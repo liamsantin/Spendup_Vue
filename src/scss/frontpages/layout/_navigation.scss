@@ -1,0 +1,27 @@
+.front-nav--desktop {
+    justify-content: flex-end;
+}
+
+.front-nav--mobile {
+    min-height: 100%;
+}
+
+.front-nav-dropdown {
+    min-width: 260px;
+    max-width: min(320px, calc(100vw - 24px));
+
+    &__login .v-btn {
+        background-color: rgb(var(--v-theme-primary)) !important;
+        color: #fff !important;
+    }
+
+    @media (max-width: 599px) {
+        .v-list-item {
+            justify-content: center;
+        }
+
+        .v-list-item-title {
+            text-align: center;
+        }
+    }
+}
