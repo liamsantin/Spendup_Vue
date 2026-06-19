@@ -1,5 +1,7 @@
 <script setup>
-const props = defineProps({ item: Object, level: Number });
+defineOptions({ name: 'NavIcon' });
+
+defineProps({ item: Object, level: Number });
 </script>
 
 <template>

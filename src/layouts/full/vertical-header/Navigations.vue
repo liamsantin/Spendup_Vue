@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+defineOptions({ name: 'AppNavigations' });
+
 import QuickLinks from './QuickLinks.vue';
 import AppsLink from './AppsLink.vue';
 import { HelpIcon, ChevronDownIcon } from 'vue-tabler-icons';

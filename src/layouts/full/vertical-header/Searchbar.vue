@@ -1,4 +1,6 @@
 <script setup>
+defineOptions({ name: 'AppSearchbar' });
+
 import { SearchIcon } from 'vue-tabler-icons';
 import { searchSugg } from '@/data/headerData';
 </script>

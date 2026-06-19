@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import Logo from '@/layouts/full/logo/Logo.vue';
 </script>
 

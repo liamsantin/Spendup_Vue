@@ -1,5 +1,5 @@
 export type ConfigProps = {
-    Sidebar_drawer: any;
+    Sidebar_drawer: boolean | null;
     Customizer_drawer: boolean;
     mini_sidebar: boolean;
     setHorizontalLayout: boolean;

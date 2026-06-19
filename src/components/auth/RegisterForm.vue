@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import Logo from '@/layouts/full/logo/Logo.vue';
 /*Social icons*/
 import google from '@/assets/images/svgs/google-icon.svg';
 import facebook from '@/assets/images/svgs/facebook-icon.svg';
 
-const checkbox = ref(false);
 const valid = ref(true);
-const show1 = ref(false);
 const password = ref('');
 const email = ref('');
 const passwordRules = ref([

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
 import { useCustomizerStore } from '../../../stores/customizer';
 // Icon Imports
-import { GridDotsIcon, LanguageIcon, SearchIcon, Menu2Icon, BellRingingIcon, ShoppingCartIcon } from 'vue-tabler-icons';
+import { GridDotsIcon, SearchIcon, Menu2Icon, ShoppingCartIcon } from 'vue-tabler-icons';
 import Logo from '../logo/Logo.vue';
 
 // dropdown imports
@@ -15,7 +15,6 @@ import RightMobileSidebar from '../vertical-header/RightMobileSidebar.vue';
 
 const customizer = useCustomizerStore();
 const showSearch = ref(false);
-const drawer = ref(false);
 const appsdrawer = ref(false);
 const priority = ref(customizer.setHorizontalLayout ? 0 : 0);
 function searchbox() {

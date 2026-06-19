@@ -5,9 +5,9 @@ import { authenticateLocal } from '@/utils/helpers/local-auth';
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         // initialize state from local storage to enable user to stay logged in
-        // @ts-ignore
+        // @ts-expect-error JSON.parse may return null when localStorage is empty
         user: JSON.parse(localStorage.getItem('user')),
-        returnUrl: null
+        returnUrl: null as string | null
     }),
     actions: {
         async login(username: string, password: string) {

@@ -1,9 +1,10 @@
+import type { Component } from 'vue';
 import { MenuIcon, CircleIcon, CircleOffIcon, BrandChromeIcon, MoodSmileIcon, StarIcon, AwardIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
     title?: string;
-    icon?: any;
+    icon?: Component;
     to?: string;
     chip?: string;
     chipBgColor?: string;

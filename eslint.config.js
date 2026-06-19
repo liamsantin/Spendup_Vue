@@ -11,7 +11,7 @@ export default defineConfigWithVueTs(
     },
     {
         name: 'app/files-to-ignore',
-        ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**']
+        ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**', '**/_template/**']
     },
     pluginVue.configs['flat/essential'],
     vueTsConfigs.recommended,

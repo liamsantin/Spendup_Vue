@@ -9,7 +9,6 @@ import facebook from '@/assets/images/svgs/facebook-icon.svg';
 
 const checkbox = ref(false);
 const valid = ref(false);
-const show1 = ref(false);
 const password = ref('admin123');
 const username = ref('info@wrappixel.com');
 const passwordRules = ref([
@@ -18,7 +17,7 @@ const passwordRules = ref([
 ]);
 const emailRules = ref([(v: string) => !!v || 'E-mail is required', (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid']);
 
-function validate(values: any, { setErrors }: any) {
+function validate(_values: Record<string, unknown>, { setErrors }: { setErrors: (errors: Record<string, string>) => void }) {
     const authStore = useAuthStore();
     return authStore.login(username.value, password.value).catch((error) => setErrors({ apiError: error }));
 }
@@ -52,12 +51,12 @@ function validate(values: any, { setErrors }: any) {
         <div class="d-flex flex-wrap align-center my-3 ml-n2">
             <v-checkbox
                 v-model="checkbox"
-                :rules="[(v: any) => !!v || 'You must agree to continue!']"
+                :rules="[(v: boolean) => !!v || 'You must agree to continue!']"
                 required
                 hide-details
                 color="primary"
             >
-                <template v-slot:label class="">Remeber this Device</template>
+                <template v-slot:label>Remeber this Device</template>
             </v-checkbox>
             <div class="ml-sm-auto">
                 <RouterLink to="" class="text-primary text-decoration-none text-body-1 opacity-1 font-weight-medium"

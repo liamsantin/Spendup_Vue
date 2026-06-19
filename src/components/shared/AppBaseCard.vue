@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useDisplay } from 'vuetify';
-const { xs, lgAndUp } = useDisplay();
+const { lgAndUp } = useDisplay();
 const sDrawer = ref(false);
 </script>
 

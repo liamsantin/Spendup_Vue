@@ -1,4 +1,6 @@
 <script setup lang="ts">
+defineOptions({ name: 'SidebarProfile' });
+
 import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();

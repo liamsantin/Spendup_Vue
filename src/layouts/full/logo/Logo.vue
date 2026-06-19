@@ -1,4 +1,6 @@
 <script setup>
+defineOptions({ name: 'AppLogo' });
+
 import { computed } from 'vue';
 import LogoLight from './LogoLight.vue';
 import LogoDark from './LogoDark.vue';

@@ -17,20 +17,20 @@ export const useCustomizerStore = defineStore('customizer', {
         SET_SIDEBAR_DRAWER() {
             this.Sidebar_drawer = !this.Sidebar_drawer;
         },
-        SET_MINI_SIDEBAR(payload: any) {
+        SET_MINI_SIDEBAR(payload: boolean) {
             this.mini_sidebar = payload;
         },
-        SET_CUSTOMIZER_DRAWER(payload: any) {
+        SET_CUSTOMIZER_DRAWER(payload: boolean) {
             this.Customizer_drawer = payload;
         },
 
-        SET_LAYOUT(payload: any) {
+        SET_LAYOUT(payload: boolean) {
             this.setHorizontalLayout = payload;
         },
-        SET_THEME(payload: any) {
+        SET_THEME(payload: string) {
             this.actTheme = payload;
         },
-        SET_CARD_BORDER(payload: any) {
+        SET_CARD_BORDER(payload: boolean) {
             this.setBorderCard = payload;
         }
     }

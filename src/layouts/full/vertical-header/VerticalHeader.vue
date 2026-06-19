@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
 import { useCustomizerStore } from '../../../stores/customizer';
-import { GridDotsIcon, LanguageIcon, SearchIcon, Menu2Icon, BellRingingIcon, ShoppingCartIcon } from 'vue-tabler-icons';
+import { GridDotsIcon, Menu2Icon, ShoppingCartIcon } from 'vue-tabler-icons';
 import LanguageDD from './LanguageDD.vue';
 import NotificationDD from './NotificationDD.vue';
 import ProfileDD from './ProfileDD.vue';
@@ -10,12 +10,8 @@ import RightMobileSidebar from './RightMobileSidebar.vue';
 import Navigations from './Navigations.vue';
 import ThemeToggler from './ThemeToggler.vue';
 const customizer = useCustomizerStore();
-const showSearch = ref(false);
 const appsdrawer = ref(false);
 const priority = ref(customizer.setHorizontalLayout ? 0 : 0);
-function searchbox() {
-    showSearch.value = !showSearch.value;
-}
 watch(priority, (newPriority) => {
     priority.value = newPriority;
 });

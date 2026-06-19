@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, shallowRef } from 'vue';
+import { shallowRef } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useCustomizerStore } from '@/stores/customizer';
 import HorizontalItems from './horizontalItems';

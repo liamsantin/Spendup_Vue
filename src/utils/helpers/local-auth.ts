@@ -12,6 +12,11 @@ export function authenticateLocal(username: string, password: string) {
         return Promise.reject('Username or password is incorrect');
     }
 
-    const { password: _, ...user } = LOCAL_USER;
-    return Promise.resolve(user);
+    return Promise.resolve({
+        id: LOCAL_USER.id,
+        username: LOCAL_USER.username,
+        firstName: LOCAL_USER.firstName,
+        lastName: LOCAL_USER.lastName,
+        token: LOCAL_USER.token
+    });
 }

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import Logo from '@/layouts/full/logo/Logo.vue';
 const valid = ref(true);
-const show1 = ref(false);
 const email = ref('');
 const emailRules = ref([(v: string) => !!v || 'E-mail is required', (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid']);
 </script>

@@ -8,13 +8,13 @@ export const fetchWrapper = {
 };
 
 function request(method: string) {
-    return (url: any, body?: any) => {
-        const requestOptions: any = {
+    return (url: string, body?: unknown) => {
+        const requestOptions: RequestInit = {
             method,
             headers: authHeader(url)
         };
         if (body) {
-            requestOptions.headers['Content-Type'] = 'application/json';
+            (requestOptions.headers as Record<string, string>)['Content-Type'] = 'application/json';
             requestOptions.body = JSON.stringify(body);
         }
         return fetch(url, requestOptions).then(handleResponse);
@@ -23,7 +23,7 @@ function request(method: string) {
 
 // helper functions
 
-function authHeader(url: any) {
+function authHeader(url: string): Record<string, string> {
     // return auth header with jwt if user is logged in and request is to the api url
     const { user } = useAuthStore();
     const isLoggedIn = !!user?.token;
@@ -35,8 +35,8 @@ function authHeader(url: any) {
     }
 }
 
-function handleResponse(response: any) {
-    return response.text().then((text: any) => {
+function handleResponse(response: Response) {
+    return response.text().then((text: string) => {
         const data = text && JSON.parse(text);
 
         if (!response.ok) {
