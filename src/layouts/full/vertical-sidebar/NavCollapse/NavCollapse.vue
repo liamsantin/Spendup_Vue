@@ -2,7 +2,7 @@
 import NavItem from '../NavItem/index.vue';
 import Icon from '../Icon.vue';
 
-defineProps({ item: Object, level: Number });
+const props = defineProps({ item: Object, level: Number });
 </script>
 
 <template>
@@ -30,11 +30,9 @@ defineProps({ item: Object, level: Number });
         <!-- ---------------------------------------------- -->
         <!---Sub Item-->
         <!-- ---------------------------------------------- -->
-        <template v-if="item.children">
-            <template v-for="(subitem, i) in item.children" :key="i">
-                <NavCollapse :item="subitem" v-if="subitem.children" :level="level + 1" />
-                <NavItem :item="subitem" :level="level + 1" v-else></NavItem>
-            </template>
+        <template v-for="(subitem, i) in item.children" :key="i" v-if="item.children">
+            <NavCollapse :item="subitem" v-if="subitem.children" :level="level + 1" />
+            <NavItem :item="subitem" :level="level + 1" v-else></NavItem>
         </template>
     </v-list-group>
 

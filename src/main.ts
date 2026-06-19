@@ -1,14 +1,13 @@
-import { createApp } from 'vue';
+import { createApp, type Plugin } from 'vue';
 import { createPinia } from 'pinia';
 import App from './App.vue';
 import { router } from './router';
 import vuetify from './plugins/vuetify';
 import '@/scss/style.scss';
 import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
-import type { Plugin } from 'vue';
 import VueApexCharts from 'vue3-apexcharts';
 import VueTablerIcons from 'vue-tabler-icons';
-import { fakeBackend } from '@/utils/helpers/fake-backend';
+import 'vue3-carousel/dist/carousel.css';
 
 import Maska from 'maska';
 
@@ -30,7 +29,6 @@ const i18n = createI18n({
 });
 
 const app = createApp(App);
-fakeBackend();
 app.use(router);
 
 app.use(PerfectScrollbarPlugin);

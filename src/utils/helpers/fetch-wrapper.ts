@@ -1,14 +1,4 @@
-import { useAuthStore } from '@/app/stores/auth-store';
-
-type RequestOptions = {
-    method: string;
-    headers: Record<string, string>;
-    body?: string;
-};
-
-type AuthUser = {
-    token?: string;
-};
+import { useAuthStore } from '@/stores/auth';
 
 export const fetchWrapper = {
     get: request('GET'),
@@ -18,8 +8,8 @@ export const fetchWrapper = {
 };
 
 function request(method: string) {
-    return (url: string, body?: unknown) => {
-        const requestOptions: RequestOptions = {
+    return (url: any, body?: any) => {
+        const requestOptions: any = {
             method,
             headers: authHeader(url)
         };
@@ -31,25 +21,28 @@ function request(method: string) {
     };
 }
 
-function authHeader(url: string): Record<string, string> {
-    const { user } = useAuthStore();
-    const authUser = user as AuthUser | null;
-    const isLoggedIn = !!authUser?.token;
-    const isApiUrl = url.startsWith(import.meta.env.VITE_API_URL);
-    if (isLoggedIn && isApiUrl && authUser?.token) {
-        return { Authorization: `Bearer ${authUser.token}` };
-    }
+// helper functions
 
-    return {};
+function authHeader(url: any) {
+    // return auth header with jwt if user is logged in and request is to the api url
+    const { user } = useAuthStore();
+    const isLoggedIn = !!user?.token;
+    const isApiUrl = url.startsWith(import.meta.env.VITE_API_URL);
+    if (isLoggedIn && isApiUrl) {
+        return { Authorization: `Bearer ${user.token}` };
+    } else {
+        return {};
+    }
 }
 
-function handleResponse(response: Response) {
-    return response.text().then((text: string) => {
-        const data = text ? JSON.parse(text) : null;
+function handleResponse(response: any) {
+    return response.text().then((text: any) => {
+        const data = text && JSON.parse(text);
 
         if (!response.ok) {
             const { user, logout } = useAuthStore();
             if ([401, 403].includes(response.status) && user) {
+                // auto logout if 401 Unauthorized or 403 Forbidden response returned from api
                 logout();
             }
 

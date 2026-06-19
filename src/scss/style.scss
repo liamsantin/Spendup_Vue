@@ -3,7 +3,6 @@
 @import './override';
 @import './layout/text';
 @import './layout/reboot';
-@import './layout/touch';
 @import './layout/container';
 @import './layout/sidebar';
 @import './layout/rtl';
@@ -32,11 +31,14 @@
 @import './components/VTable';
 @import './components/VExpansionpanel';
 
-/*Front pages css*/
-@import 'frontpages/layout/toolbar';
-@import 'frontpages/general';
-@import 'frontpages/mobile';
+/*Landing page css*/
+@import 'landingpage/header';
+@import 'landingpage/general';
 
+@import './pages/datatable';
+@import './pages/dashboards';
+@import './pages/editor';
 @import './pages/authentication';
+@import './pages/apps';
 
 @import 'vue3-perfect-scrollbar/style.css';

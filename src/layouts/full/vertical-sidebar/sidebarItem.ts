@@ -1,10 +1,9 @@
-import type { Component } from 'vue';
-import { LayoutDashboardIcon, ArrowsExchangeIcon } from 'vue-tabler-icons';
+import { MenuIcon, CircleIcon, CircleOffIcon, BrandChromeIcon, MoodSmileIcon, StarIcon, AwardIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
     title?: string;
-    icon?: Component;
+    icon?: any;
     to?: string;
     chip?: string;
     chipBgColor?: string;
@@ -17,21 +16,83 @@ export interface menu {
     subCaption?: string;
 }
 
-/** Menu sidebar zone authentifiée (/app). */
 const sidebarItem: menu[] = [
-    { header: 'Spend.Up' },
+    { header: 'Starterkit' },
     {
-        title: 'Tableau de bord',
-        icon: LayoutDashboardIcon,
-        to: '/app'
+        title: 'Sample Page',
+        icon: BrandChromeIcon,
+        to: '/'
     },
-    { header: 'Finances' },
+    { header: 'Others' },
     {
-        title: 'Transactions',
-        icon: ArrowsExchangeIcon,
-        to: '/app',
+        title: 'Menu Level',
+        icon: MenuIcon,
+        to: '#',
+        children: [
+            {
+                title: 'Level 1',
+                icon: CircleIcon,
+                to: '/level1'
+            },
+            {
+                title: 'Level 1',
+                icon: CircleIcon,
+                to: '/2level',
+                children: [
+                    {
+                        title: 'Level 2',
+                        icon: CircleIcon,
+                        to: '/barry'
+                    },
+                    {
+                        title: 'Level 2',
+                        icon: CircleIcon,
+                        to: '/2.2level',
+                        children: [
+                            {
+                                title: 'Level 3',
+                                icon: CircleIcon,
+                                to: '/barry'
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        title: 'Disabled',
+        icon: CircleOffIcon,
         disabled: true,
-        subCaption: 'Bientôt'
+        to: '/modernize'
+    },
+    {
+        title: 'Sub Caption',
+        icon: StarIcon,
+        subCaption: 'This is the subtitle',
+        to: '/modernize'
+    },
+    {
+        title: 'Chip',
+        icon: AwardIcon,
+        chip: '9',
+        chipColor: 'surface',
+        chipBgColor: 'primary',
+        to: '/modernize'
+    },
+    {
+        title: 'Outlined',
+        icon: MoodSmileIcon,
+        chip: 'outline',
+        chipColor: 'primary',
+        chipVariant: 'outlined',
+        to: '/modernize'
+    },
+    {
+        title: 'External Link',
+        icon: StarIcon,
+        to: '/modernize',
+        type: 'external'
     }
 ];
 

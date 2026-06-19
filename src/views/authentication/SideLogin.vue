@@ -10,7 +10,7 @@ import LoginForm from '@/components/auth/LoginForm.vue';
             <v-col cols="12" lg="7" xl="8" class="d-lg-flex align-center justify-center authentication position-relative">
                 <div class="auth-header pt-lg-6 pt-2 px-sm-6 px-3 pb-lg-6 pb-0">
                     <div class="position-relative">
-                        <Logo home-to="/" />
+                        <Logo />
                     </div>
                 </div>
                 <div class="">
@@ -24,11 +24,7 @@ import LoginForm from '@/components/auth/LoginForm.vue';
                     <LoginForm />
                     <h6 class="text-h6 d-flex align-center mt-6 font-weight-medium">
                         New to Modernize?
-                        <v-btn
-                            class="pl-0 text-primary text-body-1 opacity-1 pl-2 font-weight-medium"
-                            height="auto"
-                            to="/auth/register"
-                            variant="plain"
+                        <v-btn class="pl-0 text-primary text-body-1 opacity-1 pl-2 font-weight-medium" height="auto" to="/" variant="plain"
                             >Create an account</v-btn
                         >
                     </h6>

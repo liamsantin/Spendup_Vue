@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { MailIcon } from 'vue-tabler-icons';
-import { profileDD } from '@/data/admin/headerData';
+import { profileDD } from '@/data/headerData';
 
-import { useAuthStore } from '@/app/stores/auth-store';
+import { useAuthStore } from '@/stores/auth';
 
 const authStore = useAuthStore();
 </script>

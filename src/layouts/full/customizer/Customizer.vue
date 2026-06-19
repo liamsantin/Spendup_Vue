@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { useTheme } from 'vuetify';
+import { useCustomizerStore } from '@/stores/customizer';
 import {
     CheckIcon,
     LayoutColumnsIcon,
@@ -10,7 +11,8 @@ import {
     LayoutSidebarLeftCollapseIcon
 } from 'vue-tabler-icons';
 
-const customizer = useAppSettingsStore();
+const theme = useTheme();
+const customizer = useCustomizerStore();
 
 // themes color options
 const themeColors = ref([

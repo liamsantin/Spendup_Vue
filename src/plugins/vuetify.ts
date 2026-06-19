@@ -5,10 +5,6 @@ import * as directives from 'vuetify/directives';
 //DragScroll
 import { VueDraggableNext } from 'vue-draggable-next';
 
-// VLabs Components
-import { VTimePicker } from 'vuetify/labs/VTimePicker';
-import { VTreeview } from 'vuetify/labs/VTreeview';
-
 // import { BLUE_THEME} from '@/theme/LightTheme';
 import { BLUE_THEME } from '@/theme/LightTheme';
 import {
@@ -23,9 +19,7 @@ import {
 export default createVuetify({
     components: {
         ...components,
-        draggable: VueDraggableNext,
-        VTimePicker,
-        VTreeview
+        draggable: VueDraggableNext
     },
     directives,
 

@@ -5,8 +5,9 @@ import VerticalHeaderVue from './vertical-header/VerticalHeader.vue';
 import HorizontalHeader from './horizontal-header/HorizontalHeader.vue';
 import HorizontalSidebar from './horizontal-sidebar/HorizontalSidebar.vue';
 import Customizer from './customizer/Customizer.vue';
-import { useAppSettingsStore } from '@/app/stores/app-settings-store';
-const customizer = useAppSettingsStore();
+import { useCustomizerStore } from '../../stores/customizer';
+import { pl, zhHans } from 'vuetify/locale';
+const customizer = useCustomizerStore();
 </script>
 
 <template>

@@ -1,6 +1,6 @@
 <script setup>
 import { SearchIcon } from 'vue-tabler-icons';
-import { searchSugg } from '@/data/admin/headerData';
+import { searchSugg } from '@/data/headerData';
 </script>
 
 <template>

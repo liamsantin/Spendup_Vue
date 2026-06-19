@@ -2,7 +2,7 @@
 import NavItem from '../NavItem/Index.vue';
 import Icon from '../../vertical-sidebar/Icon.vue';
 
-defineProps({ item: Object, level: Number });
+const props = defineProps({ item: Object, level: Number });
 </script>
 
 <template>
@@ -19,8 +19,8 @@ defineProps({ item: Object, level: Number });
         <i class="ddIcon ml-2 d-flex align-center"><ChevronDownIcon size="15" /></i>
     </a>
     <!---Sub Item-->
-    <ul v-if="item.children" :class="`ddMenu ddLevel-${level + 1}`">
-        <li v-for="(subitem, i) in item.children" :key="i" class="navItem">
+    <ul :class="`ddMenu ddLevel-${level + 1}`">
+        <li v-for="(subitem, i) in item.children" :key="i" v-if="item.children" class="navItem">
             <Index :item="subitem" v-if="subitem.children" :level="level + 1" />
             <NavItem :item="subitem" :level="level + 1" v-else></NavItem>
         </li>
