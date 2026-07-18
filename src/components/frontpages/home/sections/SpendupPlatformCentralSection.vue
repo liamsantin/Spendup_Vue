@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ListDetailsIcon, BuildingBankIcon, UsersIcon, HomeEcoIcon, ChartPieIcon, TargetIcon, CircleCheckIcon } from 'vue-tabler-icons';
 
-const FEATURES_IMG = '/assets/images/landingpage/features';
+const FEATURES_IMG = '/assets/images/front-pages/features';
 
 const platformFeatures = [
     {
@@ -45,7 +45,7 @@ const platformFeatures = [
             <div class="su-platform-central mb-8 mb-md-10">
                 <div class="su-platform-central__image">
                     <img
-                        :src="`${FEATURES_IMG}/platform-centralization.png`"
+                        :src="`${FEATURES_IMG}/home-platform-central.png`"
                         alt="Illustration de centralisation : fonctionnalités financières convergent vers un tableau de bord"
                         class="su-platform-central__img"
                         loading="eager"

@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { DeviceDesktopIcon } from 'vue-tabler-icons';
 
-const FEATURES_IMG = '/assets/images/landingpage/features';
+const FEATURES_IMG = '/assets/images/front-pages/features';
 
 const sectionRef = ref<HTMLElement | null>(null);
 const imageOffset = ref(0);
@@ -83,7 +83,7 @@ onUnmounted(() => {
                 <v-col cols="12" md="6" class="mt-8 mt-md-0">
                     <div class="su-parallax-media rounded-xl">
                         <img
-                            :src="`${FEATURES_IMG}/platform-accessible-everywhere.png`"
+                            :src="`${FEATURES_IMG}/home-platform-accessible.png`"
                             alt="Spend.Up accessible sur ordinateur, tablette et smartphone"
                             class="w-100 su-platform-accessible-img su-parallax-media__img"
                             :style="{ transform: `translate3d(0, ${imageOffset}px, 0)` }"

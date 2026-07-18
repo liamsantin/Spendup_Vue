@@ -25,7 +25,7 @@ import SpendupDomainSection from '@/components/frontpages/features/sections/Spen
 import SpendupDomainSectionCenter from '@/components/frontpages/features/sections/SpendupDomainSectionCenter.vue';
 import { spendupAdditionalDomains } from '@/data/front-pages/spendup-additional-domains';
 
-const FEATURES_IMG = '/assets/images/landingpage/features';
+const FEATURES_IMG = '/assets/images/front-pages/features';
 
 const fichiersSection = {
     icon: FolderIcon,
@@ -48,7 +48,7 @@ const fichiersSection = {
             ]
         }
     ],
-    image: `${FEATURES_IMG}/files-imports.png`,
+    image: `${FEATURES_IMG}/feature-imports.png`,
     imageAlt: 'Import et gestion de fichiers financiers'
 };
 
@@ -73,7 +73,7 @@ const employeursSection = {
             ]
         }
     ],
-    image: `${FEATURES_IMG}/employers-salary.png`,
+    image: `${FEATURES_IMG}/feature-employers.png`,
     imageAlt: 'Employeurs, contrats et bulletins de salaire'
 };
 
@@ -93,7 +93,7 @@ const patrimoineSection = {
             items: ['logements et biens locatifs', 'charges, travaux et rendement locatif']
         }
     ],
-    image: `${FEATURES_IMG}/properties-patrimony.png`,
+    image: `${FEATURES_IMG}/feature-properties.png`,
     imageAlt: 'Propriétés et patrimoine'
 };
 
@@ -117,7 +117,7 @@ const budgetSection = {
             items: ['capital restant et échéancier', 'taux, mensualités et durée', 'dettes partagées']
         }
     ],
-    image: `${FEATURES_IMG}/budget.jpg`,
+    image: `${FEATURES_IMG}/feature-budget.jpg`,
     imageAlt: 'Budgets et dettes',
     imageClass: 'su-budget-img'
 };
@@ -156,7 +156,7 @@ const multiSection = {
         }
     ],
     alert: "Chaque utilisateur reste maître de ses données et choisit ce qu'il souhaite partager ou non.",
-    image: `${FEATURES_IMG}/friends-selfie.jpg`,
+    image: `${FEATURES_IMG}/feature-collaboration.jpg`,
     imageAlt: 'À plusieurs sur Spend.Up',
     imageClass: 'su-friends-img',
     bgClass: 'bg-surface' as const

@@ -1,30 +1,39 @@
-<script setup>
+<script setup lang="ts">
 defineOptions({ name: 'AppLogo' });
 
 import { computed } from 'vue';
-import LogoLight from './LogoLight.vue';
-import LogoDark from './LogoDark.vue';
-import { useCustomizerStore } from '@/app/stores/app-settings-store';
+import { RouterLink } from 'vue-router';
+import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 
-const customizer = useCustomizerStore();
+withDefaults(defineProps<{ homeTo?: string }>(), { homeTo: '/' });
 
-//const dark = ref(false);
-const dark = computed(() => {
-    if (
-        customizer.actTheme === 'DARK_BLUE_THEME' ||
-        customizer.actTheme === 'DARK_AQUA_THEME' ||
-        customizer.actTheme === 'DARK_ORANGE_THEME' ||
-        customizer.actTheme === 'DARK_PURPLE_THEME' ||
-        customizer.actTheme === 'DARK_GREEN_THEME' ||
-        customizer.actTheme === 'DARK_CYAN_THEME'
-    ) {
-        return true;
-    } else {
-        return false;
-    }
-});
+const customizer = useAppSettingsStore();
+
+const isDarkTheme = computed(() =>
+    ['DARK_BLUE_THEME', 'DARK_AQUA_THEME', 'DARK_ORANGE_THEME', 'DARK_PURPLE_THEME', 'DARK_GREEN_THEME', 'DARK_CYAN_THEME'].includes(
+        customizer.actTheme
+    )
+);
 </script>
+
 <template>
-    <LogoLight v-if="dark" />
-    <LogoDark v-else />
+    <div class="logo">
+        <RouterLink :to="homeTo" class="spendup-logo d-flex align-center ga-2 text-decoration-none">
+            <img src="/Spendup-icon-fusee.svg" alt="Spend.Up" class="spendup-logo__icon flex-shrink-0" width="32" height="32" />
+            <span class="spendup-logo__text text-h3 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'textPrimary'">Spend.Up</span>
+        </RouterLink>
+    </div>
 </template>
+
+<style scoped lang="scss">
+.spendup-logo__icon {
+    display: block;
+    object-fit: contain;
+}
+
+.spendup-logo__text {
+    letter-spacing: -0.02em;
+    line-height: 1;
+    white-space: nowrap;
+}
+</style>
