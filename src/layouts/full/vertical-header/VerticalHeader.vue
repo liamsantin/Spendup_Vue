@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useCustomizerStore } from '../../../stores/customizer';
+import { useCustomizerStore } from '@/app/stores/app-settings-store';
 import { GridDotsIcon, Menu2Icon, ShoppingCartIcon } from 'vue-tabler-icons';
 import LanguageDD from './LanguageDD.vue';
 import NotificationDD from './NotificationDD.vue';

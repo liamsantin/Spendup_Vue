@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { quickLink } from '@/data/headerData';
+import { quickLink } from '@/data/admin/headerData';
 </script>
 
 <template>

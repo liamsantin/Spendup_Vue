@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { MenuIcon, CircleIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, SettingsIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -21,45 +21,14 @@ export interface menu {
 
 const horizontalItems: menu[] = [
     {
-        title: 'Sample Page',
-        icon: CircleIcon,
-        to: '/'
+        title: 'Tableau de bord',
+        icon: LayoutDashboardIcon,
+        to: '/app'
     },
     {
-        title: 'Multilevel',
-        icon: MenuIcon,
-        to: '#',
-        children: [
-            {
-                title: 'Level 1',
-                icon: CircleIcon,
-                to: '/level1'
-            },
-            {
-                title: 'Level 1',
-                icon: CircleIcon,
-                to: '/2level',
-                children: [
-                    {
-                        title: 'Level 2',
-                        icon: CircleIcon,
-                        to: '/barry'
-                    },
-                    {
-                        title: 'Level 2',
-                        icon: CircleIcon,
-                        to: '/2.2level',
-                        children: [
-                            {
-                                title: 'Level 3',
-                                icon: CircleIcon,
-                                to: '/barry'
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
+        title: 'Réglages',
+        icon: SettingsIcon,
+        to: '/app/account-settings'
     }
 ];
 

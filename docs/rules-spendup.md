@@ -9,21 +9,21 @@
 
 Avant d'ajouter ou recréer une view, un composant, une route ou un style :
 
-1. Chercher dans `_template-application/` si l'élément Spend.Up existe déjà (structure cible).
-2. Sinon, chercher dans `_template-modernize/` l'équivalent du thème Modernize (écran admin, widget, UI kit…).
+1. Chercher dans `_template/old-application/` si l'élément Spend.Up existe déjà (structure cible).
+2. Sinon, chercher dans `_template/modernize/` l'équivalent du thème Modernize (écran admin, widget, UI kit…).
 3. Comparer avec ce qui est déjà présent dans `src/`.
 4. Réutiliser / adapter depuis les templates plutôt que réécrire from scratch.
 
 | Besoin Spend.Up | Où chercher en priorité | Sinon (thème Modernize) |
 | --------------- | ----------------------- | ----------------------- |
-| Front-pages, `/app`, features | `_template-application/` | — |
-| Page login, register, 2FA | `_template-application/views/authentication/` | `_template-modernize/views/authentication/` |
-| Dashboard admin | `_template-application/features/dashboard/` | `_template-modernize/views/dashboard/` |
-| Widgets, cartes, graphiques | `_template-application/components/shared/` | `_template-modernize/views/widgets/`, `_template-modernize/components/` |
-| Apps (email, chat, invoice…) | — | `_template-modernize/views/apps/`, `_template-modernize/components/apps/` |
-| Styles admin / auth / front | `_template-application/scss/` | `_template-modernize/scss/` |
+| Front-pages, `/app`, features | `_template/old-application/` | — |
+| Page login, register, 2FA | `_template/old-application/views/authentication/` | `_template/modernize/views/authentication/` |
+| Dashboard admin | `_template/old-application/features/dashboard/` | `_template/modernize/views/dashboard/` |
+| Widgets, cartes, graphiques | `_template/old-application/components/shared/` | `_template/modernize/views/widgets/`, `_template/modernize/components/` |
+| Apps (email, chat, invoice…) | — | `_template/modernize/views/apps/`, `_template/modernize/components/apps/` |
+| Styles admin / auth / front | `_template/old-application/scss/` | `_template/modernize/scss/` |
 
-**Ne pas modifier** `_template-modernize/` ni `_template-application/` — ce sont des références figées. Toute personnalisation Spend.Up se fait dans `src/`.
+**Ne pas modifier** `_template/modernize/` ni `_template/old-application/` — ce sont des références figées. Toute personnalisation Spend.Up se fait dans `src/`.
 
 ---
 
@@ -66,7 +66,7 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 - Nommer les dossiers en **kebab-case** : `account-settings`, `dashboard`, `recurring-payments`.
 - Les dossiers `shared/`, `layout/`, `auth/` dans `components/` restent des regroupements transverses.
 - Ne pas créer de dossiers de features vides « pour plus tard » — créer une feature quand du code métier apparaît.
-- Ne pas modifier `_template-modernize/` ni `_template-application/`.
+- Ne pas modifier `_template/modernize/` ni `_template/old-application/`.
 
 ### Répartition par zone
 
@@ -179,7 +179,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 
 ## À faire
 
-- Toujours commencer par `_template-application/`, puis `_template-modernize/` si besoin.
+- Toujours commencer par `_template/old-application/`, puis `_template/modernize/` si besoin.
 - Créer `features/<domaine>/` dès qu'une fonctionnalité métier apparaît.
 - Créer `views/app/<feature>/` (ou `views/front-pages/`) comme page fine de routing.
 - Placer stores métier dans `features/<domaine>/stores/`, stores globaux dans `app/stores/`.
@@ -199,7 +199,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 
 ## À éviter
 
-- Modifier les dossiers `_template-modernize/` ou `_template-application/`.
+- Modifier les dossiers `_template/modernize/` ou `_template/old-application/`.
 - Recréer from scratch un écran déjà présent dans les templates sans les avoir consultés.
 - Placer de la logique métier dans `views/` ou à la racine de `components/`.
 - Créer des stores dans un ancien dossier `src/stores/` (supprimé — utiliser `app/stores/` ou `features/<domaine>/stores/`).
@@ -225,7 +225,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 
 ## Procédure — ajout d'une nouvelle fonctionnalité `/app`
 
-1. Chercher l'équivalent dans `_template-application/`, puis `_template-modernize/`.
+1. Chercher l'équivalent dans `_template/old-application/`, puis `_template/modernize/`.
 2. Créer `features/<domaine>/` avec la structure :
    ```
    features/<domaine>/

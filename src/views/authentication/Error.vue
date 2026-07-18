@@ -1,7 +1,3 @@
-<script setup lang="ts">
-defineOptions({ name: 'ErrorPage' });
-</script>
-
 <template>
     <div class="d-flex justify-center align-center text-center h-100vh">
         <div>

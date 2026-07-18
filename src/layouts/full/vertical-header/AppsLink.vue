@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { appsLink } from '@/data/headerData';
+import { appsLink } from '@/data/admin/headerData';
 </script>
 <template>
     <!-- ---------------------------------------------- -->

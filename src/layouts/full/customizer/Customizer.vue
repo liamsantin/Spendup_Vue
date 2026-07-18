@@ -2,7 +2,7 @@
 defineOptions({ name: 'AppCustomizer' });
 
 import { ref } from 'vue';
-import { useCustomizerStore } from '@/stores/customizer';
+import { useCustomizerStore } from '@/app/stores/app-settings-store';
 import {
     CheckIcon,
     LayoutColumnsIcon,

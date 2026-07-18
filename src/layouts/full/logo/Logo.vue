@@ -4,7 +4,7 @@ defineOptions({ name: 'AppLogo' });
 import { computed } from 'vue';
 import LogoLight from './LogoLight.vue';
 import LogoDark from './LogoDark.vue';
-import { useCustomizerStore } from '@/stores/customizer';
+import { useCustomizerStore } from '@/app/stores/app-settings-store';
 
 const customizer = useCustomizerStore();
 

@@ -2,7 +2,7 @@
 defineOptions({ name: 'AppSearchbar' });
 
 import { SearchIcon } from 'vue-tabler-icons';
-import { searchSugg } from '@/data/headerData';
+import { searchSugg } from '@/data/admin/headerData';
 </script>
 
 <template>

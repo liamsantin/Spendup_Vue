@@ -3,6 +3,7 @@
 @use './override';
 @use './layout/text';
 @use './layout/reboot';
+@use './layout/touch';
 @use './layout/container';
 @use './layout/sidebar';
 @use './layout/rtl';
@@ -13,6 +14,7 @@
 
 @use './theme/themeColors';
 
+@use './components/VBreadcrumb';
 @use './components/VAlert';
 @use './components/VButtons';
 @use './components/VCard';
@@ -30,12 +32,9 @@
 @use './components/VTable';
 @use './components/VExpansionpanel';
 
-/*Landing page css*/
-@use 'landingpage/header';
-@use 'landingpage/general';
+/* Front pages */
+@use 'frontpages/layout/toolbar';
+@use 'frontpages/general';
+@use 'frontpages/mobile';
 
-@use './pages/datatable';
-@use './pages/dashboards';
-@use './pages/editor';
 @use './pages/authentication';
-@use './pages/apps';

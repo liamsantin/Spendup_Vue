@@ -5,16 +5,17 @@
 
 ---
 
-## Dossiers `_template-*` (références)
+## Dossiers `_template/` (références)
 
 À la **racine du projet** (à côté de `src/`), deux dossiers de référence **en lecture seule** :
 
 ```
 Spendup_Vue/
-├── _template-modernize/      # Modernize v6.2 complet (thème admin, apps, widgets, UI kit…)
-│   └── views/, components/, scss/, layouts/, …
-├── _template-application/    # Application Spend.Up de référence (structure cible)
-│   └── app/, features/, views/, components/frontpages/, router/, …
+├── _template/
+│   ├── modernize/            # Modernize v6.2 complet (thème admin, apps, widgets, UI kit…)
+│   │   └── views/, components/, scss/, layouts/, …
+│   └── old-application/      # Application Spend.Up de référence (structure cible)
+│       └── app/, features/, views/, components/frontpages/, router/, …
 ├── src/                      # Projet Spend.Up actif — seul dossier à modifier
 └── docs/
     ├── structure-spendup.md
@@ -23,8 +24,8 @@ Spendup_Vue/
 
 | Dossier | Rôle | Quand l'utiliser |
 | ------- | ---- | ---------------- |
-| `_template-modernize/` | Thème **Modernize v6.2** intact (équivalent `packages/main`) | Chercher un écran, widget ou composant admin du thème d'origine |
-| `_template-application/` | **Spend.Up** déjà structuré (`app/`, `features/`, front-pages, `/app`) | Copier / adapter la structure et le code Spend.Up cible |
+| `_template/modernize/` | Thème **Modernize v6.2** intact (équivalent `packages/main`) | Chercher un écran, widget ou composant admin du thème d'origine |
+| `_template/old-application/` | **Spend.Up** déjà structuré (`app/`, `features/`, front-pages, `/app`) | Copier / adapter la structure et le code Spend.Up cible |
 
 **Ne pas modifier** ces deux dossiers — toute personnalisation se fait dans `src/`.
 

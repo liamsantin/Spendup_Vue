@@ -1,0 +1,22 @@
+.pricing-intro {
+    max-width: 720px;
+    margin-inline: auto;
+}
+
+.pricing-table :deep(th),
+.pricing-table :deep(td) {
+    padding: 16px 20px !important;
+}
+
+.pricing-faq :deep(.v-expansion-panel-title) {
+    min-height: unset !important;
+    padding-block: 18px;
+}
+
+.pricing-cta {
+    background: rgba(var(--v-theme-primary), 0.06);
+}
+
+.lh-lg {
+    line-height: 1.65;
+}

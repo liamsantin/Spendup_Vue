@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { languageDD } from '@/data/headerData';
+import { languageDD } from '@/data/admin/headerData';
 import flag1 from '@/assets/images/flag/icon-flag-en.svg';
 import flag2 from '@/assets/images/flag/icon-flag-ro.svg';
 import flag3 from '@/assets/images/flag/icon-flag-zh.svg';

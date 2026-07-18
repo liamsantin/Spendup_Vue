@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useCustomizerStore } from '@/stores/customizer';
+import { useCustomizerStore } from '@/app/stores/app-settings-store';
 import { MoonIcon, SunIcon } from 'vue-tabler-icons';
 
 const customizer = useCustomizerStore();

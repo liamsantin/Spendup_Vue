@@ -1,0 +1,25 @@
+.notice-card {
+    border-color: rgba(var(--v-theme-primary), 0.12) !important;
+}
+
+.notice-icon {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    background: rgba(var(--v-theme-primary), 0.1);
+}
+
+.notice-list-item {
+    border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+    min-height: auto !important;
+}
+
+.notice-check {
+    width: 36px;
+    height: 36px;
+    background: rgba(var(--v-theme-primary), 0.08);
+}
+
+.lh-lg {
+    line-height: 1.6;
+}

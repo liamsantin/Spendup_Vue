@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { notifications } from '@/data/headerData';
+import { notifications } from '@/data/admin/headerData';
 </script>
 <template>
     <!-- ---------------------------------------------- -->
