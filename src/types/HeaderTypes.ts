@@ -11,13 +11,6 @@ type profileType = {
     href: string;
 };
 
-type languageType = {
-    avatar: string;
-    title: string;
-    subtext: string;
-    value: string;
-};
-
 type appsLinkType = {
     avatar: string;
     title: string;
@@ -35,4 +28,4 @@ type searchType = {
     href: string;
 };
 
-export type { notificationType, profileType, languageType, appsLinkType, quickLinksType, searchType };
+export type { notificationType, profileType, appsLinkType, quickLinksType, searchType };
