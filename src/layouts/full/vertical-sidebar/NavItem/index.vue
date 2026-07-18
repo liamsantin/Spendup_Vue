@@ -1,4 +1,6 @@
 <script setup>
+defineOptions({ name: 'SidebarNavItem' });
+
 import Icon from '../Icon.vue';
 
 defineProps({ item: Object, level: Number });

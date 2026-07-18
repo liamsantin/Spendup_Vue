@@ -1,3 +1,5 @@
+@use '../variables' as *;
+
 /*This is for the logo*/
 .leftSidebar {
     box-shadow: none !important;
@@ -185,4 +187,9 @@
 // scrollbar
 .ps__rail-y {
     z-index: 9;
+}
+
+.v-navigation-drawer {
+    box-shadow: none !important;
+    border-right: 1px solid rgb(var(--v-theme-borderColor)) !important;
 }

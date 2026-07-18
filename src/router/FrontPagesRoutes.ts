@@ -1,4 +1,4 @@
-import { isPricingPageEnabled } from '@/utils/pricing-page-enabled';
+import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 
 const pricingRoute = {
     name: 'Pricing',

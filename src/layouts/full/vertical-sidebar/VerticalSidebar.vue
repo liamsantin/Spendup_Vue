@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue';
-import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { useCustomizerStore } from '@/app/stores/app-settings-store';
 import sidebarItems from './sidebarItem';
 
 import NavGroup from './NavGroup/index.vue';
@@ -9,7 +9,7 @@ import NavCollapse from './NavCollapse/NavCollapse.vue';
 import Profile from './profile/Profile.vue';
 import Logo from '../logo/Logo.vue';
 
-const customizer = useAppSettingsStore();
+const customizer = useCustomizerStore();
 const sidebarMenu = shallowRef(sidebarItems);
 </script>
 
@@ -36,7 +36,7 @@ const sidebarMenu = shallowRef(sidebarItems);
         <perfect-scrollbar class="scrollnavbar">
             <v-list class="pa-6">
                 <!---Menu Loop -->
-                <template v-for="item in sidebarMenu" :key="item.title ?? item.header">
+                <template v-for="(item, index) in sidebarMenu" :key="item.header || item.title || index">
                     <!---Item Sub Header -->
                     <NavGroup :item="item" v-if="item.header" />
                     <!---If Has Child -->

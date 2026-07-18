@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { useCustomizerStore } from '@/app/stores/app-settings-store';
 // Icon Imports
 import { GridDotsIcon, SearchIcon, Menu2Icon, ShoppingCartIcon } from 'vue-tabler-icons';
 import Logo from '../logo/Logo.vue';
@@ -13,7 +13,7 @@ import Navigations from '../vertical-header/Navigations.vue';
 import Searchbar from '../vertical-header/Searchbar.vue';
 import RightMobileSidebar from '../vertical-header/RightMobileSidebar.vue';
 
-const customizer = useAppSettingsStore();
+const customizer = useCustomizerStore();
 const showSearch = ref(false);
 const appsdrawer = ref(false);
 const priority = ref(customizer.setHorizontalLayout ? 0 : 0);

@@ -1,4 +1,6 @@
 <script setup>
+defineOptions({ name: 'HorizontalNavItem' });
+
 import Icon from '../../vertical-sidebar/Icon.vue';
 defineProps({ item: Object, level: Number });
 </script>

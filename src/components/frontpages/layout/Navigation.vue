@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import Logo from '@/layouts/full/logo/Logo.vue';
-import { isPricingPageEnabled } from '@/utils/pricing-page-enabled';
+import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 
 const props = withDefaults(
     defineProps<{

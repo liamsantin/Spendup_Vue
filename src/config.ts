@@ -1,5 +1,5 @@
 export type ConfigProps = {
-    Sidebar_drawer: boolean;
+    Sidebar_drawer: boolean | null;
     Customizer_drawer: boolean;
     mini_sidebar: boolean;
     setHorizontalLayout: boolean;
@@ -9,7 +9,7 @@ export type ConfigProps = {
 };
 
 const config: ConfigProps = {
-    Sidebar_drawer: false,
+    Sidebar_drawer: null,
     Customizer_drawer: false,
     mini_sidebar: false,
     setHorizontalLayout: false, // Horizontal layout

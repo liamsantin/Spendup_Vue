@@ -1,10 +1,7 @@
 {
-    "extends": "@vue/tsconfig/tsconfig.web.json",
+    "extends": "@vue/tsconfig/tsconfig.dom.json",
     "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
     "compilerOptions": {
-        "preserveValueImports": false,
-        "importsNotUsedAsValues": "remove",
-        "verbatimModuleSyntax": true,
         "baseUrl": ".",
         "paths": {
             "@/*": ["./src/*"]

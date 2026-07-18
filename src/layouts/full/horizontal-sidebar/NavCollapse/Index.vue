@@ -1,4 +1,6 @@
 <script setup>
+defineOptions({ name: 'HorizontalNavCollapse' });
+
 import NavItem from '../NavItem/Index.vue';
 import Icon from '../../vertical-sidebar/Icon.vue';
 

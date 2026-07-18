@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue';
 import { useDisplay } from 'vuetify';
-import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { useCustomizerStore } from '@/app/stores/app-settings-store';
 import HorizontalItems from './horizontalItems';
 import NavItem from './NavItem/Index.vue';
 import NavCollapse from './NavCollapse/Index.vue';
 import VerticalSidebar from '../vertical-sidebar/VerticalSidebar.vue';
 
-const customizer = useAppSettingsStore();
+const customizer = useCustomizerStore();
 const sidebarMenu = shallowRef(HorizontalItems);
 const { mdAndUp } = useDisplay();
 // function subIsActive(input: any) {

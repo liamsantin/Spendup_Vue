@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { FooterMenu1, FooterMenu2, FooterMenu3 } from '@/data/front-pages/front-pages-data';
-import { isPricingPageEnabled } from '@/utils/pricing-page-enabled';
+import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 
 const footerMenu2 = computed(() => FooterMenu2.filter((item) => item.link !== '/tarifs' || isPricingPageEnabled()));
 </script>

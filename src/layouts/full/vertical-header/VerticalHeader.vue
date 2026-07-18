@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { useCustomizerStore } from '@/app/stores/app-settings-store';
 import { GridDotsIcon, Menu2Icon, ShoppingCartIcon } from 'vue-tabler-icons';
 import LanguageDD from './LanguageDD.vue';
 import NotificationDD from './NotificationDD.vue';
@@ -9,7 +9,7 @@ import Searchbar from './Searchbar.vue';
 import RightMobileSidebar from './RightMobileSidebar.vue';
 import Navigations from './Navigations.vue';
 import ThemeToggler from './ThemeToggler.vue';
-const customizer = useAppSettingsStore();
+const customizer = useCustomizerStore();
 const appsdrawer = ref(false);
 const priority = ref(customizer.setHorizontalLayout ? 0 : 0);
 watch(priority, (newPriority) => {
