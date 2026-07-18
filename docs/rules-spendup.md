@@ -14,14 +14,14 @@ Avant d'ajouter ou recréer une view, un composant, une route ou un style :
 3. Comparer avec ce qui est déjà présent dans `src/`.
 4. Réutiliser / adapter depuis les templates plutôt que réécrire from scratch.
 
-| Besoin Spend.Up | Où chercher en priorité | Sinon (thème Modernize) |
-| --------------- | ----------------------- | ----------------------- |
-| Front-pages, `/app`, features | `_template/old-application/` | — |
-| Page login, register, 2FA | `_template/old-application/views/authentication/` | `_template/modernize/views/authentication/` |
-| Dashboard admin | `_template/old-application/features/dashboard/` | `_template/modernize/views/dashboard/` |
-| Widgets, cartes, graphiques | `_template/old-application/components/shared/` | `_template/modernize/views/widgets/`, `_template/modernize/components/` |
-| Apps (email, chat, invoice…) | — | `_template/modernize/views/apps/`, `_template/modernize/components/apps/` |
-| Styles admin / auth / front | `_template/old-application/scss/` | `_template/modernize/scss/` |
+| Besoin Spend.Up               | Où chercher en priorité                           | Sinon (thème Modernize)                                                   |
+| ----------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------- |
+| Front-pages, `/app`, features | `_template/old-application/`                      | —                                                                         |
+| Page login, register, 2FA     | `_template/old-application/views/authentication/` | `_template/modernize/views/authentication/`                               |
+| Dashboard admin               | `_template/old-application/features/dashboard/`   | `_template/modernize/views/dashboard/`                                    |
+| Widgets, cartes, graphiques   | `_template/old-application/components/shared/`    | `_template/modernize/views/widgets/`, `_template/modernize/components/`   |
+| Apps (email, chat, invoice…)  | —                                                 | `_template/modernize/views/apps/`, `_template/modernize/components/apps/` |
+| Styles admin / auth / front   | `_template/old-application/scss/`                 | `_template/modernize/scss/`                                               |
 
 **Ne pas modifier** `_template/modernize/` ni `_template/old-application/` — ce sont des références figées. Toute personnalisation Spend.Up se fait dans `src/`.
 
@@ -33,15 +33,15 @@ Si l'IA n'est pas certaine, ou si la modification dépasse une petite correction
 
 Demander validation notamment pour :
 
-| Situation | Exemples |
-| --------- | -------- |
-| Changement de structure | Réorganisation de dossiers, renommage massif, fusion/split de features |
-| Refactoring large | Migration de plusieurs composants, rewrite d'un module entier |
-| Routing | Nouvelle zone de routes, modification d'URLs existantes, suppression de routes |
-| Choix d'architecture | Où placer un composant, nommage d'une feature, découpage views/components |
-| Suppression | Retirer des fichiers, routes, styles ou fonctionnalités existantes |
-| Comportement métier ambigu | Auth, permissions, flux utilisateur non documentés |
-| Impact transversal | Modification touchant front-pages et `/app`, ou les règles elles-mêmes |
+| Situation                  | Exemples                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------ |
+| Changement de structure    | Réorganisation de dossiers, renommage massif, fusion/split de features         |
+| Refactoring large          | Migration de plusieurs composants, rewrite d'un module entier                  |
+| Routing                    | Nouvelle zone de routes, modification d'URLs existantes, suppression de routes |
+| Choix d'architecture       | Où placer un composant, nommage d'une feature, découpage views/components      |
+| Suppression                | Retirer des fichiers, routes, styles ou fonctionnalités existantes             |
+| Comportement métier ambigu | Auth, permissions, flux utilisateur non documentés                             |
+| Impact transversal         | Modification touchant front-pages et `/app`, ou les règles elles-mêmes         |
 
 Principe : en cas de doute, poser la question, proposer des options, attendre le feu vert. Les petites corrections ciblées peuvent être faites directement.
 
@@ -51,12 +51,12 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 
 ### Couches principales
 
-| Couche | Rôle |
-| ------ | ---- |
-| `app/` | Transverse : stores globaux, guards, providers |
-| `features/<domaine>/` | Logique métier par domaine fonctionnel |
-| `views/` | Pages fines liées au routing uniquement |
-| `components/` | UI transverse (`shared/`, `auth/`, `frontpages/`) — pas de logique métier |
+| Couche                | Rôle                                                                      |
+| --------------------- | ------------------------------------------------------------------------- |
+| `app/`                | Transverse : stores globaux, guards, providers                            |
+| `features/<domaine>/` | Logique métier par domaine fonctionnel                                    |
+| `views/`              | Pages fines liées au routing uniquement                                   |
+| `components/`         | UI transverse (`shared/`, `auth/`, `frontpages/`) — pas de logique métier |
 
 ### Règles générales
 
@@ -70,11 +70,11 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 
 ### Répartition par zone
 
-| Zone | Views | Logique métier | Composants UI |
-| ---- | ----- | -------------- | ------------- |
-| Application `/app` | `views/app/<feature>/` | `features/<feature>/` | `features/<feature>/components/` |
-| Site public | `views/front-pages/` | — | `components/frontpages/<feature>/` |
-| Auth | `views/authentication/` | `app/stores/auth-store.ts` | `components/auth/` |
+| Zone               | Views                   | Logique métier             | Composants UI                      |
+| ------------------ | ----------------------- | -------------------------- | ---------------------------------- |
+| Application `/app` | `views/app/<feature>/`  | `features/<feature>/`      | `features/<feature>/components/`   |
+| Site public        | `views/front-pages/`    | —                          | `components/frontpages/<feature>/` |
+| Auth               | `views/authentication/` | `app/stores/auth-store.ts` | `components/auth/`                 |
 
 ---
 
@@ -134,10 +134,10 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 
 ### Stores Pinia
 
-| Portée | Emplacement | Exemple |
-| ------ | ----------- | ------- |
-| Global | `app/stores/<nom>-store.ts` | `auth-store.ts`, `app-settings-store.ts` |
-| Métier | `features/<domaine>/stores/<nom>-store.ts` | `transaction-store.ts`, `user-store.ts` |
+| Portée | Emplacement                                | Exemple                                  |
+| ------ | ------------------------------------------ | ---------------------------------------- |
+| Global | `app/stores/<nom>-store.ts`                | `auth-store.ts`, `app-settings-store.ts` |
+| Métier | `features/<domaine>/stores/<nom>-store.ts` | `transaction-store.ts`, `user-store.ts`  |
 
 - Composable : `use` + PascalCase — ex. `useAuthStore`, `useAppSettingsStore`, `useTransactionStore`.
 - Import global : `@/app/stores/auth-store`.
@@ -154,12 +154,12 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Même convention de nommage que les stores (`auth-store.ts` → `auth-helpers.ts`, `user-store.ts` → `user-helpers.ts`).
 - Un fichier par domaine transverse ; pas de noms génériques (`utils.ts`, `helpers.ts`, `fetch-wrapper.ts`).
 
-| Fichier | Exemples d'exports |
-| ------- | ------------------ |
-| `auth-helpers.ts` | `authenticateLocal()` |
-| `fetch-helpers.ts` | `fetchWrapper` |
-| `fake-backend-helpers.ts` | `fakeBackend()` |
-| `pricing-helpers.ts` | `isPricingPageEnabled()` |
+| Fichier                   | Exemples d'exports       |
+| ------------------------- | ------------------------ |
+| `auth-helpers.ts`         | `authenticateLocal()`    |
+| `fetch-helpers.ts`        | `fetchWrapper`           |
+| `fake-backend-helpers.ts` | `fakeBackend()`          |
+| `pricing-helpers.ts`      | `isPricingPageEnabled()` |
 
 - Import : `@/utils/helpers/<domaine>-helpers`.
 - Les helpers **métier** propres à une feature vont dans `features/<domaine>/helpers/` (même convention `<domaine>-helpers.ts` ou sous-domaine : `transaction-format-helpers.ts`).
@@ -227,15 +227,15 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 
 1. Chercher l'équivalent dans `_template/old-application/`, puis `_template/modernize/`.
 2. Créer `features/<domaine>/` avec la structure :
-   ```
-   features/<domaine>/
-   ├── api/              # si appels API
-   ├── components/       # composants propres au domaine
-   ├── composables/      # use<Domaine>.ts
-   ├── stores/           # si state métier
-   ├── types/            # types propres au domaine
-   └── index.ts          # exports publics
-   ```
+    ```
+    features/<domaine>/
+    ├── api/              # si appels API
+    ├── components/       # composants propres au domaine
+    ├── composables/      # use<Domaine>.ts
+    ├── stores/           # si state métier
+    ├── types/            # types propres au domaine
+    └── index.ts          # exports publics
+    ```
 3. Créer `views/app/<feature>/App<Feature>View.vue` — page fine qui importe depuis `@/features/<domaine>`.
 4. Enregistrer la route dans `router/AppRoutes.ts` et le menu dans `sidebarItem.ts`.
 5. Placer les styles éventuels dans `src/scss/` au chemin miroir.

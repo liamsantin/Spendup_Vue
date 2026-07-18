@@ -22,10 +22,10 @@ Spendup_Vue/
     └── rules-spendup.md
 ```
 
-| Dossier | Rôle | Quand l'utiliser |
-| ------- | ---- | ---------------- |
-| `_template/modernize/` | Thème **Modernize v6.2** intact (équivalent `packages/main`) | Chercher un écran, widget ou composant admin du thème d'origine |
-| `_template/old-application/` | **Spend.Up** déjà structuré (`app/`, `features/`, front-pages, `/app`) | Copier / adapter la structure et le code Spend.Up cible |
+| Dossier                      | Rôle                                                                   | Quand l'utiliser                                                |
+| ---------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `_template/modernize/`       | Thème **Modernize v6.2** intact (équivalent `packages/main`)           | Chercher un écran, widget ou composant admin du thème d'origine |
+| `_template/old-application/` | **Spend.Up** déjà structuré (`app/`, `features/`, front-pages, `/app`) | Copier / adapter la structure et le code Spend.Up cible         |
 
 **Ne pas modifier** ces deux dossiers — toute personnalisation se fait dans `src/`.
 
@@ -33,17 +33,17 @@ Spendup_Vue/
 
 ## Stack & commandes
 
-| Élément   | Détail                                                                     |
-| --------- | -------------------------------------------------------------------------- |
-| Framework | Vue 3 (Composition API, `<script setup>`)                                  |
-| UI        | Vuetify 3.7 — composants préfixés `v-` (`v-btn`, `v-card`, `v-container`…) |
+| Élément   | Détail                                                                                             |
+| --------- | -------------------------------------------------------------------------------------------------- |
+| Framework | Vue 3 (Composition API, `<script setup>`)                                                          |
+| UI        | Vuetify 3.7 — composants préfixés `v-` (`v-btn`, `v-card`, `v-container`…)                         |
 | State     | Pinia — stores globaux dans `src/app/stores/`, stores métier dans `src/features/<domaine>/stores/` |
-| Router    | Vue Router 4 — history mode, guard dans `src/app/guards/`                  |
-| Styles    | SCSS (Sass)                                                                |
-| Icônes    | `vue-tabler-icons` (front-pages, sidebar) + `@mdi/font` (Vuetify)          |
-| Alias     | `@` → `src/`                                                               |
-| Dev       | `npm run dev`                                                              |
-| Build     | `npm run build` (vue-tsc + vite)                                           |
+| Router    | Vue Router 4 — history mode, guard dans `src/app/guards/`                                          |
+| Styles    | SCSS (Sass)                                                                                        |
+| Icônes    | `vue-tabler-icons` (front-pages, sidebar) + `@mdi/font` (Vuetify)                                  |
+| Alias     | `@` → `src/`                                                                                       |
+| Dev       | `npm run dev`                                                                                      |
+| Build     | `npm run build` (vue-tsc + vite)                                                                   |
 
 ---
 
@@ -105,11 +105,11 @@ app/
     └── auth-guard.ts           # Protection routes meta.requiresAuth
 ```
 
-| Fichier | Rôle |
-| ------- | ---- |
-| `auth-store.ts` | Authentification, `TEST_USER`, redirection post-login |
+| Fichier                 | Rôle                                                                     |
+| ----------------------- | ------------------------------------------------------------------------ |
+| `auth-store.ts`         | Authentification, `TEST_USER`, redirection post-login                    |
 | `app-settings-store.ts` | Préférences shell admin (thème clair/sombre, sidebar, layout horizontal) |
-| `auth-guard.ts` | Guard `beforeEach` — routes protégées `/app`, redirection login |
+| `auth-guard.ts`         | Guard `beforeEach` — routes protégées `/app`, redirection login          |
 
 ---
 
@@ -167,11 +167,11 @@ features/transactions/
 
 ## Découpage par zone fonctionnelle
 
-| Zone | Views (pages fines) | Logique métier | Composants UI |
-| ---- | ------------------- | -------------- | ------------- |
-| Application `/app` | `views/app/<feature>/` | `features/<feature>/` | `features/<feature>/components/` ou `components/shared/` |
-| Site public | `views/front-pages/` | — (contenu dans composants) | `components/frontpages/<feature>/` |
-| Auth | `views/authentication/` | `app/stores/auth-store.ts` | `components/auth/` |
+| Zone               | Views (pages fines)     | Logique métier              | Composants UI                                            |
+| ------------------ | ----------------------- | --------------------------- | -------------------------------------------------------- |
+| Application `/app` | `views/app/<feature>/`  | `features/<feature>/`       | `features/<feature>/components/` ou `components/shared/` |
+| Site public        | `views/front-pages/`    | — (contenu dans composants) | `components/frontpages/<feature>/`                       |
+| Auth               | `views/authentication/` | `app/stores/auth-store.ts`  | `components/auth/`                                       |
 
 **Principe :** les `views/` restent des coquilles légères ; elles importent depuis `@/features/<domaine>`.
 
@@ -206,31 +206,31 @@ scss/
 
 ### Pages publiques (`BlankLayout`, `meta.requiresAuth: false`)
 
-| Route                        | Vue                                    | Contenu principal                                                |
-| ---------------------------- | -------------------------------------- | ---------------------------------------------------------------- |
-| `/`                          | `views/front-pages/PublicHomePage.vue` | `home/SpendupHomeContent`                                        |
-| `/fonctionnalites`           | `FeaturesPage.vue`                     | `features/SpendupFeaturesContent`                                |
-| `/a-propos`                  | `AboutPage.vue`                        | `about/SpendupTeamSection` + `SpendupAboutProjectNotice`         |
-| `/tarifs`                    | `PricingPage.vue`                      | `pricing/Packages` — conditionnel (`VITE_PRICING_PAGE=true`)     |
-| `/conditions-utilisation`    | `TermsOfUsePage.vue`                   | contenu légal inline                                             |
-| `/politique-confidentialite` | `PrivacyPolicyPage.vue`                | contenu légal inline                                             |
+| Route                        | Vue                                    | Contenu principal                                            |
+| ---------------------------- | -------------------------------------- | ------------------------------------------------------------ |
+| `/`                          | `views/front-pages/PublicHomePage.vue` | `home/SpendupHomeContent`                                    |
+| `/fonctionnalites`           | `FeaturesPage.vue`                     | `features/SpendupFeaturesContent`                            |
+| `/a-propos`                  | `AboutPage.vue`                        | `about/SpendupTeamSection` + `SpendupAboutProjectNotice`     |
+| `/tarifs`                    | `PricingPage.vue`                      | `pricing/Packages` — conditionnel (`VITE_PRICING_PAGE=true`) |
+| `/conditions-utilisation`    | `TermsOfUsePage.vue`                   | contenu légal inline                                         |
+| `/politique-confidentialite` | `PrivacyPolicyPage.vue`                | contenu légal inline                                         |
 
 ### Auth & application authentifiée
 
-| Route                    | Vue                                       | Feature / layout              |
-| ------------------------ | ----------------------------------------- | ----------------------------- |
-| `/auth/login`            | `SideLogin` + `LoginForm`                 | BlankLayout                   |
-| `/auth/login2`           | `BoxedLogin`                              | BlankLayout                   |
-| `/auth/register`         | `SideRegister` + `RegisterForm`           | BlankLayout                   |
-| `/auth/register2`        | `BoxedRegister`                           | BlankLayout                   |
-| `/auth/forgot-password`  | `SideForgotPassword` + `ResetForm`        | BlankLayout                   |
-| `/auth/forgot-password2` | `BoxedForgotPassword`                     | BlankLayout                   |
-| `/auth/two-step`         | `SideTwoStep` + `TwoStepForm`             | BlankLayout                   |
-| `/auth/two-step2`        | `BoxedTwoStep`                            | BlankLayout                   |
-| `/auth/404`              | `Error`                                   | BlankLayout                   |
-| `/auth/maintenance`      | `Maintenance`                             | BlankLayout                   |
+| Route                    | Vue                                       | Feature / layout                                   |
+| ------------------------ | ----------------------------------------- | -------------------------------------------------- |
+| `/auth/login`            | `SideLogin` + `LoginForm`                 | BlankLayout                                        |
+| `/auth/login2`           | `BoxedLogin`                              | BlankLayout                                        |
+| `/auth/register`         | `SideRegister` + `RegisterForm`           | BlankLayout                                        |
+| `/auth/register2`        | `BoxedRegister`                           | BlankLayout                                        |
+| `/auth/forgot-password`  | `SideForgotPassword` + `ResetForm`        | BlankLayout                                        |
+| `/auth/forgot-password2` | `BoxedForgotPassword`                     | BlankLayout                                        |
+| `/auth/two-step`         | `SideTwoStep` + `TwoStepForm`             | BlankLayout                                        |
+| `/auth/two-step2`        | `BoxedTwoStep`                            | BlankLayout                                        |
+| `/auth/404`              | `Error`                                   | BlankLayout                                        |
+| `/auth/maintenance`      | `Maintenance`                             | BlankLayout                                        |
 | `/app`                   | `dashboard/AppDashboardView`              | `features/dashboard` — FullLayout (`requiresAuth`) |
-| `/app/account-settings`  | `account-settings/AppAccountSettingsPage` | `features/settings` — FullLayout |
+| `/app/account-settings`  | `account-settings/AppAccountSettingsPage` | `features/settings` — FullLayout                   |
 
 ### Layouts
 
@@ -291,7 +291,7 @@ components/frontpages/
 | `.front-wraper`                   | Wrapper racine de chaque page publique               |
 | `.max-width-1218`                 | Conteneur centré (largeur max ~1218px)               |
 | `.space-p-96`                     | Padding section footer                               |
-| `.su-`*                           | Composants / sections Spendup (hero, domain, stats…) |
+| `.su-`\*                          | Composants / sections Spendup (hero, domain, stats…) |
 | `.textPrimary` / `.textSecondary` | Couleurs texte thème                                 |
 | `.text-medium-emphasis`           | Texte secondaire Vuetify                             |
 | `.lh-lg` / `.lh-md`               | Line-height custom                                   |
@@ -319,10 +319,12 @@ components/frontpages/
 
 ```html
 <h1 class="su-hero-title textPrimary font-weight-bold">
-<h2 class="display-2 font-weight-bold textPrimary">
-<p class="text-18 text-medium-emphasis lh-lg">
-<span class="text-uppercase text-primary text-13 font-weight-semibold">
-<TextBannerCard caption="…" title="…" />
+    <h2 class="display-2 font-weight-bold textPrimary">
+        <p class="text-18 text-medium-emphasis lh-lg">
+            <span class="text-uppercase text-primary text-13 font-weight-semibold"> <TextBannerCard caption="…" title="…" /></span>
+        </p>
+    </h2>
+</h1>
 ```
 
 ---
@@ -374,16 +376,16 @@ Exemples : `UserModel.ts`, `CreateTransactionModel.ts`.
 
 ### Stores Pinia — répartition
 
-| Portée | Emplacement | Exemples |
-| ------ | ----------- | -------- |
-| **Global** (app) | `app/stores/` | `auth-store`, `app-settings-store` |
-| **Métier** (domaine) | `features/<domaine>/stores/` | `user-store`, `transaction-store` |
+| Portée               | Emplacement                  | Exemples                           |
+| -------------------- | ---------------------------- | ---------------------------------- |
+| **Global** (app)     | `app/stores/`                | `auth-store`, `app-settings-store` |
+| **Métier** (domaine) | `features/<domaine>/stores/` | `user-store`, `transaction-store`  |
 
-| Store | Fichier | Usage |
-| ----- | ------- | ----- |
-| Auth | `app/stores/auth-store.ts` | Session utilisateur, login/logout |
-| App settings | `app/stores/app-settings-store.ts` | Thème, sidebar, layout admin |
-| Users | `features/users/stores/user-store.ts` | Liste / gestion utilisateurs (API) |
+| Store        | Fichier                               | Usage                              |
+| ------------ | ------------------------------------- | ---------------------------------- |
+| Auth         | `app/stores/auth-store.ts`            | Session utilisateur, login/logout  |
+| App settings | `app/stores/app-settings-store.ts`    | Thème, sidebar, layout admin       |
+| Users        | `features/users/stores/user-store.ts` | Liste / gestion utilisateurs (API) |
 
 **Imports :** `@/app/stores/auth-store`, `@/features/users` (barrel `index.ts`).
 
@@ -391,12 +393,12 @@ Exemples : `UserModel.ts`, `CreateTransactionModel.ts`.
 
 Fichiers nommés en **kebab-case** avec suffixe `-helpers.ts` (même logique que les stores).
 
-| Fichier | Rôle |
-| ------- | ---- |
-| `auth-helpers.ts` | Authentification locale (dev sans API) |
-| `fetch-helpers.ts` | Wrapper `fetch` avec JWT (`fetchWrapper`) |
+| Fichier                   | Rôle                                                |
+| ------------------------- | --------------------------------------------------- |
+| `auth-helpers.ts`         | Authentification locale (dev sans API)              |
+| `fetch-helpers.ts`        | Wrapper `fetch` avec JWT (`fetchWrapper`)           |
 | `fake-backend-helpers.ts` | Mock API (`fakeBackend()` — branché dans `main.ts`) |
-| `pricing-helpers.ts` | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE` |
+| `pricing-helpers.ts`      | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE` |
 
 **Import :** `@/utils/helpers/fetch-helpers`, `@/utils/helpers/pricing-helpers`, etc.
 

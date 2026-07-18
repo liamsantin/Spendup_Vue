@@ -19,7 +19,9 @@ export default defineConfigWithVueTs(
     {
         rules: {
             'comma-dangle': 'off',
-            '@typescript-eslint/comma-dangle': 'off'
+            '@typescript-eslint/comma-dangle': 'off',
+            // Pages / chrome front (Error, Header, Footer…) — noms intentionnels
+            'vue/multi-word-component-names': 'off'
         }
     }
 );
