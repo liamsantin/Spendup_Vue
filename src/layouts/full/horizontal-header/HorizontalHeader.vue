@@ -2,11 +2,10 @@
 import { ref, watch } from 'vue';
 import { useCustomizerStore } from '@/app/stores/app-settings-store';
 // Icon Imports
-import { GridDotsIcon, SearchIcon, Menu2Icon, ShoppingCartIcon } from 'vue-tabler-icons';
+import { GridDotsIcon, SearchIcon, Menu2Icon } from 'vue-tabler-icons';
 import Logo from '../logo/Logo.vue';
 
 // dropdown imports
-import LanguageDD from '../vertical-header/LanguageDD.vue';
 import NotificationDD from '../vertical-header/NotificationDD.vue';
 import ProfileDD from '../vertical-header/ProfileDD.vue';
 import Navigations from '../vertical-header/Navigations.vue';
@@ -67,24 +66,10 @@ watch(priority, (newPriority) => {
             <!-- ---------------------------------------------- -->
 
             <!-- ---------------------------------------------- -->
-            <!-- translate -->
-            <!-- ---------------------------------------------- -->
-            <LanguageDD />
-
-            <!-- ---------------------------------------------- -->
             <!-- Notification -->
             <!-- ---------------------------------------------- -->
 
             <NotificationDD />
-
-            <!-- ---------------------------------------------- -->
-            <!-- ShoppingCart -->
-            <!-- ---------------------------------------------- -->
-            <v-btn icon variant="text" color="primary" to="/ecommerce/checkout">
-                <v-badge color="error" :content="0">
-                    <ShoppingCartIcon stroke-width="1.5" size="22" />
-                </v-badge>
-            </v-btn>
 
             <!-- right sidebar -->
             <v-btn class="hidden-lg-and-up ml-3" icon rounded="sm" @click.stop="appsdrawer = !appsdrawer" variant="flat">

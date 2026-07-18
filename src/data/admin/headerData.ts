@@ -1,4 +1,4 @@
-import type { notificationType, profileType, languageType, appsLinkType, quickLinksType, searchType } from '@/types/HeaderTypes';
+import type { notificationType, profileType, appsLinkType, quickLinksType, searchType } from '@/types/HeaderTypes';
 
 import user1 from '@/assets/images/profile/user-1.jpg';
 import user2 from '@/assets/images/profile/user-2.jpg';
@@ -62,18 +62,6 @@ const profileDD: profileType[] = [
         subtitle: 'Accueil',
         href: '/'
     }
-];
-
-import flag1 from '@/assets/images/flag/icon-flag-en.svg';
-import flag2 from '@/assets/images/flag/icon-flag-fr.svg';
-import flag3 from '@/assets/images/flag/icon-flag-ro.svg';
-import flag4 from '@/assets/images/flag/icon-flag-zh.svg';
-
-const languageDD: languageType[] = [
-    { title: 'English', subtext: 'UK', value: 'en', avatar: flag1 },
-    { title: 'français', subtext: 'French', value: 'fr', avatar: flag2 },
-    { title: 'عربي', subtext: 'Arbic', value: 'ro', avatar: flag3 },
-    { title: '中国人', subtext: 'Chinese', value: 'zh', avatar: flag4 }
 ];
 
 import img1 from '@/assets/images/svgs/icon-dd-chat.svg';
@@ -147,4 +135,4 @@ const searchSugg: searchType[] = [
     }
 ];
 
-export { notifications, profileDD, languageDD, appsLink, quickLink, searchSugg };
+export { notifications, profileDD, appsLink, quickLink, searchSugg };
