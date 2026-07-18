@@ -1,0 +1,15 @@
+.su-card-elev {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+.su-photo-wrap {
+    max-width: 380px;
+    width: 100%;
+}
+
+.su-team-photo {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    display: block;
+}

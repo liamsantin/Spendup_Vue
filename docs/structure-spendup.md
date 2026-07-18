@@ -5,24 +5,28 @@
 
 ---
 
-## Dossier `_template/` (référence)
+## Dossiers `_template-*` (références)
 
-À la **racine du projet** (à côté de `src/`), le dossier **`_template/`** contient le **projet de base Modernize v6.2** — version complète et non personnalisée de l'application (équivalent à `packages/main`).
+À la **racine du projet** (à côté de `src/`), deux dossiers de référence **en lecture seule** :
 
 ```
-starterkit/
-├── _template/              # Référence — projet Modernize intact (lecture / copie)
-│   └── src/
-│       ├── views/          # Toutes les pages du thème (dashboard, auth, apps…)
-│       ├── components/     # Composants admin, auth, apps, widgets…
-│       ├── router/         # Routes d'origine
-│       ├── scss/           # Styles du thème
-│       ├── layouts/
-│       └── …
-├── src/                    # Projet Spend.Up actif — seul dossier à modifier
-├── structure-spendup.md
-└── rules-spendup.md
+Spendup_Vue/
+├── _template-modernize/      # Modernize v6.2 complet (thème admin, apps, widgets, UI kit…)
+│   └── views/, components/, scss/, layouts/, …
+├── _template-application/    # Application Spend.Up de référence (structure cible)
+│   └── app/, features/, views/, components/frontpages/, router/, …
+├── src/                      # Projet Spend.Up actif — seul dossier à modifier
+└── docs/
+    ├── structure-spendup.md
+    └── rules-spendup.md
 ```
+
+| Dossier | Rôle | Quand l'utiliser |
+| ------- | ---- | ---------------- |
+| `_template-modernize/` | Thème **Modernize v6.2** intact (équivalent `packages/main`) | Chercher un écran, widget ou composant admin du thème d'origine |
+| `_template-application/` | **Spend.Up** déjà structuré (`app/`, `features/`, front-pages, `/app`) | Copier / adapter la structure et le code Spend.Up cible |
+
+**Ne pas modifier** ces deux dossiers — toute personnalisation se fait dans `src/`.
 
 ---
 
@@ -79,7 +83,9 @@ src/
 ├── scss/                   # Tous les styles du projet
 ├── theme/                  # Couleurs Vuetify (LightTheme, DarkTheme)
 ├── types/                  # Types techniques / UI (hors domaine métier)
-└── utils/                  # Helpers, i18n, fake-backend
+└── utils/                  # i18n, helpers transverses
+    ├── locales/            # Fichiers i18n (messages.ts, fr.json…)
+    └── helpers/            # Helpers nommés <domaine>-helpers.ts
 ```
 
 ---
@@ -347,6 +353,7 @@ components/frontpages/
 | `data/admin/headerData.ts`                       | Dropdowns header admin                          |
 | `types/components/front-pages/index.ts`          | `PackageType`, `FooterType`                     |
 | `.env`                                           | `VITE_PRICING_PAGE` (active `/tarifs`)          |
+| `utils/helpers/pricing-helpers.ts`               | `isPricingPageEnabled()`                        |
 
 ---
 
@@ -378,6 +385,19 @@ Exemples : `UserModel.ts`, `CreateTransactionModel.ts`.
 | Users | `features/users/stores/user-store.ts` | Liste / gestion utilisateurs (API) |
 
 **Imports :** `@/app/stores/auth-store`, `@/features/users` (barrel `index.ts`).
+
+### Helpers (`utils/helpers/`)
+
+Fichiers nommés en **kebab-case** avec suffixe `-helpers.ts` (même logique que les stores).
+
+| Fichier | Rôle |
+| ------- | ---- |
+| `auth-helpers.ts` | Authentification locale (dev sans API) |
+| `fetch-helpers.ts` | Wrapper `fetch` avec JWT (`fetchWrapper`) |
+| `fake-backend-helpers.ts` | Mock API (`fakeBackend()` — branché dans `main.ts`) |
+| `pricing-helpers.ts` | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE` |
+
+**Import :** `@/utils/helpers/fetch-helpers`, `@/utils/helpers/pricing-helpers`, etc.
 
 ---
 

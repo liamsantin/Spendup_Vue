@@ -1,0 +1,305 @@
+// Overrides mobile uniquement (< 600px, breakpoint xs Vuetify).
+// Tablette (≥ 600px) et desktop (≥ 960px) : inchangés.
+
+@media (max-width: 599px) {
+    .front-wraper {
+        // — Conteneurs & espacements —
+        .v-container.max-width-1218,
+        .v-container.max-content {
+            padding-inline: 16px !important;
+        }
+
+        section.py-12 {
+            padding-block: 2rem !important;
+        }
+
+        .space-p-96 {
+            padding-block: 2rem !important;
+        }
+
+        .su-tagline {
+            padding-block: 2.5rem !important;
+        }
+
+        // — Tout le texte centré —
+        text-align: center !important;
+
+        .text-start,
+        .text-left {
+            text-align: center !important;
+        }
+
+        p,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        li,
+        td,
+        th,
+        label,
+        .v-card,
+        .v-sheet,
+        .v-alert,
+        .v-list-item-title,
+        .v-expansion-panel-title,
+        .v-expansion-panel-text {
+            text-align: center !important;
+        }
+
+        // Header : hors règles de centrage (burger visible)
+        .front-header {
+            text-align: start !important;
+
+            .d-flex,
+            .d-inline-flex {
+                justify-content: flex-start !important;
+            }
+
+            .header-actions {
+                justify-content: flex-end !important;
+                margin-inline-start: auto !important;
+            }
+
+            .v-btn {
+                margin-inline: unset !important;
+            }
+
+            .front-nav-burger {
+                display: inline-flex !important;
+                visibility: visible !important;
+            }
+        }
+
+        // Drawer legacy
+        .lp-drawer,
+        .lp-drawer * {
+            text-align: start !important;
+        }
+
+        // Listes (pages légales, etc.)
+        ul,
+        ol {
+            list-style-position: inside;
+            padding-inline-start: 0 !important;
+            text-align: center;
+        }
+
+        // Flex : contenu centré
+        .v-row {
+            justify-content: center;
+        }
+
+        .d-flex {
+            justify-content: center;
+        }
+
+        .d-inline-flex {
+            justify-content: center;
+        }
+
+        // Listes icône + texte : empilées et centrées
+        .d-flex.align-start {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        // Boutons & actions
+        .v-btn {
+            margin-inline: auto;
+        }
+
+        .d-flex.flex-wrap.ga-3 .v-btn,
+        .d-sm-flex .v-btn {
+            margin-inline: auto;
+        }
+
+        // Icônes
+        .su-icon-wrap,
+        .su-check-bubble,
+        .su-alert-icon {
+            margin-inline: auto;
+        }
+
+        // Alerts
+        .v-alert,
+        .su-alert {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+
+            .v-alert__prepend {
+                margin-inline: auto;
+                margin-bottom: 0.75rem;
+            }
+        }
+
+        // FAQ & accordéons
+        .v-expansion-panel-title {
+            justify-content: center !important;
+            text-align: center;
+        }
+
+        .v-expansion-panel-text {
+            text-align: center;
+        }
+
+        // Pricing list
+        .v-list-item-title {
+            justify-content: center !important;
+        }
+
+        // — Typographie —
+        .su-hero-title {
+            font-size: 1.75rem;
+            line-height: 1.2;
+        }
+
+        .text-banner-card__title {
+            font-size: 1.75rem;
+        }
+
+        .text-banner-card__caption {
+            font-size: 0.75rem;
+        }
+
+        // — Images (réduction) —
+        .su-hero-visual {
+            padding: 12px !important;
+        }
+
+        .su-hero-img {
+            max-height: 200px;
+        }
+
+        .su-domain-layout-img,
+        .su-platform-accessible-img {
+            max-height: 200px;
+        }
+
+        .su-platform-central__img {
+            max-height: 200px;
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .su-domain-img {
+            max-height: 160px;
+        }
+
+        .su-budget-img,
+        .su-friends-img {
+            max-height: 180px;
+        }
+
+        .su-photo-wrap {
+            max-width: 260px;
+            margin-inline: auto;
+        }
+
+        .su-team-photo {
+            aspect-ratio: 1 / 1;
+        }
+
+        // — Cards —
+        .su-card.pa-6,
+        .su-card.pa-5 {
+            padding: 1.25rem !important;
+        }
+
+        .su-card--wide {
+            padding: 1.5rem !important;
+        }
+
+        .v-sheet.pa-6 {
+            padding: 1.25rem !important;
+        }
+
+        .su-card:hover {
+            transform: none;
+            box-shadow: none !important;
+        }
+
+        // — Stats : pleine largeur + compacité —
+        .v-row:has(.su-stat) .v-col {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        .su-stat {
+            padding: 1rem !important;
+        }
+
+        .su-stat-value {
+            font-size: 1.65rem;
+        }
+
+        // — Swiss card —
+        .su-swiss-gradient {
+            padding: 1.5rem !important;
+        }
+
+        // — Layouts : gaps réduits —
+        .su-domain-layout,
+        .su-platform-central,
+        .su-feature-row,
+        .su-domain-center__body,
+        .su-domain-header {
+            gap: 1.25rem;
+        }
+
+        // — Hero : boutons pleine largeur —
+        .su-hero .d-flex.flex-wrap.ga-3 {
+            flex-direction: column;
+
+            .v-btn {
+                width: 100%;
+            }
+        }
+
+        // — Parallax désactivé sur mobile —
+        .su-parallax-media__img,
+        .su-accessible-section__text {
+            transform: none !important;
+        }
+
+        // — FAQ : titres plus compacts —
+        .su-faq-card .v-expansion-panel-title {
+            padding-block: 14px !important;
+            font-size: 0.9375rem !important;
+        }
+
+        // — Pricing —
+        .package .display-2 {
+            font-size: 1.75rem !important;
+        }
+
+        .package .v-card.pa-6 {
+            padding: 1.25rem !important;
+        }
+
+        // — Footer : colonnes de liens —
+        .space-p-96 .d-flex.flex-column {
+            align-items: center;
+        }
+    }
+
+    // Menu déroulant (rendu hors .front-wraper via teleport Vuetify)
+    .front-nav-dropdown {
+        text-align: center !important;
+
+        .v-list-item {
+            justify-content: center !important;
+            text-align: center !important;
+        }
+
+        .v-list-item-title {
+            text-align: center !important;
+            justify-content: center !important;
+        }
+    }
+}

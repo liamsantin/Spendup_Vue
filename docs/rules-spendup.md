@@ -9,19 +9,21 @@
 
 Avant d'ajouter ou recréer une view, un composant, une route ou un style :
 
-1. Chercher dans `_template/src/` si l'élément existe déjà (même nom, même domaine fonctionnel).
-2. Comparer avec ce qui est déjà présent dans `src/`.
-3. Réutiliser / adapter depuis `_template/` plutôt que réécrire from scratch.
+1. Chercher dans `_template-application/` si l'élément Spend.Up existe déjà (structure cible).
+2. Sinon, chercher dans `_template-modernize/` l'équivalent du thème Modernize (écran admin, widget, UI kit…).
+3. Comparer avec ce qui est déjà présent dans `src/`.
+4. Réutiliser / adapter depuis les templates plutôt que réécrire from scratch.
 
-| Besoin Spend.Up | Où chercher dans `_template/` |
-| --------------- | ----------------------------- |
-| Page login, register, 2FA | `_template/src/views/authentication/`, `_template/src/components/auth/` |
-| Dashboard admin | `_template/src/views/dashboards/`, `_template/src/components/dashboard/` |
-| Widgets, cartes, graphiques | `_template/src/views/widgets/`, `_template/src/components/` |
-| Apps (email, chat, invoice…) | `_template/src/views/apps/`, `_template/src/components/apps/` |
-| Styles admin / auth | `_template/src/scss/` |
+| Besoin Spend.Up | Où chercher en priorité | Sinon (thème Modernize) |
+| --------------- | ----------------------- | ----------------------- |
+| Front-pages, `/app`, features | `_template-application/` | — |
+| Page login, register, 2FA | `_template-application/views/authentication/` | `_template-modernize/views/authentication/` |
+| Dashboard admin | `_template-application/features/dashboard/` | `_template-modernize/views/dashboard/` |
+| Widgets, cartes, graphiques | `_template-application/components/shared/` | `_template-modernize/views/widgets/`, `_template-modernize/components/` |
+| Apps (email, chat, invoice…) | — | `_template-modernize/views/apps/`, `_template-modernize/components/apps/` |
+| Styles admin / auth / front | `_template-application/scss/` | `_template-modernize/scss/` |
 
-**Ne pas modifier `_template/`** — c'est une référence figée. Toute personnalisation Spend.Up se fait dans `src/`.
+**Ne pas modifier** `_template-modernize/` ni `_template-application/` — ce sont des références figées. Toute personnalisation Spend.Up se fait dans `src/`.
 
 ---
 
@@ -64,7 +66,7 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 - Nommer les dossiers en **kebab-case** : `account-settings`, `dashboard`, `recurring-payments`.
 - Les dossiers `shared/`, `layout/`, `auth/` dans `components/` restent des regroupements transverses.
 - Ne pas créer de dossiers de features vides « pour plus tard » — créer une feature quand du code métier apparaît.
-- Ne pas modifier `_template/`.
+- Ne pas modifier `_template-modernize/` ni `_template-application/`.
 
 ### Répartition par zone
 
@@ -145,6 +147,23 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 
 Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 
+### Helpers
+
+- Dossier : `utils/helpers/`.
+- Fichier : `<domaine>-helpers.ts` — **kebab-case**, suffixe `-helpers`, singulier ou composé selon le domaine.
+- Même convention de nommage que les stores (`auth-store.ts` → `auth-helpers.ts`, `user-store.ts` → `user-helpers.ts`).
+- Un fichier par domaine transverse ; pas de noms génériques (`utils.ts`, `helpers.ts`, `fetch-wrapper.ts`).
+
+| Fichier | Exemples d'exports |
+| ------- | ------------------ |
+| `auth-helpers.ts` | `authenticateLocal()` |
+| `fetch-helpers.ts` | `fetchWrapper` |
+| `fake-backend-helpers.ts` | `fakeBackend()` |
+| `pricing-helpers.ts` | `isPricingPageEnabled()` |
+
+- Import : `@/utils/helpers/<domaine>-helpers`.
+- Les helpers **métier** propres à une feature vont dans `features/<domaine>/helpers/` (même convention `<domaine>-helpers.ts` ou sous-domaine : `transaction-format-helpers.ts`).
+
 ---
 
 ## Règles typographie / thème
@@ -160,7 +179,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 
 ## À faire
 
-- Toujours commencer par `_template/src/`.
+- Toujours commencer par `_template-application/`, puis `_template-modernize/` si besoin.
 - Créer `features/<domaine>/` dès qu'une fonctionnalité métier apparaît.
 - Créer `views/app/<feature>/` (ou `views/front-pages/`) comme page fine de routing.
 - Placer stores métier dans `features/<domaine>/stores/`, stores globaux dans `app/stores/`.
@@ -172,18 +191,19 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Placer les fichiers de données dans `data/<domaine>/`, jamais à la racine de `data/` (migration vers `features/` si données métier).
 - Placer les entités dans `entities/<NomEntity>.ts`.
 - Placer les modèles API dans `models/<NomModel>.ts` ou `features/<domaine>/types/`.
+- Placer les helpers transverses dans `utils/helpers/<domaine>-helpers.ts`.
 - Exporter les features via un `index.ts`.
 - Vérifier `npm run build` après restructuration ou déplacement de fichiers.
-- Demander confirmation avant toute modification importante ou incertaine.
 
 ---
 
 ## À éviter
 
-- Modifier le dossier `_template/`.
-- Recréer from scratch un écran déjà présent dans `_template/` sans l'avoir consulté.
+- Modifier les dossiers `_template-modernize/` ou `_template-application/`.
+- Recréer from scratch un écran déjà présent dans les templates sans les avoir consultés.
 - Placer de la logique métier dans `views/` ou à la racine de `components/`.
-- Créer des stores dans un ancien dossier `src/stores/` (supprimé — utiliser `app/stores/` ou `features/`).
+- Créer des stores dans un ancien dossier `src/stores/` (supprimé — utiliser `app/stores/` ou `features/<domaine>/stores/`).
+- Nommer des helpers hors convention (`fetch-wrapper.ts`, `local-auth.ts`, `utils.ts`) — utiliser `<domaine>-helpers.ts` dans `utils/helpers/`.
 - Créer des fichiers `.scss` ou `.css` dans `components/` ou `features/`.
 - Ajouter des styles inline volumineux dans `<style>`.
 - Modifier `node_modules/` ou la config git.
@@ -205,7 +225,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 
 ## Procédure — ajout d'une nouvelle fonctionnalité `/app`
 
-1. Chercher l'équivalent dans `_template/src/`.
+1. Chercher l'équivalent dans `_template-application/`, puis `_template-modernize/`.
 2. Créer `features/<domaine>/` avec la structure :
    ```
    features/<domaine>/
