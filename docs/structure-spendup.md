@@ -412,7 +412,9 @@ Fichiers nommés en **kebab-case** avec suffixe `-helpers.ts` (même logique que
 | `src/assets/images/profile/`     | Avatars ContactBar                                                         |
 | `public/`                        | Fichiers servis tels quels (`Spendup-logo-fusee.svg`, images features SVG) |
 
-Images features référencées via `/assets/images/landingpage/features/…` (dossier `public/`).
+Images features référencées via `/assets/images/front-pages/features/…` (dossier `public/`).
+
+Convention de nommage : `home-*` (accueil), `feature-*` (page fonctionnalités), `domain-*` (domaines complémentaires).
 
 ---
 

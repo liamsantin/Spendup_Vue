@@ -35,7 +35,7 @@ export type SpendupAdditionalDomain = {
     imageAlt: string;
 };
 
-const FEATURES_IMG = '/assets/images/landingpage/features';
+const FEATURES_IMG = '/assets/images/front-pages/features';
 
 /** Domaines métier complémentaires — contenu enrichi sans duplication avec les sections existantes. */
 export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
@@ -58,7 +58,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
         ],
         footer: 'Exemple : une transaction « Netflix » classée automatiquement en « Abonnements ».',
         bgClass: 'bg-lightprimary',
-        image: `${FEATURES_IMG}/categorization-organization.png`,
+        image: `${FEATURES_IMG}/domain-categorisation.png`,
         imageAlt: 'Catégorisation et organisation des transactions'
     },
     {
@@ -80,7 +80,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
         ],
         footer: "Chaque revenu récurrent peut alimenter vos prévisions et vos objectifs d'épargne.",
         bgClass: 'bg-surface',
-        image: `${FEATURES_IMG}/recurring-income.png`,
+        image: `${FEATURES_IMG}/domain-recurring-income.png`,
         imageAlt: 'Suivi des revenus récurrents'
     },
     {
@@ -101,7 +101,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
             }
         ],
         bgClass: 'bg-lightprimary',
-        image: `${FEATURES_IMG}/friends.png`,
+        image: `${FEATURES_IMG}/domain-network.png`,
         imageAlt: 'Réseau et collaboration entre utilisateurs'
     },
     {
@@ -122,7 +122,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
             }
         ],
         bgClass: 'bg-surface',
-        image: `${FEATURES_IMG}/anomaly-detection.png`,
+        image: `${FEATURES_IMG}/domain-anomalies.png`,
         imageAlt: "Détection d'anomalies financières"
     },
     {
@@ -144,7 +144,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
         ],
         footer: 'Complète le suivi immobilier et véhicules déjà proposé sur la plateforme.',
         bgClass: 'bg-lightprimary',
-        image: `${FEATURES_IMG}/investments-crypto.jpg`,
+        image: `${FEATURES_IMG}/domain-investments.jpg`,
         imageAlt: 'Sécurisation des actifs et crypto'
     },
     {
@@ -170,7 +170,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
         ],
         footer: 'Définissez fréquence et montants pour anticiper les paiements et éviter les oublis.',
         bgClass: 'bg-surface',
-        image: `${FEATURES_IMG}/subscriptions-bills.png`,
+        image: `${FEATURES_IMG}/domain-subscriptions.png`,
         imageAlt: 'Gestion des abonnements et charges'
     },
     {
@@ -191,7 +191,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
             }
         ],
         bgClass: 'bg-lightprimary',
-        image: `${FEATURES_IMG}/alerts-notifications.png`,
+        image: `${FEATURES_IMG}/domain-alerts.png`,
         imageAlt: 'Célébration et notifications positives'
     },
     {
@@ -213,7 +213,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
         ],
         footer: 'Les événements récurrents automatisent ce qui se répète : loyer, salaire, abonnements, etc.',
         bgClass: 'bg-surface',
-        image: `${FEATURES_IMG}/calendar-planning.png`,
+        image: `${FEATURES_IMG}/domain-calendar.png`,
         imageAlt: 'Calendrier et planification financière'
     },
     {
@@ -238,7 +238,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
             }
         ],
         bgClass: 'bg-lightprimary',
-        image: `${FEATURES_IMG}/security-compliance.png`,
+        image: `${FEATURES_IMG}/domain-security.png`,
         imageAlt: 'Sécurité et conformité des données'
     }
 ];
