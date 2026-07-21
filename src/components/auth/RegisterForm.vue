@@ -17,6 +17,7 @@ const firstName = ref('');
 const name = ref('');
 const email = ref('');
 const password = ref('');
+const confirmPassword = ref('');
 
 const emailRules = [(v: string) => !!v || 'L’e-mail est requis', (v: string) => /.+@.+\..+/.test(v) || 'L’e-mail doit être valide'];
 const passwordRules = [
@@ -25,10 +26,18 @@ const passwordRules = [
     (v: string) => /[A-Za-z]/.test(v) || 'Doit contenir une lettre',
     (v: string) => /\d/.test(v) || 'Doit contenir un chiffre'
 ];
+const confirmPasswordRules = [
+    (v: string) => !!v || 'La confirmation est requise',
+    (v: string) => v === password.value || 'Les mots de passe ne correspondent pas'
+];
 
 async function onSubmit() {
     error.value = null;
     success.value = null;
+    if (password.value !== confirmPassword.value) {
+        error.value = 'Les mots de passe ne correspondent pas.';
+        return;
+    }
     loading.value = true;
     try {
         await authApi.register({
@@ -82,7 +91,25 @@ onMounted(() => {
         <VTextField v-model="email" :rules="emailRules" class="mb-4" required hide-details="auto" type="email" autocomplete="email" />
 
         <v-label class="text-subtitle-1 font-weight-medium pb-2">Mot de passe</v-label>
-        <VTextField v-model="password" :rules="passwordRules" required hide-details="auto" type="password" autocomplete="new-password" />
+        <VTextField
+            v-model="password"
+            :rules="passwordRules"
+            class="mb-4"
+            required
+            hide-details="auto"
+            type="password"
+            autocomplete="new-password"
+        />
+
+        <v-label class="text-subtitle-1 font-weight-medium pb-2">Confirmation du mot de passe</v-label>
+        <VTextField
+            v-model="confirmPassword"
+            :rules="confirmPasswordRules"
+            required
+            hide-details="auto"
+            type="password"
+            autocomplete="new-password"
+        />
 
         <v-btn size="large" class="mt-4" color="primary" block type="submit" :loading="loading" :disabled="!valid" flat>
             Créer un compte
