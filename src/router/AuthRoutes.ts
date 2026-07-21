@@ -53,7 +53,10 @@ const AuthRoutes = {
         {
             name: 'Reset Password',
             path: '/auth/reset-password',
-            component: () => import('@/views/authentication/SideResetPassword.vue')
+            redirect: (to) => ({
+                path: '/auth/forgot-password',
+                query: to.query
+            })
         },
         {
             name: 'Confirm Email Change',

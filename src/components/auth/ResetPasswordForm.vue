@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { authApi } from '@/features/auth';
 
@@ -12,6 +12,9 @@ const confirmPassword = ref('');
 const loading = ref(false);
 const error = ref<string | null>(null);
 
+const tokenFromUrl = computed(() => typeof route.query.token === 'string' && !!route.query.token);
+const showManualToken = computed(() => !tokenFromUrl.value);
+
 const passwordRules = [
     (v: string) => !!v || 'Le mot de passe est requis',
     (v: string) => (v && v.length >= 8) || 'Au moins 8 caractères',
@@ -19,17 +22,20 @@ const passwordRules = [
     (v: string) => /\d/.test(v) || 'Doit contenir un chiffre'
 ];
 
-onMounted(() => {
+function syncTokenFromRoute() {
     const q = route.query.token;
-    if (typeof q === 'string') {
+    if (typeof q === 'string' && q) {
         token.value = q;
     }
-});
+}
+
+onMounted(syncTokenFromRoute);
+watch(() => route.query.token, syncTokenFromRoute);
 
 async function submit() {
     error.value = null;
-    if (!token.value) {
-        error.value = 'Jeton de réinitialisation manquant. Ouvrez le lien reçu par e-mail.';
+    if (!token.value.trim()) {
+        error.value = 'Jeton de réinitialisation manquant. Ouvrez le lien reçu par e-mail, ou collez le jeton ci-dessous.';
         return;
     }
     if (newPassword.value !== confirmPassword.value) {
@@ -38,7 +44,7 @@ async function submit() {
     }
     loading.value = true;
     try {
-        await authApi.resetPassword(token.value, newPassword.value);
+        await authApi.resetPassword(token.value.trim(), newPassword.value);
         await router.push({
             path: '/auth/login',
             query: { notice: 'Mot de passe mis à jour. Veuillez vous connecter.' }
@@ -53,9 +59,14 @@ async function submit() {
 
 <template>
     <div class="mt-5">
-        <v-alert v-if="!token" type="warning" density="compact" class="mb-4">
-            Aucun jeton trouvé dans l’URL. Utilisez le lien reçu par e-mail.
-        </v-alert>
+        <template v-if="showManualToken">
+            <v-alert type="info" density="compact" class="mb-4">
+                Collez le jeton reçu par e-mail si le lien n’était pas cliquable.
+            </v-alert>
+            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Jeton (token)</v-label>
+            <VTextField v-model="token" class="mb-4" hide-details="auto" autocomplete="off" />
+        </template>
+
         <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Nouveau mot de passe</v-label>
         <VTextField
             v-model="newPassword"
