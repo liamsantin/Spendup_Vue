@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 
 withDefaults(
     defineProps<{
@@ -14,11 +14,12 @@ const emit = defineEmits<{
     credential: [idToken: string];
 }>();
 
+const root = ref<HTMLElement | null>(null);
 const container = ref<HTMLElement | null>(null);
-const available = ref(false);
 const error = ref<string | null>(null);
 
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+let resizeObserver: ResizeObserver | null = null;
 
 function loadGisScript(): Promise<void> {
     if (typeof google !== 'undefined' && google.accounts?.id) {
@@ -42,15 +43,21 @@ function loadGisScript(): Promise<void> {
     });
 }
 
+function buttonWidth(): number {
+    const w = root.value?.clientWidth ?? 0;
+    return Math.max(Math.round(w), 240);
+}
+
 async function render() {
     error.value = null;
-    available.value = false;
     if (!clientId) {
         return;
     }
     try {
         await loadGisScript();
-        if (!container.value) return;
+        await nextTick();
+        if (!container.value || !root.value) return;
+
         container.value.innerHTML = '';
         google.accounts.id.initialize({
             client_id: clientId,
@@ -60,14 +67,14 @@ async function render() {
                 }
             }
         });
+
         google.accounts.id.renderButton(container.value, {
             theme: 'outline',
             size: 'large',
-            width: 320,
+            width: buttonWidth(),
             text: 'continue_with',
             shape: 'rectangular'
         });
-        available.value = true;
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
     }
@@ -75,6 +82,16 @@ async function render() {
 
 onMounted(() => {
     void render();
+    if (root.value && typeof ResizeObserver !== 'undefined') {
+        let lastWidth = root.value.clientWidth;
+        resizeObserver = new ResizeObserver(() => {
+            const next = root.value?.clientWidth ?? 0;
+            if (Math.abs(next - lastWidth) < 2) return;
+            lastWidth = next;
+            void render();
+        });
+        resizeObserver.observe(root.value);
+    }
 });
 
 watch(
@@ -85,6 +102,8 @@ watch(
 );
 
 onUnmounted(() => {
+    resizeObserver?.disconnect();
+    resizeObserver = null;
     if (container.value) {
         container.value.innerHTML = '';
     }
@@ -92,12 +111,28 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div>
+    <div ref="root" class="google-signin">
         <div v-if="!clientId" class="text-subtitle-2 text-medium-emphasis mb-2">
             Connexion Google non configurée (définir VITE_GOOGLE_CLIENT_ID).
         </div>
-        <div v-show="available" ref="container" class="d-flex justify-center" />
+        <div v-else ref="container" class="google-signin__btn" />
         <v-alert v-if="error" type="warning" density="compact" class="mt-2">{{ error }}</v-alert>
         <span class="d-none">{{ label }}</span>
     </div>
 </template>
+
+<style scoped>
+.google-signin {
+    width: 100%;
+}
+
+.google-signin__btn {
+    width: 100%;
+    min-height: 40px;
+}
+
+.google-signin__btn :deep(div[role='button']),
+.google-signin__btn :deep(iframe) {
+    width: 100% !important;
+}
+</style>

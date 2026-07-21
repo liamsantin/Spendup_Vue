@@ -108,46 +108,56 @@ onMounted(() => {
 </script>
 
 <template>
-    <GoogleSignInButton class="mb-4" label="S’inscrire avec Google" @credential="onGoogleCredential" />
+    <div class="auth-form">
+        <GoogleSignInButton class="mb-4" label="S’inscrire avec Google" @credential="onGoogleCredential" />
 
-    <div class="d-flex align-center text-center mb-6">
-        <div class="text-h6 w-100 px-5 font-weight-regular auth-divider position-relative">
-            <span class="bg-surface px-5 py-3 position-relative">ou</span>
+        <div class="d-flex align-center text-center mb-6">
+            <div class="text-h6 w-100 px-5 font-weight-regular auth-divider position-relative">
+                <span class="bg-surface px-5 py-3 position-relative">ou</span>
+            </div>
         </div>
+
+        <v-form v-model="formValid" @submit.prevent="onSubmit" class="mt-5">
+            <v-label class="text-subtitle-1 font-weight-medium pb-2">
+                <span :class="{ 'text-primary': isEmailMode && !!identifierTrimmed }">Email</span>
+                <span> / </span>
+                <span :class="{ 'text-primary': !isEmailMode && !!identifierTrimmed }">Nom d’utilisateur</span>
+            </v-label>
+            <VTextField v-model="identifier" :rules="identifierRules" class="mb-4" required hide-details="auto" autocomplete="username" />
+
+            <v-label class="text-subtitle-1 font-weight-medium pb-2">Mot de passe</v-label>
+            <VTextField
+                v-model="password"
+                :rules="passwordRules"
+                class="mb-4"
+                required
+                hide-details="auto"
+                type="password"
+                autocomplete="new-password"
+            />
+
+            <v-label class="text-subtitle-1 font-weight-medium pb-2">Confirmation du mot de passe</v-label>
+            <VTextField
+                v-model="confirmPassword"
+                :rules="confirmPasswordRules"
+                required
+                hide-details="auto"
+                type="password"
+                autocomplete="new-password"
+            />
+
+            <v-btn size="large" class="mt-4" color="primary" block type="submit" :loading="loading" flat>Créer un compte</v-btn>
+
+            <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
+            <v-alert v-if="success" type="success" class="mt-3" density="compact">{{ success }}</v-alert>
+        </v-form>
     </div>
-
-    <v-form v-model="formValid" @submit.prevent="onSubmit" class="mt-5">
-        <v-label class="text-subtitle-1 font-weight-medium pb-2">
-            <span :class="{ 'text-primary': isEmailMode && !!identifierTrimmed }">Email</span>
-            <span> / </span>
-            <span :class="{ 'text-primary': !isEmailMode && !!identifierTrimmed }">Nom d’utilisateur</span>
-        </v-label>
-        <VTextField v-model="identifier" :rules="identifierRules" class="mb-4" required hide-details="auto" autocomplete="username" />
-
-        <v-label class="text-subtitle-1 font-weight-medium pb-2">Mot de passe</v-label>
-        <VTextField
-            v-model="password"
-            :rules="passwordRules"
-            class="mb-4"
-            required
-            hide-details="auto"
-            type="password"
-            autocomplete="new-password"
-        />
-
-        <v-label class="text-subtitle-1 font-weight-medium pb-2">Confirmation du mot de passe</v-label>
-        <VTextField
-            v-model="confirmPassword"
-            :rules="confirmPasswordRules"
-            required
-            hide-details="auto"
-            type="password"
-            autocomplete="new-password"
-        />
-
-        <v-btn size="large" class="mt-4" color="primary" block type="submit" :loading="loading" flat>Créer un compte</v-btn>
-
-        <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
-        <v-alert v-if="success" type="success" class="mt-3" density="compact">{{ success }}</v-alert>
-    </v-form>
 </template>
+
+<style scoped>
+.auth-form {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+</style>

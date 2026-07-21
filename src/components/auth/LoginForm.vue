@@ -40,41 +40,51 @@ async function onGoogleCredential(idToken: string) {
 </script>
 
 <template>
-    <v-alert v-if="notice" type="info" variant="tonal" class="mb-4" density="compact">{{ notice }}</v-alert>
+    <div class="auth-form">
+        <v-alert v-if="notice" type="info" variant="tonal" class="mb-4" density="compact">{{ notice }}</v-alert>
 
-    <GoogleSignInButton class="mb-4" @credential="onGoogleCredential" />
+        <GoogleSignInButton class="mb-4" @credential="onGoogleCredential" />
 
-    <div class="d-flex align-center text-center mb-6">
-        <div class="text-h6 w-100 px-5 font-weight-regular auth-divider position-relative">
-            <span class="bg-surface px-5 py-3 position-relative">ou</span>
+        <div class="d-flex align-center text-center mb-6">
+            <div class="text-h6 w-100 px-5 font-weight-regular auth-divider position-relative">
+                <span class="bg-surface px-5 py-3 position-relative">ou</span>
+            </div>
         </div>
+
+        <Form @submit="validate" v-slot="{ errors, isSubmitting }" class="mt-5">
+            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">
+                <span :class="{ 'text-primary': identifierTrimmed.includes('@') }">Email</span>
+                <span> / </span>
+                <span :class="{ 'text-primary': !!identifierTrimmed && !identifierTrimmed.includes('@') }">Nom d’utilisateur</span>
+            </v-label>
+            <VTextField v-model="identifier" :rules="identifierRules" class="mb-8" required hide-details="auto" autocomplete="username" />
+            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Mot de passe</v-label>
+            <VTextField
+                v-model="password"
+                :rules="passwordRules"
+                required
+                hide-details="auto"
+                type="password"
+                class="pwdInput"
+                autocomplete="current-password"
+            />
+            <div class="d-flex flex-wrap align-center my-3 justify-end">
+                <RouterLink to="/auth/forgot-password" class="text-primary text-decoration-none text-body-1 opacity-1 font-weight-medium">
+                    Mot de passe oublié ?
+                </RouterLink>
+            </div>
+            <v-btn size="large" :loading="isSubmitting" color="primary" block type="submit" flat>Connexion</v-btn>
+            <div v-if="errors.apiError" class="mt-2">
+                <v-alert color="error">{{ errors.apiError }}</v-alert>
+            </div>
+        </Form>
     </div>
-
-    <Form @submit="validate" v-slot="{ errors, isSubmitting }" class="mt-5">
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">
-            <span :class="{ 'text-primary': identifierTrimmed.includes('@') }">Email</span>
-            <span> / </span>
-            <span :class="{ 'text-primary': !!identifierTrimmed && !identifierTrimmed.includes('@') }">Nom d’utilisateur</span>
-        </v-label>
-        <VTextField v-model="identifier" :rules="identifierRules" class="mb-8" required hide-details="auto" autocomplete="username" />
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Mot de passe</v-label>
-        <VTextField
-            v-model="password"
-            :rules="passwordRules"
-            required
-            hide-details="auto"
-            type="password"
-            class="pwdInput"
-            autocomplete="current-password"
-        />
-        <div class="d-flex flex-wrap align-center my-3 justify-end">
-            <RouterLink to="/auth/forgot-password" class="text-primary text-decoration-none text-body-1 opacity-1 font-weight-medium">
-                Mot de passe oublié ?
-            </RouterLink>
-        </div>
-        <v-btn size="large" :loading="isSubmitting" color="primary" block type="submit" flat>Se connecter</v-btn>
-        <div v-if="errors.apiError" class="mt-2">
-            <v-alert color="error">{{ errors.apiError }}</v-alert>
-        </div>
-    </Form>
 </template>
+
+<style scoped>
+.auth-form {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+</style>
