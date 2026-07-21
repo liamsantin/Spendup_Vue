@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/app/stores/auth-store';
+import { useAuthStore } from '@/features/auth';
 
 type RequestOptions = {
     method: string;

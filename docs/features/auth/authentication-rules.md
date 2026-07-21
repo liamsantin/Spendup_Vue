@@ -318,7 +318,7 @@ Si 2FA :
 | Google bouton            | GIS + `google`                          |
 | Mot de passe oublié      | `forgot-password`                       |
 | Reset (route `?token=`)  | `reset-password`                        |
-| Profil / settings        | `me`                                    |
+| Profil                   | `me`                                    |
 | Changer MDP              | `password/change` → **re-login**        |
 | Changer email            | `email/change` + `email/confirm-change` |
 | Activer / désactiver 2FA | `2fa/setup`, `enable`, `disable`        |

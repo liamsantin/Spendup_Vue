@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { ArrowsExchangeIcon, ChartPieIcon, TargetIcon, BuildingBankIcon, SettingsIcon } from 'vue-tabler-icons';
+import { ArrowsExchangeIcon, ChartPieIcon, TargetIcon, BuildingBankIcon } from 'vue-tabler-icons';
 
 export interface DashboardModule {
     title: string;
@@ -38,13 +38,6 @@ export function useDashboardModules() {
             icon: TargetIcon,
             to: '/app',
             disabled: true
-        },
-        {
-            title: 'Réglages',
-            caption: 'Profil et préférences',
-            icon: SettingsIcon,
-            to: '/app/account-settings',
-            disabled: false
         }
     ];
 

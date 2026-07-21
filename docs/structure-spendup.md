@@ -58,7 +58,6 @@ src/
 │   └── guards/             # Guards Vue Router
 ├── features/               # Logique métier par domaine fonctionnel
 │   ├── dashboard/
-│   ├── settings/
 │   ├── users/
 │   └── …                   # transactions, budgets, invoices… (à venir)
 ├── views/
@@ -98,18 +97,16 @@ Regroupe tout ce qui est **global à l'application**, sans appartenir à un doma
 ```
 app/
 ├── stores/
-│   ├── auth-store.ts           # Session, login/logout, utilisateur courant
 │   └── app-settings-store.ts # Thème, sidebar, layout admin (ex-customizer)
-│   # À venir : user-session-store, workspace-store, permissions-store
+│   # Stores métier → features/<domaine>/stores/ (ex. features/auth/stores/auth-store.ts)
 └── guards/
     └── auth-guard.ts           # Protection routes meta.requiresAuth
 ```
 
-| Fichier                 | Rôle                                                                     |
-| ----------------------- | ------------------------------------------------------------------------ |
-| `auth-store.ts`         | Authentification, `TEST_USER`, redirection post-login                    |
-| `app-settings-store.ts` | Préférences shell admin (thème clair/sombre, sidebar, layout horizontal) |
-| `auth-guard.ts`         | Guard `beforeEach` — routes protégées `/app`, redirection login          |
+| Fichier                 | Rôle                                                                |
+| ----------------------- | ------------------------------------------------------------------- |
+| `app-settings-store.ts` | Préférences shell admin (thème clair/sombre, sidebar, layout admin) |
+| `auth-guard.ts`         | Guard `beforeEach` — routes protégées `/app`, redirection login     |
 
 ---
 
@@ -121,15 +118,18 @@ Chaque domaine fonctionnel vit dans son propre dossier. **Toute logique métier*
 
 ```
 features/
+├── auth/
+│   ├── api.ts
+│   ├── device.ts
+│   ├── types.ts
+│   ├── stores/
+│   │   └── auth-store.ts   # Session JWT, login / logout / 2FA / `/me`
+│   └── index.ts
 ├── dashboard/
 │   ├── components/
 │   │   └── DashboardContent.vue
 │   ├── composables/
 │   │   └── useDashboardModules.ts
-│   └── index.ts
-├── settings/
-│   ├── components/
-│   │   └── AccountProfileCard.vue
 │   └── index.ts
 └── users/
     ├── stores/
@@ -167,11 +167,13 @@ features/transactions/
 
 ## Découpage par zone fonctionnelle
 
-| Zone               | Views (pages fines)     | Logique métier              | Composants UI                                            |
-| ------------------ | ----------------------- | --------------------------- | -------------------------------------------------------- |
-| Application `/app` | `views/app/<feature>/`  | `features/<feature>/`       | `features/<feature>/components/` ou `components/shared/` |
-| Site public        | `views/front-pages/`    | — (contenu dans composants) | `components/frontpages/<feature>/`                       |
-| Auth               | `views/authentication/` | `app/stores/auth-store.ts`  | `components/auth/`                                       |
+| Zone               | Views (pages fines)     | Logique métier                         | Composants UI                                            |
+| ------------------ | ----------------------- | -------------------------------------- | -------------------------------------------------------- |
+| Application `/app` | `views/app/<feature>/`  | `features/<feature>/`                  | `features/<feature>/components/` ou `components/shared/` |
+| Site public        | `views/front-pages/`    | — (contenu dans composants)            | `components/frontpages/<feature>/`                       |
+| Auth               | `views/authentication/` | `features/auth/` (store + API + types) | `components/auth/`                                       |
+
+**Auth :** store dans `features/auth/stores/auth-store.ts` ; client HTTP typé dans `features/auth/` ; formulaires UI dans `components/auth/` ; styles dans `scss/pages/_authentication.scss` ; guard dans `app/guards/`.
 
 **Principe :** les `views/` restent des coquilles légères ; elles importent depuis `@/features/<domaine>`.
 
@@ -217,20 +219,18 @@ scss/
 
 ### Auth & application authentifiée
 
-| Route                    | Vue                                       | Feature / layout                                   |
-| ------------------------ | ----------------------------------------- | -------------------------------------------------- |
-| `/auth/login`            | `SideLogin` + `LoginForm`                 | BlankLayout                                        |
-| `/auth/login2`           | `BoxedLogin`                              | BlankLayout                                        |
-| `/auth/register`         | `SideRegister` + `RegisterForm`           | BlankLayout                                        |
-| `/auth/register2`        | `BoxedRegister`                           | BlankLayout                                        |
-| `/auth/forgot-password`  | `SideForgotPassword` + `ResetForm`        | BlankLayout                                        |
-| `/auth/forgot-password2` | `BoxedForgotPassword`                     | BlankLayout                                        |
-| `/auth/two-step`         | `SideTwoStep` + `TwoStepForm`             | BlankLayout                                        |
-| `/auth/two-step2`        | `BoxedTwoStep`                            | BlankLayout                                        |
-| `/auth/404`              | `Error`                                   | BlankLayout                                        |
-| `/auth/maintenance`      | `Maintenance`                             | BlankLayout                                        |
-| `/app`                   | `dashboard/AppDashboardView`              | `features/dashboard` — FullLayout (`requiresAuth`) |
-| `/app/account-settings`  | `account-settings/AppAccountSettingsPage` | `features/settings` — FullLayout                   |
+| Route                        | Vue                                             | Feature / layout                                   |
+| ---------------------------- | ----------------------------------------------- | -------------------------------------------------- |
+| `/auth/login`                | `SideLogin` + `LoginForm`                       | BlankLayout                                        |
+| `/auth/register`             | `SideRegister` + `RegisterForm`                 | BlankLayout                                        |
+| `/auth/forgot-password`      | `SideForgotPassword` + `ResetForm` / reset form | BlankLayout — `?token=` → nouveau mot de passe     |
+| `/auth/reset-password`       | alias → même vue que forgot-password            | BlankLayout (compat liens)                         |
+| `/auth/two-step`             | `SideTwoStep` + `TwoStepForm`                   | BlankLayout                                        |
+| `/auth/confirm-email`        | `SideConfirmEmail` + `ConfirmEmailForm`         | BlankLayout                                        |
+| `/auth/confirm-email-change` | `SideConfirmEmailChange`                        | BlankLayout                                        |
+| `/auth/404`                  | `Error`                                         | BlankLayout                                        |
+| `/auth/maintenance`          | `Maintenance`                                   | BlankLayout                                        |
+| `/app`                       | `dashboard/AppDashboardView`                    | `features/dashboard` — FullLayout (`requiresAuth`) |
 
 ### Layouts
 
@@ -349,14 +349,14 @@ components/frontpages/
 
 ## Données & config
 
-| Fichier                                          | Contenu                                         |
-| ------------------------------------------------ | ----------------------------------------------- |
-| `data/front-pages/front-pages-data.ts`           | Tarifs (`SpendupPricingPackages`), menus footer |
-| `data/front-pages/spendup-additional-domains.ts` | Sections domaines (page fonctionnalités)        |
-| `data/admin/headerData.ts`                       | Dropdowns header admin                          |
-| `types/components/front-pages/index.ts`          | `PackageType`, `FooterType`                     |
-| `.env`                                           | `VITE_PRICING_PAGE` (active `/tarifs`)          |
-| `utils/helpers/pricing-helpers.ts`               | `isPricingPageEnabled()`                        |
+| Fichier                                          | Contenu                                                           |
+| ------------------------------------------------ | ----------------------------------------------------------------- |
+| `data/front-pages/front-pages-data.ts`           | Tarifs (`SpendupPricingPackages`), menus footer                   |
+| `data/front-pages/spendup-additional-domains.ts` | Sections domaines (page fonctionnalités)                          |
+| `data/admin/headerData.ts`                       | Dropdowns header admin                                            |
+| `types/components/front-pages/index.ts`          | `PackageType`, `FooterType`                                       |
+| `.env` / `.env.example`                          | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID`, `VITE_PRICING_PAGE` |
+| `utils/helpers/pricing-helpers.ts`               | `isPricingPageEnabled()`                                          |
 
 ---
 
@@ -376,31 +376,32 @@ Exemples : `UserModel.ts`, `CreateTransactionModel.ts`.
 
 ### Stores Pinia — répartition
 
-| Portée               | Emplacement                  | Exemples                           |
-| -------------------- | ---------------------------- | ---------------------------------- |
-| **Global** (app)     | `app/stores/`                | `auth-store`, `app-settings-store` |
-| **Métier** (domaine) | `features/<domaine>/stores/` | `user-store`, `transaction-store`  |
+| Portée               | Emplacement                  | Exemples                      |
+| -------------------- | ---------------------------- | ----------------------------- |
+| **Global** (app)     | `app/stores/`                | `app-settings-store`          |
+| **Métier** (domaine) | `features/<domaine>/stores/` | `auth-store`, `user-store`, … |
 
-| Store        | Fichier                               | Usage                              |
-| ------------ | ------------------------------------- | ---------------------------------- |
-| Auth         | `app/stores/auth-store.ts`            | Session utilisateur, login/logout  |
-| App settings | `app/stores/app-settings-store.ts`    | Thème, sidebar, layout admin       |
-| Users        | `features/users/stores/user-store.ts` | Liste / gestion utilisateurs (API) |
+| Store        | Fichier                               | Usage                                     |
+| ------------ | ------------------------------------- | ----------------------------------------- |
+| Auth         | `features/auth/stores/auth-store.ts`  | Session JWT, login / logout / 2FA / `/me` |
+| App settings | `app/stores/app-settings-store.ts`    | Thème, sidebar, layout admin              |
+| Users        | `features/users/stores/user-store.ts` | Liste / gestion utilisateurs (API)        |
 
-**Imports :** `@/app/stores/auth-store`, `@/features/users` (barrel `index.ts`).
+**Imports :** `@/features/auth`, `@/features/users` (barrels `index.ts`), `@/app/stores/app-settings-store`.
 
 ### Helpers (`utils/helpers/`)
 
 Fichiers nommés en **kebab-case** avec suffixe `-helpers.ts` (même logique que les stores).
 
-| Fichier                   | Rôle                                                |
-| ------------------------- | --------------------------------------------------- |
-| `auth-helpers.ts`         | Authentification locale (dev sans API)              |
-| `fetch-helpers.ts`        | Wrapper `fetch` avec JWT (`fetchWrapper`)           |
-| `fake-backend-helpers.ts` | Mock API (`fakeBackend()` — branché dans `main.ts`) |
-| `pricing-helpers.ts`      | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE` |
+| Fichier                   | Rôle                                                            |
+| ------------------------- | --------------------------------------------------------------- |
+| `fetch-helpers.ts`        | Wrapper `fetch` avec Bearer + refresh sur 401 (`fetchWrapper`)  |
+| `fake-backend-helpers.ts` | Ancien mock API — **non branché** (auth réelle via Spendup API) |
+| `pricing-helpers.ts`      | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE`             |
 
 **Import :** `@/utils/helpers/fetch-helpers`, `@/utils/helpers/pricing-helpers`, etc.
+
+Client auth réel : `@/features/auth` (`authApi`), pas le fake backend.
 
 ---
 
@@ -434,9 +435,7 @@ layouts/
 views/app/                    # Pages fines — une par fonctionnalité
 ├── dashboard/
 │   └── AppDashboardView.vue  # → importe DashboardContent depuis features/dashboard
-└── account-settings/
-    └── AppAccountSettingsPage.vue  # → importe AccountProfileCard depuis features/settings
 
 features/dashboard/           # Logique métier tableau de bord
-features/settings/            # Logique métier réglages compte
+features/auth/                # Store + client API auth
 ```

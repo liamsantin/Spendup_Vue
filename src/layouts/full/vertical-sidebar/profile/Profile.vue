@@ -2,7 +2,7 @@
 defineOptions({ name: 'SidebarProfile' });
 
 import { computed } from 'vue';
-import { useAuthStore } from '@/app/stores/auth-store';
+import { useAuthStore } from '@/features/auth';
 
 const authStore = useAuthStore();
 const displayName = computed(() => authStore.displayName || 'Utilisateur');

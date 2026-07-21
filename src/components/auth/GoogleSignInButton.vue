@@ -120,19 +120,3 @@ onUnmounted(() => {
         <span class="d-none">{{ label }}</span>
     </div>
 </template>
-
-<style scoped>
-.google-signin {
-    width: 100%;
-}
-
-.google-signin__btn {
-    width: 100%;
-    min-height: 40px;
-}
-
-.google-signin__btn :deep(div[role='button']),
-.google-signin__btn :deep(iframe) {
-    width: 100% !important;
-}
-</style>

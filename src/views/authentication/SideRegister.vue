@@ -30,23 +30,3 @@ import RegisterForm from '@/components/auth/RegisterForm.vue';
         </v-row>
     </div>
 </template>
-
-<style scoped>
-.auth-panel {
-    width: 75%;
-    max-width: 100%;
-    box-sizing: border-box;
-}
-
-.auth-panel :deep(.auth-form) {
-    width: 100%;
-    max-width: 100%;
-    margin-inline: 0;
-}
-
-@media screen and (max-width: 960px) {
-    .auth-panel {
-        width: 85%;
-    }
-}
-</style>

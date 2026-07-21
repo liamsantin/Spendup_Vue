@@ -63,20 +63,26 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 - Ne jamais créer un fichier métier directement à la racine de `views/` ou `components/`.
 - **Toute logique métier** va dans `features/<domaine>/` (stores, API, composables, composants propres au domaine).
 - Les `views/` restent des coquilles légères : breadcrumb, layout de page, import depuis `@/features/<domaine>`.
-- Nommer les dossiers en **kebab-case** : `account-settings`, `dashboard`, `recurring-payments`.
+- Nommer les dossiers en **kebab-case** : `dashboard`, `recurring-payments`.
 - Les dossiers `shared/`, `layout/`, `auth/` dans `components/` restent des regroupements transverses.
 - Ne pas créer de dossiers de features vides « pour plus tard » — créer une feature quand du code métier apparaît.
 - Ne pas modifier `_template/modernize/` ni `_template/old-application/`.
 
 ### Répartition par zone
 
-| Zone               | Views                   | Logique métier             | Composants UI                      |
-| ------------------ | ----------------------- | -------------------------- | ---------------------------------- |
-| Application `/app` | `views/app/<feature>/`  | `features/<feature>/`      | `features/<feature>/components/`   |
-| Site public        | `views/front-pages/`    | —                          | `components/frontpages/<feature>/` |
-| Auth               | `views/authentication/` | `app/stores/auth-store.ts` | `components/auth/`                 |
+| Zone               | Views                   | Logique métier                                        | Composants UI                      |
+| ------------------ | ----------------------- | ----------------------------------------------------- | ---------------------------------- |
+| Application `/app` | `views/app/<feature>/`  | `features/<feature>/`                                 | `features/<feature>/components/`   |
+| Site public        | `views/front-pages/`    | —                                                     | `components/frontpages/<feature>/` |
+| Auth               | `views/authentication/` | `features/auth/` (`stores/auth-store.ts`, API, types) | `components/auth/`                 |
 
----
+**Auth — répartition :**
+
+- **Store métier** (tokens, login/logout, refresh, `/me`, redirections) → `features/auth/stores/auth-store.ts`.
+- **Client API & types** (`/api/auth/*`, device id) → `features/auth/` (export via `index.ts`).
+- **UI** (formulaires) → `components/auth/` : présentation + appels au store / `@/features/auth` ; pas de logique métier dans les `views/`.
+- **Styles** auth → `scss/pages/_authentication.scss` (pas de `<style>` volumineux dans les `.vue`).
+- **Guards** (transverse) → `app/guards/auth-guard.ts` (consomme `useAuthStore` depuis `@/features/auth`).
 
 ## Règles SCSS
 
@@ -106,7 +112,7 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 
 ### Dossiers
 
-- **kebab-case** : `account-settings`, `recurring-payments`, `front-pages`.
+- **kebab-case** : `recurring-payments`, `front-pages`.
 
 ### Composants Vue
 
@@ -134,14 +140,14 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 
 ### Stores Pinia
 
-| Portée | Emplacement                                | Exemple                                  |
-| ------ | ------------------------------------------ | ---------------------------------------- |
-| Global | `app/stores/<nom>-store.ts`                | `auth-store.ts`, `app-settings-store.ts` |
-| Métier | `features/<domaine>/stores/<nom>-store.ts` | `transaction-store.ts`, `user-store.ts`  |
+| Portée | Emplacement                                | Exemple                                    |
+| ------ | ------------------------------------------ | ------------------------------------------ |
+| Global | `app/stores/<nom>-store.ts`                | `app-settings-store.ts`                    |
+| Métier | `features/<domaine>/stores/<nom>-store.ts` | `auth-store.ts`, `transaction-store.ts`, … |
 
 - Composable : `use` + PascalCase — ex. `useAuthStore`, `useAppSettingsStore`, `useTransactionStore`.
-- Import global : `@/app/stores/auth-store`.
 - Import métier : `@/features/<domaine>` (barrel `index.ts`) ou chemin direct.
+- Import global : `@/app/stores/app-settings-store`.
 
 ### Barrel `index.ts`
 
@@ -154,12 +160,12 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Même convention de nommage que les stores (`auth-store.ts` → `auth-helpers.ts`, `user-store.ts` → `user-helpers.ts`).
 - Un fichier par domaine transverse ; pas de noms génériques (`utils.ts`, `helpers.ts`, `fetch-wrapper.ts`).
 
-| Fichier                   | Exemples d'exports       |
-| ------------------------- | ------------------------ |
-| `auth-helpers.ts`         | `authenticateLocal()`    |
-| `fetch-helpers.ts`        | `fetchWrapper`           |
-| `fake-backend-helpers.ts` | `fakeBackend()`          |
-| `pricing-helpers.ts`      | `isPricingPageEnabled()` |
+| Fichier                   | Exemples d'exports                            |
+| ------------------------- | --------------------------------------------- |
+| `auth-helpers.ts`         | (legacy) helpers auth locaux si besoin        |
+| `fetch-helpers.ts`        | `fetchWrapper`                                |
+| `fake-backend-helpers.ts` | `fakeBackend()` — non utilisé pour l’auth API |
+| `pricing-helpers.ts`      | `isPricingPageEnabled()`                      |
 
 - Import : `@/utils/helpers/<domaine>-helpers`.
 - Les helpers **métier** propres à une feature vont dans `features/<domaine>/helpers/` (même convention `<domaine>-helpers.ts` ou sous-domaine : `transaction-format-helpers.ts`).

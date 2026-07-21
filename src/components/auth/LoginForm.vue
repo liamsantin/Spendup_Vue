@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { useAuthStore } from '@/app/stores/auth-store';
+import { useAuthStore } from '@/features/auth';
 import { Form } from 'vee-validate';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 
@@ -80,15 +80,3 @@ async function onGoogleCredential(idToken: string) {
         </Form>
     </div>
 </template>
-
-<style scoped>
-.auth-form {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.auth-label-sep {
-    padding-inline: 0.2em;
-}
-</style>

@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { authApi } from '@/features/auth';
-import { useAuthStore } from '@/app/stores/auth-store';
+import { useAuthStore } from '@/features/auth';
 import Logo from '@/layouts/full/logo/Logo.vue';
 
 const router = useRouter();

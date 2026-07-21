@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/app/stores/auth-store';
+import { useAuthStore } from '@/features/auth';
 import { authApi, isValidUsername, normalizeUsername } from '@/features/auth';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 
@@ -138,15 +138,3 @@ onMounted(() => {
         </v-form>
     </div>
 </template>
-
-<style scoped>
-.auth-form {
-    display: block;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.auth-label-sep {
-    padding-inline: 0.2em;
-}
-</style>

@@ -40,7 +40,6 @@ const notifications: notificationType[] = [
 ];
 
 import proUser1 from '@/assets/images/svgs/icon-account.svg';
-import proUser2 from '@/assets/images/svgs/icon-inbox.svg';
 import proUser3 from '@/assets/images/svgs/icon-tasks.svg';
 
 const profileDD: profileType[] = [
@@ -51,12 +50,6 @@ const profileDD: profileType[] = [
         href: '/app'
     },
     {
-        avatar: proUser2,
-        title: 'Réglages du compte',
-        subtitle: 'Profil et préférences',
-        href: '/app/account-settings'
-    },
-    {
         avatar: proUser3,
         title: 'Site public',
         subtitle: 'Accueil',
@@ -65,7 +58,6 @@ const profileDD: profileType[] = [
 ];
 
 import img1 from '@/assets/images/svgs/icon-dd-chat.svg';
-import img6 from '@/assets/images/svgs/icon-dd-lifebuoy.svg';
 import img8 from '@/assets/images/svgs/icon-dd-application.svg';
 
 const appsLink: appsLinkType[] = [
@@ -74,12 +66,6 @@ const appsLink: appsLinkType[] = [
         title: 'Tableau de bord',
         subtext: 'Vue d’ensemble',
         href: '/app'
-    },
-    {
-        avatar: img6,
-        title: 'Réglages du compte',
-        subtext: 'Profil utilisateur',
-        href: '/app/account-settings'
     },
     {
         avatar: img1,
@@ -93,10 +79,6 @@ const quickLink: quickLinksType[] = [
     {
         title: 'Tableau de bord',
         href: '/app'
-    },
-    {
-        title: 'Réglages du compte',
-        href: '/app/account-settings'
     },
     {
         title: 'Connexion',
@@ -116,10 +98,6 @@ const searchSugg: searchType[] = [
     {
         title: 'Tableau de bord',
         href: '/app'
-    },
-    {
-        title: 'Réglages du compte',
-        href: '/app/account-settings'
     },
     {
         title: 'Accueil',

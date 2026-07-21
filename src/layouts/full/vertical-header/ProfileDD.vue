@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { MailIcon } from 'vue-tabler-icons';
 import { profileDD } from '@/data/admin/headerData';
 
-import { useAuthStore } from '@/app/stores/auth-store';
+import { useAuthStore } from '@/features/auth';
 
 const authStore = useAuthStore();
 

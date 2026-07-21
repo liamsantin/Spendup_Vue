@@ -59,7 +59,6 @@ export const FooterMenu2: FooterType[] = [
 ];
 
 export const FooterMenu3: FooterType[] = [
-    { menu: 'Réglages du compte', link: '/app/account-settings' },
     { menu: 'Accueil public', link: '/' },
     { menu: 'À propos', link: '/a-propos' }
 ];
