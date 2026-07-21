@@ -2,6 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
+import AppAlert from '@/components/shared/AppAlert.vue';
 
 const route = useRoute();
 const auth = useAuthStore();
@@ -52,9 +53,7 @@ async function submit() {
 <template>
     <div class="mt-5">
         <template v-if="showManualToken">
-            <v-alert type="info" density="compact" class="mb-4">
-                Collez le jeton reçu par e-mail si le lien n’était pas cliquable.
-            </v-alert>
+            <AppAlert type="info" class="mb-4"> Collez le jeton reçu par e-mail si le lien n’était pas cliquable. </AppAlert>
             <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Jeton (token)</v-label>
             <VTextField v-model="token" :rules="tokenRules" class="mb-4" hide-details autocomplete="off" />
         </template>
@@ -71,6 +70,6 @@ async function submit() {
             autocomplete="new-password"
         />
         <v-btn color="primary" size="large" block flat :loading="loading" @click="submit">Réinitialiser</v-btn>
-        <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
+        <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
     </div>
 </template>

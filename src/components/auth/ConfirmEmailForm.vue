@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
+import AppAlert from '@/components/shared/AppAlert.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -90,12 +91,10 @@ async function resend() {
             <v-btn color="primary" size="large" block flat :loading="loading" @click="confirm">Confirmer l’e-mail</v-btn>
         </template>
         <template v-else>
-            <v-alert type="warning" density="compact" class="mb-3">
-                Aucun e-mail d’inscription trouvé. Reprenez l’inscription ou connectez-vous.
-            </v-alert>
+            <AppAlert type="warning" class="mb-3"> Aucun e-mail d’inscription trouvé. Reprenez l’inscription ou connectez-vous. </AppAlert>
             <v-btn color="primary" size="large" block flat to="/auth/register">Retour à l’inscription</v-btn>
         </template>
-        <v-alert v-if="success" type="success" class="mt-3" density="compact">{{ success }}</v-alert>
-        <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
+        <AppAlert v-if="success" type="success" class="mt-3">{{ success }}</AppAlert>
+        <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
     </div>
 </template>

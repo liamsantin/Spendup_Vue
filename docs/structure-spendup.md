@@ -67,7 +67,7 @@ src/
 ├── components/
 │   ├── frontpages/         # Composants site public
 │   ├── auth/               # Formulaires authentification (UI → store)
-│   └── shared/             # Composants réutilisables transverses
+│   └── shared/             # Composants réutilisables transverses (AppAlert, …)
 ├── assets/images/          # Images statiques
 ├── data/                   # Données statiques (front-pages, header profil)
 │   ├── front-pages/

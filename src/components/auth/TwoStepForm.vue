@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
+import AppAlert from '@/components/shared/AppAlert.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -78,7 +79,7 @@ function backToLogin() {
         </template>
 
         <v-btn color="primary" size="large" block flat class="mt-4" :loading="loading" @click="verify">Vérifier</v-btn>
-        <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
+        <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
         <h6 class="text-h6 mt-5 font-weight-regular">
             Un problème ?
             <a href="#" class="text-primary text-subtitle-1 text-decoration-none pl-1 font-weight-medium" @click.prevent="backToLogin">

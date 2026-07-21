@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import AppAlert from '@/components/shared/AppAlert.vue';
 
 withDefaults(
     defineProps<{
@@ -116,7 +117,7 @@ onUnmounted(() => {
             Connexion Google non configurée (définir VITE_GOOGLE_CLIENT_ID).
         </div>
         <div v-else ref="container" class="google-signin__btn" />
-        <v-alert v-if="error" type="warning" density="compact" class="mt-2">{{ error }}</v-alert>
+        <AppAlert v-if="error" type="warning" class="mt-2">{{ error }}</AppAlert>
         <span class="d-none">{{ label }}</span>
     </div>
 </template>

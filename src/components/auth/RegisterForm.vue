@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useAuthStore, isValidUsername, normalizeUsername } from '@/features/auth';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
+import AppAlert from '@/components/shared/AppAlert.vue';
 
 const authStore = useAuthStore();
 
@@ -119,8 +120,8 @@ onMounted(() => {
 
             <v-btn size="large" class="mt-4" color="primary" block type="submit" :loading="loading" flat>Créer un compte</v-btn>
 
-            <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
-            <v-alert v-if="success" type="success" class="mt-3" density="compact">{{ success }}</v-alert>
+            <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
+            <AppAlert v-if="success" type="success" class="mt-3">{{ success }}</AppAlert>
         </v-form>
     </div>
 </template>

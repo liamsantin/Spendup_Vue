@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '@/features/auth';
+import AppAlert from '@/components/shared/AppAlert.vue';
 
 const auth = useAuthStore();
 
@@ -30,6 +31,6 @@ async function submit() {
         <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Code</v-label>
         <VTextField v-model="code" class="mb-4" hide-details inputmode="numeric" maxlength="6" />
         <v-btn color="primary" size="large" block flat :loading="loading" @click="submit">Confirmer</v-btn>
-        <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
+        <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
     </div>
 </template>

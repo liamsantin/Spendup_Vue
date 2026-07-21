@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import { Form } from 'vee-validate';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
+import AppAlert from '@/components/shared/AppAlert.vue';
 
 const route = useRoute();
 const authStore = useAuthStore();
@@ -41,7 +42,7 @@ async function onGoogleCredential(idToken: string) {
 
 <template>
     <div class="auth-form">
-        <v-alert v-if="notice" type="info" variant="tonal" class="mb-4" density="compact">{{ notice }}</v-alert>
+        <AppAlert v-if="notice" type="info" variant="tonal" class="mb-4">{{ notice }}</AppAlert>
 
         <GoogleSignInButton class="mb-4" @credential="onGoogleCredential" />
 
@@ -75,7 +76,7 @@ async function onGoogleCredential(idToken: string) {
             </div>
             <v-btn size="large" :loading="isSubmitting" color="primary" block type="submit" flat>Connexion</v-btn>
             <div v-if="errors.apiError" class="mt-2">
-                <v-alert color="error">{{ errors.apiError }}</v-alert>
+                <AppAlert color="error">{{ errors.apiError }}</AppAlert>
             </div>
         </Form>
     </div>
