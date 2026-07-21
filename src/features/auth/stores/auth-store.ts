@@ -96,6 +96,54 @@ export const useAuthStore = defineStore('auth', {
             await this.navigateAfterLogin();
         },
 
+        async register(payload: {
+            email?: string | null;
+            username?: string | null;
+            password: string;
+            firstName?: string | null;
+            name?: string | null;
+        }) {
+            const result = await authApi.register(payload);
+            if (result.email) {
+                await router.push({
+                    path: '/auth/confirm-email',
+                    query: { email: result.email }
+                });
+                return { outcome: 'confirm-email' as const, result };
+            }
+            const identifier = result.username || payload.username || payload.email;
+            if (!identifier) {
+                throw new Error('Identifiant manquant après inscription.');
+            }
+            await this.login(identifier, payload.password);
+            return { outcome: 'logged-in' as const, result };
+        },
+
+        async confirmEmail(email: string, code: string) {
+            await authApi.confirmEmail({ email, code });
+        },
+
+        async resendVerification(email: string) {
+            await authApi.resendVerification(email);
+        },
+
+        async forgotPassword(email: string) {
+            await authApi.forgotPassword(email);
+        },
+
+        async resetPassword(token: string, newPassword: string) {
+            await authApi.resetPassword(token, newPassword);
+            await router.push({
+                path: '/auth/login',
+                query: { notice: 'Mot de passe mis à jour. Veuillez vous connecter.' }
+            });
+        },
+
+        async confirmEmailChange(email: string, code: string) {
+            await authApi.confirmEmailChange(email, code);
+            await this.forceReLogin('E-mail mis à jour. Veuillez vous reconnecter.');
+        },
+
         async verifyTwoFactor(code: string) {
             if (!this.twoFactorToken) {
                 throw new Error('Session 2FA expirée. Veuillez vous reconnecter.');

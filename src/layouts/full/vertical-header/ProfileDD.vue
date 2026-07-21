@@ -12,9 +12,6 @@ const email = computed(() => authStore.user?.email ?? '');
 </script>
 
 <template>
-    <!-- ---------------------------------------------- -->
-    <!-- notifications DD -->
-    <!-- ---------------------------------------------- -->
     <v-menu :close-on-content-click="false">
         <template v-slot:activator="{ props }">
             <v-btn class="custom-hover-primary" variant="text" v-bind="props" icon>
@@ -56,16 +53,6 @@ const email = computed(() => authStore.user?.email ?? '');
                     </v-list-item>
                 </v-list>
             </perfect-scrollbar>
-            <div class="px-8 py-3">
-                <div class="bg-lightprimary rounded-md pa-5 overflow-hidden position-relative">
-                    <h5 class="text-h6">
-                        Accès<br />
-                        illimité
-                    </h5>
-                    <v-btn variant="flat" color="primary" class="mt-3">Mettre à niveau</v-btn>
-                    <img src="@/assets/images/backgrounds/unlimited-bg.png" alt="bg-img" class="right-pos-img" />
-                </div>
-            </div>
             <div class="pt-4 pb-6 px-8 text-center">
                 <v-btn color="primary" variant="outlined" block @click="authStore.logout()">Se déconnecter</v-btn>
             </div>

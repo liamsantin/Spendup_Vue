@@ -57,28 +57,25 @@ src/
 │   ├── stores/             # Stores Pinia globaux uniquement
 │   └── guards/             # Guards Vue Router
 ├── features/               # Logique métier par domaine fonctionnel
+│   ├── auth/
 │   ├── dashboard/
-│   ├── users/
-│   └── …                   # transactions, budgets, invoices… (à venir)
+│   └── …                   # transactions, budgets… (à créer avec du code réel)
 ├── views/
 │   ├── app/                # Pages fines zone /app — liées au routing
 │   ├── front-pages/        # Pages publiques (coquilles de route)
 │   └── authentication/     # Login, register, erreur…
 ├── components/
-│   ├── app/                # Composants UI /app transverses (si non liés à une feature)
 │   ├── frontpages/         # Composants site public
-│   ├── auth/               # Formulaires authentification
+│   ├── auth/               # Formulaires authentification (UI → store)
 │   └── shared/             # Composants réutilisables transverses
 ├── assets/images/          # Images statiques
-├── data/                   # Données statiques (transition — à migrer vers features si métier)
+├── data/                   # Données statiques (front-pages, header profil)
 │   ├── front-pages/
 │   └── admin/
 ├── layouts/
 │   ├── blank/              # Pages publiques & auth (sans sidebar)
 │   └── full/               # Zone /app (sidebar, header, customizer)
 ├── plugins/vuetify.ts
-├── entities/               # Entités métier — interfaces TypeScript (domaine)
-├── models/                 # Modèles API — payloads JSON (POST, PUT, body requête)
 ├── router/                 # FrontPagesRoutes, AppRoutes, AuthRoutes
 ├── scss/                   # Tous les styles du projet
 ├── theme/                  # Couleurs Vuetify (LightTheme, DarkTheme)
@@ -87,6 +84,8 @@ src/
     ├── locales/            # Fichiers i18n (messages.ts, fr.json…)
     └── helpers/            # Helpers nommés <domaine>-helpers.ts
 ```
+
+> **Types métier :** préférer `features/<domaine>/types.ts` (ex. auth). Les dossiers `entities/` / `models/` ne sont **pas** créés pour l’instant — éventuel partage cross-features plus tard seulement.
 
 ---
 
@@ -131,10 +130,6 @@ features/
 │   ├── composables/
 │   │   └── useDashboardModules.ts
 │   └── index.ts
-└── users/
-    ├── stores/
-    │   └── user-store.ts
-    └── index.ts
 ```
 
 ### Features prévues (plateforme financière)
@@ -353,55 +348,52 @@ components/frontpages/
 | ------------------------------------------------ | ----------------------------------------------------------------- |
 | `data/front-pages/front-pages-data.ts`           | Tarifs (`SpendupPricingPackages`), menus footer                   |
 | `data/front-pages/spendup-additional-domains.ts` | Sections domaines (page fonctionnalités)                          |
-| `data/admin/headerData.ts`                       | Dropdowns header admin                                            |
+| `data/admin/headerData.ts`                       | Liens profil header (`profileDD`)                                 |
 | `types/components/front-pages/index.ts`          | `PackageType`, `FooterType`                                       |
 | `.env` / `.env.example`                          | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID`, `VITE_PRICING_PAGE` |
 | `utils/helpers/pricing-helpers.ts`               | `isPricingPageEnabled()`                                          |
 
 ---
 
-## Entités, modèles & stores
+## Types & stores
 
-### `entities/` — interfaces TypeScript (domaine)
+### Types métier
 
-Représente les **entités métier** du domaine Spend.Up (forme des objets côté app / API en lecture).
+**Règle actuelle :** types du domaine dans `features/<domaine>/types.ts` (référence : auth).
 
-Exemples : `UserEntity.ts`, `TransactionEntity.ts`.
-
-### `models/` — payloads API (écriture)
-
-Représente les **modèles de requête** envoyés à l'API (body JSON des `POST`, `PUT`, `PATCH`…).
-
-Exemples : `UserModel.ts`, `CreateTransactionModel.ts`.
+Les dossiers `entities/` et `models/` ne sont **pas** utilisés pour l’instant. Ne les créer que si plusieurs features partagent les mêmes contrats et qu’un extrait commun est clairement nécessaire.
 
 ### Stores Pinia — répartition
 
-| Portée               | Emplacement                  | Exemples                      |
-| -------------------- | ---------------------------- | ----------------------------- |
-| **Global** (app)     | `app/stores/`                | `app-settings-store`          |
-| **Métier** (domaine) | `features/<domaine>/stores/` | `auth-store`, `user-store`, … |
+| Portée               | Emplacement                  | Exemples             |
+| -------------------- | ---------------------------- | -------------------- |
+| **Global** (app)     | `app/stores/`                | `app-settings-store` |
+| **Métier** (domaine) | `features/<domaine>/stores/` | `auth-store`, …      |
 
-| Store        | Fichier                               | Usage                                     |
-| ------------ | ------------------------------------- | ----------------------------------------- |
-| Auth         | `features/auth/stores/auth-store.ts`  | Session JWT, login / logout / 2FA / `/me` |
-| App settings | `app/stores/app-settings-store.ts`    | Thème, sidebar, layout admin              |
-| Users        | `features/users/stores/user-store.ts` | Liste / gestion utilisateurs (API)        |
+| Store        | Fichier                              | Usage                                     |
+| ------------ | ------------------------------------ | ----------------------------------------- |
+| Auth         | `features/auth/stores/auth-store.ts` | Session JWT, login / logout / 2FA / `/me` |
+| App settings | `app/stores/app-settings-store.ts`   | Thème, sidebar, layout admin              |
 
-**Imports :** `@/features/auth`, `@/features/users` (barrels `index.ts`), `@/app/stores/app-settings-store`.
+**Imports :** `@/features/auth`, `@/app/stores/app-settings-store`.
+
+### Clients HTTP
+
+| Client                        | Usage                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------- |
+| `features/auth` → `authApi`   | Endpoints `/api/auth/*` (sans interceptor refresh — évite les boucles) |
+| `utils/helpers/fetch-helpers` | Appels authentifiés domaine (`fetchWrapper`) + refresh sur 401         |
+
+Les formulaires UI appellent le **store** (`useAuthStore`), pas `authApi` directement.
 
 ### Helpers (`utils/helpers/`)
 
-Fichiers nommés en **kebab-case** avec suffixe `-helpers.ts` (même logique que les stores).
+| Fichier              | Rôle                                                           |
+| -------------------- | -------------------------------------------------------------- |
+| `fetch-helpers.ts`   | Wrapper `fetch` avec Bearer + refresh sur 401 (`fetchWrapper`) |
+| `pricing-helpers.ts` | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE`            |
 
-| Fichier                   | Rôle                                                            |
-| ------------------------- | --------------------------------------------------------------- |
-| `fetch-helpers.ts`        | Wrapper `fetch` avec Bearer + refresh sur 401 (`fetchWrapper`)  |
-| `fake-backend-helpers.ts` | Ancien mock API — **non branché** (auth réelle via Spendup API) |
-| `pricing-helpers.ts`      | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE`             |
-
-**Import :** `@/utils/helpers/fetch-helpers`, `@/utils/helpers/pricing-helpers`, etc.
-
-Client auth réel : `@/features/auth` (`authApi`), pas le fake backend.
+**Import :** `@/utils/helpers/fetch-helpers`, `@/utils/helpers/pricing-helpers`.
 
 ---
 

@@ -7,11 +7,11 @@ import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 
 withDefaults(defineProps<{ homeTo?: string }>(), { homeTo: '/' });
 
-const customizer = useAppSettingsStore();
+const appSettings = useAppSettingsStore();
 
 const isDarkTheme = computed(() =>
     ['DARK_BLUE_THEME', 'DARK_AQUA_THEME', 'DARK_ORANGE_THEME', 'DARK_PURPLE_THEME', 'DARK_GREEN_THEME', 'DARK_CYAN_THEME'].includes(
-        customizer.actTheme
+        appSettings.actTheme
     )
 );
 </script>

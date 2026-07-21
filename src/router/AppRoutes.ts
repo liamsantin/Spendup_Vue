@@ -1,6 +1,6 @@
 /**
  * Routes authentifiées — préfixe /app, layout FullLayout (sidebar + header).
- * JWT à brancher plus tard ; guard via meta.requiresAuth.
+ * Guard via meta.requiresAuth (session JWT / refresh).
  */
 const AppRoutes = {
     path: '/app',

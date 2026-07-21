@@ -35,6 +35,3 @@ export const useAppSettingsStore = defineStore('app-settings', {
         }
     }
 });
-
-/** @deprecated Utiliser useAppSettingsStore — alias conservé pour compatibilité template. */
-export const useCustomizerStore = useAppSettingsStore;

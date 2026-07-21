@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue';
-import { useCustomizerStore } from '@/app/stores/app-settings-store';
+import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import sidebarItems from './sidebarItem';
 
 import NavGroup from './NavGroup/index.vue';
@@ -9,19 +9,19 @@ import NavCollapse from './NavCollapse/NavCollapse.vue';
 import Profile from './profile/Profile.vue';
 import Logo from '../logo/Logo.vue';
 
-const customizer = useCustomizerStore();
+const appSettings = useAppSettingsStore();
 const sidebarMenu = shallowRef(sidebarItems);
 </script>
 
 <template>
     <v-navigation-drawer
         left
-        v-model="customizer.Sidebar_drawer"
+        v-model="appSettings.Sidebar_drawer"
         elevation="0"
         rail-width="75"
         app
         class="leftSidebar"
-        :rail="customizer.mini_sidebar"
+        :rail="appSettings.mini_sidebar"
         expand-on-hover
         width="270"
     >

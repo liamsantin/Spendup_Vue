@@ -1,46 +1,29 @@
-import type { notificationType, profileType, appsLinkType, quickLinksType, searchType } from '@/types/HeaderTypes';
+import type { notificationType, profileType, searchType } from '@/types/HeaderTypes';
 
 import user1 from '@/assets/images/profile/user-1.jpg';
 import user2 from '@/assets/images/profile/user-2.jpg';
 import user3 from '@/assets/images/profile/user-3.jpg';
-import user4 from '@/assets/images/profile/user-4.jpg';
-import user5 from '@/assets/images/profile/user-5.jpg';
+
+import proUser1 from '@/assets/images/svgs/icon-account.svg';
+import proUser3 from '@/assets/images/svgs/icon-tasks.svg';
 
 const notifications: notificationType[] = [
     {
         avatar: user1,
-        title: 'Roman Joined the Team!',
-        subtitle: 'Congratulate him'
+        title: 'Bienvenue sur Spend.Up',
+        subtitle: 'Votre espace est prêt'
     },
     {
         avatar: user2,
-        title: 'New message received',
-        subtitle: 'Salma sent you new message'
+        title: 'Conseil du jour',
+        subtitle: 'Suivez vos dépenses chaque semaine'
     },
     {
         avatar: user3,
-        title: 'New Payment received',
-        subtitle: 'Check your earnings'
-    },
-    {
-        avatar: user4,
-        title: 'Jolly completed tasks',
-        subtitle: 'Assign her new tasks'
-    },
-    {
-        avatar: user5,
-        title: 'New Payment received',
-        subtitle: 'Check your earnings'
-    },
-    {
-        avatar: user1,
-        title: 'Roman Joined the Team!',
-        subtitle: 'Congratulate him'
+        title: 'Rappel',
+        subtitle: 'Pensez à vérifier vos comptes'
     }
 ];
-
-import proUser1 from '@/assets/images/svgs/icon-account.svg';
-import proUser3 from '@/assets/images/svgs/icon-tasks.svg';
 
 const profileDD: profileType[] = [
     {
@@ -54,43 +37,6 @@ const profileDD: profileType[] = [
         title: 'Site public',
         subtitle: 'Accueil',
         href: '/'
-    }
-];
-
-import img1 from '@/assets/images/svgs/icon-dd-chat.svg';
-import img8 from '@/assets/images/svgs/icon-dd-application.svg';
-
-const appsLink: appsLinkType[] = [
-    {
-        avatar: img8,
-        title: 'Tableau de bord',
-        subtext: 'Vue d’ensemble',
-        href: '/app'
-    },
-    {
-        avatar: img1,
-        title: 'Site public',
-        subtext: 'Pages marketing',
-        href: '/'
-    }
-];
-
-const quickLink: quickLinksType[] = [
-    {
-        title: 'Tableau de bord',
-        href: '/app'
-    },
-    {
-        title: 'Connexion',
-        href: '/auth/login'
-    },
-    {
-        title: 'Accueil public',
-        href: '/'
-    },
-    {
-        title: 'Fonctionnalités',
-        href: '/fonctionnalites'
     }
 ];
 
@@ -113,4 +59,4 @@ const searchSugg: searchType[] = [
     }
 ];
 
-export { notifications, profileDD, appsLink, quickLink, searchSugg };
+export { notifications, profileDD, searchSugg };

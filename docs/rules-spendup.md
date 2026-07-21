@@ -80,9 +80,18 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 
 - **Store métier** (tokens, login/logout, refresh, `/me`, redirections) → `features/auth/stores/auth-store.ts`.
 - **Client API & types** (`/api/auth/*`, device id) → `features/auth/` (export via `index.ts`).
-- **UI** (formulaires) → `components/auth/` : présentation + appels au store / `@/features/auth` ; pas de logique métier dans les `views/`.
+- **UI** (formulaires) → `components/auth/` : présentation + appels au **store** uniquement ; pas d’appels `authApi` directs ; pas de logique métier dans les `views/`.
 - **Styles** auth → `scss/pages/_authentication.scss` (pas de `<style>` volumineux dans les `.vue`).
 - **Guards** (transverse) → `app/guards/auth-guard.ts` (consomme `useAuthStore` depuis `@/features/auth`).
+
+### Clients HTTP
+
+| Client                                         | Quand                                                   |
+| ---------------------------------------------- | ------------------------------------------------------- |
+| `authApi` (`features/auth`)                    | Bootstrap auth `/api/auth/*` (sans refresh interceptor) |
+| `fetchWrapper` (`utils/helpers/fetch-helpers`) | API domaine authentifiée + refresh 401                  |
+
+Les composants UI passent par le store de la feature, pas par le client HTTP.
 
 ## Règles SCSS
 
@@ -124,19 +133,10 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 - Fichier : `use<Nom>.ts` — ex. `useTransactions.ts`, `useDashboardModules.ts`.
 - Emplacement : `features/<domaine>/composables/`.
 
-### Entités
+### Types métier
 
-- Dossier : `entities/`.
-- Fichier : `NomEntity.ts`.
-- Format : PascalCase, suffixe `Entity`, singulier, anglais.
-- Exemple : `export interface UserEntity { … }`.
-
-### Modèles API
-
-- Dossier : `models/` (ou `features/<domaine>/types/` pour les types propres au domaine).
-- Fichier : `NomModel.ts`.
-- Format : PascalCase, suffixe `Model`, singulier, anglais.
-- Exemple : `export interface CreateTransactionModel { … }`.
+- Emplacement par défaut : `features/<domaine>/types.ts` (ex. auth).
+- Ne pas créer `entities/` / `models/` tant qu’il n’y a pas de besoin de partage cross-features clair.
 
 ### Stores Pinia
 
@@ -160,12 +160,10 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Même convention de nommage que les stores (`auth-store.ts` → `auth-helpers.ts`, `user-store.ts` → `user-helpers.ts`).
 - Un fichier par domaine transverse ; pas de noms génériques (`utils.ts`, `helpers.ts`, `fetch-wrapper.ts`).
 
-| Fichier                   | Exemples d'exports                            |
-| ------------------------- | --------------------------------------------- |
-| `auth-helpers.ts`         | (legacy) helpers auth locaux si besoin        |
-| `fetch-helpers.ts`        | `fetchWrapper`                                |
-| `fake-backend-helpers.ts` | `fakeBackend()` — non utilisé pour l’auth API |
-| `pricing-helpers.ts`      | `isPricingPageEnabled()`                      |
+| Fichier              | Exemples d'exports       |
+| -------------------- | ------------------------ |
+| `fetch-helpers.ts`   | `fetchWrapper`           |
+| `pricing-helpers.ts` | `isPricingPageEnabled()` |
 
 - Import : `@/utils/helpers/<domaine>-helpers`.
 - Les helpers **métier** propres à une feature vont dans `features/<domaine>/helpers/` (même convention `<domaine>-helpers.ts` ou sous-domaine : `transaction-format-helpers.ts`).
@@ -195,11 +193,11 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Respecter le squelette page publique.
 - Nommer les dossiers en minuscules kebab-case (`shared/`, pas `Shared/`).
 - Placer les fichiers de données dans `data/<domaine>/`, jamais à la racine de `data/` (migration vers `features/` si données métier).
-- Placer les entités dans `entities/<NomEntity>.ts`.
-- Placer les modèles API dans `models/<NomModel>.ts` ou `features/<domaine>/types/`.
+- Placer les types métier dans `features/<domaine>/types.ts` (pas de `entities/`/`models/` tant que non nécessaires).
 - Placer les helpers transverses dans `utils/helpers/<domaine>-helpers.ts`.
 - Exporter les features via un `index.ts`.
 - Vérifier `npm run build` après restructuration ou déplacement de fichiers.
+- Les formulaires UI appellent le store de la feature, pas le client API directement.
 
 ---
 

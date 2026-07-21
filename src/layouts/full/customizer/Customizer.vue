@@ -2,7 +2,7 @@
 defineOptions({ name: 'AppCustomizer' });
 
 import { ref } from 'vue';
-import { useCustomizerStore } from '@/app/stores/app-settings-store';
+import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import {
     CheckIcon,
     LayoutColumnsIcon,
@@ -12,7 +12,7 @@ import {
     LayoutSidebarLeftCollapseIcon
 } from 'vue-tabler-icons';
 
-const customizer = useCustomizerStore();
+const appSettings = useAppSettingsStore();
 
 // themes color options
 const themeColors = ref([
@@ -57,7 +57,7 @@ const DarkthemeColors = ref([
 <!-- Customizer -->
 <!------------------------------------->
 <template>
-    <v-navigation-drawer app temporary elevation="10" location="right" v-model="customizer.Customizer_drawer" width="320">
+    <v-navigation-drawer app temporary elevation="10" location="right" v-model="appSettings.Customizer_drawer" width="320">
         <div class="pa-6">
             <h5 class="text-h5">Settings</h5>
         </div>
@@ -65,7 +65,7 @@ const DarkthemeColors = ref([
         <perfect-scrollbar style="height: calc(100vh - 90px)">
             <div class="pa-6">
                 <h6 class="text-h6 mb-2">Sidebar Layout</h6>
-                <v-btn-toggle v-model="customizer.setHorizontalLayout" color="primary" class="my-2 btn-group-custom" rounded="0" group>
+                <v-btn-toggle v-model="appSettings.setHorizontalLayout" color="primary" class="my-2 btn-group-custom" rounded="0" group>
                     <v-btn :value="false" variant="text" elevation="9" class="rounded-md">
                         <LayoutColumnsIcon stroke-width="1.5" size="21" class="mr-2 icon" /> Vertical
                     </v-btn>
@@ -74,7 +74,7 @@ const DarkthemeColors = ref([
                     </v-btn>
                 </v-btn-toggle>
                 <h6 class="text-h6 mt-8 mb-5">Theme Color</h6>
-                <v-item-group mandatory v-model="customizer.actTheme" class="ml-n2 v-row">
+                <v-item-group mandatory v-model="appSettings.actTheme" class="ml-n2 v-row">
                     <v-col cols="4" v-for="theme in themeColors" :key="theme.name" class="pa-2">
                         <v-item v-slot="{ isSelected, toggle }" :value="theme.name">
                             <v-sheet
@@ -91,7 +91,7 @@ const DarkthemeColors = ref([
                     </v-col>
                 </v-item-group>
                 <h6 class="text-h6 mt-11 mb-5">Theme Dark Color</h6>
-                <v-item-group mandatory v-model="customizer.actTheme" class="ml-n2 v-row">
+                <v-item-group mandatory v-model="appSettings.actTheme" class="ml-n2 v-row">
                     <v-col cols="4" v-for="theme in DarkthemeColors" :key="theme.name" class="pa-2">
                         <v-item v-slot="{ isSelected, toggle }" :value="theme.name">
                             <v-sheet
@@ -108,7 +108,7 @@ const DarkthemeColors = ref([
                     </v-col>
                 </v-item-group>
                 <h6 class="text-h6 mt-11 mb-2">Container Option</h6>
-                <v-btn-toggle v-model="customizer.boxed" color="primary" class="my-2 btn-group-custom" rounded="0" group>
+                <v-btn-toggle v-model="appSettings.boxed" color="primary" class="my-2 btn-group-custom" rounded="0" group>
                     <v-btn :value="true" variant="text" elevation="9" class="rounded-md">
                         <LayoutDistributeVerticalIcon stroke-width="1.5" size="21" class="mr-2 icon" />
                         Boxed
@@ -119,7 +119,7 @@ const DarkthemeColors = ref([
                     </v-btn>
                 </v-btn-toggle>
                 <h6 class="text-h6 mt-11 mb-2">Sidebar Type</h6>
-                <v-btn-toggle v-model="customizer.mini_sidebar" color="primary" class="my-2 btn-group-custom" rounded="0" group>
+                <v-btn-toggle v-model="appSettings.mini_sidebar" color="primary" class="my-2 btn-group-custom" rounded="0" group>
                     <v-btn :value="false" variant="text" elevation="9" class="rounded-md">
                         <LayoutSidebarIcon stroke-width="1.5" size="21" class="mr-2 icon" />
                         Full
@@ -130,7 +130,7 @@ const DarkthemeColors = ref([
                     </v-btn>
                 </v-btn-toggle>
                 <h6 class="text-h6 mt-11 mb-2">Card with</h6>
-                <v-btn-toggle v-model="customizer.setBorderCard" color="primary" class="my-2 btn-group-custom" rounded="0" group>
+                <v-btn-toggle v-model="appSettings.setBorderCard" color="primary" class="my-2 btn-group-custom" rounded="0" group>
                     <v-btn :value="false" variant="text" elevation="9" class="rounded-md">
                         <LayoutSidebarLeftCollapseIcon stroke-width="1.5" size="21" class="mr-2 icon" />
                         Shadow

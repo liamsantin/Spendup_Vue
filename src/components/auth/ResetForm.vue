@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { authApi } from '@/features/auth';
+import { useAuthStore } from '@/features/auth';
+
+const auth = useAuthStore();
 
 const valid = ref(false);
 const email = ref('');
@@ -14,7 +16,7 @@ async function onSubmit() {
     success.value = null;
     loading.value = true;
     try {
-        await authApi.forgotPassword(email.value);
+        await auth.forgotPassword(email.value);
         success.value = 'Si un compte avec e-mail vérifié existe, vous recevrez bientôt un lien de réinitialisation.';
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
@@ -27,7 +29,7 @@ async function onSubmit() {
 <template>
     <v-form v-model="valid" @submit.prevent="onSubmit" class="mt-sm-13 mt-8">
         <v-alert type="info" density="compact" variant="tonal" class="mb-4">
-            La réinitialisation nécessite un e-mail vérifié lié au compte. Compte username seul : ajoutez un e-mail dans les paramètres.
+            La réinitialisation nécessite un e-mail vérifié lié au compte.
         </v-alert>
         <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Adresse e-mail</v-label>
         <VTextField v-model="email" :rules="emailRules" required hide-details type="email" autocomplete="email" />

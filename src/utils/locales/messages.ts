@@ -4,10 +4,10 @@ import ar from './ar.json';
 import zh from './zh.json';
 
 const messages = {
-    en: en,
-    fr: fr,
-    ro: ar,
-    zh: zh
+    en,
+    fr,
+    ar,
+    zh
 };
 
 export default messages;

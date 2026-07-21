@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { authApi } from '@/features/auth';
+import { useRoute } from 'vue-router';
+import { useAuthStore } from '@/features/auth';
 
 const route = useRoute();
-const router = useRouter();
+const auth = useAuthStore();
 
 const token = ref('');
 const newPassword = ref('');
@@ -40,11 +40,7 @@ async function submit() {
     if (newPassword.value !== confirmPassword.value) return;
     loading.value = true;
     try {
-        await authApi.resetPassword(token.value.trim(), newPassword.value);
-        await router.push({
-            path: '/auth/login',
-            query: { notice: 'Mot de passe mis à jour. Veuillez vous connecter.' }
-        });
+        await auth.resetPassword(token.value.trim(), newPassword.value);
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
     } finally {

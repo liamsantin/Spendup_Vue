@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 defineOptions({ name: 'AppSearchbar' });
 
 import { SearchIcon } from 'vue-tabler-icons';
@@ -6,27 +6,24 @@ import { searchSugg } from '@/data/admin/headerData';
 </script>
 
 <template>
-    <!-- ---------------------------------------------- -->
-    <!-- search1 -->
-    <!-- ------------------------------------------------>
     <v-menu :close-on-content-click="false">
-        <template v-slot:activator="{ props }">
+        <template #activator="{ props }">
             <v-btn icon class="custom-hover-primary" size="small" variant="text" color="primary" v-bind="props">
                 <SearchIcon stroke-width="1.5" size="20" />
             </v-btn>
         </template>
         <v-sheet width="360" elevation="10" rounded="md">
             <div class="d-flex align-center justify-space-between pa-5">
-                <v-text-field placeholder="Search" color="primary" density="compact" variant="outlined" hide-details></v-text-field>
+                <v-text-field placeholder="Rechercher…" color="primary" density="compact" variant="outlined" hide-details />
             </div>
-            <v-divider></v-divider>
-            <h5 class="text-h5 mt-4 px-5 pb-4">Quick Page Links</h5>
-            <perfect-scrollbar style="height: 380px">
+            <v-divider />
+            <h5 class="text-h5 mt-4 px-5 pb-4">Liens rapides</h5>
+            <perfect-scrollbar style="height: 280px">
                 <v-list class="pt-0 pb-5" lines="two">
                     <v-list-item
-                        :value="item"
                         v-for="(item, index) in searchSugg"
                         :key="index"
+                        :value="item"
                         :to="item.href"
                         color="primary"
                         class="px-5 py-2"

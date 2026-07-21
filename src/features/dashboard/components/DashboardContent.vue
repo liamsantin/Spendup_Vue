@@ -15,8 +15,7 @@ const { modules } = useDashboardModules();
                     <div>
                         <p class="text-subtitle-1 font-weight-semibold textPrimary mb-1">Espace authentifié Spend.Up</p>
                         <p class="text-body-2 text-medium-emphasis mb-0">
-                            Page de test après connexion. Les modules ci-dessous préfigurent la structure de l'application
-                            (<code>/app</code>). L'authentification JWT sera branchée ultérieurement.
+                            Tableau de bord Spend.Up. Les modules ci-dessous préfigurent les prochaines fonctionnalités (<code>/app</code>).
                         </p>
                     </div>
                 </div>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue';
 import { useDisplay } from 'vuetify';
-import { useCustomizerStore } from '@/app/stores/app-settings-store';
+import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import HorizontalItems from './horizontalItems';
 import NavItem from './NavItem/Index.vue';
 import NavCollapse from './NavCollapse/Index.vue';
 import VerticalSidebar from '../vertical-sidebar/VerticalSidebar.vue';
 
-const customizer = useCustomizerStore();
+const appSettings = useAppSettingsStore();
 const sidebarMenu = shallowRef(HorizontalItems);
 const { mdAndUp } = useDisplay();
 // function subIsActive(input: any) {
@@ -21,7 +21,7 @@ const { mdAndUp } = useDisplay();
 <template>
     <template v-if="mdAndUp">
         <div class="horizontalMenu border-bottom">
-            <div :class="customizer.boxed ? 'maxWidth' : 'px-6'">
+            <div :class="appSettings.boxed ? 'maxWidth' : 'px-6'">
                 <ul class="gap-1 horizontal-navbar mx-0">
                     <!---Menu Loop -->
                     <li v-for="(item, i) in sidebarMenu" :key="i" class="navItem">

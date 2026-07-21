@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { authApi } from '@/features/auth';
+import { useAuthStore } from '@/features/auth';
 
 const route = useRoute();
 const router = useRouter();
+const auth = useAuthStore();
 
 const email = ref('');
 const code = ref('');
@@ -28,7 +29,7 @@ async function confirm() {
     success.value = null;
     loading.value = true;
     try {
-        await authApi.confirmEmail({ email: email.value, code: code.value });
+        await auth.confirmEmail(email.value, code.value);
         success.value = 'E-mail confirmé. Vous pouvez vous connecter.';
         setTimeout(() => router.push('/auth/login'), 800);
     } catch (e: unknown) {
@@ -43,7 +44,7 @@ async function resend() {
     success.value = null;
     resending.value = true;
     try {
-        await authApi.resendVerification(email.value);
+        await auth.resendVerification(email.value);
         success.value = 'Si un compte existe pour cet e-mail, un nouveau code a été envoyé.';
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useCustomizerStore } from '@/app/stores/app-settings-store';
+import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { MoonIcon, SunIcon } from 'vue-tabler-icons';
 
-const customizer = useCustomizerStore();
+const appSettings = useAppSettingsStore();
 
 // template skin color options
 const themeColors = ref([
@@ -20,7 +20,7 @@ const themeColors = ref([
 
 <template>
     <div class="position-relative">
-        <v-item-group mandatory v-model="customizer.actTheme" class="d-flex">
+        <v-item-group mandatory v-model="appSettings.actTheme" class="d-flex">
             <div v-for="theme in themeColors" :key="theme.name">
                 <v-item v-slot="{ toggle }" :value="theme.name">
                     <v-sheet rounded="circle" class="cursor-pointer text-center hover-btns" elevation="0" @click="toggle">

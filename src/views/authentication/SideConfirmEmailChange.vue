@@ -1,30 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { authApi } from '@/features/auth';
-import { useAuthStore } from '@/features/auth';
 import Logo from '@/layouts/full/logo/Logo.vue';
-
-const router = useRouter();
-const auth = useAuthStore();
-
-const email = ref('');
-const code = ref('');
-const loading = ref(false);
-const error = ref<string | null>(null);
-
-async function submit() {
-    error.value = null;
-    loading.value = true;
-    try {
-        await authApi.confirmEmailChange(email.value, code.value);
-        await auth.forceReLogin('E-mail mis à jour. Veuillez vous reconnecter.');
-    } catch (e: unknown) {
-        error.value = e instanceof Error ? e.message : String(e);
-    } finally {
-        loading.value = false;
-    }
-}
+import ConfirmEmailChangeForm from '@/components/auth/ConfirmEmailChangeForm.vue';
 </script>
 
 <template>
@@ -41,14 +17,8 @@ async function submit() {
             <v-col cols="12" lg="4" xl="4" xxl="3" class="d-flex align-center justify-center">
                 <div class="pa-sm-7 pa-4 w-100">
                     <h2 class="text--darken-2 text-h4 font-weight-bold">Confirmer le nouvel e-mail</h2>
-                    <p class="text-subtitle-1 py-4 text-10">Saisissez le code envoyé à votre nouvelle adresse e-mail.</p>
-                    <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Nouvel e-mail</v-label>
-                    <VTextField v-model="email" type="email" class="mb-4" hide-details />
-                    <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Code</v-label>
-                    <VTextField v-model="code" class="mb-4" hide-details inputmode="numeric" maxlength="6" />
-                    <v-btn color="primary" size="large" block flat :loading="loading" @click="submit">Confirmer</v-btn>
-                    <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
-                    <v-btn size="large" color="lightprimary" block class="mt-5 text-primary" flat @click="router.push('/auth/login')">
+                    <ConfirmEmailChangeForm />
+                    <v-btn size="large" color="lightprimary" to="/auth/login" block class="mt-5 text-primary" flat>
                         Retour à la connexion
                     </v-btn>
                 </div>

@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/features/auth';
-import { authApi, isValidUsername, normalizeUsername } from '@/features/auth';
+import { useAuthStore, isValidUsername, normalizeUsername } from '@/features/auth';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 
-const router = useRouter();
 const authStore = useAuthStore();
 
 const formValid = ref(false);
@@ -53,24 +50,13 @@ async function onSubmit() {
 
     loading.value = true;
     try {
-        const username = asEmail ? null : normalizeUsername(value);
-        const result = await authApi.register({
+        await authStore.register({
             email: asEmail ? value : null,
-            username,
+            username: asEmail ? null : normalizeUsername(value),
             password: password.value,
             firstName: null,
             name: null
         });
-
-        if (result.email) {
-            await router.push({
-                path: '/auth/confirm-email',
-                query: { email: result.email }
-            });
-            return;
-        }
-
-        await authStore.login(result.username || username || value, password.value);
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
     } finally {
