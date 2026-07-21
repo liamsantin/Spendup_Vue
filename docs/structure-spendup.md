@@ -63,7 +63,8 @@ src/
 ├── views/
 │   ├── app/                # Pages fines zone /app — liées au routing
 │   ├── front-pages/        # Pages publiques (coquilles de route)
-│   └── authentication/     # Login, register, erreur…
+│   ├── authentication/     # Login, register, erreur…
+│   └── dev/                # Showcase UI (`/components`) — VITE_APP_ENV=development uniquement
 ├── components/
 │   ├── frontpages/         # Composants site public
 │   ├── auth/               # Formulaires authentification (UI → store)
@@ -167,8 +168,18 @@ features/transactions/
 | Application `/app` | `views/app/<feature>/`  | `features/<feature>/`                  | `features/<feature>/components/` ou `components/shared/` |
 | Site public        | `views/front-pages/`    | — (contenu dans composants)            | `components/frontpages/<feature>/`                       |
 | Auth               | `views/authentication/` | `features/auth/` (store + API + types) | `components/auth/`                                       |
+| Dev / showcase     | `views/dev/`            | —                                      | `components/shared/` (ex. AppAlert)                      |
 
-**Auth :** store dans `features/auth/stores/auth-store.ts` ; client HTTP typé dans `features/auth/` ; formulaires UI dans `components/auth/` (dont `GoogleSignInButton`) ; styles dans `scss/pages/_authentication.scss` ; guard dans `app/guards/`.
+**Auth :** store dans `features/auth/stores/auth-store.ts` ; client HTTP typé dans `features/auth/` ; formulaires UI dans `components/auth/` (dont `GoogleSignInButton`) ; styles dans `scss/pages/_authentication.scss` ; guard dans `app/guards/`. Feedback UI via **`AppAlert`** (pas `v-alert` brut) — doc : `docs/components/alert/alert-component.md`.
+
+**Auth — flux inscription / confirmation (front) :**
+
+| Étape                                 | Comportement                                                                                      |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Register avec e-mail                  | `setPendingEmail` + `router.replace` → `/auth/confirm-email?email=…`                              |
+| Confirm e-mail                        | Pas de champ e-mail éditable : e-mail retenu (query / `pendingEmail`) ; saisie du code uniquement |
+| Réinscription même e-mail non vérifié | Géré côté API (MAJ MDP + nouveau code) ; front redirige à nouveau vers confirm                    |
+| Logo                                  | Voir section Logo ci-dessous                                                                      |
 
 **Principe :** les `views/` restent des coquilles légères ; elles importent depuis `@/features/<domaine>`.
 
@@ -242,10 +253,14 @@ scss/
 - Sous `/app` → lien vers `/app` (dashboard)
 - Ailleurs → lien vers `/` (accueil), ou prop `homeTo` si fournie
 - Icône : `/Spendup-icon-fusee.svg` (+ texte « Spend.Up »)
+- Utilisé dans sidebar `/app`, header front, pages auth — **pas** de lien vers `/components`
 
 ### Guard d'authentification
 
 Le guard est défini dans `app/guards/auth-guard.ts` et branché dans `router/index.ts` via `router.beforeEach(authGuard)`.
+
+- `meta.requiresAuth` → session requise
+- `meta.devOnly` → accessible seulement si `isDevAppEnv()` (`VITE_APP_ENV=development`), sinon redirect `/auth/404`
 
 ### Squelette page publique
 
@@ -449,6 +464,9 @@ layouts/
 views/app/                    # Pages fines — une par fonctionnalité
 ├── dashboard/
 │   └── AppDashboardView.vue  # → importe DashboardContent depuis features/dashboard
+
+views/dev/                    # Showcase composants (dev only)
+└── ComponentsShowcasePage.vue
 
 features/dashboard/           # Logique métier tableau de bord
 features/auth/                # Store + API + device + types (barrel index.ts)

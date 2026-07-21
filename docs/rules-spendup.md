@@ -75,14 +75,22 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 | Application `/app` | `views/app/<feature>/`  | `features/<feature>/`                                 | `features/<feature>/components/`   |
 | Site public        | `views/front-pages/`    | —                                                     | `components/frontpages/<feature>/` |
 | Auth               | `views/authentication/` | `features/auth/` (`stores/auth-store.ts`, API, types) | `components/auth/`                 |
+| Dev / showcase     | `views/dev/`            | —                                                     | `components/shared/`               |
 
 **Auth — répartition :**
 
-- **Store métier** (tokens, login/logout, refresh, `/me`, redirections) → `features/auth/stores/auth-store.ts`.
+- **Store métier** (tokens, login/logout, refresh, `/me`, redirections, `pendingEmail`) → `features/auth/stores/auth-store.ts`.
 - **Client API & types** (`/api/auth/*`, device id) → `features/auth/` (export via `index.ts`).
 - **UI** (formulaires) → `components/auth/` : présentation + appels au **store** uniquement ; pas d’appels `authApi` directs ; pas de logique métier dans les `views/`.
+- **Confirm e-mail après register** : pas de champ e-mail ; retenir l’e-mail (`query` + `pendingEmail`) ; `router.replace` vers `/auth/confirm-email`.
 - **Styles** auth → `scss/pages/_authentication.scss` (pas de `<style>` volumineux dans les `.vue`).
 - **Guards** (transverse) → `app/guards/auth-guard.ts` (consomme `useAuthStore` depuis `@/features/auth`).
+- **Alertes** → toujours `AppAlert` (`components/shared/AppAlert.vue`), **jamais** `v-alert` brut. Doc : `docs/components/alert/alert-component.md`. Preview : `/components` (dev only).
+
+### Composants shared
+
+- Feedback / notices : utiliser **`AppAlert`**, pas `v-alert` directement (défaut `density="compact"` pour l’auth ; passer `density="default"` pour coller aux démos Modernize).
+- Référence visuelle des variantes : `_template/modernize/components/ui-components/alert/` + page `/components`.
 
 ### Clients HTTP
 

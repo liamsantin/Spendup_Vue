@@ -147,6 +147,13 @@ POST /login
 
 Le front utilise `router.replace` vers `/auth/confirm-email` après un register réussi avec e-mail (évite un retour arrière vers un formulaire déjà consommé).
 
+**Front — confirmation e-mail (`ConfirmEmailForm`) :**
+
+- Pas de champ e-mail éditable : l’adresse vient de `?email=` et/ou `auth.pendingEmail` (sessionStorage via `setPendingEmail`).
+- UI : code à 6 chiffres + « Renvoyer le code » (discret) + « Confirmer l’e-mail ».
+- Feedback via `AppAlert` (pas `v-alert` brut).
+- Détails structure / logo : `docs/structure-spendup.md` ; alertes : `docs/components/alert/alert-component.md`.
+
 ### 5.2 Login email / mot de passe
 
 ```txt
