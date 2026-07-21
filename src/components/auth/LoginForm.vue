@@ -44,7 +44,7 @@ async function onGoogleCredential(idToken: string) {
 
     <div class="d-flex align-center text-center mb-6">
         <div class="text-h6 w-100 px-5 font-weight-regular auth-divider position-relative">
-            <span class="bg-surface px-5 py-3 position-relative">ou connectez-vous avec l’e-mail</span>
+            <span class="bg-surface px-5 py-3 position-relative">ou</span>
         </div>
     </div>
 
