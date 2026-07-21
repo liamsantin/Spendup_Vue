@@ -114,6 +114,8 @@ Les composants UI passent par le store de la feature, pas par le client HTTP.
 - Chaque page publique doit respecter le squelette : `AnnounceBar` → `Header` → contenu → `ContactBar` → `Footer`.
 - Pour une nouvelle page publique, enregistrer la route dans `router/FrontPagesRoutes.ts`.
 - Pour une nouvelle fonctionnalité `/app`, enregistrer la route dans `router/AppRoutes.ts` et le menu dans `sidebarItem.ts`.
+- Le logo (`layouts/full/logo/Logo.vue`) : sous `/app` → dashboard (`/app`) ; ailleurs → accueil (`/` ou `homeTo`).
+- Catch-all `/:pathMatch(.*)*` → `Error.vue` (déjà dans `router/index.ts`).
 
 ---
 
@@ -160,10 +162,11 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Même convention de nommage que les stores (`auth-store.ts` → `auth-helpers.ts`, `user-store.ts` → `user-helpers.ts`).
 - Un fichier par domaine transverse ; pas de noms génériques (`utils.ts`, `helpers.ts`, `fetch-wrapper.ts`).
 
-| Fichier              | Exemples d'exports       |
-| -------------------- | ------------------------ |
-| `fetch-helpers.ts`   | `fetchWrapper`           |
-| `pricing-helpers.ts` | `isPricingPageEnabled()` |
+| Fichier                   | Exemples d'exports       |
+| ------------------------- | ------------------------ |
+| `fetch-helpers.ts`        | `fetchWrapper`           |
+| `pricing-helpers.ts`      | `isPricingPageEnabled()` |
+| `fake-backend-helpers.ts` | Backend factice (legacy) |
 
 - Import : `@/utils/helpers/<domaine>-helpers`.
 - Les helpers **métier** propres à une feature vont dans `features/<domaine>/helpers/` (même convention `<domaine>-helpers.ts` ou sous-domaine : `transaction-format-helpers.ts`).

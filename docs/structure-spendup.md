@@ -168,7 +168,7 @@ features/transactions/
 | Site public        | `views/front-pages/`    | — (contenu dans composants)            | `components/frontpages/<feature>/`                       |
 | Auth               | `views/authentication/` | `features/auth/` (store + API + types) | `components/auth/`                                       |
 
-**Auth :** store dans `features/auth/stores/auth-store.ts` ; client HTTP typé dans `features/auth/` ; formulaires UI dans `components/auth/` ; styles dans `scss/pages/_authentication.scss` ; guard dans `app/guards/`.
+**Auth :** store dans `features/auth/stores/auth-store.ts` ; client HTTP typé dans `features/auth/` ; formulaires UI dans `components/auth/` (dont `GoogleSignInButton`) ; styles dans `scss/pages/_authentication.scss` ; guard dans `app/guards/`.
 
 **Principe :** les `views/` restent des coquilles légères ; elles importent depuis `@/features/<domaine>`.
 
@@ -188,14 +188,15 @@ scss/
 └── frontpages/
     ├── _general.scss       # Utilitaires globaux front (.front-wraper, .package, .space-p-96…)
     ├── _spendup-shared.scss # Classes Spendup partagées (.su-*, .lh-lg…)
-    ├── home/               # Styles sections accueil
-    ├── features/
-    ├── about/
-    ├── shared/
-    ├── layout/             # _toolbar.scss (header global), _header.scss, _navigation.scss
+    ├── home/               # _home-content, _expansion-panels
+    ├── about/              # _team-section, _project-notice
+    ├── shared/             # _text-banner-card
+    ├── layout/             # _toolbar, _header, _navigation
     ├── pages/              # pricing, terms, privacy
     └── _mobile.scss        # Overrides mobile uniquement (< 600px)
 ```
+
+> Les styles de la page fonctionnalités vivent surtout dans `_spendup-shared.scss` / composants ; pas de dossier `scss/frontpages/features/` pour l’instant.
 
 ---
 
@@ -214,23 +215,32 @@ scss/
 
 ### Auth & application authentifiée
 
-| Route                        | Vue                                             | Feature / layout                                   |
-| ---------------------------- | ----------------------------------------------- | -------------------------------------------------- |
-| `/auth/login`                | `SideLogin` + `LoginForm`                       | BlankLayout                                        |
-| `/auth/register`             | `SideRegister` + `RegisterForm`                 | BlankLayout                                        |
-| `/auth/forgot-password`      | `SideForgotPassword` + `ResetForm` / reset form | BlankLayout — `?token=` → nouveau mot de passe     |
-| `/auth/reset-password`       | alias → même vue que forgot-password            | BlankLayout (compat liens)                         |
-| `/auth/two-step`             | `SideTwoStep` + `TwoStepForm`                   | BlankLayout                                        |
-| `/auth/confirm-email`        | `SideConfirmEmail` + `ConfirmEmailForm`         | BlankLayout                                        |
-| `/auth/confirm-email-change` | `SideConfirmEmailChange`                        | BlankLayout                                        |
-| `/auth/404`                  | `Error`                                         | BlankLayout                                        |
-| `/auth/maintenance`          | `Maintenance`                                   | BlankLayout                                        |
-| `/app`                       | `dashboard/AppDashboardView`                    | `features/dashboard` — FullLayout (`requiresAuth`) |
+| Route                        | Vue                                                      | Feature / layout                                   |
+| ---------------------------- | -------------------------------------------------------- | -------------------------------------------------- |
+| `/auth/login`                | `SideLogin` + `LoginForm` + `GoogleSignInButton`         | BlankLayout                                        |
+| `/auth/register`             | `SideRegister` + `RegisterForm`                          | BlankLayout                                        |
+| `/auth/forgot-password`      | `SideForgotPassword` + `ResetForm` / `ResetPasswordForm` | BlankLayout — `?token=` → nouveau mot de passe     |
+| `/auth/reset-password`       | alias → même vue que forgot-password                     | BlankLayout (compat liens)                         |
+| `/auth/two-step`             | `SideTwoStep` + `TwoStepForm`                            | BlankLayout                                        |
+| `/auth/confirm-email`        | `SideConfirmEmail` + `ConfirmEmailForm`                  | BlankLayout                                        |
+| `/auth/confirm-email-change` | `SideConfirmEmailChange` + `ConfirmEmailChangeForm`      | BlankLayout                                        |
+| `/auth/404`                  | `Error`                                                  | BlankLayout                                        |
+| `/auth/maintenance`          | `Maintenance`                                            | BlankLayout                                        |
+| `/app`                       | `dashboard/AppDashboardView`                             | `features/dashboard` — FullLayout (`requiresAuth`) |
+| `/:pathMatch(.*)*`           | `Error`                                                  | Catch-all 404 (`router/index.ts`)                  |
+
+**Composants auth UI** (`components/auth/`) : `LoginForm`, `RegisterForm`, `ResetForm`, `ResetPasswordForm`, `TwoStepForm`, `ConfirmEmailForm`, `ConfirmEmailChangeForm`, `GoogleSignInButton`.
 
 ### Layouts
 
 - `BlankLayout` — pages publiques + auth (pas de sidebar)
 - `FullLayout` — zone `/app` après connexion (sidebar, header, customizer)
+
+### Logo (`layouts/full/logo/Logo.vue`)
+
+- Sous `/app` → lien vers `/app` (dashboard)
+- Ailleurs → lien vers `/` (accueil), ou prop `homeTo` si fournie
+- Icône : `/Spendup-icon-fusee.svg` (+ texte « Spend.Up »)
 
 ### Guard d'authentification
 
@@ -258,11 +268,11 @@ components/frontpages/
 ├── shared/       TextBannerCard, ContactBar
 ├── home/
 │   ├── SpendupHomeContent.vue
-│   └── sections/   PlatformCentral, Accessible, ExpansionPanels
+│   └── sections/   SpendupPlatformCentralSection, SpendupAccessibleSection, SpendupExpansionPanels
 ├── features/
 │   ├── SpendupFeaturesContent.vue
-│   └── sections/   DomainSection, DomainSectionCenter
-├── about/        TeamSection, AboutProjectNotice
+│   └── sections/   SpendupDomainSection, SpendupDomainSectionCenter
+├── about/        SpendupTeamSection, SpendupAboutProjectNotice
 └── pricing/      Packages
 ```
 
@@ -350,8 +360,11 @@ components/frontpages/
 | `data/front-pages/spendup-additional-domains.ts` | Sections domaines (page fonctionnalités)                          |
 | `data/admin/headerData.ts`                       | Liens profil header (`profileDD`)                                 |
 | `types/components/front-pages/index.ts`          | `PackageType`, `FooterType`                                       |
+| `types/HeaderTypes.ts`                           | Types menu / header admin (sidebar, profil…)                      |
 | `.env` / `.env.example`                          | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID`, `VITE_PRICING_PAGE` |
 | `utils/helpers/pricing-helpers.ts`               | `isPricingPageEnabled()`                                          |
+
+> Les variables `VITE_*` sont **publiques** (injectées dans le bundle). Secrets → backend uniquement. `.env` local hors Git ; `.env.example` commité avec placeholders.
 
 ---
 
@@ -388,10 +401,11 @@ Les formulaires UI appellent le **store** (`useAuthStore`), pas `authApi` direct
 
 ### Helpers (`utils/helpers/`)
 
-| Fichier              | Rôle                                                           |
-| -------------------- | -------------------------------------------------------------- |
-| `fetch-helpers.ts`   | Wrapper `fetch` avec Bearer + refresh sur 401 (`fetchWrapper`) |
-| `pricing-helpers.ts` | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE`            |
+| Fichier                   | Rôle                                                               |
+| ------------------------- | ------------------------------------------------------------------ |
+| `fetch-helpers.ts`        | Wrapper `fetch` avec Bearer + refresh sur 401 (`fetchWrapper`)     |
+| `pricing-helpers.ts`      | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE`                |
+| `fake-backend-helpers.ts` | Backend factice (legacy / démo — ne pas étendre pour l’API réelle) |
 
 **Import :** `@/utils/helpers/fetch-helpers`, `@/utils/helpers/pricing-helpers`.
 
@@ -399,11 +413,16 @@ Les formulaires UI appellent le **store** (`useAuthStore`), pas `authApi` direct
 
 ## Assets
 
-| Emplacement                      | Usage                                                                      |
-| -------------------------------- | -------------------------------------------------------------------------- |
-| `src/assets/images/front-pages/` | Images front (background, technology, payments)                            |
-| `src/assets/images/profile/`     | Avatars ContactBar                                                         |
-| `public/`                        | Fichiers servis tels quels (`Spendup-logo-fusee.svg`, images features SVG) |
+| Emplacement                      | Usage                                                   |
+| -------------------------------- | ------------------------------------------------------- |
+| `src/assets/images/front-pages/` | Images front (background, technology, payments)         |
+| `src/assets/images/profile/`     | Avatars ContactBar                                      |
+| `public/`                        | Fichiers servis tels quels (logos, images features SVG) |
+
+| Fichier `public/`        | Usage                                    |
+| ------------------------ | ---------------------------------------- |
+| `Spendup-icon-fusee.svg` | Icône logo (`Logo.vue`, taille compacte) |
+| `Spendup-logo-fusee.svg` | Logo complet (autres usages / marketing) |
 
 Images features référencées via `/assets/images/front-pages/features/…` (dossier `public/`).
 
@@ -421,7 +440,8 @@ layouts/
     ├── vertical-sidebar/       # sidebarItem.ts → routes /app
     ├── vertical-header/
     ├── horizontal-sidebar/
-    ├── logo/
+    ├── horizontal-header/
+    ├── logo/                   # Logo.vue — /app → dashboard, sinon accueil
     └── customizer/
 
 views/app/                    # Pages fines — une par fonctionnalité
@@ -429,5 +449,5 @@ views/app/                    # Pages fines — une par fonctionnalité
 │   └── AppDashboardView.vue  # → importe DashboardContent depuis features/dashboard
 
 features/dashboard/           # Logique métier tableau de bord
-features/auth/                # Store + client API auth
+features/auth/                # Store + API + device + types (barrel index.ts)
 ```
