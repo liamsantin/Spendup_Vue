@@ -14,7 +14,7 @@ const breadcrumbs = ref([
     <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs" />
 
     <v-row>
-        <v-col cols="12" md="8" lg="6">
+        <v-col cols="12" md="10" lg="8">
             <AccountProfileCard />
         </v-col>
     </v-row>

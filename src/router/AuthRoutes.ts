@@ -46,6 +46,21 @@ const AuthRoutes = {
             component: () => import('@/views/authentication/BoxedTwoStep.vue')
         },
         {
+            name: 'Confirm Email',
+            path: '/auth/confirm-email',
+            component: () => import('@/views/authentication/SideConfirmEmail.vue')
+        },
+        {
+            name: 'Reset Password',
+            path: '/auth/reset-password',
+            component: () => import('@/views/authentication/SideResetPassword.vue')
+        },
+        {
+            name: 'Confirm Email Change',
+            path: '/auth/confirm-email-change',
+            component: () => import('@/views/authentication/SideConfirmEmailChange.vue')
+        },
+        {
             name: 'Error',
             path: '/auth/404',
             component: () => import('@/views/authentication/Error.vue')

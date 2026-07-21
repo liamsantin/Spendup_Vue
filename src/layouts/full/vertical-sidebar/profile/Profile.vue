@@ -1,9 +1,11 @@
 <script setup lang="ts">
 defineOptions({ name: 'SidebarProfile' });
 
+import { computed } from 'vue';
 import { useAuthStore } from '@/app/stores/auth-store';
 
 const authStore = useAuthStore();
+const displayName = computed(() => authStore.displayName || 'Utilisateur');
 </script>
 
 <template>
@@ -13,8 +15,8 @@ const authStore = useAuthStore();
                 <img src="@/assets/images/profile/user-1.jpg" alt="user" height="40" />
             </v-avatar>
             <div class="ml-4">
-                <h4 class="mb-n1 text-h6 textPrimary">Mathew</h4>
-                <span class="text-subtitle-2 textSecondary">Designer</span>
+                <h4 class="mb-n1 text-h6 textPrimary">{{ displayName }}</h4>
+                <span class="text-subtitle-2 textSecondary">{{ authStore.user?.email ?? '' }}</span>
             </div>
             <div class="ml-auto">
                 <v-btn variant="text" icon rounded="md" color="primary" @click="authStore.logout()">

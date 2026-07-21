@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Logo from '@/layouts/full/logo/Logo.vue';
-/*form component*/
 import TwoStepForm from '@/components/auth/TwoStepForm.vue';
 </script>
 
@@ -19,14 +18,9 @@ import TwoStepForm from '@/components/auth/TwoStepForm.vue';
             </v-col>
             <v-col cols="12" lg="4" xl="3" class="d-flex align-center justify-center">
                 <div class="pa-sm-6 pa-4 w-100">
-                    <h3 class="text-h4 font-weight-bold">Two Step Verification</h3>
-                    <p class="text-subtitle-1 mt-2 text-13">
-                        We sent a verification code to your mobile. Enter the code from the mobile in the field below.
-                    </p>
-                    <h6 class="text-subtitle-1 mt-3 font-weight-bold">******1234</h6>
-                    <!---Form---->
+                    <h3 class="text-h4 font-weight-bold">Two-step verification</h3>
+                    <p class="text-subtitle-1 mt-2 text-13">Enter the code from your authenticator app, or use a one-time recovery code.</p>
                     <TwoStepForm />
-                    <!------->
                 </div>
             </v-col>
         </v-row>

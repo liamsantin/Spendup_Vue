@@ -1,58 +1,93 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-/*Social icons*/
-import google from '@/assets/images/svgs/google-icon.svg';
-import facebook from '@/assets/images/svgs/facebook-icon.svg';
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/app/stores/auth-store';
+import { authApi } from '@/features/auth';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 
-const valid = ref(true);
-const password = ref('');
+const router = useRouter();
+const authStore = useAuthStore();
+
+const valid = ref(false);
+const loading = ref(false);
+const error = ref<string | null>(null);
+const success = ref<string | null>(null);
+
+const firstName = ref('');
+const name = ref('');
 const email = ref('');
-const passwordRules = ref([
+const password = ref('');
+
+const emailRules = [(v: string) => !!v || 'E-mail is required', (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid'];
+const passwordRules = [
     (v: string) => !!v || 'Password is required',
-    (v: string) => (v && v.length <= 10) || 'Password must be less than 10 characters'
-]);
-const emailRules = ref([(v: string) => !!v || 'E-mail is required', (v: string) => /.+@.+\..+/.test(v) || 'E-mail must be valid']);
-const fname = ref('');
-const fnameRules = ref([
-    (v: string) => !!v || 'Name is required',
-    (v: string) => (v && v.length <= 10) || 'Name must be less than 10 characters'
-]);
+    (v: string) => (v && v.length >= 8) || 'Password must be at least 8 characters',
+    (v: string) => /[A-Za-z]/.test(v) || 'Password must contain a letter',
+    (v: string) => /\d/.test(v) || 'Password must contain a number'
+];
+
+async function onSubmit() {
+    error.value = null;
+    success.value = null;
+    loading.value = true;
+    try {
+        await authApi.register({
+            email: email.value,
+            password: password.value,
+            firstName: firstName.value || undefined,
+            name: name.value || undefined
+        });
+        await router.push({
+            path: '/auth/confirm-email',
+            query: { email: email.value }
+        });
+    } catch (e: unknown) {
+        // Anti-enumeration: register can still succeed with same shape; show API message or neutral
+        error.value = e instanceof Error ? e.message : String(e);
+    } finally {
+        loading.value = false;
+    }
+}
+
+async function onGoogleCredential(idToken: string) {
+    error.value = null;
+    try {
+        await authStore.loginWithGoogle(idToken);
+    } catch (e: unknown) {
+        error.value = e instanceof Error ? e.message : String(e);
+    }
+}
+
+onMounted(() => {
+    success.value = null;
+});
 </script>
+
 <template>
-    <v-row class="d-flex mb-6">
-        <v-col cols="6" sm="6">
-            <v-btn variant="outlined" size="large" class="border text-subtitle-1" block>
-                <img :src="google" height="20" class="mr-2" alt="google" />
-                <span class="d-sm-flex d-none mr-1">Sign up with</span>Google
-            </v-btn>
-        </v-col>
-        <v-col cols="6" sm="6">
-            <v-btn variant="outlined" size="large" class="border text-subtitle-1" block>
-                <img :src="facebook" width="25" height="30" class="mr-1" alt="facebook" />
-                <span class="d-sm-flex d-none mr-1">Sign up with</span>FB
-            </v-btn>
-        </v-col>
-    </v-row>
+    <GoogleSignInButton class="mb-4" label="Sign up with Google" @credential="onGoogleCredential" />
+
     <div class="d-flex align-center text-center mb-6">
         <div class="text-h6 w-100 px-5 font-weight-regular auth-divider position-relative">
-            <span class="bg-surface px-5 py-3 position-relative">or sign in with</span>
+            <span class="bg-surface px-5 py-3 position-relative">or sign up with email</span>
         </div>
     </div>
-    <v-form ref="form" v-model="valid" lazy-validation action="/pages/boxedlogin" class="mt-5">
+
+    <v-form v-model="valid" @submit.prevent="onSubmit" class="mt-5">
+        <v-label class="text-subtitle-1 font-weight-medium pb-2">First name</v-label>
+        <VTextField v-model="firstName" class="mb-4" hide-details="auto" autocomplete="given-name" />
+
         <v-label class="text-subtitle-1 font-weight-medium pb-2">Name</v-label>
-        <VTextField v-model="fname" :rules="fnameRules" required></VTextField>
-        <v-label class="text-subtitle-1 font-weight-medium pb-2">Email Adddress</v-label>
-        <VTextField v-model="email" :rules="emailRules" required></VTextField>
+        <VTextField v-model="name" class="mb-4" hide-details="auto" autocomplete="family-name" />
+
+        <v-label class="text-subtitle-1 font-weight-medium pb-2">Email Address</v-label>
+        <VTextField v-model="email" :rules="emailRules" class="mb-4" required hide-details="auto" type="email" autocomplete="email" />
+
         <v-label class="text-subtitle-1 font-weight-medium pb-2">Password</v-label>
-        <VTextField
-            v-model="password"
-            :counter="10"
-            :rules="passwordRules"
-            required
-            variant="outlined"
-            type="password"
-            color="primary"
-        ></VTextField>
-        <v-btn size="large" class="mt-2" color="primary" block submit flat>Sign Up</v-btn>
+        <VTextField v-model="password" :rules="passwordRules" required hide-details="auto" type="password" autocomplete="new-password" />
+
+        <v-btn size="large" class="mt-4" color="primary" block type="submit" :loading="loading" :disabled="!valid" flat>Sign Up</v-btn>
+
+        <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
+        <v-alert v-if="success" type="success" class="mt-3" density="compact">{{ success }}</v-alert>
     </v-form>
 </template>

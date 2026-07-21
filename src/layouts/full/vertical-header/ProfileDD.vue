@@ -1,10 +1,14 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { MailIcon } from 'vue-tabler-icons';
 import { profileDD } from '@/data/admin/headerData';
 
 import { useAuthStore } from '@/app/stores/auth-store';
 
 const authStore = useAuthStore();
+
+const displayName = computed(() => authStore.displayName || 'Utilisateur');
+const email = computed(() => authStore.user?.email ?? '');
 </script>
 
 <template>
@@ -15,7 +19,7 @@ const authStore = useAuthStore();
         <template v-slot:activator="{ props }">
             <v-btn class="custom-hover-primary" variant="text" v-bind="props" icon>
                 <v-avatar size="35">
-                    <img src="@/assets/images/profile/user-1.jpg" width="35" alt="Julia" />
+                    <img src="@/assets/images/profile/user-1.jpg" width="35" alt="user" />
                 </v-avatar>
             </v-btn>
         </template>
@@ -27,11 +31,11 @@ const authStore = useAuthStore();
                         <img src="@/assets/images/profile/user-1.jpg" width="80" />
                     </v-avatar>
                     <div class="ml-3">
-                        <h6 class="text-h6 mb-n1">Mathew Anderson</h6>
-                        <span class="text-subtitle-1 font-weight-regular textSecondary">Designer</span>
+                        <h6 class="text-h6 mb-n1">{{ displayName }}</h6>
+                        <span class="text-subtitle-1 font-weight-regular textSecondary">Spendup</span>
                         <div class="d-flex align-center mt-1">
                             <MailIcon size="18" stroke-width="1.5" />
-                            <span class="text-subtitle-1 font-weight-regular textSecondary ml-2">info@modernize.com</span>
+                            <span class="text-subtitle-1 font-weight-regular textSecondary ml-2">{{ email }}</span>
                         </div>
                     </div>
                 </div>
