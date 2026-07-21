@@ -15,7 +15,7 @@ async function onSubmit() {
     loading.value = true;
     try {
         await authApi.forgotPassword(email.value);
-        success.value = 'Si un compte existe pour cet e-mail, vous recevrez bientôt un lien de réinitialisation.';
+        success.value = 'Si un compte avec e-mail vérifié existe, vous recevrez bientôt un lien de réinitialisation.';
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -26,6 +26,9 @@ async function onSubmit() {
 
 <template>
     <v-form v-model="valid" @submit.prevent="onSubmit" class="mt-sm-13 mt-8">
+        <v-alert type="info" density="compact" variant="tonal" class="mb-4">
+            La réinitialisation nécessite un e-mail vérifié lié au compte. Compte username seul : ajoutez un e-mail dans les paramètres.
+        </v-alert>
         <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Adresse e-mail</v-label>
         <VTextField v-model="email" :rules="emailRules" required hide-details="auto" type="email" autocomplete="email" />
         <v-btn size="large" color="primary" block type="submit" class="mt-4" :loading="loading" :disabled="!valid" flat>

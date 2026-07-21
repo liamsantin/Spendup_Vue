@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useAuthStore } from '@/app/stores/auth-store';
-import { authApi } from '@/features/auth';
+import { authApi, isValidUsername, normalizeUsername } from '@/features/auth';
 import type { TwoFactorSetup } from '@/features/auth';
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
@@ -10,6 +10,11 @@ const auth = useAuthStore();
 
 const loadingProfile = ref(false);
 const profileError = ref<string | null>(null);
+
+const usernameDraft = ref('');
+const usernameLoading = ref(false);
+const usernameMessage = ref<string | null>(null);
+const usernameError = ref<string | null>(null);
 
 const currentPassword = ref('');
 const newPassword = ref('');
@@ -22,6 +27,7 @@ const newEmail = ref('');
 const emailLoading = ref(false);
 const emailMessage = ref<string | null>(null);
 const emailError = ref<string | null>(null);
+const useGoogleForEmail = ref(false);
 
 const twoFaSetup = ref<TwoFactorSetup | null>(null);
 const twoFaCode = ref('');
@@ -46,16 +52,21 @@ const passwordRules = [
     (v: string) => /\d/.test(v) || 'Doit contenir un chiffre'
 ];
 
+const usernameRules = [(v: string) => !!v || 'Requis', (v: string) => isValidUsername(v) || '3–30 caractères : a-z, 0-9, ., _, -'];
+
 const qrUrl = computed(() => {
     if (!twoFaSetup.value?.otpAuthUri) return null;
     return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(twoFaSetup.value.otpAuthUri)}`;
 });
+
+const emailChangeTitle = computed(() => (auth.user?.email ? 'Changer l’e-mail' : 'Lier un e-mail'));
 
 async function loadProfile() {
     profileError.value = null;
     loadingProfile.value = true;
     try {
         await auth.fetchMe();
+        usernameDraft.value = auth.user?.username ?? '';
     } catch (e: unknown) {
         profileError.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -66,6 +77,28 @@ async function loadProfile() {
 onMounted(() => {
     void loadProfile();
 });
+
+async function saveUsername() {
+    usernameError.value = null;
+    usernameMessage.value = null;
+    const value = normalizeUsername(usernameDraft.value);
+    if (!isValidUsername(value)) {
+        usernameError.value = 'Nom d’utilisateur invalide (3–30 caractères : a-z, 0-9, ., _, -).';
+        return;
+    }
+    usernameLoading.value = true;
+    try {
+        const token = await auth.requireAccessToken();
+        await authApi.setUsername(token, value);
+        usernameMessage.value = 'Nom d’utilisateur mis à jour.';
+        await auth.fetchMe();
+        usernameDraft.value = auth.user?.username ?? value;
+    } catch (e: unknown) {
+        usernameError.value = e instanceof Error ? e.message : String(e);
+    } finally {
+        usernameLoading.value = false;
+    }
+}
 
 async function changePassword() {
     passwordError.value = null;
@@ -82,13 +115,48 @@ async function changePassword() {
     }
 }
 
-async function changeEmail() {
+async function changeEmailWithPassword() {
     emailError.value = null;
     emailMessage.value = null;
+    if (!newEmail.value.trim()) {
+        emailError.value = 'L’e-mail est requis.';
+        return;
+    }
+    if (!emailPassword.value) {
+        emailError.value = 'Le mot de passe est requis.';
+        return;
+    }
     emailLoading.value = true;
     try {
         const token = await auth.requireAccessToken();
-        await authApi.changeEmail(token, emailPassword.value, newEmail.value);
+        await authApi.changeEmail(token, {
+            newEmail: newEmail.value.trim(),
+            currentPassword: emailPassword.value,
+            googleIdToken: null
+        });
+        emailMessage.value = 'Consultez votre nouvelle boîte mail pour le code, puis ouvrez « Confirmer avec le code ».';
+    } catch (e: unknown) {
+        emailError.value = e instanceof Error ? e.message : String(e);
+    } finally {
+        emailLoading.value = false;
+    }
+}
+
+async function changeEmailWithGoogle(idToken: string) {
+    emailError.value = null;
+    emailMessage.value = null;
+    if (!newEmail.value.trim()) {
+        emailError.value = 'L’e-mail est requis.';
+        return;
+    }
+    emailLoading.value = true;
+    try {
+        const token = await auth.requireAccessToken();
+        await authApi.changeEmail(token, {
+            newEmail: newEmail.value.trim(),
+            currentPassword: null,
+            googleIdToken: idToken
+        });
         emailMessage.value = 'Consultez votre nouvelle boîte mail pour le code, puis ouvrez « Confirmer avec le code ».';
     } catch (e: unknown) {
         emailError.value = e instanceof Error ? e.message : String(e);
@@ -212,17 +280,21 @@ async function deleteWithGoogle(idToken: string) {
             <v-alert v-else-if="profileError" type="error" density="compact">{{ profileError }}</v-alert>
             <v-list v-else lines="two" class="bg-transparent pa-0">
                 <v-list-item>
-                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Email</v-list-item-title>
+                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Nom d’utilisateur</v-list-item-title>
+                    <v-list-item-subtitle class="text-body-1 textPrimary">{{ auth.user?.username ?? '—' }}</v-list-item-subtitle>
+                </v-list-item>
+                <v-list-item>
+                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">E-mail</v-list-item-title>
                     <v-list-item-subtitle class="text-body-1 textPrimary">{{ auth.user?.email ?? '—' }}</v-list-item-subtitle>
                 </v-list-item>
                 <v-list-item>
-                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Nom</v-list-item-title>
+                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Nom affiché</v-list-item-title>
                     <v-list-item-subtitle class="text-body-1 textPrimary">{{ auth.displayName || '—' }}</v-list-item-subtitle>
                 </v-list-item>
                 <v-list-item>
-                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">Email vérifié</v-list-item-title>
+                    <v-list-item-title class="text-subtitle-2 text-medium-emphasis">E-mail vérifié</v-list-item-title>
                     <v-list-item-subtitle class="text-body-1 textPrimary">{{
-                        auth.user?.emailVerified ? 'Oui' : 'Non'
+                        auth.user?.email ? (auth.user.emailVerified ? 'Oui' : 'Non') : '—'
                     }}</v-list-item-subtitle>
                 </v-list-item>
                 <v-list-item>
@@ -232,7 +304,27 @@ async function deleteWithGoogle(idToken: string) {
                     </v-list-item-subtitle>
                 </v-list-item>
             </v-list>
+
+            <v-alert v-if="!auth.hasVerifiedEmail" type="info" density="compact" class="mt-3" variant="tonal">
+                Sans e-mail vérifié, la réinitialisation de mot de passe n’est pas disponible. Liez un e-mail ci-dessous.
+            </v-alert>
+
             <v-btn color="error" variant="tonal" class="text-none mt-4" @click="auth.logout()">Se déconnecter</v-btn>
+        </UiParentCard>
+
+        <UiParentCard title="Nom d’utilisateur">
+            <v-label class="text-subtitle-2 pb-1">Nom d’utilisateur</v-label>
+            <VTextField
+                v-model="usernameDraft"
+                :rules="usernameRules"
+                class="mb-3"
+                hide-details="auto"
+                hint="3–30 caractères : a-z, 0-9, ., _, -"
+                persistent-hint
+            />
+            <v-btn color="primary" class="text-none" :loading="usernameLoading" @click="saveUsername">Enregistrer</v-btn>
+            <v-alert v-if="usernameError" type="error" class="mt-3" density="compact">{{ usernameError }}</v-alert>
+            <v-alert v-if="usernameMessage" type="success" class="mt-3" density="compact">{{ usernameMessage }}</v-alert>
         </UiParentCard>
 
         <UiParentCard title="Changer le mot de passe">
@@ -252,12 +344,30 @@ async function deleteWithGoogle(idToken: string) {
             <v-alert v-if="passwordMessage" type="success" class="mt-3" density="compact">{{ passwordMessage }}</v-alert>
         </UiParentCard>
 
-        <UiParentCard title="Changer l’email">
-            <v-label class="text-subtitle-2 pb-1">Mot de passe actuel</v-label>
-            <VTextField v-model="emailPassword" type="password" class="mb-3" hide-details="auto" />
-            <v-label class="text-subtitle-2 pb-1">Nouvel email</v-label>
+        <UiParentCard :title="emailChangeTitle">
+            <v-label class="text-subtitle-2 pb-1">Nouvel e-mail</v-label>
             <VTextField v-model="newEmail" type="email" class="mb-3" hide-details="auto" />
-            <v-btn color="primary" class="text-none" :loading="emailLoading" @click="changeEmail">Demander le changement</v-btn>
+
+            <v-switch
+                v-model="useGoogleForEmail"
+                color="primary"
+                hide-details
+                class="mb-3"
+                label="Prouver l’identité avec Google (compte Google-only)"
+            />
+
+            <template v-if="!useGoogleForEmail">
+                <v-label class="text-subtitle-2 pb-1">Mot de passe actuel</v-label>
+                <VTextField v-model="emailPassword" type="password" class="mb-3" hide-details="auto" />
+                <v-btn color="primary" class="text-none" :loading="emailLoading" @click="changeEmailWithPassword">
+                    Demander le changement
+                </v-btn>
+            </template>
+            <template v-else>
+                <p class="text-body-2 mb-2">Confirmez avec Google, puis validez le code reçu par e-mail.</p>
+                <GoogleSignInButton @credential="changeEmailWithGoogle" />
+            </template>
+
             <v-btn variant="text" class="text-none ml-2" to="/auth/confirm-email-change">Confirmer avec le code</v-btn>
             <v-alert v-if="emailError" type="error" class="mt-3" density="compact">{{ emailError }}</v-alert>
             <v-alert v-if="emailMessage" type="success" class="mt-3" density="compact">{{ emailMessage }}</v-alert>

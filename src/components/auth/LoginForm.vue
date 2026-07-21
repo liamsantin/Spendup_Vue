@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/app/stores/auth-store';
 import { Form } from 'vee-validate';
@@ -10,9 +10,11 @@ const authStore = useAuthStore();
 
 const notice = ref<string | null>(null);
 const password = ref('');
-const email = ref('');
+const identifier = ref('');
 const passwordRules = ref([(v: string) => !!v || 'Le mot de passe est requis']);
-const emailRules = ref([(v: string) => !!v || 'L’e-mail est requis', (v: string) => /.+@.+\..+/.test(v) || 'L’e-mail doit être valide']);
+const identifierRules = ref([(v: string) => !!v || 'L’identifiant est requis']);
+
+const identifierTrimmed = computed(() => identifier.value.trim());
 
 onMounted(() => {
     const q = route.query.notice;
@@ -22,7 +24,7 @@ onMounted(() => {
 });
 
 function validate(_values: Record<string, unknown>, { setErrors }: { setErrors: (errors: Record<string, string>) => void }) {
-    return authStore.login(email.value, password.value).catch((error: unknown) => {
+    return authStore.login(identifier.value, password.value).catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);
         setErrors({ apiError: message });
     });
@@ -49,8 +51,12 @@ async function onGoogleCredential(idToken: string) {
     </div>
 
     <Form @submit="validate" v-slot="{ errors, isSubmitting }" class="mt-5">
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">E-mail</v-label>
-        <VTextField v-model="email" :rules="emailRules" class="mb-8" required hide-details="auto" type="email" autocomplete="email" />
+        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">
+            <span :class="{ 'text-primary': identifierTrimmed.includes('@') }">Email</span>
+            <span> / </span>
+            <span :class="{ 'text-primary': !!identifierTrimmed && !identifierTrimmed.includes('@') }">Nom d’utilisateur</span>
+        </v-label>
+        <VTextField v-model="identifier" :rules="identifierRules" class="mb-8" required hide-details="auto" autocomplete="username" />
         <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Mot de passe</v-label>
         <VTextField
             v-model="password"

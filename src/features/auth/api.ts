@@ -1,5 +1,5 @@
 import { getDeviceInfo } from './device';
-import type { ApiResponse, AuthSession, AuthTokens, Me, TwoFactorSetup } from './types';
+import type { ApiResponse, AuthSession, AuthTokens, Me, RegisterResult, TwoFactorSetup } from './types';
 
 export class ApiError extends Error {
     status: number;
@@ -41,8 +41,14 @@ export async function authRequest<T>(path: string, options: RequestInit = {}, ac
 }
 
 export const authApi = {
-    register(payload: { email: string; password: string; firstName?: string; name?: string }) {
-        return authRequest<{ email: string }>('/api/auth/register', {
+    register(payload: {
+        email?: string | null;
+        username?: string | null;
+        password: string;
+        firstName?: string | null;
+        name?: string | null;
+    }) {
+        return authRequest<RegisterResult>('/api/auth/register', {
             method: 'POST',
             body: JSON.stringify(payload)
         });
@@ -62,10 +68,10 @@ export const authApi = {
         });
     },
 
-    login(email: string, password: string) {
+    login(identifier: string, password: string) {
         return authRequest<AuthSession>('/api/auth/login', {
             method: 'POST',
-            body: JSON.stringify({ email, password, ...getDeviceInfo() })
+            body: JSON.stringify({ identifier, password, ...getDeviceInfo() })
         });
     },
 
@@ -105,6 +111,17 @@ export const authApi = {
         return authRequest<Me>('/api/auth/me', { method: 'GET' }, accessToken);
     },
 
+    setUsername(accessToken: string, username: string) {
+        return authRequest<null>(
+            '/api/auth/username',
+            {
+                method: 'PUT',
+                body: JSON.stringify({ username })
+            },
+            accessToken
+        );
+    },
+
     forgotPassword(email: string) {
         return authRequest<null>('/api/auth/forgot-password', {
             method: 'POST',
@@ -130,12 +147,16 @@ export const authApi = {
         );
     },
 
-    changeEmail(accessToken: string, currentPassword: string, newEmail: string) {
+    changeEmail(accessToken: string, payload: { newEmail: string; currentPassword?: string | null; googleIdToken?: string | null }) {
         return authRequest<null>(
             '/api/auth/email/change',
             {
                 method: 'POST',
-                body: JSON.stringify({ currentPassword, newEmail })
+                body: JSON.stringify({
+                    newEmail: payload.newEmail,
+                    currentPassword: payload.currentPassword ?? null,
+                    googleIdToken: payload.googleIdToken ?? null
+                })
             },
             accessToken
         );

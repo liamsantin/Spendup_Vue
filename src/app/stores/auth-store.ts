@@ -29,8 +29,10 @@ export const useAuthStore = defineStore('auth', {
         displayName: (state) => {
             if (!state.user) return '';
             const parts = [state.user.firstName, state.user.name].filter(Boolean);
-            return parts.length ? parts.join(' ') : state.user.email;
-        }
+            if (parts.length) return parts.join(' ');
+            return state.user.username || state.user.email || '';
+        },
+        hasVerifiedEmail: (state) => !!state.user?.email && state.user.emailVerified
     },
     actions: {
         setTokens(tokens: AuthTokens) {
@@ -74,8 +76,8 @@ export const useAuthStore = defineStore('auth', {
             await router.push(target);
         },
 
-        async login(email: string, password: string) {
-            const session = await authApi.login(email, password);
+        async login(identifier: string, password: string) {
+            const session = await authApi.login(identifier.trim(), password);
             const outcome = await this.applySession(session);
             if (outcome === '2fa') {
                 await router.push('/auth/two-step');
