@@ -53,9 +53,9 @@ async function onGoogleCredential(idToken: string) {
 
         <Form @submit="validate" v-slot="{ errors, isSubmitting }" class="mt-5">
             <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">
-                <span :class="{ 'text-primary': identifierTrimmed.includes('@') }">Email</span>
-                <span> / </span>
                 <span :class="{ 'text-primary': !!identifierTrimmed && !identifierTrimmed.includes('@') }">Nom d’utilisateur</span>
+                <span class="auth-label-sep"> / </span>
+                <span :class="{ 'text-primary': identifierTrimmed.includes('@') }">Email</span>
             </v-label>
             <VTextField v-model="identifier" :rules="identifierRules" class="mb-8" required hide-details autocomplete="username" />
             <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Mot de passe</v-label>
@@ -86,5 +86,9 @@ async function onGoogleCredential(idToken: string) {
     display: block;
     width: 100%;
     box-sizing: border-box;
+}
+
+.auth-label-sep {
+    padding-inline: 0.2em;
 }
 </style>

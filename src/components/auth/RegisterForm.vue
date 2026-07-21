@@ -104,9 +104,9 @@ onMounted(() => {
 
         <v-form v-model="formValid" @submit.prevent="onSubmit" class="mt-5">
             <v-label class="text-subtitle-1 font-weight-medium pb-2">
-                <span :class="{ 'text-primary': isEmailMode && !!identifierTrimmed }">Email</span>
-                <span> / </span>
                 <span :class="{ 'text-primary': !isEmailMode && !!identifierTrimmed }">Nom d’utilisateur</span>
+                <span class="auth-label-sep"> / </span>
+                <span :class="{ 'text-primary': isEmailMode && !!identifierTrimmed }">Email</span>
             </v-label>
             <VTextField v-model="identifier" :rules="identifierRules" class="mb-4" required hide-details autocomplete="username" />
 
@@ -144,5 +144,9 @@ onMounted(() => {
     display: block;
     width: 100%;
     box-sizing: border-box;
+}
+
+.auth-label-sep {
+    padding-inline: 0.2em;
 }
 </style>
