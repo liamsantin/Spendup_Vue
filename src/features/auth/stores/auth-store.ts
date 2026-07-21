@@ -7,6 +7,7 @@ export const APP_HOME_ROUTE = '/app';
 
 const REFRESH_KEY = 'spendup_refresh_token';
 const ACCESS_KEY = 'spendup_access_token';
+const PENDING_EMAIL_KEY = 'spendup_pending_email';
 
 function readRefreshToken(): string | null {
     return localStorage.getItem(REFRESH_KEY);
@@ -16,11 +17,25 @@ function readAccessToken(): string | null {
     return sessionStorage.getItem(ACCESS_KEY);
 }
 
+function readPendingEmail(): string | null {
+    return sessionStorage.getItem(PENDING_EMAIL_KEY);
+}
+
+function writePendingEmail(email: string | null) {
+    if (email) {
+        sessionStorage.setItem(PENDING_EMAIL_KEY, email);
+    } else {
+        sessionStorage.removeItem(PENDING_EMAIL_KEY);
+    }
+}
+
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         accessToken: readAccessToken() as string | null,
         refreshToken: readRefreshToken() as string | null,
         twoFactorToken: null as string | null,
+        /** E-mail en attente de confirmation après inscription. */
+        pendingEmail: readPendingEmail() as string | null,
         user: null as Me | null,
         returnUrl: null as string | null
     }),
@@ -35,6 +50,11 @@ export const useAuthStore = defineStore('auth', {
         hasVerifiedEmail: (state) => !!state.user?.email && state.user.emailVerified
     },
     actions: {
+        setPendingEmail(email: string | null) {
+            this.pendingEmail = email;
+            writePendingEmail(email);
+        },
+
         setTokens(tokens: AuthTokens) {
             this.accessToken = tokens.accessToken;
             this.refreshToken = tokens.refreshToken;
@@ -46,6 +66,7 @@ export const useAuthStore = defineStore('auth', {
             this.accessToken = null;
             this.refreshToken = null;
             this.twoFactorToken = null;
+            this.setPendingEmail(null);
             this.user = null;
             sessionStorage.removeItem(ACCESS_KEY);
             localStorage.removeItem(REFRESH_KEY);
@@ -105,7 +126,9 @@ export const useAuthStore = defineStore('auth', {
         }) {
             const result = await authApi.register(payload);
             if (result.email) {
-                await router.push({
+                this.setPendingEmail(result.email);
+                // replace : le retour arrière ne ramène pas sur un formulaire d’inscription déjà consommé
+                await router.replace({
                     path: '/auth/confirm-email',
                     query: { email: result.email }
                 });
@@ -121,6 +144,7 @@ export const useAuthStore = defineStore('auth', {
 
         async confirmEmail(email: string, code: string) {
             await authApi.confirmEmail({ email, code });
+            this.setPendingEmail(null);
         },
 
         async resendVerification(email: string) {

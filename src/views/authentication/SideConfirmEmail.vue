@@ -18,7 +18,7 @@ import ConfirmEmailForm from '@/components/auth/ConfirmEmailForm.vue';
                 <div class="pa-sm-7 pa-4 w-100">
                     <h2 class="text--darken-2 text-h4 font-weight-bold">Vérifiez votre e-mail</h2>
                     <ConfirmEmailForm />
-                    <v-btn size="large" color="lightprimary" to="/auth/login" block class="mt-5 text-primary" flat>
+                    <v-btn size="large" color="lightprimary" to="/auth/login" block class="mt-2 text-primary" flat>
                         Retour à la connexion
                     </v-btn>
                 </div>

@@ -29,7 +29,7 @@ const hasToken = computed(() => typeof route.query.token === 'string' && !!route
                     </template>
                     <template v-else>
                         <h2 class="text--darken-2 text-h4 font-weight-bold">Mot de passe oublié ?</h2>
-                        <p class="text-subtitle-1 py-4 text-10">
+                        <p class="text-subtitle-1 pt-2 pb-1 text-10">
                             Indiquez l’e-mail associé à votre compte : nous vous enverrons un lien pour réinitialiser votre mot de passe.
                         </p>
                         <ResetForm />

@@ -125,7 +125,8 @@ Optionnels, mais utiles pour l’audit sessions.
 
 ```txt
 POST /register
-  → afficher « vérifiez votre email » (même si email déjà pris — anti-énumération)
+  → compte non vérifié créé (ou repris si email déjà inscrit non vérifié)
+  → afficher « vérifiez votre email » + code envoyé
 POST /confirm-email  { email, code }     // code 6 chiffres
 POST /login
   → si requiresTwoFactor === false → stocker tokens
@@ -135,6 +136,16 @@ POST /login
 **Mot de passe :** ≥ 8 caractères, **au moins une lettre et un chiffre**.
 
 `register` **ne renvoie pas** de tokens. Il faut confirmer l’email puis login.
+
+**Réinscription (même e-mail) :**
+
+| État du compte           | Comportement API                                                         |
+| ------------------------ | ------------------------------------------------------------------------ |
+| Inexistant               | Crée le compte, envoie un code                                           |
+| Existe, **non vérifié**  | Pas de doublon : met à jour le mot de passe, renvoie un **nouveau** code |
+| Existe, **déjà vérifié** | Refuse une nouvelle inscription (le front affiche le `message` API)      |
+
+Le front utilise `router.replace` vers `/auth/confirm-email` après un register réussi avec e-mail (évite un retour arrière vers un formulaire déjà consommé).
 
 ### 5.2 Login email / mot de passe
 
@@ -330,15 +341,17 @@ Si 2FA :
 
 ## 8. Limites / messages UX
 
-| Cas                           | Comportement API                       | UX front                                                          |
-| ----------------------------- | -------------------------------------- | ----------------------------------------------------------------- |
-| Register email déjà pris      | Même succès `{ email }`                | Message neutre « si un compte existe… »                           |
-| Login email non vérifié       | Même erreur que mauvais MDP            | Message générique                                                 |
-| Forgot / resend email inconnu | Toujours OK                            | Message neutre                                                    |
-| Rate-limit emails             | ~5 / email / h et ~20 / IP / h         | Afficher `message`, proposer réessai plus tard                    |
-| Lockout login                 | 5 échecs / email (ou 30 / IP) / 15 min | Afficher `message`, countdown éventuel                            |
-| Verify 2FA                    | Rate-limit + token one-shot            | Si KO, peut falloir **re-login** pour un nouveau `twoFactorToken` |
-| Compte Google-only delete     | Passer `googleIdToken` (pas de MDP)    | Brancher GIS avant delete                                         |
+| Cas                           | Comportement API                                          | UX front                                               |
+| ----------------------------- | --------------------------------------------------------- | ------------------------------------------------------ |
+| Register email inconnu        | Succès `{ email }` + code                                 | → `/auth/confirm-email`                                |
+| Register email non vérifié    | Succès : MAJ mot de passe + nouveau code (pas de doublon) | → `/auth/confirm-email` (même flux)                    |
+| Register email déjà vérifié   | Erreur (refuse)                                           | Afficher `message` API                                 |
+| Login email non vérifié       | Même erreur que mauvais MDP                               | Message générique                                      |
+| Forgot / resend email inconnu | Toujours OK                                               | Message neutre                                         |
+| Rate-limit emails             | ~5 / email / h et ~20 / IP / h                            | Afficher `message`, proposer réessai plus tard         |
+| Lockout login                 | 5 échecs / email (ou 30 / IP) / 15 min                    | Afficher `message`, countdown éventuel                 |
+| Verify 2FA                    | Rate-limit + token one-shot                               | Si KO, peut falloir **re-login** pour un nouveau token |
+| Compte Google-only delete     | Passer `googleIdToken` (pas de MDP)                       | Brancher GIS avant delete                              |
 
 ---
 

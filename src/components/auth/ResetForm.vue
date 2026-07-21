@@ -27,7 +27,7 @@ async function onSubmit() {
 </script>
 
 <template>
-    <v-form v-model="valid" @submit.prevent="onSubmit" class="mt-sm-13 mt-8">
+    <v-form v-model="valid" @submit.prevent="onSubmit" class="mt-2">
         <v-alert type="info" density="compact" variant="tonal" class="mb-4">
             La réinitialisation nécessite un e-mail vérifié lié au compte.
         </v-alert>
