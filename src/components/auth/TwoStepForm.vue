@@ -74,7 +74,7 @@ function backToLogin() {
         </template>
         <template v-else>
             <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Code de récupération</v-label>
-            <VTextField v-model="recoveryCode" hide-details="auto" class="mb-2" autocomplete="one-time-code" />
+            <VTextField v-model="recoveryCode" hide-details class="mb-2" autocomplete="one-time-code" />
         </template>
 
         <v-btn color="primary" size="large" block flat class="mt-4" :loading="loading" @click="verify">Vérifier</v-btn>

@@ -43,4 +43,10 @@ import RegisterForm from '@/components/auth/RegisterForm.vue';
     max-width: 100%;
     margin-inline: 0;
 }
+
+@media screen and (max-width: 960px) {
+    .auth-panel {
+        width: 85%;
+    }
+}
 </style>

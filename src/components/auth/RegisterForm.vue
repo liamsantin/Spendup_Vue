@@ -21,50 +21,35 @@ const identifierTrimmed = computed(() => identifier.value.trim());
 const isEmailMode = computed(() => identifierTrimmed.value.includes('@'));
 
 const identifierRules = [
-    (v: string) => !!v.trim() || 'Une adresse email ou un nom d’utilisateur est obligatoire.',
+    (v: string) => !!v.trim(),
     (v: string) => {
         const value = v.trim();
         if (!value) return true;
         if (value.includes('@')) {
-            return /.+@.+\..+/.test(value) || 'L’e-mail doit être valide';
+            return /.+@.+\..+/.test(value);
         }
-        return isValidUsername(value) || '3–30 caractères : a-z, 0-9, ., _, -';
+        return isValidUsername(value);
     }
 ];
 const passwordRules = [
-    (v: string) => !!v || 'Le mot de passe est requis',
-    (v: string) => (v && v.length >= 8) || 'Au moins 8 caractères',
-    (v: string) => /[A-Za-z]/.test(v) || 'Doit contenir une lettre',
-    (v: string) => /\d/.test(v) || 'Doit contenir un chiffre'
+    (v: string) => !!v,
+    (v: string) => !!(v && v.length >= 8),
+    (v: string) => /[A-Za-z]/.test(v),
+    (v: string) => /\d/.test(v)
 ];
-const confirmPasswordRules = [
-    (v: string) => !!v || 'La confirmation est requise',
-    (v: string) => v === password.value || 'Les mots de passe ne correspondent pas'
-];
+const confirmPasswordRules = [(v: string) => !!v, (v: string) => v === password.value];
 
 async function onSubmit() {
     error.value = null;
     success.value = null;
 
     const value = identifierTrimmed.value;
-    if (!value) {
-        error.value = 'Une adresse email ou un nom d’utilisateur est obligatoire.';
-        return;
-    }
+    if (!value) return;
 
     const asEmail = value.includes('@');
-    if (asEmail && !/.+@.+\..+/.test(value)) {
-        error.value = 'L’e-mail doit être valide.';
-        return;
-    }
-    if (!asEmail && !isValidUsername(value)) {
-        error.value = 'Nom d’utilisateur invalide (3–30 caractères : a-z, 0-9, ., _, -).';
-        return;
-    }
-    if (password.value !== confirmPassword.value) {
-        error.value = 'Les mots de passe ne correspondent pas.';
-        return;
-    }
+    if (asEmail && !/.+@.+\..+/.test(value)) return;
+    if (!asEmail && !isValidUsername(value)) return;
+    if (password.value !== confirmPassword.value) return;
 
     loading.value = true;
     try {
@@ -123,7 +108,7 @@ onMounted(() => {
                 <span> / </span>
                 <span :class="{ 'text-primary': !isEmailMode && !!identifierTrimmed }">Nom d’utilisateur</span>
             </v-label>
-            <VTextField v-model="identifier" :rules="identifierRules" class="mb-4" required hide-details="auto" autocomplete="username" />
+            <VTextField v-model="identifier" :rules="identifierRules" class="mb-4" required hide-details autocomplete="username" />
 
             <v-label class="text-subtitle-1 font-weight-medium pb-2">Mot de passe</v-label>
             <VTextField
@@ -131,7 +116,7 @@ onMounted(() => {
                 :rules="passwordRules"
                 class="mb-4"
                 required
-                hide-details="auto"
+                hide-details
                 type="password"
                 autocomplete="new-password"
             />
@@ -141,7 +126,7 @@ onMounted(() => {
                 v-model="confirmPassword"
                 :rules="confirmPasswordRules"
                 required
-                hide-details="auto"
+                hide-details
                 type="password"
                 autocomplete="new-password"
             />

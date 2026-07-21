@@ -43,9 +43,9 @@ async function submit() {
                     <h2 class="text--darken-2 text-h4 font-weight-bold">Confirmer le nouvel e-mail</h2>
                     <p class="text-subtitle-1 py-4 text-10">Saisissez le code envoyé à votre nouvelle adresse e-mail.</p>
                     <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Nouvel e-mail</v-label>
-                    <VTextField v-model="email" type="email" class="mb-4" hide-details="auto" />
+                    <VTextField v-model="email" type="email" class="mb-4" hide-details />
                     <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Code</v-label>
-                    <VTextField v-model="code" class="mb-4" hide-details="auto" inputmode="numeric" maxlength="6" />
+                    <VTextField v-model="code" class="mb-4" hide-details inputmode="numeric" maxlength="6" />
                     <v-btn color="primary" size="large" block flat :loading="loading" @click="submit">Confirmer</v-btn>
                     <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
                     <v-btn size="large" color="lightprimary" block class="mt-5 text-primary" flat @click="router.push('/auth/login')">

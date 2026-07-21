@@ -11,8 +11,8 @@ const authStore = useAuthStore();
 const notice = ref<string | null>(null);
 const password = ref('');
 const identifier = ref('');
-const passwordRules = ref([(v: string) => !!v || 'Le mot de passe est requis']);
-const identifierRules = ref([(v: string) => !!v || 'L’identifiant est requis']);
+const passwordRules = ref([(v: string) => !!v]);
+const identifierRules = ref([(v: string) => !!v.trim()]);
 
 const identifierTrimmed = computed(() => identifier.value.trim());
 
@@ -57,13 +57,13 @@ async function onGoogleCredential(idToken: string) {
                 <span> / </span>
                 <span :class="{ 'text-primary': !!identifierTrimmed && !identifierTrimmed.includes('@') }">Nom d’utilisateur</span>
             </v-label>
-            <VTextField v-model="identifier" :rules="identifierRules" class="mb-8" required hide-details="auto" autocomplete="username" />
+            <VTextField v-model="identifier" :rules="identifierRules" class="mb-8" required hide-details autocomplete="username" />
             <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Mot de passe</v-label>
             <VTextField
                 v-model="password"
                 :rules="passwordRules"
                 required
-                hide-details="auto"
+                hide-details
                 type="password"
                 class="pwdInput"
                 autocomplete="current-password"

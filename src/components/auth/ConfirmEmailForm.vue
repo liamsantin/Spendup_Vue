@@ -13,8 +13,8 @@ const resending = ref(false);
 const error = ref<string | null>(null);
 const success = ref<string | null>(null);
 
-const emailRules = [(v: string) => !!v || 'L’e-mail est requis', (v: string) => /.+@.+\..+/.test(v) || 'L’e-mail doit être valide'];
-const codeRules = [(v: string) => !!v || 'Le code est requis', (v: string) => /^\d{6}$/.test(v) || 'Saisissez le code à 6 chiffres'];
+const emailRules = [(v: string) => !!v, (v: string) => /.+@.+\..+/.test(v)];
+const codeRules = [(v: string) => !!v, (v: string) => /^\d{6}$/.test(v)];
 
 onMounted(() => {
     const q = route.query.email;
@@ -59,9 +59,9 @@ async function resend() {
             Saisissez le code à 6 chiffres envoyé par e-mail. Vérifiez votre boîte de réception (et les spams).
         </p>
         <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">E-mail</v-label>
-        <VTextField v-model="email" :rules="emailRules" class="mb-4" hide-details="auto" type="email" autocomplete="email" />
+        <VTextField v-model="email" :rules="emailRules" class="mb-4" hide-details type="email" autocomplete="email" />
         <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Code de vérification</v-label>
-        <VTextField v-model="code" :rules="codeRules" class="mb-4" hide-details="auto" inputmode="numeric" maxlength="6" />
+        <VTextField v-model="code" :rules="codeRules" class="mb-4" hide-details inputmode="numeric" maxlength="6" />
         <v-btn color="primary" size="large" block flat :loading="loading" @click="confirm">Confirmer l’e-mail</v-btn>
         <v-btn class="mt-3" variant="text" block :loading="resending" @click="resend">Renvoyer le code</v-btn>
         <v-alert v-if="success" type="success" class="mt-3" density="compact">{{ success }}</v-alert>
