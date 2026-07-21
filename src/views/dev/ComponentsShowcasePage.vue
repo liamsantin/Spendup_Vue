@@ -1,11 +1,14 @@
 <script setup lang="ts">
+/**
+ * Clone des démos `_template/modernize/components/ui-components/alert/*`.
+ * `density` est explicite : Modernize n’utilise `compact` que sur Outlined + Action.
+ */
 defineOptions({ name: 'ComponentsShowcasePage' });
 
 import { ref } from 'vue';
 import AppAlert from '@/components/shared/AppAlert.vue';
 
 const closableOpen = ref(true);
-const actionOpen = ref(true);
 </script>
 
 <template>
@@ -19,101 +22,141 @@ const actionOpen = ref(true);
         <section class="mb-10">
             <h2 class="text-h5 font-weight-bold textPrimary mb-1">AppAlert</h2>
             <p class="text-body-2 text-medium-emphasis mb-6">
-                Wrapper <code>v-alert</code> — voir <code>docs/components/alert/alert-component.md</code>
+                Clone des exemples Modernize —
+                <code>_template/modernize/components/ui-components/alert/</code>
             </p>
 
+            <!-- Basic.vue → tonal + color (pas de density = default) -->
+            <h3 class="text-h6 font-weight-semibold mb-3">Basic (tonal)</h3>
+            <div class="mb-8">
+                <AppAlert class="mb-3" color="error" variant="tonal" density="default">This is an error alert — check it out!</AppAlert>
+                <AppAlert class="mb-3" color="warning" variant="tonal" density="default">This is a warning alert — check it out!</AppAlert>
+                <AppAlert class="mb-3" color="info" variant="tonal" density="default">This is an info alert — check it out!</AppAlert>
+                <AppAlert color="success" variant="tonal" density="default">This is a success alert — check it out!</AppAlert>
+            </div>
+
+            <!-- Filled.vue → type uniquement -->
             <h3 class="text-h6 font-weight-semibold mb-3">Filled</h3>
-            <div class="d-flex flex-column ga-3 mb-8">
-                <AppAlert type="error">Message d’erreur (filled)</AppAlert>
-                <AppAlert type="warning">Avertissement (filled)</AppAlert>
-                <AppAlert type="info">Information (filled)</AppAlert>
-                <AppAlert type="success">Succès (filled)</AppAlert>
+            <div class="mb-8">
+                <AppAlert class="mb-3" type="error" density="default">This is an error alert — check it out!</AppAlert>
+                <AppAlert class="mb-3" type="warning" density="default">This is a warning alert — check it out!</AppAlert>
+                <AppAlert class="mb-3" type="info" density="default">This is an info alert — check it out!</AppAlert>
+                <AppAlert type="success" density="default">This is a success alert — check it out!</AppAlert>
             </div>
 
-            <h3 class="text-h6 font-weight-semibold mb-3">Tonal</h3>
-            <div class="d-flex flex-column ga-3 mb-8">
-                <AppAlert color="error" variant="tonal">Erreur tonale</AppAlert>
-                <AppAlert color="warning" variant="tonal">Warning tonal</AppAlert>
-                <AppAlert color="info" variant="tonal">Info tonale</AppAlert>
-                <AppAlert color="success" variant="tonal">Succès tonal</AppAlert>
-            </div>
-
+            <!-- Outlined.vue → outlined + compact + prepend icons -->
             <h3 class="text-h6 font-weight-semibold mb-3">Outlined</h3>
-            <div class="d-flex flex-column ga-3 mb-8">
-                <AppAlert type="error" variant="outlined">Erreur outlined</AppAlert>
-                <AppAlert type="warning" variant="outlined">Warning outlined</AppAlert>
-                <AppAlert type="info" variant="outlined">Info outlined</AppAlert>
-                <AppAlert type="success" variant="outlined">Succès outlined</AppAlert>
-            </div>
-
-            <h3 class="text-h6 font-weight-semibold mb-3">Description</h3>
-            <div class="d-flex flex-column ga-3 mb-8">
-                <AppAlert type="error" variant="tonal">
-                    <h5 class="text-h6 text-capitalize">error</h5>
-                    <div>Ceci est une alerte d’erreur avec titre et corps.</div>
+            <div class="mb-8">
+                <AppAlert type="error" variant="outlined" density="compact" class="mb-4">
+                    <template #prepend>
+                        <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
+                    </template>
+                    <div>This is an error alert — check it out!</div>
                 </AppAlert>
-                <AppAlert type="warning" variant="tonal">
-                    <h5 class="text-h6 text-capitalize">warning</h5>
-                    <div>Ceci est une alerte d’avertissement avec titre et corps.</div>
+                <AppAlert type="warning" variant="outlined" density="compact" class="mb-4">
+                    <template #prepend>
+                        <v-icon class="text-24">mdi-alert-outline</v-icon>
+                    </template>
+                    <div>This is a warning alert — check it out!</div>
                 </AppAlert>
-                <AppAlert type="info" variant="tonal">
-                    <h5 class="text-h6 text-capitalize">info</h5>
-                    <div>Ceci est une alerte d’information avec titre et corps.</div>
+                <AppAlert type="info" variant="outlined" density="compact" class="mb-4">
+                    <template #prepend>
+                        <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
+                    </template>
+                    <div>This is an info alert — check it out!</div>
                 </AppAlert>
-                <AppAlert type="success" variant="tonal">
-                    <h5 class="text-h6 text-capitalize">success</h5>
-                    <div>Ceci est une alerte de succès avec titre et corps.</div>
-                </AppAlert>
-            </div>
-
-            <h3 class="text-h6 font-weight-semibold mb-3">Avec icône</h3>
-            <div class="d-flex flex-column ga-3 mb-8">
-                <AppAlert color="success" variant="tonal">
+                <AppAlert type="success" variant="outlined" density="compact" class="mb-4">
                     <template #prepend>
                         <v-icon class="text-24">mdi-checkbox-marked-circle-outline</v-icon>
                     </template>
-                    Opération réussie.
-                </AppAlert>
-                <AppAlert color="info" variant="tonal">
-                    <template #prepend>
-                        <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
-                    </template>
-                    Information avec icône.
-                </AppAlert>
-                <AppAlert color="warning" variant="tonal">
-                    <template #prepend>
-                        <v-icon class="text-24">mdi-alert-outline</v-icon>
-                    </template>
-                    Avertissement avec icône.
-                </AppAlert>
-                <AppAlert color="error" variant="tonal">
-                    <template #prepend>
-                        <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
-                    </template>
-                    Erreur avec icône.
+                    <div>This is a success alert — check it out!</div>
                 </AppAlert>
             </div>
 
+            <!-- Description.vue -->
+            <h3 class="text-h6 font-weight-semibold mb-3">Description</h3>
+            <div class="mb-8">
+                <AppAlert type="error" variant="tonal" density="default" class="mb-4">
+                    <h5 class="text-h6 text-capitalize">error</h5>
+                    <div>This is an error alert — check it out!</div>
+                </AppAlert>
+                <AppAlert type="warning" variant="tonal" density="default" class="mb-4">
+                    <h5 class="text-h6 text-capitalize">warning</h5>
+                    <div>This is an warning alert — check it out!</div>
+                </AppAlert>
+                <AppAlert type="info" variant="tonal" density="default" class="mb-4">
+                    <h5 class="text-h6 text-capitalize">info</h5>
+                    <div>This is an info alert — check it out!</div>
+                </AppAlert>
+                <AppAlert type="success" variant="tonal" density="default" class="mb-4">
+                    <h5 class="text-h6 text-capitalize">success</h5>
+                    <div>This is an success alert — check it out!</div>
+                </AppAlert>
+            </div>
+
+            <!-- Icons.vue -->
+            <h3 class="text-h6 font-weight-semibold mb-3">Icons</h3>
+            <div class="mb-8">
+                <AppAlert color="success" variant="tonal" density="default" class="mb-4">
+                    <template #prepend>
+                        <v-icon class="text-24">mdi-checkbox-marked-circle-outline</v-icon>
+                    </template>
+                    <div>This is an success alert.</div>
+                </AppAlert>
+                <AppAlert color="info" variant="tonal" density="default" class="mb-4">
+                    <template #prepend>
+                        <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
+                    </template>
+                    <div>This is an info alert.</div>
+                </AppAlert>
+                <AppAlert color="warning" variant="tonal" density="default" class="mb-4">
+                    <template #prepend>
+                        <v-icon class="text-24">mdi-alert-outline</v-icon>
+                    </template>
+                    <div>This is an warning alert.</div>
+                </AppAlert>
+                <AppAlert color="error" variant="tonal" density="default" class="mb-4">
+                    <template #prepend>
+                        <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
+                    </template>
+                    <div>This is an error alert.</div>
+                </AppAlert>
+            </div>
+
+            <!-- Closable.vue -->
             <h3 class="text-h6 font-weight-semibold mb-3">Closable</h3>
-            <div class="d-flex flex-column ga-3 mb-8">
+            <div class="mb-8">
                 <AppAlert
-                    v-if="closableOpen"
                     v-model="closableOpen"
                     border="start"
                     variant="tonal"
-                    color="primary"
-                    title="Alerte fermable"
+                    density="default"
                     closable
-                    close-label="Fermer"
+                    close-label="Close Alert"
+                    color="primary"
+                    title="Closable Alert"
                 >
-                    Contenu de l’alerte — fermez-la avec la croix.
+                    Aenean imperdiet. Quisque id odio. Cras dapibus. Pellentesque ut neque. Cras dapibus. Vivamus consectetuer hendrerit
+                    lacus. Sed mollis, eros et ultrices tempus, mauris ipsum aliquam libero, non
                 </AppAlert>
-                <p v-else class="text-body-2 text-medium-emphasis">Alerte fermée (rechargez la page pour la réafficher).</p>
+                <div v-if="!closableOpen" class="mt-3">
+                    <v-btn color="primary" flat @click="closableOpen = true">Reset</v-btn>
+                </div>
+            </div>
 
-                <AppAlert v-if="actionOpen" v-model="actionOpen" type="warning" closable class="single-line-alert">
-                    <div>Message court avec fermeture.</div>
+            <!-- Action.vue → compact + single-line-alert -->
+            <h3 class="text-h6 font-weight-semibold mb-3">Action</h3>
+            <div class="mb-8">
+                <AppAlert type="warning" density="compact" class="mb-4 single-line-alert" closable>
+                    <div>This is an warning alert — check it out!</div>
                     <template #prepend>
                         <v-icon class="text-24">mdi-alert-outline</v-icon>
+                    </template>
+                </AppAlert>
+                <AppAlert type="info" density="compact" class="mb-4 single-line-alert" closable>
+                    <div>This is an info alert — check it out!</div>
+                    <template #prepend>
+                        <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
                     </template>
                 </AppAlert>
             </div>
