@@ -13,8 +13,6 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const success = ref<string | null>(null);
 
-const firstName = ref('');
-const name = ref('');
 const email = ref('');
 const password = ref('');
 const confirmPassword = ref('');
@@ -42,9 +40,7 @@ async function onSubmit() {
     try {
         await authApi.register({
             email: email.value,
-            password: password.value,
-            firstName: firstName.value || undefined,
-            name: name.value || undefined
+            password: password.value
         });
         await router.push({
             path: '/auth/confirm-email',
@@ -81,12 +77,6 @@ onMounted(() => {
     </div>
 
     <v-form v-model="valid" @submit.prevent="onSubmit" class="mt-5">
-        <v-label class="text-subtitle-1 font-weight-medium pb-2">Prénom</v-label>
-        <VTextField v-model="firstName" class="mb-4" hide-details="auto" autocomplete="given-name" />
-
-        <v-label class="text-subtitle-1 font-weight-medium pb-2">Nom</v-label>
-        <VTextField v-model="name" class="mb-4" hide-details="auto" autocomplete="family-name" />
-
         <v-label class="text-subtitle-1 font-weight-medium pb-2">Adresse e-mail</v-label>
         <VTextField v-model="email" :rules="emailRules" class="mb-4" required hide-details="auto" type="email" autocomplete="email" />
 
