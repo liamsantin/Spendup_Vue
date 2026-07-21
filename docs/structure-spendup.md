@@ -354,15 +354,15 @@ components/frontpages/
 
 ## Données & config
 
-| Fichier                                          | Contenu                                                           |
-| ------------------------------------------------ | ----------------------------------------------------------------- |
-| `data/front-pages/front-pages-data.ts`           | Tarifs (`SpendupPricingPackages`), menus footer                   |
-| `data/front-pages/spendup-additional-domains.ts` | Sections domaines (page fonctionnalités)                          |
-| `data/admin/headerData.ts`                       | Liens profil header (`profileDD`)                                 |
-| `types/components/front-pages/index.ts`          | `PackageType`, `FooterType`                                       |
-| `types/HeaderTypes.ts`                           | Types menu / header admin (sidebar, profil…)                      |
-| `.env` / `.env.example`                          | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID`, `VITE_PRICING_PAGE` |
-| `utils/helpers/pricing-helpers.ts`               | `isPricingPageEnabled()`                                          |
+| Fichier                                          | Contenu                                                                           |
+| ------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `data/front-pages/front-pages-data.ts`           | Tarifs (`SpendupPricingPackages`), menus footer                                   |
+| `data/front-pages/spendup-additional-domains.ts` | Sections domaines (page fonctionnalités)                                          |
+| `data/admin/headerData.ts`                       | Liens profil header (`profileDD`)                                                 |
+| `types/components/front-pages/index.ts`          | `PackageType`, `FooterType`                                                       |
+| `types/HeaderTypes.ts`                           | Types menu / header admin (sidebar, profil…)                                      |
+| `.env` / `.env.example`                          | `VITE_API_BASE_URL`, `VITE_GOOGLE_CLIENT_ID`, `VITE_PRICING_PAGE`, `VITE_APP_ENV` |
+| `utils/helpers/pricing-helpers.ts`               | `isPricingPageEnabled()`                                                          |
 
 > Les variables `VITE_*` sont **publiques** (injectées dans le bundle). Secrets → backend uniquement. `.env` local hors Git ; `.env.example` commité avec placeholders.
 
