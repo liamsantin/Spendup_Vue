@@ -18,8 +18,10 @@ import TwoStepForm from '@/components/auth/TwoStepForm.vue';
             </v-col>
             <v-col cols="12" lg="4" xl="3" class="d-flex align-center justify-center">
                 <div class="pa-sm-6 pa-4 w-100">
-                    <h3 class="text-h4 font-weight-bold">Two-step verification</h3>
-                    <p class="text-subtitle-1 mt-2 text-13">Enter the code from your authenticator app, or use a one-time recovery code.</p>
+                    <h3 class="text-h4 font-weight-bold">Vérification en deux étapes</h3>
+                    <p class="text-subtitle-1 mt-2 text-13">
+                        Saisissez le code de votre application d’authentification, ou un code de récupération.
+                    </p>
                     <TwoStepForm />
                 </div>
             </v-col>

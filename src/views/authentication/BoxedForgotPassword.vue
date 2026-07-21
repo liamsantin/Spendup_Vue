@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Logo from '@/layouts/full/logo/Logo.vue';
-/* Reset form */
 import ResetPassword from '@/components/auth/ResetForm.vue';
 </script>
 
@@ -13,13 +12,13 @@ import ResetPassword from '@/components/auth/ResetForm.vue';
                         <v-card-item class="pa-sm-8">
                             <div class="d-flex justify-center my-5"><Logo /></div>
                             <p class="text-subtitle-1 text-center text-10">
-                                Please enter the email address associated with your account and We will email you a link to reset your
-                                password.
+                                Indiquez l’e-mail associé à votre compte : nous vous enverrons un lien pour réinitialiser votre mot de
+                                passe.
                             </p>
                             <ResetPassword />
-                            <v-btn size="large" color="lightprimary" to="/auth/login2" block class="mt-5 text-primary" flat
-                                >Back to Login</v-btn
-                            >
+                            <v-btn size="large" color="lightprimary" to="/auth/login2" block class="mt-5 text-primary" flat>
+                                Retour à la connexion
+                            </v-btn>
                         </v-card-item>
                     </v-card>
                 </v-col>

@@ -22,7 +22,7 @@ const displayName = computed(() => authStore.displayName || 'Utilisateur');
                 <v-btn variant="text" icon rounded="md" color="primary" @click="authStore.logout()">
                     <PowerIcon />
 
-                    <v-tooltip activator="parent" location="top">Logout</v-tooltip>
+                    <v-tooltip activator="parent" location="top">Se déconnecter</v-tooltip>
                 </v-btn>
             </div>
         </div>

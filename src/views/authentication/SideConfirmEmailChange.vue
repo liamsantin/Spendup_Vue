@@ -18,7 +18,7 @@ async function submit() {
     loading.value = true;
     try {
         await authApi.confirmEmailChange(email.value, code.value);
-        await auth.forceReLogin('Email updated. Please sign in again.');
+        await auth.forceReLogin('E-mail mis à jour. Veuillez vous reconnecter.');
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -40,16 +40,16 @@ async function submit() {
             </v-col>
             <v-col cols="12" lg="4" xl="4" xxl="3" class="d-flex align-center justify-center">
                 <div class="pa-sm-7 pa-4 w-100">
-                    <h2 class="text--darken-2 text-h4 font-weight-bold">Confirm new email</h2>
-                    <p class="text-subtitle-1 py-4 text-10">Enter the code sent to your new email address.</p>
-                    <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">New email</v-label>
+                    <h2 class="text--darken-2 text-h4 font-weight-bold">Confirmer le nouvel e-mail</h2>
+                    <p class="text-subtitle-1 py-4 text-10">Saisissez le code envoyé à votre nouvelle adresse e-mail.</p>
+                    <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Nouvel e-mail</v-label>
                     <VTextField v-model="email" type="email" class="mb-4" hide-details="auto" />
                     <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Code</v-label>
                     <VTextField v-model="code" class="mb-4" hide-details="auto" inputmode="numeric" maxlength="6" />
-                    <v-btn color="primary" size="large" block flat :loading="loading" @click="submit">Confirm</v-btn>
+                    <v-btn color="primary" size="large" block flat :loading="loading" @click="submit">Confirmer</v-btn>
                     <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
                     <v-btn size="large" color="lightprimary" block class="mt-5 text-primary" flat @click="router.push('/auth/login')">
-                        Back to Login
+                        Retour à la connexion
                     </v-btn>
                 </div>
             </v-col>

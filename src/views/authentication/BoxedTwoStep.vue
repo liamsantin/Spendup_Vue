@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import Logo from '@/layouts/full/logo/Logo.vue';
-/*form component*/
 import TwoStepForm from '@/components/auth/TwoStepForm.vue';
 </script>
 <template>
@@ -12,10 +11,8 @@ import TwoStepForm from '@/components/auth/TwoStepForm.vue';
                         <v-card-item class="pa-sm-8">
                             <div class="d-flex justify-center py-4"><Logo /></div>
                             <p class="text-subtitle-1 text-center mt-2 text-13">
-                                We sent a verification code to your mobile. Enter the code from the mobile in the field below.
+                                Saisissez le code de votre application d’authentification, ou un code de récupération.
                             </p>
-                            <h6 class="text-subtitle-1 font-weight-bold mt-3 text-center">******1234</h6>
-                            <!---Form---->
                             <TwoStepForm />
                         </v-card-item>
                     </v-card>

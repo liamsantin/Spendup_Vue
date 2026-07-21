@@ -55,7 +55,7 @@ export const useAuthStore = defineStore('auth', {
                 return '2fa';
             }
             if (!session.accessToken || !session.refreshToken) {
-                throw new Error('Missing tokens in auth response.');
+                throw new Error('Jetons manquants dans la réponse d’authentification.');
             }
             this.setTokens({
                 accessToken: session.accessToken,
@@ -96,7 +96,7 @@ export const useAuthStore = defineStore('auth', {
 
         async verifyTwoFactor(code: string) {
             if (!this.twoFactorToken) {
-                throw new Error('Two-factor session expired. Please sign in again.');
+                throw new Error('Session 2FA expirée. Veuillez vous reconnecter.');
             }
             const tokens = await authApi.verify2fa(this.twoFactorToken, code);
             this.setTokens(tokens);
@@ -137,7 +137,7 @@ export const useAuthStore = defineStore('auth', {
         async requireAccessToken(): Promise<string> {
             const token = await this.ensureAccessToken();
             if (!token) {
-                throw new Error('Not authenticated.');
+                throw new Error('Non authentifié.');
             }
             return token;
         },

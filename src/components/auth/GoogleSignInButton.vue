@@ -6,7 +6,7 @@ withDefaults(
         label?: string;
     }>(),
     {
-        label: 'Sign in with Google'
+        label: 'Se connecter avec Google'
     }
 );
 
@@ -28,7 +28,7 @@ function loadGisScript(): Promise<void> {
         const existing = document.getElementById('google-gis');
         if (existing) {
             existing.addEventListener('load', () => resolve());
-            existing.addEventListener('error', () => reject(new Error('Failed to load Google script')));
+            existing.addEventListener('error', () => reject(new Error('Échec du chargement du script Google')));
             return;
         }
         const script = document.createElement('script');
@@ -37,7 +37,7 @@ function loadGisScript(): Promise<void> {
         script.async = true;
         script.defer = true;
         script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load Google script'));
+        script.onerror = () => reject(new Error('Échec du chargement du script Google'));
         document.head.appendChild(script);
     });
 }
@@ -94,7 +94,7 @@ onUnmounted(() => {
 <template>
     <div>
         <div v-if="!clientId" class="text-subtitle-2 text-medium-emphasis mb-2">
-            Google Sign-In is not configured (set VITE_GOOGLE_CLIENT_ID).
+            Connexion Google non configurée (définir VITE_GOOGLE_CLIENT_ID).
         </div>
         <div v-show="available" ref="container" class="d-flex justify-center" />
         <v-alert v-if="error" type="warning" density="compact" class="mt-2">{{ error }}</v-alert>

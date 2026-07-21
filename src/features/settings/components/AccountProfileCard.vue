@@ -40,10 +40,10 @@ const unlinkError = ref<string | null>(null);
 const unlinkMessage = ref<string | null>(null);
 
 const passwordRules = [
-    (v: string) => !!v || 'Required',
-    (v: string) => (v && v.length >= 8) || 'At least 8 characters',
-    (v: string) => /[A-Za-z]/.test(v) || 'Must contain a letter',
-    (v: string) => /\d/.test(v) || 'Must contain a number'
+    (v: string) => !!v || 'Requis',
+    (v: string) => (v && v.length >= 8) || 'Au moins 8 caractères',
+    (v: string) => /[A-Za-z]/.test(v) || 'Doit contenir une lettre',
+    (v: string) => /\d/.test(v) || 'Doit contenir un chiffre'
 ];
 
 const qrUrl = computed(() => {
@@ -74,7 +74,7 @@ async function changePassword() {
     try {
         const token = await auth.requireAccessToken();
         await authApi.changePassword(token, currentPassword.value, newPassword.value);
-        await auth.forceReLogin('Password changed. Please sign in again.');
+        await auth.forceReLogin('Mot de passe modifié. Veuillez vous reconnecter.');
     } catch (e: unknown) {
         passwordError.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -89,7 +89,7 @@ async function changeEmail() {
     try {
         const token = await auth.requireAccessToken();
         await authApi.changeEmail(token, emailPassword.value, newEmail.value);
-        emailMessage.value = 'Check your new inbox for a confirmation code, then open Confirm email change.';
+        emailMessage.value = 'Consultez votre nouvelle boîte mail pour le code, puis ouvrez « Confirmer avec le code ».';
     } catch (e: unknown) {
         emailError.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -104,7 +104,8 @@ async function start2faSetup() {
     try {
         const token = await auth.requireAccessToken();
         twoFaSetup.value = await authApi.setup2fa(token);
-        twoFaMessage.value = 'Scan the QR code (or enter the secret), then confirm with a code. Save recovery codes now — shown once.';
+        twoFaMessage.value =
+            'Scannez le QR code (ou saisissez le secret), puis confirmez avec un code. Enregistrez les codes de récupération maintenant — affichés une seule fois.';
     } catch (e: unknown) {
         twoFaError.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -120,7 +121,7 @@ async function enable2fa() {
         await authApi.enable2fa(token, twoFaCode.value);
         twoFaSetup.value = null;
         twoFaCode.value = '';
-        twoFaMessage.value = 'Two-factor authentication enabled.';
+        twoFaMessage.value = 'Authentification à deux facteurs activée.';
         await auth.fetchMe();
     } catch (e: unknown) {
         twoFaError.value = e instanceof Error ? e.message : String(e);
@@ -136,7 +137,7 @@ async function disable2fa() {
         const token = await auth.requireAccessToken();
         await authApi.disable2fa(token, twoFaCode.value);
         twoFaCode.value = '';
-        twoFaMessage.value = 'Two-factor authentication disabled.';
+        twoFaMessage.value = 'Authentification à deux facteurs désactivée.';
         await auth.fetchMe();
     } catch (e: unknown) {
         twoFaError.value = e instanceof Error ? e.message : String(e);
@@ -163,7 +164,7 @@ async function unlinkGoogle() {
     try {
         const token = await auth.requireAccessToken();
         await authApi.unlinkGoogle(token, unlinkPassword.value);
-        unlinkMessage.value = 'Google account unlinked.';
+        unlinkMessage.value = 'Compte Google détaché.';
         unlinkPassword.value = '';
         await auth.fetchMe();
     } catch (e: unknown) {
@@ -180,7 +181,7 @@ async function deleteWithPassword() {
         const token = await auth.requireAccessToken();
         await authApi.deleteAccount(token, { currentPassword: deletePassword.value });
         auth.clearSession();
-        await auth.forceReLogin('Account deleted.');
+        await auth.forceReLogin('Compte supprimé.');
     } catch (e: unknown) {
         deleteError.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -195,7 +196,7 @@ async function deleteWithGoogle(idToken: string) {
         const token = await auth.requireAccessToken();
         await authApi.deleteAccount(token, { googleIdToken: idToken });
         auth.clearSession();
-        await auth.forceReLogin('Account deleted.');
+        await auth.forceReLogin('Compte supprimé.');
     } catch (e: unknown) {
         deleteError.value = e instanceof Error ? e.message : String(e);
     } finally {

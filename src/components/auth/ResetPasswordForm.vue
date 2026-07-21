@@ -13,10 +13,10 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 
 const passwordRules = [
-    (v: string) => !!v || 'Password is required',
-    (v: string) => (v && v.length >= 8) || 'Password must be at least 8 characters',
-    (v: string) => /[A-Za-z]/.test(v) || 'Password must contain a letter',
-    (v: string) => /\d/.test(v) || 'Password must contain a number'
+    (v: string) => !!v || 'Le mot de passe est requis',
+    (v: string) => (v && v.length >= 8) || 'Au moins 8 caractères',
+    (v: string) => /[A-Za-z]/.test(v) || 'Doit contenir une lettre',
+    (v: string) => /\d/.test(v) || 'Doit contenir un chiffre'
 ];
 
 onMounted(() => {
@@ -29,17 +29,20 @@ onMounted(() => {
 async function submit() {
     error.value = null;
     if (!token.value) {
-        error.value = 'Missing reset token. Open the link from your email.';
+        error.value = 'Jeton de réinitialisation manquant. Ouvrez le lien reçu par e-mail.';
         return;
     }
     if (newPassword.value !== confirmPassword.value) {
-        error.value = 'Passwords do not match.';
+        error.value = 'Les mots de passe ne correspondent pas.';
         return;
     }
     loading.value = true;
     try {
         await authApi.resetPassword(token.value, newPassword.value);
-        await router.push({ path: '/auth/login', query: { notice: 'Password updated. Please sign in.' } });
+        await router.push({
+            path: '/auth/login',
+            query: { notice: 'Mot de passe mis à jour. Veuillez vous connecter.' }
+        });
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -51,9 +54,9 @@ async function submit() {
 <template>
     <div class="mt-5">
         <v-alert v-if="!token" type="warning" density="compact" class="mb-4">
-            No reset token found in the URL. Use the link from your email.
+            Aucun jeton trouvé dans l’URL. Utilisez le lien reçu par e-mail.
         </v-alert>
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">New password</v-label>
+        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Nouveau mot de passe</v-label>
         <VTextField
             v-model="newPassword"
             :rules="passwordRules"
@@ -62,9 +65,9 @@ async function submit() {
             hide-details="auto"
             autocomplete="new-password"
         />
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Confirm password</v-label>
+        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Confirmer le mot de passe</v-label>
         <VTextField v-model="confirmPassword" type="password" class="mb-4" hide-details="auto" autocomplete="new-password" />
-        <v-btn color="primary" size="large" block flat :loading="loading" @click="submit">Reset password</v-btn>
+        <v-btn color="primary" size="large" block flat :loading="loading" @click="submit">Réinitialiser</v-btn>
         <v-alert v-if="error" type="error" class="mt-3" density="compact">{{ error }}</v-alert>
     </div>
 </template>

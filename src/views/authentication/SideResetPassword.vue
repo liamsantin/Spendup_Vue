@@ -16,10 +16,12 @@ import ResetPasswordForm from '@/components/auth/ResetPasswordForm.vue';
             </v-col>
             <v-col cols="12" lg="4" xl="4" xxl="3" class="d-flex align-center justify-center">
                 <div class="pa-sm-7 pa-4 w-100">
-                    <h2 class="text--darken-2 text-h4 font-weight-bold">Reset password</h2>
-                    <p class="text-subtitle-1 py-4 text-10">Choose a new password for your account.</p>
+                    <h2 class="text--darken-2 text-h4 font-weight-bold">Réinitialiser le mot de passe</h2>
+                    <p class="text-subtitle-1 py-4 text-10">Choisissez un nouveau mot de passe pour votre compte.</p>
                     <ResetPasswordForm />
-                    <v-btn size="large" color="lightprimary" to="/auth/login" block class="mt-5 text-primary" flat>Back to Login</v-btn>
+                    <v-btn size="large" color="lightprimary" to="/auth/login" block class="mt-5 text-primary" flat>
+                        Retour à la connexion
+                    </v-btn>
                 </div>
             </v-col>
         </v-row>
