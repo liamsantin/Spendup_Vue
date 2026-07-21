@@ -1,9 +1,21 @@
 import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
+import { isDevAppEnv } from '@/utils/helpers/env-helpers';
 
 const pricingRoute = {
     name: 'Pricing',
     path: 'tarifs',
     component: () => import('@/views/front-pages/PricingPage.vue')
+};
+
+/** Showcase composants — uniquement si `VITE_APP_ENV=development` (pas de lien UI). */
+const componentsShowcaseRoute = {
+    name: 'ComponentsShowcase',
+    path: 'components',
+    meta: {
+        requiresAuth: false,
+        devOnly: true
+    },
+    component: () => import('@/views/dev/ComponentsShowcasePage.vue')
 };
 
 const FrontPagesRoutes = {
@@ -29,6 +41,7 @@ const FrontPagesRoutes = {
             component: () => import('@/views/front-pages/AboutPage.vue')
         },
         ...(isPricingPageEnabled() ? [pricingRoute] : []),
+        ...(isDevAppEnv() ? [componentsShowcaseRoute] : []),
         {
             name: 'TermsOfUse',
             path: 'conditions-utilisation',

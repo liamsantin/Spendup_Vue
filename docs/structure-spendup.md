@@ -204,14 +204,15 @@ scss/
 
 ### Pages publiques (`BlankLayout`, `meta.requiresAuth: false`)
 
-| Route                        | Vue                                    | Contenu principal                                            |
-| ---------------------------- | -------------------------------------- | ------------------------------------------------------------ |
-| `/`                          | `views/front-pages/PublicHomePage.vue` | `home/SpendupHomeContent`                                    |
-| `/fonctionnalites`           | `FeaturesPage.vue`                     | `features/SpendupFeaturesContent`                            |
-| `/a-propos`                  | `AboutPage.vue`                        | `about/SpendupTeamSection` + `SpendupAboutProjectNotice`     |
-| `/tarifs`                    | `PricingPage.vue`                      | `pricing/Packages` — conditionnel (`VITE_PRICING_PAGE=true`) |
-| `/conditions-utilisation`    | `TermsOfUsePage.vue`                   | contenu légal inline                                         |
-| `/politique-confidentialite` | `PrivacyPolicyPage.vue`                | contenu légal inline                                         |
+| Route                        | Vue                                    | Contenu principal                                                       |
+| ---------------------------- | -------------------------------------- | ----------------------------------------------------------------------- |
+| `/`                          | `views/front-pages/PublicHomePage.vue` | `home/SpendupHomeContent`                                               |
+| `/fonctionnalites`           | `FeaturesPage.vue`                     | `features/SpendupFeaturesContent`                                       |
+| `/a-propos`                  | `AboutPage.vue`                        | `about/SpendupTeamSection` + `SpendupAboutProjectNotice`                |
+| `/tarifs`                    | `PricingPage.vue`                      | `pricing/Packages` — conditionnel (`VITE_PRICING_PAGE=true`)            |
+| `/conditions-utilisation`    | `TermsOfUsePage.vue`                   | contenu légal inline                                                    |
+| `/politique-confidentialite` | `PrivacyPolicyPage.vue`                | contenu légal inline                                                    |
+| `/components`                | `views/dev/ComponentsShowcasePage.vue` | Showcase UI — **dev only** (`VITE_APP_ENV=development`), pas de lien UI |
 
 ### Auth & application authentifiée
 
@@ -405,9 +406,10 @@ Les formulaires UI appellent le **store** (`useAuthStore`), pas `authApi` direct
 | ------------------------- | ------------------------------------------------------------------ |
 | `fetch-helpers.ts`        | Wrapper `fetch` avec Bearer + refresh sur 401 (`fetchWrapper`)     |
 | `pricing-helpers.ts`      | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE`                |
+| `env-helpers.ts`          | `isDevAppEnv()` — `VITE_APP_ENV === 'development'`                 |
 | `fake-backend-helpers.ts` | Backend factice (legacy / démo — ne pas étendre pour l’API réelle) |
 
-**Import :** `@/utils/helpers/fetch-helpers`, `@/utils/helpers/pricing-helpers`.
+**Import :** `@/utils/helpers/fetch-helpers`, `@/utils/helpers/pricing-helpers`, `@/utils/helpers/env-helpers`.
 
 ---
 

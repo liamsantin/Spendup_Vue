@@ -116,6 +116,7 @@ Les composants UI passent par le store de la feature, pas par le client HTTP.
 - Pour une nouvelle fonctionnalité `/app`, enregistrer la route dans `router/AppRoutes.ts` et le menu dans `sidebarItem.ts`.
 - Le logo (`layouts/full/logo/Logo.vue`) : sous `/app` → dashboard (`/app`) ; ailleurs → accueil (`/` ou `homeTo`).
 - Catch-all `/:pathMatch(.*)*` → `Error.vue` (déjà dans `router/index.ts`).
+- Page `/components` (showcase UI) : `meta.devOnly` + enregistrée seulement si `VITE_APP_ENV=development` — **aucun lien** dans l’UI, accès URL manuelle uniquement.
 
 ---
 
@@ -166,6 +167,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 | ------------------------- | ------------------------ |
 | `fetch-helpers.ts`        | `fetchWrapper`           |
 | `pricing-helpers.ts`      | `isPricingPageEnabled()` |
+| `env-helpers.ts`          | `isDevAppEnv()`          |
 | `fake-backend-helpers.ts` | Backend factice (legacy) |
 
 - Import : `@/utils/helpers/<domaine>-helpers`.

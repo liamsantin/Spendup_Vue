@@ -1,7 +1,8 @@
 # AppAlert
 
 > Composant : `src/components/shared/AppAlert.vue`  
-> Wrapper fin autour de `v-alert` (Vuetify). Référence visuelle : `_template/modernize/components/ui-components/alert/`.
+> Wrapper fin autour de `v-alert` (Vuetify). Référence visuelle : `_template/modernize/components/ui-components/alert/`.  
+> Preview live (dev) : `/components` — uniquement si `VITE_APP_ENV=development`.
 
 ## Import
 

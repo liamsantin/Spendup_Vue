@@ -1,9 +1,15 @@
 import type { NavigationGuard } from 'vue-router';
 import { useAuthStore, APP_HOME_ROUTE } from '@/features/auth';
+import { isDevAppEnv } from '@/utils/helpers/env-helpers';
 
 export const authGuard: NavigationGuard = async (to, _from, next) => {
     const auth = useAuthStore();
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+    const devOnly = to.matched.some((record) => record.meta.devOnly);
+
+    if (devOnly && !isDevAppEnv()) {
+        return next('/auth/404');
+    }
 
     if (requiresAuth) {
         if (!auth.isAuthenticated) {
