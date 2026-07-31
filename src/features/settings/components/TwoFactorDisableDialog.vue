@@ -63,7 +63,7 @@ async function disable(submittedCode?: string) {
         title="Désactiver la double authentification"
         subtitle="Confirmez avec le code de votre application d’authentification."
         :max-width="440"
-        :height="420"
+        :scrollable="false"
     >
         <v-label class="text-subtitle-1 font-weight-semibold pb-2">Code à 6 chiffres</v-label>
         <OtpDigitsInput v-model="code" field-class="two-factor-disable-otp" @complete="disable" />

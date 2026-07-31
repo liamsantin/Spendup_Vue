@@ -83,36 +83,7 @@ function onDisabled() {
 
                         <div class="d-flex justify-space-between my-4">
                             <div>
-                                <h6 class="text-h6 mb-1">Application d’authentification</h6>
-                                <h5 class="text-subtitle-1 text-medium-emphasis">
-                                    {{
-                                        twoFactorEnabled
-                                            ? 'Google Authenticator / Authy configurée'
-                                            : 'Scannez un QR code avec Google Authenticator ou Authy'
-                                    }}
-                                </h5>
-                            </div>
-                            <v-btn v-if="!twoFactorEnabled" class="bg-lightprimary text-primary" flat @click="openSetup">
-                                Configurer
-                            </v-btn>
-                            <v-btn v-else class="bg-lightprimary text-primary" flat disabled>Configurée</v-btn>
-                        </div>
-
-                        <v-divider></v-divider>
-
-                        <div class="d-flex justify-space-between my-4">
-                            <div>
                                 <h6 class="text-h6 mb-1">Autre e-mail</h6>
-                                <h5 class="text-subtitle-1 text-medium-emphasis">Non disponible pour le moment</h5>
-                            </div>
-                            <v-btn class="bg-lightprimary text-primary" flat disabled>Bientôt</v-btn>
-                        </div>
-
-                        <v-divider></v-divider>
-
-                        <div class="d-flex justify-space-between my-4">
-                            <div>
-                                <h6 class="text-h6 mb-1">Récupération par SMS</h6>
                                 <h5 class="text-subtitle-1 text-medium-emphasis">Non disponible pour le moment</h5>
                             </div>
                             <v-btn class="bg-lightprimary text-primary" flat disabled>Bientôt</v-btn>
