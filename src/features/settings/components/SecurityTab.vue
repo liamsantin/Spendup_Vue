@@ -52,7 +52,21 @@ function onDisabled() {
                             </v-chip>
                         </div>
 
-                        <AppAlert v-if="successMessage" type="success" class="mt-4">{{ successMessage }}</AppAlert>
+                        <AppAlert
+                            v-if="successMessage"
+                            color="success"
+                            variant="tonal"
+                            density="default"
+                            closable
+                            :dismiss-ms="3000"
+                            class="mt-4"
+                            @dismiss="successMessage = null"
+                        >
+                            <template #prepend>
+                                <v-icon class="text-24">mdi-checkbox-marked-circle-outline</v-icon>
+                            </template>
+                            <div>{{ successMessage }}</div>
+                        </AppAlert>
 
                         <div class="d-sm-flex justify-space-between mt-4 mb-8">
                             <div class="text-subtitle-1 text-medium-emphasis text-13 pr-5">

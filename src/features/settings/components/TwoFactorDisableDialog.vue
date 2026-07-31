@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import AppModalBase from '@/components/shared/AppModalBase.vue';
 import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 
 const props = defineProps<{
@@ -57,28 +58,21 @@ async function disable(submittedCode?: string) {
 </script>
 
 <template>
-    <v-dialog v-model="open" max-width="440" persistent>
-        <v-card rounded="md">
-            <v-card-item>
-                <h5 class="text-h5">Désactiver la double authentification</h5>
-                <div class="text-subtitle-1 text-medium-emphasis mt-1">Confirmez avec le code de votre application d’authentification.</div>
-            </v-card-item>
+    <AppModalBase
+        v-model="open"
+        title="Désactiver la double authentification"
+        subtitle="Confirmez avec le code de votre application d’authentification."
+        :max-width="440"
+        :height="420"
+    >
+        <v-label class="text-subtitle-1 font-weight-semibold pb-2">Code à 6 chiffres</v-label>
+        <OtpDigitsInput v-model="code" field-class="two-factor-disable-otp" @complete="disable" />
+        <AppAlert v-if="error" type="error" class="mt-4">{{ error }}</AppAlert>
 
-            <v-divider />
-
-            <v-card-text class="pa-6">
-                <v-label class="text-subtitle-1 font-weight-semibold pb-2">Code à 6 chiffres</v-label>
-                <OtpDigitsInput v-model="code" field-class="two-factor-disable-otp" @complete="disable" />
-                <AppAlert v-if="error" type="error" class="mt-4">{{ error }}</AppAlert>
-            </v-card-text>
-
-            <v-divider />
-
-            <v-card-actions class="pa-4">
-                <v-btn variant="text" flat @click="open = false">Annuler</v-btn>
-                <v-spacer />
-                <v-btn color="error" flat :loading="loading" @click="disable()">Désactiver</v-btn>
-            </v-card-actions>
-        </v-card>
-    </v-dialog>
+        <template #footer="{ close }">
+            <v-btn variant="text" flat @click="close">Annuler</v-btn>
+            <v-spacer />
+            <v-btn color="error" flat :loading="loading" @click="disable()">Désactiver</v-btn>
+        </template>
+    </AppModalBase>
 </template>
