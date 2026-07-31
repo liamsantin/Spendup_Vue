@@ -2,14 +2,19 @@
 /**
  * Showcase composants (dev only).
  * Onglet Alert = clone `_template/modernize/components/ui-components/alert/*`.
+ * Onglet Modal = AppModalBase (`docs/components/modal/modalbase-component.md`).
  */
 defineOptions({ name: 'ComponentsShowcasePage' });
 
 import { ref } from 'vue';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import AppModalBase from '@/components/shared/AppModalBase.vue';
 
 const tab = ref('alert');
 const closableOpen = ref(true);
+
+const modalScrollableOpen = ref(false);
+const modalStaticOpen = ref(false);
 </script>
 
 <template>
@@ -22,6 +27,7 @@ const closableOpen = ref(true);
 
         <v-tabs v-model="tab" color="primary" class="mb-4">
             <v-tab value="alert">Alert</v-tab>
+            <v-tab value="modal">Modal</v-tab>
         </v-tabs>
 
         <v-tabs-window v-model="tab">
@@ -166,6 +172,65 @@ const closableOpen = ref(true);
                             <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
                         </template>
                     </AppAlert>
+                </div>
+            </v-tabs-window-item>
+
+            <v-tabs-window-item value="modal">
+                <p class="text-body-2 text-medium-emphasis mb-6">
+                    <code>AppModalBase</code> — shell modal Spend.Up. Doc :
+                    <code>docs/components/modal/modalbase-component.md</code>
+                </p>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Scrollable (contenu long)</h3>
+                <div class="mb-8">
+                    <p class="text-body-2 text-medium-emphasis mb-3">
+                        Header + footer fixes, body avec <code>perfect-scrollbar</code> (<code>scrollable</code> par défaut).
+                    </p>
+                    <v-btn color="primary" flat @click="modalScrollableOpen = true">Ouvrir modal scrollable</v-btn>
+
+                    <AppModalBase
+                        v-model="modalScrollableOpen"
+                        title="Exemple scrollable"
+                        subtitle="Le header et le footer restent fixes pendant le scroll."
+                        :max-width="520"
+                        :height="640"
+                    >
+                        <p v-for="n in 24" :key="n" class="mb-3 text-body-1">
+                            Ligne de démonstration {{ n }} — contenu volontairement long pour activer le scroll.
+                        </p>
+
+                        <template #footer="{ close }">
+                            <v-btn variant="text" flat @click="close">Annuler</v-btn>
+                            <v-spacer />
+                            <v-btn color="primary" flat @click="close">Confirmer</v-btn>
+                        </template>
+                    </AppModalBase>
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Statique (sans scroll)</h3>
+                <div class="mb-8">
+                    <p class="text-body-2 text-medium-emphasis mb-3">
+                        Contenu court : <code>:scrollable="false"</code> — pas de perfect-scrollbar, hauteur auto.
+                    </p>
+                    <v-btn color="primary" variant="tonal" flat @click="modalStaticOpen = true">Ouvrir modal statique</v-btn>
+
+                    <AppModalBase
+                        v-model="modalStaticOpen"
+                        title="Exemple sans scroll"
+                        subtitle="Idéal pour une confirmation ou une saisie OTP."
+                        :max-width="440"
+                        :scrollable="false"
+                    >
+                        <p class="text-body-1 mb-0">
+                            Cette modale n’active pas perfect-scrollbar. Utilisez ce mode dès que le contenu ne peut pas déborder.
+                        </p>
+
+                        <template #footer="{ close }">
+                            <v-btn variant="text" flat @click="close">Annuler</v-btn>
+                            <v-spacer />
+                            <v-btn color="primary" flat @click="close">OK</v-btn>
+                        </template>
+                    </AppModalBase>
                 </div>
             </v-tabs-window-item>
         </v-tabs-window>
