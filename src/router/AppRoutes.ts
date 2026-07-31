@@ -14,6 +14,11 @@ const AppRoutes = {
             name: 'AppDashboard',
             path: '',
             component: () => import('@/views/app/dashboard/AppDashboardView.vue')
+        },
+        {
+            name: 'AppSettings',
+            path: 'parametres',
+            component: () => import('@/views/app/settings/AppSettingsPage.vue')
         }
     ]
 };

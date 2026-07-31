@@ -33,6 +33,12 @@ const profileDD: profileType[] = [
         href: '/app'
     },
     {
+        avatar: proUser1,
+        title: 'Paramètres',
+        subtitle: 'Compte & sécurité',
+        href: '/app/parametres'
+    },
+    {
         avatar: proUser3,
         title: 'Site public',
         subtitle: 'Accueil',
@@ -44,6 +50,10 @@ const searchSugg: searchType[] = [
     {
         title: 'Tableau de bord',
         href: '/app'
+    },
+    {
+        title: 'Paramètres',
+        href: '/app/parametres'
     },
     {
         title: 'Accueil',

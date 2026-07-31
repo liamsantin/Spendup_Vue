@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, ArrowsExchangeIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, ArrowsExchangeIcon, SettingsIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -24,6 +24,11 @@ const sidebarItem: menu[] = [
         title: 'Tableau de bord',
         icon: LayoutDashboardIcon,
         to: '/app'
+    },
+    {
+        title: 'Paramètres',
+        icon: SettingsIcon,
+        to: '/app/parametres'
     },
     { header: 'Finances' },
     {
