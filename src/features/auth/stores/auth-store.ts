@@ -231,6 +231,28 @@ export const useAuthStore = defineStore('auth', {
             await this.fetchMe();
         },
 
+        async listDevices() {
+            const token = await this.requireAccessToken();
+            return authApi.listDevices(token);
+        },
+
+        async revokeDevice(deviceIdentifier: string) {
+            const token = await this.requireAccessToken();
+            await authApi.revokeDevice(token, deviceIdentifier);
+        },
+
+        async trustDevice(deviceIdentifier: string) {
+            const token = await this.requireAccessToken();
+            await authApi.trustDevice(token, deviceIdentifier);
+        },
+
+        /** Révoque toutes les sessions (y compris l’appareil courant) → force re-login. */
+        async revokeAllDevices() {
+            const token = await this.requireAccessToken();
+            await authApi.revokeAllDevices(token);
+            await this.forceReLogin('Toutes les sessions ont été déconnectées. Veuillez vous reconnecter.');
+        },
+
         async refreshSession(): Promise<boolean> {
             if (!this.refreshToken) return false;
             try {
@@ -272,7 +294,9 @@ export const useAuthStore = defineStore('auth', {
             const refresh = this.refreshToken;
             const access = this.accessToken;
             try {
-                await authApi.logout(refresh, access);
+                if (refresh) {
+                    await authApi.logout(refresh, access);
+                }
             } catch {
                 // Always clear local session
             }

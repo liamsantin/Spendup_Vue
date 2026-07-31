@@ -1,4 +1,5 @@
 import { getDeviceInfo } from './device';
+import { normalizeAuthDevices } from './normalizeDevices';
 import type { ApiResponse, AuthSession, AuthTokens, Me, RegisterResult, TwoFactorSetup } from './types';
 
 export class ApiError extends Error {
@@ -26,9 +27,19 @@ export async function authRequest<T>(path: string, options: RequestInit = {}, ac
     }
 
     const res = await fetch(`${apiBaseUrl()}${path}`, { ...options, headers });
+
+    // 204 / corps vide (ex. trust device)
+    const raw = await res.text();
+    if (!raw) {
+        if (!res.ok) {
+            throw new ApiError(res.statusText || `HTTP ${res.status}`, res.status);
+        }
+        return undefined as T;
+    }
+
     let body: ApiResponse<T>;
     try {
-        body = (await res.json()) as ApiResponse<T>;
+        body = JSON.parse(raw) as ApiResponse<T>;
     } catch {
         throw new ApiError(res.statusText || `HTTP ${res.status}`, res.status);
     }
@@ -96,14 +107,18 @@ export const authApi = {
         });
     },
 
-    logout(refreshToken: string | null, accessToken: string | null) {
+    /**
+     * Déconnexion de la session courante uniquement.
+     * `refreshToken` est obligatoire côté API.
+     */
+    logout(refreshToken: string, accessToken?: string | null) {
         return authRequest<null>(
             '/api/auth/logout',
             {
                 method: 'POST',
-                body: JSON.stringify(refreshToken ? { refreshToken } : {})
+                body: JSON.stringify({ refreshToken })
             },
-            accessToken
+            accessToken ?? null
         );
     },
 
@@ -215,5 +230,22 @@ export const authApi = {
             },
             accessToken
         );
+    },
+
+    async listDevices(accessToken: string) {
+        const result = await authRequest<unknown>('/api/auth/devices', { method: 'GET' }, accessToken);
+        return normalizeAuthDevices(result);
+    },
+
+    revokeDevice(accessToken: string, deviceIdentifier: string) {
+        return authRequest<null>(`/api/auth/devices/${encodeURIComponent(deviceIdentifier)}`, { method: 'DELETE' }, accessToken);
+    },
+
+    revokeAllDevices(accessToken: string) {
+        return authRequest<null>('/api/auth/devices/revoke-all', { method: 'POST' }, accessToken);
+    },
+
+    trustDevice(accessToken: string, deviceIdentifier: string) {
+        return authRequest<null>(`/api/auth/devices/${encodeURIComponent(deviceIdentifier)}/trust`, { method: 'POST' }, accessToken);
     }
 };
