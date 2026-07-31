@@ -68,6 +68,17 @@ const tab = ref('Account');
     overflow: hidden;
 }
 
+@media screen and (max-width: 767px) {
+    .settings-page {
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+    }
+
+    .settings-page-card {
+        border-radius: 0 !important;
+    }
+}
+
 .settings-tabs :deep(.v-tab) {
     min-height: 52px;
     font-size: 0.875rem;
