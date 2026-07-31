@@ -3,31 +3,34 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const digits = ref(['', '', '', '', '', '']);
+const digitsCode = ref('');
 const recoveryCode = ref('');
 const useRecovery = ref(false);
 const loading = ref(false);
 const error = ref<string | null>(null);
 
-const code = computed(() => (useRecovery.value ? recoveryCode.value.trim() : digits.value.join('')));
+const code = computed(() => (useRecovery.value ? recoveryCode.value.trim() : digitsCode.value));
 
-async function verify() {
+async function verify(submittedCode?: string) {
     error.value = null;
     if (!authStore.twoFactorToken) {
         error.value = 'Session 2FA expirée. Veuillez vous reconnecter.';
         return;
     }
-    if (!code.value) {
-        error.value = 'Saisissez votre code de vérification.';
+    const otp = submittedCode ?? code.value;
+    if (!otp || (!useRecovery.value && otp.length !== 6)) {
+        error.value = 'Saisissez le code à 6 chiffres.';
         return;
     }
+    if (loading.value) return;
     loading.value = true;
     try {
-        await authStore.verifyTwoFactor(code.value);
+        await authStore.verifyTwoFactor(otp);
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
         if (String(error.value).toLowerCase().includes('token') || String(error.value).toLowerCase().includes('expired')) {
@@ -35,16 +38,6 @@ async function verify() {
         }
     } finally {
         loading.value = false;
-    }
-}
-
-function onDigitInput(index: number, event: Event) {
-    const input = event.target as HTMLInputElement;
-    const value = input.value.replace(/\D/g, '').slice(-1);
-    digits.value[index] = value;
-    if (value && index < 5) {
-        const next = input.closest('.verification')?.querySelectorAll('input')[index + 1] as HTMLInputElement | undefined;
-        next?.focus();
     }
 }
 
@@ -56,22 +49,9 @@ function backToLogin() {
 
 <template>
     <div class="mt-sm-13 mt-8">
-        <v-switch v-model="useRecovery" color="primary" hide-details class="mb-4" label="Utiliser un code de récupération" />
-
         <template v-if="!useRecovery">
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Code à 6 chiffres</v-label>
-            <div class="d-flex justify-space-between gap-3 mb-2 verification">
-                <VTextField
-                    v-for="(_, i) in digits"
-                    :key="i"
-                    :model-value="digits[i]"
-                    maxlength="1"
-                    inputmode="numeric"
-                    hide-details
-                    @update:model-value="(v: string) => (digits[i] = String(v).replace(/\D/g, '').slice(-1))"
-                    @input="onDigitInput(i, $event)"
-                />
-            </div>
+            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Saisissez votre code à 6 chiffres</v-label>
+            <OtpDigitsInput v-model="digitsCode" field-class="two-step-otp" @complete="verify" />
         </template>
         <template v-else>
             <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Code de récupération</v-label>
@@ -80,7 +60,30 @@ function backToLogin() {
 
         <v-btn color="primary" size="large" block flat class="mt-4" :loading="loading" @click="verify">Vérifier</v-btn>
         <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
+
         <h6 class="text-h6 mt-5 font-weight-regular">
+            <template v-if="!useRecovery">
+                Utiliser un code de récupération ?
+                <a
+                    href="#"
+                    class="text-primary text-subtitle-1 text-decoration-none pl-1 font-weight-medium"
+                    @click.prevent="useRecovery = true"
+                >
+                    Cliquez ici
+                </a>
+            </template>
+            <template v-else>
+                Revenir au code à 6 chiffres ?
+                <a
+                    href="#"
+                    class="text-primary text-subtitle-1 text-decoration-none pl-1 font-weight-medium"
+                    @click.prevent="useRecovery = false"
+                >
+                    Cliquez ici
+                </a>
+            </template>
+        </h6>
+        <h6 class="text-h6 mt-3 font-weight-regular">
             Un problème ?
             <a href="#" class="text-primary text-subtitle-1 text-decoration-none pl-1 font-weight-medium" @click.prevent="backToLogin">
                 Retour à la connexion

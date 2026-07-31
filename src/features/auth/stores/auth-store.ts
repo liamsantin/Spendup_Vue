@@ -8,6 +8,7 @@ export const APP_HOME_ROUTE = '/app';
 const REFRESH_KEY = 'spendup_refresh_token';
 const ACCESS_KEY = 'spendup_access_token';
 const PENDING_EMAIL_KEY = 'spendup_pending_email';
+const PENDING_PASSWORD_KEY = 'spendup_pending_password';
 
 function readRefreshToken(): string | null {
     return localStorage.getItem(REFRESH_KEY);
@@ -29,6 +30,18 @@ function writePendingEmail(email: string | null) {
     }
 }
 
+function readPendingPassword(): string | null {
+    return sessionStorage.getItem(PENDING_PASSWORD_KEY);
+}
+
+function writePendingPassword(password: string | null) {
+    if (password) {
+        sessionStorage.setItem(PENDING_PASSWORD_KEY, password);
+    } else {
+        sessionStorage.removeItem(PENDING_PASSWORD_KEY);
+    }
+}
+
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         accessToken: readAccessToken() as string | null,
@@ -36,6 +49,8 @@ export const useAuthStore = defineStore('auth', {
         twoFactorToken: null as string | null,
         /** E-mail en attente de confirmation après inscription. */
         pendingEmail: readPendingEmail() as string | null,
+        /** Mot de passe temporaire pour login auto après confirm-email (sessionStorage). */
+        pendingPassword: readPendingPassword() as string | null,
         user: null as Me | null,
         returnUrl: null as string | null
     }),
@@ -55,6 +70,16 @@ export const useAuthStore = defineStore('auth', {
             writePendingEmail(email);
         },
 
+        setPendingPassword(password: string | null) {
+            this.pendingPassword = password;
+            writePendingPassword(password);
+        },
+
+        clearPendingRegistration() {
+            this.setPendingEmail(null);
+            this.setPendingPassword(null);
+        },
+
         setTokens(tokens: AuthTokens) {
             this.accessToken = tokens.accessToken;
             this.refreshToken = tokens.refreshToken;
@@ -66,7 +91,7 @@ export const useAuthStore = defineStore('auth', {
             this.accessToken = null;
             this.refreshToken = null;
             this.twoFactorToken = null;
-            this.setPendingEmail(null);
+            this.clearPendingRegistration();
             this.user = null;
             sessionStorage.removeItem(ACCESS_KEY);
             localStorage.removeItem(REFRESH_KEY);
@@ -127,6 +152,7 @@ export const useAuthStore = defineStore('auth', {
             const result = await authApi.register(payload);
             if (result.email) {
                 this.setPendingEmail(result.email);
+                this.setPendingPassword(payload.password);
                 // replace : le retour arrière ne ramène pas sur un formulaire d’inscription déjà consommé
                 await router.replace({
                     path: '/auth/confirm-email',
@@ -144,7 +170,16 @@ export const useAuthStore = defineStore('auth', {
 
         async confirmEmail(email: string, code: string) {
             await authApi.confirmEmail({ email, code });
-            this.setPendingEmail(null);
+            const password = this.pendingPassword;
+            this.clearPendingRegistration();
+            if (!password) {
+                await router.push({
+                    path: '/auth/login',
+                    query: { notice: 'E-mail confirmé. Veuillez vous connecter.' }
+                });
+                return;
+            }
+            await this.login(email, password);
         },
 
         async resendVerification(email: string) {

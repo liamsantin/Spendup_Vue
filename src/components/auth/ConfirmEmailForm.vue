@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 
 const route = useRoute();
-const router = useRouter();
 const auth = useAuthStore();
 
 const email = ref('');
@@ -15,7 +15,6 @@ const resending = ref(false);
 const error = ref<string | null>(null);
 const success = ref<string | null>(null);
 
-const codeRules = [(v: string) => !!v, (v: string) => /^\d{6}$/.test(v)];
 const hasEmail = computed(() => !!email.value);
 
 onMounted(() => {
@@ -29,18 +28,22 @@ onMounted(() => {
     }
 });
 
-async function confirm() {
+async function confirm(submittedCode?: string) {
     if (!email.value) {
         error.value = 'E-mail manquant. Reprenez l’inscription.';
         return;
     }
+    const otp = submittedCode ?? code.value;
+    if (otp.length !== 6) {
+        error.value = 'Saisissez le code à 6 chiffres.';
+        return;
+    }
+    if (loading.value) return;
     error.value = null;
     success.value = null;
     loading.value = true;
     try {
-        await auth.confirmEmail(email.value, code.value);
-        success.value = 'E-mail confirmé. Vous pouvez vous connecter.';
-        setTimeout(() => router.push('/auth/login'), 800);
+        await auth.confirmEmail(email.value, otp);
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -75,16 +78,8 @@ async function resend() {
                 <strong class="textPrimary">{{ email }}</strong
                 >. Vérifiez votre boîte de réception (et les spams).
             </p>
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Code de vérification</v-label>
-            <VTextField
-                v-model="code"
-                :rules="codeRules"
-                class="mb-4"
-                hide-details
-                inputmode="numeric"
-                maxlength="6"
-                autocomplete="one-time-code"
-            />
+            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Saisissez votre code à 6 chiffres</v-label>
+            <OtpDigitsInput v-model="code" field-class="confirm-email-otp" @complete="confirm" />
             <v-btn class="mb-1 text-medium-emphasis" variant="text" size="small" block :loading="resending" @click="resend">
                 Renvoyer le code
             </v-btn>
