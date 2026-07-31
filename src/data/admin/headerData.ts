@@ -34,9 +34,15 @@ const profileDD: profileType[] = [
     },
     {
         avatar: proUser1,
-        title: 'Paramètres',
+        title: 'Comptes',
         subtitle: 'Compte & sécurité',
-        href: '/app/parametres'
+        href: '/app/comptes'
+    },
+    {
+        avatar: proUser3,
+        title: 'Applications',
+        subtitle: 'Apps connectées',
+        href: '/app/applications'
     },
     {
         avatar: proUser3,
@@ -52,8 +58,12 @@ const searchSugg: searchType[] = [
         href: '/app'
     },
     {
-        title: 'Paramètres',
-        href: '/app/parametres'
+        title: 'Comptes',
+        href: '/app/comptes'
+    },
+    {
+        title: 'Applications',
+        href: '/app/applications'
     },
     {
         title: 'Accueil',

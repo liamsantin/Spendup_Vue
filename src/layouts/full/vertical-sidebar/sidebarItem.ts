@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, ArrowsExchangeIcon, SettingsIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, ArrowsExchangeIcon, UserCircleIcon, AppsIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -35,9 +35,14 @@ const sidebarItem: menu[] = [
     },
     { header: 'Paramètres' },
     {
-        title: 'Paramètres',
-        icon: SettingsIcon,
-        to: '/app/parametres'
+        title: 'Comptes',
+        icon: UserCircleIcon,
+        to: '/app/comptes'
+    },
+    {
+        title: 'Applications',
+        icon: AppsIcon,
+        to: '/app/applications'
     }
 ];
 
