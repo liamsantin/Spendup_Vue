@@ -6,7 +6,7 @@
  */
 defineOptions({ name: 'AppAlert', inheritAttrs: false });
 
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from 'vue';
 
 const props = withDefaults(
     defineProps<{
@@ -35,6 +35,8 @@ const emit = defineEmits<{
     dismiss: [];
 }>();
 
+const attrs = useAttrs();
+
 const internalVisible = ref(true);
 let dismissTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -42,13 +44,22 @@ const isControlled = computed(() => props.modelValue !== undefined);
 
 const visible = computed(() => (isControlled.value ? props.modelValue !== false : internalVisible.value));
 
-const progressStyle = computed(() =>
-    props.dismissMs
-        ? {
-              animationDuration: `${props.dismissMs}ms`
-          }
-        : undefined
-);
+const themeColorKey = computed(() => {
+    const color = attrs.color;
+    const type = attrs.type;
+    if (typeof color === 'string' && color) return color;
+    if (typeof type === 'string' && type) return type;
+    return 'primary';
+});
+
+const progressStyle = computed(() => {
+    if (!props.dismissMs) return undefined;
+    return {
+        animationDuration: `${props.dismissMs}ms`,
+        // Légèrement plus foncé que la couleur de l’alert
+        backgroundColor: `color-mix(in srgb, rgb(var(--v-theme-${themeColorKey.value})) 92%, black)`
+    };
+});
 
 function clearDismissTimer() {
     if (dismissTimer) {
@@ -128,7 +139,6 @@ onBeforeUnmount(() => {
     width: 100%;
     transform: scaleX(0);
     transform-origin: left center;
-    background-color: rgba(var(--v-theme-on-surface), 0.28);
     pointer-events: none;
     animation-name: app-alert-progress;
     animation-timing-function: linear;

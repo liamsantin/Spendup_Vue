@@ -58,7 +58,7 @@ function onDisabled() {
                             variant="tonal"
                             density="default"
                             closable
-                            :dismiss-ms="3000"
+                            :dismiss-ms="5000"
                             class="mt-4"
                             @dismiss="successMessage = null"
                         >
