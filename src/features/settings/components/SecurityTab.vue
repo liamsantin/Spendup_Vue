@@ -241,13 +241,12 @@ function isDeviceTrusted(device: AuthDevice): boolean {
     return device.isTrusted === true;
 }
 
-async function trustDevice(device: AuthDevice) {
-    if (trustLoadingId.value || isDeviceTrusted(device)) return;
+async function setDeviceTrust(device: AuthDevice, isTrusted: boolean) {
+    if (trustLoadingId.value || isDeviceTrusted(device) === isTrusted) return;
     trustLoadingId.value = device.deviceIdentifier;
     devicesError.value = null;
     try {
-        await auth.trustDevice(device.deviceIdentifier);
-        successMessage.value = 'Appareil marqué comme de confiance.';
+        await auth.setDeviceTrust(device.deviceIdentifier, isTrusted);
         await loadDevices();
         if (detailsDevice.value?.deviceIdentifier === device.deviceIdentifier) {
             detailsDevice.value = devices.value.find((d) => d.deviceIdentifier === device.deviceIdentifier) ?? null;
@@ -423,12 +422,17 @@ async function confirmRevokeAll() {
                                                     </v-avatar>
                                                 </v-btn>
                                             </template>
-                                            <v-list density="compact" min-width="180">
+                                            <v-list density="compact" min-width="200">
                                                 <v-list-item title="Voir les détails" @click="openDeviceDetails(device)" />
                                                 <v-list-item
                                                     v-if="!isDeviceTrusted(device)"
                                                     title="Faire confiance"
-                                                    @click="trustDevice(device)"
+                                                    @click="setDeviceTrust(device, true)"
+                                                />
+                                                <v-list-item
+                                                    v-else
+                                                    title="Ne plus faire confiance"
+                                                    @click="setDeviceTrust(device, false)"
                                                 />
                                                 <v-list-item title="Déconnecter" @click="revokeDevice(device)" />
                                             </v-list>
@@ -484,9 +488,19 @@ async function confirmRevokeAll() {
                     variant="tonal"
                     flat
                     :loading="trustLoadingId === detailsDevice.deviceIdentifier"
-                    @click="trustDevice(detailsDevice)"
+                    @click="setDeviceTrust(detailsDevice, true)"
                 >
                     Faire confiance
+                </v-btn>
+                <v-btn
+                    v-else-if="detailsDevice"
+                    color="default"
+                    variant="tonal"
+                    flat
+                    :loading="trustLoadingId === detailsDevice.deviceIdentifier"
+                    @click="setDeviceTrust(detailsDevice, false)"
+                >
+                    Ne plus faire confiance
                 </v-btn>
                 <v-spacer />
                 <v-btn color="primary" flat @click="close">Fermer</v-btn>

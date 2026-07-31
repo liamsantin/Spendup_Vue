@@ -241,9 +241,9 @@ export const useAuthStore = defineStore('auth', {
             await authApi.revokeDevice(token, deviceIdentifier);
         },
 
-        async trustDevice(deviceIdentifier: string) {
+        async setDeviceTrust(deviceIdentifier: string, isTrusted: boolean) {
             const token = await this.requireAccessToken();
-            await authApi.trustDevice(token, deviceIdentifier);
+            await authApi.setDeviceTrust(token, deviceIdentifier, isTrusted);
         },
 
         /** Révoque toutes les sessions (y compris l’appareil courant) → force re-login. */

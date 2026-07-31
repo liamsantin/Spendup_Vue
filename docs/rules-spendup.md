@@ -94,10 +94,11 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 
 ### Clients HTTP
 
-| Client                                         | Quand                                                   |
-| ---------------------------------------------- | ------------------------------------------------------- |
-| `authApi` (`features/auth`)                    | Bootstrap auth `/api/auth/*` (sans refresh interceptor) |
-| `fetchWrapper` (`utils/helpers/fetch-helpers`) | API domaine authentifiée + refresh 401                  |
+| Client                                                       | Quand                                                   |
+| ------------------------------------------------------------ | ------------------------------------------------------- |
+| `authApi` + `authHttp.get/post/put/delete` (`features/auth`) | Bootstrap auth `/api/auth/*` (sans refresh interceptor) |
+| `fetchWrapper` (`utils/helpers/fetch-helpers`) via Axios     | API domaine authentifiée + refresh 401                  |
+| `authAxios` / `createApiAxios` (`axios-helpers`)             | Instances Axios partagées                               |
 
 Les composants UI passent par le store de la feature, pas par le client HTTP.
 

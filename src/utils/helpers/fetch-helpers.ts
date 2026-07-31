@@ -1,10 +1,12 @@
+import axios, { type AxiosRequestConfig, type Method } from 'axios';
 import { useAuthStore } from '@/features/auth';
+import { createApiAxios, getApiBaseUrl } from '@/utils/helpers/axios-helpers';
 
-type RequestOptions = {
-    method: string;
-    headers: Record<string, string>;
-    body?: string;
-};
+/**
+ * Client Axios pour les API domaine authentifiées.
+ * Ajoute le Bearer et retente une fois après refresh sur 401.
+ */
+const domainAxios = createApiAxios();
 
 let refreshInFlight: Promise<boolean> | null = null;
 
@@ -15,37 +17,52 @@ export const fetchWrapper = {
     delete: request('DELETE')
 };
 
-function apiBaseUrl(): string {
-    return (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
-}
-
-function request(method: string) {
+function request(method: Method) {
     return async (url: string, body?: unknown) => {
-        const doFetch = async (retried: boolean): Promise<unknown> => {
-            const requestOptions: RequestOptions = {
+        const doRequest = async (retried: boolean): Promise<unknown> => {
+            const config: AxiosRequestConfig = {
+                url: toRequestUrl(url),
                 method,
-                headers: authHeader(url)
+                data: body,
+                headers: authHeader(url),
+                validateStatus: () => true
             };
-            if (body !== undefined) {
-                requestOptions.headers['Content-Type'] = 'application/json';
-                requestOptions.body = JSON.stringify(body);
-            }
 
-            const response = await fetch(url, requestOptions);
-            return handleResponse(response, () => {
-                if (retried) return Promise.reject('Unauthorized');
-                return doFetch(true);
-            });
+            try {
+                const response = await domainAxios.request(config);
+                return handleResponse(response.status, response.data, response.statusText, () => {
+                    if (retried) return Promise.reject('Unauthorized');
+                    return doRequest(true);
+                });
+            } catch (e: unknown) {
+                if (axios.isAxiosError(e) && !e.response) {
+                    return Promise.reject(e.message || 'Network error');
+                }
+                throw e;
+            }
         };
 
-        return doFetch(false);
+        return doRequest(false);
     };
+}
+
+/** Accepte une URL absolue ou un path relatif à la base API. */
+function toRequestUrl(url: string): string {
+    const base = getApiBaseUrl();
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        if (base && url.startsWith(base)) {
+            return url.slice(base.length) || '/';
+        }
+        return url;
+    }
+    return url;
 }
 
 function authHeader(url: string): Record<string, string> {
     const auth = useAuthStore();
+    const base = getApiBaseUrl();
     const isLoggedIn = !!auth.accessToken;
-    const isApiUrl = url.startsWith(apiBaseUrl());
+    const isApiUrl = url.startsWith(base) || url.startsWith('/') || !url.startsWith('http');
     if (isLoggedIn && isApiUrl && auth.accessToken) {
         return { Authorization: `Bearer ${auth.accessToken}` };
     }
@@ -62,11 +79,8 @@ async function tryRefreshOnce(): Promise<boolean> {
     return refreshInFlight;
 }
 
-async function handleResponse(response: Response, retry: () => Promise<unknown>) {
-    const text = await response.text();
-    const data = text ? JSON.parse(text) : null;
-
-    if (response.status === 401) {
+async function handleResponse(status: number, data: unknown, statusText: string, retry: () => Promise<unknown>): Promise<unknown> {
+    if (status === 401) {
         const auth = useAuthStore();
         if (auth.refreshToken) {
             const refreshed = await tryRefreshOnce();
@@ -78,21 +92,22 @@ async function handleResponse(response: Response, retry: () => Promise<unknown>)
             auth.clearSession();
             await auth.forceReLogin();
         }
-        const error = (data && data.message) || response.statusText;
+        const error = (data && typeof data === 'object' && 'message' in data && (data as { message?: string }).message) || statusText;
         return Promise.reject(error);
     }
 
-    if (!response.ok) {
-        const error = (data && data.message) || response.statusText;
+    if (status >= 400) {
+        const error = (data && typeof data === 'object' && 'message' in data && (data as { message?: string }).message) || statusText;
         return Promise.reject(error);
     }
 
     // Spendup envelope when present
     if (data && typeof data === 'object' && 'success' in data) {
-        if (!data.success) {
-            return Promise.reject(data.message ?? 'Request failed');
+        const envelope = data as { success: boolean; message?: string; result?: unknown };
+        if (!envelope.success) {
+            return Promise.reject(envelope.message ?? 'Request failed');
         }
-        return data.result;
+        return envelope.result;
     }
 
     return data;
