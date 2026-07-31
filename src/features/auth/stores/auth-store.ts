@@ -214,6 +214,23 @@ export const useAuthStore = defineStore('auth', {
             await this.navigateAfterLogin();
         },
 
+        async setupTwoFactor() {
+            const token = await this.requireAccessToken();
+            return authApi.setup2fa(token);
+        },
+
+        async enableTwoFactor(code: string) {
+            const token = await this.requireAccessToken();
+            await authApi.enable2fa(token, code);
+            await this.fetchMe();
+        },
+
+        async disableTwoFactor(code: string) {
+            const token = await this.requireAccessToken();
+            await authApi.disable2fa(token, code);
+            await this.fetchMe();
+        },
+
         async refreshSession(): Promise<boolean> {
             if (!this.refreshToken) return false;
             try {

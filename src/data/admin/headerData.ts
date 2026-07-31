@@ -5,7 +5,6 @@ import user2 from '@/assets/images/profile/user-2.jpg';
 import user3 from '@/assets/images/profile/user-3.jpg';
 
 import proUser1 from '@/assets/images/svgs/icon-account.svg';
-import proUser3 from '@/assets/images/svgs/icon-tasks.svg';
 
 const notifications: notificationType[] = [
     {
@@ -28,27 +27,9 @@ const notifications: notificationType[] = [
 const profileDD: profileType[] = [
     {
         avatar: proUser1,
-        title: 'Tableau de bord',
-        subtitle: 'Spend.Up',
-        href: '/app'
-    },
-    {
-        avatar: proUser1,
         title: 'Comptes',
         subtitle: 'Compte & sécurité',
         href: '/app/comptes'
-    },
-    {
-        avatar: proUser3,
-        title: 'Applications',
-        subtitle: 'Apps connectées',
-        href: '/app/applications'
-    },
-    {
-        avatar: proUser3,
-        title: 'Site public',
-        subtitle: 'Accueil',
-        href: '/'
     }
 ];
 

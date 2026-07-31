@@ -16,6 +16,7 @@
     },
     "dependencies": {
         "pinia": "^3.0.4",
+        "qrcode": "^1.5.4",
         "vee-validate": "^4.15.1",
         "vue": "^3.5.38",
         "vue-i18n": "^9.14.5",
@@ -28,6 +29,7 @@
         "@mdi/font": "^7.4.47",
         "@tsconfig/node22": "^22.0.2",
         "@types/node": "^22.19.21",
+        "@types/qrcode": "^1.5.6",
         "@vitejs/plugin-vue": "^6.0.7",
         "@vue/eslint-config-prettier": "^10.2.0",
         "@vue/eslint-config-typescript": "^14.8.0",

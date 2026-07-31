@@ -2,7 +2,6 @@
 import { computed } from 'vue';
 import { MailIcon } from 'vue-tabler-icons';
 import { profileDD } from '@/data/admin/headerData';
-
 import { useAuthStore } from '@/features/auth';
 
 const authStore = useAuthStore();
@@ -38,21 +37,19 @@ const email = computed(() => authStore.user?.email ?? '');
                 </div>
                 <v-divider></v-divider>
             </div>
-            <perfect-scrollbar style="height: calc(100vh - 240px); max-height: 240px">
-                <v-list class="py-0 theme-list" lines="two">
-                    <v-list-item v-for="item in profileDD" :key="item.title" class="py-4 px-8 custom-text-primary" :to="item.href">
-                        <template v-slot:prepend>
-                            <v-avatar size="48" color="lightprimary" class="mr-3" rounded="md">
-                                <img :src="item.avatar" width="24" height="24" :alt="item.avatar" />
-                            </v-avatar>
-                        </template>
-                        <div>
-                            <h6 class="text-subtitle-1 font-weight-bold mb-2 custom-title">{{ item.title }}</h6>
-                        </div>
-                        <p class="text-subtitle-1 font-weight-regular textSecondary">{{ item.subtitle }}</p>
-                    </v-list-item>
-                </v-list>
-            </perfect-scrollbar>
+            <v-list class="py-0 theme-list" lines="two">
+                <v-list-item v-for="item in profileDD" :key="item.title" class="py-4 px-8 custom-text-primary" :to="item.href">
+                    <template v-slot:prepend>
+                        <v-avatar size="48" color="lightprimary" class="mr-3" rounded="md">
+                            <img :src="item.avatar" width="24" height="24" :alt="item.title" />
+                        </v-avatar>
+                    </template>
+                    <div>
+                        <h6 class="text-subtitle-1 font-weight-bold mb-2 custom-title">{{ item.title }}</h6>
+                    </div>
+                    <p class="text-subtitle-1 font-weight-regular textSecondary">{{ item.subtitle }}</p>
+                </v-list-item>
+            </v-list>
             <div class="pt-4 pb-6 px-8 text-center">
                 <v-btn color="primary" variant="outlined" block @click="authStore.logout()">Se déconnecter</v-btn>
             </div>

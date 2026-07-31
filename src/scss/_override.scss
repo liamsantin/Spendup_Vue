@@ -1,6 +1,8 @@
 @use 'variables' as *;
 
 html {
+    zoom: 0.95;
+
     .bg-success {
         color: white !important;
     }
