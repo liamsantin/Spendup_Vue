@@ -88,8 +88,4 @@ const switchoff3 = ref(false);
             </v-card>
         </v-col>
     </v-row>
-    <div class="d-flex justify-end mt-5">
-        <v-btn size="large" color="primary" class="mr-4" flat>Enregistrer</v-btn>
-        <v-btn size="large" class="bg-lighterror text-error" flat>Annuler</v-btn>
-    </div>
 </template>
