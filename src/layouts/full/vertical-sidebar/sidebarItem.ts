@@ -25,11 +25,6 @@ const sidebarItem: menu[] = [
         icon: LayoutDashboardIcon,
         to: '/app'
     },
-    {
-        title: 'Paramètres',
-        icon: SettingsIcon,
-        to: '/app/parametres'
-    },
     { header: 'Finances' },
     {
         title: 'Transactions',
@@ -37,6 +32,12 @@ const sidebarItem: menu[] = [
         to: '/app',
         disabled: true,
         subCaption: 'Bientôt'
+    },
+    { header: 'Paramètres' },
+    {
+        title: 'Paramètres',
+        icon: SettingsIcon,
+        to: '/app/parametres'
     }
 ];
 
