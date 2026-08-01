@@ -9,7 +9,7 @@ const appSettings = useAppSettingsStore();
 </script>
 
 <template>
-    <v-locale-provider>
+    <v-locale-provider locale="fr">
         <v-app
             :theme="appSettings.actTheme"
             :class="[

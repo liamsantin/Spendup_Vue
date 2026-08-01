@@ -21,6 +21,7 @@ export type AuthTokens = {
 };
 
 export type Me = {
+    /** Identifiant public à 7 caractères (0-9 + A-Z), ex. `762H2M3`. */
     userPublicId: string;
     email: string | null;
     username: string | null;

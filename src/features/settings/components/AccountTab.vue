@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { isValidUsername, normalizeUsername, useAuthStore, type Me, type UpdateProfilePayload } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppDatePicker from '@/components/shared/AppDatePicker.vue';
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -58,6 +59,30 @@ const currentEmail = computed(() => auth.user?.email ?? null);
 const pendingEmail = computed(() => auth.user?.pendingEmail ?? null);
 const displayUsername = computed(() => username.value || '—');
 const displayEmail = computed(() => currentEmail.value || '—');
+const displayPublicId = computed(() => auth.user?.userPublicId || '—');
+const birthDateMax = computed(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+});
+const birthDateModel = computed({
+    get: () => birthDate.value || null,
+    set: (value: string | null) => {
+        birthDate.value = value ?? '';
+    }
+});
+
+async function copyPublicId() {
+    const id = auth.user?.userPublicId;
+    if (!id) return;
+    try {
+        await navigator.clipboard.writeText(id);
+    } catch {
+        profileError.value = 'Impossible de copier l’identifiant.';
+    }
+}
 
 function emptyToNull(value: string): string | null {
     const trimmed = value.trim();
@@ -113,12 +138,65 @@ function buildProfilePayload(): UpdateProfilePayload {
     };
 }
 
+type ProfileSnapshot = {
+    firstName: string | null;
+    name: string | null;
+    phone: string | null;
+    birthDate: string | null;
+    street: string | null;
+    streetNumber: string | null;
+    countryId: number | null;
+    profilePicture: string | null;
+};
+
+const baseline = ref<ProfileSnapshot | null>(null);
+
+function takeSnapshot(): ProfileSnapshot {
+    return {
+        firstName: emptyToNull(firstName.value),
+        name: emptyToNull(name.value),
+        phone: emptyToNull(phone.value),
+        birthDate: emptyToNull(birthDate.value),
+        street: emptyToNull(street.value),
+        streetNumber: emptyToNull(streetNumber.value),
+        countryId: countryId.value,
+        profilePicture: pictureCleared.value ? null : profilePicture.value
+    };
+}
+
+function commitBaseline() {
+    baseline.value = takeSnapshot();
+}
+
+const isDirty = computed(() => {
+    if (!baseline.value) return false;
+    const current = takeSnapshot();
+    const base = baseline.value;
+    return (
+        current.firstName !== base.firstName ||
+        current.name !== base.name ||
+        current.phone !== base.phone ||
+        current.birthDate !== base.birthDate ||
+        current.street !== base.street ||
+        current.streetNumber !== base.streetNumber ||
+        current.countryId !== base.countryId ||
+        current.profilePicture !== base.profilePicture
+    );
+});
+
+const emit = defineEmits<{
+    dirty: [value: boolean];
+}>();
+
+watch(isDirty, (value) => emit('dirty', value), { immediate: true });
+
 async function loadProfile() {
     loading.value = true;
     profileError.value = null;
     try {
         const user = await auth.fetchMe();
         hydrateFromUser(user);
+        commitBaseline();
     } catch (e: unknown) {
         profileError.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -127,13 +205,14 @@ async function loadProfile() {
 }
 
 async function saveProfile() {
-    if (profileSaving.value) return;
+    if (profileSaving.value || !isDirty.value) return;
     profileSaving.value = true;
     profileError.value = null;
     profileSuccess.value = null;
     try {
         await auth.updateProfile(buildProfilePayload());
         hydrateFromUser(auth.user);
+        commitBaseline();
         profileSuccess.value = 'Profil enregistré.';
     } catch (e: unknown) {
         profileError.value = e instanceof Error ? e.message : String(e);
@@ -307,6 +386,9 @@ defineExpose({
     resetProfile,
     get loading() {
         return profileSaving.value || loading.value;
+    },
+    get isDirty() {
+        return isDirty.value;
     }
 });
 </script>
@@ -355,7 +437,19 @@ defineExpose({
             <v-col cols="12" class="account-layout__info min-w-0">
                 <v-card elevation="10" class="h-100">
                     <v-card-item>
-                        <h5 class="text-h5">Informations personnelles</h5>
+                        <div class="d-flex align-center justify-space-between flex-wrap ga-2">
+                            <h5 class="text-h5 mb-0">Informations personnelles</h5>
+                            <div
+                                v-if="displayPublicId !== '—'"
+                                class="text-subtitle-1 text-medium-emphasis account-public-id"
+                                role="button"
+                                tabindex="0"
+                                @click="copyPublicId"
+                                @keydown.enter.prevent="copyPublicId"
+                            >
+                                <span class="font-weight-medium textPrimary">#{{ displayPublicId }}</span>
+                            </div>
+                        </div>
                         <div class="text-subtitle-1 text-medium-emphasis mt-2">Enregistrez via la barre d’actions en bas de page.</div>
                         <AppAlert
                             v-if="profileSuccess"
@@ -372,7 +466,8 @@ defineExpose({
                             {{ profileError }}
                         </AppAlert>
                         <AppAlert v-if="pendingEmail" color="warning" variant="tonal" class="mt-4">
-                            Confirmation en attente pour <strong>{{ pendingEmail }}</strong>.
+                            Confirmation en attente pour <strong>{{ pendingEmail }}</strong
+                            >.
                             <v-btn
                                 variant="text"
                                 color="warning"
@@ -447,7 +542,7 @@ defineExpose({
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-label class="mb-2 font-weight-medium">Date de naissance</v-label>
-                                    <v-text-field v-model="birthDate" color="primary" variant="outlined" type="date" hide-details />
+                                    <AppDatePicker v-model="birthDateModel" :max="birthDateMax" color="primary" hide-details />
                                 </v-col>
                                 <v-col cols="12" md="8">
                                     <v-label class="mb-2 font-weight-medium">Rue</v-label>
@@ -589,6 +684,11 @@ defineExpose({
 
 .account-layout {
     max-width: 100%;
+}
+
+.account-public-id {
+    cursor: pointer;
+    user-select: none;
 }
 
 .account-layout__photo,

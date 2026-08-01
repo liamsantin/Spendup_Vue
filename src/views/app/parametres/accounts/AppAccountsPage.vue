@@ -13,9 +13,11 @@ type AccountTabExpose = {
 const tab = ref('Account');
 const accountTabRef = ref<AccountTabExpose | null>(null);
 const footerBusy = ref(false);
+const profileDirty = ref(false);
 
 const isAccountTab = computed(() => tab.value === 'Account');
 const saveLoading = computed(() => footerBusy.value || !!accountTabRef.value?.loading);
+const saveDisabled = computed(() => !isAccountTab.value || saveLoading.value || !profileDirty.value);
 
 async function onSave() {
     if (!isAccountTab.value || !accountTabRef.value || footerBusy.value) return;
@@ -64,7 +66,7 @@ async function onCancel() {
                 <v-card-text class="pa-sm-6 pa-3">
                     <v-window v-model="tab">
                         <v-window-item value="Account">
-                            <AccountTab ref="accountTabRef" />
+                            <AccountTab ref="accountTabRef" @dirty="profileDirty = $event" />
                         </v-window-item>
                         <v-window-item value="Notification">
                             <NotificationTab />
@@ -79,10 +81,12 @@ async function onCancel() {
             <v-divider class="flex-grow-0" />
 
             <div class="settings-actions-bar">
-                <v-btn color="primary" class="mr-3" flat :loading="saveLoading" :disabled="!isAccountTab" @click="onSave">
+                <v-btn color="primary" class="mr-3" flat :loading="saveLoading" :disabled="saveDisabled" @click="onSave">
                     Enregistrer
                 </v-btn>
-                <v-btn class="bg-lighterror text-error" flat :disabled="!isAccountTab || saveLoading" @click="onCancel"> Annuler </v-btn>
+                <v-btn class="bg-lighterror text-error" flat :disabled="!isAccountTab || saveLoading || !profileDirty" @click="onCancel">
+                    Annuler
+                </v-btn>
             </div>
         </v-card>
     </div>

@@ -172,13 +172,13 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Même convention de nommage que les stores (`auth-store.ts` → `auth-helpers.ts`, `user-store.ts` → `user-helpers.ts`).
 - Un fichier par domaine transverse ; pas de noms génériques (`utils.ts`, `helpers.ts`, `fetch-wrapper.ts`).
 
-| Fichier                   | Exemples d'exports       |
-| ------------------------- | ------------------------ |
-| `fetch-helpers.ts`        | `fetchWrapper`           |
+| Fichier                   | Exemples d'exports          |
+| ------------------------- | --------------------------- |
+| `fetch-helpers.ts`        | `fetchWrapper`              |
 | `scrollbar-helpers.ts`    | `PERFECT_SCROLLBAR_OPTIONS` |
-| `pricing-helpers.ts`      | `isPricingPageEnabled()` |
-| `env-helpers.ts`          | `isDevAppEnv()`          |
-| `fake-backend-helpers.ts` | Backend factice (legacy) |
+| `pricing-helpers.ts`      | `isPricingPageEnabled()`    |
+| `env-helpers.ts`          | `isDevAppEnv()`             |
+| `fake-backend-helpers.ts` | Backend factice (legacy)    |
 
 - Import : `@/utils/helpers/<domaine>-helpers`.
 - Les helpers **métier** propres à une feature vont dans `features/<domaine>/helpers/` (même convention `<domaine>-helpers.ts` ou sous-domaine : `transaction-format-helpers.ts`).
