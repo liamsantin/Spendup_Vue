@@ -395,17 +395,17 @@ defineExpose({
 </script>
 
 <template>
-    <v-card elevation="10" class="account-tab">
+    <div class="account-tab">
         <div v-if="loading && !auth.user" class="d-flex justify-center py-10">
             <v-progress-circular indeterminate color="primary" size="36" />
         </div>
 
-        <v-row v-else class="account-layout ma-0" no-gutters>
-            <v-col cols="12" class="account-layout__photo min-w-0">
-                <v-card elevation="10" class="h-100">
+        <v-row v-else class="justify-center py-1" no-gutters>
+            <v-col cols="12" md="9" class="pb-4">
+                <v-card elevation="10">
                     <v-card-item>
-                        <h5 class="text-h5">Photo de profil</h5>
-                        <div class="text-subtitle-1 text-medium-emphasis mt-2">Changez votre photo de profil ici</div>
+                        <h4 class="text-h4">Photo de profil</h4>
+                        <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">Changez votre photo de profil ici</div>
                         <div class="text-center mt-6 mb-6">
                             <v-avatar size="120" color="lightprimary">
                                 <v-img v-if="avatarSrc" :src="avatarSrc" alt="Photo de profil" cover />
@@ -425,21 +425,21 @@ defineExpose({
                             <v-btn color="primary" class="ma-1" flat @click="openFilePicker">Téléverser</v-btn>
                             <v-btn color="error" class="ma-1" variant="outlined" flat @click="resetPicture">Réinitialiser</v-btn>
                         </div>
-                        <div class="text-subtitle-1 text-medium-emphasis text-center my-sm-8 my-6">
+                        <div class="text-subtitle-1 text-medium-emphasis text-center mt-6">
                             JPG, GIF ou PNG autorisés. Taille max. 800 Ko
                         </div>
-                        <AppAlert v-if="pictureError" type="warning" class="mt-2" closable @dismiss="pictureError = null">
+                        <AppAlert v-if="pictureError" type="warning" class="mt-4" closable @dismiss="pictureError = null">
                             {{ pictureError }}
                         </AppAlert>
                     </v-card-item>
                 </v-card>
             </v-col>
 
-            <v-col cols="12" class="account-layout__info min-w-0">
-                <v-card elevation="10" class="h-100">
+            <v-col cols="12" md="9" class="pb-4">
+                <v-card elevation="10">
                     <v-card-item>
                         <div class="d-flex align-center justify-space-between flex-wrap ga-2">
-                            <h5 class="text-h5 mb-0">Informations personnelles</h5>
+                            <h4 class="text-h4 mb-0">Informations personnelles</h4>
                             <div
                                 v-if="displayPublicId !== '—'"
                                 class="text-subtitle-1 text-medium-emphasis account-public-id"
@@ -451,7 +451,9 @@ defineExpose({
                                 <span class="font-weight-medium textPrimary">#{{ displayPublicId }}</span>
                             </div>
                         </div>
-                        <div class="text-subtitle-1 text-medium-emphasis mt-2">Enregistrez via la barre d’actions en bas de page.</div>
+                        <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
+                            Enregistrez via la barre d’actions en bas de page.
+                        </div>
                         <AppAlert
                             v-if="profileSuccess"
                             color="success"
@@ -466,21 +468,8 @@ defineExpose({
                         <AppAlert v-if="profileError" type="error" class="mt-4" closable @dismiss="profileError = null">
                             {{ profileError }}
                         </AppAlert>
-                        <AppAlert v-if="pendingEmail" color="warning" variant="tonal" class="mt-4">
-                            Confirmation en attente pour <strong>{{ pendingEmail }}</strong
-                            >.
-                            <v-btn
-                                variant="text"
-                                color="warning"
-                                size="small"
-                                class="ml-1"
-                                @click="router.push({ path: '/auth/confirm-email-change', query: { email: pendingEmail } })"
-                            >
-                                Saisir le code
-                            </v-btn>
-                        </AppAlert>
-                        <div class="mt-5">
-                            <v-row class="ma-0" dense>
+                        <div class="mt-6">
+                            <v-row dense>
                                 <v-col cols="12" md="6">
                                     <v-label class="mb-2 font-weight-medium">Prénom</v-label>
                                     <v-text-field v-model="firstName" color="primary" variant="outlined" hide-details />
@@ -520,10 +509,33 @@ defineExpose({
                                     />
                                 </v-col>
                             </v-row>
+                        </div>
+                    </v-card-item>
+                </v-card>
+            </v-col>
 
-                            <h5 class="text-h5 mt-8 mb-5">Informations du compte</h5>
-
-                            <v-row class="ma-0" dense>
+            <v-col cols="12" md="9">
+                <v-card elevation="10">
+                    <v-card-item>
+                        <h4 class="text-h4">Informations du compte</h4>
+                        <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
+                            Identifiants de connexion. Modifiez-les via l’icône crayon.
+                        </div>
+                        <AppAlert v-if="pendingEmail" color="warning" variant="tonal" class="mt-4">
+                            Confirmation en attente pour <strong>{{ pendingEmail }}</strong
+                            >.
+                            <v-btn
+                                variant="text"
+                                color="warning"
+                                size="small"
+                                class="ml-1"
+                                @click="router.push({ path: '/auth/confirm-email-change', query: { email: pendingEmail } })"
+                            >
+                                Saisir le code
+                            </v-btn>
+                        </AppAlert>
+                        <div class="mt-6">
+                            <v-row dense>
                                 <v-col cols="12" md="6">
                                     <v-label class="mb-2 font-weight-medium">Nom d’utilisateur</v-label>
                                     <v-text-field
@@ -708,17 +720,13 @@ defineExpose({
                 <v-btn color="primary" flat type="submit" form="account-password-form" :loading="passwordSaving">Enregistrer</v-btn>
             </template>
         </AppModalBase>
-    </v-card>
+    </div>
 </template>
 
 <style scoped>
 .account-tab {
     max-width: 100%;
     overflow-x: hidden;
-}
-
-.account-layout {
-    max-width: 100%;
 }
 
 .account-public-id {
@@ -734,34 +742,8 @@ defineExpose({
     cursor: pointer;
 }
 
-.account-layout__photo,
-.account-layout__info {
-    min-width: 0;
-}
-
-.account-layout__info :deep(.v-label) {
+.account-tab :deep(.v-label) {
     display: block;
     margin-bottom: 16px;
-}
-
-@media screen and (min-width: 960px) {
-    .account-layout__photo {
-        flex: 0 0 30%;
-        max-width: 30%;
-        padding-right: 12px;
-        box-sizing: border-box;
-    }
-
-    .account-layout__info {
-        flex: 0 0 70%;
-        max-width: 70%;
-        box-sizing: border-box;
-    }
-}
-
-@media screen and (max-width: 959px) {
-    .account-layout__photo {
-        margin-bottom: 12px;
-    }
 }
 </style>
