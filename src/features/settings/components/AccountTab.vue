@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { PencilIcon } from 'vue-tabler-icons';
 import { isValidUsername, normalizeUsername, useAuthStore, type Me, type UpdateProfilePayload } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
 import AppDatePicker from '@/components/shared/AppDatePicker.vue';
+import { COUNTRIES } from '@/data/countries';
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -33,7 +35,6 @@ const profilePicture = ref<string | null>(null);
 /** Aperçu local (blob:) après sélection fichier — non persisté tant qu’il n’y a pas d’upload API. */
 const picturePreview = ref<string | null>(null);
 const pictureCleared = ref(false);
-/** Conservé depuis /me — non éditable tant qu’il n’y a pas de GET /countries. */
 const countryId = ref<number | null>(null);
 
 const username = ref('');
@@ -489,54 +490,6 @@ defineExpose({
                                     <v-text-field v-model="name" color="primary" variant="outlined" hide-details />
                                 </v-col>
                                 <v-col cols="12" md="6">
-                                    <v-label class="mb-2 font-weight-medium">Nom d’utilisateur</v-label>
-                                    <div class="d-flex align-center ga-2">
-                                        <v-text-field
-                                            :model-value="displayUsername"
-                                            color="primary"
-                                            variant="outlined"
-                                            hide-details
-                                            readonly
-                                            class="flex-grow-1"
-                                        />
-                                        <v-btn color="primary" variant="tonal" flat class="flex-shrink-0" @click="openUsernameModal">
-                                            Modifier
-                                        </v-btn>
-                                    </div>
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-label class="mb-2 font-weight-medium">E-mail</v-label>
-                                    <div class="d-flex align-center ga-2">
-                                        <v-text-field
-                                            :model-value="displayEmail"
-                                            color="primary"
-                                            variant="outlined"
-                                            hide-details
-                                            readonly
-                                            class="flex-grow-1"
-                                        />
-                                        <v-btn color="primary" variant="tonal" flat class="flex-shrink-0" @click="openEmailModal">
-                                            Modifier
-                                        </v-btn>
-                                    </div>
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-label class="mb-2 font-weight-medium">Mot de passe</v-label>
-                                    <div class="d-flex align-center ga-2">
-                                        <v-text-field
-                                            model-value="••••••••"
-                                            color="primary"
-                                            variant="outlined"
-                                            hide-details
-                                            readonly
-                                            class="flex-grow-1"
-                                        />
-                                        <v-btn color="primary" variant="tonal" flat class="flex-shrink-0" @click="openPasswordModal">
-                                            Modifier
-                                        </v-btn>
-                                    </div>
-                                </v-col>
-                                <v-col cols="12" md="6">
                                     <v-label class="mb-2 font-weight-medium">Téléphone</v-label>
                                     <v-text-field v-model="phone" color="primary" variant="outlined" type="tel" hide-details />
                                 </v-col>
@@ -544,13 +497,95 @@ defineExpose({
                                     <v-label class="mb-2 font-weight-medium">Date de naissance</v-label>
                                     <AppDatePicker v-model="birthDateModel" :max="birthDateMax" color="primary" hide-details />
                                 </v-col>
-                                <v-col cols="12" md="8">
+                                <v-col cols="12" md="5">
                                     <v-label class="mb-2 font-weight-medium">Rue</v-label>
                                     <v-text-field v-model="street" color="primary" variant="outlined" hide-details />
                                 </v-col>
-                                <v-col cols="12" md="4">
+                                <v-col cols="12" md="2">
                                     <v-label class="mb-2 font-weight-medium">N°</v-label>
                                     <v-text-field v-model="streetNumber" color="primary" variant="outlined" hide-details />
+                                </v-col>
+                                <v-col cols="12" md="5">
+                                    <v-label class="mb-2 font-weight-medium">Pays</v-label>
+                                    <v-autocomplete
+                                        v-model="countryId"
+                                        :items="COUNTRIES"
+                                        item-title="name"
+                                        item-value="id"
+                                        color="primary"
+                                        variant="outlined"
+                                        hide-details
+                                        clearable
+                                        auto-select-first
+                                    />
+                                </v-col>
+                            </v-row>
+
+                            <h5 class="text-h5 mt-8 mb-5">Informations du compte</h5>
+
+                            <v-row class="ma-0" dense>
+                                <v-col cols="12" md="6">
+                                    <v-label class="mb-2 font-weight-medium">Nom d’utilisateur</v-label>
+                                    <v-text-field
+                                        :model-value="displayUsername"
+                                        color="primary"
+                                        variant="outlined"
+                                        hide-details
+                                        readonly
+                                        class="account-field-editable"
+                                        @click="openUsernameModal"
+                                    >
+                                        <template #append-inner>
+                                            <PencilIcon
+                                                size="18"
+                                                stroke-width="1.5"
+                                                class="text-medium-emphasis account-field-edit-icon"
+                                                @click.stop="openUsernameModal"
+                                            />
+                                        </template>
+                                    </v-text-field>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-label class="mb-2 font-weight-medium">E-mail</v-label>
+                                    <v-text-field
+                                        :model-value="displayEmail"
+                                        color="primary"
+                                        variant="outlined"
+                                        hide-details
+                                        readonly
+                                        class="account-field-editable"
+                                        @click="openEmailModal"
+                                    >
+                                        <template #append-inner>
+                                            <PencilIcon
+                                                size="18"
+                                                stroke-width="1.5"
+                                                class="text-medium-emphasis account-field-edit-icon"
+                                                @click.stop="openEmailModal"
+                                            />
+                                        </template>
+                                    </v-text-field>
+                                </v-col>
+                                <v-col cols="12" md="6">
+                                    <v-label class="mb-2 font-weight-medium">Mot de passe</v-label>
+                                    <v-text-field
+                                        model-value="••••••••"
+                                        color="primary"
+                                        variant="outlined"
+                                        hide-details
+                                        readonly
+                                        class="account-field-editable"
+                                        @click="openPasswordModal"
+                                    >
+                                        <template #append-inner>
+                                            <PencilIcon
+                                                size="18"
+                                                stroke-width="1.5"
+                                                class="text-medium-emphasis account-field-edit-icon"
+                                                @click.stop="openPasswordModal"
+                                            />
+                                        </template>
+                                    </v-text-field>
                                 </v-col>
                             </v-row>
                         </div>
@@ -691,9 +726,22 @@ defineExpose({
     user-select: none;
 }
 
+.account-field-editable {
+    cursor: pointer;
+}
+
+.account-field-edit-icon {
+    cursor: pointer;
+}
+
 .account-layout__photo,
 .account-layout__info {
     min-width: 0;
+}
+
+.account-layout__info :deep(.v-label) {
+    display: block;
+    margin-bottom: 16px;
 }
 
 @media screen and (min-width: 960px) {
