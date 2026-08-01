@@ -1,7 +1,17 @@
 @use 'variables' as *;
 
 html {
-    zoom: 0.95;
+    /* Le zoom laisse une bande hors contenu : aligner le fond sur le thème. */
+    background-color: #ffffff;
+
+    &:has([class*='DARK_']) {
+        background-color: #171c23;
+    }
+
+    &:has(.DARK_BLUE_THEME),
+    &:has(.v-theme--DARK_BLUE_THEME) {
+        background-color: #2a3447;
+    }
 
     .bg-success {
         color: white !important;
@@ -18,6 +28,10 @@ html {
     .bg-warning {
         color: $white !important;
     }
+}
+
+body {
+    background-color: inherit;
 }
 
 .border,
