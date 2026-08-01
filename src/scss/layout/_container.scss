@@ -17,10 +17,7 @@ html {
     box-sizing: border-box;
     height: calc(100dvh - var(--v-layout-top, 70px));
     min-height: calc(100vh - var(--v-layout-top, 70px));
-    padding: 24px;
-    @media screen and (max-width: 767px) {
-        padding: 20px 10px;
-    }
+    padding: 0 16px;
 }
 
 .page-content {
