@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { PencilIcon } from 'vue-tabler-icons';
+import { CameraIcon, LockIcon, PencilIcon, UserIcon } from 'vue-tabler-icons';
 import { isValidUsername, normalizeUsername, useAuthStore, type Me, type UpdateProfilePayload } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
@@ -441,7 +441,12 @@ defineExpose({
             <v-col cols="12" md="9" class="pb-4">
                 <v-card elevation="10">
                     <v-card-item>
-                        <h4 class="text-h4">Photo de profil</h4>
+                        <div class="d-flex align-center ga-3 flex-wrap">
+                            <v-avatar size="48" rounded="md" color="lightprimary">
+                                <CameraIcon class="text-primary" size="25" />
+                            </v-avatar>
+                            <h4 class="text-h4 mb-0">Photo de profil</h4>
+                        </div>
                         <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">Changez votre photo de profil ici</div>
                         <div class="text-center mt-6 mb-6">
                             <v-avatar size="120" color="lightprimary">
@@ -475,8 +480,13 @@ defineExpose({
             <v-col cols="12" md="9" class="pb-4">
                 <v-card elevation="10">
                     <v-card-item>
-                        <div class="d-flex align-center justify-space-between flex-wrap ga-2">
-                            <h4 class="text-h4 mb-0">Informations personnelles</h4>
+                        <div class="d-flex align-center justify-space-between flex-wrap ga-3">
+                            <div class="d-flex align-center ga-3 flex-wrap">
+                                <v-avatar size="48" rounded="md" color="lightprimary">
+                                    <UserIcon class="text-primary" size="25" />
+                                </v-avatar>
+                                <h4 class="text-h4 mb-0">Informations personnelles</h4>
+                            </div>
                             <div
                                 v-if="displayPublicId !== '—'"
                                 class="text-subtitle-1 text-medium-emphasis account-public-id"
@@ -554,7 +564,12 @@ defineExpose({
             <v-col cols="12" md="9">
                 <v-card elevation="10">
                     <v-card-item>
-                        <h4 class="text-h4">Informations du compte</h4>
+                        <div class="d-flex align-center ga-3 flex-wrap">
+                            <v-avatar size="48" rounded="md" color="lightprimary">
+                                <LockIcon class="text-primary" size="25" />
+                            </v-avatar>
+                            <h4 class="text-h4 mb-0">Informations du compte</h4>
+                        </div>
                         <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
                             Identifiants de connexion. Modifiez-les via l’icône crayon.
                         </div>

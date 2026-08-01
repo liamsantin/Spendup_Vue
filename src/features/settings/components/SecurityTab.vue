@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { DeviceLaptopIcon, DeviceMobileIcon, DotsVerticalIcon } from 'vue-tabler-icons';
+import { DeviceLaptopIcon, DeviceMobileIcon, DotsVerticalIcon, ShieldLockIcon } from 'vue-tabler-icons';
 import { getOrCreateDeviceId, useAuthStore, type AuthDevice } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
@@ -292,16 +292,25 @@ async function confirmRevokeAll() {
 </script>
 
 <template>
-    <v-card elevation="10">
-        <v-row class="ma-sm-n2 ma-n1">
-            <v-col cols="12" md="8">
+    <div class="security-tab">
+        <v-row class="justify-center py-1" no-gutters>
+            <v-col cols="12" md="9" class="pb-4">
                 <v-card elevation="10">
                     <v-card-item>
                         <div class="d-flex align-center justify-space-between flex-wrap ga-3">
-                            <h4 class="text-h4">Authentification à deux facteurs</h4>
+                            <div class="d-flex align-center ga-3 flex-wrap">
+                                <v-avatar size="48" rounded="md" color="lightprimary">
+                                    <ShieldLockIcon class="text-primary" size="25" />
+                                </v-avatar>
+                                <h4 class="text-h4 mb-0">Authentification à deux facteurs</h4>
+                            </div>
                             <v-chip :color="twoFactorEnabled ? 'success' : 'default'" variant="tonal" size="small">
                                 {{ twoFactorEnabled ? 'Activée' : 'Désactivée' }}
                             </v-chip>
+                        </div>
+                        <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
+                            Ajoutez une couche de sécurité supplémentaire à votre compte en activant l’authentification à deux facteurs via
+                            une application (TOTP).
                         </div>
 
                         <AppAlert
@@ -320,10 +329,9 @@ async function confirmRevokeAll() {
                             <div>{{ successMessage }}</div>
                         </AppAlert>
 
-                        <div class="d-sm-flex justify-space-between mt-4 mb-8">
+                        <div class="d-sm-flex justify-space-between align-sm-center mt-4 mb-8">
                             <div class="text-subtitle-1 text-medium-emphasis text-13 pr-5">
-                                Ajoutez une couche de sécurité supplémentaire à votre compte en activant l’authentification à deux facteurs
-                                via une application (TOTP).
+                                Utilisez une application d’authentification pour générer un code à usage unique à chaque connexion.
                             </div>
                             <v-btn v-if="!twoFactorEnabled" color="primary" class="mt-sm-0 mt-3" flat @click="openSetup"> Activer </v-btn>
                             <v-btn v-else color="error" class="mt-sm-0 mt-3" variant="outlined" flat @click="openDisable">
@@ -331,9 +339,9 @@ async function confirmRevokeAll() {
                             </v-btn>
                         </div>
 
-                        <v-divider></v-divider>
+                        <v-divider />
 
-                        <div class="d-flex justify-space-between my-4">
+                        <div class="d-flex justify-space-between align-center flex-wrap ga-3 my-4">
                             <div>
                                 <h6 class="text-h6 mb-1">Autre e-mail</h6>
                                 <h5 class="text-subtitle-1 text-medium-emphasis">Non disponible pour le moment</h5>
@@ -344,14 +352,18 @@ async function confirmRevokeAll() {
                 </v-card>
             </v-col>
 
-            <v-col cols="12" md="4">
+            <v-col cols="12" md="9">
                 <v-card elevation="10">
                     <v-card-item>
-                        <v-avatar size="48" rounded="md" color="lightprimary">
-                            <DeviceLaptopIcon class="text-primary" size="25" />
-                        </v-avatar>
-                        <h5 class="text-h5 mt-4">Appareils</h5>
-                        <div class="text-subtitle-1 mt-3 text-medium-emphasis text-10">Gérez les appareils connectés à votre compte.</div>
+                        <div class="d-flex align-center ga-3 flex-wrap">
+                            <v-avatar size="48" rounded="md" color="lightprimary">
+                                <DeviceLaptopIcon class="text-primary" size="25" />
+                            </v-avatar>
+                            <div>
+                                <h4 class="text-h4 mb-0">Appareils</h4>
+                            </div>
+                        </div>
+                        <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">Gérez les appareils connectés à votre compte.</div>
 
                         <AppAlert v-if="devicesError" type="error" class="mt-4" closable @dismiss="devicesError = null">
                             {{ devicesError }}
@@ -359,7 +371,7 @@ async function confirmRevokeAll() {
 
                         <v-btn
                             color="primary"
-                            class="mt-4"
+                            class="mt-2"
                             flat
                             :loading="revokeAllLoading"
                             :disabled="devicesLoading || devices.length === 0"
@@ -506,5 +518,12 @@ async function confirmRevokeAll() {
                 <v-btn color="primary" flat @click="close">Fermer</v-btn>
             </template>
         </AppModalBase>
-    </v-card>
+    </div>
 </template>
+
+<style scoped>
+.security-tab {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+</style>
