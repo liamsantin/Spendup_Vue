@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { CameraIcon, LockIcon, PencilIcon, UserIcon } from 'vue-tabler-icons';
+import { LockIcon, PencilIcon, UserIcon } from 'vue-tabler-icons';
 import { isValidUsername, normalizeUsername, useAuthStore, type Me, type UpdateProfilePayload } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
@@ -441,21 +441,6 @@ defineExpose({
             <v-col cols="12" md="9" class="pb-4">
                 <v-card elevation="10">
                     <v-card-item>
-                        <div class="d-flex align-center ga-3 flex-wrap">
-                            <v-avatar size="48" rounded="md" color="lightprimary">
-                                <CameraIcon class="text-primary" size="25" />
-                            </v-avatar>
-                            <h4 class="text-h4 mb-0">Photo de profil</h4>
-                        </div>
-                        <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">Changez votre photo de profil ici</div>
-                        <div class="text-center mt-6 mb-6">
-                            <v-avatar size="120" color="lightprimary">
-                                <v-img v-if="avatarSrc" :src="avatarSrc" alt="Photo de profil" cover />
-                                <span v-else class="text-h4 text-primary">{{
-                                    (firstName || name || username || '?').charAt(0).toUpperCase()
-                                }}</span>
-                            </v-avatar>
-                        </div>
                         <input
                             ref="fileInputRef"
                             type="file"
@@ -463,13 +448,26 @@ defineExpose({
                             accept="image/jpeg,image/png,image/gif"
                             @change="onPictureSelected"
                         />
-                        <div class="d-flex justify-center flex-wrap">
-                            <v-btn color="primary" class="ma-1" flat @click="openFilePicker">Téléverser</v-btn>
-                            <v-btn color="error" class="ma-1" variant="outlined" flat @click="resetPicture">Réinitialiser</v-btn>
+
+                        <div class="d-flex align-center justify-space-between flex-wrap ga-4">
+                            <div class="d-flex align-center ga-4 min-w-0">
+                                <v-avatar size="72" color="lightprimary" class="flex-shrink-0">
+                                    <v-img v-if="avatarSrc" :src="avatarSrc" alt="Photo de profil" cover />
+                                    <span v-else class="text-h5 text-primary">{{
+                                        (firstName || name || username || '?').charAt(0).toUpperCase()
+                                    }}</span>
+                                </v-avatar>
+                                <div class="min-w-0">
+                                    <h4 class="text-h4 mb-0">Photo de profil</h4>
+                                    <div class="text-subtitle-1 text-medium-emphasis text-10 mt-1">JPG, GIF ou PNG · max. 800 Ko</div>
+                                </div>
+                            </div>
+                            <div class="d-flex flex-wrap ga-2">
+                                <v-btn color="primary" flat @click="openFilePicker">Téléverser</v-btn>
+                                <v-btn color="error" variant="outlined" flat @click="resetPicture">Réinitialiser</v-btn>
+                            </div>
                         </div>
-                        <div class="text-subtitle-1 text-medium-emphasis text-center mt-6">
-                            JPG, GIF ou PNG autorisés. Taille max. 800 Ko
-                        </div>
+
                         <AppAlert v-if="pictureError" type="warning" class="mt-4" closable @dismiss="pictureError = null">
                             {{ pictureError }}
                         </AppAlert>
