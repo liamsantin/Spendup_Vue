@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { router } from '@/router';
 import { authApi } from '@/features/auth/api';
-import type { AuthSession, AuthTokens, Me } from '@/features/auth/types';
+import type { AuthSession, AuthTokens, Me, UpdateProfilePayload } from '@/features/auth/types';
 
 export const APP_HOME_ROUTE = '/app';
 
@@ -273,6 +273,30 @@ export const useAuthStore = defineStore('auth', {
             }
             this.user = await authApi.me(token);
             return this.user;
+        },
+
+        async updateProfile(payload: UpdateProfilePayload) {
+            const token = await this.requireAccessToken();
+            await authApi.updateProfile(token, payload);
+            await this.fetchMe();
+        },
+
+        async setUsername(username: string) {
+            const token = await this.requireAccessToken();
+            await authApi.setUsername(token, username);
+            await this.fetchMe();
+        },
+
+        async changeEmail(payload: { newEmail: string; currentPassword?: string | null; googleIdToken?: string | null }) {
+            const token = await this.requireAccessToken();
+            await authApi.changeEmail(token, payload);
+            await this.fetchMe();
+        },
+
+        async changePassword(currentPassword: string, newPassword: string) {
+            const token = await this.requireAccessToken();
+            await authApi.changePassword(token, currentPassword, newPassword);
+            await this.forceReLogin('Mot de passe mis à jour. Veuillez vous reconnecter.');
         },
 
         async ensureAccessToken(): Promise<string | null> {

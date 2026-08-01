@@ -1,9 +1,42 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { UserCircleIcon, BellIcon, LockIcon } from 'vue-tabler-icons';
 import { AccountTab, NotificationTab, SecurityTab } from '@/features/settings';
 
+type AccountTabExpose = {
+    saveProfile: () => Promise<void>;
+    resetProfile: () => Promise<void>;
+    loading: boolean;
+};
+
 const tab = ref('Account');
+const accountTabRef = ref<AccountTabExpose | null>(null);
+const footerBusy = ref(false);
+
+const isAccountTab = computed(() => tab.value === 'Account');
+const saveLoading = computed(() => footerBusy.value || !!accountTabRef.value?.loading);
+
+async function onSave() {
+    if (!isAccountTab.value || !accountTabRef.value || footerBusy.value) return;
+    footerBusy.value = true;
+    try {
+        await accountTabRef.value.saveProfile();
+    } catch {
+        // Erreur déjà affichée dans AccountTab
+    } finally {
+        footerBusy.value = false;
+    }
+}
+
+async function onCancel() {
+    if (!isAccountTab.value || !accountTabRef.value || footerBusy.value) return;
+    footerBusy.value = true;
+    try {
+        await accountTabRef.value.resetProfile();
+    } finally {
+        footerBusy.value = false;
+    }
+}
 </script>
 
 <template>
@@ -30,7 +63,7 @@ const tab = ref('Account');
                 <v-card-text class="pa-sm-6 pa-3">
                     <v-window v-model="tab">
                         <v-window-item value="Account">
-                            <AccountTab />
+                            <AccountTab ref="accountTabRef" />
                         </v-window-item>
                         <v-window-item value="Notification">
                             <NotificationTab />
@@ -45,8 +78,10 @@ const tab = ref('Account');
             <v-divider class="flex-grow-0" />
 
             <div class="settings-actions-bar">
-                <v-btn color="primary" class="mr-3" flat>Enregistrer</v-btn>
-                <v-btn class="bg-lighterror text-error" flat>Annuler</v-btn>
+                <v-btn color="primary" class="mr-3" flat :loading="saveLoading" :disabled="!isAccountTab" @click="onSave">
+                    Enregistrer
+                </v-btn>
+                <v-btn class="bg-lighterror text-error" flat :disabled="!isAccountTab || saveLoading" @click="onCancel"> Annuler </v-btn>
             </div>
         </v-card>
     </div>

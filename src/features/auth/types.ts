@@ -28,6 +28,26 @@ export type Me = {
     name: string | null;
     emailVerified: boolean;
     twoFactorEnabled: boolean;
+    pendingEmail: string | null;
+    phone: string | null;
+    /** Jour calendaire `YYYY-MM-DD` (sans heure). */
+    birthDate: string | null;
+    street: string | null;
+    streetNumber: string | null;
+    countryId: number | null;
+    profilePicture: string | null;
+};
+
+/** Corps soft de `PUT /api/auth/profile` — `null` = vider le champ. */
+export type UpdateProfilePayload = {
+    firstName: string | null;
+    name: string | null;
+    phone: string | null;
+    birthDate: string | null;
+    street: string | null;
+    streetNumber: string | null;
+    countryId: number | null;
+    profilePicture: string | null;
 };
 
 export type RegisterResult = {

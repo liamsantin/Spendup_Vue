@@ -1,15 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 
 const auth = useAuthStore();
+const route = useRoute();
 
 const email = ref('');
 const code = ref('');
 const loading = ref(false);
 const error = ref<string | null>(null);
+
+onMounted(() => {
+    const fromQuery = route.query.email;
+    if (typeof fromQuery === 'string' && fromQuery.trim()) {
+        email.value = fromQuery.trim();
+    }
+});
 
 async function submit(submittedCode?: string) {
     error.value = null;
@@ -18,10 +27,14 @@ async function submit(submittedCode?: string) {
         error.value = 'Saisissez le code à 6 chiffres.';
         return;
     }
+    if (!email.value.trim()) {
+        error.value = 'Saisissez le nouvel e-mail.';
+        return;
+    }
     if (loading.value) return;
     loading.value = true;
     try {
-        await auth.confirmEmailChange(email.value, otp);
+        await auth.confirmEmailChange(email.value.trim(), otp);
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
     } finally {

@@ -2,7 +2,7 @@ import axios, { type AxiosRequestConfig, type Method } from 'axios';
 import { authAxios } from '@/utils/helpers/axios-helpers';
 import { getDeviceInfo } from './device';
 import { normalizeAuthDevices } from './normalizeDevices';
-import type { ApiResponse, AuthSession, AuthTokens, Me, RegisterResult, TwoFactorSetup } from './types';
+import type { ApiResponse, AuthSession, AuthTokens, Me, RegisterResult, TwoFactorSetup, UpdateProfilePayload } from './types';
 
 export class ApiError extends Error {
     status: number;
@@ -126,6 +126,10 @@ export const authApi = {
 
     me(accessToken: string) {
         return authHttp.get<Me>('/api/auth/me', accessToken);
+    },
+
+    updateProfile(accessToken: string, payload: UpdateProfilePayload) {
+        return authHttp.put<null>('/api/auth/profile', payload, accessToken);
     },
 
     setUsername(accessToken: string, username: string) {
