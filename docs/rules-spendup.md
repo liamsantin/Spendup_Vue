@@ -175,6 +175,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 | Fichier                   | Exemples d'exports       |
 | ------------------------- | ------------------------ |
 | `fetch-helpers.ts`        | `fetchWrapper`           |
+| `scrollbar-helpers.ts`    | `PERFECT_SCROLLBAR_OPTIONS` |
 | `pricing-helpers.ts`      | `isPricingPageEnabled()` |
 | `env-helpers.ts`          | `isDevAppEnv()`          |
 | `fake-backend-helpers.ts` | Backend factice (legacy) |

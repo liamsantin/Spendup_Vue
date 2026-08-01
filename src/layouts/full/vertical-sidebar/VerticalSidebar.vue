@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { shallowRef } from 'vue';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import sidebarItems from './sidebarItem';
 
 import NavGroup from './NavGroup/index.vue';
@@ -33,7 +34,7 @@ const sidebarMenu = shallowRef(sidebarItems);
         <!-- ---------------------------------------------- -->
         <!---Navigation -->
         <!-- ---------------------------------------------- -->
-        <perfect-scrollbar class="scrollnavbar">
+        <perfect-scrollbar class="scrollnavbar" :options="PERFECT_SCROLLBAR_OPTIONS">
             <v-list class="pa-6">
                 <!---Menu Loop -->
                 <template v-for="(item, index) in sidebarMenu" :key="item.header || item.title || index">

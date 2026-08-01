@@ -312,14 +312,14 @@ defineExpose({
 </script>
 
 <template>
-    <v-card elevation="10">
+    <v-card elevation="10" class="account-tab">
         <div v-if="loading && !auth.user" class="d-flex justify-center py-10">
             <v-progress-circular indeterminate color="primary" size="36" />
         </div>
 
-        <v-row v-else class="ma-sm-n2 ma-n1">
-            <v-col cols="12" sm="6">
-                <v-card elevation="10">
+        <v-row v-else class="account-layout ma-0" no-gutters>
+            <v-col cols="12" class="account-layout__photo min-w-0">
+                <v-card elevation="10" class="h-100">
                     <v-card-item>
                         <h5 class="text-h5">Photo de profil</h5>
                         <div class="text-subtitle-1 text-medium-emphasis mt-2">Changez votre photo de profil ici</div>
@@ -338,9 +338,9 @@ defineExpose({
                             accept="image/jpeg,image/png,image/gif"
                             @change="onPictureSelected"
                         />
-                        <div class="d-flex justify-center">
-                            <v-btn color="primary" class="mx-2" flat @click="openFilePicker">Téléverser</v-btn>
-                            <v-btn color="error" class="mx-2" variant="outlined" flat @click="resetPicture">Réinitialiser</v-btn>
+                        <div class="d-flex justify-center flex-wrap">
+                            <v-btn color="primary" class="ma-1" flat @click="openFilePicker">Téléverser</v-btn>
+                            <v-btn color="error" class="ma-1" variant="outlined" flat @click="resetPicture">Réinitialiser</v-btn>
                         </div>
                         <div class="text-subtitle-1 text-medium-emphasis text-center my-sm-8 my-6">
                             JPG, GIF ou PNG autorisés. Taille max. 800 Ko
@@ -352,8 +352,8 @@ defineExpose({
                 </v-card>
             </v-col>
 
-            <v-col cols="12">
-                <v-card elevation="10">
+            <v-col cols="12" class="account-layout__info min-w-0">
+                <v-card elevation="10" class="h-100">
                     <v-card-item>
                         <h5 class="text-h5">Informations personnelles</h5>
                         <div class="text-subtitle-1 text-medium-emphasis mt-2">Enregistrez via la barre d’actions en bas de page.</div>
@@ -372,8 +372,7 @@ defineExpose({
                             {{ profileError }}
                         </AppAlert>
                         <AppAlert v-if="pendingEmail" color="warning" variant="tonal" class="mt-4">
-                            Confirmation en attente pour <strong>{{ pendingEmail }}</strong
-                            >.
+                            Confirmation en attente pour <strong>{{ pendingEmail }}</strong>.
                             <v-btn
                                 variant="text"
                                 color="warning"
@@ -385,7 +384,7 @@ defineExpose({
                             </v-btn>
                         </AppAlert>
                         <div class="mt-5">
-                            <v-row>
+                            <v-row class="ma-0" dense>
                                 <v-col cols="12" md="6">
                                     <v-label class="mb-2 font-weight-medium">Prénom</v-label>
                                     <v-text-field v-model="firstName" color="primary" variant="outlined" hide-details />
@@ -472,16 +471,18 @@ defineExpose({
             :max-width="440"
             :scrollable="false"
         >
-            <AppAlert v-if="usernameError" type="error" class="mb-4" closable @dismiss="usernameError = null">
-                {{ usernameError }}
-            </AppAlert>
-            <v-label class="mb-2 font-weight-medium">Nom d’utilisateur</v-label>
-            <v-text-field v-model="usernameDraft" color="primary" variant="outlined" hide-details autofocus />
+            <form id="account-username-form" @submit.prevent="saveUsername">
+                <AppAlert v-if="usernameError" type="error" class="mb-4" closable @dismiss="usernameError = null">
+                    {{ usernameError }}
+                </AppAlert>
+                <v-label class="mb-2 font-weight-medium">Nom d’utilisateur</v-label>
+                <v-text-field v-model="usernameDraft" color="primary" variant="outlined" hide-details autofocus />
+            </form>
 
             <template #footer="{ close }">
                 <v-btn variant="text" flat :disabled="usernameSaving" @click="close">Annuler</v-btn>
                 <v-spacer />
-                <v-btn color="primary" flat :loading="usernameSaving" @click="saveUsername">Enregistrer</v-btn>
+                <v-btn color="primary" flat type="submit" form="account-username-form" :loading="usernameSaving">Enregistrer</v-btn>
             </template>
         </AppModalBase>
 
@@ -492,25 +493,37 @@ defineExpose({
             :max-width="440"
             :scrollable="false"
         >
-            <AppAlert v-if="emailError" type="error" class="mb-4" closable @dismiss="emailError = null">
-                {{ emailError }}
-            </AppAlert>
-            <v-label class="mb-2 font-weight-medium">{{ currentEmail ? 'Nouvel e-mail' : 'E-mail' }}</v-label>
-            <v-text-field v-model="emailDraft" color="primary" variant="outlined" type="email" autocomplete="email" class="mb-4" />
-            <v-label class="mb-2 font-weight-medium">Mot de passe actuel</v-label>
-            <v-text-field
-                v-model="emailCurrentPassword"
-                color="primary"
-                variant="outlined"
-                type="password"
-                autocomplete="current-password"
-                hide-details
-            />
+            <form id="account-email-form" @submit.prevent="submitEmailChange">
+                <AppAlert v-if="emailError" type="error" class="mb-3" closable @dismiss="emailError = null">
+                    {{ emailError }}
+                </AppAlert>
+                <v-label class="mb-1 font-weight-medium">{{ currentEmail ? 'Nouvel e-mail' : 'E-mail' }}</v-label>
+                <v-text-field
+                    v-model="emailDraft"
+                    color="primary"
+                    variant="outlined"
+                    type="email"
+                    autocomplete="email"
+                    density="comfortable"
+                    hide-details
+                    class="mb-2"
+                />
+                <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
+                <v-text-field
+                    v-model="emailCurrentPassword"
+                    color="primary"
+                    variant="outlined"
+                    type="password"
+                    autocomplete="current-password"
+                    density="comfortable"
+                    hide-details
+                />
+            </form>
 
             <template #footer="{ close }">
                 <v-btn variant="text" flat :disabled="emailSaving" @click="close">Annuler</v-btn>
                 <v-spacer />
-                <v-btn color="primary" flat :loading="emailSaving" @click="submitEmailChange">Continuer</v-btn>
+                <v-btn color="primary" flat type="submit" form="account-email-form" :loading="emailSaving">Continuer</v-btn>
             </template>
         </AppModalBase>
 
@@ -521,42 +534,86 @@ defineExpose({
             :max-width="440"
             :scrollable="false"
         >
-            <AppAlert v-if="passwordError" type="error" class="mb-4" closable @dismiss="passwordError = null">
-                {{ passwordError }}
-            </AppAlert>
-            <v-label class="mb-2 font-weight-medium">Mot de passe actuel</v-label>
-            <v-text-field
-                v-model="currentPassword"
-                color="primary"
-                variant="outlined"
-                type="password"
-                autocomplete="current-password"
-                class="mb-4"
-            />
-            <v-label class="mb-2 font-weight-medium">Nouveau mot de passe</v-label>
-            <v-text-field
-                v-model="newPassword"
-                color="primary"
-                variant="outlined"
-                type="password"
-                autocomplete="new-password"
-                class="mb-4"
-            />
-            <v-label class="mb-2 font-weight-medium">Confirmer le mot de passe</v-label>
-            <v-text-field
-                v-model="confirmPassword"
-                color="primary"
-                variant="outlined"
-                type="password"
-                autocomplete="new-password"
-                hide-details
-            />
+            <form id="account-password-form" @submit.prevent="submitPasswordChange">
+                <AppAlert v-if="passwordError" type="error" class="mb-3" closable @dismiss="passwordError = null">
+                    {{ passwordError }}
+                </AppAlert>
+                <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
+                <v-text-field
+                    v-model="currentPassword"
+                    color="primary"
+                    variant="outlined"
+                    type="password"
+                    autocomplete="current-password"
+                    density="comfortable"
+                    hide-details
+                    class="mb-2"
+                />
+                <v-label class="mb-1 font-weight-medium">Nouveau mot de passe</v-label>
+                <v-text-field
+                    v-model="newPassword"
+                    color="primary"
+                    variant="outlined"
+                    type="password"
+                    autocomplete="new-password"
+                    density="comfortable"
+                    hide-details
+                    class="mb-2"
+                />
+                <v-label class="mb-1 font-weight-medium">Confirmer le mot de passe</v-label>
+                <v-text-field
+                    v-model="confirmPassword"
+                    color="primary"
+                    variant="outlined"
+                    type="password"
+                    autocomplete="new-password"
+                    density="comfortable"
+                    hide-details
+                />
+            </form>
 
             <template #footer="{ close }">
                 <v-btn variant="text" flat :disabled="passwordSaving" @click="close">Annuler</v-btn>
                 <v-spacer />
-                <v-btn color="primary" flat :loading="passwordSaving" @click="submitPasswordChange">Enregistrer</v-btn>
+                <v-btn color="primary" flat type="submit" form="account-password-form" :loading="passwordSaving">Enregistrer</v-btn>
             </template>
         </AppModalBase>
     </v-card>
 </template>
+
+<style scoped>
+.account-tab {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.account-layout {
+    max-width: 100%;
+}
+
+.account-layout__photo,
+.account-layout__info {
+    min-width: 0;
+}
+
+@media screen and (min-width: 960px) {
+    .account-layout__photo {
+        flex: 0 0 30%;
+        max-width: 30%;
+        padding-right: 12px;
+        box-sizing: border-box;
+    }
+
+    .account-layout__info {
+        flex: 0 0 70%;
+        max-width: 70%;
+        box-sizing: border-box;
+    }
+}
+
+@media screen and (max-width: 959px) {
+    .account-layout__photo {
+        margin-bottom: 12px;
+    }
+}
+</style>

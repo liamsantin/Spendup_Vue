@@ -3,6 +3,7 @@ defineOptions({ name: 'AppSearchbar' });
 
 import { SearchIcon } from 'vue-tabler-icons';
 import { searchSugg } from '@/data/admin/headerData';
+import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 </script>
 
 <template>
@@ -18,7 +19,7 @@ import { searchSugg } from '@/data/admin/headerData';
             </div>
             <v-divider />
             <h5 class="text-h5 mt-4 px-5 pb-4">Liens rapides</h5>
-            <perfect-scrollbar style="height: 280px">
+            <perfect-scrollbar style="height: 280px" :options="PERFECT_SCROLLBAR_OPTIONS">
                 <v-list class="pt-0 pb-5" lines="two">
                     <v-list-item
                         v-for="(item, index) in searchSugg"

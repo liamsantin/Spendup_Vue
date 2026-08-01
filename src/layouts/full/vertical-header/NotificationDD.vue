@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { notifications } from '@/data/admin/headerData';
+import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 </script>
 
 <template>
@@ -18,7 +19,7 @@ import { notifications } from '@/data/admin/headerData';
                     <v-chip color="primary" variant="flat" size="small" class="text-white"> {{ notifications.length }} nouvelles </v-chip>
                 </div>
             </div>
-            <perfect-scrollbar style="height: 280px">
+            <perfect-scrollbar style="height: 280px" :options="PERFECT_SCROLLBAR_OPTIONS">
                 <v-list class="py-0 theme-list" lines="two">
                     <v-list-item v-for="item in notifications" :key="item.title" :value="item" color="primary" class="py-4 px-8">
                         <template #prepend>

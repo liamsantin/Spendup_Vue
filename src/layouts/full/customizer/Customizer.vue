@@ -3,6 +3,7 @@ defineOptions({ name: 'AppCustomizer' });
 
 import { ref } from 'vue';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import {
     CheckIcon,
     LayoutColumnsIcon,
@@ -62,7 +63,7 @@ const DarkthemeColors = ref([
             <h5 class="text-h5">Settings</h5>
         </div>
         <v-divider></v-divider>
-        <perfect-scrollbar style="height: calc(100vh - 90px)">
+        <perfect-scrollbar style="height: calc(100vh - 90px)" :options="PERFECT_SCROLLBAR_OPTIONS">
             <div class="pa-6">
                 <h6 class="text-h6 mb-2">Sidebar Layout</h6>
                 <v-btn-toggle v-model="appSettings.setHorizontalLayout" color="primary" class="my-2 btn-group-custom" rounded="0" group>

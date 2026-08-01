@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { PaletteIcon } from 'vue-tabler-icons';
 import { ThemeTab } from '@/features/applications';
+import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 
 const tab = ref('Theme');
 </script>
@@ -25,7 +26,7 @@ const tab = ref('Theme');
 
             <v-divider class="flex-grow-0" />
 
-            <perfect-scrollbar class="applications-tabs-scroll">
+            <perfect-scrollbar class="applications-tabs-scroll" :options="PERFECT_SCROLLBAR_OPTIONS">
                 <v-card-text class="pa-sm-6 pa-3">
                     <v-window v-model="tab">
                         <v-window-item value="Theme">

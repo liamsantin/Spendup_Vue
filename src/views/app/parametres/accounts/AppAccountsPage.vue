@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue';
 import { UserCircleIcon, BellIcon, LockIcon } from 'vue-tabler-icons';
 import { AccountTab, NotificationTab, SecurityTab } from '@/features/settings';
+import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 
 type AccountTabExpose = {
     saveProfile: () => Promise<void>;
@@ -59,7 +60,7 @@ async function onCancel() {
 
             <v-divider class="flex-grow-0" />
 
-            <perfect-scrollbar class="settings-tabs-scroll">
+            <perfect-scrollbar class="settings-tabs-scroll" :options="PERFECT_SCROLLBAR_OPTIONS">
                 <v-card-text class="pa-sm-6 pa-3">
                     <v-window v-model="tab">
                         <v-window-item value="Account">

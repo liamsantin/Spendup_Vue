@@ -11,6 +11,7 @@ defineOptions({ name: 'AppModalBase' });
 import { computed, nextTick, ref, watch } from 'vue';
 import { XIcon } from 'vue-tabler-icons';
 import type { PerfectScrollbarExpose } from 'vue3-perfect-scrollbar';
+import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 
 const props = withDefaults(
     defineProps<{
@@ -44,7 +45,7 @@ const emit = defineEmits<{
 }>();
 
 const scrollbarRef = ref<PerfectScrollbarExpose | null>(null);
-const scrollbarOptions = { suppressScrollX: true };
+const scrollbarOptions = PERFECT_SCROLLBAR_OPTIONS;
 
 const open = computed({
     get: () => props.modelValue,
@@ -176,10 +177,6 @@ defineExpose({
     padding: 24px;
     width: 100%;
     box-sizing: border-box;
-}
-
-.app-modal-base__body :deep(.ps__rail-x) {
-    display: none !important;
 }
 
 .app-modal-base__footer {
