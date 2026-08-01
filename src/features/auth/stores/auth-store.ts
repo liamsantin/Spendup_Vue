@@ -299,6 +299,12 @@ export const useAuthStore = defineStore('auth', {
             await this.forceReLogin('Mot de passe mis à jour. Veuillez vous reconnecter.');
         },
 
+        async deleteAccount(currentPassword: string) {
+            const token = await this.requireAccessToken();
+            await authApi.deleteAccount(token, { currentPassword });
+            await this.forceReLogin('Votre compte a été définitivement supprimé.');
+        },
+
         async ensureAccessToken(): Promise<string | null> {
             if (this.accessToken) return this.accessToken;
             if (!this.refreshToken) return null;

@@ -1,13 +1,33 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { MailIcon } from 'vue-tabler-icons';
+import { AtIcon, HashIcon, MailIcon, PhoneIcon } from 'vue-tabler-icons';
 import { profileDD } from '@/data/admin/headerData';
 import { useAuthStore } from '@/features/auth';
 
 const authStore = useAuthStore();
 
 const displayName = computed(() => authStore.displayName || 'Utilisateur');
-const email = computed(() => authStore.user?.email ?? '');
+
+const profileDetails = computed(() => {
+    const user = authStore.user;
+    if (!user) return [];
+
+    const entries: { key: string; value: string; icon: typeof HashIcon }[] = [];
+
+    const publicId = user.userPublicId?.trim();
+    if (publicId) entries.push({ key: 'id', value: publicId.replace(/^#/, ''), icon: HashIcon });
+
+    const username = user.username?.trim();
+    if (username) entries.push({ key: 'username', value: username, icon: AtIcon });
+
+    const email = user.email?.trim();
+    if (email) entries.push({ key: 'email', value: email, icon: MailIcon });
+
+    const phone = user.phone?.trim();
+    if (phone) entries.push({ key: 'phone', value: phone, icon: PhoneIcon });
+
+    return entries;
+});
 </script>
 
 <template>
@@ -21,17 +41,16 @@ const email = computed(() => authStore.user?.email ?? '');
         </template>
         <v-sheet rounded="md" width="360" elevation="10">
             <div class="px-8 pt-6">
-                <h6 class="text-h5 font-weight-medium">Profil</h6>
+                <h6 class="text-h5 font-weight-medium">Profil utilisateur</h6>
                 <div class="d-flex align-center mt-4 pb-6">
                     <v-avatar size="80">
                         <img src="@/assets/images/profile/user-1.jpg" width="80" />
                     </v-avatar>
-                    <div class="ml-3">
+                    <div class="ml-3 min-w-0">
                         <h6 class="text-h6 mb-n1">{{ displayName }}</h6>
-                        <span class="text-subtitle-1 font-weight-regular textSecondary">Spendup</span>
-                        <div class="d-flex align-center mt-1">
-                            <MailIcon size="18" stroke-width="1.5" />
-                            <span class="text-subtitle-1 font-weight-regular textSecondary ml-2">{{ email }}</span>
+                        <div v-for="detail in profileDetails" :key="detail.key" class="d-flex align-center mt-1">
+                            <component :is="detail.icon" size="18" stroke-width="1.5" class="flex-shrink-0" />
+                            <span class="text-subtitle-1 font-weight-regular textSecondary ml-2 text-truncate">{{ detail.value }}</span>
                         </div>
                     </div>
                 </div>

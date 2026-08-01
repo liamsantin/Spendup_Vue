@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { LockIcon, PencilIcon, UserIcon } from 'vue-tabler-icons';
+import { LockIcon, PencilIcon, TrashIcon, UserIcon } from 'vue-tabler-icons';
 import { isValidUsername, normalizeUsername, useAuthStore, type Me, type UpdateProfilePayload } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
@@ -53,6 +53,11 @@ const confirmPassword = ref('');
 const cancelConfirmOpen = ref(false);
 const cancelConfirming = ref(false);
 const saveConfirmOpen = ref(false);
+
+const deleteOpen = ref(false);
+const deleteSaving = ref(false);
+const deletePassword = ref('');
+const deleteError = ref<string | null>(null);
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
@@ -319,6 +324,30 @@ function openPasswordModal() {
     passwordOpen.value = true;
 }
 
+function openDeleteModal() {
+    deletePassword.value = '';
+    deleteError.value = null;
+    deleteOpen.value = true;
+}
+
+async function submitDeleteAccount() {
+    if (deleteSaving.value) return;
+    deleteError.value = null;
+
+    if (!deletePassword.value) {
+        deleteError.value = 'Saisissez votre mot de passe pour confirmer.';
+        return;
+    }
+
+    deleteSaving.value = true;
+    try {
+        await auth.deleteAccount(deletePassword.value);
+    } catch (e: unknown) {
+        deleteError.value = e instanceof Error ? e.message : String(e);
+        deleteSaving.value = false;
+    }
+}
+
 async function saveUsername() {
     if (usernameSaving.value) return;
     usernameError.value = null;
@@ -411,6 +440,10 @@ watch(emailOpen, (open) => {
 
 watch(passwordOpen, (open) => {
     if (!open) passwordError.value = null;
+});
+
+watch(deleteOpen, (open) => {
+    if (!open) deleteError.value = null;
 });
 
 onMounted(loadProfile);
@@ -559,7 +592,7 @@ defineExpose({
                 </v-card>
             </v-col>
 
-            <v-col cols="12" md="9">
+            <v-col cols="12" md="9" class="pb-4">
                 <v-card elevation="10">
                     <v-card-item>
                         <div class="d-flex align-center ga-3 flex-wrap">
@@ -650,6 +683,28 @@ defineExpose({
                                     </v-text-field>
                                 </v-col>
                             </v-row>
+                        </div>
+                    </v-card-item>
+                </v-card>
+            </v-col>
+
+            <v-col cols="12" md="9">
+                <v-card elevation="10">
+                    <v-card-item>
+                        <div class="d-flex align-center ga-3 flex-wrap">
+                            <v-avatar size="48" rounded="md" color="lighterror">
+                                <TrashIcon class="text-error" size="25" />
+                            </v-avatar>
+                            <h4 class="text-h4 mb-0">Zone danger</h4>
+                        </div>
+                        <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
+                            Cette action est définitive. Toutes vos données seront irrémédiablement effacées.
+                        </div>
+                        <div class="d-flex align-center justify-space-between flex-wrap ga-3 mt-2">
+                            <div class="text-subtitle-1 text-medium-emphasis text-13 pr-4">
+                                Vous ne pourrez plus vous connecter ni récupérer votre historique après suppression.
+                            </div>
+                            <v-btn color="error" flat class="flex-shrink-0" @click="openDeleteModal">Supprimer mon compte</v-btn>
                         </div>
                     </v-card-item>
                 </v-card>
@@ -801,6 +856,42 @@ defineExpose({
                 <v-spacer />
                 <v-btn class="bg-lighterror text-error" flat :loading="cancelConfirming" @click="confirmResetProfile">
                     Annuler les modifications
+                </v-btn>
+            </template>
+        </AppModalBase>
+
+        <AppModalBase
+            v-model="deleteOpen"
+            title="Supprimer définitivement le compte"
+            subtitle="Cette action est irréversible."
+            :max-width="440"
+            :scrollable="false"
+        >
+            <form id="account-delete-form" @submit.prevent="submitDeleteAccount">
+                <AppAlert v-if="deleteError" type="error" class="mb-3" closable @dismiss="deleteError = null">
+                    {{ deleteError }}
+                </AppAlert>
+                <p class="text-body-1 mb-4">
+                    Confirmez avec votre mot de passe pour supprimer définitivement votre compte et toutes les données associées.
+                </p>
+                <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
+                <v-text-field
+                    v-model="deletePassword"
+                    color="primary"
+                    variant="outlined"
+                    type="password"
+                    autocomplete="current-password"
+                    density="comfortable"
+                    hide-details
+                    autofocus
+                />
+            </form>
+
+            <template #footer="{ close }">
+                <v-btn variant="text" flat :disabled="deleteSaving" @click="close">Annuler</v-btn>
+                <v-spacer />
+                <v-btn color="error" flat type="submit" form="account-delete-form" :loading="deleteSaving">
+                    Supprimer définitivement
                 </v-btn>
             </template>
         </AppModalBase>
