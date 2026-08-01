@@ -12,33 +12,20 @@ type AccountTabExpose = {
 
 const tab = ref('Account');
 const accountTabRef = ref<AccountTabExpose | null>(null);
-const footerBusy = ref(false);
 const profileDirty = ref(false);
 
 const isAccountTab = computed(() => tab.value === 'Account');
-const saveLoading = computed(() => footerBusy.value || !!accountTabRef.value?.loading);
+const saveLoading = computed(() => !!accountTabRef.value?.loading);
 const saveDisabled = computed(() => !isAccountTab.value || saveLoading.value || !profileDirty.value);
 
-async function onSave() {
-    if (!isAccountTab.value || !accountTabRef.value || footerBusy.value) return;
-    footerBusy.value = true;
-    try {
-        await accountTabRef.value.saveProfile();
-    } catch {
-        // Erreur déjà affichée dans AccountTab
-    } finally {
-        footerBusy.value = false;
-    }
+function onSave() {
+    if (!isAccountTab.value || !accountTabRef.value || saveLoading.value) return;
+    accountTabRef.value.saveProfile();
 }
 
-async function onCancel() {
-    if (!isAccountTab.value || !accountTabRef.value || footerBusy.value) return;
-    footerBusy.value = true;
-    try {
-        await accountTabRef.value.resetProfile();
-    } finally {
-        footerBusy.value = false;
-    }
+function onCancel() {
+    if (!isAccountTab.value || !accountTabRef.value || saveLoading.value) return;
+    accountTabRef.value.resetProfile();
 }
 </script>
 

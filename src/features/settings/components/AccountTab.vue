@@ -50,6 +50,10 @@ const currentPassword = ref('');
 const newPassword = ref('');
 const confirmPassword = ref('');
 
+const cancelConfirmOpen = ref(false);
+const cancelConfirming = ref(false);
+const saveConfirmOpen = ref(false);
+
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
 const avatarSrc = computed(() => {
@@ -223,10 +227,43 @@ async function saveProfile() {
     }
 }
 
+/** Ouvert depuis la barre d’actions « Enregistrer » — demande confirmation avant save. */
+function requestSaveProfile() {
+    if (!isDirty.value || profileSaving.value) return;
+    saveConfirmOpen.value = true;
+}
+
+async function confirmSaveProfile() {
+    if (profileSaving.value) return;
+    try {
+        await saveProfile();
+        saveConfirmOpen.value = false;
+    } catch {
+        // Erreur déjà affichée dans le formulaire
+    }
+}
+
 async function resetProfile() {
     profileError.value = null;
     profileSuccess.value = null;
     await loadProfile();
+}
+
+/** Ouvert depuis la barre d’actions « Annuler » — demande confirmation avant reset. */
+function requestResetProfile() {
+    if (!isDirty.value || cancelConfirming.value) return;
+    cancelConfirmOpen.value = true;
+}
+
+async function confirmResetProfile() {
+    if (cancelConfirming.value) return;
+    cancelConfirming.value = true;
+    try {
+        await resetProfile();
+        cancelConfirmOpen.value = false;
+    } finally {
+        cancelConfirming.value = false;
+    }
 }
 
 function openFilePicker() {
@@ -383,10 +420,10 @@ onUnmounted(() => {
 });
 
 defineExpose({
-    saveProfile,
-    resetProfile,
+    saveProfile: requestSaveProfile,
+    resetProfile: requestResetProfile,
     get loading() {
-        return profileSaving.value || loading.value;
+        return profileSaving.value || loading.value || cancelConfirming.value;
     },
     get isDirty() {
         return isDirty.value;
@@ -718,6 +755,40 @@ defineExpose({
                 <v-btn variant="text" flat :disabled="passwordSaving" @click="close">Annuler</v-btn>
                 <v-spacer />
                 <v-btn color="primary" flat type="submit" form="account-password-form" :loading="passwordSaving">Enregistrer</v-btn>
+            </template>
+        </AppModalBase>
+
+        <AppModalBase
+            v-model="saveConfirmOpen"
+            title="Enregistrer les modifications"
+            subtitle="Les changements seront appliqués à votre profil."
+            :max-width="440"
+            :scrollable="false"
+        >
+            <p class="text-body-1 mb-0">Voulez-vous vraiment enregistrer les modifications effectuées ?</p>
+
+            <template #footer="{ close }">
+                <v-btn variant="text" flat :disabled="profileSaving" @click="close">Retour</v-btn>
+                <v-spacer />
+                <v-btn color="primary" flat :loading="profileSaving" @click="confirmSaveProfile">Enregistrer</v-btn>
+            </template>
+        </AppModalBase>
+
+        <AppModalBase
+            v-model="cancelConfirmOpen"
+            title="Annuler les modifications"
+            subtitle="Les changements non enregistrés seront perdus."
+            :max-width="440"
+            :scrollable="false"
+        >
+            <p class="text-body-1 mb-0">Voulez-vous vraiment annuler les modifications effectuées ?</p>
+
+            <template #footer="{ close }">
+                <v-btn variant="text" flat :disabled="cancelConfirming" @click="close">Retour</v-btn>
+                <v-spacer />
+                <v-btn class="bg-lighterror text-error" flat :loading="cancelConfirming" @click="confirmResetProfile">
+                    Annuler les modifications
+                </v-btn>
             </template>
         </AppModalBase>
     </div>
