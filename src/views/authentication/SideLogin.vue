@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import LoginForm from '@/components/auth/LoginForm.vue';
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -18,18 +21,19 @@ import LoginForm from '@/components/auth/LoginForm.vue';
             </v-col>
             <v-col cols="12" lg="5" xl="4" class="d-flex align-center justify-center">
                 <div class="auth-panel mt-xl-0 mt-5">
-                    <h2 class="text-h3 font-weight-bold mb-2">Bienvenue sur Spend.Up</h2>
-                    <div class="text-subtitle-1 mb-6">Votre plateforme de gestion financière</div>
+                    <h2 class="text-h3 font-weight-bold mb-2">{{ t('auth.pages.welcomeTitle') }}</h2>
+                    <div class="text-subtitle-1 mb-6">{{ t('auth.pages.welcomeSubtitle') }}</div>
                     <LoginForm />
                     <h6 class="text-h6 d-flex align-center mt-6 font-weight-medium">
-                        Nouveau sur Spend.Up ?
+                        {{ t('auth.pages.newHere') }}
                         <v-btn
                             class="pl-0 text-primary text-body-1 opacity-1 pl-2 font-weight-medium"
                             height="auto"
                             to="/auth/register"
                             variant="plain"
-                            >Créer un compte</v-btn
                         >
+                            {{ t('auth.pages.createAccount') }}
+                        </v-btn>
                     </h6>
                 </div>
             </v-col>

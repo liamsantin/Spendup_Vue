@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
@@ -7,6 +8,7 @@ import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 
 const route = useRoute();
 const auth = useAuthStore();
+const { t } = useI18n();
 
 const email = ref('');
 const code = ref('');
@@ -30,12 +32,12 @@ onMounted(() => {
 
 async function confirm(submittedCode?: string) {
     if (!email.value) {
-        error.value = 'E-mail manquant. Reprenez l’inscription.';
+        error.value = t('auth.confirmEmail.errors.missingEmail');
         return;
     }
     const otp = submittedCode ?? code.value;
     if (otp.length !== 6) {
-        error.value = 'Saisissez le code à 6 chiffres.';
+        error.value = t('auth.confirmEmail.errors.otp');
         return;
     }
     if (loading.value) return;
@@ -53,7 +55,7 @@ async function confirm(submittedCode?: string) {
 
 async function resend() {
     if (!email.value) {
-        error.value = 'E-mail manquant. Reprenez l’inscription.';
+        error.value = t('auth.confirmEmail.errors.missingEmail');
         return;
     }
     error.value = null;
@@ -61,7 +63,7 @@ async function resend() {
     resending.value = true;
     try {
         await auth.resendVerification(email.value);
-        success.value = 'Si un compte existe pour cet e-mail, un nouveau code a été envoyé.';
+        success.value = t('auth.confirmEmail.resendSuccess');
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -73,21 +75,19 @@ async function resend() {
 <template>
     <div class="mt-5">
         <template v-if="hasEmail">
-            <p class="text-subtitle-1 mb-4">
-                Un code à 6 chiffres a été envoyé à
-                <strong class="textPrimary">{{ email }}</strong
-                >. Vérifiez votre boîte de réception (et les spams).
-            </p>
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Saisissez votre code à 6 chiffres</v-label>
+            <p class="text-subtitle-1 mb-4">{{ t('auth.confirmEmail.sentTo', { email }) }}</p>
+            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.confirmEmail.otpLabel') }}</v-label>
             <OtpDigitsInput v-model="code" field-class="confirm-email-otp" @complete="confirm" />
             <v-btn class="mb-1 text-medium-emphasis" variant="text" size="small" block :loading="resending" @click="resend">
-                Renvoyer le code
+                {{ t('auth.confirmEmail.resend') }}
             </v-btn>
-            <v-btn color="primary" size="large" block flat :loading="loading" @click="confirm">Confirmer l’e-mail</v-btn>
+            <v-btn color="primary" size="large" block flat :loading="loading" @click="confirm">
+                {{ t('auth.confirmEmail.submit') }}
+            </v-btn>
         </template>
         <template v-else>
-            <AppAlert type="warning" class="mb-3"> Aucun e-mail d’inscription trouvé. Reprenez l’inscription ou connectez-vous. </AppAlert>
-            <v-btn color="primary" size="large" block flat to="/auth/register">Retour à l’inscription</v-btn>
+            <AppAlert type="warning" class="mb-3">{{ t('auth.confirmEmail.missingEmail') }}</AppAlert>
+            <v-btn color="primary" size="large" block flat to="/auth/register">{{ t('auth.confirmEmail.backToRegister') }}</v-btn>
         </template>
         <AppAlert v-if="success" type="success" class="mt-3">{{ success }}</AppAlert>
         <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>

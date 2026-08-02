@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
@@ -7,6 +8,7 @@ import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const { t } = useI18n();
 
 const digitsCode = ref('');
 const recoveryCode = ref('');
@@ -19,12 +21,12 @@ const code = computed(() => (useRecovery.value ? recoveryCode.value.trim() : dig
 async function verify(submittedCode?: string) {
     error.value = null;
     if (!authStore.twoFactorToken) {
-        error.value = 'Session 2FA expirée. Veuillez vous reconnecter.';
+        error.value = t('auth.twoStep.errors.expired');
         return;
     }
     const otp = submittedCode ?? code.value;
     if (!otp || (!useRecovery.value && otp.length !== 6)) {
-        error.value = 'Saisissez le code à 6 chiffres.';
+        error.value = t('auth.twoStep.errors.otp');
         return;
     }
     if (loading.value) return;
@@ -50,43 +52,45 @@ function backToLogin() {
 <template>
     <div class="mt-sm-13 mt-8">
         <template v-if="!useRecovery">
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Saisissez votre code à 6 chiffres</v-label>
+            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.twoStep.otpLabel') }}</v-label>
             <OtpDigitsInput v-model="digitsCode" field-class="two-step-otp" @complete="verify" />
         </template>
         <template v-else>
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Code de récupération</v-label>
+            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.twoStep.recoveryLabel') }}</v-label>
             <VTextField v-model="recoveryCode" hide-details class="mb-2" autocomplete="one-time-code" />
         </template>
 
-        <v-btn color="primary" size="large" block flat class="mt-4" :loading="loading" @click="verify">Vérifier</v-btn>
+        <v-btn color="primary" size="large" block flat class="mt-4" :loading="loading" @click="verify">
+            {{ t('auth.twoStep.submit') }}
+        </v-btn>
         <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
 
         <h6 class="text-h6 mt-5 font-weight-regular">
             <template v-if="!useRecovery">
-                Utiliser un code de récupération ?
+                {{ t('auth.twoStep.useRecovery') }}
                 <a
                     href="#"
                     class="text-primary text-subtitle-1 text-decoration-none pl-1 font-weight-medium"
                     @click.prevent="useRecovery = true"
                 >
-                    Cliquez ici
+                    {{ t('auth.twoStep.clickHere') }}
                 </a>
             </template>
             <template v-else>
-                Revenir au code à 6 chiffres ?
+                {{ t('auth.twoStep.useOtp') }}
                 <a
                     href="#"
                     class="text-primary text-subtitle-1 text-decoration-none pl-1 font-weight-medium"
                     @click.prevent="useRecovery = false"
                 >
-                    Cliquez ici
+                    {{ t('auth.twoStep.clickHere') }}
                 </a>
             </template>
         </h6>
         <h6 class="text-h6 mt-3 font-weight-regular">
-            Un problème ?
+            {{ t('auth.twoStep.problem') }}
             <a href="#" class="text-primary text-subtitle-1 text-decoration-none pl-1 font-weight-medium" @click.prevent="backToLogin">
-                Retour à la connexion
+                {{ t('auth.twoStep.backToLogin') }}
             </a>
         </h6>
     </div>

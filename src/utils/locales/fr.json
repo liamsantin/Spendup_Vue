@@ -506,6 +506,24 @@
             "passwordUpdatedRelogin": "Mot de passe mis à jour. Veuillez vous reconnecter.",
             "accountDeleted": "Votre compte a été définitivement supprimé."
         },
+        "pages": {
+            "welcomeTitle": "Bienvenue sur Spend.Up",
+            "welcomeSubtitle": "Votre plateforme de gestion financière",
+            "newHere": "Nouveau sur Spend.Up ?",
+            "createAccount": "Créer un compte",
+            "alreadyHaveAccount": "Déjà un compte ?",
+            "signIn": "Se connecter",
+            "errorTitle": "Oups !",
+            "errorNotFound": "La page que vous recherchez est introuvable.",
+            "maintenanceBody": "Le site est en maintenance. Revenez un peu plus tard.",
+            "backHome": "Retour à l’accueil"
+        },
+        "google": {
+            "signIn": "Se connecter avec Google",
+            "signUp": "S’inscrire avec Google",
+            "notConfigured": "Connexion Google non configurée (définir VITE_GOOGLE_CLIENT_ID).",
+            "scriptFailed": "Échec du chargement du script Google"
+        },
         "login": {
             "username": "Nom d’utilisateur",
             "email": "Email",
@@ -517,6 +535,74 @@
                 "required": "Champ requis.",
                 "identifier": "Saisissez votre nom d’utilisateur ou e-mail.",
                 "password": "Saisissez votre mot de passe."
+            }
+        },
+        "register": {
+            "username": "Nom d’utilisateur",
+            "email": "Email",
+            "password": "Mot de passe",
+            "confirmPassword": "Confirmation du mot de passe",
+            "submit": "Créer un compte",
+            "or": "ou",
+            "errors": {
+                "identifier": "Saisissez un nom d’utilisateur ou un e-mail.",
+                "email": "Saisissez une adresse e-mail valide.",
+                "username": "Le nom d’utilisateur doit faire 3–30 caractères ([a-z0-9._-]).",
+                "password": "Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.",
+                "mismatch": "La confirmation ne correspond pas au mot de passe."
+            }
+        },
+        "twoStep": {
+            "title": "Vérification en deux étapes",
+            "subtitle": "Saisissez le code de votre application d’authentification, ou un code de récupération.",
+            "otpLabel": "Saisissez votre code à 6 chiffres",
+            "recoveryLabel": "Code de récupération",
+            "submit": "Vérifier",
+            "useRecovery": "Utiliser un code de récupération ?",
+            "useOtp": "Revenir au code à 6 chiffres ?",
+            "clickHere": "Cliquez ici",
+            "problem": "Un problème ?",
+            "backToLogin": "Retour à la connexion",
+            "errors": {
+                "expired": "Session 2FA expirée. Veuillez vous reconnecter.",
+                "otp": "Saisissez le code à 6 chiffres."
+            }
+        },
+        "confirmEmail": {
+            "title": "Vérifiez votre e-mail",
+            "sentTo": "Un code à 6 chiffres a été envoyé à {email}. Vérifiez votre boîte de réception (et les spams).",
+            "otpLabel": "Saisissez votre code à 6 chiffres",
+            "resend": "Renvoyer le code",
+            "submit": "Confirmer l’e-mail",
+            "missingEmail": "Aucun e-mail d’inscription trouvé. Reprenez l’inscription ou connectez-vous.",
+            "backToRegister": "Retour à l’inscription",
+            "backToLogin": "Retour à la connexion",
+            "resendSuccess": "Si un compte existe pour cet e-mail, un nouveau code a été envoyé.",
+            "errors": {
+                "missingEmail": "E-mail manquant. Reprenez l’inscription.",
+                "otp": "Saisissez le code à 6 chiffres."
+            }
+        },
+        "confirmEmailChange": {
+            "title": "Confirmer le nouvel e-mail",
+            "hint": "Saisissez le code envoyé à votre nouvelle adresse e-mail.",
+            "newEmail": "Nouvel e-mail",
+            "otpLabel": "Saisissez votre code à 6 chiffres",
+            "resend": "Renvoyer le code",
+            "resendPasswordHint": "Pour renvoyer un code, confirmez avec votre mot de passe actuel (compte connecté).",
+            "resendGoogleHint": "Compte Google : confirmez avec Google pour renvoyer un code.",
+            "currentPassword": "Mot de passe actuel",
+            "sendNewCode": "Envoyer un nouveau code",
+            "cancel": "Annuler",
+            "submit": "Confirmer",
+            "backToApp": "Retour à l’application",
+            "backToLogin": "Retour à la connexion",
+            "resendSuccess": "Un nouveau code a été envoyé à votre adresse.",
+            "errors": {
+                "otp": "Saisissez le code à 6 chiffres.",
+                "email": "Saisissez le nouvel e-mail.",
+                "relogin": "Reconnectez-vous pour renvoyer un code.",
+                "password": "Saisissez votre mot de passe pour renvoyer le code."
             }
         },
         "forgotPassword": {

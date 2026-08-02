@@ -506,6 +506,24 @@
             "passwordUpdatedRelogin": "Password updated. Please sign in again.",
             "accountDeleted": "Your account has been permanently deleted."
         },
+        "pages": {
+            "welcomeTitle": "Welcome to Spend.Up",
+            "welcomeSubtitle": "Your financial management platform",
+            "newHere": "New to Spend.Up?",
+            "createAccount": "Create an account",
+            "alreadyHaveAccount": "Already have an account?",
+            "signIn": "Sign in",
+            "errorTitle": "Oops!",
+            "errorNotFound": "The page you are looking for could not be found.",
+            "maintenanceBody": "The site is under maintenance. Please come back later.",
+            "backHome": "Back to home"
+        },
+        "google": {
+            "signIn": "Sign in with Google",
+            "signUp": "Sign up with Google",
+            "notConfigured": "Google sign-in is not configured (set VITE_GOOGLE_CLIENT_ID).",
+            "scriptFailed": "Failed to load the Google script"
+        },
         "login": {
             "username": "Username",
             "email": "Email",
@@ -517,6 +535,74 @@
                 "required": "Required field.",
                 "identifier": "Enter your username or email.",
                 "password": "Enter your password."
+            }
+        },
+        "register": {
+            "username": "Username",
+            "email": "Email",
+            "password": "Password",
+            "confirmPassword": "Confirm password",
+            "submit": "Create account",
+            "or": "or",
+            "errors": {
+                "identifier": "Enter a username or email.",
+                "email": "Enter a valid email address.",
+                "username": "Username must be 3–30 characters ([a-z0-9._-]).",
+                "password": "Password must be at least 8 characters, with a letter and a digit.",
+                "mismatch": "Password confirmation does not match."
+            }
+        },
+        "twoStep": {
+            "title": "Two-step verification",
+            "subtitle": "Enter the code from your authenticator app, or a recovery code.",
+            "otpLabel": "Enter your 6-digit code",
+            "recoveryLabel": "Recovery code",
+            "submit": "Verify",
+            "useRecovery": "Use a recovery code?",
+            "useOtp": "Back to the 6-digit code?",
+            "clickHere": "Click here",
+            "problem": "Having trouble?",
+            "backToLogin": "Back to sign in",
+            "errors": {
+                "expired": "2FA session expired. Please sign in again.",
+                "otp": "Enter the 6-digit code."
+            }
+        },
+        "confirmEmail": {
+            "title": "Verify your email",
+            "sentTo": "A 6-digit code was sent to {email}. Check your inbox (and spam).",
+            "otpLabel": "Enter your 6-digit code",
+            "resend": "Resend code",
+            "submit": "Confirm email",
+            "missingEmail": "No registration email found. Start registration again or sign in.",
+            "backToRegister": "Back to registration",
+            "backToLogin": "Back to sign in",
+            "resendSuccess": "If an account exists for this email, a new code was sent.",
+            "errors": {
+                "missingEmail": "Email missing. Start registration again.",
+                "otp": "Enter the 6-digit code."
+            }
+        },
+        "confirmEmailChange": {
+            "title": "Confirm new email",
+            "hint": "Enter the code sent to your new email address.",
+            "newEmail": "New email",
+            "otpLabel": "Enter your 6-digit code",
+            "resend": "Resend code",
+            "resendPasswordHint": "To resend a code, confirm with your current password (signed-in account).",
+            "resendGoogleHint": "Google account: confirm with Google to resend a code.",
+            "currentPassword": "Current password",
+            "sendNewCode": "Send a new code",
+            "cancel": "Cancel",
+            "submit": "Confirm",
+            "backToApp": "Back to the app",
+            "backToLogin": "Back to sign in",
+            "resendSuccess": "A new code was sent to your address.",
+            "errors": {
+                "otp": "Enter the 6-digit code.",
+                "email": "Enter the new email.",
+                "relogin": "Sign in again to resend a code.",
+                "password": "Enter your password to resend the code."
             }
         },
         "forgotPassword": {

@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import ConfirmEmailForm from '@/components/auth/ConfirmEmailForm.vue';
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -16,10 +19,10 @@ import ConfirmEmailForm from '@/components/auth/ConfirmEmailForm.vue';
             </v-col>
             <v-col cols="12" lg="4" xl="4" xxl="3" class="d-flex align-center justify-center">
                 <div class="pa-sm-7 pa-4 w-100">
-                    <h2 class="text--darken-2 text-h4 font-weight-bold">Vérifiez votre e-mail</h2>
+                    <h2 class="text--darken-2 text-h4 font-weight-bold">{{ t('auth.confirmEmail.title') }}</h2>
                     <ConfirmEmailForm />
                     <v-btn size="large" color="lightprimary" to="/auth/login" block class="mt-2 text-primary" flat>
-                        Retour à la connexion
+                        {{ t('auth.confirmEmail.backToLogin') }}
                     </v-btn>
                 </div>
             </v-col>

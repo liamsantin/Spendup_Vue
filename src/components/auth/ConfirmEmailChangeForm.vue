@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
@@ -8,6 +9,7 @@ import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 
 const auth = useAuthStore();
 const route = useRoute();
+const { t } = useI18n();
 
 const email = ref('');
 const code = ref('');
@@ -41,11 +43,11 @@ async function submit(submittedCode?: string) {
     success.value = null;
     const otp = submittedCode ?? code.value;
     if (otp.length !== 6) {
-        error.value = 'Saisissez le code à 6 chiffres.';
+        error.value = t('auth.confirmEmailChange.errors.otp');
         return;
     }
     if (!email.value.trim()) {
-        error.value = 'Saisissez le nouvel e-mail.';
+        error.value = t('auth.confirmEmailChange.errors.email');
         return;
     }
     if (loading.value) return;
@@ -64,7 +66,7 @@ function openResend() {
     success.value = null;
     resendGoogleIdToken.value = null;
     if (!canResend.value) {
-        error.value = 'Reconnectez-vous pour renvoyer un code.';
+        error.value = t('auth.confirmEmailChange.errors.relogin');
         return;
     }
     showResendAuth.value = true;
@@ -75,24 +77,23 @@ async function resendWithAuth(payload: { currentPassword?: string | null; google
     success.value = null;
 
     if (!canResend.value) {
-        error.value = 'Reconnectez-vous pour renvoyer un code.';
+        error.value = t('auth.confirmEmailChange.errors.relogin');
         return;
     }
     if (!email.value.trim()) {
-        error.value = 'Saisissez le nouvel e-mail.';
+        error.value = t('auth.confirmEmailChange.errors.email');
         return;
     }
     if (resending.value) return;
 
     resending.value = true;
     try {
-        // Pas d’endpoint resend dédié : POST /email/change avec le même e-mail + preuve d’identité.
         await auth.changeEmail({
             newEmail: email.value.trim(),
             currentPassword: payload.currentPassword ?? null,
             googleIdToken: payload.googleIdToken ?? null
         });
-        success.value = 'Un nouveau code a été envoyé à votre adresse.';
+        success.value = t('auth.confirmEmailChange.resendSuccess');
         resendPassword.value = '';
         resendGoogleIdToken.value = null;
         showResendAuth.value = false;
@@ -107,7 +108,7 @@ async function resendWithAuth(payload: { currentPassword?: string | null; google
 
 async function resend() {
     if (!resendPassword.value) {
-        error.value = 'Saisissez votre mot de passe pour renvoyer le code.';
+        error.value = t('auth.confirmEmailChange.errors.password');
         showResendAuth.value = true;
         return;
     }
@@ -122,10 +123,10 @@ async function onResendGoogleCredential(idToken: string) {
 
 <template>
     <div class="mt-5">
-        <p class="text-subtitle-1 mb-4">Saisissez le code envoyé à votre nouvelle adresse e-mail.</p>
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Nouvel e-mail</v-label>
+        <p class="text-subtitle-1 mb-4">{{ t('auth.confirmEmailChange.hint') }}</p>
+        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.confirmEmailChange.newEmail') }}</v-label>
         <VTextField v-model="email" type="email" class="mb-4" hide-details autocomplete="email" />
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Saisissez votre code à 6 chiffres</v-label>
+        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.confirmEmailChange.otpLabel') }}</v-label>
         <OtpDigitsInput v-model="code" field-class="confirm-email-change-otp" @complete="submit" />
 
         <v-btn
@@ -137,14 +138,14 @@ async function onResendGoogleCredential(idToken: string) {
             :disabled="resending"
             @click="openResend"
         >
-            Renvoyer le code
+            {{ t('auth.confirmEmailChange.resend') }}
         </v-btn>
         <div v-else class="mt-2 mb-3">
             <template v-if="showResendPassword">
-                <p class="text-subtitle-2 text-medium-emphasis mb-3">
-                    Pour renvoyer un code, confirmez avec votre mot de passe actuel (compte connecté).
-                </p>
-                <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">Mot de passe actuel</v-label>
+                <p class="text-subtitle-2 text-medium-emphasis mb-3">{{ t('auth.confirmEmailChange.resendPasswordHint') }}</p>
+                <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">
+                    {{ t('auth.confirmEmailChange.currentPassword') }}
+                </v-label>
                 <VTextField
                     v-model="resendPassword"
                     type="password"
@@ -154,10 +155,12 @@ async function onResendGoogleCredential(idToken: string) {
                     autofocus
                     @keyup.enter="resend"
                 />
-                <v-btn color="primary" variant="tonal" block flat :loading="resending" @click="resend">Envoyer un nouveau code</v-btn>
+                <v-btn color="primary" variant="tonal" block flat :loading="resending" @click="resend">
+                    {{ t('auth.confirmEmailChange.sendNewCode') }}
+                </v-btn>
             </template>
             <template v-else-if="showResendGoogle">
-                <p class="text-subtitle-2 text-medium-emphasis mb-3">Compte Google : confirmez avec Google pour renvoyer un code.</p>
+                <p class="text-subtitle-2 text-medium-emphasis mb-3">{{ t('auth.confirmEmailChange.resendGoogleHint') }}</p>
                 <GoogleSignInButton @credential="onResendGoogleCredential" />
             </template>
             <v-btn
@@ -168,11 +171,13 @@ async function onResendGoogleCredential(idToken: string) {
                 :disabled="resending"
                 @click="showResendAuth = false"
             >
-                Annuler
+                {{ t('auth.confirmEmailChange.cancel') }}
             </v-btn>
         </div>
 
-        <v-btn color="primary" size="large" block flat class="mt-2" :loading="loading" @click="submit">Confirmer</v-btn>
+        <v-btn color="primary" size="large" block flat class="mt-2" :loading="loading" @click="submit">
+            {{ t('auth.confirmEmailChange.submit') }}
+        </v-btn>
         <AppAlert v-if="success" type="success" class="mt-3">{{ success }}</AppAlert>
         <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
     </div>

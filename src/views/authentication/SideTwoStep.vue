@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import TwoStepForm from '@/components/auth/TwoStepForm.vue';
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -18,10 +21,8 @@ import TwoStepForm from '@/components/auth/TwoStepForm.vue';
             </v-col>
             <v-col cols="12" lg="4" xl="3" class="d-flex align-center justify-center">
                 <div class="pa-sm-6 pa-4 w-100">
-                    <h3 class="text-h4 font-weight-bold">Vérification en deux étapes</h3>
-                    <p class="text-subtitle-1 mt-2 text-13">
-                        Saisissez le code de votre application d’authentification, ou un code de récupération.
-                    </p>
+                    <h3 class="text-h4 font-weight-bold">{{ t('auth.twoStep.title') }}</h3>
+                    <p class="text-subtitle-1 mt-2 text-13">{{ t('auth.twoStep.subtitle') }}</p>
                     <TwoStepForm />
                 </div>
             </v-col>

@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 
-withDefaults(
-    defineProps<{
-        label?: string;
-    }>(),
-    {
-        label: 'Se connecter avec Google'
-    }
-);
+const props = defineProps<{
+    label?: string;
+}>();
+
+const { t } = useI18n();
+const displayLabel = computed(() => props.label || t('auth.google.signIn'));
 
 const emit = defineEmits<{
     credential: [idToken: string];
@@ -39,7 +38,7 @@ function loadGisScript(): Promise<void> {
                 return;
             }
             existing.addEventListener('load', () => resolve(), { once: true });
-            existing.addEventListener('error', () => reject(new Error('Échec du chargement du script Google')), { once: true });
+            existing.addEventListener('error', () => reject(new Error(t('auth.google.scriptFailed'))), { once: true });
             return;
         }
         const script = document.createElement('script');
@@ -50,7 +49,7 @@ function loadGisScript(): Promise<void> {
         script.onload = () => resolve();
         script.onerror = () => {
             gisScriptPromise = null;
-            reject(new Error('Échec du chargement du script Google'));
+            reject(new Error(t('auth.google.scriptFailed')));
         };
         document.head.appendChild(script);
     });
@@ -121,10 +120,10 @@ onUnmounted(() => {
 <template>
     <div ref="root" class="google-signin">
         <div v-if="!clientId" class="text-subtitle-2 text-medium-emphasis mb-2">
-            Connexion Google non configurée (définir VITE_GOOGLE_CLIENT_ID).
+            {{ t('auth.google.notConfigured') }}
         </div>
         <div v-else ref="container" class="google-signin__btn" />
         <AppAlert v-if="error" type="warning" class="mt-2">{{ error }}</AppAlert>
-        <span class="d-none">{{ label }}</span>
+        <span class="d-none">{{ displayLabel }}</span>
     </div>
 </template>
