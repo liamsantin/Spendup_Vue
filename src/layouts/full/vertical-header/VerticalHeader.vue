@@ -5,7 +5,6 @@ import { Menu2Icon } from 'vue-tabler-icons';
 import NotificationDD from './NotificationDD.vue';
 import ProfileDD from './ProfileDD.vue';
 import Searchbar from './Searchbar.vue';
-import ThemeToggler from './ThemeToggler.vue';
 
 const appSettings = useAppSettingsStore();
 const priority = ref(appSettings.setHorizontalLayout ? 0 : 0);
@@ -34,10 +33,6 @@ watch(priority, (newPriority) => {
         </v-sheet>
 
         <v-spacer />
-
-        <div class="me-2">
-            <ThemeToggler />
-        </div>
 
         <NotificationDD />
 

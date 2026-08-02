@@ -10,7 +10,7 @@ export function localeToAppLocale(locale: string): AppLocale {
 }
 
 function resolveVuetifyTheme(settings: UserSettings, currentlyDark: boolean): string | null {
-    // Mode jour/nuit = état UI courant (ThemeToggler). Les hex API choisissent la famille de couleur.
+    // Mode jour/nuit = thème Vuetify courant. Les hex API choisissent la famille de couleur.
     const hex = normalizeHex(currentlyDark ? settings.themeDarkColor : settings.themeColor);
     const mapped = currentlyDark ? HEX_TO_DARK_THEME[hex] : HEX_TO_LIGHT_THEME[hex];
     return mapped ?? null;

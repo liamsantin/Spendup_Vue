@@ -6,7 +6,6 @@ import Logo from '../logo/Logo.vue';
 import NotificationDD from '../vertical-header/NotificationDD.vue';
 import ProfileDD from '../vertical-header/ProfileDD.vue';
 import Searchbar from '../vertical-header/Searchbar.vue';
-import ThemeToggler from '../vertical-header/ThemeToggler.vue';
 
 const appSettings = useAppSettingsStore();
 const priority = ref(appSettings.setHorizontalLayout ? 0 : 0);
@@ -30,10 +29,6 @@ watch(priority, (newPriority) => {
             </v-sheet>
 
             <v-spacer />
-
-            <div class="me-2">
-                <ThemeToggler />
-            </div>
 
             <NotificationDD />
 
