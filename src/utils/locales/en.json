@@ -27,13 +27,12 @@
         "headers": {
             "spendup": "Spend.Up",
             "finances": "Finances",
-            "settings": "Settings"
+            "settings": "Preferences"
         },
         "items": {
             "dashboard": "Dashboard",
             "transactions": "Transactions",
-            "accounts": "Accounts",
-            "applications": "Applications"
+            "preferences": "My account"
         },
         "subCaptions": {
             "soon": "Soon"
@@ -64,8 +63,7 @@
             "quickLinks": "Quick links",
             "suggestions": {
                 "dashboard": "Dashboard",
-                "accounts": "Accounts",
-                "applications": "Applications",
+                "preferences": "My account",
                 "home": "Home",
                 "features": "Features",
                 "about": "About"
@@ -76,9 +74,9 @@
             "fallbackName": "User",
             "logout": "Sign out",
             "menu": {
-                "accounts": {
-                    "title": "Accounts",
-                    "subtitle": "Account & security"
+                "preferences": {
+                    "title": "My account",
+                    "subtitle": "Account, preferences & security"
                 }
             }
         }
@@ -116,15 +114,10 @@
             }
         }
     },
-    "applications": {
-        "tabs": {
-            "preferences": "Preferences"
-        }
-    },
     "accounts": {
         "tabs": {
-            "account": "Account",
-            "notification": "Notifications",
+            "account": "Profile",
+            "preferences": "Preferences",
             "security": "Security"
         },
         "picture": {
@@ -392,48 +385,6 @@
                 "currentDeviceRevoked": "This device was signed out. Please sign in again.",
                 "allRevoked": "All sessions were signed out. Please sign in again."
             }
-        }
-    },
-    "notifications": {
-        "preferences": {
-            "title": "Notification preferences",
-            "subtitle": "Select the notifications you want to receive by email. Note that you cannot disable service messages such as payment, security or legal notifications.",
-            "emailLabel": "Email address*",
-            "emailRequired": "Required for notifications.",
-            "items": {
-                "newsletter": {
-                    "title": "Our newsletter",
-                    "subtitle": "We will always notify you of important changes"
-                },
-                "orderConfirmation": {
-                    "title": "Order confirmation",
-                    "subtitle": "You will be notified when a customer places an order"
-                },
-                "orderStatusChanged": {
-                    "title": "Order status changed",
-                    "subtitle": "You will be notified when the customer changes the order"
-                },
-                "orderDelivered": {
-                    "title": "Order delivered",
-                    "subtitle": "You will be notified once the order is delivered"
-                },
-                "emailNotifications": {
-                    "title": "Email notifications",
-                    "subtitle": "Enable email notifications to receive updates"
-                }
-            }
-        },
-        "dateTime": {
-            "title": "Date & time",
-            "subtitle": "Time zones and calendar display settings.",
-            "timezoneLabel": "Time zone",
-            "timezoneValue": "(UTC + 01:00) Paris, Brussels",
-            "download": "Download"
-        },
-        "tracking": {
-            "title": "Ignore tracking",
-            "ignoreBrowser": "Ignore browser tracking",
-            "cookies": "Browser cookies"
         }
     },
     "userSettings": {

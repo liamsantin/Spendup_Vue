@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, ArrowsExchangeIcon, UserCircleIcon, AppsIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, ArrowsExchangeIcon, AdjustmentsHorizontalIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -35,14 +35,9 @@ const sidebarItem: menu[] = [
     },
     { header: 'nav.headers.settings' },
     {
-        title: 'nav.items.accounts',
-        icon: UserCircleIcon,
+        title: 'nav.items.preferences',
+        icon: AdjustmentsHorizontalIcon,
         to: '/app/comptes'
-    },
-    {
-        title: 'nav.items.applications',
-        icon: AppsIcon,
-        to: '/app/applications'
     }
 ];
 

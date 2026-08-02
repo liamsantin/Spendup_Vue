@@ -27,8 +27,8 @@ const notifications: notificationType[] = [
 const profileDD: profileType[] = [
     {
         avatar: proUser1,
-        titleKey: 'header.profile.menu.accounts.title',
-        subtitleKey: 'header.profile.menu.accounts.subtitle',
+        titleKey: 'header.profile.menu.preferences.title',
+        subtitleKey: 'header.profile.menu.preferences.subtitle',
         href: '/app/comptes'
     }
 ];
@@ -39,12 +39,8 @@ const searchSugg: searchType[] = [
         href: '/app'
     },
     {
-        titleKey: 'header.search.suggestions.accounts',
+        titleKey: 'header.search.suggestions.preferences',
         href: '/app/comptes'
-    },
-    {
-        titleKey: 'header.search.suggestions.applications',
-        href: '/app/applications'
     },
     {
         titleKey: 'header.search.suggestions.home',

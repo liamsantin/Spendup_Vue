@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, UserCircleIcon, AppsIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, AdjustmentsHorizontalIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -27,14 +27,9 @@ const horizontalItems: menu[] = [
         to: '/app'
     },
     {
-        title: 'nav.items.accounts',
-        icon: UserCircleIcon,
+        title: 'nav.items.preferences',
+        icon: AdjustmentsHorizontalIcon,
         to: '/app/comptes'
-    },
-    {
-        title: 'nav.items.applications',
-        icon: AppsIcon,
-        to: '/app/applications'
     }
 ];
 

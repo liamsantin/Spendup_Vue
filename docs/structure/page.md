@@ -55,27 +55,17 @@ src/views/app/
 | Finances       | `finances/`    |
 | Paramètres     | `parametres/`  |
 
-**Exemple Comptes :**
+**Exemple Préférences (`/app/comptes`) :**
 
 ```
 src/views/app/parametres/accounts/AppAccountsPage.vue
 src/features/settings/
 ├── index.ts
-├── types.ts
-├── data/
-│   └── notificationPreferences.ts
 └── components/
     ├── AccountTab.vue
     ├── account/                  # cartes UI (photo, perso, credentials)
-    ├── NotificationTab.vue
     ├── SecurityTab.vue
     └── TwoFactor*.vue
-```
-
-**Exemple Applications :**
-
-```
-src/views/app/parametres/applications/AppApplicationsPage.vue
 src/features/user-settings/
 ├── api.ts / types.ts / mappers.ts
 ├── stores/user-settings-store.ts

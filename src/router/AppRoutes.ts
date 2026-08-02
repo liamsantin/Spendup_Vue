@@ -26,9 +26,8 @@ const AppRoutes = {
             component: () => import('@/views/app/parametres/accounts/AppAccountsPage.vue')
         },
         {
-            name: 'AppApplications',
             path: 'applications',
-            component: () => import('@/views/app/parametres/applications/AppApplicationsPage.vue')
+            redirect: '/app/comptes'
         }
     ]
 };

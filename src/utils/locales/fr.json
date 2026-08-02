@@ -27,13 +27,12 @@
         "headers": {
             "spendup": "Spend.Up",
             "finances": "Finances",
-            "settings": "Paramètres"
+            "settings": "Préférences"
         },
         "items": {
             "dashboard": "Tableau de bord",
             "transactions": "Transactions",
-            "accounts": "Comptes",
-            "applications": "Applications"
+            "preferences": "Mon compte"
         },
         "subCaptions": {
             "soon": "Bientôt"
@@ -64,8 +63,7 @@
             "quickLinks": "Liens rapides",
             "suggestions": {
                 "dashboard": "Tableau de bord",
-                "accounts": "Comptes",
-                "applications": "Applications",
+                "preferences": "Mon compte",
                 "home": "Accueil",
                 "features": "Fonctionnalités",
                 "about": "À propos"
@@ -76,9 +74,9 @@
             "fallbackName": "Utilisateur",
             "logout": "Se déconnecter",
             "menu": {
-                "accounts": {
-                    "title": "Comptes",
-                    "subtitle": "Compte & sécurité"
+                "preferences": {
+                    "title": "Mon compte",
+                    "subtitle": "Compte, préférences & sécurité"
                 }
             }
         }
@@ -116,15 +114,10 @@
             }
         }
     },
-    "applications": {
-        "tabs": {
-            "preferences": "Préférences"
-        }
-    },
     "accounts": {
         "tabs": {
-            "account": "Compte",
-            "notification": "Notifications",
+            "account": "Profil",
+            "preferences": "Préférences",
             "security": "Sécurité"
         },
         "picture": {
@@ -392,48 +385,6 @@
                 "currentDeviceRevoked": "Cet appareil a été déconnecté. Veuillez vous reconnecter.",
                 "allRevoked": "Toutes les sessions ont été déconnectées. Veuillez vous reconnecter."
             }
-        }
-    },
-    "notifications": {
-        "preferences": {
-            "title": "Préférences de notification",
-            "subtitle": "Sélectionnez les notifications que vous souhaitez recevoir par e-mail. Notez que vous ne pouvez pas désactiver les messages de service, tels que les notifications de paiement, de sécurité ou légales.",
-            "emailLabel": "Adresse e-mail*",
-            "emailRequired": "Requis pour les notifications.",
-            "items": {
-                "newsletter": {
-                    "title": "Notre newsletter",
-                    "subtitle": "Nous vous informerons toujours des changements importants"
-                },
-                "orderConfirmation": {
-                    "title": "Confirmation de commande",
-                    "subtitle": "Vous serez notifié lorsqu’un client passe une commande"
-                },
-                "orderStatusChanged": {
-                    "title": "Statut de commande modifié",
-                    "subtitle": "Vous serez notifié lorsque le client modifie la commande"
-                },
-                "orderDelivered": {
-                    "title": "Commande livrée",
-                    "subtitle": "Vous serez notifié une fois la commande livrée"
-                },
-                "emailNotifications": {
-                    "title": "Notifications par e-mail",
-                    "subtitle": "Activez les notifications e-mail pour recevoir les mises à jour"
-                }
-            }
-        },
-        "dateTime": {
-            "title": "Date & heure",
-            "subtitle": "Fuseaux horaires et paramètres d’affichage du calendrier.",
-            "timezoneLabel": "Fuseau horaire",
-            "timezoneValue": "(UTC + 01:00) Paris, Bruxelles",
-            "download": "Télécharger"
-        },
-        "tracking": {
-            "title": "Ignorer le suivi",
-            "ignoreBrowser": "Ignorer le suivi du navigateur",
-            "cookies": "Cookies du navigateur"
         }
     },
     "userSettings": {
