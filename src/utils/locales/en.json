@@ -436,8 +436,8 @@
             }
         },
         "security": {
-            "title": "Security",
-            "subtitle": "Idle logout, trusted devices and 2FA.",
+            "title": "Session",
+            "subtitle": "Idle logout and trusted device duration.",
             "idleLogoutEnabled": "Sign out after inactivity",
             "idleLogoutMinutes": "Idle minutes",
             "trustedDeviceDurationDays": "Trusted device duration (days)",

@@ -11,7 +11,7 @@ type AccountTabExpose = {
     loading: boolean;
 };
 
-type PreferencesTabExpose = {
+type SettingsTabExpose = {
     saveSettings: () => void | Promise<void>;
     resetSettings: () => void;
     loading: boolean;
@@ -21,9 +21,11 @@ const { t } = useI18n();
 
 const tab = ref('Account');
 const accountTabRef = ref<AccountTabExpose | null>(null);
-const preferencesTabRef = ref<PreferencesTabExpose | null>(null);
+const preferencesTabRef = ref<SettingsTabExpose | null>(null);
+const securityTabRef = ref<SettingsTabExpose | null>(null);
 const profileDirty = ref(false);
 const preferencesDirty = ref(false);
+const securityDirty = ref(false);
 
 const tabs = computed(() => [
     { value: 'Account', label: t('accounts.tabs.account'), icon: UserCircleIcon },
@@ -34,22 +36,29 @@ const tabs = computed(() => [
 
 const isAccountTab = computed(() => tab.value === 'Account');
 const isPreferencesTab = computed(() => tab.value === 'Preferences');
+const isSecurityTab = computed(() => tab.value === 'Security');
 
 const activeLoading = computed(() => {
     if (isAccountTab.value) return !!accountTabRef.value?.loading;
     if (isPreferencesTab.value) return !!preferencesTabRef.value?.loading;
+    if (isSecurityTab.value) return !!securityTabRef.value?.loading;
     return false;
 });
 
 const activeDirty = computed(() => {
     if (isAccountTab.value) return profileDirty.value;
     if (isPreferencesTab.value) return preferencesDirty.value;
+    if (isSecurityTab.value) return securityDirty.value;
     return false;
 });
 
 const saveLoading = computed(() => activeLoading.value);
-const saveDisabled = computed(() => (!isAccountTab.value && !isPreferencesTab.value) || saveLoading.value || !activeDirty.value);
-const cancelDisabled = computed(() => (!isAccountTab.value && !isPreferencesTab.value) || saveLoading.value || !activeDirty.value);
+const saveDisabled = computed(
+    () => (!isAccountTab.value && !isPreferencesTab.value && !isSecurityTab.value) || saveLoading.value || !activeDirty.value
+);
+const cancelDisabled = computed(
+    () => (!isAccountTab.value && !isPreferencesTab.value && !isSecurityTab.value) || saveLoading.value || !activeDirty.value
+);
 
 function onSave() {
     if (saveLoading.value || !activeDirty.value) return;
@@ -59,6 +68,10 @@ function onSave() {
     }
     if (isPreferencesTab.value) {
         void preferencesTabRef.value?.saveSettings();
+        return;
+    }
+    if (isSecurityTab.value) {
+        void securityTabRef.value?.saveSettings();
     }
 }
 
@@ -70,6 +83,10 @@ function onCancel() {
     }
     if (isPreferencesTab.value) {
         preferencesTabRef.value?.resetSettings();
+        return;
+    }
+    if (isSecurityTab.value) {
+        securityTabRef.value?.resetSettings();
     }
 }
 </script>
@@ -95,7 +112,7 @@ function onCancel() {
                 <NotificationsTab />
             </v-window-item>
             <v-window-item value="Security">
-                <SecurityTab />
+                <SecurityTab ref="securityTabRef" @dirty="securityDirty = $event" />
             </v-window-item>
         </v-window>
     </TabbedActionShell>

@@ -152,12 +152,10 @@ features/
 │   ├── stores/
 │   │   └── user-settings-store.ts
 │   ├── components/
-│   │   ├── AccountTab.vue
-│   │   ├── account/
-│   │   ├── PreferencesTab.vue      # Préférences (GET/PUT settings)
-│   │   ├── NotificationsTab.vue
-│   │   ├── SecurityTab.vue
-│   │   └── TwoFactor*.vue
+│   │   ├── AccountTab.vue + account/
+│   │   ├── PreferencesTab.vue + preferences/
+│   │   ├── NotificationsTab.vue + notifications/
+│   │   └── SecurityTab.vue + security/   # 2FA, appareils, dialogs
 │   └── index.ts
 ├── dashboard/
 │   ├── components/

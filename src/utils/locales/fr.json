@@ -436,8 +436,8 @@
             }
         },
         "security": {
-            "title": "Sécurité",
-            "subtitle": "Déconnexion automatique, appareils de confiance et 2FA.",
+            "title": "Session",
+            "subtitle": "Déconnexion après inactivité et durée de confiance des appareils.",
             "idleLogoutEnabled": "Déconnexion après inactivité",
             "idleLogoutMinutes": "Minutes d’inactivité",
             "trustedDeviceDurationDays": "Durée de confiance des appareils (jours)",

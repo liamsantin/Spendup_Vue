@@ -63,11 +63,13 @@ src/features/user-settings/
 ├── stores/user-settings-store.ts
 └── components/
     ├── AccountTab.vue
-    ├── account/                     # cartes UI (photo, perso, credentials)
-    ├── PreferencesTab.vue           # onglet Préférences (GET/PUT /api/settings)
+    ├── account/                     # sections Profil
+    ├── PreferencesTab.vue           # GET/PUT /api/settings
+    ├── preferences/                 # sections Préférences
     ├── NotificationsTab.vue
+    ├── notifications/
     ├── SecurityTab.vue
-    └── TwoFactor*.vue
+    └── security/                    # 2FA, appareils, dialogs
 ```
 
 - La **view** orchestre le shell (tabs, scroll, footer) + dirty / save / cancel.
