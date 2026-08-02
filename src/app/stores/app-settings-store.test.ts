@@ -20,16 +20,19 @@ describe('useAppSettingsStore', () => {
         expect(raw).toBeTruthy();
         expect(JSON.parse(raw!).boxed).toBe(false);
         expect(JSON.parse(raw!).v).toBe(1);
-        expect(JSON.parse(raw!).locale).toBe('fr');
+        expect(JSON.parse(raw!).locale).toBeUndefined();
     });
 
-    it('SET_LOCALE persiste et n’accepte que fr/en', async () => {
+    it('SET_LOCALE reste en mémoire (pas de localStorage)', async () => {
         const { useAppSettingsStore } = await import('@/app/stores/app-settings-store');
         const store = useAppSettingsStore();
 
         store.SET_LOCALE('en');
         expect(store.locale).toBe('en');
-        expect(JSON.parse(localStorage.getItem('spendup_app_settings')!).locale).toBe('en');
+        expect(localStorage.getItem('spendup_app_settings')).toBeNull();
+
+        store.persist();
+        expect(JSON.parse(localStorage.getItem('spendup_app_settings')!).locale).toBeUndefined();
     });
 
     it('SET_THEME persiste immédiatement', async () => {

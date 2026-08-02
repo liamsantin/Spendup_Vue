@@ -9,21 +9,11 @@ export function isAppLocale(value: unknown): value is AppLocale {
     return value === 'fr' || value === 'en';
 }
 
-/** Lit la locale persistée avant le boot Pinia (même clé que app-settings). */
-export function readInitialLocale(): AppLocale {
-    try {
-        const raw = localStorage.getItem('spendup_app_settings');
-        if (!raw) return 'fr';
-        const parsed = JSON.parse(raw) as { locale?: unknown };
-        return isAppLocale(parsed.locale) ? parsed.locale : 'fr';
-    } catch {
-        return 'fr';
-    }
-}
+export const DEFAULT_LOCALE: AppLocale = 'fr';
 
 export const i18n = createI18n({
     legacy: false,
-    locale: readInitialLocale(),
+    locale: DEFAULT_LOCALE,
     fallbackLocale: 'fr',
     messages,
     globalInjection: true,

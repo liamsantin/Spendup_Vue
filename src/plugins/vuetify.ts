@@ -3,7 +3,7 @@ import '@mdi/font/css/materialdesignicons.css';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import { en, fr } from 'vuetify/locale';
-import { readInitialLocale } from '@/plugins/i18n';
+import { DEFAULT_LOCALE } from '@/plugins/i18n';
 
 import { BLUE_THEME, AQUA_THEME, PURPLE_THEME, GREEN_THEME, CYAN_THEME, ORANGE_THEME } from '@/theme/LightTheme';
 import {
@@ -22,7 +22,7 @@ export default createVuetify({
     directives,
 
     locale: {
-        locale: readInitialLocale(),
+        locale: DEFAULT_LOCALE,
         fallback: 'en',
         messages: { fr, en }
     },

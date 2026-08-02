@@ -27,7 +27,6 @@ export type PersistedSettings = {
     mini_sidebar: boolean;
     setHorizontalLayout: boolean;
     setBorderCard: boolean;
-    locale: AppLocale;
 };
 
 type StoredPayload = PersistedSettings & { v: number };
@@ -38,8 +37,7 @@ function defaults(): PersistedSettings {
         boxed: config.boxed,
         mini_sidebar: config.mini_sidebar,
         setHorizontalLayout: config.setHorizontalLayout,
-        setBorderCard: config.setBorderCard,
-        locale: 'fr'
+        setBorderCard: config.setBorderCard
     };
 }
 
@@ -55,8 +53,7 @@ function sanitize(raw: unknown): PersistedSettings {
         boxed: typeof source.boxed === 'boolean' ? source.boxed : base.boxed,
         mini_sidebar: typeof source.mini_sidebar === 'boolean' ? source.mini_sidebar : base.mini_sidebar,
         setHorizontalLayout: typeof source.setHorizontalLayout === 'boolean' ? source.setHorizontalLayout : base.setHorizontalLayout,
-        setBorderCard: typeof source.setBorderCard === 'boolean' ? source.setBorderCard : base.setBorderCard,
-        locale: isAppLocale(source.locale) ? source.locale : base.locale
+        setBorderCard: typeof source.setBorderCard === 'boolean' ? source.setBorderCard : base.setBorderCard
     };
 }
 
@@ -88,7 +85,8 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
     const actTheme = ref(saved.actTheme);
     const boxed = ref(saved.boxed);
     const setBorderCard = ref(saved.setBorderCard);
-    const locale = ref<AppLocale>(saved.locale);
+    /** Session only — never persisted to localStorage. */
+    const locale = ref<AppLocale>('fr');
 
     /** Ignore les events `storage` déclenchés par notre propre `persist()`. */
     let suppressStorageSync = false;
@@ -99,8 +97,7 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
             boxed: boxed.value,
             mini_sidebar: mini_sidebar.value,
             setHorizontalLayout: setHorizontalLayout.value,
-            setBorderCard: setBorderCard.value,
-            locale: locale.value
+            setBorderCard: setBorderCard.value
         };
     }
 
@@ -111,10 +108,8 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
         mini_sidebar.value = next.mini_sidebar;
         setHorizontalLayout.value = next.setHorizontalLayout;
         setBorderCard.value = next.setBorderCard;
-        locale.value = next.locale;
-        setI18nLocale(next.locale);
         if (options?.fromStorage) {
-            // déjà lu depuis storage
+            // locale intentionnellement non synchronisée (session only)
         }
     }
 
@@ -158,7 +153,6 @@ export const useAppSettingsStore = defineStore('app-settings', () => {
         if (!isAppLocale(payload)) return;
         locale.value = payload;
         setI18nLocale(payload);
-        persist();
     }
 
     function syncFromStorageEvent(event: StorageEvent) {

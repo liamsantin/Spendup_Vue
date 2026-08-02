@@ -15,8 +15,7 @@ import {
     LayoutIcon
 } from 'vue-tabler-icons';
 
-/** Snapshot thème/layout uniquement — la locale est gérée par LanguageTab. */
-type ThemeSnapshot = Omit<PersistedSettings, 'locale'>;
+type ThemeSnapshot = PersistedSettings;
 
 const { t } = useI18n();
 const appSettings = useAppSettingsStore();
@@ -28,14 +27,7 @@ const baseline = ref<ThemeSnapshot | null>(null);
 const saving = ref(false);
 
 function takeSnapshot(): ThemeSnapshot {
-    const full = appSettings.snapshot();
-    return {
-        actTheme: full.actTheme,
-        boxed: full.boxed,
-        mini_sidebar: full.mini_sidebar,
-        setHorizontalLayout: full.setHorizontalLayout,
-        setBorderCard: full.setBorderCard
-    };
+    return appSettings.snapshot();
 }
 
 function snapshotsEqual(a: ThemeSnapshot, b: ThemeSnapshot) {
@@ -76,7 +68,7 @@ function saveSettings() {
 
 function resetSettings() {
     if (!baseline.value || saving.value) return;
-    appSettings.applySnapshot({ ...baseline.value, locale: appSettings.locale });
+    appSettings.applySnapshot(baseline.value);
 }
 
 defineExpose({
