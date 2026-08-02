@@ -62,25 +62,25 @@ const modalStaticOpen = ref(false);
                 <div class="mb-8">
                     <AppAlert type="error" variant="outlined" density="compact" class="mb-4">
                         <template #prepend>
-                            <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
+                            <v-icon class="text-24" icon="$error" />
                         </template>
                         <div>This is an error alert — check it out!</div>
                     </AppAlert>
                     <AppAlert type="warning" variant="outlined" density="compact" class="mb-4">
                         <template #prepend>
-                            <v-icon class="text-24">mdi-alert-outline</v-icon>
+                            <v-icon class="text-24" icon="$warning" />
                         </template>
                         <div>This is a warning alert — check it out!</div>
                     </AppAlert>
                     <AppAlert type="info" variant="outlined" density="compact" class="mb-4">
                         <template #prepend>
-                            <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
+                            <v-icon class="text-24" icon="$error" />
                         </template>
                         <div>This is an info alert — check it out!</div>
                     </AppAlert>
                     <AppAlert type="success" variant="outlined" density="compact" class="mb-4">
                         <template #prepend>
-                            <v-icon class="text-24">mdi-checkbox-marked-circle-outline</v-icon>
+                            <v-icon class="text-24" icon="$success" />
                         </template>
                         <div>This is a success alert — check it out!</div>
                     </AppAlert>
@@ -112,25 +112,25 @@ const modalStaticOpen = ref(false);
                 <div class="mb-8">
                     <AppAlert color="success" variant="tonal" density="default" class="mb-4">
                         <template #prepend>
-                            <v-icon class="text-24">mdi-checkbox-marked-circle-outline</v-icon>
+                            <v-icon class="text-24" icon="$success" />
                         </template>
                         <div>This is an success alert.</div>
                     </AppAlert>
                     <AppAlert color="info" variant="tonal" density="default" class="mb-4">
                         <template #prepend>
-                            <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
+                            <v-icon class="text-24" icon="$error" />
                         </template>
                         <div>This is an info alert.</div>
                     </AppAlert>
                     <AppAlert color="warning" variant="tonal" density="default" class="mb-4">
                         <template #prepend>
-                            <v-icon class="text-24">mdi-alert-outline</v-icon>
+                            <v-icon class="text-24" icon="$warning" />
                         </template>
                         <div>This is an warning alert.</div>
                     </AppAlert>
                     <AppAlert color="error" variant="tonal" density="default" class="mb-4">
                         <template #prepend>
-                            <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
+                            <v-icon class="text-24" icon="$error" />
                         </template>
                         <div>This is an error alert.</div>
                     </AppAlert>
@@ -163,13 +163,13 @@ const modalStaticOpen = ref(false);
                     <AppAlert type="warning" density="compact" class="mb-4 single-line-alert" closable>
                         <div>This is an warning alert — check it out!</div>
                         <template #prepend>
-                            <v-icon class="text-24">mdi-alert-outline</v-icon>
+                            <v-icon class="text-24" icon="$warning" />
                         </template>
                     </AppAlert>
                     <AppAlert type="info" density="compact" class="mb-4 single-line-alert" closable>
                         <div>This is an info alert — check it out!</div>
                         <template #prepend>
-                            <v-icon class="text-24">mdi-alert-circle-outline</v-icon>
+                            <v-icon class="text-24" icon="$error" />
                         </template>
                     </AppAlert>
                 </div>

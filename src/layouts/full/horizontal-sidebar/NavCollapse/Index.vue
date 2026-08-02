@@ -1,6 +1,7 @@
 <script setup>
 defineOptions({ name: 'HorizontalNavCollapse' });
 
+import { ChevronDownIcon } from 'vue-tabler-icons';
 import NavItem from '../NavItem/Index.vue';
 import Icon from '../../vertical-sidebar/Icon.vue';
 

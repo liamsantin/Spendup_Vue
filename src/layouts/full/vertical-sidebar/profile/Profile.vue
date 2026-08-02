@@ -3,6 +3,7 @@ defineOptions({ name: 'SidebarProfile' });
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { PowerIcon } from 'vue-tabler-icons';
 import { useAuthStore, useProfileAvatarUrl } from '@/features/auth';
 
 const { t } = useI18n();

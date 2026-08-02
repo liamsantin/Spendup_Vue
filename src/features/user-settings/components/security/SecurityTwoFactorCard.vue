@@ -46,7 +46,7 @@ const { t } = useI18n();
                 @dismiss="emit('dismissSuccess')"
             >
                 <template #prepend>
-                    <v-icon class="text-24">mdi-checkbox-marked-circle-outline</v-icon>
+                    <v-icon class="text-24" icon="$success" />
                 </template>
                 <div>{{ successMessage }}</div>
             </AppAlert>

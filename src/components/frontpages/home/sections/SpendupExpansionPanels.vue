@@ -34,7 +34,7 @@ withDefaults(
                 :disabled="item.disabled"
                 class="mb-4"
             >
-                <v-expansion-panel-title :class="titleClass" collapse-icon="mdi-minus" expand-icon="mdi-plus">
+                <v-expansion-panel-title :class="titleClass" collapse-icon="$minus" expand-icon="$plus">
                     <slot name="title" :item="item" :index="index" />
                 </v-expansion-panel-title>
                 <v-expansion-panel-text :class="textClass">

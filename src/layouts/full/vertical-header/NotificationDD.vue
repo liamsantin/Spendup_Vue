@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { BellRingingIcon } from 'vue-tabler-icons';
 import { notifications } from '@/data/admin/headerData';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 

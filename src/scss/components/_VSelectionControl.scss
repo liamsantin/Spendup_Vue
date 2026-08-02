@@ -1,6 +1,5 @@
-// For checkbox & radios
-.v-selection-control__input > .v-icon.mdi-checkbox-blank-outline,
-.v-selection-control__input > .v-icon.mdi-radiobox-blank {
+// Checkbox / radio non cochés (SVG mdi-svg, plus de classes .mdi-*).
+.v-selection-control:not(.v-selection-control--dirty) .v-selection-control__input > .v-icon {
     color: rgb(var(--v-theme-inputBorder));
     opacity: 1;
 }

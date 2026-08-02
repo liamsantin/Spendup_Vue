@@ -1,6 +1,7 @@
 <script setup lang="ts">
 defineOptions({ name: 'NavGroupTitle' });
 
+import { DotsIcon } from 'vue-tabler-icons';
 import type { menu } from '../sidebarItem';
 
 defineProps<{ item: menu }>();

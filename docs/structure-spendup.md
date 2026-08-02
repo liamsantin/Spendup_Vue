@@ -44,7 +44,7 @@ Spendup_Vue/
 | Router    | Vue Router 4 — history mode, guard dans `src/app/guards/`                                       |
 | Styles    | SCSS (Sass)                                                                                     |
 | Tests     | Vitest + Vue Test Utils + jsdom (`*.test.ts` colocalisés, setup dans `src/test/`)               |
-| Icônes    | `vue-tabler-icons` (front-pages, sidebar) + `@mdi/font` (Vuetify)                               |
+| Icônes    | `vue-tabler-icons` (imports individuels / tree-shake) + Vuetify `mdi-svg` (pas de webfont MDI)  |
 | Alias     | `@` → `src/`                                                                                    |
 | Dev       | `npm run dev`                                                                                   |
 | Test      | `npm test` (CI) / `npm run test:watch`                                                          |

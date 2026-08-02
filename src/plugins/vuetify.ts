@@ -1,6 +1,6 @@
 import { createVuetify } from 'vuetify';
 import 'vuetify/styles';
-import '@mdi/font/css/materialdesignicons.css';
+import { aliases, mdi } from 'vuetify/iconsets/mdi-svg';
 import { en, fr } from 'vuetify/locale';
 import { DEFAULT_LOCALE } from '@/plugins/i18n';
 
@@ -14,8 +14,17 @@ import {
     DARK_CYAN_THEME
 } from '@/theme/DarkTheme';
 
-/** Composants / directives auto-importés via `vite-plugin-vuetify` (pas d’import *). */
+/**
+ * Icônes Vuetify en SVG inline (aliases) — pas de webfont `@mdi/font` (~1 Mo+).
+ * Composants / directives auto-importés via `vite-plugin-vuetify`.
+ */
 export default createVuetify({
+    icons: {
+        defaultSet: 'mdi',
+        aliases,
+        sets: { mdi }
+    },
+
     locale: {
         locale: DEFAULT_LOCALE,
         fallback: 'en',
