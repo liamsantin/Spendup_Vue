@@ -2,10 +2,11 @@
 
 **Public :** développeur Vue (Vite / Nuxt / Vue CLI)  
 **API :** Spendup — auth uniquement pour l’instant (`/api/auth/*`)  
-**Dernière mise à jour :** 2026-07-21
+**Dernière mise à jour :** 2026-08-02
 
 Ce document décrit **tout ce que le front doit savoir** pour brancher l’auth.  
-Référence backend détaillée : `Docs/Features/authentication/feature-authentification.md`.
+Implémentation Vue : `src/features/auth/` + `components/auth/` + `app/guards/auth-guard.ts`.  
+Référence backend détaillée : `Docs/Features/authentication/feature-authentification.md` (repo API).
 
 ---
 
@@ -72,11 +73,20 @@ JSON en **camelCase** (ASP.NET Core par défaut).
 
 ## 3. Tokens — règles critiques
 
-| Token            | Où le stocker (reco)                                                                                                                              | Durée défaut | Usage                                                         |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------- |
-| `accessToken`    | mémoire (Pinia/Vuex) + éventuellement `sessionStorage`                                                                                            | **15 min**   | Header `Authorization: Bearer {accessToken}`                  |
-| `refreshToken`   | stockage persistant **sécurisé** (`localStorage` ou mieux httpOnly cookie _si_ vous ajoutez ce mode plus tard — **aujourd’hui : body JSON only**) | **30 jours** | `POST /api/auth/refresh`                                      |
-| `twoFactorToken` | mémoire courte uniquement                                                                                                                         | **5 min**    | Uniquement `POST /api/auth/2fa/verify` — **jamais** sur `/me` |
+| Token            | Où le stocker (Spend.Up Vue)                                        | Durée défaut | Usage                                                         |
+| ---------------- | ------------------------------------------------------------------- | ------------ | ------------------------------------------------------------- |
+| `accessToken`    | Pinia + `sessionStorage` (`spendup_access_token`)                   | **15 min**   | Header `Authorization: Bearer {accessToken}`                  |
+| `expiresAt`      | Pinia + `sessionStorage` (`spendup_access_expires_at`) — ISO string | = access     | Refresh **proactif** (~30 s avant expiration)                 |
+| `refreshToken`   | Pinia + `localStorage` (`spendup_refresh_token`)                    | **30 jours** | `POST /api/auth/refresh`                                      |
+| `twoFactorToken` | mémoire courte uniquement                                           | **5 min**    | Uniquement `POST /api/auth/2fa/verify` — **jamais** sur `/me` |
+
+**Pending register (front) :**
+
+| Donnée            | Stockage                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------- |
+| `pendingEmail`    | `sessionStorage` (`spendup_pending_email`)                                                              |
+| `pendingPassword` | **mémoire seule** (jamais `sessionStorage`) — login auto après confirm si l’onglet n’a pas été rechargé |
+| Login notice      | `sessionStorage` (`spendup_login_notice`) — une fois sur `/auth/login`                                  |
 
 ### Header protégé
 
@@ -85,17 +95,19 @@ Authorization: Bearer eyJhbGciOi...
 Content-Type: application/json
 ```
 
-### Intercepteur recommandé (Vue)
+### Intercepteur / refresh (Spend.Up)
 
-1. Sur **401** d’une route protégée → tenter **un** refresh avec le `refreshToken`.
-2. Si refresh OK → stocker les **nouveaux** `accessToken` + `refreshToken` (rotation) → rejouer la requête.
-3. Si refresh KO → logout local + redirect login.
-4. **Ne jamais** envoyer le `twoFactorToken` comme Bearer sur les routes `[Authorize]`.
+1. `ensureAccessToken()` : si access absent **ou** `expiresAt` proche → `refreshSession()`.
+2. **Mutex** : un seul `refresh` concurrent (store partagé avec `fetchWrapper`).
+3. Sur **401** d’une route domaine (`fetchWrapper`) → un refresh → retry une fois ; si KO → `forceReLogin()`.
+4. `GET /me` : retry une fois après 401 via refresh.
+5. Guard `/app` : si `fetchMe()` renvoie `null` ou session morte → login (pas d’accès « fantôme »).
+6. **Ne jamais** envoyer le `twoFactorToken` comme Bearer sur les routes `[Authorize]`.
 
 ### Invalidation immédiate de l’access JWT
 
-Après **reset password**, **change password**, **confirm email change**, l’ancien access JWT est **immédiatement invalide** (même avant 15 min).  
-Le front doit forcer un logout / nouveau login.
+Après **reset password**, **change password**, **confirm email change**, **delete account**, **revoke-all devices**, l’ancien access JWT est **immédiatement invalide**.  
+Le front appelle `forceReLogin(message)` (clear session + notice login).
 
 Réutilisation d’un refresh déjà consommé → **toutes** les sessions de la famille sont révoquées (détection de vol) → logout partout.
 
@@ -150,9 +162,12 @@ Le front utilise `router.replace` vers `/auth/confirm-email` après un register 
 **Front — confirmation e-mail (`ConfirmEmailForm`) :**
 
 - Pas de champ e-mail éditable : l’adresse vient de `?email=` et/ou `auth.pendingEmail` (sessionStorage via `setPendingEmail`).
-- UI : code à 6 chiffres + « Renvoyer le code » (discret) + « Confirmer l’e-mail ».
+- MDP post-register en **mémoire** uniquement : si l’utilisateur recharge avant confirm → message « connectez-vous » après confirm.
+- UI : code à 6 chiffres (`OtpDigitsInput`) + « Renvoyer le code » + « Confirmer ».
 - Feedback via `AppAlert` (pas `v-alert` brut).
 - Détails structure / logo : `docs/structure-spendup.md` ; alertes : `docs/components/alert/alert-component.md`.
+
+Register accepte aussi un **username** (sans e-mail) → login immédiat sans étape confirm.
 
 ### 5.2 Login email / mot de passe
 
@@ -161,6 +176,8 @@ POST /login
   ├─ requiresTwoFactor: false → accessToken + refreshToken + expiresAt + userPublicId
   └─ requiresTwoFactor: true  → twoFactorToken seulement → écran code TOTP / recovery
 ```
+
+Body login : `{ identifier, password, device… }` — `identifier` = e-mail **ou** username.
 
 Email non vérifié **ou** mauvais MDP → **même message** (`Invalid email or password.`) — ne pas distinguer côté UI.
 
@@ -239,27 +256,37 @@ Recovery codes : usage unique. Les afficher / faire télécharger **une seule fo
 
 Préfixe : **`/api/auth`**
 
-| Méthode  | Route                   | Auth              | Body                                            | `result`                          |
-| -------- | ----------------------- | ----------------- | ----------------------------------------------- | --------------------------------- |
-| `POST`   | `/register`             | —                 | email, password, firstName?, name?              | `{ email }`                       |
-| `POST`   | `/confirm-email`        | —                 | email, code                                     | `null`                            |
-| `POST`   | `/resend-verification`  | —                 | email                                           | `null`                            |
-| `POST`   | `/login`                | —                 | email, password, deviceIdentifier?, deviceName? | `AuthSession`                     |
-| `POST`   | `/google`               | —                 | idToken, deviceIdentifier?, deviceName?         | `AuthSession`                     |
-| `POST`   | `/2fa/verify`           | —                 | twoFactorToken, code, device…?                  | `AuthTokens`                      |
-| `POST`   | `/refresh`              | —                 | refreshToken                                    | `AuthTokens`                      |
-| `POST`   | `/logout`               | refresh et/ou JWT | refreshToken?                                   | `null`                            |
-| `GET`    | `/me`                   | JWT               | —                                               | profil                            |
-| `POST`   | `/forgot-password`      | —                 | email                                           | `null`                            |
-| `POST`   | `/reset-password`       | —                 | token, newPassword                              | `null`                            |
-| `POST`   | `/password/change`      | JWT               | currentPassword, newPassword                    | `null`                            |
-| `POST`   | `/email/change`         | JWT               | currentPassword, newEmail                       | `null`                            |
-| `POST`   | `/email/confirm-change` | —                 | email, code                                     | `null`                            |
-| `POST`   | `/google/unlink`        | JWT               | currentPassword                                 | `null`                            |
-| `DELETE` | `/account`              | JWT               | currentPassword? **ou** googleIdToken?          | `null`                            |
-| `POST`   | `/2fa/setup`            | JWT               | —                                               | secret, otpAuthUri, recoveryCodes |
-| `POST`   | `/2fa/enable`           | JWT               | code                                            | `null`                            |
-| `POST`   | `/2fa/disable`          | JWT               | code                                            | `null`                            |
+| Méthode  | Route                   | Auth              | Body                                                 | `result`                          |
+| -------- | ----------------------- | ----------------- | ---------------------------------------------------- | --------------------------------- |
+| `POST`   | `/register`             | —                 | email?, username?, password, firstName?, name?       | `{ email, username }`             |
+| `POST`   | `/confirm-email`        | —                 | email, code                                          | `null`                            |
+| `POST`   | `/resend-verification`  | —                 | email                                                | `null`                            |
+| `POST`   | `/login`                | —                 | identifier, password, deviceIdentifier?, deviceName? | `AuthSession`                     |
+| `POST`   | `/google`               | —                 | idToken, deviceIdentifier?, deviceName?              | `AuthSession`                     |
+| `POST`   | `/2fa/verify`           | —                 | twoFactorToken, code, device…?                       | `AuthTokens`                      |
+| `POST`   | `/refresh`              | —                 | refreshToken                                         | `AuthTokens`                      |
+| `POST`   | `/logout`               | refresh et/ou JWT | refreshToken?                                        | `null`                            |
+| `GET`    | `/me`                   | JWT               | —                                                    | profil (`Me`)                     |
+| `PUT`    | `/profile`              | JWT               | soft profile (sans photo)                            | `null`                            |
+| `PUT`    | `/me/avatar`            | JWT               | `{ profilePicture: "/avatar/…" }` catalogue          | `null`                            |
+| `POST`   | `/me/avatar`            | JWT               | multipart `file` (JPEG/PNG/WebP, max 2 Mo)           | `{ profilePicture: hash }`        |
+| `GET`    | `/me/avatar`            | JWT               | — (binaire si hash uploadé)                          | blob                              |
+| `DELETE` | `/me/avatar`            | JWT               | —                                                    | `null`                            |
+| `PUT`    | `/username`             | JWT               | `{ username }`                                       | `null`                            |
+| `POST`   | `/forgot-password`      | —                 | email                                                | `null`                            |
+| `POST`   | `/reset-password`       | —                 | token, newPassword                                   | `null`                            |
+| `POST`   | `/password/change`      | JWT               | currentPassword?, newPassword                        | `null`                            |
+| `POST`   | `/email/change`         | JWT               | newEmail, currentPassword? **ou** googleIdToken?     | `null`                            |
+| `POST`   | `/email/confirm-change` | —                 | email, code                                          | `null`                            |
+| `POST`   | `/google/unlink`        | JWT               | currentPassword                                      | `null`                            |
+| `DELETE` | `/account`              | JWT               | currentPassword? **ou** googleIdToken?               | `null`                            |
+| `POST`   | `/2fa/setup`            | JWT               | —                                                    | secret, otpAuthUri, recoveryCodes |
+| `POST`   | `/2fa/enable`           | JWT               | code                                                 | `null`                            |
+| `POST`   | `/2fa/disable`          | JWT               | code                                                 | `null`                            |
+| `GET`    | `/devices`              | JWT               | —                                                    | liste appareils                   |
+| `DELETE` | `/devices/{id}`         | JWT               | —                                                    | `null`                            |
+| `POST`   | `/devices/revoke-all`   | JWT               | —                                                    | `null`                            |
+| `PUT`    | `/devices/{id}/trust`   | JWT               | `{ isTrusted }`                                      | `null`                            |
 
 ### Formes `result` utiles
 
@@ -300,18 +327,32 @@ Si 2FA :
 }
 ```
 
-**Me** (`GET /me`) :
+**Me** (`GET /me`) — champs utilisés par le front :
 
 ```json
 {
-    "userPublicId": "...",
+    "userPublicId": "762H2M3",
     "email": "user@example.com",
+    "username": "ada",
     "firstName": "Ada",
     "name": "Lovelace",
     "emailVerified": true,
-    "twoFactorEnabled": false
+    "twoFactorEnabled": false,
+    "pendingEmail": null,
+    "phone": null,
+    "birthDate": "1990-01-15",
+    "street": null,
+    "streetNumber": null,
+    "countryId": 1,
+    "profilePicture": "/avatar/user-1",
+    "hasPassword": true,
+    "hasGoogle": false
 }
 ```
+
+- `profilePicture` : chemin catalogue (`/avatar/…`), hash SHA-256 64 hex (upload), ou `null`.
+- `hasPassword` / `hasGoogle` : pilotent l’UI Google-only (changement e-mail, suppression compte, etc.).
+- Photo **hors** soft `PUT /profile` — endpoints `/me/avatar` uniquement.
 
 **2FA setup** :
 
@@ -327,22 +368,24 @@ Si 2FA :
 
 ## 7. Écrans Vue à prévoir (checklist)
 
-| Écran / feature          | Endpoints                               |
-| ------------------------ | --------------------------------------- |
-| Inscription              | `register`                              |
-| Saisie code email        | `confirm-email`, `resend-verification`  |
-| Login                    | `login` → éventuellement écran 2FA      |
-| Challenge 2FA            | `2fa/verify`                            |
-| Google bouton            | GIS + `google`                          |
-| Mot de passe oublié      | `forgot-password`                       |
-| Reset (route `?token=`)  | `reset-password`                        |
-| Profil                   | `me`                                    |
-| Changer MDP              | `password/change` → **re-login**        |
-| Changer email            | `email/change` + `email/confirm-change` |
-| Activer / désactiver 2FA | `2fa/setup`, `enable`, `disable`        |
-| Unlink Google            | `google/unlink`                         |
-| Supprimer compte         | `DELETE /account`                       |
-| Session globale          | refresh interceptor + logout            |
+| Écran / feature          | Endpoints / notes                                           |
+| ------------------------ | ----------------------------------------------------------- |
+| Inscription              | `register` (± username)                                     |
+| Saisie code email        | `confirm-email`, `resend-verification`                      |
+| Login                    | `login` → éventuellement écran 2FA                          |
+| Challenge 2FA            | `2fa/verify`                                                |
+| Google bouton            | GIS + `google`                                              |
+| Mot de passe oublié      | `forgot-password`                                           |
+| Reset (route `?token=`)  | `reset-password`                                            |
+| Profil (AccountTab)      | `me`, `PUT /profile`, username / email / password           |
+| Photo de profil          | `PUT/POST/GET/DELETE /me/avatar`                            |
+| Changer MDP              | `password/change` → **re-login**                            |
+| Changer email            | `email/change` (MDP **ou** Google) + `email/confirm-change` |
+| Activer / désactiver 2FA | `2fa/setup`, `enable`, `disable`                            |
+| Appareils (SecurityTab)  | `devices`, revoke, trust, revoke-all                        |
+| Unlink Google            | `google/unlink`                                             |
+| Supprimer compte         | `DELETE /account` (MDP **ou** Google)                       |
+| Session globale          | refresh mutex + logout / `forceReLogin`                     |
 
 ---
 
@@ -359,6 +402,8 @@ Si 2FA :
 | Lockout login                 | 5 échecs / email (ou 30 / IP) / 15 min                    | Afficher `message`, countdown éventuel                 |
 | Verify 2FA                    | Rate-limit + token one-shot                               | Si KO, peut falloir **re-login** pour un nouveau token |
 | Compte Google-only delete     | Passer `googleIdToken` (pas de MDP)                       | Brancher GIS avant delete                              |
+| Compte Google-only email      | `googleIdToken` sur `/email/change` (et renvoi de code)   | Même pattern GIS que delete                            |
+| Username                      | 3–30 chars `[a-z0-9._-]`, stocké lowercase                | Helpers `isValidUsername` / `normalizeUsername`        |
 
 ---
 
@@ -433,5 +478,6 @@ Collection Postman : `Postman/Spendup_Api.postman_collection.json`.
 3. `VITE_API_BASE_URL` correct (pas de slash final obligatoire ; paths commencent par `/api/...`).
 4. Google : même Client ID Web front + API.
 5. Reset MDP : `Email:PasswordResetBaseUrl` pointe vers la route Vue (`…/reset-password`).
-6. Intercepteur refresh + purge tokens sur logout / 401 définitif.
+6. Intercepteur refresh + purge tokens sur logout / 401 définitif (`forceReLogin`).
 7. Ne jamais logger access/refresh/2FA tokens.
+8. Ne jamais persister le mot de passe pending register hors mémoire process.

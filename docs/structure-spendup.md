@@ -19,7 +19,10 @@ Spendup_Vue/
 ├── src/                      # Projet Spend.Up actif — seul dossier à modifier
 └── docs/
     ├── structure-spendup.md
-    └── rules-spendup.md
+    ├── rules-spendup.md
+    ├── structure/page.md              # Tabbed Action Shell
+    ├── features/auth/authentication-rules.md
+    └── components/                    # AppAlert, AppModalBase, …
 ```
 
 | Dossier                      | Rôle                                                                   | Quand l'utiliser                                                |
@@ -33,17 +36,20 @@ Spendup_Vue/
 
 ## Stack & commandes
 
-| Élément   | Détail                                                                                             |
-| --------- | -------------------------------------------------------------------------------------------------- |
-| Framework | Vue 3 (Composition API, `<script setup>`)                                                          |
-| UI        | Vuetify 3.7 — composants préfixés `v-` (`v-btn`, `v-card`, `v-container`…)                         |
-| State     | Pinia — stores globaux dans `src/app/stores/`, stores métier dans `src/features/<domaine>/stores/` |
-| Router    | Vue Router 4 — history mode, guard dans `src/app/guards/`                                          |
-| Styles    | SCSS (Sass)                                                                                        |
-| Icônes    | `vue-tabler-icons` (front-pages, sidebar) + `@mdi/font` (Vuetify)                                  |
-| Alias     | `@` → `src/`                                                                                       |
-| Dev       | `npm run dev`                                                                                      |
-| Build     | `npm run build` (vue-tsc + vite)                                                                   |
+| Élément   | Détail                                                                                          |
+| --------- | ----------------------------------------------------------------------------------------------- |
+| Framework | Vue 3 (Composition API, `<script setup>`)                                                       |
+| UI        | Vuetify 3 — composants préfixés `v-` (`v-btn`, `v-card`, `v-container`…)                        |
+| State     | Pinia — **Setup Store uniquement** (`app/stores/` globaux, `features/<domaine>/stores/` métier) |
+| Router    | Vue Router 4 — history mode, guard dans `src/app/guards/`                                       |
+| Styles    | SCSS (Sass)                                                                                     |
+| Tests     | Vitest + Vue Test Utils + jsdom (`*.test.ts` colocalisés, setup dans `src/test/`)               |
+| Icônes    | `vue-tabler-icons` (front-pages, sidebar) + `@mdi/font` (Vuetify)                               |
+| Alias     | `@` → `src/`                                                                                    |
+| Dev       | `npm run dev`                                                                                   |
+| Test      | `npm test` (CI) / `npm run test:watch`                                                          |
+| Build     | `npm run build` (vue-tsc + vite)                                                                |
+| Validate  | `npm run validate` = typecheck + lint + format:check + **test** + build                         |
 
 ---
 
@@ -55,21 +61,28 @@ src/
 ├── App.vue
 ├── app/                    # Couche application (transverse, hors domaine métier)
 │   ├── stores/             # Stores Pinia globaux uniquement
-│   └── guards/             # Guards Vue Router
+│   └── guards/             # Guards Vue Router (+ tests *.test.ts)
 ├── features/               # Logique métier par domaine fonctionnel
 │   ├── auth/
+│   ├── countries/
+│   ├── settings/           # Onglets Compte / Notifications / Sécurité
+│   ├── applications/       # Onglet Thème (page Applications)
 │   ├── dashboard/
 │   └── …                   # transactions, budgets… (à créer avec du code réel)
 ├── views/
 │   ├── app/                # Pages fines zone /app — liées au routing
+│   │   ├── spendup/dashboard/
+│   │   └── parametres/
+│   │       ├── accounts/       # Tabbed Action Shell — Compte
+│   │       └── applications/   # Tabbed Action Shell — Applications
 │   ├── front-pages/        # Pages publiques (coquilles de route)
 │   ├── authentication/     # Login, register, erreur…
 │   └── dev/                # Showcase UI (`/components`) — VITE_APP_ENV=development uniquement
 ├── components/
 │   ├── frontpages/         # Composants site public
 │   ├── auth/               # Formulaires authentification (UI → store)
-│   └── shared/             # Composants réutilisables transverses (AppAlert, …)
-├── assets/images/          # Images statiques
+│   └── shared/             # Composants réutilisables transverses (AppAlert, AppModalBase, …)
+├── assets/images/          # Images statiques (dont profile/avatar catalogue)
 ├── data/                   # Données statiques (front-pages, header profil)
 │   ├── front-pages/
 │   └── admin/
@@ -79,11 +92,12 @@ src/
 ├── plugins/vuetify.ts
 ├── router/                 # FrontPagesRoutes, AppRoutes, AuthRoutes
 ├── scss/                   # Tous les styles du projet
+├── test/                   # Setup Vitest partagé (setup.ts, pinia.ts)
 ├── theme/                  # Couleurs Vuetify (LightTheme, DarkTheme)
 ├── types/                  # Types techniques / UI (hors domaine métier)
 └── utils/                  # i18n, helpers transverses
     ├── locales/            # Fichiers i18n (messages.ts, fr.json…)
-    └── helpers/            # Helpers nommés <domaine>-helpers.ts
+    └── helpers/            # Helpers nommés <domaine>-helpers.ts (+ *.test.ts)
 ```
 
 > **Types métier :** préférer `features/<domaine>/types.ts` (ex. auth). Les dossiers `entities/` / `models/` ne sont **pas** créés pour l’instant — éventuel partage cross-features plus tard seulement.
@@ -97,7 +111,7 @@ Regroupe tout ce qui est **global à l'application**, sans appartenir à un doma
 ```
 app/
 ├── stores/
-│   └── app-settings-store.ts # Thème, sidebar, layout admin (ex-customizer)
+│   └── app-settings-store.ts # Thème, sidebar, layout admin (ex-customizer) — persistés localStorage
 │   # Stores métier → features/<domaine>/stores/ (ex. features/auth/stores/auth-store.ts)
 └── guards/
     └── auth-guard.ts           # Protection routes meta.requiresAuth
@@ -119,11 +133,36 @@ Chaque domaine fonctionnel vit dans son propre dossier. **Toute logique métier*
 ```
 features/
 ├── auth/
-│   ├── api.ts
+│   ├── api.ts                      # authHttp / authApi (+ avatar multipart)
 │   ├── device.ts
+│   ├── types.ts                    # Me, tokens, username helpers…
+│   ├── profilePicture.ts           # Catalogue /avatar/user-1…30, hash upload
+│   ├── normalizeDevices.ts
+│   ├── composables/
+│   │   └── useProfileAvatarUrl.ts  # URL avatar partagée (header / sidebar)
+│   ├── stores/
+│   │   └── auth-store.ts           # Session JWT, refresh mutex, expiresAt, `/me`
+│   └── index.ts
+├── countries/
+│   ├── api.ts                      # GET /api/countries via fetchWrapper
 │   ├── types.ts
 │   ├── stores/
-│   │   └── auth-store.ts   # Session JWT, login / logout / 2FA / `/me`
+│   │   └── countries-store.ts      # Cache + ensureLoaded (promise partagée)
+│   └── index.ts
+├── settings/                       # Page Paramètres → Comptes
+│   ├── components/
+│   │   ├── AccountTab.vue
+│   │   ├── NotificationTab.vue
+│   │   ├── SecurityTab.vue
+│   │   ├── TwoFactorSetupDialog.vue
+│   │   └── TwoFactorDisableDialog.vue
+│   ├── data/
+│   │   └── notificationPreferences.ts
+│   ├── types.ts
+│   └── index.ts
+├── applications/                   # Page Paramètres → Applications
+│   ├── components/
+│   │   └── ThemeTab.vue            # Thème + mise en page (dirty / save / reset)
 │   └── index.ts
 ├── dashboard/
 │   ├── components/
@@ -133,6 +172,8 @@ features/
 │   └── index.ts
 ```
 
+Les tests unitaires sont **colocalisés** (`*.test.ts` à côté du module) : ex. `auth-store.test.ts`, `countries-store.test.ts`, `fetch-helpers.test.ts`.
+
 ### Features prévues (plateforme financière)
 
 `accounts`, `transactions`, `budgets`, `categories`, `recurring-payments`, `invoices`, `expenses`, `income`, `cashflow`, `reports`, `alerts`, `teams` — à créer au fil de l'implémentation, pas en squelettes vides.
@@ -140,8 +181,8 @@ features/
 ### Exemple cible — fonctionnalité `transactions`
 
 ```
-views/app/transactions/
-└── AppTransactionsView.vue          # Page fine — routing uniquement
+views/app/finances/transactions/
+└── AppTransactionsPage.vue          # Page fine — routing uniquement
 
 features/transactions/
 ├── api/
@@ -154,8 +195,7 @@ features/transactions/
 │   └── useTransactions.ts
 ├── stores/
 │   └── transaction-store.ts
-├── types/
-│   └── transaction.types.ts
+├── types.ts
 └── index.ts
 ```
 
@@ -165,21 +205,29 @@ features/transactions/
 
 | Zone               | Views (pages fines)     | Logique métier                         | Composants UI                                            |
 | ------------------ | ----------------------- | -------------------------------------- | -------------------------------------------------------- |
-| Application `/app` | `views/app/<feature>/`  | `features/<feature>/`                  | `features/<feature>/components/` ou `components/shared/` |
+| Application `/app` | `views/app/<header>/…`  | `features/<domaine>/`                  | `features/<domaine>/components/` ou `components/shared/` |
 | Site public        | `views/front-pages/`    | — (contenu dans composants)            | `components/frontpages/<feature>/`                       |
 | Auth               | `views/authentication/` | `features/auth/` (store + API + types) | `components/auth/`                                       |
 | Dev / showcase     | `views/dev/`            | —                                      | `components/shared/` (ex. AppAlert)                      |
 
-**Auth :** store dans `features/auth/stores/auth-store.ts` ; client HTTP typé dans `features/auth/` ; formulaires UI dans `components/auth/` (dont `GoogleSignInButton`) ; styles dans `scss/pages/_authentication.scss` ; guard dans `app/guards/`. Feedback UI via **`AppAlert`** (pas `v-alert` brut) — doc : `docs/components/alert/alert-component.md`.
+**Auth :** store dans `features/auth/stores/auth-store.ts` ; client HTTP typé dans `features/auth/` ; formulaires UI dans `components/auth/` (dont `GoogleSignInButton`, `OtpDigitsInput`) ; styles dans `scss/pages/_authentication.scss` ; guard dans `app/guards/`. Feedback UI via **`AppAlert`** (pas `v-alert` brut) — doc : `docs/components/alert/alert-component.md`. Modales métier via **`AppModalBase`** — `docs/components/modal/modalbase-component.md`. Règles API détaillées : `docs/features/auth/authentication-rules.md`.
 
 **Auth — flux inscription / confirmation (front) :**
 
-| Étape                                 | Comportement                                                                                      |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Register avec e-mail                  | `setPendingEmail` + `router.replace` → `/auth/confirm-email?email=…`                              |
-| Confirm e-mail                        | Pas de champ e-mail éditable : e-mail retenu (query / `pendingEmail`) ; saisie du code uniquement |
-| Réinscription même e-mail non vérifié | Géré côté API (MAJ MDP + nouveau code) ; front redirige à nouveau vers confirm                    |
-| Logo                                  | Voir section Logo ci-dessous                                                                      |
+| Étape                                 | Comportement                                                                                                                      |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Register avec e-mail                  | `setPendingEmail` + MDP en **mémoire seule** (`setPendingPassword`) + `router.replace` → `/auth/confirm-email?email=…`            |
+| Confirm e-mail                        | Pas de champ e-mail éditable : e-mail retenu (query / `pendingEmail`) ; login auto si MDP encore en mémoire, sinon redirect login |
+| Réinscription même e-mail non vérifié | Géré côté API (MAJ MDP + nouveau code) ; front redirige à nouveau vers confirm                                                    |
+| Notice login                          | `sessionStorage` clé `spendup_login_notice` (pas de `?notice=` dans l’URL) — `consumeLoginNotice()`                               |
+| Logo                                  | Voir section Logo ci-dessous                                                                                                      |
+
+**Paramètres `/app` — Tabbed Action Shell** (doc : `docs/structure/page.md`) :
+
+| Route               | View                  | Feature        | Onglets                         |
+| ------------------- | --------------------- | -------------- | ------------------------------- |
+| `/app/comptes`      | `AppAccountsPage`     | `settings`     | Compte, Notifications, Sécurité |
+| `/app/applications` | `AppApplicationsPage` | `applications` | Thème                           |
 
 **Principe :** les `views/` restent des coquilles légères ; elles importent depuis `@/features/<domaine>`.
 
@@ -238,10 +286,12 @@ scss/
 | `/auth/confirm-email-change` | `SideConfirmEmailChange` + `ConfirmEmailChangeForm`      | BlankLayout                                        |
 | `/auth/404`                  | `Error`                                                  | BlankLayout                                        |
 | `/auth/maintenance`          | `Maintenance`                                            | BlankLayout                                        |
-| `/app`                       | `dashboard/AppDashboardView`                             | `features/dashboard` — FullLayout (`requiresAuth`) |
+| `/app`                       | `spendup/dashboard/AppDashboardView`                     | `features/dashboard` — FullLayout (`requiresAuth`) |
+| `/app/comptes`               | `parametres/accounts/AppAccountsPage`                    | `features/settings` — Tabbed Action Shell          |
+| `/app/applications`          | `parametres/applications/AppApplicationsPage`            | `features/applications` — Tabbed Action Shell      |
 | `/:pathMatch(.*)*`           | `Error`                                                  | Catch-all 404 (`router/index.ts`)                  |
 
-**Composants auth UI** (`components/auth/`) : `LoginForm`, `RegisterForm`, `ResetForm`, `ResetPasswordForm`, `TwoStepForm`, `ConfirmEmailForm`, `ConfirmEmailChangeForm`, `GoogleSignInButton`.
+**Composants auth UI** (`components/auth/`) : `LoginForm`, `RegisterForm`, `ResetForm`, `ResetPasswordForm`, `TwoStepForm`, `ConfirmEmailForm`, `ConfirmEmailChangeForm`, `GoogleSignInButton`, `OtpDigitsInput`.
 
 ### Layouts
 
@@ -261,6 +311,7 @@ Le guard est défini dans `app/guards/auth-guard.ts` et branché dans `router/in
 
 - `meta.requiresAuth` → session requise
 - `meta.devOnly` → accessible seulement si `isDevAppEnv()` (`VITE_APP_ENV=development`), sinon redirect `/auth/404`
+- Sur route protégée : si `fetchMe()` renvoie `null` / session morte → redirect login
 
 ### Squelette page publique
 
@@ -352,19 +403,20 @@ components/frontpages/
 
 ## Couleurs & thème
 
-| Fichier                            | Rôle                                                                |
-| ---------------------------------- | ------------------------------------------------------------------- |
-| `src/theme/LightTheme.ts`          | Thème clair par défaut (`BLUE_THEME`) — couleurs primaires Spend.Up |
-| `src/theme/DarkTheme.ts`           | Variantes dark                                                      |
-| `src/plugins/vuetify.ts`           | Thème actif, defaults composants                                    |
-| `src/scss/theme/_themeColors.scss` | Utilitaires couleur SCSS                                            |
+| Fichier                                | Rôle                                                                                                    |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `src/theme/LightTheme.ts`              | Thèmes clairs : `BLUE_THEME`, `AQUA_THEME`, `PURPLE_THEME`, `GREEN_THEME`, `CYAN_THEME`, `ORANGE_THEME` |
+| `src/theme/DarkTheme.ts`               | Variantes dark (`DARK_*_THEME`)                                                                         |
+| `src/plugins/vuetify.ts`               | Enregistrement de **tous** les thèmes, defaults composants                                              |
+| `src/scss/theme/_themeColors.scss`     | Overrides CSS variables pour variantes non-blue                                                         |
+| `src/app/stores/app-settings-store.ts` | `actTheme` + layout — **persistés** en `localStorage` (`spendup_app_settings`)                          |
 
-**Couleurs clés (light) :**
+**Couleurs clés (BLUE_THEME light) :**
 
 - `primary` : `#5D87FF`
 - `secondary` : `#49BEFF`
 - `textPrimary` : `#2A3547`
-- `lightprimary` : `#F2F6FF`
+- `lightprimary` : `#ECF2FF`
 
 ---
 
@@ -399,11 +451,11 @@ Les dossiers `entities/` et `models/` ne sont **pas** utilisés pour l’instant
 | **Global** (app)     | `app/stores/`                | `app-settings-store` |
 | **Métier** (domaine) | `features/<domaine>/stores/` | `auth-store`, …      |
 
-| Store        | Fichier                                        | Usage                                     |
-| ------------ | ---------------------------------------------- | ----------------------------------------- |
-| Auth         | `features/auth/stores/auth-store.ts`           | Session JWT, login / logout / 2FA / `/me` |
-| App settings | `app/stores/app-settings-store.ts`             | Thème, sidebar, layout admin              |
-| Countries    | `features/countries/stores/countries-store.ts` | Liste pays (`GET /api/countries`)         |
+| Store        | Fichier                                        | Usage                                                                          |
+| ------------ | ---------------------------------------------- | ------------------------------------------------------------------------------ |
+| Auth         | `features/auth/stores/auth-store.ts`           | Session JWT, refresh mutex, `expiresAt`, login / logout / 2FA / `/me`, avatars |
+| App settings | `app/stores/app-settings-store.ts`             | Thème, sidebar, layout — persistés `localStorage`                              |
+| Countries    | `features/countries/stores/countries-store.ts` | Liste pays (`GET /api/countries`)                                              |
 
 **Style :** Setup Store uniquement (`defineStore('id', () => { … return {…} })`) — voir `docs/rules-spendup.md` § Stores Pinia. Pas d’Options API.
 
@@ -420,24 +472,29 @@ Les formulaires UI appellent le **store** (`useAuthStore`), pas `authApi` direct
 
 ### Helpers (`utils/helpers/`)
 
-| Fichier                   | Rôle                                                               |
-| ------------------------- | ------------------------------------------------------------------ |
-| `fetch-helpers.ts`        | Wrapper `fetch` avec Bearer + refresh sur 401 (`fetchWrapper`)     |
-| `pricing-helpers.ts`      | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE`                |
-| `env-helpers.ts`          | `isDevAppEnv()` — `VITE_APP_ENV === 'development'`                 |
-| `fake-backend-helpers.ts` | Backend factice (legacy / démo — ne pas étendre pour l’API réelle) |
+| Fichier                | Rôle                                                                 |
+| ---------------------- | -------------------------------------------------------------------- |
+| `fetch-helpers.ts`     | `fetchWrapper` Axios domaine + Bearer + refresh 401 + `forceReLogin` |
+| `axios-helpers.ts`     | `getApiBaseUrl`, `createApiAxios`, `authAxios`                       |
+| `pricing-helpers.ts`   | `isPricingPageEnabled()` — flag `VITE_PRICING_PAGE`                  |
+| `env-helpers.ts`       | `isDevAppEnv()` — `VITE_APP_ENV === 'development'`                   |
+| `scrollbar-helpers.ts` | `PERFECT_SCROLLBAR_OPTIONS` (pages shell, customizer)                |
 
-**Import :** `@/utils/helpers/fetch-helpers`, `@/utils/helpers/pricing-helpers`, `@/utils/helpers/env-helpers`.
+**Import :** `@/utils/helpers/fetch-helpers`, `@/utils/helpers/axios-helpers`, etc.
 
 ---
 
 ## Assets
 
-| Emplacement                      | Usage                                                   |
-| -------------------------------- | ------------------------------------------------------- |
-| `src/assets/images/front-pages/` | Images front (background, technology, payments)         |
-| `src/assets/images/profile/`     | Avatars ContactBar                                      |
-| `public/`                        | Fichiers servis tels quels (logos, images features SVG) |
+| Emplacement                                 | Usage                                                 |
+| ------------------------------------------- | ----------------------------------------------------- |
+| `src/assets/images/backgrounds/`            | Auth (`login-bg`, `errorimg`, `maintenance`)          |
+| `src/assets/images/breadcrumb/`             | `ChatBc.png` (BaseBreadcrumb)                         |
+| `src/assets/images/front-pages/background/` | Ellipses, Scene, design-collection.webp, announce bar |
+| `src/assets/images/logos/`                  | `logoIcon.svg` (footer)                               |
+| `src/assets/images/profile/avatar/`         | Catalogue `user-1` … `user-30` (AccountTab, UI)       |
+| `src/assets/images/svgs/`                   | `icon-account.svg` (menu profil)                      |
+| `public/`                                   | Logos fusée, images features SVG, marketing           |
 
 | Fichier `public/`        | Usage                                    |
 | ------------------------ | ---------------------------------------- |
@@ -447,6 +504,8 @@ Les formulaires UI appellent le **store** (`useAuthStore`), pas `authApi` direct
 Images features référencées via `/assets/images/front-pages/features/…` (dossier `public/`).
 
 Convention de nommage : `home-*` (accueil), `feature-*` (page fonctionnalités), `domain-*` (domaines complémentaires).
+
+**Avatars catalogue :** chemins API `/avatar/user-1` … `/avatar/user-30` — mapping front dans `features/auth/profilePicture.ts`. Upload utilisateur = hash SHA-256 (64 hex) via `POST /api/auth/me/avatar`.
 
 ---
 
@@ -464,13 +523,34 @@ layouts/
     ├── logo/                   # Logo.vue — /app → dashboard, sinon accueil
     └── customizer/
 
-views/app/                    # Pages fines — une par fonctionnalité
-├── dashboard/
-│   └── AppDashboardView.vue  # → importe DashboardContent depuis features/dashboard
+views/app/                    # Pages fines — une par entrée menu
+├── spendup/
+│   └── dashboard/
+│       └── AppDashboardView.vue
+└── parametres/
+    ├── accounts/
+    │   └── AppAccountsPage.vue       # → features/settings (*Tab)
+    └── applications/
+        └── AppApplicationsPage.vue   # → features/applications (ThemeTab)
 
 views/dev/                    # Showcase composants (dev only)
 └── ComponentsShowcasePage.vue
 
 features/dashboard/           # Logique métier tableau de bord
-features/auth/                # Store + API + device + types (barrel index.ts)
+features/auth/                # Store + API + device + avatars + types (barrel index.ts)
+features/countries/           # Liste pays
+features/settings/            # Compte / Notifications / Sécurité
+features/applications/        # Thème & mise en page
 ```
+
+---
+
+## Tests
+
+| Élément             | Détail                                                                                                |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| Runner              | Vitest (`vite.config.ts` → `test.environment: 'jsdom'`)                                               |
+| Setup               | `src/test/setup.ts` (clear storage / mocks), `src/test/pinia.ts`                                      |
+| Emplacement         | `*.test.ts` à côté du code testé                                                                      |
+| Scripts             | `npm test`, `npm run test:watch` — inclus dans `npm run validate`                                     |
+| Couverture actuelle | Auth store (expiresAt, mutex, pending MDP), guard, fetchWrapper, countries, username / avatar helpers |

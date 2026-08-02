@@ -2,7 +2,8 @@
 
 > Composant : `src/components/shared/AppAlert.vue`  
 > Wrapper fin autour de `v-alert` (Vuetify). Référence visuelle : `_template/modernize/components/ui-components/alert/`.  
-> Preview live (dev) : `/components` — uniquement si `VITE_APP_ENV=development`.
+> Preview live (dev) : `/components` — uniquement si `VITE_APP_ENV=development`.  
+> Structure projet : `docs/structure-spendup.md` · Règles : `docs/rules-spendup.md`.
 
 ## Import
 

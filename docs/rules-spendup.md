@@ -79,13 +79,15 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 
 **Auth — répartition :**
 
-- **Store métier** (tokens, login/logout, refresh, `/me`, redirections, `pendingEmail`) → `features/auth/stores/auth-store.ts`.
-- **Client API & types** (`/api/auth/*`, device id) → `features/auth/` (export via `index.ts`).
+- **Store métier** (tokens, login/logout, refresh mutex + `expiresAt`, `/me`, avatars, redirections, `pendingEmail`) → `features/auth/stores/auth-store.ts`.
+- **Client API & types** (`/api/auth/*`, device id, `profilePicture`) → `features/auth/` (export via `index.ts`).
 - **UI** (formulaires) → `components/auth/` : présentation + appels au **store** uniquement ; pas d’appels `authApi` directs ; pas de logique métier dans les `views/`.
-- **Confirm e-mail après register** : pas de champ e-mail ; retenir l’e-mail (`query` + `pendingEmail`) ; `router.replace` vers `/auth/confirm-email`.
+- **Confirm e-mail après register** : pas de champ e-mail ; retenir l’e-mail (`query` + `pendingEmail`) ; MDP pending en **mémoire seule** (jamais `sessionStorage`) ; `router.replace` vers `/auth/confirm-email`.
 - **Styles** auth → `scss/pages/_authentication.scss` (pas de `<style>` volumineux dans les `.vue`).
 - **Guards** (transverse) → `app/guards/auth-guard.ts` (consomme `useAuthStore` depuis `@/features/auth`).
 - **Alertes** → toujours `AppAlert` (`components/shared/AppAlert.vue`), **jamais** `v-alert` brut. Doc : `docs/components/alert/alert-component.md`. Preview : `/components` (dev only).
+- **Modales métier** → toujours `AppModalBase`. Doc : `docs/components/modal/modalbase-component.md`.
+- **Pages paramètres** (Comptes, Applications) → **Tabbed Action Shell** — doc : `docs/structure/page.md`.
 
 ### Composants shared
 
@@ -191,16 +193,27 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Même convention de nommage que les stores (`auth-store.ts` → `auth-helpers.ts`, `user-store.ts` → `user-helpers.ts`).
 - Un fichier par domaine transverse ; pas de noms génériques (`utils.ts`, `helpers.ts`, `fetch-wrapper.ts`).
 
-| Fichier                   | Exemples d'exports          |
-| ------------------------- | --------------------------- |
-| `fetch-helpers.ts`        | `fetchWrapper`              |
-| `scrollbar-helpers.ts`    | `PERFECT_SCROLLBAR_OPTIONS` |
-| `pricing-helpers.ts`      | `isPricingPageEnabled()`    |
-| `env-helpers.ts`          | `isDevAppEnv()`             |
-| `fake-backend-helpers.ts` | Backend factice (legacy)    |
+| Fichier                | Exemples d'exports           |
+| ---------------------- | ---------------------------- |
+| `fetch-helpers.ts`     | `fetchWrapper`               |
+| `axios-helpers.ts`     | `getApiBaseUrl`, `authAxios` |
+| `scrollbar-helpers.ts` | `PERFECT_SCROLLBAR_OPTIONS`  |
+| `pricing-helpers.ts`   | `isPricingPageEnabled()`     |
+| `env-helpers.ts`       | `isDevAppEnv()`              |
 
 - Import : `@/utils/helpers/<domaine>-helpers`.
-- Les helpers **métier** propres à une feature vont dans `features/<domaine>/helpers/` (même convention `<domaine>-helpers.ts` ou sous-domaine : `transaction-format-helpers.ts`).
+- Les helpers **métier** propres à une feature vont dans `features/<domaine>/` (ex. `profilePicture.ts`, `device.ts`) ou `features/<domaine>/helpers/` si le volume le justifie.
+
+---
+
+## Règles de tests
+
+- Framework : **Vitest** (+ `@vue/test-utils`, `jsdom`).
+- Fichiers : `*.test.ts` **colocalisés** avec le module testé (pas de dossier `__tests__` séparé pour l’instant).
+- Setup partagé : `src/test/setup.ts`, helpers Pinia dans `src/test/pinia.ts`.
+- Couvrir en priorité : auth (tokens / refresh / guard), clients HTTP, stores métier critiques.
+- Lancer `npm test` avant merge / dans `npm run validate`.
+- Ne pas appeler de vraie API dans les tests unitaires — mocker `authApi` / `fetchWrapper` / Axios.
 
 ---
 
@@ -231,8 +244,9 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Placer les types métier dans `features/<domaine>/types.ts` (pas de `entities/`/`models/` tant que non nécessaires).
 - Placer les helpers transverses dans `utils/helpers/<domaine>-helpers.ts`.
 - Exporter les features via un `index.ts`.
-- Vérifier `npm run build` après restructuration ou déplacement de fichiers.
+- Vérifier `npm run build` et `npm test` après restructuration ou déplacement de fichiers.
 - Les formulaires UI appellent le store de la feature, pas le client API directement.
+- Pages paramètres multi-onglets : reprendre le **Tabbed Action Shell** (`docs/structure/page.md`).
 
 ---
 
@@ -243,6 +257,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Placer de la logique métier dans `views/` ou à la racine de `components/`.
 - Créer des stores dans un ancien dossier `src/stores/` (supprimé — utiliser `app/stores/` ou `features/<domaine>/stores/`).
 - Définir un store Pinia en Options API (`state` / `getters` / `actions`) — toujours le style Setup.
+- Stocker un mot de passe en clair dans `sessionStorage` / `localStorage` (pending register = mémoire seule).
 - Nommer des helpers hors convention (`fetch-wrapper.ts`, `local-auth.ts`, `utils.ts`) — utiliser `<domaine>-helpers.ts` dans `utils/helpers/`.
 - Créer des fichiers `.scss` ou `.css` dans `components/` ou `features/`.
 - Ajouter des styles inline volumineux dans `<style>`.
@@ -250,6 +265,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Casser les routes françaises existantes.
 - Lancer une grosse modification structurelle sans confirmation utilisateur.
 - Créer des dossiers de features vides sans code associé.
+- Utiliser `v-alert` / `v-dialog` bruts pour le feedback / les modales métier (`AppAlert` / `AppModalBase`).
 
 ---
 
@@ -269,14 +285,15 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 2. Créer `features/<domaine>/` avec la structure :
     ```
     features/<domaine>/
-    ├── api/              # si appels API
+    ├── api/              # si appels API (ou api.ts à la racine feature)
     ├── components/       # composants propres au domaine
     ├── composables/      # use<Domaine>.ts
-    ├── stores/           # si state métier
-    ├── types/            # types propres au domaine
+    ├── stores/           # Setup Store si state métier
+    ├── types.ts          # (ou types/) types propres au domaine
     └── index.ts          # exports publics
     ```
-3. Créer `views/app/<feature>/App<Feature>View.vue` — page fine qui importe depuis `@/features/<domaine>`.
+3. Créer `views/app/<header>/<page>/App<Name>Page.vue` — page fine (souvent Tabbed Action Shell).
 4. Enregistrer la route dans `router/AppRoutes.ts` et le menu dans `sidebarItem.ts`.
 5. Placer les styles éventuels dans `src/scss/` au chemin miroir.
-6. Mettre à jour les imports et vérifier `npm run build`.
+6. Ajouter des tests unitaires ciblés (`*.test.ts`) pour la logique critique.
+7. Mettre à jour les imports et vérifier `npm run validate`.

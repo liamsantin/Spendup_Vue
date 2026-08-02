@@ -2,7 +2,8 @@
 
 > Composant : `src/components/shared/AppModalBase.vue`  
 > Shell modal standard Spend.Up — **header fixe**, **body** (optionnellement scrollable), **footer fixe**.  
-> Preview live (dev) : `/components` → onglet **Modal** — uniquement si `VITE_APP_ENV=development`.
+> Preview live (dev) : `/components` → onglet **Modal** — uniquement si `VITE_APP_ENV=development`.  
+> Structure projet : `docs/structure-spendup.md` · Règles : `docs/rules-spendup.md`.
 
 **Règle :** ne pas utiliser `v-dialog` / `v-card` bruts pour les modales métier. Passer toujours par `AppModalBase`.
 
