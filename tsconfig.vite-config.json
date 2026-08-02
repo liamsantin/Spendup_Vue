@@ -6,6 +6,6 @@
         "noEmit": false,
         "emitDeclarationOnly": true,
         "allowJs": true,
-        "types": ["node"]
+        "types": ["node", "vitest/config"]
     }
 }
