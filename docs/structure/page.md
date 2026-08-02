@@ -76,11 +76,6 @@ src/features/settings/
 
 ```
 src/views/app/parametres/applications/AppApplicationsPage.vue
-src/features/applications/
-├── index.ts
-├── themeOptions.ts
-└── components/
-    └── ThemeTab.vue
 src/features/user-settings/
 ├── api.ts / types.ts / mappers.ts
 ├── stores/user-settings-store.ts

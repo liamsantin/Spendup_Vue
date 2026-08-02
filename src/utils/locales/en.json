@@ -118,30 +118,7 @@
     },
     "applications": {
         "tabs": {
-            "preferences": "Preferences",
-            "theme": "Theme"
-        },
-        "theme": {
-            "title": "Theme",
-            "subtitle": "Choose the main interface color (light or dark).",
-            "lightColors": "Theme color",
-            "darkColors": "Dark theme color"
-        },
-        "layout": {
-            "title": "Layout",
-            "subtitle": "Customize the sidebar, container and card layout.",
-            "sidebarOrientation": "Sidebar layout",
-            "vertical": "Vertical",
-            "horizontal": "Horizontal",
-            "container": "Container",
-            "boxed": "Boxed",
-            "full": "Full",
-            "sidebarType": "Sidebar type",
-            "fullSidebar": "Full",
-            "miniSidebar": "Mini",
-            "cards": "Cards",
-            "shadow": "Shadow",
-            "border": "Border"
+            "preferences": "Preferences"
         }
     },
     "accounts": {
@@ -527,40 +504,11 @@
                 "6": "Saturday"
             }
         },
-        "appearance": {
-            "title": "Appearance",
-            "subtitle": "Theme, sidebar, container and cards.",
-            "sidebarLayout": "Sidebar layout",
-            "sidebarType": "Sidebar type",
-            "themeActiveLabel": "Theme mode",
-            "themeColor": "Theme color",
-            "themeDarkColor": "Dark theme color",
-            "containerOption": "Container",
-            "cardStyleLabel": "Card style",
-            "densityLabel": "Density",
-            "sidebar": {
-                "default": "Default",
-                "compact": "Compact",
-                "mini": "Mini"
-            },
-            "themeActive": {
-                "light": "Light",
-                "dark": "Dark",
-                "system": "System"
-            },
-            "container": {
-                "boxed": "Boxed",
-                "full": "Full"
-            },
-            "cardStyle": {
-                "shadow": "Shadow",
-                "border": "Border",
-                "flat": "Flat"
-            },
-            "density": {
-                "comfortable": "Comfortable",
-                "compact": "Compact"
-            }
+        "themeColors": {
+            "title": "Theme colors",
+            "subtitle": "Pick a predefined color for day and night modes.",
+            "day": "Theme color (day)",
+            "night": "Theme color (night)"
         },
         "dashboard": {
             "title": "Dashboard",

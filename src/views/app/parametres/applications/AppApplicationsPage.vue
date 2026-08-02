@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { AdjustmentsHorizontalIcon, PaletteIcon } from 'vue-tabler-icons';
-import { ThemeTab } from '@/features/applications';
+import { AdjustmentsHorizontalIcon } from 'vue-tabler-icons';
 import { UserSettingsTab } from '@/features/user-settings';
 import TabbedActionShell from '@/components/shared/TabbedActionShell.vue';
 
@@ -15,40 +14,23 @@ type SettingsTabExpose = {
 const { t } = useI18n();
 
 const tab = ref('Preferences');
-const themeTabRef = ref<SettingsTabExpose | null>(null);
 const preferencesTabRef = ref<SettingsTabExpose | null>(null);
-const themeDirty = ref(false);
 const preferencesDirty = ref(false);
 
-const tabs = computed(() => [
-    { value: 'Preferences', label: t('applications.tabs.preferences'), icon: AdjustmentsHorizontalIcon },
-    { value: 'Theme', label: t('applications.tabs.theme'), icon: PaletteIcon }
-]);
+const tabs = computed(() => [{ value: 'Preferences', label: t('applications.tabs.preferences'), icon: AdjustmentsHorizontalIcon }]);
 
-const activeTabRef = computed(() => {
-    if (tab.value === 'Preferences') return preferencesTabRef.value;
-    if (tab.value === 'Theme') return themeTabRef.value;
-    return null;
-});
-
-const activeDirty = computed(() => {
-    if (tab.value === 'Preferences') return preferencesDirty.value;
-    if (tab.value === 'Theme') return themeDirty.value;
-    return false;
-});
-
-const saveLoading = computed(() => !!activeTabRef.value?.loading);
-const saveDisabled = computed(() => !activeTabRef.value || saveLoading.value || !activeDirty.value);
-const cancelDisabled = computed(() => !activeTabRef.value || saveLoading.value || !activeDirty.value);
+const saveLoading = computed(() => !!preferencesTabRef.value?.loading);
+const saveDisabled = computed(() => saveLoading.value || !preferencesDirty.value);
+const cancelDisabled = computed(() => saveLoading.value || !preferencesDirty.value);
 
 function onSave() {
-    if (!activeTabRef.value || saveLoading.value) return;
-    void activeTabRef.value.saveSettings();
+    if (!preferencesTabRef.value || saveLoading.value) return;
+    void preferencesTabRef.value.saveSettings();
 }
 
 function onCancel() {
-    if (!activeTabRef.value || saveLoading.value) return;
-    activeTabRef.value.resetSettings();
+    if (!preferencesTabRef.value || saveLoading.value) return;
+    preferencesTabRef.value.resetSettings();
 }
 </script>
 
@@ -65,9 +47,6 @@ function onCancel() {
         <v-window v-model="tab">
             <v-window-item value="Preferences">
                 <UserSettingsTab ref="preferencesTabRef" @dirty="preferencesDirty = $event" />
-            </v-window-item>
-            <v-window-item value="Theme">
-                <ThemeTab ref="themeTabRef" @dirty="themeDirty = $event" />
             </v-window-item>
         </v-window>
     </TabbedActionShell>

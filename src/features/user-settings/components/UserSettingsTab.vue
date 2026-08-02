@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { BellIcon, LayoutDashboardIcon, LockIcon, PaletteIcon, ShieldLockIcon, WorldIcon } from 'vue-tabler-icons';
+import { BellIcon, CheckIcon, LayoutDashboardIcon, LockIcon, PaletteIcon, ShieldLockIcon, WorldIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { CURRENCY_OPTIONS, LOCALE_OPTIONS, TIMEZONE_OPTIONS, USER_SETTINGS_DEFAULTS, type UserSettings } from '../types';
 import { cloneSettings, settingsEqual } from '../mappers';
 import { useUserSettingsStore } from '../stores/user-settings-store';
+import { DAY_THEME_COLORS, NIGHT_THEME_COLORS, normalizeHex } from '../themeColorOptions';
 
 const { t } = useI18n();
 const store = useUserSettingsStore();
@@ -66,34 +67,6 @@ const firstDayItems = computed(() =>
         value
     }))
 );
-
-const sidebarItems = computed(() => [
-    { title: t('userSettings.appearance.sidebar.default'), value: 'default' },
-    { title: t('userSettings.appearance.sidebar.compact'), value: 'compact' },
-    { title: t('userSettings.appearance.sidebar.mini'), value: 'mini' }
-]);
-
-const themeActiveItems = computed(() => [
-    { title: t('userSettings.appearance.themeActive.light'), value: 'light' },
-    { title: t('userSettings.appearance.themeActive.dark'), value: 'dark' },
-    { title: t('userSettings.appearance.themeActive.system'), value: 'system' }
-]);
-
-const containerItems = computed(() => [
-    { title: t('userSettings.appearance.container.boxed'), value: 'boxed' },
-    { title: t('userSettings.appearance.container.full'), value: 'full' }
-]);
-
-const cardStyleItems = computed(() => [
-    { title: t('userSettings.appearance.cardStyle.shadow'), value: 'shadow' },
-    { title: t('userSettings.appearance.cardStyle.border'), value: 'border' },
-    { title: t('userSettings.appearance.cardStyle.flat'), value: 'flat' }
-]);
-
-const densityItems = computed(() => [
-    { title: t('userSettings.appearance.density.comfortable'), value: 'comfortable' },
-    { title: t('userSettings.appearance.density.compact'), value: 'compact' }
-]);
 
 const dashboardViewItems = computed(() => [
     { title: t('userSettings.dashboard.views.overview'), value: 'overview' },
@@ -438,7 +411,7 @@ defineExpose({
                 </v-card>
             </v-col>
 
-            <!-- Appearance -->
+            <!-- Theme colors (day / night) — presets only -->
             <v-col cols="12" md="9" class="pb-4">
                 <v-card elevation="10">
                     <v-card-item>
@@ -447,88 +420,58 @@ defineExpose({
                                 <PaletteIcon class="text-primary" size="25" />
                             </v-avatar>
                             <div>
-                                <h4 class="text-h4 mb-0">{{ t('userSettings.appearance.title') }}</h4>
+                                <h4 class="text-h4 mb-0">{{ t('userSettings.themeColors.title') }}</h4>
                                 <div class="text-subtitle-1 text-medium-emphasis text-10">
-                                    {{ t('userSettings.appearance.subtitle') }}
+                                    {{ t('userSettings.themeColors.subtitle') }}
                                 </div>
                             </div>
                         </div>
-                        <v-row dense class="mt-4">
-                            <v-col cols="12" md="6">
-                                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.appearance.sidebarLayout') }}</v-label>
-                                <v-select
-                                    v-model="draft.sidebarLayout"
-                                    :items="sidebarItems"
-                                    item-title="title"
-                                    item-value="value"
-                                    variant="outlined"
-                                    hide-details
-                                />
+
+                        <h6 class="text-h6 mt-4 mb-5">{{ t('userSettings.themeColors.day') }}</h6>
+                        <v-item-group
+                            :model-value="normalizeHex(draft.themeColor)"
+                            mandatory
+                            class="ml-n2 v-row"
+                            @update:model-value="draft.themeColor = String($event)"
+                        >
+                            <v-col v-for="color in DAY_THEME_COLORS" :key="color.id" cols="4" sm="2" class="pa-2">
+                                <v-item v-slot="{ isSelected, toggle }" :value="normalizeHex(color.hex)">
+                                    <v-sheet
+                                        rounded="md"
+                                        class="border cursor-pointer d-block text-center px-5 py-4 hover-btns"
+                                        elevation="9"
+                                        @click="toggle"
+                                    >
+                                        <v-avatar :class="color.bg" size="25">
+                                            <CheckIcon v-if="isSelected" color="white" size="18" />
+                                        </v-avatar>
+                                    </v-sheet>
+                                </v-item>
                             </v-col>
-                            <v-col cols="12" md="6">
-                                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.appearance.sidebarType') }}</v-label>
-                                <v-select
-                                    v-model="draft.sidebarType"
-                                    :items="sidebarItems"
-                                    item-title="title"
-                                    item-value="value"
-                                    variant="outlined"
-                                    hide-details
-                                />
+                        </v-item-group>
+
+                        <h6 class="text-h6 mt-8 mb-5">{{ t('userSettings.themeColors.night') }}</h6>
+                        <v-item-group
+                            :model-value="normalizeHex(draft.themeDarkColor)"
+                            mandatory
+                            class="ml-n2 v-row"
+                            @update:model-value="draft.themeDarkColor = String($event)"
+                        >
+                            <v-col v-for="color in NIGHT_THEME_COLORS" :key="color.id" cols="4" sm="2" class="pa-2">
+                                <v-item v-slot="{ isSelected, toggle }" :value="normalizeHex(color.hex)">
+                                    <v-sheet
+                                        rounded="md"
+                                        class="border cursor-pointer d-block text-center px-5 py-4 hover-btns"
+                                        elevation="9"
+                                        @click="toggle"
+                                    >
+                                        <v-avatar :class="color.bg" size="25">
+                                            <CheckIcon v-if="isSelected" color="white" size="18" />
+                                        </v-avatar>
+                                    </v-sheet>
+                                </v-item>
                             </v-col>
-                            <v-col cols="12" md="6">
-                                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.appearance.themeActiveLabel') }}</v-label>
-                                <v-select
-                                    v-model="draft.themeActive"
-                                    :items="themeActiveItems"
-                                    item-title="title"
-                                    item-value="value"
-                                    variant="outlined"
-                                    hide-details
-                                />
-                            </v-col>
-                            <v-col cols="12" md="6">
-                                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.appearance.densityLabel') }}</v-label>
-                                <v-select
-                                    v-model="draft.density"
-                                    :items="densityItems"
-                                    item-title="title"
-                                    item-value="value"
-                                    variant="outlined"
-                                    hide-details
-                                />
-                            </v-col>
-                            <v-col cols="12" md="6">
-                                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.appearance.themeColor') }}</v-label>
-                                <v-text-field v-model="draft.themeColor" type="color" variant="outlined" hide-details />
-                            </v-col>
-                            <v-col cols="12" md="6">
-                                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.appearance.themeDarkColor') }}</v-label>
-                                <v-text-field v-model="draft.themeDarkColor" type="color" variant="outlined" hide-details />
-                            </v-col>
-                            <v-col cols="12" md="6">
-                                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.appearance.containerOption') }}</v-label>
-                                <v-select
-                                    v-model="draft.containerOption"
-                                    :items="containerItems"
-                                    item-title="title"
-                                    item-value="value"
-                                    variant="outlined"
-                                    hide-details
-                                />
-                            </v-col>
-                            <v-col cols="12" md="6">
-                                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.appearance.cardStyleLabel') }}</v-label>
-                                <v-select
-                                    v-model="draft.cardStyle"
-                                    :items="cardStyleItems"
-                                    item-title="title"
-                                    item-value="value"
-                                    variant="outlined"
-                                    hide-details
-                                />
-                            </v-col>
-                        </v-row>
+                        </v-item-group>
                     </v-card-item>
                 </v-card>
             </v-col>

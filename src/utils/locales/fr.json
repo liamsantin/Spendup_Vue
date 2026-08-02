@@ -118,30 +118,7 @@
     },
     "applications": {
         "tabs": {
-            "preferences": "Préférences",
-            "theme": "Thème"
-        },
-        "theme": {
-            "title": "Thème",
-            "subtitle": "Choisissez la couleur principale de l’interface (clair ou sombre).",
-            "lightColors": "Couleur du thème",
-            "darkColors": "Couleur du thème sombre"
-        },
-        "layout": {
-            "title": "Mise en page",
-            "subtitle": "Personnalisez la disposition de la barre latérale, du conteneur et des cartes.",
-            "sidebarOrientation": "Disposition de la barre latérale",
-            "vertical": "Verticale",
-            "horizontal": "Horizontale",
-            "container": "Conteneur",
-            "boxed": "Encadré",
-            "full": "Plein",
-            "sidebarType": "Type de barre latérale",
-            "fullSidebar": "Complète",
-            "miniSidebar": "Réduite",
-            "cards": "Cartes",
-            "shadow": "Ombre",
-            "border": "Bordure"
+            "preferences": "Préférences"
         }
     },
     "accounts": {
@@ -527,40 +504,11 @@
                 "6": "Samedi"
             }
         },
-        "appearance": {
-            "title": "Apparence",
-            "subtitle": "Thème, barre latérale, conteneur et cartes.",
-            "sidebarLayout": "Disposition de la barre latérale",
-            "sidebarType": "Type de barre latérale",
-            "themeActiveLabel": "Mode thème",
-            "themeColor": "Couleur du thème",
-            "themeDarkColor": "Couleur du thème sombre",
-            "containerOption": "Conteneur",
-            "cardStyleLabel": "Style des cartes",
-            "densityLabel": "Densité",
-            "sidebar": {
-                "default": "Par défaut",
-                "compact": "Compacte",
-                "mini": "Réduite"
-            },
-            "themeActive": {
-                "light": "Clair",
-                "dark": "Sombre",
-                "system": "Système"
-            },
-            "container": {
-                "boxed": "Encadré",
-                "full": "Plein"
-            },
-            "cardStyle": {
-                "shadow": "Ombre",
-                "border": "Bordure",
-                "flat": "Plat"
-            },
-            "density": {
-                "comfortable": "Confortable",
-                "compact": "Compacte"
-            }
+        "themeColors": {
+            "title": "Couleurs du thème",
+            "subtitle": "Choisissez une couleur prédéfinie pour le mode jour et le mode nuit.",
+            "day": "Couleur du thème (jour)",
+            "night": "Couleur du thème (nuit)"
         },
         "dashboard": {
             "title": "Tableau de bord",

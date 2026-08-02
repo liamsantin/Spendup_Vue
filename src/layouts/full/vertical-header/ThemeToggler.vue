@@ -1,13 +1,20 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { MoonIcon, SunIcon } from 'vue-tabler-icons';
 
 const appSettings = useAppSettingsStore();
 
-const themeColors = [
-    { name: 'BLUE_THEME', bg: 'togglethemeBlue', icon: 'sun' as const },
-    { name: 'DARK_BLUE_THEME', bg: 'togglethemeDarkBlue', icon: 'moon' as const }
-];
+/** Famille de couleur courante (BLUE, AQUA, …) d’après actTheme. */
+const colorFamily = computed(() => appSettings.actTheme.replace(/^DARK_/, '').replace(/_THEME$/, '') || 'BLUE');
+
+const lightTheme = computed(() => `${colorFamily.value}_THEME`);
+const darkTheme = computed(() => `DARK_${colorFamily.value}_THEME`);
+
+const themeColors = computed(() => [
+    { name: lightTheme.value, bg: 'togglethemeBlue', icon: 'sun' as const },
+    { name: darkTheme.value, bg: 'togglethemeDarkBlue', icon: 'moon' as const }
+]);
 
 function selectTheme(name: string) {
     appSettings.SET_THEME(name);
