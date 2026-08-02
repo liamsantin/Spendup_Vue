@@ -2,11 +2,18 @@
 import { computed } from 'vue';
 import { AtIcon, HashIcon, MailIcon, PhoneIcon } from 'vue-tabler-icons';
 import { profileDD } from '@/data/admin/headerData';
-import { useAuthStore } from '@/features/auth';
+import { DEFAULT_AVATAR_SRC, catalogAvatarSrc, isCatalogProfilePicture, useAuthStore } from '@/features/auth';
 
 const authStore = useAuthStore();
 
 const displayName = computed(() => authStore.displayName || 'Utilisateur');
+
+const headerAvatarSrc = computed(() => {
+    const picture = authStore.user?.profilePicture;
+    if (isCatalogProfilePicture(picture)) return catalogAvatarSrc(picture!);
+    // Upload hash : nécessite GET async — défaut jusqu’à un composable dédié.
+    return DEFAULT_AVATAR_SRC;
+});
 
 const profileDetails = computed(() => {
     const user = authStore.user;
@@ -35,7 +42,7 @@ const profileDetails = computed(() => {
         <template v-slot:activator="{ props }">
             <v-btn class="custom-hover-primary" variant="text" v-bind="props" icon>
                 <v-avatar size="35">
-                    <img src="@/assets/images/profile/user-1.jpg" width="35" alt="user" />
+                    <img :src="headerAvatarSrc" width="35" alt="user" />
                 </v-avatar>
             </v-btn>
         </template>
@@ -44,7 +51,7 @@ const profileDetails = computed(() => {
                 <h6 class="text-h5 font-weight-medium">Profil utilisateur</h6>
                 <div class="d-flex align-center mt-4 pb-6">
                     <v-avatar size="80">
-                        <img src="@/assets/images/profile/user-1.jpg" width="80" />
+                        <img :src="headerAvatarSrc" width="80" alt="user" />
                     </v-avatar>
                     <div class="ml-3 min-w-0">
                         <h6 class="text-h6 mb-n1">{{ displayName }}</h6>

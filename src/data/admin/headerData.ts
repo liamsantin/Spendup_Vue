@@ -1,8 +1,8 @@
 import type { notificationType, profileType, searchType } from '@/types/HeaderTypes';
 
-import user1 from '@/assets/images/profile/user-1.jpg';
-import user2 from '@/assets/images/profile/user-2.jpg';
-import user3 from '@/assets/images/profile/user-3.jpg';
+import user1 from '@/assets/images/profile/avatar/user-1.jpg';
+import user2 from '@/assets/images/profile/avatar/user-2.jpg';
+import user3 from '@/assets/images/profile/avatar/user-3.jpg';
 
 import proUser1 from '@/assets/images/svgs/icon-account.svg';
 

@@ -2,7 +2,16 @@ import axios, { type AxiosRequestConfig, type Method } from 'axios';
 import { authAxios } from '@/utils/helpers/axios-helpers';
 import { getDeviceInfo } from './device';
 import { normalizeAuthDevices } from './normalizeDevices';
-import type { ApiResponse, AuthSession, AuthTokens, Me, RegisterResult, TwoFactorSetup, UpdateProfilePayload } from './types';
+import type {
+    ApiResponse,
+    AuthSession,
+    AuthTokens,
+    Me,
+    RegisterResult,
+    TwoFactorSetup,
+    UpdateProfilePayload,
+    UploadAvatarResult
+} from './types';
 
 export class ApiError extends Error {
     status: number;
@@ -153,6 +162,106 @@ export const authApi = {
 
     updateProfile(accessToken: string, payload: UpdateProfilePayload) {
         return authHttp.put<null>('/api/auth/profile', payload, accessToken);
+    },
+
+    /** Avatar catalogue — `PUT /api/auth/me/avatar`. */
+    setCatalogAvatar(accessToken: string, profilePicture: string) {
+        return authHttp.put<null>('/api/auth/me/avatar', { profilePicture }, accessToken);
+    },
+
+    /** Upload multipart — champ `file` (JPEG/PNG/WebP, max 2 Mo). */
+    async uploadAvatar(accessToken: string, file: File): Promise<UploadAvatarResult> {
+        const form = new FormData();
+        form.append('file', file);
+
+        try {
+            const res = await authAxios.request<ApiResponse<UploadAvatarResult> | '' | null>({
+                url: '/api/auth/me/avatar',
+                method: 'POST',
+                data: form,
+                validateStatus: () => true,
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    'Content-Type': undefined
+                }
+            });
+
+            const status = res.status;
+            const payload = res.data;
+
+            if (payload == null || payload === '') {
+                if (status >= 400) {
+                    throw new ApiError(res.statusText || `HTTP ${status}`, status);
+                }
+                throw new ApiError('Réponse upload vide.', status);
+            }
+
+            if (typeof payload !== 'object') {
+                throw new ApiError(res.statusText || `HTTP ${status}`, status);
+            }
+
+            const body = payload as ApiResponse<UploadAvatarResult>;
+            if (status >= 400 || !body.success) {
+                throw new ApiError(body.message ?? `HTTP ${status}`, status);
+            }
+
+            const result = body.result as UploadAvatarResult & Record<string, unknown>;
+            const profilePicture =
+                (typeof result?.profilePicture === 'string' && result.profilePicture) ||
+                (typeof result?.ProfilePicture === 'string' && (result.ProfilePicture as string)) ||
+                '';
+            if (!profilePicture) {
+                throw new ApiError('Hash de photo manquant dans la réponse.', status);
+            }
+            return { profilePicture };
+        } catch (e: unknown) {
+            if (e instanceof ApiError) throw e;
+            if (axios.isAxiosError(e)) {
+                const status = e.response?.status ?? 0;
+                const message = (e.response?.data as { message?: string } | undefined)?.message || e.message || `HTTP ${status}`;
+                throw new ApiError(message, status);
+            }
+            throw e;
+        }
+    },
+
+    /** Binaire de la photo uploadée — uniquement si `profilePicture` est un hash. */
+    async getAvatarBlob(accessToken: string): Promise<Blob> {
+        try {
+            const res = await authAxios.request<Blob>({
+                url: '/api/auth/me/avatar',
+                method: 'GET',
+                responseType: 'blob',
+                validateStatus: () => true,
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+
+            if (res.status >= 400) {
+                let message = res.statusText || `HTTP ${res.status}`;
+                if (res.data instanceof Blob && res.data.type.includes('json')) {
+                    try {
+                        const json = JSON.parse(await res.data.text()) as { message?: string };
+                        if (json.message) message = json.message;
+                    } catch {
+                        // ignore
+                    }
+                }
+                throw new ApiError(message, res.status);
+            }
+
+            return res.data;
+        } catch (e: unknown) {
+            if (e instanceof ApiError) throw e;
+            if (axios.isAxiosError(e)) {
+                const status = e.response?.status ?? 0;
+                throw new ApiError(e.message || `HTTP ${status}`, status);
+            }
+            throw e;
+        }
+    },
+
+    deleteAvatar(accessToken: string) {
+        return authHttp.delete<null>('/api/auth/me/avatar', undefined, accessToken);
     },
 
     setUsername(accessToken: string, username: string) {

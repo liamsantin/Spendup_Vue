@@ -290,6 +290,30 @@ export const useAuthStore = defineStore('auth', () => {
         await fetchMe();
     }
 
+    async function setCatalogAvatar(profilePicture: string) {
+        const token = await requireAccessToken();
+        await authApi.setCatalogAvatar(token, profilePicture);
+        await fetchMe();
+    }
+
+    async function uploadAvatar(file: File) {
+        const token = await requireAccessToken();
+        const result = await authApi.uploadAvatar(token, file);
+        await fetchMe();
+        return result;
+    }
+
+    async function deleteAvatar() {
+        const token = await requireAccessToken();
+        await authApi.deleteAvatar(token);
+        await fetchMe();
+    }
+
+    async function fetchAvatarBlob() {
+        const token = await requireAccessToken();
+        return authApi.getAvatarBlob(token);
+    }
+
     async function setUsername(username: string) {
         const token = await requireAccessToken();
         await authApi.setUsername(token, username);
@@ -401,6 +425,10 @@ export const useAuthStore = defineStore('auth', () => {
         refreshSession,
         fetchMe,
         updateProfile,
+        setCatalogAvatar,
+        uploadAvatar,
+        deleteAvatar,
+        fetchAvatarBlob,
         setUsername,
         changeEmail,
         changePassword,

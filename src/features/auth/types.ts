@@ -36,6 +36,10 @@ export type Me = {
     street: string | null;
     streetNumber: string | null;
     countryId: number | null;
+    /**
+     * Avatar catalogue (`/avatar/…`), hash SHA-256 uploadé (64 hex), ou `null`.
+     * Géré via `/api/auth/me/avatar`, pas via `PUT /profile`.
+     */
     profilePicture: string | null;
     /**
      * `false` = aucun mot de passe (compte Google-only typiquement).
@@ -46,7 +50,7 @@ export type Me = {
     hasGoogle?: boolean | null;
 };
 
-/** Corps soft de `PUT /api/auth/profile` — `null` = vider le champ. */
+/** Corps soft de `PUT /api/auth/profile` — `null` = vider le champ. Photo hors scope. */
 export type UpdateProfilePayload = {
     firstName: string | null;
     name: string | null;
@@ -55,7 +59,11 @@ export type UpdateProfilePayload = {
     street: string | null;
     streetNumber: string | null;
     countryId: number | null;
-    profilePicture: string | null;
+};
+
+/** Réponse `POST /api/auth/me/avatar`. */
+export type UploadAvatarResult = {
+    profilePicture: string;
 };
 
 export type RegisterResult = {

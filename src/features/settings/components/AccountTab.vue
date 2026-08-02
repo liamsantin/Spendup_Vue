@@ -2,7 +2,18 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { LockIcon, PencilIcon, TrashIcon, UserIcon } from 'vue-tabler-icons';
-import { isValidUsername, normalizeUsername, useAuthStore, type Me, type UpdateProfilePayload } from '@/features/auth';
+import {
+    CATALOG_AVATARS,
+    DEFAULT_AVATAR_SRC,
+    catalogAvatarSrc,
+    isCatalogProfilePicture,
+    isUploadedProfilePicture,
+    isValidUsername,
+    normalizeUsername,
+    useAuthStore,
+    type Me,
+    type UpdateProfilePayload
+} from '@/features/auth';
 import { useCountriesStore } from '@/features/countries';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
@@ -18,6 +29,7 @@ const profileSaving = ref(false);
 const usernameSaving = ref(false);
 const emailSaving = ref(false);
 const passwordSaving = ref(false);
+const pictureSaving = ref(false);
 
 const profileError = ref<string | null>(null);
 const profileSuccess = ref<string | null>(null);
@@ -27,6 +39,7 @@ const usernameError = ref<string | null>(null);
 const emailError = ref<string | null>(null);
 const passwordError = ref<string | null>(null);
 const pictureError = ref<string | null>(null);
+const pictureSuccess = ref<string | null>(null);
 
 const firstName = ref('');
 const name = ref('');
@@ -34,11 +47,10 @@ const phone = ref('');
 const birthDate = ref('');
 const street = ref('');
 const streetNumber = ref('');
-/** URL serveur (ou null si réinitialisée) — envoyée dans PUT /profile. */
+/** Valeur `profilePicture` issue de `/me` (chemin catalogue, hash, ou null). */
 const profilePicture = ref<string | null>(null);
-/** Aperçu local (blob:) après sélection fichier — non persisté tant qu’il n’y a pas d’upload API. */
-const picturePreview = ref<string | null>(null);
-const pictureCleared = ref(false);
+/** URL affichable (asset catalogue, blob upload, ou aperçu local). */
+const avatarDisplaySrc = ref<string | null>(DEFAULT_AVATAR_SRC);
 const countryId = ref<number | null>(null);
 
 const username = ref('');
@@ -69,12 +81,12 @@ const deleteGoogleIdToken = ref<string | null>(null);
 const deleteError = ref<string | null>(null);
 const deletePasswordExpanded = ref(false);
 
+const avatarOpen = ref(false);
+const avatarDraft = ref<string | null>(null);
+
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
-const avatarSrc = computed(() => {
-    if (pictureCleared.value) return undefined;
-    return picturePreview.value || profilePicture.value || undefined;
-});
+const avatarSrc = computed(() => avatarDisplaySrc.value || undefined);
 const currentEmail = computed(() => auth.user?.email ?? null);
 const pendingEmail = computed(() => auth.user?.pendingEmail ?? null);
 const displayUsername = computed(() => username.value || '—');
@@ -121,16 +133,35 @@ function emptyToNull(value: string): string | null {
     return trimmed.length ? trimmed : null;
 }
 
-function revokePreview() {
-    if (picturePreview.value?.startsWith('blob:')) {
-        URL.revokeObjectURL(picturePreview.value);
+function revokeDisplayBlob() {
+    if (avatarDisplaySrc.value?.startsWith('blob:')) {
+        URL.revokeObjectURL(avatarDisplaySrc.value);
     }
-    picturePreview.value = null;
+}
+
+async function resolveAvatarDisplay(picture: string | null) {
+    revokeDisplayBlob();
+    avatarDisplaySrc.value = DEFAULT_AVATAR_SRC;
+
+    if (!picture) return;
+
+    if (isCatalogProfilePicture(picture)) {
+        avatarDisplaySrc.value = catalogAvatarSrc(picture);
+        return;
+    }
+
+    if (isUploadedProfilePicture(picture)) {
+        try {
+            const blob = await auth.fetchAvatarBlob();
+            avatarDisplaySrc.value = URL.createObjectURL(blob);
+        } catch (e: unknown) {
+            pictureError.value = e instanceof Error ? e.message : String(e);
+            avatarDisplaySrc.value = DEFAULT_AVATAR_SRC;
+        }
+    }
 }
 
 function hydrateFromUser(user: Me | null) {
-    revokePreview();
-    pictureCleared.value = false;
     pictureError.value = null;
 
     if (!user) {
@@ -143,6 +174,7 @@ function hydrateFromUser(user: Me | null) {
         profilePicture.value = null;
         countryId.value = null;
         username.value = '';
+        void resolveAvatarDisplay(null);
         return;
     }
 
@@ -155,6 +187,7 @@ function hydrateFromUser(user: Me | null) {
     profilePicture.value = user.profilePicture ?? null;
     countryId.value = user.countryId ?? null;
     username.value = user.username ?? '';
+    void resolveAvatarDisplay(profilePicture.value);
 }
 
 function buildProfilePayload(): UpdateProfilePayload {
@@ -165,8 +198,7 @@ function buildProfilePayload(): UpdateProfilePayload {
         birthDate: emptyToNull(birthDate.value),
         street: emptyToNull(street.value),
         streetNumber: emptyToNull(streetNumber.value),
-        countryId: countryId.value,
-        profilePicture: pictureCleared.value ? null : profilePicture.value
+        countryId: countryId.value
     };
 }
 
@@ -178,7 +210,6 @@ type ProfileSnapshot = {
     street: string | null;
     streetNumber: string | null;
     countryId: number | null;
-    profilePicture: string | null;
 };
 
 const baseline = ref<ProfileSnapshot | null>(null);
@@ -191,8 +222,7 @@ function takeSnapshot(): ProfileSnapshot {
         birthDate: emptyToNull(birthDate.value),
         street: emptyToNull(street.value),
         streetNumber: emptyToNull(streetNumber.value),
-        countryId: countryId.value,
-        profilePicture: pictureCleared.value ? null : profilePicture.value
+        countryId: countryId.value
     };
 }
 
@@ -211,8 +241,7 @@ const isDirty = computed(() => {
         current.birthDate !== base.birthDate ||
         current.street !== base.street ||
         current.streetNumber !== base.streetNumber ||
-        current.countryId !== base.countryId ||
-        current.profilePicture !== base.profilePicture
+        current.countryId !== base.countryId
     );
 });
 
@@ -297,34 +326,81 @@ async function confirmResetProfile() {
 
 function openFilePicker() {
     pictureError.value = null;
+    pictureSuccess.value = null;
     fileInputRef.value?.click();
 }
 
-function onPictureSelected(event: Event) {
+function openAvatarPicker() {
+    pictureError.value = null;
+    pictureSuccess.value = null;
+    avatarDraft.value = isCatalogProfilePicture(profilePicture.value) ? profilePicture.value : null;
+    avatarOpen.value = true;
+}
+
+async function onPictureSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
-    if (!file) return;
+    if (!file || pictureSaving.value) return;
 
-    const allowed = ['image/jpeg', 'image/png', 'image/gif'];
+    const allowed = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.type)) {
-        pictureError.value = 'Formats autorisés : JPG, GIF ou PNG.';
+        pictureError.value = 'Formats autorisés : JPEG, PNG ou WebP.';
         return;
     }
-    if (file.size > 800 * 1024) {
-        pictureError.value = 'Taille max. 800 Ko.';
+    if (file.size > 2 * 1024 * 1024) {
+        pictureError.value = 'Taille max. 2 Mo.';
         return;
     }
 
-    revokePreview();
-    pictureCleared.value = false;
-    picturePreview.value = URL.createObjectURL(file);
+    pictureSaving.value = true;
+    pictureError.value = null;
+    pictureSuccess.value = null;
+    try {
+        await auth.uploadAvatar(file);
+        profilePicture.value = auth.user?.profilePicture ?? null;
+        await resolveAvatarDisplay(profilePicture.value);
+        pictureSuccess.value = 'Photo de profil mise à jour.';
+    } catch (e: unknown) {
+        pictureError.value = e instanceof Error ? e.message : String(e);
+    } finally {
+        pictureSaving.value = false;
+    }
 }
 
-function resetPicture() {
-    revokePreview();
-    pictureCleared.value = true;
+async function resetPicture() {
+    if (pictureSaving.value) return;
+    pictureSaving.value = true;
     pictureError.value = null;
+    pictureSuccess.value = null;
+    try {
+        await auth.deleteAvatar();
+        profilePicture.value = null;
+        await resolveAvatarDisplay(null);
+        pictureSuccess.value = 'Photo de profil supprimée.';
+    } catch (e: unknown) {
+        pictureError.value = e instanceof Error ? e.message : String(e);
+    } finally {
+        pictureSaving.value = false;
+    }
+}
+
+async function confirmCatalogAvatar() {
+    if (pictureSaving.value || !avatarDraft.value) return;
+    pictureSaving.value = true;
+    pictureError.value = null;
+    pictureSuccess.value = null;
+    try {
+        await auth.setCatalogAvatar(avatarDraft.value);
+        profilePicture.value = auth.user?.profilePicture ?? avatarDraft.value;
+        await resolveAvatarDisplay(profilePicture.value);
+        avatarOpen.value = false;
+        pictureSuccess.value = 'Avatar mis à jour.';
+    } catch (e: unknown) {
+        pictureError.value = e instanceof Error ? e.message : String(e);
+    } finally {
+        pictureSaving.value = false;
+    }
 }
 
 function openUsernameModal() {
@@ -544,7 +620,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    revokePreview();
+    revokeDisplayBlob();
 });
 
 defineExpose({
@@ -573,29 +649,50 @@ defineExpose({
                             ref="fileInputRef"
                             type="file"
                             class="d-none"
-                            accept="image/jpeg,image/png,image/gif"
+                            accept="image/jpeg,image/png,image/webp"
                             @change="onPictureSelected"
                         />
 
                         <div class="d-flex align-center justify-space-between flex-wrap ga-4">
                             <div class="d-flex align-center ga-4 min-w-0">
                                 <v-avatar size="72" color="lightprimary" class="flex-shrink-0">
-                                    <v-img v-if="avatarSrc" :src="avatarSrc" alt="Photo de profil" cover />
-                                    <span v-else class="text-h5 text-primary">{{
-                                        (firstName || name || username || '?').charAt(0).toUpperCase()
-                                    }}</span>
+                                    <v-img :src="avatarSrc || DEFAULT_AVATAR_SRC" alt="Photo de profil" cover />
                                 </v-avatar>
                                 <div class="min-w-0">
                                     <h4 class="text-h4 mb-0">Photo de profil</h4>
-                                    <div class="text-subtitle-1 text-medium-emphasis text-10 mt-1">JPG, GIF ou PNG · max. 800 Ko</div>
+                                    <div class="text-subtitle-1 text-medium-emphasis text-10 mt-1">
+                                        Avatar catalogue, ou JPEG / PNG / WebP · max. 2 Mo
+                                    </div>
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap ga-2">
-                                <v-btn color="primary" flat @click="openFilePicker">Téléverser</v-btn>
-                                <v-btn color="error" variant="outlined" flat @click="resetPicture">Réinitialiser</v-btn>
+                                <v-btn color="primary" variant="tonal" flat :disabled="pictureSaving" @click="openAvatarPicker">
+                                    Avatar
+                                </v-btn>
+                                <v-btn color="primary" flat :loading="pictureSaving" @click="openFilePicker">Téléverser</v-btn>
+                                <v-btn
+                                    color="error"
+                                    variant="outlined"
+                                    flat
+                                    :disabled="pictureSaving || !profilePicture"
+                                    @click="resetPicture"
+                                >
+                                    Réinitialiser
+                                </v-btn>
                             </div>
                         </div>
 
+                        <AppAlert
+                            v-if="pictureSuccess"
+                            color="success"
+                            variant="tonal"
+                            class="mt-4"
+                            closable
+                            :dismiss-ms="5000"
+                            @dismiss="pictureSuccess = null"
+                        >
+                            {{ pictureSuccess }}
+                        </AppAlert>
                         <AppAlert v-if="pictureError" type="warning" class="mt-4" closable @dismiss="pictureError = null">
                             {{ pictureError }}
                         </AppAlert>
@@ -822,6 +919,38 @@ defineExpose({
                 </v-card>
             </v-col>
         </v-row>
+
+        <AppModalBase
+            v-model="avatarOpen"
+            title="Choisir un avatar"
+            subtitle="Sélectionnez un avatar du catalogue."
+            :max-width="480"
+            :scrollable="false"
+        >
+            <div class="d-flex flex-wrap justify-center ga-3 py-2">
+                <button
+                    v-for="path in CATALOG_AVATARS"
+                    :key="path"
+                    type="button"
+                    class="avatar-catalog-option"
+                    :class="{ 'avatar-catalog-option--selected': avatarDraft === path }"
+                    :aria-pressed="avatarDraft === path"
+                    @click="avatarDraft = path"
+                >
+                    <v-avatar size="64" color="lightprimary">
+                        <v-img :src="catalogAvatarSrc(path)" :alt="path" cover />
+                    </v-avatar>
+                </button>
+            </div>
+
+            <template #footer="{ close }">
+                <v-btn variant="text" flat :disabled="pictureSaving" @click="close">Annuler</v-btn>
+                <v-spacer />
+                <v-btn color="primary" flat :loading="pictureSaving" :disabled="!avatarDraft" @click="confirmCatalogAvatar">
+                    Appliquer
+                </v-btn>
+            </template>
+        </AppModalBase>
 
         <AppModalBase
             v-model="usernameOpen"
@@ -1109,5 +1238,18 @@ defineExpose({
 .account-tab :deep(.v-label) {
     display: block;
     margin-bottom: 16px;
+}
+
+.avatar-catalog-option {
+    padding: 4px;
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background: transparent;
+    cursor: pointer;
+    line-height: 0;
+}
+
+.avatar-catalog-option--selected {
+    border-color: rgb(var(--v-theme-primary));
 }
 </style>

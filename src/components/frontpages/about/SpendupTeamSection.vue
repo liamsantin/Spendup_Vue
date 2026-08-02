@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import liamPhoto from '@/assets/images/profile/user-1.jpg';
+import liamPhoto from '@/assets/images/profile/avatar/user-1.jpg';
 </script>
 
 <template>
