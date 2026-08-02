@@ -32,14 +32,12 @@ const passwordSaving = ref(false);
 const pictureSaving = ref(false);
 
 const profileError = ref<string | null>(null);
-const profileSuccess = ref<string | null>(null);
 const accountError = ref<string | null>(null);
 const accountSuccess = ref<string | null>(null);
 const usernameError = ref<string | null>(null);
 const emailError = ref<string | null>(null);
 const passwordError = ref<string | null>(null);
 const pictureError = ref<string | null>(null);
-const pictureSuccess = ref<string | null>(null);
 
 const firstName = ref('');
 const name = ref('');
@@ -269,12 +267,10 @@ async function saveProfile() {
     if (profileSaving.value || !isDirty.value) return;
     profileSaving.value = true;
     profileError.value = null;
-    profileSuccess.value = null;
     try {
         await auth.updateProfile(buildProfilePayload());
         hydrateFromUser(auth.user);
         commitBaseline();
-        profileSuccess.value = 'Profil enregistré.';
     } catch (e: unknown) {
         profileError.value = e instanceof Error ? e.message : String(e);
         throw e;
@@ -301,7 +297,6 @@ async function confirmSaveProfile() {
 
 async function resetProfile() {
     profileError.value = null;
-    profileSuccess.value = null;
     accountError.value = null;
     accountSuccess.value = null;
     await loadProfile();
@@ -326,13 +321,11 @@ async function confirmResetProfile() {
 
 function openFilePicker() {
     pictureError.value = null;
-    pictureSuccess.value = null;
     fileInputRef.value?.click();
 }
 
 function openAvatarPicker() {
     pictureError.value = null;
-    pictureSuccess.value = null;
     avatarDraft.value = isCatalogProfilePicture(profilePicture.value) ? profilePicture.value : null;
     avatarOpen.value = true;
 }
@@ -355,12 +348,10 @@ async function onPictureSelected(event: Event) {
 
     pictureSaving.value = true;
     pictureError.value = null;
-    pictureSuccess.value = null;
     try {
         await auth.uploadAvatar(file);
         profilePicture.value = auth.user?.profilePicture ?? null;
         await resolveAvatarDisplay(profilePicture.value);
-        pictureSuccess.value = 'Photo de profil mise à jour.';
     } catch (e: unknown) {
         pictureError.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -372,12 +363,10 @@ async function resetPicture() {
     if (pictureSaving.value) return;
     pictureSaving.value = true;
     pictureError.value = null;
-    pictureSuccess.value = null;
     try {
         await auth.deleteAvatar();
         profilePicture.value = null;
         await resolveAvatarDisplay(null);
-        pictureSuccess.value = 'Photo de profil supprimée.';
     } catch (e: unknown) {
         pictureError.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -389,13 +378,11 @@ async function confirmCatalogAvatar() {
     if (pictureSaving.value || !avatarDraft.value) return;
     pictureSaving.value = true;
     pictureError.value = null;
-    pictureSuccess.value = null;
     try {
         await auth.setCatalogAvatar(avatarDraft.value);
         profilePicture.value = auth.user?.profilePicture ?? avatarDraft.value;
         await resolveAvatarDisplay(profilePicture.value);
         avatarOpen.value = false;
-        pictureSuccess.value = 'Avatar mis à jour.';
     } catch (e: unknown) {
         pictureError.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -682,17 +669,6 @@ defineExpose({
                             </div>
                         </div>
 
-                        <AppAlert
-                            v-if="pictureSuccess"
-                            color="success"
-                            variant="tonal"
-                            class="mt-4"
-                            closable
-                            :dismiss-ms="5000"
-                            @dismiss="pictureSuccess = null"
-                        >
-                            {{ pictureSuccess }}
-                        </AppAlert>
                         <AppAlert v-if="pictureError" type="warning" class="mt-4" closable @dismiss="pictureError = null">
                             {{ pictureError }}
                         </AppAlert>
@@ -724,17 +700,6 @@ defineExpose({
                         <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
                             Enregistrez via la barre d’actions en bas de page.
                         </div>
-                        <AppAlert
-                            v-if="profileSuccess"
-                            color="success"
-                            variant="tonal"
-                            class="mt-4"
-                            closable
-                            :dismiss-ms="5000"
-                            @dismiss="profileSuccess = null"
-                        >
-                            {{ profileSuccess }}
-                        </AppAlert>
                         <AppAlert v-if="profileError" type="error" class="mt-4" closable @dismiss="profileError = null">
                             {{ profileError }}
                         </AppAlert>
