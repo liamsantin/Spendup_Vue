@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { AdjustmentsHorizontalIcon, LockIcon, UserCircleIcon } from 'vue-tabler-icons';
-import { AccountTab, SecurityTab } from '@/features/settings';
+import { AdjustmentsHorizontalIcon, BellIcon, LockIcon, UserCircleIcon } from 'vue-tabler-icons';
+import { AccountTab, NotificationsTab, SecurityTab } from '@/features/settings';
 import { UserSettingsTab } from '@/features/user-settings';
 import TabbedActionShell from '@/components/shared/TabbedActionShell.vue';
 
@@ -29,6 +29,7 @@ const preferencesDirty = ref(false);
 const tabs = computed(() => [
     { value: 'Account', label: t('accounts.tabs.account'), icon: UserCircleIcon },
     { value: 'Preferences', label: t('accounts.tabs.preferences'), icon: AdjustmentsHorizontalIcon },
+    { value: 'Notifications', label: t('accounts.tabs.notifications'), icon: BellIcon },
     { value: 'Security', label: t('accounts.tabs.security'), icon: LockIcon }
 ]);
 
@@ -90,6 +91,9 @@ function onCancel() {
             </v-window-item>
             <v-window-item value="Preferences">
                 <UserSettingsTab ref="preferencesTabRef" @dirty="preferencesDirty = $event" />
+            </v-window-item>
+            <v-window-item value="Notifications">
+                <NotificationsTab />
             </v-window-item>
             <v-window-item value="Security">
                 <SecurityTab />

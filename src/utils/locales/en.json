@@ -118,7 +118,16 @@
         "tabs": {
             "account": "Profile",
             "preferences": "Preferences",
+            "notifications": "Notifications",
             "security": "Security"
+        },
+        "notifications": {
+            "example": {
+                "title": "Email digest",
+                "subtitle": "Example section — not connected to the API.",
+                "itemTitle": "Receive a daily digest",
+                "itemSubtitle": "A summary email of your activity once a day."
+            }
         },
         "picture": {
             "title": "Profile picture",

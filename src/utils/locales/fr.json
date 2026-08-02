@@ -118,7 +118,16 @@
         "tabs": {
             "account": "Profil",
             "preferences": "Préférences",
+            "notifications": "Notifications",
             "security": "Sécurité"
+        },
+        "notifications": {
+            "example": {
+                "title": "Résumé par e-mail",
+                "subtitle": "Exemple de section — non connecté à l’API.",
+                "itemTitle": "Recevoir un résumé quotidien",
+                "itemSubtitle": "Un e-mail récapitulatif de votre activité une fois par jour."
+            }
         },
         "picture": {
             "title": "Photo de profil",
