@@ -17,6 +17,7 @@ import {
     writeTokens
 } from '@/features/auth/session-storage';
 import { i18n } from '@/plugins/i18n';
+import { useUserSettingsStore } from '@/features/user-settings';
 
 function t(key: string) {
     return i18n.global.t(key);
@@ -85,6 +86,7 @@ export const useAuthStore = defineStore('auth', () => {
         clearPendingRegistration();
         user.value = null;
         clearStoredTokens();
+        useUserSettingsStore().reset();
     }
 
     async function applySession(session: AuthSession): Promise<'ok' | '2fa'> {

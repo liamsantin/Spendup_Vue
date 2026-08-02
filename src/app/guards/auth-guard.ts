@@ -1,5 +1,6 @@
 import type { NavigationGuard } from 'vue-router';
 import { useAuthStore, APP_HOME_ROUTE } from '@/features/auth';
+import { useUserSettingsStore } from '@/features/user-settings';
 import { isDevAppEnv } from '@/utils/helpers/env-helpers';
 
 export const authGuard: NavigationGuard = async (to, _from, next) => {
@@ -29,6 +30,11 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
                 auth.returnUrl = to.fullPath;
                 return next('/auth/login');
             }
+        }
+        try {
+            await useUserSettingsStore().ensureLoaded();
+        } catch {
+            // Settings non bloquants : l’app reste accessible
         }
         return next();
     }

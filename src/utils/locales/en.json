@@ -118,8 +118,8 @@
     },
     "applications": {
         "tabs": {
-            "theme": "Theme",
-            "language": "Language"
+            "preferences": "Preferences",
+            "theme": "Theme"
         },
         "theme": {
             "title": "Theme",
@@ -142,15 +142,6 @@
             "cards": "Cards",
             "shadow": "Shadow",
             "border": "Border"
-        },
-        "language": {
-            "title": "Language",
-            "subtitle": "Choose the application interface language.",
-            "interfaceLanguage": "Interface language",
-            "options": {
-                "fr": "Français",
-                "en": "English"
-            }
         }
     },
     "accounts": {
@@ -466,6 +457,122 @@
             "title": "Ignore tracking",
             "ignoreBrowser": "Ignore browser tracking",
             "cookies": "Browser cookies"
+        }
+    },
+    "userSettings": {
+        "privacy": {
+            "title": "Privacy",
+            "subtitle": "Control who can see your profile and contact you.",
+            "profileVisibility": "Profile visibility",
+            "profilePictureVisibility": "Profile picture visibility",
+            "friendRequestsFrom": "Friend requests from",
+            "discoverableInSearch": "Discoverable in search",
+            "visibility": {
+                "public": "Public",
+                "friends": "Friends",
+                "private": "Private"
+            },
+            "friendRequests": {
+                "everyone": "Everyone",
+                "friendsOfFriends": "Friends of friends",
+                "friends": "Friends only",
+                "nobody": "Nobody"
+            }
+        },
+        "notifications": {
+            "title": "Notifications",
+            "subtitle": "Email, push and digest frequency.",
+            "emailSection": "Email",
+            "pushSection": "Push",
+            "emailSecurityAlerts": "Security alerts (email)",
+            "emailFriendRequest": "Friend requests (email)",
+            "emailFinancialAlerts": "Financial alerts (email)",
+            "pushNotifications": "Push notifications",
+            "pushSecurityAlerts": "Security alerts (push)",
+            "pushFriendRequest": "Friend requests (push)",
+            "pushFinancialAlerts": "Financial alerts (push)",
+            "digestFrequency": "Digest frequency",
+            "digest": {
+                "off": "Off",
+                "daily": "Daily",
+                "weekly": "Weekly"
+            }
+        },
+        "security": {
+            "title": "Security",
+            "subtitle": "Idle logout, trusted devices and 2FA.",
+            "idleLogoutEnabled": "Sign out after inactivity",
+            "idleLogoutMinutes": "Idle minutes",
+            "trustedDeviceDurationDays": "Trusted device duration (days)",
+            "require2faForSensitiveActions": "Require 2FA for sensitive actions"
+        },
+        "regional": {
+            "title": "Regional",
+            "subtitle": "Language, timezone, currency and calendar.",
+            "locale": "Language",
+            "timezone": "Timezone",
+            "defaultCurrency": "Default currency",
+            "firstDayOfWeek": "First day of week",
+            "locales": {
+                "frCH": "French (Switzerland)",
+                "enUS": "English (US)"
+            },
+            "firstDay": {
+                "0": "Sunday",
+                "1": "Monday",
+                "2": "Tuesday",
+                "3": "Wednesday",
+                "4": "Thursday",
+                "5": "Friday",
+                "6": "Saturday"
+            }
+        },
+        "appearance": {
+            "title": "Appearance",
+            "subtitle": "Theme, sidebar, container and cards.",
+            "sidebarLayout": "Sidebar layout",
+            "sidebarType": "Sidebar type",
+            "themeActiveLabel": "Theme mode",
+            "themeColor": "Theme color",
+            "themeDarkColor": "Dark theme color",
+            "containerOption": "Container",
+            "cardStyleLabel": "Card style",
+            "densityLabel": "Density",
+            "sidebar": {
+                "default": "Default",
+                "compact": "Compact",
+                "mini": "Mini"
+            },
+            "themeActive": {
+                "light": "Light",
+                "dark": "Dark",
+                "system": "System"
+            },
+            "container": {
+                "boxed": "Boxed",
+                "full": "Full"
+            },
+            "cardStyle": {
+                "shadow": "Shadow",
+                "border": "Border",
+                "flat": "Flat"
+            },
+            "density": {
+                "comfortable": "Comfortable",
+                "compact": "Compact"
+            }
+        },
+        "dashboard": {
+            "title": "Dashboard",
+            "subtitle": "Default view and amount display.",
+            "defaultView": "Default view",
+            "showBalance": "Show balance",
+            "hideSensitiveAmounts": "Hide sensitive amounts",
+            "views": {
+                "overview": "Overview",
+                "budget": "Budget",
+                "transactions": "Transactions"
+            }
         }
     },
     "auth": {

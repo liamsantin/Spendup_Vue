@@ -80,8 +80,11 @@ src/features/applications/
 ├── index.ts
 ├── themeOptions.ts
 └── components/
-    ├── ThemeTab.vue
-    └── LanguageTab.vue
+    └── ThemeTab.vue
+src/features/user-settings/
+├── api.ts / types.ts / mappers.ts
+├── stores/user-settings-store.ts
+└── components/UserSettingsTab.vue   # onglet Préférences (GET/PUT /api/settings)
 ```
 
 - La **view** orchestre le shell (tabs, scroll, footer) + dirty / save / cancel.
