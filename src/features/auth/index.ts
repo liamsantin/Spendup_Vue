@@ -1,5 +1,6 @@
 export { authApi, authHttp, ApiError, authRequest } from './api';
 export { getDeviceInfo, getOrCreateDeviceId, getDeviceName } from './device';
+export { resolveIsCurrentDevice } from './device-current';
 export { normalizeAuthDevices, normalizeAuthDevice } from './normalizeDevices';
 export { useAuthStore, APP_HOME_ROUTE } from './stores/auth-store';
 export { sanitizeReturnUrl } from './safe-return-url';

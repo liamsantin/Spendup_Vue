@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { DeviceLaptopIcon, DeviceMobileIcon, DotsVerticalIcon } from 'vue-tabler-icons';
 import { getOrCreateDeviceId, useAuthStore, type AuthDevice } from '@/features/auth';
+import { resolveIsCurrentDevice } from '@/features/auth/device-current';
 import { withStepUpRetry } from '@/features/auth/step-up';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
@@ -218,9 +219,7 @@ function isMobileDevice(device: AuthDevice): boolean {
 }
 
 function isCurrentDevice(device: AuthDevice): boolean {
-    if (device.isCurrentDevice === true) return true;
-    if (device.isCurrentDevice === false) return false;
-    return device.deviceIdentifier === currentDeviceId;
+    return resolveIsCurrentDevice(device, currentDeviceId);
 }
 
 async function loadDevices() {

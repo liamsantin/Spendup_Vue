@@ -21,6 +21,13 @@ import AppModalBase from '@/components/shared/AppModalBase.vue';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { withStepUpRetry } from '@/features/auth/step-up';
+import {
+    buildProfilePayload as buildPayloadFromFields,
+    isProfileDirty,
+    isValidAccountPassword,
+    takeProfileSnapshot,
+    type ProfileSnapshot
+} from '../account-profile';
 import AccountPictureCard from './account/AccountPictureCard.vue';
 import AccountPersonalCard from './account/AccountPersonalCard.vue';
 import AccountCredentialsCard from './account/AccountCredentialsCard.vue';
@@ -141,11 +148,6 @@ async function copyPublicId() {
     }
 }
 
-function emptyToNull(value: string): string | null {
-    const trimmed = value.trim();
-    return trimmed.length ? trimmed : null;
-}
-
 function revokeDisplayBlob() {
     if (avatarDisplaySrc.value?.startsWith('blob:')) {
         URL.revokeObjectURL(avatarDisplaySrc.value);
@@ -216,60 +218,33 @@ function hydrateFromUser(user: Me | null) {
     void resolveAvatarDisplay(profilePicture.value);
 }
 
-function buildProfilePayload(): UpdateProfilePayload {
+function profileFields() {
     return {
-        firstName: emptyToNull(firstName.value),
-        name: emptyToNull(name.value),
-        phone: emptyToNull(phone.value),
-        birthDate: emptyToNull(birthDate.value),
-        street: emptyToNull(street.value),
-        streetNumber: emptyToNull(streetNumber.value),
+        firstName: firstName.value,
+        name: name.value,
+        phone: phone.value,
+        birthDate: birthDate.value,
+        street: street.value,
+        streetNumber: streetNumber.value,
         countryId: countryId.value
     };
 }
 
-type ProfileSnapshot = {
-    firstName: string | null;
-    name: string | null;
-    phone: string | null;
-    birthDate: string | null;
-    street: string | null;
-    streetNumber: string | null;
-    countryId: number | null;
-};
+function buildProfilePayload(): UpdateProfilePayload {
+    return buildPayloadFromFields(profileFields());
+}
 
 const baseline = ref<ProfileSnapshot | null>(null);
 
 function takeSnapshot(): ProfileSnapshot {
-    return {
-        firstName: emptyToNull(firstName.value),
-        name: emptyToNull(name.value),
-        phone: emptyToNull(phone.value),
-        birthDate: emptyToNull(birthDate.value),
-        street: emptyToNull(street.value),
-        streetNumber: emptyToNull(streetNumber.value),
-        countryId: countryId.value
-    };
+    return takeProfileSnapshot(profileFields());
 }
 
 function commitBaseline() {
     baseline.value = takeSnapshot();
 }
 
-const isDirty = computed(() => {
-    if (!baseline.value) return false;
-    const current = takeSnapshot();
-    const base = baseline.value;
-    return (
-        current.firstName !== base.firstName ||
-        current.name !== base.name ||
-        current.phone !== base.phone ||
-        current.birthDate !== base.birthDate ||
-        current.street !== base.street ||
-        current.streetNumber !== base.streetNumber ||
-        current.countryId !== base.countryId
-    );
-});
+const isDirty = computed(() => isProfileDirty(takeSnapshot(), baseline.value));
 
 const emit = defineEmits<{
     dirty: [value: boolean];
@@ -434,7 +409,7 @@ function openUsernameModal() {
 }
 
 function isValidNewPassword(value: string) {
-    return value.length >= 8 && /[A-Za-z]/.test(value) && /\d/.test(value);
+    return isValidAccountPassword(value);
 }
 
 function openEmailModal() {

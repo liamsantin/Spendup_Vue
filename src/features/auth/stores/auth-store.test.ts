@@ -265,4 +265,42 @@ describe('useAuthStore', () => {
             expect(auth.accessToken).toBe('from-cookie');
         });
     });
+
+    describe('devices & password (step-up)', () => {
+        it('listDevices passe le access token', async () => {
+            const auth = useAuthStore();
+            auth.setTokens(tokens({ accessToken: 'tok-devices' }));
+            authApiMock.listDevices.mockResolvedValue([{ deviceIdentifier: 'd1' }]);
+
+            const list = await auth.listDevices();
+
+            expect(authApiMock.listDevices).toHaveBeenCalledWith('tok-devices');
+            expect(list).toEqual([{ deviceIdentifier: 'd1' }]);
+        });
+
+        it('revokeDevice propage la preuve step-up', async () => {
+            const auth = useAuthStore();
+            auth.setTokens(tokens());
+            authApiMock.revokeDevice.mockResolvedValue(undefined);
+
+            const stepUp = { password: 'Secret123' };
+            await auth.revokeDevice('device-xyz', stepUp);
+
+            expect(authApiMock.revokeDevice).toHaveBeenCalledWith('access-1', 'device-xyz', stepUp);
+        });
+
+        it('changePassword envoie step-up puis force re-login', async () => {
+            const auth = useAuthStore();
+            auth.setTokens(tokens());
+            authApiMock.changePassword.mockResolvedValue(undefined);
+            authApiMock.logout.mockResolvedValue(undefined);
+
+            const stepUp = { otp: '123456' };
+            await auth.changePassword('old-pass', 'NewPass12', undefined, stepUp);
+
+            expect(authApiMock.changePassword).toHaveBeenCalledWith('access-1', 'old-pass', 'NewPass12', stepUp);
+            expect(routerPush).toHaveBeenCalledWith('/auth/login');
+            expect(auth.accessToken).toBeNull();
+        });
+    });
 });
