@@ -10,8 +10,11 @@ defineOptions({ name: 'AppModalBase' });
 
 import { computed, nextTick, ref, watch } from 'vue';
 import { XIcon } from 'vue-tabler-icons';
+import { useI18n } from 'vue-i18n';
 import type { PerfectScrollbarExpose } from 'vue3-perfect-scrollbar';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
+
+const { t } = useI18n();
 
 const props = withDefaults(
     defineProps<{
@@ -105,7 +108,7 @@ defineExpose({
                     <div v-if="subtitle" class="text-subtitle-1 text-medium-emphasis mt-1">{{ subtitle }}</div>
                     <slot name="header-extra" />
                 </div>
-                <v-btn class="app-modal-base__close" icon variant="text" size="small" aria-label="Fermer" @click="close">
+                <v-btn class="app-modal-base__close" icon variant="text" size="small" :aria-label="t('common.close')" @click="close">
                     <XIcon size="20" />
                 </v-btn>
             </div>

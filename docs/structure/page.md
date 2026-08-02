@@ -3,6 +3,7 @@
 > Nom du modèle : **Tabbed Action Shell**  
 > Références :
 >
+> - `src/components/shared/TabbedActionShell.vue` (shell réutilisable)
 > - `src/views/app/parametres/accounts/AppAccountsPage.vue` (multi-onglets)
 > - `src/views/app/parametres/applications/AppApplicationsPage.vue` (un onglet)
 >
@@ -65,6 +66,7 @@ src/features/settings/
 │   └── notificationPreferences.ts
 └── components/
     ├── AccountTab.vue
+    ├── account/                  # cartes UI (photo, perso, credentials)
     ├── NotificationTab.vue
     ├── SecurityTab.vue
     └── TwoFactor*.vue
@@ -76,8 +78,10 @@ src/features/settings/
 src/views/app/parametres/applications/AppApplicationsPage.vue
 src/features/applications/
 ├── index.ts
+├── themeOptions.ts
 └── components/
-    └── ThemeTab.vue
+    ├── ThemeTab.vue
+    └── LanguageTab.vue
 ```
 
 - La **view** orchestre le shell (tabs, scroll, footer) + dirty / save / cancel.

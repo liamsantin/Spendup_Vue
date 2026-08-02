@@ -17,30 +17,30 @@ export interface menu {
     subCaption?: string;
 }
 
-/** Menu sidebar zone authentifiée (/app). */
+/** Menu sidebar zone authentifiée (/app). Les title/header sont des clés i18n. */
 const sidebarItem: menu[] = [
-    { header: 'Spend.Up' },
+    { header: 'nav.headers.spendup' },
     {
-        title: 'Tableau de bord',
+        title: 'nav.items.dashboard',
         icon: LayoutDashboardIcon,
         to: '/app'
     },
-    { header: 'Finances' },
+    { header: 'nav.headers.finances' },
     {
-        title: 'Transactions',
+        title: 'nav.items.transactions',
         icon: ArrowsExchangeIcon,
         to: '/app',
         disabled: true,
-        subCaption: 'Bientôt'
+        subCaption: 'nav.subCaptions.soon'
     },
-    { header: 'Paramètres' },
+    { header: 'nav.headers.settings' },
     {
-        title: 'Comptes',
+        title: 'nav.items.accounts',
         icon: UserCircleIcon,
         to: '/app/comptes'
     },
     {
-        title: 'Applications',
+        title: 'nav.items.applications',
         icon: AppsIcon,
         to: '/app/applications'
     }

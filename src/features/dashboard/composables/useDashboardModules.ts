@@ -2,8 +2,8 @@ import type { Component } from 'vue';
 import { ArrowsExchangeIcon, ChartPieIcon, TargetIcon, BuildingBankIcon } from 'vue-tabler-icons';
 
 export interface DashboardModule {
-    title: string;
-    caption: string;
+    titleKey: string;
+    captionKey: string;
     icon: Component;
     to: string;
     disabled: boolean;
@@ -12,29 +12,29 @@ export interface DashboardModule {
 export function useDashboardModules() {
     const modules: DashboardModule[] = [
         {
-            title: 'Transactions',
-            caption: 'Revenus, dépenses et catégories',
+            titleKey: 'dashboard.modules.transactions.title',
+            captionKey: 'dashboard.modules.transactions.caption',
             icon: ArrowsExchangeIcon,
             to: '/app',
             disabled: true
         },
         {
-            title: 'Comptes',
-            caption: 'Banques, épargne et moyens de paiement',
+            titleKey: 'dashboard.modules.accounts.title',
+            captionKey: 'dashboard.modules.accounts.caption',
             icon: BuildingBankIcon,
             to: '/app',
             disabled: true
         },
         {
-            title: 'Budgets',
-            caption: 'Suivi et alertes budgétaires',
+            titleKey: 'dashboard.modules.budgets.title',
+            captionKey: 'dashboard.modules.budgets.caption',
             icon: ChartPieIcon,
             to: '/app',
             disabled: true
         },
         {
-            title: 'Objectifs',
-            caption: 'Projets et épargne',
+            titleKey: 'dashboard.modules.goals.title',
+            captionKey: 'dashboard.modules.goals.caption',
             icon: TargetIcon,
             to: '/app',
             disabled: true

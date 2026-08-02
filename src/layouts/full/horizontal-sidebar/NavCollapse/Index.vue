@@ -13,10 +13,10 @@ defineProps({ item: Object, level: Number });
         <!---Icon  -->
         <i class="navIcon"><Icon :item="item.icon" :level="level" /></i>
         <!---Title  -->
-        <span class="mr-auto">{{ item.title }}</span>
+        <span class="mr-auto">{{ $t(item.title) }}</span>
         <!---If Caption-->
         <small v-if="item.subCaption" class="text-caption mt-n1 hide-menu">
-            {{ item.subCaption }}
+            {{ $t(item.subCaption) }}
         </small>
         <i class="ddIcon ml-2 d-flex align-center"><ChevronDownIcon size="15" /></i>
     </a>

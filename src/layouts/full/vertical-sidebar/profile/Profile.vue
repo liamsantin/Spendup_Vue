@@ -2,11 +2,13 @@
 defineOptions({ name: 'SidebarProfile' });
 
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore, useProfileAvatarUrl } from '@/features/auth';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const { avatarSrc } = useProfileAvatarUrl();
-const displayName = computed(() => authStore.displayName || 'Utilisateur');
+const displayName = computed(() => authStore.displayName || t('header.profile.fallbackName'));
 </script>
 
 <template>
@@ -23,7 +25,7 @@ const displayName = computed(() => authStore.displayName || 'Utilisateur');
                 <v-btn variant="text" icon rounded="md" color="primary" @click="authStore.logout()">
                     <PowerIcon />
 
-                    <v-tooltip activator="parent" location="top">Se déconnecter</v-tooltip>
+                    <v-tooltip activator="parent" location="top">{{ t('common.logout') }}</v-tooltip>
                 </v-btn>
             </div>
         </div>

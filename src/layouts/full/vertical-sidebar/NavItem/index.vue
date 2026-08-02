@@ -23,7 +23,7 @@ defineProps({ item: Object, level: Number });
         <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
         <!---If Caption-->
         <v-list-item-subtitle v-if="item.subCaption" class="text-caption mt-n1 hide-menu">
-            {{ item.subCaption }}
+            {{ $t(item.subCaption) }}
         </v-list-item-subtitle>
         <!---If any chip or label-->
         <template v-slot:append v-if="item.chip">

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { DeviceLaptopIcon, DeviceMobileIcon, DotsVerticalIcon, ShieldLockIcon } from 'vue-tabler-icons';
 import { getOrCreateDeviceId, useAuthStore, type AuthDevice } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
@@ -8,6 +9,7 @@ import TwoFactorSetupDialog from './TwoFactorSetupDialog.vue';
 import TwoFactorDisableDialog from './TwoFactorDisableDialog.vue';
 
 const auth = useAuthStore();
+const { t, locale } = useI18n();
 
 const setupOpen = ref(false);
 const disableOpen = ref(false);
@@ -25,15 +27,18 @@ const revokeAllLoading = ref(false);
 
 const currentDeviceId = getOrCreateDeviceId();
 const twoFactorEnabled = computed(() => !!auth.user?.twoFactorEnabled);
-const detailsTitle = computed(() => detailsDevice.value?.deviceName || 'Détails de l’appareil');
+const detailsTitle = computed(() => detailsDevice.value?.deviceName || t('security.devices.details.fallbackTitle'));
 const detailsRows = computed(() => (detailsDevice.value ? deviceDetailRows(detailsDevice.value) : []));
 
 type DeviceDetailRow = { label: string; value: string };
 
-const dateFormatter = new Intl.DateTimeFormat('fr-FR', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-});
+const dateFormatter = computed(
+    () =>
+        new Intl.DateTimeFormat(locale.value, {
+            dateStyle: 'medium',
+            timeStyle: 'short'
+        })
+);
 
 const KNOWN_RAW_KEYS = new Set([
     'deviceIdentifier',
@@ -106,12 +111,12 @@ function formatDeviceDate(value: string | null | undefined): string | null {
     if (!value) return null;
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
-    return dateFormatter.format(date);
+    return dateFormatter.value.format(date);
 }
 
 function formatRawValue(value: unknown): string | null {
     if (value == null) return null;
-    if (typeof value === 'boolean') return value ? 'Oui' : 'Non';
+    if (typeof value === 'boolean') return value ? t('security.devices.details.boolean.yes') : t('security.devices.details.boolean.no');
     if (typeof value === 'number') return String(value);
     if (typeof value === 'string') {
         const trimmed = value.trim();
@@ -138,8 +143,8 @@ function filterRows(rows: Array<{ label: string; value: string | null | undefine
 /** Aperçu liste : champs essentiels uniquement. */
 function deviceSummaryRows(device: AuthDevice): DeviceDetailRow[] {
     return filterRows([
-        { label: 'Première connexion', value: formatDeviceDate(device.firstSeenAt || device.createdAt) },
-        { label: 'Dernière activité', value: formatDeviceDate(device.lastSeenAt || device.lastActiveAt) }
+        { label: t('security.devices.summary.firstSeen'), value: formatDeviceDate(device.firstSeenAt || device.createdAt) },
+        { label: t('security.devices.summary.lastActive'), value: formatDeviceDate(device.lastSeenAt || device.lastActiveAt) }
     ]);
 }
 
@@ -147,23 +152,28 @@ function deviceSummaryRows(device: AuthDevice): DeviceDetailRow[] {
 function deviceDetailRows(device: AuthDevice): DeviceDetailRow[] {
     const location = [device.city, device.region, device.country].filter(Boolean).join(', ') || null;
     const rows: Array<{ label: string; value: string | null | undefined }> = [
-        { label: 'Type', value: device.deviceType },
-        { label: 'Navigateur', value: device.browser },
-        { label: 'Système', value: device.os },
-        { label: 'Localisation', value: location },
-        { label: 'Adresse IP', value: device.ipAddress },
-        { label: 'Dernière activité', value: formatDeviceDate(device.lastSeenAt || device.lastActiveAt) },
-        { label: 'Première connexion', value: formatDeviceDate(device.firstSeenAt || device.createdAt) },
+        { label: t('security.devices.details.rows.type'), value: device.deviceType },
+        { label: t('security.devices.details.rows.browser'), value: device.browser },
+        { label: t('security.devices.details.rows.os'), value: device.os },
+        { label: t('security.devices.details.rows.location'), value: location },
+        { label: t('security.devices.details.rows.ip'), value: device.ipAddress },
+        { label: t('security.devices.details.rows.lastActive'), value: formatDeviceDate(device.lastSeenAt || device.lastActiveAt) },
+        { label: t('security.devices.details.rows.firstSeen'), value: formatDeviceDate(device.firstSeenAt || device.createdAt) },
         {
-            label: 'Sessions actives',
+            label: t('security.devices.details.rows.sessionCount'),
             value: device.sessionCount != null ? String(device.sessionCount) : null
         },
         {
-            label: 'Appareil de confiance',
-            value: device.isTrusted == null ? null : device.isTrusted ? 'Oui' : 'Non'
+            label: t('security.devices.details.rows.trusted'),
+            value:
+                device.isTrusted == null
+                    ? null
+                    : device.isTrusted
+                      ? t('security.devices.details.boolean.yes')
+                      : t('security.devices.details.boolean.no')
         },
-        { label: 'Identifiant', value: device.deviceIdentifier },
-        { label: 'User-Agent', value: device.userAgent }
+        { label: t('security.devices.details.rows.identifier'), value: device.deviceIdentifier },
+        { label: t('security.devices.details.rows.userAgent'), value: device.userAgent }
     ];
 
     if (device.raw) {
@@ -230,11 +240,11 @@ function openDisable() {
 }
 
 function onEnabled() {
-    successMessage.value = 'La double authentification est maintenant activée.';
+    successMessage.value = t('security.twoFactor.success.enabled');
 }
 
 function onDisabled() {
-    successMessage.value = 'La double authentification a été désactivée.';
+    successMessage.value = t('security.twoFactor.success.disabled');
 }
 
 function isDeviceTrusted(device: AuthDevice): boolean {
@@ -265,10 +275,10 @@ async function revokeDevice(device: AuthDevice) {
     try {
         await auth.revokeDevice(device.deviceIdentifier);
         if (isCurrentDevice(device)) {
-            await auth.forceReLogin('Cet appareil a été déconnecté. Veuillez vous reconnecter.');
+            await auth.forceReLogin(t('security.devices.success.currentDeviceRevoked'));
             return;
         }
-        successMessage.value = 'Appareil déconnecté.';
+        successMessage.value = t('security.devices.success.deviceRevoked');
         await loadDevices();
     } catch (e: unknown) {
         devicesError.value = e instanceof Error ? e.message : String(e);
@@ -302,15 +312,14 @@ async function confirmRevokeAll() {
                                 <v-avatar size="48" rounded="md" color="lightprimary">
                                     <ShieldLockIcon class="text-primary" size="25" />
                                 </v-avatar>
-                                <h4 class="text-h4 mb-0">Authentification à deux facteurs</h4>
+                                <h4 class="text-h4 mb-0">{{ t('security.twoFactor.title') }}</h4>
                             </div>
                             <v-chip :color="twoFactorEnabled ? 'success' : 'default'" variant="tonal" size="small">
-                                {{ twoFactorEnabled ? 'Activée' : 'Désactivée' }}
+                                {{ twoFactorEnabled ? t('security.twoFactor.status.enabled') : t('security.twoFactor.status.disabled') }}
                             </v-chip>
                         </div>
                         <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
-                            Ajoutez une couche de sécurité supplémentaire à votre compte en activant l’authentification à deux facteurs via
-                            une application (TOTP).
+                            {{ t('security.twoFactor.subtitle') }}
                         </div>
 
                         <AppAlert
@@ -331,11 +340,13 @@ async function confirmRevokeAll() {
 
                         <div class="d-sm-flex justify-space-between align-sm-center mt-4 mb-8">
                             <div class="text-subtitle-1 text-medium-emphasis text-13 pr-5">
-                                Utilisez une application d’authentification pour générer un code à usage unique à chaque connexion.
+                                {{ t('security.twoFactor.description') }}
                             </div>
-                            <v-btn v-if="!twoFactorEnabled" color="primary" class="mt-sm-0 mt-3" flat @click="openSetup"> Activer </v-btn>
+                            <v-btn v-if="!twoFactorEnabled" color="primary" class="mt-sm-0 mt-3" flat @click="openSetup">
+                                {{ t('security.twoFactor.enable') }}
+                            </v-btn>
                             <v-btn v-else color="error" class="mt-sm-0 mt-3" variant="outlined" flat @click="openDisable">
-                                Désactiver
+                                {{ t('security.twoFactor.disable') }}
                             </v-btn>
                         </div>
 
@@ -343,10 +354,10 @@ async function confirmRevokeAll() {
 
                         <div class="d-flex justify-space-between align-center flex-wrap ga-3 my-4">
                             <div>
-                                <h6 class="text-h6 mb-1">Autre e-mail</h6>
-                                <h5 class="text-subtitle-1 text-medium-emphasis">Non disponible pour le moment</h5>
+                                <h6 class="text-h6 mb-1">{{ t('security.twoFactor.otherEmail.title') }}</h6>
+                                <h5 class="text-subtitle-1 text-medium-emphasis">{{ t('security.twoFactor.otherEmail.subtitle') }}</h5>
                             </div>
-                            <v-btn class="bg-lightprimary text-primary" flat disabled>Bientôt</v-btn>
+                            <v-btn class="bg-lightprimary text-primary" flat disabled>{{ t('security.twoFactor.otherEmail.soon') }}</v-btn>
                         </div>
                     </v-card-item>
                 </v-card>
@@ -360,10 +371,10 @@ async function confirmRevokeAll() {
                                 <DeviceLaptopIcon class="text-primary" size="25" />
                             </v-avatar>
                             <div>
-                                <h4 class="text-h4 mb-0">Appareils</h4>
+                                <h4 class="text-h4 mb-0">{{ t('security.devices.title') }}</h4>
                             </div>
                         </div>
-                        <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">Gérez les appareils connectés à votre compte.</div>
+                        <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">{{ t('security.devices.subtitle') }}</div>
 
                         <AppAlert v-if="devicesError" type="error" class="mt-4" closable @dismiss="devicesError = null">
                             {{ devicesError }}
@@ -377,7 +388,7 @@ async function confirmRevokeAll() {
                             :disabled="devicesLoading || devices.length === 0"
                             @click="revokeAllOpen = true"
                         >
-                            Déconnecter tous les appareils
+                            {{ t('security.devices.revokeAll') }}
                         </v-btn>
 
                         <div class="mt-sm-8 mt-5">
@@ -386,7 +397,7 @@ async function confirmRevokeAll() {
                             </div>
 
                             <div v-else-if="devices.length === 0" class="text-subtitle-1 text-medium-emphasis py-4">
-                                Aucun appareil connecté.
+                                {{ t('security.devices.empty') }}
                             </div>
 
                             <template v-else>
@@ -399,12 +410,14 @@ async function confirmRevokeAll() {
                                         </v-avatar>
                                         <div class="ml-3 pr-2 flex-grow-1" style="min-width: 0">
                                             <div class="d-flex align-center flex-wrap ga-2 mb-2">
-                                                <h6 class="text-h6 mb-0 text-truncate">{{ device.deviceName || 'Appareil' }}</h6>
+                                                <h6 class="text-h6 mb-0 text-truncate">
+                                                    {{ device.deviceName || t('security.devices.fallbackName') }}
+                                                </h6>
                                                 <v-chip v-if="isCurrentDevice(device)" size="x-small" color="primary" variant="tonal">
-                                                    Cet appareil
+                                                    {{ t('security.devices.chips.current') }}
                                                 </v-chip>
                                                 <v-chip v-if="isDeviceTrusted(device)" size="x-small" color="success" variant="tonal">
-                                                    De confiance
+                                                    {{ t('security.devices.chips.trusted') }}
                                                 </v-chip>
                                             </div>
                                             <div
@@ -435,18 +448,21 @@ async function confirmRevokeAll() {
                                                 </v-btn>
                                             </template>
                                             <v-list density="compact" min-width="200">
-                                                <v-list-item title="Voir les détails" @click="openDeviceDetails(device)" />
+                                                <v-list-item
+                                                    :title="t('security.devices.menu.viewDetails')"
+                                                    @click="openDeviceDetails(device)"
+                                                />
                                                 <v-list-item
                                                     v-if="!isDeviceTrusted(device)"
-                                                    title="Faire confiance"
+                                                    :title="t('security.devices.menu.trust')"
                                                     @click="setDeviceTrust(device, true)"
                                                 />
                                                 <v-list-item
                                                     v-else
-                                                    title="Ne plus faire confiance"
+                                                    :title="t('security.devices.menu.untrust')"
                                                     @click="setDeviceTrust(device, false)"
                                                 />
-                                                <v-list-item title="Déconnecter" @click="revokeDevice(device)" />
+                                                <v-list-item :title="t('security.devices.menu.disconnect')" @click="revokeDevice(device)" />
                                             </v-list>
                                         </v-menu>
                                     </div>
@@ -463,29 +479,33 @@ async function confirmRevokeAll() {
 
         <AppModalBase
             v-model="revokeAllOpen"
-            title="Déconnecter tous les appareils"
-            subtitle="Toutes les sessions seront révoquées, y compris celle en cours. Vous devrez vous reconnecter."
+            :title="t('security.devices.revokeAllModal.title')"
+            :subtitle="t('security.devices.revokeAllModal.subtitle')"
             :max-width="440"
             :scrollable="false"
         >
-            <p class="text-body-1 mb-0">Cette action déconnecte immédiatement tous les appareils liés à votre compte.</p>
+            <p class="text-body-1 mb-0">{{ t('security.devices.revokeAllModal.body') }}</p>
 
             <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="revokeAllLoading" @click="close">Annuler</v-btn>
+                <v-btn variant="text" flat :disabled="revokeAllLoading" @click="close">{{ t('common.cancel') }}</v-btn>
                 <v-spacer />
-                <v-btn color="error" flat :loading="revokeAllLoading" @click="confirmRevokeAll">Tout déconnecter</v-btn>
+                <v-btn color="error" flat :loading="revokeAllLoading" @click="confirmRevokeAll">
+                    {{ t('security.devices.revokeAllModal.confirm') }}
+                </v-btn>
             </template>
         </AppModalBase>
 
         <AppModalBase
             :model-value="detailsOpen"
             :title="detailsTitle"
-            :subtitle="detailsDevice && isCurrentDevice(detailsDevice) ? 'Appareil actuel' : undefined"
+            :subtitle="detailsDevice && isCurrentDevice(detailsDevice) ? t('security.devices.details.currentSubtitle') : undefined"
             :max-width="480"
             :height="520"
             @update:model-value="onDetailsOpenChange"
         >
-            <div v-if="detailsRows.length === 0" class="text-body-1 text-medium-emphasis">Aucun détail disponible pour cet appareil.</div>
+            <div v-if="detailsRows.length === 0" class="text-body-1 text-medium-emphasis">
+                {{ t('security.devices.details.empty') }}
+            </div>
             <div v-else class="d-flex flex-column ga-3">
                 <div v-for="row in detailsRows" :key="row.label">
                     <div class="text-subtitle-2 text-medium-emphasis mb-1">{{ row.label }}</div>
@@ -502,7 +522,7 @@ async function confirmRevokeAll() {
                     :loading="trustLoadingId === detailsDevice.deviceIdentifier"
                     @click="setDeviceTrust(detailsDevice, true)"
                 >
-                    Faire confiance
+                    {{ t('security.devices.details.trust') }}
                 </v-btn>
                 <v-btn
                     v-else-if="detailsDevice"
@@ -512,10 +532,10 @@ async function confirmRevokeAll() {
                     :loading="trustLoadingId === detailsDevice.deviceIdentifier"
                     @click="setDeviceTrust(detailsDevice, false)"
                 >
-                    Ne plus faire confiance
+                    {{ t('security.devices.details.untrust') }}
                 </v-btn>
                 <v-spacer />
-                <v-btn color="primary" flat @click="close">Fermer</v-btn>
+                <v-btn color="primary" flat @click="close">{{ t('security.devices.details.close') }}</v-btn>
             </template>
         </AppModalBase>
     </div>

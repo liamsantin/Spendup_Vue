@@ -8,15 +8,7 @@ import 'vue3-perfect-scrollbar/style.css';
 import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 import VueTablerIcons from 'vue-tabler-icons';
 
-import { createI18n } from 'vue-i18n';
-import messages from '@/utils/locales/messages';
-
-const i18n = createI18n({
-    locale: 'fr',
-    messages: messages,
-    silentTranslationWarn: true,
-    silentFallbackWarn: true
-});
+import { i18n } from '@/plugins/i18n';
 
 const app = createApp(App);
 app.use(createPinia());

@@ -1,12 +1,483 @@
 {
-    "Sample Page": "Page d'exemple",
-    "Menu Level": "Niveau menus",
-    "Level 1": "Niveau 1",
-    "Level 2": "Niveau 2",
-    "Level 3": "Niveau 3",
-    "Disabled": "Désactivé",
-    "Sub Caption": "Sous-titre",
-    "Outlined": "Décrite",
-    "External Link": "lien externe",
-    "Chip": "Ébrécher"
+    "common": {
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "continue": "Continuer",
+        "back": "Retour",
+        "close": "Fermer",
+        "retry": "Réessayer",
+        "apply": "Appliquer",
+        "yes": "Oui",
+        "no": "Non",
+        "or": "ou",
+        "soon": "Bientôt",
+        "comingSoon": "Bientôt disponible",
+        "copy": "Copier",
+        "copied": "Copié",
+        "user": "Utilisateur",
+        "logout": "Se déconnecter",
+        "emptyValue": "—",
+        "open": "Ouvrir"
+    },
+    "shell": {
+        "save": "Enregistrer",
+        "cancel": "Annuler"
+    },
+    "nav": {
+        "headers": {
+            "spendup": "Spend.Up",
+            "finances": "Finances",
+            "settings": "Paramètres"
+        },
+        "items": {
+            "dashboard": "Tableau de bord",
+            "transactions": "Transactions",
+            "accounts": "Comptes",
+            "applications": "Applications"
+        },
+        "subCaptions": {
+            "soon": "Bientôt"
+        }
+    },
+    "header": {
+        "notifications": {
+            "title": "Notifications",
+            "newCount": "{count} nouvelles",
+            "viewAll": "Toutes les notifications",
+            "items": {
+                "welcome": {
+                    "title": "Bienvenue sur Spend.Up",
+                    "subtitle": "Votre espace est prêt"
+                },
+                "tip": {
+                    "title": "Conseil du jour",
+                    "subtitle": "Suivez vos dépenses chaque semaine"
+                },
+                "reminder": {
+                    "title": "Rappel",
+                    "subtitle": "Pensez à vérifier vos comptes"
+                }
+            }
+        },
+        "search": {
+            "placeholder": "Rechercher…",
+            "quickLinks": "Liens rapides",
+            "suggestions": {
+                "dashboard": "Tableau de bord",
+                "accounts": "Comptes",
+                "applications": "Applications",
+                "home": "Accueil",
+                "features": "Fonctionnalités",
+                "about": "À propos"
+            }
+        },
+        "profile": {
+            "title": "Profil utilisateur",
+            "fallbackName": "Utilisateur",
+            "logout": "Se déconnecter",
+            "menu": {
+                "accounts": {
+                    "title": "Comptes",
+                    "subtitle": "Compte & sécurité"
+                }
+            }
+        }
+    },
+    "dashboard": {
+        "pageTitle": "Tableau de bord",
+        "breadcrumbs": {
+            "application": "Application",
+            "dashboard": "Tableau de bord"
+        },
+        "banner": {
+            "title": "Espace authentifié Spend.Up",
+            "body": "Tableau de bord Spend.Up. Les modules ci-dessous préfigurent les prochaines fonctionnalités (/app)."
+        },
+        "actions": {
+            "open": "Ouvrir",
+            "comingSoon": "Bientôt disponible"
+        },
+        "modules": {
+            "transactions": {
+                "title": "Transactions",
+                "caption": "Revenus, dépenses et catégories"
+            },
+            "accounts": {
+                "title": "Comptes",
+                "caption": "Banques, épargne et moyens de paiement"
+            },
+            "budgets": {
+                "title": "Budgets",
+                "caption": "Suivi et alertes budgétaires"
+            },
+            "goals": {
+                "title": "Objectifs",
+                "caption": "Projets et épargne"
+            }
+        }
+    },
+    "applications": {
+        "tabs": {
+            "theme": "Thème",
+            "language": "Langue"
+        },
+        "theme": {
+            "title": "Thème",
+            "subtitle": "Choisissez la couleur principale de l’interface (clair ou sombre).",
+            "lightColors": "Couleur du thème",
+            "darkColors": "Couleur du thème sombre"
+        },
+        "layout": {
+            "title": "Mise en page",
+            "subtitle": "Personnalisez la disposition de la barre latérale, du conteneur et des cartes.",
+            "sidebarOrientation": "Disposition de la barre latérale",
+            "vertical": "Verticale",
+            "horizontal": "Horizontale",
+            "container": "Conteneur",
+            "boxed": "Encadré",
+            "full": "Plein",
+            "sidebarType": "Type de barre latérale",
+            "fullSidebar": "Complète",
+            "miniSidebar": "Réduite",
+            "cards": "Cartes",
+            "shadow": "Ombre",
+            "border": "Bordure"
+        },
+        "language": {
+            "title": "Langue",
+            "subtitle": "Choisissez la langue de l’interface de l’application.",
+            "interfaceLanguage": "Langue de l’interface",
+            "options": {
+                "fr": "Français",
+                "en": "English"
+            }
+        }
+    },
+    "accounts": {
+        "tabs": {
+            "account": "Compte",
+            "notification": "Notifications",
+            "security": "Sécurité"
+        },
+        "picture": {
+            "title": "Photo de profil",
+            "subtitle": "Avatar catalogue, ou JPEG / PNG / WebP · max. 2 Mo",
+            "enlargeAria": "Agrandir la photo de profil",
+            "alt": "Photo de profil",
+            "avatar": "Avatar",
+            "upload": "Téléverser",
+            "reset": "Réinitialiser",
+            "errors": {
+                "allowedFormats": "Formats autorisés : JPEG, PNG ou WebP.",
+                "maxSize": "Taille max. 2 Mo."
+            },
+            "catalogModal": {
+                "title": "Choisir un avatar",
+                "subtitle": "Sélectionnez un avatar du catalogue.",
+                "apply": "Appliquer"
+            },
+            "lightbox": {
+                "title": "Photo de profil"
+            }
+        },
+        "personal": {
+            "title": "Informations personnelles",
+            "hint": "Enregistrez via la barre d’actions en bas de page.",
+            "fields": {
+                "firstName": "Prénom",
+                "name": "Nom",
+                "phone": "Téléphone",
+                "birthDate": "Date de naissance",
+                "street": "Rue",
+                "streetNumber": "N°",
+                "country": "Pays"
+            },
+            "noCountries": "Aucun pays disponible",
+            "errors": {
+                "copyPublicId": "Impossible de copier l’identifiant."
+            }
+        },
+        "credentials": {
+            "title": "Informations du compte",
+            "hint": "Identifiants de connexion. Modifiez-les via l’icône crayon.",
+            "fields": {
+                "username": "Nom d’utilisateur",
+                "email": "E-mail",
+                "password": "Mot de passe"
+            },
+            "pendingEmail": "Confirmation en attente pour {email}.",
+            "enterCode": "Saisir le code",
+            "googleLinked": "Votre compte Google est associé à ce compte.",
+            "unlinkGoogle": "Dissocier Google",
+            "success": {
+                "usernameUpdated": "Nom d’utilisateur mis à jour.",
+                "googleUnlinked": "Compte Google dissocié."
+            }
+        },
+        "danger": {
+            "title": "Zone danger",
+            "subtitle": "Cette action est définitive. Toutes vos données seront irrémédiablement effacées.",
+            "warning": "Vous ne pourrez plus vous connecter ni récupérer votre historique après suppression.",
+            "deleteAccount": "Supprimer mon compte"
+        },
+        "usernameModal": {
+            "createTitle": "Créer vos identifiants",
+            "editTitle": "Modifier le nom d’utilisateur",
+            "createSubtitle": "Choisissez un nom d’utilisateur et un mot de passe pour vous connecter sans Google.",
+            "editSubtitle": "3–30 caractères : lettres minuscules, chiffres, . _ -",
+            "usernameHint": "3–30 caractères : lettres minuscules, chiffres, . _ -",
+            "fields": {
+                "username": "Nom d’utilisateur",
+                "password": "Mot de passe",
+                "confirmPassword": "Confirmer le mot de passe"
+            },
+            "errors": {
+                "invalidUsername": "Le nom d’utilisateur doit faire 3–30 caractères ([a-z0-9._-]).",
+                "invalidPassword": "Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.",
+                "passwordMismatch": "La confirmation ne correspond pas au mot de passe."
+            },
+            "success": {
+                "credentialsCreated": "Identifiants créés : connectez-vous avec le nom d’utilisateur « {username} » et le mot de passe que vous venez de définir."
+            }
+        },
+        "emailModal": {
+            "changeTitle": "Changer l’e-mail",
+            "addTitle": "Ajouter un e-mail",
+            "subtitle": "Un code de confirmation sera envoyé à la nouvelle adresse.",
+            "fields": {
+                "newEmail": "Nouvel e-mail",
+                "email": "E-mail",
+                "currentPassword": "Mot de passe actuel"
+            },
+            "googleHint": "Compte Google : confirmez avec Google pour changer l’e-mail.",
+            "continue": "Continuer",
+            "errors": {
+                "invalidEmail": "Saisissez une adresse e-mail valide.",
+                "confirmGoogle": "Confirmez avec Google pour continuer.",
+                "currentPasswordRequired": "Le mot de passe actuel est requis."
+            }
+        },
+        "passwordModal": {
+            "changeTitle": "Modifier le mot de passe",
+            "setTitle": "Définir un mot de passe",
+            "subtitle": "Après changement, toutes les sessions sont invalidées.",
+            "fields": {
+                "currentPassword": "Mot de passe actuel",
+                "newPassword": "Nouveau mot de passe",
+                "confirmPassword": "Confirmer le mot de passe"
+            },
+            "errors": {
+                "currentRequired": "Saisissez votre mot de passe actuel.",
+                "invalidNew": "Le nouveau mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.",
+                "mismatch": "La confirmation ne correspond pas au nouveau mot de passe."
+            }
+        },
+        "unlinkGoogleModal": {
+            "title": "Dissocier le compte Google",
+            "subtitle": "Votre mot de passe actuel est requis pour confirmer cette action.",
+            "fields": {
+                "currentPassword": "Mot de passe actuel"
+            },
+            "confirm": "Dissocier Google",
+            "errors": {
+                "currentRequired": "Saisissez votre mot de passe actuel."
+            }
+        },
+        "saveConfirmModal": {
+            "title": "Enregistrer les modifications",
+            "subtitle": "Les changements seront appliqués à votre profil.",
+            "body": "Voulez-vous vraiment enregistrer les modifications effectuées ?",
+            "back": "Retour",
+            "confirm": "Enregistrer"
+        },
+        "cancelConfirmModal": {
+            "title": "Annuler les modifications",
+            "subtitle": "Les changements non enregistrés seront perdus.",
+            "body": "Voulez-vous vraiment annuler les modifications effectuées ?",
+            "back": "Retour",
+            "confirm": "Annuler les modifications"
+        },
+        "deleteModal": {
+            "title": "Supprimer définitivement le compte",
+            "subtitle": "Cette action est irréversible.",
+            "body": "Confirmez votre identité pour supprimer définitivement votre compte et toutes les données associées.",
+            "googleVerified": "Compte Google vérifié. Cliquez sur « Supprimer définitivement » pour confirmer.",
+            "or": "ou",
+            "usePassword": "Utiliser un mot de passe",
+            "fields": {
+                "currentPassword": "Mot de passe actuel"
+            },
+            "confirm": "Supprimer définitivement",
+            "errors": {
+                "confirmGoogleFirst": "Confirmez d’abord votre compte Google, puis cliquez sur Supprimer définitivement.",
+                "passwordRequired": "Saisissez votre mot de passe pour confirmer."
+            }
+        },
+        "leaveConfirm": "Vous avez des modifications non enregistrées. Voulez-vous vraiment quitter cette page ?",
+        "googleSignIn": "Se connecter avec Google"
+    },
+    "security": {
+        "twoFactor": {
+            "title": "Authentification à deux facteurs",
+            "status": {
+                "enabled": "Activée",
+                "disabled": "Désactivée"
+            },
+            "subtitle": "Ajoutez une couche de sécurité supplémentaire à votre compte en activant l’authentification à deux facteurs via une application (TOTP).",
+            "description": "Utilisez une application d’authentification pour générer un code à usage unique à chaque connexion.",
+            "enable": "Activer",
+            "disable": "Désactiver",
+            "success": {
+                "enabled": "La double authentification est maintenant activée.",
+                "disabled": "La double authentification a été désactivée."
+            },
+            "otherEmail": {
+                "title": "Autre e-mail",
+                "subtitle": "Non disponible pour le moment",
+                "soon": "Bientôt"
+            }
+        },
+        "setupDialog": {
+            "title": "Activer la double authentification",
+            "subtitle": "Utilisez une application comme Google Authenticator ou Authy.",
+            "qrAlt": "QR code 2FA",
+            "secretLabel": "Clé secrète (saisie manuelle)",
+            "copy": "Copier",
+            "copied": "Copié",
+            "recoveryWarning": "Conservez ces codes de récupération en lieu sûr. Ils ne seront affichés qu’une seule fois.",
+            "copyCodes": "Copier les codes",
+            "codesCopied": "Codes copiés",
+            "acknowledge": "J’ai enregistré mes codes de récupération",
+            "otpLabel": "Code de l’application",
+            "retry": "Réessayer",
+            "continue": "Continuer",
+            "back": "Retour",
+            "activate": "Activer",
+            "errors": {
+                "copyFailed": "Impossible de copier dans le presse-papiers.",
+                "acknowledgeRequired": "Confirmez avoir enregistré vos codes de récupération.",
+                "invalidCode": "Saisissez le code à 6 chiffres de votre application."
+            }
+        },
+        "disableDialog": {
+            "title": "Désactiver la double authentification",
+            "subtitle": "Confirmez avec le code de votre application d’authentification.",
+            "otpLabel": "Code à 6 chiffres",
+            "confirm": "Désactiver",
+            "errors": {
+                "invalidCode": "Saisissez le code à 6 chiffres de votre application."
+            }
+        },
+        "devices": {
+            "title": "Appareils",
+            "subtitle": "Gérez les appareils connectés à votre compte.",
+            "revokeAll": "Déconnecter tous les appareils",
+            "empty": "Aucun appareil connecté.",
+            "fallbackName": "Appareil",
+            "chips": {
+                "current": "Cet appareil",
+                "trusted": "De confiance"
+            },
+            "menu": {
+                "viewDetails": "Voir les détails",
+                "trust": "Faire confiance",
+                "untrust": "Ne plus faire confiance",
+                "disconnect": "Déconnecter"
+            },
+            "summary": {
+                "firstSeen": "Première connexion",
+                "lastActive": "Dernière activité"
+            },
+            "details": {
+                "fallbackTitle": "Détails de l’appareil",
+                "currentSubtitle": "Appareil actuel",
+                "empty": "Aucun détail disponible pour cet appareil.",
+                "close": "Fermer",
+                "trust": "Faire confiance",
+                "untrust": "Ne plus faire confiance",
+                "rows": {
+                    "type": "Type",
+                    "browser": "Navigateur",
+                    "os": "Système",
+                    "location": "Localisation",
+                    "ip": "Adresse IP",
+                    "lastActive": "Dernière activité",
+                    "firstSeen": "Première connexion",
+                    "sessionCount": "Sessions actives",
+                    "trusted": "Appareil de confiance",
+                    "identifier": "Identifiant",
+                    "userAgent": "User-Agent"
+                },
+                "boolean": {
+                    "yes": "Oui",
+                    "no": "Non"
+                }
+            },
+            "revokeAllModal": {
+                "title": "Déconnecter tous les appareils",
+                "subtitle": "Toutes les sessions seront révoquées, y compris celle en cours. Vous devrez vous reconnecter.",
+                "body": "Cette action déconnecte immédiatement tous les appareils liés à votre compte.",
+                "confirm": "Tout déconnecter"
+            },
+            "success": {
+                "deviceRevoked": "Appareil déconnecté.",
+                "currentDeviceRevoked": "Cet appareil a été déconnecté. Veuillez vous reconnecter.",
+                "allRevoked": "Toutes les sessions ont été déconnectées. Veuillez vous reconnecter."
+            }
+        }
+    },
+    "notifications": {
+        "preferences": {
+            "title": "Préférences de notification",
+            "subtitle": "Sélectionnez les notifications que vous souhaitez recevoir par e-mail. Notez que vous ne pouvez pas désactiver les messages de service, tels que les notifications de paiement, de sécurité ou légales.",
+            "emailLabel": "Adresse e-mail*",
+            "emailRequired": "Requis pour les notifications.",
+            "items": {
+                "newsletter": {
+                    "title": "Notre newsletter",
+                    "subtitle": "Nous vous informerons toujours des changements importants"
+                },
+                "orderConfirmation": {
+                    "title": "Confirmation de commande",
+                    "subtitle": "Vous serez notifié lorsqu’un client passe une commande"
+                },
+                "orderStatusChanged": {
+                    "title": "Statut de commande modifié",
+                    "subtitle": "Vous serez notifié lorsque le client modifie la commande"
+                },
+                "orderDelivered": {
+                    "title": "Commande livrée",
+                    "subtitle": "Vous serez notifié une fois la commande livrée"
+                },
+                "emailNotifications": {
+                    "title": "Notifications par e-mail",
+                    "subtitle": "Activez les notifications e-mail pour recevoir les mises à jour"
+                }
+            }
+        },
+        "dateTime": {
+            "title": "Date & heure",
+            "subtitle": "Fuseaux horaires et paramètres d’affichage du calendrier.",
+            "timezoneLabel": "Fuseau horaire",
+            "timezoneValue": "(UTC + 01:00) Paris, Bruxelles",
+            "download": "Télécharger"
+        },
+        "tracking": {
+            "title": "Ignorer le suivi",
+            "ignoreBrowser": "Ignorer le suivi du navigateur",
+            "cookies": "Cookies du navigateur"
+        }
+    },
+    "auth": {
+        "googleSignIn": "Se connecter avec Google",
+        "notices": {
+            "emailConfirmed": "E-mail confirmé. Veuillez vous connecter.",
+            "passwordUpdated": "Mot de passe mis à jour. Veuillez vous connecter.",
+            "emailUpdated": "E-mail mis à jour. Veuillez vous reconnecter.",
+            "twoFactorExpired": "Session 2FA expirée. Veuillez vous reconnecter.",
+            "allSessionsRevoked": "Toutes les sessions ont été déconnectées. Veuillez vous reconnecter.",
+            "passwordUpdatedRelogin": "Mot de passe mis à jour. Veuillez vous reconnecter.",
+            "accountDeleted": "Votre compte a été définitivement supprimé."
+        }
+    }
 }

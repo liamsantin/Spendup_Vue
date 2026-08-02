@@ -10,10 +10,10 @@ defineProps({ item: Object, level: Number });
     <router-link :to="`${item.to}`" class="navItemLink rounded-md" :disabled="item.disabled">
         <!---If icon-->
         <i class="navIcon"> <Icon :item="item.icon" :level="level" /></i>
-        <span>{{ item.title }}</span>
+        <span>{{ $t(item.title) }}</span>
         <!---If Caption-->
         <small v-if="item.subCaption" class="text-caption mt-n1 hide-menu">
-            {{ item.subCaption }}
+            {{ $t(item.subCaption) }}
         </small>
         <!---If any chip or label-->
         <template v-if="item.chip">

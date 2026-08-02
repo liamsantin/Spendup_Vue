@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import QRCode from 'qrcode';
 import { useAuthStore, type TwoFactorSetup } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
@@ -16,6 +17,7 @@ const emit = defineEmits<{
 }>();
 
 const auth = useAuthStore();
+const { t } = useI18n();
 const modalRef = ref<InstanceType<typeof AppModalBase> | null>(null);
 
 const step = ref<'loading' | 'setup' | 'verify'>('loading');
@@ -89,14 +91,14 @@ async function copyText(text: string, kind: 'secret' | 'codes') {
             }, 2000);
         }
     } catch {
-        error.value = 'Impossible de copier dans le presse-papiers.';
+        error.value = t('security.setupDialog.errors.copyFailed');
     }
 }
 
 function goToVerify() {
     error.value = null;
     if (!codesAcknowledged.value) {
-        error.value = 'Confirmez avoir enregistré vos codes de récupération.';
+        error.value = t('security.setupDialog.errors.acknowledgeRequired');
         return;
     }
     step.value = 'verify';
@@ -106,7 +108,7 @@ async function enable(submittedCode?: string) {
     error.value = null;
     const otp = submittedCode ?? code.value;
     if (otp.length !== 6) {
-        error.value = 'Saisissez le code à 6 chiffres de votre application.';
+        error.value = t('security.setupDialog.errors.invalidCode');
         return;
     }
     if (loading.value) return;
@@ -127,8 +129,8 @@ async function enable(submittedCode?: string) {
     <AppModalBase
         ref="modalRef"
         v-model="open"
-        title="Activer la double authentification"
-        subtitle="Utilisez une application comme Google Authenticator ou Authy."
+        :title="t('security.setupDialog.title')"
+        :subtitle="t('security.setupDialog.subtitle')"
         :max-width="520"
         :height="640"
     >
@@ -138,19 +140,19 @@ async function enable(submittedCode?: string) {
 
         <template v-else-if="step === 'setup' && setup">
             <div class="text-center mb-6">
-                <img v-if="qrDataUrl" :src="qrDataUrl" alt="QR code 2FA" width="220" height="220" class="rounded-md" />
+                <img v-if="qrDataUrl" :src="qrDataUrl" :alt="t('security.setupDialog.qrAlt')" width="220" height="220" class="rounded-md" />
             </div>
 
-            <v-label class="mb-2 font-weight-medium">Clé secrète (saisie manuelle)</v-label>
+            <v-label class="mb-2 font-weight-medium">{{ t('security.setupDialog.secretLabel') }}</v-label>
             <div class="d-flex align-center ga-2 mb-6">
                 <v-text-field :model-value="setup.secret" variant="outlined" readonly hide-details density="comfortable" />
                 <v-btn variant="tonal" color="primary" flat @click="copyText(setup.secret, 'secret')">
-                    {{ copiedSecret ? 'Copié' : 'Copier' }}
+                    {{ copiedSecret ? t('security.setupDialog.copied') : t('security.setupDialog.copy') }}
                 </v-btn>
             </div>
 
             <AppAlert type="warning" variant="tonal" class="mb-4">
-                Conservez ces codes de récupération en lieu sûr. Ils ne seront affichés qu’une seule fois.
+                {{ t('security.setupDialog.recoveryWarning') }}
             </AppAlert>
 
             <v-sheet border rounded="md" class="pa-4 mb-4">
@@ -160,30 +162,32 @@ async function enable(submittedCode?: string) {
                     </v-chip>
                 </div>
                 <v-btn class="mt-4" variant="tonal" color="primary" flat block @click="copyText(setup.recoveryCodes.join('\n'), 'codes')">
-                    {{ copiedCodes ? 'Codes copiés' : 'Copier les codes' }}
+                    {{ copiedCodes ? t('security.setupDialog.codesCopied') : t('security.setupDialog.copyCodes') }}
                 </v-btn>
             </v-sheet>
 
-            <v-checkbox v-model="codesAcknowledged" hide-details color="primary" label="J’ai enregistré mes codes de récupération" />
+            <v-checkbox v-model="codesAcknowledged" hide-details color="primary" :label="t('security.setupDialog.acknowledge')" />
         </template>
 
         <template v-else-if="step === 'verify'">
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2">Code de l’application</v-label>
+            <v-label class="text-subtitle-1 font-weight-semibold pb-2">{{ t('security.setupDialog.otpLabel') }}</v-label>
             <OtpDigitsInput v-model="code" field-class="two-factor-enable-otp" @complete="enable" />
         </template>
 
         <AppAlert v-if="error" type="error" class="mt-4">{{ error }}</AppAlert>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat @click="close">Annuler</v-btn>
+            <v-btn variant="text" flat @click="close">{{ t('common.cancel') }}</v-btn>
             <v-spacer />
             <template v-if="step === 'setup' || step === 'loading'">
-                <v-btn v-if="!setup" color="primary" flat :loading="loading" @click="startSetup">Réessayer</v-btn>
-                <v-btn v-else color="primary" flat @click="goToVerify">Continuer</v-btn>
+                <v-btn v-if="!setup" color="primary" flat :loading="loading" @click="startSetup">{{
+                    t('security.setupDialog.retry')
+                }}</v-btn>
+                <v-btn v-else color="primary" flat @click="goToVerify">{{ t('security.setupDialog.continue') }}</v-btn>
             </template>
             <template v-else-if="step === 'verify'">
-                <v-btn variant="text" flat class="mr-2" @click="step = 'setup'">Retour</v-btn>
-                <v-btn color="primary" flat :loading="loading" @click="enable()">Activer</v-btn>
+                <v-btn variant="text" flat class="mr-2" @click="step = 'setup'">{{ t('security.setupDialog.back') }}</v-btn>
+                <v-btn color="primary" flat :loading="loading" @click="enable()">{{ t('security.setupDialog.activate') }}</v-btn>
             </template>
         </template>
     </AppModalBase>

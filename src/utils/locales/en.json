@@ -1,12 +1,483 @@
 {
-    "Sample Page": "Sample Page",
-    "Menu Level": "Menu level",
-    "Level 1": "Level 1",
-    "Level 2": "Level 2",
-    "Level 3": "Level 3",
-    "Disabled": "Disabled",
-    "Sub Caption": "Sub Caption",
-    "Outlined": "Outlined",
-    "External Link": "External Link",
-    "Chip": "Chip"
+    "common": {
+        "cancel": "Cancel",
+        "save": "Save",
+        "continue": "Continue",
+        "back": "Back",
+        "close": "Close",
+        "retry": "Retry",
+        "apply": "Apply",
+        "yes": "Yes",
+        "no": "No",
+        "or": "or",
+        "soon": "Soon",
+        "comingSoon": "Coming soon",
+        "copy": "Copy",
+        "copied": "Copied",
+        "user": "User",
+        "logout": "Sign out",
+        "emptyValue": "—",
+        "open": "Open"
+    },
+    "shell": {
+        "save": "Save",
+        "cancel": "Cancel"
+    },
+    "nav": {
+        "headers": {
+            "spendup": "Spend.Up",
+            "finances": "Finances",
+            "settings": "Settings"
+        },
+        "items": {
+            "dashboard": "Dashboard",
+            "transactions": "Transactions",
+            "accounts": "Accounts",
+            "applications": "Applications"
+        },
+        "subCaptions": {
+            "soon": "Soon"
+        }
+    },
+    "header": {
+        "notifications": {
+            "title": "Notifications",
+            "newCount": "{count} new",
+            "viewAll": "All notifications",
+            "items": {
+                "welcome": {
+                    "title": "Welcome to Spend.Up",
+                    "subtitle": "Your workspace is ready"
+                },
+                "tip": {
+                    "title": "Tip of the day",
+                    "subtitle": "Track your spending every week"
+                },
+                "reminder": {
+                    "title": "Reminder",
+                    "subtitle": "Don’t forget to review your accounts"
+                }
+            }
+        },
+        "search": {
+            "placeholder": "Search…",
+            "quickLinks": "Quick links",
+            "suggestions": {
+                "dashboard": "Dashboard",
+                "accounts": "Accounts",
+                "applications": "Applications",
+                "home": "Home",
+                "features": "Features",
+                "about": "About"
+            }
+        },
+        "profile": {
+            "title": "User profile",
+            "fallbackName": "User",
+            "logout": "Sign out",
+            "menu": {
+                "accounts": {
+                    "title": "Accounts",
+                    "subtitle": "Account & security"
+                }
+            }
+        }
+    },
+    "dashboard": {
+        "pageTitle": "Dashboard",
+        "breadcrumbs": {
+            "application": "Application",
+            "dashboard": "Dashboard"
+        },
+        "banner": {
+            "title": "Authenticated Spend.Up space",
+            "body": "Spend.Up dashboard. The modules below preview upcoming features (/app)."
+        },
+        "actions": {
+            "open": "Open",
+            "comingSoon": "Coming soon"
+        },
+        "modules": {
+            "transactions": {
+                "title": "Transactions",
+                "caption": "Income, expenses and categories"
+            },
+            "accounts": {
+                "title": "Accounts",
+                "caption": "Banks, savings and payment methods"
+            },
+            "budgets": {
+                "title": "Budgets",
+                "caption": "Budget tracking and alerts"
+            },
+            "goals": {
+                "title": "Goals",
+                "caption": "Projects and savings"
+            }
+        }
+    },
+    "applications": {
+        "tabs": {
+            "theme": "Theme",
+            "language": "Language"
+        },
+        "theme": {
+            "title": "Theme",
+            "subtitle": "Choose the main interface color (light or dark).",
+            "lightColors": "Theme color",
+            "darkColors": "Dark theme color"
+        },
+        "layout": {
+            "title": "Layout",
+            "subtitle": "Customize the sidebar, container and card layout.",
+            "sidebarOrientation": "Sidebar layout",
+            "vertical": "Vertical",
+            "horizontal": "Horizontal",
+            "container": "Container",
+            "boxed": "Boxed",
+            "full": "Full",
+            "sidebarType": "Sidebar type",
+            "fullSidebar": "Full",
+            "miniSidebar": "Mini",
+            "cards": "Cards",
+            "shadow": "Shadow",
+            "border": "Border"
+        },
+        "language": {
+            "title": "Language",
+            "subtitle": "Choose the application interface language.",
+            "interfaceLanguage": "Interface language",
+            "options": {
+                "fr": "Français",
+                "en": "English"
+            }
+        }
+    },
+    "accounts": {
+        "tabs": {
+            "account": "Account",
+            "notification": "Notifications",
+            "security": "Security"
+        },
+        "picture": {
+            "title": "Profile picture",
+            "subtitle": "Catalog avatar, or JPEG / PNG / WebP · max. 2 MB",
+            "enlargeAria": "Enlarge profile picture",
+            "alt": "Profile picture",
+            "avatar": "Avatar",
+            "upload": "Upload",
+            "reset": "Reset",
+            "errors": {
+                "allowedFormats": "Allowed formats: JPEG, PNG or WebP.",
+                "maxSize": "Max. size 2 MB."
+            },
+            "catalogModal": {
+                "title": "Choose an avatar",
+                "subtitle": "Select an avatar from the catalog.",
+                "apply": "Apply"
+            },
+            "lightbox": {
+                "title": "Profile picture"
+            }
+        },
+        "personal": {
+            "title": "Personal information",
+            "hint": "Save using the action bar at the bottom of the page.",
+            "fields": {
+                "firstName": "First name",
+                "name": "Last name",
+                "phone": "Phone",
+                "birthDate": "Date of birth",
+                "street": "Street",
+                "streetNumber": "No.",
+                "country": "Country"
+            },
+            "noCountries": "No countries available",
+            "errors": {
+                "copyPublicId": "Unable to copy the identifier."
+            }
+        },
+        "credentials": {
+            "title": "Account information",
+            "hint": "Sign-in credentials. Edit them using the pencil icon.",
+            "fields": {
+                "username": "Username",
+                "email": "Email",
+                "password": "Password"
+            },
+            "pendingEmail": "Confirmation pending for {email}.",
+            "enterCode": "Enter code",
+            "googleLinked": "Your Google account is linked to this account.",
+            "unlinkGoogle": "Unlink Google",
+            "success": {
+                "usernameUpdated": "Username updated.",
+                "googleUnlinked": "Google account unlinked."
+            }
+        },
+        "danger": {
+            "title": "Danger zone",
+            "subtitle": "This action is permanent. All your data will be irreversibly deleted.",
+            "warning": "You will no longer be able to sign in or recover your history after deletion.",
+            "deleteAccount": "Delete my account"
+        },
+        "usernameModal": {
+            "createTitle": "Create your credentials",
+            "editTitle": "Change username",
+            "createSubtitle": "Choose a username and password to sign in without Google.",
+            "editSubtitle": "3–30 characters: lowercase letters, digits, . _ -",
+            "usernameHint": "3–30 characters: lowercase letters, digits, . _ -",
+            "fields": {
+                "username": "Username",
+                "password": "Password",
+                "confirmPassword": "Confirm password"
+            },
+            "errors": {
+                "invalidUsername": "Username must be 3–30 characters ([a-z0-9._-]).",
+                "invalidPassword": "Password must be at least 8 characters and include a letter and a digit.",
+                "passwordMismatch": "Confirmation does not match the password."
+            },
+            "success": {
+                "credentialsCreated": "Credentials created: sign in with username “{username}” and the password you just set."
+            }
+        },
+        "emailModal": {
+            "changeTitle": "Change email",
+            "addTitle": "Add an email",
+            "subtitle": "A confirmation code will be sent to the new address.",
+            "fields": {
+                "newEmail": "New email",
+                "email": "Email",
+                "currentPassword": "Current password"
+            },
+            "googleHint": "Google account: confirm with Google to change the email.",
+            "continue": "Continue",
+            "errors": {
+                "invalidEmail": "Enter a valid email address.",
+                "confirmGoogle": "Confirm with Google to continue.",
+                "currentPasswordRequired": "Current password is required."
+            }
+        },
+        "passwordModal": {
+            "changeTitle": "Change password",
+            "setTitle": "Set a password",
+            "subtitle": "After changing, all sessions are invalidated.",
+            "fields": {
+                "currentPassword": "Current password",
+                "newPassword": "New password",
+                "confirmPassword": "Confirm password"
+            },
+            "errors": {
+                "currentRequired": "Enter your current password.",
+                "invalidNew": "New password must be at least 8 characters and include a letter and a digit.",
+                "mismatch": "Confirmation does not match the new password."
+            }
+        },
+        "unlinkGoogleModal": {
+            "title": "Unlink Google account",
+            "subtitle": "Your current password is required to confirm this action.",
+            "fields": {
+                "currentPassword": "Current password"
+            },
+            "confirm": "Unlink Google",
+            "errors": {
+                "currentRequired": "Enter your current password."
+            }
+        },
+        "saveConfirmModal": {
+            "title": "Save changes",
+            "subtitle": "Changes will be applied to your profile.",
+            "body": "Do you really want to save the changes you made?",
+            "back": "Back",
+            "confirm": "Save"
+        },
+        "cancelConfirmModal": {
+            "title": "Discard changes",
+            "subtitle": "Unsaved changes will be lost.",
+            "body": "Do you really want to discard the changes you made?",
+            "back": "Back",
+            "confirm": "Discard changes"
+        },
+        "deleteModal": {
+            "title": "Permanently delete account",
+            "subtitle": "This action cannot be undone.",
+            "body": "Confirm your identity to permanently delete your account and all associated data.",
+            "googleVerified": "Google account verified. Click “Delete permanently” to confirm.",
+            "or": "or",
+            "usePassword": "Use a password",
+            "fields": {
+                "currentPassword": "Current password"
+            },
+            "confirm": "Delete permanently",
+            "errors": {
+                "confirmGoogleFirst": "First confirm your Google account, then click Delete permanently.",
+                "passwordRequired": "Enter your password to confirm."
+            }
+        },
+        "leaveConfirm": "You have unsaved changes. Do you really want to leave this page?",
+        "googleSignIn": "Sign in with Google"
+    },
+    "security": {
+        "twoFactor": {
+            "title": "Two-factor authentication",
+            "status": {
+                "enabled": "Enabled",
+                "disabled": "Disabled"
+            },
+            "subtitle": "Add an extra layer of security to your account by enabling two-factor authentication with an authenticator app (TOTP).",
+            "description": "Use an authenticator app to generate a one-time code at each sign-in.",
+            "enable": "Enable",
+            "disable": "Disable",
+            "success": {
+                "enabled": "Two-factor authentication is now enabled.",
+                "disabled": "Two-factor authentication has been disabled."
+            },
+            "otherEmail": {
+                "title": "Other email",
+                "subtitle": "Not available yet",
+                "soon": "Soon"
+            }
+        },
+        "setupDialog": {
+            "title": "Enable two-factor authentication",
+            "subtitle": "Use an app such as Google Authenticator or Authy.",
+            "qrAlt": "2FA QR code",
+            "secretLabel": "Secret key (manual entry)",
+            "copy": "Copy",
+            "copied": "Copied",
+            "recoveryWarning": "Keep these recovery codes in a safe place. They will only be shown once.",
+            "copyCodes": "Copy codes",
+            "codesCopied": "Codes copied",
+            "acknowledge": "I have saved my recovery codes",
+            "otpLabel": "App code",
+            "retry": "Retry",
+            "continue": "Continue",
+            "back": "Back",
+            "activate": "Enable",
+            "errors": {
+                "copyFailed": "Unable to copy to the clipboard.",
+                "acknowledgeRequired": "Confirm that you have saved your recovery codes.",
+                "invalidCode": "Enter the 6-digit code from your authenticator app."
+            }
+        },
+        "disableDialog": {
+            "title": "Disable two-factor authentication",
+            "subtitle": "Confirm with the code from your authenticator app.",
+            "otpLabel": "6-digit code",
+            "confirm": "Disable",
+            "errors": {
+                "invalidCode": "Enter the 6-digit code from your authenticator app."
+            }
+        },
+        "devices": {
+            "title": "Devices",
+            "subtitle": "Manage devices signed in to your account.",
+            "revokeAll": "Sign out all devices",
+            "empty": "No signed-in devices.",
+            "fallbackName": "Device",
+            "chips": {
+                "current": "This device",
+                "trusted": "Trusted"
+            },
+            "menu": {
+                "viewDetails": "View details",
+                "trust": "Trust",
+                "untrust": "Remove trust",
+                "disconnect": "Sign out"
+            },
+            "summary": {
+                "firstSeen": "First sign-in",
+                "lastActive": "Last activity"
+            },
+            "details": {
+                "fallbackTitle": "Device details",
+                "currentSubtitle": "Current device",
+                "empty": "No details available for this device.",
+                "close": "Close",
+                "trust": "Trust",
+                "untrust": "Remove trust",
+                "rows": {
+                    "type": "Type",
+                    "browser": "Browser",
+                    "os": "System",
+                    "location": "Location",
+                    "ip": "IP address",
+                    "lastActive": "Last activity",
+                    "firstSeen": "First sign-in",
+                    "sessionCount": "Active sessions",
+                    "trusted": "Trusted device",
+                    "identifier": "Identifier",
+                    "userAgent": "User-Agent"
+                },
+                "boolean": {
+                    "yes": "Yes",
+                    "no": "No"
+                }
+            },
+            "revokeAllModal": {
+                "title": "Sign out all devices",
+                "subtitle": "All sessions will be revoked, including the current one. You will need to sign in again.",
+                "body": "This action immediately signs out all devices linked to your account.",
+                "confirm": "Sign out all"
+            },
+            "success": {
+                "deviceRevoked": "Device signed out.",
+                "currentDeviceRevoked": "This device was signed out. Please sign in again.",
+                "allRevoked": "All sessions were signed out. Please sign in again."
+            }
+        }
+    },
+    "notifications": {
+        "preferences": {
+            "title": "Notification preferences",
+            "subtitle": "Select the notifications you want to receive by email. Note that you cannot disable service messages such as payment, security or legal notifications.",
+            "emailLabel": "Email address*",
+            "emailRequired": "Required for notifications.",
+            "items": {
+                "newsletter": {
+                    "title": "Our newsletter",
+                    "subtitle": "We will always notify you of important changes"
+                },
+                "orderConfirmation": {
+                    "title": "Order confirmation",
+                    "subtitle": "You will be notified when a customer places an order"
+                },
+                "orderStatusChanged": {
+                    "title": "Order status changed",
+                    "subtitle": "You will be notified when the customer changes the order"
+                },
+                "orderDelivered": {
+                    "title": "Order delivered",
+                    "subtitle": "You will be notified once the order is delivered"
+                },
+                "emailNotifications": {
+                    "title": "Email notifications",
+                    "subtitle": "Enable email notifications to receive updates"
+                }
+            }
+        },
+        "dateTime": {
+            "title": "Date & time",
+            "subtitle": "Time zones and calendar display settings.",
+            "timezoneLabel": "Time zone",
+            "timezoneValue": "(UTC + 01:00) Paris, Brussels",
+            "download": "Download"
+        },
+        "tracking": {
+            "title": "Ignore tracking",
+            "ignoreBrowser": "Ignore browser tracking",
+            "cookies": "Browser cookies"
+        }
+    },
+    "auth": {
+        "googleSignIn": "Sign in with Google",
+        "notices": {
+            "emailConfirmed": "Email confirmed. Please sign in.",
+            "passwordUpdated": "Password updated. Please sign in.",
+            "emailUpdated": "Email updated. Please sign in again.",
+            "twoFactorExpired": "2FA session expired. Please sign in again.",
+            "allSessionsRevoked": "All sessions were signed out. Please sign in again.",
+            "passwordUpdatedRelogin": "Password updated. Please sign in again.",
+            "accountDeleted": "Your account has been permanently deleted."
+        }
+    }
 }

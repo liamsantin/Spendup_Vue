@@ -4,6 +4,7 @@ import { useAuthStore } from '@/features/auth';
 import { Form } from 'vee-validate';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import { getErrorMessage } from '@/utils/errors/app-error';
 
 const authStore = useAuthStore();
 
@@ -30,8 +31,7 @@ function validate(_values: Record<string, unknown>, { setErrors }: { setErrors: 
         return;
     }
     return authStore.login(id, password.value).catch((error: unknown) => {
-        const message = error instanceof Error ? error.message : String(error);
-        setErrors({ apiError: message });
+        setErrors({ apiError: getErrorMessage(error) });
     });
 }
 

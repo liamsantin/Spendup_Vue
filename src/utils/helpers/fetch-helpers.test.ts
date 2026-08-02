@@ -44,7 +44,7 @@ describe('fetchWrapper', () => {
         });
         refreshSession.mockResolvedValue(false);
 
-        await expect(fetchWrapper.get('/api/countries')).rejects.toBeTruthy();
+        await expect(fetchWrapper.get('/api/countries')).rejects.toMatchObject({ name: 'AppError', status: 401 });
         expect(refreshSession).toHaveBeenCalled();
         expect(forceReLogin).toHaveBeenCalled();
     });

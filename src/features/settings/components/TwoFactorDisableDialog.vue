@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
@@ -15,6 +16,7 @@ const emit = defineEmits<{
 }>();
 
 const auth = useAuthStore();
+const { t } = useI18n();
 
 const code = ref('');
 const loading = ref(false);
@@ -40,7 +42,7 @@ async function disable(submittedCode?: string) {
     error.value = null;
     const otp = submittedCode ?? code.value;
     if (otp.length !== 6) {
-        error.value = 'Saisissez le code à 6 chiffres de votre application.';
+        error.value = t('security.disableDialog.errors.invalidCode');
         return;
     }
     if (loading.value) return;
@@ -60,19 +62,19 @@ async function disable(submittedCode?: string) {
 <template>
     <AppModalBase
         v-model="open"
-        title="Désactiver la double authentification"
-        subtitle="Confirmez avec le code de votre application d’authentification."
+        :title="t('security.disableDialog.title')"
+        :subtitle="t('security.disableDialog.subtitle')"
         :max-width="440"
         :scrollable="false"
     >
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2">Code à 6 chiffres</v-label>
+        <v-label class="text-subtitle-1 font-weight-semibold pb-2">{{ t('security.disableDialog.otpLabel') }}</v-label>
         <OtpDigitsInput v-model="code" field-class="two-factor-disable-otp" @complete="disable" />
         <AppAlert v-if="error" type="error" class="mt-4">{{ error }}</AppAlert>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat @click="close">Annuler</v-btn>
+            <v-btn variant="text" flat @click="close">{{ t('common.cancel') }}</v-btn>
             <v-spacer />
-            <v-btn color="error" flat :loading="loading" @click="disable()">Désactiver</v-btn>
+            <v-btn color="error" flat :loading="loading" @click="disable()">{{ t('security.disableDialog.confirm') }}</v-btn>
         </template>
     </AppModalBase>
 </template>

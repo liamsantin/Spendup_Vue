@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref } from 'vue';
 import AppAlert from '@/components/shared/AppAlert.vue';
 
 withDefaults(
@@ -22,15 +22,24 @@ const error = ref<string | null>(null);
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 let resizeObserver: ResizeObserver | null = null;
 
+/** Chargeur GIS partagé (évite des listeners `load` empilés à chaque mount). */
+let gisScriptPromise: Promise<void> | null = null;
+
 function loadGisScript(): Promise<void> {
     if (typeof google !== 'undefined' && google.accounts?.id) {
         return Promise.resolve();
     }
-    return new Promise((resolve, reject) => {
-        const existing = document.getElementById('google-gis');
+    if (gisScriptPromise) return gisScriptPromise;
+
+    gisScriptPromise = new Promise((resolve, reject) => {
+        const existing = document.getElementById('google-gis') as HTMLScriptElement | null;
         if (existing) {
-            existing.addEventListener('load', () => resolve());
-            existing.addEventListener('error', () => reject(new Error('Échec du chargement du script Google')));
+            if (typeof google !== 'undefined' && google.accounts?.id) {
+                resolve();
+                return;
+            }
+            existing.addEventListener('load', () => resolve(), { once: true });
+            existing.addEventListener('error', () => reject(new Error('Échec du chargement du script Google')), { once: true });
             return;
         }
         const script = document.createElement('script');
@@ -39,9 +48,14 @@ function loadGisScript(): Promise<void> {
         script.async = true;
         script.defer = true;
         script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Échec du chargement du script Google'));
+        script.onerror = () => {
+            gisScriptPromise = null;
+            reject(new Error('Échec du chargement du script Google'));
+        };
         document.head.appendChild(script);
     });
+
+    return gisScriptPromise;
 }
 
 function buttonWidth(): number {
@@ -94,13 +108,6 @@ onMounted(() => {
         resizeObserver.observe(root.value);
     }
 });
-
-watch(
-    () => clientId,
-    () => {
-        void render();
-    }
-);
 
 onUnmounted(() => {
     resizeObserver?.disconnect();

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import { LockIcon, PencilIcon, TrashIcon, UserIcon } from 'vue-tabler-icons';
+import { useI18n } from 'vue-i18n';
+import { onBeforeRouteLeave, useRouter } from 'vue-router';
+import { TrashIcon } from 'vue-tabler-icons';
 import {
     CATALOG_AVATARS,
     DEFAULT_AVATAR_SRC,
@@ -17,12 +18,16 @@ import {
 import { useCountriesStore } from '@/features/countries';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
-import AppDatePicker from '@/components/shared/AppDatePicker.vue';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
+import { getErrorMessage } from '@/utils/errors/app-error';
+import AccountPictureCard from './account/AccountPictureCard.vue';
+import AccountPersonalCard from './account/AccountPersonalCard.vue';
+import AccountCredentialsCard from './account/AccountCredentialsCard.vue';
 
 const auth = useAuthStore();
 const countries = useCountriesStore();
 const router = useRouter();
+const { t } = useI18n();
 
 const loading = ref(false);
 const profileSaving = ref(false);
@@ -68,6 +73,11 @@ const currentPassword = ref('');
 const newPassword = ref('');
 const confirmPassword = ref('');
 
+const unlinkGoogleOpen = ref(false);
+const unlinkGooglePassword = ref('');
+const unlinkGoogleSaving = ref(false);
+const unlinkGoogleError = ref<string | null>(null);
+
 const cancelConfirmOpen = ref(false);
 const cancelConfirming = ref(false);
 const saveConfirmOpen = ref(false);
@@ -83,7 +93,6 @@ const avatarOpen = ref(false);
 const avatarDraft = ref<string | null>(null);
 const pictureLightboxOpen = ref(false);
 
-const fileInputRef = ref<HTMLInputElement | null>(null);
 /** Garde-fou courses async pour l’affichage avatar (blob). */
 let avatarDisplayRequestId = 0;
 const emailGoogleIdToken = ref<string | null>(null);
@@ -113,6 +122,7 @@ const canSubmitEmailChange = computed(() => {
 const showDeleteGoogle = computed(() => isGoogleOnlyAccount.value || auth.user?.hasGoogle !== false);
 const showDeletePassword = computed(() => !isGoogleOnlyAccount.value);
 const canSubmitDelete = computed(() => !!deleteGoogleIdToken.value || (!!deletePassword.value && showDeletePassword.value));
+const canUnlinkGoogle = computed(() => auth.user?.hasGoogle === true && auth.user?.hasPassword === true);
 const birthDateMax = computed(() => {
     const now = new Date();
     const y = now.getFullYear();
@@ -120,20 +130,13 @@ const birthDateMax = computed(() => {
     const d = String(now.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
 });
-const birthDateModel = computed({
-    get: () => birthDate.value || null,
-    set: (value: string | null) => {
-        birthDate.value = value ?? '';
-    }
-});
-
 async function copyPublicId() {
     const id = auth.user?.userPublicId;
     if (!id) return;
     try {
         await navigator.clipboard.writeText(id);
     } catch {
-        profileError.value = 'Impossible de copier l’identifiant.';
+        profileError.value = t('accounts.personal.errors.copyPublicId');
     }
 }
 
@@ -172,7 +175,7 @@ async function resolveAvatarDisplay(picture: string | null) {
             avatarDisplaySrc.value = nextUrl;
         } catch (e: unknown) {
             if (id !== avatarDisplayRequestId) return;
-            pictureError.value = e instanceof Error ? e.message : String(e);
+            pictureError.value = getErrorMessage(e);
             revokeDisplayBlob();
             avatarDisplaySrc.value = DEFAULT_AVATAR_SRC;
         }
@@ -286,7 +289,7 @@ async function loadProfile() {
         hydrateFromUser(user);
         commitBaseline();
     } catch (e: unknown) {
-        profileError.value = e instanceof Error ? e.message : String(e);
+        profileError.value = getErrorMessage(e);
     } finally {
         loading.value = false;
     }
@@ -301,7 +304,7 @@ async function saveProfile() {
         hydrateFromUser(auth.user);
         commitBaseline();
     } catch (e: unknown) {
-        profileError.value = e instanceof Error ? e.message : String(e);
+        profileError.value = getErrorMessage(e);
         throw e;
     } finally {
         profileSaving.value = false;
@@ -348,11 +351,6 @@ async function confirmResetProfile() {
     }
 }
 
-function openFilePicker() {
-    pictureError.value = null;
-    fileInputRef.value?.click();
-}
-
 function openAvatarPicker() {
     pictureError.value = null;
     avatarDraft.value = isCatalogProfilePicture(profilePicture.value) ? profilePicture.value : null;
@@ -371,11 +369,11 @@ async function onPictureSelected(event: Event) {
 
     const allowed = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowed.includes(file.type)) {
-        pictureError.value = 'Formats autorisés : JPEG, PNG ou WebP.';
+        pictureError.value = t('accounts.picture.errors.allowedFormats');
         return;
     }
     if (file.size > 2 * 1024 * 1024) {
-        pictureError.value = 'Taille max. 2 Mo.';
+        pictureError.value = t('accounts.picture.errors.maxSize');
         return;
     }
 
@@ -386,7 +384,7 @@ async function onPictureSelected(event: Event) {
         profilePicture.value = auth.user?.profilePicture ?? null;
         await resolveAvatarDisplay(profilePicture.value);
     } catch (e: unknown) {
-        pictureError.value = e instanceof Error ? e.message : String(e);
+        pictureError.value = getErrorMessage(e);
     } finally {
         pictureSaving.value = false;
     }
@@ -401,7 +399,7 @@ async function resetPicture() {
         profilePicture.value = null;
         await resolveAvatarDisplay(null);
     } catch (e: unknown) {
-        pictureError.value = e instanceof Error ? e.message : String(e);
+        pictureError.value = getErrorMessage(e);
     } finally {
         pictureSaving.value = false;
     }
@@ -417,7 +415,7 @@ async function confirmCatalogAvatar() {
         await resolveAvatarDisplay(profilePicture.value);
         avatarOpen.value = false;
     } catch (e: unknown) {
-        pictureError.value = e instanceof Error ? e.message : String(e);
+        pictureError.value = getErrorMessage(e);
     } finally {
         pictureSaving.value = false;
     }
@@ -480,7 +478,7 @@ async function runDeleteAccount(payload: { currentPassword?: string; googleIdTok
     try {
         await auth.deleteAccount(payload);
     } catch (e: unknown) {
-        deleteError.value = e instanceof Error ? e.message : String(e);
+        deleteError.value = getErrorMessage(e);
         deleteSaving.value = false;
     }
 }
@@ -495,10 +493,10 @@ async function submitDeleteAccount() {
         return;
     }
     if (showDeleteGoogle.value && !deleteGoogleIdToken.value) {
-        deleteError.value = 'Confirmez d’abord votre compte Google, puis cliquez sur Supprimer définitivement.';
+        deleteError.value = t('accounts.deleteModal.errors.confirmGoogleFirst');
         return;
     }
-    deleteError.value = 'Saisissez votre mot de passe pour confirmer.';
+    deleteError.value = t('accounts.deleteModal.errors.passwordRequired');
 }
 
 function onDeleteGoogleCredential(idToken: string) {
@@ -517,18 +515,18 @@ async function saveUsername() {
 
     const value = normalizeUsername(usernameDraft.value);
     if (!isValidUsername(value)) {
-        usernameError.value = 'Le nom d’utilisateur doit faire 3–30 caractères ([a-z0-9._-]).';
+        usernameError.value = t('accounts.usernameModal.errors.invalidUsername');
         return;
     }
 
     const withPassword = usernameModalIncludesPassword.value;
     if (withPassword) {
         if (!isValidNewPassword(usernamePassword.value)) {
-            usernameError.value = 'Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.';
+            usernameError.value = t('accounts.usernameModal.errors.invalidPassword');
             return;
         }
         if (usernamePassword.value !== usernamePasswordConfirm.value) {
-            usernameError.value = 'La confirmation ne correspond pas au mot de passe.';
+            usernameError.value = t('accounts.usernameModal.errors.passwordMismatch');
             return;
         }
     }
@@ -542,16 +540,16 @@ async function saveUsername() {
             await auth.changePassword(
                 null,
                 usernamePassword.value,
-                `Identifiants créés : connectez-vous avec le nom d’utilisateur « ${value} » et le mot de passe que vous venez de définir.`
+                t('accounts.usernameModal.success.credentialsCreated', { username: value })
             );
             return;
         }
 
         usernameOpen.value = false;
-        accountSuccess.value = 'Nom d’utilisateur mis à jour.';
+        accountSuccess.value = t('accounts.credentials.success.usernameUpdated');
         accountError.value = null;
     } catch (e: unknown) {
-        usernameError.value = e instanceof Error ? e.message : String(e);
+        usernameError.value = getErrorMessage(e);
     } finally {
         usernameSaving.value = false;
     }
@@ -563,11 +561,13 @@ async function submitEmailChange() {
 
     const email = emailDraft.value.trim();
     if (!email || !/.+@.+\..+/.test(email)) {
-        emailError.value = 'Saisissez une adresse e-mail valide.';
+        emailError.value = t('accounts.emailModal.errors.invalidEmail');
         return;
     }
     if (!canSubmitEmailChange.value) {
-        emailError.value = isGoogleOnlyAccount.value ? 'Confirmez avec Google pour continuer.' : 'Le mot de passe actuel est requis.';
+        emailError.value = isGoogleOnlyAccount.value
+            ? t('accounts.emailModal.errors.confirmGoogle')
+            : t('accounts.emailModal.errors.currentPasswordRequired');
         return;
     }
 
@@ -586,7 +586,7 @@ async function submitEmailChange() {
             query: { email, from: 'app' }
         });
     } catch (e: unknown) {
-        emailError.value = e instanceof Error ? e.message : String(e);
+        emailError.value = getErrorMessage(e);
         emailGoogleIdToken.value = null;
     } finally {
         emailSaving.value = false;
@@ -598,15 +598,15 @@ async function submitPasswordChange() {
     passwordError.value = null;
 
     if (requiresCurrentPassword.value && !currentPassword.value) {
-        passwordError.value = 'Saisissez votre mot de passe actuel.';
+        passwordError.value = t('accounts.passwordModal.errors.currentRequired');
         return;
     }
     if (!isValidNewPassword(newPassword.value)) {
-        passwordError.value = 'Le nouveau mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.';
+        passwordError.value = t('accounts.passwordModal.errors.invalidNew');
         return;
     }
     if (newPassword.value !== confirmPassword.value) {
-        passwordError.value = 'La confirmation ne correspond pas au nouveau mot de passe.';
+        passwordError.value = t('accounts.passwordModal.errors.mismatch');
         return;
     }
 
@@ -614,8 +614,37 @@ async function submitPasswordChange() {
     try {
         await auth.changePassword(requiresCurrentPassword.value ? currentPassword.value : null, newPassword.value);
     } catch (e: unknown) {
-        passwordError.value = e instanceof Error ? e.message : String(e);
+        passwordError.value = getErrorMessage(e);
         passwordSaving.value = false;
+    }
+}
+
+function openUnlinkGoogleModal() {
+    unlinkGooglePassword.value = '';
+    unlinkGoogleError.value = null;
+    accountError.value = null;
+    accountSuccess.value = null;
+    unlinkGoogleOpen.value = true;
+}
+
+async function submitUnlinkGoogle() {
+    if (unlinkGoogleSaving.value) return;
+    if (!unlinkGooglePassword.value) {
+        unlinkGoogleError.value = t('accounts.unlinkGoogleModal.errors.currentRequired');
+        return;
+    }
+
+    unlinkGoogleSaving.value = true;
+    unlinkGoogleError.value = null;
+    try {
+        await auth.unlinkGoogle(unlinkGooglePassword.value);
+        unlinkGoogleOpen.value = false;
+        accountError.value = null;
+        accountSuccess.value = t('accounts.credentials.success.googleUnlinked');
+    } catch (e: unknown) {
+        unlinkGoogleError.value = getErrorMessage(e);
+    } finally {
+        unlinkGoogleSaving.value = false;
     }
 }
 
@@ -633,6 +662,13 @@ watch(emailOpen, (open) => {
 
 watch(passwordOpen, (open) => {
     if (!open) passwordError.value = null;
+});
+
+watch(unlinkGoogleOpen, (open) => {
+    if (!open) {
+        unlinkGoogleError.value = null;
+        unlinkGooglePassword.value = '';
+    }
 });
 
 watch(deleteOpen, (open) => {
@@ -656,6 +692,11 @@ onUnmounted(() => {
     revokeDisplayBlob();
 });
 
+onBeforeRouteLeave(() => {
+    if (!isDirty.value) return true;
+    return window.confirm(t('accounts.leaveConfirm'));
+});
+
 defineExpose({
     saveProfile: requestSaveProfile,
     resetProfile: requestResetProfile,
@@ -676,265 +717,58 @@ defineExpose({
 
         <v-row v-else class="justify-center py-1" no-gutters>
             <v-col cols="12" md="9" class="pb-4">
-                <v-card elevation="10">
-                    <v-card-item>
-                        <input
-                            ref="fileInputRef"
-                            type="file"
-                            class="d-none"
-                            accept="image/jpeg,image/png,image/webp"
-                            @change="onPictureSelected"
-                        />
-
-                        <div class="d-flex align-center justify-space-between flex-wrap ga-4">
-                            <div class="d-flex align-center ga-4 min-w-0">
-                                <v-avatar
-                                    size="72"
-                                    color="lightprimary"
-                                    class="flex-shrink-0 account-picture-avatar"
-                                    role="button"
-                                    tabindex="0"
-                                    aria-label="Agrandir la photo de profil"
-                                    @click="openPictureLightbox"
-                                    @keydown.enter.prevent="openPictureLightbox"
-                                    @keydown.space.prevent="openPictureLightbox"
-                                >
-                                    <v-img :src="avatarSrc || DEFAULT_AVATAR_SRC" alt="Photo de profil" cover />
-                                </v-avatar>
-                                <div class="min-w-0">
-                                    <h4 class="text-h4 mb-0">Photo de profil</h4>
-                                    <div class="text-subtitle-1 text-medium-emphasis text-10 mt-1">
-                                        Avatar catalogue, ou JPEG / PNG / WebP · max. 2 Mo
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex flex-wrap ga-2">
-                                <v-btn color="primary" variant="tonal" flat :disabled="pictureSaving" @click="openAvatarPicker">
-                                    Avatar
-                                </v-btn>
-                                <v-btn color="primary" flat :loading="pictureSaving" @click="openFilePicker">Téléverser</v-btn>
-                                <v-btn
-                                    color="error"
-                                    variant="outlined"
-                                    flat
-                                    :disabled="pictureSaving || !profilePicture"
-                                    @click="resetPicture"
-                                >
-                                    Réinitialiser
-                                </v-btn>
-                            </div>
-                        </div>
-
-                        <AppAlert v-if="pictureError" type="warning" class="mt-4" closable @dismiss="pictureError = null">
-                            {{ pictureError }}
-                        </AppAlert>
-                    </v-card-item>
-                </v-card>
+                <AccountPictureCard
+                    :avatar-src="avatarSrc"
+                    :profile-picture="profilePicture"
+                    :saving="pictureSaving"
+                    :error="pictureError"
+                    @upload="onPictureSelected"
+                    @choose-avatar="openAvatarPicker"
+                    @reset="resetPicture"
+                    @open-lightbox="openPictureLightbox"
+                    @dismiss-error="pictureError = null"
+                />
             </v-col>
 
             <v-col cols="12" md="9" class="pb-4">
-                <v-card elevation="10">
-                    <v-card-item>
-                        <div class="d-flex align-center justify-space-between flex-wrap ga-3">
-                            <div class="d-flex align-center ga-3 flex-wrap">
-                                <v-avatar size="48" rounded="md" color="lightprimary">
-                                    <UserIcon class="text-primary" size="25" />
-                                </v-avatar>
-                                <h4 class="text-h4 mb-0">Informations personnelles</h4>
-                            </div>
-                            <div
-                                v-if="displayPublicId !== '—'"
-                                class="text-subtitle-1 text-medium-emphasis account-public-id"
-                                role="button"
-                                tabindex="0"
-                                @click="copyPublicId"
-                                @keydown.enter.prevent="copyPublicId"
-                            >
-                                <span class="font-weight-medium textPrimary">#{{ displayPublicId }}</span>
-                            </div>
-                        </div>
-                        <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
-                            Enregistrez via la barre d’actions en bas de page.
-                        </div>
-                        <AppAlert v-if="profileError" type="error" class="mt-4" closable @dismiss="profileError = null">
-                            {{ profileError }}
-                        </AppAlert>
-                        <div class="mt-6">
-                            <v-row dense>
-                                <v-col cols="12" md="6">
-                                    <v-label class="mb-2 font-weight-medium">Prénom</v-label>
-                                    <v-text-field v-model="firstName" color="primary" variant="outlined" hide-details :disabled="loading" />
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-label class="mb-2 font-weight-medium">Nom</v-label>
-                                    <v-text-field v-model="name" color="primary" variant="outlined" hide-details :disabled="loading" />
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-label class="mb-2 font-weight-medium">Téléphone</v-label>
-                                    <v-text-field
-                                        v-model="phone"
-                                        color="primary"
-                                        variant="outlined"
-                                        type="tel"
-                                        hide-details
-                                        :disabled="loading"
-                                    />
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-label class="mb-2 font-weight-medium">Date de naissance</v-label>
-                                    <AppDatePicker
-                                        v-model="birthDateModel"
-                                        :max="birthDateMax"
-                                        color="primary"
-                                        hide-details
-                                        :disabled="loading"
-                                    />
-                                </v-col>
-                                <v-col cols="12" md="5">
-                                    <v-label class="mb-2 font-weight-medium">Rue</v-label>
-                                    <v-text-field v-model="street" color="primary" variant="outlined" hide-details :disabled="loading" />
-                                </v-col>
-                                <v-col cols="12" md="2">
-                                    <v-label class="mb-2 font-weight-medium">N°</v-label>
-                                    <v-text-field
-                                        v-model="streetNumber"
-                                        color="primary"
-                                        variant="outlined"
-                                        hide-details
-                                        :disabled="loading"
-                                    />
-                                </v-col>
-                                <v-col cols="12" md="5">
-                                    <v-label class="mb-2 font-weight-medium">Pays</v-label>
-                                    <v-autocomplete
-                                        v-model="countryId"
-                                        :items="countries.items"
-                                        item-title="name"
-                                        item-value="id"
-                                        color="primary"
-                                        variant="outlined"
-                                        hide-details
-                                        clearable
-                                        auto-select-first
-                                        :loading="countries.loading"
-                                        :disabled="loading || (countries.loading && !countries.items.length)"
-                                        no-data-text="Aucun pays disponible"
-                                    />
-                                </v-col>
-                            </v-row>
-                        </div>
-                    </v-card-item>
-                </v-card>
+                <AccountPersonalCard
+                    v-model:first-name="firstName"
+                    v-model:name="name"
+                    v-model:phone="phone"
+                    v-model:birth-date="birthDate"
+                    v-model:street="street"
+                    v-model:street-number="streetNumber"
+                    v-model:country-id="countryId"
+                    :loading="loading"
+                    :countries="countries.items"
+                    :countries-loading="countries.loading"
+                    :public-id="displayPublicId"
+                    :error="profileError"
+                    :birth-date-max="birthDateMax"
+                    @copy-public-id="copyPublicId"
+                    @dismiss-error="profileError = null"
+                />
             </v-col>
 
             <v-col cols="12" md="9" class="pb-4">
-                <v-card elevation="10">
-                    <v-card-item>
-                        <div class="d-flex align-center ga-3 flex-wrap">
-                            <v-avatar size="48" rounded="md" color="lightprimary">
-                                <LockIcon class="text-primary" size="25" />
-                            </v-avatar>
-                            <h4 class="text-h4 mb-0">Informations du compte</h4>
-                        </div>
-                        <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
-                            Identifiants de connexion. Modifiez-les via l’icône crayon.
-                        </div>
-                        <AppAlert
-                            v-if="accountSuccess"
-                            color="success"
-                            variant="tonal"
-                            class="mt-4"
-                            closable
-                            :dismiss-ms="5000"
-                            @dismiss="accountSuccess = null"
-                        >
-                            {{ accountSuccess }}
-                        </AppAlert>
-                        <AppAlert v-if="accountError" type="error" class="mt-4" closable @dismiss="accountError = null">
-                            {{ accountError }}
-                        </AppAlert>
-                        <AppAlert v-if="pendingEmail" color="warning" variant="tonal" class="mt-4">
-                            Confirmation en attente pour <strong>{{ pendingEmail }}</strong
-                            >.
-                            <v-btn
-                                variant="text"
-                                color="warning"
-                                size="small"
-                                class="ml-1"
-                                @click="router.push({ path: '/auth/confirm-email-change', query: { email: pendingEmail, from: 'app' } })"
-                            >
-                                Saisir le code
-                            </v-btn>
-                        </AppAlert>
-                        <div class="mt-6">
-                            <v-row dense>
-                                <v-col cols="12" md="6">
-                                    <v-label class="mb-2 font-weight-medium">Nom d’utilisateur</v-label>
-                                    <v-text-field
-                                        :model-value="displayUsername"
-                                        color="primary"
-                                        variant="outlined"
-                                        hide-details
-                                        readonly
-                                        class="account-field-editable"
-                                        @click="openUsernameModal"
-                                    >
-                                        <template #append-inner>
-                                            <PencilIcon
-                                                size="18"
-                                                stroke-width="1.5"
-                                                class="text-medium-emphasis account-field-edit-icon"
-                                                @click.stop="openUsernameModal"
-                                            />
-                                        </template>
-                                    </v-text-field>
-                                </v-col>
-                                <v-col cols="12" md="6">
-                                    <v-label class="mb-2 font-weight-medium">E-mail</v-label>
-                                    <v-text-field
-                                        :model-value="displayEmail"
-                                        color="primary"
-                                        variant="outlined"
-                                        hide-details
-                                        readonly
-                                        class="account-field-editable"
-                                        @click="openEmailModal"
-                                    >
-                                        <template #append-inner>
-                                            <PencilIcon
-                                                size="18"
-                                                stroke-width="1.5"
-                                                class="text-medium-emphasis account-field-edit-icon"
-                                                @click.stop="openEmailModal"
-                                            />
-                                        </template>
-                                    </v-text-field>
-                                </v-col>
-                                <v-col v-if="showAccountPasswordField" cols="12" md="6">
-                                    <v-label class="mb-2 font-weight-medium">Mot de passe</v-label>
-                                    <v-text-field
-                                        model-value="••••••••"
-                                        color="primary"
-                                        variant="outlined"
-                                        hide-details
-                                        readonly
-                                        class="account-field-editable"
-                                        @click="openPasswordModal"
-                                    >
-                                        <template #append-inner>
-                                            <PencilIcon
-                                                size="18"
-                                                stroke-width="1.5"
-                                                class="text-medium-emphasis account-field-edit-icon"
-                                                @click.stop="openPasswordModal"
-                                            />
-                                        </template>
-                                    </v-text-field>
-                                </v-col>
-                            </v-row>
-                        </div>
-                    </v-card-item>
-                </v-card>
+                <AccountCredentialsCard
+                    :username="displayUsername"
+                    :email="displayEmail"
+                    :pending-email="pendingEmail"
+                    :show-password-field="showAccountPasswordField"
+                    :can-unlink-google="canUnlinkGoogle"
+                    :success="accountSuccess"
+                    :error="accountError"
+                    @edit-username="openUsernameModal"
+                    @edit-email="openEmailModal"
+                    @edit-password="openPasswordModal"
+                    @unlink-google="openUnlinkGoogleModal"
+                    @confirm-pending-email="
+                        router.push({ path: '/auth/confirm-email-change', query: { email: pendingEmail, from: 'app' } })
+                    "
+                    @dismiss-success="accountSuccess = null"
+                    @dismiss-error="accountError = null"
+                />
             </v-col>
 
             <v-col cols="12" md="9">
@@ -944,16 +778,18 @@ defineExpose({
                             <v-avatar size="48" rounded="md" color="lighterror">
                                 <TrashIcon class="text-error" size="25" />
                             </v-avatar>
-                            <h4 class="text-h4 mb-0">Zone danger</h4>
+                            <h4 class="text-h4 mb-0">{{ t('accounts.danger.title') }}</h4>
                         </div>
                         <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
-                            Cette action est définitive. Toutes vos données seront irrémédiablement effacées.
+                            {{ t('accounts.danger.subtitle') }}
                         </div>
                         <div class="d-flex align-center justify-space-between flex-wrap ga-3 mt-2">
                             <div class="text-subtitle-1 text-medium-emphasis text-13 pr-4">
-                                Vous ne pourrez plus vous connecter ni récupérer votre historique après suppression.
+                                {{ t('accounts.danger.warning') }}
                             </div>
-                            <v-btn color="error" flat class="flex-shrink-0" @click="openDeleteModal">Supprimer mon compte</v-btn>
+                            <v-btn color="error" flat class="flex-shrink-0" @click="openDeleteModal">{{
+                                t('accounts.danger.deleteAccount')
+                            }}</v-btn>
                         </div>
                     </v-card-item>
                 </v-card>
@@ -962,7 +798,7 @@ defineExpose({
 
         <AppModalBase
             v-model="pictureLightboxOpen"
-            title="Photo de profil"
+            :title="t('accounts.picture.lightbox.title')"
             :max-width="560"
             :scrollable="false"
             :show-footer="false"
@@ -971,7 +807,7 @@ defineExpose({
             <div class="d-flex justify-center">
                 <v-img
                     :src="avatarSrc || DEFAULT_AVATAR_SRC"
-                    alt="Photo de profil"
+                    :alt="t('accounts.picture.alt')"
                     max-width="100%"
                     max-height="70vh"
                     contain
@@ -982,8 +818,8 @@ defineExpose({
 
         <AppModalBase
             v-model="avatarOpen"
-            title="Choisir un avatar"
-            subtitle="Sélectionnez un avatar du catalogue."
+            :title="t('accounts.picture.catalogModal.title')"
+            :subtitle="t('accounts.picture.catalogModal.subtitle')"
             :max-width="520"
             :scrollable="true"
         >
@@ -1004,21 +840,19 @@ defineExpose({
             </div>
 
             <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="pictureSaving" @click="close">Annuler</v-btn>
+                <v-btn variant="text" flat :disabled="pictureSaving" @click="close">{{ t('common.cancel') }}</v-btn>
                 <v-spacer />
                 <v-btn color="primary" flat :loading="pictureSaving" :disabled="!avatarDraft" @click="confirmCatalogAvatar">
-                    Appliquer
+                    {{ t('accounts.picture.catalogModal.apply') }}
                 </v-btn>
             </template>
         </AppModalBase>
 
         <AppModalBase
             v-model="usernameOpen"
-            :title="usernameModalIncludesPassword ? 'Créer vos identifiants' : 'Modifier le nom d’utilisateur'"
+            :title="usernameModalIncludesPassword ? t('accounts.usernameModal.createTitle') : t('accounts.usernameModal.editTitle')"
             :subtitle="
-                usernameModalIncludesPassword
-                    ? 'Choisissez un nom d’utilisateur et un mot de passe pour vous connecter sans Google.'
-                    : '3–30 caractères : lettres minuscules, chiffres, . _ -'
+                usernameModalIncludesPassword ? t('accounts.usernameModal.createSubtitle') : t('accounts.usernameModal.editSubtitle')
             "
             :max-width="440"
             :scrollable="false"
@@ -1027,7 +861,7 @@ defineExpose({
                 <AppAlert v-if="usernameError" type="error" class="mb-4" closable @dismiss="usernameError = null">
                     {{ usernameError }}
                 </AppAlert>
-                <v-label class="mb-2 font-weight-medium">Nom d’utilisateur</v-label>
+                <v-label class="mb-2 font-weight-medium">{{ t('accounts.usernameModal.fields.username') }}</v-label>
                 <v-text-field
                     v-model="usernameDraft"
                     color="primary"
@@ -1037,8 +871,8 @@ defineExpose({
                     :class="usernameModalIncludesPassword ? 'mb-2' : undefined"
                 />
                 <template v-if="usernameModalIncludesPassword">
-                    <div class="text-caption text-medium-emphasis mb-2">3–30 caractères : lettres minuscules, chiffres, . _ -</div>
-                    <v-label class="mb-1 font-weight-medium">Mot de passe</v-label>
+                    <div class="text-caption text-medium-emphasis mb-2">{{ t('accounts.usernameModal.usernameHint') }}</div>
+                    <v-label class="mb-1 font-weight-medium">{{ t('accounts.usernameModal.fields.password') }}</v-label>
                     <v-text-field
                         v-model="usernamePassword"
                         color="primary"
@@ -1049,7 +883,7 @@ defineExpose({
                         hide-details
                         class="mb-2"
                     />
-                    <v-label class="mb-1 font-weight-medium">Confirmer le mot de passe</v-label>
+                    <v-label class="mb-1 font-weight-medium">{{ t('accounts.usernameModal.fields.confirmPassword') }}</v-label>
                     <v-text-field
                         v-model="usernamePasswordConfirm"
                         color="primary"
@@ -1063,16 +897,18 @@ defineExpose({
             </form>
 
             <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="usernameSaving" @click="close">Annuler</v-btn>
+                <v-btn variant="text" flat :disabled="usernameSaving" @click="close">{{ t('common.cancel') }}</v-btn>
                 <v-spacer />
-                <v-btn color="primary" flat type="submit" form="account-username-form" :loading="usernameSaving">Enregistrer</v-btn>
+                <v-btn color="primary" flat type="submit" form="account-username-form" :loading="usernameSaving">{{
+                    t('common.save')
+                }}</v-btn>
             </template>
         </AppModalBase>
 
         <AppModalBase
             v-model="emailOpen"
-            :title="currentEmail ? 'Changer l’e-mail' : 'Ajouter un e-mail'"
-            subtitle="Un code de confirmation sera envoyé à la nouvelle adresse."
+            :title="currentEmail ? t('accounts.emailModal.changeTitle') : t('accounts.emailModal.addTitle')"
+            :subtitle="t('accounts.emailModal.subtitle')"
             :max-width="440"
             :scrollable="false"
         >
@@ -1080,7 +916,9 @@ defineExpose({
                 <AppAlert v-if="emailError" type="error" class="mb-3" closable @dismiss="emailError = null">
                     {{ emailError }}
                 </AppAlert>
-                <v-label class="mb-1 font-weight-medium">{{ currentEmail ? 'Nouvel e-mail' : 'E-mail' }}</v-label>
+                <v-label class="mb-1 font-weight-medium">{{
+                    currentEmail ? t('accounts.emailModal.fields.newEmail') : t('accounts.emailModal.fields.email')
+                }}</v-label>
                 <v-text-field
                     v-model="emailDraft"
                     color="primary"
@@ -1093,7 +931,7 @@ defineExpose({
                     :disabled="emailSaving"
                 />
                 <template v-if="showEmailPassword">
-                    <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
+                    <v-label class="mb-1 font-weight-medium">{{ t('accounts.emailModal.fields.currentPassword') }}</v-label>
                     <v-text-field
                         v-model="emailCurrentPassword"
                         color="primary"
@@ -1106,13 +944,13 @@ defineExpose({
                     />
                 </template>
                 <template v-else-if="showEmailGoogle">
-                    <p class="text-subtitle-2 text-medium-emphasis mb-3">Compte Google : confirmez avec Google pour changer l’e-mail.</p>
+                    <p class="text-subtitle-2 text-medium-emphasis mb-3">{{ t('accounts.emailModal.googleHint') }}</p>
                     <GoogleSignInButton @credential="onEmailGoogleCredential" />
                 </template>
             </form>
 
             <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="emailSaving" @click="close">Annuler</v-btn>
+                <v-btn variant="text" flat :disabled="emailSaving" @click="close">{{ t('common.cancel') }}</v-btn>
                 <v-spacer />
                 <v-btn
                     v-if="showEmailPassword"
@@ -1123,15 +961,15 @@ defineExpose({
                     :loading="emailSaving"
                     :disabled="!canSubmitEmailChange"
                 >
-                    Continuer
+                    {{ t('accounts.emailModal.continue') }}
                 </v-btn>
             </template>
         </AppModalBase>
 
         <AppModalBase
             v-model="passwordOpen"
-            :title="requiresCurrentPassword ? 'Modifier le mot de passe' : 'Définir un mot de passe'"
-            subtitle="Après changement, toutes les sessions sont invalidées."
+            :title="requiresCurrentPassword ? t('accounts.passwordModal.changeTitle') : t('accounts.passwordModal.setTitle')"
+            :subtitle="t('accounts.passwordModal.subtitle')"
             :max-width="440"
             :scrollable="false"
         >
@@ -1140,7 +978,7 @@ defineExpose({
                     {{ passwordError }}
                 </AppAlert>
                 <template v-if="requiresCurrentPassword">
-                    <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
+                    <v-label class="mb-1 font-weight-medium">{{ t('accounts.passwordModal.fields.currentPassword') }}</v-label>
                     <v-text-field
                         v-model="currentPassword"
                         color="primary"
@@ -1152,7 +990,7 @@ defineExpose({
                         class="mb-2"
                     />
                 </template>
-                <v-label class="mb-1 font-weight-medium">Nouveau mot de passe</v-label>
+                <v-label class="mb-1 font-weight-medium">{{ t('accounts.passwordModal.fields.newPassword') }}</v-label>
                 <v-text-field
                     v-model="newPassword"
                     color="primary"
@@ -1163,7 +1001,7 @@ defineExpose({
                     hide-details
                     class="mb-2"
                 />
-                <v-label class="mb-1 font-weight-medium">Confirmer le mot de passe</v-label>
+                <v-label class="mb-1 font-weight-medium">{{ t('accounts.passwordModal.fields.confirmPassword') }}</v-label>
                 <v-text-field
                     v-model="confirmPassword"
                     color="primary"
@@ -1176,50 +1014,94 @@ defineExpose({
             </form>
 
             <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="passwordSaving" @click="close">Annuler</v-btn>
+                <v-btn variant="text" flat :disabled="passwordSaving" @click="close">{{ t('common.cancel') }}</v-btn>
                 <v-spacer />
-                <v-btn color="primary" flat type="submit" form="account-password-form" :loading="passwordSaving">Enregistrer</v-btn>
+                <v-btn color="primary" flat type="submit" form="account-password-form" :loading="passwordSaving">{{
+                    t('common.save')
+                }}</v-btn>
+            </template>
+        </AppModalBase>
+
+        <AppModalBase
+            v-model="unlinkGoogleOpen"
+            :title="t('accounts.unlinkGoogleModal.title')"
+            :subtitle="t('accounts.unlinkGoogleModal.subtitle')"
+            :max-width="440"
+            :scrollable="false"
+        >
+            <form id="account-unlink-google-form" @submit.prevent="submitUnlinkGoogle">
+                <AppAlert v-if="unlinkGoogleError" type="error" class="mb-3" closable @dismiss="unlinkGoogleError = null">
+                    {{ unlinkGoogleError }}
+                </AppAlert>
+                <v-label class="mb-1 font-weight-medium">{{ t('accounts.unlinkGoogleModal.fields.currentPassword') }}</v-label>
+                <v-text-field
+                    v-model="unlinkGooglePassword"
+                    color="primary"
+                    variant="outlined"
+                    type="password"
+                    autocomplete="current-password"
+                    density="comfortable"
+                    hide-details
+                    :disabled="unlinkGoogleSaving"
+                />
+            </form>
+
+            <template #footer="{ close }">
+                <v-btn variant="text" flat :disabled="unlinkGoogleSaving" @click="close">{{ t('common.cancel') }}</v-btn>
+                <v-spacer />
+                <v-btn
+                    color="error"
+                    flat
+                    type="submit"
+                    form="account-unlink-google-form"
+                    :loading="unlinkGoogleSaving"
+                    :disabled="!unlinkGooglePassword"
+                >
+                    {{ t('accounts.unlinkGoogleModal.confirm') }}
+                </v-btn>
             </template>
         </AppModalBase>
 
         <AppModalBase
             v-model="saveConfirmOpen"
-            title="Enregistrer les modifications"
-            subtitle="Les changements seront appliqués à votre profil."
+            :title="t('accounts.saveConfirmModal.title')"
+            :subtitle="t('accounts.saveConfirmModal.subtitle')"
             :max-width="440"
             :scrollable="false"
         >
-            <p class="text-body-1 mb-0">Voulez-vous vraiment enregistrer les modifications effectuées ?</p>
+            <p class="text-body-1 mb-0">{{ t('accounts.saveConfirmModal.body') }}</p>
 
             <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="profileSaving" @click="close">Retour</v-btn>
+                <v-btn variant="text" flat :disabled="profileSaving" @click="close">{{ t('accounts.saveConfirmModal.back') }}</v-btn>
                 <v-spacer />
-                <v-btn color="primary" flat :loading="profileSaving" @click="confirmSaveProfile">Enregistrer</v-btn>
+                <v-btn color="primary" flat :loading="profileSaving" @click="confirmSaveProfile">{{
+                    t('accounts.saveConfirmModal.confirm')
+                }}</v-btn>
             </template>
         </AppModalBase>
 
         <AppModalBase
             v-model="cancelConfirmOpen"
-            title="Annuler les modifications"
-            subtitle="Les changements non enregistrés seront perdus."
+            :title="t('accounts.cancelConfirmModal.title')"
+            :subtitle="t('accounts.cancelConfirmModal.subtitle')"
             :max-width="440"
             :scrollable="false"
         >
-            <p class="text-body-1 mb-0">Voulez-vous vraiment annuler les modifications effectuées ?</p>
+            <p class="text-body-1 mb-0">{{ t('accounts.cancelConfirmModal.body') }}</p>
 
             <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="cancelConfirming" @click="close">Retour</v-btn>
+                <v-btn variant="text" flat :disabled="cancelConfirming" @click="close">{{ t('accounts.cancelConfirmModal.back') }}</v-btn>
                 <v-spacer />
                 <v-btn class="bg-lighterror text-error" flat :loading="cancelConfirming" @click="confirmResetProfile">
-                    Annuler les modifications
+                    {{ t('accounts.cancelConfirmModal.confirm') }}
                 </v-btn>
             </template>
         </AppModalBase>
 
         <AppModalBase
             v-model="deleteOpen"
-            title="Supprimer définitivement le compte"
-            subtitle="Cette action est irréversible."
+            :title="t('accounts.deleteModal.title')"
+            :subtitle="t('accounts.deleteModal.subtitle')"
             :max-width="440"
             :scrollable="false"
         >
@@ -1228,7 +1110,7 @@ defineExpose({
                     {{ deleteError }}
                 </AppAlert>
                 <p class="text-body-1 mb-4">
-                    Confirmez votre identité pour supprimer définitivement votre compte et toutes les données associées.
+                    {{ t('accounts.deleteModal.body') }}
                 </p>
 
                 <template v-if="showDeleteGoogle">
@@ -1240,14 +1122,14 @@ defineExpose({
                         closable
                         @dismiss="clearDeleteGoogleCredential"
                     >
-                        Compte Google vérifié. Cliquez sur « Supprimer définitivement » pour confirmer.
+                        {{ t('accounts.deleteModal.googleVerified') }}
                     </AppAlert>
                     <GoogleSignInButton v-else class="mb-4" @credential="onDeleteGoogleCredential" />
                 </template>
 
                 <template v-if="showDeletePassword">
                     <div v-if="showDeleteGoogle && !deleteGoogleIdToken" class="d-flex align-center text-center mb-3">
-                        <div class="text-subtitle-2 text-medium-emphasis w-100">ou</div>
+                        <div class="text-subtitle-2 text-medium-emphasis w-100">{{ t('accounts.deleteModal.or') }}</div>
                     </div>
 
                     <v-btn
@@ -1257,11 +1139,11 @@ defineExpose({
                         class="mb-2 px-0"
                         @click="deletePasswordExpanded = true"
                     >
-                        Utiliser un mot de passe
+                        {{ t('accounts.deleteModal.usePassword') }}
                     </v-btn>
 
                     <template v-if="deletePasswordExpanded && !deleteGoogleIdToken">
-                        <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
+                        <v-label class="mb-1 font-weight-medium">{{ t('accounts.deleteModal.fields.currentPassword') }}</v-label>
                         <v-text-field
                             v-model="deletePassword"
                             color="primary"
@@ -1277,7 +1159,7 @@ defineExpose({
             </form>
 
             <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="deleteSaving" @click="close">Annuler</v-btn>
+                <v-btn variant="text" flat :disabled="deleteSaving" @click="close">{{ t('common.cancel') }}</v-btn>
                 <v-spacer />
                 <v-btn
                     color="error"
@@ -1287,7 +1169,7 @@ defineExpose({
                     :loading="deleteSaving"
                     :disabled="!canSubmitDelete && !deleteSaving"
                 >
-                    Supprimer définitivement
+                    {{ t('accounts.deleteModal.confirm') }}
                 </v-btn>
             </template>
         </AppModalBase>

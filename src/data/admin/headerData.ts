@@ -9,53 +9,53 @@ import proUser1 from '@/assets/images/svgs/icon-account.svg';
 const notifications: notificationType[] = [
     {
         avatar: user1,
-        title: 'Bienvenue sur Spend.Up',
-        subtitle: 'Votre espace est prêt'
+        titleKey: 'header.notifications.items.welcome.title',
+        subtitleKey: 'header.notifications.items.welcome.subtitle'
     },
     {
         avatar: user2,
-        title: 'Conseil du jour',
-        subtitle: 'Suivez vos dépenses chaque semaine'
+        titleKey: 'header.notifications.items.tip.title',
+        subtitleKey: 'header.notifications.items.tip.subtitle'
     },
     {
         avatar: user3,
-        title: 'Rappel',
-        subtitle: 'Pensez à vérifier vos comptes'
+        titleKey: 'header.notifications.items.reminder.title',
+        subtitleKey: 'header.notifications.items.reminder.subtitle'
     }
 ];
 
 const profileDD: profileType[] = [
     {
         avatar: proUser1,
-        title: 'Comptes',
-        subtitle: 'Compte & sécurité',
+        titleKey: 'header.profile.menu.accounts.title',
+        subtitleKey: 'header.profile.menu.accounts.subtitle',
         href: '/app/comptes'
     }
 ];
 
 const searchSugg: searchType[] = [
     {
-        title: 'Tableau de bord',
+        titleKey: 'header.search.suggestions.dashboard',
         href: '/app'
     },
     {
-        title: 'Comptes',
+        titleKey: 'header.search.suggestions.accounts',
         href: '/app/comptes'
     },
     {
-        title: 'Applications',
+        titleKey: 'header.search.suggestions.applications',
         href: '/app/applications'
     },
     {
-        title: 'Accueil',
+        titleKey: 'header.search.suggestions.home',
         href: '/'
     },
     {
-        title: 'Fonctionnalités',
+        titleKey: 'header.search.suggestions.features',
         href: '/fonctionnalites'
     },
     {
-        title: 'À propos',
+        titleKey: 'header.search.suggestions.about',
         href: '/a-propos'
     }
 ];

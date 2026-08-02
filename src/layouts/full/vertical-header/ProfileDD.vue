@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { AtIcon, HashIcon, MailIcon, PhoneIcon } from 'vue-tabler-icons';
+import { useI18n } from 'vue-i18n';
 import { profileDD } from '@/data/admin/headerData';
 import { useAuthStore, useProfileAvatarUrl } from '@/features/auth';
 
+const { t } = useI18n();
 const authStore = useAuthStore();
 const { avatarSrc } = useProfileAvatarUrl();
 
-const displayName = computed(() => authStore.displayName || 'Utilisateur');
+const displayName = computed(() => authStore.displayName || t('header.profile.fallbackName'));
 
 const profileDetails = computed(() => {
     const user = authStore.user;
@@ -42,7 +44,7 @@ const profileDetails = computed(() => {
         </template>
         <v-sheet rounded="md" width="360" elevation="10">
             <div class="px-8 pt-6">
-                <h6 class="text-h5 font-weight-medium">Profil utilisateur</h6>
+                <h6 class="text-h5 font-weight-medium">{{ t('header.profile.title') }}</h6>
                 <div class="d-flex align-center mt-4 pb-6">
                     <v-avatar size="80">
                         <img :src="avatarSrc" width="80" height="80" alt="user" class="obj-cover" />
@@ -58,20 +60,20 @@ const profileDetails = computed(() => {
                 <v-divider></v-divider>
             </div>
             <v-list class="py-0 theme-list" lines="two">
-                <v-list-item v-for="item in profileDD" :key="item.title" class="py-4 px-8 custom-text-primary" :to="item.href">
+                <v-list-item v-for="item in profileDD" :key="item.titleKey" class="py-4 px-8 custom-text-primary" :to="item.href">
                     <template v-slot:prepend>
                         <v-avatar size="48" color="lightprimary" class="mr-3" rounded="md">
-                            <img :src="item.avatar" width="24" height="24" :alt="item.title" />
+                            <img :src="item.avatar" width="24" height="24" :alt="t(item.titleKey)" />
                         </v-avatar>
                     </template>
                     <div>
-                        <h6 class="text-subtitle-1 font-weight-bold mb-2 custom-title">{{ item.title }}</h6>
+                        <h6 class="text-subtitle-1 font-weight-bold mb-2 custom-title">{{ t(item.titleKey) }}</h6>
                     </div>
-                    <p class="text-subtitle-1 font-weight-regular textSecondary">{{ item.subtitle }}</p>
+                    <p class="text-subtitle-1 font-weight-regular textSecondary">{{ t(item.subtitleKey) }}</p>
                 </v-list-item>
             </v-list>
             <div class="pt-4 pb-6 px-8 text-center">
-                <v-btn color="primary" variant="outlined" block @click="authStore.logout()">Se déconnecter</v-btn>
+                <v-btn color="primary" variant="outlined" block @click="authStore.logout()">{{ t('header.profile.logout') }}</v-btn>
             </div>
         </v-sheet>
     </v-menu>

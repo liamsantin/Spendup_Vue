@@ -1,114 +1,67 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { PaletteIcon } from 'vue-tabler-icons';
-import { ThemeTab } from '@/features/applications';
-import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
+import { useI18n } from 'vue-i18n';
+import { LanguageIcon, PaletteIcon } from 'vue-tabler-icons';
+import { LanguageTab, ThemeTab } from '@/features/applications';
+import TabbedActionShell from '@/components/shared/TabbedActionShell.vue';
 
-type ThemeTabExpose = {
+type SettingsTabExpose = {
     saveSettings: () => void;
     resetSettings: () => void;
     loading: boolean;
 };
 
+const { t } = useI18n();
+
 const tab = ref('Theme');
-const themeTabRef = ref<ThemeTabExpose | null>(null);
+const themeTabRef = ref<SettingsTabExpose | null>(null);
+const languageTabRef = ref<SettingsTabExpose | null>(null);
 const themeDirty = ref(false);
+const languageDirty = ref(false);
+
+const tabs = computed(() => [
+    { value: 'Theme', label: t('applications.tabs.theme'), icon: PaletteIcon },
+    { value: 'Language', label: t('applications.tabs.language'), icon: LanguageIcon }
+]);
 
 const isThemeTab = computed(() => tab.value === 'Theme');
-const saveLoading = computed(() => !!themeTabRef.value?.loading);
-const saveDisabled = computed(() => !isThemeTab.value || saveLoading.value || !themeDirty.value);
+const isLanguageTab = computed(() => tab.value === 'Language');
+
+const activeTabRef = computed(() => (isThemeTab.value ? themeTabRef.value : isLanguageTab.value ? languageTabRef.value : null));
+const activeDirty = computed(() => (isThemeTab.value ? themeDirty.value : isLanguageTab.value ? languageDirty.value : false));
+
+const saveLoading = computed(() => !!activeTabRef.value?.loading);
+const saveDisabled = computed(() => !activeTabRef.value || saveLoading.value || !activeDirty.value);
+const cancelDisabled = computed(() => !activeTabRef.value || saveLoading.value || !activeDirty.value);
 
 function onSave() {
-    if (!isThemeTab.value || !themeTabRef.value || saveLoading.value) return;
-    themeTabRef.value.saveSettings();
+    if (!activeTabRef.value || saveLoading.value) return;
+    activeTabRef.value.saveSettings();
 }
 
 function onCancel() {
-    if (!isThemeTab.value || !themeTabRef.value || saveLoading.value) return;
-    themeTabRef.value.resetSettings();
+    if (!activeTabRef.value || saveLoading.value) return;
+    activeTabRef.value.resetSettings();
 }
 </script>
 
 <template>
-    <div class="settings-page">
-        <v-card elevation="10" rounded="md" class="settings-page-card">
-            <v-tabs v-model="tab" bg-color="grey100" density="comfortable" height="52" color="primary" class="settings-tabs flex-grow-0">
-                <v-tab value="Theme" class="text-medium-emphasis">
-                    <PaletteIcon class="mr-2" size="18" />
-                    Thème
-                </v-tab>
-            </v-tabs>
-
-            <v-divider class="flex-grow-0" />
-
-            <perfect-scrollbar class="settings-tabs-scroll" :options="PERFECT_SCROLLBAR_OPTIONS">
-                <v-card-text class="pa-sm-6 pa-3">
-                    <v-window v-model="tab">
-                        <v-window-item value="Theme">
-                            <ThemeTab ref="themeTabRef" @dirty="themeDirty = $event" />
-                        </v-window-item>
-                    </v-window>
-                </v-card-text>
-            </perfect-scrollbar>
-
-            <v-divider class="flex-grow-0" />
-
-            <div class="settings-actions-bar">
-                <v-btn color="primary" class="mr-3" flat :loading="saveLoading" :disabled="saveDisabled" @click="onSave">
-                    Enregistrer
-                </v-btn>
-                <v-btn class="bg-lighterror text-error" flat :disabled="!isThemeTab || saveLoading || !themeDirty" @click="onCancel">
-                    Annuler
-                </v-btn>
-            </div>
-        </v-card>
-    </div>
+    <TabbedActionShell
+        v-model="tab"
+        :tabs="tabs"
+        :save-disabled="saveDisabled"
+        :cancel-disabled="cancelDisabled"
+        :save-loading="saveLoading"
+        @save="onSave"
+        @cancel="onCancel"
+    >
+        <v-window v-model="tab">
+            <v-window-item value="Theme">
+                <ThemeTab ref="themeTabRef" @dirty="themeDirty = $event" />
+            </v-window-item>
+            <v-window-item value="Language">
+                <LanguageTab ref="languageTabRef" @dirty="languageDirty = $event" />
+            </v-window-item>
+        </v-window>
+    </TabbedActionShell>
 </template>
-
-<style scoped>
-.settings-page {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.settings-page-card {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-@media screen and (max-width: 767px) {
-    .settings-page {
-        width: 100vw;
-        margin-left: calc(50% - 50vw);
-    }
-
-    .settings-page-card {
-        border-radius: 0 !important;
-    }
-}
-
-.settings-tabs :deep(.v-tab) {
-    min-height: 52px;
-    font-size: 0.875rem;
-}
-
-.settings-tabs-scroll {
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 0;
-}
-
-.settings-actions-bar {
-    flex-shrink: 0;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 12px 24px;
-    background: rgb(var(--v-theme-surface));
-}
-</style>

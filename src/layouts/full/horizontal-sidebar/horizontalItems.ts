@@ -19,19 +19,20 @@ export interface menu {
     type?: string;
 }
 
+/** Menu horizontal /app — title = clés i18n. */
 const horizontalItems: menu[] = [
     {
-        title: 'Tableau de bord',
+        title: 'nav.items.dashboard',
         icon: LayoutDashboardIcon,
         to: '/app'
     },
     {
-        title: 'Comptes',
+        title: 'nav.items.accounts',
         icon: UserCircleIcon,
         to: '/app/comptes'
     },
     {
-        title: 'Applications',
+        title: 'nav.items.applications',
         icon: AppsIcon,
         to: '/app/applications'
     }

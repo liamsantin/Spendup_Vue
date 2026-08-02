@@ -3,69 +3,29 @@ import { computed, ref } from 'vue';
 import { router } from '@/router';
 import { authApi, ApiError } from '@/features/auth/api';
 import type { AuthSession, AuthTokens, Me, UpdateProfilePayload } from '@/features/auth/types';
+import {
+    clearLegacyPendingPassword,
+    clearStoredTokens,
+    isAccessExpired,
+    readAccessToken,
+    readAndClearLoginNotice,
+    readExpiresAt,
+    readPendingEmail,
+    readRefreshToken,
+    writeLoginNotice,
+    writePendingEmail,
+    writeTokens
+} from '@/features/auth/session-storage';
+import { i18n } from '@/plugins/i18n';
+
+function t(key: string) {
+    return i18n.global.t(key);
+}
 
 export const APP_HOME_ROUTE = '/app';
 
-const REFRESH_KEY = 'spendup_refresh_token';
-const ACCESS_KEY = 'spendup_access_token';
-const EXPIRES_AT_KEY = 'spendup_access_expires_at';
-const PENDING_EMAIL_KEY = 'spendup_pending_email';
-const LOGIN_NOTICE_KEY = 'spendup_login_notice';
-/** Marge avant expiration pour déclencher un refresh proactif. */
-const ACCESS_EXPIRY_SKEW_MS = 30_000;
-
 /** Mot de passe post-inscription — mémoire seule (jamais sessionStorage). */
 let pendingPasswordMemory: string | null = null;
-
-function readRefreshToken(): string | null {
-    return localStorage.getItem(REFRESH_KEY);
-}
-
-function readAccessToken(): string | null {
-    return sessionStorage.getItem(ACCESS_KEY);
-}
-
-function readExpiresAt(): string | null {
-    return sessionStorage.getItem(EXPIRES_AT_KEY);
-}
-
-function readPendingEmail(): string | null {
-    return sessionStorage.getItem(PENDING_EMAIL_KEY);
-}
-
-function writePendingEmail(email: string | null) {
-    if (email) {
-        sessionStorage.setItem(PENDING_EMAIL_KEY, email);
-    } else {
-        sessionStorage.removeItem(PENDING_EMAIL_KEY);
-    }
-}
-
-function writeLoginNotice(message: string | null) {
-    if (message) {
-        sessionStorage.setItem(LOGIN_NOTICE_KEY, message);
-    } else {
-        sessionStorage.removeItem(LOGIN_NOTICE_KEY);
-    }
-}
-
-function readAndClearLoginNotice(): string | null {
-    const message = sessionStorage.getItem(LOGIN_NOTICE_KEY);
-    sessionStorage.removeItem(LOGIN_NOTICE_KEY);
-    return message;
-}
-
-/** Nettoyage legacy : ancien stockage plaintext du mot de passe. */
-function clearLegacyPendingPassword() {
-    sessionStorage.removeItem('spendup_pending_password');
-}
-
-function isAccessExpired(expiresAt: string | null | undefined, skewMs = ACCESS_EXPIRY_SKEW_MS): boolean {
-    if (!expiresAt) return false;
-    const ts = Date.parse(expiresAt);
-    if (Number.isNaN(ts)) return false;
-    return Date.now() >= ts - skewMs;
-}
 
 export const useAuthStore = defineStore('auth', () => {
     clearLegacyPendingPassword();
@@ -114,13 +74,7 @@ export const useAuthStore = defineStore('auth', () => {
         accessToken.value = tokens.accessToken;
         refreshToken.value = tokens.refreshToken;
         expiresAt.value = tokens.expiresAt || null;
-        sessionStorage.setItem(ACCESS_KEY, tokens.accessToken);
-        localStorage.setItem(REFRESH_KEY, tokens.refreshToken);
-        if (tokens.expiresAt) {
-            sessionStorage.setItem(EXPIRES_AT_KEY, tokens.expiresAt);
-        } else {
-            sessionStorage.removeItem(EXPIRES_AT_KEY);
-        }
+        writeTokens(tokens.accessToken, tokens.refreshToken, tokens.expiresAt || null);
     }
 
     function clearSession() {
@@ -130,10 +84,7 @@ export const useAuthStore = defineStore('auth', () => {
         twoFactorToken.value = null;
         clearPendingRegistration();
         user.value = null;
-        sessionStorage.removeItem(ACCESS_KEY);
-        sessionStorage.removeItem(EXPIRES_AT_KEY);
-        localStorage.removeItem(REFRESH_KEY);
-        clearLegacyPendingPassword();
+        clearStoredTokens();
     }
 
     async function applySession(session: AuthSession): Promise<'ok' | '2fa'> {
@@ -212,7 +163,7 @@ export const useAuthStore = defineStore('auth', () => {
         const password = pendingPassword.value;
         clearPendingRegistration();
         if (!password) {
-            await goToLogin('E-mail confirmé. Veuillez vous connecter.');
+            await goToLogin(t('auth.notices.emailConfirmed'));
             return;
         }
         await login(email, password);
@@ -228,17 +179,17 @@ export const useAuthStore = defineStore('auth', () => {
 
     async function resetPassword(token: string, newPassword: string) {
         await authApi.resetPassword(token, newPassword);
-        await goToLogin('Mot de passe mis à jour. Veuillez vous connecter.');
+        await goToLogin(t('auth.notices.passwordUpdated'));
     }
 
     async function confirmEmailChange(email: string, code: string) {
         await authApi.confirmEmailChange(email, code);
-        await forceReLogin('E-mail mis à jour. Veuillez vous reconnecter.');
+        await forceReLogin(t('auth.notices.emailUpdated'));
     }
 
     async function verifyTwoFactor(code: string) {
         if (!twoFactorToken.value) {
-            throw new Error('Session 2FA expirée. Veuillez vous reconnecter.');
+            throw new Error(t('auth.notices.twoFactorExpired'));
         }
         const tokens = await authApi.verify2fa(twoFactorToken.value, code);
         setTokens(tokens);
@@ -283,7 +234,7 @@ export const useAuthStore = defineStore('auth', () => {
     async function revokeAllDevices() {
         const token = await requireAccessToken();
         await authApi.revokeAllDevices(token);
-        await forceReLogin('Toutes les sessions ont été déconnectées. Veuillez vous reconnecter.');
+        await forceReLogin(t('auth.notices.allSessionsRevoked'));
     }
 
     async function refreshSession(): Promise<boolean> {
@@ -372,7 +323,13 @@ export const useAuthStore = defineStore('auth', () => {
     async function changePassword(currentPassword: string | null, newPassword: string, reLoginMessage?: string) {
         const token = await requireAccessToken();
         await authApi.changePassword(token, currentPassword, newPassword);
-        await forceReLogin(reLoginMessage ?? 'Mot de passe mis à jour. Veuillez vous reconnecter.');
+        await forceReLogin(reLoginMessage ?? t('auth.notices.passwordUpdatedRelogin'));
+    }
+
+    async function unlinkGoogle(currentPassword: string) {
+        const token = await requireAccessToken();
+        await authApi.unlinkGoogle(token, currentPassword);
+        await fetchMe();
     }
 
     async function deleteAccount(payload: { currentPassword?: string; googleIdToken?: string }) {
@@ -381,7 +338,7 @@ export const useAuthStore = defineStore('auth', () => {
             currentPassword: payload.currentPassword,
             googleIdToken: payload.googleIdToken
         });
-        await forceReLogin('Votre compte a été définitivement supprimé.');
+        await forceReLogin(t('auth.notices.accountDeleted'));
     }
 
     async function ensureAccessToken(): Promise<string | null> {
@@ -484,6 +441,7 @@ export const useAuthStore = defineStore('auth', () => {
         setUsername,
         changeEmail,
         changePassword,
+        unlinkGoogle,
         deleteAccount,
         ensureAccessToken,
         requireAccessToken,

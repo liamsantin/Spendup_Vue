@@ -4,12 +4,12 @@ import { computed, ref, watch } from 'vue';
 const props = withDefaults(
     defineProps<{
         modelValue?: string;
-        /** Sélecteur CSS unique si plusieurs OTP sur la même page */
+        /** Classe optionnelle sur le conteneur (compat / styles ciblés). */
         fieldClass?: string;
     }>(),
     {
         modelValue: '',
-        fieldClass: 'otp-digits'
+        fieldClass: ''
     }
 );
 
@@ -19,8 +19,16 @@ const emit = defineEmits<{
 }>();
 
 const digits = ref(['', '', '', '', '', '']);
+const inputRefs = ref<(HTMLInputElement | null)[]>([]);
 
 const code = computed(() => digits.value.join(''));
+
+function setInputRef(el: unknown, index: number) {
+    const root = el as { $el?: HTMLElement } | HTMLElement | null;
+    const host = root && typeof root === 'object' && '$el' in root ? root.$el : (root as HTMLElement | null);
+    const input = host?.querySelector?.('input') ?? (host instanceof HTMLInputElement ? host : null);
+    inputRefs.value[index] = input;
+}
 
 function emitCode(value: string, completed: boolean) {
     if (value !== props.modelValue) {
@@ -44,8 +52,7 @@ watch(
 );
 
 function focusInput(index: number) {
-    const inputs = document.querySelectorAll<HTMLInputElement>(`.${props.fieldClass} input`);
-    inputs[index]?.focus();
+    inputRefs.value[index]?.focus();
 }
 
 function onDigitUpdate(index: number, raw: string | number | null) {
@@ -82,6 +89,7 @@ function onPaste(event: ClipboardEvent) {
         <VTextField
             v-for="(_, i) in digits"
             :key="i"
+            :ref="(el) => setInputRef(el, i)"
             :model-value="digits[i]"
             maxlength="1"
             inputmode="numeric"

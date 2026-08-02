@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { useI18n } from 'vue-i18n';
+import { useAppSettingsStore, type PersistedSettings } from '@/app/stores/app-settings-store';
+import { DARK_THEME_OPTIONS, LIGHT_THEME_OPTIONS } from '@/features/applications/themeOptions';
 import {
     CheckIcon,
     LayoutColumnsIcon,
@@ -13,42 +15,30 @@ import {
     LayoutIcon
 } from 'vue-tabler-icons';
 
-type SettingsSnapshot = {
-    actTheme: string;
-    boxed: boolean;
-    mini_sidebar: boolean;
-    setHorizontalLayout: boolean;
-    setBorderCard: boolean;
-};
+/** Snapshot thème/layout uniquement — la locale est gérée par LanguageTab. */
+type ThemeSnapshot = Omit<PersistedSettings, 'locale'>;
 
+const { t } = useI18n();
 const appSettings = useAppSettingsStore();
 
-const themeColors = ref([
-    { name: 'BLUE_THEME', bg: 'themeBlue' },
-    { name: 'AQUA_THEME', bg: 'themeAqua' },
-    { name: 'PURPLE_THEME', bg: 'themePurple' },
-    { name: 'GREEN_THEME', bg: 'themeGreen' },
-    { name: 'CYAN_THEME', bg: 'themeCyan' },
-    { name: 'ORANGE_THEME', bg: 'themeOrange' }
-]);
+const themeColors = LIGHT_THEME_OPTIONS;
+const DarkthemeColors = DARK_THEME_OPTIONS;
 
-const DarkthemeColors = ref([
-    { name: 'DARK_BLUE_THEME', bg: 'themeDarkBlue' },
-    { name: 'DARK_AQUA_THEME', bg: 'themeDarkAqua' },
-    { name: 'DARK_PURPLE_THEME', bg: 'themeDarkPurple' },
-    { name: 'DARK_GREEN_THEME', bg: 'themeDarkGreen' },
-    { name: 'DARK_CYAN_THEME', bg: 'themeDarkCyan' },
-    { name: 'DARK_ORANGE_THEME', bg: 'themeDarkOrange' }
-]);
-
-const baseline = ref<SettingsSnapshot | null>(null);
+const baseline = ref<ThemeSnapshot | null>(null);
 const saving = ref(false);
 
-function takeSnapshot(): SettingsSnapshot {
-    return appSettings.snapshot();
+function takeSnapshot(): ThemeSnapshot {
+    const full = appSettings.snapshot();
+    return {
+        actTheme: full.actTheme,
+        boxed: full.boxed,
+        mini_sidebar: full.mini_sidebar,
+        setHorizontalLayout: full.setHorizontalLayout,
+        setBorderCard: full.setBorderCard
+    };
 }
 
-function snapshotsEqual(a: SettingsSnapshot, b: SettingsSnapshot) {
+function snapshotsEqual(a: ThemeSnapshot, b: ThemeSnapshot) {
     return (
         a.actTheme === b.actTheme &&
         a.boxed === b.boxed &&
@@ -86,7 +76,7 @@ function saveSettings() {
 
 function resetSettings() {
     if (!baseline.value || saving.value) return;
-    appSettings.applySnapshot(baseline.value);
+    appSettings.applySnapshot({ ...baseline.value, locale: appSettings.locale });
 }
 
 defineExpose({
@@ -111,13 +101,13 @@ defineExpose({
                             <v-avatar size="48" rounded="md" color="lightprimary">
                                 <PaletteIcon class="text-primary" size="25" />
                             </v-avatar>
-                            <h4 class="text-h4 mb-0">Thème</h4>
+                            <h4 class="text-h4 mb-0">{{ t('applications.theme.title') }}</h4>
                         </div>
                         <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
-                            Choisissez la couleur principale de l’interface (clair ou sombre).
+                            {{ t('applications.theme.subtitle') }}
                         </div>
 
-                        <h6 class="text-h6 mt-2 mb-5">Couleur du thème</h6>
+                        <h6 class="text-h6 mt-2 mb-5">{{ t('applications.theme.lightColors') }}</h6>
                         <v-item-group mandatory v-model="appSettings.actTheme" class="ml-n2 v-row">
                             <v-col cols="4" sm="2" v-for="theme in themeColors" :key="theme.name" class="pa-2">
                                 <v-item v-slot="{ isSelected, toggle }" :value="theme.name">
@@ -135,7 +125,7 @@ defineExpose({
                             </v-col>
                         </v-item-group>
 
-                        <h6 class="text-h6 mt-8 mb-5">Couleur du thème sombre</h6>
+                        <h6 class="text-h6 mt-8 mb-5">{{ t('applications.theme.darkColors') }}</h6>
                         <v-item-group mandatory v-model="appSettings.actTheme" class="ml-n2 v-row">
                             <v-col cols="4" sm="2" v-for="theme in DarkthemeColors" :key="theme.name" class="pa-2">
                                 <v-item v-slot="{ isSelected, toggle }" :value="theme.name">
@@ -163,13 +153,13 @@ defineExpose({
                             <v-avatar size="48" rounded="md" color="lightprimary">
                                 <LayoutIcon class="text-primary" size="25" />
                             </v-avatar>
-                            <h4 class="text-h4 mb-0">Mise en page</h4>
+                            <h4 class="text-h4 mb-0">{{ t('applications.layout.title') }}</h4>
                         </div>
                         <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
-                            Personnalisez la disposition de la barre latérale, du conteneur et des cartes.
+                            {{ t('applications.layout.subtitle') }}
                         </div>
 
-                        <h6 class="text-h6 mt-2 mb-2">Disposition de la barre latérale</h6>
+                        <h6 class="text-h6 mt-2 mb-2">{{ t('applications.layout.sidebarOrientation') }}</h6>
                         <v-btn-toggle
                             v-model="appSettings.setHorizontalLayout"
                             color="primary"
@@ -179,47 +169,47 @@ defineExpose({
                         >
                             <v-btn :value="false" variant="text" elevation="9" class="rounded-md">
                                 <LayoutColumnsIcon stroke-width="1.5" size="21" class="mr-2 icon" />
-                                Verticale
+                                {{ t('applications.layout.vertical') }}
                             </v-btn>
                             <v-btn :value="true" variant="text" elevation="9" class="rounded-md ml-4">
                                 <LayoutNavbarIcon stroke-width="1.5" size="21" class="mr-2 icon" />
-                                Horizontale
+                                {{ t('applications.layout.horizontal') }}
                             </v-btn>
                         </v-btn-toggle>
 
-                        <h6 class="text-h6 mt-8 mb-2">Conteneur</h6>
+                        <h6 class="text-h6 mt-8 mb-2">{{ t('applications.layout.container') }}</h6>
                         <v-btn-toggle v-model="appSettings.boxed" color="primary" class="my-2 btn-group-custom" rounded="0" group>
                             <v-btn :value="true" variant="text" elevation="9" class="rounded-md">
                                 <LayoutDistributeVerticalIcon stroke-width="1.5" size="21" class="mr-2 icon" />
-                                Encadré
+                                {{ t('applications.layout.boxed') }}
                             </v-btn>
                             <v-btn :value="false" variant="text" elevation="9" class="rounded-md ml-4">
                                 <LayoutDistributeHorizontalIcon stroke-width="1.5" size="21" class="mr-2 icon" />
-                                Plein
+                                {{ t('applications.layout.full') }}
                             </v-btn>
                         </v-btn-toggle>
 
-                        <h6 class="text-h6 mt-8 mb-2">Type de barre latérale</h6>
+                        <h6 class="text-h6 mt-8 mb-2">{{ t('applications.layout.sidebarType') }}</h6>
                         <v-btn-toggle v-model="appSettings.mini_sidebar" color="primary" class="my-2 btn-group-custom" rounded="0" group>
                             <v-btn :value="false" variant="text" elevation="9" class="rounded-md">
                                 <LayoutSidebarIcon stroke-width="1.5" size="21" class="mr-2 icon" />
-                                Complète
+                                {{ t('applications.layout.fullSidebar') }}
                             </v-btn>
                             <v-btn :value="true" variant="text" elevation="9" class="rounded-md ml-4">
                                 <LayoutSidebarLeftCollapseIcon stroke-width="1.5" size="21" class="mr-2 icon" />
-                                Réduite
+                                {{ t('applications.layout.miniSidebar') }}
                             </v-btn>
                         </v-btn-toggle>
 
-                        <h6 class="text-h6 mt-8 mb-2">Cartes</h6>
+                        <h6 class="text-h6 mt-8 mb-2">{{ t('applications.layout.cards') }}</h6>
                         <v-btn-toggle v-model="appSettings.setBorderCard" color="primary" class="my-2 btn-group-custom" rounded="0" group>
                             <v-btn :value="false" variant="text" elevation="9" class="rounded-md">
                                 <LayoutSidebarLeftCollapseIcon stroke-width="1.5" size="21" class="mr-2 icon" />
-                                Ombre
+                                {{ t('applications.layout.shadow') }}
                             </v-btn>
                             <v-btn :value="true" variant="text" elevation="9" class="rounded-md ml-4">
                                 <LayoutSidebarIcon stroke-width="1.5" size="21" class="mr-2 icon" />
-                                Bordure
+                                {{ t('applications.layout.border') }}
                             </v-btn>
                         </v-btn-toggle>
                     </v-card-item>

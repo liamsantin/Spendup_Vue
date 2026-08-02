@@ -1,6 +1,7 @@
 import axios, { type AxiosRequestConfig, type Method } from 'axios';
 import { useAuthStore } from '@/features/auth';
 import { createApiAxios, getApiBaseUrl } from '@/utils/helpers/axios-helpers';
+import { AppError, unwrapSpendupEnvelope } from '@/utils/errors/app-error';
 
 /**
  * Client Axios pour les API domaine authentifiées.
@@ -29,12 +30,13 @@ function request(method: Method) {
             try {
                 const response = await domainAxios.request(config);
                 return handleResponse(response.status, response.data, response.statusText, () => {
-                    if (retried) return Promise.reject('Unauthorized');
+                    if (retried) return Promise.reject(new AppError('Unauthorized', 401));
                     return doRequest(true);
                 });
             } catch (e: unknown) {
+                if (e instanceof AppError) return Promise.reject(e);
                 if (axios.isAxiosError(e) && !e.response) {
-                    return Promise.reject(e.message || 'Network error');
+                    return Promise.reject(new AppError(e.message || 'Network error', 0));
                 }
                 throw e;
             }
@@ -78,25 +80,25 @@ async function handleResponse(status: number, data: unknown, statusText: string,
                 return retry();
             }
         }
-        // Toujours forcer le re-login : clearSession a déjà pu rendre isAuthenticated=false.
         await auth.forceReLogin();
-        const error = (data && typeof data === 'object' && 'message' in data && (data as { message?: string }).message) || statusText;
-        return Promise.reject(error);
+        const message =
+            (data && typeof data === 'object' && 'message' in data && (data as { message?: string }).message) ||
+            statusText ||
+            'Unauthorized';
+        return Promise.reject(new AppError(String(message), 401));
     }
 
     if (status >= 400) {
-        const error = (data && typeof data === 'object' && 'message' in data && (data as { message?: string }).message) || statusText;
-        return Promise.reject(error);
+        const message =
+            (data && typeof data === 'object' && 'message' in data && (data as { message?: string }).message) ||
+            statusText ||
+            'Request failed';
+        return Promise.reject(new AppError(String(message), status));
     }
 
-    // Spendup envelope when present
-    if (data && typeof data === 'object' && 'success' in data) {
-        const envelope = data as { success: boolean; message?: string; result?: unknown };
-        if (!envelope.success) {
-            return Promise.reject(envelope.message ?? 'Request failed');
-        }
-        return envelope.result;
+    try {
+        return unwrapSpendupEnvelope(data, statusText);
+    } catch (e: unknown) {
+        return Promise.reject(AppError.fromUnknown(e, statusText));
     }
-
-    return data;
 }

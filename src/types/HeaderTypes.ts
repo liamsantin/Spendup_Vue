@@ -1,18 +1,18 @@
 type notificationType = {
     avatar: string;
-    title: string;
-    subtitle: string;
+    titleKey: string;
+    subtitleKey: string;
 };
 
 type profileType = {
     avatar: string;
-    title: string;
-    subtitle: string;
+    titleKey: string;
+    subtitleKey: string;
     href: string;
 };
 
 type searchType = {
-    title: string;
+    titleKey: string;
     href: string;
 };
 

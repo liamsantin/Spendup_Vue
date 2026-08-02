@@ -2,7 +2,8 @@ import { createVuetify } from 'vuetify';
 import '@mdi/font/css/materialdesignicons.css';
 import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
-import { fr } from 'vuetify/locale';
+import { en, fr } from 'vuetify/locale';
+import { readInitialLocale } from '@/plugins/i18n';
 
 import { BLUE_THEME, AQUA_THEME, PURPLE_THEME, GREEN_THEME, CYAN_THEME, ORANGE_THEME } from '@/theme/LightTheme';
 import {
@@ -21,14 +22,15 @@ export default createVuetify({
     directives,
 
     locale: {
-        locale: 'fr',
+        locale: readInitialLocale(),
         fallback: 'en',
-        messages: { fr }
+        messages: { fr, en }
     },
 
     date: {
         locale: {
-            fr: 'fr-FR'
+            fr: 'fr-FR',
+            en: 'en-US'
         }
     },
 
