@@ -399,12 +399,15 @@ Les dossiers `entities/` et `models/` ne sont **pas** utilisés pour l’instant
 | **Global** (app)     | `app/stores/`                | `app-settings-store` |
 | **Métier** (domaine) | `features/<domaine>/stores/` | `auth-store`, …      |
 
-| Store        | Fichier                              | Usage                                     |
-| ------------ | ------------------------------------ | ----------------------------------------- |
-| Auth         | `features/auth/stores/auth-store.ts` | Session JWT, login / logout / 2FA / `/me` |
-| App settings | `app/stores/app-settings-store.ts`   | Thème, sidebar, layout admin              |
+| Store        | Fichier                                        | Usage                                     |
+| ------------ | ---------------------------------------------- | ----------------------------------------- |
+| Auth         | `features/auth/stores/auth-store.ts`           | Session JWT, login / logout / 2FA / `/me` |
+| App settings | `app/stores/app-settings-store.ts`             | Thème, sidebar, layout admin              |
+| Countries    | `features/countries/stores/countries-store.ts` | Liste pays (`GET /api/countries`)         |
 
-**Imports :** `@/features/auth`, `@/app/stores/app-settings-store`.
+**Style :** Setup Store uniquement (`defineStore('id', () => { … return {…} })`) — voir `docs/rules-spendup.md` § Stores Pinia. Pas d’Options API.
+
+**Imports :** `@/features/auth`, `@/features/countries`, `@/app/stores/app-settings-store`.
 
 ### Clients HTTP
 

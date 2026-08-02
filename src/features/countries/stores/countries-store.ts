@@ -1,44 +1,49 @@
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 import { countriesApi } from '../api';
 import type { Country } from '../types';
 
-export const useCountriesStore = defineStore('countries', {
-    state: () => ({
-        items: [] as Country[],
-        loading: false,
-        loaded: false,
-        error: null as string | null
-    }),
+export const useCountriesStore = defineStore('countries', () => {
+    const items = ref<Country[]>([]);
+    const loading = ref(false);
+    const loaded = ref(false);
+    const error = ref<string | null>(null);
 
-    getters: {
-        byId: (state) => (id: number | null | undefined) => {
-            if (id == null) return undefined;
-            return state.items.find((c) => c.id === id);
-        }
-    },
+    function byId(id: number | null | undefined): Country | undefined {
+        if (id == null) return undefined;
+        return items.value.find((c) => c.id === id);
+    }
 
-    actions: {
-        /** Charge la liste une fois (cache mémoire). `force` pour recharger. */
-        async ensureLoaded(force = false) {
-            if (this.loading) return;
-            if (this.loaded && !force) return;
+    /** Charge la liste une fois (cache mémoire). `force` pour recharger. */
+    async function ensureLoaded(force = false) {
+        if (loading.value) return;
+        if (loaded.value && !force) return;
 
-            this.loading = true;
-            this.error = null;
-            try {
-                const result = await countriesApi.getAll();
-                this.items = Array.isArray(result?.items) ? result.items : [];
-                this.loaded = true;
-            } catch (e: unknown) {
-                this.error = e instanceof Error ? e.message : String(e);
-                throw e;
-            } finally {
-                this.loading = false;
-            }
-        },
-
-        async refresh() {
-            await this.ensureLoaded(true);
+        loading.value = true;
+        error.value = null;
+        try {
+            const result = await countriesApi.getAll();
+            items.value = Array.isArray(result?.items) ? result.items : [];
+            loaded.value = true;
+        } catch (e: unknown) {
+            error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            loading.value = false;
         }
     }
+
+    async function refresh() {
+        await ensureLoaded(true);
+    }
+
+    return {
+        items,
+        loading,
+        loaded,
+        error,
+        byId,
+        ensureLoaded,
+        refresh
+    };
 });

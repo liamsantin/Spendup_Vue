@@ -161,6 +161,25 @@ Les composants UI passent par le store de la feature, pas par le client HTTP.
 - Import métier : `@/features/<domaine>` (barrel `index.ts`) ou chemin direct.
 - Import global : `@/app/stores/app-settings-store`.
 
+**Style obligatoire — Setup Store uniquement :**
+
+- Toujours `defineStore('id', () => { … })` avec `ref` / `computed`, fonctions, et un `return` final.
+- **Interdit** : Options API Pinia (`state` / `getters` / `actions` en objet).
+- Référence : `features/countries/stores/countries-store.ts`, `features/auth/stores/auth-store.ts`.
+
+```ts
+export const useExampleStore = defineStore('example', () => {
+    const items = ref<Item[]>([]);
+    const loading = ref(false);
+
+    async function fetchItems() {
+        /* … */
+    }
+
+    return { items, loading, fetchItems };
+});
+```
+
 ### Barrel `index.ts`
 
 Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
@@ -202,6 +221,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Créer `features/<domaine>/` dès qu'une fonctionnalité métier apparaît.
 - Créer `views/app/<feature>/` (ou `views/front-pages/`) comme page fine de routing.
 - Placer stores métier dans `features/<domaine>/stores/`, stores globaux dans `app/stores/`.
+- Écrire tout store Pinia en **Setup Store** (`defineStore` + `() => { ref…; return {…} }`), jamais en Options API.
 - Placer tout nouveau SCSS dans `src/scss/` au chemin miroir du composant.
 - Utiliser `<script setup lang="ts">` et imports absolus `@/…`.
 - Réutiliser les classes existantes (`.su-*`, `.text-16`, Vuetify utilities) avant d'en créer.
@@ -222,6 +242,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Recréer from scratch un écran déjà présent dans les templates sans les avoir consultés.
 - Placer de la logique métier dans `views/` ou à la racine de `components/`.
 - Créer des stores dans un ancien dossier `src/stores/` (supprimé — utiliser `app/stores/` ou `features/<domaine>/stores/`).
+- Définir un store Pinia en Options API (`state` / `getters` / `actions`) — toujours le style Setup.
 - Nommer des helpers hors convention (`fetch-wrapper.ts`, `local-auth.ts`, `utils.ts`) — utiliser `<domaine>-helpers.ts` dans `utils/helpers/`.
 - Créer des fichiers `.scss` ou `.css` dans `components/` ou `features/`.
 - Ajouter des styles inline volumineux dans `<style>`.

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { computed, ref } from 'vue';
 import { router } from '@/router';
 import { authApi } from '@/features/auth/api';
 import type { AuthSession, AuthTokens, Me, UpdateProfilePayload } from '@/features/auth/types';
@@ -57,311 +58,358 @@ function readAndClearLoginNotice(): string | null {
     return message;
 }
 
-export const useAuthStore = defineStore('auth', {
-    state: () => ({
-        accessToken: readAccessToken() as string | null,
-        refreshToken: readRefreshToken() as string | null,
-        twoFactorToken: null as string | null,
-        /** E-mail en attente de confirmation après inscription. */
-        pendingEmail: readPendingEmail() as string | null,
-        /** Mot de passe temporaire pour login auto après confirm-email (sessionStorage). */
-        pendingPassword: readPendingPassword() as string | null,
-        user: null as Me | null,
-        returnUrl: null as string | null
-    }),
-    getters: {
-        isAuthenticated: (state) => !!state.refreshToken || !!state.accessToken,
-        displayName: (state) => {
-            if (!state.user) return '';
-            const parts = [state.user.firstName, state.user.name].filter(Boolean);
-            if (parts.length) return parts.join(' ');
-            return state.user.username || state.user.email || '';
-        },
-        hasVerifiedEmail: (state) => !!state.user?.email && state.user.emailVerified
-    },
-    actions: {
-        setPendingEmail(email: string | null) {
-            this.pendingEmail = email;
-            writePendingEmail(email);
-        },
+export const useAuthStore = defineStore('auth', () => {
+    const accessToken = ref<string | null>(readAccessToken());
+    const refreshToken = ref<string | null>(readRefreshToken());
+    const twoFactorToken = ref<string | null>(null);
+    /** E-mail en attente de confirmation après inscription. */
+    const pendingEmail = ref<string | null>(readPendingEmail());
+    /** Mot de passe temporaire pour login auto après confirm-email (sessionStorage). */
+    const pendingPassword = ref<string | null>(readPendingPassword());
+    const user = ref<Me | null>(null);
+    const returnUrl = ref<string | null>(null);
 
-        setPendingPassword(password: string | null) {
-            this.pendingPassword = password;
-            writePendingPassword(password);
-        },
+    const isAuthenticated = computed(() => !!refreshToken.value || !!accessToken.value);
 
-        clearPendingRegistration() {
-            this.setPendingEmail(null);
-            this.setPendingPassword(null);
-        },
+    const displayName = computed(() => {
+        if (!user.value) return '';
+        const parts = [user.value.firstName, user.value.name].filter(Boolean);
+        if (parts.length) return parts.join(' ');
+        return user.value.username || user.value.email || '';
+    });
 
-        setTokens(tokens: AuthTokens) {
-            this.accessToken = tokens.accessToken;
-            this.refreshToken = tokens.refreshToken;
-            sessionStorage.setItem(ACCESS_KEY, tokens.accessToken);
-            localStorage.setItem(REFRESH_KEY, tokens.refreshToken);
-        },
+    const hasVerifiedEmail = computed(() => !!user.value?.email && user.value.emailVerified);
 
-        clearSession() {
-            this.accessToken = null;
-            this.refreshToken = null;
-            this.twoFactorToken = null;
-            this.clearPendingRegistration();
-            this.user = null;
-            sessionStorage.removeItem(ACCESS_KEY);
-            localStorage.removeItem(REFRESH_KEY);
-        },
+    function setPendingEmail(email: string | null) {
+        pendingEmail.value = email;
+        writePendingEmail(email);
+    }
 
-        async applySession(session: AuthSession): Promise<'ok' | '2fa'> {
-            if (session.requiresTwoFactor) {
-                this.twoFactorToken = session.twoFactorToken;
-                return '2fa';
-            }
-            if (!session.accessToken || !session.refreshToken) {
-                throw new Error('Jetons manquants dans la réponse d’authentification.');
-            }
-            this.setTokens({
-                accessToken: session.accessToken,
-                refreshToken: session.refreshToken,
-                expiresAt: session.expiresAt ?? '',
-                userPublicId: session.userPublicId ?? ''
+    function setPendingPassword(password: string | null) {
+        pendingPassword.value = password;
+        writePendingPassword(password);
+    }
+
+    function clearPendingRegistration() {
+        setPendingEmail(null);
+        setPendingPassword(null);
+    }
+
+    function setTokens(tokens: AuthTokens) {
+        accessToken.value = tokens.accessToken;
+        refreshToken.value = tokens.refreshToken;
+        sessionStorage.setItem(ACCESS_KEY, tokens.accessToken);
+        localStorage.setItem(REFRESH_KEY, tokens.refreshToken);
+    }
+
+    function clearSession() {
+        accessToken.value = null;
+        refreshToken.value = null;
+        twoFactorToken.value = null;
+        clearPendingRegistration();
+        user.value = null;
+        sessionStorage.removeItem(ACCESS_KEY);
+        localStorage.removeItem(REFRESH_KEY);
+    }
+
+    async function applySession(session: AuthSession): Promise<'ok' | '2fa'> {
+        if (session.requiresTwoFactor) {
+            twoFactorToken.value = session.twoFactorToken;
+            return '2fa';
+        }
+        if (!session.accessToken || !session.refreshToken) {
+            throw new Error('Jetons manquants dans la réponse d’authentification.');
+        }
+        setTokens({
+            accessToken: session.accessToken,
+            refreshToken: session.refreshToken,
+            expiresAt: session.expiresAt ?? '',
+            userPublicId: session.userPublicId ?? ''
+        });
+        twoFactorToken.value = null;
+        await fetchMe();
+        return 'ok';
+    }
+
+    async function navigateAfterLogin() {
+        const target = returnUrl.value || APP_HOME_ROUTE;
+        returnUrl.value = null;
+        await router.push(target);
+    }
+
+    async function login(identifier: string, password: string) {
+        const session = await authApi.login(identifier.trim(), password);
+        const outcome = await applySession(session);
+        if (outcome === '2fa') {
+            await router.push('/auth/two-step');
+            return;
+        }
+        await navigateAfterLogin();
+    }
+
+    async function loginWithGoogle(idToken: string) {
+        const session = await authApi.google(idToken);
+        const outcome = await applySession(session);
+        if (outcome === '2fa') {
+            await router.push('/auth/two-step');
+            return;
+        }
+        await navigateAfterLogin();
+    }
+
+    async function register(payload: {
+        email?: string | null;
+        username?: string | null;
+        password: string;
+        firstName?: string | null;
+        name?: string | null;
+    }) {
+        const result = await authApi.register(payload);
+        if (result.email) {
+            setPendingEmail(result.email);
+            setPendingPassword(payload.password);
+            // replace : le retour arrière ne ramène pas sur un formulaire d’inscription déjà consommé
+            await router.replace({
+                path: '/auth/confirm-email',
+                query: { email: result.email }
             });
-            this.twoFactorToken = null;
-            await this.fetchMe();
-            return 'ok';
-        },
+            return { outcome: 'confirm-email' as const, result };
+        }
+        const identifier = result.username || payload.username || payload.email;
+        if (!identifier) {
+            throw new Error('Identifiant manquant après inscription.');
+        }
+        await login(identifier, payload.password);
+        return { outcome: 'logged-in' as const, result };
+    }
 
-        async navigateAfterLogin() {
-            const target = this.returnUrl || APP_HOME_ROUTE;
-            this.returnUrl = null;
-            await router.push(target);
-        },
+    async function confirmEmail(email: string, code: string) {
+        await authApi.confirmEmail({ email, code });
+        const password = pendingPassword.value;
+        clearPendingRegistration();
+        if (!password) {
+            await goToLogin('E-mail confirmé. Veuillez vous connecter.');
+            return;
+        }
+        await login(email, password);
+    }
 
-        async login(identifier: string, password: string) {
-            const session = await authApi.login(identifier.trim(), password);
-            const outcome = await this.applySession(session);
-            if (outcome === '2fa') {
-                await router.push('/auth/two-step');
-                return;
-            }
-            await this.navigateAfterLogin();
-        },
+    async function resendVerification(email: string) {
+        await authApi.resendVerification(email);
+    }
 
-        async loginWithGoogle(idToken: string) {
-            const session = await authApi.google(idToken);
-            const outcome = await this.applySession(session);
-            if (outcome === '2fa') {
-                await router.push('/auth/two-step');
-                return;
-            }
-            await this.navigateAfterLogin();
-        },
+    async function forgotPassword(email: string) {
+        await authApi.forgotPassword(email);
+    }
 
-        async register(payload: {
-            email?: string | null;
-            username?: string | null;
-            password: string;
-            firstName?: string | null;
-            name?: string | null;
-        }) {
-            const result = await authApi.register(payload);
-            if (result.email) {
-                this.setPendingEmail(result.email);
-                this.setPendingPassword(payload.password);
-                // replace : le retour arrière ne ramène pas sur un formulaire d’inscription déjà consommé
-                await router.replace({
-                    path: '/auth/confirm-email',
-                    query: { email: result.email }
-                });
-                return { outcome: 'confirm-email' as const, result };
-            }
-            const identifier = result.username || payload.username || payload.email;
-            if (!identifier) {
-                throw new Error('Identifiant manquant après inscription.');
-            }
-            await this.login(identifier, payload.password);
-            return { outcome: 'logged-in' as const, result };
-        },
+    async function resetPassword(token: string, newPassword: string) {
+        await authApi.resetPassword(token, newPassword);
+        await goToLogin('Mot de passe mis à jour. Veuillez vous connecter.');
+    }
 
-        async confirmEmail(email: string, code: string) {
-            await authApi.confirmEmail({ email, code });
-            const password = this.pendingPassword;
-            this.clearPendingRegistration();
-            if (!password) {
-                await this.goToLogin('E-mail confirmé. Veuillez vous connecter.');
-                return;
-            }
-            await this.login(email, password);
-        },
+    async function confirmEmailChange(email: string, code: string) {
+        await authApi.confirmEmailChange(email, code);
+        await forceReLogin('E-mail mis à jour. Veuillez vous reconnecter.');
+    }
 
-        async resendVerification(email: string) {
-            await authApi.resendVerification(email);
-        },
+    async function verifyTwoFactor(code: string) {
+        if (!twoFactorToken.value) {
+            throw new Error('Session 2FA expirée. Veuillez vous reconnecter.');
+        }
+        const tokens = await authApi.verify2fa(twoFactorToken.value, code);
+        setTokens(tokens);
+        twoFactorToken.value = null;
+        await fetchMe();
+        await navigateAfterLogin();
+    }
 
-        async forgotPassword(email: string) {
-            await authApi.forgotPassword(email);
-        },
+    async function setupTwoFactor() {
+        const token = await requireAccessToken();
+        return authApi.setup2fa(token);
+    }
 
-        async resetPassword(token: string, newPassword: string) {
-            await authApi.resetPassword(token, newPassword);
-            await this.goToLogin('Mot de passe mis à jour. Veuillez vous connecter.');
-        },
+    async function enableTwoFactor(code: string) {
+        const token = await requireAccessToken();
+        await authApi.enable2fa(token, code);
+        await fetchMe();
+    }
 
-        async confirmEmailChange(email: string, code: string) {
-            await authApi.confirmEmailChange(email, code);
-            await this.forceReLogin('E-mail mis à jour. Veuillez vous reconnecter.');
-        },
+    async function disableTwoFactor(code: string) {
+        const token = await requireAccessToken();
+        await authApi.disable2fa(token, code);
+        await fetchMe();
+    }
 
-        async verifyTwoFactor(code: string) {
-            if (!this.twoFactorToken) {
-                throw new Error('Session 2FA expirée. Veuillez vous reconnecter.');
-            }
-            const tokens = await authApi.verify2fa(this.twoFactorToken, code);
-            this.setTokens(tokens);
-            this.twoFactorToken = null;
-            await this.fetchMe();
-            await this.navigateAfterLogin();
-        },
+    async function listDevices() {
+        const token = await requireAccessToken();
+        return authApi.listDevices(token);
+    }
 
-        async setupTwoFactor() {
-            const token = await this.requireAccessToken();
-            return authApi.setup2fa(token);
-        },
+    async function revokeDevice(deviceIdentifier: string) {
+        const token = await requireAccessToken();
+        await authApi.revokeDevice(token, deviceIdentifier);
+    }
 
-        async enableTwoFactor(code: string) {
-            const token = await this.requireAccessToken();
-            await authApi.enable2fa(token, code);
-            await this.fetchMe();
-        },
+    async function setDeviceTrust(deviceIdentifier: string, isTrusted: boolean) {
+        const token = await requireAccessToken();
+        await authApi.setDeviceTrust(token, deviceIdentifier, isTrusted);
+    }
 
-        async disableTwoFactor(code: string) {
-            const token = await this.requireAccessToken();
-            await authApi.disable2fa(token, code);
-            await this.fetchMe();
-        },
+    /** Révoque toutes les sessions (y compris l’appareil courant) → force re-login. */
+    async function revokeAllDevices() {
+        const token = await requireAccessToken();
+        await authApi.revokeAllDevices(token);
+        await forceReLogin('Toutes les sessions ont été déconnectées. Veuillez vous reconnecter.');
+    }
 
-        async listDevices() {
-            const token = await this.requireAccessToken();
-            return authApi.listDevices(token);
-        },
-
-        async revokeDevice(deviceIdentifier: string) {
-            const token = await this.requireAccessToken();
-            await authApi.revokeDevice(token, deviceIdentifier);
-        },
-
-        async setDeviceTrust(deviceIdentifier: string, isTrusted: boolean) {
-            const token = await this.requireAccessToken();
-            await authApi.setDeviceTrust(token, deviceIdentifier, isTrusted);
-        },
-
-        /** Révoque toutes les sessions (y compris l’appareil courant) → force re-login. */
-        async revokeAllDevices() {
-            const token = await this.requireAccessToken();
-            await authApi.revokeAllDevices(token);
-            await this.forceReLogin('Toutes les sessions ont été déconnectées. Veuillez vous reconnecter.');
-        },
-
-        async refreshSession(): Promise<boolean> {
-            if (!this.refreshToken) return false;
-            try {
-                const tokens = await authApi.refresh(this.refreshToken);
-                this.setTokens(tokens);
-                return true;
-            } catch {
-                this.clearSession();
-                return false;
-            }
-        },
-
-        async fetchMe() {
-            const token = await this.ensureAccessToken();
-            if (!token) {
-                this.user = null;
-                return null;
-            }
-            this.user = await authApi.me(token);
-            return this.user;
-        },
-
-        async updateProfile(payload: UpdateProfilePayload) {
-            const token = await this.requireAccessToken();
-            await authApi.updateProfile(token, payload);
-            await this.fetchMe();
-        },
-
-        async setUsername(username: string) {
-            const token = await this.requireAccessToken();
-            await authApi.setUsername(token, username);
-            await this.fetchMe();
-        },
-
-        async changeEmail(payload: { newEmail: string; currentPassword?: string | null; googleIdToken?: string | null }) {
-            const token = await this.requireAccessToken();
-            await authApi.changeEmail(token, payload);
-            await this.fetchMe();
-        },
-
-        async changePassword(currentPassword: string | null, newPassword: string, reLoginMessage?: string) {
-            const token = await this.requireAccessToken();
-            await authApi.changePassword(token, currentPassword, newPassword);
-            await this.forceReLogin(reLoginMessage ?? 'Mot de passe mis à jour. Veuillez vous reconnecter.');
-        },
-
-        async deleteAccount(payload: { currentPassword?: string; googleIdToken?: string }) {
-            const token = await this.requireAccessToken();
-            await authApi.deleteAccount(token, {
-                currentPassword: payload.currentPassword,
-                googleIdToken: payload.googleIdToken
-            });
-            await this.forceReLogin('Votre compte a été définitivement supprimé.');
-        },
-
-        async ensureAccessToken(): Promise<string | null> {
-            if (this.accessToken) return this.accessToken;
-            if (!this.refreshToken) return null;
-            const ok = await this.refreshSession();
-            return ok ? this.accessToken : null;
-        },
-
-        async requireAccessToken(): Promise<string> {
-            const token = await this.ensureAccessToken();
-            if (!token) {
-                throw new Error('Non authentifié.');
-            }
-            return token;
-        },
-
-        async logout() {
-            const refresh = this.refreshToken;
-            const access = this.accessToken;
-            try {
-                if (refresh) {
-                    await authApi.logout(refresh, access);
-                }
-            } catch {
-                // Always clear local session
-            }
-            this.clearSession();
-            this.returnUrl = null;
-            await router.push('/');
-        },
-
-        /** Notice affichée une fois sur /auth/login (sessionStorage, pas dans l’URL). */
-        consumeLoginNotice(): string | null {
-            return readAndClearLoginNotice();
-        },
-
-        async goToLogin(message?: string) {
-            writeLoginNotice(message ?? null);
-            await router.push('/auth/login');
-        },
-
-        /** Force re-login after password/email change invalidates JWT. */
-        async forceReLogin(message?: string) {
-            this.clearSession();
-            this.returnUrl = null;
-            await this.goToLogin(message);
+    async function refreshSession(): Promise<boolean> {
+        if (!refreshToken.value) return false;
+        try {
+            const tokens = await authApi.refresh(refreshToken.value);
+            setTokens(tokens);
+            return true;
+        } catch {
+            clearSession();
+            return false;
         }
     }
+
+    async function fetchMe() {
+        const token = await ensureAccessToken();
+        if (!token) {
+            user.value = null;
+            return null;
+        }
+        user.value = await authApi.me(token);
+        return user.value;
+    }
+
+    async function updateProfile(payload: UpdateProfilePayload) {
+        const token = await requireAccessToken();
+        await authApi.updateProfile(token, payload);
+        await fetchMe();
+    }
+
+    async function setUsername(username: string) {
+        const token = await requireAccessToken();
+        await authApi.setUsername(token, username);
+        await fetchMe();
+    }
+
+    async function changeEmail(payload: { newEmail: string; currentPassword?: string | null; googleIdToken?: string | null }) {
+        const token = await requireAccessToken();
+        await authApi.changeEmail(token, payload);
+        await fetchMe();
+    }
+
+    async function changePassword(currentPassword: string | null, newPassword: string, reLoginMessage?: string) {
+        const token = await requireAccessToken();
+        await authApi.changePassword(token, currentPassword, newPassword);
+        await forceReLogin(reLoginMessage ?? 'Mot de passe mis à jour. Veuillez vous reconnecter.');
+    }
+
+    async function deleteAccount(payload: { currentPassword?: string; googleIdToken?: string }) {
+        const token = await requireAccessToken();
+        await authApi.deleteAccount(token, {
+            currentPassword: payload.currentPassword,
+            googleIdToken: payload.googleIdToken
+        });
+        await forceReLogin('Votre compte a été définitivement supprimé.');
+    }
+
+    async function ensureAccessToken(): Promise<string | null> {
+        if (accessToken.value) return accessToken.value;
+        if (!refreshToken.value) return null;
+        const ok = await refreshSession();
+        return ok ? accessToken.value : null;
+    }
+
+    async function requireAccessToken(): Promise<string> {
+        const token = await ensureAccessToken();
+        if (!token) {
+            throw new Error('Non authentifié.');
+        }
+        return token;
+    }
+
+    async function logout() {
+        const refresh = refreshToken.value;
+        const access = accessToken.value;
+        try {
+            if (refresh) {
+                await authApi.logout(refresh, access);
+            }
+        } catch {
+            // Always clear local session
+        }
+        clearSession();
+        returnUrl.value = null;
+        await router.push('/');
+    }
+
+    /** Notice affichée une fois sur /auth/login (sessionStorage, pas dans l’URL). */
+    function consumeLoginNotice(): string | null {
+        return readAndClearLoginNotice();
+    }
+
+    async function goToLogin(message?: string) {
+        writeLoginNotice(message ?? null);
+        await router.push('/auth/login');
+    }
+
+    /** Force re-login after password/email change invalidates JWT. */
+    async function forceReLogin(message?: string) {
+        clearSession();
+        returnUrl.value = null;
+        await goToLogin(message);
+    }
+
+    return {
+        accessToken,
+        refreshToken,
+        twoFactorToken,
+        pendingEmail,
+        pendingPassword,
+        user,
+        returnUrl,
+        isAuthenticated,
+        displayName,
+        hasVerifiedEmail,
+        setPendingEmail,
+        setPendingPassword,
+        clearPendingRegistration,
+        setTokens,
+        clearSession,
+        applySession,
+        navigateAfterLogin,
+        login,
+        loginWithGoogle,
+        register,
+        confirmEmail,
+        resendVerification,
+        forgotPassword,
+        resetPassword,
+        confirmEmailChange,
+        verifyTwoFactor,
+        setupTwoFactor,
+        enableTwoFactor,
+        disableTwoFactor,
+        listDevices,
+        revokeDevice,
+        setDeviceTrust,
+        revokeAllDevices,
+        refreshSession,
+        fetchMe,
+        updateProfile,
+        setUsername,
+        changeEmail,
+        changePassword,
+        deleteAccount,
+        ensureAccessToken,
+        requireAccessToken,
+        logout,
+        consumeLoginNotice,
+        goToLogin,
+        forceReLogin
+    };
 });
