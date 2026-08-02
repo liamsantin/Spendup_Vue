@@ -167,8 +167,8 @@ export const authApi = {
         return authHttp.post<null>('/api/auth/reset-password', { token, newPassword });
     },
 
-    changePassword(accessToken: string, currentPassword: string, newPassword: string) {
-        return authHttp.post<null>('/api/auth/password/change', { currentPassword, newPassword }, accessToken);
+    changePassword(accessToken: string, currentPassword: string | null, newPassword: string) {
+        return authHttp.post<null>('/api/auth/password/change', { currentPassword: currentPassword ?? null, newPassword }, accessToken);
     },
 
     changeEmail(accessToken: string, payload: { newEmail: string; currentPassword?: string | null; googleIdToken?: string | null }) {

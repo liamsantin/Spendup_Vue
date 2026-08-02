@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import { Form } from 'vee-validate';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 import AppAlert from '@/components/shared/AppAlert.vue';
 
-const route = useRoute();
 const authStore = useAuthStore();
 
 const notice = ref<string | null>(null);
@@ -18,10 +16,7 @@ const identifierRules = ref([(v: string) => !!v.trim()]);
 const identifierTrimmed = computed(() => identifier.value.trim());
 
 onMounted(() => {
-    const q = route.query.notice;
-    if (typeof q === 'string' && q) {
-        notice.value = q;
-    }
+    notice.value = authStore.consumeLoginNotice();
 });
 
 function validate(_values: Record<string, unknown>, { setErrors }: { setErrors: (errors: Record<string, string>) => void }) {

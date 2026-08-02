@@ -42,6 +42,10 @@ const countryId = ref<number | null>(null);
 
 const username = ref('');
 const usernameDraft = ref('');
+const usernamePassword = ref('');
+const usernamePasswordConfirm = ref('');
+/** Figé à l’ouverture : première création username + MDP (évite de masquer les champs après setUsername). */
+const usernameModalIncludesPassword = ref(false);
 const usernameOpen = ref(false);
 
 const emailDraft = ref('');
@@ -77,6 +81,13 @@ const displayEmail = computed(() => currentEmail.value || '—');
 const displayPublicId = computed(() => auth.user?.userPublicId || '—');
 /** Compte sans mot de passe (Google-only). */
 const isGoogleOnlyAccount = computed(() => auth.user?.hasPassword === false);
+/** Champ MDP visible dès qu’un username est défini. */
+const showAccountPasswordField = computed(() => !!username.value.trim());
+/**
+ * Exiger le MDP actuel seulement si /me confirme hasPassword === true.
+ * Si false / absent (compte Google), la modale sert à définir un mot de passe.
+ */
+const requiresCurrentPassword = computed(() => auth.user?.hasPassword === true);
 const showDeleteGoogle = computed(() => isGoogleOnlyAccount.value || auth.user?.hasGoogle !== false);
 const showDeletePassword = computed(() => !isGoogleOnlyAccount.value);
 const canSubmitDelete = computed(() => !!deleteGoogleIdToken.value || (!!deletePassword.value && showDeletePassword.value));
@@ -317,10 +328,17 @@ function resetPicture() {
 
 function openUsernameModal() {
     usernameDraft.value = username.value;
+    usernamePassword.value = '';
+    usernamePasswordConfirm.value = '';
+    usernameModalIncludesPassword.value = !username.value.trim() && auth.user?.hasPassword !== true;
     usernameError.value = null;
     accountSuccess.value = null;
     accountError.value = null;
     usernameOpen.value = true;
+}
+
+function isValidNewPassword(value: string) {
+    return value.length >= 8 && /[A-Za-z]/.test(value) && /\d/.test(value);
 }
 
 function openEmailModal() {
@@ -399,10 +417,32 @@ async function saveUsername() {
         return;
     }
 
+    const withPassword = usernameModalIncludesPassword.value;
+    if (withPassword) {
+        if (!isValidNewPassword(usernamePassword.value)) {
+            usernameError.value = 'Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.';
+            return;
+        }
+        if (usernamePassword.value !== usernamePasswordConfirm.value) {
+            usernameError.value = 'La confirmation ne correspond pas au mot de passe.';
+            return;
+        }
+    }
+
     usernameSaving.value = true;
     try {
         await auth.setUsername(value);
         username.value = auth.user?.username ?? value;
+
+        if (withPassword) {
+            await auth.changePassword(
+                null,
+                usernamePassword.value,
+                `Identifiants créés : connectez-vous avec le nom d’utilisateur « ${value} » et le mot de passe que vous venez de définir.`
+            );
+            return;
+        }
+
         usernameOpen.value = false;
         accountSuccess.value = 'Nom d’utilisateur mis à jour.';
         accountError.value = null;
@@ -452,11 +492,11 @@ async function submitPasswordChange() {
     if (passwordSaving.value) return;
     passwordError.value = null;
 
-    if (!currentPassword.value) {
+    if (requiresCurrentPassword.value && !currentPassword.value) {
         passwordError.value = 'Saisissez votre mot de passe actuel.';
         return;
     }
-    if (newPassword.value.length < 8 || !/[A-Za-z]/.test(newPassword.value) || !/\d/.test(newPassword.value)) {
+    if (!isValidNewPassword(newPassword.value)) {
         passwordError.value = 'Le nouveau mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.';
         return;
     }
@@ -467,7 +507,7 @@ async function submitPasswordChange() {
 
     passwordSaving.value = true;
     try {
-        await auth.changePassword(currentPassword.value, newPassword.value);
+        await auth.changePassword(requiresCurrentPassword.value ? currentPassword.value : null, newPassword.value);
     } catch (e: unknown) {
         passwordError.value = e instanceof Error ? e.message : String(e);
         passwordSaving.value = false;
@@ -724,7 +764,7 @@ defineExpose({
                                         </template>
                                     </v-text-field>
                                 </v-col>
-                                <v-col cols="12" md="6">
+                                <v-col v-if="showAccountPasswordField" cols="12" md="6">
                                     <v-label class="mb-2 font-weight-medium">Mot de passe</v-label>
                                     <v-text-field
                                         model-value="••••••••"
@@ -776,8 +816,12 @@ defineExpose({
 
         <AppModalBase
             v-model="usernameOpen"
-            title="Modifier le nom d’utilisateur"
-            subtitle="3–30 caractères : lettres minuscules, chiffres, . _ -"
+            :title="usernameModalIncludesPassword ? 'Créer vos identifiants' : 'Modifier le nom d’utilisateur'"
+            :subtitle="
+                usernameModalIncludesPassword
+                    ? 'Choisissez un nom d’utilisateur et un mot de passe pour vous connecter sans Google.'
+                    : '3–30 caractères : lettres minuscules, chiffres, . _ -'
+            "
             :max-width="440"
             :scrollable="false"
         >
@@ -786,7 +830,38 @@ defineExpose({
                     {{ usernameError }}
                 </AppAlert>
                 <v-label class="mb-2 font-weight-medium">Nom d’utilisateur</v-label>
-                <v-text-field v-model="usernameDraft" color="primary" variant="outlined" hide-details autofocus />
+                <v-text-field
+                    v-model="usernameDraft"
+                    color="primary"
+                    variant="outlined"
+                    hide-details
+                    autofocus
+                    :class="usernameModalIncludesPassword ? 'mb-2' : undefined"
+                />
+                <template v-if="usernameModalIncludesPassword">
+                    <div class="text-caption text-medium-emphasis mb-2">3–30 caractères : lettres minuscules, chiffres, . _ -</div>
+                    <v-label class="mb-1 font-weight-medium">Mot de passe</v-label>
+                    <v-text-field
+                        v-model="usernamePassword"
+                        color="primary"
+                        variant="outlined"
+                        type="password"
+                        autocomplete="new-password"
+                        density="comfortable"
+                        hide-details
+                        class="mb-2"
+                    />
+                    <v-label class="mb-1 font-weight-medium">Confirmer le mot de passe</v-label>
+                    <v-text-field
+                        v-model="usernamePasswordConfirm"
+                        color="primary"
+                        variant="outlined"
+                        type="password"
+                        autocomplete="new-password"
+                        density="comfortable"
+                        hide-details
+                    />
+                </template>
             </form>
 
             <template #footer="{ close }">
@@ -839,7 +914,7 @@ defineExpose({
 
         <AppModalBase
             v-model="passwordOpen"
-            title="Modifier le mot de passe"
+            :title="requiresCurrentPassword ? 'Modifier le mot de passe' : 'Définir un mot de passe'"
             subtitle="Après changement, toutes les sessions sont invalidées."
             :max-width="440"
             :scrollable="false"
@@ -848,17 +923,19 @@ defineExpose({
                 <AppAlert v-if="passwordError" type="error" class="mb-3" closable @dismiss="passwordError = null">
                     {{ passwordError }}
                 </AppAlert>
-                <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
-                <v-text-field
-                    v-model="currentPassword"
-                    color="primary"
-                    variant="outlined"
-                    type="password"
-                    autocomplete="current-password"
-                    density="comfortable"
-                    hide-details
-                    class="mb-2"
-                />
+                <template v-if="requiresCurrentPassword">
+                    <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
+                    <v-text-field
+                        v-model="currentPassword"
+                        color="primary"
+                        variant="outlined"
+                        type="password"
+                        autocomplete="current-password"
+                        density="comfortable"
+                        hide-details
+                        class="mb-2"
+                    />
+                </template>
                 <v-label class="mb-1 font-weight-medium">Nouveau mot de passe</v-label>
                 <v-text-field
                     v-model="newPassword"

@@ -9,6 +9,7 @@ const REFRESH_KEY = 'spendup_refresh_token';
 const ACCESS_KEY = 'spendup_access_token';
 const PENDING_EMAIL_KEY = 'spendup_pending_email';
 const PENDING_PASSWORD_KEY = 'spendup_pending_password';
+const LOGIN_NOTICE_KEY = 'spendup_login_notice';
 
 function readRefreshToken(): string | null {
     return localStorage.getItem(REFRESH_KEY);
@@ -40,6 +41,20 @@ function writePendingPassword(password: string | null) {
     } else {
         sessionStorage.removeItem(PENDING_PASSWORD_KEY);
     }
+}
+
+function writeLoginNotice(message: string | null) {
+    if (message) {
+        sessionStorage.setItem(LOGIN_NOTICE_KEY, message);
+    } else {
+        sessionStorage.removeItem(LOGIN_NOTICE_KEY);
+    }
+}
+
+function readAndClearLoginNotice(): string | null {
+    const message = sessionStorage.getItem(LOGIN_NOTICE_KEY);
+    sessionStorage.removeItem(LOGIN_NOTICE_KEY);
+    return message;
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -173,10 +188,7 @@ export const useAuthStore = defineStore('auth', {
             const password = this.pendingPassword;
             this.clearPendingRegistration();
             if (!password) {
-                await router.push({
-                    path: '/auth/login',
-                    query: { notice: 'E-mail confirmé. Veuillez vous connecter.' }
-                });
+                await this.goToLogin('E-mail confirmé. Veuillez vous connecter.');
                 return;
             }
             await this.login(email, password);
@@ -192,10 +204,7 @@ export const useAuthStore = defineStore('auth', {
 
         async resetPassword(token: string, newPassword: string) {
             await authApi.resetPassword(token, newPassword);
-            await router.push({
-                path: '/auth/login',
-                query: { notice: 'Mot de passe mis à jour. Veuillez vous connecter.' }
-            });
+            await this.goToLogin('Mot de passe mis à jour. Veuillez vous connecter.');
         },
 
         async confirmEmailChange(email: string, code: string) {
@@ -293,10 +302,10 @@ export const useAuthStore = defineStore('auth', {
             await this.fetchMe();
         },
 
-        async changePassword(currentPassword: string, newPassword: string) {
+        async changePassword(currentPassword: string | null, newPassword: string, reLoginMessage?: string) {
             const token = await this.requireAccessToken();
             await authApi.changePassword(token, currentPassword, newPassword);
-            await this.forceReLogin('Mot de passe mis à jour. Veuillez vous reconnecter.');
+            await this.forceReLogin(reLoginMessage ?? 'Mot de passe mis à jour. Veuillez vous reconnecter.');
         },
 
         async deleteAccount(payload: { currentPassword?: string; googleIdToken?: string }) {
@@ -338,14 +347,21 @@ export const useAuthStore = defineStore('auth', {
             await router.push('/');
         },
 
+        /** Notice affichée une fois sur /auth/login (sessionStorage, pas dans l’URL). */
+        consumeLoginNotice(): string | null {
+            return readAndClearLoginNotice();
+        },
+
+        async goToLogin(message?: string) {
+            writeLoginNotice(message ?? null);
+            await router.push('/auth/login');
+        },
+
         /** Force re-login after password/email change invalidates JWT. */
         async forceReLogin(message?: string) {
             this.clearSession();
             this.returnUrl = null;
-            await router.push({
-                path: '/auth/login',
-                query: message ? { notice: message } : undefined
-            });
+            await this.goToLogin(message);
         }
     }
 });
