@@ -4,7 +4,7 @@ import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import { fr } from 'vuetify/locale';
 
-import { BLUE_THEME } from '@/theme/LightTheme';
+import { BLUE_THEME, AQUA_THEME, PURPLE_THEME, GREEN_THEME, CYAN_THEME, ORANGE_THEME } from '@/theme/LightTheme';
 import {
     DARK_BLUE_THEME,
     DARK_AQUA_THEME,
@@ -36,6 +36,11 @@ export default createVuetify({
         defaultTheme: 'BLUE_THEME',
         themes: {
             BLUE_THEME,
+            AQUA_THEME,
+            PURPLE_THEME,
+            GREEN_THEME,
+            CYAN_THEME,
+            ORANGE_THEME,
 
             DARK_BLUE_THEME,
             DARK_AQUA_THEME,

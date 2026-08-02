@@ -1,10 +1,32 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { PaletteIcon } from 'vue-tabler-icons';
 import { ThemeTab } from '@/features/applications';
+import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 
 const tab = ref('Theme');
+const appSettings = useAppSettingsStore();
+const draftBaseline = ref(appSettings.snapshot());
+const saving = ref(false);
+
+onMounted(() => {
+    draftBaseline.value = appSettings.snapshot();
+});
+
+function saveSettings() {
+    saving.value = true;
+    try {
+        appSettings.persist();
+        draftBaseline.value = appSettings.snapshot();
+    } finally {
+        saving.value = false;
+    }
+}
+
+function cancelSettings() {
+    appSettings.applySnapshot(draftBaseline.value);
+}
 </script>
 
 <template>
@@ -39,8 +61,8 @@ const tab = ref('Theme');
             <v-divider class="flex-grow-0" />
 
             <div class="applications-actions-bar">
-                <v-btn color="primary" class="mr-3" flat>Enregistrer</v-btn>
-                <v-btn class="bg-lighterror text-error" flat>Annuler</v-btn>
+                <v-btn color="primary" class="mr-3" flat :loading="saving" @click="saveSettings">Enregistrer</v-btn>
+                <v-btn class="bg-lighterror text-error" flat @click="cancelSettings">Annuler</v-btn>
             </div>
         </v-card>
     </div>

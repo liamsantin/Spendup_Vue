@@ -34,7 +34,7 @@ function pickBool(source: Record<string, unknown>, ...keys: string[]): boolean |
 /** Normalise /me (camelCase / snake_case) pour les flags d’auth. */
 function normalizeMe(raw: Me | null | undefined): Me {
     if (!raw || typeof raw !== 'object') {
-        return raw as Me;
+        throw new ApiError('Profil utilisateur invalide.', 0);
     }
     const source = raw as Me & Record<string, unknown>;
     const hasPassword = pickBool(source, 'hasPassword', 'has_password', 'HasPassword');
@@ -181,9 +181,21 @@ export const authApi = {
                 data: form,
                 validateStatus: () => true,
                 headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': undefined
-                }
+                    Authorization: `Bearer ${accessToken}`
+                },
+                // Retire le Content-Type JSON par défaut pour laisser le navigateur poser la boundary multipart.
+                transformRequest: [
+                    (data, headers) => {
+                        if (data instanceof FormData) {
+                            if (headers && typeof (headers as { delete?: (key: string) => void }).delete === 'function') {
+                                (headers as { delete: (key: string) => void }).delete('Content-Type');
+                            } else if (headers) {
+                                delete (headers as Record<string, unknown>)['Content-Type'];
+                            }
+                        }
+                        return data;
+                    }
+                ]
             });
 
             const status = res.status;

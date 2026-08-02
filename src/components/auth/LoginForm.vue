@@ -20,7 +20,16 @@ onMounted(() => {
 });
 
 function validate(_values: Record<string, unknown>, { setErrors }: { setErrors: (errors: Record<string, string>) => void }) {
-    return authStore.login(identifier.value, password.value).catch((error: unknown) => {
+    const id = identifier.value.trim();
+    if (!id) {
+        setErrors({ apiError: 'Saisissez votre nom d’utilisateur ou e-mail.' });
+        return;
+    }
+    if (!password.value) {
+        setErrors({ apiError: 'Saisissez votre mot de passe.' });
+        return;
+    }
+    return authStore.login(id, password.value).catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);
         setErrors({ apiError: message });
     });

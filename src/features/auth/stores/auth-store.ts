@@ -1,16 +1,21 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { router } from '@/router';
-import { authApi } from '@/features/auth/api';
+import { authApi, ApiError } from '@/features/auth/api';
 import type { AuthSession, AuthTokens, Me, UpdateProfilePayload } from '@/features/auth/types';
 
 export const APP_HOME_ROUTE = '/app';
 
 const REFRESH_KEY = 'spendup_refresh_token';
 const ACCESS_KEY = 'spendup_access_token';
+const EXPIRES_AT_KEY = 'spendup_access_expires_at';
 const PENDING_EMAIL_KEY = 'spendup_pending_email';
-const PENDING_PASSWORD_KEY = 'spendup_pending_password';
 const LOGIN_NOTICE_KEY = 'spendup_login_notice';
+/** Marge avant expiration pour déclencher un refresh proactif. */
+const ACCESS_EXPIRY_SKEW_MS = 30_000;
+
+/** Mot de passe post-inscription — mémoire seule (jamais sessionStorage). */
+let pendingPasswordMemory: string | null = null;
 
 function readRefreshToken(): string | null {
     return localStorage.getItem(REFRESH_KEY);
@@ -18,6 +23,10 @@ function readRefreshToken(): string | null {
 
 function readAccessToken(): string | null {
     return sessionStorage.getItem(ACCESS_KEY);
+}
+
+function readExpiresAt(): string | null {
+    return sessionStorage.getItem(EXPIRES_AT_KEY);
 }
 
 function readPendingEmail(): string | null {
@@ -29,18 +38,6 @@ function writePendingEmail(email: string | null) {
         sessionStorage.setItem(PENDING_EMAIL_KEY, email);
     } else {
         sessionStorage.removeItem(PENDING_EMAIL_KEY);
-    }
-}
-
-function readPendingPassword(): string | null {
-    return sessionStorage.getItem(PENDING_PASSWORD_KEY);
-}
-
-function writePendingPassword(password: string | null) {
-    if (password) {
-        sessionStorage.setItem(PENDING_PASSWORD_KEY, password);
-    } else {
-        sessionStorage.removeItem(PENDING_PASSWORD_KEY);
     }
 }
 
@@ -58,16 +55,34 @@ function readAndClearLoginNotice(): string | null {
     return message;
 }
 
+/** Nettoyage legacy : ancien stockage plaintext du mot de passe. */
+function clearLegacyPendingPassword() {
+    sessionStorage.removeItem('spendup_pending_password');
+}
+
+function isAccessExpired(expiresAt: string | null | undefined, skewMs = ACCESS_EXPIRY_SKEW_MS): boolean {
+    if (!expiresAt) return false;
+    const ts = Date.parse(expiresAt);
+    if (Number.isNaN(ts)) return false;
+    return Date.now() >= ts - skewMs;
+}
+
 export const useAuthStore = defineStore('auth', () => {
+    clearLegacyPendingPassword();
+
     const accessToken = ref<string | null>(readAccessToken());
     const refreshToken = ref<string | null>(readRefreshToken());
+    const expiresAt = ref<string | null>(readExpiresAt());
     const twoFactorToken = ref<string | null>(null);
     /** E-mail en attente de confirmation après inscription. */
     const pendingEmail = ref<string | null>(readPendingEmail());
-    /** Mot de passe temporaire pour login auto après confirm-email (sessionStorage). */
-    const pendingPassword = ref<string | null>(readPendingPassword());
+    /** Mot de passe temporaire pour login auto après confirm-email (mémoire seule). */
+    const pendingPassword = ref<string | null>(pendingPasswordMemory);
     const user = ref<Me | null>(null);
     const returnUrl = ref<string | null>(null);
+
+    /** Mutex partagé store ↔ fetchWrapper — un seul refresh à la fois. */
+    let refreshInFlight: Promise<boolean> | null = null;
 
     const isAuthenticated = computed(() => !!refreshToken.value || !!accessToken.value);
 
@@ -86,8 +101,8 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     function setPendingPassword(password: string | null) {
+        pendingPasswordMemory = password;
         pendingPassword.value = password;
-        writePendingPassword(password);
     }
 
     function clearPendingRegistration() {
@@ -98,18 +113,27 @@ export const useAuthStore = defineStore('auth', () => {
     function setTokens(tokens: AuthTokens) {
         accessToken.value = tokens.accessToken;
         refreshToken.value = tokens.refreshToken;
+        expiresAt.value = tokens.expiresAt || null;
         sessionStorage.setItem(ACCESS_KEY, tokens.accessToken);
         localStorage.setItem(REFRESH_KEY, tokens.refreshToken);
+        if (tokens.expiresAt) {
+            sessionStorage.setItem(EXPIRES_AT_KEY, tokens.expiresAt);
+        } else {
+            sessionStorage.removeItem(EXPIRES_AT_KEY);
+        }
     }
 
     function clearSession() {
         accessToken.value = null;
         refreshToken.value = null;
+        expiresAt.value = null;
         twoFactorToken.value = null;
         clearPendingRegistration();
         user.value = null;
         sessionStorage.removeItem(ACCESS_KEY);
+        sessionStorage.removeItem(EXPIRES_AT_KEY);
         localStorage.removeItem(REFRESH_KEY);
+        clearLegacyPendingPassword();
     }
 
     async function applySession(session: AuthSession): Promise<'ok' | '2fa'> {
@@ -264,14 +288,22 @@ export const useAuthStore = defineStore('auth', () => {
 
     async function refreshSession(): Promise<boolean> {
         if (!refreshToken.value) return false;
-        try {
-            const tokens = await authApi.refresh(refreshToken.value);
-            setTokens(tokens);
-            return true;
-        } catch {
-            clearSession();
-            return false;
-        }
+        if (refreshInFlight) return refreshInFlight;
+
+        refreshInFlight = (async () => {
+            try {
+                const tokens = await authApi.refresh(refreshToken.value!);
+                setTokens(tokens);
+                return true;
+            } catch {
+                clearSession();
+                return false;
+            } finally {
+                refreshInFlight = null;
+            }
+        })();
+
+        return refreshInFlight;
     }
 
     async function fetchMe() {
@@ -280,8 +312,19 @@ export const useAuthStore = defineStore('auth', () => {
             user.value = null;
             return null;
         }
-        user.value = await authApi.me(token);
-        return user.value;
+        try {
+            user.value = await authApi.me(token);
+            return user.value;
+        } catch (e: unknown) {
+            if (e instanceof ApiError && e.status === 401 && refreshToken.value) {
+                const ok = await refreshSession();
+                if (ok && accessToken.value) {
+                    user.value = await authApi.me(accessToken.value);
+                    return user.value;
+                }
+            }
+            throw e;
+        }
     }
 
     async function updateProfile(payload: UpdateProfilePayload) {
@@ -342,8 +385,16 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function ensureAccessToken(): Promise<string | null> {
-        if (accessToken.value) return accessToken.value;
-        if (!refreshToken.value) return null;
+        const hasUsableAccess = !!accessToken.value && !isAccessExpired(expiresAt.value);
+        if (hasUsableAccess) return accessToken.value;
+
+        if (!refreshToken.value) {
+            if (accessToken.value && isAccessExpired(expiresAt.value)) {
+                clearSession();
+            }
+            return null;
+        }
+
         const ok = await refreshSession();
         return ok ? accessToken.value : null;
     }
@@ -391,6 +442,7 @@ export const useAuthStore = defineStore('auth', () => {
     return {
         accessToken,
         refreshToken,
+        expiresAt,
         twoFactorToken,
         pendingEmail,
         pendingPassword,

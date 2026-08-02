@@ -42,12 +42,28 @@ async function onSubmit() {
     success.value = null;
 
     const value = identifierTrimmed.value;
-    if (!value) return;
+    if (!value) {
+        error.value = 'Saisissez un nom d’utilisateur ou un e-mail.';
+        return;
+    }
 
     const asEmail = value.includes('@');
-    if (asEmail && !/.+@.+\..+/.test(value)) return;
-    if (!asEmail && !isValidUsername(value)) return;
-    if (password.value !== confirmPassword.value) return;
+    if (asEmail && !/.+@.+\..+/.test(value)) {
+        error.value = 'Saisissez une adresse e-mail valide.';
+        return;
+    }
+    if (!asEmail && !isValidUsername(value)) {
+        error.value = 'Le nom d’utilisateur doit faire 3–30 caractères ([a-z0-9._-]).';
+        return;
+    }
+    if (password.value.length < 8 || !/[A-Za-z]/.test(password.value) || !/\d/.test(password.value)) {
+        error.value = 'Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.';
+        return;
+    }
+    if (password.value !== confirmPassword.value) {
+        error.value = 'La confirmation ne correspond pas au mot de passe.';
+        return;
+    }
 
     loading.value = true;
     try {

@@ -84,6 +84,9 @@ const avatarDraft = ref<string | null>(null);
 const pictureLightboxOpen = ref(false);
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
+/** Garde-fou courses async pour l’affichage avatar (blob). */
+let avatarDisplayRequestId = 0;
+const emailGoogleIdToken = ref<string | null>(null);
 
 const avatarSrc = computed(() => avatarDisplaySrc.value || undefined);
 const currentEmail = computed(() => auth.user?.email ?? null);
@@ -100,6 +103,13 @@ const showAccountPasswordField = computed(() => !!username.value.trim());
  * Si false / absent (compte Google), la modale sert à définir un mot de passe.
  */
 const requiresCurrentPassword = computed(() => auth.user?.hasPassword === true);
+const showEmailPassword = computed(() => !isGoogleOnlyAccount.value);
+const showEmailGoogle = computed(() => isGoogleOnlyAccount.value || auth.user?.hasGoogle !== false);
+const canSubmitEmailChange = computed(() => {
+    if (showEmailPassword.value && emailCurrentPassword.value) return true;
+    if (showEmailGoogle.value && emailGoogleIdToken.value) return true;
+    return false;
+});
 const showDeleteGoogle = computed(() => isGoogleOnlyAccount.value || auth.user?.hasGoogle !== false);
 const showDeletePassword = computed(() => !isGoogleOnlyAccount.value);
 const canSubmitDelete = computed(() => !!deleteGoogleIdToken.value || (!!deletePassword.value && showDeletePassword.value));
@@ -139,12 +149,16 @@ function revokeDisplayBlob() {
 }
 
 async function resolveAvatarDisplay(picture: string | null) {
-    revokeDisplayBlob();
-    avatarDisplaySrc.value = DEFAULT_AVATAR_SRC;
+    const id = ++avatarDisplayRequestId;
 
-    if (!picture) return;
+    if (!picture) {
+        revokeDisplayBlob();
+        avatarDisplaySrc.value = DEFAULT_AVATAR_SRC;
+        return;
+    }
 
     if (isCatalogProfilePicture(picture)) {
+        revokeDisplayBlob();
         avatarDisplaySrc.value = catalogAvatarSrc(picture);
         return;
     }
@@ -152,12 +166,21 @@ async function resolveAvatarDisplay(picture: string | null) {
     if (isUploadedProfilePicture(picture)) {
         try {
             const blob = await auth.fetchAvatarBlob();
-            avatarDisplaySrc.value = URL.createObjectURL(blob);
+            if (id !== avatarDisplayRequestId) return;
+            const nextUrl = URL.createObjectURL(blob);
+            revokeDisplayBlob();
+            avatarDisplaySrc.value = nextUrl;
         } catch (e: unknown) {
+            if (id !== avatarDisplayRequestId) return;
             pictureError.value = e instanceof Error ? e.message : String(e);
+            revokeDisplayBlob();
             avatarDisplaySrc.value = DEFAULT_AVATAR_SRC;
         }
+        return;
     }
+
+    revokeDisplayBlob();
+    avatarDisplaySrc.value = DEFAULT_AVATAR_SRC;
 }
 
 function hydrateFromUser(user: Me | null) {
@@ -254,6 +277,11 @@ async function loadProfile() {
     loading.value = true;
     profileError.value = null;
     try {
+        // Hydrate d’abord depuis le cache pour éviter un formulaire vide éditable.
+        if (auth.user && !baseline.value) {
+            hydrateFromUser(auth.user);
+            commitBaseline();
+        }
         const user = await auth.fetchMe();
         hydrateFromUser(user);
         commitBaseline();
@@ -413,10 +441,17 @@ function isValidNewPassword(value: string) {
 function openEmailModal() {
     emailDraft.value = '';
     emailCurrentPassword.value = '';
+    emailGoogleIdToken.value = null;
     emailError.value = null;
     accountSuccess.value = null;
     accountError.value = null;
     emailOpen.value = true;
+}
+
+async function onEmailGoogleCredential(idToken: string) {
+    emailGoogleIdToken.value = idToken;
+    emailError.value = null;
+    await submitEmailChange();
 }
 
 function openPasswordModal() {
@@ -531,8 +566,8 @@ async function submitEmailChange() {
         emailError.value = 'Saisissez une adresse e-mail valide.';
         return;
     }
-    if (!emailCurrentPassword.value) {
-        emailError.value = 'Le mot de passe actuel est requis.';
+    if (!canSubmitEmailChange.value) {
+        emailError.value = isGoogleOnlyAccount.value ? 'Confirmez avec Google pour continuer.' : 'Le mot de passe actuel est requis.';
         return;
     }
 
@@ -540,8 +575,8 @@ async function submitEmailChange() {
     try {
         await auth.changeEmail({
             newEmail: email,
-            currentPassword: emailCurrentPassword.value,
-            googleIdToken: null
+            currentPassword: showEmailPassword.value ? emailCurrentPassword.value : null,
+            googleIdToken: emailGoogleIdToken.value
         });
         emailOpen.value = false;
         accountSuccess.value = null;
@@ -552,6 +587,7 @@ async function submitEmailChange() {
         });
     } catch (e: unknown) {
         emailError.value = e instanceof Error ? e.message : String(e);
+        emailGoogleIdToken.value = null;
     } finally {
         emailSaving.value = false;
     }
@@ -588,7 +624,11 @@ watch(usernameOpen, (open) => {
 });
 
 watch(emailOpen, (open) => {
-    if (!open) emailError.value = null;
+    if (!open) {
+        emailError.value = null;
+        emailGoogleIdToken.value = null;
+        emailCurrentPassword.value = '';
+    }
 });
 
 watch(passwordOpen, (open) => {
@@ -612,6 +652,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    avatarDisplayRequestId += 1;
     revokeDisplayBlob();
 });
 
@@ -629,7 +670,7 @@ defineExpose({
 
 <template>
     <div class="account-tab">
-        <div v-if="loading && !auth.user" class="d-flex justify-center py-10">
+        <div v-if="loading && !baseline" class="d-flex justify-center py-10">
             <v-progress-circular indeterminate color="primary" size="36" />
         </div>
 
@@ -722,27 +763,46 @@ defineExpose({
                             <v-row dense>
                                 <v-col cols="12" md="6">
                                     <v-label class="mb-2 font-weight-medium">Prénom</v-label>
-                                    <v-text-field v-model="firstName" color="primary" variant="outlined" hide-details />
+                                    <v-text-field v-model="firstName" color="primary" variant="outlined" hide-details :disabled="loading" />
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-label class="mb-2 font-weight-medium">Nom</v-label>
-                                    <v-text-field v-model="name" color="primary" variant="outlined" hide-details />
+                                    <v-text-field v-model="name" color="primary" variant="outlined" hide-details :disabled="loading" />
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-label class="mb-2 font-weight-medium">Téléphone</v-label>
-                                    <v-text-field v-model="phone" color="primary" variant="outlined" type="tel" hide-details />
+                                    <v-text-field
+                                        v-model="phone"
+                                        color="primary"
+                                        variant="outlined"
+                                        type="tel"
+                                        hide-details
+                                        :disabled="loading"
+                                    />
                                 </v-col>
                                 <v-col cols="12" md="6">
                                     <v-label class="mb-2 font-weight-medium">Date de naissance</v-label>
-                                    <AppDatePicker v-model="birthDateModel" :max="birthDateMax" color="primary" hide-details />
+                                    <AppDatePicker
+                                        v-model="birthDateModel"
+                                        :max="birthDateMax"
+                                        color="primary"
+                                        hide-details
+                                        :disabled="loading"
+                                    />
                                 </v-col>
                                 <v-col cols="12" md="5">
                                     <v-label class="mb-2 font-weight-medium">Rue</v-label>
-                                    <v-text-field v-model="street" color="primary" variant="outlined" hide-details />
+                                    <v-text-field v-model="street" color="primary" variant="outlined" hide-details :disabled="loading" />
                                 </v-col>
                                 <v-col cols="12" md="2">
                                     <v-label class="mb-2 font-weight-medium">N°</v-label>
-                                    <v-text-field v-model="streetNumber" color="primary" variant="outlined" hide-details />
+                                    <v-text-field
+                                        v-model="streetNumber"
+                                        color="primary"
+                                        variant="outlined"
+                                        hide-details
+                                        :disabled="loading"
+                                    />
                                 </v-col>
                                 <v-col cols="12" md="5">
                                     <v-label class="mb-2 font-weight-medium">Pays</v-label>
@@ -757,7 +817,7 @@ defineExpose({
                                         clearable
                                         auto-select-first
                                         :loading="countries.loading"
-                                        :disabled="countries.loading && !countries.items.length"
+                                        :disabled="loading || (countries.loading && !countries.items.length)"
                                         no-data-text="Aucun pays disponible"
                                     />
                                 </v-col>
@@ -1030,23 +1090,41 @@ defineExpose({
                     density="comfortable"
                     hide-details
                     class="mb-2"
+                    :disabled="emailSaving"
                 />
-                <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
-                <v-text-field
-                    v-model="emailCurrentPassword"
-                    color="primary"
-                    variant="outlined"
-                    type="password"
-                    autocomplete="current-password"
-                    density="comfortable"
-                    hide-details
-                />
+                <template v-if="showEmailPassword">
+                    <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
+                    <v-text-field
+                        v-model="emailCurrentPassword"
+                        color="primary"
+                        variant="outlined"
+                        type="password"
+                        autocomplete="current-password"
+                        density="comfortable"
+                        hide-details
+                        :disabled="emailSaving"
+                    />
+                </template>
+                <template v-else-if="showEmailGoogle">
+                    <p class="text-subtitle-2 text-medium-emphasis mb-3">Compte Google : confirmez avec Google pour changer l’e-mail.</p>
+                    <GoogleSignInButton @credential="onEmailGoogleCredential" />
+                </template>
             </form>
 
             <template #footer="{ close }">
                 <v-btn variant="text" flat :disabled="emailSaving" @click="close">Annuler</v-btn>
                 <v-spacer />
-                <v-btn color="primary" flat type="submit" form="account-email-form" :loading="emailSaving">Continuer</v-btn>
+                <v-btn
+                    v-if="showEmailPassword"
+                    color="primary"
+                    flat
+                    type="submit"
+                    form="account-email-form"
+                    :loading="emailSaving"
+                    :disabled="!canSubmitEmailChange"
+                >
+                    Continuer
+                </v-btn>
             </template>
         </AppModalBase>
 

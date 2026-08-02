@@ -18,7 +18,12 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
         }
         if (!auth.user) {
             try {
-                await auth.fetchMe();
+                const me = await auth.fetchMe();
+                if (!me || !auth.isAuthenticated) {
+                    auth.clearSession();
+                    auth.returnUrl = to.fullPath;
+                    return next('/auth/login');
+                }
             } catch {
                 auth.clearSession();
                 auth.returnUrl = to.fullPath;

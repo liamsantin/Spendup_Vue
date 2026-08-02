@@ -8,8 +8,6 @@ import { createApiAxios, getApiBaseUrl } from '@/utils/helpers/axios-helpers';
  */
 const domainAxios = createApiAxios();
 
-let refreshInFlight: Promise<boolean> | null = null;
-
 export const fetchWrapper = {
     get: request('GET'),
     post: request('POST'),
@@ -24,7 +22,7 @@ function request(method: Method) {
                 url: toRequestUrl(url),
                 method,
                 data: body,
-                headers: authHeader(url),
+                headers: await authHeader(url),
                 validateStatus: () => true
             };
 
@@ -58,40 +56,30 @@ function toRequestUrl(url: string): string {
     return url;
 }
 
-function authHeader(url: string): Record<string, string> {
+async function authHeader(url: string): Promise<Record<string, string>> {
     const auth = useAuthStore();
     const base = getApiBaseUrl();
-    const isLoggedIn = !!auth.accessToken;
-    const isApiUrl = url.startsWith(base) || url.startsWith('/') || !url.startsWith('http');
-    if (isLoggedIn && isApiUrl && auth.accessToken) {
-        return { Authorization: `Bearer ${auth.accessToken}` };
+    const isApiUrl = (!!base && url.startsWith(base)) || url.startsWith('/') || !url.startsWith('http');
+    if (!isApiUrl) return {};
+
+    const token = await auth.ensureAccessToken();
+    if (token) {
+        return { Authorization: `Bearer ${token}` };
     }
     return {};
-}
-
-async function tryRefreshOnce(): Promise<boolean> {
-    if (!refreshInFlight) {
-        const auth = useAuthStore();
-        refreshInFlight = auth.refreshSession().finally(() => {
-            refreshInFlight = null;
-        });
-    }
-    return refreshInFlight;
 }
 
 async function handleResponse(status: number, data: unknown, statusText: string, retry: () => Promise<unknown>): Promise<unknown> {
     if (status === 401) {
         const auth = useAuthStore();
         if (auth.refreshToken) {
-            const refreshed = await tryRefreshOnce();
+            const refreshed = await auth.refreshSession();
             if (refreshed) {
                 return retry();
             }
         }
-        if (auth.isAuthenticated) {
-            auth.clearSession();
-            await auth.forceReLogin();
-        }
+        // Toujours forcer le re-login : clearSession a déjà pu rendre isAuthenticated=false.
+        await auth.forceReLogin();
         const error = (data && typeof data === 'object' && 'message' in data && (data as { message?: string }).message) || statusText;
         return Promise.reject(error);
     }
