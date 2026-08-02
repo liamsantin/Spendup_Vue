@@ -25,12 +25,13 @@ export const CSP_DEV_REPORT_ONLY = [
 
 /**
  * Prod enforce — pas de `unsafe-eval` ni `ws` (HMR).
- * `http:` conservé pour preview local → API ; en prod réelle l’API est en HTTPS.
- * `unsafe-inline` conservé pour styles Vuetify.
+ * connect-src resserré : self, Google, localhost (preview → API), https/wss.
  */
-export const CSP_PROD_ENFORCE = [...SHARED, "script-src 'self' https://accounts.google.com", "connect-src 'self' http: https: wss:"].join(
-    '; '
-);
+export const CSP_PROD_ENFORCE = [
+    ...SHARED,
+    "script-src 'self' https://accounts.google.com",
+    "connect-src 'self' https://accounts.google.com https://*.googleapis.com http://localhost:* http://127.0.0.1:* https: wss:"
+].join('; ');
 
 export const SECURITY_HEADERS_BASE = {
     'Referrer-Policy': 'strict-origin-when-cross-origin',

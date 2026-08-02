@@ -121,6 +121,7 @@
             "notifications": "Notifications",
             "security": "Security"
         },
+        "leaveDirtyConfirm": "You have unsaved changes. Leave this page?",
         "notifications": {
             "example": {
                 "title": "Email digest",
@@ -163,6 +164,7 @@
                 "country": "Country"
             },
             "noCountries": "No countries available",
+            "countriesLoadFailed": "Could not load the country list.",
             "errors": {
                 "copyPublicId": "Unable to copy the identifier."
             }
@@ -503,6 +505,19 @@
             "allSessionsRevoked": "All sessions were signed out. Please sign in again.",
             "passwordUpdatedRelogin": "Password updated. Please sign in again.",
             "accountDeleted": "Your account has been permanently deleted."
+        },
+        "login": {
+            "username": "Username",
+            "email": "Email",
+            "password": "Password",
+            "forgotPassword": "Forgot password?",
+            "submit": "Sign in",
+            "or": "or",
+            "errors": {
+                "required": "Required field.",
+                "identifier": "Enter your username or email.",
+                "password": "Enter your password."
+            }
         },
         "forgotPassword": {
             "title": "Forgot password?",

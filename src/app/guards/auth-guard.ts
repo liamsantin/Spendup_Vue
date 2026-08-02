@@ -25,13 +25,13 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
             try {
                 const me = await auth.fetchMe();
                 if (!me || !auth.isAuthenticated) {
-                    auth.clearSession();
                     auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
+                    await auth.forceReLogin();
                     return next('/auth/login');
                 }
             } catch {
-                auth.clearSession();
                 auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
+                await auth.forceReLogin();
                 return next('/auth/login');
             }
         }

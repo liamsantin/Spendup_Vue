@@ -21,6 +21,7 @@ import { i18n } from '@/plugins/i18n';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 import { isIdleSessionError, isIdleSessionMessage } from '@/features/auth/idle-session';
+import { clearCsrfToken, rememberCsrfToken } from '@/features/auth/csrf';
 import { isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 
 function t(key: string) {
@@ -38,11 +39,13 @@ export const useAuthStore = defineStore('auth', () => {
     const cookieMode = isAuthCookieMode();
     if (cookieMode) {
         clearStoredRefreshToken();
+        // Access mémoire seule : purger un éventuel access legacy en sessionStorage.
+        clearStoredTokens();
     }
 
-    const accessToken = ref<string | null>(readAccessToken());
+    const accessToken = ref<string | null>(cookieMode ? null : readAccessToken());
     const refreshToken = ref<string | null>(cookieMode ? null : readRefreshToken());
-    const expiresAt = ref<string | null>(readExpiresAt());
+    const expiresAt = ref<string | null>(cookieMode ? null : readExpiresAt());
     const twoFactorToken = ref<string | null>(null);
     /** E-mail en attente de confirmation après inscription. */
     const pendingEmail = ref<string | null>(readPendingEmail());
@@ -57,7 +60,8 @@ export const useAuthStore = defineStore('auth', () => {
     let bootstrapInFlight: Promise<void> | null = null;
     let bootstrapDone = false;
 
-    const isAuthenticated = computed(() => !!refreshToken.value || !!accessToken.value);
+    /** Cookie-mode : access mémoire ; session restaurée via `bootstrapSession` (cookie refresh). */
+    const isAuthenticated = computed(() => !!accessToken.value || (!cookieMode && !!refreshToken.value));
 
     const displayName = computed(() => {
         if (!user.value) return '';
@@ -87,12 +91,17 @@ export const useAuthStore = defineStore('auth', () => {
         accessToken.value = tokens.accessToken;
         expiresAt.value = tokens.expiresAt || null;
         if (cookieMode) {
+            rememberCsrfToken(tokens.csrfToken);
             refreshToken.value = null;
-            writeTokens(tokens.accessToken, null, tokens.expiresAt || null, { persistRefresh: false });
+            writeTokens(tokens.accessToken, null, tokens.expiresAt || null, {
+                persistRefresh: false,
+                persistAccess: false
+            });
         } else {
             refreshToken.value = tokens.refreshToken ?? null;
             writeTokens(tokens.accessToken, tokens.refreshToken ?? null, tokens.expiresAt || null, {
-                persistRefresh: true
+                persistRefresh: true,
+                persistAccess: true
             });
         }
     }
@@ -105,6 +114,9 @@ export const useAuthStore = defineStore('auth', () => {
         clearPendingRegistration();
         user.value = null;
         clearStoredTokens();
+        clearCsrfToken();
+        bootstrapDone = false;
+        bootstrapInFlight = null;
         useUserSettingsStore().reset();
     }
 
@@ -113,6 +125,7 @@ export const useAuthStore = defineStore('auth', () => {
             twoFactorToken.value = session.twoFactorToken;
             return '2fa';
         }
+        rememberCsrfToken(session.csrfToken);
         if (!session.accessToken) {
             throw new Error('Jeton d’accès manquant dans la réponse d’authentification.');
         }

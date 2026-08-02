@@ -59,6 +59,7 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
             error.value = null;
             try {
                 const result = await userSettingsApi.get();
+                // Defaults uniquement pour les clés absentes du GET (UI) — le PUT renvoie le draft hydraté, pas un second merge.
                 settings.value = cloneSettings({ ...USER_SETTINGS_DEFAULTS, ...result });
                 loaded.value = true;
                 applyUserSettingsToRuntime(settings.value);

@@ -8,6 +8,7 @@ export { useIdleLogout } from './composables/useIdleLogout';
 export { useProfileAvatarUrl } from './composables/useProfileAvatarUrl';
 export { withStepUpRetry, isStepUpRequired, getStepUpChallenge, STEP_UP_REQUIRED_CODE } from './step-up';
 export { isIdleSessionError, isIdleSessionMessage } from './idle-session';
+export { CSRF_COOKIE_NAME, CSRF_HEADER_NAME, getCsrfToken, rememberCsrfToken, clearCsrfToken, csrfHeaderRecord } from './csrf';
 export { useStepUpStore } from './stores/step-up-store';
 export { USERNAME_PATTERN, normalizeUsername, isValidUsername } from './types';
 export {

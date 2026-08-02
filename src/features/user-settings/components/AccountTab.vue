@@ -692,7 +692,7 @@ watch(deleteOpen, (open) => {
 onMounted(() => {
     void loadProfile();
     void countries.ensureLoaded().catch(() => {
-        // Erreur déjà dans countries.error — le select reste vide.
+        /* countries.error exposé dans AccountPersonalCard */
     });
 });
 
@@ -751,6 +751,7 @@ defineExpose({
                     :loading="loading"
                     :countries="countries.items"
                     :countries-loading="countries.loading"
+                    :countries-error="countries.error"
                     :public-id="displayPublicId"
                     :error="profileError"
                     :birth-date-max="birthDateMax"

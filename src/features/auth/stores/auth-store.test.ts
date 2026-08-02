@@ -219,7 +219,7 @@ describe('useAuthStore', () => {
             createTestPinia();
         });
 
-        it('n’écrit pas le refresh en localStorage', async () => {
+        it('n’écrit ni refresh ni access en storage JS', async () => {
             const auth = useAuthStore();
             localStorage.setItem(REFRESH_KEY, 'legacy-refresh');
             auth.setTokens(tokens({ refreshToken: 'should-not-persist' }));
@@ -227,7 +227,7 @@ describe('useAuthStore', () => {
             expect(localStorage.getItem(REFRESH_KEY)).toBeNull();
             expect(auth.refreshToken).toBeNull();
             expect(auth.accessToken).toBe('access-1');
-            expect(sessionStorage.getItem('spendup_access_token')).toBe('access-1');
+            expect(sessionStorage.getItem('spendup_access_token')).toBeNull();
         });
 
         it('applySession accepte une session sans refreshToken body', async () => {

@@ -51,13 +51,14 @@ describe('authGuard', () => {
         auth.refreshToken = 'refresh-1';
         auth.bootstrapSession = vi.fn().mockResolvedValue(undefined);
         auth.fetchMe = vi.fn().mockResolvedValue(null);
+        auth.forceReLogin = vi.fn().mockResolvedValue(undefined);
 
         const next = vi.fn();
         await authGuard(route('/app/settings'), route('/'), next);
 
         expect(auth.fetchMe).toHaveBeenCalled();
+        expect(auth.forceReLogin).toHaveBeenCalled();
         expect(next).toHaveBeenCalledWith('/auth/login');
-        expect(auth.isAuthenticated).toBe(false);
     });
 
     it('laisse passer si user déjà chargé', async () => {

@@ -44,7 +44,7 @@ Les views suivent les **headers** de `sidebarItem.ts` :
 ```
 src/views/app/
 └── <header-slug>/              # ex. parametres, spendup, finances
-    └── <page-slug>/            # ex. accounts, applications
+    └── <page-slug>/            # ex. accounts
         └── App<Name>Page.vue   # ex. AppAccountsPage.vue
 ```
 

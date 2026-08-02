@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import Logo from '@/layouts/full/logo/Logo.vue';
@@ -9,8 +9,9 @@ import { readPasswordResetToken } from '@/features/auth/password-reset-token';
 
 const { t } = useI18n();
 const route = useRoute();
-/** Figé au premier rendu : le formulaire retire ensuite le token de l’URL. */
-const showReset = ref(!!readPasswordResetToken(route));
+
+/** Recalculé à chaque navigation (forgot ↔ reset partagent ce composant). */
+const showReset = computed(() => !!readPasswordResetToken(route));
 </script>
 
 <template>
@@ -29,7 +30,7 @@ const showReset = ref(!!readPasswordResetToken(route));
                     <template v-if="showReset">
                         <h2 class="text--darken-2 text-h4 font-weight-bold">{{ t('auth.resetPassword.title') }}</h2>
                         <p class="text-subtitle-1 py-4 text-10">{{ t('auth.resetPassword.subtitle') }}</p>
-                        <ResetPasswordForm />
+                        <ResetPasswordForm :key="route.fullPath" />
                     </template>
                     <template v-else>
                         <h2 class="text--darken-2 text-h4 font-weight-bold">{{ t('auth.forgotPassword.title') }}</h2>

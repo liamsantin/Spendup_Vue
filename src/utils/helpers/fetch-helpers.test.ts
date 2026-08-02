@@ -94,4 +94,24 @@ describe('fetchWrapper', () => {
         await expect(fetchWrapper.get('/api/countries')).rejects.toMatchObject({ status: 401 });
         expect(forceReLogin).toHaveBeenCalledWith('Session expirée pour inactivité.');
     });
+
+    it('préserve code et details sur les erreurs 4xx', async () => {
+        axiosRequest.mockResolvedValue({
+            status: 403,
+            data: {
+                success: false,
+                message: 'Step-up required',
+                code: 'STEP_UP_REQUIRED',
+                details: { requiresPassword: true, requiresOtp: false, requiresGoogleIdToken: false }
+            },
+            statusText: 'Forbidden'
+        });
+
+        await expect(fetchWrapper.post('/api/settings', {})).rejects.toMatchObject({
+            name: 'AppError',
+            status: 403,
+            code: 'STEP_UP_REQUIRED',
+            details: expect.objectContaining({ requiresPassword: true })
+        });
+    });
 });

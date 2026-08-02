@@ -58,26 +58,34 @@ export function clearStoredRefreshToken() {
 }
 
 /**
- * Persiste l’access (+ expiresAt).
- * `persistRefresh: false` = mode cookie HttpOnly (ne jamais écrire le refresh en JS storage).
+ * Persiste les jetons.
+ * - Cookie-mode (`persistAccess: false`) : access **mémoire seule** (Pinia) — rien en sessionStorage.
+ * - Legacy : access en sessionStorage, refresh en localStorage si `persistRefresh`.
  */
 export function writeTokens(
     accessToken: string,
     refreshToken: string | null | undefined,
     expiresAt: string | null,
-    options?: { persistRefresh?: boolean }
+    options?: { persistRefresh?: boolean; persistAccess?: boolean }
 ) {
-    sessionStorage.setItem(ACCESS_KEY, accessToken);
+    const persistAccess = options?.persistAccess !== false;
+    if (persistAccess) {
+        sessionStorage.setItem(ACCESS_KEY, accessToken);
+        if (expiresAt) {
+            sessionStorage.setItem(EXPIRES_AT_KEY, expiresAt);
+        } else {
+            sessionStorage.removeItem(EXPIRES_AT_KEY);
+        }
+    } else {
+        sessionStorage.removeItem(ACCESS_KEY);
+        sessionStorage.removeItem(EXPIRES_AT_KEY);
+    }
+
     const persistRefresh = options?.persistRefresh !== false;
     if (persistRefresh && refreshToken) {
         localStorage.setItem(REFRESH_KEY, refreshToken);
     } else {
         localStorage.removeItem(REFRESH_KEY);
-    }
-    if (expiresAt) {
-        sessionStorage.setItem(EXPIRES_AT_KEY, expiresAt);
-    } else {
-        sessionStorage.removeItem(EXPIRES_AT_KEY);
     }
 }
 

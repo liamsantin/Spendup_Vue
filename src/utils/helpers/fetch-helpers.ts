@@ -100,11 +100,9 @@ async function handleResponse(status: number, data: unknown, statusText: string,
     }
 
     if (status >= 400) {
-        const message =
-            (data && typeof data === 'object' && 'message' in data && (data as { message?: string }).message) ||
-            statusText ||
-            'Request failed';
-        return Promise.reject(new AppError(String(message), status));
+        const envelope = data && typeof data === 'object' ? (data as { message?: string; code?: string; details?: unknown }) : null;
+        const message = envelope?.message || statusText || 'Request failed';
+        return Promise.reject(new AppError(String(message), status, envelope?.code, envelope?.details));
     }
 
     try {

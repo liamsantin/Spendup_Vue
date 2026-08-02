@@ -27,6 +27,8 @@ export type AuthSession = {
     refreshToken: string | null;
     expiresAt: string | null;
     userPublicId: string | null;
+    /** Double-submit CSRF (si l’API l’expose en body — sinon cookie `spendup_csrf`). */
+    csrfToken?: string | null;
 };
 
 export type AuthTokens = {
@@ -35,6 +37,8 @@ export type AuthTokens = {
     refreshToken?: string | null;
     expiresAt: string;
     userPublicId: string;
+    /** Double-submit CSRF (rotation à chaque refresh cookie). */
+    csrfToken?: string | null;
 };
 
 export type Me = {

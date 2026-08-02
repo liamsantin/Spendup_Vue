@@ -10,6 +10,7 @@ defineProps<{
     loading: boolean;
     countries: Country[];
     countriesLoading: boolean;
+    countriesError?: string | null;
     publicId: string;
     error: string | null;
     birthDateMax: string;
@@ -90,6 +91,9 @@ const birthDateModel = computed({
                     </v-col>
                     <v-col cols="12" md="5">
                         <v-label class="mb-2 font-weight-medium">{{ t('accounts.personal.fields.country') }}</v-label>
+                        <v-alert v-if="countriesError" type="error" variant="tonal" density="compact" class="mb-2">
+                            {{ countriesError }}
+                        </v-alert>
                         <v-autocomplete
                             v-model="countryId"
                             :items="countries"
@@ -102,7 +106,7 @@ const birthDateModel = computed({
                             auto-select-first
                             :loading="countriesLoading"
                             :disabled="loading || (countriesLoading && !countries.length)"
-                            :no-data-text="t('accounts.personal.noCountries')"
+                            :no-data-text="countriesError ? t('accounts.personal.countriesLoadFailed') : t('accounts.personal.noCountries')"
                         />
                     </v-col>
                 </v-row>

@@ -498,9 +498,9 @@ Collection Postman : `Postman/Spendup_Api.postman_collection.json`.
 | `POST /api/auth/logout`                          | Clear-Cookie + révocation famille                                                                                                                          |
 | CORS                                             | `Allow-Credentials: true` ; `AllowedOrigins` **explicites** (pas `*`)                                                                                      |
 | Access token                                     | Court (15 min) : rester en body **ou** cookie HttpOnly non-JS ; le front vise access **mémoire** uniquement                                                |
-| CSRF                                             | Si cookie envoyé cross-site : double-submit / header CSRF / SameSite strict selon topologie                                                                |
+| CSRF                                             | Cookie `spendup_csrf` + header `X-CSRF-Token` sur refresh/logout (déjà côté API)                                                                           |
 
-Front : `withCredentials` + `VITE_AUTH_COOKIE_MODE=true` uniquement après bascule API.
+Front cookie-mode : `withCredentials` + envoi `X-CSRF-Token` (`src/features/auth/csrf.ts`). Le cookie CSRF doit être **lisible JS** (`Path=/`) **ou** le body doit exposer `csrfToken`.
 
 ### 12.2 Appareils (identité serveur) — **implémenté front + API**
 

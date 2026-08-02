@@ -1,7 +1,6 @@
 import { createVuetify } from 'vuetify';
+import 'vuetify/styles';
 import '@mdi/font/css/materialdesignicons.css';
-import * as components from 'vuetify/components';
-import * as directives from 'vuetify/directives';
 import { en, fr } from 'vuetify/locale';
 import { DEFAULT_LOCALE } from '@/plugins/i18n';
 
@@ -15,12 +14,8 @@ import {
     DARK_CYAN_THEME
 } from '@/theme/DarkTheme';
 
+/** Composants / directives auto-importés via `vite-plugin-vuetify` (pas d’import *). */
 export default createVuetify({
-    components: {
-        ...components
-    },
-    directives,
-
     locale: {
         locale: DEFAULT_LOCALE,
         fallback: 'en',

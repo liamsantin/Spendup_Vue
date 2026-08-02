@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { AdjustmentsHorizontalIcon, BellIcon, LockIcon, UserCircleIcon } from 'vue-tabler-icons';
 import { AccountTab, NotificationsTab, PreferencesTab, SecurityTab } from '@/features/user-settings';
@@ -22,9 +23,11 @@ const { t } = useI18n();
 const tab = ref('Account');
 const accountTabRef = ref<AccountTabExpose | null>(null);
 const preferencesTabRef = ref<SettingsTabExpose | null>(null);
+const notificationsTabRef = ref<SettingsTabExpose | null>(null);
 const securityTabRef = ref<SettingsTabExpose | null>(null);
 const profileDirty = ref(false);
 const preferencesDirty = ref(false);
+const notificationsDirty = ref(false);
 const securityDirty = ref(false);
 
 const tabs = computed(() => [
@@ -36,29 +39,39 @@ const tabs = computed(() => [
 
 const isAccountTab = computed(() => tab.value === 'Account');
 const isPreferencesTab = computed(() => tab.value === 'Preferences');
+const isNotificationsTab = computed(() => tab.value === 'Notifications');
 const isSecurityTab = computed(() => tab.value === 'Security');
+const isSettingsTab = computed(() => isPreferencesTab.value || isNotificationsTab.value || isSecurityTab.value);
+
+const settingsDirty = computed(() => preferencesDirty.value || notificationsDirty.value || securityDirty.value);
+const anyDirty = computed(() => profileDirty.value || settingsDirty.value);
 
 const activeLoading = computed(() => {
     if (isAccountTab.value) return !!accountTabRef.value?.loading;
     if (isPreferencesTab.value) return !!preferencesTabRef.value?.loading;
+    if (isNotificationsTab.value) return !!notificationsTabRef.value?.loading;
     if (isSecurityTab.value) return !!securityTabRef.value?.loading;
     return false;
 });
 
 const activeDirty = computed(() => {
     if (isAccountTab.value) return profileDirty.value;
-    if (isPreferencesTab.value) return preferencesDirty.value;
-    if (isSecurityTab.value) return securityDirty.value;
+    if (isSettingsTab.value) return settingsDirty.value;
     return false;
 });
 
 const saveLoading = computed(() => activeLoading.value);
-const saveDisabled = computed(
-    () => (!isAccountTab.value && !isPreferencesTab.value && !isSecurityTab.value) || saveLoading.value || !activeDirty.value
-);
-const cancelDisabled = computed(
-    () => (!isAccountTab.value && !isPreferencesTab.value && !isSecurityTab.value) || saveLoading.value || !activeDirty.value
-);
+const saveDisabled = computed(() => (!isAccountTab.value && !isSettingsTab.value) || saveLoading.value || !activeDirty.value);
+const cancelDisabled = computed(() => (!isAccountTab.value && !isSettingsTab.value) || saveLoading.value || !activeDirty.value);
+
+onBeforeRouteLeave((_to, _from, next) => {
+    if (!anyDirty.value) {
+        next();
+        return;
+    }
+    const ok = window.confirm(t('accounts.leaveDirtyConfirm'));
+    next(ok);
+});
 
 function onSave() {
     if (saveLoading.value || !activeDirty.value) return;
@@ -68,6 +81,10 @@ function onSave() {
     }
     if (isPreferencesTab.value) {
         void preferencesTabRef.value?.saveSettings();
+        return;
+    }
+    if (isNotificationsTab.value) {
+        void notificationsTabRef.value?.saveSettings();
         return;
     }
     if (isSecurityTab.value) {
@@ -83,6 +100,10 @@ function onCancel() {
     }
     if (isPreferencesTab.value) {
         preferencesTabRef.value?.resetSettings();
+        return;
+    }
+    if (isNotificationsTab.value) {
+        notificationsTabRef.value?.resetSettings();
         return;
     }
     if (isSecurityTab.value) {
@@ -109,7 +130,7 @@ function onCancel() {
                 <PreferencesTab ref="preferencesTabRef" @dirty="preferencesDirty = $event" />
             </v-window-item>
             <v-window-item value="Notifications">
-                <NotificationsTab />
+                <NotificationsTab ref="notificationsTabRef" @dirty="notificationsDirty = $event" />
             </v-window-item>
             <v-window-item value="Security">
                 <SecurityTab ref="securityTabRef" @dirty="securityDirty = $event" />

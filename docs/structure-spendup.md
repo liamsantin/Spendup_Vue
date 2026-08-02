@@ -217,10 +217,11 @@ features/transactions/
 
 **Paramètres `/app` — Tabbed Action Shell** (doc : `docs/structure/page.md`) :
 
-| Route               | View                  | Feature        | Onglets                         |
-| ------------------- | --------------------- | -------------- | ------------------------------- |
-| `/app/comptes`      | `AppAccountsPage`     | `settings`     | Compte, Notifications, Sécurité |
-| `/app/applications` | `AppApplicationsPage` | `applications` | Thème                           |
+| Route          | View              | Feature         | Onglets                                      |
+| -------------- | ----------------- | --------------- | -------------------------------------------- |
+| `/app/comptes` | `AppAccountsPage` | `user-settings` | Profil, Préférences, Notifications, Sécurité |
+
+(`/app/applications` redirige vers `/app/comptes` — feature `applications` supprimée.)
 
 **Principe :** les `views/` restent des coquilles légères ; elles importent depuis `@/features/<domaine>`.
 
@@ -281,7 +282,7 @@ scss/
 | `/auth/maintenance`          | `Maintenance`                                            | BlankLayout                                        |
 | `/app`                       | `spendup/dashboard/AppDashboardView`                     | `features/dashboard` — FullLayout (`requiresAuth`) |
 | `/app/comptes`               | `parametres/accounts/AppAccountsPage`                    | `features/user-settings` — Tabbed Action Shell     |
-| `/app/applications`          | `parametres/applications/AppApplicationsPage`            | `features/applications` — Tabbed Action Shell      |
+| `/app/applications`          | redirect → `/app/comptes`                                | legacy                                             |
 | `/:pathMatch(.*)*`           | `Error`                                                  | Catch-all 404 (`router/index.ts`)                  |
 
 **Composants auth UI** (`components/auth/`) : `LoginForm`, `RegisterForm`, `ResetForm`, `ResetPasswordForm`, `TwoStepForm`, `ConfirmEmailForm`, `ConfirmEmailChangeForm`, `GoogleSignInButton`, `OtpDigitsInput`.

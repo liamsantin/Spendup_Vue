@@ -121,6 +121,7 @@
             "notifications": "Notifications",
             "security": "Sécurité"
         },
+        "leaveDirtyConfirm": "Vous avez des modifications non enregistrées. Quitter cette page ?",
         "notifications": {
             "example": {
                 "title": "Résumé par e-mail",
@@ -163,6 +164,7 @@
                 "country": "Pays"
             },
             "noCountries": "Aucun pays disponible",
+            "countriesLoadFailed": "Impossible de charger la liste des pays.",
             "errors": {
                 "copyPublicId": "Impossible de copier l’identifiant."
             }
@@ -503,6 +505,19 @@
             "allSessionsRevoked": "Toutes les sessions ont été déconnectées. Veuillez vous reconnecter.",
             "passwordUpdatedRelogin": "Mot de passe mis à jour. Veuillez vous reconnecter.",
             "accountDeleted": "Votre compte a été définitivement supprimé."
+        },
+        "login": {
+            "username": "Nom d’utilisateur",
+            "email": "Email",
+            "password": "Mot de passe",
+            "forgotPassword": "Mot de passe oublié ?",
+            "submit": "Connexion",
+            "or": "ou",
+            "errors": {
+                "required": "Champ requis.",
+                "identifier": "Saisissez votre nom d’utilisateur ou e-mail.",
+                "password": "Saisissez votre mot de passe."
+            }
         },
         "forgotPassword": {
             "title": "Mot de passe oublié ?",
