@@ -2,6 +2,22 @@ export type ApiResponse<T> = {
     success: boolean;
     message: string | null;
     result: T;
+    code?: string | null;
+    details?: unknown;
+};
+
+/** Preuve fraîche pour actions sensibles (P1 step-up). */
+export type StepUpProof = {
+    password?: string;
+    otp?: string;
+    googleIdToken?: string;
+};
+
+export type StepUpRequiredDetails = {
+    requiresPassword: boolean;
+    requiresOtp: boolean;
+    requiresGoogleIdToken: boolean;
+    acceptedMethods: string[];
 };
 
 export type AuthSession = {
@@ -15,7 +31,8 @@ export type AuthSession = {
 
 export type AuthTokens = {
     accessToken: string;
-    refreshToken: string;
+    /** Absent / null en mode cookie HttpOnly (P1). */
+    refreshToken?: string | null;
     expiresAt: string;
     userPublicId: string;
 };
@@ -100,8 +117,11 @@ export type AuthDevice = {
     userAgent?: string | null;
     sessionCount?: number | null;
     isTrusted?: boolean | null;
+    /** Calculé serveur via claim JWT `did` (fallback client possible). */
     isCurrentDevice?: boolean | null;
-    /** Payload brut pour afficher tout champ additionnel. */
+    /** Fin de la fenêtre de confiance (API) ; null si non trusted. */
+    trustedUntil?: string | null;
+    /** Payload brut pour l’affichage exhaustif. */
     raw?: Record<string, unknown>;
 };
 

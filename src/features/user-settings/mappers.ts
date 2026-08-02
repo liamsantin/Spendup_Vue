@@ -1,7 +1,32 @@
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { isAppLocale, type AppLocale } from '@/plugins/i18n';
 import { HEX_TO_DARK_THEME, HEX_TO_LIGHT_THEME, normalizeHex } from './themeColorOptions';
-import type { UserSettings } from './types';
+import {
+    IDLE_LOGOUT_MINUTES_MAX,
+    IDLE_LOGOUT_MINUTES_MIN,
+    TRUSTED_DEVICE_DAYS_MAX,
+    TRUSTED_DEVICE_DAYS_MIN,
+    type UserSettings
+} from './types';
+
+function clampInt(value: number, min: number, max: number): number {
+    if (!Number.isFinite(value)) return min;
+    return Math.min(max, Math.max(min, Math.round(value)));
+}
+
+/** Normalise les champs sécurité avant PUT (aligné validation API). */
+export function normalizeSecuritySettings(settings: UserSettings): UserSettings {
+    const idle = settings.idleLogoutMinutes;
+    const idleLogoutMinutes =
+        idle == null || !Number.isFinite(idle) ? null : clampInt(idle, IDLE_LOGOUT_MINUTES_MIN, IDLE_LOGOUT_MINUTES_MAX);
+
+    return {
+        ...settings,
+        idleLogoutMinutes,
+        trustedDeviceDurationDays: clampInt(settings.trustedDeviceDurationDays, TRUSTED_DEVICE_DAYS_MIN, TRUSTED_DEVICE_DAYS_MAX),
+        require2faForSensitiveActions: !!settings.require2faForSensitiveActions
+    };
+}
 
 /** Mappe `fr-CH` / `en-US` → locale i18n `fr` / `en`. */
 export function localeToAppLocale(locale: string): AppLocale {

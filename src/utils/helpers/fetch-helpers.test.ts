@@ -22,7 +22,8 @@ vi.mock('@/features/auth', () => ({
 
 vi.mock('@/utils/helpers/axios-helpers', () => ({
     getApiBaseUrl: () => 'http://api.test',
-    createApiAxios: () => ({ request: axiosRequest })
+    createApiAxios: () => ({ request: axiosRequest }),
+    isAuthCookieMode: () => false
 }));
 
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
@@ -46,7 +47,7 @@ describe('fetchWrapper', () => {
 
         await expect(fetchWrapper.get('/api/countries')).rejects.toMatchObject({ name: 'AppError', status: 401 });
         expect(refreshSession).toHaveBeenCalled();
-        expect(forceReLogin).toHaveBeenCalled();
+        expect(forceReLogin).toHaveBeenCalledWith('Unauthorized');
     });
 
     it('retente une fois après refresh réussi', async () => {
@@ -79,6 +80,18 @@ describe('fetchWrapper', () => {
 
         await expect(fetchWrapper.get('/api/countries')).rejects.toMatchObject({ name: 'AppError', status: 401 });
         expect(axiosRequest).toHaveBeenCalledTimes(2);
-        expect(forceReLogin).toHaveBeenCalled();
+        expect(forceReLogin).toHaveBeenCalledWith('Unauthorized');
+    });
+
+    it('passe le message idle au re-login si le refresh échoue', async () => {
+        axiosRequest.mockResolvedValue({
+            status: 401,
+            data: { message: 'Session expirée pour inactivité.' },
+            statusText: 'Unauthorized'
+        });
+        refreshSession.mockResolvedValue(false);
+
+        await expect(fetchWrapper.get('/api/countries')).rejects.toMatchObject({ status: 401 });
+        expect(forceReLogin).toHaveBeenCalledWith('Session expirée pour inactivité.');
     });
 });

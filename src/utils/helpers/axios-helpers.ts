@@ -4,12 +4,19 @@ export function getApiBaseUrl(): string {
     return (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
 }
 
+/** Activer uniquement quand l’API expose le refresh en cookie HttpOnly (P1). */
+export function isAuthCookieMode(): boolean {
+    const raw = String(import.meta.env.VITE_AUTH_COOKIE_MODE ?? '').toLowerCase();
+    return raw === 'true' || raw === '1';
+}
+
 /** Instance Axios de base (JSON). Sans interceptor refresh. Timeout 30s. */
 export function createApiAxios(): AxiosInstance {
     return axios.create({
         baseURL: getApiBaseUrl(),
         timeout: 30_000,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: isAuthCookieMode()
     });
 }
 

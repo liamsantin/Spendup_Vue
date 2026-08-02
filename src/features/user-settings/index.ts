@@ -1,8 +1,15 @@
 export { userSettingsApi } from './api';
 export { useUserSettingsStore } from './stores/user-settings-store';
-export { localeToAppLocale, applyUserSettingsToRuntime } from './mappers';
+export { localeToAppLocale, applyUserSettingsToRuntime, normalizeSecuritySettings } from './mappers';
 export type { UserSettings } from './types';
-export { USER_SETTINGS_DEFAULTS } from './types';
+export {
+    USER_SETTINGS_DEFAULTS,
+    IDLE_LOGOUT_MINUTES_MIN,
+    IDLE_LOGOUT_MINUTES_MAX,
+    IDLE_LOGOUT_MINUTES_DEFAULT,
+    TRUSTED_DEVICE_DAYS_MIN,
+    TRUSTED_DEVICE_DAYS_MAX
+} from './types';
 
 export { default as AccountTab } from './components/AccountTab.vue';
 export { default as PreferencesTab } from './components/PreferencesTab.vue';

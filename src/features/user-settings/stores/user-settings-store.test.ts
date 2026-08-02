@@ -62,4 +62,17 @@ describe('useUserSettingsStore draft', () => {
         expect(store.isDirty).toBe(false);
         expect(store.draft.locale).toBe('fr-CH');
     });
+
+    it('saveDraft clamp les champs sécurité hors bornes API', async () => {
+        getSettings.mockResolvedValue({ ...USER_SETTINGS_DEFAULTS });
+        putSettings.mockResolvedValue({ ...USER_SETTINGS_DEFAULTS, idleLogoutMinutes: 5, trustedDeviceDurationDays: 365 });
+        const store = useUserSettingsStore();
+
+        await store.ensureLoaded();
+        store.draft.idleLogoutMinutes = 2;
+        store.draft.trustedDeviceDurationDays = 999;
+        await store.saveDraft();
+
+        expect(putSettings).toHaveBeenCalledWith(expect.objectContaining({ idleLogoutMinutes: 5, trustedDeviceDurationDays: 365 }));
+    });
 });

@@ -5,7 +5,11 @@ import VerticalHeaderVue from './vertical-header/VerticalHeader.vue';
 import HorizontalHeader from './horizontal-header/HorizontalHeader.vue';
 import HorizontalSidebar from './horizontal-sidebar/HorizontalSidebar.vue';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { useIdleLogout } from '@/features/auth/composables/useIdleLogout';
+import StepUpDialog from '@/features/auth/components/StepUpDialog.vue';
+
 const appSettings = useAppSettingsStore();
+useIdleLogout();
 </script>
 
 <template>
@@ -31,6 +35,8 @@ const appSettings = useAppSettingsStore();
                     </div>
                 </v-container>
             </v-main>
+
+            <StepUpDialog />
         </v-app>
     </v-locale-provider>
 </template>

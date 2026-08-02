@@ -7,17 +7,19 @@ import { ApiError } from '@/features/auth/api';
 export class AppError extends Error {
     status: number;
     code?: string;
+    details?: unknown;
 
-    constructor(message: string, status = 0, code?: string) {
+    constructor(message: string, status = 0, code?: string, details?: unknown) {
         super(message);
         this.name = 'AppError';
         this.status = status;
         this.code = code;
+        this.details = details;
     }
 
     static fromUnknown(error: unknown, fallback = 'Une erreur est survenue.'): AppError {
         if (error instanceof AppError) return error;
-        if (error instanceof ApiError) return new AppError(error.message, error.status);
+        if (error instanceof ApiError) return new AppError(error.message, error.status, error.code, error.details);
         if (error instanceof Error) return new AppError(error.message || fallback);
         if (typeof error === 'string' && error.trim()) return new AppError(error);
         return new AppError(fallback);

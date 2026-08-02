@@ -13,6 +13,9 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
         return next('/auth/404');
     }
 
+    // Mode cookie : restaure l’access via refresh HttpOnly avant les checks auth.
+    await auth.bootstrapSession();
+
     if (requiresAuth) {
         if (!auth.isAuthenticated) {
             auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);

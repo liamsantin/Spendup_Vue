@@ -351,7 +351,8 @@
             },
             "summary": {
                 "firstSeen": "First sign-in",
-                "lastActive": "Last activity"
+                "lastActive": "Last activity",
+                "trustedUntil": "Trusted until"
             },
             "details": {
                 "fallbackTitle": "Device details",
@@ -370,6 +371,7 @@
                     "firstSeen": "First sign-in",
                     "sessionCount": "Active sessions",
                     "trusted": "Trusted device",
+                    "trustedUntil": "Trusted until",
                     "identifier": "Identifier",
                     "userAgent": "User-Agent"
                 },
@@ -398,14 +400,18 @@
             }
         },
         "session": {
-            "example": {
-                "title": "Session",
-                "subtitle": "Example section — not connected to the API.",
-                "idleLogoutEnabled": "Sign out after inactivity",
-                "idleLogoutMinutes": "Idle minutes",
-                "trustedDeviceDurationDays": "Trusted device duration (days)",
-                "require2faForSensitiveActions": "Require 2FA for sensitive actions"
-            }
+            "title": "Session",
+            "subtitle": "Idle logout, trusted devices and 2FA for sensitive actions.",
+            "idleLogoutNotice": "You were signed out after a period of inactivity.",
+            "idleLogoutEnabled": "Sign out after inactivity",
+            "idleLogoutMinutes": "Idle minutes",
+            "idleLogoutHint": "Enforced on the server (refresh and API) and locally for an immediate sign-out.",
+            "idleLogoutRange": "Between {min} and {max} minutes.",
+            "trustedDeviceDurationDays": "Trusted device duration (days)",
+            "trustedDeviceHint": "Applied each time you trust a device (1–365 days).",
+            "require2faForSensitiveActions": "Require 2FA for sensitive actions",
+            "require2faHint": "When enabled, an OTP code is required in addition to your password for sensitive actions.",
+            "require2faNeedsTwoFactor": "Enable two-factor authentication first to use this option."
         }
     },
     "userSettings": {
@@ -497,6 +503,50 @@
             "allSessionsRevoked": "All sessions were signed out. Please sign in again.",
             "passwordUpdatedRelogin": "Password updated. Please sign in again.",
             "accountDeleted": "Your account has been permanently deleted."
+        },
+        "forgotPassword": {
+            "title": "Forgot password?",
+            "subtitle": "Enter the email linked to your account and we will send you a reset link.",
+            "email": "Email address",
+            "submit": "Send reset link",
+            "backToLogin": "Back to sign in",
+            "verifiedEmailHint": "Password reset requires a verified email on the account.",
+            "success": "If an account with a verified email exists, you will soon receive a reset link.",
+            "errors": {
+                "required": "Required field.",
+                "email": "Invalid email address."
+            }
+        },
+        "resetPassword": {
+            "title": "Reset password",
+            "subtitle": "Choose a new password for your account.",
+            "token": "Token",
+            "manualTokenHint": "Paste the token from the email if the link was not clickable.",
+            "newPassword": "New password",
+            "confirmPassword": "Confirm password",
+            "submit": "Reset password",
+            "errors": {
+                "required": "Required field.",
+                "minLength": "At least 8 characters.",
+                "letter": "At least one letter.",
+                "digit": "At least one digit.",
+                "mismatch": "Passwords do not match."
+            }
+        },
+        "stepUp": {
+            "title": "Confirmation required",
+            "subtitle": "This sensitive action needs an extra verification step.",
+            "confirm": "Confirm",
+            "googleConfirm": "Confirm with Google",
+            "googleReady": "Google account confirmed.",
+            "fields": {
+                "password": "Current password",
+                "otp": "Authenticator code",
+                "google": "Confirm with your Google account"
+            },
+            "errors": {
+                "incomplete": "Complete the requested verification."
+            }
         }
     }
 }

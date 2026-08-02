@@ -35,7 +35,6 @@ export function extractDevicesPayload(result: unknown): unknown[] {
         for (const key of ['devices', 'items', 'data', 'result', '$values']) {
             if (Array.isArray(obj[key])) return obj[key] as unknown[];
         }
-        // Dernier recours : premier tableau trouvé dans l’objet.
         for (const value of Object.values(obj)) {
             if (Array.isArray(value)) return value;
         }
@@ -45,16 +44,13 @@ export function extractDevicesPayload(result: unknown): unknown[] {
 
 /**
  * Normalise camelCase / snake_case / PascalCase vers `AuthDevice`.
- * Conserve le payload brut pour l’affichage exhaustif.
+ * Identifiant = `deviceIdentifier` client stable (pas l’id DB interne).
  */
 export function normalizeAuthDevice(input: unknown): AuthDevice | null {
     if (!input || typeof input !== 'object') return null;
     const source = input as Record<string, unknown>;
 
-    const deviceIdentifier =
-        pickString(source, 'deviceIdentifier', 'device_identifier', 'DeviceIdentifier') ||
-        pickString(source, 'id_devices', 'idDevices', 'IdDevices', 'id');
-
+    const deviceIdentifier = pickString(source, 'deviceIdentifier', 'device_identifier', 'DeviceIdentifier');
     if (!deviceIdentifier) return null;
 
     return {
@@ -63,8 +59,8 @@ export function normalizeAuthDevice(input: unknown): AuthDevice | null {
         deviceType: pickString(source, 'deviceType', 'device_type', 'DeviceType'),
         browser: pickString(source, 'browser', 'Browser'),
         os: pickString(source, 'os', 'operatingSystem', 'operating_system', 'OperatingSystem', 'Os'),
-        ipAddress: pickString(source, 'ipAddress', 'ip_address', 'last_ip_address', 'lastIpAddress', 'IpAddress', 'ip'),
-        country: pickString(source, 'country', 'last_country', 'lastCountry', 'Country'),
+        ipAddress: pickString(source, 'lastIpAddress', 'last_ip_address', 'ipAddress', 'ip_address', 'IpAddress', 'ip'),
+        country: pickString(source, 'lastCountry', 'last_country', 'country', 'Country'),
         city: pickString(source, 'city', 'City'),
         region: pickString(source, 'region', 'Region'),
         createdAt: pickString(source, 'createdAt', 'created_at', 'CreatedAt'),
@@ -75,6 +71,7 @@ export function normalizeAuthDevice(input: unknown): AuthDevice | null {
         sessionCount: pickNumber(source, 'sessionCount', 'active_sessions_count', 'activeSessionsCount', 'SessionCount'),
         isTrusted: pickBoolean(source, 'isTrusted', 'is_trusted', 'IsTrusted'),
         isCurrentDevice: pickBoolean(source, 'isCurrentDevice', 'is_current_device', 'IsCurrentDevice'),
+        trustedUntil: pickString(source, 'trustedUntil', 'trusted_until', 'TrustedUntil'),
         raw: source
     };
 }

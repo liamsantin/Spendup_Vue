@@ -6,6 +6,14 @@ vi.mock('@/utils/helpers/env-helpers', () => ({
     isDevAppEnv: () => false
 }));
 
+vi.mock('@/utils/helpers/axios-helpers', async () => {
+    const actual = await vi.importActual<typeof import('@/utils/helpers/axios-helpers')>('@/utils/helpers/axios-helpers');
+    return {
+        ...actual,
+        isAuthCookieMode: () => false
+    };
+});
+
 import { authGuard } from '@/app/guards/auth-guard';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 
@@ -41,6 +49,7 @@ describe('authGuard', () => {
     it('redirige vers login si fetchMe renvoie null', async () => {
         const auth = useAuthStore();
         auth.refreshToken = 'refresh-1';
+        auth.bootstrapSession = vi.fn().mockResolvedValue(undefined);
         auth.fetchMe = vi.fn().mockResolvedValue(null);
 
         const next = vi.fn();
@@ -54,6 +63,7 @@ describe('authGuard', () => {
     it('laisse passer si user déjà chargé', async () => {
         const auth = useAuthStore();
         auth.refreshToken = 'refresh-1';
+        auth.bootstrapSession = vi.fn().mockResolvedValue(undefined);
         auth.user = {
             userPublicId: 'ABC1234',
             email: 'a@b.c',

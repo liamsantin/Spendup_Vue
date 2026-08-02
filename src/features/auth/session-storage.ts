@@ -52,9 +52,28 @@ export function clearLegacyPendingPassword() {
     sessionStorage.removeItem('spendup_pending_password');
 }
 
-export function writeTokens(accessToken: string, refreshToken: string, expiresAt: string | null) {
+/** Supprime un refresh éventuellement resté en localStorage (mode cookie). */
+export function clearStoredRefreshToken() {
+    localStorage.removeItem(REFRESH_KEY);
+}
+
+/**
+ * Persiste l’access (+ expiresAt).
+ * `persistRefresh: false` = mode cookie HttpOnly (ne jamais écrire le refresh en JS storage).
+ */
+export function writeTokens(
+    accessToken: string,
+    refreshToken: string | null | undefined,
+    expiresAt: string | null,
+    options?: { persistRefresh?: boolean }
+) {
     sessionStorage.setItem(ACCESS_KEY, accessToken);
-    localStorage.setItem(REFRESH_KEY, refreshToken);
+    const persistRefresh = options?.persistRefresh !== false;
+    if (persistRefresh && refreshToken) {
+        localStorage.setItem(REFRESH_KEY, refreshToken);
+    } else {
+        localStorage.removeItem(REFRESH_KEY);
+    }
     if (expiresAt) {
         sessionStorage.setItem(EXPIRES_AT_KEY, expiresAt);
     } else {

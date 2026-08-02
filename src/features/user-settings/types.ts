@@ -93,3 +93,12 @@ export const TIMEZONE_OPTIONS: string[] = [
 ];
 
 export const CURRENCY_OPTIONS: DefaultCurrency[] = ['CHF', 'EUR', 'USD', 'GBP'];
+
+/** Bornes API `idleLogoutMinutes` (null = désactivé). */
+export const IDLE_LOGOUT_MINUTES_MIN = 5;
+export const IDLE_LOGOUT_MINUTES_MAX = 10080;
+export const IDLE_LOGOUT_MINUTES_DEFAULT = 30;
+
+/** Bornes API `trustedDeviceDurationDays`. */
+export const TRUSTED_DEVICE_DAYS_MIN = 1;
+export const TRUSTED_DEVICE_DAYS_MAX = 365;

@@ -8,6 +8,7 @@ import type {
     AuthTokens,
     Me,
     RegisterResult,
+    StepUpProof,
     TwoFactorSetup,
     UpdateProfilePayload,
     UploadAvatarResult
@@ -15,11 +16,15 @@ import type {
 
 export class ApiError extends Error {
     status: number;
+    code?: string;
+    details?: unknown;
 
-    constructor(message: string, status: number) {
+    constructor(message: string, status: number, code?: string, details?: unknown) {
         super(message);
         this.name = 'ApiError';
         this.status = status;
+        this.code = code;
+        this.details = details;
     }
 }
 
@@ -77,7 +82,7 @@ async function request<T>(method: Method, path: string, data?: unknown, accessTo
 
         const body = payload as ApiResponse<T>;
         if (status >= 400 || !body.success) {
-            throw new ApiError(body.message ?? `HTTP ${status}`, status);
+            throw new ApiError(body.message ?? `HTTP ${status}`, status, body.code ?? undefined, body.details);
         }
 
         return body.result;
@@ -85,8 +90,9 @@ async function request<T>(method: Method, path: string, data?: unknown, accessTo
         if (e instanceof ApiError) throw e;
         if (axios.isAxiosError(e)) {
             const status = e.response?.status ?? 0;
-            const message = (e.response?.data as { message?: string } | undefined)?.message || e.message || `HTTP ${status}`;
-            throw new ApiError(message, status);
+            const data = e.response?.data as { message?: string; code?: string; details?: unknown } | undefined;
+            const message = data?.message || e.message || `HTTP ${status}`;
+            throw new ApiError(message, status, data?.code, data?.details);
         }
         throw e;
     }
@@ -147,13 +153,21 @@ export const authApi = {
         return authHttp.post<AuthTokens>('/api/auth/2fa/verify', { twoFactorToken, code, ...getDeviceInfo() });
     },
 
-    refresh(refreshToken: string) {
-        return authHttp.post<AuthTokens>('/api/auth/refresh', { refreshToken });
+    /**
+     * Refresh : cookie HttpOnly et/ou body `refreshToken`.
+     * `deviceIdentifier` optionnel — s’il est envoyé, doit matcher la session (sinon 401).
+     */
+    refresh(refreshToken?: string | null) {
+        const device = getDeviceInfo();
+        return authHttp.post<AuthTokens>('/api/auth/refresh', {
+            ...(refreshToken ? { refreshToken } : {}),
+            deviceIdentifier: device.deviceIdentifier
+        });
     },
 
-    /** Session courante uniquement — `refreshToken` obligatoire. */
-    logout(refreshToken: string, accessToken?: string | null) {
-        return authHttp.post<null>('/api/auth/logout', { refreshToken }, accessToken);
+    /** Session courante — body refresh optionnel en mode cookie. */
+    logout(refreshToken?: string | null, accessToken?: string | null) {
+        return authHttp.post<null>('/api/auth/logout', refreshToken ? { refreshToken } : {}, accessToken);
     },
 
     me(accessToken: string) {
@@ -288,17 +302,29 @@ export const authApi = {
         return authHttp.post<null>('/api/auth/reset-password', { token, newPassword });
     },
 
-    changePassword(accessToken: string, currentPassword: string | null, newPassword: string) {
-        return authHttp.post<null>('/api/auth/password/change', { currentPassword: currentPassword ?? null, newPassword }, accessToken);
+    changePassword(accessToken: string, currentPassword: string | null, newPassword: string, stepUp?: StepUpProof) {
+        return authHttp.post<null>(
+            '/api/auth/password/change',
+            {
+                currentPassword: currentPassword ?? null,
+                newPassword,
+                ...(stepUp ? { stepUp } : {})
+            },
+            accessToken
+        );
     },
 
-    changeEmail(accessToken: string, payload: { newEmail: string; currentPassword?: string | null; googleIdToken?: string | null }) {
+    changeEmail(
+        accessToken: string,
+        payload: { newEmail: string; currentPassword?: string | null; googleIdToken?: string | null; stepUp?: StepUpProof }
+    ) {
         return authHttp.post<null>(
             '/api/auth/email/change',
             {
                 newEmail: payload.newEmail,
                 currentPassword: payload.currentPassword ?? null,
-                googleIdToken: payload.googleIdToken ?? null
+                googleIdToken: payload.googleIdToken ?? null,
+                ...(payload.stepUp ? { stepUp: payload.stepUp } : {})
             },
             accessToken
         );
@@ -308,11 +334,18 @@ export const authApi = {
         return authHttp.post<null>('/api/auth/email/confirm-change', { email, code });
     },
 
-    unlinkGoogle(accessToken: string, currentPassword: string) {
-        return authHttp.post<null>('/api/auth/google/unlink', { currentPassword }, accessToken);
+    unlinkGoogle(accessToken: string, currentPassword: string, stepUp?: StepUpProof) {
+        return authHttp.post<null>(
+            '/api/auth/google/unlink',
+            {
+                currentPassword,
+                ...(stepUp ? { stepUp } : {})
+            },
+            accessToken
+        );
     },
 
-    deleteAccount(accessToken: string, payload: { currentPassword?: string; googleIdToken?: string }) {
+    deleteAccount(accessToken: string, payload: { currentPassword?: string; googleIdToken?: string; stepUp?: StepUpProof }) {
         return authHttp.delete<null>('/api/auth/account', payload, accessToken);
     },
 
@@ -333,15 +366,22 @@ export const authApi = {
         return normalizeAuthDevices(result);
     },
 
-    revokeDevice(accessToken: string, deviceIdentifier: string) {
-        return authHttp.delete<null>(`/api/auth/devices/${encodeURIComponent(deviceIdentifier)}`, undefined, accessToken);
+    revokeDevice(accessToken: string, deviceIdentifier: string, stepUp?: StepUpProof) {
+        return authHttp.delete<null>(`/api/auth/devices/${encodeURIComponent(deviceIdentifier)}`, stepUp ? { stepUp } : {}, accessToken);
     },
 
-    revokeAllDevices(accessToken: string) {
-        return authHttp.post<null>('/api/auth/devices/revoke-all', undefined, accessToken);
+    revokeAllDevices(accessToken: string, stepUp?: StepUpProof) {
+        return authHttp.post<null>('/api/auth/devices/revoke-all', stepUp ? { stepUp } : {}, accessToken);
     },
 
-    setDeviceTrust(accessToken: string, deviceIdentifier: string, isTrusted: boolean) {
-        return authHttp.put<null>(`/api/auth/devices/${encodeURIComponent(deviceIdentifier)}/trust`, { isTrusted }, accessToken);
+    setDeviceTrust(accessToken: string, deviceIdentifier: string, isTrusted: boolean, stepUp?: StepUpProof) {
+        return authHttp.put<null>(
+            `/api/auth/devices/${encodeURIComponent(deviceIdentifier)}/trust`,
+            {
+                isTrusted,
+                ...(stepUp ? { stepUp } : {})
+            },
+            accessToken
+        );
     }
 };

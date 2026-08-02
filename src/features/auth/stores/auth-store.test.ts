@@ -53,7 +53,18 @@ vi.mock('@/features/auth/api', async () => {
     };
 });
 
+const cookieMode = vi.hoisted(() => ({ enabled: false }));
+
+vi.mock('@/utils/helpers/axios-helpers', async () => {
+    const actual = await vi.importActual<typeof import('@/utils/helpers/axios-helpers')>('@/utils/helpers/axios-helpers');
+    return {
+        ...actual,
+        isAuthCookieMode: () => cookieMode.enabled
+    };
+});
+
 import { useAuthStore } from '@/features/auth/stores/auth-store';
+import { REFRESH_KEY } from '@/features/auth/session-storage';
 
 function tokens(overrides: Partial<AuthTokens> = {}): AuthTokens {
     return {
@@ -89,6 +100,9 @@ function meUser(overrides: Partial<Me> = {}): Me {
 
 describe('useAuthStore', () => {
     beforeEach(() => {
+        cookieMode.enabled = false;
+        localStorage.clear();
+        sessionStorage.clear();
         createTestPinia();
         routerPush.mockReset();
         routerReplace.mockReset();
@@ -197,5 +211,58 @@ describe('useAuthStore', () => {
         const me = await auth.fetchMe();
         expect(me).toBeNull();
         expect(authApiMock.me).not.toHaveBeenCalled();
+    });
+
+    describe('mode cookie HttpOnly', () => {
+        beforeEach(() => {
+            cookieMode.enabled = true;
+            createTestPinia();
+        });
+
+        it('n’écrit pas le refresh en localStorage', async () => {
+            const auth = useAuthStore();
+            localStorage.setItem(REFRESH_KEY, 'legacy-refresh');
+            auth.setTokens(tokens({ refreshToken: 'should-not-persist' }));
+
+            expect(localStorage.getItem(REFRESH_KEY)).toBeNull();
+            expect(auth.refreshToken).toBeNull();
+            expect(auth.accessToken).toBe('access-1');
+            expect(sessionStorage.getItem('spendup_access_token')).toBe('access-1');
+        });
+
+        it('applySession accepte une session sans refreshToken body', async () => {
+            const auth = useAuthStore();
+            authApiMock.me.mockResolvedValue(meUser());
+
+            const outcome = await auth.applySession({
+                requiresTwoFactor: false,
+                twoFactorToken: null,
+                accessToken: 'access-cookie',
+                refreshToken: null,
+                expiresAt: new Date(Date.now() + 60_000).toISOString(),
+                userPublicId: 'ABC1234'
+            });
+
+            expect(outcome).toBe('ok');
+            expect(auth.accessToken).toBe('access-cookie');
+            expect(localStorage.getItem(REFRESH_KEY)).toBeNull();
+        });
+
+        it('refreshSession appelle /refresh sans body token', async () => {
+            const auth = useAuthStore();
+            authApiMock.refresh.mockResolvedValue(
+                tokens({
+                    accessToken: 'from-cookie',
+                    refreshToken: null,
+                    expiresAt: new Date(Date.now() + 60_000).toISOString()
+                })
+            );
+
+            const ok = await auth.refreshSession();
+
+            expect(ok).toBe(true);
+            expect(authApiMock.refresh).toHaveBeenCalledWith(null);
+            expect(auth.accessToken).toBe('from-cookie');
+        });
     });
 });

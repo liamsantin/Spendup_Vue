@@ -32,7 +32,7 @@ En Dev, déjà autorisées notamment :
 
 En prod : ajouter l’origine du site Vue (ex. `https://app.spendup.ch`) dans la config API / variables d’env.
 
-Le front n’a **pas** besoin de cookies pour l’auth : tokens dans le body / header.
+**P1 (actif côté Vue si `VITE_AUTH_COOKIE_MODE=true`) :** refresh en cookie HttpOnly ; le front n’écrit plus le refresh en `localStorage`. CORS API doit autoriser credentials. Access token reste en Bearer (sessionStorage / mémoire).
 
 ---
 
@@ -77,7 +77,7 @@ JSON en **camelCase** (ASP.NET Core par défaut).
 | ---------------- | ------------------------------------------------------------------- | ------------ | ------------------------------------------------------------- |
 | `accessToken`    | Pinia + `sessionStorage` (`spendup_access_token`)                   | **15 min**   | Header `Authorization: Bearer {accessToken}`                  |
 | `expiresAt`      | Pinia + `sessionStorage` (`spendup_access_expires_at`) — ISO string | = access     | Refresh **proactif** (~30 s avant expiration)                 |
-| `refreshToken`   | Pinia + `localStorage` (`spendup_refresh_token`)                    | **30 jours** | `POST /api/auth/refresh`                                      |
+| `refreshToken`   | **Cookie HttpOnly** (mode P1) — plus en `localStorage`              | **30 jours** | `POST /api/auth/refresh` (cookie, body optionnel)             |
 | `twoFactorToken` | mémoire courte uniquement                                           | **5 min**    | Uniquement `POST /api/auth/2fa/verify` — **jamais** sur `/me` |
 
 **Pending register (front) :**
@@ -215,15 +215,15 @@ POST /logout  { refreshToken? }
 
 ```txt
 POST /forgot-password  { email }     // toujours « OK » (pas d’énumération)
-→ page front /reset-password?token=...
+→ mail : /auth/reset-password#token=...
 POST /reset-password  { token, newPassword }
 → rediriger login (toutes sessions invalidées)
 ```
 
 L’API envoie un mail avec lien basé sur `Email:PasswordResetBaseUrl`  
-→ **à configurer côté API** vers la route Vue réelle, ex.  
-`https://app.spendup.ch/reset-password`  
-Le mail ajoute `?token=...`.
+→ configurer vers la route Vue : `https://app…/auth/reset-password`  
+Le mail ajoute **`#token=…`** (fragment, non envoyé en Referer).  
+Le front accepte encore `?token=` en legacy, retire le jeton de l’URL au boot.
 
 ### 5.7 2FA (TOTP)
 
@@ -264,7 +264,7 @@ Préfixe : **`/api/auth`**
 | `POST`   | `/login`                | —                 | identifier, password, deviceIdentifier?, deviceName? | `AuthSession`                     |
 | `POST`   | `/google`               | —                 | idToken, deviceIdentifier?, deviceName?              | `AuthSession`                     |
 | `POST`   | `/2fa/verify`           | —                 | twoFactorToken, code, device…?                       | `AuthTokens`                      |
-| `POST`   | `/refresh`              | —                 | refreshToken                                         | `AuthTokens`                      |
+| `POST`   | `/refresh`              | —                 | refreshToken?, deviceIdentifier?                     | `AuthTokens`                      |
 | `POST`   | `/logout`               | refresh et/ou JWT | refreshToken?                                        | `null`                            |
 | `GET`    | `/me`                   | JWT               | —                                                    | profil (`Me`)                     |
 | `PUT`    | `/profile`              | JWT               | soft profile (sans photo)                            | `null`                            |
@@ -376,7 +376,7 @@ Si 2FA :
 | Challenge 2FA            | `2fa/verify`                                                |
 | Google bouton            | GIS + `google`                                              |
 | Mot de passe oublié      | `forgot-password`                                           |
-| Reset (route `?token=`)  | `reset-password`                                            |
+| Reset (route `#token=`)  | `reset-password`                                            |
 | Profil (AccountTab)      | `me`, `PUT /profile`, username / email / password           |
 | Photo de profil          | `PUT/POST/GET/DELETE /me/avatar`                            |
 | Changer MDP              | `password/change` → **re-login**                            |
@@ -463,7 +463,7 @@ VITE_GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
 ## 10. Hors scope actuel
 
 L’API n’expose **pas encore** : comptes bancaires, budgets, transactions, etc.  
-Seule la couche **Auth** est intégrable aujourd’hui.
+Seule la couche **Auth** (+ settings utilisateur) est intégrable aujourd’hui.
 
 Pages Tools HTML (`/tools/*`) = Dev only, pas pour le front prod.
 
@@ -477,7 +477,99 @@ Collection Postman : `Postman/Spendup_Api.postman_collection.json`.
 2. Origine Vue listée dans `Cors:AllowedOrigins`.
 3. `VITE_API_BASE_URL` correct (pas de slash final obligatoire ; paths commencent par `/api/...`).
 4. Google : même Client ID Web front + API.
-5. Reset MDP : `Email:PasswordResetBaseUrl` pointe vers la route Vue (`…/reset-password`).
+5. Reset MDP : `Email:PasswordResetBaseUrl` → `…/auth/reset-password` ; lien mail `#token=…`.
 6. Intercepteur refresh + purge tokens sur logout / 401 définitif (`forceReLogin`).
 7. Ne jamais logger access/refresh/2FA tokens.
 8. Ne jamais persister le mot de passe pending register hors mémoire process.
+
+---
+
+## 12. P1 — Contrat API cible (remédiation sécurité)
+
+État front P1 : cookies, idle logout, reset `#token=`, step-up, appareils, settings session, **CSP enforce prod** (12.6).
+
+### 12.1 Cookies de session (remplace refresh en localStorage)
+
+| Changement API                                   | Détail                                                                                                                                                     |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cookie refresh HttpOnly                          | Nom suggéré `spendup_rt` ; `Secure` ; `SameSite=None` (cross-site front/API) **ou** `Lax` si même site ; `Path=/api/auth` ; durée = refresh actuel (~30 j) |
+| `POST /api/auth/login` / `google` / `2fa/verify` | **Set-Cookie** refresh ; body peut omettre `refreshToken` (ou le garder en transition puis le retirer)                                                     |
+| `POST /api/auth/refresh`                         | Lit le cookie (body `refreshToken` optionnel en transition) ; **rotation** + nouveau Set-Cookie ; reuse detection inchangée                                |
+| `POST /api/auth/logout`                          | Clear-Cookie + révocation famille                                                                                                                          |
+| CORS                                             | `Allow-Credentials: true` ; `AllowedOrigins` **explicites** (pas `*`)                                                                                      |
+| Access token                                     | Court (15 min) : rester en body **ou** cookie HttpOnly non-JS ; le front vise access **mémoire** uniquement                                                |
+| CSRF                                             | Si cookie envoyé cross-site : double-submit / header CSRF / SameSite strict selon topologie                                                                |
+
+Front : `withCredentials` + `VITE_AUTH_COOKIE_MODE=true` uniquement après bascule API.
+
+### 12.2 Appareils (identité serveur) — **implémenté front + API**
+
+Contrat API (réf. `Spendup_Api/.../devices-list.md`) :
+
+| Point                       | Détail                                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------ |
+| Identifiant client          | Toujours envoyer un `deviceIdentifier` **stable** (+ `deviceName`) au login / Google / 2FA |
+| Claim JWT `did`             | Access token lié à l’appareil de la session                                                |
+| `GET /devices`              | `isCurrentDevice` calculé serveur ; `trustedUntil` si confiance active                     |
+| `POST /refresh`             | `deviceIdentifier` optionnel ; s’il est fourni, doit matcher la session (sinon 401)        |
+| Trust TTL                   | `trustedDeviceDurationDays` appliqué serveur ; le front affiche `trustedUntil`             |
+| Trust / revoke / revoke-all | Step-up (12.3)                                                                             |
+
+Front : normalisation `trustedUntil` / `isCurrentDevice`, badge appareil courant (serveur puis fallback UUID local), `deviceIdentifier` envoyé au refresh.
+
+### 12.3 Step-up (actions sensibles) — **implémenté front + API**
+
+Contrat API (réf. `Spendup_Api/.../feature-step-up.md`) :
+
+1. Appeler l’action.
+2. Si HTTP **403** + `code: "STEP_UP_REQUIRED"` → dialogue selon `details` (`requiresPassword` / `requiresOtp` / `requiresGoogleIdToken`).
+3. Relancer avec `"stepUp": { "password?", "otp?", "googleIdToken?" }`.
+
+Front : `withStepUpRetry` + `StepUpDialog` (monté dans `FullLayout`).  
+Endpoints branchés : change password/email, unlink Google, delete account, trust/revoke/revoke-all devices.
+
+### 12.4 Settings session (enforcement serveur) — **implémenté front + API**
+
+Contrat API (réf. `Spendup_Api/.../feature-idle-logout.md`, `feature-user-settings.md`, `feature-step-up.md`) :
+
+| Champ                           | Effet                                                                                        |
+| ------------------------------- | -------------------------------------------------------------------------------------------- |
+| `idleLogoutMinutes`             | `null` ou 5–10080 ; API révoque + 401 sur refresh/JWT ; front : timer UX + notice login i18n |
+| `require2faForSensitiveActions` | Si `true` + 2FA on → OTP step-up obligatoire (dialog déjà branché)                           |
+| `trustedDeviceDurationDays`     | 1–365 ; TTL confiance à chaque trust ; UI affiche `trustedUntil`                             |
+
+Front : carte Session (validation + hints), clamp avant PUT, toggle 2FA sensible désactivé sans 2FA.
+
+### 12.5 Reset mot de passe (lien mail) — **implémenté front + API**
+
+Contrat API (réf. `Spendup_Api/.../feature-password-reset-link.md`) :
+
+| Point     | Détail                                                                                                    |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| Lien mail | `{PasswordResetBaseUrl}#token={urlEncoded}` — **pas** `?token=`                                           |
+| Base URL  | `/auth/reset-password`                                                                                    |
+| Token     | One-time, TTL `PasswordResetTokenMinutes` (30), invalidation après usage                                  |
+| Front     | Lit `#token=` (prioritaire) puis `?token=` legacy ; `replaceState` / `router.replace` pour nettoyer l’URL |
+
+### 12.6 Headers / CSP — **implémenté front + API**
+
+API : middleware `SecurityHeaders` (CSP API stricte, HSTS HTTPS, nosniff, etc.) — réf. `Spendup_Api/.../feature-security-headers.md`.  
+Front SPA (politique distincte, voir `src/security/csp.ts`) :
+
+| Contexte                           | CSP                                                         |
+| ---------------------------------- | ----------------------------------------------------------- |
+| `vite` / HMR                       | `Content-Security-Policy-Report-Only` (unsafe-eval + ws)    |
+| `vite preview` + `public/_headers` | **`Content-Security-Policy` enforce**                       |
+| Build HTML                         | meta `http-equiv` CSP enforce (filet si CDN omet le header) |
+
+Autres headers front : `Referrer-Policy: strict-origin-when-cross-origin`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Permissions-Policy` restrictive.  
+HSTS : côté API / reverse-proxy HTTPS (pas le serveur Vite).
+
+### 12.7 Ordre de livraison
+
+1. ~~CORS credentials + cookie refresh~~ (12.1)
+2. ~~Step-up~~ (12.3)
+3. ~~Device binding serveur~~ (12.2)
+4. ~~Enforcement settings session~~ (12.4)
+5. ~~Lien reset `#token=`~~ (12.5)
+6. ~~CSP / security headers~~ (12.6)

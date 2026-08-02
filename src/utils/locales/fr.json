@@ -351,7 +351,8 @@
             },
             "summary": {
                 "firstSeen": "Première connexion",
-                "lastActive": "Dernière activité"
+                "lastActive": "Dernière activité",
+                "trustedUntil": "Confiance jusqu’au"
             },
             "details": {
                 "fallbackTitle": "Détails de l’appareil",
@@ -370,6 +371,7 @@
                     "firstSeen": "Première connexion",
                     "sessionCount": "Sessions actives",
                     "trusted": "Appareil de confiance",
+                    "trustedUntil": "Confiance jusqu’au",
                     "identifier": "Identifiant",
                     "userAgent": "User-Agent"
                 },
@@ -398,14 +400,18 @@
             }
         },
         "session": {
-            "example": {
-                "title": "Session",
-                "subtitle": "Exemple de section — non connecté à l’API.",
-                "idleLogoutEnabled": "Déconnexion après inactivité",
-                "idleLogoutMinutes": "Minutes d’inactivité",
-                "trustedDeviceDurationDays": "Durée de confiance des appareils (jours)",
-                "require2faForSensitiveActions": "Exiger la 2FA pour les actions sensibles"
-            }
+            "title": "Session",
+            "subtitle": "Déconnexion après inactivité, appareils de confiance et 2FA sensible.",
+            "idleLogoutNotice": "Vous avez été déconnecté après une période d’inactivité.",
+            "idleLogoutEnabled": "Déconnexion après inactivité",
+            "idleLogoutMinutes": "Minutes d’inactivité",
+            "idleLogoutHint": "Appliqué côté serveur (refresh et API) et localement pour une déconnexion immédiate.",
+            "idleLogoutRange": "Entre {min} et {max} minutes.",
+            "trustedDeviceDurationDays": "Durée de confiance des appareils (jours)",
+            "trustedDeviceHint": "Durée appliquée à chaque « Faire confiance » (1–365 jours).",
+            "require2faForSensitiveActions": "Exiger la 2FA pour les actions sensibles",
+            "require2faHint": "Si activé, un code OTP est exigé en plus du mot de passe pour les actions sensibles.",
+            "require2faNeedsTwoFactor": "Activez d’abord la double authentification pour utiliser cette option."
         }
     },
     "userSettings": {
@@ -497,6 +503,50 @@
             "allSessionsRevoked": "Toutes les sessions ont été déconnectées. Veuillez vous reconnecter.",
             "passwordUpdatedRelogin": "Mot de passe mis à jour. Veuillez vous reconnecter.",
             "accountDeleted": "Votre compte a été définitivement supprimé."
+        },
+        "forgotPassword": {
+            "title": "Mot de passe oublié ?",
+            "subtitle": "Indiquez l’e-mail associé à votre compte : nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+            "email": "Adresse e-mail",
+            "submit": "Envoyer le lien",
+            "backToLogin": "Retour à la connexion",
+            "verifiedEmailHint": "La réinitialisation nécessite un e-mail vérifié lié au compte.",
+            "success": "Si un compte avec e-mail vérifié existe, vous recevrez bientôt un lien de réinitialisation.",
+            "errors": {
+                "required": "Champ requis.",
+                "email": "Adresse e-mail invalide."
+            }
+        },
+        "resetPassword": {
+            "title": "Réinitialiser le mot de passe",
+            "subtitle": "Choisissez un nouveau mot de passe pour votre compte.",
+            "token": "Jeton (token)",
+            "manualTokenHint": "Collez le jeton reçu par e-mail si le lien n’était pas cliquable.",
+            "newPassword": "Nouveau mot de passe",
+            "confirmPassword": "Confirmer le mot de passe",
+            "submit": "Réinitialiser",
+            "errors": {
+                "required": "Champ requis.",
+                "minLength": "Au moins 8 caractères.",
+                "letter": "Au moins une lettre.",
+                "digit": "Au moins un chiffre.",
+                "mismatch": "Les mots de passe ne correspondent pas."
+            }
+        },
+        "stepUp": {
+            "title": "Confirmation requise",
+            "subtitle": "Cette action sensible nécessite une vérification supplémentaire.",
+            "confirm": "Confirmer",
+            "googleConfirm": "Confirmer avec Google",
+            "googleReady": "Compte Google confirmé.",
+            "fields": {
+                "password": "Mot de passe actuel",
+                "otp": "Code d’authentification",
+                "google": "Confirmez avec votre compte Google"
+            },
+            "errors": {
+                "incomplete": "Complétez la vérification demandée."
+            }
         }
     }
 }

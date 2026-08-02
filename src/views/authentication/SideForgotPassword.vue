@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import ResetForm from '@/components/auth/ResetForm.vue';
 import ResetPasswordForm from '@/components/auth/ResetPasswordForm.vue';
+import { readPasswordResetToken } from '@/features/auth/password-reset-token';
 
+const { t } = useI18n();
 const route = useRoute();
-const hasToken = computed(() => typeof route.query.token === 'string' && !!route.query.token);
+/** Figé au premier rendu : le formulaire retire ensuite le token de l’URL. */
+const showReset = ref(!!readPasswordResetToken(route));
 </script>
 
 <template>
@@ -22,20 +26,18 @@ const hasToken = computed(() => typeof route.query.token === 'string' && !!route
             </v-col>
             <v-col cols="12" lg="4" xl="4" xxl="3" class="d-flex align-center justify-center">
                 <div class="pa-sm-7 pa-4 w-100">
-                    <template v-if="hasToken">
-                        <h2 class="text--darken-2 text-h4 font-weight-bold">Réinitialiser le mot de passe</h2>
-                        <p class="text-subtitle-1 py-4 text-10">Choisissez un nouveau mot de passe pour votre compte.</p>
+                    <template v-if="showReset">
+                        <h2 class="text--darken-2 text-h4 font-weight-bold">{{ t('auth.resetPassword.title') }}</h2>
+                        <p class="text-subtitle-1 py-4 text-10">{{ t('auth.resetPassword.subtitle') }}</p>
                         <ResetPasswordForm />
                     </template>
                     <template v-else>
-                        <h2 class="text--darken-2 text-h4 font-weight-bold">Mot de passe oublié ?</h2>
-                        <p class="text-subtitle-1 pt-2 pb-1 text-10">
-                            Indiquez l’e-mail associé à votre compte : nous vous enverrons un lien pour réinitialiser votre mot de passe.
-                        </p>
+                        <h2 class="text--darken-2 text-h4 font-weight-bold">{{ t('auth.forgotPassword.title') }}</h2>
+                        <p class="text-subtitle-1 pt-2 pb-1 text-10">{{ t('auth.forgotPassword.subtitle') }}</p>
                         <ResetForm />
                     </template>
                     <v-btn size="large" color="lightprimary" to="/auth/login" block class="mt-5 text-primary" flat>
-                        Retour à la connexion
+                        {{ t('auth.forgotPassword.backToLogin') }}
                     </v-btn>
                 </div>
             </v-col>

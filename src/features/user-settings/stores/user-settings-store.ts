@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { userSettingsApi } from '../api';
-import { applyUserSettingsToRuntime, cloneSettings, settingsEqual } from '../mappers';
+import { applyUserSettingsToRuntime, cloneSettings, normalizeSecuritySettings, settingsEqual } from '../mappers';
 import { USER_SETTINGS_DEFAULTS, type UserSettings } from '../types';
 
 export const useUserSettingsStore = defineStore('user-settings', () => {
@@ -82,7 +82,8 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
         saving.value = true;
         error.value = null;
         try {
-            const result = await userSettingsApi.put(next);
+            const payload = normalizeSecuritySettings(next);
+            const result = await userSettingsApi.put(payload);
             settings.value = cloneSettings({ ...USER_SETTINGS_DEFAULTS, ...result });
             loaded.value = true;
             applyUserSettingsToRuntime(settings.value);

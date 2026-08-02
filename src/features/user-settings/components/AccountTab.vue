@@ -20,6 +20,7 @@ import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
+import { withStepUpRetry } from '@/features/auth/step-up';
 import AccountPictureCard from './account/AccountPictureCard.vue';
 import AccountPersonalCard from './account/AccountPersonalCard.vue';
 import AccountCredentialsCard from './account/AccountCredentialsCard.vue';
@@ -476,7 +477,7 @@ async function runDeleteAccount(payload: { currentPassword?: string; googleIdTok
     deleteError.value = null;
     deleteSaving.value = true;
     try {
-        await auth.deleteAccount(payload);
+        await withStepUpRetry((stepUp) => auth.deleteAccount({ ...payload, stepUp }));
     } catch (e: unknown) {
         deleteError.value = getErrorMessage(e);
         deleteSaving.value = false;
@@ -537,10 +538,13 @@ async function saveUsername() {
         username.value = auth.user?.username ?? value;
 
         if (withPassword) {
-            await auth.changePassword(
-                null,
-                usernamePassword.value,
-                t('accounts.usernameModal.success.credentialsCreated', { username: value })
+            await withStepUpRetry((stepUp) =>
+                auth.changePassword(
+                    null,
+                    usernamePassword.value,
+                    t('accounts.usernameModal.success.credentialsCreated', { username: value }),
+                    stepUp
+                )
             );
             return;
         }
@@ -573,11 +577,14 @@ async function submitEmailChange() {
 
     emailSaving.value = true;
     try {
-        await auth.changeEmail({
-            newEmail: email,
-            currentPassword: showEmailPassword.value ? emailCurrentPassword.value : null,
-            googleIdToken: emailGoogleIdToken.value
-        });
+        await withStepUpRetry((stepUp) =>
+            auth.changeEmail({
+                newEmail: email,
+                currentPassword: showEmailPassword.value ? emailCurrentPassword.value : null,
+                googleIdToken: emailGoogleIdToken.value,
+                stepUp
+            })
+        );
         emailOpen.value = false;
         accountSuccess.value = null;
         accountError.value = null;
@@ -612,7 +619,9 @@ async function submitPasswordChange() {
 
     passwordSaving.value = true;
     try {
-        await auth.changePassword(requiresCurrentPassword.value ? currentPassword.value : null, newPassword.value);
+        await withStepUpRetry((stepUp) =>
+            auth.changePassword(requiresCurrentPassword.value ? currentPassword.value : null, newPassword.value, undefined, stepUp)
+        );
     } catch (e: unknown) {
         passwordError.value = getErrorMessage(e);
         passwordSaving.value = false;
@@ -637,7 +646,7 @@ async function submitUnlinkGoogle() {
     unlinkGoogleSaving.value = true;
     unlinkGoogleError.value = null;
     try {
-        await auth.unlinkGoogle(unlinkGooglePassword.value);
+        await withStepUpRetry((stepUp) => auth.unlinkGoogle(unlinkGooglePassword.value, stepUp));
         unlinkGoogleOpen.value = false;
         accountError.value = null;
         accountSuccess.value = t('accounts.credentials.success.googleUnlinked');

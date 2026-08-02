@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { DeviceLaptopIcon, DeviceMobileIcon, DotsVerticalIcon } from 'vue-tabler-icons';
 import { getOrCreateDeviceId, useAuthStore, type AuthDevice } from '@/features/auth';
+import { withStepUpRetry } from '@/features/auth/step-up';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
 
@@ -102,6 +103,13 @@ const KNOWN_RAW_KEYS = new Set([
     'isCurrentDevice',
     'is_current_device',
     'IsCurrentDevice',
+    'trustedUntil',
+    'trusted_until',
+    'TrustedUntil',
+    'lastIpAddress',
+    'last_ip_address',
+    'lastCountry',
+    'last_country',
     'is_hidden',
     'isHidden',
     'IsHidden'
@@ -143,7 +151,11 @@ function filterRows(rows: Array<{ label: string; value: string | null | undefine
 function deviceSummaryRows(device: AuthDevice): DeviceDetailRow[] {
     return filterRows([
         { label: t('security.devices.summary.firstSeen'), value: formatDeviceDate(device.firstSeenAt || device.createdAt) },
-        { label: t('security.devices.summary.lastActive'), value: formatDeviceDate(device.lastSeenAt || device.lastActiveAt) }
+        { label: t('security.devices.summary.lastActive'), value: formatDeviceDate(device.lastSeenAt || device.lastActiveAt) },
+        {
+            label: t('security.devices.summary.trustedUntil'),
+            value: device.isTrusted ? formatDeviceDate(device.trustedUntil) : null
+        }
     ]);
 }
 
@@ -169,6 +181,10 @@ function deviceDetailRows(device: AuthDevice): DeviceDetailRow[] {
                     : device.isTrusted
                       ? t('security.devices.details.boolean.yes')
                       : t('security.devices.details.boolean.no')
+        },
+        {
+            label: t('security.devices.details.rows.trustedUntil'),
+            value: device.isTrusted ? formatDeviceDate(device.trustedUntil) : null
         },
         { label: t('security.devices.details.rows.identifier'), value: device.deviceIdentifier },
         { label: t('security.devices.details.rows.userAgent'), value: device.userAgent }
@@ -233,7 +249,7 @@ async function setDeviceTrust(device: AuthDevice, isTrusted: boolean) {
     trustLoadingId.value = device.deviceIdentifier;
     devicesError.value = null;
     try {
-        await auth.setDeviceTrust(device.deviceIdentifier, isTrusted);
+        await withStepUpRetry((stepUp) => auth.setDeviceTrust(device.deviceIdentifier, isTrusted, stepUp));
         await loadDevices();
         if (detailsDevice.value?.deviceIdentifier === device.deviceIdentifier) {
             detailsDevice.value = devices.value.find((d) => d.deviceIdentifier === device.deviceIdentifier) ?? null;
@@ -261,7 +277,7 @@ async function confirmRevokeDevice() {
     revokeLoadingId.value = device.deviceIdentifier;
     devicesError.value = null;
     try {
-        await auth.revokeDevice(device.deviceIdentifier);
+        await withStepUpRetry((stepUp) => auth.revokeDevice(device.deviceIdentifier, stepUp));
         revokeOpen.value = false;
         revokeTarget.value = null;
         if (isCurrentDevice(device)) {
@@ -282,7 +298,7 @@ async function confirmRevokeAll() {
     revokeAllLoading.value = true;
     devicesError.value = null;
     try {
-        await auth.revokeAllDevices();
+        await withStepUpRetry((stepUp) => auth.revokeAllDevices(stepUp));
     } catch (e: unknown) {
         devicesError.value = e instanceof Error ? e.message : String(e);
         revokeAllLoading.value = false;

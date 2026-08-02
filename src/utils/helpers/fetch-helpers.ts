@@ -1,6 +1,6 @@
 import axios, { type AxiosRequestConfig, type Method } from 'axios';
 import { useAuthStore } from '@/features/auth';
-import { createApiAxios, getApiBaseUrl } from '@/utils/helpers/axios-helpers';
+import { createApiAxios, getApiBaseUrl, isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 import { AppError, unwrapSpendupEnvelope } from '@/utils/errors/app-error';
 
 /**
@@ -31,8 +31,15 @@ function request(method: Method) {
                 const response = await domainAxios.request(config);
                 return handleResponse(response.status, response.data, response.statusText, async () => {
                     if (retried) {
-                        await useAuthStore().forceReLogin();
-                        return Promise.reject(new AppError('Unauthorized', 401));
+                        const msg =
+                            (response.data &&
+                                typeof response.data === 'object' &&
+                                'message' in response.data &&
+                                (response.data as { message?: string }).message) ||
+                            response.statusText ||
+                            'Unauthorized';
+                        await useAuthStore().forceReLogin(String(msg));
+                        return Promise.reject(new AppError(String(msg), 401));
                     }
                     return doRequest(true);
                 });
@@ -77,17 +84,18 @@ async function authHeader(url: string): Promise<Record<string, string>> {
 async function handleResponse(status: number, data: unknown, statusText: string, retry: () => Promise<unknown>): Promise<unknown> {
     if (status === 401) {
         const auth = useAuthStore();
-        if (auth.refreshToken) {
+        const message =
+            (data && typeof data === 'object' && 'message' in data && (data as { message?: string }).message) ||
+            statusText ||
+            'Unauthorized';
+        if (auth.refreshToken || isAuthCookieMode()) {
             const refreshed = await auth.refreshSession();
             if (refreshed) {
                 return retry();
             }
         }
-        await auth.forceReLogin();
-        const message =
-            (data && typeof data === 'object' && 'message' in data && (data as { message?: string }).message) ||
-            statusText ||
-            'Unauthorized';
+        // Passe le message API (ex. idle) pour la notice login si le refresh a aussi échoué.
+        await auth.forceReLogin(String(message));
         return Promise.reject(new AppError(String(message), 401));
     }
 

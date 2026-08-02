@@ -2,9 +2,10 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { router } from '@/router';
 import { authApi, ApiError } from '@/features/auth/api';
-import type { AuthSession, AuthTokens, Me, UpdateProfilePayload } from '@/features/auth/types';
+import type { AuthSession, AuthTokens, Me, StepUpProof, UpdateProfilePayload } from '@/features/auth/types';
 import {
     clearLegacyPendingPassword,
+    clearStoredRefreshToken,
     clearStoredTokens,
     isAccessExpired,
     readAccessToken,
@@ -19,6 +20,8 @@ import {
 import { i18n } from '@/plugins/i18n';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
+import { isIdleSessionError, isIdleSessionMessage } from '@/features/auth/idle-session';
+import { isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 
 function t(key: string) {
     return i18n.global.t(key);
@@ -32,8 +35,13 @@ let pendingPasswordMemory: string | null = null;
 export const useAuthStore = defineStore('auth', () => {
     clearLegacyPendingPassword();
 
+    const cookieMode = isAuthCookieMode();
+    if (cookieMode) {
+        clearStoredRefreshToken();
+    }
+
     const accessToken = ref<string | null>(readAccessToken());
-    const refreshToken = ref<string | null>(readRefreshToken());
+    const refreshToken = ref<string | null>(cookieMode ? null : readRefreshToken());
     const expiresAt = ref<string | null>(readExpiresAt());
     const twoFactorToken = ref<string | null>(null);
     /** E-mail en attente de confirmation après inscription. */
@@ -45,6 +53,9 @@ export const useAuthStore = defineStore('auth', () => {
 
     /** Mutex partagé store ↔ fetchWrapper — un seul refresh à la fois. */
     let refreshInFlight: Promise<boolean> | null = null;
+    /** Bootstrap cookie : un seul essai refresh silencieux au chargement. */
+    let bootstrapInFlight: Promise<void> | null = null;
+    let bootstrapDone = false;
 
     const isAuthenticated = computed(() => !!refreshToken.value || !!accessToken.value);
 
@@ -74,9 +85,16 @@ export const useAuthStore = defineStore('auth', () => {
 
     function setTokens(tokens: AuthTokens) {
         accessToken.value = tokens.accessToken;
-        refreshToken.value = tokens.refreshToken;
         expiresAt.value = tokens.expiresAt || null;
-        writeTokens(tokens.accessToken, tokens.refreshToken, tokens.expiresAt || null);
+        if (cookieMode) {
+            refreshToken.value = null;
+            writeTokens(tokens.accessToken, null, tokens.expiresAt || null, { persistRefresh: false });
+        } else {
+            refreshToken.value = tokens.refreshToken ?? null;
+            writeTokens(tokens.accessToken, tokens.refreshToken ?? null, tokens.expiresAt || null, {
+                persistRefresh: true
+            });
+        }
     }
 
     function clearSession() {
@@ -95,8 +113,11 @@ export const useAuthStore = defineStore('auth', () => {
             twoFactorToken.value = session.twoFactorToken;
             return '2fa';
         }
-        if (!session.accessToken || !session.refreshToken) {
-            throw new Error('Jetons manquants dans la réponse d’authentification.');
+        if (!session.accessToken) {
+            throw new Error('Jeton d’accès manquant dans la réponse d’authentification.');
+        }
+        if (!cookieMode && !session.refreshToken) {
+            throw new Error('Jeton de rafraîchissement manquant dans la réponse d’authentification.');
         }
         setTokens({
             accessToken: session.accessToken,
@@ -223,33 +244,39 @@ export const useAuthStore = defineStore('auth', () => {
         return authApi.listDevices(token);
     }
 
-    async function revokeDevice(deviceIdentifier: string) {
+    async function revokeDevice(deviceIdentifier: string, stepUp?: StepUpProof) {
         const token = await requireAccessToken();
-        await authApi.revokeDevice(token, deviceIdentifier);
+        await authApi.revokeDevice(token, deviceIdentifier, stepUp);
     }
 
-    async function setDeviceTrust(deviceIdentifier: string, isTrusted: boolean) {
+    async function setDeviceTrust(deviceIdentifier: string, isTrusted: boolean, stepUp?: StepUpProof) {
         const token = await requireAccessToken();
-        await authApi.setDeviceTrust(token, deviceIdentifier, isTrusted);
+        await authApi.setDeviceTrust(token, deviceIdentifier, isTrusted, stepUp);
     }
 
     /** Révoque toutes les sessions (y compris l’appareil courant) → force re-login. */
-    async function revokeAllDevices() {
+    async function revokeAllDevices(stepUp?: StepUpProof) {
         const token = await requireAccessToken();
-        await authApi.revokeAllDevices(token);
+        await authApi.revokeAllDevices(token, stepUp);
         await forceReLogin(t('auth.notices.allSessionsRevoked'));
     }
 
+    /** Notice idle en attente si le refresh a échoué pour inactivité (lue par `forceReLogin`). */
+    let pendingIdleLogoutNotice = false;
+
     async function refreshSession(): Promise<boolean> {
-        if (!refreshToken.value) return false;
+        if (!cookieMode && !refreshToken.value) return false;
         if (refreshInFlight) return refreshInFlight;
 
         refreshInFlight = (async () => {
             try {
-                const tokens = await authApi.refresh(refreshToken.value!);
+                const tokens = await authApi.refresh(cookieMode ? null : refreshToken.value);
                 setTokens(tokens);
                 return true;
-            } catch {
+            } catch (e: unknown) {
+                if (isIdleSessionError(e)) {
+                    pendingIdleLogoutNotice = true;
+                }
                 clearSession();
                 return false;
             } finally {
@@ -258,6 +285,29 @@ export const useAuthStore = defineStore('auth', () => {
         })();
 
         return refreshInFlight;
+    }
+
+    /**
+     * Mode cookie : tente un refresh silencieux (cookie HttpOnly) si pas d’access utilisable.
+     * À appeler depuis le guard avant de décider login /app.
+     */
+    async function bootstrapSession(): Promise<void> {
+        if (!cookieMode) return;
+        if (bootstrapDone) return;
+        if (bootstrapInFlight) return bootstrapInFlight;
+
+        bootstrapInFlight = (async () => {
+            try {
+                const hasUsableAccess = !!accessToken.value && !isAccessExpired(expiresAt.value);
+                if (hasUsableAccess) return;
+                await refreshSession();
+            } finally {
+                bootstrapDone = true;
+                bootstrapInFlight = null;
+            }
+        })();
+
+        return bootstrapInFlight;
     }
 
     async function fetchMe() {
@@ -270,7 +320,8 @@ export const useAuthStore = defineStore('auth', () => {
             user.value = await authApi.me(token);
             return user.value;
         } catch (e: unknown) {
-            if (e instanceof ApiError && e.status === 401 && refreshToken.value) {
+            const canRetry = cookieMode || !!refreshToken.value;
+            if (e instanceof ApiError && e.status === 401 && canRetry) {
                 const ok = await refreshSession();
                 if (ok && accessToken.value) {
                     user.value = await authApi.me(accessToken.value);
@@ -317,36 +368,43 @@ export const useAuthStore = defineStore('auth', () => {
         await fetchMe();
     }
 
-    async function changeEmail(payload: { newEmail: string; currentPassword?: string | null; googleIdToken?: string | null }) {
+    async function changeEmail(payload: {
+        newEmail: string;
+        currentPassword?: string | null;
+        googleIdToken?: string | null;
+        stepUp?: StepUpProof;
+    }) {
         const token = await requireAccessToken();
         await authApi.changeEmail(token, payload);
         await fetchMe();
     }
 
-    async function changePassword(currentPassword: string | null, newPassword: string, reLoginMessage?: string) {
+    async function changePassword(currentPassword: string | null, newPassword: string, reLoginMessage?: string, stepUp?: StepUpProof) {
         const token = await requireAccessToken();
-        await authApi.changePassword(token, currentPassword, newPassword);
+        await authApi.changePassword(token, currentPassword, newPassword, stepUp);
         await forceReLogin(reLoginMessage ?? t('auth.notices.passwordUpdatedRelogin'));
     }
 
-    async function unlinkGoogle(currentPassword: string) {
+    async function unlinkGoogle(currentPassword: string, stepUp?: StepUpProof) {
         const token = await requireAccessToken();
-        await authApi.unlinkGoogle(token, currentPassword);
+        await authApi.unlinkGoogle(token, currentPassword, stepUp);
         await fetchMe();
     }
 
-    async function deleteAccount(payload: { currentPassword?: string; googleIdToken?: string }) {
+    async function deleteAccount(payload: { currentPassword?: string; googleIdToken?: string; stepUp?: StepUpProof }) {
         const token = await requireAccessToken();
-        await authApi.deleteAccount(token, {
-            currentPassword: payload.currentPassword,
-            googleIdToken: payload.googleIdToken
-        });
+        await authApi.deleteAccount(token, payload);
         await forceReLogin(t('auth.notices.accountDeleted'));
     }
 
     async function ensureAccessToken(): Promise<string | null> {
         const hasUsableAccess = !!accessToken.value && !isAccessExpired(expiresAt.value);
         if (hasUsableAccess) return accessToken.value;
+
+        if (cookieMode) {
+            const ok = await refreshSession();
+            return ok ? accessToken.value : null;
+        }
 
         if (!refreshToken.value) {
             if (accessToken.value && isAccessExpired(expiresAt.value)) {
@@ -367,16 +425,20 @@ export const useAuthStore = defineStore('auth', () => {
         return token;
     }
 
-    async function logout() {
-        const refresh = refreshToken.value;
-        const access = accessToken.value;
+    async function clearServerSession() {
         try {
-            if (refresh) {
-                await authApi.logout(refresh, access);
+            if (cookieMode) {
+                await authApi.logout(null, accessToken.value);
+            } else if (refreshToken.value) {
+                await authApi.logout(refreshToken.value, accessToken.value);
             }
         } catch {
             // Always clear local session
         }
+    }
+
+    async function logout() {
+        await clearServerSession();
         clearSession();
         returnUrl.value = null;
         await router.push('/');
@@ -394,9 +456,12 @@ export const useAuthStore = defineStore('auth', () => {
 
     /** Force re-login after password/email change invalidates JWT. */
     async function forceReLogin(message?: string) {
+        const idleNotice = pendingIdleLogoutNotice || isIdleSessionMessage(message);
+        pendingIdleLogoutNotice = false;
+        await clearServerSession();
         clearSession();
         returnUrl.value = null;
-        await goToLogin(message);
+        await goToLogin(idleNotice ? t('security.session.idleLogoutNotice') : message);
     }
 
     return {
@@ -435,6 +500,7 @@ export const useAuthStore = defineStore('auth', () => {
         setDeviceTrust,
         revokeAllDevices,
         refreshSession,
+        bootstrapSession,
         fetchMe,
         updateProfile,
         setCatalogAvatar,
