@@ -31,9 +31,11 @@ describe('authGuard', () => {
     });
 
     it('redirige vers login si non authentifié', async () => {
+        const auth = useAuthStore();
         const next = vi.fn();
-        await authGuard(route('/app'), route('/'), next);
+        await authGuard(route('/app/comptes'), route('/'), next);
         expect(next).toHaveBeenCalledWith('/auth/login');
+        expect(auth.returnUrl).toBe('/app/comptes');
     });
 
     it('redirige vers login si fetchMe renvoie null', async () => {

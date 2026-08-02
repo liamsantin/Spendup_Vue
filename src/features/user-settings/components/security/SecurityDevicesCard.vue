@@ -14,6 +14,8 @@ const auth = useAuthStore();
 const { t, locale } = useI18n();
 
 const revokeAllOpen = ref(false);
+const revokeOpen = ref(false);
+const revokeTarget = ref<AuthDevice | null>(null);
 const detailsOpen = ref(false);
 const detailsDevice = ref<AuthDevice | null>(null);
 const devicesError = ref<string | null>(null);
@@ -243,12 +245,25 @@ async function setDeviceTrust(device: AuthDevice, isTrusted: boolean) {
     }
 }
 
-async function revokeDevice(device: AuthDevice) {
-    if (revokeLoadingId.value) return;
+function openRevokeDevice(device: AuthDevice) {
+    revokeTarget.value = device;
+    revokeOpen.value = true;
+}
+
+function onRevokeOpenChange(value: boolean) {
+    revokeOpen.value = value;
+    if (!value) revokeTarget.value = null;
+}
+
+async function confirmRevokeDevice() {
+    const device = revokeTarget.value;
+    if (!device || revokeLoadingId.value) return;
     revokeLoadingId.value = device.deviceIdentifier;
     devicesError.value = null;
     try {
         await auth.revokeDevice(device.deviceIdentifier);
+        revokeOpen.value = false;
+        revokeTarget.value = null;
         if (isCurrentDevice(device)) {
             await auth.forceReLogin(t('security.devices.success.currentDeviceRevoked'));
             return;
@@ -369,7 +384,7 @@ async function confirmRevokeAll() {
                                         :title="t('security.devices.menu.untrust')"
                                         @click="setDeviceTrust(device, false)"
                                     />
-                                    <v-list-item :title="t('security.devices.menu.disconnect')" @click="revokeDevice(device)" />
+                                    <v-list-item :title="t('security.devices.menu.disconnect')" @click="openRevokeDevice(device)" />
                                 </v-list>
                             </v-menu>
                         </div>
@@ -393,6 +408,31 @@ async function confirmRevokeAll() {
             <v-spacer />
             <v-btn color="error" flat :loading="revokeAllLoading" @click="confirmRevokeAll">
                 {{ t('security.devices.revokeAllModal.confirm') }}
+            </v-btn>
+        </template>
+    </AppModalBase>
+
+    <AppModalBase
+        :model-value="revokeOpen"
+        :title="t('security.devices.revokeModal.title')"
+        :subtitle="t('security.devices.revokeModal.subtitle')"
+        :max-width="440"
+        :scrollable="false"
+        @update:model-value="onRevokeOpenChange"
+    >
+        <p class="text-body-1 mb-0">
+            {{
+                revokeTarget && isCurrentDevice(revokeTarget)
+                    ? t('security.devices.revokeModal.bodyCurrent')
+                    : t('security.devices.revokeModal.body')
+            }}
+        </p>
+
+        <template #footer="{ close }">
+            <v-btn variant="text" flat :disabled="!!revokeLoadingId" @click="close">{{ t('common.cancel') }}</v-btn>
+            <v-spacer />
+            <v-btn color="error" flat :loading="!!revokeLoadingId" @click="confirmRevokeDevice">
+                {{ t('security.devices.revokeModal.confirm') }}
             </v-btn>
         </template>
     </AppModalBase>

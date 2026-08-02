@@ -18,6 +18,7 @@ import {
 } from '@/features/auth/session-storage';
 import { i18n } from '@/plugins/i18n';
 import { useUserSettingsStore } from '@/features/user-settings';
+import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 
 function t(key: string) {
     return i18n.global.t(key);
@@ -109,7 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function navigateAfterLogin() {
-        const target = returnUrl.value || APP_HOME_ROUTE;
+        const target = sanitizeReturnUrl(returnUrl.value, APP_HOME_ROUTE);
         returnUrl.value = null;
         await router.push(target);
     }

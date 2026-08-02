@@ -28,14 +28,6 @@ export function applyUserSettingsToRuntime(settings: UserSettings) {
     }
 }
 
-export const USER_SETTINGS_SECURITY_KEYS = [
-    'idleLogoutMinutes',
-    'require2faForSensitiveActions',
-    'trustedDeviceDurationDays'
-] as const satisfies readonly (keyof UserSettings)[];
-
-export type UserSettingsSecurityKey = (typeof USER_SETTINGS_SECURITY_KEYS)[number];
-
 export function cloneSettings(settings: UserSettings): UserSettings {
     return { ...settings };
 }
@@ -43,18 +35,4 @@ export function cloneSettings(settings: UserSettings): UserSettings {
 export function settingsEqual(a: UserSettings, b: UserSettings): boolean {
     const keys = Object.keys(a) as (keyof UserSettings)[];
     return keys.every((key) => a[key] === b[key]);
-}
-
-export function settingsEqualKeys(a: UserSettings, b: UserSettings, keys: readonly (keyof UserSettings)[]): boolean {
-    return keys.every((key) => a[key] === b[key]);
-}
-
-/** Conserve les champs sécurité issus de `securitySource` (évite d’écraser l’onglet Sécurité). */
-export function withSecurityFrom(base: UserSettings, securitySource: UserSettings): UserSettings {
-    return {
-        ...base,
-        idleLogoutMinutes: securitySource.idleLogoutMinutes,
-        require2faForSensitiveActions: securitySource.require2faForSensitiveActions,
-        trustedDeviceDurationDays: securitySource.trustedDeviceDurationDays
-    };
 }

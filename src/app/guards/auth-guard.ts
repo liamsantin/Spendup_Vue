@@ -1,5 +1,6 @@
 import type { NavigationGuard } from 'vue-router';
 import { useAuthStore, APP_HOME_ROUTE } from '@/features/auth';
+import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isDevAppEnv } from '@/utils/helpers/env-helpers';
 
@@ -14,7 +15,7 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
 
     if (requiresAuth) {
         if (!auth.isAuthenticated) {
-            auth.returnUrl = to.fullPath;
+            auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
             return next('/auth/login');
         }
         if (!auth.user) {
@@ -22,12 +23,12 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
                 const me = await auth.fetchMe();
                 if (!me || !auth.isAuthenticated) {
                     auth.clearSession();
-                    auth.returnUrl = to.fullPath;
+                    auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
                     return next('/auth/login');
                 }
             } catch {
                 auth.clearSession();
-                auth.returnUrl = to.fullPath;
+                auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
                 return next('/auth/login');
             }
         }

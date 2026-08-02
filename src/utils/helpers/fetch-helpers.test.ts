@@ -68,4 +68,17 @@ describe('fetchWrapper', () => {
         expect(axiosRequest).toHaveBeenCalledTimes(2);
         expect(forceReLogin).not.toHaveBeenCalled();
     });
+
+    it('force le re-login si le retry après refresh renvoie encore 401', async () => {
+        axiosRequest.mockResolvedValue({
+            status: 401,
+            data: { message: 'Unauthorized' },
+            statusText: 'Unauthorized'
+        });
+        refreshSession.mockResolvedValue(true);
+
+        await expect(fetchWrapper.get('/api/countries')).rejects.toMatchObject({ name: 'AppError', status: 401 });
+        expect(axiosRequest).toHaveBeenCalledTimes(2);
+        expect(forceReLogin).toHaveBeenCalled();
+    });
 });

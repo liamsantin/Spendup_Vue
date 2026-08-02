@@ -1,26 +1,18 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ClockHour4Icon } from 'vue-tabler-icons';
-import type { UserSettings } from '../../types';
 
-const draft = defineModel<UserSettings>({ required: true });
 const { t } = useI18n();
 
+/** Exemple local — non branché API / non appliqué. */
 const idleEnabled = ref(false);
-
-watch(
-    () => draft.value.idleLogoutMinutes,
-    (value) => {
-        idleEnabled.value = value != null;
-    },
-    { immediate: true }
-);
+const idleLogoutMinutes = ref(30);
+const trustedDeviceDurationDays = ref(30);
+const require2faForSensitiveActions = ref(false);
 
 function onIdleToggle(enabled: boolean | null) {
-    const on = !!enabled;
-    idleEnabled.value = on;
-    draft.value.idleLogoutMinutes = on ? (draft.value.idleLogoutMinutes ?? 30) : null;
+    idleEnabled.value = !!enabled;
 }
 </script>
 
@@ -32,9 +24,9 @@ function onIdleToggle(enabled: boolean | null) {
                     <ClockHour4Icon class="text-primary" size="25" />
                 </v-avatar>
                 <div>
-                    <h4 class="text-h4 mb-0">{{ t('userSettings.security.title') }}</h4>
+                    <h4 class="text-h4 mb-0">{{ t('security.session.example.title') }}</h4>
                     <div class="text-subtitle-1 text-medium-emphasis text-10">
-                        {{ t('userSettings.security.subtitle') }}
+                        {{ t('security.session.example.subtitle') }}
                     </div>
                 </div>
             </div>
@@ -44,14 +36,14 @@ function onIdleToggle(enabled: boolean | null) {
                         :model-value="idleEnabled"
                         color="primary"
                         hide-details
-                        :label="t('userSettings.security.idleLogoutEnabled')"
+                        :label="t('security.session.example.idleLogoutEnabled')"
                         @update:model-value="onIdleToggle"
                     />
                 </v-col>
                 <v-col cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('userSettings.security.idleLogoutMinutes') }}</v-label>
+                    <v-label class="mb-2 font-weight-medium">{{ t('security.session.example.idleLogoutMinutes') }}</v-label>
                     <v-text-field
-                        v-model.number="draft.idleLogoutMinutes"
+                        v-model.number="idleLogoutMinutes"
                         type="number"
                         min="5"
                         max="10080"
@@ -61,9 +53,9 @@ function onIdleToggle(enabled: boolean | null) {
                     />
                 </v-col>
                 <v-col cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('userSettings.security.trustedDeviceDurationDays') }}</v-label>
+                    <v-label class="mb-2 font-weight-medium">{{ t('security.session.example.trustedDeviceDurationDays') }}</v-label>
                     <v-text-field
-                        v-model.number="draft.trustedDeviceDurationDays"
+                        v-model.number="trustedDeviceDurationDays"
                         type="number"
                         min="1"
                         max="365"
@@ -73,10 +65,10 @@ function onIdleToggle(enabled: boolean | null) {
                 </v-col>
                 <v-col cols="12">
                     <v-switch
-                        v-model="draft.require2faForSensitiveActions"
+                        v-model="require2faForSensitiveActions"
                         color="primary"
                         hide-details
-                        :label="t('userSettings.security.require2faForSensitiveActions')"
+                        :label="t('security.session.example.require2faForSensitiveActions')"
                     />
                 </v-col>
             </v-row>

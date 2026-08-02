@@ -384,10 +384,27 @@
                 "body": "Cette action déconnecte immédiatement tous les appareils liés à votre compte.",
                 "confirm": "Tout déconnecter"
             },
+            "revokeModal": {
+                "title": "Déconnecter cet appareil",
+                "subtitle": "La session de cet appareil sera révoquée immédiatement.",
+                "body": "L’appareil devra se reconnecter pour accéder à nouveau au compte.",
+                "bodyCurrent": "Il s’agit de l’appareil actuel : vous serez déconnecté et devrez vous reconnecter.",
+                "confirm": "Déconnecter"
+            },
             "success": {
                 "deviceRevoked": "Appareil déconnecté.",
                 "currentDeviceRevoked": "Cet appareil a été déconnecté. Veuillez vous reconnecter.",
                 "allRevoked": "Toutes les sessions ont été déconnectées. Veuillez vous reconnecter."
+            }
+        },
+        "session": {
+            "example": {
+                "title": "Session",
+                "subtitle": "Exemple de section — non connecté à l’API.",
+                "idleLogoutEnabled": "Déconnexion après inactivité",
+                "idleLogoutMinutes": "Minutes d’inactivité",
+                "trustedDeviceDurationDays": "Durée de confiance des appareils (jours)",
+                "require2faForSensitiveActions": "Exiger la 2FA pour les actions sensibles"
             }
         }
     },
@@ -429,14 +446,6 @@
                 "daily": "Quotidien",
                 "weekly": "Hebdomadaire"
             }
-        },
-        "security": {
-            "title": "Session",
-            "subtitle": "Déconnexion après inactivité et durée de confiance des appareils.",
-            "idleLogoutEnabled": "Déconnexion après inactivité",
-            "idleLogoutMinutes": "Minutes d’inactivité",
-            "trustedDeviceDurationDays": "Durée de confiance des appareils (jours)",
-            "require2faForSensitiveActions": "Exiger la 2FA pour les actions sensibles"
         },
         "regional": {
             "title": "Région",

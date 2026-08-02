@@ -29,8 +29,11 @@ function request(method: Method) {
 
             try {
                 const response = await domainAxios.request(config);
-                return handleResponse(response.status, response.data, response.statusText, () => {
-                    if (retried) return Promise.reject(new AppError('Unauthorized', 401));
+                return handleResponse(response.status, response.data, response.statusText, async () => {
+                    if (retried) {
+                        await useAuthStore().forceReLogin();
+                        return Promise.reject(new AppError('Unauthorized', 401));
+                    }
                     return doRequest(true);
                 });
             } catch (e: unknown) {

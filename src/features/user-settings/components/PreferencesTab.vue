@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import { storeToRefs } from 'pinia';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { USER_SETTINGS_DEFAULTS, type UserSettings } from '../types';
-import { cloneSettings, settingsEqual, withSecurityFrom } from '../mappers';
 import { useUserSettingsStore } from '../stores/user-settings-store';
 import PreferencesPrivacyCard from './preferences/PreferencesPrivacyCard.vue';
 import PreferencesNotificationsCard from './preferences/PreferencesNotificationsCard.vue';
@@ -12,39 +11,24 @@ import PreferencesThemeColorsCard from './preferences/PreferencesThemeColorsCard
 import PreferencesDashboardCard from './preferences/PreferencesDashboardCard.vue';
 
 const store = useUserSettingsStore();
+const { draft, isDirty, draftReady, saving } = storeToRefs(store);
 
-const draft = ref<UserSettings>(cloneSettings(USER_SETTINGS_DEFAULTS));
-const baseline = ref<UserSettings | null>(null);
 const localError = ref<string | null>(null);
 
 const emit = defineEmits<{
     dirty: [value: boolean];
 }>();
 
-const isDirty = computed(() => {
-    if (!baseline.value) return false;
-    return !settingsEqual(draft.value, baseline.value);
-});
-
-const saving = computed(() => store.saving);
-const loading = computed(() => store.loading && !baseline.value);
+const loading = computed(() => !draftReady.value);
 
 watch(isDirty, (value) => emit('dirty', value), { immediate: true });
-
-function hydrateFromStore() {
-    const source = store.settings ? cloneSettings(store.settings) : cloneSettings(USER_SETTINGS_DEFAULTS);
-    draft.value = source;
-    baseline.value = cloneSettings(source);
-    localError.value = null;
-}
 
 async function bootstrap() {
     try {
         await store.ensureLoaded();
-        hydrateFromStore();
+        localError.value = null;
     } catch (e: unknown) {
         localError.value = getErrorMessage(e);
-        hydrateFromStore();
     }
 }
 
@@ -56,17 +40,15 @@ async function saveSettings() {
     if (saving.value || !isDirty.value) return;
     localError.value = null;
     try {
-        const securitySource = store.settings ?? USER_SETTINGS_DEFAULTS;
-        await store.save(withSecurityFrom(cloneSettings(draft.value), securitySource));
-        hydrateFromStore();
+        await store.saveDraft();
     } catch (e: unknown) {
         localError.value = getErrorMessage(e);
     }
 }
 
 function resetSettings() {
-    if (!baseline.value || saving.value) return;
-    draft.value = cloneSettings(baseline.value);
+    if (saving.value || !isDirty.value) return;
+    store.resetDraft();
     localError.value = null;
 }
 

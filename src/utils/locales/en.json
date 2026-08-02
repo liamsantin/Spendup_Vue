@@ -384,10 +384,27 @@
                 "body": "This action immediately signs out all devices linked to your account.",
                 "confirm": "Sign out all"
             },
+            "revokeModal": {
+                "title": "Sign out this device",
+                "subtitle": "This device’s session will be revoked immediately.",
+                "body": "The device will need to sign in again to access the account.",
+                "bodyCurrent": "This is the current device: you will be signed out and need to sign in again.",
+                "confirm": "Sign out"
+            },
             "success": {
                 "deviceRevoked": "Device signed out.",
                 "currentDeviceRevoked": "This device was signed out. Please sign in again.",
                 "allRevoked": "All sessions were signed out. Please sign in again."
+            }
+        },
+        "session": {
+            "example": {
+                "title": "Session",
+                "subtitle": "Example section — not connected to the API.",
+                "idleLogoutEnabled": "Sign out after inactivity",
+                "idleLogoutMinutes": "Idle minutes",
+                "trustedDeviceDurationDays": "Trusted device duration (days)",
+                "require2faForSensitiveActions": "Require 2FA for sensitive actions"
             }
         }
     },
@@ -429,14 +446,6 @@
                 "daily": "Daily",
                 "weekly": "Weekly"
             }
-        },
-        "security": {
-            "title": "Session",
-            "subtitle": "Idle logout and trusted device duration.",
-            "idleLogoutEnabled": "Sign out after inactivity",
-            "idleLogoutMinutes": "Idle minutes",
-            "trustedDeviceDurationDays": "Trusted device duration (days)",
-            "require2faForSensitiveActions": "Require 2FA for sensitive actions"
         },
         "regional": {
             "title": "Regional",
