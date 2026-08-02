@@ -81,6 +81,7 @@ const deletePasswordExpanded = ref(false);
 
 const avatarOpen = ref(false);
 const avatarDraft = ref<string | null>(null);
+const pictureLightboxOpen = ref(false);
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
@@ -328,6 +329,10 @@ function openAvatarPicker() {
     pictureError.value = null;
     avatarDraft.value = isCatalogProfilePicture(profilePicture.value) ? profilePicture.value : null;
     avatarOpen.value = true;
+}
+
+function openPictureLightbox() {
+    pictureLightboxOpen.value = true;
 }
 
 async function onPictureSelected(event: Event) {
@@ -642,7 +647,17 @@ defineExpose({
 
                         <div class="d-flex align-center justify-space-between flex-wrap ga-4">
                             <div class="d-flex align-center ga-4 min-w-0">
-                                <v-avatar size="72" color="lightprimary" class="flex-shrink-0">
+                                <v-avatar
+                                    size="72"
+                                    color="lightprimary"
+                                    class="flex-shrink-0 account-picture-avatar"
+                                    role="button"
+                                    tabindex="0"
+                                    aria-label="Agrandir la photo de profil"
+                                    @click="openPictureLightbox"
+                                    @keydown.enter.prevent="openPictureLightbox"
+                                    @keydown.space.prevent="openPictureLightbox"
+                                >
                                     <v-img :src="avatarSrc || DEFAULT_AVATAR_SRC" alt="Photo de profil" cover />
                                 </v-avatar>
                                 <div class="min-w-0">
@@ -884,6 +899,26 @@ defineExpose({
                 </v-card>
             </v-col>
         </v-row>
+
+        <AppModalBase
+            v-model="pictureLightboxOpen"
+            title="Photo de profil"
+            :max-width="560"
+            :scrollable="false"
+            :show-footer="false"
+            :persistent="false"
+        >
+            <div class="d-flex justify-center">
+                <v-img
+                    :src="avatarSrc || DEFAULT_AVATAR_SRC"
+                    alt="Photo de profil"
+                    max-width="100%"
+                    max-height="70vh"
+                    contain
+                    class="rounded-lg account-picture-lightbox-img"
+                />
+            </div>
+        </AppModalBase>
 
         <AppModalBase
             v-model="avatarOpen"
@@ -1216,5 +1251,13 @@ defineExpose({
 
 .avatar-catalog-option--selected {
     border-color: rgb(var(--v-theme-primary));
+}
+
+.account-picture-avatar {
+    cursor: zoom-in;
+}
+
+.account-picture-lightbox-img {
+    width: min(100%, 480px);
 }
 </style>
