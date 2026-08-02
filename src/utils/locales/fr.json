@@ -300,11 +300,6 @@
             "success": {
                 "enabled": "La double authentification est maintenant activée.",
                 "disabled": "La double authentification a été désactivée."
-            },
-            "otherEmail": {
-                "title": "Autre e-mail",
-                "subtitle": "Non disponible pour le moment",
-                "soon": "Bientôt"
             }
         },
         "setupDialog": {

@@ -51,7 +51,7 @@ const { t } = useI18n();
                 <div>{{ successMessage }}</div>
             </AppAlert>
 
-            <div class="d-sm-flex justify-space-between align-sm-center mt-4 mb-8">
+            <div class="d-sm-flex justify-space-between align-sm-center mt-4">
                 <div class="text-subtitle-1 text-medium-emphasis text-13 pr-5">
                     {{ t('security.twoFactor.description') }}
                 </div>
@@ -61,16 +61,6 @@ const { t } = useI18n();
                 <v-btn v-else color="error" class="mt-sm-0 mt-3" variant="outlined" flat @click="emit('disable')">
                     {{ t('security.twoFactor.disable') }}
                 </v-btn>
-            </div>
-
-            <v-divider />
-
-            <div class="d-flex justify-space-between align-center flex-wrap ga-3 my-4">
-                <div>
-                    <h6 class="text-h6 mb-1">{{ t('security.twoFactor.otherEmail.title') }}</h6>
-                    <h5 class="text-subtitle-1 text-medium-emphasis">{{ t('security.twoFactor.otherEmail.subtitle') }}</h5>
-                </div>
-                <v-btn class="bg-lightprimary text-primary" flat disabled>{{ t('security.twoFactor.otherEmail.soon') }}</v-btn>
             </div>
         </v-card-item>
     </v-card>

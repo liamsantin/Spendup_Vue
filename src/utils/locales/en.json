@@ -300,11 +300,6 @@
             "success": {
                 "enabled": "Two-factor authentication is now enabled.",
                 "disabled": "Two-factor authentication has been disabled."
-            },
-            "otherEmail": {
-                "title": "Other email",
-                "subtitle": "Not available yet",
-                "soon": "Soon"
             }
         },
         "setupDialog": {
