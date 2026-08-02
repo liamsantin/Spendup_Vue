@@ -4,8 +4,7 @@
 > Références :
 >
 > - `src/components/shared/TabbedActionShell.vue` (shell réutilisable)
-> - `src/views/app/parametres/accounts/AppAccountsPage.vue` (multi-onglets)
-> - `src/views/app/parametres/applications/AppApplicationsPage.vue` (un onglet)
+> - `src/views/app/parametres/accounts/AppAccountsPage.vue` (multi-onglets — référence)
 >
 > À utiliser pour toute nouvelle view `/app` qui combine **onglets fixes**, **contenu scrollable** et **barre d’actions fixe**.
 
@@ -105,7 +104,7 @@ const saveDisabled = computed(() => !isAccountTab.value || saveLoading.value || 
 </script>
 ```
 
-Pattern Applications : même idée avec `ThemeTab` (`saveSettings` / `resetSettings` / `@dirty`).
+Pattern Préférences : même idée avec `UserSettingsTab` (`saveSettings` / `resetSettings` / `@dirty`).
 
 ### 2. Template (ordre imposé)
 
@@ -176,11 +175,10 @@ Pour **Paramètres → Applications**, préférer quand même un `v-tab` unique 
 
 ## Référence
 
-| Fichier                                                         | Rôle                                         |
-| --------------------------------------------------------------- | -------------------------------------------- |
-| `src/views/app/parametres/accounts/AppAccountsPage.vue`         | Modèle canonique multi-onglets               |
-| `src/views/app/parametres/applications/AppApplicationsPage.vue` | Variante un onglet (même shell)              |
-| `src/features/settings/components/*Tab.vue`                     | Contenu onglets Compte                       |
-| `src/features/applications/components/ThemeTab.vue`             | Contenu onglet Thème                         |
-| `src/layouts/full/vertical-sidebar/sidebarItem.ts`              | Headers → dossiers views                     |
-| `src/scss/layout/_container.scss`                               | `page-wrapper` / `page-content` flex hauteur |
+| Fichier                                                     | Rôle                                         |
+| ----------------------------------------------------------- | -------------------------------------------- |
+| `src/views/app/parametres/accounts/AppAccountsPage.vue`     | Modèle canonique multi-onglets               |
+| `src/features/settings/components/*Tab.vue`                 | Contenu onglets Profil / Notifs / Sécurité   |
+| `src/features/user-settings/components/UserSettingsTab.vue` | Contenu onglet Préférences (API settings)    |
+| `src/layouts/full/vertical-sidebar/sidebarItem.ts`          | Headers → dossiers views                     |
+| `src/scss/layout/_container.scss`                           | `page-wrapper` / `page-content` flex hauteur |
