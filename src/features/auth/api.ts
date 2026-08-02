@@ -14,6 +14,29 @@ export class ApiError extends Error {
     }
 }
 
+function pickBool(source: Record<string, unknown>, ...keys: string[]): boolean | null | undefined {
+    for (const key of keys) {
+        const value = source[key];
+        if (typeof value === 'boolean') return value;
+    }
+    return undefined;
+}
+
+/** Normalise /me (camelCase / snake_case) pour les flags d’auth. */
+function normalizeMe(raw: Me | null | undefined): Me {
+    if (!raw || typeof raw !== 'object') {
+        return raw as Me;
+    }
+    const source = raw as Me & Record<string, unknown>;
+    const hasPassword = pickBool(source, 'hasPassword', 'has_password', 'HasPassword');
+    const hasGoogle = pickBool(source, 'hasGoogle', 'has_google', 'HasGoogle', 'googleLinked', 'google_linked', 'GoogleLinked');
+    return {
+        ...raw,
+        ...(hasPassword !== undefined ? { hasPassword } : {}),
+        ...(hasGoogle !== undefined ? { hasGoogle } : {})
+    };
+}
+
 /**
  * Exécute un appel auth Axios et dépaquete `{ success, message, result }`.
  * Sans interceptor refresh (évite les boucles login/refresh).
@@ -125,7 +148,7 @@ export const authApi = {
     },
 
     me(accessToken: string) {
-        return authHttp.get<Me>('/api/auth/me', accessToken);
+        return authHttp.get<Me>('/api/auth/me', accessToken).then(normalizeMe);
     },
 
     updateProfile(accessToken: string, payload: UpdateProfilePayload) {

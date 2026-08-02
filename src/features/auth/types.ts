@@ -37,6 +37,13 @@ export type Me = {
     streetNumber: string | null;
     countryId: number | null;
     profilePicture: string | null;
+    /**
+     * `false` = aucun mot de passe (compte Google-only typiquement).
+     * Absent / null = inconnu (UI prudente).
+     */
+    hasPassword?: boolean | null;
+    /** Compte lié à Google (GIS). */
+    hasGoogle?: boolean | null;
 };
 
 /** Corps soft de `PUT /api/auth/profile` — `null` = vider le champ. */

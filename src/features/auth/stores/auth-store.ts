@@ -299,9 +299,12 @@ export const useAuthStore = defineStore('auth', {
             await this.forceReLogin('Mot de passe mis à jour. Veuillez vous reconnecter.');
         },
 
-        async deleteAccount(currentPassword: string) {
+        async deleteAccount(payload: { currentPassword?: string; googleIdToken?: string }) {
             const token = await this.requireAccessToken();
-            await authApi.deleteAccount(token, { currentPassword });
+            await authApi.deleteAccount(token, {
+                currentPassword: payload.currentPassword,
+                googleIdToken: payload.googleIdToken
+            });
             await this.forceReLogin('Votre compte a été définitivement supprimé.');
         },
 

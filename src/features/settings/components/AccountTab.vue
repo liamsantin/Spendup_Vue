@@ -6,6 +6,7 @@ import { isValidUsername, normalizeUsername, useAuthStore, type Me, type UpdateP
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
 import AppDatePicker from '@/components/shared/AppDatePicker.vue';
+import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 import { COUNTRIES } from '@/data/countries';
 
 const auth = useAuthStore();
@@ -19,6 +20,8 @@ const passwordSaving = ref(false);
 
 const profileError = ref<string | null>(null);
 const profileSuccess = ref<string | null>(null);
+const accountError = ref<string | null>(null);
+const accountSuccess = ref<string | null>(null);
 const usernameError = ref<string | null>(null);
 const emailError = ref<string | null>(null);
 const passwordError = ref<string | null>(null);
@@ -57,7 +60,9 @@ const saveConfirmOpen = ref(false);
 const deleteOpen = ref(false);
 const deleteSaving = ref(false);
 const deletePassword = ref('');
+const deleteGoogleIdToken = ref<string | null>(null);
 const deleteError = ref<string | null>(null);
+const deletePasswordExpanded = ref(false);
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
@@ -70,6 +75,11 @@ const pendingEmail = computed(() => auth.user?.pendingEmail ?? null);
 const displayUsername = computed(() => username.value || '—');
 const displayEmail = computed(() => currentEmail.value || '—');
 const displayPublicId = computed(() => auth.user?.userPublicId || '—');
+/** Compte sans mot de passe (Google-only). */
+const isGoogleOnlyAccount = computed(() => auth.user?.hasPassword === false);
+const showDeleteGoogle = computed(() => isGoogleOnlyAccount.value || auth.user?.hasGoogle !== false);
+const showDeletePassword = computed(() => !isGoogleOnlyAccount.value);
+const canSubmitDelete = computed(() => !!deleteGoogleIdToken.value || (!!deletePassword.value && showDeletePassword.value));
 const birthDateMax = computed(() => {
     const now = new Date();
     const y = now.getFullYear();
@@ -251,6 +261,8 @@ async function confirmSaveProfile() {
 async function resetProfile() {
     profileError.value = null;
     profileSuccess.value = null;
+    accountError.value = null;
+    accountSuccess.value = null;
     await loadProfile();
 }
 
@@ -306,6 +318,8 @@ function resetPicture() {
 function openUsernameModal() {
     usernameDraft.value = username.value;
     usernameError.value = null;
+    accountSuccess.value = null;
+    accountError.value = null;
     usernameOpen.value = true;
 }
 
@@ -313,6 +327,8 @@ function openEmailModal() {
     emailDraft.value = '';
     emailCurrentPassword.value = '';
     emailError.value = null;
+    accountSuccess.value = null;
+    accountError.value = null;
     emailOpen.value = true;
 }
 
@@ -321,31 +337,56 @@ function openPasswordModal() {
     newPassword.value = '';
     confirmPassword.value = '';
     passwordError.value = null;
+    accountSuccess.value = null;
+    accountError.value = null;
     passwordOpen.value = true;
 }
 
 function openDeleteModal() {
     deletePassword.value = '';
+    deleteGoogleIdToken.value = null;
     deleteError.value = null;
+    // MDP visible d’emblée si le compte a un mot de passe, ou s’il n’est pas Google.
+    deletePasswordExpanded.value = auth.user?.hasPassword === true || auth.user?.hasGoogle === false;
     deleteOpen.value = true;
 }
 
-async function submitDeleteAccount() {
+async function runDeleteAccount(payload: { currentPassword?: string; googleIdToken?: string }) {
     if (deleteSaving.value) return;
     deleteError.value = null;
-
-    if (!deletePassword.value) {
-        deleteError.value = 'Saisissez votre mot de passe pour confirmer.';
-        return;
-    }
-
     deleteSaving.value = true;
     try {
-        await auth.deleteAccount(deletePassword.value);
+        await auth.deleteAccount(payload);
     } catch (e: unknown) {
         deleteError.value = e instanceof Error ? e.message : String(e);
         deleteSaving.value = false;
     }
+}
+
+async function submitDeleteAccount() {
+    if (deleteGoogleIdToken.value) {
+        await runDeleteAccount({ googleIdToken: deleteGoogleIdToken.value });
+        return;
+    }
+    if (showDeletePassword.value && deletePassword.value) {
+        await runDeleteAccount({ currentPassword: deletePassword.value });
+        return;
+    }
+    if (showDeleteGoogle.value && !deleteGoogleIdToken.value) {
+        deleteError.value = 'Confirmez d’abord votre compte Google, puis cliquez sur Supprimer définitivement.';
+        return;
+    }
+    deleteError.value = 'Saisissez votre mot de passe pour confirmer.';
+}
+
+function onDeleteGoogleCredential(idToken: string) {
+    deleteGoogleIdToken.value = idToken;
+    deleteError.value = null;
+    deletePassword.value = '';
+}
+
+function clearDeleteGoogleCredential() {
+    deleteGoogleIdToken.value = null;
 }
 
 async function saveUsername() {
@@ -363,7 +404,8 @@ async function saveUsername() {
         await auth.setUsername(value);
         username.value = auth.user?.username ?? value;
         usernameOpen.value = false;
-        profileSuccess.value = 'Nom d’utilisateur mis à jour.';
+        accountSuccess.value = 'Nom d’utilisateur mis à jour.';
+        accountError.value = null;
     } catch (e: unknown) {
         usernameError.value = e instanceof Error ? e.message : String(e);
     } finally {
@@ -393,9 +435,11 @@ async function submitEmailChange() {
             googleIdToken: null
         });
         emailOpen.value = false;
+        accountSuccess.value = null;
+        accountError.value = null;
         await router.push({
             path: '/auth/confirm-email-change',
-            query: { email }
+            query: { email, from: 'app' }
         });
     } catch (e: unknown) {
         emailError.value = e instanceof Error ? e.message : String(e);
@@ -443,7 +487,12 @@ watch(passwordOpen, (open) => {
 });
 
 watch(deleteOpen, (open) => {
-    if (!open) deleteError.value = null;
+    if (!open) {
+        deleteError.value = null;
+        deleteGoogleIdToken.value = null;
+        deletePassword.value = '';
+        deletePasswordExpanded.value = false;
+    }
 });
 
 onMounted(loadProfile);
@@ -604,6 +653,20 @@ defineExpose({
                         <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
                             Identifiants de connexion. Modifiez-les via l’icône crayon.
                         </div>
+                        <AppAlert
+                            v-if="accountSuccess"
+                            color="success"
+                            variant="tonal"
+                            class="mt-4"
+                            closable
+                            :dismiss-ms="5000"
+                            @dismiss="accountSuccess = null"
+                        >
+                            {{ accountSuccess }}
+                        </AppAlert>
+                        <AppAlert v-if="accountError" type="error" class="mt-4" closable @dismiss="accountError = null">
+                            {{ accountError }}
+                        </AppAlert>
                         <AppAlert v-if="pendingEmail" color="warning" variant="tonal" class="mt-4">
                             Confirmation en attente pour <strong>{{ pendingEmail }}</strong
                             >.
@@ -612,7 +675,7 @@ defineExpose({
                                 color="warning"
                                 size="small"
                                 class="ml-1"
-                                @click="router.push({ path: '/auth/confirm-email-change', query: { email: pendingEmail } })"
+                                @click="router.push({ path: '/auth/confirm-email-change', query: { email: pendingEmail, from: 'app' } })"
                             >
                                 Saisir le code
                             </v-btn>
@@ -872,25 +935,65 @@ defineExpose({
                     {{ deleteError }}
                 </AppAlert>
                 <p class="text-body-1 mb-4">
-                    Confirmez avec votre mot de passe pour supprimer définitivement votre compte et toutes les données associées.
+                    Confirmez votre identité pour supprimer définitivement votre compte et toutes les données associées.
                 </p>
-                <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
-                <v-text-field
-                    v-model="deletePassword"
-                    color="primary"
-                    variant="outlined"
-                    type="password"
-                    autocomplete="current-password"
-                    density="comfortable"
-                    hide-details
-                    autofocus
-                />
+
+                <template v-if="showDeleteGoogle">
+                    <AppAlert
+                        v-if="deleteGoogleIdToken"
+                        color="success"
+                        variant="tonal"
+                        class="mb-3"
+                        closable
+                        @dismiss="clearDeleteGoogleCredential"
+                    >
+                        Compte Google vérifié. Cliquez sur « Supprimer définitivement » pour confirmer.
+                    </AppAlert>
+                    <GoogleSignInButton v-else class="mb-4" @credential="onDeleteGoogleCredential" />
+                </template>
+
+                <template v-if="showDeletePassword">
+                    <div v-if="showDeleteGoogle && !deleteGoogleIdToken" class="d-flex align-center text-center mb-3">
+                        <div class="text-subtitle-2 text-medium-emphasis w-100">ou</div>
+                    </div>
+
+                    <v-btn
+                        v-if="!deletePasswordExpanded && !deleteGoogleIdToken"
+                        variant="text"
+                        color="primary"
+                        class="mb-2 px-0"
+                        @click="deletePasswordExpanded = true"
+                    >
+                        Utiliser un mot de passe
+                    </v-btn>
+
+                    <template v-if="deletePasswordExpanded && !deleteGoogleIdToken">
+                        <v-label class="mb-1 font-weight-medium">Mot de passe actuel</v-label>
+                        <v-text-field
+                            v-model="deletePassword"
+                            color="primary"
+                            variant="outlined"
+                            type="password"
+                            autocomplete="current-password"
+                            density="comfortable"
+                            hide-details
+                            :disabled="deleteSaving"
+                        />
+                    </template>
+                </template>
             </form>
 
             <template #footer="{ close }">
                 <v-btn variant="text" flat :disabled="deleteSaving" @click="close">Annuler</v-btn>
                 <v-spacer />
-                <v-btn color="error" flat type="submit" form="account-delete-form" :loading="deleteSaving">
+                <v-btn
+                    color="error"
+                    flat
+                    type="submit"
+                    form="account-delete-form"
+                    :loading="deleteSaving"
+                    :disabled="!canSubmitDelete && !deleteSaving"
+                >
                     Supprimer définitivement
                 </v-btn>
             </template>

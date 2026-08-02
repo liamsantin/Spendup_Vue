@@ -1,6 +1,18 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import ConfirmEmailChangeForm from '@/components/auth/ConfirmEmailChangeForm.vue';
+import { useAuthStore } from '@/features/auth';
+
+const route = useRoute();
+const auth = useAuthStore();
+
+/** Depuis l’app (définition / confirmation d’e-mail) vs flux auth public. */
+const fromApp = computed(() => route.query.from === 'app' || !!auth.accessToken || !!auth.refreshToken);
+
+const backLabel = computed(() => (fromApp.value ? 'Retour à l’application' : 'Retour à la connexion'));
+const backTo = computed(() => (fromApp.value ? '/app/comptes' : '/auth/login'));
 </script>
 
 <template>
@@ -18,8 +30,8 @@ import ConfirmEmailChangeForm from '@/components/auth/ConfirmEmailChangeForm.vue
                 <div class="pa-sm-7 pa-4 w-100">
                     <h2 class="text--darken-2 text-h4 font-weight-bold">Confirmer le nouvel e-mail</h2>
                     <ConfirmEmailChangeForm />
-                    <v-btn size="large" color="lightprimary" to="/auth/login" block class="mt-5 text-primary" flat>
-                        Retour à la connexion
+                    <v-btn size="large" color="lightprimary" :to="backTo" block class="mt-5 text-primary" flat>
+                        {{ backLabel }}
                     </v-btn>
                 </div>
             </v-col>
