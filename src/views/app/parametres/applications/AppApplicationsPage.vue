@@ -1,45 +1,38 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { PaletteIcon } from 'vue-tabler-icons';
 import { ThemeTab } from '@/features/applications';
-import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 
+type ThemeTabExpose = {
+    saveSettings: () => void;
+    resetSettings: () => void;
+    loading: boolean;
+};
+
 const tab = ref('Theme');
-const appSettings = useAppSettingsStore();
-const draftBaseline = ref(appSettings.snapshot());
-const saving = ref(false);
+const themeTabRef = ref<ThemeTabExpose | null>(null);
+const themeDirty = ref(false);
 
-onMounted(() => {
-    draftBaseline.value = appSettings.snapshot();
-});
+const isThemeTab = computed(() => tab.value === 'Theme');
+const saveLoading = computed(() => !!themeTabRef.value?.loading);
+const saveDisabled = computed(() => !isThemeTab.value || saveLoading.value || !themeDirty.value);
 
-function saveSettings() {
-    saving.value = true;
-    try {
-        appSettings.persist();
-        draftBaseline.value = appSettings.snapshot();
-    } finally {
-        saving.value = false;
-    }
+function onSave() {
+    if (!isThemeTab.value || !themeTabRef.value || saveLoading.value) return;
+    themeTabRef.value.saveSettings();
 }
 
-function cancelSettings() {
-    appSettings.applySnapshot(draftBaseline.value);
+function onCancel() {
+    if (!isThemeTab.value || !themeTabRef.value || saveLoading.value) return;
+    themeTabRef.value.resetSettings();
 }
 </script>
 
 <template>
-    <div class="applications-page">
-        <v-card elevation="10" rounded="md" class="applications-page-card">
-            <v-tabs
-                v-model="tab"
-                bg-color="grey100"
-                density="comfortable"
-                height="52"
-                color="primary"
-                class="applications-tabs flex-grow-0"
-            >
+    <div class="settings-page">
+        <v-card elevation="10" rounded="md" class="settings-page-card">
+            <v-tabs v-model="tab" bg-color="grey100" density="comfortable" height="52" color="primary" class="settings-tabs flex-grow-0">
                 <v-tab value="Theme" class="text-medium-emphasis">
                     <PaletteIcon class="mr-2" size="18" />
                     Thème
@@ -48,11 +41,11 @@ function cancelSettings() {
 
             <v-divider class="flex-grow-0" />
 
-            <perfect-scrollbar class="applications-tabs-scroll" :options="PERFECT_SCROLLBAR_OPTIONS">
+            <perfect-scrollbar class="settings-tabs-scroll" :options="PERFECT_SCROLLBAR_OPTIONS">
                 <v-card-text class="pa-sm-6 pa-3">
                     <v-window v-model="tab">
                         <v-window-item value="Theme">
-                            <ThemeTab />
+                            <ThemeTab ref="themeTabRef" @dirty="themeDirty = $event" />
                         </v-window-item>
                     </v-window>
                 </v-card-text>
@@ -60,23 +53,27 @@ function cancelSettings() {
 
             <v-divider class="flex-grow-0" />
 
-            <div class="applications-actions-bar">
-                <v-btn color="primary" class="mr-3" flat :loading="saving" @click="saveSettings">Enregistrer</v-btn>
-                <v-btn class="bg-lighterror text-error" flat @click="cancelSettings">Annuler</v-btn>
+            <div class="settings-actions-bar">
+                <v-btn color="primary" class="mr-3" flat :loading="saveLoading" :disabled="saveDisabled" @click="onSave">
+                    Enregistrer
+                </v-btn>
+                <v-btn class="bg-lighterror text-error" flat :disabled="!isThemeTab || saveLoading || !themeDirty" @click="onCancel">
+                    Annuler
+                </v-btn>
             </div>
         </v-card>
     </div>
 </template>
 
 <style scoped>
-.applications-page {
+.settings-page {
     flex: 1 1 auto;
     min-height: 0;
     display: flex;
     flex-direction: column;
 }
 
-.applications-page-card {
+.settings-page-card {
     flex: 1 1 auto;
     min-height: 0;
     display: flex;
@@ -85,28 +82,28 @@ function cancelSettings() {
 }
 
 @media screen and (max-width: 767px) {
-    .applications-page {
+    .settings-page {
         width: 100vw;
         margin-left: calc(50% - 50vw);
     }
 
-    .applications-page-card {
+    .settings-page-card {
         border-radius: 0 !important;
     }
 }
 
-.applications-tabs :deep(.v-tab) {
+.settings-tabs :deep(.v-tab) {
     min-height: 52px;
     font-size: 0.875rem;
 }
 
-.applications-tabs-scroll {
+.settings-tabs-scroll {
     flex: 1 1 auto;
     min-height: 0;
     height: 0;
 }
 
-.applications-actions-bar {
+.settings-actions-bar {
     flex-shrink: 0;
     display: flex;
     justify-content: flex-end;
