@@ -2,8 +2,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { AdjustmentsHorizontalIcon, BellIcon, LockIcon, UserCircleIcon } from 'vue-tabler-icons';
-import { AccountTab, NotificationsTab, SecurityTab } from '@/features/settings';
-import { UserSettingsTab } from '@/features/user-settings';
+import { AccountTab, NotificationsTab, PreferencesTab, SecurityTab } from '@/features/user-settings';
 import TabbedActionShell from '@/components/shared/TabbedActionShell.vue';
 
 type AccountTabExpose = {
@@ -90,7 +89,7 @@ function onCancel() {
                 <AccountTab ref="accountTabRef" @dirty="profileDirty = $event" />
             </v-window-item>
             <v-window-item value="Preferences">
-                <UserSettingsTab ref="preferencesTabRef" @dirty="preferencesDirty = $event" />
+                <PreferencesTab ref="preferencesTabRef" @dirty="preferencesDirty = $event" />
             </v-window-item>
             <v-window-item value="Notifications">
                 <NotificationsTab />

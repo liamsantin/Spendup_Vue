@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { BellIcon, CheckIcon, LayoutDashboardIcon, LockIcon, PaletteIcon, ShieldLockIcon, WorldIcon } from 'vue-tabler-icons';
+import { CheckIcon, EyeIcon, FingerprintIcon, LayoutDashboardIcon, MailIcon, PaletteIcon, WorldIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { CURRENCY_OPTIONS, LOCALE_OPTIONS, TIMEZONE_OPTIONS, USER_SETTINGS_DEFAULTS, type UserSettings } from '../types';
@@ -151,7 +151,7 @@ defineExpose({
                     <v-card-item>
                         <div class="d-flex align-center ga-3 flex-wrap">
                             <v-avatar size="48" rounded="md" color="lightprimary">
-                                <ShieldLockIcon class="text-primary" size="25" />
+                                <EyeIcon class="text-primary" size="25" />
                             </v-avatar>
                             <div>
                                 <h4 class="text-h4 mb-0">{{ t('userSettings.privacy.title') }}</h4>
@@ -213,7 +213,7 @@ defineExpose({
                     <v-card-item>
                         <div class="d-flex align-center ga-3 flex-wrap">
                             <v-avatar size="48" rounded="md" color="lightprimary">
-                                <BellIcon class="text-primary" size="25" />
+                                <MailIcon class="text-primary" size="25" />
                             </v-avatar>
                             <div>
                                 <h4 class="text-h4 mb-0">{{ t('userSettings.notifications.title') }}</h4>
@@ -296,7 +296,7 @@ defineExpose({
                     <v-card-item>
                         <div class="d-flex align-center ga-3 flex-wrap">
                             <v-avatar size="48" rounded="md" color="lightprimary">
-                                <LockIcon class="text-primary" size="25" />
+                                <FingerprintIcon class="text-primary" size="25" />
                             </v-avatar>
                             <div>
                                 <h4 class="text-h4 mb-0">{{ t('userSettings.security.title') }}</h4>

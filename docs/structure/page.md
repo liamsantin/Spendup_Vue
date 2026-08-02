@@ -58,17 +58,16 @@ src/views/app/
 
 ```
 src/views/app/parametres/accounts/AppAccountsPage.vue
-src/features/settings/
-├── index.ts
+src/features/user-settings/
+├── api.ts / types.ts / mappers.ts / themeColorOptions.ts
+├── stores/user-settings-store.ts
 └── components/
     ├── AccountTab.vue
-    ├── account/                  # cartes UI (photo, perso, credentials)
+    ├── account/                     # cartes UI (photo, perso, credentials)
+    ├── PreferencesTab.vue           # onglet Préférences (GET/PUT /api/settings)
+    ├── NotificationsTab.vue
     ├── SecurityTab.vue
     └── TwoFactor*.vue
-src/features/user-settings/
-├── api.ts / types.ts / mappers.ts
-├── stores/user-settings-store.ts
-└── components/UserSettingsTab.vue   # onglet Préférences (GET/PUT /api/settings)
 ```
 
 - La **view** orchestre le shell (tabs, scroll, footer) + dirty / save / cancel.
@@ -85,7 +84,7 @@ src/features/user-settings/
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { UserCircleIcon, BellIcon, LockIcon } from 'vue-tabler-icons';
-import { AccountTab, NotificationTab, SecurityTab } from '@/features/settings';
+import { AccountTab, NotificationsTab, PreferencesTab, SecurityTab } from '@/features/user-settings';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 
 type AccountTabExpose = {
@@ -104,7 +103,7 @@ const saveDisabled = computed(() => !isAccountTab.value || saveLoading.value || 
 </script>
 ```
 
-Pattern Préférences : même idée avec `UserSettingsTab` (`saveSettings` / `resetSettings` / `@dirty`).
+Pattern Préférences : même idée avec `PreferencesTab` (`saveSettings` / `resetSettings` / `@dirty`).
 
 ### 2. Template (ordre imposé)
 
@@ -175,10 +174,9 @@ Pour **Paramètres → Applications**, préférer quand même un `v-tab` unique 
 
 ## Référence
 
-| Fichier                                                     | Rôle                                         |
-| ----------------------------------------------------------- | -------------------------------------------- |
-| `src/views/app/parametres/accounts/AppAccountsPage.vue`     | Modèle canonique multi-onglets               |
-| `src/features/settings/components/*Tab.vue`                 | Contenu onglets Profil / Notifs / Sécurité   |
-| `src/features/user-settings/components/UserSettingsTab.vue` | Contenu onglet Préférences (API settings)    |
-| `src/layouts/full/vertical-sidebar/sidebarItem.ts`          | Headers → dossiers views                     |
-| `src/scss/layout/_container.scss`                           | `page-wrapper` / `page-content` flex hauteur |
+| Fichier                                                 | Rôle                                                     |
+| ------------------------------------------------------- | -------------------------------------------------------- |
+| `src/views/app/parametres/accounts/AppAccountsPage.vue` | Modèle canonique multi-onglets                           |
+| `src/features/user-settings/components/*Tab.vue`        | Contenu onglets Profil / Préférences / Notifs / Sécurité |
+| `src/layouts/full/vertical-sidebar/sidebarItem.ts`      | Headers → dossiers views                                 |
+| `src/scss/layout/_container.scss`                       | `page-wrapper` / `page-content` flex hauteur             |

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { BellIcon } from 'vue-tabler-icons';
+import { BellRingingIcon } from 'vue-tabler-icons';
 
 const { t } = useI18n();
 
@@ -17,7 +17,7 @@ const emailDigestEnabled = ref(true);
                     <v-card-item>
                         <div class="d-flex align-center ga-3 flex-wrap">
                             <v-avatar size="48" rounded="md" color="lightprimary">
-                                <BellIcon class="text-primary" size="25" />
+                                <BellRingingIcon class="text-primary" size="25" />
                             </v-avatar>
                             <div>
                                 <h4 class="text-h4 mb-0">{{ t('accounts.notifications.example.title') }}</h4>

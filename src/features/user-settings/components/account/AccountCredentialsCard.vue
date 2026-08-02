@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { LockIcon, PencilIcon } from 'vue-tabler-icons';
+import { KeyIcon, PencilIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/AppAlert.vue';
 
 defineProps<{
@@ -31,7 +31,7 @@ const { t } = useI18n();
         <v-card-item>
             <div class="d-flex align-center ga-3 flex-wrap">
                 <v-avatar size="48" rounded="md" color="lightprimary">
-                    <LockIcon class="text-primary" size="25" />
+                    <KeyIcon class="text-primary" size="25" />
                 </v-avatar>
                 <h4 class="text-h4 mb-0">{{ t('accounts.credentials.title') }}</h4>
             </div>

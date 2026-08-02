@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { DeviceLaptopIcon, DeviceMobileIcon, DotsVerticalIcon, ShieldLockIcon } from 'vue-tabler-icons';
+import { DeviceLaptopIcon, DeviceMobileIcon, DotsVerticalIcon, ShieldCheckIcon } from 'vue-tabler-icons';
 import { getOrCreateDeviceId, useAuthStore, type AuthDevice } from '@/features/auth';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
@@ -310,7 +310,7 @@ async function confirmRevokeAll() {
                         <div class="d-flex align-center justify-space-between flex-wrap ga-3">
                             <div class="d-flex align-center ga-3 flex-wrap">
                                 <v-avatar size="48" rounded="md" color="lightprimary">
-                                    <ShieldLockIcon class="text-primary" size="25" />
+                                    <ShieldCheckIcon class="text-primary" size="25" />
                                 </v-avatar>
                                 <h4 class="text-h4 mb-0">{{ t('security.twoFactor.title') }}</h4>
                             </div>

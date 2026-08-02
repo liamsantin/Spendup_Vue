@@ -65,16 +65,14 @@ src/
 ├── features/               # Logique métier par domaine fonctionnel
 │   ├── auth/
 │   ├── countries/
-│   ├── settings/           # Onglets Compte / Notifications / Sécurité
-│   ├── applications/       # Onglet Thème (page Applications)
+│   ├── user-settings/      # Profil / Préférences / Notifications / Sécurité
 │   ├── dashboard/
 │   └── …                   # transactions, budgets… (à créer avec du code réel)
 ├── views/
 │   ├── app/                # Pages fines zone /app — liées au routing
 │   │   ├── spendup/dashboard/
 │   │   └── parametres/
-│   │       ├── accounts/       # Tabbed Action Shell — Compte
-│   │       └── applications/   # Tabbed Action Shell — Applications
+│   │       └── accounts/       # Tabbed Action Shell — Mon compte
 │   ├── front-pages/        # Pages publiques (coquilles de route)
 │   ├── authentication/     # Login, register, erreur…
 │   └── dev/                # Showcase UI (`/components`) — VITE_APP_ENV=development uniquement
@@ -149,20 +147,17 @@ features/
 │   ├── stores/
 │   │   └── countries-store.ts      # Cache + ensureLoaded (promise partagée)
 │   └── index.ts
-├── settings/                       # Page Paramètres → Comptes
+├── user-settings/                  # Page Mon compte (+ API /api/settings)
+│   ├── api.ts / types.ts / mappers.ts / themeColorOptions.ts
+│   ├── stores/
+│   │   └── user-settings-store.ts
 │   ├── components/
 │   │   ├── AccountTab.vue
-│   │   ├── NotificationTab.vue
+│   │   ├── account/
+│   │   ├── PreferencesTab.vue      # Préférences (GET/PUT settings)
+│   │   ├── NotificationsTab.vue
 │   │   ├── SecurityTab.vue
-│   │   ├── TwoFactorSetupDialog.vue
-│   │   └── TwoFactorDisableDialog.vue
-│   ├── data/
-│   │   └── notificationPreferences.ts
-│   ├── types.ts
-│   └── index.ts
-├── applications/                   # Page Paramètres → Applications
-│   ├── components/
-│   │   └── ThemeTab.vue            # Thème + mise en page (dirty / save / reset)
+│   │   └── TwoFactor*.vue
 │   └── index.ts
 ├── dashboard/
 │   ├── components/
@@ -287,7 +282,7 @@ scss/
 | `/auth/404`                  | `Error`                                                  | BlankLayout                                        |
 | `/auth/maintenance`          | `Maintenance`                                            | BlankLayout                                        |
 | `/app`                       | `spendup/dashboard/AppDashboardView`                     | `features/dashboard` — FullLayout (`requiresAuth`) |
-| `/app/comptes`               | `parametres/accounts/AppAccountsPage`                    | `features/settings` — Tabbed Action Shell          |
+| `/app/comptes`               | `parametres/accounts/AppAccountsPage`                    | `features/user-settings` — Tabbed Action Shell     |
 | `/app/applications`          | `parametres/applications/AppApplicationsPage`            | `features/applications` — Tabbed Action Shell      |
 | `/:pathMatch(.*)*`           | `Error`                                                  | Catch-all 404 (`router/index.ts`)                  |
 
@@ -529,7 +524,7 @@ views/app/                    # Pages fines — une par entrée menu
 │       └── AppDashboardView.vue
 └── parametres/
     ├── accounts/
-    │   └── AppAccountsPage.vue       # → features/settings (*Tab)
+    │   └── AppAccountsPage.vue       # → features/user-settings (*Tab)
     └── applications/
         └── AppApplicationsPage.vue   # → features/applications (ThemeTab)
 
@@ -539,7 +534,7 @@ views/dev/                    # Showcase composants (dev only)
 features/dashboard/           # Logique métier tableau de bord
 features/auth/                # Store + API + device + avatars + types (barrel index.ts)
 features/countries/           # Liste pays
-features/settings/            # Compte / Notifications / Sécurité
+features/user-settings/       # Profil / Préférences / Notifications / Sécurité (+ API settings)
 features/applications/        # Thème & mise en page
 ```
 
