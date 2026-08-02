@@ -3,13 +3,14 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { LockIcon, PencilIcon, TrashIcon, UserIcon } from 'vue-tabler-icons';
 import { isValidUsername, normalizeUsername, useAuthStore, type Me, type UpdateProfilePayload } from '@/features/auth';
+import { useCountriesStore } from '@/features/countries';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
 import AppDatePicker from '@/components/shared/AppDatePicker.vue';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
-import { COUNTRIES } from '@/data/countries';
 
 const auth = useAuthStore();
+const countries = useCountriesStore();
 const router = useRouter();
 
 const loading = ref(false);
@@ -535,7 +536,12 @@ watch(deleteOpen, (open) => {
     }
 });
 
-onMounted(loadProfile);
+onMounted(() => {
+    void loadProfile();
+    void countries.ensureLoaded().catch(() => {
+        // Erreur déjà dans countries.error — le select reste vide.
+    });
+});
 
 onUnmounted(() => {
     revokePreview();
@@ -665,7 +671,7 @@ defineExpose({
                                     <v-label class="mb-2 font-weight-medium">Pays</v-label>
                                     <v-autocomplete
                                         v-model="countryId"
-                                        :items="COUNTRIES"
+                                        :items="countries.items"
                                         item-title="name"
                                         item-value="id"
                                         color="primary"
@@ -673,6 +679,9 @@ defineExpose({
                                         hide-details
                                         clearable
                                         auto-select-first
+                                        :loading="countries.loading"
+                                        :disabled="countries.loading && !countries.items.length"
+                                        no-data-text="Aucun pays disponible"
                                     />
                                 </v-col>
                             </v-row>
