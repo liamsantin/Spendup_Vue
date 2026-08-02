@@ -924,8 +924,8 @@ defineExpose({
             v-model="avatarOpen"
             title="Choisir un avatar"
             subtitle="Sélectionnez un avatar du catalogue."
-            :max-width="480"
-            :scrollable="false"
+            :max-width="520"
+            :scrollable="true"
         >
             <div class="d-flex flex-wrap justify-center ga-3 py-2">
                 <button

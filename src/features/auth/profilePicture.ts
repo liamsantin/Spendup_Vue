@@ -13,6 +13,21 @@ import user12 from '@/assets/images/profile/avatar/user-12.jpg';
 import user13 from '@/assets/images/profile/avatar/user-13.jpg';
 import user14 from '@/assets/images/profile/avatar/user-14.jpg';
 import user15 from '@/assets/images/profile/avatar/user-15.jpg';
+import user16 from '@/assets/images/profile/avatar/user-16.jpg';
+import user17 from '@/assets/images/profile/avatar/user-17.jpg';
+import user18 from '@/assets/images/profile/avatar/user-18.jpg';
+import user19 from '@/assets/images/profile/avatar/user-19.jpg';
+import user20 from '@/assets/images/profile/avatar/user-20.jpg';
+import user21 from '@/assets/images/profile/avatar/user-21.jpg';
+import user22 from '@/assets/images/profile/avatar/user-22.jpg';
+import user23 from '@/assets/images/profile/avatar/user-23.jpg';
+import user24 from '@/assets/images/profile/avatar/user-24.jpg';
+import user25 from '@/assets/images/profile/avatar/user-25.jpg';
+import user26 from '@/assets/images/profile/avatar/user-26.jpg';
+import user27 from '@/assets/images/profile/avatar/user-27.jpg';
+import user28 from '@/assets/images/profile/avatar/user-28.jpg';
+import user29 from '@/assets/images/profile/avatar/user-29.jpg';
+import user30 from '@/assets/images/profile/avatar/user-30.jpg';
 
 /** Préfixe des avatars catalogue (`/avatar/user-1`, …). */
 export const AVATAR_CATALOG_PREFIX = '/avatar/';
@@ -36,7 +51,22 @@ export const CATALOG_AVATARS = [
     '/avatar/user-12',
     '/avatar/user-13',
     '/avatar/user-14',
-    '/avatar/user-15'
+    '/avatar/user-15',
+    '/avatar/user-16',
+    '/avatar/user-17',
+    '/avatar/user-18',
+    '/avatar/user-19',
+    '/avatar/user-20',
+    '/avatar/user-21',
+    '/avatar/user-22',
+    '/avatar/user-23',
+    '/avatar/user-24',
+    '/avatar/user-25',
+    '/avatar/user-26',
+    '/avatar/user-27',
+    '/avatar/user-28',
+    '/avatar/user-29',
+    '/avatar/user-30'
 ] as const;
 
 export type CatalogAvatarPath = (typeof CATALOG_AVATARS)[number];
@@ -57,6 +87,21 @@ const CATALOG_SRC_BY_PATH: Record<string, string> = {
     '/avatar/user-13': user13,
     '/avatar/user-14': user14,
     '/avatar/user-15': user15,
+    '/avatar/user-16': user16,
+    '/avatar/user-17': user17,
+    '/avatar/user-18': user18,
+    '/avatar/user-19': user19,
+    '/avatar/user-20': user20,
+    '/avatar/user-21': user21,
+    '/avatar/user-22': user22,
+    '/avatar/user-23': user23,
+    '/avatar/user-24': user24,
+    '/avatar/user-25': user25,
+    '/avatar/user-26': user26,
+    '/avatar/user-27': user27,
+    '/avatar/user-28': user28,
+    '/avatar/user-29': user29,
+    '/avatar/user-30': user30,
     // Alias historiques éventuels côté API / tests
     '/avatar/guy1': user1,
     '/avatar/guy2': user2,
