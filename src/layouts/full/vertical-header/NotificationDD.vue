@@ -47,14 +47,6 @@ async function onItemClick(item: AppNotification) {
         await router.push(target);
     }
 }
-
-async function onMarkAllRead() {
-    try {
-        await notifications.markAllRead();
-    } catch {
-        // store.error
-    }
-}
 </script>
 
 <template>
@@ -112,18 +104,8 @@ async function onMarkAllRead() {
                 </v-list>
             </perfect-scrollbar>
 
-            <div class="py-4 px-6 d-flex flex-column ga-2">
-                <v-btn
-                    color="primary"
-                    variant="outlined"
-                    block
-                    :loading="notifications.markingAll"
-                    :disabled="!notifications.hasUnread || notifications.markingAll"
-                    @click="onMarkAllRead"
-                >
-                    {{ t('header.notifications.markAllRead') }}
-                </v-btn>
-                <v-btn color="primary" variant="text" block :to="'/app/notifications'">
+            <div class="py-4 px-6 text-center">
+                <v-btn color="primary" variant="outlined" block :to="'/app/notifications'">
                     {{ t('header.notifications.viewAll') }}
                 </v-btn>
             </div>
