@@ -32,7 +32,7 @@ En Dev, déjà autorisées notamment :
 
 En prod : ajouter l’origine du site Vue (ex. `https://app.spendup.ch`) dans la config API / variables d’env.
 
-**P1 (actif côté Vue si `VITE_AUTH_COOKIE_MODE=true`) :** refresh en cookie HttpOnly ; le front n’écrit plus le refresh en `localStorage`. CORS API doit autoriser credentials. Access token reste en Bearer (sessionStorage / mémoire).
+**P1 (actif côté Vue si `VITE_AUTH_COOKIE_MODE=true`) :** refresh **et** access en cookies HttpOnly (`spendup_refresh`, `spendup_access`) ; le front n’écrit plus ces jetons en storage JS et **n’envoie plus de Bearer** (credentials + cookie). CSRF double-submit sur refresh/logout.
 
 ---
 
@@ -497,7 +497,7 @@ Collection Postman : `Postman/Spendup_Api.postman_collection.json`.
 | `POST /api/auth/refresh`                         | Lit le cookie (body `refreshToken` optionnel en transition) ; **rotation** + nouveau Set-Cookie ; reuse detection inchangée                                |
 | `POST /api/auth/logout`                          | Clear-Cookie + révocation famille                                                                                                                          |
 | CORS                                             | `Allow-Credentials: true` ; `AllowedOrigins` **explicites** (pas `*`)                                                                                      |
-| Access token                                     | Court (15 min) : rester en body **ou** cookie HttpOnly non-JS ; le front vise access **mémoire** uniquement                                                |
+| Access token                                     | Cookie HttpOnly `spendup_access` (Path `/api`) ; body optionnel (`ReturnAccessTokenInBody`) ; front cookie-mode sans Bearer                                |
 | CSRF                                             | Cookie `spendup_csrf` + header `X-CSRF-Token` sur refresh/logout (déjà côté API)                                                                           |
 
 Front cookie-mode : `withCredentials` + envoi `X-CSRF-Token` (`src/features/auth/csrf.ts`). Le cookie CSRF doit être **lisible JS** (`Path=/`) **ou** le body doit exposer `csrfToken`.

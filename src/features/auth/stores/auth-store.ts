@@ -59,9 +59,14 @@ export const useAuthStore = defineStore('auth', () => {
     /** Bootstrap cookie : un seul essai refresh silencieux au chargement. */
     let bootstrapInFlight: Promise<void> | null = null;
     let bootstrapDone = false;
+    /**
+     * Cookie-mode : session établie (cookies HttpOnly posés), même si l’access
+     * n’est plus renvoyé dans le JSON (`ReturnAccessTokenInBody=false`).
+     */
+    const cookieSessionActive = ref(false);
 
-    /** Cookie-mode : access mémoire ; session restaurée via `bootstrapSession` (cookie refresh). */
-    const isAuthenticated = computed(() => !!accessToken.value || (!cookieMode && !!refreshToken.value));
+    /** Cookie-mode : cookies HttpOnly ; legacy : access/refresh en storage. */
+    const isAuthenticated = computed(() => (cookieMode ? cookieSessionActive.value : !!accessToken.value || !!refreshToken.value));
 
     const displayName = computed(() => {
         if (!user.value) return '';
@@ -88,12 +93,14 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     function setTokens(tokens: AuthTokens) {
-        accessToken.value = tokens.accessToken;
+        const access = tokens.accessToken?.trim() ? tokens.accessToken.trim() : null;
+        accessToken.value = access;
         expiresAt.value = tokens.expiresAt || null;
         if (cookieMode) {
             rememberCsrfToken(tokens.csrfToken);
             refreshToken.value = null;
-            writeTokens(tokens.accessToken, null, tokens.expiresAt || null, {
+            cookieSessionActive.value = true;
+            writeTokens(access ?? '', null, tokens.expiresAt || null, {
                 persistRefresh: false,
                 persistAccess: false
             });
@@ -111,6 +118,7 @@ export const useAuthStore = defineStore('auth', () => {
         refreshToken.value = null;
         expiresAt.value = null;
         twoFactorToken.value = null;
+        cookieSessionActive.value = false;
         clearPendingRegistration();
         user.value = null;
         clearStoredTokens();
@@ -126,17 +134,20 @@ export const useAuthStore = defineStore('auth', () => {
             return '2fa';
         }
         rememberCsrfToken(session.csrfToken);
-        if (!session.accessToken) {
+        const access = session.accessToken?.trim() || '';
+        if (!cookieMode && !access) {
             throw new Error('Jeton d’accès manquant dans la réponse d’authentification.');
         }
         if (!cookieMode && !session.refreshToken) {
             throw new Error('Jeton de rafraîchissement manquant dans la réponse d’authentification.');
         }
+        // Cookie-mode : access peut être vide si uniquement dans `spendup_access`.
         setTokens({
-            accessToken: session.accessToken,
+            accessToken: access,
             refreshToken: session.refreshToken,
             expiresAt: session.expiresAt ?? '',
-            userPublicId: session.userPublicId ?? ''
+            userPublicId: session.userPublicId ?? '',
+            csrfToken: session.csrfToken
         });
         twoFactorToken.value = null;
         await fetchMe();
@@ -312,7 +323,13 @@ export const useAuthStore = defineStore('auth', () => {
         bootstrapInFlight = (async () => {
             try {
                 const hasUsableAccess = !!accessToken.value && !isAccessExpired(expiresAt.value);
-                if (hasUsableAccess) return;
+                if (hasUsableAccess) {
+                    cookieSessionActive.value = true;
+                    return;
+                }
+                if (cookieSessionActive.value && expiresAt.value && !isAccessExpired(expiresAt.value)) {
+                    return;
+                }
                 await refreshSession();
             } finally {
                 bootstrapDone = true;
@@ -324,6 +341,27 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function fetchMe() {
+        if (cookieMode) {
+            const token = await ensureAccessToken();
+            if (!cookieSessionActive.value) {
+                user.value = null;
+                return null;
+            }
+            try {
+                user.value = await authApi.me(token);
+                return user.value;
+            } catch (e: unknown) {
+                if (e instanceof ApiError && e.status === 401) {
+                    const ok = await refreshSession();
+                    if (ok && cookieSessionActive.value) {
+                        user.value = await authApi.me(accessToken.value);
+                        return user.value;
+                    }
+                }
+                throw e;
+            }
+        }
+
         const token = await ensureAccessToken();
         if (!token) {
             user.value = null;
@@ -333,8 +371,7 @@ export const useAuthStore = defineStore('auth', () => {
             user.value = await authApi.me(token);
             return user.value;
         } catch (e: unknown) {
-            const canRetry = cookieMode || !!refreshToken.value;
-            if (e instanceof ApiError && e.status === 401 && canRetry) {
+            if (e instanceof ApiError && e.status === 401 && refreshToken.value) {
                 const ok = await refreshSession();
                 if (ok && accessToken.value) {
                     user.value = await authApi.me(accessToken.value);
@@ -411,13 +448,18 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     async function ensureAccessToken(): Promise<string | null> {
+        if (cookieMode) {
+            const expired = !!expiresAt.value && isAccessExpired(expiresAt.value);
+            const needsRefresh = !cookieSessionActive.value || expired;
+            if (needsRefresh) {
+                const ok = await refreshSession();
+                return ok ? accessToken.value : null;
+            }
+            return accessToken.value;
+        }
+
         const hasUsableAccess = !!accessToken.value && !isAccessExpired(expiresAt.value);
         if (hasUsableAccess) return accessToken.value;
-
-        if (cookieMode) {
-            const ok = await refreshSession();
-            return ok ? accessToken.value : null;
-        }
 
         if (!refreshToken.value) {
             if (accessToken.value && isAccessExpired(expiresAt.value)) {
@@ -430,7 +472,18 @@ export const useAuthStore = defineStore('auth', () => {
         return ok ? accessToken.value : null;
     }
 
-    async function requireAccessToken(): Promise<string> {
+    /**
+     * Garantit une session utilisable.
+     * Cookie-mode : peut renvoyer `null` (auth via cookie HttpOnly, pas de Bearer).
+     */
+    async function requireAccessToken(): Promise<string | null> {
+        if (cookieMode) {
+            await ensureAccessToken();
+            if (!cookieSessionActive.value) {
+                throw new Error('Non authentifié.');
+            }
+            return accessToken.value;
+        }
         const token = await ensureAccessToken();
         if (!token) {
             throw new Error('Non authentifié.');

@@ -1,5 +1,5 @@
 import axios, { type AxiosRequestConfig, type Method } from 'axios';
-import { authAxios } from '@/utils/helpers/axios-helpers';
+import { authAxios, shouldSendBearerAuth } from '@/utils/helpers/axios-helpers';
 import { getDeviceInfo } from './device';
 import { normalizeAuthDevices } from './normalizeDevices';
 import type {
@@ -13,6 +13,11 @@ import type {
     UpdateProfilePayload,
     UploadAvatarResult
 } from './types';
+
+function bearerHeaders(accessToken: string | null | undefined): Record<string, string> | undefined {
+    if (!shouldSendBearerAuth() || !accessToken) return undefined;
+    return { Authorization: `Bearer ${accessToken}` };
+}
 
 export class ApiError extends Error {
     status: number;
@@ -61,7 +66,7 @@ async function request<T>(method: Method, path: string, data?: unknown, accessTo
         method,
         data,
         validateStatus: () => true,
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined
+        headers: bearerHeaders(accessToken)
     };
 
     try {
@@ -170,21 +175,21 @@ export const authApi = {
         return authHttp.post<null>('/api/auth/logout', refreshToken ? { refreshToken } : {}, accessToken);
     },
 
-    me(accessToken: string) {
+    me(accessToken?: string | null) {
         return authHttp.get<Me>('/api/auth/me', accessToken).then(normalizeMe);
     },
 
-    updateProfile(accessToken: string, payload: UpdateProfilePayload) {
+    updateProfile(accessToken: string | null | undefined, payload: UpdateProfilePayload) {
         return authHttp.put<null>('/api/auth/profile', payload, accessToken);
     },
 
     /** Avatar catalogue — `PUT /api/auth/me/avatar`. */
-    setCatalogAvatar(accessToken: string, profilePicture: string) {
+    setCatalogAvatar(accessToken: string | null | undefined, profilePicture: string) {
         return authHttp.put<null>('/api/auth/me/avatar', { profilePicture }, accessToken);
     },
 
     /** Upload multipart — champ `file` (JPEG/PNG/WebP, max 2 Mo). */
-    async uploadAvatar(accessToken: string, file: File): Promise<UploadAvatarResult> {
+    async uploadAvatar(accessToken: string | null | undefined, file: File): Promise<UploadAvatarResult> {
         const form = new FormData();
         form.append('file', file);
 
@@ -194,9 +199,7 @@ export const authApi = {
                 method: 'POST',
                 data: form,
                 validateStatus: () => true,
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                },
+                headers: bearerHeaders(accessToken),
                 // Retire le Content-Type JSON par défaut pour laisser le navigateur poser la boundary multipart.
                 transformRequest: [
                     (data, headers) => {
@@ -252,14 +255,14 @@ export const authApi = {
     },
 
     /** Binaire de la photo uploadée — uniquement si `profilePicture` est un hash. */
-    async getAvatarBlob(accessToken: string): Promise<Blob> {
+    async getAvatarBlob(accessToken: string | null | undefined): Promise<Blob> {
         try {
             const res = await authAxios.request<Blob>({
                 url: '/api/auth/me/avatar',
                 method: 'GET',
                 responseType: 'blob',
                 validateStatus: () => true,
-                headers: { Authorization: `Bearer ${accessToken}` }
+                headers: bearerHeaders(accessToken)
             });
 
             if (res.status >= 400) {
@@ -286,11 +289,11 @@ export const authApi = {
         }
     },
 
-    deleteAvatar(accessToken: string) {
+    deleteAvatar(accessToken: string | null | undefined) {
         return authHttp.delete<null>('/api/auth/me/avatar', undefined, accessToken);
     },
 
-    setUsername(accessToken: string, username: string) {
+    setUsername(accessToken: string | null | undefined, username: string) {
         return authHttp.put<null>('/api/auth/username', { username }, accessToken);
     },
 
@@ -302,7 +305,7 @@ export const authApi = {
         return authHttp.post<null>('/api/auth/reset-password', { token, newPassword });
     },
 
-    changePassword(accessToken: string, currentPassword: string | null, newPassword: string, stepUp?: StepUpProof) {
+    changePassword(accessToken: string | null | undefined, currentPassword: string | null, newPassword: string, stepUp?: StepUpProof) {
         return authHttp.post<null>(
             '/api/auth/password/change',
             {
@@ -315,7 +318,7 @@ export const authApi = {
     },
 
     changeEmail(
-        accessToken: string,
+        accessToken: string | null | undefined,
         payload: { newEmail: string; currentPassword?: string | null; googleIdToken?: string | null; stepUp?: StepUpProof }
     ) {
         return authHttp.post<null>(
@@ -334,7 +337,7 @@ export const authApi = {
         return authHttp.post<null>('/api/auth/email/confirm-change', { email, code });
     },
 
-    unlinkGoogle(accessToken: string, currentPassword: string, stepUp?: StepUpProof) {
+    unlinkGoogle(accessToken: string | null | undefined, currentPassword: string, stepUp?: StepUpProof) {
         return authHttp.post<null>(
             '/api/auth/google/unlink',
             {
@@ -345,36 +348,39 @@ export const authApi = {
         );
     },
 
-    deleteAccount(accessToken: string, payload: { currentPassword?: string; googleIdToken?: string; stepUp?: StepUpProof }) {
+    deleteAccount(
+        accessToken: string | null | undefined,
+        payload: { currentPassword?: string; googleIdToken?: string; stepUp?: StepUpProof }
+    ) {
         return authHttp.delete<null>('/api/auth/account', payload, accessToken);
     },
 
-    setup2fa(accessToken: string) {
+    setup2fa(accessToken: string | null | undefined) {
         return authHttp.post<TwoFactorSetup>('/api/auth/2fa/setup', undefined, accessToken);
     },
 
-    enable2fa(accessToken: string, code: string) {
+    enable2fa(accessToken: string | null | undefined, code: string) {
         return authHttp.post<null>('/api/auth/2fa/enable', { code }, accessToken);
     },
 
-    disable2fa(accessToken: string, code: string) {
+    disable2fa(accessToken: string | null | undefined, code: string) {
         return authHttp.post<null>('/api/auth/2fa/disable', { code }, accessToken);
     },
 
-    async listDevices(accessToken: string) {
+    async listDevices(accessToken: string | null | undefined) {
         const result = await authHttp.get<unknown>('/api/auth/devices', accessToken);
         return normalizeAuthDevices(result);
     },
 
-    revokeDevice(accessToken: string, deviceIdentifier: string, stepUp?: StepUpProof) {
+    revokeDevice(accessToken: string | null | undefined, deviceIdentifier: string, stepUp?: StepUpProof) {
         return authHttp.delete<null>(`/api/auth/devices/${encodeURIComponent(deviceIdentifier)}`, stepUp ? { stepUp } : {}, accessToken);
     },
 
-    revokeAllDevices(accessToken: string, stepUp?: StepUpProof) {
+    revokeAllDevices(accessToken: string | null | undefined, stepUp?: StepUpProof) {
         return authHttp.post<null>('/api/auth/devices/revoke-all', stepUp ? { stepUp } : {}, accessToken);
     },
 
-    setDeviceTrust(accessToken: string, deviceIdentifier: string, isTrusted: boolean, stepUp?: StepUpProof) {
+    setDeviceTrust(accessToken: string | null | undefined, deviceIdentifier: string, isTrusted: boolean, stepUp?: StepUpProof) {
         return authHttp.put<null>(
             `/api/auth/devices/${encodeURIComponent(deviceIdentifier)}/trust`,
             {

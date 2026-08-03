@@ -32,6 +32,7 @@ export type AuthSession = {
 };
 
 export type AuthTokens = {
+    /** Peut être vide si `ReturnAccessTokenInBody=false` (cookie `spendup_access`). */
     accessToken: string;
     /** Absent / null en mode cookie HttpOnly (P1). */
     refreshToken?: string | null;

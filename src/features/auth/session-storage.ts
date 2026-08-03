@@ -59,7 +59,7 @@ export function clearStoredRefreshToken() {
 
 /**
  * Persiste les jetons.
- * - Cookie-mode (`persistAccess: false`) : access **mémoire seule** (Pinia) — rien en sessionStorage.
+ * - Cookie-mode (`persistAccess: false`) : rien en storage JS (access + refresh = cookies HttpOnly).
  * - Legacy : access en sessionStorage, refresh en localStorage si `persistRefresh`.
  */
 export function writeTokens(

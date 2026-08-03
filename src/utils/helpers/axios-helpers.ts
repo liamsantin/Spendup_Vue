@@ -5,10 +5,15 @@ export function getApiBaseUrl(): string {
     return (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
 }
 
-/** Activer uniquement quand l’API expose le refresh en cookie HttpOnly (P1). */
+/** Activer uniquement quand l’API expose refresh (+ access) en cookie HttpOnly. */
 export function isAuthCookieMode(): boolean {
     const raw = String(import.meta.env.VITE_AUTH_COOKIE_MODE ?? '').toLowerCase();
     return raw === 'true' || raw === '1';
+}
+
+/** En cookie-mode, le JWT access voyage dans `spendup_access` — pas de header Bearer. */
+export function shouldSendBearerAuth(): boolean {
+    return !isAuthCookieMode();
 }
 
 /** Instance Axios de base (JSON). Sans interceptor refresh. Timeout 30s. */

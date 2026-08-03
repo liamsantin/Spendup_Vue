@@ -75,6 +75,12 @@ async function authHeader(url: string): Promise<Record<string, string>> {
     const isApiUrl = (!!base && url.startsWith(base)) || url.startsWith('/') || !url.startsWith('http');
     if (!isApiUrl) return {};
 
+    // Cookie-mode : refresh si besoin, auth via cookie `spendup_access` (pas de Bearer).
+    if (isAuthCookieMode()) {
+        await auth.ensureAccessToken();
+        return {};
+    }
+
     const token = await auth.ensureAccessToken();
     if (token) {
         return { Authorization: `Bearer ${token}` };

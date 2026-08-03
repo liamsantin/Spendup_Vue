@@ -263,6 +263,26 @@ describe('useAuthStore', () => {
             expect(ok).toBe(true);
             expect(authApiMock.refresh).toHaveBeenCalledWith(null);
             expect(auth.accessToken).toBe('from-cookie');
+            expect(auth.isAuthenticated).toBe(true);
+        });
+
+        it('applySession accepte une session sans accessToken body (cookie HttpOnly)', async () => {
+            const auth = useAuthStore();
+            authApiMock.me.mockResolvedValue(meUser());
+
+            const outcome = await auth.applySession({
+                requiresTwoFactor: false,
+                twoFactorToken: null,
+                accessToken: null,
+                refreshToken: null,
+                expiresAt: new Date(Date.now() + 60_000).toISOString(),
+                userPublicId: 'ABC1234'
+            });
+
+            expect(outcome).toBe('ok');
+            expect(auth.isAuthenticated).toBe(true);
+            expect(auth.accessToken).toBeNull();
+            expect(authApiMock.me).toHaveBeenCalledWith(null);
         });
     });
 
