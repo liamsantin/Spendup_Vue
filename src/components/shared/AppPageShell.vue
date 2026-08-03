@@ -37,11 +37,11 @@ const emit = defineEmits<{
         <v-card elevation="10" rounded="md" class="settings-page-card">
             <div class="app-page-shell-header">
                 <div class="d-flex align-center ga-3 min-width-0">
-                    <v-avatar v-if="icon" class="bg-lightprimary text-primary flex-shrink-0" rounded="md" size="48">
-                        <component :is="icon" size="24" />
+                    <v-avatar v-if="icon" class="bg-lightprimary text-primary flex-shrink-0" rounded="md" size="46">
+                        <component :is="icon" size="23" />
                     </v-avatar>
                     <div class="min-width-0">
-                        <h4 class="text-h4 mb-0">{{ title }}</h4>
+                        <h4 class="text-h5 mb-0">{{ title }}</h4>
                         <div v-if="subtitle" class="text-subtitle-1 textSecondary mt-1 text-truncate">
                             {{ subtitle }}
                         </div>
@@ -96,7 +96,8 @@ const emit = defineEmits<{
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 12px;
-    padding: 16px 24px;
+    min-height: 72px;
+    padding: 14px 24px;
     background: rgb(var(--v-theme-grey100));
 }
 
@@ -126,7 +127,8 @@ const emit = defineEmits<{
     }
 
     .app-page-shell-header {
-        padding: 16px;
+        min-height: 68px;
+        padding: 12px 16px;
     }
 }
 </style>
