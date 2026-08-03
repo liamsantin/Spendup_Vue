@@ -20,12 +20,15 @@ withDefaults(
         saveLoading?: boolean;
         /** Masquer la barre d’actions (onglets sans save). */
         hideActions?: boolean;
+        /** Alignement des onglets (`v-tabs` align-tabs). */
+        alignTabs?: 'start' | 'title' | 'center' | 'end';
     }>(),
     {
         saveDisabled: true,
         cancelDisabled: true,
         saveLoading: false,
-        hideActions: false
+        hideActions: false,
+        alignTabs: 'start'
     }
 );
 
@@ -45,6 +48,8 @@ const emit = defineEmits<{
                 density="comfortable"
                 height="52"
                 color="primary"
+                :align-tabs="alignTabs"
+                show-arrows
                 class="settings-tabs flex-grow-0"
                 @update:model-value="emit('update:modelValue', String($event))"
             >

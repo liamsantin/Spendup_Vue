@@ -87,7 +87,7 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 - **Guards** (transverse) → `app/guards/auth-guard.ts` (consomme `useAuthStore` depuis `@/features/auth`).
 - **Alertes** → toujours `AppAlert` (`components/shared/AppAlert.vue`), **jamais** `v-alert` brut. Doc : `docs/components/alert/alert-component.md`. Preview : `/components` (dev only).
 - **Modales métier** → toujours `AppModalBase`. Doc : `docs/components/modal/modalbase-component.md`.
-- **Pages paramètres** (Comptes, Applications) → **Tabbed Action Shell** — doc : `docs/structure/page.md`.
+- **Pages paramètres** (Comptes, Applications) → **App Tabs Shell** — doc : `docs/structure/page.md`.
 
 ### Composants shared
 
@@ -246,7 +246,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 - Exporter les features via un `index.ts`.
 - Vérifier `npm run build` et `npm test` après restructuration ou déplacement de fichiers.
 - Les formulaires UI appellent le store de la feature, pas le client API directement.
-- Pages paramètres multi-onglets : reprendre le **Tabbed Action Shell** (`docs/structure/page.md`).
+- Pages paramètres multi-onglets : reprendre le **App Tabs Shell** (`docs/structure/page.md`).
 
 ---
 
@@ -292,7 +292,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
     ├── types.ts          # (ou types/) types propres au domaine
     └── index.ts          # exports publics
     ```
-3. Créer `views/app/<header>/<page>/App<Name>Page.vue` — page fine (souvent Tabbed Action Shell).
+3. Créer `views/app/<header>/<page>/App<Name>Page.vue` — page fine (souvent App Tabs Shell).
 4. Enregistrer la route dans `router/AppRoutes.ts` et le menu dans `sidebarItem.ts`.
 5. Placer les styles éventuels dans `src/scss/` au chemin miroir.
 6. Ajouter des tests unitaires ciblés (`*.test.ts`) pour la logique critique.

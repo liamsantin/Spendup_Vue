@@ -20,7 +20,7 @@ Spendup_Vue/
 └── docs/
     ├── structure-spendup.md
     ├── rules-spendup.md
-    ├── structure/page.md              # Tabbed Action Shell
+    ├── structure/page.md              # App Tabs Shell
     ├── features/auth/authentication-rules.md
     └── components/                    # AppAlert, AppModalBase, …
 ```
@@ -72,7 +72,7 @@ src/
 │   ├── app/                # Pages fines zone /app — liées au routing
 │   │   ├── spendup/dashboard/
 │   │   └── parametres/
-│   │       └── accounts/       # Tabbed Action Shell — Mon compte
+│   │       └── accounts/       # App Tabs Shell — Mon compte
 │   ├── front-pages/        # Pages publiques (coquilles de route)
 │   ├── authentication/     # Login, register, erreur…
 │   └── dev/                # Showcase UI (`/components`) — VITE_APP_ENV=development uniquement
@@ -215,7 +215,7 @@ features/transactions/
 | Notice login                          | `sessionStorage` clé `spendup_login_notice` (pas de `?notice=` dans l’URL) — `consumeLoginNotice()`                               |
 | Logo                                  | Voir section Logo ci-dessous                                                                                                      |
 
-**Paramètres `/app` — Tabbed Action Shell** (doc : `docs/structure/page.md`) :
+**Paramètres `/app` — App Tabs Shell** (doc : `docs/structure/page.md`) :
 
 | Route          | View              | Feature         | Onglets                                      |
 | -------------- | ----------------- | --------------- | -------------------------------------------- |
@@ -281,7 +281,7 @@ scss/
 | `/auth/404`                  | `Error`                                                  | BlankLayout                                        |
 | `/auth/maintenance`          | `Maintenance`                                            | BlankLayout                                        |
 | `/app`                       | `spendup/dashboard/AppDashboardView`                     | `features/dashboard` — FullLayout (`requiresAuth`) |
-| `/app/comptes`               | `parametres/accounts/AppAccountsPage`                    | `features/user-settings` — Tabbed Action Shell     |
+| `/app/comptes`               | `parametres/accounts/AppAccountsPage`                    | `features/user-settings` — App Tabs Shell          |
 | `/app/applications`          | redirect → `/app/comptes`                                | legacy                                             |
 | `/:pathMatch(.*)*`           | `Error`                                                  | Catch-all 404 (`router/index.ts`)                  |
 

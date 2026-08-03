@@ -1,18 +1,18 @@
-# Structure de page — Tabbed Action Shell
+# Structure de page — App Tabs Shell
 
-> Nom du modèle : **Tabbed Action Shell**  
+> Nom du modèle : **App Tabs Shell**  
 > Références :
 >
-> - `src/components/shared/TabbedActionShell.vue` (shell réutilisable)
+> - `src/components/shared/AppTabsShell.vue` (shell réutilisable)
 > - `src/views/app/parametres/accounts/AppAccountsPage.vue` (multi-onglets — référence)
 >
 > À utiliser pour toute nouvelle view `/app` qui combine **onglets fixes**, **contenu scrollable** et **barre d’actions fixe**.
 
 ---
 
-## Qu’est-ce qu’un Tabbed Action Shell ?
+## Qu’est-ce qu’un App Tabs Shell ?
 
-Un **Tabbed Action Shell** est une page authentifiée qui occupe **toute la hauteur utile** du layout (`page-wrapper`), sous la forme d’une **card unique** découpée en trois zones figées :
+Un **App Tabs Shell** est une page authentifiée qui occupe **toute la hauteur utile** du layout (`page-wrapper`), sous la forme d’une **card unique** découpée en trois zones figées :
 
 | Zone       | Rôle                                     | Comportement                                   |
 | ---------- | ---------------------------------------- | ---------------------------------------------- |
@@ -150,7 +150,7 @@ Le layout parent (`page-wrapper` / `page-content`) doit déjà être en flex col
 
 ---
 
-## Checklist nouvelle page Tabbed Action Shell
+## Checklist nouvelle page App Tabs Shell
 
 1. [ ] Créer `src/views/app/<header>/<page>/App<Name>Page.vue`
 2. [ ] Ajouter la route dans `AppRoutes.ts` (import vers le nouveau chemin)

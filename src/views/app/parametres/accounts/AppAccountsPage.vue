@@ -4,7 +4,7 @@ import { onBeforeRouteLeave } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { AdjustmentsHorizontalIcon, BellIcon, LockIcon, UserCircleIcon } from 'vue-tabler-icons';
 import { AccountTab, NotificationsTab, PreferencesTab, SecurityTab } from '@/features/user-settings';
-import TabbedActionShell from '@/components/shared/TabbedActionShell.vue';
+import AppTabsShell from '@/components/shared/AppTabsShell.vue';
 
 type AccountTabExpose = {
     saveProfile: () => Promise<void>;
@@ -113,9 +113,10 @@ function onCancel() {
 </script>
 
 <template>
-    <TabbedActionShell
+    <AppTabsShell
         v-model="tab"
         :tabs="tabs"
+        align-tabs="center"
         :save-disabled="saveDisabled"
         :cancel-disabled="cancelDisabled"
         :save-loading="saveLoading"
@@ -136,5 +137,5 @@ function onCancel() {
                 <SecurityTab ref="securityTabRef" @dirty="securityDirty = $event" />
             </v-window-item>
         </v-window>
-    </TabbedActionShell>
+    </AppTabsShell>
 </template>
