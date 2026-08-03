@@ -1,7 +1,9 @@
-// ===============================|| Blank Layout ||=============================== //
+<!-- ===============================|| Blank Layout ||=============================== -->
 <template>
     <v-app>
-        <RouterView />
+        <main id="main-content" tabindex="-1">
+            <RouterView />
+        </main>
     </v-app>
 </template>
 <script setup lang="ts">

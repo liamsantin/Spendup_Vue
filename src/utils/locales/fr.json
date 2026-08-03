@@ -17,7 +17,8 @@
         "user": "Utilisateur",
         "logout": "Se déconnecter",
         "emptyValue": "—",
-        "open": "Ouvrir"
+        "open": "Ouvrir",
+        "skipToContent": "Aller au contenu"
     },
     "shell": {
         "save": "Enregistrer",

@@ -17,7 +17,8 @@
         "user": "User",
         "logout": "Sign out",
         "emptyValue": "—",
-        "open": "Open"
+        "open": "Open",
+        "skipToContent": "Skip to content"
     },
     "shell": {
         "save": "Save",

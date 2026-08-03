@@ -28,7 +28,7 @@ useIdleLogout();
             <HorizontalHeader v-if="appSettings.setHorizontalLayout" />
             <HorizontalSidebar v-if="appSettings.setHorizontalLayout" />
 
-            <v-main>
+            <v-main id="main-content" tabindex="-1">
                 <v-container fluid class="page-wrapper">
                     <div class="page-content" :class="appSettings.boxed ? 'maxWidth' : ''">
                         <RouterView />
