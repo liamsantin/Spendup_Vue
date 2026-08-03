@@ -5,7 +5,6 @@ import AppAlert from '@/components/shared/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useUserSettingsStore } from '../stores/user-settings-store';
 import PreferencesPrivacyCard from './preferences/PreferencesPrivacyCard.vue';
-import PreferencesNotificationsCard from './preferences/PreferencesNotificationsCard.vue';
 import PreferencesRegionalCard from './preferences/PreferencesRegionalCard.vue';
 import PreferencesThemeColorsCard from './preferences/PreferencesThemeColorsCard.vue';
 import PreferencesDashboardCard from './preferences/PreferencesDashboardCard.vue';
@@ -79,9 +78,6 @@ defineExpose({
 
             <v-col cols="12" md="9" class="pb-4">
                 <PreferencesPrivacyCard v-model="draft" />
-            </v-col>
-            <v-col cols="12" md="9" class="pb-4">
-                <PreferencesNotificationsCard v-model="draft" />
             </v-col>
             <v-col cols="12" md="9" class="pb-4">
                 <PreferencesRegionalCard v-model="draft" />
