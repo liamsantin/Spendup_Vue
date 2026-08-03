@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sanitizeReturnUrl } from './safe-return-url';
+import { sanitizeReturnUrl } from '../safe-return-url';
 
 describe('sanitizeReturnUrl', () => {
     it('accepte les chemins /app', () => {

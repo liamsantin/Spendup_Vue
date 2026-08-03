@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractDevicesPayload, normalizeAuthDevice, normalizeAuthDevices } from './normalizeDevices';
+import { extractDevicesPayload, normalizeAuthDevice, normalizeAuthDevices } from '../normalizeDevices';
 
 describe('normalizeAuthDevice', () => {
     it('maps camelCase API payload including trustedUntil and isCurrentDevice', () => {

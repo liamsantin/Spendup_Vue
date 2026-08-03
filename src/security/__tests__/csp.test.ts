@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CSP_DEV_REPORT_ONLY, CSP_PROD_ENFORCE, SECURITY_HEADERS_BASE } from './csp';
+import { CSP_DEV_REPORT_ONLY, CSP_PROD_ENFORCE, SECURITY_HEADERS_BASE } from '../csp';
 
 describe('csp', () => {
     it('prod enforce sans unsafe-eval ni ws HMR, connect-src resserré', () => {

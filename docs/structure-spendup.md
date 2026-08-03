@@ -43,7 +43,7 @@ Spendup_Vue/
 | State     | Pinia — **Setup Store uniquement** (`app/stores/` globaux, `features/<domaine>/stores/` métier) |
 | Router    | Vue Router 4 — history mode, guard dans `src/app/guards/`                                       |
 | Styles    | SCSS (Sass)                                                                                     |
-| Tests     | Vitest + Vue Test Utils + jsdom (`*.test.ts` colocalisés, setup dans `src/test/`)               |
+| Tests     | Vitest + Vue Test Utils + jsdom (`__tests__/*.test.ts`, setup dans `src/test/`)                 |
 | Icônes    | `vue-tabler-icons` (imports individuels / tree-shake) + Vuetify `mdi-svg` (pas de webfont MDI)  |
 | Alias     | `@` → `src/`                                                                                    |
 | Dev       | `npm run dev`                                                                                   |
@@ -61,7 +61,7 @@ src/
 ├── App.vue
 ├── app/                    # Couche application (transverse, hors domaine métier)
 │   ├── stores/             # Stores Pinia globaux uniquement
-│   └── guards/             # Guards Vue Router (+ tests *.test.ts)
+│   └── guards/             # Guards Vue Router (+ __tests__/)
 ├── features/               # Logique métier par domaine fonctionnel
 │   ├── auth/
 │   ├── countries/
@@ -95,7 +95,7 @@ src/
 ├── types/                  # Types techniques / UI (hors domaine métier)
 └── utils/                  # i18n, helpers transverses
     ├── locales/            # Fichiers i18n (messages.ts, fr.json…)
-    └── helpers/            # Helpers nommés <domaine>-helpers.ts (+ *.test.ts)
+    └── helpers/            # Helpers nommés <domaine>-helpers.ts (+ __tests__/)
 ```
 
 > **Types métier :** préférer `features/<domaine>/types.ts` (ex. auth). Les dossiers `entities/` / `models/` ne sont **pas** créés pour l’instant — éventuel partage cross-features plus tard seulement.
@@ -165,7 +165,7 @@ features/
 │   └── index.ts
 ```
 
-Les tests unitaires sont **colocalisés** (`*.test.ts` à côté du module) : ex. `auth-store.test.ts`, `countries-store.test.ts`, `fetch-helpers.test.ts`.
+Les tests unitaires sont dans un dossier `__tests__/` sibling du module : ex. `stores/__tests__/auth-store.test.ts`, `helpers/__tests__/fetch-helpers.test.ts`.
 
 ### Features prévues (plateforme financière)
 
@@ -545,6 +545,6 @@ features/applications/        # Thème & mise en page
 | ------------------- | ----------------------------------------------------------------------------------------------------- |
 | Runner              | Vitest (`vite.config.ts` → `test.environment: 'jsdom'`)                                               |
 | Setup               | `src/test/setup.ts` (clear storage / mocks), `src/test/pinia.ts`                                      |
-| Emplacement         | `*.test.ts` à côté du code testé                                                                      |
+| Emplacement         | `__tests__/*.test.ts` sibling du code testé                                                           |
 | Scripts             | `npm test`, `npm run test:watch` — inclus dans `npm run validate`                                     |
 | Couverture actuelle | Auth store (expiresAt, mutex, pending MDP), guard, fetchWrapper, countries, username / avatar helpers |

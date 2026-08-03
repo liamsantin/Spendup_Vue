@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ApiError } from './api';
-import { isIdleSessionError, isIdleSessionMessage } from './idle-session';
+import { ApiError } from '../api';
+import { isIdleSessionError, isIdleSessionMessage } from '../idle-session';
 
 describe('idle-session', () => {
     it('détecte le message API français', () => {

@@ -209,7 +209,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 ## Règles de tests
 
 - Framework : **Vitest** (+ `@vue/test-utils`, `jsdom`).
-- Fichiers : `*.test.ts` **colocalisés** avec le module testé (pas de dossier `__tests__` séparé pour l’instant).
+- Fichiers : `*.test.ts` dans un dossier `__tests__/` sibling du module testé (ex. `guards/__tests__/auth-guard.test.ts`).
 - Setup partagé : `src/test/setup.ts`, helpers Pinia dans `src/test/pinia.ts`.
 - Couvrir en priorité : auth (tokens / refresh / guard), clients HTTP, stores métier critiques.
 - Lancer `npm test` avant merge / dans `npm run validate`.
@@ -295,5 +295,5 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
 3. Créer `views/app/<header>/<page>/App<Name>Page.vue` — page fine (souvent App Tabs Shell).
 4. Enregistrer la route dans `router/AppRoutes.ts` et le menu dans `sidebarItem.ts`.
 5. Placer les styles éventuels dans `src/scss/` au chemin miroir.
-6. Ajouter des tests unitaires ciblés (`*.test.ts`) pour la logique critique.
+6. Ajouter des tests unitaires ciblés (`__tests__/*.test.ts`) pour la logique critique.
 7. Mettre à jour les imports et vérifier `npm run validate`.

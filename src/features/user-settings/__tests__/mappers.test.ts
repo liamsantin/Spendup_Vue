@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { diffSettings, isEmptySettingsPatch } from './mappers';
-import { USER_SETTINGS_DEFAULTS } from './types';
+import { diffSettings, isEmptySettingsPatch } from '../mappers';
+import { USER_SETTINGS_DEFAULTS } from '../types';
 
 describe('diffSettings', () => {
     it('renvoie uniquement les clés modifiées', () => {

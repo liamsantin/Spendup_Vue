@@ -7,7 +7,7 @@ import {
     getCsrfToken,
     readCsrfCookie,
     rememberCsrfToken
-} from './csrf';
+} from '../csrf';
 
 describe('csrf', () => {
     beforeEach(() => {

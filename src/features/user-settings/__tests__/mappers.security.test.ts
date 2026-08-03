@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeSecuritySettings } from './mappers';
-import { USER_SETTINGS_DEFAULTS } from './types';
+import { normalizeSecuritySettings } from '../mappers';
+import { USER_SETTINGS_DEFAULTS } from '../types';
 
 describe('normalizeSecuritySettings', () => {
     it('clamp idle et trusted days', () => {

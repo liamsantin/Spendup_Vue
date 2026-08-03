@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { resolveIsCurrentDevice } from './device-current';
-import type { AuthDevice } from './types';
+import { resolveIsCurrentDevice } from '../device-current';
+import type { AuthDevice } from '../types';
 
 function device(overrides: Partial<AuthDevice> = {}): AuthDevice {
     return {

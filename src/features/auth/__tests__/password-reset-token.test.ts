@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
-import { clearPasswordResetTokenFromUrl, readPasswordResetToken } from './password-reset-token';
+import { clearPasswordResetTokenFromUrl, readPasswordResetToken } from '../password-reset-token';
 
 function fakeRoute(partial: Partial<RouteLocationNormalizedLoaded>): RouteLocationNormalizedLoaded {
     return {
