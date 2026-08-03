@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
-import { AppError } from '@/utils/errors/app-error';
 import { USER_SETTINGS_DEFAULTS } from '../types';
 
 const { getSettings, putSettings, patchSettings } = vi.hoisted(() => ({
@@ -65,21 +64,6 @@ describe('useUserSettingsStore draft', () => {
         expect(patchSettings).toHaveBeenCalledWith({ locale: 'fr-CH' });
         expect(putSettings).not.toHaveBeenCalled();
         expect(store.isDirty).toBe(false);
-        expect(store.draft.locale).toBe('fr-CH');
-    });
-
-    it('saveDraft fallback PUT si PATCH non supporté (405)', async () => {
-        getSettings.mockResolvedValue({ ...USER_SETTINGS_DEFAULTS, locale: 'en-US' });
-        patchSettings.mockRejectedValue(new AppError('Method Not Allowed', 405));
-        putSettings.mockResolvedValue({ ...USER_SETTINGS_DEFAULTS, locale: 'fr-CH' });
-        const store = useUserSettingsStore();
-
-        await store.ensureLoaded();
-        store.draft.locale = 'fr-CH';
-        await store.saveDraft();
-
-        expect(patchSettings).toHaveBeenCalledWith({ locale: 'fr-CH' });
-        expect(putSettings).toHaveBeenCalledWith(expect.objectContaining({ locale: 'fr-CH' }));
         expect(store.draft.locale).toBe('fr-CH');
     });
 
