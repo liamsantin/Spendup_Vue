@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, ArrowsExchangeIcon, UserCircleIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, ArrowsExchangeIcon, BellIcon, UserCircleIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -24,6 +24,11 @@ const sidebarItem: menu[] = [
         title: 'nav.items.dashboard',
         icon: LayoutDashboardIcon,
         to: '/app'
+    },
+    {
+        title: 'nav.items.notifications',
+        icon: BellIcon,
+        to: '/app/notifications'
     },
     { header: 'nav.headers.finances' },
     {

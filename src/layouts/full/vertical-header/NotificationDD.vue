@@ -112,7 +112,7 @@ async function onMarkAllRead() {
                 </v-list>
             </perfect-scrollbar>
 
-            <div class="py-4 px-6 text-center">
+            <div class="py-4 px-6 d-flex flex-column ga-2">
                 <v-btn
                     color="primary"
                     variant="outlined"
@@ -122,6 +122,9 @@ async function onMarkAllRead() {
                     @click="onMarkAllRead"
                 >
                     {{ t('header.notifications.markAllRead') }}
+                </v-btn>
+                <v-btn color="primary" variant="text" block :to="'/app/notifications'">
+                    {{ t('header.notifications.viewAll') }}
                 </v-btn>
             </div>
         </v-sheet>

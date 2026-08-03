@@ -32,6 +32,7 @@
         },
         "items": {
             "dashboard": "Tableau de bord",
+            "notifications": "Notifications",
             "transactions": "Transactions",
             "preferences": "Mon compte"
         },
@@ -117,6 +118,16 @@
                 "caption": "Projets et épargne"
             }
         }
+    },
+    "notificationsPage": {
+        "title": "Notifications",
+        "subtitle": "Historique de vos alertes et messages.",
+        "tabs": {
+            "inbox": "Boîte de réception"
+        },
+        "unread": "Non lu",
+        "unreadCount": "{count} non lues",
+        "loadMore": "Charger plus"
     },
     "accounts": {
         "tabs": {

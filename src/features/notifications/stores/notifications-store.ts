@@ -26,6 +26,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
     const hasUnread = computed(() => unreadCount.value > 0);
     const badgeContent = computed(() => (unreadCount.value > 0 ? unreadCount.value : undefined));
+    const hasMore = computed(() => items.value.length < totalCount.value);
 
     function applyUnreadCount(count: number) {
         unreadCount.value = Math.max(0, Number.isFinite(count) ? count : 0);
@@ -107,6 +108,11 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
     async function openInbox() {
         await loadInbox({ page: 1, append: false });
+    }
+
+    async function loadMore() {
+        if (!hasMore.value || loading.value || loadingMore.value) return;
+        await loadInbox({ page: page.value + 1, append: true });
     }
 
     async function markRead(id: number) {
@@ -216,9 +222,11 @@ export const useNotificationsStore = defineStore('notifications', () => {
         hubConnected,
         hasUnread,
         badgeContent,
+        hasMore,
         fetchUnreadCount,
         loadInbox,
         openInbox,
+        loadMore,
         markRead,
         markAllRead,
         syncRealtimePreference,

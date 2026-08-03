@@ -71,7 +71,9 @@ src/
 │   └── …                   # transactions, budgets… (à créer avec du code réel)
 ├── views/
 │   ├── app/                # Pages fines zone /app — liées au routing
-│   │   ├── spendup/dashboard/
+│   │   ├── spendup/
+│   │   │   ├── dashboard/
+│   │   │   └── notifications/  # Inbox notifications (App Tabs Shell)
 │   │   └── parametres/
 │   │       └── accounts/       # App Tabs Shell — Mon compte
 │   ├── front-pages/        # Pages publiques (coquilles de route)
@@ -218,9 +220,10 @@ features/transactions/
 
 **Paramètres `/app` — App Tabs Shell** (doc : `docs/structure/page.md`) :
 
-| Route          | View              | Feature         | Onglets                                      |
-| -------------- | ----------------- | --------------- | -------------------------------------------- |
-| `/app/comptes` | `AppAccountsPage` | `user-settings` | Profil, Préférences, Notifications, Sécurité |
+| Route                | View                   | Feature         | Onglets                                      |
+| -------------------- | ---------------------- | --------------- | -------------------------------------------- |
+| `/app/comptes`       | `AppAccountsPage`      | `user-settings` | Profil, Préférences, Notifications, Sécurité |
+| `/app/notifications` | `AppNotificationsPage` | `notifications` | Boîte de réception                           |
 
 (`/app/applications` redirige vers `/app/comptes` — feature `applications` supprimée.)
 
@@ -283,6 +286,7 @@ scss/
 | `/auth/maintenance`          | `Maintenance`                                            | BlankLayout                                        |
 | `/app`                       | `spendup/dashboard/AppDashboardView`                     | `features/dashboard` — FullLayout (`requiresAuth`) |
 | `/app/comptes`               | `parametres/accounts/AppAccountsPage`                    | `features/user-settings` — App Tabs Shell          |
+| `/app/notifications`         | `spendup/notifications/AppNotificationsPage`             | `features/notifications` — App Tabs Shell          |
 | `/app/applications`          | redirect → `/app/comptes`                                | legacy                                             |
 | `/:pathMatch(.*)*`           | `Error`                                                  | Catch-all 404 (`router/index.ts`)                  |
 
