@@ -9,7 +9,7 @@ export type CardStyle = 'shadow' | 'border' | 'flat';
 export type Density = 'comfortable' | 'compact';
 export type DefaultDashboardView = 'overview' | 'budget' | 'transactions';
 
-/** Contrat PUT/GET `/api/settings` — 30 champs, remplacement total. */
+/** Contrat GET `/api/settings` — 30 champs. */
 export type UserSettings = {
     profileVisibility: ProfileVisibility;
     discoverableInSearch: boolean;
@@ -42,6 +42,9 @@ export type UserSettings = {
     showBalanceOnDashboard: boolean;
     hideSensitiveAmounts: boolean;
 };
+
+/** Sous-ensemble pour `PATCH /api/settings` (clés présentes = champs à appliquer). */
+export type UserSettingsPatch = Partial<UserSettings>;
 
 export const USER_SETTINGS_DEFAULTS: UserSettings = {
     profileVisibility: 'friends',

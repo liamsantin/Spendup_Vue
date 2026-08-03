@@ -1,7 +1,7 @@
 export { userSettingsApi } from './api';
 export { useUserSettingsStore } from './stores/user-settings-store';
-export { localeToAppLocale, applyUserSettingsToRuntime, normalizeSecuritySettings } from './mappers';
-export type { UserSettings } from './types';
+export type { UserSettings, UserSettingsPatch } from './types';
+export { localeToAppLocale, applyUserSettingsToRuntime, normalizeSecuritySettings, diffSettings } from './mappers';
 export {
     USER_SETTINGS_DEFAULTS,
     IDLE_LOGOUT_MINUTES_MIN,

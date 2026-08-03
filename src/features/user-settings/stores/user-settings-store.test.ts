@@ -1,16 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
+import { AppError } from '@/utils/errors/app-error';
 import { USER_SETTINGS_DEFAULTS } from '../types';
 
-const { getSettings, putSettings } = vi.hoisted(() => ({
+const { getSettings, putSettings, patchSettings } = vi.hoisted(() => ({
     getSettings: vi.fn(),
-    putSettings: vi.fn()
+    putSettings: vi.fn(),
+    patchSettings: vi.fn()
 }));
 
 vi.mock('../api', () => ({
     userSettingsApi: {
         get: () => getSettings(),
-        put: (body: unknown) => putSettings(body)
+        put: (body: unknown) => putSettings(body),
+        patch: (body: unknown) => patchSettings(body)
     }
 }));
 
@@ -29,6 +32,7 @@ describe('useUserSettingsStore draft', () => {
         createTestPinia();
         getSettings.mockReset();
         putSettings.mockReset();
+        patchSettings.mockReset();
     });
 
     it('hydrate un brouillon unique et détecte le dirty', async () => {
@@ -49,8 +53,24 @@ describe('useUserSettingsStore draft', () => {
         expect(store.isDirty).toBe(false);
     });
 
-    it('saveDraft envoie le brouillon et ré-hydrate', async () => {
+    it('saveDraft envoie un PATCH partiel et ré-hydrate', async () => {
         getSettings.mockResolvedValue({ ...USER_SETTINGS_DEFAULTS, locale: 'en-US' });
+        patchSettings.mockResolvedValue({ ...USER_SETTINGS_DEFAULTS, locale: 'fr-CH' });
+        const store = useUserSettingsStore();
+
+        await store.ensureLoaded();
+        store.draft.locale = 'fr-CH';
+        await store.saveDraft();
+
+        expect(patchSettings).toHaveBeenCalledWith({ locale: 'fr-CH' });
+        expect(putSettings).not.toHaveBeenCalled();
+        expect(store.isDirty).toBe(false);
+        expect(store.draft.locale).toBe('fr-CH');
+    });
+
+    it('saveDraft fallback PUT si PATCH non supporté (405)', async () => {
+        getSettings.mockResolvedValue({ ...USER_SETTINGS_DEFAULTS, locale: 'en-US' });
+        patchSettings.mockRejectedValue(new AppError('Method Not Allowed', 405));
         putSettings.mockResolvedValue({ ...USER_SETTINGS_DEFAULTS, locale: 'fr-CH' });
         const store = useUserSettingsStore();
 
@@ -58,14 +78,18 @@ describe('useUserSettingsStore draft', () => {
         store.draft.locale = 'fr-CH';
         await store.saveDraft();
 
+        expect(patchSettings).toHaveBeenCalledWith({ locale: 'fr-CH' });
         expect(putSettings).toHaveBeenCalledWith(expect.objectContaining({ locale: 'fr-CH' }));
-        expect(store.isDirty).toBe(false);
         expect(store.draft.locale).toBe('fr-CH');
     });
 
-    it('saveDraft clamp les champs sécurité hors bornes API', async () => {
+    it('saveDraft clamp les champs sécurité hors bornes API dans le PATCH', async () => {
         getSettings.mockResolvedValue({ ...USER_SETTINGS_DEFAULTS });
-        putSettings.mockResolvedValue({ ...USER_SETTINGS_DEFAULTS, idleLogoutMinutes: 5, trustedDeviceDurationDays: 365 });
+        patchSettings.mockResolvedValue({
+            ...USER_SETTINGS_DEFAULTS,
+            idleLogoutMinutes: 5,
+            trustedDeviceDurationDays: 365
+        });
         const store = useUserSettingsStore();
 
         await store.ensureLoaded();
@@ -73,6 +97,9 @@ describe('useUserSettingsStore draft', () => {
         store.draft.trustedDeviceDurationDays = 999;
         await store.saveDraft();
 
-        expect(putSettings).toHaveBeenCalledWith(expect.objectContaining({ idleLogoutMinutes: 5, trustedDeviceDurationDays: 365 }));
+        expect(patchSettings).toHaveBeenCalledWith({
+            idleLogoutMinutes: 5,
+            trustedDeviceDurationDays: 365
+        });
     });
 });

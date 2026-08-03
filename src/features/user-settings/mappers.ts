@@ -6,7 +6,8 @@ import {
     IDLE_LOGOUT_MINUTES_MIN,
     TRUSTED_DEVICE_DAYS_MAX,
     TRUSTED_DEVICE_DAYS_MIN,
-    type UserSettings
+    type UserSettings,
+    type UserSettingsPatch
 } from './types';
 
 function clampInt(value: number, min: number, max: number): number {
@@ -60,4 +61,23 @@ export function cloneSettings(settings: UserSettings): UserSettings {
 export function settingsEqual(a: UserSettings, b: UserSettings): boolean {
     const keys = Object.keys(a) as (keyof UserSettings)[];
     return keys.every((key) => a[key] === b[key]);
+}
+
+/**
+ * Diff draft vs baseline pour PATCH : seules les clés dont la valeur a changé.
+ * Inclut les passages à `null` (ex. `idleLogoutMinutes` désactivé).
+ */
+export function diffSettings(current: UserSettings, baseline: UserSettings): UserSettingsPatch {
+    const patch: UserSettingsPatch = {};
+    const keys = Object.keys(current) as (keyof UserSettings)[];
+    for (const key of keys) {
+        if (current[key] !== baseline[key]) {
+            (patch as Record<string, unknown>)[key] = current[key];
+        }
+    }
+    return patch;
+}
+
+export function isEmptySettingsPatch(patch: UserSettingsPatch): boolean {
+    return Object.keys(patch).length === 0;
 }
