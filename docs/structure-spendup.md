@@ -222,7 +222,7 @@ features/transactions/
 | Route                | View                   | Feature         | Onglets                                      |
 | -------------------- | ---------------------- | --------------- | -------------------------------------------- |
 | `/app/comptes`       | `AppAccountsPage`      | `user-settings` | Profil, Préférences, Notifications, Sécurité |
-| `/app/notifications` | `AppNotificationsPage` | `notifications` | Inbox (header titre, sans tabs)              |
+| `/app/notifications` | `AppNotificationsPage` | `notifications` | Inbox — App Page Shell                       |
 
 (`/app/applications` redirige vers `/app/comptes` — feature `applications` supprimée.)
 
@@ -285,7 +285,7 @@ scss/
 | `/auth/maintenance`          | `Maintenance`                                            | BlankLayout                                        |
 | `/app`                       | `dashboard/AppDashboardView`                             | `features/dashboard` — FullLayout (`requiresAuth`) |
 | `/app/comptes`               | `parametres/accounts/AppAccountsPage`                    | `features/user-settings` — App Tabs Shell          |
-| `/app/notifications`         | `notifications/AppNotificationsPage`                     | `features/notifications` — card header + inbox     |
+| `/app/notifications`         | `notifications/AppNotificationsPage`                     | `features/notifications` — App Page Shell          |
 | `/app/applications`          | redirect → `/app/comptes`                                | legacy                                             |
 | `/:pathMatch(.*)*`           | `Error`                                                  | Catch-all 404 (`router/index.ts`)                  |
 

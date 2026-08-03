@@ -87,7 +87,8 @@ Principe : en cas de doute, poser la question, proposer des options, attendre le
 - **Guards** (transverse) → `app/guards/auth-guard.ts` (consomme `useAuthStore` depuis `@/features/auth`).
 - **Alertes** → toujours `AppAlert` (`components/shared/AppAlert.vue`), **jamais** `v-alert` brut. Doc : `docs/components/alert/alert-component.md`. Preview : `/components` (dev only).
 - **Modales métier** → toujours `AppModalBase`. Doc : `docs/components/modal/modalbase-component.md`.
-- **Pages paramètres** (Comptes, Applications) → **App Tabs Shell** — doc : `docs/structure/page.md`.
+- **Pages paramètres** (Comptes) → **App Tabs Shell** — doc : `docs/structure/page.md`.
+- **Pages /app sans onglets** (ex. Notifications) → **App Page Shell** — même doc.
 
 ### Composants shared
 
@@ -292,7 +293,7 @@ Chaque feature expose ses exports publics via `features/<domaine>/index.ts`.
     ├── types.ts          # (ou types/) types propres au domaine
     └── index.ts          # exports publics
     ```
-3. Créer `views/app/<header>/<page>/App<Name>Page.vue` — page fine (souvent App Tabs Shell).
+3. Créer `views/app/<page>/App<Name>Page.vue` — page fine (`AppTabsShell` ou `AppPageShell`).
 4. Enregistrer la route dans `router/AppRoutes.ts` et le menu dans `sidebarItem.ts`.
 5. Placer les styles éventuels dans `src/scss/` au chemin miroir.
 6. Ajouter des tests unitaires ciblés (`__tests__/*.test.ts`) pour la logique critique.

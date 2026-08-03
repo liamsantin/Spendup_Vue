@@ -1,12 +1,14 @@
-# Structure de page — App Tabs Shell
+# Structure de page — App Tabs Shell & App Page Shell
 
-> Nom du modèle : **App Tabs Shell**  
+> Noms des modèles : **App Tabs Shell** / **App Page Shell**  
 > Références :
 >
-> - `src/components/shared/AppTabsShell.vue` (shell réutilisable)
+> - `src/components/shared/AppTabsShell.vue` (shell multi-onglets)
+> - `src/components/shared/AppPageShell.vue` (shell titre + contenu, sans onglets)
 > - `src/views/app/parametres/accounts/AppAccountsPage.vue` (multi-onglets — référence)
+> - `src/views/app/notifications/AppNotificationsPage.vue` (page shell — référence)
 >
-> À utiliser pour toute nouvelle view `/app` qui combine **onglets fixes**, **contenu scrollable** et **barre d’actions fixe**.
+> À utiliser pour toute nouvelle view `/app` qui combine **header fixe**, **contenu scrollable** et éventuellement **barre d’actions fixe**.
 
 ---
 
@@ -165,15 +167,35 @@ Le layout parent (`page-wrapper` / `page-content`) doit déjà être en flex col
 
 ---
 
-## Variante Action Shell (sans onglets)
+## Variante App Page Shell (sans onglets)
 
-Si la page n’a **vraiment** pas d’onglets (hors paramètres multi-sections), conserver le même shell :
+Composant : `src/components/shared/AppPageShell.vue`  
+Référence : `src/views/app/notifications/AppNotificationsPage.vue`
 
-- Header fixe (titre / sous-titre en `v-card-item` à la place de `v-tabs`)
-- Body `perfect-scrollbar`
-- Footer optionnel (seulement s’il y a des actions globales)
+Même card pleine hauteur que `AppTabsShell`, mais le header est un **titre** (icône + titre + sous-titre) à la place de `v-tabs` :
 
-Pour **Paramètres → Applications**, préférer quand même un `v-tab` unique (aligné Comptes).
+| Zone       | Rôle                                              | Comportement                                |
+| ---------- | ------------------------------------------------- | ------------------------------------------- |
+| **Header** | Icône, titre, sous-titre + slot `#actions`        | Fixe — fond `grey100`                       |
+| **Body**   | Contenu (slot défaut)                             | Seule zone scrollable (`perfect-scrollbar`) |
+| **Footer** | Optionnel — Enregistrer / Annuler (`hideActions`) | Masqué par défaut                           |
+
+```
+┌─────────────────────────────────────┐
+│  [icon] Titre          [actions…]   │
+│         Sous-titre                  │
+├─────────────────────────────────────┤
+│                                     │
+│  Contenu (scroll only)              │
+│  ← perfect-scrollbar                │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+Props principales : `title`, `subtitle?`, `icon?`, `hideActions` (défaut `true`).  
+Slot `#actions` : boutons / chips à droite du header (ex. « Tout lu »).
+
+Pour **Paramètres → multi-sections**, préférer `AppTabsShell` (éventuellement un seul onglet).
 
 ---
 
@@ -181,7 +203,10 @@ Pour **Paramètres → Applications**, préférer quand même un `v-tab` unique 
 
 | Fichier                                                 | Rôle                                                     |
 | ------------------------------------------------------- | -------------------------------------------------------- |
+| `src/components/shared/AppTabsShell.vue`                | Shell réutilisable multi-onglets                         |
+| `src/components/shared/AppPageShell.vue`                | Shell réutilisable titre + body                          |
 | `src/views/app/parametres/accounts/AppAccountsPage.vue` | Modèle canonique multi-onglets                           |
+| `src/views/app/notifications/AppNotificationsPage.vue`  | Modèle canonique App Page Shell                          |
 | `src/features/user-settings/components/*Tab.vue`        | Contenu onglets Profil / Préférences / Notifs / Sécurité |
 | `src/layouts/full/vertical-sidebar/sidebarItem.ts`      | Headers → dossiers views                                 |
 | `src/scss/layout/_container.scss`                       | `page-wrapper` / `page-content` flex hauteur             |
