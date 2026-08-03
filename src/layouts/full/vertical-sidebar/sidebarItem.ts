@@ -28,7 +28,9 @@ const sidebarItem: menu[] = [
     {
         title: 'nav.items.notifications',
         icon: BellIcon,
-        to: '/app/notifications'
+        to: '/app/notifications',
+        chipColor: 'surface',
+        chipBgColor: 'primary'
     },
     { header: 'nav.headers.finances' },
     {

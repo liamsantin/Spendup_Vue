@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue';
+import { computed } from 'vue';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { useNotificationsStore } from '@/features/notifications';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
-import sidebarItems from './sidebarItem';
+import sidebarItems, { type menu } from './sidebarItem';
 
 import NavGroup from './NavGroup/index.vue';
 import NavItem from './NavItem/index.vue';
@@ -11,7 +12,23 @@ import Profile from './profile/Profile.vue';
 import Logo from '../logo/Logo.vue';
 
 const appSettings = useAppSettingsStore();
-const sidebarMenu = shallowRef(sidebarItems);
+const notifications = useNotificationsStore();
+
+const sidebarMenu = computed<menu[]>(() =>
+    sidebarItems.map((item) => {
+        if (item.to !== '/app/notifications') return item;
+        const count = notifications.unreadCount;
+        if (count <= 0) {
+            return { ...item, chip: undefined };
+        }
+        return {
+            ...item,
+            chip: String(count),
+            chipColor: item.chipColor ?? 'surface',
+            chipBgColor: item.chipBgColor ?? 'primary'
+        };
+    })
+);
 </script>
 
 <template>

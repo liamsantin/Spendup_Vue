@@ -29,7 +29,9 @@ const horizontalItems: menu[] = [
     {
         title: 'nav.items.notifications',
         icon: BellIcon,
-        to: '/app/notifications'
+        to: '/app/notifications',
+        chipColor: 'surface',
+        chipVariant: 'flat'
     },
     {
         title: 'nav.items.preferences',

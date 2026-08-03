@@ -1,21 +1,32 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue';
+import { computed } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
-import HorizontalItems from './horizontalItems';
+import { useNotificationsStore } from '@/features/notifications';
+import HorizontalItems, { type menu } from './horizontalItems';
 import NavItem from './NavItem/Index.vue';
 import NavCollapse from './NavCollapse/Index.vue';
 import VerticalSidebar from '../vertical-sidebar/VerticalSidebar.vue';
 
 const appSettings = useAppSettingsStore();
-const sidebarMenu = shallowRef(HorizontalItems);
+const notifications = useNotificationsStore();
 const { mdAndUp } = useDisplay();
-// function subIsActive(input: any) {
-//     const paths = Array.isArray(input) ? input : [input];
-//     return paths.some((path) => {
-//         return; //$route.path.indexOf(path) === 0; // current path starts with this path string
-//     });
-// }
+
+const sidebarMenu = computed<menu[]>(() =>
+    HorizontalItems.map((item) => {
+        if (item.to !== '/app/notifications') return item;
+        const count = notifications.unreadCount;
+        if (count <= 0) {
+            return { ...item, chip: undefined };
+        }
+        return {
+            ...item,
+            chip: String(count),
+            chipColor: item.chipColor ?? 'primary',
+            chipVariant: item.chipVariant ?? 'flat'
+        };
+    })
+);
 </script>
 
 <template>
