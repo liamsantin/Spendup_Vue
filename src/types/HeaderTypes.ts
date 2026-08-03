@@ -1,9 +1,3 @@
-type notificationType = {
-    avatar: string;
-    titleKey: string;
-    subtitleKey: string;
-};
-
 type profileType = {
     avatar: string;
     titleKey: string;
@@ -16,4 +10,4 @@ type searchType = {
     href: string;
 };
 
-export type { notificationType, profileType, searchType };
+export type { profileType, searchType };

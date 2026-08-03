@@ -17,6 +17,7 @@
         "prepare": "husky"
     },
     "dependencies": {
+        "@microsoft/signalr": "^10.0.0",
         "axios": "^1.19.0",
         "pinia": "^3.0.4",
         "qrcode": "^1.5.4",

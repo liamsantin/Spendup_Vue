@@ -1,28 +1,6 @@
-import type { notificationType, profileType, searchType } from '@/types/HeaderTypes';
-
-import user1 from '@/assets/images/profile/avatar/user-1.jpg';
-import user2 from '@/assets/images/profile/avatar/user-2.jpg';
-import user3 from '@/assets/images/profile/avatar/user-3.jpg';
+import type { profileType, searchType } from '@/types/HeaderTypes';
 
 import proUser1 from '@/assets/images/svgs/icon-account.svg';
-
-const notifications: notificationType[] = [
-    {
-        avatar: user1,
-        titleKey: 'header.notifications.items.welcome.title',
-        subtitleKey: 'header.notifications.items.welcome.subtitle'
-    },
-    {
-        avatar: user2,
-        titleKey: 'header.notifications.items.tip.title',
-        subtitleKey: 'header.notifications.items.tip.subtitle'
-    },
-    {
-        avatar: user3,
-        titleKey: 'header.notifications.items.reminder.title',
-        subtitleKey: 'header.notifications.items.reminder.subtitle'
-    }
-];
 
 const profileDD: profileType[] = [
     {
@@ -56,4 +34,4 @@ const searchSugg: searchType[] = [
     }
 ];
 
-export { notifications, profileDD, searchSugg };
+export { profileDD, searchSugg };

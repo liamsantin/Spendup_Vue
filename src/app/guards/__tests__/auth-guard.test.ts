@@ -14,6 +14,20 @@ vi.mock('@/utils/helpers/axios-helpers', async () => {
     };
 });
 
+vi.mock('@/features/notifications', () => ({
+    useNotificationsStore: () => ({
+        onAuthenticatedSession: vi.fn().mockResolvedValue(undefined),
+        reset: vi.fn()
+    })
+}));
+
+vi.mock('@/features/user-settings', () => ({
+    useUserSettingsStore: () => ({
+        ensureLoaded: vi.fn().mockResolvedValue(undefined),
+        reset: vi.fn()
+    })
+}));
+
 import { authGuard } from '@/app/guards/auth-guard';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 

@@ -65,6 +65,7 @@ src/
 ├── features/               # Logique métier par domaine fonctionnel
 │   ├── auth/
 │   ├── countries/
+│   ├── notifications/      # Inbox REST + hub SignalR (badge header)
 │   ├── user-settings/      # Profil / Préférences / Notifications / Sécurité
 │   ├── dashboard/
 │   └── …                   # transactions, budgets… (à créer avec du code réel)

@@ -44,6 +44,9 @@
             "title": "Notifications",
             "newCount": "{count} nouvelles",
             "viewAll": "Toutes les notifications",
+            "markAllRead": "Tout marquer comme lu",
+            "empty": "Aucune notification",
+            "loading": "Chargement…",
             "items": {
                 "welcome": {
                     "title": "Bienvenue sur Spend.Up",

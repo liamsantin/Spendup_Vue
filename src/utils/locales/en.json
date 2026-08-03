@@ -44,6 +44,9 @@
             "title": "Notifications",
             "newCount": "{count} new",
             "viewAll": "All notifications",
+            "markAllRead": "Mark all as read",
+            "empty": "No notifications",
+            "loading": "Loading…",
             "items": {
                 "welcome": {
                     "title": "Welcome to Spend.Up",

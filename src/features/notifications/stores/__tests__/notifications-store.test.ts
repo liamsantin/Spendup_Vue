@@ -1,0 +1,129 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createTestPinia } from '@/test/pinia';
+import { USER_SETTINGS_DEFAULTS } from '@/features/user-settings';
+
+const { unreadCount, list, markRead, markAllRead, startHub, stopHub, setHandlers } = vi.hoisted(() => ({
+    unreadCount: vi.fn(),
+    list: vi.fn(),
+    markRead: vi.fn(),
+    markAllRead: vi.fn(),
+    startHub: vi.fn(),
+    stopHub: vi.fn(),
+    setHandlers: vi.fn()
+}));
+
+vi.mock('../../api', () => ({
+    notificationsApi: {
+        unreadCount: () => unreadCount(),
+        list: (...args: unknown[]) => list(...args),
+        markRead: (id: number) => markRead(id),
+        markAllRead: () => markAllRead()
+    }
+}));
+
+vi.mock('../../hub', () => ({
+    startNotificationsHub: () => startHub(),
+    stopNotificationsHub: () => stopHub(),
+    setNotificationsHubHandlers: (h: unknown) => setHandlers(h),
+    getNotificationsHubState: () => null
+}));
+
+vi.mock('@/features/user-settings', async () => {
+    const actual = await vi.importActual<typeof import('@/features/user-settings')>('@/features/user-settings');
+    return {
+        ...actual,
+        useUserSettingsStore: () => ({
+            current: { ...USER_SETTINGS_DEFAULTS, pushNotifications: true, pushSecurityAlerts: true }
+        })
+    };
+});
+
+import { useNotificationsStore } from '../notifications-store';
+
+describe('useNotificationsStore', () => {
+    beforeEach(() => {
+        createTestPinia();
+        unreadCount.mockReset();
+        list.mockReset();
+        markRead.mockReset();
+        markAllRead.mockReset();
+        startHub.mockReset().mockResolvedValue(undefined);
+        stopHub.mockReset().mockResolvedValue(undefined);
+        setHandlers.mockReset();
+    });
+
+    it('hydrate le badge via unread-count puis démarre le hub', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 3 });
+        const store = useNotificationsStore();
+
+        await store.onAuthenticatedSession();
+
+        expect(store.unreadCount).toBe(3);
+        expect(startHub).toHaveBeenCalled();
+        expect(setHandlers).toHaveBeenCalled();
+    });
+
+    it('charge l’inbox à l’ouverture', async () => {
+        list.mockResolvedValue({
+            items: [
+                {
+                    id: 1,
+                    type: 'securityAlert',
+                    title: 'MDP changé',
+                    subtitle: null,
+                    message: null,
+                    isRead: false,
+                    readAt: null,
+                    link: '/security',
+                    photoUrl: null,
+                    createdAt: '2026-01-01T00:00:00Z'
+                }
+            ],
+            unreadCount: 1,
+            page: 1,
+            pageSize: 20,
+            totalCount: 1
+        });
+        const store = useNotificationsStore();
+
+        await store.openInbox();
+
+        expect(store.items).toHaveLength(1);
+        expect(store.unreadCount).toBe(1);
+        expect(store.inboxLoaded).toBe(true);
+    });
+
+    it('markAllRead met à jour le badge et les items', async () => {
+        const store = useNotificationsStore();
+        store.items = [
+            {
+                id: 1,
+                type: 'other',
+                title: 'A',
+                subtitle: null,
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: null,
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            }
+        ];
+        store.unreadCount = 1;
+        markAllRead.mockResolvedValue({ markedCount: 1, unreadCount: 0 });
+
+        await store.markAllRead();
+
+        expect(store.unreadCount).toBe(0);
+        expect(store.items[0]?.isRead).toBe(true);
+    });
+
+    it('reset coupe le hub et vide l’état', async () => {
+        const store = useNotificationsStore();
+        store.unreadCount = 2;
+        store.items = [];
+        store.reset();
+        expect(store.unreadCount).toBe(0);
+        expect(stopHub).toHaveBeenCalled();
+    });
+});

@@ -1,17 +1,67 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 import { BellRingingIcon } from 'vue-tabler-icons';
-import { notifications } from '@/data/admin/headerData';
+import { resolveNotificationLink, useNotificationsStore } from '@/features/notifications';
+import type { AppNotification } from '@/features/notifications';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const router = useRouter();
+const notifications = useNotificationsStore();
+
+const unreadLabel = computed(() => t('header.notifications.newCount', { count: notifications.unreadCount }));
+
+function formatCreatedAt(iso: string): string {
+    try {
+        return new Intl.DateTimeFormat(locale.value || undefined, {
+            dateStyle: 'short',
+            timeStyle: 'short'
+        }).format(new Date(iso));
+    } catch {
+        return iso;
+    }
+}
+
+async function onMenuUpdate(open: boolean) {
+    if (open) {
+        try {
+            await notifications.openInbox();
+        } catch {
+            // erreur affichée via store.error
+        }
+    }
+}
+
+async function onItemClick(item: AppNotification) {
+    if (!item.isRead) {
+        try {
+            await notifications.markRead(item.id);
+        } catch {
+            // navigation quand même si link
+        }
+    }
+    const target = resolveNotificationLink(item.link);
+    if (target) {
+        await router.push(target);
+    }
+}
+
+async function onMarkAllRead() {
+    try {
+        await notifications.markAllRead();
+    } catch {
+        // store.error
+    }
+}
 </script>
 
 <template>
-    <v-menu :close-on-content-click="false">
+    <v-menu :close-on-content-click="false" @update:model-value="onMenuUpdate">
         <template #activator="{ props }">
             <v-btn icon variant="text" color="primary" class="custom-hover-primary" v-bind="props">
-                <v-badge :content="notifications.length" color="primary">
+                <v-badge :content="notifications.badgeContent" :model-value="notifications.hasUnread" color="primary">
                     <BellRingingIcon stroke-width="1.5" size="22" />
                 </v-badge>
             </v-btn>
@@ -20,28 +70,59 @@ const { t } = useI18n();
             <div class="px-8 pb-4 pt-6">
                 <div class="d-flex align-center justify-space-between">
                     <h6 class="text-h5">{{ t('header.notifications.title') }}</h6>
-                    <v-chip color="primary" variant="flat" size="small" class="text-white">
-                        {{ t('header.notifications.newCount', { count: notifications.length }) }}
+                    <v-chip v-if="notifications.hasUnread" color="primary" variant="flat" size="small" class="text-white">
+                        {{ unreadLabel }}
                     </v-chip>
                 </div>
             </div>
-            <perfect-scrollbar style="height: 280px" :options="PERFECT_SCROLLBAR_OPTIONS">
+
+            <div v-if="notifications.loading" class="px-8 py-6 text-center text-medium-emphasis">
+                {{ t('header.notifications.loading') }}
+            </div>
+            <div v-else-if="notifications.error" class="px-8 py-4 text-error text-body-2">
+                {{ notifications.error }}
+            </div>
+            <div v-else-if="!notifications.items.length" class="px-8 py-6 text-center text-medium-emphasis">
+                {{ t('header.notifications.empty') }}
+            </div>
+            <perfect-scrollbar v-else style="height: 280px" :options="PERFECT_SCROLLBAR_OPTIONS">
                 <v-list class="py-0 theme-list" lines="two">
-                    <v-list-item v-for="item in notifications" :key="item.titleKey" :value="item" color="primary" class="py-4 px-8">
+                    <v-list-item
+                        v-for="item in notifications.items"
+                        :key="item.id"
+                        :value="item.id"
+                        color="primary"
+                        class="py-4 px-8"
+                        :class="{ 'bg-lightprimary': !item.isRead }"
+                        @click="onItemClick(item)"
+                    >
                         <template #prepend>
-                            <v-avatar size="48" class="mr-3">
-                                <v-img :src="item.avatar" width="48" :alt="t(item.titleKey)" />
+                            <v-avatar size="48" class="mr-3" color="lightprimary">
+                                <v-img v-if="item.photoUrl" :src="item.photoUrl" width="48" :alt="item.title" />
+                                <span v-else class="text-h6 text-primary">{{ item.title.charAt(0) }}</span>
                             </v-avatar>
                         </template>
                         <div>
-                            <h6 class="text-subtitle-1 font-weight-bold mb-1">{{ t(item.titleKey) }}</h6>
+                            <h6 class="text-subtitle-1 font-weight-bold mb-1">{{ item.title }}</h6>
                         </div>
-                        <p class="text-subtitle-1 font-weight-regular textSecondary">{{ t(item.subtitleKey) }}</p>
+                        <p class="text-subtitle-1 font-weight-regular textSecondary mb-0">
+                            {{ item.subtitle || item.message || formatCreatedAt(item.createdAt) }}
+                        </p>
                     </v-list-item>
                 </v-list>
             </perfect-scrollbar>
+
             <div class="py-4 px-6 text-center">
-                <v-btn color="primary" variant="outlined" block>{{ t('header.notifications.viewAll') }}</v-btn>
+                <v-btn
+                    color="primary"
+                    variant="outlined"
+                    block
+                    :loading="notifications.markingAll"
+                    :disabled="!notifications.hasUnread || notifications.markingAll"
+                    @click="onMarkAllRead"
+                >
+                    {{ t('header.notifications.markAllRead') }}
+                </v-btn>
             </div>
         </v-sheet>
     </v-menu>

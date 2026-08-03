@@ -90,6 +90,9 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
         loaded.value = true;
         applyUserSettingsToRuntime(settings.value);
         hydrateDraft(settings.value);
+        void import('@/features/notifications/stores/notifications-store').then(({ useNotificationsStore }) => {
+            void useNotificationsStore().syncRealtimePreference();
+        });
         return settings.value;
     }
 
