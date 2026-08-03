@@ -2,10 +2,10 @@
  * Routes authentifiées — préfixe /app, layout FullLayout (sidebar + header).
  * Guard via meta.requiresAuth (session JWT / refresh).
  *
- * Les vues suivent les headers sidebarItem :
- *   Spend.Up   → views/app/spendup/
- *   Finances   → views/app/finances/
- *   Paramètres → views/app/parametres/
+ * Les vues :
+ *   dashboard / notifications → views/app/<page>/
+ *   Paramètres               → views/app/parametres/
+ *   Finances (à venir)       → views/app/finances/
  */
 const AppRoutes = {
     path: '/app',
@@ -18,7 +18,7 @@ const AppRoutes = {
         {
             name: 'AppDashboard',
             path: '',
-            component: () => import('@/views/app/spendup/dashboard/AppDashboardView.vue')
+            component: () => import('@/views/app/dashboard/AppDashboardView.vue')
         },
         {
             name: 'AppAccounts',
@@ -28,7 +28,7 @@ const AppRoutes = {
         {
             name: 'AppNotifications',
             path: 'notifications',
-            component: () => import('@/views/app/spendup/notifications/AppNotificationsPage.vue')
+            component: () => import('@/views/app/notifications/AppNotificationsPage.vue')
         },
         {
             path: 'applications',

@@ -39,20 +39,23 @@ Même avec **un seul onglet** (ex. Applications → Thème), conserver `v-tabs` 
 
 ## Emplacement des fichiers
 
-Les views suivent les **headers** de `sidebarItem.ts` :
+Les views `/app` :
 
 ```
 src/views/app/
-└── <header-slug>/              # ex. parametres, spendup, finances
+├── dashboard/
+├── notifications/
+└── parametres/
     └── <page-slug>/            # ex. accounts
         └── App<Name>Page.vue   # ex. AppAccountsPage.vue
 ```
 
-| Header sidebar | Dossier parent |
-| -------------- | -------------- |
-| Spend.Up       | `spendup/`     |
-| Finances       | `finances/`    |
-| Paramètres     | `parametres/`  |
+| Zone          | Dossier parent        |
+| ------------- | --------------------- |
+| Dashboard     | `dashboard/`          |
+| Notifications | `notifications/`      |
+| Paramètres    | `parametres/`         |
+| Finances      | `finances/` (à venir) |
 
 **Exemple Préférences (`/app/comptes`) :**
 

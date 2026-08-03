@@ -71,9 +71,8 @@ src/
 │   └── …                   # transactions, budgets… (à créer avec du code réel)
 ├── views/
 │   ├── app/                # Pages fines zone /app — liées au routing
-│   │   ├── spendup/
-│   │   │   ├── dashboard/
-│   │   │   └── notifications/  # Inbox notifications (App Tabs Shell)
+│   │   ├── dashboard/
+│   │   ├── notifications/  # Inbox notifications (App Tabs Shell)
 │   │   └── parametres/
 │   │       └── accounts/       # App Tabs Shell — Mon compte
 │   ├── front-pages/        # Pages publiques (coquilles de route)
@@ -223,7 +222,7 @@ features/transactions/
 | Route                | View                   | Feature         | Onglets                                      |
 | -------------------- | ---------------------- | --------------- | -------------------------------------------- |
 | `/app/comptes`       | `AppAccountsPage`      | `user-settings` | Profil, Préférences, Notifications, Sécurité |
-| `/app/notifications` | `AppNotificationsPage` | `notifications` | Boîte de réception                           |
+| `/app/notifications` | `AppNotificationsPage` | `notifications` | Inbox (header titre, sans tabs)              |
 
 (`/app/applications` redirige vers `/app/comptes` — feature `applications` supprimée.)
 
@@ -284,9 +283,9 @@ scss/
 | `/auth/confirm-email-change` | `SideConfirmEmailChange` + `ConfirmEmailChangeForm`      | BlankLayout                                        |
 | `/auth/404`                  | `Error`                                                  | BlankLayout                                        |
 | `/auth/maintenance`          | `Maintenance`                                            | BlankLayout                                        |
-| `/app`                       | `spendup/dashboard/AppDashboardView`                     | `features/dashboard` — FullLayout (`requiresAuth`) |
+| `/app`                       | `dashboard/AppDashboardView`                             | `features/dashboard` — FullLayout (`requiresAuth`) |
 | `/app/comptes`               | `parametres/accounts/AppAccountsPage`                    | `features/user-settings` — App Tabs Shell          |
-| `/app/notifications`         | `spendup/notifications/AppNotificationsPage`             | `features/notifications` — App Tabs Shell          |
+| `/app/notifications`         | `notifications/AppNotificationsPage`                     | `features/notifications` — card header + inbox     |
 | `/app/applications`          | redirect → `/app/comptes`                                | legacy                                             |
 | `/:pathMatch(.*)*`           | `Error`                                                  | Catch-all 404 (`router/index.ts`)                  |
 
@@ -523,14 +522,13 @@ layouts/
     └── customizer/
 
 views/app/                    # Pages fines — une par entrée menu
-├── spendup/
-│   └── dashboard/
-│       └── AppDashboardView.vue
+├── dashboard/
+│   └── AppDashboardView.vue
+├── notifications/
+│   └── AppNotificationsPage.vue
 └── parametres/
-    ├── accounts/
-    │   └── AppAccountsPage.vue       # → features/user-settings (*Tab)
-    └── applications/
-        └── AppApplicationsPage.vue   # → features/applications (ThemeTab)
+    └── accounts/
+        └── AppAccountsPage.vue       # → features/user-settings (*Tab)
 
 views/dev/                    # Showcase composants (dev only)
 └── ComponentsShowcasePage.vue

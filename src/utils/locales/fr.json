@@ -45,7 +45,7 @@
             "title": "Notifications",
             "newCount": "{count} nouvelles",
             "viewAll": "Toutes les notifications",
-            "markAllRead": "Tout marquer comme lu",
+            "markAllRead": "Tout lu",
             "empty": "Aucune notification",
             "loading": "Chargement…",
             "items": {
