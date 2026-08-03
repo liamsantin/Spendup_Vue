@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, ArrowsExchangeIcon, BellIcon, UserCircleIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, BellIcon, UserCircleIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -15,6 +15,8 @@ export interface menu {
     disabled?: boolean;
     type?: string;
     subCaption?: string;
+    /** Active router-link uniquement sur le path exact (ex. `/app`). */
+    exact?: boolean;
 }
 
 /** Menu sidebar zone authentifiée (/app). Les title/header sont des clés i18n. */
@@ -23,7 +25,8 @@ const sidebarItem: menu[] = [
     {
         title: 'nav.items.dashboard',
         icon: LayoutDashboardIcon,
-        to: '/app'
+        to: '/app',
+        exact: true
     },
     {
         title: 'nav.items.notifications',
@@ -31,14 +34,6 @@ const sidebarItem: menu[] = [
         to: '/app/notifications',
         chipColor: 'surface',
         chipBgColor: 'primary'
-    },
-    { header: 'nav.headers.finances' },
-    {
-        title: 'nav.items.transactions',
-        icon: ArrowsExchangeIcon,
-        to: '/app',
-        disabled: true,
-        subCaption: 'nav.subCaptions.soon'
     },
     { header: 'nav.headers.settings' },
     {

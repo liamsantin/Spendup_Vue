@@ -11,6 +11,7 @@ defineProps({ item: Object, level: Number });
     <v-list-item
         :to="item.type === 'external' ? '' : item.to"
         :href="item.type === 'external' ? item.to : ''"
+        :exact="item.exact === true"
         rounded
         class="mb-1"
         :disabled="item.disabled"

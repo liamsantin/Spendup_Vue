@@ -17,6 +17,7 @@ export interface menu {
     class?: string;
     extraclass?: string;
     type?: string;
+    exact?: boolean;
 }
 
 /** Menu horizontal /app — title = clés i18n. */
@@ -24,7 +25,8 @@ const horizontalItems: menu[] = [
     {
         title: 'nav.items.dashboard',
         icon: LayoutDashboardIcon,
-        to: '/app'
+        to: '/app',
+        exact: true
     },
     {
         title: 'nav.items.notifications',
