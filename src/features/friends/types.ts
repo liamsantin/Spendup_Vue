@@ -6,8 +6,8 @@ export type FriendUser = {
     firstName: string | null;
     name: string | null;
     /**
-     * Catalogue (`/avatar/…`), chemin relatif servi par l’API (`/uploads/…`),
-     * URL absolue, hash upload (64 hex), ou `null`.
+     * Catalogue (`/avatar/…`), chemin relatif (`/uploads/…`),
+     * URL absolue, hash upload (64 hex → `GET /api/users/{publicId}/avatar`), ou `null`.
      */
     profilePicture: string | null;
 };

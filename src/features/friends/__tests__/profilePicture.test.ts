@@ -5,7 +5,7 @@ vi.mock('@/utils/helpers/axios-helpers', () => ({
     getApiBaseUrl: () => 'https://api.example.test'
 }));
 
-import { resolveFriendAvatarSrc } from '../profilePicture';
+import { extractPublicIdFromUserAvatarPath, needsUserAvatarFetch, resolveFriendAvatarSrc } from '../profilePicture';
 
 describe('resolveFriendAvatarSrc', () => {
     beforeEach(() => {
@@ -29,8 +29,14 @@ describe('resolveFriendAvatarSrc', () => {
         expect(resolveFriendAvatarSrc('https://cdn.example/photo.jpg')).toBe('https://cdn.example/photo.jpg');
     });
 
-    it('retombe sur le défaut pour un hash upload', () => {
+    it('signale un fetch auth pour un hash upload', () => {
         const hash = 'a'.repeat(64);
-        expect(resolveFriendAvatarSrc(hash)).toBe(DEFAULT_AVATAR_SRC);
+        expect(needsUserAvatarFetch(hash)).toBe(true);
+        expect(resolveFriendAvatarSrc(hash)).toBeNull();
+    });
+
+    it('signale un fetch auth pour /api/users/{id}/avatar', () => {
+        expect(extractPublicIdFromUserAvatarPath('/api/users/USR12345/avatar')).toBe('USR12345');
+        expect(resolveFriendAvatarSrc('/api/users/USR12345/avatar')).toBeNull();
     });
 });

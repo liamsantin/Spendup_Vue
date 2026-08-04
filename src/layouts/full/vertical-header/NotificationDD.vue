@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { BellRingingIcon } from 'vue-tabler-icons';
+import { UserPhotoAvatar } from '@/features/friends';
 import { resolveNotificationLink, useNotificationsStore } from '@/features/notifications';
 import type { AppNotification } from '@/features/notifications';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
@@ -89,10 +90,7 @@ async function onItemClick(item: AppNotification) {
                         @click="onItemClick(item)"
                     >
                         <template #prepend>
-                            <v-avatar size="48" class="mr-3" color="lightprimary">
-                                <v-img v-if="item.photoUrl" :src="item.photoUrl" width="48" :alt="item.title" />
-                                <span v-else class="text-h6 text-primary">{{ item.title.charAt(0) }}</span>
-                            </v-avatar>
+                            <UserPhotoAvatar class="mr-3" :photo-url="item.photoUrl" :fallback-label="item.title" :size="48" />
                         </template>
                         <div>
                             <h6 class="text-subtitle-1 font-weight-bold mb-1">{{ item.title }}</h6>

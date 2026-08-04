@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { resolveFriendAvatarSrc } from '../profilePicture';
+import { useFriendAvatarUrl } from '../composables/useFriendAvatarUrl';
 import type { FriendUser } from '../types';
 
 const props = defineProps<{
@@ -11,7 +11,11 @@ const props = defineProps<{
 
 const fullName = computed(() => [props.user.firstName, props.user.name].filter(Boolean).join(' ').trim());
 const title = computed(() => fullName.value || props.user.username || props.user.publicId);
-const avatarSrc = computed(() => resolveFriendAvatarSrc(props.user.profilePicture));
+
+const { avatarSrc } = useFriendAvatarUrl(
+    () => props.user.publicId,
+    () => props.user.profilePicture
+);
 </script>
 
 <template>

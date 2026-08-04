@@ -1,3 +1,5 @@
+import axios from 'axios';
+import { authAxios, shouldSendBearerAuth } from '@/utils/helpers/axios-helpers';
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
 import type {
     BlockedFriendItem,
@@ -17,6 +19,11 @@ function toQuery(params: Record<string, string | number | boolean | null | undef
     });
     const qs = search.toString();
     return qs ? `?${qs}` : '';
+}
+
+function bearerHeaders(accessToken: string | null | undefined): Record<string, string> | undefined {
+    if (!shouldSendBearerAuth() || !accessToken) return undefined;
+    return { Authorization: `Bearer ${accessToken}` };
 }
 
 export const friendsApi = {
@@ -72,5 +79,41 @@ export const friendsApi = {
 
     unblock(userPublicId: string) {
         return fetchWrapper.delete(`/api/friends/${userPublicId}/block`) as Promise<void>;
+    },
+
+    /**
+     * Binaire photo uploadée — `GET /api/users/{publicId}/avatar`.
+     * Uniquement si `profilePicture` est un hash ; catalogue → 404 côté API.
+     */
+    async getUserAvatarBlob(publicId: string, accessToken: string | null | undefined): Promise<Blob> {
+        try {
+            const res = await authAxios.request<Blob>({
+                url: `/api/users/${encodeURIComponent(publicId)}/avatar`,
+                method: 'GET',
+                responseType: 'blob',
+                validateStatus: () => true,
+                headers: bearerHeaders(accessToken)
+            });
+
+            if (res.status >= 400) {
+                let message = res.statusText || `HTTP ${res.status}`;
+                if (res.data instanceof Blob && res.data.type.includes('json')) {
+                    try {
+                        const json = JSON.parse(await res.data.text()) as { message?: string };
+                        if (json.message) message = json.message;
+                    } catch {
+                        // ignore
+                    }
+                }
+                throw new Error(message);
+            }
+
+            return res.data;
+        } catch (e: unknown) {
+            if (axios.isAxiosError(e)) {
+                throw new Error(e.message || `HTTP ${e.response?.status ?? 0}`);
+            }
+            throw e;
+        }
     }
 };
