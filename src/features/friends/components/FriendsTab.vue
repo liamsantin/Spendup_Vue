@@ -1,15 +1,49 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import AppModalBase from '@/components/shared/AppModalBase.vue';
 import FriendListItem from './FriendListItem.vue';
 import { useFriendsStore } from '../stores/friends-store';
+import type { FriendItem } from '../types';
 
 const { t, locale } = useI18n();
 const store = useFriendsStore();
 
+const removeOpen = ref(false);
+const removeTarget = ref<FriendItem | null>(null);
+
+const removeDisplayName = computed(() => {
+    const user = removeTarget.value?.user;
+    if (!user) return '';
+    const fullName = [user.firstName, user.name].filter(Boolean).join(' ').trim();
+    return fullName || user.username || user.publicId;
+});
+
 function formatDate(value: string) {
     return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium' }).format(new Date(value));
+}
+
+function openRemoveFriend(friend: FriendItem) {
+    removeTarget.value = friend;
+    removeOpen.value = true;
+}
+
+function onRemoveOpenChange(open: boolean) {
+    removeOpen.value = open;
+    if (!open) removeTarget.value = null;
+}
+
+async function confirmRemoveFriend() {
+    const friendshipPublicId = removeTarget.value?.friendshipPublicId;
+    if (!friendshipPublicId) return;
+    try {
+        await store.removeFriend(friendshipPublicId);
+        removeOpen.value = false;
+        removeTarget.value = null;
+    } catch {
+        // erreur via store.error
+    }
 }
 
 onMounted(() => {
@@ -38,13 +72,7 @@ onMounted(() => {
                 :subtitle="t('friendsPage.friends.since', { date: formatDate(friend.friendsSince) })"
             >
                 <template #actions>
-                    <v-btn
-                        size="small"
-                        variant="text"
-                        color="error"
-                        :disabled="store.acting"
-                        @click.stop="store.removeFriend(friend.friendshipPublicId)"
-                    >
+                    <v-btn size="small" variant="text" color="error" :disabled="store.acting" @click.stop="openRemoveFriend(friend)">
                         {{ t('friendsPage.actions.remove') }}
                     </v-btn>
                     <v-btn
@@ -71,4 +99,25 @@ onMounted(() => {
             </v-btn>
         </div>
     </template>
+
+    <AppModalBase
+        :model-value="removeOpen"
+        :title="t('friendsPage.removeModal.title')"
+        :subtitle="t('friendsPage.removeModal.subtitle')"
+        :max-width="440"
+        :scrollable="false"
+        @update:model-value="onRemoveOpenChange"
+    >
+        <p class="text-body-1 mb-0">
+            {{ t('friendsPage.removeModal.body', { name: removeDisplayName }) }}
+        </p>
+
+        <template #footer="{ close }">
+            <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>
+            <v-spacer />
+            <v-btn color="error" flat :loading="store.acting" @click="confirmRemoveFriend">
+                {{ t('friendsPage.removeModal.confirm') }}
+            </v-btn>
+        </template>
+    </AppModalBase>
 </template>

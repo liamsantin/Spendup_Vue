@@ -147,6 +147,12 @@
             "block": "Block",
             "unblock": "Unblock"
         },
+        "removeModal": {
+            "title": "Remove this friend?",
+            "subtitle": "This action takes effect immediately.",
+            "body": "You will no longer be friends with {name}. You can send a new request later.",
+            "confirm": "Remove"
+        },
         "friends": {
             "since": "Friends since {date}"
         },

@@ -147,6 +147,12 @@
             "block": "Bloquer",
             "unblock": "Débloquer"
         },
+        "removeModal": {
+            "title": "Retirer cet ami ?",
+            "subtitle": "Cette action est immédiate.",
+            "body": "Vous ne serez plus ami avec {name}. Vous pourrez renvoyer une demande plus tard.",
+            "confirm": "Retirer"
+        },
         "friends": {
             "since": "Amis depuis {date}"
         },
