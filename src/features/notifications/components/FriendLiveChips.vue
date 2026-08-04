@@ -63,9 +63,24 @@ async function onChipClick(key: string, notificationId: number) {
     pointer-events: none;
 }
 
+/* Fond couleur plein (variant par défaut) sans transparence du underlay tonal. */
 .friend-live-chips__chip {
     pointer-events: auto;
     cursor: pointer;
     max-width: 100%;
+    opacity: 1;
+    color: rgb(var(--v-theme-on-primary)) !important;
+}
+
+.friend-live-chips__chip :deep(.v-chip__underlay) {
+    opacity: 1 !important;
+}
+
+.friend-live-chips__chip.text-error {
+    color: rgb(var(--v-theme-on-error)) !important;
+}
+
+.friend-live-chips__chip.text-warning {
+    color: rgb(var(--v-theme-on-warning)) !important;
 }
 </style>

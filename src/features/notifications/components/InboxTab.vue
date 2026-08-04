@@ -29,6 +29,7 @@ onMounted(() => {
 });
 
 async function onItemClick(item: AppNotification) {
+    store.dismissLiveFriendChipsByNotificationId(item.id);
     if (!item.isRead) {
         try {
             await store.markRead(item.id);

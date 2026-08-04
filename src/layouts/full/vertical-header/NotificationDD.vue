@@ -43,6 +43,8 @@ function closeMenu() {
 
 async function onItemClick(item: AppNotification) {
     closeMenu();
+    // Ne pas afficher le chip live une fois que l’utilisateur agit depuis le dropdown.
+    notifications.dismissLiveFriendChipsByNotificationId(item.id);
     if (!item.isRead) {
         try {
             await notifications.markRead(item.id);

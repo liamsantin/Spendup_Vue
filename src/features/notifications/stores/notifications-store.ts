@@ -82,6 +82,10 @@ export const useNotificationsStore = defineStore('notifications', () => {
         liveFriendChips.value = liveFriendChips.value.filter((chip) => chip.key !== key);
     }
 
+    function dismissLiveFriendChipsByNotificationId(notificationId: number) {
+        liveFriendChips.value.filter((chip) => chip.notification.id === notificationId).forEach((chip) => dismissLiveFriendChip(chip.key));
+    }
+
     function clearLiveFriendChips() {
         liveChipTimers.forEach((timer) => clearTimeout(timer));
         liveChipTimers.clear();
@@ -90,6 +94,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
     function pushLiveFriendChip(notification: AppNotification) {
         if (!isFriendLiveChipType(String(notification.type))) return;
+        if (notification.isRead) return;
         if (!shouldShowLiveNotification(String(notification.type))) return;
 
         const key = `${notification.id}-${Date.now()}`;
@@ -203,6 +208,8 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
 
     async function markRead(id: number) {
+        // Lecture depuis le dropdown / inbox : retirer le chip live associé.
+        dismissLiveFriendChipsByNotificationId(id);
         const updated = await notificationsApi.markRead(id);
         upsertItem(updated);
         try {
@@ -222,6 +229,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
             const result = await notificationsApi.markAllRead();
             applyUnreadCount(result?.unreadCount ?? 0);
             items.value = items.value.map((n) => (n.isRead ? n : { ...n, isRead: true, readAt: n.readAt ?? new Date().toISOString() }));
+            clearLiveFriendChips();
             return result;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -315,6 +323,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         hasMore,
         subscribeToFriendNotifications,
         dismissLiveFriendChip,
+        dismissLiveFriendChipsByNotificationId,
         fetchUnreadCount,
         loadInbox,
         openInbox,
