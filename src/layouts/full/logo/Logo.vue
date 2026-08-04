@@ -24,7 +24,9 @@ const isDarkTheme = computed(() =>
     <div class="logo">
         <RouterLink :to="logoTo" class="spendup-logo d-flex align-center ga-2 text-decoration-none">
             <img src="/Spendup-icon-fusee.svg" alt="Spend.Up" class="spendup-logo__icon flex-shrink-0" width="32" height="32" />
-            <span class="spendup-logo__text text-h3 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'textPrimary'">Spend.Up</span>
+            <span class="spendup-logo__text text-h3 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'textPrimary'">
+                Spend<span class="spendup-logo__dot">.</span>Up
+            </span>
         </RouterLink>
     </div>
 </template>
@@ -39,5 +41,9 @@ const isDarkTheme = computed(() =>
     letter-spacing: -0.02em;
     line-height: 1;
     white-space: nowrap;
+}
+
+.spendup-logo__dot {
+    color: #775cff !important;
 }
 </style>
