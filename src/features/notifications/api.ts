@@ -1,4 +1,5 @@
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
+import { normalizeAppNotification, normalizeNotificationsListResult } from './normalize';
 import type { AppNotification, MarkAllReadResult, NotificationsListQuery, NotificationsListResult, UnreadCountResult } from './types';
 
 function toQuery(params: NotificationsListQuery): string {
@@ -12,16 +13,22 @@ function toQuery(params: NotificationsListQuery): string {
 
 /** `GET/POST /api/notifications*` — JWT requis. */
 export const notificationsApi = {
-    list(params: NotificationsListQuery = {}) {
-        return fetchWrapper.get(`/api/notifications${toQuery(params)}`) as Promise<NotificationsListResult>;
+    async list(params: NotificationsListQuery = {}): Promise<NotificationsListResult> {
+        const raw = await fetchWrapper.get(`/api/notifications${toQuery(params)}`);
+        return normalizeNotificationsListResult(raw);
     },
 
     unreadCount() {
         return fetchWrapper.get('/api/notifications/unread-count') as Promise<UnreadCountResult>;
     },
 
-    markRead(id: number) {
-        return fetchWrapper.post(`/api/notifications/${id}/read`) as Promise<AppNotification>;
+    async markRead(id: number): Promise<AppNotification> {
+        const raw = await fetchWrapper.post(`/api/notifications/${id}/read`);
+        const normalized = normalizeAppNotification(raw);
+        if (!normalized) {
+            throw new Error('Invalid notification payload');
+        }
+        return normalized;
     },
 
     markAllRead() {

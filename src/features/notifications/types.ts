@@ -10,13 +10,14 @@ export type NotificationType =
     | 'other'
     | (string & {});
 
-/** Item inbox — même forme REST / SignalR (camelCase). */
+/** Item inbox — même forme REST / SignalR (camelCase). `metadata` est toujours un objet côté front (string JSON API parsée). */
 export type AppNotification = {
     id: number;
     type: NotificationType;
     title: string;
     subtitle: string | null;
     message: string | null;
+    /** Objet parsé ; l’API peut renvoyer une string JSON brute. */
     metadata?: Record<string, unknown> | null;
     isRead: boolean;
     readAt: string | null;

@@ -36,7 +36,7 @@ async function onItemClick(item: AppNotification) {
             // navigation quand même si link
         }
     }
-    const target = resolveNotificationLink(item.link);
+    const target = resolveNotificationLink(item.link, item);
     if (target) {
         await router.push(target);
     }

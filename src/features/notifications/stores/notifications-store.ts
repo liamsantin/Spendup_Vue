@@ -7,6 +7,7 @@ import { useUserSettingsStore } from '@/features/user-settings';
 import { notificationsApi } from '../api';
 import { getNotificationsHubState, setNotificationsHubHandlers, startNotificationsHub, stopNotificationsHub } from '../hub';
 import { isFriendNotificationType, isSecurityNotificationType } from '../link';
+import { normalizeNotificationReceivedPayload } from '../normalize';
 import type { AppNotification, NotificationReceivedPayload, SessionEndedPayload } from '../types';
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -64,10 +65,11 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
 
     function onNotificationReceived(payload: NotificationReceivedPayload) {
-        if (payload?.unreadCount != null) {
-            applyUnreadCount(payload.unreadCount);
+        const normalized = normalizeNotificationReceivedPayload(payload) ?? payload;
+        if (normalized?.unreadCount != null) {
+            applyUnreadCount(normalized.unreadCount);
         }
-        const notification = payload?.notification;
+        const notification = normalized?.notification;
         if (!notification?.id) return;
 
         // Les listes amis se mettent à jour même si l’utilisateur a coupé l’affichage push.
