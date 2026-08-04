@@ -33,6 +33,7 @@
         "items": {
             "dashboard": "Dashboard",
             "notifications": "Notifications",
+            "friends": "Friends",
             "transactions": "Transactions",
             "preferences": "My account"
         },
@@ -69,6 +70,7 @@
             "suggestions": {
                 "dashboard": "Dashboard",
                 "preferences": "My account",
+                "friends": "Friends",
                 "home": "Home",
                 "features": "Features",
                 "about": "About"
@@ -128,6 +130,53 @@
         "unread": "Unread",
         "unreadCount": "{count} unread",
         "loadMore": "Load more"
+    },
+    "friendsPage": {
+        "tabs": {
+            "friends": "Friends",
+            "requests": "Requests",
+            "discover": "Discover",
+            "blocked": "Blocked"
+        },
+        "actions": {
+            "add": "Add",
+            "accept": "Accept",
+            "refuse": "Refuse",
+            "cancel": "Cancel",
+            "remove": "Remove",
+            "block": "Block",
+            "unblock": "Unblock"
+        },
+        "friends": {
+            "since": "Friends since {date}"
+        },
+        "requests": {
+            "incomingTitle": "Incoming requests",
+            "outgoingTitle": "Outgoing requests"
+        },
+        "discover": {
+            "searchLabel": "Search users",
+            "searchHint": "Enter at least 2 characters.",
+            "startTyping": "Start typing a name, username, or public id.",
+            "messagePlaceholder": "Optional message"
+        },
+        "blocked": {
+            "blockedAt": "Blocked on {date}"
+        },
+        "empty": {
+            "friends": "No friends yet.",
+            "incoming": "No incoming requests.",
+            "outgoing": "No outgoing requests.",
+            "blocked": "No blocked users.",
+            "search": "No users found."
+        },
+        "status": {
+            "pending": "Pending",
+            "accepted": "Friend",
+            "refused": "Refused",
+            "canceled": "Canceled",
+            "blocked": "Blocked"
+        }
     },
     "accounts": {
         "tabs": {

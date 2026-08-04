@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, BellIcon, UserCircleIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, BellIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -34,6 +34,11 @@ const sidebarItem: menu[] = [
         to: '/app/notifications',
         chipColor: 'surface',
         chipBgColor: 'primary'
+    },
+    {
+        title: 'nav.items.friends',
+        icon: UsersIcon,
+        to: '/app/friends'
     },
     { header: 'nav.headers.settings' },
     {

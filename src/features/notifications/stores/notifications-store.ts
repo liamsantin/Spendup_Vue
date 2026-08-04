@@ -21,6 +21,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const inboxLoaded = ref(false);
     const error = ref<string | null>(null);
     const hubConnected = ref(false);
+    const friendListeners = new Set<(notification: AppNotification) => void>();
 
     let sessionPromise: Promise<void> | null = null;
 
@@ -63,6 +64,16 @@ export const useNotificationsStore = defineStore('notifications', () => {
         if (!notification?.id) return;
         if (!shouldShowLiveNotification(String(notification.type))) return;
         upsertItem(notification, true);
+        if (isFriendNotificationType(String(notification.type))) {
+            friendListeners.forEach((listener) => listener(notification));
+        }
+    }
+
+    function subscribeToFriendNotifications(listener: (notification: AppNotification) => void) {
+        friendListeners.add(listener);
+        return () => {
+            friendListeners.delete(listener);
+        };
     }
 
     function wireHubHandlers() {
@@ -223,6 +234,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         hasUnread,
         badgeContent,
         hasMore,
+        subscribeToFriendNotifications,
         fetchUnreadCount,
         loadInbox,
         openInbox,

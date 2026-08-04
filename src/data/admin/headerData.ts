@@ -21,6 +21,10 @@ const searchSugg: searchType[] = [
         href: '/app/comptes'
     },
     {
+        titleKey: 'header.search.suggestions.friends',
+        href: '/app/friends'
+    },
+    {
         titleKey: 'header.search.suggestions.home',
         href: '/'
     },

@@ -31,6 +31,11 @@ const AppRoutes = {
             component: () => import('@/views/app/notifications/AppNotificationsPage.vue')
         },
         {
+            name: 'AppFriends',
+            path: 'friends',
+            component: () => import('@/views/app/friends/AppFriendsPage.vue')
+        },
+        {
             path: 'applications',
             redirect: '/app/comptes'
         }

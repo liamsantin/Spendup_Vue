@@ -8,6 +8,7 @@ export type AppNotification = {
     title: string;
     subtitle: string | null;
     message: string | null;
+    metadata?: Record<string, unknown> | null;
     isRead: boolean;
     readAt: string | null;
     link: string | null;

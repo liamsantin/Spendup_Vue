@@ -33,6 +33,7 @@
         "items": {
             "dashboard": "Tableau de bord",
             "notifications": "Notifications",
+            "friends": "Amis",
             "transactions": "Transactions",
             "preferences": "Mon compte"
         },
@@ -69,6 +70,7 @@
             "suggestions": {
                 "dashboard": "Tableau de bord",
                 "preferences": "Mon compte",
+                "friends": "Amis",
                 "home": "Accueil",
                 "features": "Fonctionnalités",
                 "about": "À propos"
@@ -128,6 +130,53 @@
         "unread": "Non lu",
         "unreadCount": "{count} non lues",
         "loadMore": "Charger plus"
+    },
+    "friendsPage": {
+        "tabs": {
+            "friends": "Mes amis",
+            "requests": "Demandes",
+            "discover": "Découvrir",
+            "blocked": "Bloqués"
+        },
+        "actions": {
+            "add": "Ajouter",
+            "accept": "Accepter",
+            "refuse": "Refuser",
+            "cancel": "Annuler",
+            "remove": "Retirer",
+            "block": "Bloquer",
+            "unblock": "Débloquer"
+        },
+        "friends": {
+            "since": "Amis depuis {date}"
+        },
+        "requests": {
+            "incomingTitle": "Demandes reçues",
+            "outgoingTitle": "Demandes envoyées"
+        },
+        "discover": {
+            "searchLabel": "Rechercher des utilisateurs",
+            "searchHint": "Entrez au moins 2 caractères.",
+            "startTyping": "Commencez à saisir un nom, un pseudo ou un identifiant.",
+            "messagePlaceholder": "Message optionnel"
+        },
+        "blocked": {
+            "blockedAt": "Bloqué le {date}"
+        },
+        "empty": {
+            "friends": "Aucun ami pour le moment.",
+            "incoming": "Aucune demande reçue.",
+            "outgoing": "Aucune demande envoyée.",
+            "blocked": "Aucun utilisateur bloqué.",
+            "search": "Aucun utilisateur trouvé."
+        },
+        "status": {
+            "pending": "En attente",
+            "accepted": "Ami",
+            "refused": "Refusée",
+            "canceled": "Annulée",
+            "blocked": "Bloqué"
+        }
     },
     "accounts": {
         "tabs": {

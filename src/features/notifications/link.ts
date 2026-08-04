@@ -11,6 +11,9 @@ export function resolveNotificationLink(link: string | null | undefined): string
     if (trimmed === '/security' || trimmed.startsWith('/security/')) {
         return '/app/comptes';
     }
+    if (trimmed === '/friends' || trimmed.startsWith('/friends/')) {
+        return '/app/friends';
+    }
     return trimmed;
 }
 
