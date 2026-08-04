@@ -170,7 +170,28 @@
             "searchLabel": "Rechercher des utilisateurs",
             "searchHint": "Entrez au moins 2 caractères.",
             "startTyping": "Commencez à saisir un nom, un pseudo ou un identifiant.",
-            "messagePlaceholder": "Message optionnel"
+            "messagePlaceholder": "Message optionnel",
+            "openQr": "QR code"
+        },
+        "qr": {
+            "title": "Ajouter via QR",
+            "subtitle": "Montrez votre code ou scannez celui d’un ami.",
+            "tabs": {
+                "qr": "QR",
+                "add": "Ajouter"
+            },
+            "showHint": "Demandez à un ami de scanner ce code pour vous trouver.",
+            "scanHint": "Pointez la caméra vers le QR code Spend.Up d’un ami.",
+            "yourId": "Votre identifiant : {id}",
+            "missingPublicId": "Identifiant public introuvable. Rechargez la page ou reconnectez-vous.",
+            "cameraError": "Impossible d’accéder à la caméra. Vérifiez les permissions du navigateur.",
+            "cameraUnavailable": "Aucune caméra n’est disponible sur cet appareil.",
+            "cameraPermissionNeeded": "Autorisez l’accès à la caméra pour scanner un QR code ami.",
+            "cameraPermissionDeniedHint": "Si aucune popup n’apparaît : icône cadenas (ou info) dans la barre d’adresse → Autorisations → Caméra → Autoriser, puis réessayez. Vérifiez aussi Paramètres Windows → Confidentialité → Caméra.",
+            "cameraBusy": "La caméra est déjà utilisée par une autre application. Fermez-la puis réessayez.",
+            "enableCamera": "Activer la caméra",
+            "invalidQr": "QR non reconnu. Utilisez un code Spend.Up ami.",
+            "selfScan": "Vous ne pouvez pas scanner votre propre code."
         },
         "blocked": {
             "blockedAt": "Bloqué le {date}"

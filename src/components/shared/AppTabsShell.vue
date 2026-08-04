@@ -14,7 +14,7 @@ export type ShellTab = {
     chip?: string | number;
 };
 
-withDefaults(
+const props = withDefaults(
     defineProps<{
         tabs: ShellTab[];
         modelValue: string;
@@ -25,13 +25,19 @@ withDefaults(
         hideActions?: boolean;
         /** Alignement des onglets (`v-tabs` align-tabs). */
         alignTabs?: 'start' | 'title' | 'center' | 'end';
+        /**
+         * Mode modal / embarqué : pas de FriendLiveChips, card plate,
+         * contenu sans scroll forcé plein écran.
+         */
+        embedded?: boolean;
     }>(),
     {
         saveDisabled: true,
         cancelDisabled: true,
         saveLoading: false,
         hideActions: false,
-        alignTabs: 'start'
+        alignTabs: 'start',
+        embedded: false
     }
 );
 
@@ -43,9 +49,14 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <div class="settings-page">
-        <v-card elevation="10" rounded="md" class="settings-page-card">
-            <FriendLiveChips />
+    <div class="settings-page" :class="{ 'settings-page--embedded': props.embedded }">
+        <v-card
+            :elevation="props.embedded ? 0 : 10"
+            :rounded="props.embedded ? 0 : 'md'"
+            class="settings-page-card"
+            :class="{ 'settings-page-card--embedded': props.embedded }"
+        >
+            <FriendLiveChips v-if="!props.embedded" />
 
             <v-tabs
                 :model-value="modelValue"
@@ -79,11 +90,15 @@ const emit = defineEmits<{
                 <slot name="toolbar" />
             </div>
 
-            <perfect-scrollbar class="settings-tabs-scroll" :options="PERFECT_SCROLLBAR_OPTIONS">
+            <perfect-scrollbar v-if="!props.embedded" class="settings-tabs-scroll" :options="PERFECT_SCROLLBAR_OPTIONS">
                 <v-card-text class="pa-sm-6 pa-3">
                     <slot />
                 </v-card-text>
             </perfect-scrollbar>
+
+            <v-card-text v-else class="pa-sm-6 pa-3 settings-tabs-body--embedded">
+                <slot />
+            </v-card-text>
 
             <template v-if="!hideActions">
                 <v-divider class="flex-grow-0" />
@@ -108,6 +123,11 @@ const emit = defineEmits<{
     flex-direction: column;
 }
 
+.settings-page--embedded {
+    flex: 0 0 auto;
+    min-height: unset;
+}
+
 .settings-page-card {
     position: relative;
     flex: 1 1 auto;
@@ -117,13 +137,19 @@ const emit = defineEmits<{
     overflow: hidden;
 }
 
+.settings-page-card--embedded {
+    flex: 0 0 auto;
+    min-height: unset;
+    background: transparent !important;
+}
+
 @media screen and (max-width: 767px) {
-    .settings-page {
+    .settings-page:not(.settings-page--embedded) {
         width: 100vw;
         margin-left: calc(50% - 50vw);
     }
 
-    .settings-page-card {
+    .settings-page:not(.settings-page--embedded) .settings-page-card {
         border-radius: 0 !important;
     }
 
@@ -141,6 +167,10 @@ const emit = defineEmits<{
     flex: 1 1 auto;
     min-height: 0;
     height: 0;
+}
+
+.settings-tabs-body--embedded {
+    flex: 0 0 auto;
 }
 
 .settings-tabs-toolbar {

@@ -19,5 +19,7 @@ describe('csp', () => {
     it('expose les headers de base', () => {
         expect(SECURITY_HEADERS_BASE['Referrer-Policy']).toBe('strict-origin-when-cross-origin');
         expect(SECURITY_HEADERS_BASE['X-Content-Type-Options']).toBe('nosniff');
+        expect(SECURITY_HEADERS_BASE['Permissions-Policy']).toContain('camera=(self)');
+        expect(SECURITY_HEADERS_BASE['Permissions-Policy']).toContain('microphone=()');
     });
 });

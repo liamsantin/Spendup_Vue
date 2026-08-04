@@ -60,18 +60,18 @@ const cardStyle = computed(() => {
         return { maxHeight: '85vh' };
     }
     const height = typeof props.height === 'number' ? `${props.height}px` : props.height;
-    return { height, maxHeight: '85vh' };
+    // Hauteur fixe (plafonnée à 85vh sur petit écran).
+    const fixed = `min(${height}, 85vh)`;
+    return { height: fixed, minHeight: fixed, maxHeight: fixed };
 });
 
 const bodyStyle = computed(() => {
     if (!props.scrollable) return undefined;
-    if (typeof props.height === 'number') {
-        return {
-            height: `${Math.max(props.height - 180, 240)}px`,
-            maxHeight: 'calc(85vh - 160px)'
-        };
-    }
-    return { height: '460px', maxHeight: 'calc(85vh - 160px)' };
+    return {
+        flex: '1 1 auto',
+        minHeight: '0',
+        height: '0' // force le flex child à prendre le reste de la card fixe
+    };
 });
 
 async function refreshScrollbar() {
@@ -114,6 +114,10 @@ defineExpose({
             </div>
 
             <v-divider class="flex-grow-0" />
+
+            <div v-if="$slots.toolbar" class="app-modal-base__toolbar flex-grow-0">
+                <slot name="toolbar" />
+            </div>
 
             <PerfectScrollbar
                 v-if="scrollable"
@@ -164,6 +168,10 @@ defineExpose({
     position: absolute;
     top: 12px;
     right: 12px;
+}
+
+.app-modal-base__toolbar {
+    flex-shrink: 0;
 }
 
 .app-modal-base__body {

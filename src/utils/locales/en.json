@@ -170,7 +170,28 @@
             "searchLabel": "Search users",
             "searchHint": "Enter at least 2 characters.",
             "startTyping": "Start typing a name, username, or public id.",
-            "messagePlaceholder": "Optional message"
+            "messagePlaceholder": "Optional message",
+            "openQr": "QR code"
+        },
+        "qr": {
+            "title": "Add via QR",
+            "subtitle": "Show your code or scan a friend’s.",
+            "tabs": {
+                "qr": "QR",
+                "add": "Add"
+            },
+            "showHint": "Ask a friend to scan this code to find you.",
+            "scanHint": "Point the camera at a Spend.Up friend QR code.",
+            "yourId": "Your ID: {id}",
+            "missingPublicId": "Public ID not found. Reload the page or sign in again.",
+            "cameraError": "Unable to access the camera. Check browser permissions.",
+            "cameraUnavailable": "No camera is available on this device.",
+            "cameraPermissionNeeded": "Allow camera access to scan a friend QR code.",
+            "cameraPermissionDeniedHint": "If no popup appears: site padlock/info in the address bar → Permissions → Camera → Allow, then try again. Also check Windows Settings → Privacy → Camera.",
+            "cameraBusy": "The camera is already in use by another app. Close it and try again.",
+            "enableCamera": "Enable camera",
+            "invalidQr": "Unrecognized QR. Use a Spend.Up friend code.",
+            "selfScan": "You cannot scan your own code."
         },
         "blocked": {
             "blockedAt": "Blocked on {date}"

@@ -37,5 +37,6 @@ export const SECURITY_HEADERS_BASE = {
     'Referrer-Policy': 'strict-origin-when-cross-origin',
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'SAMEORIGIN',
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()'
+    // camera=(self) : scan QR amis (Découvrir). micro / géoloc / paiement restent coupés.
+    'Permissions-Policy': 'camera=(self), microphone=(), geolocation=(), payment=()'
 } as const;
