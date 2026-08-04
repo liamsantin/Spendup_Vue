@@ -9,6 +9,8 @@ export type ShellTab = {
     label: string;
     /** Composant icône vue-tabler (optionnel). */
     icon?: unknown;
+    /** Compteur / chip affiché à droite du label (ex. demandes reçues). */
+    chip?: string | number;
 };
 
 withDefaults(
@@ -56,6 +58,15 @@ const emit = defineEmits<{
                 <v-tab v-for="tab in tabs" :key="tab.value" :value="tab.value" class="text-medium-emphasis">
                     <component :is="tab.icon" v-if="tab.icon" class="mr-2" size="18" />
                     {{ tab.label }}
+                    <v-chip
+                        v-if="tab.chip != null && tab.chip !== '' && Number(tab.chip) !== 0"
+                        class="ml-2"
+                        color="primary"
+                        size="x-small"
+                        variant="flat"
+                    >
+                        {{ tab.chip }}
+                    </v-chip>
                 </v-tab>
             </v-tabs>
 

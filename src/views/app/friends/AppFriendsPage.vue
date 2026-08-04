@@ -11,7 +11,12 @@ const tab = ref('Friends');
 
 const tabs = computed(() => [
     { value: 'Friends', label: t('friendsPage.tabs.friends'), icon: UsersIcon },
-    { value: 'Requests', label: t('friendsPage.tabs.requests'), icon: BellPlusIcon },
+    {
+        value: 'Requests',
+        label: t('friendsPage.tabs.requests'),
+        icon: BellPlusIcon,
+        chip: store.incomingCount > 0 ? store.incomingCount : undefined
+    },
     { value: 'Discover', label: t('friendsPage.tabs.discover'), icon: UserHeartIcon },
     { value: 'Blocked', label: t('friendsPage.tabs.blocked'), icon: ShieldLockIcon }
 ]);
