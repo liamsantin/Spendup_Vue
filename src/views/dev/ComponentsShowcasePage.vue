@@ -2,14 +2,20 @@
 /**
  * Showcase composants (dev only).
  * Onglet Alert = clone `_template/modernize/components/ui-components/alert/*`.
+ * Onglet Chip = clone `_template/modernize/components/ui-components/chip/*` via AppChip.
  * Onglet Modal = AppModalBase / AppConfirmationModal.
  */
 defineOptions({ name: 'ComponentsShowcasePage' });
 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { ChecksIcon, CircleXIcon, MoodSmileIcon, UserCircleIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import AppChip from '@/components/shared/AppChip.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
+import user1 from '@/assets/images/profile/avatar/user-1.jpg';
+import user2 from '@/assets/images/profile/avatar/user-2.jpg';
+import user5 from '@/assets/images/profile/avatar/user-5.jpg';
 
 const tab = ref('alert');
 const closableOpen = ref(true);
@@ -17,6 +23,28 @@ const closableOpen = ref(true);
 const modalScrollableOpen = ref(false);
 const modalStaticOpen = ref(false);
 const confirmationOpen = ref(false);
+
+const chipClosable = ref({
+    primary: true,
+    secondary: true,
+    warning: true,
+    success: true,
+    error: true,
+    info: true
+});
+
+const anyChipClosableHidden = computed(() => Object.values(chipClosable.value).some((v) => !v));
+
+function resetChipClosable() {
+    chipClosable.value = {
+        primary: true,
+        secondary: true,
+        warning: true,
+        success: true,
+        error: true,
+        info: true
+    };
+}
 </script>
 
 <template>
@@ -29,6 +57,7 @@ const confirmationOpen = ref(false);
 
         <v-tabs v-model="tab" color="primary" class="mb-4">
             <v-tab value="alert">Alert</v-tab>
+            <v-tab value="chip">Chip</v-tab>
             <v-tab value="modal">Modal</v-tab>
         </v-tabs>
 
@@ -174,6 +203,226 @@ const confirmationOpen = ref(false);
                             <v-icon class="text-24" icon="$error" />
                         </template>
                     </AppAlert>
+                </div>
+            </v-tabs-window-item>
+
+            <v-tabs-window-item value="chip">
+                <p class="text-body-2 text-medium-emphasis mb-6">
+                    <code>AppChip</code> — clone Modernize
+                    <code>_template/modernize/components/ui-components/chip/</code>
+                </p>
+
+                <!-- FilledColor.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">Filled</h3>
+                <div class="mb-8 d-flex flex-wrap align-center ga-3">
+                    <AppChip class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Default Filled
+                    </AppChip>
+                    <AppChip class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Default Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip color="primary" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user1" width="25" alt="" />
+                        </v-avatar>
+                        Primary Filled
+                    </AppChip>
+                    <AppChip color="primary" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user1" width="25" alt="" />
+                        </v-avatar>
+                        Primary Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip color="secondary" class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Secondary Filled
+                    </AppChip>
+                    <AppChip color="secondary" class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Secondary Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip color="success" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user2" width="25" alt="" />
+                        </v-avatar>
+                        Success Filled
+                    </AppChip>
+                    <AppChip color="success" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user2" width="25" alt="" />
+                        </v-avatar>
+                        Success Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip color="warning" class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Warning Filled
+                    </AppChip>
+                    <AppChip color="warning" class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Warning Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip color="error" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user5" width="25" alt="" />
+                        </v-avatar>
+                        Error Filled
+                    </AppChip>
+                    <AppChip color="error" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user5" width="25" alt="" />
+                        </v-avatar>
+                        Error Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                </div>
+
+                <!-- Outlined.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">Outlined</h3>
+                <div class="mb-8 d-flex flex-wrap align-center ga-3">
+                    <AppChip variant="outlined" class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Default Outlined
+                    </AppChip>
+                    <AppChip variant="outlined" class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Default Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip variant="outlined" color="primary" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user1" width="25" alt="" />
+                        </v-avatar>
+                        Primary Outlined
+                    </AppChip>
+                    <AppChip variant="outlined" color="primary" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user1" width="25" alt="" />
+                        </v-avatar>
+                        Primary Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip variant="outlined" color="secondary" class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Secondary Outlined
+                    </AppChip>
+                    <AppChip variant="outlined" color="secondary" class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Secondary Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip variant="outlined" color="success" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user2" width="25" alt="" />
+                        </v-avatar>
+                        Success Outlined
+                    </AppChip>
+                    <AppChip variant="outlined" color="success" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user2" width="25" alt="" />
+                        </v-avatar>
+                        Success Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip variant="outlined" color="warning" class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Warning Outlined
+                    </AppChip>
+                    <AppChip variant="outlined" color="warning" class="text-body-2">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Warning Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip variant="outlined" color="error" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user5" width="25" alt="" />
+                        </v-avatar>
+                        Error Outlined
+                    </AppChip>
+                    <AppChip variant="outlined" color="error" class="text-body-2">
+                        <v-avatar start size="25">
+                            <img :src="user5" width="25" alt="" />
+                        </v-avatar>
+                        Error Deletable
+                        <CircleXIcon class="ml-2" start size="20" />
+                    </AppChip>
+                </div>
+
+                <!-- CustomIcon.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">Custom Icon</h3>
+                <div class="mb-8 d-flex flex-column flex-sm-row flex-wrap align-center ga-3">
+                    <AppChip color="primary">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Custom Icon
+                        <ChecksIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip color="secondary">
+                        <UserCircleIcon class="mr-2" start size="20" />
+                        Custom Icon
+                        <ChecksIcon class="ml-2" start size="20" />
+                    </AppChip>
+                </div>
+
+                <!-- CustomIconOutlined.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">Custom Outlined Icon</h3>
+                <div class="mb-8 d-flex flex-column flex-sm-row flex-wrap align-center ga-3">
+                    <AppChip color="primary" variant="outlined">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Custom Icon
+                        <ChecksIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip color="secondary" variant="outlined">
+                        <UserCircleIcon class="mr-2" start size="20" />
+                        Custom Icon
+                        <ChecksIcon class="ml-2" start size="20" />
+                    </AppChip>
+                </div>
+
+                <!-- Disabled.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">Disabled</h3>
+                <div class="mb-8 d-flex flex-column flex-sm-row flex-wrap align-center ga-3">
+                    <AppChip disabled variant="outlined">
+                        <MoodSmileIcon class="mr-2" start size="20" />
+                        Custom Icon
+                        <ChecksIcon class="ml-2" start size="20" />
+                    </AppChip>
+                    <AppChip color="secondary" disabled variant="outlined">
+                        <UserCircleIcon class="mr-2" start size="20" />
+                        Custom Icon
+                        <ChecksIcon class="ml-2" start size="20" />
+                    </AppChip>
+                </div>
+
+                <!-- Sizes.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">Sizes</h3>
+                <div class="mb-8 d-flex flex-column flex-sm-row flex-wrap align-center ga-3">
+                    <AppChip color="primary" size="x-small">x-small</AppChip>
+                    <AppChip color="primary" size="small">small</AppChip>
+                    <AppChip color="primary">Default</AppChip>
+                    <AppChip color="primary" size="large">large</AppChip>
+                    <AppChip color="primary" size="x-large">x-large</AppChip>
+                </div>
+
+                <!-- Closable.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">Closable</h3>
+                <div class="mb-8">
+                    <div class="d-flex flex-wrap align-center ga-3">
+                        <AppChip v-model:visible="chipClosable.primary" closable color="primary">Primary Deletable</AppChip>
+                        <AppChip v-model:visible="chipClosable.secondary" closable color="secondary">Secondary Deletable</AppChip>
+                        <AppChip v-model:visible="chipClosable.warning" closable color="warning">Warning Deletable</AppChip>
+                        <AppChip v-model:visible="chipClosable.success" closable color="success">Success Deletable</AppChip>
+                        <AppChip v-model:visible="chipClosable.error" closable color="error">Error Deletable</AppChip>
+                        <AppChip v-model:visible="chipClosable.info" closable color="info">Info Deletable</AppChip>
+                    </div>
+                    <div v-if="anyChipClosableHidden" class="mt-3">
+                        <v-btn color="primary" flat @click="resetChipClosable">Reset</v-btn>
+                    </div>
                 </div>
             </v-tabs-window-item>
 
