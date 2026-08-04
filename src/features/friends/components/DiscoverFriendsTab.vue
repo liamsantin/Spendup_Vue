@@ -1,18 +1,56 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import AppModalBase from '@/components/shared/AppModalBase.vue';
 import FriendListItem from './FriendListItem.vue';
 import { useFriendsStore } from '../stores/friends-store';
 import type { FriendSearchItem } from '../types';
 
 const { t } = useI18n();
 const store = useFriendsStore();
-const requestMessages = ref<Record<string, string>>({});
+
+const requestOpen = ref(false);
+const requestTarget = ref<FriendSearchItem | null>(null);
+const requestMessage = ref('');
+
+const requestDisplayName = computed(() => {
+    const user = requestTarget.value;
+    if (!user) return '';
+    const fullName = [user.firstName, user.name].filter(Boolean).join(' ').trim();
+    return fullName || user.username || user.publicId;
+});
 
 function outgoingPendingId(user: FriendSearchItem): string | undefined {
     if (user.friendshipStatus !== 'pending') return undefined;
     return store.outgoingRequestFor(user.publicId)?.friendshipPublicId;
+}
+
+function openRequestModal(user: FriendSearchItem) {
+    requestTarget.value = user;
+    requestMessage.value = '';
+    requestOpen.value = true;
+}
+
+function onRequestOpenChange(open: boolean) {
+    requestOpen.value = open;
+    if (!open) {
+        requestTarget.value = null;
+        requestMessage.value = '';
+    }
+}
+
+async function confirmSendRequest() {
+    const publicId = requestTarget.value?.publicId;
+    if (!publicId) return;
+    try {
+        await store.sendRequest(publicId, requestMessage.value);
+        requestOpen.value = false;
+        requestTarget.value = null;
+        requestMessage.value = '';
+    } catch {
+        // erreur via store.error
+    }
 }
 </script>
 
@@ -56,24 +94,9 @@ function outgoingPendingId(user: FriendSearchItem): string | undefined {
                     <v-chip v-else-if="user.friendshipStatus" size="small" color="primary" variant="tonal">
                         {{ t(`friendsPage.status.${user.friendshipStatus}`) }}
                     </v-chip>
-                    <template v-else>
-                        <v-text-field
-                            v-model="requestMessages[user.publicId]"
-                            density="compact"
-                            variant="outlined"
-                            hide-details
-                            class="friends-message-field"
-                            :placeholder="t('friendsPage.discover.messagePlaceholder')"
-                        />
-                        <v-btn
-                            size="small"
-                            color="primary"
-                            :disabled="store.acting"
-                            @click.stop="store.sendRequest(user.publicId, requestMessages[user.publicId])"
-                        >
-                            {{ t('friendsPage.actions.add') }}
-                        </v-btn>
-                    </template>
+                    <v-btn v-else size="small" color="primary" :disabled="store.acting" @click.stop="openRequestModal(user)">
+                        {{ t('friendsPage.actions.add') }}
+                    </v-btn>
                 </template>
             </FriendListItem>
         </v-list>
@@ -89,10 +112,35 @@ function outgoingPendingId(user: FriendSearchItem): string | undefined {
             </v-btn>
         </div>
     </template>
-</template>
 
-<style scoped>
-.friends-message-field {
-    min-width: 180px;
-}
-</style>
+    <AppModalBase
+        :model-value="requestOpen"
+        :title="t('friendsPage.addModal.title')"
+        :subtitle="t('friendsPage.addModal.subtitle', { name: requestDisplayName })"
+        :max-width="480"
+        :scrollable="false"
+        @update:model-value="onRequestOpenChange"
+    >
+        <v-textarea
+            v-model="requestMessage"
+            :label="t('friendsPage.discover.messagePlaceholder')"
+            :placeholder="t('friendsPage.discover.messagePlaceholder')"
+            variant="outlined"
+            rows="3"
+            auto-grow
+            hide-details="auto"
+            maxlength="300"
+            counter
+        />
+
+        <template #footer="{ close }">
+            <v-spacer />
+            <v-btn variant="text" flat class="mr-2" :disabled="store.acting" @click="close">
+                {{ t('common.cancel') }}
+            </v-btn>
+            <v-btn color="primary" flat :loading="store.acting" @click="confirmSendRequest">
+                {{ t('friendsPage.addModal.confirm') }}
+            </v-btn>
+        </template>
+    </AppModalBase>
+</template>

@@ -152,6 +152,11 @@
             "body": "Vous ne serez plus ami avec {name}. Vous pourrez renvoyer une demande plus tard.",
             "confirm": "Retirer"
         },
+        "addModal": {
+            "title": "Envoyer une demande d’ami",
+            "subtitle": "À {name}",
+            "confirm": "Envoyer"
+        },
         "friends": {
             "since": "Amis depuis {date}"
         },

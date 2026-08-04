@@ -152,6 +152,11 @@
             "body": "You will no longer be friends with {name}. You can send a new request later.",
             "confirm": "Remove"
         },
+        "addModal": {
+            "title": "Send a friend request",
+            "subtitle": "To {name}",
+            "confirm": "Send"
+        },
         "friends": {
             "since": "Friends since {date}"
         },
