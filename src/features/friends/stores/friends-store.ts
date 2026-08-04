@@ -172,13 +172,17 @@ export const useFriendsStore = defineStore('friends', () => {
         clearError();
         try {
             await friendsApi.cancel(friendshipPublicId);
-            await loadOutgoing(true);
+            await Promise.all([loadOutgoing(true), searchUsers(searchQuery.value)]);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
             acting.value = false;
         }
+    }
+
+    function outgoingRequestFor(userPublicId: string) {
+        return outgoingRequests.value.find((r) => r.otherUser.publicId === userPublicId && r.status === 'pending');
     }
 
     async function removeFriend(friendshipPublicId: string) {
@@ -292,6 +296,7 @@ export const useFriendsStore = defineStore('friends', () => {
             return;
         }
         if (tab === 'Discover') {
+            await loadOutgoing(true);
             refreshSearchIfNeeded();
         }
     }
@@ -348,6 +353,7 @@ export const useFriendsStore = defineStore('friends', () => {
         acceptRequest,
         refuseRequest,
         cancelRequest,
+        outgoingRequestFor,
         removeFriend,
         blockUser,
         unblockUser,

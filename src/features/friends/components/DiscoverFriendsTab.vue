@@ -4,10 +4,16 @@ import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import FriendListItem from './FriendListItem.vue';
 import { useFriendsStore } from '../stores/friends-store';
+import type { FriendSearchItem } from '../types';
 
 const { t } = useI18n();
 const store = useFriendsStore();
 const requestMessages = ref<Record<string, string>>({});
+
+function outgoingPendingId(user: FriendSearchItem): string | undefined {
+    if (user.friendshipStatus !== 'pending') return undefined;
+    return store.outgoingRequestFor(user.publicId)?.friendshipPublicId;
+}
 </script>
 
 <template>
@@ -27,7 +33,21 @@ const requestMessages = ref<Record<string, string>>({});
     <v-list v-else class="py-0 theme-list">
         <FriendListItem v-for="user in store.searchResults" :key="user.publicId" :user="user" :subtitle="user.username || user.publicId">
             <template #actions>
-                <v-chip v-if="user.friendshipStatus" size="small" color="primary" variant="tonal">
+                <template v-if="outgoingPendingId(user)">
+                    <v-chip size="small" color="primary" variant="tonal">
+                        {{ t('friendsPage.status.pending') }}
+                    </v-chip>
+                    <v-btn
+                        size="small"
+                        variant="text"
+                        color="error"
+                        :disabled="store.acting"
+                        @click.stop="store.cancelRequest(outgoingPendingId(user)!)"
+                    >
+                        {{ t('friendsPage.actions.cancel') }}
+                    </v-btn>
+                </template>
+                <v-chip v-else-if="user.friendshipStatus" size="small" color="primary" variant="tonal">
                     {{ t(`friendsPage.status.${user.friendshipStatus}`) }}
                 </v-chip>
                 <template v-else>
@@ -48,9 +68,6 @@ const requestMessages = ref<Record<string, string>>({});
                         {{ t('friendsPage.actions.add') }}
                     </v-btn>
                 </template>
-                <v-btn size="small" variant="text" color="warning" :disabled="store.acting" @click.stop="store.blockUser(user.publicId)">
-                    {{ t('friendsPage.actions.block') }}
-                </v-btn>
             </template>
         </FriendListItem>
     </v-list>
