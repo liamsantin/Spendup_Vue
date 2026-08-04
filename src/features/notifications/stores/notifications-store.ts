@@ -62,11 +62,14 @@ export const useNotificationsStore = defineStore('notifications', () => {
         }
         const notification = payload?.notification;
         if (!notification?.id) return;
-        if (!shouldShowLiveNotification(String(notification.type))) return;
-        upsertItem(notification, true);
+
+        // Les listes amis se mettent à jour même si l’utilisateur a coupé l’affichage push.
         if (isFriendNotificationType(String(notification.type))) {
             friendListeners.forEach((listener) => listener(notification));
         }
+
+        if (!shouldShowLiveNotification(String(notification.type))) return;
+        upsertItem(notification, true);
     }
 
     function subscribeToFriendNotifications(listener: (notification: AppNotification) => void) {

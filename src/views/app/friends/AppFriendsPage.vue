@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { BellPlusIcon, ShieldLockIcon, UserHeartIcon, UsersIcon } from 'vue-tabler-icons';
 import AppTabsShell from '@/components/shared/AppTabsShell.vue';
@@ -23,6 +23,12 @@ const tabs = computed(() => [
 
 onMounted(() => {
     void store.bootstrap().catch(() => undefined);
+});
+
+watch(tab, (value) => {
+    if (value === 'Friends' || value === 'Requests' || value === 'Blocked' || value === 'Discover') {
+        void store.openTab(value).catch(() => undefined);
+    }
 });
 </script>
 

@@ -229,13 +229,21 @@ export const useFriendsStore = defineStore('friends', () => {
         }
     }
 
+    function refreshSearchIfNeeded() {
+        if (searchQuery.value.trim().length < 2) return;
+        void searchUsers(searchQuery.value);
+    }
+
     function handleRealtime(notification: AppNotification) {
         if (notification.type === 'friendRequest') {
             void loadIncoming(true);
+            refreshSearchIfNeeded();
             return;
         }
         if (notification.type === 'friendAccepted') {
-            void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true)]);
+            void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true)]).then(() => {
+                refreshSearchIfNeeded();
+            });
         }
     }
 
@@ -246,9 +254,32 @@ export const useFriendsStore = defineStore('friends', () => {
 
     async function bootstrap() {
         ensureRealtimeBridge();
-        if (initialized.value) return;
-        await Promise.all([loadFriends(), loadIncoming(), loadOutgoing(), loadBlocked()]);
-        initialized.value = true;
+        if (!initialized.value) {
+            await Promise.all([loadFriends(), loadIncoming(), loadOutgoing(), loadBlocked()]);
+            initialized.value = true;
+            return;
+        }
+        // Revenir sur la page Amis → données à jour (ex. nouvelle photo d’un autre user).
+        await refreshAll();
+    }
+
+    async function openTab(tab: 'Friends' | 'Requests' | 'Blocked' | 'Discover') {
+        ensureRealtimeBridge();
+        if (tab === 'Friends') {
+            await loadFriends(true);
+            return;
+        }
+        if (tab === 'Requests') {
+            await Promise.all([loadIncoming(true), loadOutgoing(true)]);
+            return;
+        }
+        if (tab === 'Blocked') {
+            await loadBlocked(true);
+            return;
+        }
+        if (tab === 'Discover') {
+            refreshSearchIfNeeded();
+        }
     }
 
     function reset() {
@@ -291,6 +322,7 @@ export const useFriendsStore = defineStore('friends', () => {
         blockedCount,
         canSearch,
         bootstrap,
+        openTab,
         refreshAll,
         loadFriends,
         loadIncoming,
