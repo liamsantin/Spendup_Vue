@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { BellRingingIcon } from 'vue-tabler-icons';
+import { BellRingingIcon, ChecksIcon } from 'vue-tabler-icons';
 import { UserPhotoAvatar } from '@/features/friends';
 import { resolveNotificationLink, useNotificationsStore } from '@/features/notifications';
 import type { AppNotification } from '@/features/notifications';
@@ -41,6 +41,15 @@ function closeMenu() {
     menuOpen.value = false;
 }
 
+async function onMarkAllRead() {
+    if (!notifications.hasUnread || notifications.markingAll) return;
+    try {
+        await notifications.markAllRead();
+    } catch {
+        // erreur via store.error
+    }
+}
+
 async function onItemClick(item: AppNotification) {
     closeMenu();
     // Ne pas afficher le chip live une fois que l’utilisateur agit depuis le dropdown.
@@ -72,9 +81,25 @@ async function onItemClick(item: AppNotification) {
             <div class="px-8 pb-4 pt-6">
                 <div class="d-flex align-center justify-space-between">
                     <h6 class="text-h5">{{ t('header.notifications.title') }}</h6>
-                    <v-chip v-if="notifications.hasUnread" color="primary" variant="flat" size="small" class="text-white">
-                        {{ unreadLabel }}
-                    </v-chip>
+                    <div class="d-flex align-center ga-1">
+                        <v-chip v-if="notifications.hasUnread" color="primary" variant="flat" size="small" class="text-white">
+                            {{ unreadLabel }}
+                        </v-chip>
+                        <v-btn
+                            icon
+                            variant="text"
+                            color="primary"
+                            size="small"
+                            class="custom-hover-primary"
+                            :loading="notifications.markingAll"
+                            :disabled="!notifications.hasUnread || notifications.markingAll"
+                            :aria-label="t('header.notifications.markAllRead')"
+                            :title="t('header.notifications.markAllRead')"
+                            @click="onMarkAllRead"
+                        >
+                            <ChecksIcon stroke-width="1.5" size="20" />
+                        </v-btn>
+                    </div>
                 </div>
             </div>
 
