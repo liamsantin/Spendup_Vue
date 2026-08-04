@@ -569,6 +569,7 @@
             "emailUpdated": "Email updated. Please sign in again.",
             "twoFactorExpired": "2FA session expired. Please sign in again.",
             "allSessionsRevoked": "All sessions were signed out. Please sign in again.",
+            "sessionEnded": "This session was signed out. Please sign in again.",
             "passwordUpdatedRelogin": "Password updated. Please sign in again.",
             "accountDeleted": "Your account has been permanently deleted."
         },

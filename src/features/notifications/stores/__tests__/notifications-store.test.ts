@@ -2,14 +2,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
 import { USER_SETTINGS_DEFAULTS } from '@/features/user-settings';
 
-const { unreadCount, list, markRead, markAllRead, startHub, stopHub, setHandlers } = vi.hoisted(() => ({
+const { unreadCount, list, markRead, markAllRead, startHub, stopHub, setHandlers, forceReLogin, getDeviceId } = vi.hoisted(() => ({
     unreadCount: vi.fn(),
     list: vi.fn(),
     markRead: vi.fn(),
     markAllRead: vi.fn(),
     startHub: vi.fn(),
     stopHub: vi.fn(),
-    setHandlers: vi.fn()
+    setHandlers: vi.fn(),
+    forceReLogin: vi.fn(),
+    getDeviceId: vi.fn(() => 'device-local')
 }));
 
 vi.mock('../../api', () => ({
@@ -28,6 +30,16 @@ vi.mock('../../hub', () => ({
     getNotificationsHubState: () => null
 }));
 
+vi.mock('@/features/auth/device', () => ({
+    getOrCreateDeviceId: () => getDeviceId()
+}));
+
+vi.mock('@/features/auth/stores/auth-store', () => ({
+    useAuthStore: () => ({
+        forceReLogin: (...args: unknown[]) => forceReLogin(...args)
+    })
+}));
+
 vi.mock('@/features/user-settings', async () => {
     const actual = await vi.importActual<typeof import('@/features/user-settings')>('@/features/user-settings');
     return {
@@ -40,6 +52,10 @@ vi.mock('@/features/user-settings', async () => {
 
 import { useNotificationsStore } from '../notifications-store';
 
+type HubHandlers = {
+    onSessionEnded?: (payload: { reason: string; deviceIdentifier: string | null }) => void;
+};
+
 describe('useNotificationsStore', () => {
     beforeEach(() => {
         createTestPinia();
@@ -50,6 +66,8 @@ describe('useNotificationsStore', () => {
         startHub.mockReset().mockResolvedValue(undefined);
         stopHub.mockReset().mockResolvedValue(undefined);
         setHandlers.mockReset();
+        forceReLogin.mockReset().mockResolvedValue(undefined);
+        getDeviceId.mockReset().mockReturnValue('device-local');
     });
 
     it('hydrate le badge via unread-count puis démarre le hub', async () => {
@@ -125,5 +143,41 @@ describe('useNotificationsStore', () => {
         store.reset();
         expect(store.unreadCount).toBe(0);
         expect(stopHub).toHaveBeenCalled();
+    });
+
+    it('sessionEnded (tous appareils) coupe le hub et force le re-login', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        await handlers.onSessionEnded?.({ reason: 'session_ended', deviceIdentifier: null });
+
+        expect(stopHub).toHaveBeenCalled();
+        expect(forceReLogin).toHaveBeenCalled();
+    });
+
+    it('sessionEnded pour cet appareil force le re-login', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        await handlers.onSessionEnded?.({ reason: 'session_ended', deviceIdentifier: 'device-local' });
+
+        expect(forceReLogin).toHaveBeenCalled();
+    });
+
+    it('sessionEnded pour un autre appareil est ignoré', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+        stopHub.mockClear();
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        await handlers.onSessionEnded?.({ reason: 'session_ended', deviceIdentifier: 'other-device' });
+
+        expect(stopHub).not.toHaveBeenCalled();
+        expect(forceReLogin).not.toHaveBeenCalled();
     });
 });

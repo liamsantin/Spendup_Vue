@@ -1,13 +1,19 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import { HubConnectionState } from '@microsoft/signalr';
+import { getOrCreateDeviceId } from '@/features/auth/device';
+import { i18n } from '@/plugins/i18n';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { notificationsApi } from '../api';
 import { getNotificationsHubState, setNotificationsHubHandlers, startNotificationsHub, stopNotificationsHub } from '../hub';
 import { isFriendNotificationType, isSecurityNotificationType } from '../link';
-import type { AppNotification, NotificationReceivedPayload } from '../types';
+import type { AppNotification, NotificationReceivedPayload, SessionEndedPayload } from '../types';
 
 const DEFAULT_PAGE_SIZE = 20;
+
+function t(key: string) {
+    return String(i18n.global.t(key));
+}
 
 export const useNotificationsStore = defineStore('notifications', () => {
     const items = ref<AppNotification[]>([]);
@@ -24,6 +30,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const friendListeners = new Set<(notification: AppNotification) => void>();
 
     let sessionPromise: Promise<void> | null = null;
+    let handlingSessionEnded = false;
 
     const hasUnread = computed(() => unreadCount.value > 0);
     const badgeContent = computed(() => (unreadCount.value > 0 ? unreadCount.value : undefined));
@@ -72,6 +79,34 @@ export const useNotificationsStore = defineStore('notifications', () => {
         upsertItem(notification, true);
     }
 
+    function targetsThisDevice(payload: SessionEndedPayload): boolean {
+        const target = payload?.deviceIdentifier;
+        if (target == null || target === '') return true;
+        return target === getOrCreateDeviceId();
+    }
+
+    /**
+     * Session invalidée (logout / stamp MDP-email / révocation appareil).
+     * Coupe le hub ; force le re-login si cet appareil est concerné.
+     */
+    async function onSessionEnded(payload: SessionEndedPayload) {
+        if (handlingSessionEnded) return;
+        if (!targetsThisDevice(payload)) return;
+
+        handlingSessionEnded = true;
+        try {
+            await stopHub();
+            const { useAuthStore } = await import('@/features/auth/stores/auth-store');
+            const messageKey =
+                payload?.deviceIdentifier == null || payload.deviceIdentifier === ''
+                    ? 'auth.notices.allSessionsRevoked'
+                    : 'auth.notices.sessionEnded';
+            await useAuthStore().forceReLogin(t(messageKey));
+        } finally {
+            handlingSessionEnded = false;
+        }
+    }
+
     function subscribeToFriendNotifications(listener: (notification: AppNotification) => void) {
         friendListeners.add(listener);
         return () => {
@@ -84,7 +119,8 @@ export const useNotificationsStore = defineStore('notifications', () => {
             onConnected: () => {
                 hubConnected.value = true;
             },
-            onNotificationReceived
+            onNotificationReceived,
+            onSessionEnded: (payload) => onSessionEnded(payload)
         });
     }
 
@@ -169,13 +205,12 @@ export const useNotificationsStore = defineStore('notifications', () => {
         hubConnected.value = false;
     }
 
-    /** Démarre / coupe le hub selon `pushNotifications`. */
+    /**
+     * Le hub reste connecté même si l’affichage push est coupé :
+     * nécessaire pour recevoir `sessionEnded` (invalidation session).
+     * `pushNotifications` ne filtre que l’affichage live des notifs.
+     */
     async function syncRealtimePreference() {
-        const enabled = useUserSettingsStore().current.pushNotifications;
-        if (!enabled) {
-            await stopHub();
-            return;
-        }
         try {
             await startHub();
         } catch {
@@ -185,7 +220,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
     /**
      * Après session authentifiée complète (pas pendant challenge 2FA) :
-     * badge unread + hub si push activé.
+     * badge unread + hub SignalR (sessionEnded + pushes).
      */
     async function onAuthenticatedSession() {
         if (sessionPromise) return sessionPromise;

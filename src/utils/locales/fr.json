@@ -569,6 +569,7 @@
             "emailUpdated": "E-mail mis à jour. Veuillez vous reconnecter.",
             "twoFactorExpired": "Session 2FA expirée. Veuillez vous reconnecter.",
             "allSessionsRevoked": "Toutes les sessions ont été déconnectées. Veuillez vous reconnecter.",
+            "sessionEnded": "Cette session a été déconnectée. Veuillez vous reconnecter.",
             "passwordUpdatedRelogin": "Mot de passe mis à jour. Veuillez vous reconnecter.",
             "accountDeleted": "Votre compte a été définitivement supprimé."
         },

@@ -47,6 +47,13 @@ export type NotificationConnectedPayload = {
     userId: string;
 };
 
+/** Payload SignalR `sessionEnded` — session invalidée côté API. */
+export type SessionEndedPayload = {
+    reason: 'session_ended' | (string & {});
+    /** Appareil ciblé ; `null` = toutes les sessions. */
+    deviceIdentifier: string | null;
+};
+
 export type NotificationReceivedPayload = {
     notification: AppNotification;
     unreadCount: number;

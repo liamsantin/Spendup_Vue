@@ -1,11 +1,12 @@
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { useAuthStore } from '@/features/auth';
 import { getApiBaseUrl, isAuthCookieMode } from '@/utils/helpers/axios-helpers';
-import type { NotificationConnectedPayload, NotificationReceivedPayload } from './types';
+import type { NotificationConnectedPayload, NotificationReceivedPayload, SessionEndedPayload } from './types';
 
 export type NotificationsHubHandlers = {
     onConnected?: (payload: NotificationConnectedPayload) => void;
     onNotificationReceived?: (payload: NotificationReceivedPayload) => void;
+    onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
 };
 
 let connection: HubConnection | null = null;
@@ -25,6 +26,7 @@ async function accessTokenFactory(): Promise<string> {
 function attachHandlers(conn: HubConnection) {
     conn.off('connected');
     conn.off('notificationReceived');
+    conn.off('sessionEnded');
 
     conn.on('connected', (payload: NotificationConnectedPayload) => {
         handlers.onConnected?.(payload);
@@ -32,6 +34,10 @@ function attachHandlers(conn: HubConnection) {
 
     conn.on('notificationReceived', (payload: NotificationReceivedPayload) => {
         handlers.onNotificationReceived?.(payload);
+    });
+
+    conn.on('sessionEnded', (payload: SessionEndedPayload) => {
+        handlers.onSessionEnded?.(payload);
     });
 }
 
