@@ -63,12 +63,16 @@ export const useNotificationsStore = defineStore('notifications', () => {
         }
     }
 
-    function shouldShowLiveNotification(type: string): boolean {
+    /**
+     * Gate des chips live in-app uniquement (`pushNotifications` + sous-préférences).
+     * N’affecte pas l’inbox / badge / listes amis.
+     */
+    function shouldShowLiveChip(type: string): boolean {
         const settings = useUserSettingsStore().current;
         if (!settings.pushNotifications) return false;
         if (isSecurityNotificationType(type) && !settings.pushSecurityAlerts) return false;
         if (isFriendNotificationType(type) && !settings.pushFriendRequest) return false;
-        // Types finance futurs — coupe le live si désactivé.
+        // Types finance futurs — coupe le chip si désactivé.
         if (type.toLowerCase().includes('financial') && !settings.pushFinancialAlerts) return false;
         return true;
     }
@@ -95,7 +99,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     function pushLiveFriendChip(notification: AppNotification) {
         if (!isFriendLiveChipType(String(notification.type))) return;
         if (notification.isRead) return;
-        if (!shouldShowLiveNotification(String(notification.type))) return;
+        if (!shouldShowLiveChip(String(notification.type))) return;
 
         const key = `${notification.id}-${Date.now()}`;
         liveFriendChips.value = [...liveFriendChips.value, { key, notification }];
@@ -111,12 +115,10 @@ export const useNotificationsStore = defineStore('notifications', () => {
         const notification = normalized?.notification;
         if (!notification?.id) return;
 
-        // Les listes amis se mettent à jour même si l’utilisateur a coupé l’affichage push.
+        // Listes amis + inbox : toujours, indépendamment des préférences chip.
         if (isFriendNotificationType(String(notification.type))) {
             friendListeners.forEach((listener) => listener(notification));
         }
-
-        if (!shouldShowLiveNotification(String(notification.type))) return;
         upsertItem(notification, true);
         pushLiveFriendChip(notification);
     }
@@ -251,11 +253,14 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
 
     /**
-     * Le hub reste connecté même si l’affichage push est coupé :
-     * nécessaire pour recevoir `sessionEnded` (invalidation session).
-     * `pushNotifications` ne filtre que l’affichage live des notifs.
+     * Le hub reste connecté même si les chips sont coupés :
+     * nécessaire pour recevoir `sessionEnded` et alimenter l’inbox.
+     * `pushNotifications` ne filtre que l’affichage des chips live.
      */
     async function syncRealtimePreference() {
+        if (!useUserSettingsStore().current.pushNotifications) {
+            clearLiveFriendChips();
+        }
         try {
             await startHub();
         } catch {

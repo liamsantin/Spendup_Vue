@@ -1,18 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
-import { USER_SETTINGS_DEFAULTS } from '@/features/user-settings';
 
-const { unreadCount, list, markRead, markAllRead, startHub, stopHub, setHandlers, forceReLogin, getDeviceId } = vi.hoisted(() => ({
-    unreadCount: vi.fn(),
-    list: vi.fn(),
-    markRead: vi.fn(),
-    markAllRead: vi.fn(),
-    startHub: vi.fn(),
-    stopHub: vi.fn(),
-    setHandlers: vi.fn(),
-    forceReLogin: vi.fn(),
-    getDeviceId: vi.fn(() => 'device-local')
-}));
+const { unreadCount, list, markRead, markAllRead, startHub, stopHub, setHandlers, forceReLogin, getDeviceId, settingsState } = vi.hoisted(
+    () => ({
+        unreadCount: vi.fn(),
+        list: vi.fn(),
+        markRead: vi.fn(),
+        markAllRead: vi.fn(),
+        startHub: vi.fn(),
+        stopHub: vi.fn(),
+        setHandlers: vi.fn(),
+        forceReLogin: vi.fn(),
+        getDeviceId: vi.fn(() => 'device-local'),
+        settingsState: {
+            current: { pushNotifications: true, pushSecurityAlerts: true, pushFriendRequest: true, pushFinancialAlerts: true }
+        }
+    })
+);
 
 vi.mock('../../api', () => ({
     notificationsApi: {
@@ -45,7 +49,9 @@ vi.mock('@/features/user-settings', async () => {
     return {
         ...actual,
         useUserSettingsStore: () => ({
-            current: { ...USER_SETTINGS_DEFAULTS, pushNotifications: true, pushSecurityAlerts: true }
+            get current() {
+                return { ...actual.USER_SETTINGS_DEFAULTS, ...settingsState.current };
+            }
         })
     };
 });
@@ -54,11 +60,32 @@ import { useNotificationsStore } from '../notifications-store';
 
 type HubHandlers = {
     onSessionEnded?: (payload: { reason: string; deviceIdentifier: string | null }) => void;
+    onNotificationReceived?: (payload: {
+        notification: {
+            id: number;
+            type: string;
+            title: string;
+            subtitle: string | null;
+            message: string | null;
+            isRead: boolean;
+            readAt: string | null;
+            link: string | null;
+            photoUrl: string | null;
+            createdAt: string;
+        };
+        unreadCount: number;
+    }) => void;
 };
 
 describe('useNotificationsStore', () => {
     beforeEach(() => {
         createTestPinia();
+        settingsState.current = {
+            pushNotifications: true,
+            pushSecurityAlerts: true,
+            pushFriendRequest: true,
+            pushFinancialAlerts: true
+        };
         unreadCount.mockReset();
         list.mockReset();
         markRead.mockReset();
@@ -181,5 +208,86 @@ describe('useNotificationsStore', () => {
 
         expect(stopHub).not.toHaveBeenCalled();
         expect(forceReLogin).not.toHaveBeenCalled();
+    });
+
+    it('pushNotifications off : inbox mise à jour, pas de chip', async () => {
+        settingsState.current.pushNotifications = false;
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        handlers.onNotificationReceived?.({
+            notification: {
+                id: 42,
+                type: 'friendAccepted',
+                title: 'Ami accepté',
+                subtitle: null,
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: '/friends',
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            },
+            unreadCount: 1
+        });
+
+        expect(store.unreadCount).toBe(1);
+        expect(store.items).toHaveLength(1);
+        expect(store.items[0]?.id).toBe(42);
+        expect(store.liveFriendChips).toHaveLength(0);
+    });
+
+    it('pushNotifications on : chip ami affiché', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        handlers.onNotificationReceived?.({
+            notification: {
+                id: 43,
+                type: 'friendRequest',
+                title: 'Demande',
+                subtitle: null,
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: '/friends',
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            },
+            unreadCount: 1
+        });
+
+        expect(store.liveFriendChips).toHaveLength(1);
+        expect(store.liveFriendChips[0]?.notification.id).toBe(43);
+    });
+
+    it('syncRealtimePreference coupe les chips si pushNotifications off', async () => {
+        const store = useNotificationsStore();
+        store.liveFriendChips = [
+            {
+                key: 'x',
+                notification: {
+                    id: 1,
+                    type: 'friendAccepted',
+                    title: 'A',
+                    subtitle: null,
+                    message: null,
+                    isRead: false,
+                    readAt: null,
+                    link: null,
+                    photoUrl: null,
+                    createdAt: '2026-01-01T00:00:00Z'
+                }
+            }
+        ];
+        settingsState.current.pushNotifications = false;
+
+        await store.syncRealtimePreference();
+
+        expect(store.liveFriendChips).toHaveLength(0);
     });
 });
