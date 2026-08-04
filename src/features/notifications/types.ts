@@ -1,5 +1,14 @@
 /** Types d’événements déjà émis par l’API (sécu + placeholders amis/finance). */
-export type NotificationType = 'loginNewDevice' | 'securityAlert' | 'friendRequest' | 'friendAccepted' | 'other' | (string & {});
+export type NotificationType =
+    | 'loginNewDevice'
+    | 'securityAlert'
+    | 'friendRequest'
+    | 'friendAccepted'
+    | 'friendRefused'
+    | 'friendCanceled'
+    | 'friendRemoved'
+    | 'other'
+    | (string & {});
 
 /** Item inbox — même forme REST / SignalR (camelCase). */
 export type AppNotification = {

@@ -244,6 +244,20 @@ export const useFriendsStore = defineStore('friends', () => {
             void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true)]).then(() => {
                 refreshSearchIfNeeded();
             });
+            return;
+        }
+        // Refus / annulation : retire la demande côté émetteur / destinataire + maj Découvrir.
+        if (notification.type === 'friendRefused' || notification.type === 'friendCanceled') {
+            void Promise.all([loadOutgoing(true), loadIncoming(true)]).then(() => {
+                refreshSearchIfNeeded();
+            });
+            return;
+        }
+        // Suppression d’ami : retire de « Mes amis » + maj Découvrir.
+        if (notification.type === 'friendRemoved') {
+            void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true)]).then(() => {
+                refreshSearchIfNeeded();
+            });
         }
     }
 

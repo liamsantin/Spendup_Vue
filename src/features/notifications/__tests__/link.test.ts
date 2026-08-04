@@ -23,5 +23,9 @@ describe('notification type helpers', () => {
         expect(isSecurityNotificationType('securityAlert')).toBe(true);
         expect(isSecurityNotificationType('friendRequest')).toBe(false);
         expect(isFriendNotificationType('friendAccepted')).toBe(true);
+        expect(isFriendNotificationType('friendRefused')).toBe(true);
+        expect(isFriendNotificationType('friendCanceled')).toBe(true);
+        expect(isFriendNotificationType('friendRemoved')).toBe(true);
+        expect(isFriendNotificationType('other')).toBe(false);
     });
 });

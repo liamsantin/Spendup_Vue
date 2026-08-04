@@ -22,5 +22,11 @@ export function isSecurityNotificationType(type: string): boolean {
 }
 
 export function isFriendNotificationType(type: string): boolean {
-    return type === 'friendRequest' || type === 'friendAccepted';
+    return (
+        type === 'friendRequest' ||
+        type === 'friendAccepted' ||
+        type === 'friendRefused' ||
+        type === 'friendCanceled' ||
+        type === 'friendRemoved'
+    );
 }
