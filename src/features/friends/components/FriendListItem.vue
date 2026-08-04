@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { getApiBaseUrl } from '@/utils/helpers/axios-helpers';
+import { resolveFriendAvatarSrc } from '../profilePicture';
 import type { FriendUser } from '../types';
 
 const props = defineProps<{
@@ -11,20 +11,14 @@ const props = defineProps<{
 
 const fullName = computed(() => [props.user.firstName, props.user.name].filter(Boolean).join(' ').trim());
 const title = computed(() => fullName.value || props.user.username || props.user.publicId);
-const avatarSrc = computed(() => {
-    const src = props.user.profilePicture?.trim();
-    if (!src) return null;
-    if (src.startsWith('http://') || src.startsWith('https://')) return src;
-    return `${getApiBaseUrl()}${src}`;
-});
+const avatarSrc = computed(() => resolveFriendAvatarSrc(props.user.profilePicture));
 </script>
 
 <template>
     <v-list-item class="px-2 py-3" rounded="md" :class="{ 'bg-lightprimary': highlight }">
         <template #prepend>
             <v-avatar size="46" class="mr-3" color="lightprimary">
-                <v-img v-if="avatarSrc" :src="avatarSrc" width="46" :alt="title" />
-                <span v-else class="text-subtitle-1 text-primary">{{ title.charAt(0) }}</span>
+                <v-img :src="avatarSrc" width="46" height="46" cover :alt="title" />
             </v-avatar>
         </template>
 

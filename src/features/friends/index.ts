@@ -1,5 +1,6 @@
 export { friendsApi } from './api';
 export { useFriendsStore } from './stores/friends-store';
+export { resolveFriendAvatarSrc } from './profilePicture';
 export type {
     FriendshipStatus,
     FriendUser,
