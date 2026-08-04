@@ -262,6 +262,13 @@ export const useFriendsStore = defineStore('friends', () => {
             void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true)]).then(() => {
                 refreshSearchIfNeeded();
             });
+            return;
+        }
+        // Blocage : texte notif générique côté API — on rafraîchit seulement les listes (pas d’UI « X vous a bloqué »).
+        if (notification.type === 'friendBlocked') {
+            void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true), loadBlocked(true)]).then(() => {
+                refreshSearchIfNeeded();
+            });
         }
     }
 

@@ -7,6 +7,7 @@ export type NotificationType =
     | 'friendRefused'
     | 'friendCanceled'
     | 'friendRemoved'
+    | 'friendBlocked'
     | 'other'
     | (string & {});
 

@@ -99,4 +99,33 @@ describe('useFriendsStore', () => {
         expect(api.sendRequest).toHaveBeenCalledWith({ recipientPublicId: 'U1', message: 'hello' });
         expect(api.outgoing).toHaveBeenCalled();
     });
+
+    it('sur friendBlocked rafraîchit amis / demandes / bloqués', async () => {
+        api.list.mockResolvedValue({ items: [] });
+        api.incoming.mockResolvedValue({ items: [] });
+        api.outgoing.mockResolvedValue({ items: [] });
+        api.blocked.mockResolvedValue({ items: [] });
+
+        let listener: ((n: { type: string }) => void) | undefined;
+        subscribeToFriendNotifications.mockImplementation((fn: (n: { type: string }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useFriendsStore();
+        await store.bootstrap();
+        api.list.mockClear();
+        api.incoming.mockClear();
+        api.outgoing.mockClear();
+        api.blocked.mockClear();
+
+        listener?.({ type: 'friendBlocked' });
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(api.list).toHaveBeenCalled();
+        expect(api.incoming).toHaveBeenCalled();
+        expect(api.outgoing).toHaveBeenCalled();
+        expect(api.blocked).toHaveBeenCalled();
+    });
 });

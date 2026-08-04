@@ -31,6 +31,13 @@ describe('resolveNotificationLink', () => {
                 metadata: { friendshipPublicId: 'fr-2' }
             })
         ).toBe('/app/friends?tab=Friends&friendship=fr-2');
+
+        expect(
+            resolveNotificationLink('/friends', {
+                type: 'friendBlocked',
+                metadata: null
+            })
+        ).toBe('/app/friends?tab=Friends');
     });
 });
 
@@ -84,6 +91,7 @@ describe('notification type helpers', () => {
         expect(isFriendNotificationType('friendRefused')).toBe(true);
         expect(isFriendNotificationType('friendCanceled')).toBe(true);
         expect(isFriendNotificationType('friendRemoved')).toBe(true);
+        expect(isFriendNotificationType('friendBlocked')).toBe(true);
         expect(isFriendNotificationType('other')).toBe(false);
     });
 });

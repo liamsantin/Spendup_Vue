@@ -35,6 +35,7 @@ function friendsTabForType(type: NotificationType | string): 'Friends' | 'Reques
             return 'Requests';
         case 'friendAccepted':
         case 'friendRemoved':
+        case 'friendBlocked':
             return 'Friends';
         default:
             return null;
@@ -63,6 +64,7 @@ export function isFriendNotificationType(type: string): boolean {
         type === 'friendAccepted' ||
         type === 'friendRefused' ||
         type === 'friendCanceled' ||
-        type === 'friendRemoved'
+        type === 'friendRemoved' ||
+        type === 'friendBlocked'
     );
 }
