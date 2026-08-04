@@ -47,9 +47,10 @@ describe('friendLiveChipColor', () => {
         expect(isFriendLiveChipType('friendAccepted')).toBe(true);
         expect(isFriendLiveChipType('friendRemoved')).toBe(true);
         expect(isFriendLiveChipType('friendBlocked')).toBe(true);
-        expect(isFriendLiveChipType('friendRequest')).toBe(false);
+        expect(isFriendLiveChipType('friendRequest')).toBe(true);
 
         expect(friendLiveChipColor('friendAccepted')).toBe('primary');
+        expect(friendLiveChipColor('friendRequest')).toBe('primary');
         expect(friendLiveChipColor('friendRemoved')).toBe('error');
         expect(friendLiveChipColor('friendBlocked')).toBe('warning');
     });
