@@ -4,6 +4,7 @@ import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { Menu2Icon } from 'vue-tabler-icons';
 import Logo from '../logo/Logo.vue';
 import NotificationDD from '../vertical-header/NotificationDD.vue';
+import FriendsHeaderBtn from '../vertical-header/FriendsHeaderBtn.vue';
 import ProfileDD from '../vertical-header/ProfileDD.vue';
 import Searchbar from '../vertical-header/Searchbar.vue';
 
@@ -27,6 +28,8 @@ watch(priority, (newPriority) => {
             <v-sheet class="mx-2">
                 <Searchbar />
             </v-sheet>
+
+            <FriendsHeaderBtn class="ml-1" />
 
             <v-spacer />
 

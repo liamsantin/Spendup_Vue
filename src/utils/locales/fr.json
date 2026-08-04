@@ -86,6 +86,10 @@
                     "subtitle": "Compte, préférences & sécurité"
                 }
             }
+        },
+        "friends": {
+            "label": "Amis",
+            "openQr": "Ajouter un ami via QR"
         }
     },
     "dashboard": {

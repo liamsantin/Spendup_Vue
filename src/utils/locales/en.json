@@ -86,6 +86,10 @@
                     "subtitle": "Account, preferences & security"
                 }
             }
+        },
+        "friends": {
+            "label": "Friends",
+            "openQr": "Add a friend via QR"
         }
     },
     "dashboard": {
