@@ -28,7 +28,7 @@ onMounted(() => {
     <div v-else-if="!store.friends.length" class="py-8 text-center text-medium-emphasis">
         {{ t('friendsPage.empty.friends') }}
     </div>
-    <v-list v-else class="py-0" lines="two">
+    <v-list v-else class="py-0 theme-list" lines="two">
         <FriendListItem
             v-for="friend in store.friends"
             :key="friend.friendshipPublicId"

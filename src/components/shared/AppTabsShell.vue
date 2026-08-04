@@ -72,6 +72,10 @@ const emit = defineEmits<{
 
             <v-divider class="flex-grow-0" />
 
+            <div v-if="$slots.toolbar" class="settings-tabs-toolbar flex-grow-0">
+                <slot name="toolbar" />
+            </div>
+
             <perfect-scrollbar class="settings-tabs-scroll" :options="PERFECT_SCROLLBAR_OPTIONS">
                 <v-card-text class="pa-sm-6 pa-3">
                     <slot />
@@ -118,6 +122,10 @@ const emit = defineEmits<{
     .settings-page-card {
         border-radius: 0 !important;
     }
+
+    .settings-tabs-toolbar {
+        padding: 12px 16px 4px;
+    }
 }
 
 .settings-tabs :deep(.v-tab) {
@@ -129,6 +137,12 @@ const emit = defineEmits<{
     flex: 1 1 auto;
     min-height: 0;
     height: 0;
+}
+
+.settings-tabs-toolbar {
+    flex-shrink: 0;
+    padding: 12px 24px 4px;
+    background: rgb(var(--v-theme-surface));
 }
 
 .settings-actions-bar {

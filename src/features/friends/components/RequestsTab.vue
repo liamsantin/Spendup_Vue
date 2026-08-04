@@ -52,7 +52,7 @@ onMounted(() => {
                             <div v-else-if="!store.incomingRequests.length" class="py-6 text-center text-medium-emphasis">
                                 {{ t('friendsPage.empty.incoming') }}
                             </div>
-                            <v-list v-else class="py-0">
+                            <v-list v-else class="py-0 theme-list">
                                 <FriendListItem
                                     v-for="request in store.incomingRequests"
                                     :key="request.friendshipPublicId"
@@ -123,7 +123,7 @@ onMounted(() => {
                             <div v-else-if="!store.outgoingRequests.length" class="py-6 text-center text-medium-emphasis">
                                 {{ t('friendsPage.empty.outgoing') }}
                             </div>
-                            <v-list v-else class="py-0">
+                            <v-list v-else class="py-0 theme-list">
                                 <FriendListItem
                                     v-for="request in store.outgoingRequests"
                                     :key="request.friendshipPublicId"

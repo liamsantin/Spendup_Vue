@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import FriendListItem from './FriendListItem.vue';
@@ -8,30 +8,12 @@ import { useFriendsStore } from '../stores/friends-store';
 const { t } = useI18n();
 const store = useFriendsStore();
 const requestMessages = ref<Record<string, string>>({});
-
-watch(
-    () => store.searchQuery,
-    (value) => {
-        if (value.trim().length < 2) {
-            store.clearSearch();
-        }
-    }
-);
 </script>
 
 <template>
     <AppAlert v-if="store.error" type="error" density="default" class="mb-4" closable @dismiss="store.error = null">
         {{ store.error }}
     </AppAlert>
-
-    <v-text-field
-        v-model="store.searchQuery"
-        :label="t('friendsPage.discover.searchLabel')"
-        :hint="t('friendsPage.discover.searchHint')"
-        persistent-hint
-        prepend-inner-icon="mdi-magnify"
-        @update:model-value="store.searchUsers(String($event || ''))"
-    />
 
     <div v-if="store.searching" class="py-8 text-center">
         <v-progress-circular indeterminate color="primary" size="32" />
@@ -42,7 +24,7 @@ watch(
     <div v-else-if="store.searchQuery.trim().length < 2" class="py-8 text-center text-medium-emphasis">
         {{ t('friendsPage.discover.startTyping') }}
     </div>
-    <v-list v-else class="py-0">
+    <v-list v-else class="py-0 theme-list">
         <FriendListItem v-for="user in store.searchResults" :key="user.publicId" :user="user" :subtitle="user.username || user.publicId">
             <template #actions>
                 <v-chip v-if="user.friendshipStatus" size="small" color="primary" variant="tonal">

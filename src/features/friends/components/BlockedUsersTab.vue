@@ -28,7 +28,7 @@ onMounted(() => {
     <div v-else-if="!store.blockedUsers.length" class="py-8 text-center text-medium-emphasis">
         {{ t('friendsPage.empty.blocked') }}
     </div>
-    <v-list v-else class="py-0">
+    <v-list v-else class="py-0 theme-list">
         <FriendListItem
             v-for="item in store.blockedUsers"
             :key="item.friendshipPublicId"

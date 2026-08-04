@@ -19,7 +19,15 @@ const { avatarSrc } = useFriendAvatarUrl(
 </script>
 
 <template>
-    <v-list-item class="px-2 py-3" rounded="md" :class="{ 'bg-lightprimary': highlight }">
+    <!-- `link` active le hover Vuetify (comme les items notifications cliquables). -->
+    <v-list-item
+        link
+        color="primary"
+        class="friend-list-item px-2 py-3"
+        rounded="md"
+        :class="{ 'bg-lightprimary': highlight }"
+        @click.prevent
+    >
         <template #prepend>
             <v-avatar size="46" class="mr-3" color="lightprimary">
                 <v-img :src="avatarSrc" width="46" height="46" cover :alt="title" />
@@ -33,9 +41,16 @@ const { avatarSrc } = useFriendAvatarUrl(
                     {{ subtitle || user.username || user.publicId }}
                 </p>
             </div>
-            <div class="d-flex flex-wrap justify-end ga-2">
+            <div class="d-flex flex-wrap justify-end ga-2 friend-list-item__actions" @click.stop>
                 <slot name="actions" />
             </div>
         </div>
     </v-list-item>
 </template>
+
+<style scoped>
+.friend-list-item__actions {
+    position: relative;
+    z-index: 2;
+}
+</style>

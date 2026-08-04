@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { BellPlusIcon, ShieldLockIcon, UserHeartIcon, UsersIcon } from 'vue-tabler-icons';
 import AppTabsShell from '@/components/shared/AppTabsShell.vue';
-import { BlockedUsersTab, DiscoverFriendsTab, FriendsTab, RequestsTab, useFriendsStore } from '@/features/friends';
+import { BlockedUsersTab, DiscoverFriendsTab, DiscoverSearchBar, FriendsTab, RequestsTab, useFriendsStore } from '@/features/friends';
 
 const { t } = useI18n();
 const store = useFriendsStore();
@@ -34,6 +34,10 @@ watch(tab, (value) => {
 
 <template>
     <AppTabsShell v-model="tab" :tabs="tabs" align-tabs="center" hide-actions>
+        <template v-if="tab === 'Discover'" #toolbar>
+            <DiscoverSearchBar />
+        </template>
+
         <v-window v-model="tab">
             <v-window-item value="Friends">
                 <FriendsTab />
