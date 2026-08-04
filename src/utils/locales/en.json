@@ -152,7 +152,9 @@
         },
         "requests": {
             "incomingTitle": "Incoming requests",
-            "outgoingTitle": "Outgoing requests"
+            "incomingSubtitle": "Invitations waiting for your response.",
+            "outgoingTitle": "Outgoing requests",
+            "outgoingSubtitle": "Invitations you have sent."
         },
         "discover": {
             "searchLabel": "Search users",

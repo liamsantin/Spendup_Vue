@@ -152,7 +152,9 @@
         },
         "requests": {
             "incomingTitle": "Demandes reçues",
-            "outgoingTitle": "Demandes envoyées"
+            "incomingSubtitle": "Invitations en attente de votre réponse.",
+            "outgoingTitle": "Demandes envoyées",
+            "outgoingSubtitle": "Invitations que vous avez envoyées."
         },
         "discover": {
             "searchLabel": "Rechercher des utilisateurs",
