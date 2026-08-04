@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { BellRingingIcon } from 'vue-tabler-icons';
@@ -11,6 +11,7 @@ import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 const { t, locale } = useI18n();
 const router = useRouter();
 const notifications = useNotificationsStore();
+const menuOpen = ref(false);
 
 const unreadLabel = computed(() => t('header.notifications.newCount', { count: notifications.unreadCount }));
 
@@ -26,6 +27,7 @@ function formatCreatedAt(iso: string): string {
 }
 
 async function onMenuUpdate(open: boolean) {
+    menuOpen.value = open;
     if (open) {
         try {
             await notifications.openInbox();
@@ -35,7 +37,12 @@ async function onMenuUpdate(open: boolean) {
     }
 }
 
+function closeMenu() {
+    menuOpen.value = false;
+}
+
 async function onItemClick(item: AppNotification) {
+    closeMenu();
     if (!item.isRead) {
         try {
             await notifications.markRead(item.id);
@@ -51,7 +58,7 @@ async function onItemClick(item: AppNotification) {
 </script>
 
 <template>
-    <v-menu :close-on-content-click="false" @update:model-value="onMenuUpdate">
+    <v-menu :model-value="menuOpen" :close-on-content-click="false" @update:model-value="onMenuUpdate">
         <template #activator="{ props }">
             <v-btn icon variant="text" color="primary" class="custom-hover-primary" v-bind="props">
                 <v-badge :content="notifications.badgeContent" :model-value="notifications.hasUnread" color="primary">
@@ -103,7 +110,7 @@ async function onItemClick(item: AppNotification) {
             </perfect-scrollbar>
 
             <div class="py-4 px-6 text-center">
-                <v-btn color="primary" variant="outlined" block :to="'/app/notifications'">
+                <v-btn color="primary" variant="outlined" block :to="'/app/notifications'" @click="closeMenu">
                     {{ t('header.notifications.viewAll') }}
                 </v-btn>
             </div>
