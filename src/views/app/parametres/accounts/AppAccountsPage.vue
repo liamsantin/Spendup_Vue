@@ -4,6 +4,7 @@ import { onBeforeRouteLeave } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { AdjustmentsHorizontalIcon, BellIcon, LockIcon, UserCircleIcon } from 'vue-tabler-icons';
 import { AccountTab, NotificationsTab, PreferencesTab, SecurityTab } from '@/features/user-settings';
+import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import AppTabsShell from '@/components/shared/AppTabsShell.vue';
 
 type AccountTabExpose = {
@@ -29,6 +30,9 @@ const profileDirty = ref(false);
 const preferencesDirty = ref(false);
 const notificationsDirty = ref(false);
 const securityDirty = ref(false);
+
+const leaveConfirmOpen = ref(false);
+let leaveResolve: ((ok: boolean) => void) | null = null;
 
 const tabs = computed(() => [
     { value: 'Account', label: t('accounts.tabs.account'), icon: UserCircleIcon },
@@ -69,9 +73,26 @@ onBeforeRouteLeave((_to, _from, next) => {
         next();
         return;
     }
-    const ok = window.confirm(t('accounts.leaveDirtyConfirm'));
-    next(ok);
+    leaveConfirmOpen.value = true;
+    leaveResolve = (ok) => {
+        leaveResolve = null;
+        next(ok);
+    };
 });
+
+function onLeaveOpenChange(open: boolean) {
+    leaveConfirmOpen.value = open;
+    if (!open && leaveResolve) {
+        leaveResolve(false);
+        leaveResolve = null;
+    }
+}
+
+function confirmLeave() {
+    leaveConfirmOpen.value = false;
+    leaveResolve?.(true);
+    leaveResolve = null;
+}
 
 function onSave() {
     if (saveLoading.value || !activeDirty.value) return;
@@ -138,4 +159,14 @@ function onCancel() {
             </v-window-item>
         </v-window>
     </AppTabsShell>
+
+    <AppConfirmationModal
+        :model-value="leaveConfirmOpen"
+        :title="t('accounts.leaveDirtyModal.title')"
+        :message="t('accounts.leaveDirtyModal.body')"
+        :confirm-label="t('accounts.leaveDirtyModal.confirm')"
+        confirm-color="error"
+        @update:model-value="onLeaveOpenChange"
+        @confirm="confirmLeave"
+    />
 </template>

@@ -149,7 +149,6 @@
         },
         "removeModal": {
             "title": "Retirer cet ami ?",
-            "subtitle": "Cette action est immédiate.",
             "body": "Vous ne serez plus ami avec {name}. Vous pourrez renvoyer une demande plus tard.",
             "confirm": "Retirer"
         },
@@ -195,6 +194,11 @@
             "security": "Sécurité"
         },
         "leaveDirtyConfirm": "Vous avez des modifications non enregistrées. Quitter cette page ?",
+        "leaveDirtyModal": {
+            "title": "Quitter sans enregistrer ?",
+            "body": "Vous avez des modifications non enregistrées. Voulez-vous vraiment quitter cette page ?",
+            "confirm": "Quitter"
+        },
         "notifications": {
             "example": {
                 "title": "Résumé par e-mail",
@@ -329,16 +333,14 @@
             }
         },
         "saveConfirmModal": {
-            "title": "Enregistrer les modifications",
-            "subtitle": "Les changements seront appliqués à votre profil.",
-            "body": "Voulez-vous vraiment enregistrer les modifications effectuées ?",
+            "title": "Enregistrer les modifications ?",
+            "body": "Les changements seront appliqués à votre profil.",
             "back": "Retour",
             "confirm": "Enregistrer"
         },
         "cancelConfirmModal": {
-            "title": "Annuler les modifications",
-            "subtitle": "Les changements non enregistrés seront perdus.",
-            "body": "Voulez-vous vraiment annuler les modifications effectuées ?",
+            "title": "Annuler les modifications ?",
+            "body": "Les changements non enregistrés seront perdus.",
             "back": "Retour",
             "confirm": "Annuler les modifications"
         },
@@ -456,16 +458,14 @@
                 }
             },
             "revokeAllModal": {
-                "title": "Déconnecter tous les appareils",
-                "subtitle": "Toutes les sessions seront révoquées, y compris celle en cours. Vous devrez vous reconnecter.",
-                "body": "Cette action déconnecte immédiatement tous les appareils liés à votre compte.",
+                "title": "Déconnecter tous les appareils ?",
+                "body": "Toutes les sessions seront révoquées immédiatement, y compris celle en cours. Vous devrez vous reconnecter.",
                 "confirm": "Tout déconnecter"
             },
             "revokeModal": {
-                "title": "Déconnecter cet appareil",
-                "subtitle": "La session de cet appareil sera révoquée immédiatement.",
-                "body": "L’appareil devra se reconnecter pour accéder à nouveau au compte.",
-                "bodyCurrent": "Il s’agit de l’appareil actuel : vous serez déconnecté et devrez vous reconnecter.",
+                "title": "Déconnecter cet appareil ?",
+                "body": "La session de cet appareil sera révoquée immédiatement. Il devra se reconnecter pour accéder à nouveau au compte.",
+                "bodyCurrent": "Il s’agit de l’appareil actuel : vous serez déconnecté immédiatement et devrez vous reconnecter.",
                 "confirm": "Déconnecter"
             },
             "success": {

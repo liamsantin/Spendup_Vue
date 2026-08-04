@@ -2,12 +2,13 @@
 /**
  * Showcase composants (dev only).
  * Onglet Alert = clone `_template/modernize/components/ui-components/alert/*`.
- * Onglet Modal = AppModalBase (`docs/components/modal/modalbase-component.md`).
+ * Onglet Modal = AppModalBase / AppConfirmationModal.
  */
 defineOptions({ name: 'ComponentsShowcasePage' });
 
 import { ref } from 'vue';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
 
 const tab = ref('alert');
@@ -15,6 +16,7 @@ const closableOpen = ref(true);
 
 const modalScrollableOpen = ref(false);
 const modalStaticOpen = ref(false);
+const confirmationOpen = ref(false);
 </script>
 
 <template>
@@ -207,6 +209,23 @@ const modalStaticOpen = ref(false);
                     </AppModalBase>
                 </div>
 
+                <h3 class="text-h6 font-weight-semibold mb-3">Confirmation (AppConfirmationModal)</h3>
+                <div class="mb-8">
+                    <p class="text-body-2 text-medium-emphasis mb-3">
+                        Header + footer uniquement — titre et message (style secondaire), sans section body.
+                    </p>
+                    <v-btn color="error" variant="tonal" flat @click="confirmationOpen = true">Ouvrir confirmation</v-btn>
+
+                    <AppConfirmationModal
+                        v-model="confirmationOpen"
+                        title="Retirer cet ami ?"
+                        message="Vous ne serez plus ami avec Alice. Vous pourrez renvoyer une demande plus tard."
+                        confirm-label="Retirer"
+                        confirm-color="error"
+                        @confirm="confirmationOpen = false"
+                    />
+                </div>
+
                 <h3 class="text-h6 font-weight-semibold mb-3">Statique (sans scroll)</h3>
                 <div class="mb-8">
                     <p class="text-body-2 text-medium-emphasis mb-3">
@@ -217,7 +236,7 @@ const modalStaticOpen = ref(false);
                     <AppModalBase
                         v-model="modalStaticOpen"
                         title="Exemple sans scroll"
-                        subtitle="Idéal pour une confirmation ou une saisie OTP."
+                        subtitle="Idéal pour une saisie OTP ou un formulaire court."
                         :max-width="440"
                         :scrollable="false"
                     >

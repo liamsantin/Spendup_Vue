@@ -6,6 +6,7 @@ import { getOrCreateDeviceId, useAuthStore, type AuthDevice } from '@/features/a
 import { resolveIsCurrentDevice } from '@/features/auth/device-current';
 import { withStepUpRetry } from '@/features/auth/step-up';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
 
 const emit = defineEmits<{
@@ -409,48 +410,30 @@ async function confirmRevokeAll() {
         </v-card-item>
     </v-card>
 
-    <AppModalBase
+    <AppConfirmationModal
         v-model="revokeAllOpen"
         :title="t('security.devices.revokeAllModal.title')"
-        :subtitle="t('security.devices.revokeAllModal.subtitle')"
-        :max-width="440"
-        :scrollable="false"
-    >
-        <p class="text-body-1 mb-0">{{ t('security.devices.revokeAllModal.body') }}</p>
+        :message="t('security.devices.revokeAllModal.body')"
+        :confirm-label="t('security.devices.revokeAllModal.confirm')"
+        confirm-color="error"
+        :loading="revokeAllLoading"
+        @confirm="confirmRevokeAll"
+    />
 
-        <template #footer="{ close }">
-            <v-btn variant="text" flat :disabled="revokeAllLoading" @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="error" flat :loading="revokeAllLoading" @click="confirmRevokeAll">
-                {{ t('security.devices.revokeAllModal.confirm') }}
-            </v-btn>
-        </template>
-    </AppModalBase>
-
-    <AppModalBase
+    <AppConfirmationModal
         :model-value="revokeOpen"
         :title="t('security.devices.revokeModal.title')"
-        :subtitle="t('security.devices.revokeModal.subtitle')"
-        :max-width="440"
-        :scrollable="false"
+        :message="
+            revokeTarget && isCurrentDevice(revokeTarget)
+                ? t('security.devices.revokeModal.bodyCurrent')
+                : t('security.devices.revokeModal.body')
+        "
+        :confirm-label="t('security.devices.revokeModal.confirm')"
+        confirm-color="error"
+        :loading="!!revokeLoadingId"
         @update:model-value="onRevokeOpenChange"
-    >
-        <p class="text-body-1 mb-0">
-            {{
-                revokeTarget && isCurrentDevice(revokeTarget)
-                    ? t('security.devices.revokeModal.bodyCurrent')
-                    : t('security.devices.revokeModal.body')
-            }}
-        </p>
-
-        <template #footer="{ close }">
-            <v-btn variant="text" flat :disabled="!!revokeLoadingId" @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="error" flat :loading="!!revokeLoadingId" @click="confirmRevokeDevice">
-                {{ t('security.devices.revokeModal.confirm') }}
-            </v-btn>
-        </template>
-    </AppModalBase>
+        @confirm="confirmRevokeDevice"
+    />
 
     <AppModalBase
         :model-value="detailsOpen"

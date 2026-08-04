@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { onBeforeRouteLeave, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { TrashIcon } from 'vue-tabler-icons';
 import {
     CATALOG_AVATARS,
@@ -17,6 +17,7 @@ import {
 } from '@/features/auth';
 import { useCountriesStore } from '@/features/countries';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
@@ -676,11 +677,6 @@ onUnmounted(() => {
     revokeDisplayBlob();
 });
 
-onBeforeRouteLeave(() => {
-    if (!isDirty.value) return true;
-    return window.confirm(t('accounts.leaveConfirm'));
-});
-
 defineExpose({
     saveProfile: requestSaveProfile,
     resetProfile: requestResetProfile,
@@ -1047,41 +1043,27 @@ defineExpose({
             </template>
         </AppModalBase>
 
-        <AppModalBase
+        <AppConfirmationModal
             v-model="saveConfirmOpen"
             :title="t('accounts.saveConfirmModal.title')"
-            :subtitle="t('accounts.saveConfirmModal.subtitle')"
-            :max-width="440"
-            :scrollable="false"
-        >
-            <p class="text-body-1 mb-0">{{ t('accounts.saveConfirmModal.body') }}</p>
+            :message="t('accounts.saveConfirmModal.body')"
+            :cancel-label="t('accounts.saveConfirmModal.back')"
+            :confirm-label="t('accounts.saveConfirmModal.confirm')"
+            :loading="profileSaving"
+            @confirm="confirmSaveProfile"
+        />
 
-            <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="profileSaving" @click="close">{{ t('accounts.saveConfirmModal.back') }}</v-btn>
-                <v-spacer />
-                <v-btn color="primary" flat :loading="profileSaving" @click="confirmSaveProfile">{{
-                    t('accounts.saveConfirmModal.confirm')
-                }}</v-btn>
-            </template>
-        </AppModalBase>
-
-        <AppModalBase
+        <AppConfirmationModal
             v-model="cancelConfirmOpen"
             :title="t('accounts.cancelConfirmModal.title')"
-            :subtitle="t('accounts.cancelConfirmModal.subtitle')"
-            :max-width="440"
-            :scrollable="false"
-        >
-            <p class="text-body-1 mb-0">{{ t('accounts.cancelConfirmModal.body') }}</p>
-
-            <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="cancelConfirming" @click="close">{{ t('accounts.cancelConfirmModal.back') }}</v-btn>
-                <v-spacer />
-                <v-btn class="bg-lighterror text-error" flat :loading="cancelConfirming" @click="confirmResetProfile">
-                    {{ t('accounts.cancelConfirmModal.confirm') }}
-                </v-btn>
-            </template>
-        </AppModalBase>
+            :message="t('accounts.cancelConfirmModal.body')"
+            :cancel-label="t('accounts.cancelConfirmModal.back')"
+            :confirm-label="t('accounts.cancelConfirmModal.confirm')"
+            confirm-color=""
+            confirm-class="bg-lighterror text-error"
+            :loading="cancelConfirming"
+            @confirm="confirmResetProfile"
+        />
 
         <AppModalBase
             v-model="deleteOpen"

@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import FriendListItem from './FriendListItem.vue';
 import { useFriendsStore } from '../stores/friends-store';
 import type { FriendItem } from '../types';
@@ -100,24 +100,14 @@ onMounted(() => {
         </div>
     </template>
 
-    <AppModalBase
+    <AppConfirmationModal
         :model-value="removeOpen"
         :title="t('friendsPage.removeModal.title')"
-        :subtitle="t('friendsPage.removeModal.subtitle')"
-        :max-width="440"
-        :scrollable="false"
+        :message="t('friendsPage.removeModal.body', { name: removeDisplayName })"
+        :confirm-label="t('friendsPage.removeModal.confirm')"
+        confirm-color="error"
+        :loading="store.acting"
         @update:model-value="onRemoveOpenChange"
-    >
-        <p class="text-body-1 mb-0">
-            {{ t('friendsPage.removeModal.body', { name: removeDisplayName }) }}
-        </p>
-
-        <template #footer="{ close }">
-            <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="error" flat :loading="store.acting" @click="confirmRemoveFriend">
-                {{ t('friendsPage.removeModal.confirm') }}
-            </v-btn>
-        </template>
-    </AppModalBase>
+        @confirm="confirmRemoveFriend"
+    />
 </template>

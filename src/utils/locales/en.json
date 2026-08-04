@@ -149,7 +149,6 @@
         },
         "removeModal": {
             "title": "Remove this friend?",
-            "subtitle": "This action takes effect immediately.",
             "body": "You will no longer be friends with {name}. You can send a new request later.",
             "confirm": "Remove"
         },
@@ -195,6 +194,11 @@
             "security": "Security"
         },
         "leaveDirtyConfirm": "You have unsaved changes. Leave this page?",
+        "leaveDirtyModal": {
+            "title": "Leave without saving?",
+            "body": "You have unsaved changes. Do you really want to leave this page?",
+            "confirm": "Leave"
+        },
         "notifications": {
             "example": {
                 "title": "Email digest",
@@ -329,16 +333,14 @@
             }
         },
         "saveConfirmModal": {
-            "title": "Save changes",
-            "subtitle": "Changes will be applied to your profile.",
-            "body": "Do you really want to save the changes you made?",
+            "title": "Save changes?",
+            "body": "Changes will be applied to your profile.",
             "back": "Back",
             "confirm": "Save"
         },
         "cancelConfirmModal": {
-            "title": "Discard changes",
-            "subtitle": "Unsaved changes will be lost.",
-            "body": "Do you really want to discard the changes you made?",
+            "title": "Discard changes?",
+            "body": "Unsaved changes will be lost.",
             "back": "Back",
             "confirm": "Discard changes"
         },
@@ -456,16 +458,14 @@
                 }
             },
             "revokeAllModal": {
-                "title": "Sign out all devices",
-                "subtitle": "All sessions will be revoked, including the current one. You will need to sign in again.",
-                "body": "This action immediately signs out all devices linked to your account.",
+                "title": "Sign out all devices?",
+                "body": "All sessions will be revoked immediately, including the current one. You will need to sign in again.",
                 "confirm": "Sign out all"
             },
             "revokeModal": {
-                "title": "Sign out this device",
-                "subtitle": "This device’s session will be revoked immediately.",
-                "body": "The device will need to sign in again to access the account.",
-                "bodyCurrent": "This is the current device: you will be signed out and need to sign in again.",
+                "title": "Sign out this device?",
+                "body": "This device’s session will be revoked immediately. It will need to sign in again to access the account.",
+                "bodyCurrent": "This is the current device: you will be signed out immediately and need to sign in again.",
                 "confirm": "Sign out"
             },
             "success": {
