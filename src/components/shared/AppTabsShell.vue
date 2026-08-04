@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { FriendLiveChips } from '@/features/notifications';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 
 const { t } = useI18n();
@@ -44,6 +45,8 @@ const emit = defineEmits<{
 <template>
     <div class="settings-page">
         <v-card elevation="10" rounded="md" class="settings-page-card">
+            <FriendLiveChips />
+
             <v-tabs
                 :model-value="modelValue"
                 bg-color="grey100"
@@ -106,6 +109,7 @@ const emit = defineEmits<{
 }
 
 .settings-page-card {
+    position: relative;
     flex: 1 1 auto;
     min-height: 0;
     display: flex;

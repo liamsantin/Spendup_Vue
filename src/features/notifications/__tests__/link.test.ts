@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { friendLiveChipColor, isFriendLiveChipType } from '../friendChip';
 import { isFriendNotificationType, isSecurityNotificationType, resolveNotificationLink } from '../link';
 import { getFriendshipPublicId, normalizeAppNotification, parseNotificationMetadata } from '../normalize';
 
@@ -38,6 +39,19 @@ describe('resolveNotificationLink', () => {
                 metadata: null
             })
         ).toBe('/app/friends?tab=Friends');
+    });
+});
+
+describe('friendLiveChipColor', () => {
+    it('mappe les types amis vers primary / error / warning', () => {
+        expect(isFriendLiveChipType('friendAccepted')).toBe(true);
+        expect(isFriendLiveChipType('friendRemoved')).toBe(true);
+        expect(isFriendLiveChipType('friendBlocked')).toBe(true);
+        expect(isFriendLiveChipType('friendRequest')).toBe(false);
+
+        expect(friendLiveChipColor('friendAccepted')).toBe('primary');
+        expect(friendLiveChipColor('friendRemoved')).toBe('error');
+        expect(friendLiveChipColor('friendBlocked')).toBe('warning');
     });
 });
 

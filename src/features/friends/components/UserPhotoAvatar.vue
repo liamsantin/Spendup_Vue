@@ -10,6 +10,8 @@ const props = defineProps<{
     photoUrl?: string | null;
     fallbackLabel?: string;
     size?: number | string;
+    /** Passe `start` au `v-avatar` (ex. dans un AppChip). */
+    start?: boolean;
 }>();
 
 const auth = useAuthStore();
@@ -94,7 +96,7 @@ const initial = computed(() => (props.fallbackLabel?.trim().charAt(0) || '?').to
 </script>
 
 <template>
-    <v-avatar :size="sizePx" color="lightprimary">
+    <v-avatar :size="sizePx" color="lightprimary" :start="start">
         <v-img v-if="avatarSrc" :src="avatarSrc" :width="sizePx" :height="sizePx" cover :alt="fallbackLabel || 'avatar'" />
         <span v-else-if="showFallback" class="text-h6 text-primary">{{ initial }}</span>
     </v-avatar>

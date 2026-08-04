@@ -6,11 +6,18 @@ import { i18n } from '@/plugins/i18n';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { notificationsApi } from '../api';
 import { getNotificationsHubState, setNotificationsHubHandlers, startNotificationsHub, stopNotificationsHub } from '../hub';
+import { isFriendLiveChipType } from '../friendChip';
 import { isFriendNotificationType, isSecurityNotificationType } from '../link';
 import { normalizeNotificationReceivedPayload } from '../normalize';
 import type { AppNotification, NotificationReceivedPayload, SessionEndedPayload } from '../types';
 
 const DEFAULT_PAGE_SIZE = 20;
+const LIVE_CHIP_DISMISS_MS = 8000;
+
+export type LiveFriendChip = {
+    key: string;
+    notification: AppNotification;
+};
 
 function t(key: string) {
     return String(i18n.global.t(key));
@@ -29,9 +36,11 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const error = ref<string | null>(null);
     const hubConnected = ref(false);
     const friendListeners = new Set<(notification: AppNotification) => void>();
+    const liveFriendChips = ref<LiveFriendChip[]>([]);
 
     let sessionPromise: Promise<void> | null = null;
     let handlingSessionEnded = false;
+    const liveChipTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
     const hasUnread = computed(() => unreadCount.value > 0);
     const badgeContent = computed(() => (unreadCount.value > 0 ? unreadCount.value : undefined));
@@ -64,6 +73,31 @@ export const useNotificationsStore = defineStore('notifications', () => {
         return true;
     }
 
+    function dismissLiveFriendChip(key: string) {
+        const timer = liveChipTimers.get(key);
+        if (timer) {
+            clearTimeout(timer);
+            liveChipTimers.delete(key);
+        }
+        liveFriendChips.value = liveFriendChips.value.filter((chip) => chip.key !== key);
+    }
+
+    function clearLiveFriendChips() {
+        liveChipTimers.forEach((timer) => clearTimeout(timer));
+        liveChipTimers.clear();
+        liveFriendChips.value = [];
+    }
+
+    function pushLiveFriendChip(notification: AppNotification) {
+        if (!isFriendLiveChipType(String(notification.type))) return;
+        if (!shouldShowLiveNotification(String(notification.type))) return;
+
+        const key = `${notification.id}-${Date.now()}`;
+        liveFriendChips.value = [...liveFriendChips.value, { key, notification }];
+        const timer = setTimeout(() => dismissLiveFriendChip(key), LIVE_CHIP_DISMISS_MS);
+        liveChipTimers.set(key, timer);
+    }
+
     function onNotificationReceived(payload: NotificationReceivedPayload) {
         const normalized = normalizeNotificationReceivedPayload(payload) ?? payload;
         if (normalized?.unreadCount != null) {
@@ -79,6 +113,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
         if (!shouldShowLiveNotification(String(notification.type))) return;
         upsertItem(notification, true);
+        pushLiveFriendChip(notification);
     }
 
     function targetsThisDevice(payload: SessionEndedPayload): boolean {
@@ -258,6 +293,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         error.value = null;
         hubConnected.value = false;
         friendListeners.clear();
+        clearLiveFriendChips();
         void stopHub();
     }
 
@@ -273,10 +309,12 @@ export const useNotificationsStore = defineStore('notifications', () => {
         inboxLoaded,
         error,
         hubConnected,
+        liveFriendChips,
         hasUnread,
         badgeContent,
         hasMore,
         subscribeToFriendNotifications,
+        dismissLiveFriendChip,
         fetchUnreadCount,
         loadInbox,
         openInbox,

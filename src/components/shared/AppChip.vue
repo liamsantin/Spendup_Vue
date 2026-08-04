@@ -36,6 +36,7 @@ const isControlled = computed(() => props.visible !== undefined);
 const isVisible = computed(() => (isControlled.value ? props.visible !== false : internalVisible.value));
 
 function onClose(event: MouseEvent) {
+    event.stopPropagation();
     emit('click:close', event);
     if (!isControlled.value) {
         internalVisible.value = false;
