@@ -1,7 +1,7 @@
 import { onUnmounted, ref, toValue, watch, type MaybeRefOrGetter } from 'vue';
 import { useAuthStore } from '@/features/auth';
 import { friendsApi } from '../api';
-import { DEFAULT_AVATAR_SRC, needsUserAvatarFetch, resolveFriendAvatarSrc } from '../profilePicture';
+import { DEFAULT_AVATAR_SRC, extractPublicIdFromUserAvatarPath, needsUserAvatarFetch, resolveFriendAvatarSrc } from '../profilePicture';
 
 type SharedBlobEntry = {
     url: string;
@@ -56,8 +56,8 @@ export function useFriendAvatarUrl(publicId: MaybeRefOrGetter<string>, profilePi
         heldKey = null;
     }
 
-    async function resolveUploaded(id: string, hash: string, request: number): Promise<void> {
-        const key = avatarCacheKey(id, hash);
+    async function resolveUploaded(id: string, cacheToken: string, request: number): Promise<void> {
+        const key = avatarCacheKey(id, cacheToken);
         loading.value = true;
         try {
             let urlPromise = sharedBlobInFlight.get(key);
@@ -110,6 +110,13 @@ export function useFriendAvatarUrl(publicId: MaybeRefOrGetter<string>, profilePi
 
         if (needsUserAvatarFetch(picture) && picture) {
             await resolveUploaded(id, picture, request);
+            return;
+        }
+
+        // Path auth `/api/users/{id}/avatar` → blob Bearer (ne pas coller en src img).
+        const pathPublicId = extractPublicIdFromUserAvatarPath(picture);
+        if (pathPublicId) {
+            await resolveUploaded(id || pathPublicId, `path:${pathPublicId}`, request);
             return;
         }
 

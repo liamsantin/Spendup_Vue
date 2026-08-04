@@ -22,39 +22,53 @@ onMounted(() => {
         {{ store.error }}
     </AppAlert>
 
-    <div v-if="store.loadingFriends" class="py-8 text-center">
+    <div v-if="store.loadingFriends && !store.friends.length" class="py-8 text-center">
         <v-progress-circular indeterminate color="primary" size="32" />
     </div>
     <div v-else-if="!store.friends.length" class="py-8 text-center text-medium-emphasis">
         {{ t('friendsPage.empty.friends') }}
     </div>
-    <v-list v-else class="py-0 theme-list" lines="two">
-        <FriendListItem
-            v-for="friend in store.friends"
-            :key="friend.friendshipPublicId"
-            :user="friend.user"
-            :subtitle="t('friendsPage.friends.since', { date: formatDate(friend.friendsSince) })"
-        >
-            <template #actions>
-                <v-btn
-                    size="small"
-                    variant="text"
-                    color="error"
-                    :disabled="store.acting"
-                    @click.stop="store.removeFriend(friend.friendshipPublicId)"
-                >
-                    {{ t('friendsPage.actions.remove') }}
-                </v-btn>
-                <v-btn
-                    size="small"
-                    variant="text"
-                    color="warning"
-                    :disabled="store.acting"
-                    @click.stop="store.blockUser(friend.user.publicId)"
-                >
-                    {{ t('friendsPage.actions.block') }}
-                </v-btn>
-            </template>
-        </FriendListItem>
-    </v-list>
+    <template v-else>
+        <v-list class="py-0 theme-list" lines="two">
+            <FriendListItem
+                v-for="friend in store.friends"
+                :key="friend.friendshipPublicId"
+                :friendship-public-id="friend.friendshipPublicId"
+                :user="friend.user"
+                :subtitle="t('friendsPage.friends.since', { date: formatDate(friend.friendsSince) })"
+            >
+                <template #actions>
+                    <v-btn
+                        size="small"
+                        variant="text"
+                        color="error"
+                        :disabled="store.acting"
+                        @click.stop="store.removeFriend(friend.friendshipPublicId)"
+                    >
+                        {{ t('friendsPage.actions.remove') }}
+                    </v-btn>
+                    <v-btn
+                        size="small"
+                        variant="text"
+                        color="warning"
+                        :disabled="store.acting"
+                        @click.stop="store.blockUser(friend.user.publicId)"
+                    >
+                        {{ t('friendsPage.actions.block') }}
+                    </v-btn>
+                </template>
+            </FriendListItem>
+        </v-list>
+        <div v-if="store.hasMoreFriends" class="pt-4 text-center">
+            <v-btn
+                variant="text"
+                color="primary"
+                :loading="store.loadingMoreFriends"
+                :disabled="store.loadingMoreFriends"
+                @click="store.loadMoreFriends()"
+            >
+                {{ t('friendsPage.loadMore') }}
+            </v-btn>
+        </div>
+    </template>
 </template>

@@ -21,7 +21,7 @@ function outgoingPendingId(user: FriendSearchItem): string | undefined {
         {{ store.error }}
     </AppAlert>
 
-    <div v-if="store.searching" class="py-8 text-center">
+    <div v-if="store.searching && !store.searchResults.length" class="py-8 text-center">
         <v-progress-circular indeterminate color="primary" size="32" />
     </div>
     <div v-else-if="store.searchQuery.trim().length >= 2 && !store.searchResults.length" class="py-8 text-center text-medium-emphasis">
@@ -30,47 +30,65 @@ function outgoingPendingId(user: FriendSearchItem): string | undefined {
     <div v-else-if="store.searchQuery.trim().length < 2" class="py-8 text-center text-medium-emphasis">
         {{ t('friendsPage.discover.startTyping') }}
     </div>
-    <v-list v-else class="py-0 theme-list">
-        <FriendListItem v-for="user in store.searchResults" :key="user.publicId" :user="user" :subtitle="user.username || user.publicId">
-            <template #actions>
-                <template v-if="outgoingPendingId(user)">
-                    <v-chip size="small" color="primary" variant="tonal">
-                        {{ t('friendsPage.status.pending') }}
+    <template v-else>
+        <v-list class="py-0 theme-list">
+            <FriendListItem
+                v-for="user in store.searchResults"
+                :key="user.publicId"
+                :user="user"
+                :subtitle="user.username || user.publicId"
+            >
+                <template #actions>
+                    <template v-if="outgoingPendingId(user)">
+                        <v-chip size="small" color="primary" variant="tonal">
+                            {{ t('friendsPage.status.pending') }}
+                        </v-chip>
+                        <v-btn
+                            size="small"
+                            variant="text"
+                            color="error"
+                            :disabled="store.acting"
+                            @click.stop="store.cancelRequest(outgoingPendingId(user)!)"
+                        >
+                            {{ t('friendsPage.actions.cancel') }}
+                        </v-btn>
+                    </template>
+                    <v-chip v-else-if="user.friendshipStatus" size="small" color="primary" variant="tonal">
+                        {{ t(`friendsPage.status.${user.friendshipStatus}`) }}
                     </v-chip>
-                    <v-btn
-                        size="small"
-                        variant="text"
-                        color="error"
-                        :disabled="store.acting"
-                        @click.stop="store.cancelRequest(outgoingPendingId(user)!)"
-                    >
-                        {{ t('friendsPage.actions.cancel') }}
-                    </v-btn>
+                    <template v-else>
+                        <v-text-field
+                            v-model="requestMessages[user.publicId]"
+                            density="compact"
+                            variant="outlined"
+                            hide-details
+                            class="friends-message-field"
+                            :placeholder="t('friendsPage.discover.messagePlaceholder')"
+                        />
+                        <v-btn
+                            size="small"
+                            color="primary"
+                            :disabled="store.acting"
+                            @click.stop="store.sendRequest(user.publicId, requestMessages[user.publicId])"
+                        >
+                            {{ t('friendsPage.actions.add') }}
+                        </v-btn>
+                    </template>
                 </template>
-                <v-chip v-else-if="user.friendshipStatus" size="small" color="primary" variant="tonal">
-                    {{ t(`friendsPage.status.${user.friendshipStatus}`) }}
-                </v-chip>
-                <template v-else>
-                    <v-text-field
-                        v-model="requestMessages[user.publicId]"
-                        density="compact"
-                        variant="outlined"
-                        hide-details
-                        class="friends-message-field"
-                        :placeholder="t('friendsPage.discover.messagePlaceholder')"
-                    />
-                    <v-btn
-                        size="small"
-                        color="primary"
-                        :disabled="store.acting"
-                        @click.stop="store.sendRequest(user.publicId, requestMessages[user.publicId])"
-                    >
-                        {{ t('friendsPage.actions.add') }}
-                    </v-btn>
-                </template>
-            </template>
-        </FriendListItem>
-    </v-list>
+            </FriendListItem>
+        </v-list>
+        <div v-if="store.hasMoreSearch" class="pt-4 text-center">
+            <v-btn
+                variant="text"
+                color="primary"
+                :loading="store.loadingMoreSearch"
+                :disabled="store.loadingMoreSearch"
+                @click="store.loadMoreSearch()"
+            >
+                {{ t('friendsPage.loadMore') }}
+            </v-btn>
+        </div>
+    </template>
 </template>
 
 <style scoped>

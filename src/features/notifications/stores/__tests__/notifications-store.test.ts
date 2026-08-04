@@ -140,9 +140,11 @@ describe('useNotificationsStore', () => {
         const store = useNotificationsStore();
         store.unreadCount = 2;
         store.items = [];
+        const unsub = store.subscribeToFriendNotifications(() => undefined);
         store.reset();
         expect(store.unreadCount).toBe(0);
         expect(stopHub).toHaveBeenCalled();
+        unsub();
     });
 
     it('sessionEnded (tous appareils) coupe le hub et force le re-login', async () => {

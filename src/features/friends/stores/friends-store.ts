@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { useNotificationsStore } from '@/features/notifications';
 import type { AppNotification } from '@/features/notifications';
 import { friendsApi } from '../api';
-import type { BlockedFriendItem, FriendItem, FriendRequestItem, FriendSearchItem } from '../types';
+import type { BlockedFriendItem, FriendItem, FriendRequestItem, FriendSearchItem, FriendsPageResult } from '../types';
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -14,25 +14,63 @@ export const useFriendsStore = defineStore('friends', () => {
     const blockedUsers = ref<BlockedFriendItem[]>([]);
     const searchResults = ref<FriendSearchItem[]>([]);
     const searchQuery = ref('');
+
+    const friendsPage = ref(1);
+    const incomingPage = ref(1);
+    const outgoingPage = ref(1);
+    const blockedPage = ref(1);
+    const searchPage = ref(1);
+
+    const friendsTotalCount = ref(0);
+    const incomingTotalCount = ref(0);
+    const outgoingTotalCount = ref(0);
+    const blockedTotalCount = ref(0);
+    const searchTotalCount = ref(0);
+
     const loadingFriends = ref(false);
     const loadingIncoming = ref(false);
     const loadingOutgoing = ref(false);
     const loadingBlocked = ref(false);
     const searching = ref(false);
+    const loadingMoreFriends = ref(false);
+    const loadingMoreIncoming = ref(false);
+    const loadingMoreOutgoing = ref(false);
+    const loadingMoreBlocked = ref(false);
+    const loadingMoreSearch = ref(false);
     const acting = ref(false);
     const initialized = ref(false);
     const error = ref<string | null>(null);
+    /** Deep-link notif : `?friendship=` à mettre en évidence / scroller. */
+    const focusFriendshipPublicId = ref<string | null>(null);
 
     let unsubscribe: (() => void) | null = null;
 
-    const friendsCount = computed(() => friends.value.length);
-    const incomingCount = computed(() => incomingRequests.value.length);
-    const outgoingCount = computed(() => outgoingRequests.value.length);
-    const blockedCount = computed(() => blockedUsers.value.length);
+    const friendsCount = computed(() => friendsTotalCount.value);
+    const incomingCount = computed(() => incomingTotalCount.value);
+    const outgoingCount = computed(() => outgoingTotalCount.value);
+    const blockedCount = computed(() => blockedTotalCount.value);
     const canSearch = computed(() => searchQuery.value.trim().length >= 2);
+    const hasMoreFriends = computed(() => friends.value.length < friendsTotalCount.value);
+    const hasMoreIncoming = computed(() => incomingRequests.value.length < incomingTotalCount.value);
+    const hasMoreOutgoing = computed(() => outgoingRequests.value.length < outgoingTotalCount.value);
+    const hasMoreBlocked = computed(() => blockedUsers.value.length < blockedTotalCount.value);
+    const hasMoreSearch = computed(() => searchResults.value.length < searchTotalCount.value);
 
     function clearError() {
         error.value = null;
+    }
+
+    function applyPageResult<T>(
+        result: FriendsPageResult<T> | null | undefined,
+        items: { value: T[] },
+        page: { value: number },
+        totalCount: { value: number },
+        append: boolean
+    ) {
+        const nextItems = Array.isArray(result?.items) ? result.items : [];
+        items.value = append ? [...items.value, ...nextItems] : nextItems;
+        page.value = result?.page ?? (append ? page.value + 1 : 1);
+        totalCount.value = result?.totalCount ?? nextItems.length;
     }
 
     async function loadFriends(force = false) {
@@ -41,12 +79,27 @@ export const useFriendsStore = defineStore('friends', () => {
         clearError();
         try {
             const result = await friendsApi.list(1, DEFAULT_PAGE_SIZE);
-            friends.value = Array.isArray(result?.items) ? result.items : [];
+            applyPageResult(result, friends, friendsPage, friendsTotalCount, false);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
             loadingFriends.value = false;
+        }
+    }
+
+    async function loadMoreFriends() {
+        if (!hasMoreFriends.value || loadingFriends.value || loadingMoreFriends.value) return;
+        loadingMoreFriends.value = true;
+        clearError();
+        try {
+            const result = await friendsApi.list(friendsPage.value + 1, DEFAULT_PAGE_SIZE);
+            applyPageResult(result, friends, friendsPage, friendsTotalCount, true);
+        } catch (e: unknown) {
+            error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            loadingMoreFriends.value = false;
         }
     }
 
@@ -56,12 +109,27 @@ export const useFriendsStore = defineStore('friends', () => {
         clearError();
         try {
             const result = await friendsApi.incoming(1, DEFAULT_PAGE_SIZE);
-            incomingRequests.value = Array.isArray(result?.items) ? result.items : [];
+            applyPageResult(result, incomingRequests, incomingPage, incomingTotalCount, false);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
             loadingIncoming.value = false;
+        }
+    }
+
+    async function loadMoreIncoming() {
+        if (!hasMoreIncoming.value || loadingIncoming.value || loadingMoreIncoming.value) return;
+        loadingMoreIncoming.value = true;
+        clearError();
+        try {
+            const result = await friendsApi.incoming(incomingPage.value + 1, DEFAULT_PAGE_SIZE);
+            applyPageResult(result, incomingRequests, incomingPage, incomingTotalCount, true);
+        } catch (e: unknown) {
+            error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            loadingMoreIncoming.value = false;
         }
     }
 
@@ -71,12 +139,27 @@ export const useFriendsStore = defineStore('friends', () => {
         clearError();
         try {
             const result = await friendsApi.outgoing(1, DEFAULT_PAGE_SIZE);
-            outgoingRequests.value = Array.isArray(result?.items) ? result.items : [];
+            applyPageResult(result, outgoingRequests, outgoingPage, outgoingTotalCount, false);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
             loadingOutgoing.value = false;
+        }
+    }
+
+    async function loadMoreOutgoing() {
+        if (!hasMoreOutgoing.value || loadingOutgoing.value || loadingMoreOutgoing.value) return;
+        loadingMoreOutgoing.value = true;
+        clearError();
+        try {
+            const result = await friendsApi.outgoing(outgoingPage.value + 1, DEFAULT_PAGE_SIZE);
+            applyPageResult(result, outgoingRequests, outgoingPage, outgoingTotalCount, true);
+        } catch (e: unknown) {
+            error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            loadingMoreOutgoing.value = false;
         }
     }
 
@@ -86,7 +169,7 @@ export const useFriendsStore = defineStore('friends', () => {
         clearError();
         try {
             const result = await friendsApi.blocked(1, DEFAULT_PAGE_SIZE);
-            blockedUsers.value = Array.isArray(result?.items) ? result.items : [];
+            applyPageResult(result, blockedUsers, blockedPage, blockedTotalCount, false);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
@@ -95,11 +178,28 @@ export const useFriendsStore = defineStore('friends', () => {
         }
     }
 
+    async function loadMoreBlocked() {
+        if (!hasMoreBlocked.value || loadingBlocked.value || loadingMoreBlocked.value) return;
+        loadingMoreBlocked.value = true;
+        clearError();
+        try {
+            const result = await friendsApi.blocked(blockedPage.value + 1, DEFAULT_PAGE_SIZE);
+            applyPageResult(result, blockedUsers, blockedPage, blockedTotalCount, true);
+        } catch (e: unknown) {
+            error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            loadingMoreBlocked.value = false;
+        }
+    }
+
     async function searchUsers(q = searchQuery.value) {
         searchQuery.value = q;
         const trimmed = q.trim();
         if (trimmed.length < 2) {
             searchResults.value = [];
+            searchPage.value = 1;
+            searchTotalCount.value = 0;
             return;
         }
 
@@ -107,7 +207,7 @@ export const useFriendsStore = defineStore('friends', () => {
         clearError();
         try {
             const result = await friendsApi.search({ q: trimmed, page: 1, pageSize: DEFAULT_PAGE_SIZE });
-            searchResults.value = Array.isArray(result?.items) ? result.items : [];
+            applyPageResult(result, searchResults, searchPage, searchTotalCount, false);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
@@ -116,9 +216,40 @@ export const useFriendsStore = defineStore('friends', () => {
         }
     }
 
+    async function loadMoreSearch() {
+        if (!hasMoreSearch.value || searching.value || loadingMoreSearch.value) return;
+        const trimmed = searchQuery.value.trim();
+        if (trimmed.length < 2) return;
+        loadingMoreSearch.value = true;
+        clearError();
+        try {
+            const result = await friendsApi.search({
+                q: trimmed,
+                page: searchPage.value + 1,
+                pageSize: DEFAULT_PAGE_SIZE
+            });
+            applyPageResult(result, searchResults, searchPage, searchTotalCount, true);
+        } catch (e: unknown) {
+            error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            loadingMoreSearch.value = false;
+        }
+    }
+
     function clearSearch() {
         searchQuery.value = '';
         searchResults.value = [];
+        searchPage.value = 1;
+        searchTotalCount.value = 0;
+    }
+
+    function setFocusFriendship(friendshipPublicId: string | null) {
+        focusFriendshipPublicId.value = friendshipPublicId?.trim() || null;
+    }
+
+    function isFocusedFriendship(friendshipPublicId: string) {
+        return !!focusFriendshipPublicId.value && focusFriendshipPublicId.value === friendshipPublicId;
     }
 
     async function refreshAll() {
@@ -250,21 +381,18 @@ export const useFriendsStore = defineStore('friends', () => {
             });
             return;
         }
-        // Refus / annulation : retire la demande côté émetteur / destinataire + maj Découvrir.
         if (notification.type === 'friendRefused' || notification.type === 'friendCanceled') {
             void Promise.all([loadOutgoing(true), loadIncoming(true)]).then(() => {
                 refreshSearchIfNeeded();
             });
             return;
         }
-        // Suppression d’ami : retire de « Mes amis » + maj Découvrir.
         if (notification.type === 'friendRemoved') {
             void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true)]).then(() => {
                 refreshSearchIfNeeded();
             });
             return;
         }
-        // Blocage : texte notif générique côté API — on rafraîchit seulement les listes (pas d’UI « X vous a bloqué »).
         if (notification.type === 'friendBlocked') {
             void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true), loadBlocked(true)]).then(() => {
                 refreshSearchIfNeeded();
@@ -277,6 +405,11 @@ export const useFriendsStore = defineStore('friends', () => {
         unsubscribe = useNotificationsStore().subscribeToFriendNotifications(handleRealtime);
     }
 
+    /** Après login : écoute live même avant la première visite de /app/friends. */
+    function onAuthenticatedSession() {
+        ensureRealtimeBridge();
+    }
+
     async function bootstrap() {
         ensureRealtimeBridge();
         if (!initialized.value) {
@@ -284,7 +417,6 @@ export const useFriendsStore = defineStore('friends', () => {
             initialized.value = true;
             return;
         }
-        // Revenir sur la page Amis → données à jour (ex. nouvelle photo d’un autre user).
         await refreshAll();
     }
 
@@ -315,14 +447,30 @@ export const useFriendsStore = defineStore('friends', () => {
         blockedUsers.value = [];
         searchResults.value = [];
         searchQuery.value = '';
+        friendsPage.value = 1;
+        incomingPage.value = 1;
+        outgoingPage.value = 1;
+        blockedPage.value = 1;
+        searchPage.value = 1;
+        friendsTotalCount.value = 0;
+        incomingTotalCount.value = 0;
+        outgoingTotalCount.value = 0;
+        blockedTotalCount.value = 0;
+        searchTotalCount.value = 0;
         loadingFriends.value = false;
         loadingIncoming.value = false;
         loadingOutgoing.value = false;
         loadingBlocked.value = false;
         searching.value = false;
+        loadingMoreFriends.value = false;
+        loadingMoreIncoming.value = false;
+        loadingMoreOutgoing.value = false;
+        loadingMoreBlocked.value = false;
+        loadingMoreSearch.value = false;
         acting.value = false;
         initialized.value = false;
         error.value = null;
+        focusFriendshipPublicId.value = null;
         unsubscribe?.();
         unsubscribe = null;
     }
@@ -334,11 +482,17 @@ export const useFriendsStore = defineStore('friends', () => {
         blockedUsers,
         searchResults,
         searchQuery,
+        focusFriendshipPublicId,
         loadingFriends,
         loadingIncoming,
         loadingOutgoing,
         loadingBlocked,
         searching,
+        loadingMoreFriends,
+        loadingMoreIncoming,
+        loadingMoreOutgoing,
+        loadingMoreBlocked,
+        loadingMoreSearch,
         acting,
         initialized,
         error,
@@ -347,15 +501,28 @@ export const useFriendsStore = defineStore('friends', () => {
         outgoingCount,
         blockedCount,
         canSearch,
+        hasMoreFriends,
+        hasMoreIncoming,
+        hasMoreOutgoing,
+        hasMoreBlocked,
+        hasMoreSearch,
+        onAuthenticatedSession,
         bootstrap,
         openTab,
         refreshAll,
         loadFriends,
+        loadMoreFriends,
         loadIncoming,
+        loadMoreIncoming,
         loadOutgoing,
+        loadMoreOutgoing,
         loadBlocked,
+        loadMoreBlocked,
         searchUsers,
+        loadMoreSearch,
         clearSearch,
+        setFocusFriendship,
+        isFocusedFriendship,
         sendRequest,
         acceptRequest,
         refuseRequest,

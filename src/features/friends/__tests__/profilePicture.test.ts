@@ -38,5 +38,6 @@ describe('resolveFriendAvatarSrc', () => {
     it('signale un fetch auth pour /api/users/{id}/avatar', () => {
         expect(extractPublicIdFromUserAvatarPath('/api/users/USR12345/avatar')).toBe('USR12345');
         expect(resolveFriendAvatarSrc('/api/users/USR12345/avatar')).toBeNull();
+        expect(needsUserAvatarFetch('/api/users/USR12345/avatar')).toBe(false);
     });
 });

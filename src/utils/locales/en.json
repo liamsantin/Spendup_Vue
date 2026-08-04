@@ -178,7 +178,8 @@
             "refused": "Refused",
             "canceled": "Canceled",
             "blocked": "Blocked"
-        }
+        },
+        "loadMore": "Load more"
     },
     "accounts": {
         "tabs": {

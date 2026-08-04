@@ -1,16 +1,22 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useFriendAvatarUrl } from '../composables/useFriendAvatarUrl';
+import { useFriendsStore } from '../stores/friends-store';
 import type { FriendUser } from '../types';
 
 const props = defineProps<{
     user: FriendUser;
+    friendshipPublicId?: string | null;
     subtitle?: string | null;
     highlight?: boolean;
 }>();
 
+const store = useFriendsStore();
 const fullName = computed(() => [props.user.firstName, props.user.name].filter(Boolean).join(' ').trim());
 const title = computed(() => fullName.value || props.user.username || props.user.publicId);
+const focused = computed(
+    () => props.highlight === true || (!!props.friendshipPublicId && store.isFocusedFriendship(props.friendshipPublicId))
+);
 
 const { avatarSrc } = useFriendAvatarUrl(
     () => props.user.publicId,
@@ -25,7 +31,8 @@ const { avatarSrc } = useFriendAvatarUrl(
         color="primary"
         class="friend-list-item px-2 py-3"
         rounded="md"
-        :class="{ 'bg-lightprimary': highlight }"
+        :data-friendship-id="friendshipPublicId || undefined"
+        :class="{ 'bg-lightprimary': focused }"
         @click.prevent
     >
         <template #prepend>

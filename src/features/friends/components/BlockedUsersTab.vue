@@ -22,30 +22,44 @@ onMounted(() => {
         {{ store.error }}
     </AppAlert>
 
-    <div v-if="store.loadingBlocked" class="py-8 text-center">
+    <div v-if="store.loadingBlocked && !store.blockedUsers.length" class="py-8 text-center">
         <v-progress-circular indeterminate color="primary" size="32" />
     </div>
     <div v-else-if="!store.blockedUsers.length" class="py-8 text-center text-medium-emphasis">
         {{ t('friendsPage.empty.blocked') }}
     </div>
-    <v-list v-else class="py-0 theme-list">
-        <FriendListItem
-            v-for="item in store.blockedUsers"
-            :key="item.friendshipPublicId"
-            :user="item.user"
-            :subtitle="t('friendsPage.blocked.blockedAt', { date: formatDate(item.blockedAt) })"
-        >
-            <template #actions>
-                <v-btn
-                    size="small"
-                    variant="text"
-                    color="primary"
-                    :disabled="store.acting"
-                    @click.stop="store.unblockUser(item.user.publicId)"
-                >
-                    {{ t('friendsPage.actions.unblock') }}
-                </v-btn>
-            </template>
-        </FriendListItem>
-    </v-list>
+    <template v-else>
+        <v-list class="py-0 theme-list">
+            <FriendListItem
+                v-for="item in store.blockedUsers"
+                :key="item.friendshipPublicId"
+                :friendship-public-id="item.friendshipPublicId"
+                :user="item.user"
+                :subtitle="t('friendsPage.blocked.blockedAt', { date: formatDate(item.blockedAt) })"
+            >
+                <template #actions>
+                    <v-btn
+                        size="small"
+                        variant="text"
+                        color="primary"
+                        :disabled="store.acting"
+                        @click.stop="store.unblockUser(item.user.publicId)"
+                    >
+                        {{ t('friendsPage.actions.unblock') }}
+                    </v-btn>
+                </template>
+            </FriendListItem>
+        </v-list>
+        <div v-if="store.hasMoreBlocked" class="pt-4 text-center">
+            <v-btn
+                variant="text"
+                color="primary"
+                :loading="store.loadingMoreBlocked"
+                :disabled="store.loadingMoreBlocked"
+                @click="store.loadMoreBlocked()"
+            >
+                {{ t('friendsPage.loadMore') }}
+            </v-btn>
+        </div>
+    </template>
 </template>

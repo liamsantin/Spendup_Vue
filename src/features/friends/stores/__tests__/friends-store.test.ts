@@ -58,11 +58,14 @@ describe('useFriendsStore', () => {
                     user: { publicId: 'U1', username: 'alice', firstName: null, name: null, profilePicture: null },
                     friendsSince: '2026-01-01'
                 }
-            ]
+            ],
+            page: 1,
+            pageSize: 20,
+            totalCount: 1
         });
-        api.incoming.mockResolvedValue({ items: [] });
-        api.outgoing.mockResolvedValue({ items: [] });
-        api.blocked.mockResolvedValue({ items: [] });
+        api.incoming.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+        api.outgoing.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+        api.blocked.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
 
         const store = useFriendsStore();
         await store.bootstrap();
@@ -101,10 +104,10 @@ describe('useFriendsStore', () => {
     });
 
     it('sur friendBlocked rafraîchit amis / demandes / bloqués', async () => {
-        api.list.mockResolvedValue({ items: [] });
-        api.incoming.mockResolvedValue({ items: [] });
-        api.outgoing.mockResolvedValue({ items: [] });
-        api.blocked.mockResolvedValue({ items: [] });
+        api.list.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+        api.incoming.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+        api.outgoing.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+        api.blocked.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
 
         let listener: ((n: { type: string }) => void) | undefined;
         subscribeToFriendNotifications.mockImplementation((fn: (n: { type: string }) => void) => {
@@ -127,5 +130,50 @@ describe('useFriendsStore', () => {
         expect(api.incoming).toHaveBeenCalled();
         expect(api.outgoing).toHaveBeenCalled();
         expect(api.blocked).toHaveBeenCalled();
+    });
+
+    it('onAuthenticatedSession branche le realtime sans charger les listes', () => {
+        const store = useFriendsStore();
+        store.onAuthenticatedSession();
+        expect(subscribeToFriendNotifications).toHaveBeenCalled();
+        expect(api.list).not.toHaveBeenCalled();
+    });
+
+    it('loadMoreFriends append les pages suivantes', async () => {
+        api.list
+            .mockResolvedValueOnce({
+                items: [
+                    {
+                        friendshipPublicId: 'f1',
+                        user: { publicId: 'U1', username: 'alice', firstName: null, name: null, profilePicture: null },
+                        friendsSince: '2026-01-01'
+                    }
+                ],
+                page: 1,
+                pageSize: 1,
+                totalCount: 2
+            })
+            .mockResolvedValueOnce({
+                items: [
+                    {
+                        friendshipPublicId: 'f2',
+                        user: { publicId: 'U2', username: 'bob', firstName: null, name: null, profilePicture: null },
+                        friendsSince: '2026-01-02'
+                    }
+                ],
+                page: 2,
+                pageSize: 1,
+                totalCount: 2
+            });
+
+        const store = useFriendsStore();
+        await store.loadFriends();
+        expect(store.friends).toHaveLength(1);
+        expect(store.hasMoreFriends).toBe(true);
+
+        await store.loadMoreFriends();
+        expect(store.friends).toHaveLength(2);
+        expect(store.hasMoreFriends).toBe(false);
+        expect(api.list).toHaveBeenLastCalledWith(2, 20);
     });
 });

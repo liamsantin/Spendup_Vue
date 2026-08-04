@@ -46,51 +46,64 @@ onMounted(() => {
                         </div>
 
                         <div class="mt-4">
-                            <div v-if="store.loadingIncoming" class="py-6 text-center">
+                            <div v-if="store.loadingIncoming && !store.incomingRequests.length" class="py-6 text-center">
                                 <v-progress-circular indeterminate color="primary" size="28" />
                             </div>
                             <div v-else-if="!store.incomingRequests.length" class="py-6 text-center text-medium-emphasis">
                                 {{ t('friendsPage.empty.incoming') }}
                             </div>
-                            <v-list v-else class="py-0 theme-list">
-                                <FriendListItem
-                                    v-for="request in store.incomingRequests"
-                                    :key="request.friendshipPublicId"
-                                    :user="request.otherUser"
-                                    :subtitle="request.message || formatDate(request.requestedAt)"
-                                    highlight
-                                >
-                                    <template #actions>
-                                        <v-btn
-                                            size="small"
-                                            variant="text"
-                                            color="primary"
-                                            :disabled="store.acting"
-                                            @click.stop="store.acceptRequest(request.friendshipPublicId)"
-                                        >
-                                            {{ t('friendsPage.actions.accept') }}
-                                        </v-btn>
-                                        <v-btn
-                                            size="small"
-                                            variant="text"
-                                            color="error"
-                                            :disabled="store.acting"
-                                            @click.stop="store.refuseRequest(request.friendshipPublicId)"
-                                        >
-                                            {{ t('friendsPage.actions.refuse') }}
-                                        </v-btn>
-                                        <v-btn
-                                            size="small"
-                                            variant="text"
-                                            color="warning"
-                                            :disabled="store.acting"
-                                            @click.stop="store.blockUser(request.otherUser.publicId)"
-                                        >
-                                            {{ t('friendsPage.actions.block') }}
-                                        </v-btn>
-                                    </template>
-                                </FriendListItem>
-                            </v-list>
+                            <template v-else>
+                                <v-list class="py-0 theme-list">
+                                    <FriendListItem
+                                        v-for="request in store.incomingRequests"
+                                        :key="request.friendshipPublicId"
+                                        :friendship-public-id="request.friendshipPublicId"
+                                        :user="request.otherUser"
+                                        :subtitle="request.message || formatDate(request.requestedAt)"
+                                    >
+                                        <template #actions>
+                                            <v-btn
+                                                size="small"
+                                                variant="text"
+                                                color="primary"
+                                                :disabled="store.acting"
+                                                @click.stop="store.acceptRequest(request.friendshipPublicId)"
+                                            >
+                                                {{ t('friendsPage.actions.accept') }}
+                                            </v-btn>
+                                            <v-btn
+                                                size="small"
+                                                variant="text"
+                                                color="error"
+                                                :disabled="store.acting"
+                                                @click.stop="store.refuseRequest(request.friendshipPublicId)"
+                                            >
+                                                {{ t('friendsPage.actions.refuse') }}
+                                            </v-btn>
+                                            <v-btn
+                                                size="small"
+                                                variant="text"
+                                                color="warning"
+                                                :disabled="store.acting"
+                                                @click.stop="store.blockUser(request.otherUser.publicId)"
+                                            >
+                                                {{ t('friendsPage.actions.block') }}
+                                            </v-btn>
+                                        </template>
+                                    </FriendListItem>
+                                </v-list>
+                                <div v-if="store.hasMoreIncoming" class="pt-3 text-center">
+                                    <v-btn
+                                        variant="text"
+                                        color="primary"
+                                        :loading="store.loadingMoreIncoming"
+                                        :disabled="store.loadingMoreIncoming"
+                                        @click="store.loadMoreIncoming()"
+                                    >
+                                        {{ t('friendsPage.loadMore') }}
+                                    </v-btn>
+                                </div>
+                            </template>
                         </div>
                     </v-card-item>
                 </v-card>
@@ -117,32 +130,46 @@ onMounted(() => {
                         </div>
 
                         <div class="mt-4">
-                            <div v-if="store.loadingOutgoing" class="py-6 text-center">
+                            <div v-if="store.loadingOutgoing && !store.outgoingRequests.length" class="py-6 text-center">
                                 <v-progress-circular indeterminate color="primary" size="28" />
                             </div>
                             <div v-else-if="!store.outgoingRequests.length" class="py-6 text-center text-medium-emphasis">
                                 {{ t('friendsPage.empty.outgoing') }}
                             </div>
-                            <v-list v-else class="py-0 theme-list">
-                                <FriendListItem
-                                    v-for="request in store.outgoingRequests"
-                                    :key="request.friendshipPublicId"
-                                    :user="request.otherUser"
-                                    :subtitle="request.message || formatDate(request.requestedAt)"
-                                >
-                                    <template #actions>
-                                        <v-btn
-                                            size="small"
-                                            variant="text"
-                                            color="error"
-                                            :disabled="store.acting"
-                                            @click.stop="store.cancelRequest(request.friendshipPublicId)"
-                                        >
-                                            {{ t('friendsPage.actions.cancel') }}
-                                        </v-btn>
-                                    </template>
-                                </FriendListItem>
-                            </v-list>
+                            <template v-else>
+                                <v-list class="py-0 theme-list">
+                                    <FriendListItem
+                                        v-for="request in store.outgoingRequests"
+                                        :key="request.friendshipPublicId"
+                                        :friendship-public-id="request.friendshipPublicId"
+                                        :user="request.otherUser"
+                                        :subtitle="request.message || formatDate(request.requestedAt)"
+                                    >
+                                        <template #actions>
+                                            <v-btn
+                                                size="small"
+                                                variant="text"
+                                                color="error"
+                                                :disabled="store.acting"
+                                                @click.stop="store.cancelRequest(request.friendshipPublicId)"
+                                            >
+                                                {{ t('friendsPage.actions.cancel') }}
+                                            </v-btn>
+                                        </template>
+                                    </FriendListItem>
+                                </v-list>
+                                <div v-if="store.hasMoreOutgoing" class="pt-3 text-center">
+                                    <v-btn
+                                        variant="text"
+                                        color="primary"
+                                        :loading="store.loadingMoreOutgoing"
+                                        :disabled="store.loadingMoreOutgoing"
+                                        @click="store.loadMoreOutgoing()"
+                                    >
+                                        {{ t('friendsPage.loadMore') }}
+                                    </v-btn>
+                                </div>
+                            </template>
                         </div>
                     </v-card-item>
                 </v-card>

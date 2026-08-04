@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { BellPlusIcon, ShieldLockIcon, UserHeartIcon, UsersIcon } from 'vue-tabler-icons';
@@ -21,6 +21,11 @@ function tabFromQuery(): FriendTab {
     return 'Friends';
 }
 
+function friendshipFromQuery(): string | null {
+    const raw = route.query.friendship;
+    return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
+}
+
 const tab = ref<FriendTab>(tabFromQuery());
 
 const tabs = computed(() => [
@@ -35,8 +40,22 @@ const tabs = computed(() => [
     { value: 'Blocked', label: t('friendsPage.tabs.blocked'), icon: ShieldLockIcon }
 ]);
 
+async function scrollToFocusedFriendship() {
+    const id = store.focusFriendshipPublicId;
+    if (!id) return;
+    await nextTick();
+    const el = document.querySelector(`[data-friendship-id="${CSS.escape(id)}"]`);
+    if (el instanceof HTMLElement) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
 onMounted(() => {
-    void store.bootstrap().catch(() => undefined);
+    store.setFocusFriendship(friendshipFromQuery());
+    void store
+        .bootstrap()
+        .then(() => scrollToFocusedFriendship())
+        .catch(() => undefined);
 });
 
 watch(
@@ -46,9 +65,20 @@ watch(
     }
 );
 
+watch(
+    () => route.query.friendship,
+    (value) => {
+        store.setFocusFriendship(typeof value === 'string' ? value : null);
+        void scrollToFocusedFriendship();
+    }
+);
+
 watch(tab, (value) => {
     if (value === 'Friends' || value === 'Requests' || value === 'Blocked' || value === 'Discover') {
-        void store.openTab(value).catch(() => undefined);
+        void store
+            .openTab(value)
+            .then(() => scrollToFocusedFriendship())
+            .catch(() => undefined);
     }
 });
 </script>

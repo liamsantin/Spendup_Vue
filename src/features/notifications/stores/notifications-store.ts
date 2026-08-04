@@ -246,6 +246,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
 
     function reset() {
         sessionPromise = null;
+        handlingSessionEnded = false;
         items.value = [];
         unreadCount.value = 0;
         page.value = 1;
@@ -256,6 +257,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         inboxLoaded.value = false;
         error.value = null;
         hubConnected.value = false;
+        friendListeners.clear();
         void stopHub();
     }
 

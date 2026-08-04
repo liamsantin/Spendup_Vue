@@ -178,7 +178,8 @@
             "refused": "Refusée",
             "canceled": "Annulée",
             "blocked": "Bloqué"
-        }
+        },
+        "loadMore": "Charger plus"
     },
     "accounts": {
         "tabs": {
