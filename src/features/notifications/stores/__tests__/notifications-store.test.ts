@@ -60,6 +60,7 @@ import { useNotificationsStore } from '../notifications-store';
 
 type HubHandlers = {
     onSessionEnded?: (payload: { reason: string; deviceIdentifier: string | null }) => void;
+    onFriendshipChanged?: (payload: { change: string; friendshipPublicId: string }) => void;
     onNotificationReceived?: (payload: {
         notification: {
             id: number;
@@ -263,6 +264,26 @@ describe('useNotificationsStore', () => {
 
         expect(store.liveFriendChips).toHaveLength(1);
         expect(store.liveFriendChips[0]?.notification.id).toBe(43);
+    });
+
+    it('friendshipChanged notifie les listeners sans toucher au badge', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+        store.unreadCount = 3;
+
+        const seen: { change: string; friendshipPublicId: string }[] = [];
+        store.subscribeToFriendshipChanged((payload) => {
+            seen.push(payload);
+        });
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        handlers.onFriendshipChanged?.({ change: 'removed', friendshipPublicId: 'fr-9' });
+
+        expect(seen).toEqual([{ change: 'removed', friendshipPublicId: 'fr-9' }]);
+        expect(store.unreadCount).toBe(3);
+        expect(store.liveFriendChips).toHaveLength(0);
+        expect(store.items).toHaveLength(0);
     });
 
     it('syncRealtimePreference coupe les chips si pushNotifications off', async () => {

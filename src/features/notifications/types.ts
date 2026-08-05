@@ -1,12 +1,16 @@
-/** Types d’événements déjà émis par l’API (sécu + placeholders amis/finance). */
+/** Types d’événements inbox (sécu + amis produits). Anciens types amis peuvent rester en historique. */
 export type NotificationType =
     | 'loginNewDevice'
     | 'securityAlert'
     | 'friendRequest'
     | 'friendAccepted'
+    /** @deprecated plus produit — historique inbox uniquement */
     | 'friendRefused'
+    /** @deprecated plus produit — historique inbox uniquement */
     | 'friendCanceled'
+    /** @deprecated plus produit — historique inbox uniquement */
     | 'friendRemoved'
+    /** @deprecated plus produit — historique inbox uniquement */
     | 'friendBlocked'
     | 'other'
     | (string & {});
@@ -59,6 +63,14 @@ export type SessionEndedPayload = {
 export type NotificationReceivedPayload = {
     notification: AppNotification;
     unreadCount: number;
+};
+
+/** Payload SignalR `friendshipChanged` — live sans inbox / badge. */
+export type FriendshipChange = 'refused' | 'canceled' | 'blocked' | 'removed';
+
+export type FriendshipChangedPayload = {
+    change: FriendshipChange;
+    friendshipPublicId: string;
 };
 
 export type NotificationsListQuery = {

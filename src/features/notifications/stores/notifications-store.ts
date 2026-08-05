@@ -9,7 +9,7 @@ import { getNotificationsHubState, setNotificationsHubHandlers, startNotificatio
 import { isFriendLiveChipType } from '../friendChip';
 import { isFriendNotificationType, isSecurityNotificationType } from '../link';
 import { normalizeNotificationReceivedPayload } from '../normalize';
-import type { AppNotification, NotificationReceivedPayload, SessionEndedPayload } from '../types';
+import type { AppNotification, FriendshipChangedPayload, NotificationReceivedPayload, SessionEndedPayload } from '../types';
 
 const DEFAULT_PAGE_SIZE = 20;
 const LIVE_CHIP_DISMISS_MS = 8000;
@@ -36,6 +36,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const error = ref<string | null>(null);
     const hubConnected = ref(false);
     const friendListeners = new Set<(notification: AppNotification) => void>();
+    const friendshipChangeListeners = new Set<(payload: FriendshipChangedPayload) => void>();
     const liveFriendChips = ref<LiveFriendChip[]>([]);
 
     let sessionPromise: Promise<void> | null = null;
@@ -115,12 +116,18 @@ export const useNotificationsStore = defineStore('notifications', () => {
         const notification = normalized?.notification;
         if (!notification?.id) return;
 
-        // Listes amis + inbox : toujours, indépendamment des préférences chip.
+        // Listes amis + inbox : friendRequest / friendAccepted uniquement.
         if (isFriendNotificationType(String(notification.type))) {
             friendListeners.forEach((listener) => listener(notification));
         }
         upsertItem(notification, true);
         pushLiveFriendChip(notification);
+    }
+
+    /** Live sans inbox : ne touche pas au badge unread. */
+    function onFriendshipChanged(payload: FriendshipChangedPayload) {
+        if (!payload?.change || !payload?.friendshipPublicId) return;
+        friendshipChangeListeners.forEach((listener) => listener(payload));
     }
 
     function targetsThisDevice(payload: SessionEndedPayload): boolean {
@@ -158,12 +165,20 @@ export const useNotificationsStore = defineStore('notifications', () => {
         };
     }
 
+    function subscribeToFriendshipChanged(listener: (payload: FriendshipChangedPayload) => void) {
+        friendshipChangeListeners.add(listener);
+        return () => {
+            friendshipChangeListeners.delete(listener);
+        };
+    }
+
     function wireHubHandlers() {
         setNotificationsHubHandlers({
             onConnected: () => {
                 hubConnected.value = true;
             },
             onNotificationReceived,
+            onFriendshipChanged,
             onSessionEnded: (payload) => onSessionEnded(payload)
         });
     }
@@ -306,6 +321,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         error.value = null;
         hubConnected.value = false;
         friendListeners.clear();
+        friendshipChangeListeners.clear();
         clearLiveFriendChips();
         void stopHub();
     }
@@ -327,6 +343,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         badgeContent,
         hasMore,
         subscribeToFriendNotifications,
+        subscribeToFriendshipChanged,
         dismissLiveFriendChip,
         dismissLiveFriendChipsByNotificationId,
         fetchUnreadCount,

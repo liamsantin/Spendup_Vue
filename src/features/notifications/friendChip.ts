@@ -1,18 +1,9 @@
-import type { NotificationType } from './types';
-
-/** Types amis qui déclenchent un chip live (demande / ajout / retrait / blocage). */
+/** Types amis qui déclenchent un chip live (inbox + push). */
 export function isFriendLiveChipType(type: string): boolean {
-    return type === 'friendRequest' || type === 'friendAccepted' || type === 'friendRemoved' || type === 'friendBlocked';
+    return type === 'friendRequest' || type === 'friendAccepted';
 }
 
-/**
- * Couleur filled du chip live :
- * - demande / ajout → primary
- * - retiré → error
- * - bloqué → warning
- */
-export function friendLiveChipColor(type: NotificationType | string): 'primary' | 'error' | 'warning' {
-    if (type === 'friendRemoved') return 'error';
-    if (type === 'friendBlocked') return 'warning';
+/** Couleur filled du chip live — demande / acceptation → primary. */
+export function friendLiveChipColor(): 'primary' {
     return 'primary';
 }

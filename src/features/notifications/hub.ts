@@ -1,11 +1,12 @@
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { useAuthStore } from '@/features/auth';
 import { getApiBaseUrl, isAuthCookieMode } from '@/utils/helpers/axios-helpers';
-import type { NotificationConnectedPayload, NotificationReceivedPayload, SessionEndedPayload } from './types';
+import type { FriendshipChangedPayload, NotificationConnectedPayload, NotificationReceivedPayload, SessionEndedPayload } from './types';
 
 export type NotificationsHubHandlers = {
     onConnected?: (payload: NotificationConnectedPayload) => void;
     onNotificationReceived?: (payload: NotificationReceivedPayload) => void;
+    onFriendshipChanged?: (payload: FriendshipChangedPayload) => void;
     onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
 };
 
@@ -14,7 +15,7 @@ let handlers: NotificationsHubHandlers = {};
 let startPromise: Promise<void> | null = null;
 
 function hubUrl(): string {
-    return `${getApiBaseUrl()}/hubs/notifications`;
+    return `${getApiBaseUrl()}/hubs/realtime`;
 }
 
 async function accessTokenFactory(): Promise<string> {
@@ -26,6 +27,7 @@ async function accessTokenFactory(): Promise<string> {
 function attachHandlers(conn: HubConnection) {
     conn.off('connected');
     conn.off('notificationReceived');
+    conn.off('friendshipChanged');
     conn.off('sessionEnded');
 
     conn.on('connected', (payload: NotificationConnectedPayload) => {
@@ -34,6 +36,10 @@ function attachHandlers(conn: HubConnection) {
 
     conn.on('notificationReceived', (payload: NotificationReceivedPayload) => {
         handlers.onNotificationReceived?.(payload);
+    });
+
+    conn.on('friendshipChanged', (payload: FriendshipChangedPayload) => {
+        handlers.onFriendshipChanged?.(payload);
     });
 
     conn.on('sessionEnded', (payload: SessionEndedPayload) => {

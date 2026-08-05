@@ -37,7 +37,7 @@ async function onChipClick(key: string, notificationId: number) {
             v-for="chip in store.liveFriendChips"
             :key="chip.key"
             class="text-body-2 friend-live-chips__chip"
-            :color="friendLiveChipColor(chip.notification.type)"
+            :color="friendLiveChipColor()"
             variant="flat"
             closable
             @click="onChipClick(chip.key, chip.notification.id)"

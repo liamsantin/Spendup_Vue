@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { useNotificationsStore } from '@/features/notifications';
-import type { AppNotification } from '@/features/notifications';
+import type { AppNotification, FriendshipChangedPayload } from '@/features/notifications';
 import { friendsApi } from '../api';
 import type { BlockedFriendItem, FriendItem, FriendRequestItem, FriendSearchItem, FriendsPageResult } from '../types';
 
@@ -43,7 +43,8 @@ export const useFriendsStore = defineStore('friends', () => {
     /** Deep-link notif : `?friendship=` à mettre en évidence / scroller. */
     const focusFriendshipPublicId = ref<string | null>(null);
 
-    let unsubscribe: (() => void) | null = null;
+    let unsubscribeNotifications: (() => void) | null = null;
+    let unsubscribeFriendshipChanged: (() => void) | null = null;
 
     const friendsCount = computed(() => friendsTotalCount.value);
     const incomingCount = computed(() => incomingTotalCount.value);
@@ -379,30 +380,34 @@ export const useFriendsStore = defineStore('friends', () => {
             void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true)]).then(() => {
                 refreshSearchIfNeeded();
             });
+        }
+    }
+
+    function handleFriendshipChanged(payload: FriendshipChangedPayload) {
+        if (payload.change === 'refused') {
+            void loadOutgoing(true).then(() => refreshSearchIfNeeded());
             return;
         }
-        if (notification.type === 'friendRefused' || notification.type === 'friendCanceled') {
-            void Promise.all([loadOutgoing(true), loadIncoming(true)]).then(() => {
-                refreshSearchIfNeeded();
-            });
+        if (payload.change === 'canceled') {
+            void loadIncoming(true).then(() => refreshSearchIfNeeded());
             return;
         }
-        if (notification.type === 'friendRemoved') {
-            void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true)]).then(() => {
-                refreshSearchIfNeeded();
-            });
-            return;
-        }
-        if (notification.type === 'friendBlocked') {
+        if (payload.change === 'blocked') {
             void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true), loadBlocked(true)]).then(() => {
                 refreshSearchIfNeeded();
             });
+            return;
+        }
+        if (payload.change === 'removed') {
+            void loadFriends(true);
         }
     }
 
     function ensureRealtimeBridge() {
-        if (unsubscribe) return;
-        unsubscribe = useNotificationsStore().subscribeToFriendNotifications(handleRealtime);
+        if (unsubscribeNotifications && unsubscribeFriendshipChanged) return;
+        const notifications = useNotificationsStore();
+        unsubscribeNotifications ??= notifications.subscribeToFriendNotifications(handleRealtime);
+        unsubscribeFriendshipChanged ??= notifications.subscribeToFriendshipChanged(handleFriendshipChanged);
     }
 
     /** Après login : écoute live même avant la première visite de /app/friends. */
@@ -471,8 +476,10 @@ export const useFriendsStore = defineStore('friends', () => {
         initialized.value = false;
         error.value = null;
         focusFriendshipPublicId.value = null;
-        unsubscribe?.();
-        unsubscribe = null;
+        unsubscribeNotifications?.();
+        unsubscribeNotifications = null;
+        unsubscribeFriendshipChanged?.();
+        unsubscribeFriendshipChanged = null;
     }
 
     return {

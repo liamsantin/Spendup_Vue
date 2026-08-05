@@ -43,16 +43,13 @@ describe('resolveNotificationLink', () => {
 });
 
 describe('friendLiveChipColor', () => {
-    it('mappe les types amis vers primary / error / warning', () => {
+    it('ne déclenche un chip que pour friendRequest / friendAccepted', () => {
         expect(isFriendLiveChipType('friendAccepted')).toBe(true);
-        expect(isFriendLiveChipType('friendRemoved')).toBe(true);
-        expect(isFriendLiveChipType('friendBlocked')).toBe(true);
         expect(isFriendLiveChipType('friendRequest')).toBe(true);
+        expect(isFriendLiveChipType('friendRemoved')).toBe(false);
+        expect(isFriendLiveChipType('friendBlocked')).toBe(false);
 
-        expect(friendLiveChipColor('friendAccepted')).toBe('primary');
-        expect(friendLiveChipColor('friendRequest')).toBe('primary');
-        expect(friendLiveChipColor('friendRemoved')).toBe('error');
-        expect(friendLiveChipColor('friendBlocked')).toBe('warning');
+        expect(friendLiveChipColor()).toBe('primary');
     });
 });
 
@@ -98,15 +95,16 @@ describe('normalizeAppNotification', () => {
 });
 
 describe('notification type helpers', () => {
-    it('détecte les types sécu / amis', () => {
+    it('détecte les types sécu / amis inbox', () => {
         expect(isSecurityNotificationType('loginNewDevice')).toBe(true);
         expect(isSecurityNotificationType('securityAlert')).toBe(true);
         expect(isSecurityNotificationType('friendRequest')).toBe(false);
         expect(isFriendNotificationType('friendAccepted')).toBe(true);
-        expect(isFriendNotificationType('friendRefused')).toBe(true);
-        expect(isFriendNotificationType('friendCanceled')).toBe(true);
-        expect(isFriendNotificationType('friendRemoved')).toBe(true);
-        expect(isFriendNotificationType('friendBlocked')).toBe(true);
+        expect(isFriendNotificationType('friendRequest')).toBe(true);
+        expect(isFriendNotificationType('friendRefused')).toBe(false);
+        expect(isFriendNotificationType('friendCanceled')).toBe(false);
+        expect(isFriendNotificationType('friendRemoved')).toBe(false);
+        expect(isFriendNotificationType('friendBlocked')).toBe(false);
         expect(isFriendNotificationType('other')).toBe(false);
     });
 });

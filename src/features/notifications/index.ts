@@ -13,6 +13,8 @@ export type {
     MarkAllReadResult,
     NotificationConnectedPayload,
     NotificationReceivedPayload,
+    FriendshipChange,
+    FriendshipChangedPayload,
     SessionEndedPayload,
     NotificationsListQuery
 } from './types';

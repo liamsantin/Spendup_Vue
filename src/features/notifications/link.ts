@@ -43,28 +43,23 @@ function friendsTabForType(type: NotificationType | string): 'Friends' | 'Reques
 }
 
 function resolveFriendsDeepLink(notification?: Pick<AppNotification, 'type' | 'metadata'> | null): string | null {
-    if (!notification || !isFriendNotificationType(String(notification.type))) return null;
-
+    if (!notification) return null;
+    // Inclut l’historique (types amis plus produits) pour deep-link inbox.
     const tab = friendsTabForType(notification.type);
+    if (tab == null) return null;
+
     const friendship = getFriendshipPublicId(notification.metadata);
     const params = new URLSearchParams();
-    if (tab) params.set('tab', tab);
+    params.set('tab', tab);
     if (friendship) params.set('friendship', friendship);
-    const qs = params.toString();
-    return qs ? `/app/friends?${qs}` : '/app/friends';
+    return `/app/friends?${params.toString()}`;
 }
 
 export function isSecurityNotificationType(type: string): boolean {
     return type === 'loginNewDevice' || type === 'securityAlert';
 }
 
+/** Types amis encore produits en inbox (`notificationReceived`). */
 export function isFriendNotificationType(type: string): boolean {
-    return (
-        type === 'friendRequest' ||
-        type === 'friendAccepted' ||
-        type === 'friendRefused' ||
-        type === 'friendCanceled' ||
-        type === 'friendRemoved' ||
-        type === 'friendBlocked'
-    );
+    return type === 'friendRequest' || type === 'friendAccepted';
 }

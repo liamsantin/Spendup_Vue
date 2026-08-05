@@ -17,6 +17,7 @@ const api = vi.hoisted(() => ({
 }));
 
 const subscribeToFriendNotifications = vi.fn();
+const subscribeToFriendshipChanged = vi.fn();
 
 vi.mock('../../api', () => ({
     friendsApi: {
@@ -37,7 +38,8 @@ vi.mock('../../api', () => ({
 
 vi.mock('@/features/notifications', () => ({
     useNotificationsStore: () => ({
-        subscribeToFriendNotifications
+        subscribeToFriendNotifications,
+        subscribeToFriendshipChanged
     })
 }));
 
@@ -48,6 +50,7 @@ describe('useFriendsStore', () => {
         createTestPinia();
         Object.values(api).forEach((mock) => mock.mockReset());
         subscribeToFriendNotifications.mockReset().mockReturnValue(() => undefined);
+        subscribeToFriendshipChanged.mockReset().mockReturnValue(() => undefined);
     });
 
     it('charge les listes principales au bootstrap', async () => {
@@ -72,6 +75,7 @@ describe('useFriendsStore', () => {
 
         expect(store.friendsCount).toBe(1);
         expect(subscribeToFriendNotifications).toHaveBeenCalled();
+        expect(subscribeToFriendshipChanged).toHaveBeenCalled();
         expect(store.initialized).toBe(true);
     });
 
@@ -103,14 +107,14 @@ describe('useFriendsStore', () => {
         expect(api.outgoing).toHaveBeenCalled();
     });
 
-    it('sur friendBlocked rafraîchit amis / demandes / bloqués', async () => {
+    it('sur friendshipChanged blocked rafraîchit amis / demandes / bloqués', async () => {
         api.list.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
         api.incoming.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
         api.outgoing.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
         api.blocked.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
 
-        let listener: ((n: { type: string }) => void) | undefined;
-        subscribeToFriendNotifications.mockImplementation((fn: (n: { type: string }) => void) => {
+        let listener: ((p: { change: string; friendshipPublicId: string }) => void) | undefined;
+        subscribeToFriendshipChanged.mockImplementation((fn: (p: { change: string; friendshipPublicId: string }) => void) => {
             listener = fn;
             return () => undefined;
         });
@@ -122,7 +126,7 @@ describe('useFriendsStore', () => {
         api.outgoing.mockClear();
         api.blocked.mockClear();
 
-        listener?.({ type: 'friendBlocked' });
+        listener?.({ change: 'blocked', friendshipPublicId: 'fr-1' });
         await Promise.resolve();
         await Promise.resolve();
 
@@ -132,10 +136,35 @@ describe('useFriendsStore', () => {
         expect(api.blocked).toHaveBeenCalled();
     });
 
+    it('sur friendshipChanged refused rafraîchit outgoing', async () => {
+        api.outgoing.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        let listener: ((p: { change: string; friendshipPublicId: string }) => void) | undefined;
+        subscribeToFriendshipChanged.mockImplementation((fn: (p: { change: string; friendshipPublicId: string }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useFriendsStore();
+        store.onAuthenticatedSession();
+        api.outgoing.mockClear();
+        api.list.mockClear();
+        api.incoming.mockClear();
+
+        listener?.({ change: 'refused', friendshipPublicId: 'fr-2' });
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(api.outgoing).toHaveBeenCalled();
+        expect(api.list).not.toHaveBeenCalled();
+        expect(api.incoming).not.toHaveBeenCalled();
+    });
+
     it('onAuthenticatedSession branche le realtime sans charger les listes', () => {
         const store = useFriendsStore();
         store.onAuthenticatedSession();
         expect(subscribeToFriendNotifications).toHaveBeenCalled();
+        expect(subscribeToFriendshipChanged).toHaveBeenCalled();
         expect(api.list).not.toHaveBeenCalled();
     });
 
