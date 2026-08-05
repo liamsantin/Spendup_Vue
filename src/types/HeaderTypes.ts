@@ -7,7 +7,11 @@ type profileType = {
 
 type searchType = {
     titleKey: string;
+    subtitleKey: string;
     href: string;
+    /** Clé d’icône résolue dans Searchbar. */
+    icon: 'dashboard' | 'notifications' | 'friends' | 'account' | 'home' | 'features' | 'about';
+    group: 'app' | 'site';
 };
 
 type appsLinkType = {

@@ -66,15 +66,45 @@
             }
         },
         "search": {
-            "placeholder": "Rechercher…",
+            "placeholder": "Rechercher une page…",
             "quickLinks": "Liens rapides",
+            "sectionApp": "Dans l’application",
+            "sectionSite": "Site",
+            "sectionFriends": "Personnes",
+            "empty": "Aucun résultat",
+            "clear": "Effacer",
+            "friendsHint": "Saisissez au moins 2 caractères pour chercher des personnes.",
+            "friendsLoading": "Recherche des personnes…",
+            "friendsEmpty": "Aucune personne trouvée.",
             "suggestions": {
-                "dashboard": "Tableau de bord",
-                "preferences": "Mon compte",
-                "friends": "Amis",
-                "home": "Accueil",
-                "features": "Fonctionnalités",
-                "about": "À propos"
+                "dashboard": {
+                    "title": "Tableau de bord",
+                    "subtitle": "Vue d’ensemble de votre espace"
+                },
+                "notifications": {
+                    "title": "Notifications",
+                    "subtitle": "Alertes et messages"
+                },
+                "friends": {
+                    "title": "Amis",
+                    "subtitle": "Liste, demandes et découverte"
+                },
+                "preferences": {
+                    "title": "Mon compte",
+                    "subtitle": "Profil, préférences et sécurité"
+                },
+                "home": {
+                    "title": "Accueil",
+                    "subtitle": "Page publique Spend.Up"
+                },
+                "features": {
+                    "title": "Fonctionnalités",
+                    "subtitle": "Découvrir ce que propose Spend.Up"
+                },
+                "about": {
+                    "title": "À propos",
+                    "subtitle": "En savoir plus sur le projet"
+                }
             }
         },
         "profile": {

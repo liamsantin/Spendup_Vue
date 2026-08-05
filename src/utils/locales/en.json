@@ -66,15 +66,45 @@
             }
         },
         "search": {
-            "placeholder": "Search…",
+            "placeholder": "Search a page…",
             "quickLinks": "Quick links",
+            "sectionApp": "In the app",
+            "sectionSite": "Website",
+            "sectionFriends": "People",
+            "empty": "No results",
+            "clear": "Clear",
+            "friendsHint": "Type at least 2 characters to search for people.",
+            "friendsLoading": "Searching people…",
+            "friendsEmpty": "No people found.",
             "suggestions": {
-                "dashboard": "Dashboard",
-                "preferences": "My account",
-                "friends": "Friends",
-                "home": "Home",
-                "features": "Features",
-                "about": "About"
+                "dashboard": {
+                    "title": "Dashboard",
+                    "subtitle": "Overview of your workspace"
+                },
+                "notifications": {
+                    "title": "Notifications",
+                    "subtitle": "Alerts and messages"
+                },
+                "friends": {
+                    "title": "Friends",
+                    "subtitle": "List, requests and discover"
+                },
+                "preferences": {
+                    "title": "My account",
+                    "subtitle": "Profile, preferences and security"
+                },
+                "home": {
+                    "title": "Home",
+                    "subtitle": "Spend.Up public homepage"
+                },
+                "features": {
+                    "title": "Features",
+                    "subtitle": "Discover what Spend.Up offers"
+                },
+                "about": {
+                    "title": "About",
+                    "subtitle": "Learn more about the project"
+                }
             }
         },
         "profile": {

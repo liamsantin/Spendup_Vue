@@ -28,28 +28,53 @@ const profileDD: profileType[] = [
 
 const searchSugg: searchType[] = [
     {
-        titleKey: 'header.search.suggestions.dashboard',
-        href: '/app'
+        titleKey: 'header.search.suggestions.dashboard.title',
+        subtitleKey: 'header.search.suggestions.dashboard.subtitle',
+        href: '/app',
+        icon: 'dashboard',
+        group: 'app'
     },
     {
-        titleKey: 'header.search.suggestions.preferences',
-        href: '/app/comptes'
+        titleKey: 'header.search.suggestions.notifications.title',
+        subtitleKey: 'header.search.suggestions.notifications.subtitle',
+        href: '/app/notifications',
+        icon: 'notifications',
+        group: 'app'
     },
     {
-        titleKey: 'header.search.suggestions.friends',
-        href: '/app/friends'
+        titleKey: 'header.search.suggestions.friends.title',
+        subtitleKey: 'header.search.suggestions.friends.subtitle',
+        href: '/app/friends',
+        icon: 'friends',
+        group: 'app'
     },
     {
-        titleKey: 'header.search.suggestions.home',
-        href: '/'
+        titleKey: 'header.search.suggestions.preferences.title',
+        subtitleKey: 'header.search.suggestions.preferences.subtitle',
+        href: '/app/comptes',
+        icon: 'account',
+        group: 'app'
     },
     {
-        titleKey: 'header.search.suggestions.features',
-        href: '/fonctionnalites'
+        titleKey: 'header.search.suggestions.home.title',
+        subtitleKey: 'header.search.suggestions.home.subtitle',
+        href: '/',
+        icon: 'home',
+        group: 'site'
     },
     {
-        titleKey: 'header.search.suggestions.about',
-        href: '/a-propos'
+        titleKey: 'header.search.suggestions.features.title',
+        subtitleKey: 'header.search.suggestions.features.subtitle',
+        href: '/fonctionnalites',
+        icon: 'features',
+        group: 'site'
+    },
+    {
+        titleKey: 'header.search.suggestions.about.title',
+        subtitleKey: 'header.search.suggestions.about.subtitle',
+        href: '/a-propos',
+        icon: 'about',
+        group: 'site'
     }
 ];
 
