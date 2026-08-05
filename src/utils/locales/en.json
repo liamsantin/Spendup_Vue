@@ -84,6 +84,10 @@
                 "preferences": {
                     "title": "My account",
                     "subtitle": "Account, preferences & security"
+                },
+                "friends": {
+                    "title": "My friends",
+                    "subtitle": "List, requests & discover"
                 }
             }
         },
