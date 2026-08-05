@@ -107,36 +107,20 @@ const appsLink: appsLinkType[] = [
 
 const quickLink: quickLinksType[] = [
     {
-        titleKey: 'header.appsSidebar.quickLinks.pricing',
-        href: '/pages/pricing'
+        titleKey: 'header.appsSidebar.quickLinks.dashboard',
+        href: '/app'
     },
     {
-        titleKey: 'header.appsSidebar.quickLinks.auth',
-        href: '/auth/login'
+        titleKey: 'header.appsSidebar.quickLinks.notifications',
+        href: '/app/notifications'
     },
     {
-        titleKey: 'header.appsSidebar.quickLinks.register',
-        href: '/auth/register'
+        titleKey: 'header.appsSidebar.quickLinks.friends',
+        href: '/app/friends'
     },
     {
-        titleKey: 'header.appsSidebar.quickLinks.error404',
-        href: '/auth/404'
-    },
-    {
-        titleKey: 'header.appsSidebar.quickLinks.notes',
-        href: '/apps/notes'
-    },
-    {
-        titleKey: 'header.appsSidebar.quickLinks.user',
-        href: '/apps/user/profile'
-    },
-    {
-        titleKey: 'header.appsSidebar.quickLinks.blog',
-        href: '/apps/blog/posts'
-    },
-    {
-        titleKey: 'header.appsSidebar.quickLinks.cart',
-        href: '/ecommerce/checkout'
+        titleKey: 'header.appsSidebar.quickLinks.preferences',
+        href: '/app/comptes'
     }
 ];
 

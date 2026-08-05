@@ -1,6 +1,7 @@
 <script setup lang="ts">
 defineOptions({ name: 'AppSearchbar' });
 
+import { ref } from 'vue';
 import { SearchIcon } from 'vue-tabler-icons';
 import { useI18n } from 'vue-i18n';
 import { searchSugg } from '@/data/admin/headerData';
@@ -9,10 +10,15 @@ import { useHeaderMenuOverlay } from './useHeaderMenuOverlay';
 
 const { t } = useI18n();
 const { scrim, opacity } = useHeaderMenuOverlay();
+const menuOpen = ref(false);
+
+function closeMenu() {
+    menuOpen.value = false;
+}
 </script>
 
 <template>
-    <v-menu :close-on-content-click="false" :scrim="scrim" :opacity="opacity">
+    <v-menu v-model="menuOpen" :close-on-content-click="false" :scrim="scrim" :opacity="opacity">
         <template #activator="{ props }">
             <v-btn icon class="custom-hover-primary" size="small" variant="text" color="primary" v-bind="props">
                 <SearchIcon stroke-width="1.5" size="20" />
@@ -39,6 +45,7 @@ const { scrim, opacity } = useHeaderMenuOverlay();
                         :to="item.href"
                         color="primary"
                         class="px-5 py-2"
+                        @click="closeMenu"
                     >
                         <h6 class="text-subtitle-1 font-weight-bold mb-1">{{ t(item.titleKey) }}</h6>
                         <p class="text-subtitle-2 text-medium-emphasis">{{ item.href }}</p>

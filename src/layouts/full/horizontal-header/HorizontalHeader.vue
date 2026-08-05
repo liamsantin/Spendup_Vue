@@ -48,6 +48,6 @@ watch(priority, (newPriority) => {
     </v-app-bar>
 
     <v-navigation-drawer v-model="appsdrawer" location="right" temporary>
-        <RightMobileSidebar />
+        <RightMobileSidebar @close="appsdrawer = false" />
     </v-navigation-drawer>
 </template>

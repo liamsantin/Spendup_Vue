@@ -5,8 +5,13 @@ import { AppsIcon, CalendarIcon, MailIcon, MessagesIcon } from 'vue-tabler-icons
 import AppsLink from './AppsLink.vue';
 import QuickLinks from './QuickLinks.vue';
 
+const emit = defineEmits<{ close: [] }>();
 const { t } = useI18n();
 const open = ref(['Apps']);
+
+function onSelect() {
+    emit('close');
+}
 </script>
 
 <template>
@@ -24,7 +29,7 @@ const open = ref(['Apps']);
                 </template>
                 <v-list-item class="pl-6 pb-6">
                     <div>
-                        <AppsLink />
+                        <AppsLink @select="onSelect" />
                     </div>
                 </v-list-item>
             </v-list-group>
@@ -49,7 +54,7 @@ const open = ref(['Apps']);
         </v-list>
         <div class="px-5">
             <h5 class="text-h5 my-4">{{ t('header.appsSidebar.quickLinksTitle') }}</h5>
-            <QuickLinks />
+            <QuickLinks @select="onSelect" />
         </div>
     </div>
 </template>

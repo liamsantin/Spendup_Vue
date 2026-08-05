@@ -146,14 +146,10 @@
                 }
             },
             "quickLinks": {
-                "pricing": "Pricing Page",
-                "auth": "Authentication Design",
-                "register": "Register Now",
-                "error404": "404 Error Page",
-                "notes": "Notes App",
-                "user": "User Application",
-                "blog": "Blog Design",
-                "cart": "Shopping Cart"
+                "dashboard": "Dashboard",
+                "notifications": "Notifications",
+                "friends": "Friends",
+                "preferences": "My account"
             }
         }
     },

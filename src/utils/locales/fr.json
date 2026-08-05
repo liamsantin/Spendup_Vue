@@ -146,14 +146,10 @@
                 }
             },
             "quickLinks": {
-                "pricing": "Page tarifs",
-                "auth": "Design authentification",
-                "register": "S’inscrire",
-                "error404": "Page d’erreur 404",
-                "notes": "Application Notes",
-                "user": "Application utilisateur",
-                "blog": "Design blog",
-                "cart": "Panier"
+                "dashboard": "Tableau de bord",
+                "notifications": "Notifications",
+                "friends": "Amis",
+                "preferences": "Mon compte"
             }
         }
     },

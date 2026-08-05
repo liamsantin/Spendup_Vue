@@ -2,12 +2,13 @@
 import { useI18n } from 'vue-i18n';
 import { appsLink } from '@/data/admin/headerData';
 
+const emit = defineEmits<{ select: [] }>();
 const { t } = useI18n();
 </script>
 <template>
     <v-row>
         <v-col v-for="(item, i) in appsLink" :key="i" cols="12" lg="6">
-            <router-link :to="item.href" class="text-decoration-none custom-text-primary">
+            <router-link :to="item.href" class="text-decoration-none custom-text-primary" @click="emit('select')">
                 <div class="d-flex align-center">
                     <v-avatar size="45" color="grey100" rounded="md">
                         <img :src="item.avatar" width="24" height="24" :alt="t(item.titleKey)" />
