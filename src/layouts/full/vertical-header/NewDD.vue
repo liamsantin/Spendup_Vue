@@ -45,7 +45,7 @@ async function onQrScanned(publicId: string) {
             </v-btn>
         </template>
 
-        <v-sheet rounded="md" width="360" elevation="10">
+        <v-sheet rounded="md" width="216" elevation="10">
             <v-list class="py-2" density="comfortable">
                 <v-list-item class="px-4" :aria-label="t('header.friends.openQr')" @click="openAddFriend">
                     <template #prepend>
