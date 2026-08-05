@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
 
-const { unreadCount, list, markRead, markAllRead, startHub, stopHub, setHandlers, forceReLogin, getDeviceId, settingsState } = vi.hoisted(
-    () => ({
+const { unreadCount, list, markRead, markAllRead, deleteAll, startHub, stopHub, setHandlers, forceReLogin, getDeviceId, settingsState } =
+    vi.hoisted(() => ({
         unreadCount: vi.fn(),
         list: vi.fn(),
         markRead: vi.fn(),
         markAllRead: vi.fn(),
+        deleteAll: vi.fn(),
         startHub: vi.fn(),
         stopHub: vi.fn(),
         setHandlers: vi.fn(),
@@ -15,15 +16,15 @@ const { unreadCount, list, markRead, markAllRead, startHub, stopHub, setHandlers
         settingsState: {
             current: { pushNotifications: true, pushSecurityAlerts: true, pushFriendRequest: true, pushFinancialAlerts: true }
         }
-    })
-);
+    }));
 
 vi.mock('../../api', () => ({
     notificationsApi: {
         unreadCount: () => unreadCount(),
         list: (...args: unknown[]) => list(...args),
         markRead: (id: number) => markRead(id),
-        markAllRead: () => markAllRead()
+        markAllRead: () => markAllRead(),
+        deleteAll: () => deleteAll()
     }
 }));
 
@@ -61,6 +62,7 @@ import { useNotificationsStore } from '../notifications-store';
 type HubHandlers = {
     onSessionEnded?: (payload: { reason: string; deviceIdentifier: string | null }) => void;
     onFriendshipChanged?: (payload: { change: string; friendshipPublicId: string }) => void;
+    onInboxCleared?: (payload: { unreadCount: number }) => void;
     onNotificationReceived?: (payload: {
         notification: {
             id: number;
@@ -91,6 +93,7 @@ describe('useNotificationsStore', () => {
         list.mockReset();
         markRead.mockReset();
         markAllRead.mockReset();
+        deleteAll.mockReset();
         startHub.mockReset().mockResolvedValue(undefined);
         stopHub.mockReset().mockResolvedValue(undefined);
         setHandlers.mockReset();
@@ -162,6 +165,65 @@ describe('useNotificationsStore', () => {
 
         expect(store.unreadCount).toBe(0);
         expect(store.items[0]?.isRead).toBe(true);
+    });
+
+    it('clearAll vide l’inbox et le badge', async () => {
+        const store = useNotificationsStore();
+        store.items = [
+            {
+                id: 1,
+                type: 'other',
+                title: 'A',
+                subtitle: null,
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: null,
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            }
+        ];
+        store.unreadCount = 2;
+        store.totalCount = 1;
+        deleteAll.mockResolvedValue({ deletedCount: 1 });
+
+        await store.clearAll();
+
+        expect(deleteAll).toHaveBeenCalled();
+        expect(store.items).toHaveLength(0);
+        expect(store.unreadCount).toBe(0);
+        expect(store.totalCount).toBe(0);
+        expect(store.hasItems).toBe(false);
+    });
+
+    it('inboxCleared vide l’état sans appeler l’API', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+        store.items = [
+            {
+                id: 9,
+                type: 'other',
+                title: 'X',
+                subtitle: null,
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: null,
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            }
+        ];
+        store.unreadCount = 4;
+        store.totalCount = 1;
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        handlers.onInboxCleared?.({ unreadCount: 0 });
+
+        expect(deleteAll).not.toHaveBeenCalled();
+        expect(store.items).toHaveLength(0);
+        expect(store.unreadCount).toBe(0);
+        expect(store.totalCount).toBe(0);
     });
 
     it('reset coupe le hub et vide l’état', async () => {

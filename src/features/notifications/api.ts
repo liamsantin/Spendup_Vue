@@ -1,6 +1,13 @@
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
 import { normalizeAppNotification, normalizeNotificationsListResult } from './normalize';
-import type { AppNotification, MarkAllReadResult, NotificationsListQuery, NotificationsListResult, UnreadCountResult } from './types';
+import type {
+    AppNotification,
+    DeleteAllNotificationsResult,
+    MarkAllReadResult,
+    NotificationsListQuery,
+    NotificationsListResult,
+    UnreadCountResult
+} from './types';
 
 function toQuery(params: NotificationsListQuery): string {
     const search = new URLSearchParams();
@@ -11,7 +18,7 @@ function toQuery(params: NotificationsListQuery): string {
     return qs ? `?${qs}` : '';
 }
 
-/** `GET/POST /api/notifications*` — JWT requis. */
+/** `GET/POST/DELETE /api/notifications*` — JWT requis. */
 export const notificationsApi = {
     async list(params: NotificationsListQuery = {}): Promise<NotificationsListResult> {
         const raw = await fetchWrapper.get(`/api/notifications${toQuery(params)}`);
@@ -33,5 +40,9 @@ export const notificationsApi = {
 
     markAllRead() {
         return fetchWrapper.post('/api/notifications/read-all') as Promise<MarkAllReadResult>;
+    },
+
+    deleteAll() {
+        return fetchWrapper.delete('/api/notifications') as Promise<DeleteAllNotificationsResult>;
     }
 };

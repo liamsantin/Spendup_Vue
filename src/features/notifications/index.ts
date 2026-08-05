@@ -11,10 +11,12 @@ export type {
     NotificationsListResult,
     UnreadCountResult,
     MarkAllReadResult,
+    DeleteAllNotificationsResult,
     NotificationConnectedPayload,
     NotificationReceivedPayload,
     FriendshipChange,
     FriendshipChangedPayload,
+    InboxClearedPayload,
     SessionEndedPayload,
     NotificationsListQuery
 } from './types';

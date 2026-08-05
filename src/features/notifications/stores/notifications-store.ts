@@ -9,7 +9,13 @@ import { getNotificationsHubState, setNotificationsHubHandlers, startNotificatio
 import { isFriendLiveChipType } from '../friendChip';
 import { isFriendNotificationType, isSecurityNotificationType } from '../link';
 import { normalizeNotificationReceivedPayload } from '../normalize';
-import type { AppNotification, FriendshipChangedPayload, NotificationReceivedPayload, SessionEndedPayload } from '../types';
+import type {
+    AppNotification,
+    FriendshipChangedPayload,
+    InboxClearedPayload,
+    NotificationReceivedPayload,
+    SessionEndedPayload
+} from '../types';
 
 const DEFAULT_PAGE_SIZE = 20;
 const LIVE_CHIP_DISMISS_MS = 8000;
@@ -32,6 +38,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const loading = ref(false);
     const loadingMore = ref(false);
     const markingAll = ref(false);
+    const clearingAll = ref(false);
     const inboxLoaded = ref(false);
     const error = ref<string | null>(null);
     const hubConnected = ref(false);
@@ -46,6 +53,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const hasUnread = computed(() => unreadCount.value > 0);
     const badgeContent = computed(() => (unreadCount.value > 0 ? unreadCount.value : undefined));
     const hasMore = computed(() => items.value.length < totalCount.value);
+    const hasItems = computed(() => items.value.length > 0 || totalCount.value > 0);
 
     function applyUnreadCount(count: number) {
         unreadCount.value = Math.max(0, Number.isFinite(count) ? count : 0);
@@ -130,6 +138,19 @@ export const useNotificationsStore = defineStore('notifications', () => {
         friendshipChangeListeners.forEach((listener) => listener(payload));
     }
 
+    function applyInboxCleared(unread = 0) {
+        applyUnreadCount(unread);
+        items.value = [];
+        totalCount.value = 0;
+        page.value = 1;
+        clearLiveFriendChips();
+    }
+
+    /** SignalR multi-appareils après DELETE /api/notifications. */
+    function onInboxCleared(payload: InboxClearedPayload) {
+        applyInboxCleared(payload?.unreadCount ?? 0);
+    }
+
     function targetsThisDevice(payload: SessionEndedPayload): boolean {
         const target = payload?.deviceIdentifier;
         if (target == null || target === '') return true;
@@ -179,6 +200,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
             },
             onNotificationReceived,
             onFriendshipChanged,
+            onInboxCleared,
             onSessionEnded: (payload) => onSessionEnded(payload)
         });
     }
@@ -256,6 +278,21 @@ export const useNotificationsStore = defineStore('notifications', () => {
         }
     }
 
+    async function clearAll() {
+        clearingAll.value = true;
+        error.value = null;
+        try {
+            const result = await notificationsApi.deleteAll();
+            applyInboxCleared(0);
+            return result;
+        } catch (e: unknown) {
+            error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            clearingAll.value = false;
+        }
+    }
+
     async function startHub() {
         wireHubHandlers();
         await startNotificationsHub();
@@ -317,6 +354,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         loading.value = false;
         loadingMore.value = false;
         markingAll.value = false;
+        clearingAll.value = false;
         inboxLoaded.value = false;
         error.value = null;
         hubConnected.value = false;
@@ -335,6 +373,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         loading,
         loadingMore,
         markingAll,
+        clearingAll,
         inboxLoaded,
         error,
         hubConnected,
@@ -342,6 +381,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         hasUnread,
         badgeContent,
         hasMore,
+        hasItems,
         subscribeToFriendNotifications,
         subscribeToFriendshipChanged,
         dismissLiveFriendChip,
@@ -352,6 +392,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         loadMore,
         markRead,
         markAllRead,
+        clearAll,
         syncRealtimePreference,
         onAuthenticatedSession,
         reset

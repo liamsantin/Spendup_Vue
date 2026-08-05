@@ -47,6 +47,7 @@
             "newCount": "{count} new",
             "viewAll": "All notifications",
             "markAllRead": "All read",
+            "clearAll": "Delete all",
             "empty": "No notifications",
             "loading": "Loading…",
             "items": {
@@ -137,7 +138,12 @@
         },
         "unread": "Unread",
         "unreadCount": "{count} unread",
-        "loadMore": "Load more"
+        "loadMore": "Load more",
+        "clearAllModal": {
+            "title": "Delete all notifications?",
+            "body": "This cannot be undone. All your notifications will be removed.",
+            "confirm": "Delete all"
+        }
     },
     "friendsPage": {
         "tabs": {

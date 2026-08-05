@@ -48,6 +48,15 @@ export type MarkAllReadResult = {
     unreadCount: number;
 };
 
+export type DeleteAllNotificationsResult = {
+    deletedCount: number;
+};
+
+/** Payload SignalR `inboxCleared` — inbox vidée (multi-appareils). */
+export type InboxClearedPayload = {
+    unreadCount: number;
+};
+
 export type NotificationConnectedPayload = {
     connectionId: string;
     userId: string;

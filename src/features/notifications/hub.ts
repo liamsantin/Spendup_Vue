@@ -1,12 +1,19 @@
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { useAuthStore } from '@/features/auth';
 import { getApiBaseUrl, isAuthCookieMode } from '@/utils/helpers/axios-helpers';
-import type { FriendshipChangedPayload, NotificationConnectedPayload, NotificationReceivedPayload, SessionEndedPayload } from './types';
+import type {
+    FriendshipChangedPayload,
+    InboxClearedPayload,
+    NotificationConnectedPayload,
+    NotificationReceivedPayload,
+    SessionEndedPayload
+} from './types';
 
 export type NotificationsHubHandlers = {
     onConnected?: (payload: NotificationConnectedPayload) => void;
     onNotificationReceived?: (payload: NotificationReceivedPayload) => void;
     onFriendshipChanged?: (payload: FriendshipChangedPayload) => void;
+    onInboxCleared?: (payload: InboxClearedPayload) => void;
     onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
 };
 
@@ -28,6 +35,7 @@ function attachHandlers(conn: HubConnection) {
     conn.off('connected');
     conn.off('notificationReceived');
     conn.off('friendshipChanged');
+    conn.off('inboxCleared');
     conn.off('sessionEnded');
 
     conn.on('connected', (payload: NotificationConnectedPayload) => {
@@ -40,6 +48,10 @@ function attachHandlers(conn: HubConnection) {
 
     conn.on('friendshipChanged', (payload: FriendshipChangedPayload) => {
         handlers.onFriendshipChanged?.(payload);
+    });
+
+    conn.on('inboxCleared', (payload: InboxClearedPayload) => {
+        handlers.onInboxCleared?.(payload);
     });
 
     conn.on('sessionEnded', (payload: SessionEndedPayload) => {

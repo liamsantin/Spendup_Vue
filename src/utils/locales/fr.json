@@ -46,7 +46,8 @@
             "title": "Notifications",
             "newCount": "{count} nouvelles",
             "viewAll": "Toutes les notifications",
-            "markAllRead": "Tout lu",
+            "markAllRead": "Tout lire",
+            "clearAll": "Tout supprimer",
             "empty": "Aucune notification",
             "loading": "Chargement…",
             "items": {
@@ -137,7 +138,12 @@
         },
         "unread": "Non lu",
         "unreadCount": "{count} non lues",
-        "loadMore": "Charger plus"
+        "loadMore": "Charger plus",
+        "clearAllModal": {
+            "title": "Supprimer toutes les notifications ?",
+            "body": "Cette action est définitive. Toutes vos notifications seront effacées.",
+            "confirm": "Tout supprimer"
+        }
     },
     "friendsPage": {
         "tabs": {
