@@ -3,7 +3,7 @@ import { ref, watch } from 'vue';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { Menu2Icon } from 'vue-tabler-icons';
 import NotificationDD from './NotificationDD.vue';
-import FriendsHeaderBtn from './FriendsHeaderBtn.vue';
+import NewDD from './NewDD.vue';
 import ProfileDD from './ProfileDD.vue';
 import Searchbar from './Searchbar.vue';
 
@@ -33,7 +33,7 @@ watch(priority, (newPriority) => {
             <Searchbar />
         </v-sheet>
 
-        <FriendsHeaderBtn class="ml-1" />
+        <NewDD class="ml-1" />
 
         <v-spacer />
 

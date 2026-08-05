@@ -95,6 +95,10 @@
         "friends": {
             "label": "Friends",
             "openQr": "Add a friend via QR"
+        },
+        "new": {
+            "label": "New",
+            "open": "Add something"
         }
     },
     "dashboard": {

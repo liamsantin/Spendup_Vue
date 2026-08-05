@@ -95,6 +95,10 @@
         "friends": {
             "label": "Amis",
             "openQr": "Ajouter un ami via QR"
+        },
+        "new": {
+            "label": "Nouveau",
+            "open": "Ajouter quelque chose"
         }
     },
     "dashboard": {
