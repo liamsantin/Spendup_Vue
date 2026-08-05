@@ -39,7 +39,13 @@ async function onQrScanned(publicId: string) {
 <template>
     <v-menu v-model="menuOpen" :close-on-content-click="false" :scrim="scrim" :opacity="opacity">
         <template #activator="{ props }">
-            <v-btn variant="tonal" class="text-none ps-2 pe-3" v-bind="props" :aria-label="t('header.new.open')">
+            <v-btn
+                color="lightprimary"
+                variant="flat"
+                class="text-none text-primary ps-2 pe-3"
+                v-bind="props"
+                :aria-label="t('header.new.open')"
+            >
                 <PlusIcon stroke-width="1.5" size="20" class="mr-1" />
                 {{ t('header.new.label') }}
             </v-btn>
