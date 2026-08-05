@@ -4,10 +4,12 @@ import { AtIcon, HashIcon, MailIcon, PhoneIcon } from 'vue-tabler-icons';
 import { useI18n } from 'vue-i18n';
 import { profileDD } from '@/data/admin/headerData';
 import { useAuthStore, useProfileAvatarUrl } from '@/features/auth';
+import { useHeaderMenuOverlay } from './useHeaderMenuOverlay';
 
 const { t } = useI18n();
 const authStore = useAuthStore();
 const { avatarSrc } = useProfileAvatarUrl();
+const { scrim, opacity } = useHeaderMenuOverlay();
 const menuOpen = ref(false);
 
 const displayName = computed(() => authStore.displayName || t('header.profile.fallbackName'));
@@ -44,7 +46,7 @@ async function onLogout() {
 </script>
 
 <template>
-    <v-menu v-model="menuOpen" :close-on-content-click="false">
+    <v-menu v-model="menuOpen" :close-on-content-click="false" :scrim="scrim" :opacity="opacity">
         <template v-slot:activator="{ props }">
             <v-btn class="custom-hover-primary" variant="text" v-bind="props" icon>
                 <v-avatar size="35">

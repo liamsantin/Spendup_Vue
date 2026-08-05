@@ -5,12 +5,14 @@ import { SearchIcon } from 'vue-tabler-icons';
 import { useI18n } from 'vue-i18n';
 import { searchSugg } from '@/data/admin/headerData';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
+import { useHeaderMenuOverlay } from './useHeaderMenuOverlay';
 
 const { t } = useI18n();
+const { scrim, opacity } = useHeaderMenuOverlay();
 </script>
 
 <template>
-    <v-menu :close-on-content-click="false">
+    <v-menu :close-on-content-click="false" :scrim="scrim" :opacity="opacity">
         <template #activator="{ props }">
             <v-btn icon class="custom-hover-primary" size="small" variant="text" color="primary" v-bind="props">
                 <SearchIcon stroke-width="1.5" size="20" />

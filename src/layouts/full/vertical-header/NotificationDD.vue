@@ -7,10 +7,12 @@ import { UserPhotoAvatar } from '@/features/friends';
 import { resolveNotificationLink, useNotificationsStore } from '@/features/notifications';
 import type { AppNotification } from '@/features/notifications';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
+import { useHeaderMenuOverlay } from './useHeaderMenuOverlay';
 
 const { t, locale } = useI18n();
 const router = useRouter();
 const notifications = useNotificationsStore();
+const { scrim, opacity } = useHeaderMenuOverlay();
 const menuOpen = ref(false);
 
 const unreadLabel = computed(() => t('header.notifications.newCount', { count: notifications.unreadCount }));
@@ -69,7 +71,7 @@ async function onItemClick(item: AppNotification) {
 </script>
 
 <template>
-    <v-menu :model-value="menuOpen" :close-on-content-click="false" @update:model-value="onMenuUpdate">
+    <v-menu :model-value="menuOpen" :close-on-content-click="false" :scrim="scrim" :opacity="opacity" @update:model-value="onMenuUpdate">
         <template #activator="{ props }">
             <v-btn icon variant="text" color="primary" class="custom-hover-primary" v-bind="props">
                 <v-badge :content="notifications.badgeContent" :model-value="notifications.hasUnread" color="primary">
