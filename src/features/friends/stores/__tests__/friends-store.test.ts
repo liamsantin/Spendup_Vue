@@ -160,6 +160,127 @@ describe('useFriendsStore', () => {
         expect(api.incoming).not.toHaveBeenCalled();
     });
 
+    it('sur friendshipChanged canceled rafraîchit incoming', async () => {
+        api.incoming.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        let listener: ((p: { change: string; friendshipPublicId: string }) => void) | undefined;
+        subscribeToFriendshipChanged.mockImplementation((fn: (p: { change: string; friendshipPublicId: string }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useFriendsStore();
+        store.onAuthenticatedSession();
+        api.incoming.mockClear();
+        api.list.mockClear();
+        api.outgoing.mockClear();
+
+        listener?.({ change: 'canceled', friendshipPublicId: 'fr-3' });
+        await vi.waitFor(() => expect(api.incoming).toHaveBeenCalled());
+
+        expect(api.list).not.toHaveBeenCalled();
+        expect(api.outgoing).not.toHaveBeenCalled();
+    });
+
+    it('sur friendshipChanged removed rafraîchit la liste amis', async () => {
+        api.list.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        let listener: ((p: { change: string; friendshipPublicId: string }) => void) | undefined;
+        subscribeToFriendshipChanged.mockImplementation((fn: (p: { change: string; friendshipPublicId: string }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useFriendsStore();
+        store.onAuthenticatedSession();
+        api.list.mockClear();
+        api.incoming.mockClear();
+        api.outgoing.mockClear();
+
+        listener?.({ change: 'removed', friendshipPublicId: 'fr-4' });
+        await vi.waitFor(() => expect(api.list).toHaveBeenCalled());
+
+        expect(api.incoming).not.toHaveBeenCalled();
+        expect(api.outgoing).not.toHaveBeenCalled();
+    });
+
+    it('sur friendRequest rafraîchit incoming', async () => {
+        api.incoming.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        let notifListener: ((n: { type: string }) => void) | undefined;
+        subscribeToFriendNotifications.mockImplementation((fn: (n: { type: string }) => void) => {
+            notifListener = fn;
+            return () => undefined;
+        });
+
+        const store = useFriendsStore();
+        store.onAuthenticatedSession();
+        api.incoming.mockClear();
+        api.list.mockClear();
+
+        notifListener?.({ type: 'friendRequest' });
+        await vi.waitFor(() => expect(api.incoming).toHaveBeenCalled());
+        expect(api.list).not.toHaveBeenCalled();
+    });
+
+    it('sur friendAccepted rafraîchit amis / demandes', async () => {
+        api.list.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+        api.incoming.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+        api.outgoing.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        let notifListener: ((n: { type: string }) => void) | undefined;
+        subscribeToFriendNotifications.mockImplementation((fn: (n: { type: string }) => void) => {
+            notifListener = fn;
+            return () => undefined;
+        });
+
+        const store = useFriendsStore();
+        store.onAuthenticatedSession();
+        api.list.mockClear();
+        api.incoming.mockClear();
+        api.outgoing.mockClear();
+
+        notifListener?.({ type: 'friendAccepted' });
+        await vi.waitFor(() => {
+            expect(api.list).toHaveBeenCalled();
+            expect(api.incoming).toHaveBeenCalled();
+            expect(api.outgoing).toHaveBeenCalled();
+        });
+    });
+
+    it('sérialise les friendshipChanged en rafale', async () => {
+        let resolveOutgoing: (() => void) | undefined;
+        api.outgoing.mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolveOutgoing = () => resolve({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+                })
+        );
+        api.incoming.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        let listener: ((p: { change: string; friendshipPublicId: string }) => void) | undefined;
+        subscribeToFriendshipChanged.mockImplementation((fn: (p: { change: string; friendshipPublicId: string }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useFriendsStore();
+        store.onAuthenticatedSession();
+        api.outgoing.mockClear();
+        api.incoming.mockClear();
+
+        listener?.({ change: 'refused', friendshipPublicId: 'a' });
+        listener?.({ change: 'canceled', friendshipPublicId: 'b' });
+
+        await Promise.resolve();
+        expect(api.outgoing).toHaveBeenCalledTimes(1);
+        expect(api.incoming).not.toHaveBeenCalled();
+
+        resolveOutgoing?.();
+        await vi.waitFor(() => expect(api.incoming).toHaveBeenCalledTimes(1));
+        expect(api.outgoing).toHaveBeenCalledTimes(1);
+    });
+
     it('onAuthenticatedSession branche le realtime sans charger les listes', () => {
         const store = useFriendsStore();
         store.onAuthenticatedSession();

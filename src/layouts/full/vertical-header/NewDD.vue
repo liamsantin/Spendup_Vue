@@ -51,9 +51,7 @@ async function onQrScanned(publicId: string) {
                     <template #prepend>
                         <UserPlusIcon stroke-width="1.5" size="20" class="mr-3" />
                     </template>
-                    <v-list-item-title class="text-subtitle-1 font-weight-medium">
-                        {{ t('header.friends.label') }}
-                    </v-list-item-title>
+                    <v-list-item-title class="text-subtitle-1 font-weight-medium"> + {{ t('header.friends.label') }} </v-list-item-title>
                 </v-list-item>
             </v-list>
         </v-sheet>

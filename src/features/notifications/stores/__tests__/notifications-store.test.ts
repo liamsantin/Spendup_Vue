@@ -226,6 +226,54 @@ describe('useNotificationsStore', () => {
         expect(store.totalCount).toBe(0);
     });
 
+    it('notificationReceived incrémente totalCount et hasItems suit unreadCount', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+        store.totalCount = 0;
+        store.items = [];
+        store.unreadCount = 2;
+        expect(store.hasItems).toBe(true);
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        handlers.onNotificationReceived?.({
+            notification: {
+                id: 77,
+                type: 'friendRequest',
+                title: 'Demande',
+                subtitle: null,
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: '/friends',
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            },
+            unreadCount: 3
+        });
+
+        expect(store.items).toHaveLength(1);
+        expect(store.totalCount).toBe(1);
+        expect(store.hasMore).toBe(false);
+
+        handlers.onNotificationReceived?.({
+            notification: {
+                id: 77,
+                type: 'friendRequest',
+                title: 'Demande',
+                subtitle: null,
+                message: null,
+                isRead: true,
+                readAt: '2026-01-01T00:01:00Z',
+                link: '/friends',
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            },
+            unreadCount: 2
+        });
+        expect(store.totalCount).toBe(1);
+    });
+
     it('reset coupe le hub et vide l’état', async () => {
         const store = useNotificationsStore();
         store.unreadCount = 2;

@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { useNotificationsStore } from '@/features/notifications';
-import type { AppNotification, FriendshipChangedPayload } from '@/features/notifications';
+import type { AppNotification, FriendshipChange, FriendshipChangedPayload } from '@/features/notifications';
 import { friendsApi } from '../api';
 import type { BlockedFriendItem, FriendItem, FriendRequestItem, FriendSearchItem, FriendsPageResult } from '../types';
 
@@ -45,6 +45,8 @@ export const useFriendsStore = defineStore('friends', () => {
 
     let unsubscribeNotifications: (() => void) | null = null;
     let unsubscribeFriendshipChanged: (() => void) | null = null;
+    let friendshipRefreshQueue: FriendshipChange[] = [];
+    let friendshipRefreshRunning = false;
 
     const friendsCount = computed(() => friendsTotalCount.value);
     const incomingCount = computed(() => incomingTotalCount.value);
@@ -383,24 +385,51 @@ export const useFriendsStore = defineStore('friends', () => {
         }
     }
 
+    async function applyFriendshipChange(change: FriendshipChange) {
+        if (change === 'refused') {
+            await loadOutgoing(true);
+            refreshSearchIfNeeded();
+            return;
+        }
+        if (change === 'canceled') {
+            await loadIncoming(true);
+            refreshSearchIfNeeded();
+            return;
+        }
+        if (change === 'blocked') {
+            await Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true), loadBlocked(true)]);
+            refreshSearchIfNeeded();
+            return;
+        }
+        if (change === 'removed') {
+            await loadFriends(true);
+        }
+    }
+
+    async function drainFriendshipRefreshQueue() {
+        if (friendshipRefreshRunning) return;
+        friendshipRefreshRunning = true;
+        try {
+            while (friendshipRefreshQueue.length > 0) {
+                const change = friendshipRefreshQueue.shift();
+                if (!change) continue;
+                while (friendshipRefreshQueue[0] === change) {
+                    friendshipRefreshQueue.shift();
+                }
+                await applyFriendshipChange(change);
+            }
+        } finally {
+            friendshipRefreshRunning = false;
+            if (friendshipRefreshQueue.length > 0) {
+                void drainFriendshipRefreshQueue();
+            }
+        }
+    }
+
     function handleFriendshipChanged(payload: FriendshipChangedPayload) {
-        if (payload.change === 'refused') {
-            void loadOutgoing(true).then(() => refreshSearchIfNeeded());
-            return;
-        }
-        if (payload.change === 'canceled') {
-            void loadIncoming(true).then(() => refreshSearchIfNeeded());
-            return;
-        }
-        if (payload.change === 'blocked') {
-            void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true), loadBlocked(true)]).then(() => {
-                refreshSearchIfNeeded();
-            });
-            return;
-        }
-        if (payload.change === 'removed') {
-            void loadFriends(true);
-        }
+        if (!payload?.change) return;
+        friendshipRefreshQueue.push(payload.change);
+        void drainFriendshipRefreshQueue();
     }
 
     function ensureRealtimeBridge() {
@@ -480,6 +509,8 @@ export const useFriendsStore = defineStore('friends', () => {
         unsubscribeNotifications = null;
         unsubscribeFriendshipChanged?.();
         unsubscribeFriendshipChanged = null;
+        friendshipRefreshQueue = [];
+        friendshipRefreshRunning = false;
     }
 
     return {

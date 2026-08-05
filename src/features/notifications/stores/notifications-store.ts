@@ -53,23 +53,25 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const hasUnread = computed(() => unreadCount.value > 0);
     const badgeContent = computed(() => (unreadCount.value > 0 ? unreadCount.value : undefined));
     const hasMore = computed(() => items.value.length < totalCount.value);
-    const hasItems = computed(() => items.value.length > 0 || totalCount.value > 0);
+    const hasItems = computed(() => items.value.length > 0 || totalCount.value > 0 || unreadCount.value > 0);
 
     function applyUnreadCount(count: number) {
         unreadCount.value = Math.max(0, Number.isFinite(count) ? count : 0);
     }
 
-    function upsertItem(notification: AppNotification, prepend = false) {
+    /** @returns `true` si un nouvel item a été inséré (pas un update). */
+    function upsertItem(notification: AppNotification, prepend = false): boolean {
         const idx = items.value.findIndex((n) => n.id === notification.id);
         if (idx >= 0) {
             items.value[idx] = notification;
-            return;
+            return false;
         }
         if (prepend) {
             items.value = [notification, ...items.value];
         } else {
             items.value = [...items.value, notification];
         }
+        return true;
     }
 
     /**
@@ -128,7 +130,10 @@ export const useNotificationsStore = defineStore('notifications', () => {
         if (isFriendNotificationType(String(notification.type))) {
             friendListeners.forEach((listener) => listener(notification));
         }
-        upsertItem(notification, true);
+        const inserted = upsertItem(notification, true);
+        if (inserted) {
+            totalCount.value = Math.max(items.value.length, totalCount.value + 1);
+        }
         pushLiveFriendChip(notification);
     }
 
