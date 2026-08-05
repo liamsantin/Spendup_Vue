@@ -99,6 +99,62 @@
         "new": {
             "label": "New",
             "open": "Add something"
+        },
+        "appsSidebar": {
+            "navigation": "Navigation",
+            "quickLinksTitle": "Quick links",
+            "faq": "Frequently Asked Questions",
+            "faqAction": "Check",
+            "sections": {
+                "apps": "Apps",
+                "chats": "Chats",
+                "calendar": "Calendar",
+                "mail": "Mail"
+            },
+            "apps": {
+                "chat": {
+                    "title": "Chat Application",
+                    "subtitle": "New messages arrived"
+                },
+                "ecommerce": {
+                    "title": "eCommerce App",
+                    "subtitle": "Learn more information"
+                },
+                "profile": {
+                    "title": "User Profile App",
+                    "subtitle": "Get profile details"
+                },
+                "calendar": {
+                    "title": "Calendar App",
+                    "subtitle": "Get dates"
+                },
+                "contacts": {
+                    "title": "Contact Application",
+                    "subtitle": "2 Unsaved Contacts"
+                },
+                "settings": {
+                    "title": "Account Setting App",
+                    "subtitle": "Account settings"
+                },
+                "email": {
+                    "title": "Email App",
+                    "subtitle": "Get new emails"
+                },
+                "notes": {
+                    "title": "Notes Application",
+                    "subtitle": "To-do and Daily tasks"
+                }
+            },
+            "quickLinks": {
+                "pricing": "Pricing Page",
+                "auth": "Authentication Design",
+                "register": "Register Now",
+                "error404": "404 Error Page",
+                "notes": "Notes App",
+                "user": "User Application",
+                "blog": "Blog Design",
+                "cart": "Shopping Cart"
+            }
         }
     },
     "dashboard": {

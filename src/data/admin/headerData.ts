@@ -1,7 +1,15 @@
-import type { profileType, searchType } from '@/types/HeaderTypes';
+import type { appsLinkType, profileType, quickLinksType, searchType } from '@/types/HeaderTypes';
 
 import proUser1 from '@/assets/images/svgs/icon-account.svg';
 import proFriends from '@/assets/images/svgs/icon-friends.svg';
+import img1 from '@/assets/images/svgs/icon-dd-chat.svg';
+import img2 from '@/assets/images/svgs/icon-dd-cart.svg';
+import img3 from '@/assets/images/svgs/icon-dd-invoice.svg';
+import img4 from '@/assets/images/svgs/icon-dd-date.svg';
+import img5 from '@/assets/images/svgs/icon-dd-mobile.svg';
+import img6 from '@/assets/images/svgs/icon-dd-lifebuoy.svg';
+import img7 from '@/assets/images/svgs/icon-dd-message-box.svg';
+import img8 from '@/assets/images/svgs/icon-dd-application.svg';
 
 const profileDD: profileType[] = [
     {
@@ -45,4 +53,91 @@ const searchSugg: searchType[] = [
     }
 ];
 
-export { profileDD, searchSugg };
+/** Contenu temporaire (template Modernize) — à adapter ensuite. */
+const appsLink: appsLinkType[] = [
+    {
+        avatar: img1,
+        titleKey: 'header.appsSidebar.apps.chat.title',
+        subtitleKey: 'header.appsSidebar.apps.chat.subtitle',
+        href: '/apps/chats'
+    },
+    {
+        avatar: img2,
+        titleKey: 'header.appsSidebar.apps.ecommerce.title',
+        subtitleKey: 'header.appsSidebar.apps.ecommerce.subtitle',
+        href: '/ecommerce/products'
+    },
+    {
+        avatar: img3,
+        titleKey: 'header.appsSidebar.apps.profile.title',
+        subtitleKey: 'header.appsSidebar.apps.profile.subtitle',
+        href: '/apps/user/profile'
+    },
+    {
+        avatar: img4,
+        titleKey: 'header.appsSidebar.apps.calendar.title',
+        subtitleKey: 'header.appsSidebar.apps.calendar.subtitle',
+        href: '/apps/calendar'
+    },
+    {
+        avatar: img5,
+        titleKey: 'header.appsSidebar.apps.contacts.title',
+        subtitleKey: 'header.appsSidebar.apps.contacts.subtitle',
+        href: '/apps/contacts'
+    },
+    {
+        avatar: img6,
+        titleKey: 'header.appsSidebar.apps.settings.title',
+        subtitleKey: 'header.appsSidebar.apps.settings.subtitle',
+        href: '/pages/account-settings'
+    },
+    {
+        avatar: img7,
+        titleKey: 'header.appsSidebar.apps.email.title',
+        subtitleKey: 'header.appsSidebar.apps.email.subtitle',
+        href: '/'
+    },
+    {
+        avatar: img8,
+        titleKey: 'header.appsSidebar.apps.notes.title',
+        subtitleKey: 'header.appsSidebar.apps.notes.subtitle',
+        href: '/apps/notes'
+    }
+];
+
+const quickLink: quickLinksType[] = [
+    {
+        titleKey: 'header.appsSidebar.quickLinks.pricing',
+        href: '/pages/pricing'
+    },
+    {
+        titleKey: 'header.appsSidebar.quickLinks.auth',
+        href: '/auth/login'
+    },
+    {
+        titleKey: 'header.appsSidebar.quickLinks.register',
+        href: '/auth/register'
+    },
+    {
+        titleKey: 'header.appsSidebar.quickLinks.error404',
+        href: '/auth/404'
+    },
+    {
+        titleKey: 'header.appsSidebar.quickLinks.notes',
+        href: '/apps/notes'
+    },
+    {
+        titleKey: 'header.appsSidebar.quickLinks.user',
+        href: '/apps/user/profile'
+    },
+    {
+        titleKey: 'header.appsSidebar.quickLinks.blog',
+        href: '/apps/blog/posts'
+    },
+    {
+        titleKey: 'header.appsSidebar.quickLinks.cart',
+        href: '/ecommerce/checkout'
+    }
+];
+
+export { profileDD, searchSugg, appsLink, quickLink };

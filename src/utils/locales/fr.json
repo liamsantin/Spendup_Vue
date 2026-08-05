@@ -99,6 +99,62 @@
         "new": {
             "label": "Nouveau",
             "open": "Ajouter quelque chose"
+        },
+        "appsSidebar": {
+            "navigation": "Navigation",
+            "quickLinksTitle": "Liens rapides",
+            "faq": "Questions fréquentes",
+            "faqAction": "Voir",
+            "sections": {
+                "apps": "Apps",
+                "chats": "Discussions",
+                "calendar": "Calendrier",
+                "mail": "Messagerie"
+            },
+            "apps": {
+                "chat": {
+                    "title": "Application Chat",
+                    "subtitle": "Nouveaux messages reçus"
+                },
+                "ecommerce": {
+                    "title": "Application e-commerce",
+                    "subtitle": "En savoir plus"
+                },
+                "profile": {
+                    "title": "Profil utilisateur",
+                    "subtitle": "Voir les détails du profil"
+                },
+                "calendar": {
+                    "title": "Application Calendrier",
+                    "subtitle": "Voir les dates"
+                },
+                "contacts": {
+                    "title": "Application Contacts",
+                    "subtitle": "2 contacts non enregistrés"
+                },
+                "settings": {
+                    "title": "Paramètres du compte",
+                    "subtitle": "Réglages du compte"
+                },
+                "email": {
+                    "title": "Application E-mail",
+                    "subtitle": "Nouveaux e-mails"
+                },
+                "notes": {
+                    "title": "Application Notes",
+                    "subtitle": "Tâches et notes du jour"
+                }
+            },
+            "quickLinks": {
+                "pricing": "Page tarifs",
+                "auth": "Design authentification",
+                "register": "S’inscrire",
+                "error404": "Page d’erreur 404",
+                "notes": "Application Notes",
+                "user": "Application utilisateur",
+                "blog": "Design blog",
+                "cart": "Panier"
+            }
         }
     },
     "dashboard": {

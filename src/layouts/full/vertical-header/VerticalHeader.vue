@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
-import { Menu2Icon } from 'vue-tabler-icons';
+import { GridDotsIcon, Menu2Icon } from 'vue-tabler-icons';
 import NotificationDD from './NotificationDD.vue';
+import Navigations from './Navigations.vue';
 import NewDD from './NewDD.vue';
 import ProfileDD from './ProfileDD.vue';
+import RightMobileSidebar from './RightMobileSidebar.vue';
 import Searchbar from './Searchbar.vue';
 
 const appSettings = useAppSettingsStore();
+const appsdrawer = ref(false);
 const priority = ref(appSettings.setHorizontalLayout ? 0 : 0);
 watch(priority, (newPriority) => {
     priority.value = newPriority;
@@ -35,12 +38,24 @@ watch(priority, (newPriority) => {
 
         <NewDD class="ml-1" />
 
+        <div class="hidden-md-and-down">
+            <Navigations />
+        </div>
+
         <v-spacer />
 
         <NotificationDD />
+
+        <v-btn variant="text" color="primary" class="hidden-lg-and-up custom-hover-primary" icon @click.stop="appsdrawer = !appsdrawer">
+            <GridDotsIcon size="17" stroke-width="1.5" />
+        </v-btn>
 
         <div class="ml-2">
             <ProfileDD />
         </div>
     </v-app-bar>
+
+    <v-navigation-drawer v-model="appsdrawer" location="right" temporary>
+        <RightMobileSidebar />
+    </v-navigation-drawer>
 </template>
