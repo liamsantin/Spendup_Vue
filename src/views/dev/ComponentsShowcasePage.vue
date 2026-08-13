@@ -429,7 +429,7 @@ function resetChipClosable() {
             <v-tabs-window-item value="modal">
                 <p class="text-body-2 text-medium-emphasis mb-6">
                     <code>AppModalBase</code> — shell modal Spend.Up. Doc :
-                    <code>docs/components/modal/modalbase-component.md</code>
+                    <code>docs/components/modal-base.md</code>
                 </p>
 
                 <h3 class="text-h6 font-weight-semibold mb-3">Scrollable (contenu long)</h3>

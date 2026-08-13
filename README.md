@@ -4,7 +4,7 @@ Application **Vue 3 + TypeScript + Vuetify 3** (base Modernize v6.2), structuré
 
 Stack : Vue 3 · Vite 8 · Pinia · Vue Router · vue-i18n · Vuetify 3
 
-Documentation interne : `docs/structure-spendup.md`, `docs/rules-spendup.md`
+Documentation développeur : [`docs/INDEX.md`](docs/INDEX.md)
 
 ## Démarrage
 
