@@ -25,6 +25,7 @@ export const CSP_DEV_REPORT_ONLY = [
 
 /**
  * Prod enforce — pas de `unsafe-eval` ni `ws` (HMR).
+ * Prérequis : `__INTLIFY_JIT_COMPILATION__` dans vite (sinon vue-i18n → EvalError).
  * connect-src resserré : self, Google, localhost (preview → API), https/wss.
  */
 export const CSP_PROD_ENFORCE = [

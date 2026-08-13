@@ -25,6 +25,14 @@ function htmlCspMetaPlugin(): Plugin {
 // https://vite.dev/config/
 export default defineConfig({
     plugins: [vue(), vueTablerIconsTreeshake(), vuetify({ autoImport: true }), htmlCspMetaPlugin()],
+    /**
+     * vue-i18n v9 compile les messages via `new Function` par défaut → casse CSP prod
+     * (`script-src` sans `unsafe-eval`). Le JIT (v9.3+) évite eval tout en gardant les JSON runtime.
+     * @see https://vue-i18n.intlify.dev/guide/advanced/optimization.html#jit-compilation
+     */
+    define: {
+        __INTLIFY_JIT_COMPILATION__: true
+    },
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url))
