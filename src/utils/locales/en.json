@@ -726,7 +726,9 @@
             "scriptFailed": "Failed to load the Google script",
             "desktopFailed": "Google sign-in failed. Please try again.",
             "desktopTimeout": "Google sign-in timed out. Please try again.",
-            "desktopInProgress": "A Google sign-in is already in progress."
+            "desktopInProgress": "A Google sign-in is already in progress.",
+            "desktopWaitingBrowser": "Complete sign-in in your browser…",
+            "desktopWaitingSession": "Signing in to Spend.Up…"
         },
         "login": {
             "username": "Username",

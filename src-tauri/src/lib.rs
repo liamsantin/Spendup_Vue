@@ -43,12 +43,15 @@ async fn oauth_loopback_wait(app: AppHandle, timeout_ms: u64) -> Result<String, 
 }
 
 /// Échange le code OAuth contre un `id_token` côté native (évite le CORS WebView).
+/// Les clients « Application de bureau » Google ont souvent un Client secret affiché
+/// dans la console ; le token endpoint peut l’exiger même avec PKCE.
 #[tauri::command]
 async fn google_exchange_code(
     client_id: String,
     code: String,
     code_verifier: String,
     redirect_uri: String,
+    client_secret: Option<String>,
 ) -> Result<String, String> {
     #[derive(Deserialize)]
     struct TokenResponse {
@@ -57,16 +60,21 @@ async fn google_exchange_code(
         error_description: Option<String>,
     }
 
+    let mut form = vec![
+        ("client_id", client_id.clone()),
+        ("code", code.clone()),
+        ("code_verifier", code_verifier.clone()),
+        ("grant_type", "authorization_code".to_string()),
+        ("redirect_uri", redirect_uri.clone()),
+    ];
+    if let Some(secret) = client_secret.filter(|s| !s.trim().is_empty()) {
+        form.push(("client_secret", secret));
+    }
+
     let client = reqwest::Client::new();
     let response = client
         .post(GOOGLE_TOKEN_URL)
-        .form(&[
-            ("client_id", client_id.as_str()),
-            ("code", code.as_str()),
-            ("code_verifier", code_verifier.as_str()),
-            ("grant_type", "authorization_code"),
-            ("redirect_uri", redirect_uri.as_str()),
-        ])
+        .form(&form)
         .send()
         .await
         .map_err(|e| format!("token request: {e}"))?;

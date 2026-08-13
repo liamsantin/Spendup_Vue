@@ -195,7 +195,7 @@ Email non vérifié **ou** mauvais MDP → **même message** (`Invalid email or 
 | Web (GIS)      | `VITE_GOOGLE_CLIENT_ID`         | `Authentication:Google:ClientId` (Web)                                        |
 | Desktop (PKCE) | `VITE_GOOGLE_DESKTOP_CLIENT_ID` | **Doit accepter l’`aud` Desktop** en plus du Web (config / liste d’audiences) |
 
-Redirect Desktop : **pas d’URI à saisir** dans la console Google pour un client « Application de bureau » — Google autorise nativement `http://127.0.0.1` / `http://localhost` (loopback). Ne pas utiliser de scheme custom (`spendup://`) : Google renvoie `invalid_request` / politique OAuth.
+Redirect Desktop : client **Application de bureau** — Google affiche quand même un **Secret client** dans la console ; le token endpoint l’exige souvent (`client_secret is missing` sinon). Le renseigner en `VITE_GOOGLE_DESKTOP_CLIENT_SECRET` (embarqué dans l’app installée ; Google considère ce secret non confidentiel pour les apps desktop). Loopback `http://127.0.0.1:<port>/auth/google/callback` — pas de scheme custom.
 
 **CORS Tauri** : ajouter l’origine exacte de la WebView dans `Cors:AllowedOrigins` :
 

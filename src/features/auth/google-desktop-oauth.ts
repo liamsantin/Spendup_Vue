@@ -14,6 +14,10 @@ function desktopClientId(): string {
     return String(import.meta.env.VITE_GOOGLE_DESKTOP_CLIENT_ID ?? '').trim();
 }
 
+function desktopClientSecret(): string {
+    return String(import.meta.env.VITE_GOOGLE_DESKTOP_CLIENT_SECRET ?? '').trim();
+}
+
 export function isGoogleDesktopConfigured(): boolean {
     return desktopClientId().length > 0;
 }
@@ -97,7 +101,8 @@ export async function requestGoogleIdTokenDesktop(): Promise<string> {
             clientId: desktopClientId(),
             code: parsed.code,
             codeVerifier,
-            redirectUri
+            redirectUri,
+            clientSecret: desktopClientSecret() || null
         });
     } finally {
         unlisten();

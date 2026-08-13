@@ -20,10 +20,18 @@ const root = ref<HTMLElement | null>(null);
 const container = ref<HTMLElement | null>(null);
 const error = ref<string | null>(null);
 const desktopBusy = ref(false);
+/** `browser` = OAuth navigateur ; `session` = idToken reçu, login API en cours côté parent. */
+const desktopPhase = ref<'browser' | 'session' | null>(null);
 
 const useDesktopFlow = isTauri();
 const webClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const configured = computed(() => (useDesktopFlow ? isGoogleDesktopConfigured() : Boolean(webClientId)));
+
+const desktopStatusText = computed(() => {
+    if (desktopPhase.value === 'session') return t('auth.google.desktopWaitingSession');
+    if (desktopPhase.value === 'browser') return t('auth.google.desktopWaitingBrowser');
+    return '';
+});
 
 let resizeObserver: ResizeObserver | null = null;
 
@@ -102,9 +110,13 @@ async function onDesktopClick() {
     if (desktopBusy.value) return;
     error.value = null;
     desktopBusy.value = true;
+    desktopPhase.value = 'browser';
     try {
         const idToken = await requestGoogleIdTokenDesktop();
+        desktopPhase.value = 'session';
         emit('credential', idToken);
+        // Laisse le parent démarrer loginWithGoogle avant de retirer le spinner.
+        await new Promise((r) => setTimeout(r, 400));
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : String(e);
         if (/timed out/i.test(message)) {
@@ -116,6 +128,7 @@ async function onDesktopClick() {
         }
     } finally {
         desktopBusy.value = false;
+        desktopPhase.value = null;
     }
 }
 
@@ -161,9 +174,26 @@ onUnmounted(() => {
             >
                 {{ displayLabel }}
             </v-btn>
+
+            <div
+                v-if="desktopBusy"
+                class="google-signin__desktop-status d-flex align-center ga-3 mt-4 pa-3 rounded"
+                role="status"
+                aria-live="polite"
+            >
+                <v-progress-circular indeterminate size="22" width="2" color="primary" />
+                <span class="text-body-2">{{ desktopStatusText }}</span>
+            </div>
         </template>
         <div v-else ref="container" class="google-signin__btn" />
         <AppAlert v-if="error" type="warning" class="mt-2">{{ error }}</AppAlert>
         <span v-if="!useDesktopFlow" class="d-none">{{ displayLabel }}</span>
     </div>
 </template>
+
+<style scoped lang="scss">
+.google-signin__desktop-status {
+    background: rgba(var(--v-theme-primary), 0.08);
+    border: 1px solid rgba(var(--v-theme-primary), 0.2);
+}
+</style>
