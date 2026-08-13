@@ -4,6 +4,8 @@
 
 ## Public (`BlankLayout`)
 
+> Absentes sous **Tauri** (`isTauri`) : `/` redirige vers `/auth/login`. Landings web uniquement.
+
 | Route                        | Vue                                    |
 | ---------------------------- | -------------------------------------- |
 | `/`                          | `PublicHomePage`                       |

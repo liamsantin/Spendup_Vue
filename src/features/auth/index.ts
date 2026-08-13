@@ -7,6 +7,12 @@ export { sanitizeReturnUrl } from './safe-return-url';
 export { readPasswordResetToken, clearPasswordResetTokenFromUrl } from './password-reset-token';
 export { useIdleLogout } from './composables/useIdleLogout';
 export { useProfileAvatarUrl } from './composables/useProfileAvatarUrl';
+export {
+    GOOGLE_DESKTOP_CALLBACK_PATH,
+    GOOGLE_DESKTOP_REDIRECT_URI,
+    isGoogleDesktopConfigured,
+    requestGoogleIdTokenDesktop
+} from './google-desktop-oauth';
 export { withStepUpRetry, isStepUpRequired, getStepUpChallenge, STEP_UP_REQUIRED_CODE } from './step-up';
 export { isIdleSessionError, isIdleSessionMessage } from './idle-session';
 export { CSRF_COOKIE_NAME, CSRF_HEADER_NAME, getCsrfToken, rememberCsrfToken, clearCsrfToken, csrfHeaderRecord } from './csrf';

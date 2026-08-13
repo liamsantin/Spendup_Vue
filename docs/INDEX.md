@@ -6,16 +6,17 @@
 
 ## Carte
 
-| Besoin                                     | Dossier                                                       |
-| ------------------------------------------ | ------------------------------------------------------------- |
-| Modèle mental, frontières, HTTP, realtime  | [`architecture/`](architecture/layers.md)                     |
-| Normes obligatoires (naming, Pinia, SCSS…) | [`conventions/`](conventions/before-implementing.md)          |
-| Shells UI réutilisables                    | [`patterns/`](patterns/app-tabs-shell.md)                     |
-| Contrat d’un domaine métier                | [`features/<domaine>/contract.md`](features/auth/contract.md) |
-| Composants shared                          | [`components/`](components/catalog.md)                        |
-| Inventaire (routes, stores, helpers, env)  | [`reference/`](reference/tree.md)                             |
-| Checklists opérationnelles                 | [`runbooks/`](runbooks/add-app-feature.md)                    |
-| Décisions figées                           | [`adr/`](adr/0000-template.md)                                |
+| Besoin                                     | Dossier                                                                                          |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Modèle mental, frontières, HTTP, realtime  | [`architecture/`](architecture/layers.md)                                                        |
+| Normes obligatoires (naming, Pinia, SCSS…) | [`conventions/`](conventions/before-implementing.md)                                             |
+| Shells UI réutilisables                    | [`patterns/`](patterns/app-tabs-shell.md)                                                        |
+| Contrat d’un domaine métier                | [`features/<domaine>/contract.md`](features/auth/contract.md)                                    |
+| Composants shared                          | [`components/`](components/catalog.md)                                                           |
+| Inventaire (routes, stores, helpers, env)  | [`reference/`](reference/tree.md)                                                                |
+| Checklists opérationnelles                 | [`runbooks/`](runbooks/add-app-feature.md)                                                       |
+| Décisions figées                           | [`adr/`](adr/0000-template.md)                                                                   |
+| Desktop Tauri                              | [`runbooks/tauri-desktop.md`](runbooks/tauri-desktop.md) · [ADR 0004](adr/0004-tauri-desktop.md) |
 
 ## Features documentées
 

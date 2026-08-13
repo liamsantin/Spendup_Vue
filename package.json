@@ -14,10 +14,17 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "validate": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build",
+        "tauri": "tauri",
+        "tauri:dev": "tauri dev",
+        "tauri:build": "tauri build",
         "prepare": "husky"
     },
     "dependencies": {
         "@microsoft/signalr": "^10.0.0",
+        "@tauri-apps/api": "^2.11.1",
+        "@tauri-apps/plugin-deep-link": "^2.4.9",
+        "@tauri-apps/plugin-notification": "^2.3.3",
+        "@tauri-apps/plugin-opener": "^2.5.4",
         "axios": "^1.19.0",
         "html5-qrcode": "^2.3.8",
         "pinia": "^3.0.4",
@@ -31,6 +38,7 @@
         "vuetify": "^3.12.8"
     },
     "devDependencies": {
+        "@tauri-apps/cli": "^2.11.4",
         "@tsconfig/node22": "^22.0.2",
         "@types/node": "^22.19.21",
         "@types/qrcode": "^1.5.6",

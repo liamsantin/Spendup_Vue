@@ -1,22 +1,39 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
 
-const { unreadCount, list, markRead, markAllRead, deleteAll, startHub, stopHub, setHandlers, forceReLogin, getDeviceId, settingsState } =
-    vi.hoisted(() => ({
-        unreadCount: vi.fn(),
-        list: vi.fn(),
-        markRead: vi.fn(),
-        markAllRead: vi.fn(),
-        deleteAll: vi.fn(),
-        startHub: vi.fn(),
-        stopHub: vi.fn(),
-        setHandlers: vi.fn(),
-        forceReLogin: vi.fn(),
-        getDeviceId: vi.fn(() => 'device-local'),
-        settingsState: {
-            current: { pushNotifications: true, pushSecurityAlerts: true, pushFriendRequest: true, pushFinancialAlerts: true }
-        }
-    }));
+const {
+    unreadCount,
+    list,
+    markRead,
+    markAllRead,
+    deleteAll,
+    startHub,
+    stopHub,
+    setHandlers,
+    forceReLogin,
+    getDeviceId,
+    settingsState,
+    showNative,
+    ensureNativePermission,
+    isTauriMock
+} = vi.hoisted(() => ({
+    unreadCount: vi.fn(),
+    list: vi.fn(),
+    markRead: vi.fn(),
+    markAllRead: vi.fn(),
+    deleteAll: vi.fn(),
+    startHub: vi.fn(),
+    stopHub: vi.fn(),
+    setHandlers: vi.fn(),
+    forceReLogin: vi.fn(),
+    getDeviceId: vi.fn(() => 'device-local'),
+    showNative: vi.fn(),
+    ensureNativePermission: vi.fn().mockResolvedValue(true),
+    isTauriMock: vi.fn(() => false),
+    settingsState: {
+        current: { pushNotifications: true, pushSecurityAlerts: true, pushFriendRequest: true, pushFinancialAlerts: true }
+    }
+}));
 
 vi.mock('../../api', () => ({
     notificationsApi: {
@@ -33,6 +50,15 @@ vi.mock('../../hub', () => ({
     stopNotificationsHub: () => stopHub(),
     setNotificationsHubHandlers: (h: unknown) => setHandlers(h),
     getNotificationsHubState: () => null
+}));
+
+vi.mock('../../native-notify', () => ({
+    ensureNativeNotificationPermission: () => ensureNativePermission(),
+    showNativeNotification: (...args: unknown[]) => showNative(...args)
+}));
+
+vi.mock('@/utils/helpers/platform-helpers', () => ({
+    isTauri: () => isTauriMock()
 }));
 
 vi.mock('@/features/auth/device', () => ({
@@ -98,7 +124,11 @@ describe('useNotificationsStore', () => {
         stopHub.mockReset().mockResolvedValue(undefined);
         setHandlers.mockReset();
         forceReLogin.mockReset().mockResolvedValue(undefined);
+        showNative.mockReset();
+        ensureNativePermission.mockReset().mockResolvedValue(true);
+        isTauriMock.mockReset().mockReturnValue(false);
         getDeviceId.mockReset().mockReturnValue('device-local');
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
     });
 
     it('hydrate le badge via unread-count puis démarre le hub', async () => {
@@ -420,5 +450,62 @@ describe('useNotificationsStore', () => {
         await store.syncRealtimePreference();
 
         expect(store.liveFriendChips).toHaveLength(0);
+    });
+
+    it('Tauri : notificationReceived envoie une notif OS si prefs on', async () => {
+        isTauriMock.mockReturnValue(true);
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+        expect(ensureNativePermission).toHaveBeenCalled();
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        handlers.onNotificationReceived?.({
+            notification: {
+                id: 90,
+                type: 'friendRequest',
+                title: 'Demande',
+                subtitle: 'Bob',
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: '/friends',
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            },
+            unreadCount: 1
+        });
+
+        expect(showNative).toHaveBeenCalledTimes(1);
+        expect(showNative.mock.calls[0]?.[0]).toMatchObject({ id: 90, type: 'friendRequest' });
+    });
+
+    it('Tauri : pushNotifications off — pas de notif OS', async () => {
+        isTauriMock.mockReturnValue(true);
+        settingsState.current.pushNotifications = false;
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+        expect(ensureNativePermission).not.toHaveBeenCalled();
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        handlers.onNotificationReceived?.({
+            notification: {
+                id: 91,
+                type: 'friendRequest',
+                title: 'Demande',
+                subtitle: null,
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: '/friends',
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            },
+            unreadCount: 1
+        });
+
+        expect(showNative).not.toHaveBeenCalled();
+        expect(store.items).toHaveLength(1);
     });
 });

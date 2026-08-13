@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+src-tauri/target/
 
 # Env locaux (garder .env.example versionné)
 .env

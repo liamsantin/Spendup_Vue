@@ -24,6 +24,7 @@ function htmlCspMetaPlugin(): Plugin {
 
 // https://vite.dev/config/
 export default defineConfig({
+    clearScreen: false,
     plugins: [vue(), vueTablerIconsTreeshake(), vuetify({ autoImport: true }), htmlCspMetaPlugin()],
     /**
      * vue-i18n v9 compile les messages via `new Function` par défaut → casse CSP prod
@@ -39,6 +40,7 @@ export default defineConfig({
         }
     },
     server: {
+        strictPort: true,
         headers: {
             ...SECURITY_HEADERS_BASE,
             'Content-Security-Policy-Report-Only': CSP_DEV_REPORT_ONLY

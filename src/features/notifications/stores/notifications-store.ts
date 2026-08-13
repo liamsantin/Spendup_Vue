@@ -8,7 +8,9 @@ import { notificationsApi } from '../api';
 import { getNotificationsHubState, setNotificationsHubHandlers, startNotificationsHub, stopNotificationsHub } from '../hub';
 import { isFriendLiveChipType } from '../friendChip';
 import { isFriendNotificationType, isSecurityNotificationType } from '../link';
+import { ensureNativeNotificationPermission, showNativeNotification } from '../native-notify';
 import { normalizeNotificationReceivedPayload } from '../normalize';
+import { isTauri } from '@/utils/helpers/platform-helpers';
 import type {
     AppNotification,
     FriendshipChangedPayload,
@@ -75,17 +77,22 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
 
     /**
-     * Gate des chips live in-app uniquement (`pushNotifications` + sous-préférences).
-     * N’affecte pas l’inbox / badge / listes amis.
+     * Gate prefs push (`pushNotifications` + sous-préférences).
+     * Chips live in-app + notifications OS (Tauri). N’affecte pas l’inbox / badge / listes amis.
      */
     function shouldShowLiveChip(type: string): boolean {
         const settings = useUserSettingsStore().current;
         if (!settings.pushNotifications) return false;
         if (isSecurityNotificationType(type) && !settings.pushSecurityAlerts) return false;
         if (isFriendNotificationType(type) && !settings.pushFriendRequest) return false;
-        // Types finance futurs — coupe le chip si désactivé.
+        // Types finance futurs — coupe le chip / OS notify si désactivé.
         if (type.toLowerCase().includes('financial') && !settings.pushFinancialAlerts) return false;
         return true;
+    }
+
+    function maybeShowNativeOsNotification(notification: AppNotification) {
+        if (!shouldShowLiveChip(String(notification.type))) return;
+        void showNativeNotification(notification);
     }
 
     function dismissLiveFriendChip(key: string) {
@@ -135,6 +142,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
             totalCount.value = Math.max(items.value.length, totalCount.value + 1);
         }
         pushLiveFriendChip(notification);
+        maybeShowNativeOsNotification(notification);
     }
 
     /** Live sans inbox : ne touche pas au badge unread. */
@@ -310,9 +318,9 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
 
     /**
-     * Le hub reste connecté même si les chips sont coupés :
+     * Le hub reste connecté même si les chips / OS notifs sont coupés :
      * nécessaire pour recevoir `sessionEnded` et alimenter l’inbox.
-     * `pushNotifications` ne filtre que l’affichage des chips live.
+     * `pushNotifications` filtre chips live (+ notifs OS sous Tauri).
      */
     async function syncRealtimePreference() {
         if (!useUserSettingsStore().current.pushNotifications) {
@@ -338,6 +346,9 @@ export const useNotificationsStore = defineStore('notifications', () => {
                 await fetchUnreadCount();
             } catch {
                 // Badge non bloquant
+            }
+            if (isTauri() && useUserSettingsStore().current.pushNotifications) {
+                void ensureNativeNotificationPermission();
             }
             await syncRealtimePreference();
         })();

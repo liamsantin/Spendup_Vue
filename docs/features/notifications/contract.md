@@ -42,9 +42,13 @@ Hub `{apiBase}/hubs/realtime` — détails `architecture/realtime.md`.
 ## Invariants
 
 - Types inbox produit (amis) : `friendRequest`, `friendAccepted` ; anciens types friend encore deep-linkables.
-- Prefs push (`pushNotifications` + sous-flags) : gate les **chips live** uniquement — **pas** inbox, badge, ni refresh friends. Hub toujours up pour `sessionEnded`.
+- Prefs push (`pushNotifications` + sous-flags) :
+    - **Web** : gate les **chips live** uniquement — **pas** inbox, badge, ni refresh friends.
+    - **Tauri** (`isTauri`) : gate aussi les **notifications OS** natives (`plugin-notification`) sur `notificationReceived`.
+- Hub toujours up pour `sessionEnded`.
 - Upsert par `id` ; prepend sur insert realtime.
 - Deep-links : `/security*` → `/app/comptes` ; friend → `/app/friends?tab=&friendship=`.
+- Clic notif OS (Tauri) → navigation via `resolveNotificationLink`.
 
 ## Bootstrap
 

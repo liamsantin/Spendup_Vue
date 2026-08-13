@@ -4,9 +4,11 @@ import { useI18n } from 'vue-i18n';
 import { ChevronDownIcon, HelpIcon } from 'vue-tabler-icons';
 import AppsLink from './AppsLink.vue';
 import QuickLinks from './QuickLinks.vue';
+import { useAppHomeTarget } from '@/utils/helpers/navigation-helpers';
 
 const { t } = useI18n();
 const menuOpen = ref(false);
+const homeTo = useAppHomeTarget();
 
 function closeMenu() {
     menuOpen.value = false;
@@ -30,13 +32,13 @@ function closeMenu() {
                             <v-divider class="mt-6"></v-divider>
                             <div class="pa-5 pl-0">
                                 <div class="d-flex align-center justify-space-between">
-                                    <router-link to="/" class="text-decoration-none d-flex align-center" @click="closeMenu">
+                                    <router-link :to="homeTo" class="text-decoration-none d-flex align-center" @click="closeMenu">
                                         <HelpIcon size="20" stroke-width="1.5" class="text-hover-primary" />
                                         <h6 class="text-subtitle-1 font-weight-bold text-hover-primary ml-2">
                                             {{ t('header.appsSidebar.faq') }}
                                         </h6>
                                     </router-link>
-                                    <v-btn color="primary" variant="flat" to="/" @click="closeMenu">
+                                    <v-btn color="primary" variant="flat" :to="homeTo" @click="closeMenu">
                                         {{ t('header.appsSidebar.faqAction') }}
                                     </v-btn>
                                 </div>

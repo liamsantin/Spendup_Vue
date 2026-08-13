@@ -182,11 +182,25 @@ Email non vérifié **ou** mauvais MDP → **même message** (`Invalid email or 
 
 ### 5.3 Google Sign-In
 
-1. Front obtient un **Google ID token** (GIS : `google.accounts.id` / One Tap / bouton).
+1. Front obtient un **Google ID token** :
+    - **Web** : GIS (`google.accounts.id` / bouton) via `VITE_GOOGLE_CLIENT_ID`.
+    - **Tauri** : OAuth Authorization Code + PKCE dans le navigateur système → redirect loopback `http://127.0.0.1:<port>/auth/google/callback` (conforme politique Google desktop) → échange token → `id_token` (`VITE_GOOGLE_DESKTOP_CLIENT_ID`).
 2. `POST /google` avec `{ idToken, deviceIdentifier?, deviceName? }`.
 3. Même branche 2FA que le login.
 
-**Client ID Google** : celui configuré côté API (`Authentication:Google:ClientId`) — le front utilise le **même** Client ID Web.
+**Client IDs Google** :
+
+| Canal          | Env front                       | API                                                                           |
+| -------------- | ------------------------------- | ----------------------------------------------------------------------------- |
+| Web (GIS)      | `VITE_GOOGLE_CLIENT_ID`         | `Authentication:Google:ClientId` (Web)                                        |
+| Desktop (PKCE) | `VITE_GOOGLE_DESKTOP_CLIENT_ID` | **Doit accepter l’`aud` Desktop** en plus du Web (config / liste d’audiences) |
+
+Redirect Desktop : **pas d’URI à saisir** dans la console Google pour un client « Application de bureau » — Google autorise nativement `http://127.0.0.1` / `http://localhost` (loopback). Ne pas utiliser de scheme custom (`spendup://`) : Google renvoie `invalid_request` / politique OAuth.
+
+**CORS Tauri** : ajouter l’origine exacte de la WebView dans `Cors:AllowedOrigins` :
+
+- Dev : `http://localhost:5173` (déjà typique)
+- Prod bundle : selon conf Tauri (souvent `http://tauri.localhost` / origin asset) — vérifier l’origine réelle et la lister.
 
 Règles métier :
 
@@ -453,9 +467,11 @@ Variables d’env Vue recommandées :
 ```env
 VITE_API_BASE_URL=http://localhost:5124
 VITE_GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
+VITE_GOOGLE_DESKTOP_CLIENT_ID=yyyyy.apps.googleusercontent.com
 ```
 
-(`VITE_GOOGLE_CLIENT_ID` = même valeur que `Authentication:Google:ClientId` côté API.)
+(`VITE_GOOGLE_CLIENT_ID` = même valeur que `Authentication:Google:ClientId` côté API.  
+`VITE_GOOGLE_DESKTOP_CLIENT_ID` = client OAuth Desktop ; l’API doit accepter cet `aud`.)
 
 ---
 
@@ -475,11 +491,12 @@ Collection Postman : `Postman/Spendup_Api.postman_collection.json`.
 1. API up (`http://localhost:5124` ou prod).
 2. Origine Vue listée dans `Cors:AllowedOrigins`.
 3. `VITE_API_BASE_URL` correct (pas de slash final obligatoire ; paths commencent par `/api/...`).
-4. Google : même Client ID Web front + API.
-5. Reset MDP : `Email:PasswordResetBaseUrl` → `…/auth/reset-password` ; lien mail `#token=…`.
-6. Intercepteur refresh + purge tokens sur logout / 401 définitif (`forceReLogin`).
-7. Ne jamais logger access/refresh/2FA tokens.
-8. Ne jamais persister le mot de passe pending register hors mémoire process.
+4. Google web : même Client ID Web front + API.
+5. Google desktop (Tauri) : client Desktop + loopback `http://127.0.0.1` (géré par l’app) ; API accepte l’`aud` Desktop ; CORS origine WebView.
+6. Reset MDP : `Email:PasswordResetBaseUrl` → `…/auth/reset-password` ; lien mail `#token=…`.
+7. Intercepteur refresh + purge tokens sur logout / 401 définitif (`forceReLogin`).
+8. Ne jamais logger access/refresh/2FA tokens.
+9. Ne jamais persister le mot de passe pending register hors mémoire process.
 
 ---
 

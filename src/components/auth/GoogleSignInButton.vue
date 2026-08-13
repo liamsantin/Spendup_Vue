@@ -2,6 +2,8 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import { isGoogleDesktopConfigured, requestGoogleIdTokenDesktop } from '@/features/auth/google-desktop-oauth';
+import { isTauri } from '@/utils/helpers/platform-helpers';
 
 const props = defineProps<{
     label?: string;
@@ -17,8 +19,12 @@ const emit = defineEmits<{
 const root = ref<HTMLElement | null>(null);
 const container = ref<HTMLElement | null>(null);
 const error = ref<string | null>(null);
+const desktopBusy = ref(false);
 
-const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const useDesktopFlow = isTauri();
+const webClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const configured = computed(() => (useDesktopFlow ? isGoogleDesktopConfigured() : Boolean(webClientId)));
+
 let resizeObserver: ResizeObserver | null = null;
 
 /** Chargeur GIS partagé (évite des listeners `load` empilés à chaque mount). */
@@ -62,11 +68,9 @@ function buttonWidth(): number {
     return Math.max(Math.round(w), 240);
 }
 
-async function render() {
+async function renderGis() {
     error.value = null;
-    if (!clientId) {
-        return;
-    }
+    if (!webClientId) return;
     try {
         await loadGisScript();
         await nextTick();
@@ -74,7 +78,7 @@ async function render() {
 
         container.value.innerHTML = '';
         google.accounts.id.initialize({
-            client_id: clientId,
+            client_id: webClientId,
             callback: (response) => {
                 if (response.credential) {
                     emit('credential', response.credential);
@@ -94,15 +98,37 @@ async function render() {
     }
 }
 
+async function onDesktopClick() {
+    if (desktopBusy.value) return;
+    error.value = null;
+    desktopBusy.value = true;
+    try {
+        const idToken = await requestGoogleIdTokenDesktop();
+        emit('credential', idToken);
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
+        if (/timed out/i.test(message)) {
+            error.value = t('auth.google.desktopTimeout');
+        } else if (/already in progress/i.test(message)) {
+            error.value = t('auth.google.desktopInProgress');
+        } else {
+            error.value = import.meta.env.DEV ? `${t('auth.google.desktopFailed')} (${message})` : t('auth.google.desktopFailed');
+        }
+    } finally {
+        desktopBusy.value = false;
+    }
+}
+
 onMounted(() => {
-    void render();
+    if (useDesktopFlow) return;
+    void renderGis();
     if (root.value && typeof ResizeObserver !== 'undefined') {
         let lastWidth = root.value.clientWidth;
         resizeObserver = new ResizeObserver(() => {
             const next = root.value?.clientWidth ?? 0;
             if (Math.abs(next - lastWidth) < 2) return;
             lastWidth = next;
-            void render();
+            void renderGis();
         });
         resizeObserver.observe(root.value);
     }
@@ -119,11 +145,25 @@ onUnmounted(() => {
 
 <template>
     <div ref="root" class="google-signin">
-        <div v-if="!clientId" class="text-subtitle-2 text-medium-emphasis mb-2">
-            {{ t('auth.google.notConfigured') }}
+        <div v-if="!configured" class="text-subtitle-2 text-medium-emphasis mb-2">
+            {{ useDesktopFlow ? t('auth.google.desktopNotConfigured') : t('auth.google.notConfigured') }}
         </div>
+        <template v-else-if="useDesktopFlow">
+            <v-btn
+                block
+                size="large"
+                variant="outlined"
+                color="primary"
+                class="text-none"
+                :loading="desktopBusy"
+                :disabled="desktopBusy"
+                @click="onDesktopClick"
+            >
+                {{ displayLabel }}
+            </v-btn>
+        </template>
         <div v-else ref="container" class="google-signin__btn" />
         <AppAlert v-if="error" type="warning" class="mt-2">{{ error }}</AppAlert>
-        <span class="d-none">{{ displayLabel }}</span>
+        <span v-if="!useDesktopFlow" class="d-none">{{ displayLabel }}</span>
     </div>
 </template>

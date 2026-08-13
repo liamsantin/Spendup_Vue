@@ -4,8 +4,12 @@ interface ImportMetaEnv {
     readonly VITE_API_BASE_URL: string;
     readonly VITE_PRICING_PAGE: string;
     readonly VITE_GOOGLE_CLIENT_ID: string;
+    /** Client OAuth Desktop Google (PKCE / Tauri) — audience acceptée côté API. */
+    readonly VITE_GOOGLE_DESKTOP_CLIENT_ID: string;
     /** `development` | `production` */
     readonly VITE_APP_ENV: string;
+    /** `true` = cookies HttpOnly + CSRF */
+    readonly VITE_AUTH_COOKIE_MODE: string;
 }
 
 interface ImportMeta {

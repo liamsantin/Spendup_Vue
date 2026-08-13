@@ -74,6 +74,10 @@ Variables d’environnement (voir `.env.example`) :
 | `npm run format`       | Formate le projet avec Prettier         |
 | `npm run format:check` | Vérifie le formatage (CI)               |
 | `npm run validate`     | typecheck + lint + format:check + build |
+| `npm run tauri:dev`    | App desktop Tauri (dev)                 |
+| `npm run tauri:build`  | Bundle desktop Tauri                    |
+
+Desktop : prérequis Rust — voir [`docs/runbooks/tauri-desktop.md`](docs/runbooks/tauri-desktop.md).
 
 Au commit, **Husky** lance **lint-staged** (ESLint + Prettier sur les fichiers stagés).  
 Sur chaque PR, la CI GitHub Actions exécute les mêmes contrôles (voir `.github/workflows/ci.yml`).

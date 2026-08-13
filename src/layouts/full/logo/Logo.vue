@@ -4,14 +4,17 @@ defineOptions({ name: 'AppLogo' });
 import { computed } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { APP_HOME_ROUTE } from '@/features/auth';
+import { useAppHomeTarget } from '@/utils/helpers/navigation-helpers';
 
-const props = withDefaults(defineProps<{ homeTo?: string }>(), { homeTo: '/' });
+const props = withDefaults(defineProps<{ homeTo?: string }>(), { homeTo: undefined });
 
 const route = useRoute();
 const appSettings = useAppSettingsStore();
+const publicHome = useAppHomeTarget(props.homeTo);
 
-/** Sous /app → dashboard ; ailleurs → accueil (ou `homeTo` si fourni). */
-const logoTo = computed(() => (route.path.startsWith('/app') ? '/app' : props.homeTo));
+/** Sous /app → dashboard ; ailleurs → home plateforme (login en Tauri, landings en web). */
+const logoTo = computed(() => (route.path.startsWith('/app') ? APP_HOME_ROUTE : publicHome.value));
 
 const isDarkTheme = computed(() =>
     ['DARK_BLUE_THEME', 'DARK_AQUA_THEME', 'DARK_ORANGE_THEME', 'DARK_PURPLE_THEME', 'DARK_GREEN_THEME', 'DARK_CYAN_THEME'].includes(
