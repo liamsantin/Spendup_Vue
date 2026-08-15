@@ -7,6 +7,8 @@ const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 export const GOOGLE_DESKTOP_CALLBACK_PATH = '/auth/google/callback';
 const OAUTH_TIMEOUT_MS = 5 * 60 * 1000;
 const IN_PROGRESS_ERROR = 'Google sign-in already in progress';
+/** Message stable pour UI / tests quand `openUrl` échoue. */
+export const BROWSER_OPEN_ERROR = 'Failed to open system browser for Google sign-in';
 
 /** @deprecated Conservé pour compat imports — le redirect réel est `http://127.0.0.1:<port>/auth/google/callback`. */
 export const GOOGLE_DESKTOP_REDIRECT_URI = `http://127.0.0.1${GOOGLE_DESKTOP_CALLBACK_PATH}`;
@@ -43,6 +45,11 @@ export async function cancelGoogleDesktopOAuth(): Promise<void> {
 export function isGoogleDesktopCancelled(error: unknown): boolean {
     const message = error instanceof Error ? error.message : String(error);
     return /cancell?ed/i.test(message);
+}
+
+export function isGoogleDesktopBrowserOpenError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return message.includes(BROWSER_OPEN_ERROR);
 }
 
 function base64UrlEncode(bytes: Uint8Array): string {
@@ -114,22 +121,54 @@ export async function requestGoogleIdTokenDesktop(options: GoogleDesktopOAuthOpt
         const codeVerifier = randomUrlSafe(32);
         const codeChallenge = await pkceChallenge(codeVerifier);
 
-        let redirectUri = '';
-        unlisten = await listen<string>('oauth-loopback-ready', (event) => {
-            // Ignore un event d’un flux annulé / remplacé (défense en profondeur).
-            if (generation !== flowGeneration) return;
-            redirectUri = event.payload;
-            void openUrl(buildAuthorizeUrl(redirectUri, state, codeChallenge));
+        let resolveReady: ((uri: string) => void) | undefined;
+        let rejectReady: ((err: unknown) => void) | undefined;
+        const readyPromise = new Promise<string>((resolve, reject) => {
+            resolveReady = resolve;
+            rejectReady = reject;
         });
 
-        const callbackUrl = await invoke<string>('oauth_loopback_wait', { timeoutMs: OAUTH_TIMEOUT_MS });
+        unlisten = await listen<string>('oauth-loopback-ready', (event) => {
+            if (generation !== flowGeneration) return;
+            resolveReady?.(event.payload);
+        });
+
+        const waitPromise = invoke<string>('oauth_loopback_wait', { timeoutMs: OAUTH_TIMEOUT_MS });
+        // Si le wait échoue avant l’event ready (cancel / timeout / bind), débloque readyPromise.
+        void waitPromise.then(
+            () => undefined,
+            (err) => {
+                rejectReady?.(err);
+            }
+        );
+
+        let redirectUri: string;
+        try {
+            redirectUri = await readyPromise;
+        } catch (err) {
+            // Attendre le rejet du wait pour ne pas laisser une promesse orpheline.
+            await waitPromise.catch(() => undefined);
+            throw err;
+        }
+
         if (generation !== flowGeneration) {
+            await cancelGoogleDesktopOAuth().catch(() => undefined);
+            await waitPromise.catch(() => undefined);
             throw new Error(IN_PROGRESS_ERROR);
         }
 
-        if (!redirectUri) {
-            const u = new URL(callbackUrl);
-            redirectUri = `${u.protocol}//${u.host}${GOOGLE_DESKTOP_CALLBACK_PATH}`;
+        try {
+            await openUrl(buildAuthorizeUrl(redirectUri, state, codeChallenge));
+        } catch (err) {
+            await cancelGoogleDesktopOAuth().catch(() => undefined);
+            await waitPromise.catch(() => undefined);
+            const detail = err instanceof Error ? err.message : String(err);
+            throw new Error(detail ? `${BROWSER_OPEN_ERROR}: ${detail}` : BROWSER_OPEN_ERROR);
+        }
+
+        const callbackUrl = await waitPromise;
+        if (generation !== flowGeneration) {
+            throw new Error(IN_PROGRESS_ERROR);
         }
 
         const parsed = parseCallbackUrl(callbackUrl);

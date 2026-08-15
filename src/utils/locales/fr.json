@@ -727,6 +727,7 @@
             "desktopFailed": "La connexion Google a échoué. Réessayez.",
             "desktopTimeout": "La connexion Google a expiré. Réessayez.",
             "desktopInProgress": "Une connexion Google est déjà en cours.",
+            "desktopBrowserOpenFailed": "Impossible d’ouvrir le navigateur pour la connexion Google. Vérifiez le navigateur par défaut, puis réessayez.",
             "desktopWaitingBrowser": "Finalisez la connexion dans le navigateur…",
             "desktopCancel": "Annuler",
             "desktopWaitingSession": "Connexion à Spend.Up…",

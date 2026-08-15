@@ -727,6 +727,7 @@
             "desktopFailed": "Google sign-in failed. Please try again.",
             "desktopTimeout": "Google sign-in timed out. Please try again.",
             "desktopInProgress": "A Google sign-in is already in progress.",
+            "desktopBrowserOpenFailed": "Could not open your browser for Google sign-in. Check that a default browser is set, then try again.",
             "desktopWaitingBrowser": "Complete sign-in in your browser…",
             "desktopCancel": "Cancel",
             "desktopWaitingSession": "Signing in to Spend.Up…",

@@ -10,11 +10,13 @@ export { useProfileAvatarUrl } from './composables/useProfileAvatarUrl';
 export {
     GOOGLE_DESKTOP_CALLBACK_PATH,
     GOOGLE_DESKTOP_REDIRECT_URI,
+    BROWSER_OPEN_ERROR,
     isGoogleDesktopConfigured,
     isGoogleDesktopOAuthInProgress,
     requestGoogleIdTokenDesktop,
     cancelGoogleDesktopOAuth,
-    isGoogleDesktopCancelled
+    isGoogleDesktopCancelled,
+    isGoogleDesktopBrowserOpenError
 } from './google-desktop-oauth';
 export { withStepUpRetry, isStepUpRequired, getStepUpChallenge, STEP_UP_REQUIRED_CODE } from './step-up';
 export { isIdleSessionError, isIdleSessionMessage } from './idle-session';

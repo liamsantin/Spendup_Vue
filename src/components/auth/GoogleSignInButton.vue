@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import {
     cancelGoogleDesktopOAuth,
+    isGoogleDesktopBrowserOpenError,
     isGoogleDesktopCancelled,
     isGoogleDesktopConfigured,
     requestGoogleIdTokenDesktop
@@ -133,6 +134,8 @@ async function onDesktopClick() {
         const message = e instanceof Error ? e.message : String(e);
         if (isGoogleDesktopCancelled(e) || /access_denied/i.test(message)) {
             error.value = null;
+        } else if (isGoogleDesktopBrowserOpenError(e)) {
+            error.value = t('auth.google.desktopBrowserOpenFailed');
         } else if (/timed out/i.test(message)) {
             error.value = t('auth.google.desktopTimeout');
         } else if (/already in progress/i.test(message)) {
