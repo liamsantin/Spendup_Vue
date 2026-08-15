@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { friendLiveChipColor, isFriendLiveChipType } from '../friendChip';
-import { isFriendNotificationType, isSecurityNotificationType, resolveNotificationLink } from '../link';
+import {
+    isFriendNotificationType,
+    isSafeAppNotificationPath,
+    isSecurityNotificationType,
+    resolveNotificationLink
+} from '../link';
 import { getFriendshipPublicId, normalizeAppNotification, parseNotificationMetadata } from '../normalize';
 
 describe('resolveNotificationLink', () => {
@@ -10,12 +15,21 @@ describe('resolveNotificationLink', () => {
     });
 
     it('conserve les routes /app', () => {
+        expect(resolveNotificationLink('/app')).toBe('/app');
         expect(resolveNotificationLink('/app/comptes')).toBe('/app/comptes');
+        expect(resolveNotificationLink('/app/friends?tab=Friends')).toBe('/app/friends?tab=Friends');
     });
 
     it('ignore les valeurs vides ou non relatives', () => {
         expect(resolveNotificationLink(null)).toBeNull();
         expect(resolveNotificationLink('https://evil.test')).toBeNull();
+    });
+
+    it('bloque open-redirect (protocol-relative, escape, hors /app)', () => {
+        expect(resolveNotificationLink('//evil.com')).toBeNull();
+        expect(resolveNotificationLink('/\\evil.com')).toBeNull();
+        expect(resolveNotificationLink('/auth/login')).toBeNull();
+        expect(resolveNotificationLink('/unknown')).toBeNull();
     });
 
     it('deep-link amis via type + metadata', () => {
@@ -39,6 +53,19 @@ describe('resolveNotificationLink', () => {
                 metadata: null
             })
         ).toBe('/app/friends?tab=Friends');
+    });
+});
+
+describe('isSafeAppNotificationPath', () => {
+    it('n’accepte que des chemins /app internes', () => {
+        expect(isSafeAppNotificationPath('/app')).toBe(true);
+        expect(isSafeAppNotificationPath('/app/comptes')).toBe(true);
+        expect(isSafeAppNotificationPath('/app/friends?tab=1')).toBe(true);
+        expect(isSafeAppNotificationPath('//evil.com')).toBe(false);
+        expect(isSafeAppNotificationPath('/\\evil.com')).toBe(false);
+        expect(isSafeAppNotificationPath('/auth/login')).toBe(false);
+        expect(isSafeAppNotificationPath('https://evil.com')).toBe(false);
+        expect(isSafeAppNotificationPath(null)).toBe(false);
     });
 });
 

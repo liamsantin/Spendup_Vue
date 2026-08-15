@@ -2,9 +2,22 @@ import { getFriendshipPublicId } from './normalize';
 import type { AppNotification, NotificationType } from './types';
 
 /**
+ * Chemins `/app…` navigables (bloque `//evil`, `/\\…`, URLs absolues).
+ * Aligné sur `sanitizeReturnUrl` — à utiliser avant tout `router.push` notif / OS.
+ */
+export function isSafeAppNotificationPath(path: string | null | undefined): boolean {
+    if (!path) return false;
+    const trimmed = path.trim();
+    if (!trimmed.startsWith('/')) return false;
+    if (trimmed.startsWith('//') || trimmed.startsWith('/\\')) return false;
+    return trimmed.startsWith('/app');
+}
+
+/**
  * Mappe les `link` API (chemins logiques) vers les routes front réelles.
  * Ex. `/security/devices` → `/app/comptes` (onglet Sécurité).
  * Avec une notif ami + metadata, ajoute `?tab=` / `?friendship=`.
+ * Ne renvoie jamais de chemin hors `/app…` (open-redirect).
  */
 export function resolveNotificationLink(
     link: string | null | undefined,
@@ -16,15 +29,17 @@ export function resolveNotificationLink(
     if (!link) return null;
     const trimmed = link.trim();
     if (!trimmed.startsWith('/')) return null;
+    // Aligné sur sanitizeReturnUrl : bloque open-redirect protocol-relative / escape.
+    if (trimmed.startsWith('//') || trimmed.startsWith('/\\')) return null;
 
-    if (trimmed.startsWith('/app/')) return trimmed;
+    if (trimmed.startsWith('/app')) return trimmed;
     if (trimmed === '/security' || trimmed.startsWith('/security/')) {
         return '/app/comptes';
     }
     if (trimmed === '/friends' || trimmed.startsWith('/friends/')) {
         return '/app/friends';
     }
-    return trimmed;
+    return null;
 }
 
 function friendsTabForType(type: NotificationType | string): 'Friends' | 'Requests' | null {

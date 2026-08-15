@@ -1,6 +1,6 @@
 import { isPermissionGranted, requestPermission, sendNotification, onAction } from '@tauri-apps/plugin-notification';
 import type { AppNotification } from './types';
-import { resolveNotificationLink } from './link';
+import { isSafeAppNotificationPath, resolveNotificationLink } from './link';
 import { isTauri } from '@/utils/helpers/platform-helpers';
 
 let actionListenerReady = false;
@@ -18,7 +18,8 @@ async function ensureActionListener() {
         await onAction((notification) => {
             const extra = notification.extra as { link?: string } | undefined;
             const link = extra?.link;
-            if (link && navigateHandler) {
+            // Re-valide au clic : ne jamais router.push un chemin hors /app…
+            if (link && navigateHandler && isSafeAppNotificationPath(link)) {
                 navigateHandler(link);
             }
         });
