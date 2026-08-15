@@ -93,6 +93,13 @@
     }
 }
 
+/* Tablette / mobile : plafond 600px sans changer les width déjà définies */
+@media screen and (max-width: 1279.98px) {
+    .auth-panel {
+        max-width: 600px;
+    }
+}
+
 .auth-form {
     display: block;
     width: 100%;

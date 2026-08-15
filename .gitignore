@@ -6,6 +6,7 @@ src-tauri/target/
 # Env locaux (garder .env.example versionné)
 .env
 .env.local
+.env.production
 .env.*.local
 
 # IDE / OS

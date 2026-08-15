@@ -728,7 +728,9 @@
             "desktopTimeout": "La connexion Google a expiré. Réessayez.",
             "desktopInProgress": "Une connexion Google est déjà en cours.",
             "desktopWaitingBrowser": "Finalisez la connexion dans le navigateur…",
-            "desktopWaitingSession": "Connexion à Spend.Up…"
+            "desktopWaitingSession": "Connexion à Spend.Up…",
+            "finalizingTitle": "Connexion en cours…",
+            "finalizingSubtitle": "Finalisation de votre connexion Google."
         },
         "login": {
             "username": "Nom d’utilisateur",

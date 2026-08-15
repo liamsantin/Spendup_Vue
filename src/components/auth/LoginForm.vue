@@ -7,6 +7,10 @@ import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
+const emit = defineEmits<{
+    googleProcessing: [value: boolean];
+}>();
+
 const authStore = useAuthStore();
 const { t } = useI18n();
 
@@ -38,10 +42,14 @@ function validate(_values: Record<string, unknown>, { setErrors }: { setErrors: 
 }
 
 async function onGoogleCredential(idToken: string) {
+    notice.value = null;
+    // Succès : on garde l'état actif, la navigation démonte le formulaire.
+    emit('googleProcessing', true);
     try {
         await authStore.loginWithGoogle(idToken);
     } catch (error: unknown) {
         notice.value = error instanceof Error ? error.message : String(error);
+        emit('googleProcessing', false);
     }
 }
 </script>

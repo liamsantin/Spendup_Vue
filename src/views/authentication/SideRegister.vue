@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import RegisterForm from '@/components/auth/RegisterForm.vue';
+import AuthProcessingOverlay from '@/components/auth/AuthProcessingOverlay.vue';
 
 const { t } = useI18n();
+
+const googleProcessing = ref(false);
 </script>
 
 <template>
@@ -20,16 +24,22 @@ const { t } = useI18n();
                 </div>
             </v-col>
             <v-col cols="12" lg="5" xl="4" class="d-flex align-center justify-center">
-                <div class="auth-panel mt-xl-0 mt-5">
+                <div class="auth-panel mt-xl-0 mt-5 position-relative">
                     <h2 class="text-h3 font-weight-bold mb-2">{{ t('auth.pages.welcomeTitle') }}</h2>
                     <div class="text-subtitle-1 mb-6">{{ t('auth.pages.welcomeSubtitle') }}</div>
-                    <RegisterForm />
+                    <RegisterForm @google-processing="googleProcessing = $event" />
                     <h6 class="text-h6 text-medium-emphasis d-flex align-center mt-6">
                         {{ t('auth.pages.alreadyHaveAccount') }}
                         <v-btn variant="plain" to="/auth/login" class="text-primary text-body-1 opacity-1 pl-2">
                             {{ t('auth.pages.signIn') }}
                         </v-btn>
                     </h6>
+
+                    <AuthProcessingOverlay
+                        :active="googleProcessing"
+                        :title="t('auth.google.finalizingTitle')"
+                        :subtitle="t('auth.google.finalizingSubtitle')"
+                    />
                 </div>
             </v-col>
         </v-row>
