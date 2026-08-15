@@ -8,6 +8,7 @@ import 'vue3-perfect-scrollbar/style.css';
 import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 
 import { i18n } from '@/plugins/i18n';
+import { registerDesktopDeepLinks } from '@/features/desktop';
 import { setNativeNotificationNavigate } from '@/features/notifications';
 import { isTauri } from '@/utils/helpers/platform-helpers';
 
@@ -18,9 +19,11 @@ app.use(PerfectScrollbarPlugin);
 app.use(i18n);
 
 if (isTauri()) {
-    setNativeNotificationNavigate((path) => {
+    const navigate = (path: string) => {
         void router.push(path);
-    });
+    };
+    setNativeNotificationNavigate(navigate);
+    void registerDesktopDeepLinks(navigate);
 }
 
 app.use(vuetify).mount('#app');

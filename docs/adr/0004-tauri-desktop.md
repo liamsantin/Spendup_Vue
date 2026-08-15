@@ -13,6 +13,7 @@ Spend.Up est une SPA Vue (landings + auth + `/app`). Un client desktop est requi
 2. Sous `isTauri()`, les routes `FrontPagesRoutes` ne sont pas enregistrées ; `/` → `/auth/login`.
 3. **Google desktop** : navigateur système + Authorization Code PKCE + redirect loopback `http://127.0.0.1:<port>/…` → `id_token` → `POST /api/auth/google` (contrat session inchangé). Client OAuth **Desktop** distinct (`VITE_GOOGLE_DESKTOP_CLIENT_ID`) ; l’API accepte son `aud` en plus du Web. Les schemes custom (`spendup://`) sont refusés par la politique OAuth Google.
 4. **Notifications** : SignalR inchangé ; sous Tauri, `notificationReceived` peut émettre une notif OS (`plugin-notification`) filtrée par les prefs push existantes.
+5. **Deep links** `spendup://` : scheme OS + `single-instance` (feature `deep-link`) pour forwarder les argv Windows/Linux vers l’instance primaire ; le front écoute `getCurrent` / `onOpenUrl` et n’accepte que des chemins `/app…` (`resolveSpendupDeepLink`).
 
 ## Conséquences
 
@@ -26,7 +27,7 @@ Spend.Up est une SPA Vue (landings + auth + `/app`). Un client desktop est requi
 
 - Prérequis Rust + outillage Tauri pour builder.
 - Coordination API (audience Desktop + CORS origine WebView).
-- Deep links desktop : enregistrement scheme OS (dev : `register_all`).
+- Deep links : enregistrement scheme OS (dev : `register_all`) ; navigation limitée à `/app…`.
 
 ## Alternatives rejetées
 

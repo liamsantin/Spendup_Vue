@@ -258,8 +258,14 @@ pub fn run() {
 
     #[cfg(desktop)]
     {
-        builder = builder.plugin(tauri_plugin_single_instance::init(|_app, argv, _cwd| {
-            println!("single-instance: {argv:?}");
+        // Doit rester le 1er plugin : avec feature `deep-link`, les argv de la
+        // 2ᵉ instance sont forwardés au DeepLink *avant* ce callback.
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
         }));
     }
 

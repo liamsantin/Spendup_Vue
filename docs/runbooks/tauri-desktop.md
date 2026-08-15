@@ -30,3 +30,4 @@ Artefacts sous `src-tauri/target/release/bundle/`.
 - Web seul : `npm run dev` / `npm run build` inchangés.
 - Icônes : `src-tauri/icons/` (remplacer par branding produit avant release store).
 - Prod : l’origine WebView Tauri doit aussi figurer dans `Cors:AllowedOrigins` (souvent `http://tauri.localhost` — vérifier l’origine réelle).
+- Deep links : `spendup://app/friends` (ou `spendup:///app/friends`) → route `/app/friends` si session OK ; 2ᵉ instance Windows/Linux forwardée via single-instance + focus fenêtre.
