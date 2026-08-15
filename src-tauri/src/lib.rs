@@ -113,6 +113,8 @@ async fn google_exchange_code(
         error_description: Option<String>,
     }
 
+    validate_exchange_inputs(&client_id, &code, &code_verifier, &redirect_uri)?;
+
     let mut form = vec![
         ("client_id", client_id.clone()),
         ("code", code.clone()),
@@ -146,6 +148,47 @@ async fn google_exchange_code(
         .error_description
         .or(json.error)
         .unwrap_or_else(|| format!("Google token exchange failed ({status})")))
+}
+
+fn validate_exchange_inputs(
+    client_id: &str,
+    code: &str,
+    code_verifier: &str,
+    redirect_uri: &str,
+) -> Result<(), String> {
+    if client_id.trim().is_empty() {
+        return Err("client_id is required".into());
+    }
+    if code.trim().is_empty() {
+        return Err("code is required".into());
+    }
+    if code_verifier.trim().is_empty() {
+        return Err("code_verifier is required".into());
+    }
+    if !is_allowed_oauth_redirect_uri(redirect_uri) {
+        return Err(format!(
+            "redirect_uri must be http://127.0.0.1:<port>{CALLBACK_PATH}"
+        ));
+    }
+    Ok(())
+}
+
+/// Autorise uniquement le redirect loopback Google Desktop (pas d’open-redirect IPC).
+/// Format exact : `http://127.0.0.1:<port>/auth/google/callback` (sans query / fragment).
+fn is_allowed_oauth_redirect_uri(uri: &str) -> bool {
+    let Some(rest) = uri.strip_prefix("http://127.0.0.1:") else {
+        return false;
+    };
+    let Some((port_str, path)) = rest.split_once('/') else {
+        return false;
+    };
+    if path != &CALLBACK_PATH[1..] {
+        return false;
+    }
+    if port_str.is_empty() || !port_str.chars().all(|c| c.is_ascii_digit()) {
+        return false;
+    }
+    matches!(port_str.parse::<u16>(), Ok(port) if port > 0)
 }
 
 fn accept_oauth_callback(
@@ -241,3 +284,79 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running Spend.Up");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn allows_loopback_redirect_uri() {
+        assert!(is_allowed_oauth_redirect_uri(
+            "http://127.0.0.1:54321/auth/google/callback"
+        ));
+        assert!(is_allowed_oauth_redirect_uri(
+            "http://127.0.0.1:1/auth/google/callback"
+        ));
+        assert!(is_allowed_oauth_redirect_uri(
+            "http://127.0.0.1:65535/auth/google/callback"
+        ));
+    }
+
+    #[test]
+    fn rejects_unsafe_redirect_uris() {
+        assert!(!is_allowed_oauth_redirect_uri(
+            "https://127.0.0.1:54321/auth/google/callback"
+        ));
+        assert!(!is_allowed_oauth_redirect_uri(
+            "http://localhost:54321/auth/google/callback"
+        ));
+        assert!(!is_allowed_oauth_redirect_uri(
+            "http://127.0.0.1/auth/google/callback"
+        ));
+        assert!(!is_allowed_oauth_redirect_uri(
+            "http://127.0.0.1:0/auth/google/callback"
+        ));
+        assert!(!is_allowed_oauth_redirect_uri(
+            "http://127.0.0.1:54321/auth/google/callback?x=1"
+        ));
+        assert!(!is_allowed_oauth_redirect_uri(
+            "http://127.0.0.1:54321/auth/google/callback#frag"
+        ));
+        assert!(!is_allowed_oauth_redirect_uri(
+            "http://evil.test/auth/google/callback"
+        ));
+        assert!(!is_allowed_oauth_redirect_uri(
+            "http://127.0.0.1:54321/auth/google/callback/extra"
+        ));
+        assert!(!is_allowed_oauth_redirect_uri(""));
+    }
+
+    #[test]
+    fn validate_exchange_inputs_checks_redirect_and_required_fields() {
+        assert!(validate_exchange_inputs(
+            "client",
+            "code",
+            "verifier",
+            "http://127.0.0.1:9/auth/google/callback"
+        )
+        .is_ok());
+
+        assert!(validate_exchange_inputs(
+            "",
+            "code",
+            "verifier",
+            "http://127.0.0.1:9/auth/google/callback"
+        )
+        .is_err());
+
+        assert!(validate_exchange_inputs(
+            "client",
+            "code",
+            "verifier",
+            "https://accounts.google.com"
+        )
+        .unwrap_err()
+        .contains("redirect_uri"));
+    }
+}
+
