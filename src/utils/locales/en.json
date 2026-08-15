@@ -722,7 +722,7 @@
             "signIn": "Sign in with Google",
             "signUp": "Sign up with Google",
             "notConfigured": "Google sign-in is not configured (set VITE_GOOGLE_CLIENT_ID).",
-            "desktopNotConfigured": "Desktop Google sign-in is not configured (set VITE_GOOGLE_DESKTOP_CLIENT_ID).",
+            "desktopNotConfigured": "Desktop Google sign-in is not configured (set VITE_GOOGLE_DESKTOP_CLIENT_ID and VITE_GOOGLE_DESKTOP_CLIENT_SECRET).",
             "scriptFailed": "Failed to load the Google script",
             "desktopFailed": "Google sign-in failed. Please try again.",
             "desktopTimeout": "Google sign-in timed out. Please try again.",

@@ -722,7 +722,7 @@
             "signIn": "Se connecter avec Google",
             "signUp": "S’inscrire avec Google",
             "notConfigured": "Connexion Google non configurée (définir VITE_GOOGLE_CLIENT_ID).",
-            "desktopNotConfigured": "Connexion Google desktop non configurée (définir VITE_GOOGLE_DESKTOP_CLIENT_ID).",
+            "desktopNotConfigured": "Connexion Google desktop non configurée (définir VITE_GOOGLE_DESKTOP_CLIENT_ID et VITE_GOOGLE_DESKTOP_CLIENT_SECRET).",
             "scriptFailed": "Échec du chargement du script Google",
             "desktopFailed": "La connexion Google a échoué. Réessayez.",
             "desktopTimeout": "La connexion Google a expiré. Réessayez.",

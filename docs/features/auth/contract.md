@@ -468,10 +468,11 @@ Variables d’env Vue recommandées :
 VITE_API_BASE_URL=http://localhost:5124
 VITE_GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
 VITE_GOOGLE_DESKTOP_CLIENT_ID=yyyyy.apps.googleusercontent.com
+VITE_GOOGLE_DESKTOP_CLIENT_SECRET=GOCSPX-…
 ```
 
 (`VITE_GOOGLE_CLIENT_ID` = même valeur que `Authentication:Google:ClientId` côté API.  
-`VITE_GOOGLE_DESKTOP_CLIENT_ID` = client OAuth Desktop ; l’API doit accepter cet `aud`.)
+`VITE_GOOGLE_DESKTOP_CLIENT_ID` + `VITE_GOOGLE_DESKTOP_CLIENT_SECRET` = client OAuth Desktop ; l’API doit accepter cet `aud`. Les deux sont requis côté app Tauri.)
 
 ---
 

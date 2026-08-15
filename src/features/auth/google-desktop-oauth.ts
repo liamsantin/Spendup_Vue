@@ -27,7 +27,8 @@ function desktopClientSecret(): string {
 }
 
 export function isGoogleDesktopConfigured(): boolean {
-    return desktopClientId().length > 0;
+    // Google Desktop affiche un secret client et le token endpoint l’exige souvent même avec PKCE.
+    return desktopClientId().length > 0 && desktopClientSecret().length > 0;
 }
 
 export function isGoogleDesktopOAuthInProgress(): boolean {
@@ -106,7 +107,9 @@ export type GoogleDesktopOAuthOptions = {
  */
 export async function requestGoogleIdTokenDesktop(options: GoogleDesktopOAuthOptions = {}): Promise<string> {
     if (!isGoogleDesktopConfigured()) {
-        throw new Error('VITE_GOOGLE_DESKTOP_CLIENT_ID is not configured');
+        throw new Error(
+            'VITE_GOOGLE_DESKTOP_CLIENT_ID and VITE_GOOGLE_DESKTOP_CLIENT_SECRET must both be configured'
+        );
     }
     if (flowActive) {
         throw new Error(IN_PROGRESS_ERROR);

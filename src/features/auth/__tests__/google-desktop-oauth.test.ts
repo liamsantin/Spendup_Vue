@@ -149,3 +149,25 @@ describe('requestGoogleIdTokenDesktop', () => {
         expect(invoke).toHaveBeenCalledWith('oauth_loopback_cancel');
     });
 });
+
+describe('isGoogleDesktopConfigured', () => {
+    beforeEach(() => {
+        vi.resetModules();
+        vi.unstubAllEnvs();
+    });
+
+    it('exige client ID et secret', async () => {
+        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', 'id-only');
+        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', '');
+        const { isGoogleDesktopConfigured, __resetGoogleDesktopOAuthForTests } = await import('../google-desktop-oauth');
+        __resetGoogleDesktopOAuthForTests();
+        expect(isGoogleDesktopConfigured()).toBe(false);
+
+        vi.resetModules();
+        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', 'desktop-id');
+        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', 'desktop-secret');
+        const mod = await import('../google-desktop-oauth');
+        mod.__resetGoogleDesktopOAuthForTests();
+        expect(mod.isGoogleDesktopConfigured()).toBe(true);
+    });
+});
