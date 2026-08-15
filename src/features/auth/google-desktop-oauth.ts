@@ -1,14 +1,20 @@
 import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { openUrl } from '@tauri-apps/plugin-opener';
 
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
 /** Chemin de callback loopback (Google OAuth native / Desktop). */
 export const GOOGLE_DESKTOP_CALLBACK_PATH = '/auth/google/callback';
 const OAUTH_TIMEOUT_MS = 5 * 60 * 1000;
+const IN_PROGRESS_ERROR = 'Google sign-in already in progress';
 
 /** @deprecated Conservé pour compat imports — le redirect réel est `http://127.0.0.1:<port>/auth/google/callback`. */
 export const GOOGLE_DESKTOP_REDIRECT_URI = `http://127.0.0.1${GOOGLE_DESKTOP_CALLBACK_PATH}`;
+
+/** Verrou process : un seul flux OAuth desktop à la fois (évite listeners croisés). */
+let flowActive = false;
+/** Incrémenté à chaque nouveau flux / reset — les listeners périmés ignorent les events. */
+let flowGeneration = 0;
 
 function desktopClientId(): string {
     return String(import.meta.env.VITE_GOOGLE_DESKTOP_CLIENT_ID ?? '').trim();
@@ -20,6 +26,10 @@ function desktopClientSecret(): string {
 
 export function isGoogleDesktopConfigured(): boolean {
     return desktopClientId().length > 0;
+}
+
+export function isGoogleDesktopOAuthInProgress(): boolean {
+    return flowActive;
 }
 
 /**
@@ -64,6 +74,19 @@ function parseCallbackUrl(url: string): { code?: string; state?: string; error?:
     };
 }
 
+function buildAuthorizeUrl(redirectUri: string, state: string, codeChallenge: string): string {
+    const authUrl = new URL(GOOGLE_AUTH_URL);
+    authUrl.searchParams.set('client_id', desktopClientId());
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('scope', 'openid email profile');
+    authUrl.searchParams.set('state', state);
+    authUrl.searchParams.set('code_challenge', codeChallenge);
+    authUrl.searchParams.set('code_challenge_method', 'S256');
+    authUrl.searchParams.set('prompt', 'select_account');
+    return authUrl.toString();
+}
+
 export type GoogleDesktopOAuthOptions = {
     /** Appelé dès que Google a redirigé avec un code valide, avant l’échange du token. */
     onAuthorized?: () => void;
@@ -72,33 +95,38 @@ export type GoogleDesktopOAuthOptions = {
 /**
  * Ouvre Google OAuth (PKCE) dans le navigateur système et résout un ID token
  * via redirect loopback + échange token **natif** (pas de fetch WebView → CORS).
+ * Un seul appel à la fois : sinon erreur « already in progress ».
  */
 export async function requestGoogleIdTokenDesktop(options: GoogleDesktopOAuthOptions = {}): Promise<string> {
     if (!isGoogleDesktopConfigured()) {
         throw new Error('VITE_GOOGLE_DESKTOP_CLIENT_ID is not configured');
     }
+    if (flowActive) {
+        throw new Error(IN_PROGRESS_ERROR);
+    }
 
-    const state = randomUrlSafe(16);
-    const codeVerifier = randomUrlSafe(32);
-    const codeChallenge = await pkceChallenge(codeVerifier);
+    flowActive = true;
+    const generation = ++flowGeneration;
 
-    let redirectUri = '';
-    const unlisten = await listen<string>('oauth-loopback-ready', (event) => {
-        redirectUri = event.payload;
-        const authUrl = new URL(GOOGLE_AUTH_URL);
-        authUrl.searchParams.set('client_id', desktopClientId());
-        authUrl.searchParams.set('redirect_uri', redirectUri);
-        authUrl.searchParams.set('response_type', 'code');
-        authUrl.searchParams.set('scope', 'openid email profile');
-        authUrl.searchParams.set('state', state);
-        authUrl.searchParams.set('code_challenge', codeChallenge);
-        authUrl.searchParams.set('code_challenge_method', 'S256');
-        authUrl.searchParams.set('prompt', 'select_account');
-        void openUrl(authUrl.toString());
-    });
-
+    let unlisten: UnlistenFn | undefined;
     try {
+        const state = randomUrlSafe(16);
+        const codeVerifier = randomUrlSafe(32);
+        const codeChallenge = await pkceChallenge(codeVerifier);
+
+        let redirectUri = '';
+        unlisten = await listen<string>('oauth-loopback-ready', (event) => {
+            // Ignore un event d’un flux annulé / remplacé (défense en profondeur).
+            if (generation !== flowGeneration) return;
+            redirectUri = event.payload;
+            void openUrl(buildAuthorizeUrl(redirectUri, state, codeChallenge));
+        });
+
         const callbackUrl = await invoke<string>('oauth_loopback_wait', { timeoutMs: OAUTH_TIMEOUT_MS });
+        if (generation !== flowGeneration) {
+            throw new Error(IN_PROGRESS_ERROR);
+        }
+
         if (!redirectUri) {
             const u = new URL(callbackUrl);
             redirectUri = `${u.protocol}//${u.host}${GOOGLE_DESKTOP_CALLBACK_PATH}`;
@@ -125,11 +153,15 @@ export async function requestGoogleIdTokenDesktop(options: GoogleDesktopOAuthOpt
             clientSecret: desktopClientSecret() || null
         });
     } finally {
-        unlisten();
+        unlisten?.();
+        if (generation === flowGeneration) {
+            flowActive = false;
+        }
     }
 }
 
-/** Tests / teardown. */
+/** Tests / teardown — libère le verrou et invalide les listeners. */
 export function __resetGoogleDesktopOAuthForTests() {
-    // no-op
+    flowActive = false;
+    flowGeneration += 1;
 }

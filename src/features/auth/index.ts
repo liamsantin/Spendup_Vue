@@ -11,6 +11,7 @@ export {
     GOOGLE_DESKTOP_CALLBACK_PATH,
     GOOGLE_DESKTOP_REDIRECT_URI,
     isGoogleDesktopConfigured,
+    isGoogleDesktopOAuthInProgress,
     requestGoogleIdTokenDesktop,
     cancelGoogleDesktopOAuth,
     isGoogleDesktopCancelled
