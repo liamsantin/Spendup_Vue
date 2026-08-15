@@ -11,7 +11,9 @@ export {
     GOOGLE_DESKTOP_CALLBACK_PATH,
     GOOGLE_DESKTOP_REDIRECT_URI,
     isGoogleDesktopConfigured,
-    requestGoogleIdTokenDesktop
+    requestGoogleIdTokenDesktop,
+    cancelGoogleDesktopOAuth,
+    isGoogleDesktopCancelled
 } from './google-desktop-oauth';
 export { withStepUpRetry, isStepUpRequired, getStepUpChallenge, STEP_UP_REQUIRED_CODE } from './step-up';
 export { isIdleSessionError, isIdleSessionMessage } from './idle-session';

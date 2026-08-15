@@ -1,12 +1,16 @@
 use std::io::{Read, Write};
 use std::net::TcpListener;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use serde::Deserialize;
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 const CALLBACK_PATH: &str = "/auth/google/callback";
 const GOOGLE_TOKEN_URL: &str = "https://oauth2.googleapis.com/token";
+/// Message renvoyé au front quand l’utilisateur abandonne la connexion Google.
+const CANCELLED_ERROR: &str = "Google sign-in cancelled";
 const SUCCESS_HTML: &str = r#"<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="utf-8"><title>Spend.Up</title></head>
@@ -17,10 +21,20 @@ const SUCCESS_HTML: &str = r#"<!DOCTYPE html>
 </body>
 </html>"#;
 
+/// Drapeau d’annulation de l’attente loopback en cours (une seule à la fois).
+#[derive(Default)]
+struct OauthState {
+    cancel: Mutex<Option<Arc<AtomicBool>>>,
+}
+
 /// Attend le redirect OAuth Google sur `http://127.0.0.1:<port>/auth/google/callback`.
 /// Émet l’événement `oauth-loopback-ready` avec l’URI exacte à utiliser comme `redirect_uri`.
 #[tauri::command]
-async fn oauth_loopback_wait(app: AppHandle, timeout_ms: u64) -> Result<String, String> {
+async fn oauth_loopback_wait(
+    app: AppHandle,
+    state: State<'_, OauthState>,
+    timeout_ms: u64,
+) -> Result<String, String> {
     let listener = TcpListener::bind("127.0.0.1:0").map_err(|e| format!("bind loopback: {e}"))?;
     listener
         .set_nonblocking(true)
@@ -32,14 +46,53 @@ async fn oauth_loopback_wait(app: AppHandle, timeout_ms: u64) -> Result<String, 
         .port();
     let redirect_uri = format!("http://127.0.0.1:{port}{CALLBACK_PATH}");
 
+    let cancel = Arc::new(AtomicBool::new(false));
+    {
+        let mut current = state
+            .cancel
+            .lock()
+            .map_err(|_| "oauth state poisoned".to_string())?;
+        // Une attente orpheline (fenêtre rechargée, double clic) doit s’arrêter.
+        if let Some(previous) = current.replace(Arc::clone(&cancel)) {
+            previous.store(true, Ordering::SeqCst);
+        }
+    }
+
     app.emit("oauth-loopback-ready", redirect_uri.clone())
         .map_err(|e| format!("emit: {e}"))?;
 
     let timeout = Duration::from_millis(timeout_ms.max(1_000));
+    let flag = Arc::clone(&cancel);
 
-    tauri::async_runtime::spawn_blocking(move || accept_oauth_callback(listener, port, timeout))
-        .await
-        .map_err(|e| format!("join: {e}"))?
+    let outcome = tauri::async_runtime::spawn_blocking(move || {
+        accept_oauth_callback(listener, port, timeout, flag)
+    })
+    .await
+    .map_err(|e| format!("join: {e}"))?;
+
+    if let Ok(mut current) = state.cancel.lock() {
+        if current
+            .as_ref()
+            .is_some_and(|active| Arc::ptr_eq(active, &cancel))
+        {
+            *current = None;
+        }
+    }
+
+    outcome
+}
+
+/// Interrompt l’attente loopback (l’utilisateur a fermé l’onglet ou cliqué sur « Annuler »).
+#[tauri::command]
+fn oauth_loopback_cancel(state: State<'_, OauthState>) -> Result<(), String> {
+    let current = state
+        .cancel
+        .lock()
+        .map_err(|_| "oauth state poisoned".to_string())?;
+    if let Some(active) = current.as_ref() {
+        active.store(true, Ordering::SeqCst);
+    }
+    Ok(())
 }
 
 /// Échange le code OAuth contre un `id_token` côté native (évite le CORS WebView).
@@ -95,10 +148,18 @@ async fn google_exchange_code(
         .unwrap_or_else(|| format!("Google token exchange failed ({status})")))
 }
 
-fn accept_oauth_callback(listener: TcpListener, port: u16, timeout: Duration) -> Result<String, String> {
+fn accept_oauth_callback(
+    listener: TcpListener,
+    port: u16,
+    timeout: Duration,
+    cancel: Arc<AtomicBool>,
+) -> Result<String, String> {
     let started = Instant::now();
 
     loop {
+        if cancel.load(Ordering::SeqCst) {
+            return Err(CANCELLED_ERROR.into());
+        }
         if started.elapsed() >= timeout {
             return Err("Google sign-in timed out".into());
         }
@@ -163,14 +224,18 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![oauth_loopback_wait, google_exchange_code])
+        .invoke_handler(tauri::generate_handler![
+            oauth_loopback_wait,
+            oauth_loopback_cancel,
+            google_exchange_code
+        ])
         .setup(|app| {
             #[cfg(any(windows, target_os = "linux"))]
             {
                 use tauri_plugin_deep_link::DeepLinkExt;
                 app.deep_link().register_all()?;
             }
-            let _ = app;
+            app.manage(OauthState::default());
             Ok(())
         })
         .run(tauri::generate_context!())

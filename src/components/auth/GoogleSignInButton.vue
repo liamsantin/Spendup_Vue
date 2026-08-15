@@ -2,7 +2,12 @@
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
-import { isGoogleDesktopConfigured, requestGoogleIdTokenDesktop } from '@/features/auth/google-desktop-oauth';
+import {
+    cancelGoogleDesktopOAuth,
+    isGoogleDesktopCancelled,
+    isGoogleDesktopConfigured,
+    requestGoogleIdTokenDesktop
+} from '@/features/auth/google-desktop-oauth';
 import { isTauri } from '@/utils/helpers/platform-helpers';
 
 const props = defineProps<{
@@ -20,8 +25,9 @@ const root = ref<HTMLElement | null>(null);
 const container = ref<HTMLElement | null>(null);
 const error = ref<string | null>(null);
 const desktopBusy = ref(false);
-/** `browser` = OAuth navigateur ; `session` = idToken reçu, login API en cours côté parent. */
+/** `browser` = OAuth navigateur ; `session` = Google a validé, échange du token puis login API. */
 const desktopPhase = ref<'browser' | 'session' | null>(null);
+const desktopCancelling = ref(false);
 
 const useDesktopFlow = isTauri();
 const webClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
@@ -112,14 +118,22 @@ async function onDesktopClick() {
     desktopBusy.value = true;
     desktopPhase.value = 'browser';
     try {
-        const idToken = await requestGoogleIdTokenDesktop();
-        desktopPhase.value = 'session';
+        const idToken = await requestGoogleIdTokenDesktop({
+            // Google a répondu : l'annulation n'a plus de sens, l'échange du token démarre.
+            onAuthorized: () => {
+                desktopPhase.value = 'session';
+            }
+        });
+        // Annulation partie juste avant le retour de Google : on jette le token.
+        if (desktopCancelling.value) return;
         emit('credential', idToken);
         // Laisse le parent démarrer loginWithGoogle avant de retirer le spinner.
         await new Promise((r) => setTimeout(r, 400));
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : String(e);
-        if (/timed out/i.test(message)) {
+        if (isGoogleDesktopCancelled(e) || /access_denied/i.test(message)) {
+            error.value = null;
+        } else if (/timed out/i.test(message)) {
             error.value = t('auth.google.desktopTimeout');
         } else if (/already in progress/i.test(message)) {
             error.value = t('auth.google.desktopInProgress');
@@ -129,6 +143,18 @@ async function onDesktopClick() {
     } finally {
         desktopBusy.value = false;
         desktopPhase.value = null;
+        desktopCancelling.value = false;
+    }
+}
+
+/** Le navigateur ne signale pas la fermeture de l’onglet : l’abandon doit venir de l’utilisateur. */
+async function cancelDesktopFlow() {
+    if (desktopPhase.value !== 'browser' || desktopCancelling.value) return;
+    desktopCancelling.value = true;
+    try {
+        await cancelGoogleDesktopOAuth();
+    } catch {
+        desktopCancelling.value = false;
     }
 }
 
@@ -148,6 +174,9 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+    if (desktopPhase.value === 'browser') {
+        void cancelGoogleDesktopOAuth().catch(() => undefined);
+    }
     resizeObserver?.disconnect();
     resizeObserver = null;
     if (container.value) {
@@ -183,6 +212,17 @@ onUnmounted(() => {
             >
                 <v-progress-circular indeterminate size="22" width="2" color="primary" />
                 <span class="text-body-2">{{ desktopStatusText }}</span>
+                <v-btn
+                    v-if="desktopPhase === 'browser'"
+                    class="ms-auto text-none"
+                    variant="text"
+                    size="small"
+                    color="primary"
+                    :disabled="desktopCancelling"
+                    @click="cancelDesktopFlow"
+                >
+                    {{ t('auth.google.desktopCancel') }}
+                </v-btn>
             </div>
         </template>
         <div v-else ref="container" class="google-signin__btn" />

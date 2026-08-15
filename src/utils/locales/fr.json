@@ -728,6 +728,7 @@
             "desktopTimeout": "La connexion Google a expiré. Réessayez.",
             "desktopInProgress": "Une connexion Google est déjà en cours.",
             "desktopWaitingBrowser": "Finalisez la connexion dans le navigateur…",
+            "desktopCancel": "Annuler",
             "desktopWaitingSession": "Connexion à Spend.Up…",
             "finalizingTitle": "Connexion en cours…",
             "finalizingSubtitle": "Finalisation de votre connexion Google."

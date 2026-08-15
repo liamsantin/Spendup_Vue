@@ -22,6 +22,19 @@ export function isGoogleDesktopConfigured(): boolean {
     return desktopClientId().length > 0;
 }
 
+/**
+ * Interrompt l’attente du callback loopback : le navigateur ne prévient pas
+ * quand l’utilisateur ferme l’onglet Google, seul un abandon explicite débloque.
+ */
+export async function cancelGoogleDesktopOAuth(): Promise<void> {
+    await invoke('oauth_loopback_cancel');
+}
+
+export function isGoogleDesktopCancelled(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return /cancell?ed/i.test(message);
+}
+
 function base64UrlEncode(bytes: Uint8Array): string {
     let binary = '';
     bytes.forEach((b) => {
@@ -51,11 +64,16 @@ function parseCallbackUrl(url: string): { code?: string; state?: string; error?:
     };
 }
 
+export type GoogleDesktopOAuthOptions = {
+    /** Appelé dès que Google a redirigé avec un code valide, avant l’échange du token. */
+    onAuthorized?: () => void;
+};
+
 /**
  * Ouvre Google OAuth (PKCE) dans le navigateur système et résout un ID token
  * via redirect loopback + échange token **natif** (pas de fetch WebView → CORS).
  */
-export async function requestGoogleIdTokenDesktop(): Promise<string> {
+export async function requestGoogleIdTokenDesktop(options: GoogleDesktopOAuthOptions = {}): Promise<string> {
     if (!isGoogleDesktopConfigured()) {
         throw new Error('VITE_GOOGLE_DESKTOP_CLIENT_ID is not configured');
     }
@@ -96,6 +114,8 @@ export async function requestGoogleIdTokenDesktop(): Promise<string> {
         if (parsed.state !== state) {
             throw new Error('Invalid OAuth state');
         }
+
+        options.onAuthorized?.();
 
         return await invoke<string>('google_exchange_code', {
             clientId: desktopClientId(),

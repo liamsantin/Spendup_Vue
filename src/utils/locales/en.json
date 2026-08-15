@@ -728,6 +728,7 @@
             "desktopTimeout": "Google sign-in timed out. Please try again.",
             "desktopInProgress": "A Google sign-in is already in progress.",
             "desktopWaitingBrowser": "Complete sign-in in your browser…",
+            "desktopCancel": "Cancel",
             "desktopWaitingSession": "Signing in to Spend.Up…",
             "finalizingTitle": "Signing you in…",
             "finalizingSubtitle": "Finalizing your Google sign-in."

@@ -351,6 +351,12 @@
           "markdownDescription": "Allow exchanging a Google OAuth authorization code for an id_token"
         },
         {
+          "description": "Allow cancelling a pending Google OAuth loopback wait",
+          "type": "string",
+          "const": "allow-oauth-loopback-cancel",
+          "markdownDescription": "Allow cancelling a pending Google OAuth loopback wait"
+        },
+        {
           "description": "Allow listening for Google OAuth loopback redirects on 127.0.0.1",
           "type": "string",
           "const": "allow-oauth-loopback-wait",
