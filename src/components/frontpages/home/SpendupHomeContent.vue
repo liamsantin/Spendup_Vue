@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import SpendupExpansionPanels from '@/components/frontpages/home/sections/SpendupExpansionPanels.vue';
 import SpendupPlatformCentralSection from '@/components/frontpages/home/sections/SpendupPlatformCentralSection.vue';
 import SpendupAccessibleSection from '@/components/frontpages/home/sections/SpendupAccessibleSection.vue';
+import SpendupWindowsDownloadSection from '@/components/frontpages/home/sections/SpendupWindowsDownloadSection.vue';
 import {
     LayoutDashboardIcon,
     AlertTriangleIcon,
@@ -160,6 +161,8 @@ const faqAccordionItems = computed(() => faqs.map((_, index) => ({ key: index })
             </v-row>
         </v-container>
     </section>
+
+    <SpendupWindowsDownloadSection />
 
     <!-- Bêta -->
 

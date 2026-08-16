@@ -17,6 +17,8 @@
         "tauri": "tauri",
         "tauri:dev": "tauri dev",
         "tauri:build": "tauri build",
+        "tauri:publish-msi": "node scripts/publish-windows-msi.mjs",
+        "tauri:sync-msi": "node scripts/publish-windows-msi.mjs --copy-only",
         "prepare": "husky"
     },
     "dependencies": {

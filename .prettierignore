@@ -5,3 +5,6 @@ package-lock.json
 _template
 *.min.js
 *.min.css
+src-tauri/target
+src-tauri/gen
+public/downloads

@@ -1,4 +1,22 @@
+import { rm } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import type { Plugin } from 'vite';
+
+/**
+ * L’installeur Windows vit dans `public/downloads/` pour être servi par le site.
+ * Or `dist/` sert aussi de `frontendDist` à Tauri : sans ça, chaque build embarquerait
+ * l’installeur précédent dans l’app (poids cumulatif à chaque release).
+ */
+export function excludeDesktopInstaller(): Plugin {
+    return {
+        name: 'spendup-exclude-desktop-installer',
+        apply: 'build',
+        async closeBundle() {
+            if (!process.env.TAURI_ENV_PLATFORM) return;
+            await rm(resolve(process.cwd(), 'dist/downloads'), { recursive: true, force: true });
+        }
+    };
+}
 
 /**
  * Réécrit les imports nommés `vue-tabler-icons` vers les fichiers individuels

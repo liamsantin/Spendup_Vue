@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { friendLiveChipColor, isFriendLiveChipType } from '../friendChip';
-import {
-    isFriendNotificationType,
-    isSafeAppNotificationPath,
-    isSecurityNotificationType,
-    resolveNotificationLink
-} from '../link';
+import { isFriendNotificationType, isSafeAppNotificationPath, isSecurityNotificationType, resolveNotificationLink } from '../link';
 import { getFriendshipPublicId, normalizeAppNotification, parseNotificationMetadata } from '../normalize';
 
 describe('resolveNotificationLink', () => {

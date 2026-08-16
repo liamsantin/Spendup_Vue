@@ -116,8 +116,7 @@ describe('requestGoogleIdTokenDesktop', () => {
         const flow = mockLoopbackFlow();
         openUrl.mockRejectedValue(new Error('no default browser'));
 
-        const { requestGoogleIdTokenDesktop, isGoogleDesktopBrowserOpenError, BROWSER_OPEN_ERROR } =
-            await loadOAuthModule();
+        const { requestGoogleIdTokenDesktop, isGoogleDesktopBrowserOpenError, BROWSER_OPEN_ERROR } = await loadOAuthModule();
 
         const pending = requestGoogleIdTokenDesktop();
         await vi.waitFor(() => expect(flow.handlers.length).toBe(1));
@@ -195,9 +194,7 @@ describe('requestGoogleIdTokenDesktop', () => {
         flow.emitReady();
         await vi.waitFor(() => expect(openUrl).toHaveBeenCalled());
 
-        flow.resolveWait(
-            'http://127.0.0.1:33333/auth/google/callback?error=access_denied&error_description=User%20denied'
-        );
+        flow.resolveWait('http://127.0.0.1:33333/auth/google/callback?error=access_denied&error_description=User%20denied');
         await expect(pending).rejects.toThrow(/User denied/);
     });
 

@@ -4,9 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { CSP_DEV_REPORT_ONLY, CSP_PROD_ENFORCE, SECURITY_HEADERS_BASE } from '../csp';
 
-const tauriConf = JSON.parse(
-    readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../src-tauri/tauri.conf.json'), 'utf8')
-) as {
+const tauriConf = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../../../src-tauri/tauri.conf.json'), 'utf8')) as {
     app: {
         security: {
             csp: Record<string, string> | null;

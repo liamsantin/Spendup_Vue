@@ -107,9 +107,7 @@ export type GoogleDesktopOAuthOptions = {
  */
 export async function requestGoogleIdTokenDesktop(options: GoogleDesktopOAuthOptions = {}): Promise<string> {
     if (!isGoogleDesktopConfigured()) {
-        throw new Error(
-            'VITE_GOOGLE_DESKTOP_CLIENT_ID and VITE_GOOGLE_DESKTOP_CLIENT_SECRET must both be configured'
-        );
+        throw new Error('VITE_GOOGLE_DESKTOP_CLIENT_ID and VITE_GOOGLE_DESKTOP_CLIENT_SECRET must both be configured');
     }
     if (flowActive) {
         throw new Error(IN_PROGRESS_ERROR);

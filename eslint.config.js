@@ -11,7 +11,15 @@ export default defineConfigWithVueTs(
     },
     {
         name: 'app/files-to-ignore',
-        ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**', '**/_template/**']
+        ignores: [
+            '**/dist/**',
+            '**/node_modules/**',
+            '**/coverage/**',
+            '**/_template/**',
+            // Artefacts Cargo / Tauri (générés) — ne jamais lint
+            '**/src-tauri/target/**',
+            '**/src-tauri/gen/**'
+        ]
     },
     pluginVue.configs['flat/essential'],
     vueTsConfigs.recommended,
