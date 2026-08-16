@@ -2,6 +2,7 @@ import type { NavigationGuard } from 'vue-router';
 import { useAuthStore, APP_HOME_ROUTE } from '@/features/auth';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 import { useFriendsStore } from '@/features/friends';
+import { useAccountsStore } from '@/features/accounts';
 import { useNotificationsStore } from '@/features/notifications';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isDevAppEnv } from '@/utils/helpers/env-helpers';
@@ -48,6 +49,7 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
             // Hub / badge non bloquants
         }
         useFriendsStore().onAuthenticatedSession();
+        useAccountsStore().onAuthenticatedSession();
         return next();
     }
 

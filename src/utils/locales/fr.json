@@ -34,6 +34,7 @@
             "dashboard": "Tableau de bord",
             "notifications": "Notifications",
             "friends": "Amis",
+            "accounts": "Comptes",
             "transactions": "Transactions",
             "preferences": "Mon compte"
         },
@@ -213,6 +214,134 @@
             "goals": {
                 "title": "Objectifs",
                 "caption": "Projets et épargne"
+            }
+        }
+    },
+    "comptesPage": {
+        "title": "Comptes",
+        "subtitle": "Banques, épargne et moyens de paiement",
+        "tabs": {
+            "accounts": "Comptes",
+            "invitations": "Invitations"
+        },
+        "sections": {
+            "owned": "Mes comptes",
+            "ownedSubtitle": "Comptes que vous possédez.",
+            "shared": "Partagés avec moi",
+            "sharedSubtitle": "Comptes auxquels vous avez accès.",
+            "archived": "Archivés"
+        },
+        "empty": {
+            "owned": "Aucun compte pour l’instant. Créez votre premier compte.",
+            "shared": "Aucun compte partagé.",
+            "invitations": "Aucune invitation en attente."
+        },
+        "badges": {
+            "primary": "Principal",
+            "archived": "Archivé"
+        },
+        "roles": {
+            "owner": "Propriétaire",
+            "viewer": "Lecteur",
+            "editor": "Éditeur",
+            "pending": "En attente"
+        },
+        "types": {
+            "courant": "Courant",
+            "epargne": "Épargne",
+            "credit": "Crédit",
+            "cash": "Espèces",
+            "investissement": "Investissement",
+            "crypto": "Crypto",
+            "other": "Autre"
+        },
+        "actions": {
+            "create": "Nouveau compte",
+            "edit": "Modifier",
+            "setPrimary": "Définir comme principal",
+            "archive": "Archiver",
+            "restore": "Restaurer",
+            "delete": "Supprimer",
+            "accept": "Accepter",
+            "refuse": "Refuser"
+        },
+        "hints": {
+            "primaryNoArchive": "Le compte principal ne peut pas être archivé.",
+            "primaryNoDelete": "Le compte principal ne peut pas être supprimé."
+        },
+        "detail": {
+            "title": "Détail du compte",
+            "currentBalance": "Solde actuel",
+            "initialBalance": "Solde initial"
+        },
+        "form": {
+            "createTitle": "Nouveau compte",
+            "editTitle": "Modifier le compte",
+            "subtitle": "Renseignez les informations du compte.",
+            "clearColor": "Sans couleur",
+            "currencyLockedHint": "La devise ne peut plus être changée s’il existe des mouvements.",
+            "fields": {
+                "name": "Nom",
+                "type": "Type",
+                "currency": "Devise",
+                "initialBalance": "Solde initial",
+                "iban": "IBAN",
+                "accountNumber": "N° de compte",
+                "color": "Couleur",
+                "isPrimary": "Compte principal"
+            },
+            "errors": {
+                "nameRequired": "Le nom est obligatoire."
+            }
+        },
+        "share": {
+            "title": "Partage",
+            "subtitle": "Invitez des amis et gérez leurs droits.",
+            "invite": "Inviter",
+            "inviteTitle": "Partager ce compte",
+            "inviteSubtitle": "Le destinataire doit être un ami accepté.",
+            "empty": "Aucun partage pour l’instant.",
+            "emptyFriends": "Aucun ami disponible à inviter.",
+            "revoke": "Révoquer",
+            "cancelInvite": "Annuler",
+            "pendingRole": "En attente · {role}",
+            "fields": {
+                "friend": "Ami",
+                "role": "Rôle"
+            },
+            "errors": {
+                "friendRequired": "Choisissez un ami."
+            },
+            "revokeModal": {
+                "title": "Révoquer l’accès ?",
+                "body": "{name} perdra l’accès à ce compte."
+            },
+            "cancelInviteModal": {
+                "title": "Annuler l’invitation ?",
+                "body": "L’invitation envoyée à {name} sera retirée."
+            }
+        },
+        "invitations": {
+            "title": "Invitations reçues",
+            "subtitle": "Acceptez ou refusez les partages de comptes.",
+            "from": "De {name}"
+        },
+        "modals": {
+            "archive": {
+                "title": "Archiver ce compte ?",
+                "body": "Le compte sera masqué des listes actives. Vous pourrez le restaurer plus tard."
+            },
+            "restore": {
+                "title": "Restaurer ce compte ?",
+                "body": "Le compte redeviendra actif."
+            },
+            "delete": {
+                "title": "Supprimer ce compte ?",
+                "body": "Cette action est définitive si le compte n’a aucun mouvement."
+            },
+            "deleteBlocked": {
+                "title": "Suppression impossible",
+                "body": "Ce compte a des mouvements. Vous pouvez l’archiver à la place."
             }
         }
     },

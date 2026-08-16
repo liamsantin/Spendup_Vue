@@ -36,6 +36,11 @@ const AppRoutes = {
             component: () => import('@/views/app/friends/AppFriendsPage.vue')
         },
         {
+            name: 'AppComptes',
+            path: 'finances/comptes',
+            component: () => import('@/views/app/finances/comptes/AppComptesPage.vue')
+        },
+        {
             path: 'applications',
             redirect: '/app/comptes'
         }

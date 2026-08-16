@@ -21,6 +21,7 @@ import { i18n } from '@/plugins/i18n';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { useNotificationsStore } from '@/features/notifications/stores/notifications-store';
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 import { isIdleSessionError, isIdleSessionMessage } from '@/features/auth/idle-session';
 import { clearCsrfToken, rememberCsrfToken } from '@/features/auth/csrf';
@@ -130,6 +131,7 @@ export const useAuthStore = defineStore('auth', () => {
         useUserSettingsStore().reset();
         useNotificationsStore().reset();
         useFriendsStore().reset();
+        useAccountsStore().reset();
     }
 
     async function applySession(session: AuthSession): Promise<'ok' | '2fa'> {

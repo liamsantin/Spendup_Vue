@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { friendLiveChipColor, isFriendLiveChipType } from '../friendChip';
-import { isFriendNotificationType, isSafeAppNotificationPath, isSecurityNotificationType, resolveNotificationLink } from '../link';
+import {
+    isAccountShareNotificationType,
+    isFriendNotificationType,
+    isSafeAppNotificationPath,
+    isSecurityNotificationType,
+    resolveNotificationLink
+} from '../link';
 import { getFriendshipPublicId, normalizeAppNotification, parseNotificationMetadata } from '../normalize';
 
 describe('resolveNotificationLink', () => {
@@ -48,6 +54,24 @@ describe('resolveNotificationLink', () => {
                 metadata: null
             })
         ).toBe('/app/friends?tab=Friends');
+    });
+
+    it('deep-link comptes via type + metadata', () => {
+        expect(
+            resolveNotificationLink('/accounts/shares', {
+                type: 'accountShareInvite',
+                metadata: { sharePublicId: 'sh-1' }
+            })
+        ).toBe('/app/finances/comptes?tab=Invitations&share=sh-1');
+
+        expect(
+            resolveNotificationLink(null, {
+                type: 'accountShareAccepted',
+                metadata: null
+            })
+        ).toBe('/app/finances/comptes?tab=Accounts');
+
+        expect(resolveNotificationLink('/accounts')).toBe('/app/finances/comptes');
     });
 });
 
@@ -128,5 +152,8 @@ describe('notification type helpers', () => {
         expect(isFriendNotificationType('friendRemoved')).toBe(false);
         expect(isFriendNotificationType('friendBlocked')).toBe(false);
         expect(isFriendNotificationType('other')).toBe(false);
+        expect(isAccountShareNotificationType('accountShareInvite')).toBe(true);
+        expect(isAccountShareNotificationType('accountShareRevoked')).toBe(true);
+        expect(isAccountShareNotificationType('friendRequest')).toBe(false);
     });
 });

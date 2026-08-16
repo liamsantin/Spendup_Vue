@@ -34,6 +34,7 @@
             "dashboard": "Dashboard",
             "notifications": "Notifications",
             "friends": "Friends",
+            "accounts": "Accounts",
             "transactions": "Transactions",
             "preferences": "My account"
         },
@@ -213,6 +214,134 @@
             "goals": {
                 "title": "Goals",
                 "caption": "Projects and savings"
+            }
+        }
+    },
+    "comptesPage": {
+        "title": "Accounts",
+        "subtitle": "Banks, savings and payment methods",
+        "tabs": {
+            "accounts": "Accounts",
+            "invitations": "Invitations"
+        },
+        "sections": {
+            "owned": "My accounts",
+            "ownedSubtitle": "Accounts you own.",
+            "shared": "Shared with me",
+            "sharedSubtitle": "Accounts you can access.",
+            "archived": "Archived"
+        },
+        "empty": {
+            "owned": "No accounts yet. Create your first account.",
+            "shared": "No shared accounts.",
+            "invitations": "No pending invitations."
+        },
+        "badges": {
+            "primary": "Primary",
+            "archived": "Archived"
+        },
+        "roles": {
+            "owner": "Owner",
+            "viewer": "Viewer",
+            "editor": "Editor",
+            "pending": "Pending"
+        },
+        "types": {
+            "courant": "Checking",
+            "epargne": "Savings",
+            "credit": "Credit",
+            "cash": "Cash",
+            "investissement": "Investment",
+            "crypto": "Crypto",
+            "other": "Other"
+        },
+        "actions": {
+            "create": "New account",
+            "edit": "Edit",
+            "setPrimary": "Set as primary",
+            "archive": "Archive",
+            "restore": "Restore",
+            "delete": "Delete",
+            "accept": "Accept",
+            "refuse": "Refuse"
+        },
+        "hints": {
+            "primaryNoArchive": "The primary account cannot be archived.",
+            "primaryNoDelete": "The primary account cannot be deleted."
+        },
+        "detail": {
+            "title": "Account details",
+            "currentBalance": "Current balance",
+            "initialBalance": "Initial balance"
+        },
+        "form": {
+            "createTitle": "New account",
+            "editTitle": "Edit account",
+            "subtitle": "Fill in the account details.",
+            "clearColor": "No color",
+            "currencyLockedHint": "Currency cannot be changed once there are movements.",
+            "fields": {
+                "name": "Name",
+                "type": "Type",
+                "currency": "Currency",
+                "initialBalance": "Initial balance",
+                "iban": "IBAN",
+                "accountNumber": "Account number",
+                "color": "Color",
+                "isPrimary": "Primary account"
+            },
+            "errors": {
+                "nameRequired": "Name is required."
+            }
+        },
+        "share": {
+            "title": "Sharing",
+            "subtitle": "Invite friends and manage their access.",
+            "invite": "Invite",
+            "inviteTitle": "Share this account",
+            "inviteSubtitle": "The recipient must be an accepted friend.",
+            "empty": "No shares yet.",
+            "emptyFriends": "No friends available to invite.",
+            "revoke": "Revoke",
+            "cancelInvite": "Cancel",
+            "pendingRole": "Pending · {role}",
+            "fields": {
+                "friend": "Friend",
+                "role": "Role"
+            },
+            "errors": {
+                "friendRequired": "Choose a friend."
+            },
+            "revokeModal": {
+                "title": "Revoke access?",
+                "body": "{name} will lose access to this account."
+            },
+            "cancelInviteModal": {
+                "title": "Cancel invitation?",
+                "body": "The invitation sent to {name} will be removed."
+            }
+        },
+        "invitations": {
+            "title": "Incoming invitations",
+            "subtitle": "Accept or refuse account shares.",
+            "from": "From {name}"
+        },
+        "modals": {
+            "archive": {
+                "title": "Archive this account?",
+                "body": "The account will be hidden from active lists. You can restore it later."
+            },
+            "restore": {
+                "title": "Restore this account?",
+                "body": "The account will become active again."
+            },
+            "delete": {
+                "title": "Delete this account?",
+                "body": "This is permanent if the account has no movements."
+            },
+            "deleteBlocked": {
+                "title": "Cannot delete",
+                "body": "This account has movements. You can archive it instead."
             }
         }
     },

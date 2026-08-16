@@ -7,7 +7,7 @@ import { useUserSettingsStore } from '@/features/user-settings';
 import { notificationsApi } from '../api';
 import { getNotificationsHubState, setNotificationsHubHandlers, startNotificationsHub, stopNotificationsHub } from '../hub';
 import { isFriendLiveChipType } from '../friendChip';
-import { isFriendNotificationType, isSecurityNotificationType } from '../link';
+import { isAccountShareNotificationType, isFriendNotificationType, isSecurityNotificationType } from '../link';
 import { ensureNativeNotificationPermission, showNativeNotification } from '../native-notify';
 import { normalizeNotificationReceivedPayload } from '../normalize';
 import { isTauri } from '@/utils/helpers/platform-helpers';
@@ -45,6 +45,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const error = ref<string | null>(null);
     const hubConnected = ref(false);
     const friendListeners = new Set<(notification: AppNotification) => void>();
+    const accountShareListeners = new Set<(notification: AppNotification) => void>();
     const friendshipChangeListeners = new Set<(payload: FriendshipChangedPayload) => void>();
     const liveFriendChips = ref<LiveFriendChip[]>([]);
 
@@ -137,6 +138,9 @@ export const useNotificationsStore = defineStore('notifications', () => {
         if (isFriendNotificationType(String(notification.type))) {
             friendListeners.forEach((listener) => listener(notification));
         }
+        if (isAccountShareNotificationType(String(notification.type))) {
+            accountShareListeners.forEach((listener) => listener(notification));
+        }
         const inserted = upsertItem(notification, true);
         if (inserted) {
             totalCount.value = Math.max(items.value.length, totalCount.value + 1);
@@ -196,6 +200,13 @@ export const useNotificationsStore = defineStore('notifications', () => {
         friendListeners.add(listener);
         return () => {
             friendListeners.delete(listener);
+        };
+    }
+
+    function subscribeToAccountShareNotifications(listener: (notification: AppNotification) => void) {
+        accountShareListeners.add(listener);
+        return () => {
+            accountShareListeners.delete(listener);
         };
     }
 
@@ -375,6 +386,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         error.value = null;
         hubConnected.value = false;
         friendListeners.clear();
+        accountShareListeners.clear();
         friendshipChangeListeners.clear();
         clearLiveFriendChips();
         void stopHub();
@@ -399,6 +411,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         hasMore,
         hasItems,
         subscribeToFriendNotifications,
+        subscribeToAccountShareNotifications,
         subscribeToFriendshipChanged,
         dismissLiveFriendChip,
         dismissLiveFriendChipsByNotificationId,

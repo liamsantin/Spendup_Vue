@@ -25,6 +25,7 @@
 | Auth          | [`features/auth/contract.md`](features/auth/contract.md)                   |
 | Notifications | [`features/notifications/contract.md`](features/notifications/contract.md) |
 | Friends       | [`features/friends/contract.md`](features/friends/contract.md)             |
+| Accounts      | [`features/accounts/contract.md`](features/accounts/contract.md)           |
 | User settings | [`features/user-settings/contract.md`](features/user-settings/contract.md) |
 | Countries     | [`features/countries/contract.md`](features/countries/contract.md)         |
 | Dashboard     | [`features/dashboard/contract.md`](features/dashboard/contract.md)         |

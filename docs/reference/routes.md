@@ -31,12 +31,13 @@
 
 ## Application (`FullLayout`, `requiresAuth`)
 
-| Route                | Feature                    |
-| -------------------- | -------------------------- |
-| `/app`               | dashboard                  |
-| `/app/comptes`       | user-settings (Tabs Shell) |
-| `/app/notifications` | notifications (Page Shell) |
-| `/app/friends`       | friends (Tabs Shell)       |
-| `/app/applications`  | redirect → `/app/comptes`  |
+| Route                   | Feature                                        |
+| ----------------------- | ---------------------------------------------- |
+| `/app`                  | dashboard                                      |
+| `/app/comptes`          | user-settings (Tabs Shell)                     |
+| `/app/finances/comptes` | accounts (Tabs Shell : Accounts / Invitations) |
+| `/app/notifications`    | notifications (Page Shell)                     |
+| `/app/friends`          | friends (Tabs Shell)                           |
+| `/app/applications`     | redirect → `/app/comptes`                      |
 
 Catch-all → `Error`.

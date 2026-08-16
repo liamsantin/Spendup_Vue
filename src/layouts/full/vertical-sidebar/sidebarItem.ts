@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, BellIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -39,6 +39,12 @@ const sidebarItem: menu[] = [
         title: 'nav.items.friends',
         icon: UsersIcon,
         to: '/app/friends'
+    },
+    { header: 'nav.headers.finances' },
+    {
+        title: 'nav.items.accounts',
+        icon: BuildingBankIcon,
+        to: '/app/finances/comptes'
     },
     { header: 'nav.headers.settings' },
     {

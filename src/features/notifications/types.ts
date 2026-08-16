@@ -12,6 +12,10 @@ export type NotificationType =
     | 'friendRemoved'
     /** @deprecated plus produit — historique inbox uniquement */
     | 'friendBlocked'
+    | 'accountShareInvite'
+    | 'accountShareAccepted'
+    | 'accountShareRefused'
+    | 'accountShareRevoked'
     | 'other'
     | (string & {});
 

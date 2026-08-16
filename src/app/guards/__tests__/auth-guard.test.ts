@@ -27,6 +27,12 @@ vi.mock('@/features/friends', () => ({
     })
 }));
 
+vi.mock('@/features/accounts', () => ({
+    useAccountsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
 vi.mock('@/features/user-settings', () => ({
     useUserSettingsStore: () => ({
         ensureLoaded: vi.fn().mockResolvedValue(undefined),
