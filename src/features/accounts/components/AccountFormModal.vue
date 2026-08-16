@@ -121,8 +121,9 @@ async function onSave() {
         v-model="open"
         :title="isEdit ? t('comptesPage.form.editTitle') : t('comptesPage.form.createTitle')"
         :subtitle="t('comptesPage.form.subtitle')"
-        :height="680"
         :max-width="560"
+        :height="640"
+        scrollable
     >
         <AppAlert v-if="localError.message" type="error" class="mb-4" closable @dismiss="localError.message = null">
             {{ localError.message }}
@@ -185,7 +186,7 @@ async function onSave() {
                         :variant="form.color === preset ? 'outlined' : 'flat'"
                         @click="form.color = preset"
                     />
-                    <v-btn size="small" variant="text" @click="form.color = null">{{ t('comptesPage.form.clearColor') }}</v-btn>
+                    <v-btn size="small" variant="text" flat @click="form.color = null">{{ t('comptesPage.form.clearColor') }}</v-btn>
                 </div>
             </v-col>
             <v-col cols="12">
@@ -199,10 +200,12 @@ async function onSave() {
             </v-col>
         </v-row>
 
-        <template #footer>
+        <template #footer="{ close }">
+            <v-btn variant="text" flat :disabled="store.acting" @click="close">
+                {{ t('common.cancel') }}
+            </v-btn>
             <v-spacer />
-            <v-btn variant="text" :disabled="store.acting" @click="open = false">{{ t('common.cancel') }}</v-btn>
-            <v-btn color="primary" :loading="store.acting" :disabled="store.acting" @click="onSave">
+            <v-btn color="primary" flat :loading="store.acting" :disabled="store.acting" @click="onSave">
                 {{ t('common.save') }}
             </v-btn>
         </template>

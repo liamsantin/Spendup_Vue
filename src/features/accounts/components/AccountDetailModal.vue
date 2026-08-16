@@ -247,9 +247,9 @@ async function confirmDelete() {
             <AccountSharesPanel v-if="canManageShares(account)" :account-public-id="account.publicId" />
         </template>
 
-        <template #footer>
+        <template #footer="{ close }">
             <v-spacer />
-            <v-btn variant="text" @click="open = false">{{ t('common.close') }}</v-btn>
+            <v-btn color="primary" flat @click="close">{{ t('common.close') }}</v-btn>
         </template>
     </AppModalBase>
 

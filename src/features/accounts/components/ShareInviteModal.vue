@@ -128,10 +128,10 @@ async function onInvite() {
             />
         </template>
 
-        <template #footer>
+        <template #footer="{ close }">
+            <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>
             <v-spacer />
-            <v-btn variant="text" :disabled="store.acting" @click="open = false">{{ t('common.cancel') }}</v-btn>
-            <v-btn color="primary" :loading="store.acting" :disabled="store.acting || loadingFriends" @click="onInvite">
+            <v-btn color="primary" flat :loading="store.acting" :disabled="store.acting || loadingFriends" @click="onInvite">
                 {{ t('comptesPage.share.invite') }}
             </v-btn>
         </template>

@@ -134,10 +134,10 @@ async function confirmSendRequest() {
         />
 
         <template #footer="{ close }">
-            <v-spacer />
-            <v-btn variant="text" flat class="mr-2" :disabled="store.acting" @click="close">
+            <v-btn variant="text" flat :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </v-btn>
+            <v-spacer />
             <v-btn color="primary" flat :loading="store.acting" @click="confirmSendRequest">
                 {{ t('friendsPage.addModal.confirm') }}
             </v-btn>
