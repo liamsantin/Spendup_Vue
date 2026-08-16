@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
+import { UserPhotoAvatar } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '../stores/accounts-store';
 import type { AccountShare, ShareRole } from '../types';
@@ -106,12 +107,13 @@ async function confirmRevoke() {
         <v-list v-else class="py-0 theme-list">
             <v-list-item v-for="share in store.shares" :key="share.publicId" class="px-2 py-3" rounded="md">
                 <template #prepend>
-                    <v-avatar size="42" class="mr-3" color="lightprimary">
-                        <v-img v-if="share.photoUrl" :src="share.photoUrl" cover :alt="share.displayName" />
-                        <span v-else class="text-subtitle-2 font-weight-bold text-primary">
-                            {{ share.displayName.slice(0, 1).toUpperCase() }}
-                        </span>
-                    </v-avatar>
+                    <UserPhotoAvatar
+                        class="mr-3"
+                        :photo-url="share.photoUrl"
+                        :user-public-id="share.userPublicId"
+                        :fallback-label="share.displayName"
+                        :size="42"
+                    />
                 </template>
 
                 <div class="d-flex align-start justify-space-between ga-2 w-100">

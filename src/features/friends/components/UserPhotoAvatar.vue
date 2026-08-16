@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { useAuthStore } from '@/features/auth';
-import { catalogAvatarSrc, isCatalogProfilePicture } from '@/features/auth/profilePicture';
+import { catalogAvatarSrc, isCatalogProfilePicture, isUploadedProfilePicture } from '@/features/auth/profilePicture';
 import { friendsApi } from '../api';
 import { extractPublicIdFromUserAvatarPath } from '../profilePicture';
 import { getApiBaseUrl } from '@/utils/helpers/axios-helpers';
 
 const props = defineProps<{
     photoUrl?: string | null;
+    /** Requis pour résoudre un hash uploadé (même logique que `useFriendAvatarUrl`). */
+    userPublicId?: string | null;
     fallbackLabel?: string;
     size?: number | string;
     /** Passe `start` au `v-avatar` (ex. dans un AppChip). */
@@ -27,12 +29,31 @@ function revokeHeld() {
     heldUrl = null;
 }
 
-async function resolve(photoUrl: string | null | undefined) {
+async function fetchAvatarBlob(publicId: string, request: number) {
+    loading.value = true;
+    try {
+        const token = await auth.ensureAccessToken();
+        const blob = await friendsApi.getUserAvatarBlob(publicId, token);
+        if (request !== requestId) return;
+        const url = URL.createObjectURL(blob);
+        heldUrl = url;
+        avatarSrc.value = url;
+    } catch {
+        if (request !== requestId) return;
+        avatarSrc.value = null;
+    } finally {
+        if (request === requestId) loading.value = false;
+    }
+}
+
+async function resolve(photoUrl: string | null | undefined, userPublicId: string | null | undefined) {
     const request = ++requestId;
     revokeHeld();
     avatarSrc.value = null;
 
     const value = photoUrl?.trim();
+    const id = userPublicId?.trim() || '';
+
     if (!value) {
         loading.value = false;
         return;
@@ -50,22 +71,14 @@ async function resolve(photoUrl: string | null | undefined) {
         return;
     }
 
-    const publicId = extractPublicIdFromUserAvatarPath(value);
-    if (publicId) {
-        loading.value = true;
-        try {
-            const token = await auth.ensureAccessToken();
-            const blob = await friendsApi.getUserAvatarBlob(publicId, token);
-            if (request !== requestId) return;
-            const url = URL.createObjectURL(blob);
-            heldUrl = url;
-            avatarSrc.value = url;
-        } catch {
-            if (request !== requestId) return;
-            avatarSrc.value = null;
-        } finally {
-            if (request === requestId) loading.value = false;
-        }
+    if (isUploadedProfilePicture(value) && id) {
+        await fetchAvatarBlob(id, request);
+        return;
+    }
+
+    const pathPublicId = extractPublicIdFromUserAvatarPath(value);
+    if (pathPublicId) {
+        await fetchAvatarBlob(pathPublicId, request);
         return;
     }
 
@@ -80,8 +93,8 @@ async function resolve(photoUrl: string | null | undefined) {
 }
 
 watch(
-    () => props.photoUrl,
-    (value) => void resolve(value),
+    () => [props.photoUrl, props.userPublicId] as const,
+    ([photoUrl, userPublicId]) => void resolve(photoUrl, userPublicId),
     { immediate: true }
 );
 

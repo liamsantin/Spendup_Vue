@@ -3,6 +3,7 @@ import { onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { InboxIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import { UserPhotoAvatar } from '@/features/friends';
 import { useAccountsStore } from '../stores/accounts-store';
 
 const { t, locale } = useI18n();
@@ -61,17 +62,13 @@ onMounted(() => {
                                     :class="{ 'bg-lightprimary': store.isFocusedShare(invite.publicId) }"
                                 >
                                     <template #prepend>
-                                        <v-avatar size="46" class="mr-3" color="lightprimary">
-                                            <v-img
-                                                v-if="invite.ownerPhotoUrl"
-                                                :src="invite.ownerPhotoUrl"
-                                                cover
-                                                :alt="invite.ownerDisplayName"
-                                            />
-                                            <span v-else class="text-subtitle-2 font-weight-bold text-primary">
-                                                {{ invite.ownerDisplayName.slice(0, 1).toUpperCase() }}
-                                            </span>
-                                        </v-avatar>
+                                        <UserPhotoAvatar
+                                            class="mr-3"
+                                            :photo-url="invite.ownerPhotoUrl"
+                                            :user-public-id="invite.ownerPublicId"
+                                            :fallback-label="invite.ownerDisplayName"
+                                            :size="46"
+                                        />
                                     </template>
 
                                     <div class="d-flex align-start justify-space-between ga-2 w-100">
