@@ -1,0 +1,17 @@
+// Fond flouté derrière les modales (aligné sur AppColorPicker).
+// Le flou est porté par la racine du dialog et non par `.v-overlay__scrim` :
+// le scrim a un `opacity` < 1, ce qui rebléndait le flou avec l'image nette.
+.v-dialog {
+    backdrop-filter: blur(0);
+    transition: backdrop-filter 200ms ease;
+}
+
+.v-dialog.v-overlay--active {
+    backdrop-filter: blur(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .v-dialog {
+        transition: none;
+    }
+}
