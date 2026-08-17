@@ -63,14 +63,14 @@ onMounted(() => {
                             </div>
                             <template v-else>
                                 <div v-if="store.activeOwnedAccounts.length" class="mb-2">
-                                    <v-list class="py-0 theme-list">
+                                    <TransitionGroup name="account-move" tag="div" class="v-list py-0 theme-list accounts-list">
                                         <AccountListItem
                                             v-for="account in store.activeOwnedAccounts"
                                             :key="account.publicId"
                                             :account="account"
                                             @open="openDetail"
                                         />
-                                    </v-list>
+                                    </TransitionGroup>
                                 </div>
                                 <div v-if="store.archivedOwnedAccounts.length" class="mt-4">
                                     <div class="text-subtitle-2 text-medium-emphasis mb-2">
@@ -135,5 +135,20 @@ onMounted(() => {
 <style scoped>
 .accounts-tab-content {
     padding: 4px 2px 12px;
+}
+
+/* Le pulse de promotion agrandit brièvement l’item : on clippe pour éviter une scrollbar. */
+.accounts-list {
+    overflow-x: clip;
+}
+
+.account-move-move {
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .account-move-move {
+        transition: none;
+    }
 }
 </style>

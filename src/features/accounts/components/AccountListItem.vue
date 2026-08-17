@@ -20,6 +20,7 @@ const balance = computed(() => formatAccountBalance(props.account.currentBalance
 const typeLabel = computed(() => t(`comptesPage.types.${props.account.type}`));
 const roleLabel = computed(() => t(`comptesPage.roles.${props.account.myRole}`));
 const focused = computed(() => store.isFocusedAccount(props.account.publicId));
+const promoted = computed(() => store.isPromotedAccount(props.account.publicId));
 </script>
 
 <template>
@@ -29,7 +30,11 @@ const focused = computed(() => store.isFocusedAccount(props.account.publicId));
         class="account-list-item px-2 py-3"
         rounded="md"
         :data-account-id="account.publicId"
-        :class="{ 'bg-lightprimary': focused, 'opacity-60': !account.isActive }"
+        :class="{
+            'bg-lightprimary': focused,
+            'opacity-60': !account.isActive,
+            'account-list-item--promoted': promoted
+        }"
         @click="emit('open', account)"
     >
         <template #prepend>
@@ -63,3 +68,30 @@ const focused = computed(() => store.isFocusedAccount(props.account.publicId));
         </div>
     </v-list-item>
 </template>
+
+<style scoped>
+.account-list-item--promoted {
+    animation: account-promote-pulse 0.9s ease;
+}
+
+@keyframes account-promote-pulse {
+    0% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+    35% {
+        background-color: rgba(var(--v-theme-primary), 0.12);
+        transform: scale(1.015);
+    }
+    100% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .account-list-item--promoted {
+        animation: none;
+    }
+}
+</style>

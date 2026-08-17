@@ -29,10 +29,56 @@ export const useAccountsStore = defineStore('accounts', () => {
 
     const ownedAccounts = computed(() => accounts.value.filter((a) => a.isOwned));
     const sharedAccounts = computed(() => accounts.value.filter((a) => !a.isOwned));
-    const activeOwnedAccounts = computed(() => ownedAccounts.value.filter((a) => a.isActive));
+    const activeOwnedAccounts = computed(() =>
+        ownedAccounts.value
+            .filter((a) => a.isActive)
+            .slice()
+            .sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary))
+    );
     const archivedOwnedAccounts = computed(() => ownedAccounts.value.filter((a) => !a.isActive));
     const incomingCount = computed(() => incomingShares.value.length);
     const hasAccounts = computed(() => accounts.value.length > 0);
+    /** Compte qui vient d’être promu principal — déclenche l’animation de highlight. */
+    const promotedAccountPublicId = ref<string | null>(null);
+    let promoteHighlightTimer: ReturnType<typeof setTimeout> | null = null;
+
+    function clearPromoteHighlight() {
+        if (promoteHighlightTimer) {
+            clearTimeout(promoteHighlightTimer);
+            promoteHighlightTimer = null;
+        }
+        promotedAccountPublicId.value = null;
+    }
+
+    function markPromoted(publicId: string) {
+        clearPromoteHighlight();
+        promotedAccountPublicId.value = publicId;
+        promoteHighlightTimer = setTimeout(() => {
+            if (promotedAccountPublicId.value === publicId) {
+                promotedAccountPublicId.value = null;
+            }
+            promoteHighlightTimer = null;
+        }, 900);
+    }
+
+    function isPromotedAccount(publicId: string) {
+        return promotedAccountPublicId.value === publicId;
+    }
+
+    function applyPrimaryLocally(publicId: string, account?: Account) {
+        accounts.value = accounts.value.map((a) => {
+            if (!a.isOwned) return a;
+            if (a.publicId === publicId) {
+                return { ...(account ?? a), isPrimary: true };
+            }
+            return a.isPrimary ? { ...a, isPrimary: false } : a;
+        });
+        if (selectedAccount.value) {
+            const selectedId = selectedAccount.value.publicId;
+            const next = accounts.value.find((a) => a.publicId === selectedId);
+            if (next) selectedAccount.value = next;
+        }
+    }
 
     function clearError() {
         error.value = null;
@@ -171,7 +217,10 @@ export const useAccountsStore = defineStore('accounts', () => {
         clearError();
         try {
             const account = await accountsApi.setPrimary(publicId);
+            applyPrimaryLocally(publicId, account);
+            markPromoted(publicId);
             await loadAccounts(true);
+            applyPrimaryLocally(publicId);
             return account;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -379,6 +428,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         error.value = null;
         focusAccountPublicId.value = null;
         focusSharePublicId.value = null;
+        clearPromoteHighlight();
         unsubscribeNotifications?.();
         unsubscribeFriendshipChanged?.();
         unsubscribeNotifications = null;
@@ -403,6 +453,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         error,
         focusAccountPublicId,
         focusSharePublicId,
+        promotedAccountPublicId,
         ownedAccounts,
         sharedAccounts,
         activeOwnedAccounts,
@@ -414,6 +465,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         setFocusShare,
         isFocusedAccount,
         isFocusedShare,
+        isPromotedAccount,
         loadAccounts,
         loadIncoming,
         loadAccountDetail,
