@@ -52,7 +52,10 @@ const focused = computed(() => store.isFocusedAccount(props.account.publicId));
                         {{ roleLabel }}
                     </v-chip>
                 </div>
-                <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">{{ typeLabel }} · {{ account.currency }}</p>
+                <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">
+                    {{ typeLabel }} · {{ account.currency
+                    }}{{ account.accountNumber ? ` · ${t('comptesPage.list.accountNumber', { number: account.accountNumber })}` : '' }}
+                </p>
             </div>
             <div class="text-right flex-shrink-0">
                 <div class="text-subtitle-1 font-weight-semibold">{{ balance }}</div>

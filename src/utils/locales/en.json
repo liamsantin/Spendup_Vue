@@ -240,6 +240,9 @@
             "primary": "Primary",
             "archived": "Archived"
         },
+        "list": {
+            "accountNumber": "No. {number}"
+        },
         "roles": {
             "owner": "Owner",
             "viewer": "Viewer",

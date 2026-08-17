@@ -65,9 +65,10 @@ function resetForm() {
     form.currency = settings.current.defaultCurrency;
     form.initialBalance = 0;
     form.iban = '';
-    form.accountNumber = '';
+    const isFirstAccount = store.ownedAccounts.length === 0;
+    form.accountNumber = isFirstAccount ? '1' : '';
     form.color = ACCOUNT_COLOR_PRESETS[0];
-    form.isPrimary = false;
+    form.isPrimary = isFirstAccount;
 }
 
 watch(
@@ -136,24 +137,32 @@ async function onSave() {
                 <AppSwitch v-model="form.isPrimary" :label="t('comptesPage.form.fields.isPrimary')" :inset="false" />
             </v-col>
             <v-col cols="12">
-                <v-text-field v-model="form.name" :label="t('comptesPage.form.fields.name')" variant="outlined" hide-details="auto" />
+                <v-text-field
+                    v-model="form.name"
+                    :label="`${t('comptesPage.form.fields.name')} *`"
+                    variant="outlined"
+                    hide-details="auto"
+                    required
+                />
             </v-col>
             <v-col cols="12" sm="6">
                 <v-select
                     v-model="form.type"
                     :items="typeItems"
-                    :label="t('comptesPage.form.fields.type')"
+                    :label="`${t('comptesPage.form.fields.type')} *`"
                     variant="outlined"
                     hide-details="auto"
+                    required
                 />
             </v-col>
             <v-col cols="12" sm="6">
                 <v-select
                     v-model="form.currency"
                     :items="currencyItems"
-                    :label="t('comptesPage.form.fields.currency')"
+                    :label="`${t('comptesPage.form.fields.currency')} *`"
                     variant="outlined"
                     hide-details="auto"
+                    required
                     :hint="isEdit ? t('comptesPage.form.currencyLockedHint') : undefined"
                     :persistent-hint="isEdit"
                 />
@@ -163,9 +172,10 @@ async function onSave() {
                     v-model.number="form.initialBalance"
                     type="number"
                     step="0.01"
-                    :label="t('comptesPage.form.fields.initialBalance')"
+                    :label="`${t('comptesPage.form.fields.initialBalance')} *`"
                     variant="outlined"
                     hide-details="auto"
+                    required
                 />
             </v-col>
             <v-col cols="12" sm="8">
