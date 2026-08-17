@@ -3,12 +3,13 @@
  * Shell modal standard Spend.Up — header fixe, body (optionnellement scrollable), footer fixe.
  * À utiliser pour toutes les modales de l’application.
  *
- * `scrollable` : n’active perfect-scrollbar que si le contenu peut déborder.
+ * `scrollable` : monte perfect-scrollbar sur le body. La card se dimensionne au contenu sans
+ * dépasser `height`, donc le rail n’apparaît que s’il y a réellement débordement.
  * Sinon (ex. saisie OTP courte), le body est un bloc simple sans scroll.
  */
 defineOptions({ name: 'AppModalBase' });
 
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref } from 'vue';
 import { XIcon } from 'vue-tabler-icons';
 import { useI18n } from 'vue-i18n';
 import type { PerfectScrollbarExpose } from 'vue3-perfect-scrollbar';
@@ -22,7 +23,7 @@ const props = withDefaults(
         title: string;
         subtitle?: string;
         maxWidth?: number | string;
-        /** Hauteur de la card (px ou CSS). Ignorée si `scrollable` est false (hauteur auto). */
+        /** Hauteur max. de la card (px ou CSS), plafonnée à 85vh. Ignorée si `scrollable` est false. */
         height?: number | string;
         persistent?: boolean;
         /** Affiche le footer (slot `footer`). */
@@ -60,18 +61,8 @@ const cardStyle = computed(() => {
         return { maxHeight: '85vh' };
     }
     const height = typeof props.height === 'number' ? `${props.height}px` : props.height;
-    // Hauteur fixe (plafonnée à 85vh sur petit écran).
-    const fixed = `min(${height}, 85vh)`;
-    return { height: fixed, minHeight: fixed, maxHeight: fixed };
-});
-
-const bodyStyle = computed(() => {
-    if (!props.scrollable) return undefined;
-    return {
-        flex: '1 1 auto',
-        minHeight: '0',
-        height: '0' // force le flex child à prendre le reste de la card fixe
-    };
+    // Plafond seulement : la card s’adapte au contenu, donc pas de scroll tant qu’il ne déborde pas.
+    return { maxHeight: `min(${height}, 85vh)` };
 });
 
 async function refreshScrollbar() {
@@ -84,15 +75,6 @@ function close() {
     open.value = false;
 }
 
-watch(
-    () => props.modelValue,
-    (isOpen) => {
-        if (isOpen) {
-            void refreshScrollbar();
-        }
-    }
-);
-
 defineExpose({
     refreshScrollbar,
     close
@@ -100,8 +82,9 @@ defineExpose({
 </script>
 
 <template>
-    <v-dialog v-model="open" :max-width="maxWidth" :persistent="persistent">
-        <v-card rounded="md" class="app-modal-base" :class="{ 'app-modal-base--static': !scrollable }" :style="cardStyle">
+    <!-- La transition d’ouverture scale la card : perfect-scrollbar doit remesurer une fois figée. -->
+    <v-dialog v-model="open" :max-width="maxWidth" :persistent="persistent" @after-enter="refreshScrollbar">
+        <v-card rounded="md" class="app-modal-base" :style="cardStyle">
             <div class="app-modal-base__header">
                 <div class="pr-10">
                     <h5 class="text-h5">{{ title }}</h5>
@@ -119,13 +102,7 @@ defineExpose({
                 <slot name="toolbar" />
             </div>
 
-            <PerfectScrollbar
-                v-if="scrollable"
-                ref="scrollbarRef"
-                class="app-modal-base__body"
-                :style="bodyStyle"
-                :options="scrollbarOptions"
-            >
+            <PerfectScrollbar v-if="scrollable" ref="scrollbarRef" class="app-modal-base__body" :options="scrollbarOptions">
                 <div class="app-modal-base__body-inner">
                     <slot />
                 </div>
@@ -152,10 +129,6 @@ defineExpose({
     display: flex !important;
     flex-direction: column;
     overflow: hidden;
-}
-
-.app-modal-base--static {
-    height: auto !important;
 }
 
 .app-modal-base__header {
