@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppColorPicker from '@/components/shared/AppColorPicker.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppSwitch from '@/components/shared/AppSwitch.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { emptyToNull } from '../format';
@@ -132,13 +133,7 @@ async function onSave() {
 
         <v-row dense>
             <v-col cols="12">
-                <v-switch
-                    v-model="form.isPrimary"
-                    :label="t('comptesPage.form.fields.isPrimary')"
-                    color="primary"
-                    hide-details
-                    density="comfortable"
-                />
+                <AppSwitch v-model="form.isPrimary" :label="t('comptesPage.form.fields.isPrimary')" :inset="false" />
             </v-col>
             <v-col cols="12">
                 <v-text-field v-model="form.name" :label="t('comptesPage.form.fields.name')" variant="outlined" hide-details="auto" />

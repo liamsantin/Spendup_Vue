@@ -3,16 +3,18 @@
  * Showcase composants (dev only).
  * Onglet Alert = clone `_template/modernize/components/ui-components/alert/*`.
  * Onglet Chip = clone `_template/modernize/components/ui-components/chip/*` via AppChip.
+ * Onglet Switch = clone Modernize switch via AppSwitch.
  * Onglet Modal = AppModalBase / AppConfirmationModal.
  */
 defineOptions({ name: 'ComponentsShowcasePage' });
 
 import { computed, ref } from 'vue';
-import { ChecksIcon, CircleXIcon, MoodSmileIcon, UserCircleIcon } from 'vue-tabler-icons';
+import { BluetoothIcon, ChecksIcon, CircleXIcon, MoodSmileIcon, UserCircleIcon, WifiIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppChip from '@/components/shared/AppChip.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppSwitch from '@/components/shared/AppSwitch.vue';
 import user1 from '@/assets/images/profile/avatar/user-1.jpg';
 import user2 from '@/assets/images/profile/avatar/user-2.jpg';
 import user5 from '@/assets/images/profile/avatar/user-5.jpg';
@@ -23,6 +25,16 @@ const closableOpen = ref(true);
 const modalScrollableOpen = ref(false);
 const modalStaticOpen = ref(false);
 const confirmationOpen = ref(false);
+
+const switchDefaultOn = ref(true);
+const switchDefaultOff = ref(false);
+const switchInsetOn = ref(true);
+const switchInsetOff = ref(false);
+const switchLabelOn = ref(true);
+const switchLabelOff = ref(false);
+const switchWifi = ref(true);
+const switchBluetooth = ref(false);
+const switchColors = ['primary', 'secondary', 'success', 'error', 'warning'] as const;
 
 const chipClosable = ref({
     primary: true,
@@ -58,6 +70,7 @@ function resetChipClosable() {
         <v-tabs v-model="tab" color="primary" class="mb-4">
             <v-tab value="alert">Alert</v-tab>
             <v-tab value="chip">Chip</v-tab>
+            <v-tab value="switch">Switch</v-tab>
             <v-tab value="modal">Modal</v-tab>
         </v-tabs>
 
@@ -423,6 +436,84 @@ function resetChipClosable() {
                     <div v-if="anyChipClosableHidden" class="mt-3">
                         <v-btn color="primary" flat @click="resetChipClosable">Reset</v-btn>
                     </div>
+                </div>
+            </v-tabs-window-item>
+
+            <v-tabs-window-item value="switch">
+                <p class="text-body-2 text-medium-emphasis mb-6">
+                    <code>AppSwitch</code> — clone Modernize
+                    <code>_template/modernize/components/forms/form-elements/switch/</code>
+                    et
+                    <code>_template/modernize/components/ui-components/list/SwitchList.vue</code>
+                </p>
+
+                <!-- Default.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">Default</h3>
+                <div class="mb-8 d-flex flex-wrap align-center ga-4">
+                    <AppSwitch v-model="switchDefaultOn" :inset="false" />
+                    <AppSwitch v-model="switchDefaultOff" :inset="false" />
+                    <AppSwitch :model-value="true" :inset="false" disabled />
+                    <AppSwitch :model-value="false" :inset="false" disabled />
+                </div>
+
+                <!-- Inset.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">Inset</h3>
+                <div class="mb-8 d-flex flex-wrap align-center ga-4">
+                    <AppSwitch v-model="switchInsetOn" />
+                    <AppSwitch v-model="switchInsetOff" />
+                    <AppSwitch :model-value="true" disabled />
+                    <AppSwitch :model-value="false" disabled />
+                </div>
+
+                <!-- Colors.vue / InsetColors.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">Colors</h3>
+                <div class="mb-8 d-flex flex-wrap align-center ga-4">
+                    <AppSwitch v-for="color in switchColors" :key="`default-${color}`" :model-value="true" :color="color" :inset="false" />
+                </div>
+                <h3 class="text-h6 font-weight-semibold mb-3">Inset Colors</h3>
+                <div class="mb-8 d-flex flex-wrap align-center ga-4">
+                    <AppSwitch v-for="color in switchColors" :key="`inset-${color}`" :model-value="true" :color="color" />
+                </div>
+
+                <!-- Label.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">Label</h3>
+                <div class="mb-8">
+                    <AppSwitch v-model="switchLabelOn" label="Label" :inset="false" />
+                    <AppSwitch v-model="switchLabelOff" label="Disabled" :inset="false" disabled />
+                </div>
+
+                <!-- States.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">States (loading)</h3>
+                <div class="mb-8">
+                    <AppSwitch :model-value="true" loading="warning" label="on loading" :inset="false" />
+                    <AppSwitch :model-value="false" loading="warning" label="off loading" :inset="false" />
+                </div>
+
+                <!-- SwitchList.vue -->
+                <h3 class="text-h6 font-weight-semibold mb-3">List</h3>
+                <div class="mb-8">
+                    <v-list>
+                        <v-card variant="outlined" class="py-2">
+                            <v-list-item value="wifi" class="mb-2" color="primary">
+                                <div class="d-flex align-center">
+                                    <WifiIcon size="22" stroke-width="1.5" class="mr-2" />
+                                    <div class="ml-3">Wi-Fi</div>
+                                    <div class="ml-auto">
+                                        <AppSwitch v-model="switchWifi" />
+                                    </div>
+                                </div>
+                            </v-list-item>
+                            <v-list-item value="bluetooth" class="mb-2" color="primary">
+                                <div class="d-flex align-center">
+                                    <BluetoothIcon size="22" stroke-width="1.5" class="mr-2" />
+                                    <div class="ml-3">Bluetooth</div>
+                                    <div class="ml-auto">
+                                        <AppSwitch v-model="switchBluetooth" />
+                                    </div>
+                                </div>
+                            </v-list-item>
+                        </v-card>
+                    </v-list>
                 </div>
             </v-tabs-window-item>
 
