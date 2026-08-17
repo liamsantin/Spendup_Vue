@@ -2,6 +2,7 @@
 import { computed, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import AppColorPicker from '@/components/shared/AppColorPicker.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
@@ -131,6 +132,15 @@ async function onSave() {
 
         <v-row dense>
             <v-col cols="12">
+                <v-switch
+                    v-model="form.isPrimary"
+                    :label="t('comptesPage.form.fields.isPrimary')"
+                    color="primary"
+                    hide-details
+                    density="comfortable"
+                />
+            </v-col>
+            <v-col cols="12">
                 <v-text-field v-model="form.name" :label="t('comptesPage.form.fields.name')" variant="outlined" hide-details="auto" />
             </v-col>
             <v-col cols="12" sm="6">
@@ -163,39 +173,27 @@ async function onSave() {
                     hide-details="auto"
                 />
             </v-col>
-            <v-col cols="12">
+            <v-col cols="12" sm="8">
                 <v-text-field v-model="form.iban" :label="t('comptesPage.form.fields.iban')" variant="outlined" hide-details="auto" />
             </v-col>
-            <v-col cols="12">
+            <v-col cols="12" sm="4">
                 <v-text-field
                     v-model="form.accountNumber"
+                    type="number"
+                    min="1"
+                    max="99"
+                    step="1"
                     :label="t('comptesPage.form.fields.accountNumber')"
                     variant="outlined"
                     hide-details="auto"
                 />
             </v-col>
             <v-col cols="12">
-                <div class="text-subtitle-2 mb-2">{{ t('comptesPage.form.fields.color') }}</div>
-                <div class="d-flex flex-wrap ga-2 align-center">
-                    <v-btn
-                        v-for="preset in ACCOUNT_COLOR_PRESETS"
-                        :key="preset"
-                        icon
-                        size="small"
-                        :style="{ backgroundColor: preset }"
-                        :variant="form.color === preset ? 'outlined' : 'flat'"
-                        @click="form.color = preset"
-                    />
-                    <v-btn size="small" variant="text" flat @click="form.color = null">{{ t('comptesPage.form.clearColor') }}</v-btn>
-                </div>
-            </v-col>
-            <v-col cols="12">
-                <v-switch
-                    v-model="form.isPrimary"
-                    :label="t('comptesPage.form.fields.isPrimary')"
-                    color="primary"
-                    hide-details
-                    density="comfortable"
+                <AppColorPicker
+                    v-model="form.color"
+                    :colors="ACCOUNT_COLOR_PRESETS"
+                    :label="t('comptesPage.form.fields.color')"
+                    :clear-label="t('comptesPage.form.clearColor')"
                 />
             </v-col>
         </v-row>
