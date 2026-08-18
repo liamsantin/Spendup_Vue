@@ -1,7 +1,7 @@
 # Notifications — contrat front
 
 > Code : `src/features/notifications/`  
-> Statut : active · Relu : 2026-08-13  
+> Statut : active · Relu : 2026-08-18  
 > Voir aussi : `architecture/realtime.md`, `architecture/http.md`, `patterns/app-page-shell.md`
 
 ## Boundaries
@@ -42,12 +42,15 @@ Hub `{apiBase}/hubs/realtime` — détails `architecture/realtime.md`.
 ## Invariants
 
 - Types inbox produit (amis) : `friendRequest`, `friendAccepted` ; anciens types friend encore deep-linkables.
+- Types inbox produit (comptes) : `accountShareInvite`, `accountShareAccepted`, `accountShareRefused`, `accountShareRevoked`.
+- Chips live : `friendRequest`, `friendAccepted`, `accountShareInvite`.
 - Prefs push (`pushNotifications` + sous-flags) :
-    - **Web** : gate les **chips live** uniquement — **pas** inbox, badge, ni refresh friends.
+    - **Web** : gate les **chips live** uniquement — **pas** inbox, badge, ni refresh friends / comptes.
     - **Tauri** (`isTauri`) : gate aussi les **notifications OS** natives (`plugin-notification`) sur `notificationReceived`.
+    - Sous-flags : `pushFriendRequest` (amis), `pushFinancialAlerts` (partage de comptes), `pushSecurityAlerts` (sécu).
 - Hub toujours up pour `sessionEnded`.
 - Upsert par `id` ; prepend sur insert realtime.
-- Deep-links : `/security*` → `/app/comptes` ; friend → `/app/friends?tab=&friendship=`.
+- Deep-links : `/security*` → `/app/comptes` ; friend → `/app/friends?tab=&friendship=` ; comptes → `/app/finances/comptes?tab=&share=`.
 - Clic notif OS (Tauri) → navigation via `resolveNotificationLink`.
 
 ## Bootstrap

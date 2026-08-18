@@ -406,6 +406,114 @@ describe('useNotificationsStore', () => {
         expect(store.liveFriendChips[0]?.notification.id).toBe(43);
     });
 
+    it('pushNotifications on : chip invitation de compte affiché', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        handlers.onNotificationReceived?.({
+            notification: {
+                id: 44,
+                type: 'accountShareInvite',
+                title: 'Invitation',
+                subtitle: null,
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: '/accounts/shares',
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            },
+            unreadCount: 1
+        });
+
+        expect(store.liveFriendChips).toHaveLength(1);
+        expect(store.liveFriendChips[0]?.notification.id).toBe(44);
+        expect(store.items).toHaveLength(1);
+    });
+
+    it('pushFinancialAlerts off : inbox mise à jour, pas de chip invitation', async () => {
+        settingsState.current.pushFinancialAlerts = false;
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        handlers.onNotificationReceived?.({
+            notification: {
+                id: 45,
+                type: 'accountShareInvite',
+                title: 'Invitation',
+                subtitle: null,
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: '/accounts/shares',
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            },
+            unreadCount: 1
+        });
+
+        expect(store.unreadCount).toBe(1);
+        expect(store.items).toHaveLength(1);
+        expect(store.liveFriendChips).toHaveLength(0);
+    });
+
+    it('pushNotifications off : pas de chip invitation de compte', async () => {
+        settingsState.current.pushNotifications = false;
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        handlers.onNotificationReceived?.({
+            notification: {
+                id: 46,
+                type: 'accountShareInvite',
+                title: 'Invitation',
+                subtitle: null,
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: '/accounts/shares',
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            },
+            unreadCount: 1
+        });
+
+        expect(store.items).toHaveLength(1);
+        expect(store.liveFriendChips).toHaveLength(0);
+    });
+
+    it('accountShareAccepted : pas de chip live', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        handlers.onNotificationReceived?.({
+            notification: {
+                id: 47,
+                type: 'accountShareAccepted',
+                title: 'Accepté',
+                subtitle: null,
+                message: null,
+                isRead: false,
+                readAt: null,
+                link: '/accounts',
+                photoUrl: null,
+                createdAt: '2026-01-01T00:00:00Z'
+            },
+            unreadCount: 1
+        });
+
+        expect(store.items).toHaveLength(1);
+        expect(store.liveFriendChips).toHaveLength(0);
+    });
+
     it('friendshipChanged notifie les listeners sans toucher au badge', async () => {
         unreadCount.mockResolvedValue({ unreadCount: 0 });
         const store = useNotificationsStore();

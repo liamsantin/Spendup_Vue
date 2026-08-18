@@ -7,7 +7,7 @@ export {
     isFriendNotificationType,
     isAccountShareNotificationType
 } from './link';
-export { friendLiveChipColor, isFriendLiveChipType } from './friendChip';
+export { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from './friendChip';
 export { parseNotificationMetadata, getFriendshipPublicId, getAccountSharePublicId, normalizeAppNotification } from './normalize';
 export { ensureNativeNotificationPermission, setNativeNotificationNavigate, showNativeNotification } from './native-notify';
 export { default as InboxTab } from './components/InboxTab.vue';

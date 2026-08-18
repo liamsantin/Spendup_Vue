@@ -6,7 +6,7 @@ import { i18n } from '@/plugins/i18n';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { notificationsApi } from '../api';
 import { getNotificationsHubState, setNotificationsHubHandlers, startNotificationsHub, stopNotificationsHub } from '../hub';
-import { isFriendLiveChipType } from '../friendChip';
+import { isLiveChipType } from '../friendChip';
 import { isAccountShareNotificationType, isFriendNotificationType, isSecurityNotificationType } from '../link';
 import { ensureNativeNotificationPermission, showNativeNotification } from '../native-notify';
 import { normalizeNotificationReceivedPayload } from '../normalize';
@@ -86,6 +86,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         if (!settings.pushNotifications) return false;
         if (isSecurityNotificationType(type) && !settings.pushSecurityAlerts) return false;
         if (isFriendNotificationType(type) && !settings.pushFriendRequest) return false;
+        if (isAccountShareNotificationType(type) && !settings.pushFinancialAlerts) return false;
         // Types finance futurs — coupe le chip / OS notify si désactivé.
         if (type.toLowerCase().includes('financial') && !settings.pushFinancialAlerts) return false;
         return true;
@@ -116,7 +117,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
 
     function pushLiveFriendChip(notification: AppNotification) {
-        if (!isFriendLiveChipType(String(notification.type))) return;
+        if (!isLiveChipType(String(notification.type))) return;
         if (notification.isRead) return;
         if (!shouldShowLiveChip(String(notification.type))) return;
 

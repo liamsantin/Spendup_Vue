@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { friendLiveChipColor, isFriendLiveChipType } from '../friendChip';
+import { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '../friendChip';
 import {
     isAccountShareNotificationType,
     isFriendNotificationType,
@@ -89,11 +89,22 @@ describe('isSafeAppNotificationPath', () => {
 });
 
 describe('friendLiveChipColor', () => {
-    it('ne déclenche un chip que pour friendRequest / friendAccepted', () => {
+    it('ne déclenche un chip que pour friendRequest / friendAccepted / accountShareInvite', () => {
         expect(isFriendLiveChipType('friendAccepted')).toBe(true);
         expect(isFriendLiveChipType('friendRequest')).toBe(true);
         expect(isFriendLiveChipType('friendRemoved')).toBe(false);
         expect(isFriendLiveChipType('friendBlocked')).toBe(false);
+        expect(isFriendLiveChipType('accountShareInvite')).toBe(false);
+
+        expect(isAccountShareLiveChipType('accountShareInvite')).toBe(true);
+        expect(isAccountShareLiveChipType('accountShareAccepted')).toBe(false);
+        expect(isAccountShareLiveChipType('accountShareRefused')).toBe(false);
+        expect(isAccountShareLiveChipType('accountShareRevoked')).toBe(false);
+
+        expect(isLiveChipType('friendRequest')).toBe(true);
+        expect(isLiveChipType('accountShareInvite')).toBe(true);
+        expect(isLiveChipType('accountShareAccepted')).toBe(false);
+        expect(isLiveChipType('securityAlert')).toBe(false);
 
         expect(friendLiveChipColor()).toBe('primary');
     });
