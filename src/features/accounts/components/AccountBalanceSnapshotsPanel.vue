@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
+import { TrashIcon } from 'vue-tabler-icons';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { formatAccountBalance } from '../format';
 import { useAccountsStore } from '../stores/accounts-store';
@@ -183,7 +184,7 @@ async function confirmDelete() {
                             :icon="true"
                             @click="deleteTarget = snapshot"
                         >
-                            <v-icon size="18">mdi-delete-outline</v-icon>
+                            <TrashIcon size="18" />
                         </v-btn>
                     </div>
                 </div>

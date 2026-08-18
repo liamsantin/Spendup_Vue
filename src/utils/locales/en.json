@@ -325,7 +325,9 @@
             "cancelInviteModal": {
                 "title": "Cancel invitation?",
                 "body": "The invitation sent to {name} will be removed."
-            }
+            },
+            "editTitle": "Edit share",
+            "editConfirm": "Save"
         },
         "invitations": {
             "title": "Incoming invitations",

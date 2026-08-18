@@ -3,8 +3,10 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
+import AppModalBase from '@/components/shared/AppModalBase.vue';
 import AppRadioButton from '@/components/shared/AppRadioButton.vue';
 import { UserPhotoAvatar } from '@/features/friends';
+import { PencilIcon } from 'vue-tabler-icons';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '../stores/accounts-store';
 import type { AccountShare, ShareRole } from '../types';
@@ -18,8 +20,26 @@ const { t, locale } = useI18n();
 const store = useAccountsStore();
 
 const inviteOpen = ref(false);
+const editTargetId = ref<string | null>(null);
+const editRole = ref<ShareRole>('viewer');
 const revokeTarget = ref<AccountShare | null>(null);
 const localError = ref<string | null>(null);
+const editError = ref<string | null>(null);
+
+/** Toujours synchronisé avec le store — reflète les mises à jour de photoUrl, displayName, role. */
+const editTarget = computed(() =>
+    editTargetId.value ? (store.shares.find((s) => s.publicId === editTargetId.value) ?? null) : null
+);
+
+const editOpen = computed({
+    get: () => !!editTargetId.value,
+    set: (value: boolean) => {
+        if (!value) {
+            editTargetId.value = null;
+            editError.value = null;
+        }
+    }
+});
 
 const revokeOpen = computed({
     get: () => !!revokeTarget.value,
@@ -44,6 +64,18 @@ function roleChipLabel(share: AccountShare) {
     return t(`comptesPage.roles.${share.role}`);
 }
 
+function openEdit(share: AccountShare) {
+    editTargetId.value = share.publicId;
+    editRole.value = (share.role === 'pending' ? share.invitedRole ?? 'viewer' : share.role) as ShareRole;
+    editError.value = null;
+}
+
+function openRevokeFromEdit() {
+    const share = editTarget.value;
+    editTargetId.value = null;
+    revokeTarget.value = share;
+}
+
 watch(
     () => props.accountPublicId,
     (id) => {
@@ -52,13 +84,19 @@ watch(
     { immediate: true }
 );
 
-async function onRoleChange(share: AccountShare, role: ShareRole) {
-    if (share.role === 'pending' || share.role === role) return;
-    localError.value = null;
+async function confirmEdit() {
+    if (!editTarget.value) return;
+    const share = editTarget.value;
+    if (share.role === 'pending' || share.role === editRole.value) {
+        editTarget.value = null;
+        return;
+    }
+    editError.value = null;
     try {
-        await store.updateShareRole(props.accountPublicId, share.userPublicId, role);
+        await store.updateShareRole(props.accountPublicId, share.userPublicId, editRole.value);
+        editTargetId.value = null;
     } catch (e: unknown) {
-        localError.value = getErrorMessage(e);
+        editError.value = getErrorMessage(e);
     }
 }
 
@@ -117,27 +155,23 @@ async function confirmRevoke() {
                     />
                 </template>
 
-                <div class="d-flex align-start justify-space-between ga-2 w-100">
+                <div class="d-flex align-center justify-space-between ga-2 w-100">
                     <div class="min-width-0">
                         <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">{{ share.displayName }}</h6>
                         <p class="text-body-2 text-medium-emphasis mb-0">{{ formatDate(share.createdAt) }}</p>
                     </div>
-                    <div class="d-flex flex-wrap align-center justify-end ga-2">
-                        <v-chip v-if="share.role === 'pending'" size="small" color="warning" variant="tonal">
+                    <div class="d-flex align-center ga-2">
+                        <v-chip size="small" :color="share.role === 'pending' ? 'warning' : 'secondary'" variant="tonal">
                             {{ roleChipLabel(share) }}
                         </v-chip>
-                        <AppRadioButton
-                            v-else
-                            :model-value="share.role"
-                            :items="roleItems"
-                            inline
-                            density="compact"
-                            hide-details="auto"
+                        <v-btn
+                            size="small"
+                            variant="text"
+                            :icon="true"
                             :disabled="store.acting"
-                            @update:model-value="onRoleChange(share, $event as ShareRole)"
-                        />
-                        <v-btn size="small" variant="text" color="error" :disabled="store.acting" @click="revokeTarget = share">
-                            {{ share.role === 'pending' ? t('comptesPage.share.cancelInvite') : t('comptesPage.share.revoke') }}
+                            @click="openEdit(share)"
+                        >
+                            <PencilIcon size="18" />
                         </v-btn>
                     </div>
                 </div>
@@ -145,6 +179,53 @@ async function confirmRevoke() {
         </v-list>
 
         <ShareInviteModal v-model="inviteOpen" :account-public-id="accountPublicId" />
+
+        <AppModalBase
+            v-model="editOpen"
+            :title="t('comptesPage.share.editTitle')"
+            :max-width="420"
+            :scrollable="false"
+        >
+            <div v-if="editTarget" class="d-flex align-center ga-3 mb-5">
+                <UserPhotoAvatar
+                    :photo-url="editTarget.photoUrl"
+                    :user-public-id="editTarget.userPublicId"
+                    :fallback-label="editTarget.displayName"
+                    :size="42"
+                />
+                <div class="min-width-0">
+                    <div class="text-subtitle-1 font-weight-bold text-truncate">{{ editTarget.displayName }}</div>
+                    <div class="text-body-2 text-medium-emphasis">{{ formatDate(editTarget.createdAt) }}</div>
+                </div>
+            </div>
+
+            <AppAlert v-if="editError" type="error" class="mb-4" closable @dismiss="editError = null">
+                {{ editError }}
+            </AppAlert>
+
+            <div class="mb-4">
+                <div class="text-subtitle-2 mb-2">{{ t('comptesPage.share.fields.role') }}</div>
+                <AppRadioButton
+                    v-model="editRole"
+                    :items="roleItems"
+                    inline
+                    hide-details="auto"
+                    :disabled="store.acting || editTarget?.role === 'pending'"
+                />
+            </div>
+
+            <v-btn variant="tonal" color="error" size="small" :disabled="store.acting" @click="openRevokeFromEdit">
+                {{ editTarget?.role === 'pending' ? t('comptesPage.share.cancelInvite') : t('comptesPage.share.revoke') }}
+            </v-btn>
+
+            <template #footer="{ close }">
+                <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>
+                <v-spacer />
+                <v-btn color="primary" flat :loading="store.acting" :disabled="store.acting || editTarget?.role === 'pending'" @click="confirmEdit">
+                    {{ t('comptesPage.share.editConfirm') }}
+                </v-btn>
+            </template>
+        </AppModalBase>
 
         <AppConfirmationModal
             v-model="revokeOpen"

@@ -325,7 +325,9 @@
             "cancelInviteModal": {
                 "title": "Annuler l’invitation ?",
                 "body": "L’invitation envoyée à {name} sera retirée."
-            }
+            },
+            "editTitle": "Modifier le partage",
+            "editConfirm": "Modifier"
         },
         "invitations": {
             "title": "Invitations reçues",
