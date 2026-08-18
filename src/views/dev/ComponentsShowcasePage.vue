@@ -10,19 +10,58 @@
 defineOptions({ name: 'ComponentsShowcasePage' });
 
 import { computed, ref } from 'vue';
-import { BluetoothIcon, ChecksIcon, CircleXIcon, MoodSmileIcon, UserCircleIcon, WifiIcon } from 'vue-tabler-icons';
+import {
+    BluetoothIcon,
+    ChecksIcon,
+    CircleXIcon,
+    CreditCardIcon,
+    HeartIcon,
+    KeyIcon,
+    MoodSmileIcon,
+    PhoneIcon,
+    PhotoIcon,
+    StarIcon,
+    UserIcon,
+    UserCircleIcon,
+    UserPlusIcon,
+    UsersIcon,
+    WifiIcon
+} from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import AppBaseTabs from '@/components/shared/AppBaseTabs.vue';
 import AppChip from '@/components/shared/AppChip.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
 import AppRadioButton from '@/components/shared/AppRadioButton.vue';
 import AppSwitch from '@/components/shared/AppSwitch.vue';
+import blogImg1 from '@/assets/images/ui/tabs/blog/blog-img1.jpg';
+import blogImg2 from '@/assets/images/ui/tabs/blog/blog-img2.jpg';
+import blogImg3 from '@/assets/images/ui/tabs/blog/blog-img3.jpg';
+import blogImg4 from '@/assets/images/ui/tabs/blog/blog-img4.jpg';
+import blogImg5 from '@/assets/images/ui/tabs/blog/blog-img5.jpg';
+import productImg3 from '@/assets/images/ui/tabs/products/s3.jpg';
+import productImg4 from '@/assets/images/ui/tabs/products/s4.jpg';
+import productImg5 from '@/assets/images/ui/tabs/products/s5.jpg';
+import productImg6 from '@/assets/images/ui/tabs/products/s6.jpg';
+import productImg7 from '@/assets/images/ui/tabs/products/s7.jpg';
+import productImg8 from '@/assets/images/ui/tabs/products/s8.jpg';
+import productImg9 from '@/assets/images/ui/tabs/products/s9.jpg';
+import productImg10 from '@/assets/images/ui/tabs/products/s10.jpg';
+import productImg11 from '@/assets/images/ui/tabs/products/s11.jpg';
+import productImg12 from '@/assets/images/ui/tabs/products/s12.jpg';
 import user1 from '@/assets/images/profile/avatar/user-1.jpg';
 import user2 from '@/assets/images/profile/avatar/user-2.jpg';
 import user5 from '@/assets/images/profile/avatar/user-5.jpg';
 
 const tab = ref('alert');
 const closableOpen = ref(true);
+const tabsBasic = ref('one');
+const tabsStacked = ref('recents');
+const tabsAlignCenter = ref('landscape');
+const tabsAlignEnd = ref('landscape');
+const tabsIcon = ref('phone');
+const tabsDisabled = ref('one');
+const tabsColors = ref('one');
 
 const modalScrollableOpen = ref(false);
 const modalStaticOpen = ref(false);
@@ -44,6 +83,47 @@ const radioItems = [
     { title: 'Viewer', value: 'viewer' },
     { title: 'Editor', value: 'editor' }
 ];
+const basicTabItems = [
+    { value: 'one', label: 'Item One' },
+    { value: 'two', label: 'Item Two' },
+    { value: 'three', label: 'Item Three' }
+];
+const stackedTabItems = [
+    { value: 'recents', label: 'Recents', icon: PhoneIcon },
+    { value: 'favorites', label: 'Favorites', icon: HeartIcon },
+    { value: 'nearby', label: 'Nearby', icon: UserIcon }
+];
+const centerActiveItems = Array.from({ length: 14 }, (_, index) => ({
+    value: `item-${index + 1}`,
+    label: ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen'][index]
+}));
+const alignTabsItems = [
+    { value: 'landscape', label: 'Landscape' },
+    { value: 'products', label: 'Products' },
+    { value: 'abstract', label: 'Abstract' }
+];
+const iconTabItems = [
+    { value: 'phone', icon: PhoneIcon },
+    { value: 'heart', icon: HeartIcon },
+    { value: 'user', icon: UserIcon }
+];
+const disabledTabItems = [
+    { value: 'one', label: 'Item One', icon: PhoneIcon },
+    { value: 'two', label: 'Item Two', icon: HeartIcon, disabled: true },
+    { value: 'three', label: 'Item Three', icon: UserIcon }
+];
+const colorTabItems = [
+    { value: 'one', label: 'Item One', icon: PhoneIcon, color: 'secondary' },
+    { value: 'two', label: 'Item Two', icon: HeartIcon, color: 'warning' },
+    { value: 'three', label: 'Item Three', icon: UserIcon, color: 'primary' }
+];
+const customIconsItems = Array.from({ length: 30 }, (_, index) => ({
+    value: `custom-${index + 1}`,
+    label: `Item ${index + 1}`
+}));
+const galleryLandscape = [{ img: blogImg1 }, { img: blogImg2 }, { img: blogImg3 }, { img: blogImg4 }, { img: blogImg5 }, { img: blogImg1 }];
+const galleryProducts = [{ img: productImg3 }, { img: productImg4 }, { img: productImg5 }, { img: productImg6 }, { img: productImg7 }, { img: productImg8 }];
+const galleryAbstract = [{ img: productImg9 }, { img: productImg10 }, { img: productImg11 }, { img: productImg7 }, { img: productImg12 }, { img: productImg8 }];
 
 const chipClosable = ref({
     primary: true,
@@ -82,6 +162,7 @@ function resetChipClosable() {
             <v-tab value="switch">Switch</v-tab>
             <v-tab value="radio">Radio</v-tab>
             <v-tab value="modal">Modal</v-tab>
+            <v-tab value="tabs">Tabs</v-tab>
         </v-tabs>
 
         <v-tabs-window v-model="tab">
@@ -630,6 +711,122 @@ function resetChipClosable() {
                             <v-btn color="primary" flat @click="close">OK</v-btn>
                         </template>
                     </AppModalBase>
+                </div>
+            </v-tabs-window-item>
+
+            <v-tabs-window-item value="tabs">
+                <p class="text-body-2 text-medium-emphasis mb-6">
+                    <code>AppBaseTabs</code> — composant réutilisable configurable, inspiré des variantes de
+                    <code>_template/modernize/views/ui-elements/UiTabs.vue</code>.
+                </p>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Basic</h3>
+                <div class="mb-8">
+                    <AppBaseTabs v-model="tabsBasic" :tabs="basicTabItems" preset="basic">
+                        <template #panel-one>Item One</template>
+                        <template #panel-two>Item Two</template>
+                        <template #panel-three>Item Three</template>
+                    </AppBaseTabs>
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Stacked</h3>
+                <div class="mb-8">
+                    <AppBaseTabs v-model="tabsStacked" :tabs="stackedTabItems" preset="stacked">
+                        <template #panel-recents>Item One</template>
+                        <template #panel-favorites>Item two</template>
+                        <template #panel-nearby>Item three</template>
+                    </AppBaseTabs>
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Center Active</h3>
+                <div class="mb-8">
+                    <AppBaseTabs :model-value="'item-1'" :tabs="centerActiveItems" preset="center-active" />
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Custom Icons</h3>
+                <div class="mb-8">
+                    <AppBaseTabs :model-value="'custom-1'" :tabs="customIconsItems" preset="custom-icons" show-arrows next-icon="mdi-arrow-right-bold-box-outline" prev-icon="mdi-arrow-left-bold-box-outline" />
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Align Center</h3>
+                <div class="mb-8">
+                    <AppBaseTabs v-model="tabsAlignCenter" :tabs="alignTabsItems" preset="align-center">
+                        <template #panel-landscape>
+                            <v-row>
+                                <v-col v-for="item in galleryLandscape" :key="item.img" cols="12" md="4" sm="6">
+                                    <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                </v-col>
+                            </v-row>
+                        </template>
+                        <template #panel-products>
+                            <v-row>
+                                <v-col v-for="item in galleryProducts" :key="item.img" cols="12" md="4" sm="6">
+                                    <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                </v-col>
+                            </v-row>
+                        </template>
+                        <template #panel-abstract>
+                            <v-row>
+                                <v-col v-for="item in galleryAbstract" :key="item.img" cols="12" md="4" sm="6">
+                                    <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                </v-col>
+                            </v-row>
+                        </template>
+                    </AppBaseTabs>
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Align End</h3>
+                <div class="mb-8">
+                    <AppBaseTabs v-model="tabsAlignEnd" :tabs="alignTabsItems" preset="align-end">
+                        <template #panel-landscape>
+                            <v-row>
+                                <v-col v-for="item in galleryLandscape" :key="item.img" cols="12" md="4" sm="6">
+                                    <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                </v-col>
+                            </v-row>
+                        </template>
+                        <template #panel-products>
+                            <v-row>
+                                <v-col v-for="item in galleryProducts" :key="item.img" cols="12" md="4" sm="6">
+                                    <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                </v-col>
+                            </v-row>
+                        </template>
+                        <template #panel-abstract>
+                            <v-row>
+                                <v-col v-for="item in galleryAbstract" :key="item.img" cols="12" md="4" sm="6">
+                                    <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                </v-col>
+                            </v-row>
+                        </template>
+                    </AppBaseTabs>
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Icon</h3>
+                <div class="mb-8">
+                    <AppBaseTabs v-model="tabsIcon" :tabs="iconTabItems" preset="icon">
+                        <template #panel-phone>Item One</template>
+                        <template #panel-heart>Item two</template>
+                        <template #panel-user>Item three</template>
+                    </AppBaseTabs>
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Disabled</h3>
+                <div class="mb-8">
+                    <AppBaseTabs v-model="tabsDisabled" :tabs="disabledTabItems" preset="disabled">
+                        <template #panel-one>item one</template>
+                        <template #panel-two>item two</template>
+                        <template #panel-three>item three</template>
+                    </AppBaseTabs>
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Colors</h3>
+                <div class="mb-8">
+                    <AppBaseTabs v-model="tabsColors" :tabs="colorTabItems" preset="colors">
+                        <template #panel-one>item one</template>
+                        <template #panel-two>item two</template>
+                        <template #panel-three>item three</template>
+                    </AppBaseTabs>
                 </div>
             </v-tabs-window-item>
         </v-tabs-window>

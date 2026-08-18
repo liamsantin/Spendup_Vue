@@ -278,7 +278,13 @@
         "detail": {
             "title": "Détail du compte",
             "currentBalance": "Solde actuel",
-            "initialBalance": "Solde initial"
+            "initialBalance": "Solde initial",
+            "tabs": {
+                "details": "Détails",
+                "snapshots": "Relevé",
+                "shares": "Partage"
+            },
+            "shareUnavailable": "Vous n’avez pas accès à la gestion du partage de ce compte."
         },
         "form": {
             "createTitle": "Nouveau compte",

@@ -278,7 +278,13 @@
         "detail": {
             "title": "Account details",
             "currentBalance": "Current balance",
-            "initialBalance": "Initial balance"
+            "initialBalance": "Initial balance",
+            "tabs": {
+                "details": "Details",
+                "snapshots": "Snapshot",
+                "shares": "Sharing"
+            },
+            "shareUnavailable": "You do not have access to manage sharing for this account."
         },
         "form": {
             "createTitle": "New account",
