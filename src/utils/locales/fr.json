@@ -349,6 +349,32 @@
                 "title": "Suppression impossible",
                 "body": "Ce compte a des mouvements. Vous pouvez l’archiver à la place."
             }
+        },
+        "snapshots": {
+            "title": "Relevés de solde",
+            "subtitle": "Soldes bancaires déclarés manuellement.",
+            "add": "Ajouter",
+            "addTitle": "Nouveau relevé de solde",
+            "addSubtitle": "Saisissez le solde constaté dans votre application bancaire.",
+            "empty": "Aucun relevé pour l instant.",
+            "latestDeclared": "Dernier solde déclaré",
+            "diff": "Écart avec le solde calculé",
+            "sources": {
+                "manual": "Manuel",
+                "bank_import": "Import bancaire",
+                "statement": "Relevé",
+                "system": "Système"
+            },
+            "fields": {
+                "balance": "Solde constaté",
+                "snapshotAt": "Date du relevé",
+                "note": "Note (optionnel)"
+            },
+            "deleteModal": {
+                "title": "Supprimer ce relevé ?",
+                "body": "Le relevé de {balance} du {date} sera supprimé.",
+                "confirm": "Supprimer"
+            }
         }
     },
     "notificationsPage": {

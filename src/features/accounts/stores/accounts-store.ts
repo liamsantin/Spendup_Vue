@@ -5,7 +5,16 @@ import type { AppNotification, FriendshipChangedPayload } from '@/features/notif
 import { AppError } from '@/utils/errors/app-error';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
 import { accountsApi } from '../api';
-import type { Account, AccountShare, CreateAccountPayload, IncomingAccountShare, ShareRole, UpdateAccountPayload } from '../types';
+import type {
+    Account,
+    AccountBalanceSnapshot,
+    AccountShare,
+    CreateAccountPayload,
+    CreateBalanceSnapshotPayload,
+    IncomingAccountShare,
+    ShareRole,
+    UpdateAccountPayload
+} from '../types';
 
 export const ACCOUNTS_LIST_MAX_AGE_MS = 60_000;
 export const ACCOUNTS_DETAIL_MAX_AGE_MS = 30_000;
@@ -27,11 +36,14 @@ export const useAccountsStore = defineStore('accounts', () => {
     const selectedAccount = ref<Account | null>(null);
     const shares = ref<AccountShare[]>([]);
     const sharesByAccountId = new Map<string, AccountShare[]>();
+    const balanceSnapshots = ref<AccountBalanceSnapshot[]>([]);
+    const snapshotsByAccountId = new Map<string, AccountBalanceSnapshot[]>();
 
     const loadingAccounts = ref(false);
     const loadingIncoming = ref(false);
     const loadingDetail = ref(false);
     const loadingShares = ref(false);
+    const loadingSnapshots = ref(false);
     const acting = ref(false);
     const initialized = ref(false);
     const error = ref<string | null>(null);
@@ -156,6 +168,11 @@ export const useAccountsStore = defineStore('accounts', () => {
         shares.value = items;
     }
 
+    function setSnapshotsForAccount(accountPublicId: string, items: AccountBalanceSnapshot[]) {
+        snapshotsByAccountId.set(accountPublicId, items);
+        balanceSnapshots.value = items;
+    }
+
     function cancelIdlePrefetch() {
         if (prefetchTimer == null) return;
         if (typeof cancelIdleCallback === 'function') {
@@ -272,6 +289,63 @@ export const useAccountsStore = defineStore('accounts', () => {
             { force }
         );
         shares.value = sharesByAccountId.get(accountPublicId) ?? [];
+    }
+
+    async function loadBalanceSnapshots(accountPublicId: string, force = false) {
+        await cache.ensure(
+            `snapshots:${accountPublicId}`,
+            async () => {
+                loadingSnapshots.value = true;
+                clearError();
+                try {
+                    const result = await accountsApi.listBalanceSnapshots(accountPublicId);
+                    setSnapshotsForAccount(accountPublicId, Array.isArray(result?.items) ? result.items : []);
+                } catch (e: unknown) {
+                    error.value = e instanceof Error ? e.message : String(e);
+                    throw e;
+                } finally {
+                    loadingSnapshots.value = false;
+                }
+            },
+            { force }
+        );
+        balanceSnapshots.value = snapshotsByAccountId.get(accountPublicId) ?? [];
+    }
+
+    async function createBalanceSnapshot(accountPublicId: string, payload: CreateBalanceSnapshotPayload) {
+        acting.value = true;
+        clearError();
+        try {
+            const snapshot = await accountsApi.createBalanceSnapshot(accountPublicId, payload);
+            const current = snapshotsByAccountId.get(accountPublicId) ?? balanceSnapshots.value;
+            setSnapshotsForAccount(accountPublicId, [snapshot, ...current]);
+            cache.touch(`snapshots:${accountPublicId}`);
+            return snapshot;
+        } catch (e: unknown) {
+            error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            acting.value = false;
+        }
+    }
+
+    async function deleteBalanceSnapshot(accountPublicId: string, snapshotPublicId: string) {
+        acting.value = true;
+        clearError();
+        try {
+            await accountsApi.deleteBalanceSnapshot(accountPublicId, snapshotPublicId);
+            const current = snapshotsByAccountId.get(accountPublicId) ?? balanceSnapshots.value;
+            setSnapshotsForAccount(
+                accountPublicId,
+                current.filter((s) => s.publicId !== snapshotPublicId)
+            );
+            cache.touch(`snapshots:${accountPublicId}`);
+        } catch (e: unknown) {
+            error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            acting.value = false;
+        }
     }
 
     async function createAccount(payload: CreateAccountPayload) {
@@ -543,14 +617,17 @@ export const useAccountsStore = defineStore('accounts', () => {
         cancelIdlePrefetch();
         cache.reset();
         sharesByAccountId.clear();
+        snapshotsByAccountId.clear();
         accounts.value = [];
         incomingShares.value = [];
         selectedAccount.value = null;
         shares.value = [];
+        balanceSnapshots.value = [];
         loadingAccounts.value = false;
         loadingIncoming.value = false;
         loadingDetail.value = false;
         loadingShares.value = false;
+        loadingSnapshots.value = false;
         acting.value = false;
         initialized.value = false;
         error.value = null;
@@ -572,10 +649,12 @@ export const useAccountsStore = defineStore('accounts', () => {
         incomingShares,
         selectedAccount,
         shares,
+        balanceSnapshots,
         loadingAccounts,
         loadingIncoming,
         loadingDetail,
         loadingShares,
+        loadingSnapshots,
         acting,
         initialized,
         error,
@@ -598,6 +677,9 @@ export const useAccountsStore = defineStore('accounts', () => {
         loadIncoming,
         loadAccountDetail,
         loadShares,
+        loadBalanceSnapshots,
+        createBalanceSnapshot,
+        deleteBalanceSnapshot,
         createAccount,
         updateAccount,
         setPrimary,

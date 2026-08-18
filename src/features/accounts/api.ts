@@ -1,10 +1,13 @@
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
 import type {
     Account,
+    AccountBalanceSnapshot,
+    AccountBalanceSnapshotsListResult,
     AccountShare,
     AccountsListResult,
     AccountSharesListResult,
     CreateAccountPayload,
+    CreateBalanceSnapshotPayload,
     IncomingAccountSharesResult,
     InviteAccountSharePayload,
     UpdateAccountPayload,
@@ -75,5 +78,24 @@ export const accountsApi = {
 
     refuseShare(sharePublicId: string) {
         return fetchWrapper.post(`/api/accounts/shares/${encodeURIComponent(sharePublicId)}/refuse`) as Promise<void>;
+    },
+
+    listBalanceSnapshots(accountPublicId: string) {
+        return fetchWrapper.get(
+            `/api/accounts/${encodeURIComponent(accountPublicId)}/balance-snapshots`
+        ) as Promise<AccountBalanceSnapshotsListResult>;
+    },
+
+    createBalanceSnapshot(accountPublicId: string, body: CreateBalanceSnapshotPayload) {
+        return fetchWrapper.post(
+            `/api/accounts/${encodeURIComponent(accountPublicId)}/balance-snapshots`,
+            body
+        ) as Promise<AccountBalanceSnapshot>;
+    },
+
+    deleteBalanceSnapshot(accountPublicId: string, snapshotPublicId: string) {
+        return fetchWrapper.delete(
+            `/api/accounts/${encodeURIComponent(accountPublicId)}/balance-snapshots/${encodeURIComponent(snapshotPublicId)}`
+        ) as Promise<void>;
     }
 };

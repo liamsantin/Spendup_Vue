@@ -349,6 +349,32 @@
                 "title": "Cannot delete",
                 "body": "This account has movements. You can archive it instead."
             }
+        },
+        "snapshots": {
+            "title": "Balance Snapshots",
+            "subtitle": "Declared bank balances.",
+            "add": "Add",
+            "addTitle": "New balance snapshot",
+            "addSubtitle": "Enter the balance you see in your banking app.",
+            "empty": "No snapshots yet.",
+            "latestDeclared": "Last declared balance",
+            "diff": "Difference from calculated balance",
+            "sources": {
+                "manual": "Manual",
+                "bank_import": "Bank import",
+                "statement": "Statement",
+                "system": "System"
+            },
+            "fields": {
+                "balance": "Declared balance",
+                "snapshotAt": "Snapshot date",
+                "note": "Note (optional)"
+            },
+            "deleteModal": {
+                "title": "Delete this snapshot?",
+                "body": "The snapshot of {balance} on {date} will be deleted.",
+                "confirm": "Delete"
+            }
         }
     },
     "notificationsPage": {

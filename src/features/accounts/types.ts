@@ -93,6 +93,30 @@ export type UpdateAccountShareRolePayload = {
     role: ShareRole;
 };
 
+export type BalanceSnapshotSource = 'manual' | 'bank_import' | 'statement' | 'system';
+
+export type AccountBalanceSnapshot = {
+    publicId: string;
+    accountPublicId: string;
+    balance: number;
+    snapshotAt: string;
+    source: BalanceSnapshotSource;
+    note: string | null;
+    createdAt: string;
+    updatedAt: string | null;
+};
+
+export type AccountBalanceSnapshotsListResult = {
+    items: AccountBalanceSnapshot[];
+};
+
+export type CreateBalanceSnapshotPayload = {
+    balance: number;
+    snapshotAt: string;
+    source?: BalanceSnapshotSource;
+    note?: string | null;
+};
+
 export const ACCOUNT_TYPES: AccountType[] = ['courant', 'epargne', 'credit', 'cash', 'investissement', 'crypto', 'other'];
 
 export const CURRENCIES: Currency[] = ['CHF', 'EUR', 'USD', 'GBP'];

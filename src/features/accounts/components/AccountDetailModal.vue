@@ -17,6 +17,7 @@ import {
     isPrimaryActionBlocked
 } from '../rights';
 import { useAccountsStore } from '../stores/accounts-store';
+import AccountBalanceSnapshotsPanel from './AccountBalanceSnapshotsPanel.vue';
 import AccountFormModal from './AccountFormModal.vue';
 import AccountSharesPanel from './AccountSharesPanel.vue';
 
@@ -243,6 +244,12 @@ async function confirmDelete() {
                     {{ t('comptesPage.actions.delete') }}
                 </v-btn>
             </div>
+
+            <AccountBalanceSnapshotsPanel
+                class="mb-6"
+                :account="account"
+                :can-write="canEditAccount(account)"
+            />
 
             <AccountSharesPanel v-if="canManageShares(account)" :account-public-id="account.publicId" />
         </template>
