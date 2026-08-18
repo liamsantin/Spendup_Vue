@@ -10,6 +10,7 @@ const props = withDefaults(
         clearLabel?: string;
         doneLabel?: string;
         disabled?: boolean;
+        hideLabel?: boolean;
     }>(),
     {
         modelValue: null,
@@ -17,7 +18,8 @@ const props = withDefaults(
         label: 'Couleur',
         clearLabel: 'Aucune couleur',
         doneLabel: 'Terminé',
-        disabled: false
+        disabled: false,
+        hideLabel: false
     }
 );
 
@@ -210,8 +212,9 @@ onBeforeUnmount(() => {
     <div class="app-color-picker" :class="{ 'app-color-picker--disabled': disabled }">
         <v-text-field
             :model-value="hexInput"
-            :label="label"
+            :label="hideLabel ? undefined : label"
             :disabled="disabled"
+            color="primary"
             variant="outlined"
             hide-details="auto"
             prefix="#"

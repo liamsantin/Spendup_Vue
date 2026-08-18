@@ -140,7 +140,7 @@ async function onSave() {
         v-model="open"
         :title="isEdit ? t('comptesPage.form.editTitle') : t('comptesPage.form.createTitle')"
         :subtitle="t('comptesPage.form.subtitle')"
-        :max-width="560"
+        :max-width="640"
         :height="640"
         scrollable
     >
@@ -148,42 +148,41 @@ async function onSave() {
             {{ localError.message }}
         </AppAlert>
 
-        <v-row dense>
-            <v-col v-if="showPrimarySwitch" cols="12">
-                <AppSwitch
-                    v-model="form.isPrimary"
-                    :label="t('comptesPage.form.fields.isPrimary')"
-                    :inset="false"
-                    :disabled="primarySwitchLocked"
-                    :hide-details="primarySwitchHint ? 'auto' : true"
-                    :hint="primarySwitchHint"
-                    :persistent-hint="!!primarySwitchHint"
-                />
+        <div class="account-form">
+        <v-row v-if="showPrimarySwitch" class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.isPrimary') }}</v-label>
             </v-col>
-            <v-col cols="12">
-                <v-text-field
-                    v-model="form.name"
-                    :label="`${t('comptesPage.form.fields.name')} *`"
-                    variant="outlined"
-                    hide-details="auto"
-                    required
-                />
+            <v-col cols="12" sm="9">
+                <AppSwitch v-model="form.isPrimary" :inset="false" :disabled="primarySwitchLocked" />
+                <div v-if="primarySwitchHint" class="text-caption text-medium-emphasis">{{ primarySwitchHint }}</div>
             </v-col>
-            <v-col cols="12" sm="6">
-                <v-select
-                    v-model="form.type"
-                    :items="typeItems"
-                    :label="`${t('comptesPage.form.fields.type')} *`"
-                    variant="outlined"
-                    hide-details="auto"
-                    required
-                />
+        </v-row>
+        <v-row class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.name') }} *</v-label>
             </v-col>
-            <v-col cols="12" sm="6">
+            <v-col cols="12" sm="9">
+                <v-text-field v-model="form.name" color="primary" variant="outlined" hide-details required />
+            </v-col>
+        </v-row>
+        <v-row class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.type') }} *</v-label>
+            </v-col>
+            <v-col cols="12" sm="9">
+                <v-select v-model="form.type" :items="typeItems" color="primary" variant="outlined" hide-details required />
+            </v-col>
+        </v-row>
+        <v-row class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.currency') }} *</v-label>
+            </v-col>
+            <v-col cols="12" sm="9">
                 <v-select
                     v-model="form.currency"
                     :items="currencyItems"
-                    :label="`${t('comptesPage.form.fields.currency')} *`"
+                    color="primary"
                     variant="outlined"
                     hide-details="auto"
                     required
@@ -191,41 +190,63 @@ async function onSave() {
                     :persistent-hint="isEdit"
                 />
             </v-col>
-            <v-col cols="12">
+        </v-row>
+        <v-row class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.initialBalance') }} *</v-label>
+            </v-col>
+            <v-col cols="12" sm="9">
                 <v-text-field
                     v-model.number="form.initialBalance"
                     type="number"
                     step="0.01"
-                    :label="`${t('comptesPage.form.fields.initialBalance')} *`"
+                    color="primary"
                     variant="outlined"
-                    hide-details="auto"
+                    hide-details
                     required
                 />
             </v-col>
-            <v-col cols="12" sm="8">
-                <v-text-field v-model="form.iban" :label="t('comptesPage.form.fields.iban')" variant="outlined" hide-details="auto" />
+        </v-row>
+        <v-row class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.iban') }}</v-label>
             </v-col>
-            <v-col cols="12" sm="4">
+            <v-col cols="12" sm="9">
+                <v-text-field v-model="form.iban" color="primary" variant="outlined" hide-details />
+            </v-col>
+        </v-row>
+        <v-row class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.accountNumber') }}</v-label>
+            </v-col>
+            <v-col cols="12" sm="9">
                 <v-text-field
                     v-model="form.accountNumber"
                     type="number"
                     min="1"
                     max="99"
                     step="1"
-                    :label="t('comptesPage.form.fields.accountNumber')"
+                    color="primary"
                     variant="outlined"
-                    hide-details="auto"
+                    hide-details
                 />
             </v-col>
-            <v-col cols="12">
+        </v-row>
+        <v-row class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.color') }}</v-label>
+            </v-col>
+            <v-col cols="12" sm="9">
                 <AppColorPicker
                     v-model="form.color"
                     :colors="ACCOUNT_COLOR_PRESETS"
                     :label="t('comptesPage.form.fields.color')"
                     :clear-label="t('comptesPage.form.clearColor')"
+                    hide-label
                 />
             </v-col>
         </v-row>
+        </div>
 
         <template #footer="{ close }">
             <v-btn variant="text" flat :disabled="store.acting" @click="close">
@@ -238,3 +259,11 @@ async function onSave() {
         </template>
     </AppModalBase>
 </template>
+
+<style scoped>
+.account-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+</style>

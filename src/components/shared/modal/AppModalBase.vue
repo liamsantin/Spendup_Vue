@@ -158,7 +158,7 @@ defineExpose({
 }
 
 .app-modal-base__body-inner {
-    padding: 24px;
+    padding: 12px 24px 36px;
     width: 100%;
     box-sizing: border-box;
 }
