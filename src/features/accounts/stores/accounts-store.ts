@@ -85,6 +85,7 @@ export const useAccountsStore = defineStore('accounts', () => {
     }
 
     function applyPrimaryLocally(publicId: string, account?: Account) {
+        const previousPrimaryId = accounts.value.find((a) => a.isOwned && a.isPrimary && a.publicId !== publicId)?.publicId;
         accounts.value = accounts.value.map((a) => {
             if (!a.isOwned) return a;
             if (a.publicId === publicId) {
@@ -97,6 +98,9 @@ export const useAccountsStore = defineStore('accounts', () => {
             const next = accounts.value.find((a) => a.publicId === selectedId);
             if (next) selectedAccount.value = next;
         }
+        if (previousPrimaryId) cache.invalidate(`detail:${previousPrimaryId}`);
+        cache.touch(`detail:${publicId}`);
+        cache.touch(KEY_ACCOUNTS);
     }
 
     function clearError() {
@@ -278,7 +282,10 @@ export const useAccountsStore = defineStore('accounts', () => {
             upsertAccount(account, true);
             cache.touch(KEY_ACCOUNTS);
             cache.touch(`detail:${account.publicId}`);
-            if (account.isPrimary) applyPrimaryLocally(account.publicId, account);
+            const onlyOwned = accounts.value.filter((a) => a.isOwned).length === 1;
+            if (account.isOwned && (account.isPrimary || onlyOwned)) {
+                applyPrimaryLocally(account.publicId, { ...account, isPrimary: true });
+            }
             return account;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -296,6 +303,9 @@ export const useAccountsStore = defineStore('accounts', () => {
             upsertAccount(account);
             cache.touch(KEY_ACCOUNTS);
             cache.touch(`detail:${publicId}`);
+            if (account.isOwned && account.isPrimary) {
+                applyPrimaryLocally(account.publicId, account);
+            }
             return account;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -312,8 +322,6 @@ export const useAccountsStore = defineStore('accounts', () => {
             const account = await accountsApi.setPrimary(publicId);
             applyPrimaryLocally(publicId, account);
             markPromoted(publicId);
-            cache.touch(KEY_ACCOUNTS);
-            cache.touch(`detail:${publicId}`);
             return account;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);

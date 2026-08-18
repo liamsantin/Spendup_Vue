@@ -271,7 +271,9 @@
         },
         "hints": {
             "primaryNoArchive": "The primary account cannot be archived.",
-            "primaryNoDelete": "The primary account cannot be deleted."
+            "primaryNoDelete": "The primary account cannot be deleted.",
+            "primaryFirstAccount": "The first account is always primary.",
+            "primaryChangeViaPromote": "To change the primary account, open another account and use “Set as primary”."
         },
         "detail": {
             "title": "Account details",

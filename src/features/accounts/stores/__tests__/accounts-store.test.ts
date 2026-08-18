@@ -205,6 +205,52 @@ describe('useAccountsStore', () => {
         expect(api.list).not.toHaveBeenCalled();
     });
 
+    it('crée un compte primaire en démotant l’ancien sans relister', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.create.mockResolvedValue({ ...ownedAccount, publicId: 'acc-new', name: 'Nouveau', isPrimary: true });
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        api.list.mockClear();
+
+        await store.createAccount({
+            name: 'Nouveau',
+            type: 'courant',
+            initialBalance: 0,
+            isPrimary: true
+        });
+
+        expect(store.accounts.find((a) => a.publicId === 'acc-new')?.isPrimary).toBe(true);
+        expect(store.accounts.find((a) => a.publicId === 'acc-1')?.isPrimary).toBe(false);
+        expect(store.accounts.filter((a) => a.isOwned && a.isPrimary)).toHaveLength(1);
+        expect(api.list).not.toHaveBeenCalled();
+    });
+
+    it('un PUT isPrimary: true démote l’ancien primaire (réponse partielle)', async () => {
+        api.list.mockResolvedValue({
+            items: [ownedAccount, { ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: false }]
+        });
+        api.update.mockResolvedValue({ ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: true });
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+
+        await store.updateAccount('acc-2', {
+            name: 'Épargne',
+            type: 'courant',
+            currency: 'CHF',
+            initialBalance: 100,
+            iban: null,
+            accountNumber: null,
+            color: null,
+            isPrimary: true
+        });
+
+        expect(store.accounts.find((a) => a.publicId === 'acc-2')?.isPrimary).toBe(true);
+        expect(store.accounts.find((a) => a.publicId === 'acc-1')?.isPrimary).toBe(false);
+        expect(store.accounts.filter((a) => a.isOwned && a.isPrimary)).toHaveLength(1);
+    });
+
     it('setPrimary patch local sans relister', async () => {
         api.list.mockResolvedValue({
             items: [ownedAccount, { ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: false }]
@@ -219,6 +265,7 @@ describe('useAccountsStore', () => {
 
         expect(store.accounts.find((a) => a.publicId === 'acc-2')?.isPrimary).toBe(true);
         expect(store.accounts.find((a) => a.publicId === 'acc-1')?.isPrimary).toBe(false);
+        expect(store.accounts.filter((a) => a.isOwned && a.isPrimary)).toHaveLength(1);
         expect(api.list).not.toHaveBeenCalled();
     });
 

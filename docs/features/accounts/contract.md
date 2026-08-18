@@ -26,7 +26,7 @@
 ## Invariants
 
 - Liste = owned + partagés **acceptés** (pas les pending) ; UI sépare `isOwned` / `!isOwned`.
-- Compte **primaire** : pas d’archive ni delete (boutons désactivés + hint).
+- Compte **primaire** : exactement un parmi les comptes `isOwned` ; promouvoir en démote l’ancien (`POST …/primary` ou create `isPrimary: true`). Pas d’archive ni delete. Le PUT n’envoie pas un bascule `isPrimary` (400 si on tente de retirer le statut sans en promouvoir un autre).
 - Delete bloqué avec mouvements → message API + proposition d’archiver.
 - Partage : invite uniquement des amis acceptés (`friendsApi.list`), exclus déjà présents dans `shares`.
 - `onAuthenticatedSession()` (guard) : branche realtime **sans** charger les listes ; `bootstrap(tab)` page charge **l’onglet actif** (TTL + idle prefetch incoming pour le chip).

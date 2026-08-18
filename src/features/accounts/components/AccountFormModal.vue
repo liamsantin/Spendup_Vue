@@ -26,6 +26,22 @@ const store = useAccountsStore();
 const settings = useUserSettingsStore();
 
 const isEdit = computed(() => !!props.account);
+const isFirstOwnedAccount = computed(() => store.ownedAccounts.length === 0);
+const canManagePrimary = computed(() => !isEdit.value || (props.account?.isOwned === true && props.account.myRole === 'owner'));
+const showPrimarySwitch = computed(() => {
+    if (!canManagePrimary.value) return false;
+    if (!isEdit.value) return true;
+    return !!props.account?.isPrimary;
+});
+const primarySwitchLocked = computed(() => {
+    if (!isEdit.value) return isFirstOwnedAccount.value;
+    return !!props.account?.isPrimary;
+});
+const primarySwitchHint = computed(() => {
+    if (!isEdit.value && isFirstOwnedAccount.value) return t('comptesPage.hints.primaryFirstAccount');
+    if (isEdit.value && props.account?.isPrimary) return t('comptesPage.hints.primaryChangeViaPromote');
+    return undefined;
+});
 const localError = reactive({ message: null as string | null });
 
 const form = reactive({
@@ -96,7 +112,7 @@ async function onSave() {
                 iban: emptyToNull(form.iban),
                 accountNumber: emptyToNull(form.accountNumber),
                 color: emptyToNull(form.color),
-                isPrimary: form.isPrimary
+                isPrimary: props.account.isPrimary
             });
             emit('saved', updated);
         } else {
@@ -108,7 +124,7 @@ async function onSave() {
                 iban: emptyToNull(form.iban),
                 accountNumber: emptyToNull(form.accountNumber),
                 color: emptyToNull(form.color),
-                isPrimary: form.isPrimary
+                isPrimary: isFirstOwnedAccount.value ? true : form.isPrimary
             });
             emit('saved', created);
         }
@@ -133,8 +149,16 @@ async function onSave() {
         </AppAlert>
 
         <v-row dense>
-            <v-col cols="12">
-                <AppSwitch v-model="form.isPrimary" :label="t('comptesPage.form.fields.isPrimary')" :inset="false" />
+            <v-col v-if="showPrimarySwitch" cols="12">
+                <AppSwitch
+                    v-model="form.isPrimary"
+                    :label="t('comptesPage.form.fields.isPrimary')"
+                    :inset="false"
+                    :disabled="primarySwitchLocked"
+                    :hide-details="primarySwitchHint ? 'auto' : true"
+                    :hint="primarySwitchHint"
+                    :persistent-hint="!!primarySwitchHint"
+                />
             </v-col>
             <v-col cols="12">
                 <v-text-field

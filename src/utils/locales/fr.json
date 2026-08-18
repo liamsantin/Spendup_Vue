@@ -271,7 +271,9 @@
         },
         "hints": {
             "primaryNoArchive": "Le compte principal ne peut pas être archivé.",
-            "primaryNoDelete": "Le compte principal ne peut pas être supprimé."
+            "primaryNoDelete": "Le compte principal ne peut pas être supprimé.",
+            "primaryFirstAccount": "Le premier compte est toujours principal.",
+            "primaryChangeViaPromote": "Pour changer de compte principal, ouvrez un autre compte et utilisez « Définir comme principal »."
         },
         "detail": {
             "title": "Détail du compte",
