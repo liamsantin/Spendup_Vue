@@ -2,7 +2,9 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
+import { FileDescriptionIcon, Receipt2Icon, UsersIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import AppBaseTabs from '@/components/shared/AppBaseTabs.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
@@ -52,6 +54,12 @@ const account = computed(() => store.selectedAccount);
 const balance = computed(() =>
     account.value ? formatAccountBalance(account.value.currentBalance, account.value.currency, locale.value) : ''
 );
+
+const detailTabs = computed(() => [
+    { value: 'details', label: t('comptesPage.detail.tabs.details'), icon: FileDescriptionIcon },
+    { value: 'snapshots', label: t('comptesPage.detail.tabs.snapshots'), icon: Receipt2Icon },
+    { value: 'shares', label: t('comptesPage.detail.tabs.shares'), icon: UsersIcon }
+]);
 
 watch(
     () => [props.modelValue, props.accountPublicId] as const,
@@ -135,11 +143,14 @@ async function confirmDelete() {
         :max-width="640"
     >
         <template #toolbar>
-            <v-tabs v-if="account" v-model="activeTab" color="primary" density="comfortable" grow>
-                <v-tab value="details">{{ t('comptesPage.detail.tabs.details') }}</v-tab>
-                <v-tab value="snapshots">{{ t('comptesPage.detail.tabs.snapshots') }}</v-tab>
-                <v-tab value="shares">{{ t('comptesPage.detail.tabs.shares') }}</v-tab>
-            </v-tabs>
+            <AppBaseTabs
+                v-if="account"
+                v-model="activeTab"
+                :tabs="detailTabs"
+                preset="align-center"
+                align-tabs="start"
+                :show-panels="false"
+            />
         </template>
 
         <div v-if="store.loadingDetail && !account" class="py-10 text-center">

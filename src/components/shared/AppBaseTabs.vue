@@ -30,6 +30,7 @@ const props = withDefaults(
         color?: string;
         bgColor?: string;
         alignTabs?: 'start' | 'title' | 'center' | 'end';
+        grow?: boolean;
         showPanels?: boolean;
         panelClass?: string;
         contentClass?: string;
@@ -47,6 +48,7 @@ const props = withDefaults(
         color: undefined,
         bgColor: undefined,
         alignTabs: undefined,
+        grow: false,
         showPanels: undefined,
         panelClass: undefined,
         contentClass: undefined,
@@ -164,6 +166,7 @@ function iconClass(item: AppBaseTabsItem) {
             :bg-color="resolvedBgColor"
             :color="resolvedColor"
             :align-tabs="resolvedAlignTabs"
+            :grow="props.grow"
             :show-arrows="resolvedShowArrows"
             :stacked="resolvedStacked"
             :centered="resolvedCentered"
