@@ -2,8 +2,8 @@
 import { computed, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 import { useStepUpStore } from '@/features/auth/stores/step-up-store';

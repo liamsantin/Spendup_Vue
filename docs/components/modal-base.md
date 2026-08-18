@@ -1,6 +1,6 @@
 # AppModalBase
 
-> Code : `src/components/shared/AppModalBase.vue`  
+> Code : `src/components/shared/modal/AppModalBase.vue`  
 > Shell modal — header fixe · body ± scroll · footer fixe  
 > Preview : `/components` → Modal (`VITE_APP_ENV=development`) · Catalogue : `catalog.md` · Relu : 2026-08-13
 
@@ -34,7 +34,7 @@
 ## Import
 
 ```vue
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 ```
 
 ---
@@ -97,7 +97,7 @@ await modalRef.value?.refreshScrollbar();
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 
 const open = ref(false);
 </script>

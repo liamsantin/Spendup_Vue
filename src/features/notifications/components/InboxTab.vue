@@ -2,7 +2,7 @@
 import { onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { UserPhotoAvatar } from '@/features/friends';
 import { resolveNotificationLink, useNotificationsStore } from '@/features/notifications';
 import type { AppNotification } from '@/features/notifications';

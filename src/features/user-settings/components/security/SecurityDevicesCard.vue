@@ -5,9 +5,9 @@ import { DeviceLaptopIcon, DeviceMobileIcon, DotsVerticalIcon } from 'vue-tabler
 import { getOrCreateDeviceId, useAuthStore, type AuthDevice } from '@/features/auth';
 import { resolveIsCurrentDevice } from '@/features/auth/device-current';
 import { withStepUpRetry } from '@/features/auth/step-up';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 
 const emit = defineEmits<{
     success: [message: string];

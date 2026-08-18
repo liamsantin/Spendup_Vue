@@ -6,7 +6,7 @@
 defineOptions({ name: 'AppModalTabs' });
 
 import { computed, ref, watch } from 'vue';
-import AppBaseTabs, { type AppBaseTabsItem, type AppBaseTabsPreset } from './AppBaseTabs.vue';
+import AppBaseTabs, { type AppBaseTabsItem, type AppBaseTabsPreset } from '../tabs/AppBaseTabs.vue';
 import AppModalBase from './AppModalBase.vue';
 
 const props = withDefaults(

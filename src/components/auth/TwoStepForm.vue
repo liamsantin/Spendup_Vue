@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 
 const router = useRouter();

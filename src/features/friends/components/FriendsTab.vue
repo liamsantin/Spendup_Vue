@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import FriendListItem from './FriendListItem.vue';
 import { useFriendsStore } from '../stores/friends-store';
 import type { FriendItem } from '../types';

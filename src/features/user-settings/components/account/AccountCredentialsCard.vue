@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { KeyIcon, PencilIcon } from 'vue-tabler-icons';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 
 defineProps<{
     username: string;

@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 
 const auth = useAuthStore();
 const { t } = useI18n();

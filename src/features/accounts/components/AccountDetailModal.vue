@@ -3,9 +3,9 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { FileDescriptionIcon, Receipt2Icon, UsersIcon } from 'vue-tabler-icons';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
-import AppModalTabs from '@/components/shared/AppModalTabs.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { formatAccountBalance } from '../format';
 import {

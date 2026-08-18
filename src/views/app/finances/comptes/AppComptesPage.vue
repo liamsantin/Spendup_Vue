@@ -3,7 +3,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { BuildingBankIcon, BellPlusIcon, RefreshIcon } from 'vue-tabler-icons';
-import AppTabsShell from '@/components/shared/AppTabsShell.vue';
+import AppTabsShell from '@/components/shared/tabs/AppTabsShell.vue';
 import { AccountsTab, InvitationsTab, useAccountsStore } from '@/features/accounts';
 
 const ACCOUNT_TABS = ['Accounts', 'Invitations'] as const;

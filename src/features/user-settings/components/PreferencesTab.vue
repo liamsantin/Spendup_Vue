@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useUserSettingsStore } from '../stores/user-settings-store';
 import PreferencesPrivacyCard from './preferences/PreferencesPrivacyCard.vue';

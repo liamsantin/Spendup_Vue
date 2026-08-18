@@ -1,6 +1,6 @@
 # AppModalTabs
 
-> Code : `src/components/shared/AppModalTabs.vue`  
+> Code : `src/components/shared/modal/AppModalTabs.vue`  
 > Shell modal à onglets — `AppModalBase` + `AppBaseTabs`  
 > Preview : `/components` → Modal (`VITE_APP_ENV=development`) · Catalogue : `catalog.md`
 
@@ -27,8 +27,8 @@
 ## Import
 
 ```vue
-import AppModalTabs from '@/components/shared/AppModalTabs.vue';
-import type { AppBaseTabsItem } from '@/components/shared/AppBaseTabs.vue';
+import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
+import type { AppBaseTabsItem } from '@/components/shared/tabs/AppBaseTabs.vue';
 ```
 
 ---

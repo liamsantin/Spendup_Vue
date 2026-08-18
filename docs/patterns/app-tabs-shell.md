@@ -1,6 +1,6 @@
 # Pattern — App Tabs Shell
 
-> Code : `src/components/shared/AppTabsShell.vue`  
+> Code : `src/components/shared/tabs/AppTabsShell.vue`  
 > Réf. : `views/app/parametres/accounts/AppAccountsPage.vue`  
 > Variante sans onglets : `app-page-shell.md` · Relu : 2026-08-13
 

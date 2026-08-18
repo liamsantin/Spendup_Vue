@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { BuildingBankIcon, PlusIcon, ShareIcon } from 'vue-tabler-icons';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { shouldVirtualize } from '@/utils/helpers/list-virtualization';
 import { useAccountsStore } from '../stores/accounts-store';
 import type { Account } from '../types';

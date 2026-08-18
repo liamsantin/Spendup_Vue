@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import AppChip from '@/components/shared/AppChip.vue';
+import AppChip from '@/components/shared/chip/AppChip.vue';
 import { UserPhotoAvatar } from '@/features/friends';
 import { friendLiveChipColor, resolveNotificationLink, useNotificationsStore } from '@/features/notifications';
 

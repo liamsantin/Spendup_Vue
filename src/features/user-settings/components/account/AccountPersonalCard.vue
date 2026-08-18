@@ -2,8 +2,8 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { UserIcon } from 'vue-tabler-icons';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppDatePicker from '@/components/shared/AppDatePicker.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import type { Country } from '@/features/countries';
 
 defineProps<{

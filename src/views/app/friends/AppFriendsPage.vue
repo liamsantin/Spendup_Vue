@@ -3,7 +3,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { BellPlusIcon, ShieldLockIcon, UserHeartIcon, UsersIcon } from 'vue-tabler-icons';
-import AppTabsShell from '@/components/shared/AppTabsShell.vue';
+import AppTabsShell from '@/components/shared/tabs/AppTabsShell.vue';
 import { BlockedUsersTab, DiscoverFriendsTab, DiscoverSearchBar, FriendsTab, RequestsTab, useFriendsStore } from '@/features/friends';
 
 const FRIEND_TABS = ['Friends', 'Requests', 'Discover', 'Blocked'] as const;

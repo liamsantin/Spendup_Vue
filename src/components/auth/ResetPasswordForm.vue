@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import { clearPasswordResetTokenFromUrl, readPasswordResetToken } from '@/features/auth/password-reset-token';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 
 const route = useRoute();
 const router = useRouter();

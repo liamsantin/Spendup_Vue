@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
 import { Form } from 'vee-validate';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
 const emit = defineEmits<{

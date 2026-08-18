@@ -4,8 +4,8 @@ import { onBeforeRouteLeave } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { AdjustmentsHorizontalIcon, BellIcon, LockIcon, UserCircleIcon } from 'vue-tabler-icons';
 import { AccountTab, NotificationsTab, PreferencesTab, SecurityTab } from '@/features/user-settings';
-import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
-import AppTabsShell from '@/components/shared/AppTabsShell.vue';
+import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppTabsShell from '@/components/shared/tabs/AppTabsShell.vue';
 
 type AccountTabExpose = {
     saveProfile: () => Promise<void>;

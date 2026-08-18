@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
+import BaseBreadcrumb from '@/components/shared/breadcrumb/BaseBreadcrumb.vue';
 import { DashboardContent } from '@/features/dashboard';
 
 const { t } = useI18n();

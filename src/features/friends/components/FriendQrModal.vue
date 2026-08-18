@@ -9,8 +9,8 @@ import { useI18n } from 'vue-i18n';
 import QRCode from 'qrcode';
 import { Html5Qrcode } from 'html5-qrcode';
 import { CameraIcon, QrcodeIcon } from 'vue-tabler-icons';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { useAuthStore } from '@/features/auth';
 import { buildFriendQrPayload, parseFriendQrPayload } from '../qr';
 

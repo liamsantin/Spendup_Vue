@@ -1,13 +1,13 @@
 # AppAlert
 
-> Code : `src/components/shared/AppAlert.vue`  
+> Code : `src/components/shared/alert/AppAlert.vue`  
 > Wrapper `v-alert` · Réf. visuelle : `_template/modernize/components/ui-components/alert/`  
 > Preview : `/components` (`VITE_APP_ENV=development`) · Catalogue : `catalog.md` · Relu : 2026-08-13
 
 ## Import
 
 ```vue
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 ```
 
 ## Défaut Spend.Up

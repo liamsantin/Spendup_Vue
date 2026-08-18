@@ -2,8 +2,8 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { BellIcon } from 'vue-tabler-icons';
-import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
-import AppPageShell from '@/components/shared/AppPageShell.vue';
+import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import { InboxTab, useNotificationsStore } from '@/features/notifications';
 
 const { t } = useI18n();

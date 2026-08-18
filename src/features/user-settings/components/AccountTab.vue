@@ -16,9 +16,9 @@ import {
     type UpdateProfilePayload
 } from '@/features/auth';
 import { useCountriesStore } from '@/features/countries';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { withStepUpRetry } from '@/features/auth/step-up';

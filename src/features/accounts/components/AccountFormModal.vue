@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppColorPicker from '@/components/shared/AppColorPicker.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
-import AppSwitch from '@/components/shared/AppSwitch.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { emptyToNull } from '../format';

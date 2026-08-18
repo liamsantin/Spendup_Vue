@@ -2,8 +2,8 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 
 const props = defineProps<{

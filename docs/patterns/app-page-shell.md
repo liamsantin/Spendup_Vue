@@ -1,6 +1,6 @@
 # Pattern — App Page Shell
 
-> Code : `src/components/shared/AppPageShell.vue`  
+> Code : `src/components/shared/page-shell/AppPageShell.vue`  
 > Réf. : `views/app/notifications/AppNotificationsPage.vue`  
 > Multi-onglets : `app-tabs-shell.md` · Relu : 2026-08-13
 

@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore, isValidUsername, normalizeUsername } from '@/features/auth';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 
 const emit = defineEmits<{
     googleProcessing: [value: boolean];

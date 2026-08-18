@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
-import AppRadioButton from '@/components/shared/AppRadioButton.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppRadioButton from '@/components/shared/radio/AppRadioButton.vue';
 import { UserPhotoAvatar } from '@/features/friends';
 import { PencilIcon } from 'vue-tabler-icons';
 import { getErrorMessage } from '@/utils/errors/app-error';

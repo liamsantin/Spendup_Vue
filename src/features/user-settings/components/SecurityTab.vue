@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useUserSettingsStore } from '../stores/user-settings-store';
 import SecurityTwoFactorCard from './security/SecurityTwoFactorCard.vue';

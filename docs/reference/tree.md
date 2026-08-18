@@ -22,7 +22,7 @@ src/
 │   ├── authentication/
 │   └── dev/             # showcase /components (dev only)
 ├── components/
-│   ├── shared/          # AppAlert, AppModalBase, AppTabsShell, AppPageShell…
+│   ├── shared/          # alert/, modal/, tabs/, chip/, switch/, radio/, …
 │   ├── auth/
 │   └── frontpages/
 ├── layouts/blank/ · full/

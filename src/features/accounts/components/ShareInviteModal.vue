@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
-import AppRadioButton from '@/components/shared/AppRadioButton.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppRadioButton from '@/components/shared/radio/AppRadioButton.vue';
 import { friendsApi } from '@/features/friends';
 import type { FriendItem } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';

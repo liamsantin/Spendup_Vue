@@ -27,14 +27,14 @@ import {
     UsersIcon,
     WifiIcon
 } from 'vue-tabler-icons';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppBaseTabs from '@/components/shared/AppBaseTabs.vue';
-import AppChip from '@/components/shared/AppChip.vue';
-import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
-import AppModalTabs from '@/components/shared/AppModalTabs.vue';
-import AppRadioButton from '@/components/shared/AppRadioButton.vue';
-import AppSwitch from '@/components/shared/AppSwitch.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppBaseTabs from '@/components/shared/tabs/AppBaseTabs.vue';
+import AppChip from '@/components/shared/chip/AppChip.vue';
+import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
+import AppRadioButton from '@/components/shared/radio/AppRadioButton.vue';
+import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import blogImg1 from '@/assets/images/ui/tabs/blog/blog-img1.jpg';
 import blogImg2 from '@/assets/images/ui/tabs/blog/blog-img2.jpg';
 import blogImg3 from '@/assets/images/ui/tabs/blog/blog-img3.jpg';
