@@ -18,6 +18,7 @@
         "logout": "Se déconnecter",
         "emptyValue": "—",
         "open": "Ouvrir",
+        "refresh": "Actualiser",
         "skipToContent": "Aller au contenu"
     },
     "shell": {

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { BuildingBankIcon, PlusIcon, ShareIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/AppAlert.vue';
+import { shouldVirtualize } from '@/utils/helpers/list-virtualization';
 import { useAccountsStore } from '../stores/accounts-store';
 import type { Account } from '../types';
 import AccountDetailModal from './AccountDetailModal.vue';
@@ -20,10 +21,6 @@ function openDetail(account: Account) {
     detailAccountId.value = account.publicId;
     detailOpen.value = true;
 }
-
-onMounted(() => {
-    void store.loadAccounts().catch(() => undefined);
-});
 </script>
 
 <template>
@@ -63,7 +60,18 @@ onMounted(() => {
                             </div>
                             <template v-else>
                                 <div v-if="store.activeOwnedAccounts.length" class="mb-2">
-                                    <TransitionGroup name="account-move" tag="div" class="v-list py-0 theme-list accounts-list">
+                                    <v-virtual-scroll
+                                        v-if="shouldVirtualize(store.activeOwnedAccounts.length)"
+                                        :items="store.activeOwnedAccounts"
+                                        height="480"
+                                        :item-height="76"
+                                        class="v-list py-0 theme-list accounts-list"
+                                    >
+                                        <template #default="{ item }">
+                                            <AccountListItem :account="item" @open="openDetail" />
+                                        </template>
+                                    </v-virtual-scroll>
+                                    <TransitionGroup v-else name="account-move" tag="div" class="v-list py-0 theme-list accounts-list">
                                         <AccountListItem
                                             v-for="account in store.activeOwnedAccounts"
                                             :key="account.publicId"
@@ -76,7 +84,18 @@ onMounted(() => {
                                     <div class="text-subtitle-2 text-medium-emphasis mb-2">
                                         {{ t('comptesPage.sections.archived') }}
                                     </div>
-                                    <v-list class="py-0 theme-list">
+                                    <v-virtual-scroll
+                                        v-if="shouldVirtualize(store.archivedOwnedAccounts.length)"
+                                        :items="store.archivedOwnedAccounts"
+                                        height="360"
+                                        :item-height="76"
+                                        class="v-list py-0 theme-list"
+                                    >
+                                        <template #default="{ item }">
+                                            <AccountListItem :account="item" @open="openDetail" />
+                                        </template>
+                                    </v-virtual-scroll>
+                                    <v-list v-else class="py-0 theme-list">
                                         <AccountListItem
                                             v-for="account in store.archivedOwnedAccounts"
                                             :key="account.publicId"
@@ -113,6 +132,17 @@ onMounted(() => {
                             <div v-else-if="!store.sharedAccounts.length" class="py-6 text-center text-medium-emphasis">
                                 {{ t('comptesPage.empty.shared') }}
                             </div>
+                            <v-virtual-scroll
+                                v-else-if="shouldVirtualize(store.sharedAccounts.length)"
+                                :items="store.sharedAccounts"
+                                height="480"
+                                :item-height="76"
+                                class="v-list py-0 theme-list"
+                            >
+                                <template #default="{ item }">
+                                    <AccountListItem :account="item" @open="openDetail" />
+                                </template>
+                            </v-virtual-scroll>
                             <v-list v-else class="py-0 theme-list">
                                 <AccountListItem
                                     v-for="account in store.sharedAccounts"

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { InboxIcon, SendIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/AppAlert.vue';
@@ -12,10 +11,6 @@ const store = useFriendsStore();
 function formatDate(value: string) {
     return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }
-
-onMounted(() => {
-    void Promise.all([store.loadIncoming(), store.loadOutgoing()]).catch(() => undefined);
-});
 </script>
 
 <template>

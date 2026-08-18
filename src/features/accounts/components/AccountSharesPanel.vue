@@ -46,7 +46,7 @@ function roleChipLabel(share: AccountShare) {
 watch(
     () => props.accountPublicId,
     (id) => {
-        if (id) void store.loadShares(id, true).catch(() => undefined);
+        if (id) void store.loadShares(id).catch(() => undefined);
     },
     { immediate: true }
 );

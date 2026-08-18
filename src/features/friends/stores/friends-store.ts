@@ -2,10 +2,17 @@ import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { useNotificationsStore } from '@/features/notifications';
 import type { AppNotification, FriendshipChange, FriendshipChangedPayload } from '@/features/notifications';
+import { createResourceCache } from '@/utils/helpers/resource-cache';
 import { friendsApi } from '../api';
 import type { BlockedFriendItem, FriendItem, FriendRequestItem, FriendSearchItem, FriendsPageResult } from '../types';
 
 const DEFAULT_PAGE_SIZE = 20;
+export const FRIENDS_LIST_MAX_AGE_MS = 60_000;
+
+const KEY_FRIENDS = 'friends';
+const KEY_INCOMING = 'incoming';
+const KEY_OUTGOING = 'outgoing';
+const KEY_BLOCKED = 'blocked';
 
 export const useFriendsStore = defineStore('friends', () => {
     const friends = ref<FriendItem[]>([]);
@@ -43,10 +50,13 @@ export const useFriendsStore = defineStore('friends', () => {
     /** Deep-link notif : `?friendship=` à mettre en évidence / scroller. */
     const focusFriendshipPublicId = ref<string | null>(null);
 
+    const cache = createResourceCache({ defaultMaxAgeMs: FRIENDS_LIST_MAX_AGE_MS });
+
     let unsubscribeNotifications: (() => void) | null = null;
     let unsubscribeFriendshipChanged: (() => void) | null = null;
     let friendshipRefreshQueue: FriendshipChange[] = [];
     let friendshipRefreshRunning = false;
+    let prefetchTimer: ReturnType<typeof setTimeout> | number | null = null;
 
     const friendsCount = computed(() => friendsTotalCount.value);
     const incomingCount = computed(() => incomingTotalCount.value);
@@ -77,18 +87,23 @@ export const useFriendsStore = defineStore('friends', () => {
     }
 
     async function loadFriends(force = false) {
-        if (loadingFriends.value && !force) return;
-        loadingFriends.value = true;
-        clearError();
-        try {
-            const result = await friendsApi.list(1, DEFAULT_PAGE_SIZE);
-            applyPageResult(result, friends, friendsPage, friendsTotalCount, false);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingFriends.value = false;
-        }
+        await cache.ensure(
+            KEY_FRIENDS,
+            async () => {
+                loadingFriends.value = true;
+                clearError();
+                try {
+                    const result = await friendsApi.list(1, DEFAULT_PAGE_SIZE);
+                    applyPageResult(result, friends, friendsPage, friendsTotalCount, false);
+                } catch (e: unknown) {
+                    error.value = e instanceof Error ? e.message : String(e);
+                    throw e;
+                } finally {
+                    loadingFriends.value = false;
+                }
+            },
+            { force }
+        );
     }
 
     async function loadMoreFriends() {
@@ -107,18 +122,23 @@ export const useFriendsStore = defineStore('friends', () => {
     }
 
     async function loadIncoming(force = false) {
-        if (loadingIncoming.value && !force) return;
-        loadingIncoming.value = true;
-        clearError();
-        try {
-            const result = await friendsApi.incoming(1, DEFAULT_PAGE_SIZE);
-            applyPageResult(result, incomingRequests, incomingPage, incomingTotalCount, false);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingIncoming.value = false;
-        }
+        await cache.ensure(
+            KEY_INCOMING,
+            async () => {
+                loadingIncoming.value = true;
+                clearError();
+                try {
+                    const result = await friendsApi.incoming(1, DEFAULT_PAGE_SIZE);
+                    applyPageResult(result, incomingRequests, incomingPage, incomingTotalCount, false);
+                } catch (e: unknown) {
+                    error.value = e instanceof Error ? e.message : String(e);
+                    throw e;
+                } finally {
+                    loadingIncoming.value = false;
+                }
+            },
+            { force }
+        );
     }
 
     async function loadMoreIncoming() {
@@ -137,18 +157,23 @@ export const useFriendsStore = defineStore('friends', () => {
     }
 
     async function loadOutgoing(force = false) {
-        if (loadingOutgoing.value && !force) return;
-        loadingOutgoing.value = true;
-        clearError();
-        try {
-            const result = await friendsApi.outgoing(1, DEFAULT_PAGE_SIZE);
-            applyPageResult(result, outgoingRequests, outgoingPage, outgoingTotalCount, false);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingOutgoing.value = false;
-        }
+        await cache.ensure(
+            KEY_OUTGOING,
+            async () => {
+                loadingOutgoing.value = true;
+                clearError();
+                try {
+                    const result = await friendsApi.outgoing(1, DEFAULT_PAGE_SIZE);
+                    applyPageResult(result, outgoingRequests, outgoingPage, outgoingTotalCount, false);
+                } catch (e: unknown) {
+                    error.value = e instanceof Error ? e.message : String(e);
+                    throw e;
+                } finally {
+                    loadingOutgoing.value = false;
+                }
+            },
+            { force }
+        );
     }
 
     async function loadMoreOutgoing() {
@@ -167,18 +192,23 @@ export const useFriendsStore = defineStore('friends', () => {
     }
 
     async function loadBlocked(force = false) {
-        if (loadingBlocked.value && !force) return;
-        loadingBlocked.value = true;
-        clearError();
-        try {
-            const result = await friendsApi.blocked(1, DEFAULT_PAGE_SIZE);
-            applyPageResult(result, blockedUsers, blockedPage, blockedTotalCount, false);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingBlocked.value = false;
-        }
+        await cache.ensure(
+            KEY_BLOCKED,
+            async () => {
+                loadingBlocked.value = true;
+                clearError();
+                try {
+                    const result = await friendsApi.blocked(1, DEFAULT_PAGE_SIZE);
+                    applyPageResult(result, blockedUsers, blockedPage, blockedTotalCount, false);
+                } catch (e: unknown) {
+                    error.value = e instanceof Error ? e.message : String(e);
+                    throw e;
+                } finally {
+                    loadingBlocked.value = false;
+                }
+            },
+            { force }
+        );
     }
 
     async function loadMoreBlocked() {
@@ -256,6 +286,7 @@ export const useFriendsStore = defineStore('friends', () => {
     }
 
     async function refreshAll() {
+        cache.invalidate('*');
         await Promise.all([loadFriends(true), loadIncoming(true), loadOutgoing(true), loadBlocked(true)]);
     }
 
@@ -444,37 +475,61 @@ export const useFriendsStore = defineStore('friends', () => {
         ensureRealtimeBridge();
     }
 
-    async function bootstrap() {
-        ensureRealtimeBridge();
-        if (!initialized.value) {
-            await Promise.all([loadFriends(), loadIncoming(), loadOutgoing(), loadBlocked()]);
-            initialized.value = true;
+    function cancelIdlePrefetch() {
+        if (prefetchTimer == null) return;
+        if (typeof cancelIdleCallback === 'function') {
+            cancelIdleCallback(prefetchTimer as number);
+        }
+        clearTimeout(prefetchTimer);
+        prefetchTimer = null;
+    }
+
+    function scheduleIdlePrefetch(tab: 'Friends' | 'Requests' | 'Blocked' | 'Discover') {
+        if (import.meta.env.VITEST) return;
+        cancelIdlePrefetch();
+        const run = () => {
+            prefetchTimer = null;
+            if (tab !== 'Requests') void loadIncoming().catch(() => undefined);
+        };
+        if (typeof requestIdleCallback === 'function') {
+            prefetchTimer = requestIdleCallback(run, { timeout: 2000 });
             return;
         }
-        await refreshAll();
+        prefetchTimer = setTimeout(run, 2000);
+    }
+
+    async function bootstrap(tab: 'Friends' | 'Requests' | 'Blocked' | 'Discover' = 'Friends') {
+        ensureRealtimeBridge();
+        await openTab(tab);
+        if (!initialized.value) {
+            initialized.value = true;
+            scheduleIdlePrefetch(tab);
+        }
     }
 
     async function openTab(tab: 'Friends' | 'Requests' | 'Blocked' | 'Discover') {
         ensureRealtimeBridge();
         if (tab === 'Friends') {
-            await loadFriends(true);
+            await loadFriends();
             return;
         }
         if (tab === 'Requests') {
-            await Promise.all([loadIncoming(true), loadOutgoing(true)]);
+            await Promise.all([loadIncoming(), loadOutgoing()]);
             return;
         }
         if (tab === 'Blocked') {
-            await loadBlocked(true);
+            await loadBlocked();
             return;
         }
         if (tab === 'Discover') {
-            await loadOutgoing(true);
+            await loadOutgoing();
             refreshSearchIfNeeded();
         }
     }
 
     function reset() {
+        cancelIdlePrefetch();
+        cache.reset();
         friends.value = [];
         incomingRequests.value = [];
         outgoingRequests.value = [];

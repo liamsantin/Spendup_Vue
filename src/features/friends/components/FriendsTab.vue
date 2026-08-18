@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
@@ -45,10 +45,6 @@ async function confirmRemoveFriend() {
         // erreur via store.error
     }
 }
-
-onMounted(() => {
-    void store.loadFriends().catch(() => undefined);
-});
 </script>
 
 <template>

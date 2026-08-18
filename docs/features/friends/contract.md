@@ -1,7 +1,7 @@
 # Friends — contrat front
 
 > Code : `src/features/friends/`  
-> Statut : active · Relu : 2026-08-13  
+> Statut : active · Relu : 2026-08-17  
 > Voir aussi : `features/notifications/contract.md`, `patterns/app-tabs-shell.md`
 
 ## Boundaries
@@ -25,7 +25,7 @@
 ## Invariants
 
 - Search : minimum **2** caractères (`canSearch`) ; sinon clear results.
-- `onAuthenticatedSession()` (guard) : branche realtime **sans** charger les listes ; `bootstrap()` page charge les listes.
+- `onAuthenticatedSession()` (guard) : branche realtime **sans** charger les listes ; `bootstrap(tab)` page charge **l’onglet actif** (TTL 60s, `openTab` = ensure).
 - Realtime : notifs `friendRequest` / `friendAccepted` ; `friendshipChanged` (`refused|canceled|blocked|removed`) via **queue de refresh sérialisée** (dédupe).
 - Deep-link query : `?tab=Friends|Requests|Discover|Blocked`, `?friendship=` → scroll `[data-friendship-id]`.
 - QR : `spendup:user:{7×[0-9A-Z]}` ou public id nu (`qr.ts`).

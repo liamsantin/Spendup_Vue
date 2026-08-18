@@ -53,7 +53,7 @@ async function scrollToFocusedFriendship() {
 onMounted(() => {
     store.setFocusFriendship(friendshipFromQuery());
     void store
-        .bootstrap()
+        .bootstrap(tab.value)
         .then(() => scrollToFocusedFriendship())
         .catch(() => undefined);
 });

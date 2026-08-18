@@ -3,14 +3,30 @@ import { defineStore } from 'pinia';
 import { useNotificationsStore } from '@/features/notifications';
 import type { AppNotification, FriendshipChangedPayload } from '@/features/notifications';
 import { AppError } from '@/utils/errors/app-error';
+import { createResourceCache } from '@/utils/helpers/resource-cache';
 import { accountsApi } from '../api';
 import type { Account, AccountShare, CreateAccountPayload, IncomingAccountShare, ShareRole, UpdateAccountPayload } from '../types';
 
+export const ACCOUNTS_LIST_MAX_AGE_MS = 60_000;
+export const ACCOUNTS_DETAIL_MAX_AGE_MS = 30_000;
+
+const KEY_ACCOUNTS = 'accounts';
+const KEY_INCOMING = 'incoming';
+
+/**
+ * Fetch budget (TTL 60s list / 30s detail, hors invalidation realtime / refresh manuel) :
+ * - 1ère visite onglet actif : 1 list
+ * - switch onglet frais : 0
+ * - open détail avec snapshot liste : 0–1 selon TTL
+ *
+ * `ensure` par défaut ; `force` seulement refresh user, mutation qui a besoin du serveur, ou realtime.
+ */
 export const useAccountsStore = defineStore('accounts', () => {
     const accounts = ref<Account[]>([]);
     const incomingShares = ref<IncomingAccountShare[]>([]);
     const selectedAccount = ref<Account | null>(null);
     const shares = ref<AccountShare[]>([]);
+    const sharesByAccountId = new Map<string, AccountShare[]>();
 
     const loadingAccounts = ref(false);
     const loadingIncoming = ref(false);
@@ -24,8 +40,11 @@ export const useAccountsStore = defineStore('accounts', () => {
     /** Deep-link invitations : `?share=` */
     const focusSharePublicId = ref<string | null>(null);
 
+    const cache = createResourceCache({ defaultMaxAgeMs: ACCOUNTS_LIST_MAX_AGE_MS });
+
     let unsubscribeNotifications: (() => void) | null = null;
     let unsubscribeFriendshipChanged: (() => void) | null = null;
+    let prefetchTimer: ReturnType<typeof setTimeout> | number | null = null;
 
     const ownedAccounts = computed(() => accounts.value.filter((a) => a.isOwned));
     const sharedAccounts = computed(() => accounts.value.filter((a) => !a.isOwned));
@@ -100,12 +119,12 @@ export const useAccountsStore = defineStore('accounts', () => {
         return !!focusSharePublicId.value && focusSharePublicId.value === publicId;
     }
 
-    function upsertAccount(account: Account) {
+    function upsertAccount(account: Account, prepend = false) {
         const idx = accounts.value.findIndex((a) => a.publicId === account.publicId);
         if (idx >= 0) {
             accounts.value = [...accounts.value.slice(0, idx), account, ...accounts.value.slice(idx + 1)];
         } else {
-            accounts.value = [...accounts.value, account];
+            accounts.value = prepend ? [account, ...accounts.value] : [...accounts.value, account];
         }
         if (selectedAccount.value?.publicId === account.publicId) {
             selectedAccount.value = account;
@@ -118,68 +137,137 @@ export const useAccountsStore = defineStore('accounts', () => {
             selectedAccount.value = null;
             shares.value = [];
         }
+        sharesByAccountId.delete(publicId);
+        cache.invalidate(`detail:${publicId}`);
+        cache.invalidate(`shares:${publicId}`);
+    }
+
+    function hydrateSelectedFromList(publicId: string) {
+        const snapshot = accounts.value.find((a) => a.publicId === publicId);
+        if (snapshot) selectedAccount.value = snapshot;
+    }
+
+    function setSharesForAccount(accountPublicId: string, items: AccountShare[]) {
+        sharesByAccountId.set(accountPublicId, items);
+        shares.value = items;
+    }
+
+    function cancelIdlePrefetch() {
+        if (prefetchTimer == null) return;
+        if (typeof cancelIdleCallback === 'function') {
+            cancelIdleCallback(prefetchTimer as number);
+        }
+        clearTimeout(prefetchTimer);
+        prefetchTimer = null;
+    }
+
+    function scheduleIdlePrefetch(tab: 'Accounts' | 'Invitations') {
+        if (import.meta.env.VITEST) return;
+        cancelIdlePrefetch();
+        const run = () => {
+            prefetchTimer = null;
+            if (tab === 'Accounts') {
+                void loadIncoming().catch(() => undefined);
+                return;
+            }
+            void loadAccounts().catch(() => undefined);
+        };
+        if (typeof requestIdleCallback === 'function') {
+            prefetchTimer = requestIdleCallback(run, { timeout: 2000 });
+            return;
+        }
+        prefetchTimer = setTimeout(run, 2000);
     }
 
     async function loadAccounts(force = false) {
-        if (loadingAccounts.value && !force) return;
-        loadingAccounts.value = true;
-        clearError();
-        try {
-            const result = await accountsApi.list();
-            accounts.value = Array.isArray(result?.items) ? result.items : [];
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingAccounts.value = false;
-        }
+        await cache.ensure(
+            KEY_ACCOUNTS,
+            async () => {
+                loadingAccounts.value = true;
+                clearError();
+                try {
+                    const result = await accountsApi.list();
+                    accounts.value = Array.isArray(result?.items) ? result.items : [];
+                } catch (e: unknown) {
+                    error.value = e instanceof Error ? e.message : String(e);
+                    throw e;
+                } finally {
+                    loadingAccounts.value = false;
+                }
+            },
+            { force }
+        );
     }
 
     async function loadIncoming(force = false) {
-        if (loadingIncoming.value && !force) return;
-        loadingIncoming.value = true;
-        clearError();
-        try {
-            const result = await accountsApi.listIncomingShares();
-            incomingShares.value = Array.isArray(result?.items) ? result.items : [];
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingIncoming.value = false;
-        }
+        await cache.ensure(
+            KEY_INCOMING,
+            async () => {
+                loadingIncoming.value = true;
+                clearError();
+                try {
+                    const result = await accountsApi.listIncomingShares();
+                    incomingShares.value = Array.isArray(result?.items) ? result.items : [];
+                } catch (e: unknown) {
+                    error.value = e instanceof Error ? e.message : String(e);
+                    throw e;
+                } finally {
+                    loadingIncoming.value = false;
+                }
+            },
+            { force }
+        );
     }
 
-    async function loadAccountDetail(publicId: string) {
-        loadingDetail.value = true;
-        clearError();
-        try {
-            const account = await accountsApi.get(publicId);
-            selectedAccount.value = account;
-            upsertAccount(account);
-            return account;
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            selectedAccount.value = null;
-            throw e;
-        } finally {
-            loadingDetail.value = false;
+    async function loadAccountDetail(publicId: string, force = false) {
+        hydrateSelectedFromList(publicId);
+        await cache.ensure(
+            `detail:${publicId}`,
+            async () => {
+                loadingDetail.value = true;
+                clearError();
+                try {
+                    const account = await accountsApi.get(publicId);
+                    selectedAccount.value = account;
+                    upsertAccount(account);
+                    return;
+                } catch (e: unknown) {
+                    error.value = e instanceof Error ? e.message : String(e);
+                    if (!accounts.value.some((a) => a.publicId === publicId)) {
+                        selectedAccount.value = null;
+                    }
+                    throw e;
+                } finally {
+                    loadingDetail.value = false;
+                }
+            },
+            { force, maxAgeMs: ACCOUNTS_DETAIL_MAX_AGE_MS }
+        );
+        if (selectedAccount.value?.publicId !== publicId) {
+            hydrateSelectedFromList(publicId);
         }
+        return selectedAccount.value;
     }
 
     async function loadShares(accountPublicId: string, force = false) {
-        if (loadingShares.value && !force) return;
-        loadingShares.value = true;
-        clearError();
-        try {
-            const result = await accountsApi.listShares(accountPublicId);
-            shares.value = Array.isArray(result?.items) ? result.items : [];
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingShares.value = false;
-        }
+        await cache.ensure(
+            `shares:${accountPublicId}`,
+            async () => {
+                loadingShares.value = true;
+                clearError();
+                try {
+                    const result = await accountsApi.listShares(accountPublicId);
+                    setSharesForAccount(accountPublicId, Array.isArray(result?.items) ? result.items : []);
+                } catch (e: unknown) {
+                    error.value = e instanceof Error ? e.message : String(e);
+                    throw e;
+                } finally {
+                    loadingShares.value = false;
+                }
+            },
+            { force }
+        );
+        shares.value = sharesByAccountId.get(accountPublicId) ?? [];
     }
 
     async function createAccount(payload: CreateAccountPayload) {
@@ -187,7 +275,10 @@ export const useAccountsStore = defineStore('accounts', () => {
         clearError();
         try {
             const account = await accountsApi.create(payload);
-            await loadAccounts(true);
+            upsertAccount(account, true);
+            cache.touch(KEY_ACCOUNTS);
+            cache.touch(`detail:${account.publicId}`);
+            if (account.isPrimary) applyPrimaryLocally(account.publicId, account);
             return account;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -203,6 +294,8 @@ export const useAccountsStore = defineStore('accounts', () => {
         try {
             const account = await accountsApi.update(publicId, payload);
             upsertAccount(account);
+            cache.touch(KEY_ACCOUNTS);
+            cache.touch(`detail:${publicId}`);
             return account;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -219,8 +312,8 @@ export const useAccountsStore = defineStore('accounts', () => {
             const account = await accountsApi.setPrimary(publicId);
             applyPrimaryLocally(publicId, account);
             markPromoted(publicId);
-            await loadAccounts(true);
-            applyPrimaryLocally(publicId);
+            cache.touch(KEY_ACCOUNTS);
+            cache.touch(`detail:${publicId}`);
             return account;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -236,6 +329,8 @@ export const useAccountsStore = defineStore('accounts', () => {
         try {
             const account = await accountsApi.archive(publicId);
             upsertAccount(account);
+            cache.touch(KEY_ACCOUNTS);
+            cache.touch(`detail:${publicId}`);
             return account;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -251,6 +346,8 @@ export const useAccountsStore = defineStore('accounts', () => {
         try {
             const account = await accountsApi.restore(publicId);
             upsertAccount(account);
+            cache.touch(KEY_ACCOUNTS);
+            cache.touch(`detail:${publicId}`);
             return account;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -266,6 +363,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         try {
             await accountsApi.remove(publicId);
             removeAccountLocal(publicId);
+            cache.touch(KEY_ACCOUNTS);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
@@ -279,7 +377,11 @@ export const useAccountsStore = defineStore('accounts', () => {
         clearError();
         try {
             const share = await accountsApi.inviteShare(accountPublicId, { userPublicId, role });
-            await loadShares(accountPublicId, true);
+            const current = sharesByAccountId.get(accountPublicId) ?? shares.value;
+            const idx = current.findIndex((s) => s.userPublicId === userPublicId);
+            const next = idx >= 0 ? [...current.slice(0, idx), share, ...current.slice(idx + 1)] : [...current, share];
+            setSharesForAccount(accountPublicId, next);
+            cache.touch(`shares:${accountPublicId}`);
             return share;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -294,9 +396,11 @@ export const useAccountsStore = defineStore('accounts', () => {
         clearError();
         try {
             const share = await accountsApi.updateShareRole(accountPublicId, userPublicId, { role });
-            const idx = shares.value.findIndex((s) => s.userPublicId === userPublicId);
+            const current = sharesByAccountId.get(accountPublicId) ?? shares.value;
+            const idx = current.findIndex((s) => s.userPublicId === userPublicId);
             if (idx >= 0) {
-                shares.value = [...shares.value.slice(0, idx), share, ...shares.value.slice(idx + 1)];
+                setSharesForAccount(accountPublicId, [...current.slice(0, idx), share, ...current.slice(idx + 1)]);
+                cache.touch(`shares:${accountPublicId}`);
             } else {
                 await loadShares(accountPublicId, true);
             }
@@ -314,7 +418,12 @@ export const useAccountsStore = defineStore('accounts', () => {
         clearError();
         try {
             await accountsApi.revokeShare(accountPublicId, userPublicId);
-            shares.value = shares.value.filter((s) => s.userPublicId !== userPublicId);
+            const current = sharesByAccountId.get(accountPublicId) ?? shares.value;
+            setSharesForAccount(
+                accountPublicId,
+                current.filter((s) => s.userPublicId !== userPublicId)
+            );
+            cache.touch(`shares:${accountPublicId}`);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
@@ -328,7 +437,9 @@ export const useAccountsStore = defineStore('accounts', () => {
         clearError();
         try {
             await accountsApi.acceptShare(sharePublicId);
-            await Promise.all([loadIncoming(true), loadAccounts(true)]);
+            incomingShares.value = incomingShares.value.filter((s) => s.publicId !== sharePublicId);
+            cache.touch(KEY_INCOMING);
+            await loadAccounts(true);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
@@ -342,7 +453,8 @@ export const useAccountsStore = defineStore('accounts', () => {
         clearError();
         try {
             await accountsApi.refuseShare(sharePublicId);
-            await loadIncoming(true);
+            incomingShares.value = incomingShares.value.filter((s) => s.publicId !== sharePublicId);
+            cache.touch(KEY_INCOMING);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
@@ -352,18 +464,24 @@ export const useAccountsStore = defineStore('accounts', () => {
     }
 
     async function refreshAll() {
+        cache.invalidate(KEY_ACCOUNTS);
+        cache.invalidate(KEY_INCOMING);
         await Promise.all([loadAccounts(true), loadIncoming(true)]);
     }
 
     function handleRealtime(notification: AppNotification) {
         const type = String(notification.type);
         if (type === 'accountShareInvite' || type === 'accountShareRevoked') {
+            cache.invalidate(KEY_INCOMING);
+            cache.invalidate(KEY_ACCOUNTS);
             void Promise.all([loadIncoming(true), loadAccounts(true)]).catch(() => undefined);
             return;
         }
         if (type === 'accountShareAccepted' || type === 'accountShareRefused') {
+            cache.invalidate(KEY_ACCOUNTS);
             void loadAccounts(true).catch(() => undefined);
             if (selectedAccount.value && selectedAccount.value.isOwned) {
+                cache.invalidate(`shares:${selectedAccount.value.publicId}`);
                 void loadShares(selectedAccount.value.publicId, true).catch(() => undefined);
             }
         }
@@ -372,6 +490,7 @@ export const useAccountsStore = defineStore('accounts', () => {
     function handleFriendshipChanged(payload: FriendshipChangedPayload) {
         if (!payload?.change) return;
         if (payload.change === 'removed' || payload.change === 'blocked') {
+            cache.invalidate('*');
             void refreshAll().catch(() => undefined);
             if (selectedAccount.value?.isOwned) {
                 void loadShares(selectedAccount.value.publicId, true).catch(() => undefined);
@@ -390,31 +509,32 @@ export const useAccountsStore = defineStore('accounts', () => {
         ensureRealtimeBridge();
     }
 
-    async function bootstrap() {
-        ensureRealtimeBridge();
-        if (!initialized.value) {
-            await Promise.all([loadAccounts(), loadIncoming()]);
-            initialized.value = true;
-            return;
-        }
-        await refreshAll();
-    }
-
     async function openTab(tab: 'Accounts' | 'Invitations') {
         ensureRealtimeBridge();
         if (tab === 'Accounts') {
-            await loadAccounts(true);
+            await loadAccounts();
             return;
         }
-        await loadIncoming(true);
+        await loadIncoming();
+    }
+
+    async function bootstrap(tab: 'Accounts' | 'Invitations' = 'Accounts') {
+        ensureRealtimeBridge();
+        await openTab(tab);
+        if (!initialized.value) {
+            initialized.value = true;
+            scheduleIdlePrefetch(tab);
+        }
     }
 
     function clearSelected() {
         selectedAccount.value = null;
-        shares.value = [];
     }
 
     function reset() {
+        cancelIdlePrefetch();
+        cache.reset();
+        sharesByAccountId.clear();
         accounts.value = [];
         incomingShares.value = [];
         selectedAccount.value = null;

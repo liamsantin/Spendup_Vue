@@ -53,7 +53,7 @@ describe('useFriendsStore', () => {
         subscribeToFriendshipChanged.mockReset().mockReturnValue(() => undefined);
     });
 
-    it('charge les listes principales au bootstrap', async () => {
+    it('charge l’onglet actif au bootstrap', async () => {
         api.list.mockResolvedValue({
             items: [
                 {
@@ -66,17 +66,28 @@ describe('useFriendsStore', () => {
             pageSize: 20,
             totalCount: 1
         });
-        api.incoming.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
-        api.outgoing.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
-        api.blocked.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
 
         const store = useFriendsStore();
-        await store.bootstrap();
+        await store.bootstrap('Friends');
 
         expect(store.friendsCount).toBe(1);
+        expect(api.list).toHaveBeenCalledTimes(1);
+        expect(api.incoming).not.toHaveBeenCalled();
+        expect(api.outgoing).not.toHaveBeenCalled();
+        expect(api.blocked).not.toHaveBeenCalled();
         expect(subscribeToFriendNotifications).toHaveBeenCalled();
         expect(subscribeToFriendshipChanged).toHaveBeenCalled();
         expect(store.initialized).toBe(true);
+    });
+
+    it('openTab dans le TTL ne refetch pas', async () => {
+        api.list.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        const store = useFriendsStore();
+        await store.openTab('Friends');
+        await store.openTab('Friends');
+
+        expect(api.list).toHaveBeenCalledTimes(1);
     });
 
     it('vide la recherche si moins de 2 caractères', async () => {
@@ -120,7 +131,7 @@ describe('useFriendsStore', () => {
         });
 
         const store = useFriendsStore();
-        await store.bootstrap();
+        await store.bootstrap('Friends');
         api.list.mockClear();
         api.incoming.mockClear();
         api.outgoing.mockClear();

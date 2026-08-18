@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import FriendListItem from './FriendListItem.vue';
@@ -11,10 +10,6 @@ const store = useFriendsStore();
 function formatDate(value: string) {
     return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium' }).format(new Date(value));
 }
-
-onMounted(() => {
-    void store.loadBlocked().catch(() => undefined);
-});
 </script>
 
 <template>
