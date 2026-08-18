@@ -9,6 +9,7 @@
 | ------------------------- | ---------------------------------------- | ---------------------------- |
 | Feedback / notice         | `AppAlert` — **pas** `v-alert`           | `alert.md`                   |
 | Modale métier             | `AppModalBase` — **pas** `v-dialog` brut | `modal-base.md`              |
+| Modale métier à onglets   | `AppModalTabs`                           | `modal-tabs.md`              |
 | Page `/app` multi-onglets | `AppTabsShell`                           | `patterns/app-tabs-shell.md` |
 | Page `/app` titre + body  | `AppPageShell`                           | `patterns/app-page-shell.md` |
 

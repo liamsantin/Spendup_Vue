@@ -5,7 +5,7 @@
  * Onglet Chip = clone `_template/modernize/components/ui-components/chip/*` via AppChip.
  * Onglet Switch = clone Modernize switch via AppSwitch.
  * Onglet Radio = wrapper radio base via AppRadioButton.
- * Onglet Modal = AppModalBase / AppConfirmationModal.
+ * Onglet Modal = AppModalBase / AppConfirmationModal / AppModalTabs.
  */
 defineOptions({ name: 'ComponentsShowcasePage' });
 
@@ -32,6 +32,7 @@ import AppBaseTabs from '@/components/shared/AppBaseTabs.vue';
 import AppChip from '@/components/shared/AppChip.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppModalTabs from '@/components/shared/AppModalTabs.vue';
 import AppRadioButton from '@/components/shared/AppRadioButton.vue';
 import AppSwitch from '@/components/shared/AppSwitch.vue';
 import blogImg1 from '@/assets/images/ui/tabs/blog/blog-img1.jpg';
@@ -66,6 +67,8 @@ const tabsColors = ref('one');
 const modalScrollableOpen = ref(false);
 const modalStaticOpen = ref(false);
 const confirmationOpen = ref(false);
+const modalTabsOpen = ref(false);
+const modalTabsTab = ref('one');
 
 const switchDefaultOn = ref(true);
 const switchDefaultOff = ref(false);
@@ -668,6 +671,34 @@ function resetChipClosable() {
                             <v-btn color="primary" flat @click="close">Confirmer</v-btn>
                         </template>
                     </AppModalBase>
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Tabs (AppModalTabs)</h3>
+                <div class="mb-8">
+                    <p class="text-body-2 text-medium-emphasis mb-3">
+                        <code>AppModalBase</code> + <code>AppBaseTabs</code> : tabs hors scroll, panels dans le body.
+                    </p>
+                    <v-btn color="primary" variant="tonal" flat @click="modalTabsOpen = true">Ouvrir modal à onglets</v-btn>
+
+                    <AppModalTabs
+                        v-model="modalTabsOpen"
+                        v-model:tab="modalTabsTab"
+                        title="Exemple à onglets"
+                        subtitle="Les tabs restent fixes, le contenu scrolle en dessous."
+                        :tabs="stackedTabItems"
+                        :max-width="560"
+                        :height="640"
+                    >
+                        <template #panel-recents>
+                            <p v-for="n in 12" :key="n" class="mb-3 text-body-1">Recents — ligne {{ n }}</p>
+                        </template>
+                        <template #panel-favorites>Favorites tab content</template>
+                        <template #panel-nearby>Nearby tab content</template>
+                        <template #footer="{ close }">
+                            <v-spacer />
+                            <v-btn color="primary" flat @click="close">Fermer</v-btn>
+                        </template>
+                    </AppModalTabs>
                 </div>
 
                 <h3 class="text-h6 font-weight-semibold mb-3">Confirmation (AppConfirmationModal)</h3>

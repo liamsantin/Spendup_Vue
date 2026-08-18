@@ -4,9 +4,8 @@ import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { FileDescriptionIcon, Receipt2Icon, UsersIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/AppAlert.vue';
-import AppBaseTabs from '@/components/shared/AppBaseTabs.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppModalTabs from '@/components/shared/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { formatAccountBalance } from '../format';
 import {
@@ -135,44 +134,33 @@ async function confirmDelete() {
 </script>
 
 <template>
-    <AppModalBase
+    <AppModalTabs
         v-model="open"
+        v-model:tab="activeTab"
         :title="account?.name || t('comptesPage.detail.title')"
         :subtitle="account ? t(`comptesPage.types.${account.type}`) : undefined"
+        :tabs="detailTabs"
         :height="720"
         :max-width="640"
     >
-        <template #toolbar>
-            <AppBaseTabs
-                v-if="account"
-                v-model="activeTab"
-                :tabs="detailTabs"
-                preset="align-center"
-                align-tabs="start"
-                :show-panels="false"
-            />
-        </template>
-
         <div v-if="store.loadingDetail && !account" class="py-10 text-center">
             <v-progress-circular indeterminate color="primary" size="32" />
         </div>
 
-        <template v-else-if="account">
-            <AppAlert
-                v-if="localError || store.error"
-                type="error"
-                class="mb-4"
-                closable
-                @dismiss="
-                    localError = null;
-                    store.clearError();
-                "
-            >
-                {{ localError || store.error }}
-            </AppAlert>
+        <AppAlert
+            v-else-if="account && (localError || store.error)"
+            type="error"
+            class="mb-4"
+            closable
+            @dismiss="
+                localError = null;
+                store.clearError();
+            "
+        >
+            {{ localError || store.error }}
+        </AppAlert>
 
-            <v-window v-model="activeTab" class="account-detail-tabs-window">
-                <v-window-item value="details" class="account-detail-tabs-window__item">
+        <template v-if="account" #panel-details>
                     <v-row dense class="mb-4">
                         <v-col cols="12" sm="6">
                             <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.detail.currentBalance') }}</div>
@@ -273,26 +261,24 @@ async function confirmDelete() {
                             {{ t('comptesPage.actions.delete') }}
                         </v-btn>
                     </div>
-                </v-window-item>
+        </template>
 
-                <v-window-item value="snapshots" class="account-detail-tabs-window__item">
-                    <AccountBalanceSnapshotsPanel :account="account" :can-write="canEditAccount(account)" />
-                </v-window-item>
+        <template v-if="account" #panel-snapshots>
+            <AccountBalanceSnapshotsPanel :account="account" :can-write="canEditAccount(account)" />
+        </template>
 
-                <v-window-item value="shares" class="account-detail-tabs-window__item">
-                    <AccountSharesPanel v-if="canManageShares(account)" :account-public-id="account.publicId" />
-                    <div v-else class="py-8 text-center text-medium-emphasis">
-                        {{ t('comptesPage.detail.shareUnavailable') }}
-                    </div>
-                </v-window-item>
-            </v-window>
+        <template v-if="account" #panel-shares>
+            <AccountSharesPanel v-if="canManageShares(account)" :account-public-id="account.publicId" />
+            <div v-else class="py-8 text-center text-medium-emphasis">
+                {{ t('comptesPage.detail.shareUnavailable') }}
+            </div>
         </template>
 
         <template #footer="{ close }">
             <v-spacer />
             <v-btn color="primary" flat @click="close">{{ t('common.close') }}</v-btn>
         </template>
-    </AppModalBase>
+    </AppModalTabs>
 
     <AccountFormModal v-if="account" v-model="editOpen" :account="account" />
 
@@ -334,13 +320,3 @@ async function confirmDelete() {
         @confirm="confirmArchive"
     />
 </template>
-
-<style scoped>
-.account-detail-tabs-window {
-    min-height: 520px;
-}
-
-.account-detail-tabs-window__item {
-    min-height: 520px;
-}
-</style>
