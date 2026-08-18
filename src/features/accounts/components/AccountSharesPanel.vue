@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
+import AppRadioButton from '@/components/shared/AppRadioButton.vue';
 import { UserPhotoAvatar } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '../stores/accounts-store';
@@ -125,14 +126,13 @@ async function confirmRevoke() {
                         <v-chip v-if="share.role === 'pending'" size="small" color="warning" variant="tonal">
                             {{ roleChipLabel(share) }}
                         </v-chip>
-                        <v-select
+                        <AppRadioButton
                             v-else
                             :model-value="share.role"
                             :items="roleItems"
+                            inline
                             density="compact"
-                            variant="outlined"
-                            hide-details
-                            style="max-width: 140px"
+                            hide-details="auto"
                             :disabled="store.acting"
                             @update:model-value="onRoleChange(share, $event as ShareRole)"
                         />

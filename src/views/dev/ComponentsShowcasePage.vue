@@ -4,6 +4,7 @@
  * Onglet Alert = clone `_template/modernize/components/ui-components/alert/*`.
  * Onglet Chip = clone `_template/modernize/components/ui-components/chip/*` via AppChip.
  * Onglet Switch = clone Modernize switch via AppSwitch.
+ * Onglet Radio = wrapper radio base via AppRadioButton.
  * Onglet Modal = AppModalBase / AppConfirmationModal.
  */
 defineOptions({ name: 'ComponentsShowcasePage' });
@@ -14,6 +15,7 @@ import AppAlert from '@/components/shared/AppAlert.vue';
 import AppChip from '@/components/shared/AppChip.vue';
 import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppRadioButton from '@/components/shared/AppRadioButton.vue';
 import AppSwitch from '@/components/shared/AppSwitch.vue';
 import user1 from '@/assets/images/profile/avatar/user-1.jpg';
 import user2 from '@/assets/images/profile/avatar/user-2.jpg';
@@ -35,6 +37,13 @@ const switchLabelOff = ref(false);
 const switchWifi = ref(true);
 const switchBluetooth = ref(false);
 const switchColors = ['primary', 'secondary', 'success', 'error', 'warning'] as const;
+const radioInline = ref('viewer');
+const radioStacked = ref('editor');
+const radioColors = ['primary', 'secondary', 'success', 'error', 'warning'] as const;
+const radioItems = [
+    { title: 'Viewer', value: 'viewer' },
+    { title: 'Editor', value: 'editor' }
+];
 
 const chipClosable = ref({
     primary: true,
@@ -71,6 +80,7 @@ function resetChipClosable() {
             <v-tab value="alert">Alert</v-tab>
             <v-tab value="chip">Chip</v-tab>
             <v-tab value="switch">Switch</v-tab>
+            <v-tab value="radio">Radio</v-tab>
             <v-tab value="modal">Modal</v-tab>
         </v-tabs>
 
@@ -514,6 +524,36 @@ function resetChipClosable() {
                             </v-list-item>
                         </v-card>
                     </v-list>
+                </div>
+            </v-tabs-window-item>
+
+            <v-tabs-window-item value="radio">
+                <p class="text-body-2 text-medium-emphasis mb-6">
+                    <code>AppRadioButton</code> — wrapper Spend.Up inspiré de
+                    <code>_template/modernize/views/forms/form-elements/VRadio.vue</code>
+                </p>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Inline</h3>
+                <div class="mb-8">
+                    <AppRadioButton v-model="radioInline" :items="radioItems" inline hide-details="auto" />
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Stacked</h3>
+                <div class="mb-8">
+                    <AppRadioButton v-model="radioStacked" :items="radioItems" hide-details="auto" />
+                </div>
+
+                <h3 class="text-h6 font-weight-semibold mb-3">Colors</h3>
+                <div class="mb-8 d-flex flex-column ga-2">
+                    <AppRadioButton
+                        v-for="color in radioColors"
+                        :key="color"
+                        :model-value="'viewer'"
+                        :items="radioItems"
+                        :color="color"
+                        inline
+                        hide-details="auto"
+                    />
                 </div>
             </v-tabs-window-item>
 

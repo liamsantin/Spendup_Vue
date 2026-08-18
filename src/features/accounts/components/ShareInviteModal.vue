@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/AppAlert.vue';
 import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppRadioButton from '@/components/shared/AppRadioButton.vue';
 import { friendsApi } from '@/features/friends';
 import type { FriendItem } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';
@@ -119,13 +120,10 @@ async function onInvite() {
                 class="mb-4"
                 :no-data-text="t('comptesPage.share.emptyFriends')"
             />
-            <v-select
-                v-model="role"
-                :items="roleItems"
-                :label="t('comptesPage.share.fields.role')"
-                variant="outlined"
-                hide-details="auto"
-            />
+            <div>
+                <div class="text-subtitle-2 mb-2">{{ t('comptesPage.share.fields.role') }}</div>
+                <AppRadioButton v-model="role" :items="roleItems" inline hide-details="auto" />
+            </div>
         </template>
 
         <template #footer="{ close }">
