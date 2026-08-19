@@ -1,21 +1,26 @@
 <script setup lang="ts">
 /**
  * Shell modal standard Spend.Up — header fixe, body (optionnellement scrollable), footer fixe.
- * À utiliser pour toutes les modales de l’application.
  *
- * `scrollable` : monte perfect-scrollbar sur le body. La card se dimensionne au contenu sans
- * dépasser `height`, donc le rail n’apparaît que s’il y a réellement débordement.
- * Sinon (ex. saisie OTP courte), le body est un bloc simple sans scroll.
+ * Tablette/desktop : dialog centrée, hauteur plafonnée, perfect-scrollbar.
+ * Téléphone (`smAndDown`) selon `mobileLayout` :
+ * - `dialog` (défaut) : overlay compact, scroll natif
+ * - `fullscreen` : écran (détail, formulaires longs)
+ * - `sheet` : bottom sheet (~85dvh)
  */
 defineOptions({ name: 'AppModalBase' });
 
 import { computed, nextTick, ref } from 'vue';
 import { XIcon } from 'vue-tabler-icons';
 import { useI18n } from 'vue-i18n';
+import { useDisplay } from 'vuetify';
 import type { PerfectScrollbarExpose } from 'vue3-perfect-scrollbar';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 
+export type AppModalMobileLayout = 'dialog' | 'fullscreen' | 'sheet';
+
 const { t } = useI18n();
+const { smAndDown } = useDisplay();
 
 const props = withDefaults(
     defineProps<{
@@ -38,6 +43,11 @@ const props = withDefaults(
          * Mettre à `false` quand le contenu ne déborde jamais (évite rails/scroll inutiles).
          */
         scrollable?: boolean;
+        /**
+         * Comportement téléphone uniquement.
+         * `dialog` = overlay compact ; `fullscreen` = écran ; `sheet` = panneau bas.
+         */
+        mobileLayout?: AppModalMobileLayout;
     }>(),
     {
         subtitle: undefined,
@@ -46,7 +56,8 @@ const props = withDefaults(
         fixedHeight: false,
         persistent: true,
         showFooter: true,
-        scrollable: true
+        scrollable: true,
+        mobileLayout: 'dialog'
     }
 );
 
@@ -62,20 +73,64 @@ const open = computed({
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
-const cardStyle = computed(() => {
+const isFullscreen = computed(() => smAndDown.value && props.mobileLayout === 'fullscreen');
+const isSheet = computed(() => smAndDown.value && props.mobileLayout === 'sheet');
+const usePerfectScrollbar = computed(() => props.scrollable && !smAndDown.value);
+const fillConstrainedBody = computed(() => (isFullscreen.value || isSheet.value) && props.fixedHeight);
+
+const heightCap = computed(() => {
     const height = typeof props.height === 'number' ? `${props.height}px` : props.height;
-    const cap = `min(${height}, 85vh)`;
+    return `min(${height}, 85dvh)`;
+});
+
+const dialogMaxWidth = computed(() => {
+    if (isFullscreen.value) return undefined;
+    if (isSheet.value) return '100%';
+    return props.maxWidth;
+});
+
+const overlayContentClass = computed(() => (isSheet.value ? 'app-modal-overlay-content app-modal-overlay-content--sheet' : undefined));
+
+const overlayContentProps = computed(() => {
+    if (!isSheet.value) return undefined;
+    return {
+        class: overlayContentClass.value,
+        style: {
+            height: 'auto',
+            maxHeight: '85dvh',
+            width: '100%'
+        }
+    };
+});
+
+const cardRounded = computed(() => {
+    if (isFullscreen.value) return 0;
+    if (isSheet.value) return 't-md';
+    return 'md';
+});
+
+const cardStyle = computed(() => {
+    const cap = heightCap.value;
+    if (isFullscreen.value) {
+        return { height: '100%', minHeight: '100%', maxHeight: '100%' };
+    }
+    if (isSheet.value) {
+        if (props.fixedHeight) {
+            return { height: cap, minHeight: cap, maxHeight: '85dvh', width: '100%' };
+        }
+        return { maxHeight: '85dvh', width: '100%' };
+    }
     if (props.fixedHeight) {
         return { height: cap, minHeight: cap, maxHeight: cap };
     }
     if (!props.scrollable) {
-        return { maxHeight: '85vh' };
+        return { maxHeight: '85dvh' };
     }
     return { maxHeight: cap };
 });
 
 async function refreshScrollbar() {
-    if (!props.scrollable) return;
+    if (!usePerfectScrollbar.value) return;
     await nextTick();
     scrollbarRef.value?.ps?.update();
 }
@@ -92,8 +147,27 @@ defineExpose({
 
 <template>
     <!-- La transition d’ouverture scale la card : perfect-scrollbar doit remesurer une fois figée. -->
-    <v-dialog v-model="open" :max-width="maxWidth" :persistent="persistent" @after-enter="refreshScrollbar">
-        <v-card rounded="md" class="app-modal-base" :class="{ 'app-modal-base--fixed-height': fixedHeight }" :style="cardStyle">
+    <v-dialog
+        v-model="open"
+        :fullscreen="isFullscreen"
+        :max-width="dialogMaxWidth"
+        :width="isSheet ? '100%' : undefined"
+        :transition="isSheet ? 'dialog-bottom-transition' : undefined"
+        :content-class="overlayContentClass"
+        :content-props="overlayContentProps"
+        :persistent="persistent"
+        @after-enter="refreshScrollbar"
+    >
+        <v-card
+            :rounded="cardRounded"
+            class="app-modal-base"
+            :class="{
+                'app-modal-base--fixed-height': fixedHeight,
+                'app-modal-base--mobile': isFullscreen,
+                'app-modal-base--sheet': isSheet
+            }"
+            :style="cardStyle"
+        >
             <div class="app-modal-base__header">
                 <div class="pr-10">
                     <h5 class="text-h5">{{ title }}</h5>
@@ -111,13 +185,20 @@ defineExpose({
                 <slot name="toolbar" />
             </div>
 
-            <PerfectScrollbar v-if="scrollable" ref="scrollbarRef" class="app-modal-base__body" :options="scrollbarOptions">
+            <PerfectScrollbar v-if="usePerfectScrollbar" ref="scrollbarRef" class="app-modal-base__body" :options="scrollbarOptions">
                 <div class="app-modal-base__body-inner">
                     <slot />
                 </div>
             </PerfectScrollbar>
 
-            <div v-else class="app-modal-base__body app-modal-base__body--static">
+            <div
+                v-else
+                class="app-modal-base__body"
+                :class="{
+                    'app-modal-base__body--static': !scrollable && !isFullscreen && !isSheet,
+                    'app-modal-base__body--native': smAndDown && !fillConstrainedBody
+                }"
+            >
                 <div class="app-modal-base__body-inner">
                     <slot />
                 </div>
@@ -188,5 +269,48 @@ defineExpose({
     display: flex;
     align-items: center;
     padding: 12px 16px;
+}
+
+.app-modal-base--mobile {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.app-modal-base--mobile .app-modal-base__header,
+.app-modal-base--sheet .app-modal-base__header {
+    padding: 16px 16px 12px;
+}
+
+.app-modal-base--mobile .app-modal-base__body-inner,
+.app-modal-base--sheet .app-modal-base__body-inner {
+    padding: 12px 16px 24px;
+}
+
+.app-modal-base__body--native {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.app-modal-base--mobile.app-modal-base--fixed-height .app-modal-base__body-inner,
+.app-modal-base--sheet.app-modal-base--fixed-height .app-modal-base__body-inner {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.app-modal-base--sheet .app-modal-base__footer {
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+</style>
+
+<style>
+.app-modal-overlay-content--sheet {
+    align-self: flex-end !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0;
+    overflow: hidden;
 }
 </style>

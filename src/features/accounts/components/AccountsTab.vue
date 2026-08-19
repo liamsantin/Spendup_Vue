@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { BuildingBankIcon, PlusIcon, ShareIcon } from 'vue-tabler-icons';
+import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { shouldVirtualize } from '@/utils/helpers/list-virtualization';
 import { useAccountsStore } from '../stores/accounts-store';
@@ -11,7 +12,12 @@ import AccountFormModal from './AccountFormModal.vue';
 import AccountListItem from './AccountListItem.vue';
 
 const { t } = useI18n();
+const { smAndDown } = useDisplay();
 const store = useAccountsStore();
+
+function useVirtualList(length: number) {
+    return !smAndDown.value && shouldVirtualize(length);
+}
 
 const createOpen = ref(false);
 const detailOpen = ref(false);
@@ -48,17 +54,21 @@ function openDetail(account: Account) {
                                     <BuildingBankIcon class="text-primary" size="25" />
                                 </v-avatar>
                                 <div class="min-width-0">
-                                    <h4 class="text-h4 mb-0">{{ t('comptesPage.sections.owned') }}</h4>
+                                    <h4 class="text-h5 text-sm-h4 mb-0">{{ t('comptesPage.sections.owned') }}</h4>
                                     <div class="text-subtitle-1 text-medium-emphasis text-10">
                                         {{ t('comptesPage.sections.ownedSubtitle') }}
                                     </div>
                                 </div>
                             </div>
-                            <v-btn color="primary" @click="createOpen = true">
+                            <v-btn class="d-none d-sm-inline-flex" color="primary" @click="createOpen = true">
                                 <PlusIcon size="18" class="mr-1" />
                                 {{ t('comptesPage.actions.create') }}
                             </v-btn>
                         </div>
+                        <v-btn class="mt-4 d-sm-none" block color="primary" @click="createOpen = true">
+                            <PlusIcon size="18" class="mr-1" />
+                            {{ t('comptesPage.actions.create') }}
+                        </v-btn>
 
                         <div class="mt-4">
                             <div v-if="store.loadingAccounts && !store.ownedAccounts.length" class="py-6 text-center">
@@ -70,10 +80,10 @@ function openDetail(account: Account) {
                             <template v-else>
                                 <div v-if="store.activeOwnedAccounts.length" class="mb-2">
                                     <v-virtual-scroll
-                                        v-if="shouldVirtualize(store.activeOwnedAccounts.length)"
+                                        v-if="useVirtualList(store.activeOwnedAccounts.length)"
                                         :items="store.activeOwnedAccounts"
                                         height="480"
-                                        :item-height="76"
+                                        :item-height="96"
                                         class="v-list py-0 theme-list accounts-list"
                                     >
                                         <template #default="{ item }">
@@ -94,10 +104,10 @@ function openDetail(account: Account) {
                                         {{ t('comptesPage.sections.archived') }}
                                     </div>
                                     <v-virtual-scroll
-                                        v-if="shouldVirtualize(store.archivedOwnedAccounts.length)"
+                                        v-if="useVirtualList(store.archivedOwnedAccounts.length)"
                                         :items="store.archivedOwnedAccounts"
                                         height="360"
-                                        :item-height="76"
+                                        :item-height="96"
                                         class="v-list py-0 theme-list"
                                     >
                                         <template #default="{ item }">
@@ -127,7 +137,7 @@ function openDetail(account: Account) {
                                 <ShareIcon class="text-primary" size="25" />
                             </v-avatar>
                             <div class="min-width-0">
-                                <h4 class="text-h4 mb-0">{{ t('comptesPage.sections.shared') }}</h4>
+                                <h4 class="text-h5 text-sm-h4 mb-0">{{ t('comptesPage.sections.shared') }}</h4>
                                 <div class="text-subtitle-1 text-medium-emphasis text-10">
                                     {{ t('comptesPage.sections.sharedSubtitle') }}
                                 </div>
@@ -142,10 +152,10 @@ function openDetail(account: Account) {
                                 {{ t('comptesPage.empty.shared') }}
                             </div>
                             <v-virtual-scroll
-                                v-else-if="shouldVirtualize(store.sharedAccounts.length)"
+                                v-else-if="useVirtualList(store.sharedAccounts.length)"
                                 :items="store.sharedAccounts"
                                 height="480"
-                                :item-height="76"
+                                :item-height="96"
                                 class="v-list py-0 theme-list"
                             >
                                 <template #default="{ item }">

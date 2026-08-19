@@ -152,12 +152,12 @@ async function confirmRevoke() {
                     />
                 </template>
 
-                <div class="d-flex align-center justify-space-between ga-2 w-100">
+                <div class="account-share-row w-100">
                     <div class="min-width-0">
                         <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">{{ share.displayName }}</h6>
                         <p class="text-body-2 text-medium-emphasis mb-0">{{ formatDate(share.createdAt) }}</p>
                     </div>
-                    <div class="d-flex align-center ga-2">
+                    <div class="account-share-row__meta">
                         <v-chip size="small" :color="share.role === 'pending' ? 'warning' : 'secondary'" variant="tonal">
                             {{ roleChipLabel(share) }}
                         </v-chip>
@@ -165,6 +165,7 @@ async function confirmRevoke() {
                             size="small"
                             variant="text"
                             :icon="true"
+                            :aria-label="t('comptesPage.share.editTitle')"
                             :disabled="store.acting"
                             @click="openEdit(share)"
                         >
@@ -243,3 +244,31 @@ async function confirmRevoke() {
         />
     </div>
 </template>
+
+<style scoped>
+.account-share-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.account-share-row__meta {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 8px;
+}
+
+@media (max-width: 599.98px) {
+    .account-share-row {
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+
+    .account-share-row__meta {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+</style>

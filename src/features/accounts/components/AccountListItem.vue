@@ -43,27 +43,28 @@ const promoted = computed(() => store.isPromotedAccount(props.account.publicId))
             </v-avatar>
         </template>
 
-        <div class="d-flex align-start justify-space-between ga-2 w-100">
-            <div class="min-width-0">
-                <div class="d-flex align-center ga-2 flex-wrap mb-1">
-                    <h6 class="text-subtitle-1 font-weight-bold mb-0 text-truncate">{{ account.name }}</h6>
-                    <v-chip v-if="account.isPrimary" size="x-small" color="primary" variant="tonal">
-                        {{ t('comptesPage.badges.primary') }}
-                    </v-chip>
-                    <v-chip v-if="!account.isActive" size="x-small" color="warning" variant="tonal">
-                        {{ t('comptesPage.badges.archived') }}
-                    </v-chip>
-                    <v-chip v-if="!account.isOwned" size="x-small" color="secondary" variant="tonal">
-                        {{ roleLabel }}
-                    </v-chip>
-                </div>
-                <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">
-                    {{ typeLabel }} · {{ account.currency
-                    }}{{ account.accountNumber ? ` · ${t('comptesPage.list.accountNumber', { number: account.accountNumber })}` : '' }}
-                </p>
+        <div class="account-list-item__body w-100">
+            <div class="d-flex align-center justify-space-between ga-2">
+                <h6 class="text-subtitle-1 font-weight-bold mb-0 text-truncate min-width-0">{{ account.name }}</h6>
+                <div class="text-subtitle-1 font-weight-semibold text-right flex-shrink-0">{{ balance }}</div>
             </div>
-            <div class="text-right flex-shrink-0">
-                <div class="text-subtitle-1 font-weight-semibold">{{ balance }}</div>
+            <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">
+                {{ typeLabel }} · {{ account.currency
+                }}{{ account.accountNumber ? ` · ${t('comptesPage.list.accountNumber', { number: account.accountNumber })}` : '' }}
+            </p>
+            <div
+                v-if="account.isPrimary || !account.isActive || !account.isOwned"
+                class="d-flex align-center ga-2 flex-wrap mt-1"
+            >
+                <v-chip v-if="account.isPrimary" size="x-small" color="primary" variant="tonal">
+                    {{ t('comptesPage.badges.primary') }}
+                </v-chip>
+                <v-chip v-if="!account.isActive" size="x-small" color="warning" variant="tonal">
+                    {{ t('comptesPage.badges.archived') }}
+                </v-chip>
+                <v-chip v-if="!account.isOwned" size="x-small" color="secondary" variant="tonal">
+                    {{ roleLabel }}
+                </v-chip>
             </div>
         </div>
     </v-list-item>

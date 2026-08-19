@@ -33,8 +33,8 @@ function formatDate(value: string) {
             />
         </template>
 
-        <div class="d-flex align-start justify-space-between ga-2 w-100">
-            <div class="min-width-0">
+        <div class="incoming-share w-100">
+            <div class="incoming-share__text min-width-0">
                 <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">
                     {{ props.invite.accountName }}
                 </h6>
@@ -50,10 +50,10 @@ function formatDate(value: string) {
                     {{ t(`comptesPage.roles.${props.invite.invitedRole}`) }} · {{ formatDate(props.invite.createdAt) }}
                 </p>
             </div>
-            <div class="d-flex flex-wrap justify-end ga-2">
+            <div class="incoming-share__actions">
                 <v-btn
                     size="small"
-                    variant="text"
+                    variant="flat"
                     color="primary"
                     :disabled="store.acting"
                     @click.stop="store.acceptShare(props.invite.publicId)"
@@ -62,7 +62,7 @@ function formatDate(value: string) {
                 </v-btn>
                 <v-btn
                     size="small"
-                    variant="text"
+                    variant="tonal"
                     color="error"
                     :disabled="store.acting"
                     @click.stop="store.refuseShare(props.invite.publicId)"
@@ -73,3 +73,36 @@ function formatDate(value: string) {
         </div>
     </v-list-item>
 </template>
+
+<style scoped>
+.incoming-share {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.incoming-share__actions {
+    display: flex;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+@media (max-width: 599.98px) {
+    .incoming-share {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .incoming-share__actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .incoming-share__actions :deep(.v-btn) {
+        flex: 1 1 0;
+    }
+}
+</style>

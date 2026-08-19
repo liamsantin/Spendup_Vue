@@ -2,14 +2,13 @@
 import { computed, reactive, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
-import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
-import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { emptyToNull } from '../format';
 import { useAccountsStore } from '../stores/accounts-store';
 import { ACCOUNT_COLOR_PRESETS, ACCOUNT_TYPES, CURRENCIES, type Account, type AccountType, type Currency } from '../types';
+import AccountForm from './AccountForm.vue';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -143,6 +142,7 @@ async function onSave() {
         :max-width="640"
         :height="640"
         scrollable
+        :mobile-layout="isEdit ? 'sheet' : 'fullscreen'"
     >
         <AppAlert
             v-if="localError.message"
@@ -156,107 +156,15 @@ async function onSave() {
             {{ localError.message }}
         </AppAlert>
 
-        <div class="account-form">
-        <v-row v-if="showPrimarySwitch" class="align-center" no-gutters>
-            <v-col cols="auto" sm="3" class="pr-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.isPrimary') }}</v-label>
-            </v-col>
-            <v-col cols="auto" sm="9">
-                <AppSwitch v-model="form.isPrimary" :inset="false" :disabled="primarySwitchLocked" />
-            </v-col>
-            <v-col v-if="primarySwitchHint" cols="12">
-                <div class="text-caption text-medium-emphasis">{{ primarySwitchHint }}</div>
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.name') }} *</v-label>
-            </v-col>
-            <v-col cols="12" sm="9">
-                <v-text-field v-model="form.name" color="primary" variant="outlined" hide-details required />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.type') }} *</v-label>
-            </v-col>
-            <v-col cols="12" sm="9">
-                <v-select v-model="form.type" :items="typeItems" color="primary" variant="outlined" hide-details required />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.currency') }} *</v-label>
-            </v-col>
-            <v-col cols="12" sm="9">
-                <v-select
-                    v-model="form.currency"
-                    :items="currencyItems"
-                    color="primary"
-                    variant="outlined"
-                    hide-details="auto"
-                    required
-                    :hint="isEdit ? t('comptesPage.form.currencyLockedHint') : undefined"
-                    :persistent-hint="isEdit"
-                />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.initialBalance') }} *</v-label>
-            </v-col>
-            <v-col cols="12" sm="9">
-                <v-text-field
-                    v-model.number="form.initialBalance"
-                    type="number"
-                    step="0.01"
-                    color="primary"
-                    variant="outlined"
-                    hide-details
-                    required
-                />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.iban') }}</v-label>
-            </v-col>
-            <v-col cols="12" sm="9">
-                <v-text-field v-model="form.iban" color="primary" variant="outlined" hide-details />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.accountNumber') }}</v-label>
-            </v-col>
-            <v-col cols="12" sm="9">
-                <v-text-field
-                    v-model="form.accountNumber"
-                    type="number"
-                    min="1"
-                    max="99"
-                    step="1"
-                    color="primary"
-                    variant="outlined"
-                    hide-details
-                />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.color') }}</v-label>
-            </v-col>
-            <v-col cols="12" sm="9">
-                <AppColorPicker
-                    v-model="form.color"
-                    :colors="ACCOUNT_COLOR_PRESETS"
-                    :label="t('comptesPage.form.fields.color')"
-                    :clear-label="t('comptesPage.form.clearColor')"
-                    hide-label
-                />
-            </v-col>
-        </v-row>
-        </div>
+        <AccountForm
+            :form="form"
+            :is-edit="isEdit"
+            :show-primary-switch="showPrimarySwitch"
+            :primary-switch-locked="primarySwitchLocked"
+            :primary-switch-hint="primarySwitchHint"
+            :type-items="typeItems"
+            :currency-items="currencyItems"
+        />
 
         <template #footer="{ close }">
             <v-btn variant="text" flat :disabled="store.acting" @click="close">
@@ -269,11 +177,3 @@ async function onSave() {
         </template>
     </AppModalBase>
 </template>
-
-<style scoped>
-.account-form {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-</style>

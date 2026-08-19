@@ -48,6 +48,12 @@ const options: { value: ShareRole; icon: typeof EyeIcon; hintKey: string }[] = [
     gap: 10px;
 }
 
+@media (max-width: 359.98px) {
+    .share-role-picker {
+        grid-template-columns: 1fr;
+    }
+}
+
 .share-role-picker__option {
     display: flex;
     align-items: flex-start;

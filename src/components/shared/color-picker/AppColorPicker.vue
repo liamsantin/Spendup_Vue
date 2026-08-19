@@ -614,6 +614,19 @@ onBeforeUnmount(() => {
     border-top: 1px solid rgba(var(--v-border-color), 0.35);
 }
 
+@media (max-width: 599.98px) {
+    .app-color-picker__presets {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+    }
+
+    .app-color-picker__swatch {
+        flex-shrink: 0;
+    }
+}
+
 .app-color-picker__swatch {
     width: 26px;
     height: 26px;

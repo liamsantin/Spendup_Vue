@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { InboxIcon } from 'vue-tabler-icons';
+import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { shouldVirtualize } from '@/utils/helpers/list-virtualization';
 import { useAccountsStore } from '../stores/accounts-store';
 import IncomingShareListItem from './IncomingShareListItem.vue';
 
 const { t } = useI18n();
+const { smAndDown } = useDisplay();
 const store = useAccountsStore();
+
+function useVirtualList(length: number) {
+    return !smAndDown.value && shouldVirtualize(length);
+}
 </script>
 
 <template>
@@ -35,7 +41,7 @@ const store = useAccountsStore();
                                     <InboxIcon class="text-primary" size="25" />
                                 </v-avatar>
                                 <div class="min-width-0">
-                                    <h4 class="text-h4 mb-0">{{ t('comptesPage.invitations.title') }}</h4>
+                                    <h4 class="text-h5 text-sm-h4 mb-0">{{ t('comptesPage.invitations.title') }}</h4>
                                     <div class="text-subtitle-1 text-medium-emphasis text-10">
                                         {{ t('comptesPage.invitations.subtitle') }}
                                     </div>
@@ -54,7 +60,7 @@ const store = useAccountsStore();
                                 {{ t('comptesPage.empty.invitations') }}
                             </div>
                             <v-virtual-scroll
-                                v-else-if="shouldVirtualize(store.incomingShares.length)"
+                                v-else-if="useVirtualList(store.incomingShares.length)"
                                 :items="store.incomingShares"
                                 height="480"
                                 :item-height="88"

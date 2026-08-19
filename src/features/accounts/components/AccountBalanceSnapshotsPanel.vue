@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { TrashIcon } from 'vue-tabler-icons';
+import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
-import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
-import { TrashIcon } from 'vue-tabler-icons';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { formatAccountBalance } from '../format';
 import { useAccountsStore } from '../stores/accounts-store';
 import type { Account, AccountBalanceSnapshot, CreateBalanceSnapshotPayload } from '../types';
+import AccountSnapshotForm from './AccountSnapshotForm.vue';
 
 const props = defineProps<{
     account: Account;
@@ -17,6 +18,7 @@ const props = defineProps<{
 }>();
 
 const { t, locale } = useI18n();
+const { smAndDown } = useDisplay();
 const store = useAccountsStore();
 
 const addOpen = ref(false);
@@ -42,13 +44,6 @@ const form = ref<CreateBalanceSnapshotPayload>({
     snapshotAt: todayYmd(),
     source: 'manual',
     note: null
-});
-
-const snapshotAtModel = computed({
-    get: () => form.value.snapshotAt || null,
-    set: (value: string | null) => {
-        form.value.snapshotAt = value ?? todayYmd();
-    }
 });
 
 const deleteOpen = computed({
@@ -183,7 +178,7 @@ async function confirmDelete() {
                 class="px-2 py-2"
                 rounded="md"
             >
-                <div class="d-flex align-center justify-space-between ga-2 w-100">
+                <div class="d-flex align-center justify-space-between ga-2 w-100 flex-wrap">
                     <div class="min-width-0">
                         <div class="text-subtitle-2 font-weight-bold">
                             {{ formatAccountBalance(snapshot.balance, account.currency, locale) }}
@@ -202,6 +197,7 @@ async function confirmDelete() {
                             color="error"
                             :disabled="store.acting"
                             :icon="true"
+                            :aria-label="t('comptesPage.snapshots.deleteModal.confirm')"
                             @click="deleteTarget = snapshot"
                         >
                             <TrashIcon size="18" />
@@ -216,36 +212,12 @@ async function confirmDelete() {
             :title="t('comptesPage.snapshots.addTitle')"
             :subtitle="t('comptesPage.snapshots.addSubtitle')"
             :max-width="480"
+            :height="smAndDown ? 460 : undefined"
+            :fixed-height="smAndDown"
             :scrollable="false"
+            mobile-layout="sheet"
         >
-            <v-text-field
-                v-model.number="form.balance"
-                :label="t('comptesPage.snapshots.fields.balance')"
-                type="number"
-                step="0.01"
-                variant="outlined"
-                density="comfortable"
-                class="mb-3"
-                hide-details="auto"
-            />
-            <div class="mb-3">
-                <AppDatePicker
-                    v-model="snapshotAtModel"
-                    :label="t('comptesPage.snapshots.fields.snapshotAt')"
-                    :max="todayYmd()"
-                    color="primary"
-                    hide-details
-                    :clearable="false"
-                />
-            </div>
-            <v-text-field
-                v-model="form.note"
-                :label="t('comptesPage.snapshots.fields.note')"
-                variant="outlined"
-                density="comfortable"
-                maxlength="255"
-                hide-details="auto"
-            />
+            <AccountSnapshotForm :form="form" />
 
             <template #footer="{ close }">
                 <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>

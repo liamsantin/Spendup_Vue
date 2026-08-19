@@ -6,6 +6,7 @@
 defineOptions({ name: 'AppModalTabs' });
 
 import { computed, ref, watch } from 'vue';
+import { useDisplay } from 'vuetify';
 import AppBaseTabs, { type AppBaseTabsItem, type AppBaseTabsPreset } from '../tabs/AppBaseTabs.vue';
 import AppModalBase from './AppModalBase.vue';
 
@@ -26,6 +27,7 @@ const props = withDefaults(
         bgColor?: string;
         alignTabs?: 'start' | 'title' | 'center' | 'end';
         grow?: boolean;
+        mobileLayout?: 'dialog' | 'fullscreen' | 'sheet';
     }>(),
     {
         tab: null,
@@ -39,7 +41,8 @@ const props = withDefaults(
         color: undefined,
         bgColor: undefined,
         alignTabs: 'start',
-        grow: false
+        grow: false,
+        mobileLayout: 'fullscreen'
     }
 );
 
@@ -47,6 +50,9 @@ const emit = defineEmits<{
     'update:modelValue': [value: boolean];
     'update:tab': [value: string];
 }>();
+
+const { smAndDown } = useDisplay();
+const tabsGrow = computed(() => props.grow || smAndDown.value);
 
 const open = computed({
     get: () => props.modelValue,
@@ -92,6 +98,7 @@ const currentTab = computed({
         :persistent="persistent"
         :show-footer="showFooter"
         :scrollable="scrollable"
+        :mobile-layout="mobileLayout"
     >
         <template v-if="$slots['header-extra']" #header-extra>
             <slot name="header-extra" />
@@ -105,7 +112,7 @@ const currentTab = computed({
                 :color="color"
                 :bg-color="bgColor"
                 :align-tabs="alignTabs"
-                :grow="grow"
+                :grow="tabsGrow"
                 :show-panels="false"
             />
         </template>
@@ -128,5 +135,12 @@ const currentTab = computed({
 .app-modal-tabs__window,
 .app-modal-tabs__item {
     min-height: 520px;
+}
+
+@media (max-width: 599.98px) {
+    .app-modal-tabs__window,
+    .app-modal-tabs__item {
+        min-height: 0;
+    }
 }
 </style>

@@ -109,12 +109,14 @@ watch(tab, (value) => {
                 <v-btn
                     variant="text"
                     size="small"
+                    :icon="$vuetify.display.smAndDown"
+                    :aria-label="t('common.refresh')"
                     :loading="store.loadingAccounts || store.loadingIncoming"
                     :disabled="store.acting"
                     @click="store.refreshAll().catch(() => undefined)"
                 >
-                    <RefreshIcon size="18" class="mr-1" />
-                    {{ t('common.refresh') }}
+                    <RefreshIcon size="18" :class="$vuetify.display.smAndDown ? undefined : 'mr-1'" />
+                    <span v-if="!$vuetify.display.smAndDown">{{ t('common.refresh') }}</span>
                 </v-btn>
             </div>
         </template>
