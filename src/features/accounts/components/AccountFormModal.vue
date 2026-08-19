@@ -158,12 +158,14 @@ async function onSave() {
 
         <div class="account-form">
         <v-row v-if="showPrimarySwitch" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
+            <v-col cols="auto" sm="3" class="pr-3">
                 <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.isPrimary') }}</v-label>
             </v-col>
-            <v-col cols="12" sm="9">
+            <v-col cols="auto" sm="9">
                 <AppSwitch v-model="form.isPrimary" :inset="false" :disabled="primarySwitchLocked" />
-                <div v-if="primarySwitchHint" class="text-caption text-medium-emphasis">{{ primarySwitchHint }}</div>
+            </v-col>
+            <v-col v-if="primarySwitchHint" cols="12">
+                <div class="text-caption text-medium-emphasis">{{ primarySwitchHint }}</div>
             </v-col>
         </v-row>
         <v-row class="align-center" no-gutters>
