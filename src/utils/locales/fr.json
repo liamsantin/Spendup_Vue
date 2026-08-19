@@ -314,12 +314,18 @@
             "inviteSubtitle": "Le destinataire doit être un ami accepté.",
             "empty": "Aucun partage pour l’instant.",
             "emptyFriends": "Aucun ami disponible à inviter.",
+            "searchFriend": "Rechercher un ami",
+            "noMatchingFriends": "Aucun ami ne correspond.",
             "revoke": "Révoquer",
             "cancelInvite": "Annuler",
             "pendingRole": "En attente · {role}",
             "fields": {
                 "friend": "Ami",
                 "role": "Rôle"
+            },
+            "roleHints": {
+                "viewer": "Consulte les soldes et les mouvements.",
+                "editor": "Peut aussi ajouter et modifier des données."
             },
             "errors": {
                 "friendRequired": "Choisissez un ami."

@@ -37,7 +37,7 @@ const { avatarSrc } = useFriendAvatarUrl(
     >
         <template #prepend>
             <v-avatar size="46" class="mr-3" color="lightprimary">
-                <v-img :src="avatarSrc" width="46" height="46" cover :alt="title" />
+                <v-img :src="avatarSrc" width="46" height="46" cover eager :alt="title" />
             </v-avatar>
         </template>
 

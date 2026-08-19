@@ -314,12 +314,18 @@
             "inviteSubtitle": "The recipient must be an accepted friend.",
             "empty": "No shares yet.",
             "emptyFriends": "No friends available to invite.",
+            "searchFriend": "Search for a friend",
+            "noMatchingFriends": "No matching friends.",
             "revoke": "Revoke",
             "cancelInvite": "Cancel",
             "pendingRole": "Pending · {role}",
             "fields": {
                 "friend": "Friend",
                 "role": "Role"
+            },
+            "roleHints": {
+                "viewer": "Can view balances and activity.",
+                "editor": "Can also add and edit data."
             },
             "errors": {
                 "friendRequired": "Choose a friend."

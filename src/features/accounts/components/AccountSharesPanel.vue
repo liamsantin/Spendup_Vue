@@ -4,13 +4,13 @@ import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
-import AppRadioButton from '@/components/shared/radio/AppRadioButton.vue';
 import { UserPhotoAvatar } from '@/features/friends';
 import { PencilIcon } from 'vue-tabler-icons';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '../stores/accounts-store';
 import type { AccountShare, ShareRole } from '../types';
 import ShareInviteModal from './ShareInviteModal.vue';
+import ShareRolePicker from './ShareRolePicker.vue';
 
 const props = defineProps<{
     accountPublicId: string;
@@ -47,11 +47,6 @@ const revokeOpen = computed({
         if (!value) revokeTarget.value = null;
     }
 });
-
-const roleItems = computed(() => [
-    { title: t('comptesPage.roles.viewer'), value: 'viewer' as ShareRole },
-    { title: t('comptesPage.roles.editor'), value: 'editor' as ShareRole }
-]);
 
 function formatDate(value: string) {
     return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
@@ -205,13 +200,7 @@ async function confirmRevoke() {
 
             <div class="mb-4">
                 <div class="text-subtitle-2 mb-2">{{ t('comptesPage.share.fields.role') }}</div>
-                <AppRadioButton
-                    v-model="editRole"
-                    :items="roleItems"
-                    inline
-                    hide-details="auto"
-                    :disabled="store.acting || editTarget?.role === 'pending'"
-                />
+                <ShareRolePicker v-model="editRole" :disabled="store.acting || editTarget?.role === 'pending'" />
             </div>
 
             <v-btn variant="tonal" color="error" size="small" :disabled="store.acting" @click="openRevokeFromEdit">

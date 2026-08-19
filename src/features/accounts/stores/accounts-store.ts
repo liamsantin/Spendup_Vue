@@ -454,17 +454,21 @@ export const useAccountsStore = defineStore('accounts', () => {
         }
     }
 
-    async function inviteShare(accountPublicId: string, userPublicId: string, role: ShareRole) {
+    async function inviteShare(accountPublicId: string, userPublicId: string, role: ShareRole, photoUrl?: string | null) {
         acting.value = true;
         clearError();
         try {
             const share = await accountsApi.inviteShare(accountPublicId, { userPublicId, role });
+            const merged = {
+                ...share,
+                photoUrl: share.photoUrl || photoUrl || null
+            };
             const current = sharesByAccountId.get(accountPublicId) ?? shares.value;
             const idx = current.findIndex((s) => s.userPublicId === userPublicId);
-            const next = idx >= 0 ? [...current.slice(0, idx), share, ...current.slice(idx + 1)] : [...current, share];
+            const next = idx >= 0 ? [...current.slice(0, idx), merged, ...current.slice(idx + 1)] : [...current, merged];
             setSharesForAccount(accountPublicId, next);
             cache.touch(`shares:${accountPublicId}`);
-            return share;
+            return merged;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
