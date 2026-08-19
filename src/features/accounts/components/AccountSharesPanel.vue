@@ -121,9 +121,11 @@ async function confirmRevoke() {
 
         <AppAlert
             v-if="localError || store.error"
-            type="error"
+            color="error"
+            variant="tonal"
             class="mb-3"
             closable
+            :dismiss-ms="3000"
             @dismiss="
                 localError = null;
                 store.clearError();
@@ -194,7 +196,15 @@ async function confirmRevoke() {
                 </div>
             </div>
 
-            <AppAlert v-if="editError" type="error" class="mb-4" closable @dismiss="editError = null">
+            <AppAlert
+                v-if="editError"
+                color="error"
+                variant="tonal"
+                class="mb-4"
+                closable
+                :dismiss-ms="3000"
+                @dismiss="editError = null"
+            >
                 {{ editError }}
             </AppAlert>
 

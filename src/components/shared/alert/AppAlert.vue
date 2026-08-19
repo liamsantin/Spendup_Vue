@@ -6,7 +6,14 @@
  */
 defineOptions({ name: 'AppAlert', inheritAttrs: false });
 
-import { computed, onBeforeUnmount, onMounted, ref, useAttrs, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useSlots, watch } from 'vue';
+
+const ALERT_ICONS: Record<string, string> = {
+    error: '$error',
+    warning: '$warning',
+    info: '$info',
+    success: '$success'
+};
 
 const props = withDefaults(
     defineProps<{
@@ -36,6 +43,12 @@ const emit = defineEmits<{
 }>();
 
 const attrs = useAttrs();
+const slots = useSlots();
+
+const alertAttrs = computed(() => {
+    const { class: _className, style: _style, ...rest } = attrs;
+    return rest;
+});
 
 const internalVisible = ref(true);
 let dismissTimer: ReturnType<typeof setTimeout> | null = null;
@@ -52,12 +65,22 @@ const themeColorKey = computed(() => {
     return 'primary';
 });
 
+const defaultPrependIcon = computed(() => {
+    if (slots.prepend) return null;
+    const variant = attrs.variant;
+    if (variant !== 'tonal' && variant !== 'outlined') return null;
+    const type = attrs.type;
+    const color = attrs.color;
+    if (typeof type === 'string' && ALERT_ICONS[type]) return ALERT_ICONS[type];
+    if (typeof color === 'string' && ALERT_ICONS[color]) return ALERT_ICONS[color];
+    return null;
+});
+
 const progressStyle = computed(() => {
     if (!props.dismissMs) return undefined;
     return {
         animationDuration: `${props.dismissMs}ms`,
-        // Légèrement plus foncé que la couleur de l’alert
-        backgroundColor: `color-mix(in srgb, rgb(var(--v-theme-${themeColorKey.value})) 92%, black)`
+        backgroundColor: `rgb(var(--v-theme-${themeColorKey.value}))`
     };
 });
 
@@ -110,7 +133,10 @@ onBeforeUnmount(() => {
 
 <template>
     <div v-if="visible" class="app-alert-wrap">
-        <v-alert :density="density" :closable="closable" v-bind="$attrs" @click:close="dismiss">
+        <v-alert :density="density" :closable="closable" v-bind="alertAttrs" @click:close="dismiss">
+            <template v-if="defaultPrependIcon" #prepend>
+                <v-icon class="text-24" :icon="defaultPrependIcon" />
+            </template>
             <template v-for="(_, name) in $slots" #[name]="slotData">
                 <slot :name="name" v-bind="slotData || {}" />
             </template>
@@ -121,21 +147,20 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .app-alert-wrap {
-    position: relative;
-    overflow: hidden;
-    border-radius: inherit;
+    display: grid;
 }
 
 .app-alert-wrap :deep(.v-alert) {
-    margin-bottom: 0;
+    grid-area: 1 / 1;
+    margin-bottom: 0 !important;
+    width: 100%;
 }
 
 .app-alert-wrap__progress {
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    z-index: 1;
-    height: 2px;
+    grid-area: 1 / 1;
+    align-self: end;
+    z-index: 2;
+    height: 3px;
     width: 100%;
     transform: scaleX(0);
     transform-origin: left center;

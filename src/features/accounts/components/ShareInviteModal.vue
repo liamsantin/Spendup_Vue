@@ -131,7 +131,15 @@ async function onInvite() {
         :scrollable="false"
     >
         <div class="share-invite">
-            <AppAlert v-if="localError" type="error" class="mb-4" closable @dismiss="localError = null">
+            <AppAlert
+                v-if="localError"
+                color="error"
+                variant="tonal"
+                class="mb-4"
+                closable
+                :dismiss-ms="3000"
+                @dismiss="localError = null"
+            >
                 {{ localError }}
             </AppAlert>
 

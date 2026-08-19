@@ -149,9 +149,11 @@ async function confirmDelete() {
 
         <AppAlert
             v-else-if="account && (localError || store.error)"
-            type="error"
+            color="error"
+            variant="tonal"
             class="mb-4"
             closable
+            :dismiss-ms="3000"
             @dismiss="
                 localError = null;
                 store.clearError();

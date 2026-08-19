@@ -144,7 +144,15 @@ async function onSave() {
         :height="640"
         scrollable
     >
-        <AppAlert v-if="localError.message" type="error" class="mb-4" closable @dismiss="localError.message = null">
+        <AppAlert
+            v-if="localError.message"
+            color="error"
+            variant="tonal"
+            class="mb-4"
+            closable
+            :dismiss-ms="3000"
+            @dismiss="localError.message = null"
+        >
             {{ localError.message }}
         </AppAlert>
 
