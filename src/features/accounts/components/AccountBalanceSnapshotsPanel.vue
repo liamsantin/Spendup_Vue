@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { TrashIcon } from 'vue-tabler-icons';
@@ -22,11 +23,32 @@ const addOpen = ref(false);
 const deleteTarget = ref<AccountBalanceSnapshot | null>(null);
 const localError = ref<string | null>(null);
 
+function todayYmd(): string {
+    const date = new Date();
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function ymdToIso(ymd: string): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd.trim());
+    if (!match) return new Date(ymd).toISOString();
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])).toISOString();
+}
+
 const form = ref<CreateBalanceSnapshotPayload>({
     balance: 0,
-    snapshotAt: new Date().toISOString().slice(0, 16),
+    snapshotAt: todayYmd(),
     source: 'manual',
     note: null
+});
+
+const snapshotAtModel = computed({
+    get: () => form.value.snapshotAt || null,
+    set: (value: string | null) => {
+        form.value.snapshotAt = value ?? todayYmd();
+    }
 });
 
 const deleteOpen = computed({
@@ -50,17 +72,13 @@ const diffColor = computed(() => {
 });
 
 function formatDate(value: string) {
-    return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
-}
-
-function formatSnapshotDate(value: string) {
-    return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+    return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium' }).format(new Date(value));
 }
 
 function resetForm() {
     form.value = {
         balance: 0,
-        snapshotAt: new Date().toISOString().slice(0, 16),
+        snapshotAt: todayYmd(),
         source: 'manual',
         note: null
     };
@@ -84,7 +102,7 @@ async function submitAdd() {
     try {
         const payload: CreateBalanceSnapshotPayload = {
             balance: Number(form.value.balance),
-            snapshotAt: new Date(form.value.snapshotAt).toISOString(),
+            snapshotAt: ymdToIso(form.value.snapshotAt),
             source: form.value.source ?? 'manual',
             note: form.value.note?.trim() || null
         };
@@ -139,7 +157,7 @@ async function confirmDelete() {
                     <div class="text-h6 font-weight-bold">
                         {{ formatAccountBalance(latestSnapshot.balance, account.currency, locale) }}
                     </div>
-                    <div class="text-body-2 text-medium-emphasis">{{ formatSnapshotDate(latestSnapshot.snapshotAt) }}</div>
+                    <div class="text-body-2 text-medium-emphasis">{{ formatDate(latestSnapshot.snapshotAt) }}</div>
                 </div>
                 <div v-if="balanceDiff !== null" class="text-right">
                     <div class="text-body-2 text-medium-emphasis mb-1">{{ t('comptesPage.snapshots.diff') }}</div>
@@ -208,15 +226,16 @@ async function confirmDelete() {
                 class="mb-3"
                 hide-details="auto"
             />
-            <v-text-field
-                v-model="form.snapshotAt"
-                :label="t('comptesPage.snapshots.fields.snapshotAt')"
-                type="datetime-local"
-                variant="outlined"
-                density="comfortable"
-                class="mb-3"
-                hide-details="auto"
-            />
+            <div class="mb-3">
+                <AppDatePicker
+                    v-model="snapshotAtModel"
+                    :label="t('comptesPage.snapshots.fields.snapshotAt')"
+                    :max="todayYmd()"
+                    color="primary"
+                    hide-details
+                    :clearable="false"
+                />
+            </div>
             <v-text-field
                 v-model="form.note"
                 :label="t('comptesPage.snapshots.fields.note')"
