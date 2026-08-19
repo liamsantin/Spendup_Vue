@@ -2,15 +2,13 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { TrashIcon } from 'vue-tabler-icons';
-import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
-import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { formatAccountBalance } from '../format';
-import { useAccountsStore } from '../stores/accounts-store';
-import type { Account, AccountBalanceSnapshot, CreateBalanceSnapshotPayload } from '../types';
-import AccountSnapshotForm from './forms/AccountSnapshotForm.vue';
+import { formatAccountBalance } from '../../format';
+import { useAccountsStore } from '../../stores/accounts-store';
+import type { Account, AccountBalanceSnapshot } from '../../types';
+import AccountSnapshotAddModal from '../modals/AccountSnapshotAddModal.vue';
 
 const props = defineProps<{
     account: Account;
@@ -18,33 +16,11 @@ const props = defineProps<{
 }>();
 
 const { t, locale } = useI18n();
-const { smAndDown } = useDisplay();
 const store = useAccountsStore();
 
 const addOpen = ref(false);
 const deleteTarget = ref<AccountBalanceSnapshot | null>(null);
 const localError = ref<string | null>(null);
-
-function todayYmd(): string {
-    const date = new Date();
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-}
-
-function ymdToIso(ymd: string): string {
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd.trim());
-    if (!match) return new Date(ymd).toISOString();
-    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])).toISOString();
-}
-
-const form = ref<CreateBalanceSnapshotPayload>({
-    balance: 0,
-    snapshotAt: todayYmd(),
-    source: 'manual',
-    note: null
-});
 
 const deleteOpen = computed({
     get: () => !!deleteTarget.value,
@@ -70,20 +46,6 @@ function formatDate(value: string) {
     return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium' }).format(new Date(value));
 }
 
-function resetForm() {
-    form.value = {
-        balance: 0,
-        snapshotAt: todayYmd(),
-        source: 'manual',
-        note: null
-    };
-}
-
-function openAdd() {
-    resetForm();
-    addOpen.value = true;
-}
-
 watch(
     () => props.account.publicId,
     (id) => {
@@ -91,22 +53,6 @@ watch(
     },
     { immediate: true }
 );
-
-async function submitAdd() {
-    localError.value = null;
-    try {
-        const payload: CreateBalanceSnapshotPayload = {
-            balance: Number(form.value.balance),
-            snapshotAt: ymdToIso(form.value.snapshotAt),
-            source: form.value.source ?? 'manual',
-            note: form.value.note?.trim() || null
-        };
-        await store.createBalanceSnapshot(props.account.publicId, payload);
-        addOpen.value = false;
-    } catch (e: unknown) {
-        localError.value = getErrorMessage(e);
-    }
-}
 
 async function confirmDelete() {
     if (!deleteTarget.value) return;
@@ -127,7 +73,7 @@ async function confirmDelete() {
                 <h5 class="text-h6 mb-0">{{ t('comptesPage.snapshots.title') }}</h5>
                 <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.snapshots.subtitle') }}</div>
             </div>
-            <v-btn v-if="canWrite" color="primary" variant="tonal" size="small" @click="openAdd">
+            <v-btn v-if="canWrite" color="primary" variant="tonal" size="small" @click="addOpen = true">
                 {{ t('comptesPage.snapshots.add') }}
             </v-btn>
         </div>
@@ -207,26 +153,11 @@ async function confirmDelete() {
             </v-list-item>
         </v-list>
 
-        <AppModalBase
+        <AccountSnapshotAddModal
             v-model="addOpen"
-            :title="t('comptesPage.snapshots.addTitle')"
-            :subtitle="t('comptesPage.snapshots.addSubtitle')"
-            :max-width="480"
-            :height="smAndDown ? 460 : undefined"
-            :fixed-height="smAndDown"
-            :scrollable="false"
-            mobile-layout="sheet"
-        >
-            <AccountSnapshotForm :form="form" />
-
-            <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>
-                <v-spacer />
-                <v-btn color="primary" flat :loading="store.acting" :disabled="store.acting" @click="submitAdd">
-                    {{ t('comptesPage.snapshots.add') }}
-                </v-btn>
-            </template>
-        </AppModalBase>
+            :account-public-id="account.publicId"
+            @error="localError = $event"
+        />
 
         <AppConfirmationModal
             v-model="deleteOpen"

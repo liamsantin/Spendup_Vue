@@ -3,14 +3,13 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
-import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { UserPhotoAvatar } from '@/features/friends';
 import { PencilIcon } from 'vue-tabler-icons';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { useAccountsStore } from '../stores/accounts-store';
-import type { AccountShare, ShareRole } from '../types';
-import ShareInviteModal from './modals/ShareInviteModal.vue';
-import ShareRolePicker from './ShareRolePicker.vue';
+import { useAccountsStore } from '../../stores/accounts-store';
+import type { AccountShare } from '../../types';
+import AccountShareEditModal from '../modals/AccountShareEditModal.vue';
+import ShareInviteModal from '../modals/ShareInviteModal.vue';
 
 const props = defineProps<{
     accountPublicId: string;
@@ -21,10 +20,8 @@ const store = useAccountsStore();
 
 const inviteOpen = ref(false);
 const editTargetId = ref<string | null>(null);
-const editRole = ref<ShareRole>('viewer');
 const revokeTarget = ref<AccountShare | null>(null);
 const localError = ref<string | null>(null);
-const editError = ref<string | null>(null);
 
 /** Toujours synchronisé avec le store — reflète les mises à jour de photoUrl, displayName, role. */
 const editTarget = computed(() =>
@@ -34,10 +31,7 @@ const editTarget = computed(() =>
 const editOpen = computed({
     get: () => !!editTargetId.value,
     set: (value: boolean) => {
-        if (!value) {
-            editTargetId.value = null;
-            editError.value = null;
-        }
+        if (!value) editTargetId.value = null;
     }
 });
 
@@ -61,12 +55,9 @@ function roleChipLabel(share: AccountShare) {
 
 function openEdit(share: AccountShare) {
     editTargetId.value = share.publicId;
-    editRole.value = (share.role === 'pending' ? share.invitedRole ?? 'viewer' : share.role) as ShareRole;
-    editError.value = null;
 }
 
-function openRevokeFromEdit() {
-    const share = editTarget.value;
+function onRevokeFromEdit(share: AccountShare) {
     editTargetId.value = null;
     revokeTarget.value = share;
 }
@@ -78,22 +69,6 @@ watch(
     },
     { immediate: true }
 );
-
-async function confirmEdit() {
-    if (!editTarget.value) return;
-    const share = editTarget.value;
-    if (share.role === 'pending' || share.role === editRole.value) {
-        editTarget.value = null;
-        return;
-    }
-    editError.value = null;
-    try {
-        await store.updateShareRole(props.accountPublicId, share.userPublicId, editRole.value);
-        editTargetId.value = null;
-    } catch (e: unknown) {
-        editError.value = getErrorMessage(e);
-    }
-}
 
 async function confirmRevoke() {
     if (!revokeTarget.value) return;
@@ -178,54 +153,12 @@ async function confirmRevoke() {
 
         <ShareInviteModal v-model="inviteOpen" :account-public-id="accountPublicId" />
 
-        <AppModalBase
+        <AccountShareEditModal
             v-model="editOpen"
-            :title="t('comptesPage.share.editTitle')"
-            :max-width="420"
-            :scrollable="false"
-        >
-            <div v-if="editTarget" class="d-flex align-center ga-3 mb-5">
-                <UserPhotoAvatar
-                    :photo-url="editTarget.photoUrl"
-                    :user-public-id="editTarget.userPublicId"
-                    :fallback-label="editTarget.displayName"
-                    :size="42"
-                />
-                <div class="min-width-0">
-                    <div class="text-subtitle-1 font-weight-bold text-truncate">{{ editTarget.displayName }}</div>
-                    <div class="text-body-2 text-medium-emphasis">{{ formatDate(editTarget.createdAt) }}</div>
-                </div>
-            </div>
-
-            <AppAlert
-                v-if="editError"
-                color="error"
-                variant="tonal"
-                class="mb-4"
-                closable
-                :dismiss-ms="3000"
-                @dismiss="editError = null"
-            >
-                {{ editError }}
-            </AppAlert>
-
-            <div class="mb-4">
-                <div class="text-subtitle-2 mb-2">{{ t('comptesPage.share.fields.role') }}</div>
-                <ShareRolePicker v-model="editRole" :disabled="store.acting || editTarget?.role === 'pending'" />
-            </div>
-
-            <v-btn variant="tonal" color="error" size="small" :disabled="store.acting" @click="openRevokeFromEdit">
-                {{ editTarget?.role === 'pending' ? t('comptesPage.share.cancelInvite') : t('comptesPage.share.revoke') }}
-            </v-btn>
-
-            <template #footer="{ close }">
-                <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>
-                <v-spacer />
-                <v-btn color="primary" flat :loading="store.acting" :disabled="store.acting || editTarget?.role === 'pending'" @click="confirmEdit">
-                    {{ t('comptesPage.share.editConfirm') }}
-                </v-btn>
-            </template>
-        </AppModalBase>
+            :account-public-id="accountPublicId"
+            :share="editTarget"
+            @revoke="onRevokeFromEdit"
+        />
 
         <AppConfirmationModal
             v-model="revokeOpen"

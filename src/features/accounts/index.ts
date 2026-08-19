@@ -37,9 +37,9 @@ export type {
 export { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLOR_PRESETS } from './types';
 export { default as AccountsTab } from './components/tabs/AccountsTab.vue';
 export { default as InvitationsTab } from './components/tabs/InvitationsTab.vue';
-export { default as AccountListItem } from './components/AccountListItem.vue';
+export { default as AccountListItem } from './components/list/AccountListItem.vue';
 export { default as AccountFormModal } from './components/modals/AccountFormModal.vue';
 export { default as AccountDetailModal } from './components/modals/AccountDetailModal.vue';
-export { default as AccountSharesPanel } from './components/AccountSharesPanel.vue';
-export { default as AccountBalanceSnapshotsPanel } from './components/AccountBalanceSnapshotsPanel.vue';
+export { default as AccountSharesPanel } from './components/panels/AccountSharesPanel.vue';
+export { default as AccountBalanceSnapshotsPanel } from './components/panels/AccountBalanceSnapshotsPanel.vue';
 export { default as ShareInviteModal } from './components/modals/ShareInviteModal.vue';

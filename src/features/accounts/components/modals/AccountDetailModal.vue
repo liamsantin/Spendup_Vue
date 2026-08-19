@@ -19,8 +19,8 @@ import {
     isPrimaryActionBlocked
 } from '../../rights';
 import { useAccountsStore } from '../../stores/accounts-store';
-import AccountBalanceSnapshotsPanel from '../AccountBalanceSnapshotsPanel.vue';
-import AccountSharesPanel from '../AccountSharesPanel.vue';
+import AccountBalanceSnapshotsPanel from '../panels/AccountBalanceSnapshotsPanel.vue';
+import AccountSharesPanel from '../panels/AccountSharesPanel.vue';
 import AccountFormModal from './AccountFormModal.vue';
 
 const props = defineProps<{

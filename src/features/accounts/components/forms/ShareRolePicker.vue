@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { EyeIcon, PencilIcon } from 'vue-tabler-icons';
-import type { ShareRole } from '../types';
+import type { ShareRole } from '../../types';
 
 withDefaults(
     defineProps<{

@@ -9,7 +9,7 @@ import { useAccountsStore } from '../../stores/accounts-store';
 import type { Account } from '../../types';
 import AccountDetailModal from '../modals/AccountDetailModal.vue';
 import AccountFormModal from '../modals/AccountFormModal.vue';
-import AccountListItem from '../AccountListItem.vue';
+import AccountListItem from '../list/AccountListItem.vue';
 
 const { t } = useI18n();
 const { smAndDown } = useDisplay();

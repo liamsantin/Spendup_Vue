@@ -5,7 +5,7 @@ import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { shouldVirtualize } from '@/utils/helpers/list-virtualization';
 import { useAccountsStore } from '../../stores/accounts-store';
-import IncomingShareListItem from '../IncomingShareListItem.vue';
+import IncomingShareListItem from '../list/IncomingShareListItem.vue';
 
 const { t } = useI18n();
 const { smAndDown } = useDisplay();

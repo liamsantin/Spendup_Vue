@@ -1,0 +1,101 @@
+<script setup lang="ts">
+defineOptions({ name: 'AccountSnapshotAddModal' });
+
+import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { useDisplay } from 'vuetify';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import { getErrorMessage } from '@/utils/errors/app-error';
+import { useAccountsStore } from '../../stores/accounts-store';
+import type { CreateBalanceSnapshotPayload } from '../../types';
+import AccountSnapshotForm from '../forms/AccountSnapshotForm.vue';
+
+const props = defineProps<{
+    modelValue: boolean;
+    accountPublicId: string;
+}>();
+
+const emit = defineEmits<{
+    'update:modelValue': [value: boolean];
+    error: [message: string];
+}>();
+
+const { t } = useI18n();
+const { smAndDown } = useDisplay();
+const store = useAccountsStore();
+
+const open = computed({
+    get: () => props.modelValue,
+    set: (value: boolean) => emit('update:modelValue', value)
+});
+
+function todayYmd(): string {
+    const date = new Date();
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+function ymdToIso(ymd: string): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd.trim());
+    if (!match) return new Date(ymd).toISOString();
+    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])).toISOString();
+}
+
+function emptyForm(): CreateBalanceSnapshotPayload {
+    return {
+        balance: 0,
+        snapshotAt: todayYmd(),
+        source: 'manual',
+        note: null
+    };
+}
+
+const form = ref<CreateBalanceSnapshotPayload>(emptyForm());
+
+watch(
+    () => props.modelValue,
+    (isOpen) => {
+        if (isOpen) form.value = emptyForm();
+    }
+);
+
+async function submitAdd() {
+    try {
+        const payload: CreateBalanceSnapshotPayload = {
+            balance: Number(form.value.balance),
+            snapshotAt: ymdToIso(form.value.snapshotAt),
+            source: form.value.source ?? 'manual',
+            note: form.value.note?.trim() || null
+        };
+        await store.createBalanceSnapshot(props.accountPublicId, payload);
+        open.value = false;
+    } catch (e: unknown) {
+        emit('error', getErrorMessage(e));
+    }
+}
+</script>
+
+<template>
+    <AppModalBase
+        v-model="open"
+        :title="t('comptesPage.snapshots.addTitle')"
+        :subtitle="t('comptesPage.snapshots.addSubtitle')"
+        :max-width="480"
+        :height="smAndDown ? 460 : undefined"
+        :fixed-height="smAndDown"
+        :scrollable="false"
+        mobile-layout="sheet"
+    >
+        <AccountSnapshotForm :form="form" />
+
+        <template #footer="{ close }">
+            <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>
+            <v-spacer />
+            <v-btn color="primary" flat :loading="store.acting" :disabled="store.acting" @click="submitAdd">
+                {{ t('comptesPage.snapshots.add') }}
+            </v-btn>
+        </template>
+    </AppModalBase>
+</template>
