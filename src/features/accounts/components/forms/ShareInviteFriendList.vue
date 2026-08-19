@@ -1,4 +1,6 @@
 <script setup lang="ts">
+defineOptions({ name: 'ShareInviteFriendList' });
+
 import { useI18n } from 'vue-i18n';
 import { CircleCheckIcon } from 'vue-tabler-icons';
 import { FriendListItem } from '@/features/friends';

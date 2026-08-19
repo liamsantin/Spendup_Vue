@@ -10,7 +10,7 @@ import { getErrorMessage } from '@/utils/errors/app-error';
 import { formatAccountBalance } from '../format';
 import { useAccountsStore } from '../stores/accounts-store';
 import type { Account, AccountBalanceSnapshot, CreateBalanceSnapshotPayload } from '../types';
-import AccountSnapshotForm from './AccountSnapshotForm.vue';
+import AccountSnapshotForm from './forms/AccountSnapshotForm.vue';
 
 const props = defineProps<{
     account: Account;

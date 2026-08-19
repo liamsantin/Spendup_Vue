@@ -10,9 +10,9 @@ import { useDisplay } from 'vuetify';
 import type { PerfectScrollbarExpose } from 'vue3-perfect-scrollbar';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
-import { useShareInvite } from '../composables/useShareInvite';
+import { useShareInvite } from '../../composables/useShareInvite';
 import ShareInviteFriendList from './ShareInviteFriendList.vue';
-import ShareRolePicker from './ShareRolePicker.vue';
+import ShareRolePicker from '../ShareRolePicker.vue';
 
 const props = defineProps<{
     accountPublicId: string;

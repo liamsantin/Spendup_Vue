@@ -8,7 +8,7 @@ import { getErrorMessage } from '@/utils/errors/app-error';
 import { emptyToNull } from '../format';
 import { useAccountsStore } from '../stores/accounts-store';
 import { ACCOUNT_COLOR_PRESETS, ACCOUNT_TYPES, CURRENCIES, type Account, type AccountType, type Currency } from '../types';
-import AccountForm from './AccountForm.vue';
+import AccountForm from './forms/AccountForm.vue';
 
 const props = defineProps<{
     modelValue: boolean;
