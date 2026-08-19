@@ -25,6 +25,11 @@ const props = withDefaults(
         maxWidth?: number | string;
         /** Hauteur max. de la card (px ou CSS), plafonnée à 85vh. Ignorée si `scrollable` est false. */
         height?: number | string;
+        /**
+         * Si `scrollable` : applique `height` comme hauteur réelle (plus seulement un plafond).
+         * Utile quand le contenu est court (liste d’amis vide, etc.) mais la modale doit rester stable.
+         */
+        fixedHeight?: boolean;
         persistent?: boolean;
         /** Affiche le footer (slot `footer`). */
         showFooter?: boolean;
@@ -38,6 +43,7 @@ const props = withDefaults(
         subtitle: undefined,
         maxWidth: 520,
         height: 640,
+        fixedHeight: false,
         persistent: true,
         showFooter: true,
         scrollable: true
@@ -57,12 +63,15 @@ const open = computed({
 });
 
 const cardStyle = computed(() => {
+    const height = typeof props.height === 'number' ? `${props.height}px` : props.height;
+    const cap = `min(${height}, 85vh)`;
+    if (props.fixedHeight) {
+        return { height: cap, minHeight: cap, maxHeight: cap };
+    }
     if (!props.scrollable) {
         return { maxHeight: '85vh' };
     }
-    const height = typeof props.height === 'number' ? `${props.height}px` : props.height;
-    // Plafond seulement : la card s’adapte au contenu, donc pas de scroll tant qu’il ne déborde pas.
-    return { maxHeight: `min(${height}, 85vh)` };
+    return { maxHeight: cap };
 });
 
 async function refreshScrollbar() {
@@ -84,7 +93,7 @@ defineExpose({
 <template>
     <!-- La transition d’ouverture scale la card : perfect-scrollbar doit remesurer une fois figée. -->
     <v-dialog v-model="open" :max-width="maxWidth" :persistent="persistent" @after-enter="refreshScrollbar">
-        <v-card rounded="md" class="app-modal-base" :style="cardStyle">
+        <v-card rounded="md" class="app-modal-base" :class="{ 'app-modal-base--fixed-height': fixedHeight }" :style="cardStyle">
             <div class="app-modal-base__header">
                 <div class="pr-10">
                     <h5 class="text-h5">{{ title }}</h5>
@@ -155,6 +164,17 @@ defineExpose({
 .app-modal-base__body--static {
     flex: 0 0 auto;
     overflow: hidden;
+}
+
+.app-modal-base--fixed-height .app-modal-base__body,
+.app-modal-base--fixed-height .app-modal-base__body--static {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.app-modal-base--fixed-height .app-modal-base__body-inner {
+    padding-bottom: 16px;
 }
 
 .app-modal-base__body-inner {

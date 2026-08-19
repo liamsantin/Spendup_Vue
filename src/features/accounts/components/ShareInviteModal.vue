@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { CircleCheckIcon } from 'vue-tabler-icons';
+import type { PerfectScrollbarExpose } from 'vue3-perfect-scrollbar';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { FriendListItem, friendsApi } from '@/features/friends';
 import type { FriendItem } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';
+import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import { useAccountsStore } from '../stores/accounts-store';
 import type { ShareRole } from '../types';
 import ShareRolePicker from './ShareRolePicker.vue';
@@ -29,6 +31,11 @@ const friendQuery = ref('');
 const selectedUserPublicId = ref<string | null>(null);
 const role = ref<ShareRole>('viewer');
 const localError = ref<string | null>(null);
+const listScrollbarRef = ref<PerfectScrollbarExpose | null>(null);
+const listScrollbarOptions = {
+    ...PERFECT_SCROLLBAR_OPTIONS,
+    wheelPropagation: false
+};
 
 const open = computed({
     get: () => props.modelValue,
@@ -78,6 +85,15 @@ watch(
     }
 );
 
+watch(
+    () => [props.modelValue, filteredFriends.value.length, loadingFriends.value] as const,
+    async () => {
+        if (!props.modelValue) return;
+        await nextTick();
+        listScrollbarRef.value?.ps?.update();
+    }
+);
+
 function selectFriend(userPublicId: string) {
     selectedUserPublicId.value = userPublicId;
     localError.value = null;
@@ -109,21 +125,18 @@ async function onInvite() {
         v-model="open"
         :title="t('comptesPage.share.inviteTitle')"
         :subtitle="t('comptesPage.share.inviteSubtitle')"
-        :height="560"
+        :height="600"
         :max-width="520"
-        scrollable
+        fixed-height
+        :scrollable="false"
     >
-        <AppAlert v-if="localError" type="error" class="mb-4" closable @dismiss="localError = null">
-            {{ localError }}
-        </AppAlert>
+        <div class="share-invite">
+            <AppAlert v-if="localError" type="error" class="mb-4" closable @dismiss="localError = null">
+                {{ localError }}
+            </AppAlert>
 
-        <div v-if="loadingFriends" class="py-6 text-center">
-            <v-progress-circular indeterminate color="primary" size="28" />
-        </div>
-        <template v-else>
             <v-label class="font-weight-medium mb-2">{{ t('comptesPage.share.fields.friend') }}</v-label>
             <v-text-field
-                v-if="availableFriends.length"
                 v-model="friendQuery"
                 :placeholder="t('comptesPage.share.searchFriend')"
                 prepend-inner-icon="mdi-magnify"
@@ -131,37 +144,45 @@ async function onInvite() {
                 color="primary"
                 hide-details
                 clearable
+                :disabled="loadingFriends || !availableFriends.length"
                 class="mb-2"
             />
 
-            <div v-if="!availableFriends.length" class="share-invite-empty text-medium-emphasis text-body-2">
-                {{ t('comptesPage.share.emptyFriends') }}
+            <div class="share-invite-list mb-4">
+                <PerfectScrollbar ref="listScrollbarRef" class="share-invite-list__scroll" :options="listScrollbarOptions">
+                    <div v-if="loadingFriends" class="share-invite-list__placeholder">
+                        <v-progress-circular indeterminate color="primary" size="28" />
+                    </div>
+                    <div v-else-if="!availableFriends.length" class="share-invite-list__placeholder text-medium-emphasis text-body-2">
+                        {{ t('comptesPage.share.emptyFriends') }}
+                    </div>
+                    <div v-else-if="!filteredFriends.length" class="share-invite-list__placeholder text-medium-emphasis text-body-2">
+                        {{ t('comptesPage.share.noMatchingFriends') }}
+                    </div>
+                    <v-list v-else class="py-0 theme-list">
+                        <FriendListItem
+                            v-for="friend in filteredFriends"
+                            :key="friend.user.publicId"
+                            :user="friend.user"
+                            :highlight="selectedUserPublicId === friend.user.publicId"
+                            @click="selectFriend(friend.user.publicId)"
+                        >
+                            <template #actions>
+                                <CircleCheckIcon
+                                    v-if="selectedUserPublicId === friend.user.publicId"
+                                    class="text-primary"
+                                    :size="22"
+                                    stroke-width="1.8"
+                                />
+                            </template>
+                        </FriendListItem>
+                    </v-list>
+                </PerfectScrollbar>
             </div>
-            <div v-else-if="!filteredFriends.length" class="share-invite-empty text-medium-emphasis text-body-2">
-                {{ t('comptesPage.share.noMatchingFriends') }}
-            </div>
-            <v-list v-else class="share-invite-list py-0 theme-list mb-4">
-                <FriendListItem
-                    v-for="friend in filteredFriends"
-                    :key="friend.user.publicId"
-                    :user="friend.user"
-                    :highlight="selectedUserPublicId === friend.user.publicId"
-                    @click="selectFriend(friend.user.publicId)"
-                >
-                    <template #actions>
-                        <CircleCheckIcon
-                            v-if="selectedUserPublicId === friend.user.publicId"
-                            class="text-primary"
-                            :size="22"
-                            stroke-width="1.8"
-                        />
-                    </template>
-                </FriendListItem>
-            </v-list>
 
             <v-label class="font-weight-medium mb-2">{{ t('comptesPage.share.fields.role') }}</v-label>
             <ShareRolePicker v-model="role" />
-        </template>
+        </div>
 
         <template #footer="{ close }">
             <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>
@@ -175,13 +196,29 @@ async function onInvite() {
 
 <style scoped>
 .share-invite-list {
-    max-height: 220px;
-    overflow-y: auto;
+    height: 200px;
+    overflow: hidden;
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    border-radius: 10px;
 }
 
-.share-invite-empty {
-    padding: 20px 8px;
-    margin-bottom: 16px;
+.share-invite-list__scroll {
+    height: 200px;
+    max-height: 200px;
+}
+
+.share-invite-list :deep(.ps) {
+    height: 200px;
+    max-height: 200px;
+}
+
+.share-invite-list__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    height: 200px;
+    padding: 16px;
     text-align: center;
 }
 </style>
