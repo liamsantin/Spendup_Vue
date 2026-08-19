@@ -6,6 +6,7 @@ defineOptions({ name: 'ShareInviteForm' });
 
 import { nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { SearchIcon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import type { PerfectScrollbarExpose } from 'vue3-perfect-scrollbar';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
@@ -70,14 +71,17 @@ defineExpose({
         <v-text-field
             v-model="invite.friendQuery"
             :placeholder="t('comptesPage.share.searchFriend')"
-            prepend-inner-icon="mdi-magnify"
             variant="outlined"
             color="primary"
             hide-details
             clearable
             :disabled="invite.loadingFriends || !invite.availableFriends.length"
             class="mb-2"
-        />
+        >
+            <template #prepend-inner>
+                <SearchIcon stroke-width="1.5" size="18" class="text-medium-emphasis" />
+            </template>
+        </v-text-field>
 
         <div class="share-invite-form__list">
             <div v-if="smAndDown" class="share-invite-form__list-scroll">
