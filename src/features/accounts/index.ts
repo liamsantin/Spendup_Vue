@@ -35,11 +35,11 @@ export type {
     CreateBalanceSnapshotPayload
 } from './types';
 export { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLOR_PRESETS } from './types';
-export { default as AccountsTab } from './components/AccountsTab.vue';
-export { default as InvitationsTab } from './components/InvitationsTab.vue';
+export { default as AccountsTab } from './components/tabs/AccountsTab.vue';
+export { default as InvitationsTab } from './components/tabs/InvitationsTab.vue';
 export { default as AccountListItem } from './components/AccountListItem.vue';
-export { default as AccountFormModal } from './components/AccountFormModal.vue';
-export { default as AccountDetailModal } from './components/AccountDetailModal.vue';
+export { default as AccountFormModal } from './components/modals/AccountFormModal.vue';
+export { default as AccountDetailModal } from './components/modals/AccountDetailModal.vue';
 export { default as AccountSharesPanel } from './components/AccountSharesPanel.vue';
 export { default as AccountBalanceSnapshotsPanel } from './components/AccountBalanceSnapshotsPanel.vue';
-export { default as ShareInviteModal } from './components/ShareInviteModal.vue';
+export { default as ShareInviteModal } from './components/modals/ShareInviteModal.vue';

@@ -5,11 +5,11 @@ import { BuildingBankIcon, PlusIcon, ShareIcon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { shouldVirtualize } from '@/utils/helpers/list-virtualization';
-import { useAccountsStore } from '../stores/accounts-store';
-import type { Account } from '../types';
-import AccountDetailModal from './AccountDetailModal.vue';
-import AccountFormModal from './AccountFormModal.vue';
-import AccountListItem from './AccountListItem.vue';
+import { useAccountsStore } from '../../stores/accounts-store';
+import type { Account } from '../../types';
+import AccountDetailModal from '../modals/AccountDetailModal.vue';
+import AccountFormModal from '../modals/AccountFormModal.vue';
+import AccountListItem from '../AccountListItem.vue';
 
 const { t } = useI18n();
 const { smAndDown } = useDisplay();

@@ -9,7 +9,7 @@ import { PencilIcon } from 'vue-tabler-icons';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '../stores/accounts-store';
 import type { AccountShare, ShareRole } from '../types';
-import ShareInviteModal from './ShareInviteModal.vue';
+import ShareInviteModal from './modals/ShareInviteModal.vue';
 import ShareRolePicker from './ShareRolePicker.vue';
 
 const props = defineProps<{
