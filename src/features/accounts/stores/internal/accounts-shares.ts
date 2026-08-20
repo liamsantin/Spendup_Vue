@@ -3,6 +3,12 @@ import type { ShareRole } from '../../types';
 import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from './accounts-state';
 import type { AccountsCrud } from './accounts-crud';
 
+/**
+ * Actions liées aux partages et invitations entrantes.
+ * @param state État partagé du store.
+ * @param crud Dépendances CRUD (ex. `loadAccounts` après acceptation).
+ * @returns Les actions de partage.
+ */
 export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCrud, 'loadAccounts'>) {
     const {
         incomingShares,
@@ -17,6 +23,10 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         setSharesForAccount
     } = state;
 
+    /**
+     * Charge les invitations de partage reçues.
+     * @param force Si `true`, ignore le TTL et refetch.
+     */
     async function loadIncoming(force = false) {
         await cache.ensure(
             KEY_INCOMING,
@@ -37,6 +47,11 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         );
     }
 
+    /**
+     * Charge les partages d’un compte donné.
+     * @param accountPublicId Identifiant public du compte.
+     * @param force Si `true`, ignore le TTL et refetch.
+     */
     async function loadShares(accountPublicId: string, force = false) {
         await cache.ensure(
             `shares:${accountPublicId}`,
@@ -58,6 +73,14 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         shares.value = sharesByAccountId.get(accountPublicId) ?? [];
     }
 
+    /**
+     * Invite un utilisateur à partager un compte (met à jour la liste locale).
+     * @param accountPublicId Identifiant public du compte partagé.
+     * @param userPublicId Identifiant public de l’utilisateur invité.
+     * @param role Rôle accordé (`viewer`, `editor`, etc.).
+     * @param photoUrl Photo de profil optionnelle à conserver côté UI.
+     * @returns Le partage créé / fusionné.
+     */
     async function inviteShare(accountPublicId: string, userPublicId: string, role: ShareRole, photoUrl?: string | null) {
         acting.value = true;
         clearError();
@@ -81,6 +104,13 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         }
     }
 
+    /**
+     * Change le rôle d’un partage existant.
+     * @param accountPublicId Identifiant public du compte.
+     * @param userPublicId Identifiant public du bénéficiaire.
+     * @param role Nouveau rôle.
+     * @returns Le partage mis à jour.
+     */
     async function updateShareRole(accountPublicId: string, userPublicId: string, role: ShareRole) {
         acting.value = true;
         clearError();
@@ -103,6 +133,11 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         }
     }
 
+    /**
+     * Révoque un partage et le retire de la liste locale.
+     * @param accountPublicId Identifiant public du compte.
+     * @param userPublicId Identifiant public du bénéficiaire à révoquer.
+     */
     async function revokeShare(accountPublicId: string, userPublicId: string) {
         acting.value = true;
         clearError();
@@ -122,6 +157,10 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         }
     }
 
+    /**
+     * Accepte une invitation et recharge la liste des comptes.
+     * @param sharePublicId Identifiant public de l’invitation.
+     */
     async function acceptShare(sharePublicId: string) {
         acting.value = true;
         clearError();
@@ -138,6 +177,10 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         }
     }
 
+    /**
+     * Refuse une invitation entrante.
+     * @param sharePublicId Identifiant public de l’invitation.
+     */
     async function refuseShare(sharePublicId: string) {
         acting.value = true;
         clearError();
@@ -153,6 +196,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         }
     }
 
+    /** Invalide et recharge comptes + invitations. */
     async function refreshAll() {
         cache.invalidate(KEY_ACCOUNTS);
         cache.invalidate(KEY_INCOMING);

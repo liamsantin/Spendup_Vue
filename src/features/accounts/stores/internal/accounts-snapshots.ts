@@ -2,9 +2,19 @@ import { accountsApi } from '../../api';
 import type { CreateBalanceSnapshotPayload } from '../../types';
 import type { AccountsState } from './accounts-state';
 
+/**
+ * Actions liées aux snapshots de solde.
+ * @param state État partagé du store.
+ * @returns Les actions snapshots.
+ */
 export function createAccountsSnapshots(state: AccountsState) {
     const { balanceSnapshots, snapshotsByAccountId, loadingSnapshots, acting, error, cache, clearError, setSnapshotsForAccount } = state;
 
+    /**
+     * Charge l’historique des snapshots de solde d’un compte.
+     * @param accountPublicId Identifiant public du compte.
+     * @param force Si `true`, ignore le TTL et refetch.
+     */
     async function loadBalanceSnapshots(accountPublicId: string, force = false) {
         await cache.ensure(
             `snapshots:${accountPublicId}`,
@@ -26,6 +36,12 @@ export function createAccountsSnapshots(state: AccountsState) {
         balanceSnapshots.value = snapshotsByAccountId.get(accountPublicId) ?? [];
     }
 
+    /**
+     * Crée un snapshot de solde et l’ajoute en tête de liste.
+     * @param accountPublicId Identifiant public du compte.
+     * @param payload Données du snapshot (solde, date, note…).
+     * @returns Le snapshot créé.
+     */
     async function createBalanceSnapshot(accountPublicId: string, payload: CreateBalanceSnapshotPayload) {
         acting.value = true;
         clearError();
@@ -43,6 +59,11 @@ export function createAccountsSnapshots(state: AccountsState) {
         }
     }
 
+    /**
+     * Supprime un snapshot de solde.
+     * @param accountPublicId Identifiant public du compte.
+     * @param snapshotPublicId Identifiant public du snapshot à supprimer.
+     */
     async function deleteBalanceSnapshot(accountPublicId: string, snapshotPublicId: string) {
         acting.value = true;
         clearError();

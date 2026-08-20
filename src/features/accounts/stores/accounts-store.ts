@@ -35,6 +35,11 @@ export const useAccountsStore = defineStore('accounts', () => {
         teardownRealtimeBridge: realtime.teardownRealtimeBridge
     });
 
+    /**
+     * Normalise une erreur inconnue en `AppError`.
+     * @param e Erreur brute (API, réseau, etc.).
+     * @returns Une instance `AppError`.
+     */
     function toAppError(e: unknown): AppError {
         return AppError.fromUnknown(e);
     }

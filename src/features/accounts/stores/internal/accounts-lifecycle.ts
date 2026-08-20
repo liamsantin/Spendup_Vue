@@ -7,6 +7,12 @@ type LifecycleDeps = Pick<AccountsCrud, 'loadAccounts'> &
     Pick<AccountsShares, 'loadIncoming'> &
     Pick<AccountsRealtime, 'ensureRealtimeBridge' | 'teardownRealtimeBridge'>;
 
+/**
+ * Cycle de vie du store : onglets, bootstrap, prefetch idle, reset.
+ * @param state État partagé du store.
+ * @param deps Actions de chargement et bridge realtime.
+ * @returns Les actions de cycle de vie.
+ */
 export function createAccountsLifecycle(state: AccountsState, deps: LifecycleDeps) {
     const {
         accounts,
@@ -34,6 +40,7 @@ export function createAccountsLifecycle(state: AccountsState, deps: LifecycleDep
 
     let prefetchTimer: ReturnType<typeof setTimeout> | number | null = null;
 
+    /** Annule le prefetch planifié en idle. */
     function cancelIdlePrefetch() {
         if (prefetchTimer == null) return;
         if (typeof cancelIdleCallback === 'function') {
@@ -43,6 +50,10 @@ export function createAccountsLifecycle(state: AccountsState, deps: LifecycleDep
         prefetchTimer = null;
     }
 
+    /**
+     * Précharge en idle l’onglet non actif (invitations ↔ comptes).
+     * @param tab Onglet actuellement ouvert.
+     */
     function scheduleIdlePrefetch(tab: 'Accounts' | 'Invitations') {
         if (import.meta.env.VITEST) return;
         cancelIdlePrefetch();
@@ -61,6 +72,10 @@ export function createAccountsLifecycle(state: AccountsState, deps: LifecycleDep
         prefetchTimer = setTimeout(run, 2000);
     }
 
+    /**
+     * Ouvre un onglet et charge les données associées.
+     * @param tab Onglet à ouvrir (`Accounts` ou `Invitations`).
+     */
     async function openTab(tab: 'Accounts' | 'Invitations') {
         ensureRealtimeBridge();
         if (tab === 'Accounts') {
@@ -70,6 +85,10 @@ export function createAccountsLifecycle(state: AccountsState, deps: LifecycleDep
         await loadIncoming();
     }
 
+    /**
+     * Premier chargement de la page comptes + prefetch de l’autre onglet.
+     * @param tab Onglet initial (défaut : `Accounts`).
+     */
     async function bootstrap(tab: 'Accounts' | 'Invitations' = 'Accounts') {
         ensureRealtimeBridge();
         await openTab(tab);
@@ -79,6 +98,7 @@ export function createAccountsLifecycle(state: AccountsState, deps: LifecycleDep
         }
     }
 
+    /** Remet le store à zéro (logout / reset session). */
     function reset() {
         cancelIdlePrefetch();
         cache.reset();

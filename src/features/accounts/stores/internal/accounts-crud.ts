@@ -2,6 +2,11 @@ import { accountsApi } from '../../api';
 import type { CreateAccountPayload, UpdateAccountPayload } from '../../types';
 import { ACCOUNTS_DETAIL_MAX_AGE_MS, KEY_ACCOUNTS, type AccountsState } from './accounts-state';
 
+/**
+ * Actions CRUD et chargement des comptes.
+ * @param state État partagé du store.
+ * @returns Les actions CRUD.
+ */
 export function createAccountsCrud(state: AccountsState) {
     const {
         accounts,
@@ -19,6 +24,10 @@ export function createAccountsCrud(state: AccountsState) {
         markPromoted
     } = state;
 
+    /**
+     * Charge la liste des comptes (TTL cache).
+     * @param force Si `true`, ignore le TTL et refetch.
+     */
     async function loadAccounts(force = false) {
         await cache.ensure(
             KEY_ACCOUNTS,
@@ -39,6 +48,12 @@ export function createAccountsCrud(state: AccountsState) {
         );
     }
 
+    /**
+     * Charge le détail d’un compte (hydrate d’abord depuis la liste).
+     * @param publicId Identifiant public du compte.
+     * @param force Si `true`, ignore le TTL et refetch.
+     * @returns Le compte sélectionné, ou `null`.
+     */
     async function loadAccountDetail(publicId: string, force = false) {
         hydrateSelectedFromList(publicId);
         await cache.ensure(
@@ -69,6 +84,11 @@ export function createAccountsCrud(state: AccountsState) {
         return selectedAccount.value;
     }
 
+    /**
+     * Crée un compte et l’ajoute en tête de liste (gère le primary si besoin).
+     * @param payload Données de création du compte.
+     * @returns Le compte créé.
+     */
     async function createAccount(payload: CreateAccountPayload) {
         acting.value = true;
         clearError();
@@ -90,6 +110,12 @@ export function createAccountsCrud(state: AccountsState) {
         }
     }
 
+    /**
+     * Met à jour un compte existant.
+     * @param publicId Identifiant public du compte.
+     * @param payload Champs à mettre à jour.
+     * @returns Le compte mis à jour.
+     */
     async function updateAccount(publicId: string, payload: UpdateAccountPayload) {
         acting.value = true;
         clearError();
@@ -110,6 +136,11 @@ export function createAccountsCrud(state: AccountsState) {
         }
     }
 
+    /**
+     * Définit le compte comme principal et déclenche le highlight UI.
+     * @param publicId Identifiant public du compte à promouvoir.
+     * @returns Le compte promu.
+     */
     async function setPrimary(publicId: string) {
         acting.value = true;
         clearError();
@@ -126,6 +157,11 @@ export function createAccountsCrud(state: AccountsState) {
         }
     }
 
+    /**
+     * Archive un compte (soft).
+     * @param publicId Identifiant public du compte à archiver.
+     * @returns Le compte archivé.
+     */
     async function archiveAccount(publicId: string) {
         acting.value = true;
         clearError();
@@ -143,6 +179,11 @@ export function createAccountsCrud(state: AccountsState) {
         }
     }
 
+    /**
+     * Restaure un compte archivé.
+     * @param publicId Identifiant public du compte à restaurer.
+     * @returns Le compte restauré.
+     */
     async function restoreAccount(publicId: string) {
         acting.value = true;
         clearError();
@@ -160,6 +201,10 @@ export function createAccountsCrud(state: AccountsState) {
         }
     }
 
+    /**
+     * Supprime définitivement un compte.
+     * @param publicId Identifiant public du compte à supprimer.
+     */
     async function deleteAccount(publicId: string) {
         acting.value = true;
         clearError();
