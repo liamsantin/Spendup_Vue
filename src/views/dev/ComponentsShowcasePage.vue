@@ -57,12 +57,21 @@ import user5 from '@/assets/images/profile/avatar/user-5.jpg';
 const tab = ref('alert');
 const closableOpen = ref(true);
 const tabsBasic = ref('one');
+const tabsBasicPilled = ref('one');
 const tabsStacked = ref('recents');
+const tabsStackedPilled = ref('recents');
 const tabsAlignCenter = ref('landscape');
+const tabsAlignCenterPilled = ref('landscape');
 const tabsAlignEnd = ref('landscape');
+const tabsAlignEndPilled = ref('landscape');
 const tabsIcon = ref('phone');
+const tabsIconPilled = ref('phone');
 const tabsDisabled = ref('one');
+const tabsDisabledPilled = ref('one');
 const tabsColors = ref('one');
+const tabsColorsPilled = ref('one');
+const tabsCenterActivePilled = ref('item-1');
+const tabsCustomIconsPilled = ref('custom-1');
 
 const modalScrollableOpen = ref(false);
 const modalStaticOpen = ref(false);
@@ -748,40 +757,99 @@ function resetChipClosable() {
             <v-tabs-window-item value="tabs">
                 <p class="text-body-2 text-medium-emphasis mb-6">
                     <code>AppBaseTabs</code> — composant réutilisable configurable, inspiré des variantes de
-                    <code>_template/modernize/views/ui-elements/UiTabs.vue</code>.
+                    <code>_template/modernize/views/ui-elements/UiTabs.vue</code>. Chaque variante est montrée
+                    en style classique puis avec la prop <code>pilled</code>.
                 </p>
 
-                <h3 class="text-h6 font-weight-semibold mb-3">Basic</h3>
-                <div class="mb-8">
-                    <AppBaseTabs v-model="tabsBasic" :tabs="basicTabItems" preset="basic">
+                <section class="tabs-showcase-group">
+                    <h2 class="text-h5 font-weight-semibold mb-3">Basic</h2>
+                    <div class="mb-4">
+                        <AppBaseTabs v-model="tabsBasic" :tabs="basicTabItems" preset="basic">
+                            <template #panel-one>Item One</template>
+                            <template #panel-two>Item Two</template>
+                            <template #panel-three>Item Three</template>
+                        </AppBaseTabs>
+                    </div>
+                    <p class="text-caption text-medium-emphasis mb-2">pilled</p>
+                    <AppBaseTabs v-model="tabsBasicPilled" :tabs="basicTabItems" preset="basic" pilled>
                         <template #panel-one>Item One</template>
                         <template #panel-two>Item Two</template>
                         <template #panel-three>Item Three</template>
                     </AppBaseTabs>
-                </div>
+                </section>
 
-                <h3 class="text-h6 font-weight-semibold mb-3">Stacked</h3>
-                <div class="mb-8">
-                    <AppBaseTabs v-model="tabsStacked" :tabs="stackedTabItems" preset="stacked">
+                <section class="tabs-showcase-group">
+                    <h2 class="text-h5 font-weight-semibold mb-3">Stacked</h2>
+                    <div class="mb-4">
+                        <AppBaseTabs v-model="tabsStacked" :tabs="stackedTabItems" preset="stacked">
+                            <template #panel-recents>Item One</template>
+                            <template #panel-favorites>Item two</template>
+                            <template #panel-nearby>Item three</template>
+                        </AppBaseTabs>
+                    </div>
+                    <p class="text-caption text-medium-emphasis mb-2">pilled</p>
+                    <AppBaseTabs v-model="tabsStackedPilled" :tabs="stackedTabItems" preset="stacked" pilled>
                         <template #panel-recents>Item One</template>
                         <template #panel-favorites>Item two</template>
                         <template #panel-nearby>Item three</template>
                     </AppBaseTabs>
-                </div>
+                </section>
 
-                <h3 class="text-h6 font-weight-semibold mb-3">Center Active</h3>
-                <div class="mb-8">
-                    <AppBaseTabs :model-value="'item-1'" :tabs="centerActiveItems" preset="center-active" />
-                </div>
+                <section class="tabs-showcase-group">
+                    <h2 class="text-h5 font-weight-semibold mb-3">Center Active</h2>
+                    <div class="mb-4">
+                        <AppBaseTabs :model-value="'item-1'" :tabs="centerActiveItems" preset="center-active" />
+                    </div>
+                    <p class="text-caption text-medium-emphasis mb-2">pilled</p>
+                    <AppBaseTabs v-model="tabsCenterActivePilled" :tabs="centerActiveItems" preset="center-active" pilled />
+                </section>
 
-                <h3 class="text-h6 font-weight-semibold mb-3">Custom Icons</h3>
-                <div class="mb-8">
-                    <AppBaseTabs :model-value="'custom-1'" :tabs="customIconsItems" preset="custom-icons" show-arrows next-icon="mdi-arrow-right-bold-box-outline" prev-icon="mdi-arrow-left-bold-box-outline" />
-                </div>
+                <section class="tabs-showcase-group">
+                    <h2 class="text-h5 font-weight-semibold mb-3">Custom Icons</h2>
+                    <div class="mb-4">
+                        <AppBaseTabs :model-value="'custom-1'" :tabs="customIconsItems" preset="custom-icons" show-arrows next-icon="mdi-arrow-right-bold-box-outline" prev-icon="mdi-arrow-left-bold-box-outline" />
+                    </div>
+                    <p class="text-caption text-medium-emphasis mb-2">pilled</p>
+                    <AppBaseTabs
+                        v-model="tabsCustomIconsPilled"
+                        :tabs="customIconsItems"
+                        preset="custom-icons"
+                        pilled
+                        show-arrows
+                        next-icon="mdi-arrow-right-bold-box-outline"
+                        prev-icon="mdi-arrow-left-bold-box-outline"
+                    />
+                </section>
 
-                <h3 class="text-h6 font-weight-semibold mb-3">Align Center</h3>
-                <div class="mb-8">
-                    <AppBaseTabs v-model="tabsAlignCenter" :tabs="alignTabsItems" preset="align-center">
+                <section class="tabs-showcase-group">
+                    <h2 class="text-h5 font-weight-semibold mb-3">Align Center</h2>
+                    <div class="mb-4">
+                        <AppBaseTabs v-model="tabsAlignCenter" :tabs="alignTabsItems" preset="align-center">
+                            <template #panel-landscape>
+                                <v-row>
+                                    <v-col v-for="item in galleryLandscape" :key="item.img" cols="12" md="4" sm="6">
+                                        <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                    </v-col>
+                                </v-row>
+                            </template>
+                            <template #panel-products>
+                                <v-row>
+                                    <v-col v-for="item in galleryProducts" :key="item.img" cols="12" md="4" sm="6">
+                                        <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                    </v-col>
+                                </v-row>
+                            </template>
+                            <template #panel-abstract>
+                                <v-row>
+                                    <v-col v-for="item in galleryAbstract" :key="item.img" cols="12" md="4" sm="6">
+                                        <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                    </v-col>
+                                </v-row>
+                            </template>
+                        </AppBaseTabs>
+                    </div>
+                    <p class="text-caption text-medium-emphasis mb-2">pilled</p>
+                    <AppBaseTabs v-model="tabsAlignCenterPilled" :tabs="alignTabsItems" preset="align-center" pilled>
                         <template #panel-landscape>
                             <v-row>
                                 <v-col v-for="item in galleryLandscape" :key="item.img" cols="12" md="4" sm="6">
@@ -804,11 +872,37 @@ function resetChipClosable() {
                             </v-row>
                         </template>
                     </AppBaseTabs>
-                </div>
+                </section>
 
-                <h3 class="text-h6 font-weight-semibold mb-3">Align End</h3>
-                <div class="mb-8">
-                    <AppBaseTabs v-model="tabsAlignEnd" :tabs="alignTabsItems" preset="align-end">
+                <section class="tabs-showcase-group">
+                    <h2 class="text-h5 font-weight-semibold mb-3">Align End</h2>
+                    <div class="mb-4">
+                        <AppBaseTabs v-model="tabsAlignEnd" :tabs="alignTabsItems" preset="align-end">
+                            <template #panel-landscape>
+                                <v-row>
+                                    <v-col v-for="item in galleryLandscape" :key="item.img" cols="12" md="4" sm="6">
+                                        <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                    </v-col>
+                                </v-row>
+                            </template>
+                            <template #panel-products>
+                                <v-row>
+                                    <v-col v-for="item in galleryProducts" :key="item.img" cols="12" md="4" sm="6">
+                                        <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                    </v-col>
+                                </v-row>
+                            </template>
+                            <template #panel-abstract>
+                                <v-row>
+                                    <v-col v-for="item in galleryAbstract" :key="item.img" cols="12" md="4" sm="6">
+                                        <v-img :src="item.img" alt="tab" cover class="w-100" height="250" />
+                                    </v-col>
+                                </v-row>
+                            </template>
+                        </AppBaseTabs>
+                    </div>
+                    <p class="text-caption text-medium-emphasis mb-2">pilled</p>
+                    <AppBaseTabs v-model="tabsAlignEndPilled" :tabs="alignTabsItems" preset="align-end" pilled>
                         <template #panel-landscape>
                             <v-row>
                                 <v-col v-for="item in galleryLandscape" :key="item.img" cols="12" md="4" sm="6">
@@ -831,35 +925,73 @@ function resetChipClosable() {
                             </v-row>
                         </template>
                     </AppBaseTabs>
-                </div>
+                </section>
 
-                <h3 class="text-h6 font-weight-semibold mb-3">Icon</h3>
-                <div class="mb-8">
-                    <AppBaseTabs v-model="tabsIcon" :tabs="iconTabItems" preset="icon">
+                <section class="tabs-showcase-group">
+                    <h2 class="text-h5 font-weight-semibold mb-3">Icon</h2>
+                    <div class="mb-4">
+                        <AppBaseTabs v-model="tabsIcon" :tabs="iconTabItems" preset="icon">
+                            <template #panel-phone>Item One</template>
+                            <template #panel-heart>Item two</template>
+                            <template #panel-user>Item three</template>
+                        </AppBaseTabs>
+                    </div>
+                    <p class="text-caption text-medium-emphasis mb-2">pilled</p>
+                    <AppBaseTabs v-model="tabsIconPilled" :tabs="iconTabItems" preset="icon" pilled>
                         <template #panel-phone>Item One</template>
                         <template #panel-heart>Item two</template>
                         <template #panel-user>Item three</template>
                     </AppBaseTabs>
-                </div>
+                </section>
 
-                <h3 class="text-h6 font-weight-semibold mb-3">Disabled</h3>
-                <div class="mb-8">
-                    <AppBaseTabs v-model="tabsDisabled" :tabs="disabledTabItems" preset="disabled">
+                <section class="tabs-showcase-group">
+                    <h2 class="text-h5 font-weight-semibold mb-3">Disabled</h2>
+                    <div class="mb-4">
+                        <AppBaseTabs v-model="tabsDisabled" :tabs="disabledTabItems" preset="disabled">
+                            <template #panel-one>item one</template>
+                            <template #panel-two>item two</template>
+                            <template #panel-three>item three</template>
+                        </AppBaseTabs>
+                    </div>
+                    <p class="text-caption text-medium-emphasis mb-2">pilled</p>
+                    <AppBaseTabs v-model="tabsDisabledPilled" :tabs="disabledTabItems" preset="disabled" pilled>
                         <template #panel-one>item one</template>
                         <template #panel-two>item two</template>
                         <template #panel-three>item three</template>
                     </AppBaseTabs>
-                </div>
+                </section>
 
-                <h3 class="text-h6 font-weight-semibold mb-3">Colors</h3>
-                <div class="mb-8">
-                    <AppBaseTabs v-model="tabsColors" :tabs="colorTabItems" preset="colors">
+                <section class="tabs-showcase-group">
+                    <h2 class="text-h5 font-weight-semibold mb-3">Colors</h2>
+                    <div class="mb-4">
+                        <AppBaseTabs v-model="tabsColors" :tabs="colorTabItems" preset="colors">
+                            <template #panel-one>item one</template>
+                            <template #panel-two>item two</template>
+                            <template #panel-three>item three</template>
+                        </AppBaseTabs>
+                    </div>
+                    <p class="text-caption text-medium-emphasis mb-2">pilled</p>
+                    <AppBaseTabs v-model="tabsColorsPilled" :tabs="colorTabItems" preset="colors" pilled>
                         <template #panel-one>item one</template>
                         <template #panel-two>item two</template>
                         <template #panel-three>item three</template>
                     </AppBaseTabs>
-                </div>
+                </section>
             </v-tabs-window-item>
         </v-tabs-window>
     </div>
 </template>
+
+<style scoped>
+.tabs-showcase-group {
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid rgba(var(--v-theme-borderColor), 1);
+}
+
+.tabs-showcase-group:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+</style>
