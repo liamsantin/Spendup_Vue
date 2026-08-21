@@ -1,7 +1,7 @@
 <script setup lang="ts">
 defineOptions({ name: 'AppBaseTabs' });
 
-import { computed, ref, watch, type Component } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type Component } from 'vue';
 
 export type AppBaseTabsPreset =
     | 'basic'
@@ -167,38 +167,125 @@ function iconClass(item: AppBaseTabsItem) {
     if (!item.label) return undefined;
     return resolvedStacked.value ? 'mb-1' : 'v-icon--start';
 }
+
+const trackRef = ref<HTMLElement | null>(null);
+const pillReady = ref(false);
+const pillStyle = ref<Record<string, string>>({
+    width: '0px',
+    height: '0px',
+    transform: 'translate(0px, 0px)'
+});
+
+let resizeObserver: ResizeObserver | null = null;
+
+function handleWindowResize() {
+    updatePill(false);
+}
+
+function updatePill(animate = true) {
+    if (!isPilled.value || !trackRef.value) return;
+
+    const active = trackRef.value.querySelector<HTMLElement>('.v-tab--selected');
+    if (!active) return;
+
+    const trackRect = trackRef.value.getBoundingClientRect();
+    const tabRect = active.getBoundingClientRect();
+    const next = {
+        width: `${tabRect.width}px`,
+        height: `${tabRect.height}px`,
+        transform: `translate(${tabRect.left - trackRect.left}px, ${tabRect.top - trackRect.top}px)`
+    };
+
+    if (!animate) {
+        pillReady.value = false;
+        pillStyle.value = next;
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                pillReady.value = true;
+            });
+        });
+        return;
+    }
+
+    pillReady.value = true;
+    pillStyle.value = next;
+}
+
+function schedulePillUpdate(animate = true) {
+    nextTick(() => updatePill(animate));
+}
+
+watch(currentValue, () => schedulePillUpdate(true));
+watch(isPilled, (enabled) => {
+    if (enabled) {
+        nextTick(() => {
+            if (trackRef.value && resizeObserver) resizeObserver.observe(trackRef.value);
+            updatePill(false);
+        });
+    }
+});
+watch(
+    () => props.tabs,
+    () => schedulePillUpdate(false),
+    { deep: true }
+);
+
+onMounted(() => {
+    schedulePillUpdate(false);
+    if (typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver(() => updatePill(false));
+        if (trackRef.value) resizeObserver.observe(trackRef.value);
+    }
+    window.addEventListener('resize', handleWindowResize);
+});
+
+onBeforeUnmount(() => {
+    resizeObserver?.disconnect();
+    window.removeEventListener('resize', handleWindowResize);
+});
 </script>
 
 <template>
     <v-sheet elevation="0" class="app-base-tabs" :class="{ 'app-base-tabs--pilled': isPilled }">
-        <v-tabs
-            v-model="currentValue"
-            class="app-base-tabs__list"
-            :bg-color="resolvedBgColor"
-            :color="resolvedColor"
-            :align-tabs="resolvedAlignTabs"
-            :grow="props.grow"
-            :show-arrows="resolvedShowArrows"
-            :stacked="resolvedStacked"
-            :centered="resolvedCentered"
-            :center-active="resolvedCenterActive"
-            :next-icon="props.nextIcon"
-            :prev-icon="props.prevIcon"
-            :density="isPilled ? 'comfortable' : undefined"
-            :selected-class="isPilled ? 'app-base-tabs__tab--active' : undefined"
-        >
-            <v-tab
-                v-for="item in props.tabs"
-                :key="item.value"
-                class="app-base-tabs__tab"
-                :value="item.value"
-                :disabled="item.disabled"
-                :color="item.color"
+        <div ref="trackRef" :class="{ 'app-base-tabs__track': isPilled }">
+            <div
+                v-if="isPilled"
+                class="app-base-tabs__pill"
+                :class="{ 'app-base-tabs__pill--ready': pillReady }"
+                :style="pillStyle"
+                aria-hidden="true"
+            />
+
+            <v-tabs
+                v-model="currentValue"
+                class="app-base-tabs__list"
+                :bg-color="resolvedBgColor"
+                :color="resolvedColor"
+                :align-tabs="resolvedAlignTabs"
+                :grow="props.grow"
+                :show-arrows="resolvedShowArrows"
+                :stacked="resolvedStacked"
+                :centered="resolvedCentered"
+                :center-active="resolvedCenterActive"
+                :next-icon="props.nextIcon"
+                :prev-icon="props.prevIcon"
+                :density="isPilled ? 'comfortable' : undefined"
+                :selected-class="isPilled ? 'app-base-tabs__tab--active' : undefined"
             >
-                <component :is="item.icon" v-if="item.icon" stroke-width="1.5" width="20" :class="iconClass(item)" />
-                <span v-if="item.label">{{ item.label }}</span>
-            </v-tab>
-        </v-tabs>
+                <v-tab
+                    v-for="item in props.tabs"
+                    :key="item.value"
+                    class="app-base-tabs__tab"
+                    :value="item.value"
+                    :disabled="item.disabled"
+                    :color="item.color"
+                    :ripple="isPilled ? false : undefined"
+                >
+                    <component :is="item.icon" v-if="item.icon" stroke-width="1.5" width="20" :class="iconClass(item)" />
+                    <span v-if="item.label">{{ item.label }}</span>
+                </v-tab>
+            </v-tabs>
+        </div>
 
         <v-divider v-if="resolvedShowDivider" class="app-base-tabs__divider" />
 
@@ -220,10 +307,47 @@ function iconClass(item: AppBaseTabsItem) {
 .app-base-tabs--pilled {
     background: transparent;
 
+    .app-base-tabs__track {
+        position: relative;
+    }
+
+    .app-base-tabs__pill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 0;
+        border-radius: 10px;
+        background-color: rgb(var(--v-theme-primary));
+        pointer-events: none;
+        will-change: transform, width, height;
+
+        &--ready {
+            transition:
+                transform 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+                width 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+                height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+    }
+
     .app-base-tabs__list {
+        --v-tabs-height: auto;
+        position: relative;
+        z-index: 1;
+        height: auto !important;
+        min-height: 0;
+        background: transparent !important;
+        overflow: visible;
+
+        :deep(.v-slide-group),
+        :deep(.v-slide-group__container) {
+            height: auto !important;
+            overflow: visible !important;
+        }
+
         :deep(.v-slide-group__content) {
             gap: 4px;
-            padding-bottom: 8px;
+            height: auto !important;
+            align-items: center;
         }
 
         :deep(.v-tab) {
@@ -231,29 +355,41 @@ function iconClass(item: AppBaseTabsItem) {
             height: auto;
             min-height: 36px;
             padding: 8px 12px;
-            border-radius: 6px;
+            border-radius: 10px !important;
             letter-spacing: normal;
             text-transform: none;
             font-size: 0.875rem;
             font-weight: 500;
             color: rgba(var(--v-theme-textPrimary), 0.55);
+            background-color: transparent !important;
+            box-shadow: none !important;
             opacity: 1;
-            transition:
-                background-color 0.15s ease,
-                color 0.15s ease;
+            transition: color 0.2s ease;
 
             .v-btn__overlay,
-            .v-btn__underlay {
-                display: none;
+            .v-btn__underlay,
+            .v-ripple__container {
+                display: none !important;
+                opacity: 0 !important;
             }
 
             .v-tab__slider {
                 display: none;
             }
 
-            &:hover:not(.v-tab--selected):not(.v-tab--disabled) {
-                color: rgb(var(--v-theme-primary));
-                background-color: rgb(var(--v-theme-lightprimary));
+            &:hover:not(:active):not(.v-tab--selected):not(.v-tab--disabled) {
+                color: rgb(var(--v-theme-textPrimary));
+            }
+
+            &:focus,
+            &:active,
+            &:focus-visible {
+                background-color: transparent !important;
+                box-shadow: none !important;
+            }
+
+            &:active:not(.v-tab--selected):not(.v-tab--disabled) {
+                color: rgba(var(--v-theme-textPrimary), 0.55);
             }
 
             &.v-tab--disabled {
@@ -265,13 +401,29 @@ function iconClass(item: AppBaseTabsItem) {
         :deep(.v-tab--selected) {
             font-weight: 700;
             color: #fff !important;
-            background-color: rgb(var(--v-theme-primary));
+            background-color: transparent !important;
+            box-shadow: none !important;
+
+            &:hover,
+            &:focus,
+            &:active,
+            &:focus-visible {
+                color: #fff !important;
+                background-color: transparent !important;
+                box-shadow: none !important;
+            }
         }
     }
 
     .app-base-tabs__divider {
         border-color: rgb(var(--v-theme-borderColor));
         opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-base-tabs--pilled .app-base-tabs__pill--ready {
+        transition: none;
     }
 }
 </style>
