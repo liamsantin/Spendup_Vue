@@ -323,9 +323,9 @@ onBeforeUnmount(() => {
 
         &--ready {
             transition:
-                transform 0.4s cubic-bezier(0.32, 0.72, 0, 1),
-                width 0.4s cubic-bezier(0.32, 0.72, 0, 1),
-                height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+                transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+                width 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+                height 0.25s cubic-bezier(0.32, 0.72, 0, 1);
         }
     }
 
