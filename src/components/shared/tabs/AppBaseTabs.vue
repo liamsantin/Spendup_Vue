@@ -264,8 +264,8 @@ function iconClass(item: AppBaseTabsItem) {
         :deep(.app-base-tabs__tab--active),
         :deep(.v-tab--selected) {
             font-weight: 700;
-            color: rgb(var(--v-theme-primary)) !important;
-            background-color: rgb(var(--v-theme-lightprimary));
+            color: #fff !important;
+            background-color: rgb(var(--v-theme-primary));
         }
     }
 
