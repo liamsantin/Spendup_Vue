@@ -174,6 +174,7 @@ export function createAccountsState() {
         if (selectedAccount.value?.publicId === publicId) {
             selectedAccount.value = null;
             shares.value = [];
+            balanceSnapshots.value = [];
         }
         sharesByAccountId.delete(publicId);
         cache.invalidate(`detail:${publicId}`);
@@ -242,6 +243,22 @@ export function createAccountsState() {
         balanceSnapshots.value = [];
     }
 
+    /**
+     * Aligne la sélection sur la liste courante : refresh si présent, `clearSelected` si absent (revoke / friendship).
+     * @returns `false` si la sélection a été vidée, `true` sinon.
+     */
+    function syncSelectedWithList(): boolean {
+        const selected = selectedAccount.value;
+        if (!selected) return true;
+        const next = accounts.value.find((a) => a.publicId === selected.publicId);
+        if (!next) {
+            clearSelected();
+            return false;
+        }
+        selectedAccount.value = next;
+        return true;
+    }
+
     return {
         accounts,
         incomingShares,
@@ -284,7 +301,8 @@ export function createAccountsState() {
         setSnapshotsForAccount,
         activateSharesView,
         activateSnapshotsView,
-        clearSelected
+        clearSelected,
+        syncSelectedWithList
     };
 }
 

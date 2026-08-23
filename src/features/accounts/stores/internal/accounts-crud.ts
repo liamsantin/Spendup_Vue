@@ -21,7 +21,9 @@ export function createAccountsCrud(state: AccountsState) {
         removeAccountLocal,
         hydrateSelectedFromList,
         applyPrimaryLocally,
-        markPromoted
+        markPromoted,
+        syncSelectedWithList,
+        clearSelected
     } = state;
 
     /** Incrémente à chaque `loadAccountDetail` — les réponses tardives d’un id précédent sont ignorées. */
@@ -40,6 +42,7 @@ export function createAccountsCrud(state: AccountsState) {
                 try {
                     const result = await accountsApi.list();
                     accounts.value = Array.isArray(result?.items) ? result.items : [];
+                    syncSelectedWithList();
                 } catch (e: unknown) {
                     error.value = e instanceof Error ? e.message : String(e);
                     throw e;
@@ -49,6 +52,8 @@ export function createAccountsCrud(state: AccountsState) {
             },
             { force }
         );
+        // Cache hit : la liste n’a pas bougé, mais on réaligne quand même (sécurité).
+        syncSelectedWithList();
     }
 
     /**
@@ -77,7 +82,7 @@ export function createAccountsCrud(state: AccountsState) {
                     if (requestId === detailRequestSeq) {
                         error.value = e instanceof Error ? e.message : String(e);
                         if (!accounts.value.some((a) => a.publicId === publicId)) {
-                            selectedAccount.value = null;
+                            clearSelected();
                         }
                     }
                     throw e;

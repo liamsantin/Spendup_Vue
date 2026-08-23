@@ -492,6 +492,49 @@ describe('useAccountsStore', () => {
         expect(store.balanceSnapshots[0]?.publicId).toBe('snap-b');
     });
 
+    it('vide la sélection si le compte disparaît de la liste après reload', async () => {
+        const sharedAccount = {
+            ...ownedAccount,
+            publicId: 'acc-shared',
+            name: 'Partagé',
+            isOwned: false,
+            isPrimary: false,
+            myRole: 'viewer' as const
+        };
+        api.list.mockResolvedValueOnce({ items: [ownedAccount, sharedAccount] });
+        api.get.mockResolvedValue(sharedAccount);
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-shared');
+        expect(store.selectedAccount?.publicId).toBe('acc-shared');
+
+        api.list.mockResolvedValueOnce({ items: [ownedAccount] });
+        await store.loadAccounts(true);
+
+        expect(store.selectedAccount).toBeNull();
+        expect(store.shares).toEqual([]);
+        expect(store.balanceSnapshots).toEqual([]);
+    });
+
+    it('rafraîchit la sélection depuis la liste si le compte est toujours présent', async () => {
+        api.list.mockResolvedValueOnce({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+
+        api.list.mockResolvedValueOnce({
+            items: [{ ...ownedAccount, name: 'Courant renommé', isActive: false }]
+        });
+        await store.loadAccounts(true);
+
+        expect(store.selectedAccount?.publicId).toBe('acc-1');
+        expect(store.selectedAccount?.name).toBe('Courant renommé');
+        expect(store.selectedAccount?.isActive).toBe(false);
+    });
+
     it('onAuthenticatedSession branche le realtime sans charger', () => {
         const store = useAccountsStore();
         store.onAuthenticatedSession();

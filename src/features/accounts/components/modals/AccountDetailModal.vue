@@ -96,6 +96,18 @@ watch(
     }
 );
 
+/** Ferme la modale si le compte a disparu de la liste (revoke / amitié rompue) après sync. */
+watch(
+    () => [props.modelValue, props.accountPublicId, store.selectedAccount, store.loadingDetail, store.accounts] as const,
+    ([isOpen, id, selected, loadingDetail]) => {
+        if (!isOpen || !id || loadingDetail) return;
+        if (selected?.publicId === id) return;
+        if (!store.accounts.some((a) => a.publicId === id)) {
+            open.value = false;
+        }
+    }
+);
+
 async function onSetPrimary() {
     if (!account.value) return;
     localError.value = null;
