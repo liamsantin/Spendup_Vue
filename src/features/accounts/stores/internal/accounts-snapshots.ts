@@ -8,7 +8,20 @@ import type { AccountsState } from './accounts-state';
  * @returns Les actions snapshots.
  */
 export function createAccountsSnapshots(state: AccountsState) {
-    const { balanceSnapshots, snapshotsByAccountId, loadingSnapshots, acting, error, cache, clearError, setSnapshotsForAccount } = state;
+    const {
+        snapshotsByAccountId,
+        selectedAccount,
+        loadingSnapshots,
+        acting,
+        error,
+        cache,
+        clearError,
+        setSnapshotsForAccount,
+        activateSnapshotsView
+    } = state;
+
+    /** Incrémente à chaque `loadBalanceSnapshots` — ignore les réponses tardives d’un autre compte. */
+    let snapshotsRequestSeq = 0;
 
     /**
      * Charge l’historique des snapshots de solde d’un compte.
@@ -16,24 +29,33 @@ export function createAccountsSnapshots(state: AccountsState) {
      * @param force Si `true`, ignore le TTL et refetch.
      */
     async function loadBalanceSnapshots(accountPublicId: string, force = false) {
+        const requestId = ++snapshotsRequestSeq;
         await cache.ensure(
             `snapshots:${accountPublicId}`,
             async () => {
-                loadingSnapshots.value = true;
-                clearError();
+                if (requestId === snapshotsRequestSeq) {
+                    loadingSnapshots.value = true;
+                    clearError();
+                }
                 try {
                     const result = await accountsApi.listBalanceSnapshots(accountPublicId);
                     setSnapshotsForAccount(accountPublicId, Array.isArray(result?.items) ? result.items : []);
                 } catch (e: unknown) {
-                    error.value = e instanceof Error ? e.message : String(e);
+                    if (requestId === snapshotsRequestSeq) {
+                        error.value = e instanceof Error ? e.message : String(e);
+                    }
                     throw e;
                 } finally {
-                    loadingSnapshots.value = false;
+                    if (requestId === snapshotsRequestSeq) {
+                        loadingSnapshots.value = false;
+                    }
                 }
             },
             { force }
         );
-        balanceSnapshots.value = snapshotsByAccountId.get(accountPublicId) ?? [];
+        if (requestId === snapshotsRequestSeq && selectedAccount.value?.publicId === accountPublicId) {
+            activateSnapshotsView(accountPublicId);
+        }
     }
 
     /**
@@ -47,7 +69,7 @@ export function createAccountsSnapshots(state: AccountsState) {
         clearError();
         try {
             const snapshot = await accountsApi.createBalanceSnapshot(accountPublicId, payload);
-            const current = snapshotsByAccountId.get(accountPublicId) ?? balanceSnapshots.value;
+            const current = snapshotsByAccountId.get(accountPublicId) ?? [];
             setSnapshotsForAccount(accountPublicId, [snapshot, ...current]);
             cache.touch(`snapshots:${accountPublicId}`);
             return snapshot;
@@ -69,7 +91,7 @@ export function createAccountsSnapshots(state: AccountsState) {
         clearError();
         try {
             await accountsApi.deleteBalanceSnapshot(accountPublicId, snapshotPublicId);
-            const current = snapshotsByAccountId.get(accountPublicId) ?? balanceSnapshots.value;
+            const current = snapshotsByAccountId.get(accountPublicId) ?? [];
             setSnapshotsForAccount(
                 accountPublicId,
                 current.filter((s) => s.publicId !== snapshotPublicId)

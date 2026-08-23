@@ -17,7 +17,10 @@ const api = vi.hoisted(() => ({
     revokeShare: vi.fn(),
     listIncomingShares: vi.fn(),
     acceptShare: vi.fn(),
-    refuseShare: vi.fn()
+    refuseShare: vi.fn(),
+    listBalanceSnapshots: vi.fn(),
+    createBalanceSnapshot: vi.fn(),
+    deleteBalanceSnapshot: vi.fn()
 }));
 
 const subscribeToAccountShareNotifications = vi.fn();
@@ -39,7 +42,10 @@ vi.mock('../../api', () => ({
         revokeShare: (...args: unknown[]) => api.revokeShare(...args),
         listIncomingShares: (...args: unknown[]) => api.listIncomingShares(...args),
         acceptShare: (...args: unknown[]) => api.acceptShare(...args),
-        refuseShare: (...args: unknown[]) => api.refuseShare(...args)
+        refuseShare: (...args: unknown[]) => api.refuseShare(...args),
+        listBalanceSnapshots: (...args: unknown[]) => api.listBalanceSnapshots(...args),
+        createBalanceSnapshot: (...args: unknown[]) => api.createBalanceSnapshot(...args),
+        deleteBalanceSnapshot: (...args: unknown[]) => api.deleteBalanceSnapshot(...args)
     }
 }));
 
@@ -313,6 +319,8 @@ describe('useAccountsStore', () => {
     });
 
     it('restaure les shares depuis le cache mémoire sans refetch', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
         api.listShares.mockResolvedValue({
             items: [
                 {
@@ -329,12 +337,159 @@ describe('useAccountsStore', () => {
         });
 
         const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
         await store.loadShares('acc-1');
         store.shares = [];
         await store.loadShares('acc-1');
 
         expect(api.listShares).toHaveBeenCalledTimes(1);
         expect(store.shares).toHaveLength(1);
+    });
+
+    it('ignore un détail tardif quand un autre compte est déjà sélectionné', async () => {
+        const accountB = { ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: false, iban: 'CH-B' };
+        api.list.mockResolvedValue({ items: [ownedAccount, accountB] });
+
+        let resolveA: ((value: unknown) => void) | undefined;
+        api.get.mockImplementation((id: string) => {
+            if (id === 'acc-1') {
+                return new Promise((resolve) => {
+                    resolveA = resolve;
+                });
+            }
+            return Promise.resolve({ ...accountB, iban: 'CH-B-detail' });
+        });
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+
+        const loadA = store.loadAccountDetail('acc-1');
+        const loadB = store.loadAccountDetail('acc-2');
+        await loadB;
+        expect(store.selectedAccount?.publicId).toBe('acc-2');
+
+        resolveA?.({ ...ownedAccount, iban: 'CH-A-late' });
+        await loadA;
+
+        expect(store.selectedAccount?.publicId).toBe('acc-2');
+        expect(store.selectedAccount?.iban).toBe('CH-B-detail');
+        expect(store.accounts.find((a) => a.publicId === 'acc-1')?.iban).toBe('CH-A-late');
+    });
+
+    it('ignore des shares tardives d’un autre compte', async () => {
+        const accountB = { ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: false };
+        api.list.mockResolvedValue({ items: [ownedAccount, accountB] });
+        api.get.mockImplementation(async (id: string) => (id === 'acc-1' ? ownedAccount : accountB));
+
+        let resolveSharesA: ((value: unknown) => void) | undefined;
+        api.listShares.mockImplementation((id: string) => {
+            if (id === 'acc-1') {
+                return new Promise((resolve) => {
+                    resolveSharesA = resolve;
+                });
+            }
+            return Promise.resolve({
+                items: [
+                    {
+                        publicId: 's-b',
+                        userPublicId: 'u3',
+                        displayName: 'Alice',
+                        photoUrl: null,
+                        role: 'viewer',
+                        invitedRole: null,
+                        createdAt: '2026-01-01T00:00:00Z',
+                        updatedAt: '2026-01-01T00:00:00Z'
+                    }
+                ]
+            });
+        });
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        const loadSharesA = store.loadShares('acc-1');
+        await store.loadAccountDetail('acc-2');
+        await store.loadShares('acc-2');
+
+        expect(store.shares).toHaveLength(1);
+        expect(store.shares[0]?.publicId).toBe('s-b');
+
+        resolveSharesA?.({
+            items: [
+                {
+                    publicId: 's-a',
+                    userPublicId: 'u2',
+                    displayName: 'Bob',
+                    photoUrl: null,
+                    role: 'editor',
+                    invitedRole: null,
+                    createdAt: '2026-01-01T00:00:00Z',
+                    updatedAt: '2026-01-01T00:00:00Z'
+                }
+            ]
+        });
+        await loadSharesA;
+
+        expect(store.shares).toHaveLength(1);
+        expect(store.shares[0]?.publicId).toBe('s-b');
+    });
+
+    it('ignore des snapshots tardifs d’un autre compte', async () => {
+        const accountB = { ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: false };
+        api.list.mockResolvedValue({ items: [ownedAccount, accountB] });
+        api.get.mockImplementation(async (id: string) => (id === 'acc-1' ? ownedAccount : accountB));
+
+        let resolveSnapA: ((value: unknown) => void) | undefined;
+        api.listBalanceSnapshots.mockImplementation((id: string) => {
+            if (id === 'acc-1') {
+                return new Promise((resolve) => {
+                    resolveSnapA = resolve;
+                });
+            }
+            return Promise.resolve({
+                items: [
+                    {
+                        publicId: 'snap-b',
+                        accountPublicId: 'acc-2',
+                        balance: 50,
+                        snapshotAt: '2026-01-02T00:00:00Z',
+                        source: 'manual',
+                        note: null,
+                        createdAt: '2026-01-02T00:00:00Z',
+                        updatedAt: null
+                    }
+                ]
+            });
+        });
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        const loadSnapA = store.loadBalanceSnapshots('acc-1');
+        await store.loadAccountDetail('acc-2');
+        await store.loadBalanceSnapshots('acc-2');
+
+        expect(store.balanceSnapshots[0]?.publicId).toBe('snap-b');
+
+        resolveSnapA?.({
+            items: [
+                {
+                    publicId: 'snap-a',
+                    accountPublicId: 'acc-1',
+                    balance: 100,
+                    snapshotAt: '2026-01-01T00:00:00Z',
+                    source: 'manual',
+                    note: null,
+                    createdAt: '2026-01-01T00:00:00Z',
+                    updatedAt: null
+                }
+            ]
+        });
+        await loadSnapA;
+
+        expect(store.balanceSnapshots).toHaveLength(1);
+        expect(store.balanceSnapshots[0]?.publicId).toBe('snap-b');
     });
 
     it('onAuthenticatedSession branche le realtime sans charger', () => {

@@ -24,6 +24,9 @@ export function createAccountsCrud(state: AccountsState) {
         markPromoted
     } = state;
 
+    /** Incrémente à chaque `loadAccountDetail` — les réponses tardives d’un id précédent sont ignorées. */
+    let detailRequestSeq = 0;
+
     /**
      * Charge la liste des comptes (TTL cache).
      * @param force Si `true`, ignore le TTL et refetch.
@@ -55,29 +58,40 @@ export function createAccountsCrud(state: AccountsState) {
      * @returns Le compte sélectionné, ou `null`.
      */
     async function loadAccountDetail(publicId: string, force = false) {
+        const requestId = ++detailRequestSeq;
         hydrateSelectedFromList(publicId);
         await cache.ensure(
             `detail:${publicId}`,
             async () => {
-                loadingDetail.value = true;
-                clearError();
+                if (requestId === detailRequestSeq) {
+                    loadingDetail.value = true;
+                    clearError();
+                }
                 try {
                     const account = await accountsApi.get(publicId);
-                    selectedAccount.value = account;
                     upsertAccount(account);
-                    return;
+                    if (requestId === detailRequestSeq) {
+                        selectedAccount.value = account;
+                    }
                 } catch (e: unknown) {
-                    error.value = e instanceof Error ? e.message : String(e);
-                    if (!accounts.value.some((a) => a.publicId === publicId)) {
-                        selectedAccount.value = null;
+                    if (requestId === detailRequestSeq) {
+                        error.value = e instanceof Error ? e.message : String(e);
+                        if (!accounts.value.some((a) => a.publicId === publicId)) {
+                            selectedAccount.value = null;
+                        }
                     }
                     throw e;
                 } finally {
-                    loadingDetail.value = false;
+                    if (requestId === detailRequestSeq) {
+                        loadingDetail.value = false;
+                    }
                 }
             },
             { force, maxAgeMs: ACCOUNTS_DETAIL_MAX_AGE_MS }
         );
+        if (requestId !== detailRequestSeq) {
+            return selectedAccount.value;
+        }
         if (selectedAccount.value?.publicId !== publicId) {
             hydrateSelectedFromList(publicId);
         }

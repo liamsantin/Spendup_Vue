@@ -12,16 +12,20 @@ import type { AccountsCrud } from './accounts-crud';
 export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCrud, 'loadAccounts'>) {
     const {
         incomingShares,
-        shares,
         sharesByAccountId,
+        selectedAccount,
         loadingIncoming,
         loadingShares,
         acting,
         error,
         cache,
         clearError,
-        setSharesForAccount
+        setSharesForAccount,
+        activateSharesView
     } = state;
+
+    /** Incrémente à chaque `loadShares` — ignore les réponses tardives d’un autre compte. */
+    let sharesRequestSeq = 0;
 
     /**
      * Charge les invitations de partage reçues.
@@ -53,24 +57,33 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
      * @param force Si `true`, ignore le TTL et refetch.
      */
     async function loadShares(accountPublicId: string, force = false) {
+        const requestId = ++sharesRequestSeq;
         await cache.ensure(
             `shares:${accountPublicId}`,
             async () => {
-                loadingShares.value = true;
-                clearError();
+                if (requestId === sharesRequestSeq) {
+                    loadingShares.value = true;
+                    clearError();
+                }
                 try {
                     const result = await accountsApi.listShares(accountPublicId);
                     setSharesForAccount(accountPublicId, Array.isArray(result?.items) ? result.items : []);
                 } catch (e: unknown) {
-                    error.value = e instanceof Error ? e.message : String(e);
+                    if (requestId === sharesRequestSeq) {
+                        error.value = e instanceof Error ? e.message : String(e);
+                    }
                     throw e;
                 } finally {
-                    loadingShares.value = false;
+                    if (requestId === sharesRequestSeq) {
+                        loadingShares.value = false;
+                    }
                 }
             },
             { force }
         );
-        shares.value = sharesByAccountId.get(accountPublicId) ?? [];
+        if (requestId === sharesRequestSeq && selectedAccount.value?.publicId === accountPublicId) {
+            activateSharesView(accountPublicId);
+        }
     }
 
     /**
@@ -90,7 +103,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
                 ...share,
                 photoUrl: share.photoUrl || photoUrl || null
             };
-            const current = sharesByAccountId.get(accountPublicId) ?? shares.value;
+            const current = sharesByAccountId.get(accountPublicId) ?? [];
             const idx = current.findIndex((s) => s.userPublicId === userPublicId);
             const next = idx >= 0 ? [...current.slice(0, idx), merged, ...current.slice(idx + 1)] : [...current, merged];
             setSharesForAccount(accountPublicId, next);
@@ -116,7 +129,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         clearError();
         try {
             const share = await accountsApi.updateShareRole(accountPublicId, userPublicId, { role });
-            const current = sharesByAccountId.get(accountPublicId) ?? shares.value;
+            const current = sharesByAccountId.get(accountPublicId) ?? [];
             const idx = current.findIndex((s) => s.userPublicId === userPublicId);
             if (idx >= 0) {
                 setSharesForAccount(accountPublicId, [...current.slice(0, idx), share, ...current.slice(idx + 1)]);
@@ -143,7 +156,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         clearError();
         try {
             await accountsApi.revokeShare(accountPublicId, userPublicId);
-            const current = sharesByAccountId.get(accountPublicId) ?? shares.value;
+            const current = sharesByAccountId.get(accountPublicId) ?? [];
             setSharesForAccount(
                 accountPublicId,
                 current.filter((s) => s.userPublicId !== userPublicId)

@@ -182,36 +182,64 @@ export function createAccountsState() {
 
     /**
      * Préremplit la sélection depuis le snapshot déjà présent en liste.
+     * Réactive shares / snapshots du nouveau compte (cache ou listes vides) pour éviter un flash.
      * @param publicId Identifiant public du compte à hydrater.
      */
     function hydrateSelectedFromList(publicId: string) {
         const snapshot = accounts.value.find((a) => a.publicId === publicId);
-        if (snapshot) selectedAccount.value = snapshot;
+        if (!snapshot) return;
+        if (selectedAccount.value?.publicId !== publicId) {
+            shares.value = sharesByAccountId.get(publicId) ?? [];
+            balanceSnapshots.value = snapshotsByAccountId.get(publicId) ?? [];
+        }
+        selectedAccount.value = snapshot;
     }
 
     /**
-     * Mémorise les partages d’un compte et met à jour la vue courante.
+     * Mémorise les partages d’un compte. Ne touche la vue courante que si ce compte est sélectionné.
      * @param accountPublicId Identifiant public du compte.
      * @param items Liste des partages à mémoriser.
      */
     function setSharesForAccount(accountPublicId: string, items: AccountShare[]) {
         sharesByAccountId.set(accountPublicId, items);
-        shares.value = items;
+        if (selectedAccount.value?.publicId === accountPublicId) {
+            shares.value = items;
+        }
     }
 
     /**
-     * Mémorise les snapshots d’un compte et met à jour la vue courante.
+     * Mémorise les snapshots d’un compte. Ne touche la vue courante que si ce compte est sélectionné.
      * @param accountPublicId Identifiant public du compte.
      * @param items Liste des snapshots à mémoriser.
      */
     function setSnapshotsForAccount(accountPublicId: string, items: AccountBalanceSnapshot[]) {
         snapshotsByAccountId.set(accountPublicId, items);
-        balanceSnapshots.value = items;
+        if (selectedAccount.value?.publicId === accountPublicId) {
+            balanceSnapshots.value = items;
+        }
     }
 
-    /** Vide le compte actuellement sélectionné. */
+    /**
+     * Active la vue partages pour un compte (cache mémoire ou liste vide).
+     * @param accountPublicId Identifiant public du compte.
+     */
+    function activateSharesView(accountPublicId: string) {
+        shares.value = sharesByAccountId.get(accountPublicId) ?? [];
+    }
+
+    /**
+     * Active la vue snapshots pour un compte (cache mémoire ou liste vide).
+     * @param accountPublicId Identifiant public du compte.
+     */
+    function activateSnapshotsView(accountPublicId: string) {
+        balanceSnapshots.value = snapshotsByAccountId.get(accountPublicId) ?? [];
+    }
+
+    /** Vide le compte actuellement sélectionné et les vues associées. */
     function clearSelected() {
         selectedAccount.value = null;
+        shares.value = [];
+        balanceSnapshots.value = [];
     }
 
     return {
@@ -254,6 +282,8 @@ export function createAccountsState() {
         hydrateSelectedFromList,
         setSharesForAccount,
         setSnapshotsForAccount,
+        activateSharesView,
+        activateSnapshotsView,
         clearSelected
     };
 }
