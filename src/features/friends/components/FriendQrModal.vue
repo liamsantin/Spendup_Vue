@@ -11,6 +11,7 @@ import { Html5Qrcode } from 'html5-qrcode';
 import { CameraIcon, QrcodeIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppBaseTabs from '@/components/shared/tabs/AppBaseTabs.vue';
 import { useAuthStore } from '@/features/auth';
 import { buildFriendQrPayload, parseFriendQrPayload } from '../qr';
 
@@ -36,6 +37,10 @@ const open = computed({
 });
 
 const view = ref<FriendQrView>('Qr');
+const qrTabs = computed(() => [
+    { value: 'Qr', label: t('friendsPage.qr.tabs.qr'), icon: QrcodeIcon },
+    { value: 'Add', label: t('friendsPage.qr.tabs.add'), icon: CameraIcon }
+]);
 const qrDataUrl = ref<string | null>(null);
 const qrError = ref<string | null>(null);
 const scanError = ref<string | null>(null);
@@ -288,17 +293,7 @@ onBeforeUnmount(() => {
         @update:model-value="onOpenChange"
     >
         <template #toolbar>
-            <v-tabs v-model="view" align-tabs="start" color="primary" bg-color="transparent" density="comfortable" class="friend-qr-tabs">
-                <v-tab value="Qr" class="text-none">
-                    <QrcodeIcon class="mr-2" size="18" stroke-width="1.5" />
-                    {{ t('friendsPage.qr.tabs.qr') }}
-                </v-tab>
-                <v-tab value="Add" class="text-none">
-                    <CameraIcon class="mr-2" size="18" stroke-width="1.5" />
-                    {{ t('friendsPage.qr.tabs.add') }}
-                </v-tab>
-            </v-tabs>
-            <v-divider />
+            <AppBaseTabs v-model="view" :tabs="qrTabs" align-tabs="start" :show-panels="false" />
         </template>
 
         <v-window v-model="view">
@@ -355,20 +350,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.friend-qr-tabs {
-    padding-inline: 8px;
-}
-
-.friend-qr-tabs :deep(.v-slide-group__content) {
-    justify-content: flex-start;
-}
-
-.friend-qr-tabs :deep(.v-tabs-bar),
-.friend-qr-tabs :deep(.v-toolbar),
-.friend-qr-tabs :deep(.v-tabs) {
-    background: transparent !important;
-}
-
 .friend-qr-panel {
     min-height: 240px;
 }

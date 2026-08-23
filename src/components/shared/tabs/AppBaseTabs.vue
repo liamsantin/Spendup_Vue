@@ -47,7 +47,7 @@ const props = withDefaults(
     {
         modelValue: null,
         preset: 'basic',
-        pilled: false,
+        pilled: true,
         color: undefined,
         bgColor: undefined,
         alignTabs: undefined,

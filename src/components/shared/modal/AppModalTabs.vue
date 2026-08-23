@@ -27,6 +27,7 @@ const props = withDefaults(
         bgColor?: string;
         alignTabs?: 'start' | 'title' | 'center' | 'end';
         grow?: boolean;
+        pilled?: boolean;
         mobileLayout?: 'dialog' | 'fullscreen' | 'sheet';
     }>(),
     {
@@ -42,6 +43,7 @@ const props = withDefaults(
         bgColor: undefined,
         alignTabs: 'start',
         grow: false,
+        pilled: true,
         mobileLayout: 'fullscreen'
     }
 );
@@ -113,6 +115,7 @@ const currentTab = computed({
                 :bg-color="bgColor"
                 :align-tabs="alignTabs"
                 :grow="tabsGrow"
+                :pilled="pilled"
                 :show-panels="false"
             />
         </template>
