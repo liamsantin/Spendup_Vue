@@ -21,7 +21,6 @@ const props = withDefaults(
         height?: number | string;
         persistent?: boolean;
         showFooter?: boolean;
-        scrollable?: boolean;
         preset?: AppBaseTabsPreset;
         color?: string;
         bgColor?: string;
@@ -37,11 +36,10 @@ const props = withDefaults(
         height: 720,
         persistent: true,
         showFooter: true,
-        scrollable: true,
         preset: 'align-center',
         color: undefined,
         bgColor: undefined,
-        alignTabs: 'start',
+        alignTabs: 'center',
         grow: false,
         pilled: true,
         mobileLayout: 'fullscreen'
@@ -55,11 +53,6 @@ const emit = defineEmits<{
 
 const { smAndDown } = useDisplay();
 const tabsGrow = computed(() => props.grow || smAndDown.value);
-const tabsRef = ref<{ refreshPill: () => void } | null>(null);
-
-function onModalAfterEnter() {
-    tabsRef.value?.refreshPill();
-}
 
 const open = computed({
     get: () => props.modelValue,
@@ -102,38 +95,41 @@ const currentTab = computed({
         :subtitle="subtitle"
         :max-width="maxWidth"
         :height="height"
+        :fixed-height="true"
         :persistent="persistent"
         :show-footer="showFooter"
-        :scrollable="scrollable"
+        :scrollable="false"
         :mobile-layout="mobileLayout"
-        @after-enter="onModalAfterEnter"
     >
         <template v-if="$slots['header-extra']" #header-extra>
             <slot name="header-extra" />
         </template>
 
         <template #toolbar>
-            <AppBaseTabs
-                ref="tabsRef"
-                v-model="currentTab"
-                :tabs="tabs"
-                :preset="preset"
-                :color="color"
-                :bg-color="bgColor"
-                :align-tabs="alignTabs"
-                :grow="tabsGrow"
-                :pilled="pilled"
-                :show-panels="false"
-            />
+            <div class="app-modal-tabs__toolbar">
+                <AppBaseTabs
+                    v-model="currentTab"
+                    :tabs="tabs"
+                    :preset="preset"
+                    :color="color"
+                    :bg-color="bgColor"
+                    :align-tabs="alignTabs"
+                    :grow="tabsGrow"
+                    :pilled="pilled"
+                    :show-panels="false"
+                />
+            </div>
         </template>
 
-        <slot :active-tab="currentTab" />
+        <div class="app-modal-tabs__body">
+            <slot :active-tab="currentTab" />
 
-        <v-window v-model="currentTab" class="app-modal-tabs__window">
-            <v-window-item v-for="item in tabs" :key="item.value" :value="item.value" class="app-modal-tabs__item">
-                <slot :name="`panel-${item.value}`" :tab="item" :active-tab="currentTab" />
-            </v-window-item>
-        </v-window>
+            <v-window v-model="currentTab" class="app-modal-tabs__window">
+                <v-window-item v-for="item in tabs" :key="item.value" :value="item.value" class="app-modal-tabs__item">
+                    <slot :name="`panel-${item.value}`" :tab="item" :active-tab="currentTab" />
+                </v-window-item>
+            </v-window>
+        </div>
 
         <template v-if="$slots.footer" #footer="{ close }">
             <slot name="footer" :close="close" />
@@ -142,15 +138,31 @@ const currentTab = computed({
 </template>
 
 <style scoped>
-.app-modal-tabs__window,
-.app-modal-tabs__item {
-    min-height: 520px;
+.app-modal-tabs__toolbar {
+    display: flex;
+    justify-content: center;
+    padding: 4px;
 }
 
-@media (max-width: 599.98px) {
-    .app-modal-tabs__window,
-    .app-modal-tabs__item {
-        min-height: 0;
-    }
+.app-modal-tabs__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+}
+
+.app-modal-tabs__window {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+}
+
+.app-modal-tabs__window :deep(.v-window__container) {
+    height: 100%;
+}
+
+.app-modal-tabs__item {
+    height: 100%;
 }
 </style>

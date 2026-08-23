@@ -32,6 +32,7 @@ import AppBaseTabs from '@/components/shared/tabs/AppBaseTabs.vue';
 import AppChip from '@/components/shared/chip/AppChip.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import AppRadioButton from '@/components/shared/radio/AppRadioButton.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
@@ -700,10 +701,16 @@ function resetChipClosable() {
                         :height="640"
                     >
                         <template #panel-recents>
-                            <p v-for="n in 12" :key="n" class="mb-3 text-body-1">Recents — ligne {{ n }}</p>
+                            <AppModalPanelScroll>
+                                <p v-for="n in 12" :key="n" class="mb-3 text-body-1">Recents — ligne {{ n }}</p>
+                            </AppModalPanelScroll>
                         </template>
-                        <template #panel-favorites>Favorites tab content</template>
-                        <template #panel-nearby>Nearby tab content</template>
+                        <template #panel-favorites>
+                            <AppModalPanelScroll>Favorites tab content</AppModalPanelScroll>
+                        </template>
+                        <template #panel-nearby>
+                            <AppModalPanelScroll>Nearby tab content</AppModalPanelScroll>
+                        </template>
                         <template #footer="{ close }">
                             <v-spacer />
                             <v-btn color="primary" flat @click="close">Fermer</v-btn>

@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { TrashIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { formatAccountBalance } from '../../format';
 import { useAccountsStore } from '../../stores/accounts-store';
@@ -67,8 +68,8 @@ async function confirmDelete() {
 </script>
 
 <template>
-    <div>
-        <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-3">
+    <div class="snapshots-panel">
+        <div class="snapshots-panel__header d-flex align-center justify-space-between ga-3 flex-wrap mb-3">
             <div>
                 <h5 class="text-h6 mb-0">{{ t('comptesPage.snapshots.title') }}</h5>
                 <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.snapshots.subtitle') }}</div>
@@ -78,86 +79,79 @@ async function confirmDelete() {
             </v-btn>
         </div>
 
-        <AppAlert
-            v-if="localError || store.error"
-            color="error"
-            variant="tonal"
-            class="mb-3"
-            closable
-            :dismiss-ms="3000"
-            @dismiss="
-                localError = null;
-                store.clearError();
-            "
-        >
-            {{ localError || store.error }}
-        </AppAlert>
+        <AppModalPanelScroll>
+            <AppAlert
+                v-if="localError || store.error"
+                color="error"
+                variant="tonal"
+                class="mb-3"
+                closable
+                :dismiss-ms="3000"
+                @dismiss="
+                    localError = null;
+                    store.clearError();
+                "
+            >
+                {{ localError || store.error }}
+            </AppAlert>
 
-        <div v-if="latestSnapshot" class="mb-4 pa-3 rounded-lg bg-surface-variant">
-            <div class="d-flex align-start justify-space-between ga-2 flex-wrap">
-                <div>
-                    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('comptesPage.snapshots.latestDeclared') }}</div>
-                    <div class="text-h6 font-weight-bold">
-                        {{ formatAccountBalance(latestSnapshot.balance, account.currency, locale) }}
+            <div v-if="latestSnapshot" class="mb-4 pa-3 rounded-lg bg-surface-variant">
+                <div class="d-flex align-start justify-space-between ga-2 flex-wrap">
+                    <div>
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('comptesPage.snapshots.latestDeclared') }}</div>
+                        <div class="text-h6 font-weight-bold">
+                            {{ formatAccountBalance(latestSnapshot.balance, account.currency, locale) }}
+                        </div>
+                        <div class="text-body-2 text-medium-emphasis">{{ formatDate(latestSnapshot.snapshotAt) }}</div>
                     </div>
-                    <div class="text-body-2 text-medium-emphasis">{{ formatDate(latestSnapshot.snapshotAt) }}</div>
-                </div>
-                <div v-if="balanceDiff !== null" class="text-right">
-                    <div class="text-body-2 text-medium-emphasis mb-1">{{ t('comptesPage.snapshots.diff') }}</div>
-                    <div :class="`text-subtitle-1 font-weight-bold text-${diffColor}`">
-                        {{ balanceDiff >= 0 ? '+' : '' }}{{ formatAccountBalance(balanceDiff, account.currency, locale) }}
+                    <div v-if="balanceDiff !== null" class="text-right">
+                        <div class="text-body-2 text-medium-emphasis mb-1">{{ t('comptesPage.snapshots.diff') }}</div>
+                        <div :class="`text-subtitle-1 font-weight-bold text-${diffColor}`">
+                            {{ balanceDiff >= 0 ? '+' : '' }}{{ formatAccountBalance(balanceDiff, account.currency, locale) }}
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div v-if="store.loadingSnapshots && !store.balanceSnapshots.length" class="py-6 text-center">
-            <v-progress-circular indeterminate color="primary" size="28" />
-        </div>
-        <div v-else-if="!store.balanceSnapshots.length" class="py-4 text-center text-medium-emphasis text-body-2">
-            {{ t('comptesPage.snapshots.empty') }}
-        </div>
-        <v-list v-else class="py-0 theme-list">
-            <v-list-item
-                v-for="snapshot in store.balanceSnapshots"
-                :key="snapshot.publicId"
-                class="px-2 py-2"
-                rounded="md"
-            >
-                <div class="d-flex align-center justify-space-between ga-2 w-100 flex-wrap">
-                    <div class="min-width-0">
-                        <div class="text-subtitle-2 font-weight-bold">
-                            {{ formatAccountBalance(snapshot.balance, account.currency, locale) }}
+            <div v-if="store.loadingSnapshots && !store.balanceSnapshots.length" class="py-6 text-center">
+                <v-progress-circular indeterminate color="primary" size="28" />
+            </div>
+            <div v-else-if="!store.balanceSnapshots.length" class="py-4 text-center text-medium-emphasis text-body-2">
+                {{ t('comptesPage.snapshots.empty') }}
+            </div>
+            <v-list v-else class="py-0 theme-list">
+                <v-list-item v-for="snapshot in store.balanceSnapshots" :key="snapshot.publicId" class="px-2 py-2" rounded="md">
+                    <div class="d-flex align-center justify-space-between ga-2 w-100 flex-wrap">
+                        <div class="min-width-0">
+                            <div class="text-subtitle-2 font-weight-bold">
+                                {{ formatAccountBalance(snapshot.balance, account.currency, locale) }}
+                            </div>
+                            <div class="text-body-2 text-medium-emphasis">{{ formatDate(snapshot.snapshotAt) }}</div>
+                            <div v-if="snapshot.note" class="text-body-2 text-medium-emphasis text-truncate">{{ snapshot.note }}</div>
                         </div>
-                        <div class="text-body-2 text-medium-emphasis">{{ formatDate(snapshot.snapshotAt) }}</div>
-                        <div v-if="snapshot.note" class="text-body-2 text-medium-emphasis text-truncate">{{ snapshot.note }}</div>
+                        <div class="d-flex align-center ga-2">
+                            <v-chip size="x-small" variant="tonal" color="secondary">
+                                {{ t(`comptesPage.snapshots.sources.${snapshot.source}`) }}
+                            </v-chip>
+                            <v-btn
+                                v-if="canWrite"
+                                size="small"
+                                variant="text"
+                                color="error"
+                                :disabled="store.acting"
+                                :icon="true"
+                                :aria-label="t('comptesPage.snapshots.deleteModal.confirm')"
+                                @click="deleteTarget = snapshot"
+                            >
+                                <TrashIcon size="18" />
+                            </v-btn>
+                        </div>
                     </div>
-                    <div class="d-flex align-center ga-2">
-                        <v-chip size="x-small" variant="tonal" color="secondary">
-                            {{ t(`comptesPage.snapshots.sources.${snapshot.source}`) }}
-                        </v-chip>
-                        <v-btn
-                            v-if="canWrite"
-                            size="small"
-                            variant="text"
-                            color="error"
-                            :disabled="store.acting"
-                            :icon="true"
-                            :aria-label="t('comptesPage.snapshots.deleteModal.confirm')"
-                            @click="deleteTarget = snapshot"
-                        >
-                            <TrashIcon size="18" />
-                        </v-btn>
-                    </div>
-                </div>
-            </v-list-item>
-        </v-list>
+                </v-list-item>
+            </v-list>
+        </AppModalPanelScroll>
 
-        <AccountSnapshotAddModal
-            v-model="addOpen"
-            :account-public-id="account.publicId"
-            @error="localError = $event"
-        />
+        <AccountSnapshotAddModal v-model="addOpen" :account-public-id="account.publicId" @error="localError = $event" />
 
         <AppConfirmationModal
             v-model="deleteOpen"
@@ -175,3 +169,16 @@ async function confirmDelete() {
         />
     </div>
 </template>
+
+<style scoped>
+.snapshots-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.snapshots-panel__header {
+    flex-shrink: 0;
+}
+</style>

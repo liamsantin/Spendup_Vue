@@ -293,7 +293,9 @@ onBeforeUnmount(() => {
         @update:model-value="onOpenChange"
     >
         <template #toolbar>
-            <AppBaseTabs v-model="view" :tabs="qrTabs" align-tabs="start" :show-panels="false" />
+            <div class="friend-qr-modal__tabs">
+                <AppBaseTabs v-model="view" :tabs="qrTabs" align-tabs="center" :show-panels="false" />
+            </div>
         </template>
 
         <v-window v-model="view">
@@ -350,6 +352,12 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.friend-qr-modal__tabs {
+    display: flex;
+    justify-content: center;
+    padding: 4px;
+}
+
 .friend-qr-panel {
     min-height: 240px;
 }

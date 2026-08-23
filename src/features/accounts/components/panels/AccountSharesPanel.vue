@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import { UserPhotoAvatar } from '@/features/friends';
 import { PencilIcon } from 'vue-tabler-icons';
 import { getErrorMessage } from '@/utils/errors/app-error';
@@ -83,8 +84,8 @@ async function confirmRevoke() {
 </script>
 
 <template>
-    <div>
-        <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-3">
+    <div class="shares-panel">
+        <div class="shares-panel__header d-flex align-center justify-space-between ga-3 flex-wrap mb-3">
             <div>
                 <h5 class="text-h6 mb-0">{{ t('comptesPage.share.title') }}</h5>
                 <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.share.subtitle') }}</div>
@@ -94,6 +95,7 @@ async function confirmRevoke() {
             </v-btn>
         </div>
 
+        <AppModalPanelScroll>
         <AppAlert
             v-if="localError || store.error"
             color="error"
@@ -150,6 +152,7 @@ async function confirmRevoke() {
                 </div>
             </v-list-item>
         </v-list>
+        </AppModalPanelScroll>
 
         <ShareInviteModal v-model="inviteOpen" :account-public-id="accountPublicId" />
 
@@ -179,6 +182,17 @@ async function confirmRevoke() {
 </template>
 
 <style scoped>
+.shares-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.shares-panel__header {
+    flex-shrink: 0;
+}
+
 .account-share-row {
     display: flex;
     align-items: center;

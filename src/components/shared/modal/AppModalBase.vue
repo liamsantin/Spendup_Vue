@@ -130,6 +130,13 @@ const cardStyle = computed(() => {
     return { maxHeight: cap };
 });
 
+const dialogTransition = computed(() => {
+    if (isSheet.value) return 'dialog-bottom-transition';
+    // Fade plutôt que scale : évite le “resize” visible (tabs, marges) à l’ouverture.
+    if (isFullscreen.value) return undefined;
+    return 'fade-transition';
+});
+
 async function refreshScrollbar() {
     if (!usePerfectScrollbar.value) return;
     await nextTick();
@@ -152,13 +159,13 @@ defineExpose({
 </script>
 
 <template>
-    <!-- La transition d’ouverture scale la card : perfect-scrollbar doit remesurer une fois figée. -->
+    <!-- Fade (pas de scale) : marges/tabs ne “respirent” plus à l’ouverture. -->
     <v-dialog
         v-model="open"
         :fullscreen="isFullscreen"
         :max-width="dialogMaxWidth"
         :width="isSheet ? '100%' : undefined"
-        :transition="isSheet ? 'dialog-bottom-transition' : undefined"
+        :transition="dialogTransition"
         :content-class="overlayContentClass"
         :content-props="overlayContentProps"
         :persistent="persistent"
@@ -258,10 +265,18 @@ defineExpose({
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .app-modal-base--fixed-height .app-modal-base__body-inner {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
     padding-bottom: 16px;
+    box-sizing: border-box;
 }
 
 .app-modal-base__body-inner {

@@ -6,6 +6,7 @@ import { DotsVerticalIcon, FileDescriptionIcon, Receipt2Icon, UsersIcon } from '
 import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { formatAccountBalance } from '../../format';
@@ -176,6 +177,7 @@ async function confirmDelete() {
         </AppAlert>
 
         <template v-if="account" #panel-details>
+            <AppModalPanelScroll>
                     <v-row dense class="mb-4">
                         <v-col cols="12" sm="6">
                             <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.detail.currentBalance') }}</div>
@@ -324,6 +326,7 @@ async function confirmDelete() {
                             </v-list>
                         </v-menu>
                     </div>
+            </AppModalPanelScroll>
         </template>
 
         <template v-if="account" #panel-snapshots>

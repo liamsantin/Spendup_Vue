@@ -185,7 +185,8 @@ const trackAlignClass = computed(() => {
 });
 
 const trackRef = ref<HTMLElement | null>(null);
-const pillReady = ref(false);
+const pillVisible = ref(false);
+const pillAnimate = ref(false);
 const pillStyle = ref<Record<string, string>>({
     width: '0px',
     height: '0px',
@@ -198,47 +199,42 @@ function handleWindowResize() {
     updatePill(false);
 }
 
-function updatePill(animate = true) {
+function measureActiveTab(track: HTMLElement, active: HTMLElement) {
+    const trackRect = track.getBoundingClientRect();
+    const tabRect = active.getBoundingClientRect();
+    return {
+        width: `${active.offsetWidth}px`,
+        height: `${active.offsetHeight}px`,
+        transform: `translate(${tabRect.left - trackRect.left}px, ${tabRect.top - trackRect.top}px)`
+    };
+}
+
+function updatePill(animate = false) {
     if (!isPilled.value || !trackRef.value) return;
 
     const active = trackRef.value.querySelector<HTMLElement>('.v-tab--selected');
-    if (!active) return;
+    if (!active || active.offsetWidth <= 0 || active.offsetHeight <= 0) return;
 
-    const trackRect = trackRef.value.getBoundingClientRect();
-    const tabRect = active.getBoundingClientRect();
-    const next = {
-        width: `${tabRect.width}px`,
-        height: `${tabRect.height}px`,
-        transform: `translate(${tabRect.left - trackRect.left}px, ${tabRect.top - trackRect.top}px)`
-    };
-
-    if (!animate) {
-        pillReady.value = false;
-        pillStyle.value = next;
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                pillReady.value = true;
-            });
-        });
-        return;
-    }
-
-    pillReady.value = true;
-    pillStyle.value = next;
+    pillStyle.value = measureActiveTab(trackRef.value, active);
+    pillVisible.value = true;
+    pillAnimate.value = animate;
 }
 
-function schedulePillUpdate(animate = true) {
+function schedulePillUpdate(animate = false) {
     nextTick(() => updatePill(animate));
 }
 
 watch(currentValue, () => schedulePillUpdate(true));
 watch(isPilled, (enabled) => {
-    if (enabled) {
-        nextTick(() => {
-            if (trackRef.value && resizeObserver) resizeObserver.observe(trackRef.value);
-            updatePill(false);
-        });
+    if (!enabled) {
+        pillVisible.value = false;
+        pillAnimate.value = false;
+        return;
     }
+    nextTick(() => {
+        if (trackRef.value && resizeObserver) resizeObserver.observe(trackRef.value);
+        updatePill(false);
+    });
 });
 watch(
     () => props.grow,
@@ -263,13 +259,6 @@ onBeforeUnmount(() => {
     resizeObserver?.disconnect();
     window.removeEventListener('resize', handleWindowResize);
 });
-
-/** Remesure la pastille (ex. après ouverture d’une modal dont le scale fausse getBoundingClientRect). */
-function refreshPill() {
-    schedulePillUpdate(false);
-}
-
-defineExpose({ refreshPill });
 </script>
 
 <template>
@@ -287,7 +276,10 @@ defineExpose({ refreshPill });
             <div
                 v-if="isPilled"
                 class="app-base-tabs__pill"
-                :class="{ 'app-base-tabs__pill--ready': pillReady }"
+                :class="{
+                    'app-base-tabs__pill--visible': pillVisible,
+                    'app-base-tabs__pill--animate': pillAnimate
+                }"
                 :style="pillStyle"
                 aria-hidden="true"
             />
@@ -418,9 +410,14 @@ defineExpose({ refreshPill });
         border-radius: 9999px;
         background-color: rgb(var(--v-theme-primary));
         pointer-events: none;
+        opacity: 0;
         will-change: transform, width, height;
 
-        &--ready {
+        &--visible {
+            opacity: 1;
+        }
+
+        &--animate {
             transition:
                 transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
                 width 0.25s cubic-bezier(0.32, 0.72, 0, 1),
@@ -570,7 +567,7 @@ defineExpose({ refreshPill });
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .app-base-tabs--pilled .app-base-tabs__pill--ready {
+    .app-base-tabs--pilled .app-base-tabs__pill--animate {
         transition: none;
     }
 }
