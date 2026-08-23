@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import { BuildingBankIcon, BellPlusIcon, RefreshIcon } from 'vue-tabler-icons';
+import { BuildingBankIcon, BellPlusIcon } from 'vue-tabler-icons';
 import AppTabsShell from '@/components/shared/tabs/AppTabsShell.vue';
 import { AccountsTab, InvitationsTab, useAccountsStore } from '@/features/accounts';
 
@@ -104,22 +104,6 @@ watch(tab, (value) => {
 
 <template>
     <AppTabsShell v-model="tab" :tabs="tabs" align-tabs="center" hide-actions>
-        <template #toolbar>
-            <div class="d-flex justify-end">
-                <v-btn
-                    variant="text"
-                    size="small"
-                    :icon="$vuetify.display.smAndDown"
-                    :aria-label="t('common.refresh')"
-                    :loading="store.loadingAccounts || store.loadingIncoming"
-                    :disabled="store.acting"
-                    @click="store.refreshAll().catch(() => undefined)"
-                >
-                    <RefreshIcon size="18" :class="$vuetify.display.smAndDown ? undefined : 'mr-1'" />
-                    <span v-if="!$vuetify.display.smAndDown">{{ t('common.refresh') }}</span>
-                </v-btn>
-            </div>
-        </template>
         <v-window v-model="tab">
             <v-window-item value="Accounts">
                 <AccountsTab />
