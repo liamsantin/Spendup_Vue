@@ -292,7 +292,7 @@
             "editTitle": "Edit account",
             "subtitle": "Fill in the account details.",
             "clearColor": "No color",
-            "currencyLockedHint": "Currency cannot be changed once there are movements.",
+            "currencyLockedHint": "Currency cannot be changed after the account is created.",
             "fields": {
                 "name": "Name",
                 "type": "Type",

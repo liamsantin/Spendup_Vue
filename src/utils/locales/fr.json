@@ -292,7 +292,7 @@
             "editTitle": "Modifier le compte",
             "subtitle": "Renseignez les informations du compte.",
             "clearColor": "Sans couleur",
-            "currencyLockedHint": "La devise ne peut plus être changée s’il existe des mouvements.",
+            "currencyLockedHint": "La devise ne peut plus être modifiée après la création du compte.",
             "fields": {
                 "name": "Nom",
                 "type": "Type",

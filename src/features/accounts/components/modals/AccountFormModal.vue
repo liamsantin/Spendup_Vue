@@ -106,7 +106,8 @@ async function onSave() {
             const updated = await store.updateAccount(props.account.publicId, {
                 name,
                 type: form.type,
-                currency: form.currency,
+                // Devise immuable côté client après création (aligné sur le champ disabled).
+                currency: props.account.currency,
                 initialBalance: Number(form.initialBalance) || 0,
                 iban: emptyToNull(form.iban),
                 accountNumber: emptyToNull(form.accountNumber),

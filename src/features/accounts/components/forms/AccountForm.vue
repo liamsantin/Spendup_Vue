@@ -74,6 +74,7 @@ const { t } = useI18n();
                     variant="outlined"
                     hide-details="auto"
                     required
+                    :disabled="isEdit"
                     :hint="isEdit ? t('comptesPage.form.currencyLockedHint') : undefined"
                     :persistent-hint="isEdit"
                 />
