@@ -205,8 +205,8 @@ const isOverflowing = ref(false);
 const canScrollPrev = ref(false);
 const canScrollNext = ref(false);
 
-/** Espace réservé aux zones flèches + fondu (prev + next) quand overflow. */
-const ARROW_RESERVE_PX = 80;
+/** Espace réservé aux deux flèches (32px × 2) quand overflow. */
+const ARROW_RESERVE_PX = 64;
 
 let resizeObserver: ResizeObserver | null = null;
 
@@ -402,12 +402,23 @@ onBeforeUnmount(() => {
             class="app-base-tabs__nav"
             :class="{
                 'app-base-tabs__nav--overflow': isOverflowing && !props.grow,
-                'app-base-tabs__nav--fade-start': isOverflowing && !props.grow && canScrollPrev,
-                'app-base-tabs__nav--fade-end': isOverflowing && !props.grow && canScrollNext,
                 'app-base-tabs__nav--center': resolvedAlignTabs === 'center',
                 'app-base-tabs__nav--end': resolvedAlignTabs === 'end'
             }"
         >
+            <button
+                v-show="isOverflowing && !props.grow"
+                type="button"
+                class="app-base-tabs__arrow app-base-tabs__arrow--prev"
+                :disabled="!canScrollPrev"
+                aria-label="Previous tabs"
+                @click="scrollTabs(-1)"
+            >
+                <svg class="app-base-tabs__arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </button>
+
             <div
                 ref="trackRef"
                 class="app-base-tabs__track"
@@ -476,19 +487,6 @@ onBeforeUnmount(() => {
                     </v-tab>
                 </v-tabs>
             </div>
-
-            <button
-                v-show="isOverflowing && !props.grow"
-                type="button"
-                class="app-base-tabs__arrow app-base-tabs__arrow--prev"
-                :disabled="!canScrollPrev"
-                aria-label="Previous tabs"
-                @click="scrollTabs(-1)"
-            >
-                <svg class="app-base-tabs__arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
-            </button>
 
             <button
                 v-show="isOverflowing && !props.grow"
@@ -587,6 +585,8 @@ onBeforeUnmount(() => {
         &--overflow {
             display: flex;
             width: 100%;
+            align-items: stretch;
+            gap: 0;
         }
 
         &:not(.app-base-tabs__nav--overflow).app-base-tabs__nav--center {
@@ -600,55 +600,13 @@ onBeforeUnmount(() => {
             width: fit-content;
             margin-inline-start: auto;
         }
-
-        /* Fondus aux bords : le contenu passe sous les flèches. */
-        &--overflow::before,
-        &--overflow::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            z-index: 2;
-            width: 40px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-        }
-
-        &--overflow::before {
-            left: 0;
-            background: linear-gradient(
-                to right,
-                rgb(var(--v-theme-surface)) 0%,
-                rgb(var(--v-theme-surface)) 28%,
-                rgba(var(--v-theme-surface), 0.72) 55%,
-                rgba(var(--v-theme-surface), 0) 100%
-            );
-        }
-
-        &--overflow::after {
-            right: 0;
-            background: linear-gradient(
-                to left,
-                rgb(var(--v-theme-surface)) 0%,
-                rgb(var(--v-theme-surface)) 28%,
-                rgba(var(--v-theme-surface), 0.72) 55%,
-                rgba(var(--v-theme-surface), 0) 100%
-            );
-        }
-
-        &--fade-start::before,
-        &--fade-end::after {
-            opacity: 1;
-        }
     }
 
     .app-base-tabs__arrow {
-        position: absolute;
-        top: 0;
-        bottom: 0;
+        position: relative;
         z-index: 3;
         display: inline-flex;
+        flex: 0 0 auto;
         align-items: center;
         justify-content: center;
         width: 32px;
@@ -658,21 +616,19 @@ onBeforeUnmount(() => {
         padding: 0;
         border: 0;
         border-radius: 0;
-        background: transparent;
+        background: rgb(var(--v-theme-surface));
         color: rgba(var(--v-theme-on-surface), 0.55);
         cursor: pointer;
         box-shadow: none;
 
         &--prev {
-            left: 0;
-            padding-inline-start: 6px;
-            justify-content: flex-start;
+            justify-content: center;
+            border-radius: 9999px 0 0 9999px;
         }
 
         &--next {
-            right: 0;
-            padding-inline-end: 6px;
-            justify-content: flex-end;
+            justify-content: center;
+            border-radius: 0 9999px 9999px 0;
         }
 
         &:disabled {
@@ -713,17 +669,9 @@ onBeforeUnmount(() => {
             overflow-x: auto;
             overflow-y: hidden;
             scrollbar-width: none;
-            /* Laisse de la place sous les flèches pour lire le 1er / dernier tab. */
-            scroll-padding-inline: 32px;
 
             &::-webkit-scrollbar {
                 display: none;
-            }
-
-            .app-base-tabs__list {
-                :deep(.v-slide-group__content) {
-                    padding-inline: 28px;
-                }
             }
         }
 

@@ -373,8 +373,13 @@
             "addTitle": "New balance snapshot",
             "addSubtitle": "Enter the balance you see in your banking app.",
             "empty": "No snapshots yet.",
+            "emptyHint": "Add the balance shown by your bank to track discrepancies.",
             "latestDeclared": "Last declared balance",
             "diff": "Difference from calculated balance",
+            "diffShort": "Difference",
+            "matched": "Up to date",
+            "mismatch": "Difference found",
+            "history": "History",
             "sources": {
                 "manual": "Manual",
                 "bank_import": "Bank import",
