@@ -37,18 +37,13 @@ const open = computed({
         v-model="open"
         :title="t('comptesPage.share.inviteTitle')"
         :subtitle="t('comptesPage.share.inviteSubtitle')"
-        :height="smAndDown ? 400 : 600"
+        :height="smAndDown ? 520 : 600"
         :max-width="520"
         fixed-height
         :scrollable="false"
         :mobile-layout="smAndDown ? 'sheet' : 'dialog'"
     >
-        <ShareInviteForm
-            ref="formRef"
-            :account-public-id="accountPublicId"
-            :is-open="open"
-            @close="open = false"
-        />
+        <ShareInviteForm ref="formRef" :account-public-id="accountPublicId" :is-open="open" @close="open = false" />
 
         <template #footer="{ close }">
             <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>

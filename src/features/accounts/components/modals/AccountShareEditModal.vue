@@ -40,7 +40,7 @@ watch(
     () => [props.modelValue, props.share?.publicId] as const,
     () => {
         if (!props.modelValue || !props.share) return;
-        editRole.value = (props.share.role === 'pending' ? props.share.invitedRole ?? 'viewer' : props.share.role) as ShareRole;
+        editRole.value = (props.share.role === 'pending' ? (props.share.invitedRole ?? 'viewer') : props.share.role) as ShareRole;
         editError.value = null;
     }
 );
@@ -68,13 +68,7 @@ function requestRevoke() {
 </script>
 
 <template>
-    <AppModalBase
-        v-model="open"
-        :title="t('comptesPage.share.editTitle')"
-        :max-width="420"
-        :scrollable="false"
-        mobile-layout="sheet"
-    >
+    <AppModalBase v-model="open" :title="t('comptesPage.share.editTitle')" :max-width="420" :scrollable="false" mobile-layout="sheet">
         <div v-if="share" class="d-flex align-center ga-3 mb-5">
             <UserPhotoAvatar
                 :photo-url="share.photoUrl"
@@ -88,15 +82,7 @@ function requestRevoke() {
             </div>
         </div>
 
-        <AppAlert
-            v-if="editError"
-            color="error"
-            variant="tonal"
-            class="mb-4"
-            closable
-            :dismiss-ms="3000"
-            @dismiss="editError = null"
-        >
+        <AppAlert v-if="editError" color="error" variant="tonal" class="mb-4" closable :dismiss-ms="3000" @dismiss="editError = null">
             {{ editError }}
         </AppAlert>
 

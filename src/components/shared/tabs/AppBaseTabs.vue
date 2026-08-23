@@ -218,7 +218,7 @@ function asElement(value: unknown): HTMLElement | null {
     if (el instanceof HTMLElement) return el;
     // Vue / Vuetify: $el can be a comment node before the real root.
     if (el && typeof el === 'object' && 'nextElementSibling' in el) {
-        const next = (el as ChildNode).nextElementSibling;
+        const next = (el as { nextElementSibling: Element | null }).nextElementSibling;
         if (next instanceof HTMLElement) return next;
     }
     return null;
@@ -470,12 +470,7 @@ onBeforeUnmount(() => {
                             :class="iconClass(item)"
                         />
                         <span v-if="item.label" class="app-base-tabs__label" :data-label="item.label">{{ item.label }}</span>
-                        <v-chip
-                            v-if="hasChip(item)"
-                            class="app-base-tabs__chip"
-                            size="x-small"
-                            variant="tonal"
-                        >
+                        <v-chip v-if="hasChip(item)" class="app-base-tabs__chip" size="x-small" variant="tonal">
                             {{ item.chip }}
                         </v-chip>
                     </v-tab>
@@ -491,13 +486,7 @@ onBeforeUnmount(() => {
                 @click="scrollTabs(-1)"
             >
                 <svg class="app-base-tabs__arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path
-                        d="M15 6l-6 6 6 6"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
+                    <path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </button>
 
@@ -510,13 +499,7 @@ onBeforeUnmount(() => {
                 @click="scrollTabs(1)"
             >
                 <svg class="app-base-tabs__arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path
-                        d="M9 6l6 6-6 6"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
+                    <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </button>
         </div>
@@ -554,13 +537,7 @@ onBeforeUnmount(() => {
                         :class="iconClass(item)"
                     />
                     <span v-if="item.label" class="app-base-tabs__label">{{ item.label }}</span>
-                    <v-chip
-                        v-if="hasChip(item)"
-                        class="app-base-tabs__chip"
-                        color="primary"
-                        size="x-small"
-                        variant="flat"
-                    >
+                    <v-chip v-if="hasChip(item)" class="app-base-tabs__chip" color="primary" size="x-small" variant="flat">
                         {{ item.chip }}
                     </v-chip>
                 </v-tab>

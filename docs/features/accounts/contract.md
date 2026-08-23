@@ -47,13 +47,13 @@ Mémoire process via `createResourceCache` (`src/utils/helpers/resource-cache.ts
 
 ### Budget de requêtes
 
-| Action | Requêtes |
-| ------ | -------- |
-| 1ère visite onglet actif | 1 list (`GET /api/accounts` ou `…/shares/incoming`) |
-| Switch onglet frais (TTL OK) | 0 |
-| Open détail avec snapshot liste | 0–1 `GET /api/accounts/{id}` selon TTL 30s |
-| Create / setPrimary / refuse | 1 mutation, 0 list |
-| Idle prefetch onglet inactif | 1 list (hors tests) |
+| Action                          | Requêtes                                            |
+| ------------------------------- | --------------------------------------------------- |
+| 1ère visite onglet actif        | 1 list (`GET /api/accounts` ou `…/shares/incoming`) |
+| Switch onglet frais (TTL OK)    | 0                                                   |
+| Open détail avec snapshot liste | 0–1 `GET /api/accounts/{id}` selon TTL 30s          |
+| Create / setPrimary / refuse    | 1 mutation, 0 list                                  |
+| Idle prefetch onglet inactif    | 1 list (hors tests)                                 |
 
 ## Persistence
 

@@ -39,12 +39,7 @@ const { t } = useI18n();
             @click="emit('select', friend.user.publicId)"
         >
             <template #actions>
-                <CircleCheckIcon
-                    v-if="selectedUserPublicId === friend.user.publicId"
-                    class="text-primary"
-                    :size="22"
-                    stroke-width="1.8"
-                />
+                <CircleCheckIcon v-if="selectedUserPublicId === friend.user.publicId" class="text-primary" :size="22" stroke-width="1.8" />
             </template>
         </FriendListItem>
     </v-list>
@@ -56,7 +51,7 @@ const { t } = useI18n();
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    min-height: 160px;
+    min-height: 96px;
     height: 100%;
     padding: 16px;
     text-align: center;

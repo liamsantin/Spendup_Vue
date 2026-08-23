@@ -52,10 +52,7 @@ const promoted = computed(() => store.isPromotedAccount(props.account.publicId))
                 {{ typeLabel }} · {{ account.currency
                 }}{{ account.accountNumber ? ` · ${t('comptesPage.list.accountNumber', { number: account.accountNumber })}` : '' }}
             </p>
-            <div
-                v-if="account.isPrimary || !account.isActive || !account.isOwned"
-                class="d-flex align-center ga-2 flex-wrap mt-1"
-            >
+            <div v-if="account.isPrimary || !account.isActive || !account.isOwned" class="d-flex align-center ga-2 flex-wrap mt-1">
                 <v-chip v-if="account.isPrimary" size="x-small" color="primary" variant="tonal">
                     {{ t('comptesPage.badges.primary') }}
                 </v-chip>

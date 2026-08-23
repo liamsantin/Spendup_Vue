@@ -27,8 +27,8 @@
 ## Import
 
 ```vue
-import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
-import type { AppBaseTabsItem } from '@/components/shared/tabs/AppBaseTabs.vue';
+import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue'; import type { AppBaseTabsItem } from
+'@/components/shared/tabs/AppBaseTabs.vue';
 ```
 
 ---
@@ -37,15 +37,15 @@ import type { AppBaseTabsItem } from '@/components/shared/tabs/AppBaseTabs.vue';
 
 Hérite des props `AppModalBase` (`modelValue`, `title`, `subtitle`, `maxWidth`, `height`, `persistent`, `showFooter`, `scrollable`).
 
-| Prop        | Type               | Défaut          | Notes                                      |
-| ----------- | ------------------ | --------------- | ------------------------------------------ |
-| `tab`       | `string \| null`   | —               | Onglet actif (`v-model:tab`)               |
-| `tabs`      | `AppBaseTabsItem[]`| —               | Items (label, icon, disabled, color)       |
-| `preset`    | `AppBaseTabsPreset`| `align-center`  | Sans fond par défaut                       |
-| `alignTabs` | `start \| …`       | `start`         | Alignement des tabs                        |
-| `grow`      | `boolean`          | `false`         | Tabs pleine largeur                        |
-| `color`     | `string`           | —               | Couleur d’accent des tabs                  |
-| `bgColor`   | `string`           | —               | Fond des tabs                              |
+| Prop        | Type                | Défaut         | Notes                                |
+| ----------- | ------------------- | -------------- | ------------------------------------ |
+| `tab`       | `string \| null`    | —              | Onglet actif (`v-model:tab`)         |
+| `tabs`      | `AppBaseTabsItem[]` | —              | Items (label, icon, disabled, color) |
+| `preset`    | `AppBaseTabsPreset` | `align-center` | Sans fond par défaut                 |
+| `alignTabs` | `start \| …`        | `start`        | Alignement des tabs                  |
+| `grow`      | `boolean`           | `false`        | Tabs pleine largeur                  |
+| `color`     | `string`            | —              | Couleur d’accent des tabs            |
+| `bgColor`   | `string`            | —              | Fond des tabs                        |
 
 Défauts modal : `maxWidth=640`, `height=720`.
 
@@ -53,24 +53,19 @@ Défauts modal : `maxWidth=640`, `height=720`.
 
 ## Slots
 
-| Slot              | Props slot              | Usage                                      |
-| ----------------- | ----------------------- | ------------------------------------------ |
-| défaut            | `{ activeTab }`         | Contenu au-dessus des panels (alert, load) |
-| `panel-<value>`   | `{ tab, activeTab }`    | Corps de l’onglet `value`                  |
-| `footer`          | `{ close }`             | Actions bas                                |
-| `header-extra`    | —                       | Sous le sous-titre                         |
+| Slot            | Props slot           | Usage                                      |
+| --------------- | -------------------- | ------------------------------------------ |
+| défaut          | `{ activeTab }`      | Contenu au-dessus des panels (alert, load) |
+| `panel-<value>` | `{ tab, activeTab }` | Corps de l’onglet `value`                  |
+| `footer`        | `{ close }`          | Actions bas                                |
+| `header-extra`  | —                    | Sous le sous-titre                         |
 
 ---
 
 ## Exemple
 
 ```vue
-<AppModalTabs
-    v-model="open"
-    v-model:tab="activeTab"
-    title="Compte"
-    :tabs="tabs"
->
+<AppModalTabs v-model="open" v-model:tab="activeTab" title="Compte" :tabs="tabs">
     <template #panel-details>…</template>
     <template #panel-shares>…</template>
     <template #footer="{ close }">
@@ -84,6 +79,6 @@ Défauts modal : `maxWidth=640`, `height=720`.
 
 ## Références d’usage
 
-| Fichier                   | Pattern                          |
-| ------------------------- | -------------------------------- |
-| `AccountDetailModal.vue`  | Détails / Relevé / Partage       |
+| Fichier                  | Pattern                    |
+| ------------------------ | -------------------------- |
+| `AccountDetailModal.vue` | Détails / Relevé / Partage |

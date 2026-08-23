@@ -66,12 +66,7 @@ const detailTabs = computed(() => [
 const hasOverflowActions = computed(() => {
     const current = account.value;
     if (!current) return false;
-    return (
-        isPrimaryActionBlocked(current) ||
-        canArchiveAccount(current) ||
-        canRestoreAccount(current) ||
-        canDeleteAccount(current)
-    );
+    return isPrimaryActionBlocked(current) || canArchiveAccount(current) || canRestoreAccount(current) || canDeleteAccount(current);
 });
 
 watch(
@@ -190,154 +185,148 @@ async function confirmDelete() {
 
         <template v-if="account" #panel-details>
             <AppModalPanelScroll>
-                    <v-row dense class="mb-4">
-                        <v-col cols="12" sm="6">
-                            <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.detail.currentBalance') }}</div>
-                            <div class="text-h5 font-weight-bold">{{ balance }}</div>
-                        </v-col>
-                        <v-col cols="12" sm="6">
-                            <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.detail.initialBalance') }}</div>
-                            <div class="text-subtitle-1">
-                                {{ formatAccountBalance(account.initialBalance, account.currency, locale) }}
-                            </div>
-                        </v-col>
-                        <v-col v-if="account.iban" cols="12">
-                            <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.iban') }}</div>
-                            <div class="text-body-1">{{ account.iban }}</div>
-                        </v-col>
-                        <v-col v-if="account.accountNumber" cols="12">
-                            <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.accountNumber') }}</div>
-                            <div class="text-body-1">{{ account.accountNumber }}</div>
-                        </v-col>
-                        <v-col cols="12" class="d-flex flex-wrap ga-2">
-                            <v-chip v-if="account.isPrimary" size="small" color="primary" variant="tonal">
-                                {{ t('comptesPage.badges.primary') }}
-                            </v-chip>
-                            <v-chip v-if="!account.isActive" size="small" color="warning" variant="tonal">
-                                {{ t('comptesPage.badges.archived') }}
-                            </v-chip>
-                            <v-chip v-if="!account.isOwned" size="small" color="secondary" variant="tonal">
-                                {{ t(`comptesPage.roles.${account.myRole}`) }}
-                            </v-chip>
-                        </v-col>
-                    </v-row>
+                <v-row dense class="mb-4">
+                    <v-col cols="12" sm="6">
+                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.detail.currentBalance') }}</div>
+                        <div class="text-h5 font-weight-bold">{{ balance }}</div>
+                    </v-col>
+                    <v-col cols="12" sm="6">
+                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.detail.initialBalance') }}</div>
+                        <div class="text-subtitle-1">
+                            {{ formatAccountBalance(account.initialBalance, account.currency, locale) }}
+                        </div>
+                    </v-col>
+                    <v-col v-if="account.iban" cols="12">
+                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.iban') }}</div>
+                        <div class="text-body-1">{{ account.iban }}</div>
+                    </v-col>
+                    <v-col v-if="account.accountNumber" cols="12">
+                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.accountNumber') }}</div>
+                        <div class="text-body-1">{{ account.accountNumber }}</div>
+                    </v-col>
+                    <v-col cols="12" class="d-flex flex-wrap ga-2">
+                        <v-chip v-if="account.isPrimary" size="small" color="primary" variant="tonal">
+                            {{ t('comptesPage.badges.primary') }}
+                        </v-chip>
+                        <v-chip v-if="!account.isActive" size="small" color="warning" variant="tonal">
+                            {{ t('comptesPage.badges.archived') }}
+                        </v-chip>
+                        <v-chip v-if="!account.isOwned" size="small" color="secondary" variant="tonal">
+                            {{ t(`comptesPage.roles.${account.myRole}`) }}
+                        </v-chip>
+                    </v-col>
+                </v-row>
 
-                    <div class="d-flex flex-wrap ga-2">
+                <div class="d-flex flex-wrap ga-2">
+                    <v-btn
+                        v-if="canEditAccount(account)"
+                        color="primary"
+                        variant="tonal"
+                        size="small"
+                        :disabled="store.acting"
+                        @click="editOpen = true"
+                    >
+                        {{ t('comptesPage.actions.edit') }}
+                    </v-btn>
+                    <v-btn v-if="canSetPrimaryAccount(account)" variant="tonal" size="small" :disabled="store.acting" @click="onSetPrimary">
+                        {{ t('comptesPage.actions.setPrimary') }}
+                    </v-btn>
+
+                    <template v-if="!smAndDown">
+                        <v-tooltip v-if="isPrimaryActionBlocked(account)" location="top">
+                            <template #activator="{ props: tip }">
+                                <div v-bind="tip">
+                                    <v-btn variant="tonal" size="small" disabled>{{ t('comptesPage.actions.archive') }}</v-btn>
+                                </div>
+                            </template>
+                            <span>{{ t('comptesPage.hints.primaryNoArchive') }}</span>
+                        </v-tooltip>
                         <v-btn
-                            v-if="canEditAccount(account)"
-                            color="primary"
+                            v-else-if="canArchiveAccount(account)"
                             variant="tonal"
                             size="small"
                             :disabled="store.acting"
-                            @click="editOpen = true"
+                            @click="archiveOpen = true"
                         >
-                            {{ t('comptesPage.actions.edit') }}
+                            {{ t('comptesPage.actions.archive') }}
                         </v-btn>
                         <v-btn
-                            v-if="canSetPrimaryAccount(account)"
+                            v-if="canRestoreAccount(account)"
                             variant="tonal"
                             size="small"
+                            color="success"
                             :disabled="store.acting"
-                            @click="onSetPrimary"
+                            @click="restoreOpen = true"
                         >
-                            {{ t('comptesPage.actions.setPrimary') }}
+                            {{ t('comptesPage.actions.restore') }}
                         </v-btn>
+                        <v-tooltip v-if="isPrimaryActionBlocked(account) && account.isOwned" location="top">
+                            <template #activator="{ props: tip }">
+                                <div v-bind="tip">
+                                    <v-btn variant="tonal" size="small" color="error" disabled>
+                                        {{ t('comptesPage.actions.delete') }}
+                                    </v-btn>
+                                </div>
+                            </template>
+                            <span>{{ t('comptesPage.hints.primaryNoDelete') }}</span>
+                        </v-tooltip>
+                        <v-btn
+                            v-else-if="canDeleteAccount(account)"
+                            variant="tonal"
+                            size="small"
+                            color="error"
+                            :disabled="store.acting"
+                            @click="deleteOpen = true"
+                        >
+                            {{ t('comptesPage.actions.delete') }}
+                        </v-btn>
+                    </template>
 
-                        <template v-if="!smAndDown">
-                            <v-tooltip v-if="isPrimaryActionBlocked(account)" location="top">
-                                <template #activator="{ props: tip }">
-                                    <div v-bind="tip">
-                                        <v-btn variant="tonal" size="small" disabled>{{ t('comptesPage.actions.archive') }}</v-btn>
-                                    </div>
-                                </template>
-                                <span>{{ t('comptesPage.hints.primaryNoArchive') }}</span>
-                            </v-tooltip>
+                    <v-menu v-else-if="hasOverflowActions" location="bottom end">
+                        <template #activator="{ props: menuProps }">
                             <v-btn
-                                v-else-if="canArchiveAccount(account)"
+                                v-bind="menuProps"
                                 variant="tonal"
                                 size="small"
+                                icon
+                                :aria-label="t('common.more')"
                                 :disabled="store.acting"
-                                @click="archiveOpen = true"
                             >
-                                {{ t('comptesPage.actions.archive') }}
-                            </v-btn>
-                            <v-btn
-                                v-if="canRestoreAccount(account)"
-                                variant="tonal"
-                                size="small"
-                                color="success"
-                                :disabled="store.acting"
-                                @click="restoreOpen = true"
-                            >
-                                {{ t('comptesPage.actions.restore') }}
-                            </v-btn>
-                            <v-tooltip v-if="isPrimaryActionBlocked(account) && account.isOwned" location="top">
-                                <template #activator="{ props: tip }">
-                                    <div v-bind="tip">
-                                        <v-btn variant="tonal" size="small" color="error" disabled>
-                                            {{ t('comptesPage.actions.delete') }}
-                                        </v-btn>
-                                    </div>
-                                </template>
-                                <span>{{ t('comptesPage.hints.primaryNoDelete') }}</span>
-                            </v-tooltip>
-                            <v-btn
-                                v-else-if="canDeleteAccount(account)"
-                                variant="tonal"
-                                size="small"
-                                color="error"
-                                :disabled="store.acting"
-                                @click="deleteOpen = true"
-                            >
-                                {{ t('comptesPage.actions.delete') }}
+                                <DotsVerticalIcon size="18" />
                             </v-btn>
                         </template>
-
-                        <v-menu v-else-if="hasOverflowActions" location="bottom end">
-                            <template #activator="{ props: menuProps }">
-                                <v-btn
-                                    v-bind="menuProps"
-                                    variant="tonal"
-                                    size="small"
-                                    icon
-                                    :aria-label="t('common.more')"
-                                    :disabled="store.acting"
-                                >
-                                    <DotsVerticalIcon size="18" />
-                                </v-btn>
-                            </template>
-                            <v-list density="compact" min-width="220">
-                                <v-list-item
-                                    v-if="isPrimaryActionBlocked(account)"
-                                    disabled
-                                    :title="t('comptesPage.actions.archive')"
-                                    :subtitle="t('comptesPage.hints.primaryNoArchive')"
-                                />
-                                <v-list-item
-                                    v-else-if="canArchiveAccount(account)"
-                                    :title="t('comptesPage.actions.archive')"
-                                    @click="archiveOpen = true"
-                                />
-                                <v-list-item
-                                    v-if="canRestoreAccount(account)"
-                                    :title="t('comptesPage.actions.restore')"
-                                    @click="restoreOpen = true"
-                                />
-                                <v-list-item
-                                    v-if="isPrimaryActionBlocked(account) && account.isOwned"
-                                    disabled
-                                    :title="t('comptesPage.actions.delete')"
-                                    :subtitle="t('comptesPage.hints.primaryNoDelete')"
-                                />
-                                <v-list-item
-                                    v-else-if="canDeleteAccount(account)"
-                                    class="text-error"
-                                    :title="t('comptesPage.actions.delete')"
-                                    @click="deleteOpen = true"
-                                />
-                            </v-list>
-                        </v-menu>
-                    </div>
+                        <v-list density="compact" min-width="220">
+                            <v-list-item
+                                v-if="isPrimaryActionBlocked(account)"
+                                disabled
+                                :title="t('comptesPage.actions.archive')"
+                                :subtitle="t('comptesPage.hints.primaryNoArchive')"
+                            />
+                            <v-list-item
+                                v-else-if="canArchiveAccount(account)"
+                                :title="t('comptesPage.actions.archive')"
+                                @click="archiveOpen = true"
+                            />
+                            <v-list-item
+                                v-if="canRestoreAccount(account)"
+                                :title="t('comptesPage.actions.restore')"
+                                @click="restoreOpen = true"
+                            />
+                            <v-list-item
+                                v-if="isPrimaryActionBlocked(account) && account.isOwned"
+                                disabled
+                                :title="t('comptesPage.actions.delete')"
+                                :subtitle="t('comptesPage.hints.primaryNoDelete')"
+                            />
+                            <v-list-item
+                                v-else-if="canDeleteAccount(account)"
+                                class="text-error"
+                                :title="t('comptesPage.actions.delete')"
+                                @click="deleteOpen = true"
+                            />
+                        </v-list>
+                    </v-menu>
+                </div>
             </AppModalPanelScroll>
         </template>
 

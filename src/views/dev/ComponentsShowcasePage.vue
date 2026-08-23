@@ -14,17 +14,11 @@ import {
     BluetoothIcon,
     ChecksIcon,
     CircleXIcon,
-    CreditCardIcon,
     HeartIcon,
-    KeyIcon,
     MoodSmileIcon,
     PhoneIcon,
-    PhotoIcon,
-    StarIcon,
     UserIcon,
     UserCircleIcon,
-    UserPlusIcon,
-    UsersIcon,
     WifiIcon
 } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
@@ -116,7 +110,9 @@ const stackedTabItems = [
 ];
 const centerActiveItems = Array.from({ length: 14 }, (_, index) => ({
     value: `item-${index + 1}`,
-    label: ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen'][index]
+    label: ['One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen'][
+        index
+    ]
 }));
 const alignTabsItems = [
     { value: 'landscape', label: 'Landscape' },
@@ -143,8 +139,22 @@ const customIconsItems = Array.from({ length: 30 }, (_, index) => ({
     label: `Item ${index + 1}`
 }));
 const galleryLandscape = [{ img: blogImg1 }, { img: blogImg2 }, { img: blogImg3 }, { img: blogImg4 }, { img: blogImg5 }, { img: blogImg1 }];
-const galleryProducts = [{ img: productImg3 }, { img: productImg4 }, { img: productImg5 }, { img: productImg6 }, { img: productImg7 }, { img: productImg8 }];
-const galleryAbstract = [{ img: productImg9 }, { img: productImg10 }, { img: productImg11 }, { img: productImg7 }, { img: productImg12 }, { img: productImg8 }];
+const galleryProducts = [
+    { img: productImg3 },
+    { img: productImg4 },
+    { img: productImg5 },
+    { img: productImg6 },
+    { img: productImg7 },
+    { img: productImg8 }
+];
+const galleryAbstract = [
+    { img: productImg9 },
+    { img: productImg10 },
+    { img: productImg11 },
+    { img: productImg7 },
+    { img: productImg12 },
+    { img: productImg8 }
+];
 
 const chipClosable = ref({
     primary: true,
@@ -765,8 +775,8 @@ function resetChipClosable() {
             <v-tabs-window-item value="tabs">
                 <p class="text-body-2 text-medium-emphasis mb-6">
                     <code>AppBaseTabs</code> — composant réutilisable configurable, inspiré des variantes de
-                    <code>_template/modernize/views/ui-elements/UiTabs.vue</code>. Le style <code>pilled</code> est
-                    le défaut ; chaque variante est aussi montrée en classique via <code>:pilled="false"</code>.
+                    <code>_template/modernize/views/ui-elements/UiTabs.vue</code>. Le style <code>pilled</code> est le défaut ; chaque
+                    variante est aussi montrée en classique via <code>:pilled="false"</code>.
                 </p>
 
                 <section class="tabs-showcase-group">

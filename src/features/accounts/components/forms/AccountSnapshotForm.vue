@@ -1,7 +1,9 @@
 <script setup lang="ts">
 /**
  * Champs d’ajout d’un relevé de solde. Indépendant du shell modal.
+ * `form` est un objet réactif détenu par le parent ; la mutation des champs est intentionnelle.
  */
+/* eslint-disable vue/no-mutating-props -- shared reactive form owned by parent */
 defineOptions({ name: 'AccountSnapshotForm' });
 
 import { computed } from 'vue';

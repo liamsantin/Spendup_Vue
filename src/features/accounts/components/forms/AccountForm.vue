@@ -1,7 +1,9 @@
 <script setup lang="ts">
 /**
  * Champs du formulaire compte. Indépendant du shell modal (dialog / sheet / fullscreen).
+ * `form` est un objet réactif détenu par le parent ; la mutation des champs est intentionnelle.
  */
+/* eslint-disable vue/no-mutating-props -- shared reactive form owned by parent */
 defineOptions({ name: 'AccountForm' });
 
 import { useI18n } from 'vue-i18n';

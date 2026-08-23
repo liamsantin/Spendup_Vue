@@ -59,7 +59,7 @@ defineExpose({
             v-if="invite.localError"
             color="error"
             variant="tonal"
-            class="mb-4"
+            class="share-invite-form__alert"
             closable
             :dismiss-ms="3000"
             @dismiss="invite.localError = null"
@@ -67,45 +67,49 @@ defineExpose({
             {{ invite.localError }}
         </AppAlert>
 
-        <v-label class="font-weight-medium mb-2">{{ t('comptesPage.share.fields.friend') }}</v-label>
-        <v-text-field
-            v-model="invite.friendQuery"
-            :placeholder="t('comptesPage.share.searchFriend')"
-            variant="outlined"
-            color="primary"
-            hide-details
-            clearable
-            :disabled="invite.loadingFriends || !invite.availableFriends.length"
-            class="mb-2"
-        >
-            <template #prepend-inner>
-                <SearchIcon stroke-width="1.5" size="18" class="text-medium-emphasis" />
-            </template>
-        </v-text-field>
+        <div class="share-invite-form__friends">
+            <div class="share-invite-form__label">{{ t('comptesPage.share.fields.friend') }}</div>
+            <v-text-field
+                v-model="invite.friendQuery"
+                :placeholder="t('comptesPage.share.searchFriend')"
+                variant="outlined"
+                color="primary"
+                hide-details
+                clearable
+                :disabled="invite.loadingFriends || !invite.availableFriends.length"
+                class="share-invite-form__search"
+            >
+                <template #prepend-inner>
+                    <SearchIcon stroke-width="1.5" size="18" class="text-medium-emphasis" />
+                </template>
+            </v-text-field>
 
-        <div class="share-invite-form__list">
-            <div v-if="smAndDown" class="share-invite-form__list-scroll">
-                <ShareInviteFriendList
-                    :loading="invite.loadingFriends"
-                    :has-available="invite.availableFriends.length > 0"
-                    :friends="invite.filteredFriends"
-                    :selected-user-public-id="invite.selectedUserPublicId"
-                    @select="invite.selectFriend"
-                />
+            <div class="share-invite-form__list">
+                <div v-if="smAndDown" class="share-invite-form__list-scroll">
+                    <ShareInviteFriendList
+                        :loading="invite.loadingFriends"
+                        :has-available="invite.availableFriends.length > 0"
+                        :friends="invite.filteredFriends"
+                        :selected-user-public-id="invite.selectedUserPublicId"
+                        @select="invite.selectFriend"
+                    />
+                </div>
+                <PerfectScrollbar v-else ref="listScrollbarRef" class="share-invite-form__list-scroll" :options="listScrollbarOptions">
+                    <ShareInviteFriendList
+                        :loading="invite.loadingFriends"
+                        :has-available="invite.availableFriends.length > 0"
+                        :friends="invite.filteredFriends"
+                        :selected-user-public-id="invite.selectedUserPublicId"
+                        @select="invite.selectFriend"
+                    />
+                </PerfectScrollbar>
             </div>
-            <PerfectScrollbar v-else ref="listScrollbarRef" class="share-invite-form__list-scroll" :options="listScrollbarOptions">
-                <ShareInviteFriendList
-                    :loading="invite.loadingFriends"
-                    :has-available="invite.availableFriends.length > 0"
-                    :friends="invite.filteredFriends"
-                    :selected-user-public-id="invite.selectedUserPublicId"
-                    @select="invite.selectFriend"
-                />
-            </PerfectScrollbar>
         </div>
 
-        <v-label class="font-weight-medium mb-2 mt-4">{{ t('comptesPage.share.fields.role') }}</v-label>
-        <ShareRolePicker v-model="invite.role" />
+        <div class="share-invite-form__role">
+            <div class="share-invite-form__label">{{ t('comptesPage.share.fields.role') }}</div>
+            <ShareRolePicker v-model="invite.role" />
+        </div>
     </div>
 </template>
 
@@ -116,14 +120,39 @@ defineExpose({
     flex: 1 1 auto;
     min-height: 0;
     height: 100%;
+    gap: 0;
+}
+
+.share-invite-form__alert {
+    flex-shrink: 0;
+    margin-bottom: 12px;
+}
+
+.share-invite-form__label {
+    flex-shrink: 0;
+    margin-bottom: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.share-invite-form__friends {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.share-invite-form__search {
+    flex-shrink: 0;
+    margin-bottom: 8px;
 }
 
 .share-invite-form__list {
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    min-height: 160px;
-    height: 200px;
+    min-height: 120px;
     overflow: hidden;
     border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
     border-radius: 10px;
@@ -136,10 +165,14 @@ defineExpose({
     overflow: hidden;
 }
 
+.share-invite-form__role {
+    flex-shrink: 0;
+    margin-top: 16px;
+}
+
 @media (max-width: 599.98px) {
     .share-invite-form__list {
-        height: 0;
-        min-height: 180px;
+        min-height: 0;
     }
 
     .share-invite-form__list-scroll {

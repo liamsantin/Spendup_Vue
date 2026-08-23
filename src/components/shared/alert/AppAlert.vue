@@ -46,7 +46,9 @@ const attrs = useAttrs();
 const slots = useSlots();
 
 const alertAttrs = computed(() => {
-    const { class: _className, style: _style, ...rest } = attrs;
+    const rest: Record<string, unknown> = { ...attrs };
+    delete rest.class;
+    delete rest.style;
     return rest;
 });
 

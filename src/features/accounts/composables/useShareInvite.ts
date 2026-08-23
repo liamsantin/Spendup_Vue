@@ -1,6 +1,6 @@
 import { computed, reactive, ref, watch, toValue, type MaybeRefOrGetter } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { friendsApi, listAllFriends, type FriendItem } from '@/features/friends';
+import { listAllFriends, type FriendItem } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '../stores/accounts-store';
 import type { ShareRole } from '../types';
@@ -28,10 +28,7 @@ export function useShareInvite(options: {
         const query = friendQuery.value.trim().toLowerCase();
         if (!query) return availableFriends.value;
         return availableFriends.value.filter((f) => {
-            const haystack = [f.user.firstName, f.user.name, f.user.username, f.user.publicId]
-                .filter(Boolean)
-                .join(' ')
-                .toLowerCase();
+            const haystack = [f.user.firstName, f.user.name, f.user.username, f.user.publicId].filter(Boolean).join(' ').toLowerCase();
             return haystack.includes(query);
         });
     });

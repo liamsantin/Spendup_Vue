@@ -12,7 +12,7 @@ type RadioItem = {
     disabled?: boolean;
 };
 
-const props = withDefaults(
+withDefaults(
     defineProps<{
         items?: RadioItem[];
         color?: string;

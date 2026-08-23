@@ -25,9 +25,7 @@ const revokeTarget = ref<AccountShare | null>(null);
 const localError = ref<string | null>(null);
 
 /** Toujours synchronisé avec le store — reflète les mises à jour de photoUrl, displayName, role. */
-const editTarget = computed(() =>
-    editTargetId.value ? (store.shares.find((s) => s.publicId === editTargetId.value) ?? null) : null
-);
+const editTarget = computed(() => (editTargetId.value ? (store.shares.find((s) => s.publicId === editTargetId.value) ?? null) : null));
 
 const editOpen = computed({
     get: () => !!editTargetId.value,
@@ -96,72 +94,67 @@ async function confirmRevoke() {
         </div>
 
         <AppModalPanelScroll>
-        <AppAlert
-            v-if="localError || store.error"
-            color="error"
-            variant="tonal"
-            class="mb-3"
-            closable
-            :dismiss-ms="3000"
-            @dismiss="
-                localError = null;
-                store.clearError();
-            "
-        >
-            {{ localError || store.error }}
-        </AppAlert>
+            <AppAlert
+                v-if="localError || store.error"
+                color="error"
+                variant="tonal"
+                class="mb-3"
+                closable
+                :dismiss-ms="3000"
+                @dismiss="
+                    localError = null;
+                    store.clearError();
+                "
+            >
+                {{ localError || store.error }}
+            </AppAlert>
 
-        <div v-if="store.loadingShares && !store.shares.length" class="py-6 text-center">
-            <v-progress-circular indeterminate color="primary" size="28" />
-        </div>
-        <div v-else-if="!store.shares.length" class="py-6 text-center text-medium-emphasis">
-            {{ t('comptesPage.share.empty') }}
-        </div>
-        <v-list v-else class="py-0 theme-list">
-            <v-list-item v-for="share in store.shares" :key="share.publicId" class="px-2 py-3" rounded="md">
-                <template #prepend>
-                    <UserPhotoAvatar
-                        class="mr-3"
-                        :photo-url="share.photoUrl"
-                        :user-public-id="share.userPublicId"
-                        :fallback-label="share.displayName"
-                        :size="42"
-                    />
-                </template>
+            <div v-if="store.loadingShares && !store.shares.length" class="py-6 text-center">
+                <v-progress-circular indeterminate color="primary" size="28" />
+            </div>
+            <div v-else-if="!store.shares.length" class="py-6 text-center text-medium-emphasis">
+                {{ t('comptesPage.share.empty') }}
+            </div>
+            <v-list v-else class="py-0 theme-list">
+                <v-list-item v-for="share in store.shares" :key="share.publicId" class="px-2 py-3" rounded="md">
+                    <template #prepend>
+                        <UserPhotoAvatar
+                            class="mr-3"
+                            :photo-url="share.photoUrl"
+                            :user-public-id="share.userPublicId"
+                            :fallback-label="share.displayName"
+                            :size="42"
+                        />
+                    </template>
 
-                <div class="account-share-row w-100">
-                    <div class="min-width-0">
-                        <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">{{ share.displayName }}</h6>
-                        <p class="text-body-2 text-medium-emphasis mb-0">{{ formatDate(share.createdAt) }}</p>
+                    <div class="account-share-row w-100">
+                        <div class="min-width-0">
+                            <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">{{ share.displayName }}</h6>
+                            <p class="text-body-2 text-medium-emphasis mb-0">{{ formatDate(share.createdAt) }}</p>
+                        </div>
+                        <div class="account-share-row__meta">
+                            <v-chip size="small" :color="share.role === 'pending' ? 'warning' : 'secondary'" variant="tonal">
+                                {{ roleChipLabel(share) }}
+                            </v-chip>
+                            <v-btn
+                                size="small"
+                                variant="text"
+                                :icon="true"
+                                :aria-label="t('comptesPage.share.editTitle')"
+                                :disabled="store.acting"
+                                @click="openEdit(share)"
+                            >
+                                <PencilIcon size="18" />
+                            </v-btn>
+                        </div>
                     </div>
-                    <div class="account-share-row__meta">
-                        <v-chip size="small" :color="share.role === 'pending' ? 'warning' : 'secondary'" variant="tonal">
-                            {{ roleChipLabel(share) }}
-                        </v-chip>
-                        <v-btn
-                            size="small"
-                            variant="text"
-                            :icon="true"
-                            :aria-label="t('comptesPage.share.editTitle')"
-                            :disabled="store.acting"
-                            @click="openEdit(share)"
-                        >
-                            <PencilIcon size="18" />
-                        </v-btn>
-                    </div>
-                </div>
-            </v-list-item>
-        </v-list>
+                </v-list-item>
+            </v-list>
         </AppModalPanelScroll>
 
         <ShareInviteModal v-model="inviteOpen" :account-public-id="accountPublicId" />
 
-        <AccountShareEditModal
-            v-model="editOpen"
-            :account-public-id="accountPublicId"
-            :share="editTarget"
-            @revoke="onRevokeFromEdit"
-        />
+        <AccountShareEditModal v-model="editOpen" :account-public-id="accountPublicId" :share="editTarget" @revoke="onRevokeFromEdit" />
 
         <AppConfirmationModal
             v-model="revokeOpen"
