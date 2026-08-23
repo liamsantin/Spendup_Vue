@@ -82,4 +82,73 @@ describe('createResourceCache', () => {
         cache.invalidate('*');
         expect(cache.isFresh('accounts')).toBe(false);
     });
+
+    it('force attend un inflight non forcé puis refetch', async () => {
+        const resolvers: Array<() => void> = [];
+        const loader = vi.fn(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolvers.push(resolve);
+                })
+        );
+        const cache = createResourceCache({ defaultMaxAgeMs: 60_000, now: () => 1_000 });
+
+        const soft = cache.ensure('accounts', loader);
+        const forced = cache.ensure('accounts', loader, { force: true });
+        expect(loader).toHaveBeenCalledTimes(1);
+
+        resolvers[0]?.();
+        await soft;
+        await Promise.resolve();
+        expect(loader).toHaveBeenCalledTimes(2);
+
+        resolvers[1]?.();
+        await forced;
+        expect(loader).toHaveBeenCalledTimes(2);
+        expect(cache.isFresh('accounts')).toBe(true);
+    });
+
+    it('deux force concurrents partagent le refetch forcé après un inflight soft', async () => {
+        const resolvers: Array<() => void> = [];
+        const loader = vi.fn(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolvers.push(resolve);
+                })
+        );
+        const cache = createResourceCache({ defaultMaxAgeMs: 60_000, now: () => 1_000 });
+
+        const soft = cache.ensure('accounts', loader);
+        const forcedA = cache.ensure('accounts', loader, { force: true });
+        const forcedB = cache.ensure('accounts', loader, { force: true });
+        expect(loader).toHaveBeenCalledTimes(1);
+
+        resolvers[0]?.();
+        await soft;
+        await Promise.resolve();
+        expect(loader).toHaveBeenCalledTimes(2);
+
+        resolvers[1]?.();
+        await Promise.all([forcedA, forcedB]);
+        expect(loader).toHaveBeenCalledTimes(2);
+    });
+
+    it('force rejoint un inflight déjà forcé', async () => {
+        let resolveLoader: (() => void) | undefined;
+        const loader = vi.fn(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolveLoader = resolve;
+                })
+        );
+        const cache = createResourceCache({ defaultMaxAgeMs: 60_000, now: () => 1_000 });
+
+        const first = cache.ensure('accounts', loader, { force: true });
+        const second = cache.ensure('accounts', loader, { force: true });
+        expect(loader).toHaveBeenCalledTimes(1);
+
+        resolveLoader?.();
+        await Promise.all([first, second]);
+        expect(loader).toHaveBeenCalledTimes(1);
+    });
 });

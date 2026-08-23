@@ -1,5 +1,11 @@
 export type EnsureOptions = {
-    /** Ignore TTL and refetch. Join an in-flight request if one exists. */
+    /**
+     * Ignore TTL and refetch.
+     * Non-force callers still join an in-flight request.
+     * A force caller joins only an in-flight *forced* request; if a non-forced
+     * request is in flight, it waits for it then starts a fresh forced fetch
+     * (so acceptShare / realtime cannot resolve with pre-mutation data).
+     */
     force?: boolean;
     /** Override the cache default TTL for this call. */
     maxAgeMs?: number;
@@ -18,6 +24,8 @@ export type ResourceCacheOptions = {
 type CacheEntry = {
     lastFetchedAt: number | null;
     inflight: Promise<void> | null;
+    /** True when the current inflight was started with `force: true`. */
+    inflightForced: boolean;
 };
 
 /**
@@ -32,7 +40,7 @@ export function createResourceCache(options: ResourceCacheOptions) {
     function getOrCreate(key: string): CacheEntry {
         let entry = entries.get(key);
         if (!entry) {
-            entry = { lastFetchedAt: null, inflight: null };
+            entry = { lastFetchedAt: null, inflight: null, inflightForced: false };
             entries.set(key, entry);
         }
         return entry;
@@ -46,10 +54,18 @@ export function createResourceCache(options: ResourceCacheOptions) {
 
     async function ensure(key: string, loader: () => Promise<void>, ensureOptions: EnsureOptions = {}): Promise<void> {
         const entry = getOrCreate(key);
-        if (entry.inflight) return entry.inflight;
+        const force = !!ensureOptions.force;
+
+        while (entry.inflight) {
+            if (!force || entry.inflightForced) {
+                return entry.inflight;
+            }
+            // Force must not resolve with a non-forced fetch that started earlier.
+            await entry.inflight.catch(() => undefined);
+        }
 
         const maxAgeMs = ensureOptions.maxAgeMs ?? options.defaultMaxAgeMs;
-        if (!ensureOptions.force && isFresh(key, maxAgeMs)) return;
+        if (!force && isFresh(key, maxAgeMs)) return;
 
         const request = (async () => {
             try {
@@ -57,10 +73,12 @@ export function createResourceCache(options: ResourceCacheOptions) {
                 entry.lastFetchedAt = now();
             } finally {
                 entry.inflight = null;
+                entry.inflightForced = false;
             }
         })();
 
         entry.inflight = request;
+        entry.inflightForced = force;
         return request;
     }
 
