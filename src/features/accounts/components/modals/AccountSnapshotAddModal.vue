@@ -6,6 +6,7 @@ import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
+import { todayYmd, ymdToSnapshotIso } from '../../format';
 import { useAccountsStore } from '../../stores/accounts-store';
 import type { CreateBalanceSnapshotPayload } from '../../types';
 import AccountSnapshotForm from '../forms/AccountSnapshotForm.vue';
@@ -29,20 +30,6 @@ const open = computed({
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
-function todayYmd(): string {
-    const date = new Date();
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-}
-
-function ymdToIso(ymd: string): string {
-    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd.trim());
-    if (!match) return new Date(ymd).toISOString();
-    return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])).toISOString();
-}
-
 function emptyForm(): CreateBalanceSnapshotPayload {
     return {
         balance: 0,
@@ -65,7 +52,7 @@ async function submitAdd() {
     try {
         const payload: CreateBalanceSnapshotPayload = {
             balance: Number(form.value.balance),
-            snapshotAt: ymdToIso(form.value.snapshotAt),
+            snapshotAt: ymdToSnapshotIso(form.value.snapshotAt),
             source: form.value.source ?? 'manual',
             note: form.value.note?.trim() || null
         };

@@ -7,6 +7,7 @@ defineOptions({ name: 'AccountSnapshotForm' });
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
+import { todayYmd } from '../../format';
 import type { CreateBalanceSnapshotPayload } from '../../types';
 
 const props = defineProps<{
@@ -15,13 +16,7 @@ const props = defineProps<{
 
 const { t } = useI18n();
 
-function todayYmd(): string {
-    const date = new Date();
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-}
+const maxSnapshotDate = todayYmd();
 
 const snapshotAtModel = computed({
     get: () => props.form.snapshotAt || null,
@@ -47,7 +42,7 @@ const snapshotAtModel = computed({
             <AppDatePicker
                 v-model="snapshotAtModel"
                 :label="t('comptesPage.snapshots.fields.snapshotAt')"
-                :max="todayYmd()"
+                :max="maxSnapshotDate"
                 color="primary"
                 hide-details
                 :clearable="false"
