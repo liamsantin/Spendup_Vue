@@ -129,7 +129,7 @@ const resolvedShowPanels = computed(() => {
 
 const resolvedShowDivider = computed(() => {
     if (props.showDivider != null) return props.showDivider;
-    if (isPilled.value) return true;
+    if (isPilled.value) return false;
     return layoutPreset.value === 'basic' || layoutPreset.value === 'icon' || layoutPreset.value === 'disabled';
 });
 
@@ -309,6 +309,14 @@ onBeforeUnmount(() => {
 
     .app-base-tabs__track {
         position: relative;
+        padding: 6px 8px;
+        border-radius: 12px;
+        overflow: hidden;
+        background-color: rgba(var(--v-theme-on-surface), 0.02);
+        background-image:
+            linear-gradient(rgba(var(--v-theme-on-surface), 0.045) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.045) 1px, transparent 1px);
+        background-size: 10px 10px;
     }
 
     .app-base-tabs__pill {
@@ -362,6 +370,7 @@ onBeforeUnmount(() => {
             font-weight: 500;
             color: rgba(var(--v-theme-textPrimary), 0.55);
             background-color: transparent !important;
+            background-image: none !important;
             box-shadow: none !important;
             opacity: 1;
             transition: color 0.2s ease;
@@ -413,11 +422,6 @@ onBeforeUnmount(() => {
                 box-shadow: none !important;
             }
         }
-    }
-
-    .app-base-tabs__divider {
-        border-color: rgb(var(--v-theme-borderColor));
-        opacity: 1;
     }
 }
 

@@ -196,7 +196,7 @@ onBeforeUnmount(() => {
                 </v-tabs>
             </div>
 
-            <v-divider class="flex-grow-0" />
+            <v-divider v-if="!props.pilled" class="flex-grow-0" />
 
             <div v-if="$slots.toolbar" class="settings-tabs-toolbar flex-grow-0">
                 <slot name="toolbar" />
@@ -275,7 +275,15 @@ onBeforeUnmount(() => {
 }
 
 .settings-tabs-track--pilled {
-    padding: 8px 12px 4px;
+    padding: 6px 8px;
+    margin: 8px 12px 4px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: rgba(var(--v-theme-on-surface), 0.02);
+    background-image:
+        linear-gradient(rgba(var(--v-theme-on-surface), 0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.045) 1px, transparent 1px);
+    background-size: 10px 10px;
 }
 
 .settings-tabs__pill {
@@ -335,6 +343,7 @@ onBeforeUnmount(() => {
     font-weight: 500;
     color: rgba(var(--v-theme-textPrimary), 0.55);
     background-color: transparent !important;
+    background-image: none !important;
     box-shadow: none !important;
     opacity: 1;
     transition: color 0.2s ease;
