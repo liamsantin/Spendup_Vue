@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { canArchiveAccount, canDeleteAccount, canEditAccount, canManageShares, canRestoreAccount, canSetPrimaryAccount } from '../rights';
+import {
+    canArchiveAccount,
+    canCreateAccount,
+    canDeleteAccount,
+    canEditAccount,
+    canManageShares,
+    canRestoreAccount,
+    canSetPrimaryAccount,
+    canViewAccount
+} from '../rights';
 import type { Account } from '../types';
 
 function account(partial: Partial<Account>): Account {
@@ -24,6 +33,16 @@ function account(partial: Partial<Account>): Account {
 }
 
 describe('accounts rights', () => {
+    it('autorise view pour owner, editor et viewer', () => {
+        expect(canViewAccount(account({ myRole: 'owner' }))).toBe(true);
+        expect(canViewAccount(account({ myRole: 'editor' }))).toBe(true);
+        expect(canViewAccount(account({ myRole: 'viewer' }))).toBe(true);
+    });
+
+    it('autorise createAccount (toujours true côté UI)', () => {
+        expect(canCreateAccount()).toBe(true);
+    });
+
     it('autorise édition pour owner et editor seulement', () => {
         expect(canEditAccount(account({ myRole: 'owner' }))).toBe(true);
         expect(canEditAccount(account({ myRole: 'editor' }))).toBe(true);
@@ -34,6 +53,18 @@ describe('accounts rights', () => {
         const primary = account({ isPrimary: true, myRole: 'owner' });
         expect(canArchiveAccount(primary)).toBe(false);
         expect(canDeleteAccount(primary)).toBe(false);
+    });
+
+    it('autorise archive pour editor non-primaire actif', () => {
+        expect(canArchiveAccount(account({ myRole: 'editor', isPrimary: false, isActive: true }))).toBe(true);
+        expect(canArchiveAccount(account({ myRole: 'viewer', isPrimary: false, isActive: true }))).toBe(false);
+        expect(canArchiveAccount(account({ myRole: 'owner', isActive: false }))).toBe(false);
+    });
+
+    it('refuse delete si non owned', () => {
+        expect(canDeleteAccount(account({ isOwned: false, myRole: 'owner', isPrimary: false }))).toBe(false);
+        expect(canDeleteAccount(account({ isOwned: true, myRole: 'owner', isPrimary: false }))).toBe(true);
+        expect(canDeleteAccount(account({ isOwned: true, myRole: 'editor', isPrimary: false }))).toBe(false);
     });
 
     it('limite setPrimary et shares au owner owned', () => {

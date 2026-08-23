@@ -579,6 +579,105 @@ describe('useAccountsStore', () => {
         expect(api.listBalanceSnapshots).toHaveBeenCalledWith('acc-1');
     });
 
+    it('archive puis restore patchent le compte localement', async () => {
+        const secondary = { ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: false };
+        api.list.mockResolvedValue({ items: [ownedAccount, secondary] });
+        api.archive.mockResolvedValue({ ...secondary, isActive: false });
+        api.restore.mockResolvedValue({ ...secondary, isActive: true });
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.archiveAccount('acc-2');
+
+        expect(api.archive).toHaveBeenCalledWith('acc-2');
+        expect(store.accounts.find((a) => a.publicId === 'acc-2')?.isActive).toBe(false);
+        expect(store.archivedOwnedAccounts.some((a) => a.publicId === 'acc-2')).toBe(true);
+
+        await store.restoreAccount('acc-2');
+        expect(api.restore).toHaveBeenCalledWith('acc-2');
+        expect(store.accounts.find((a) => a.publicId === 'acc-2')?.isActive).toBe(true);
+        expect(store.activeOwnedAccounts.some((a) => a.publicId === 'acc-2')).toBe(true);
+    });
+
+    it('inviteShare, updateShareRole et revokeShare patchent la liste locale', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listShares.mockResolvedValue({ items: [] });
+        api.inviteShare.mockResolvedValue({
+            publicId: 's1',
+            userPublicId: 'u2',
+            displayName: 'Bob',
+            photoUrl: null,
+            role: 'pending',
+            invitedRole: 'viewer',
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z'
+        });
+        api.updateShareRole.mockResolvedValue({
+            publicId: 's1',
+            userPublicId: 'u2',
+            displayName: 'Bob',
+            photoUrl: null,
+            role: 'editor',
+            invitedRole: null,
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-02T00:00:00Z'
+        });
+        api.revokeShare.mockResolvedValue(undefined);
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        await store.loadShares('acc-1');
+
+        await store.inviteShare('acc-1', 'u2', 'viewer', 'https://photo');
+        expect(store.shares).toHaveLength(1);
+        expect(store.shares[0]?.photoUrl).toBe('https://photo');
+        expect(store.shares[0]?.role).toBe('pending');
+
+        await store.updateShareRole('acc-1', 'u2', 'editor');
+        expect(store.shares[0]?.role).toBe('editor');
+
+        await store.revokeShare('acc-1', 'u2');
+        expect(api.revokeShare).toHaveBeenCalledWith('acc-1', 'u2');
+        expect(store.shares).toHaveLength(0);
+    });
+
+    it('createBalanceSnapshot et deleteBalanceSnapshot patchent la liste locale', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listBalanceSnapshots.mockResolvedValue({ items: [] });
+        api.createBalanceSnapshot.mockResolvedValue({
+            publicId: 'snap-new',
+            accountPublicId: 'acc-1',
+            balance: 250,
+            snapshotAt: '2026-08-23T12:00:00.000Z',
+            source: 'manual',
+            note: 'ok',
+            createdAt: '2026-08-23T12:00:00.000Z',
+            updatedAt: null
+        });
+        api.deleteBalanceSnapshot.mockResolvedValue(undefined);
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+
+        await store.createBalanceSnapshot('acc-1', {
+            balance: 250,
+            snapshotAt: '2026-08-23T12:00:00.000Z',
+            source: 'manual',
+            note: 'ok'
+        });
+        expect(store.balanceSnapshots).toHaveLength(1);
+        expect(store.balanceSnapshots[0]?.publicId).toBe('snap-new');
+
+        await store.deleteBalanceSnapshot('acc-1', 'snap-new');
+        expect(api.deleteBalanceSnapshot).toHaveBeenCalledWith('acc-1', 'snap-new');
+        expect(store.balanceSnapshots).toHaveLength(0);
+    });
+
     it('onAuthenticatedSession branche le realtime sans charger', () => {
         const store = useAccountsStore();
         store.onAuthenticatedSession();

@@ -1,6 +1,6 @@
 import { computed, reactive, ref, watch, toValue, type MaybeRefOrGetter } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { friendsApi, type FriendItem } from '@/features/friends';
+import { friendsApi, listAllFriends, type FriendItem } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '../stores/accounts-store';
 import type { ShareRole } from '../types';
@@ -40,8 +40,7 @@ export function useShareInvite(options: {
         loadingFriends.value = true;
         localError.value = null;
         try {
-            const result = await friendsApi.list(1, 100);
-            friends.value = Array.isArray(result?.items) ? result.items : [];
+            friends.value = await listAllFriends();
         } catch (e: unknown) {
             localError.value = getErrorMessage(e);
             friends.value = [];

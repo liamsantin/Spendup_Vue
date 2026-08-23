@@ -23,7 +23,7 @@ export function useDashboardModules() {
             captionKey: 'dashboard.modules.accounts.caption',
             icon: BuildingBankIcon,
             to: '/app/finances/comptes',
-            disabled: true
+            disabled: false
         },
         {
             titleKey: 'dashboard.modules.budgets.title',

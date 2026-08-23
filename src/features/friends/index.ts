@@ -1,4 +1,5 @@
 export { friendsApi } from './api';
+export { listAllFriends, FRIENDS_LIST_ALL_PAGE_SIZE, FRIENDS_LIST_ALL_MAX_PAGES } from './list-all';
 export { useFriendsStore } from './stores/friends-store';
 export { resolveFriendAvatarSrc, needsUserAvatarFetch, extractPublicIdFromUserAvatarPath, DEFAULT_AVATAR_SRC } from './profilePicture';
 export { useFriendAvatarUrl } from './composables/useFriendAvatarUrl';
