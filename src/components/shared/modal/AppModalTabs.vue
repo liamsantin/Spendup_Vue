@@ -55,6 +55,11 @@ const emit = defineEmits<{
 
 const { smAndDown } = useDisplay();
 const tabsGrow = computed(() => props.grow || smAndDown.value);
+const tabsRef = ref<{ refreshPill: () => void } | null>(null);
+
+function onModalAfterEnter() {
+    tabsRef.value?.refreshPill();
+}
 
 const open = computed({
     get: () => props.modelValue,
@@ -101,6 +106,7 @@ const currentTab = computed({
         :show-footer="showFooter"
         :scrollable="scrollable"
         :mobile-layout="mobileLayout"
+        @after-enter="onModalAfterEnter"
     >
         <template v-if="$slots['header-extra']" #header-extra>
             <slot name="header-extra" />
@@ -108,6 +114,7 @@ const currentTab = computed({
 
         <template #toolbar>
             <AppBaseTabs
+                ref="tabsRef"
                 v-model="currentTab"
                 :tabs="tabs"
                 :preset="preset"

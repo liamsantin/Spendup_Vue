@@ -21,6 +21,8 @@ export type AppBaseTabsItem = {
     icon?: Component;
     disabled?: boolean;
     color?: string;
+    /** Compteur / chip à droite du label (ex. invitations). */
+    chip?: string | number;
 };
 
 const props = withDefaults(
@@ -165,8 +167,22 @@ const resolvedContentClass = computed(() => {
 
 function iconClass(item: AppBaseTabsItem) {
     if (!item.label) return undefined;
-    return resolvedStacked.value ? 'mb-1' : 'v-icon--start';
+    if (resolvedStacked.value) return 'mb-1';
+    // En mode pilled, l’espacement icône/label est géré par gap CSS.
+    if (isPilled.value) return undefined;
+    return 'v-icon--start';
 }
+
+function hasChip(item: AppBaseTabsItem) {
+    return item.chip != null && item.chip !== '' && Number(item.chip) !== 0;
+}
+
+const trackAlignClass = computed(() => {
+    if (!isPilled.value) return undefined;
+    if (resolvedAlignTabs.value === 'center') return 'app-base-tabs__track--center';
+    if (resolvedAlignTabs.value === 'end') return 'app-base-tabs__track--end';
+    return undefined;
+});
 
 const trackRef = ref<HTMLElement | null>(null);
 const pillReady = ref(false);
@@ -225,6 +241,10 @@ watch(isPilled, (enabled) => {
     }
 });
 watch(
+    () => props.grow,
+    () => schedulePillUpdate(false)
+);
+watch(
     () => props.tabs,
     () => schedulePillUpdate(false),
     { deep: true }
@@ -243,11 +263,27 @@ onBeforeUnmount(() => {
     resizeObserver?.disconnect();
     window.removeEventListener('resize', handleWindowResize);
 });
+
+/** Remesure la pastille (ex. après ouverture d’une modal dont le scale fausse getBoundingClientRect). */
+function refreshPill() {
+    schedulePillUpdate(false);
+}
+
+defineExpose({ refreshPill });
 </script>
 
 <template>
     <v-sheet elevation="0" class="app-base-tabs" :class="{ 'app-base-tabs--pilled': isPilled }">
-        <div ref="trackRef" :class="{ 'app-base-tabs__track': isPilled }">
+        <div
+            ref="trackRef"
+            :class="[
+                {
+                    'app-base-tabs__track': isPilled,
+                    'app-base-tabs__track--grow': isPilled && props.grow
+                },
+                trackAlignClass
+            ]"
+        >
             <div
                 v-if="isPilled"
                 class="app-base-tabs__pill"
@@ -281,8 +317,25 @@ onBeforeUnmount(() => {
                     :color="item.color"
                     :ripple="isPilled ? false : undefined"
                 >
-                    <component :is="item.icon" v-if="item.icon" stroke-width="1.5" width="20" :class="iconClass(item)" />
-                    <span v-if="item.label">{{ item.label }}</span>
+                    <component
+                        :is="item.icon"
+                        v-if="item.icon"
+                        class="app-base-tabs__icon"
+                        stroke-width="1.5"
+                        width="18"
+                        height="18"
+                        :class="iconClass(item)"
+                    />
+                    <span v-if="item.label" class="app-base-tabs__label" :data-label="item.label">{{ item.label }}</span>
+                    <v-chip
+                        v-if="hasChip(item)"
+                        class="app-base-tabs__chip"
+                        :color="isPilled ? undefined : 'primary'"
+                        size="x-small"
+                        :variant="isPilled ? 'tonal' : 'flat'"
+                    >
+                        {{ item.chip }}
+                    </v-chip>
                 </v-tab>
             </v-tabs>
         </div>
@@ -304,19 +357,57 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
+/* Segmented control (réf. pill) — pastille active reste en couleur primary. */
 .app-base-tabs--pilled {
-    background: transparent;
+    width: 100%;
+    background: transparent !important;
 
     .app-base-tabs__track {
         position: relative;
-        padding: 6px 8px;
-        border-radius: 12px;
+        display: inline-flex;
+        width: fit-content;
+        max-width: 100%;
+        padding: 0;
+        border-radius: 9999px;
         overflow: hidden;
-        background-color: rgba(var(--v-theme-on-surface), 0.02);
-        background-image:
-            linear-gradient(rgba(var(--v-theme-on-surface), 0.045) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(var(--v-theme-on-surface), 0.045) 1px, transparent 1px);
-        background-size: 10px 10px;
+        background-color: rgb(var(--v-theme-surface));
+        border: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+        box-shadow:
+            0 1px 2px rgba(var(--v-theme-on-surface), 0.06),
+            0 2px 8px rgba(var(--v-theme-on-surface), 0.08);
+
+        &--grow {
+            display: flex;
+            width: 100%;
+
+            .app-base-tabs__list {
+                width: 100% !important;
+                flex: 1 1 auto !important;
+
+                :deep(.v-slide-group),
+                :deep(.v-slide-group__content) {
+                    width: 100% !important;
+                    flex: 1 1 auto !important;
+                }
+
+                :deep(.v-tab) {
+                    flex: 1 1 0;
+                    justify-content: center;
+                }
+            }
+        }
+
+        &--center {
+            display: flex;
+            width: fit-content;
+            margin-inline: auto;
+        }
+
+        &--end {
+            display: flex;
+            width: fit-content;
+            margin-inline-start: auto;
+        }
     }
 
     .app-base-tabs__pill {
@@ -324,7 +415,7 @@ onBeforeUnmount(() => {
         top: 0;
         left: 0;
         z-index: 0;
-        border-radius: 10px;
+        border-radius: 9999px;
         background-color: rgb(var(--v-theme-primary));
         pointer-events: none;
         will-change: transform, width, height;
@@ -341,39 +432,87 @@ onBeforeUnmount(() => {
         --v-tabs-height: auto;
         position: relative;
         z-index: 1;
+        width: auto !important;
+        flex: 0 0 auto !important;
         height: auto !important;
         min-height: 0;
         background: transparent !important;
         overflow: visible;
 
-        :deep(.v-slide-group),
+        :deep(.v-slide-group) {
+            flex: 0 0 auto !important;
+            width: auto !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+
         :deep(.v-slide-group__container) {
             height: auto !important;
             overflow: visible !important;
         }
 
         :deep(.v-slide-group__content) {
-            gap: 4px;
+            gap: 0;
             height: auto !important;
             align-items: center;
+            flex: 0 0 auto !important;
+        }
+
+        /* Flèches Vuetify cassent le look segmented : on les masque en mode pilled. */
+        :deep(.v-slide-group__prev),
+        :deep(.v-slide-group__next) {
+            display: none !important;
         }
 
         :deep(.v-tab) {
+            flex: 0 0 auto;
             min-width: auto;
             height: auto;
-            min-height: 36px;
-            padding: 8px 12px;
-            border-radius: 10px !important;
+            min-height: 40px;
+            padding: 8px 16px;
+            border-radius: 9999px !important;
             letter-spacing: normal;
             text-transform: none;
             font-size: 0.875rem;
             font-weight: 500;
-            color: rgba(var(--v-theme-textPrimary), 0.55);
+            color: rgba(var(--v-theme-textPrimary), 0.78);
             background-color: transparent !important;
             background-image: none !important;
             box-shadow: none !important;
             opacity: 1;
             transition: color 0.2s ease;
+
+            .v-btn__content {
+                flex: 0 0 auto;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .app-base-tabs__icon {
+                flex-shrink: 0;
+                width: 18px;
+                height: 18px;
+            }
+
+            .app-base-tabs__label {
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                white-space: nowrap;
+
+                &::after {
+                    content: attr(data-label);
+                    height: 0;
+                    overflow: hidden;
+                    visibility: hidden;
+                    user-select: none;
+                    pointer-events: none;
+                    font-weight: 600;
+                    letter-spacing: inherit;
+                    font-size: inherit;
+                }
+            }
 
             .v-btn__overlay,
             .v-btn__underlay,
@@ -398,7 +537,7 @@ onBeforeUnmount(() => {
             }
 
             &:active:not(.v-tab--selected):not(.v-tab--disabled) {
-                color: rgba(var(--v-theme-textPrimary), 0.55);
+                color: rgba(var(--v-theme-textPrimary), 0.78);
             }
 
             &.v-tab--disabled {
@@ -408,7 +547,7 @@ onBeforeUnmount(() => {
 
         :deep(.app-base-tabs__tab--active),
         :deep(.v-tab--selected) {
-            font-weight: 700;
+            font-weight: 600;
             color: #fff !important;
             background-color: transparent !important;
             box-shadow: none !important;
@@ -420,6 +559,11 @@ onBeforeUnmount(() => {
                 color: #fff !important;
                 background-color: transparent !important;
                 box-shadow: none !important;
+            }
+
+            .app-base-tabs__chip {
+                color: #fff !important;
+                background: rgba(255, 255, 255, 0.22) !important;
             }
         }
     }
