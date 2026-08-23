@@ -205,7 +205,8 @@ const isOverflowing = ref(false);
 const canScrollPrev = ref(false);
 const canScrollNext = ref(false);
 
-const ARROW_RESERVE_PX = 72;
+/** Espace réservé aux zones flèches + fondu (prev + next) quand overflow. */
+const ARROW_RESERVE_PX = 80;
 
 let resizeObserver: ResizeObserver | null = null;
 
@@ -401,29 +402,12 @@ onBeforeUnmount(() => {
             class="app-base-tabs__nav"
             :class="{
                 'app-base-tabs__nav--overflow': isOverflowing && !props.grow,
+                'app-base-tabs__nav--fade-start': isOverflowing && !props.grow && canScrollPrev,
+                'app-base-tabs__nav--fade-end': isOverflowing && !props.grow && canScrollNext,
                 'app-base-tabs__nav--center': resolvedAlignTabs === 'center',
                 'app-base-tabs__nav--end': resolvedAlignTabs === 'end'
             }"
         >
-            <button
-                v-show="isOverflowing && !props.grow"
-                type="button"
-                class="app-base-tabs__arrow app-base-tabs__arrow--prev"
-                :disabled="!canScrollPrev"
-                aria-label="Previous tabs"
-                @click="scrollTabs(-1)"
-            >
-                <svg class="app-base-tabs__arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path
-                        d="M15 6l-6 6 6 6"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    />
-                </svg>
-            </button>
-
             <div
                 ref="trackRef"
                 class="app-base-tabs__track"
@@ -497,6 +481,25 @@ onBeforeUnmount(() => {
                     </v-tab>
                 </v-tabs>
             </div>
+
+            <button
+                v-show="isOverflowing && !props.grow"
+                type="button"
+                class="app-base-tabs__arrow app-base-tabs__arrow--prev"
+                :disabled="!canScrollPrev"
+                aria-label="Previous tabs"
+                @click="scrollTabs(-1)"
+            >
+                <svg class="app-base-tabs__arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                        d="M15 6l-6 6 6 6"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+            </button>
 
             <button
                 v-show="isOverflowing && !props.grow"
@@ -588,41 +591,115 @@ onBeforeUnmount(() => {
     background: transparent !important;
 
     .app-base-tabs__nav {
-        display: flex;
-        align-items: stretch;
-        width: 100%;
-        max-width: 100%;
-        gap: 4px;
-
-        &:not(.app-base-tabs__nav--overflow).app-base-tabs__nav--center {
-            justify-content: center;
-        }
-
-        &:not(.app-base-tabs__nav--overflow).app-base-tabs__nav--end {
-            justify-content: flex-end;
-        }
-    }
-
-    .app-base-tabs__arrow {
-        flex: 0 0 auto;
+        position: relative;
         display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 40px;
-        min-height: 40px;
+        align-items: stretch;
+        width: fit-content;
+        max-width: 100%;
+        min-width: 0;
+        gap: 0;
         padding: 0;
-        border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
         border-radius: 9999px;
-        background: rgb(var(--v-theme-surface));
-        color: rgba(var(--v-theme-on-surface), 0.72);
-        cursor: pointer;
+        overflow: hidden;
+        background-color: rgb(var(--v-theme-surface));
+        border: 1px solid rgba(var(--v-theme-on-surface), 0.06);
         box-shadow:
             0 1px 2px rgba(var(--v-theme-on-surface), 0.06),
             0 2px 8px rgba(var(--v-theme-on-surface), 0.08);
 
+        &--overflow {
+            display: flex;
+            width: 100%;
+        }
+
+        &:not(.app-base-tabs__nav--overflow).app-base-tabs__nav--center {
+            display: flex;
+            width: fit-content;
+            margin-inline: auto;
+        }
+
+        &:not(.app-base-tabs__nav--overflow).app-base-tabs__nav--end {
+            display: flex;
+            width: fit-content;
+            margin-inline-start: auto;
+        }
+
+        /* Fondus aux bords : le contenu passe sous les flèches. */
+        &--overflow::before,
+        &--overflow::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            z-index: 2;
+            width: 40px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        &--overflow::before {
+            left: 0;
+            background: linear-gradient(
+                to right,
+                rgb(var(--v-theme-surface)) 0%,
+                rgb(var(--v-theme-surface)) 28%,
+                rgba(var(--v-theme-surface), 0.72) 55%,
+                rgba(var(--v-theme-surface), 0) 100%
+            );
+        }
+
+        &--overflow::after {
+            right: 0;
+            background: linear-gradient(
+                to left,
+                rgb(var(--v-theme-surface)) 0%,
+                rgb(var(--v-theme-surface)) 28%,
+                rgba(var(--v-theme-surface), 0.72) 55%,
+                rgba(var(--v-theme-surface), 0) 100%
+            );
+        }
+
+        &--fade-start::before,
+        &--fade-end::after {
+            opacity: 1;
+        }
+    }
+
+    .app-base-tabs__arrow {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        min-width: 32px;
+        height: auto;
+        min-height: 40px;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        color: rgba(var(--v-theme-on-surface), 0.55);
+        cursor: pointer;
+        box-shadow: none;
+
+        &--prev {
+            left: 0;
+            padding-inline-start: 6px;
+            justify-content: flex-start;
+        }
+
+        &--next {
+            right: 0;
+            padding-inline-end: 6px;
+            justify-content: flex-end;
+        }
+
         &:disabled {
-            opacity: 0.35;
+            opacity: 0.28;
             cursor: default;
         }
 
@@ -645,25 +722,31 @@ onBeforeUnmount(() => {
         max-width: 100%;
         min-width: 0;
         padding: 0;
-        border-radius: 9999px;
+        border-radius: 0;
         overflow: hidden;
-        background-color: rgb(var(--v-theme-surface));
-        border: 1px solid rgba(var(--v-theme-on-surface), 0.06);
-        box-shadow:
-            0 1px 2px rgba(var(--v-theme-on-surface), 0.06),
-            0 2px 8px rgba(var(--v-theme-on-surface), 0.08);
+        background: transparent;
+        border: 0;
+        box-shadow: none;
 
         &--scrollable {
-            flex: 1 1 0;
-            width: auto;
+            flex: 1 1 auto;
+            width: 100%;
             max-width: none;
             min-width: 0;
             overflow-x: auto;
             overflow-y: hidden;
             scrollbar-width: none;
+            /* Laisse de la place sous les flèches pour lire le 1er / dernier tab. */
+            scroll-padding-inline: 32px;
 
             &::-webkit-scrollbar {
                 display: none;
+            }
+
+            .app-base-tabs__list {
+                :deep(.v-slide-group__content) {
+                    padding-inline: 28px;
+                }
             }
         }
 
