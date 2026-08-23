@@ -6,7 +6,7 @@ import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { todayYmd, ymdToSnapshotIso } from '../../format';
+import { parseAccountAmount, todayYmd, ymdToSnapshotIso } from '../../format';
 import { useAccountsStore } from '../../stores/accounts-store';
 import type { CreateBalanceSnapshotPayload } from '../../types';
 import AccountSnapshotForm from '../forms/AccountSnapshotForm.vue';
@@ -49,9 +49,14 @@ watch(
 );
 
 async function submitAdd() {
+    const balance = parseAccountAmount(form.value.balance);
+    if (balance == null) {
+        emit('error', t('comptesPage.snapshots.errors.balanceInvalid'));
+        return;
+    }
     try {
         const payload: CreateBalanceSnapshotPayload = {
-            balance: Number(form.value.balance),
+            balance,
             snapshotAt: ymdToSnapshotIso(form.value.snapshotAt),
             source: form.value.source ?? 'manual',
             note: form.value.note?.trim() || null

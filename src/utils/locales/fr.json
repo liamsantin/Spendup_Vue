@@ -304,7 +304,8 @@
                 "isPrimary": "Compte principal"
             },
             "errors": {
-                "nameRequired": "Le nom est obligatoire."
+                "nameRequired": "Le nom est obligatoire.",
+                "balanceInvalid": "Saisissez un solde valide."
             }
         },
         "share": {
@@ -389,6 +390,9 @@
                 "title": "Supprimer ce relevé ?",
                 "body": "Le relevé de {balance} du {date} sera supprimé.",
                 "confirm": "Supprimer"
+            },
+            "errors": {
+                "balanceInvalid": "Saisissez un solde valide."
             }
         }
     },

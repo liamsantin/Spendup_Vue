@@ -304,7 +304,8 @@
                 "isPrimary": "Primary account"
             },
             "errors": {
-                "nameRequired": "Name is required."
+                "nameRequired": "Name is required.",
+                "balanceInvalid": "Enter a valid balance."
             }
         },
         "share": {
@@ -389,6 +390,9 @@
                 "title": "Delete this snapshot?",
                 "body": "The snapshot of {balance} on {date} will be deleted.",
                 "confirm": "Delete"
+            },
+            "errors": {
+                "balanceInvalid": "Enter a valid balance."
             }
         }
     },

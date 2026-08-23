@@ -18,6 +18,20 @@ export function emptyToNull(value: string | null | undefined): string | null {
     return trimmed ? trimmed : null;
 }
 
+/**
+ * Parse un montant compte / snapshot.
+ * Accepte `0` ; refuse vide, NaN, ±Infinity (pas de fallback silencieux vers 0).
+ * @returns Le nombre fini, ou `null` si invalide.
+ */
+export function parseAccountAmount(value: unknown): number | null {
+    if (value === '' || value == null) return null;
+    if (typeof value === 'string' && value.trim() === '') return null;
+    const raw = typeof value === 'string' ? value.trim().replace(',', '.') : value;
+    const n = typeof raw === 'number' ? raw : Number(raw);
+    if (!Number.isFinite(n)) return null;
+    return n;
+}
+
 /** Date calendaire locale du jour au format `YYYY-MM-DD`. */
 export function todayYmd(now = new Date()): string {
     const y = now.getFullYear();

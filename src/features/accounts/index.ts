@@ -12,7 +12,7 @@ export {
     isPrimaryActionBlocked,
     roleLabelKey
 } from './rights';
-export { formatAccountBalance, emptyToNull, todayYmd, ymdToSnapshotIso, formatSnapshotDate } from './format';
+export { formatAccountBalance, emptyToNull, parseAccountAmount, todayYmd, ymdToSnapshotIso, formatSnapshotDate } from './format';
 export type {
     AccountType,
     Currency,

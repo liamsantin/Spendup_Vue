@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatSnapshotDate, todayYmd, ymdToSnapshotIso } from '../format';
+import { formatSnapshotDate, parseAccountAmount, todayYmd, ymdToSnapshotIso } from '../format';
 
 describe('snapshot date helpers', () => {
     it('ymdToSnapshotIso utilise midi UTC (pas de décalage de jour)', () => {
@@ -25,5 +25,26 @@ describe('snapshot date helpers', () => {
 
     it('todayYmd reflète la date locale fournie', () => {
         expect(todayYmd(new Date(2026, 7, 23, 23, 30))).toBe('2026-08-23');
+    });
+});
+
+describe('parseAccountAmount', () => {
+    it('accepte 0 et les nombres finis', () => {
+        expect(parseAccountAmount(0)).toBe(0);
+        expect(parseAccountAmount('0')).toBe(0);
+        expect(parseAccountAmount(-12.5)).toBe(-12.5);
+        expect(parseAccountAmount('1,5')).toBe(1.5);
+        expect(parseAccountAmount(' 42.10 ')).toBe(42.1);
+    });
+
+    it('refuse vide, NaN et Infinity (pas de fallback vers 0)', () => {
+        expect(parseAccountAmount('')).toBeNull();
+        expect(parseAccountAmount('   ')).toBeNull();
+        expect(parseAccountAmount(null)).toBeNull();
+        expect(parseAccountAmount(undefined)).toBeNull();
+        expect(parseAccountAmount('abc')).toBeNull();
+        expect(parseAccountAmount(Number.NaN)).toBeNull();
+        expect(parseAccountAmount(Number.POSITIVE_INFINITY)).toBeNull();
+        expect(parseAccountAmount(Number('abc'))).toBeNull();
     });
 });

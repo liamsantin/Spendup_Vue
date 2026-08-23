@@ -5,7 +5,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { emptyToNull } from '../../format';
+import { emptyToNull, parseAccountAmount } from '../../format';
 import { useAccountsStore } from '../../stores/accounts-store';
 import { ACCOUNT_COLOR_PRESETS, ACCOUNT_TYPES, CURRENCIES, type Account, type AccountType, type Currency } from '../../types';
 import AccountForm from '../forms/AccountForm.vue';
@@ -100,6 +100,11 @@ async function onSave() {
         localError.message = t('comptesPage.form.errors.nameRequired');
         return;
     }
+    const initialBalance = parseAccountAmount(form.initialBalance);
+    if (initialBalance == null) {
+        localError.message = t('comptesPage.form.errors.balanceInvalid');
+        return;
+    }
 
     try {
         if (props.account) {
@@ -108,7 +113,7 @@ async function onSave() {
                 type: form.type,
                 // Devise immuable côté client après création (aligné sur le champ disabled).
                 currency: props.account.currency,
-                initialBalance: Number(form.initialBalance) || 0,
+                initialBalance,
                 iban: emptyToNull(form.iban),
                 accountNumber: emptyToNull(form.accountNumber),
                 color: emptyToNull(form.color),
@@ -120,7 +125,7 @@ async function onSave() {
                 name,
                 type: form.type,
                 currency: form.currency,
-                initialBalance: Number(form.initialBalance) || 0,
+                initialBalance,
                 iban: emptyToNull(form.iban),
                 accountNumber: emptyToNull(form.accountNumber),
                 color: emptyToNull(form.color),
