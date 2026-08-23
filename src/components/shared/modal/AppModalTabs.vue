@@ -52,7 +52,8 @@ const emit = defineEmits<{
 }>();
 
 const { smAndDown } = useDisplay();
-const tabsGrow = computed(() => props.grow || smAndDown.value);
+/** En pilled, on préfère le scroll + flèches custom plutôt que grow (labels tronqués). */
+const tabsGrow = computed(() => !props.pilled && (props.grow || smAndDown.value));
 
 const open = computed({
     get: () => props.modelValue,
@@ -141,7 +142,18 @@ const currentTab = computed({
 .app-modal-tabs__toolbar {
     display: flex;
     justify-content: center;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
     padding: 4px;
+    box-sizing: border-box;
+}
+
+.app-modal-tabs__toolbar :deep(.app-base-tabs) {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .app-modal-tabs__body {

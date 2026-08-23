@@ -21,7 +21,7 @@ export type AppBaseTabsItem = {
     icon?: Component;
     disabled?: boolean;
     color?: string;
-    /** Compteur / chip à droite du label (ex. invitations). */
+    /** Compteur / chip a droite du label (ex. invitations). */
     chip?: string | number;
 };
 
@@ -39,7 +39,12 @@ const props = withDefaults(
         panelClass?: string;
         contentClass?: string;
         showDivider?: boolean;
-        showArrows?: boolean;
+        /**
+         * Vuetify: `false` does NOT disable arrows (falls back to desktop overflow).
+         * Use `'never'` to disable. In pilled mode Vuetify arrows are always off;
+         * custom scroll arrows are used instead when tabs overflow.
+         */
+        showArrows?: boolean | 'always' | 'desktop' | 'mobile' | 'never';
         stacked?: boolean;
         centerActive?: boolean;
         centered?: boolean;
@@ -135,9 +140,12 @@ const resolvedShowDivider = computed(() => {
     return layoutPreset.value === 'basic' || layoutPreset.value === 'icon' || layoutPreset.value === 'disabled';
 });
 
+/** Never use Vuetify affix arrows in pilled mode (they crush tab labels). */
 const resolvedShowArrows = computed(() => {
+    if (isPilled.value || props.grow) return 'never';
+    if (props.showArrows === false) return 'never';
     if (props.showArrows != null) return props.showArrows;
-    return layoutPreset.value === 'custom-icons';
+    return layoutPreset.value === 'custom-icons' ? true : 'never';
 });
 
 const resolvedStacked = computed(() => {
@@ -168,7 +176,6 @@ const resolvedContentClass = computed(() => {
 function iconClass(item: AppBaseTabsItem) {
     if (!item.label) return undefined;
     if (resolvedStacked.value) return 'mb-1';
-    // En mode pilled, l’espacement icône/label est géré par gap CSS.
     if (isPilled.value) return undefined;
     return 'v-icon--start';
 }
@@ -185,6 +192,7 @@ const trackAlignClass = computed(() => {
 });
 
 const trackRef = ref<HTMLElement | null>(null);
+const rootRef = ref<HTMLElement | null>(null);
 const pillVisible = ref(false);
 const pillAnimate = ref(false);
 const pillStyle = ref<Record<string, string>>({
@@ -193,9 +201,102 @@ const pillStyle = ref<Record<string, string>>({
     transform: 'translate(0px, 0px)'
 });
 
+const isOverflowing = ref(false);
+const canScrollPrev = ref(false);
+const canScrollNext = ref(false);
+
+const ARROW_RESERVE_PX = 72;
+
 let resizeObserver: ResizeObserver | null = null;
 
+function asElement(value: unknown): HTMLElement | null {
+    if (!value) return null;
+    if (value instanceof HTMLElement) return value;
+    const maybe = value as { $el?: unknown };
+    const el = maybe.$el;
+    if (el instanceof HTMLElement) return el;
+    // Vue / Vuetify: $el can be a comment node before the real root.
+    if (el && typeof el === 'object' && 'nextElementSibling' in el) {
+        const next = (el as ChildNode).nextElementSibling;
+        if (next instanceof HTMLElement) return next;
+    }
+    return null;
+}
+
+function measureTabsWidth(track: HTMLElement): number {
+    const content = track.querySelector<HTMLElement>('.v-slide-group__content');
+    if (content && content.scrollWidth > 0) return content.scrollWidth;
+
+    let width = 0;
+    track.querySelectorAll<HTMLElement>('.v-tab').forEach((tab) => {
+        width += tab.offsetWidth;
+    });
+    return width;
+}
+
+/**
+ * Compare la largeur intrinsèque des tabs à la largeur du host.
+ * (scrollWidth - clientWidth sur un track `fit-content` reste à 0 : le track s'étire avec le contenu.)
+ */
+function updateScrollState() {
+    if (!isPilled.value || props.grow || !trackRef.value) {
+        isOverflowing.value = false;
+        canScrollPrev.value = false;
+        canScrollNext.value = false;
+        return;
+    }
+
+    const track = trackRef.value;
+    const hostEl = asElement(rootRef.value) ?? (track.closest('.app-base-tabs') as HTMLElement | null);
+    if (!hostEl) return;
+
+    const parent = hostEl.parentElement;
+    const contentWidthOf = (el: HTMLElement) => {
+        const cs = getComputedStyle(el);
+        const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+        return Math.max(0, el.clientWidth - pad);
+    };
+    // Parent content box (header) is the real available width — host can grow with tabs.
+    const available = parent ? contentWidthOf(parent) : hostEl.clientWidth;
+    if (available <= 0) return;
+
+    const tabsWidth = measureTabsWidth(track);
+    const overflowing = tabsWidth > available + 1;
+    isOverflowing.value = overflowing;
+
+    if (!overflowing) {
+        canScrollPrev.value = false;
+        canScrollNext.value = false;
+        return;
+    }
+
+    // Track contraint (classe --scrollable) : position de scroll réelle.
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    if (maxScroll > 1) {
+        canScrollPrev.value = track.scrollLeft > 1;
+        canScrollNext.value = track.scrollLeft < maxScroll - 1;
+        return;
+    }
+
+    // Layout pas encore appliqué : on suppose qu'on est au début.
+    canScrollPrev.value = false;
+    canScrollNext.value = tabsWidth > available - ARROW_RESERVE_PX;
+}
+
+function scrollTabs(direction: -1 | 1) {
+    if (!trackRef.value) return;
+    const delta = Math.max(140, Math.floor(trackRef.value.clientWidth * 0.65));
+    trackRef.value.scrollBy({ left: direction * delta, behavior: 'smooth' });
+}
+
+function scrollActiveIntoView() {
+    if (!trackRef.value || !isOverflowing.value) return;
+    const active = trackRef.value.querySelector<HTMLElement>('.v-tab--selected');
+    active?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
+}
+
 function handleWindowResize() {
+    updateScrollState();
     updatePill(false);
 }
 
@@ -205,7 +306,7 @@ function measureActiveTab(track: HTMLElement, active: HTMLElement) {
     return {
         width: `${active.offsetWidth}px`,
         height: `${active.offsetHeight}px`,
-        transform: `translate(${tabRect.left - trackRect.left}px, ${tabRect.top - trackRect.top}px)`
+        transform: `translate(${tabRect.left - trackRect.left + track.scrollLeft}px, ${tabRect.top - trackRect.top}px)`
     };
 }
 
@@ -220,39 +321,71 @@ function updatePill(animate = false) {
     pillAnimate.value = animate;
 }
 
-function schedulePillUpdate(animate = false) {
-    nextTick(() => updatePill(animate));
+function scheduleLayoutUpdate(animatePill = false) {
+    nextTick(() => {
+        updateScrollState();
+        // 2e frame : après application de --scrollable / flèches.
+        requestAnimationFrame(() => {
+            updateScrollState();
+            updatePill(animatePill);
+            if (animatePill) scrollActiveIntoView();
+        });
+    });
 }
 
-watch(currentValue, () => schedulePillUpdate(true));
+watch(currentValue, () => scheduleLayoutUpdate(true));
 watch(isPilled, (enabled) => {
     if (!enabled) {
         pillVisible.value = false;
         pillAnimate.value = false;
+        isOverflowing.value = false;
         return;
     }
-    nextTick(() => {
-        if (trackRef.value && resizeObserver) resizeObserver.observe(trackRef.value);
-        updatePill(false);
-    });
+    scheduleLayoutUpdate(false);
 });
 watch(
     () => props.grow,
-    () => schedulePillUpdate(false)
+    () => scheduleLayoutUpdate(false)
 );
 watch(
     () => props.tabs,
-    () => schedulePillUpdate(false),
+    () => scheduleLayoutUpdate(false),
     { deep: true }
 );
+watch(isOverflowing, () => {
+    nextTick(() => {
+        updateScrollState();
+        updatePill(false);
+    });
+});
 
 onMounted(() => {
-    schedulePillUpdate(false);
-    if (typeof ResizeObserver !== 'undefined') {
-        resizeObserver = new ResizeObserver(() => updatePill(false));
-        if (trackRef.value) resizeObserver.observe(trackRef.value);
-    }
+    scheduleLayoutUpdate(false);
     window.addEventListener('resize', handleWindowResize);
+
+    nextTick(() => {
+        if (typeof ResizeObserver === 'undefined') return;
+
+        resizeObserver = new ResizeObserver(() => {
+            updateScrollState();
+            updatePill(false);
+        });
+
+        const observe = (value: unknown) => {
+            if (value instanceof Element) {
+                resizeObserver?.observe(value);
+                return;
+            }
+            const el = asElement(value);
+            if (el) resizeObserver?.observe(el);
+        };
+
+        const rootEl = asElement(rootRef.value);
+        observe(rootEl);
+        if (rootEl?.parentElement) observe(rootEl.parentElement);
+        observe(trackRef.value);
+        observe(trackRef.value?.querySelector('.v-slide-group__content'));
+    });
 });
 
 onBeforeUnmount(() => {
@@ -262,28 +395,130 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <v-sheet elevation="0" class="app-base-tabs" :class="{ 'app-base-tabs--pilled': isPilled }">
+    <v-sheet ref="rootRef" elevation="0" class="app-base-tabs" :class="{ 'app-base-tabs--pilled': isPilled }">
         <div
-            ref="trackRef"
-            :class="[
-                {
-                    'app-base-tabs__track': isPilled,
-                    'app-base-tabs__track--grow': isPilled && props.grow
-                },
-                trackAlignClass
-            ]"
+            v-if="isPilled"
+            class="app-base-tabs__nav"
+            :class="{
+                'app-base-tabs__nav--overflow': isOverflowing && !props.grow,
+                'app-base-tabs__nav--center': resolvedAlignTabs === 'center',
+                'app-base-tabs__nav--end': resolvedAlignTabs === 'end'
+            }"
         >
-            <div
-                v-if="isPilled"
-                class="app-base-tabs__pill"
-                :class="{
-                    'app-base-tabs__pill--visible': pillVisible,
-                    'app-base-tabs__pill--animate': pillAnimate
-                }"
-                :style="pillStyle"
-                aria-hidden="true"
-            />
+            <button
+                v-show="isOverflowing && !props.grow"
+                type="button"
+                class="app-base-tabs__arrow app-base-tabs__arrow--prev"
+                :disabled="!canScrollPrev"
+                aria-label="Previous tabs"
+                @click="scrollTabs(-1)"
+            >
+                <svg class="app-base-tabs__arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                        d="M15 6l-6 6 6 6"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+            </button>
 
+            <div
+                ref="trackRef"
+                class="app-base-tabs__track"
+                :class="[
+                    {
+                        'app-base-tabs__track--grow': props.grow,
+                        'app-base-tabs__track--scrollable': isOverflowing && !props.grow
+                    },
+                    trackAlignClass
+                ]"
+                @scroll.passive="
+                    () => {
+                        updateScrollState();
+                        updatePill(false);
+                    }
+                "
+            >
+                <div
+                    class="app-base-tabs__pill"
+                    :class="{
+                        'app-base-tabs__pill--visible': pillVisible,
+                        'app-base-tabs__pill--animate': pillAnimate
+                    }"
+                    :style="pillStyle"
+                    aria-hidden="true"
+                />
+
+                <v-tabs
+                    v-model="currentValue"
+                    class="app-base-tabs__list"
+                    :bg-color="resolvedBgColor"
+                    :color="resolvedColor"
+                    :align-tabs="resolvedAlignTabs"
+                    :grow="props.grow"
+                    :show-arrows="resolvedShowArrows"
+                    :stacked="resolvedStacked"
+                    :centered="resolvedCentered"
+                    :center-active="resolvedCenterActive"
+                    :next-icon="props.nextIcon"
+                    :prev-icon="props.prevIcon"
+                    density="comfortable"
+                    selected-class="app-base-tabs__tab--active"
+                >
+                    <v-tab
+                        v-for="item in props.tabs"
+                        :key="item.value"
+                        class="app-base-tabs__tab"
+                        :value="item.value"
+                        :disabled="item.disabled"
+                        :color="item.color"
+                        :ripple="false"
+                    >
+                        <component
+                            :is="item.icon"
+                            v-if="item.icon"
+                            class="app-base-tabs__icon"
+                            stroke-width="1.5"
+                            width="18"
+                            height="18"
+                            :class="iconClass(item)"
+                        />
+                        <span v-if="item.label" class="app-base-tabs__label" :data-label="item.label">{{ item.label }}</span>
+                        <v-chip
+                            v-if="hasChip(item)"
+                            class="app-base-tabs__chip"
+                            size="x-small"
+                            variant="tonal"
+                        >
+                            {{ item.chip }}
+                        </v-chip>
+                    </v-tab>
+                </v-tabs>
+            </div>
+
+            <button
+                v-show="isOverflowing && !props.grow"
+                type="button"
+                class="app-base-tabs__arrow app-base-tabs__arrow--next"
+                :disabled="!canScrollNext"
+                aria-label="Next tabs"
+                @click="scrollTabs(1)"
+            >
+                <svg class="app-base-tabs__arrow-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                        d="M9 6l6 6-6 6"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    />
+                </svg>
+            </button>
+        </div>
+
+        <template v-else>
             <v-tabs
                 v-model="currentValue"
                 class="app-base-tabs__list"
@@ -297,8 +532,6 @@ onBeforeUnmount(() => {
                 :center-active="resolvedCenterActive"
                 :next-icon="props.nextIcon"
                 :prev-icon="props.prevIcon"
-                :density="isPilled ? 'comfortable' : undefined"
-                :selected-class="isPilled ? 'app-base-tabs__tab--active' : undefined"
             >
                 <v-tab
                     v-for="item in props.tabs"
@@ -307,7 +540,6 @@ onBeforeUnmount(() => {
                     :value="item.value"
                     :disabled="item.disabled"
                     :color="item.color"
-                    :ripple="isPilled ? false : undefined"
                 >
                     <component
                         :is="item.icon"
@@ -318,19 +550,19 @@ onBeforeUnmount(() => {
                         height="18"
                         :class="iconClass(item)"
                     />
-                    <span v-if="item.label" class="app-base-tabs__label" :data-label="item.label">{{ item.label }}</span>
+                    <span v-if="item.label" class="app-base-tabs__label">{{ item.label }}</span>
                     <v-chip
                         v-if="hasChip(item)"
                         class="app-base-tabs__chip"
-                        :color="isPilled ? undefined : 'primary'"
+                        color="primary"
                         size="x-small"
-                        :variant="isPilled ? 'tonal' : 'flat'"
+                        variant="flat"
                     >
                         {{ item.chip }}
                     </v-chip>
                 </v-tab>
             </v-tabs>
-        </div>
+        </template>
 
         <v-divider v-if="resolvedShowDivider" class="app-base-tabs__divider" />
 
@@ -349,16 +581,69 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped lang="scss">
-/* Segmented control (réf. pill) — pastille active reste en couleur primary. */
 .app-base-tabs--pilled {
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     background: transparent !important;
+
+    .app-base-tabs__nav {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+        max-width: 100%;
+        gap: 4px;
+
+        &:not(.app-base-tabs__nav--overflow).app-base-tabs__nav--center {
+            justify-content: center;
+        }
+
+        &:not(.app-base-tabs__nav--overflow).app-base-tabs__nav--end {
+            justify-content: flex-end;
+        }
+    }
+
+    .app-base-tabs__arrow {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 40px;
+        min-height: 40px;
+        padding: 0;
+        border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+        border-radius: 9999px;
+        background: rgb(var(--v-theme-surface));
+        color: rgba(var(--v-theme-on-surface), 0.72);
+        cursor: pointer;
+        box-shadow:
+            0 1px 2px rgba(var(--v-theme-on-surface), 0.06),
+            0 2px 8px rgba(var(--v-theme-on-surface), 0.08);
+
+        &:disabled {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+        &:not(:disabled):hover {
+            color: rgb(var(--v-theme-on-surface));
+        }
+
+        .app-base-tabs__arrow-icon {
+            display: block;
+            flex-shrink: 0;
+            color: inherit;
+            stroke: currentColor;
+        }
+    }
 
     .app-base-tabs__track {
         position: relative;
         display: inline-flex;
         width: fit-content;
         max-width: 100%;
+        min-width: 0;
         padding: 0;
         border-radius: 9999px;
         overflow: hidden;
@@ -367,6 +652,20 @@ onBeforeUnmount(() => {
         box-shadow:
             0 1px 2px rgba(var(--v-theme-on-surface), 0.06),
             0 2px 8px rgba(var(--v-theme-on-surface), 0.08);
+
+        &--scrollable {
+            flex: 1 1 0;
+            width: auto;
+            max-width: none;
+            min-width: 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+        }
 
         &--grow {
             display: flex;
@@ -387,18 +686,6 @@ onBeforeUnmount(() => {
                     justify-content: center;
                 }
             }
-        }
-
-        &--center {
-            display: flex;
-            width: fit-content;
-            margin-inline: auto;
-        }
-
-        &--end {
-            display: flex;
-            width: fit-content;
-            margin-inline-start: auto;
         }
     }
 
@@ -455,7 +742,7 @@ onBeforeUnmount(() => {
             flex: 0 0 auto !important;
         }
 
-        /* Flèches Vuetify cassent le look segmented : on les masque en mode pilled. */
+        /* Always hide Vuetify arrows in pilled mode. */
         :deep(.v-slide-group__prev),
         :deep(.v-slide-group__next) {
             display: none !important;

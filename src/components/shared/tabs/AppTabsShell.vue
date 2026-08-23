@@ -6,7 +6,6 @@ defineOptions({ name: 'AppTabsShell' });
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useDisplay } from 'vuetify';
 import { FriendLiveChips } from '@/features/notifications';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import AppBaseTabs, { type AppBaseTabsItem } from './AppBaseTabs.vue';
@@ -57,7 +56,6 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const { smAndDown } = useDisplay();
 
 const currentTab = computed({
     get: () => props.modelValue,
@@ -72,9 +70,6 @@ const baseTabs = computed<AppBaseTabsItem[]>(() =>
         chip: tab.chip
     }))
 );
-
-/** Mobile : barre pleine largeur ; desktop : pilule qui épouse le contenu. */
-const tabsGrow = computed(() => smAndDown.value);
 </script>
 
 <template>
@@ -93,9 +88,8 @@ const tabsGrow = computed(() => smAndDown.value);
                     :tabs="baseTabs"
                     :align-tabs="alignTabs"
                     :pilled="pilled"
-                    :grow="tabsGrow"
                     :show-panels="false"
-                    :show-arrows="false"
+                    show-arrows="never"
                     :show-divider="false"
                 />
             </div>
@@ -162,8 +156,18 @@ const tabsGrow = computed(() => smAndDown.value);
 .settings-tabs-header {
     display: flex;
     justify-content: center;
-    padding: 12px 16px 8px;
+    width: 100%;
     max-width: 100%;
+    min-width: 0;
+    padding: 12px 16px 8px;
+    box-sizing: border-box;
+}
+
+.settings-tabs-header :deep(.app-base-tabs) {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 @media screen and (max-width: 767px) {
