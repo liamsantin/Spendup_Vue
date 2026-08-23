@@ -33,6 +33,12 @@
     .v-card-item {
         padding: 24px 24px;
     }
+
+    @media (max-width: 599px) {
+        .v-card-item {
+            padding: 16px;
+        }
+    }
 }
 
 // Theme cards

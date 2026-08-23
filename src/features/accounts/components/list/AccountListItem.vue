@@ -27,7 +27,7 @@ const promoted = computed(() => store.isPromotedAccount(props.account.publicId))
     <v-list-item
         link
         color="primary"
-        class="account-list-item px-2 py-3"
+        class="account-list-item pa-0"
         rounded="md"
         :data-account-id="account.publicId"
         :class="{
@@ -68,6 +68,11 @@ const promoted = computed(() => store.isPromotedAccount(props.account.publicId))
 </template>
 
 <style scoped>
+.account-list-item {
+    padding: 0 !important;
+    min-height: unset !important;
+}
+
 .account-list-item--promoted {
     animation: account-promote-pulse 0.9s ease;
 }
