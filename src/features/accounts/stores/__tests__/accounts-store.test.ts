@@ -535,6 +535,50 @@ describe('useAccountsStore', () => {
         expect(store.selectedAccount?.isActive).toBe(false);
     });
 
+    it('deleteAccount purge liste, sélection, shares, snapshots et invalide le cache snapshots', async () => {
+        const deletable = { ...ownedAccount, isPrimary: false };
+        api.list.mockResolvedValue({ items: [deletable] });
+        api.get.mockResolvedValue(deletable);
+        api.listBalanceSnapshots.mockResolvedValue({
+            items: [
+                {
+                    publicId: 'snap-1',
+                    accountPublicId: 'acc-1',
+                    balance: 100,
+                    snapshotAt: '2026-01-01T12:00:00.000Z',
+                    source: 'manual',
+                    note: null,
+                    createdAt: '2026-01-01T12:00:00.000Z',
+                    updatedAt: null
+                }
+            ]
+        });
+        api.remove.mockResolvedValue(undefined);
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+        expect(store.balanceSnapshots).toHaveLength(1);
+
+        await store.deleteAccount('acc-1');
+
+        expect(api.remove).toHaveBeenCalledWith('acc-1');
+        expect(store.accounts.some((a) => a.publicId === 'acc-1')).toBe(false);
+        expect(store.selectedAccount).toBeNull();
+        expect(store.shares).toEqual([]);
+        expect(store.balanceSnapshots).toEqual([]);
+
+        // Compte réapparu : le cache snapshots ne doit plus être frais → refetch.
+        api.list.mockResolvedValue({ items: [deletable] });
+        api.listBalanceSnapshots.mockClear();
+        api.listBalanceSnapshots.mockResolvedValue({ items: [] });
+        await store.loadAccounts(true);
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+        expect(api.listBalanceSnapshots).toHaveBeenCalledWith('acc-1');
+    });
+
     it('onAuthenticatedSession branche le realtime sans charger', () => {
         const store = useAccountsStore();
         store.onAuthenticatedSession();

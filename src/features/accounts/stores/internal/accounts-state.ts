@@ -177,8 +177,10 @@ export function createAccountsState() {
             balanceSnapshots.value = [];
         }
         sharesByAccountId.delete(publicId);
+        snapshotsByAccountId.delete(publicId);
         cache.invalidate(`detail:${publicId}`);
         cache.invalidate(`shares:${publicId}`);
+        cache.invalidate(`snapshots:${publicId}`);
     }
 
     /**
