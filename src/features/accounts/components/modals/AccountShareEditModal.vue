@@ -7,9 +7,9 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { UserPhotoAvatar } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { useAccountsStore } from '../../stores/accounts-store';
-import type { AccountShare, ShareRole } from '../../types';
-import ShareRolePicker from '../forms/ShareRolePicker.vue';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import type { AccountShare, ShareRole } from '@/features/accounts/types';
+import ShareRolePicker from '@/features/accounts/components/forms/ShareRolePicker.vue';
 
 const props = defineProps<{
     modelValue: boolean;

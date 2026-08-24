@@ -3,7 +3,7 @@ import { LayoutDashboardIcon } from 'vue-tabler-icons';
 import { useI18n } from 'vue-i18n';
 import UiParentCard from '@/components/shared/card/UiParentCard.vue';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
-import { useDashboardModules } from '../composables/useDashboardModules';
+import { useDashboardModules } from '@/features/dashboard/composables/useDashboardModules';
 
 const { t } = useI18n();
 const { modules } = useDashboardModules();

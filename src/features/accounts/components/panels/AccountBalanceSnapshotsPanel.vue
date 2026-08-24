@@ -6,10 +6,10 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { formatAccountBalance, formatSnapshotDate } from '../../format';
-import { useAccountsStore } from '../../stores/accounts-store';
-import type { Account, AccountBalanceSnapshot } from '../../types';
-import AccountSnapshotAddModal from '../modals/AccountSnapshotAddModal.vue';
+import { formatAccountBalance, formatSnapshotDate } from '@/features/accounts/format';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import type { Account, AccountBalanceSnapshot } from '@/features/accounts/types';
+import AccountSnapshotAddModal from '@/features/accounts/components/modals/AccountSnapshotAddModal.vue';
 
 const props = defineProps<{
     account: Account;

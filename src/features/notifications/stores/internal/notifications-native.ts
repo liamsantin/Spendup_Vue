@@ -1,9 +1,9 @@
 import { useUserSettingsStore } from '@/features/user-settings';
-import { isLiveChipType } from '../../friendChip';
-import { isAccountShareNotificationType, isFriendNotificationType, isSecurityNotificationType } from '../../link';
-import { showNativeNotification } from '../../native-notify';
-import type { AppNotification } from '../../types';
-import type { NotificationsState } from './notifications-state';
+import { isLiveChipType } from '@/features/notifications/friendChip';
+import { isAccountShareNotificationType, isFriendNotificationType, isSecurityNotificationType } from '@/features/notifications/link';
+import { showNativeNotification } from '@/features/notifications/native-notify';
+import type { AppNotification } from '@/features/notifications/types';
+import type { NotificationsState } from '@/features/notifications/stores/internal/notifications-state';
 
 const LIVE_CHIP_DISMISS_MS = 8000;
 

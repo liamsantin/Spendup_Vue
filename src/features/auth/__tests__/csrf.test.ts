@@ -7,7 +7,7 @@ import {
     getCsrfToken,
     readCsrfCookie,
     rememberCsrfToken
-} from '../csrf';
+} from '@/features/auth/csrf';
 
 describe('csrf', () => {
     beforeEach(() => {

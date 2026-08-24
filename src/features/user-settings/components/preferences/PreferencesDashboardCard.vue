@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { LayoutDashboardIcon } from 'vue-tabler-icons';
-import type { UserSettings } from '../../types';
+import type { UserSettings } from '@/features/user-settings/types';
 
 const draft = defineModel<UserSettings>({ required: true });
 const { t } = useI18n();

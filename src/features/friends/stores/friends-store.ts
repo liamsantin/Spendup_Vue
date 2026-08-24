@@ -1,9 +1,12 @@
 import { defineStore } from 'pinia';
-import { createFriendsState, FRIENDS_LIST_MAX_AGE_MS } from './internal/friends-state';
-import { createFriendsLists } from './internal/friends-lists';
-import { createFriendsMutations } from './internal/friends-mutations';
-import { createFriendsRealtime } from './internal/friends-realtime';
-import { createFriendsLifecycle } from './internal/friends-lifecycle';
+import {
+    createFriendsState,
+    createFriendsLists,
+    createFriendsMutations,
+    createFriendsRealtime,
+    createFriendsLifecycle,
+    FRIENDS_LIST_MAX_AGE_MS
+} from '@/features/friends/stores/internal';
 
 export { FRIENDS_LIST_MAX_AGE_MS };
 

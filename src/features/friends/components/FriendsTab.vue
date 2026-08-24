@@ -3,9 +3,9 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
-import FriendListItem from './FriendListItem.vue';
-import { useFriendsStore } from '../stores/friends-store';
-import type { FriendItem } from '../types';
+import FriendListItem from '@/features/friends/components/FriendListItem.vue';
+import { useFriendsStore } from '@/features/friends/stores/friends-store';
+import type { FriendItem } from '@/features/friends/types';
 
 const { t, locale } = useI18n();
 const store = useFriendsStore();

@@ -1,8 +1,8 @@
-export { friendsApi } from './api';
-export { listAllFriends, FRIENDS_LIST_ALL_PAGE_SIZE, FRIENDS_LIST_ALL_MAX_PAGES } from './list-all';
-export { useFriendsStore } from './stores/friends-store';
-export { resolveFriendAvatarSrc, needsUserAvatarFetch, extractPublicIdFromUserAvatarPath, DEFAULT_AVATAR_SRC } from './profilePicture';
-export { useFriendAvatarUrl } from './composables/useFriendAvatarUrl';
+export { friendsApi } from '@/features/friends/api';
+export { listAllFriends, FRIENDS_LIST_ALL_PAGE_SIZE, FRIENDS_LIST_ALL_MAX_PAGES } from '@/features/friends/list-all';
+export { useFriendsStore } from '@/features/friends/stores/friends-store';
+export { resolveFriendAvatarSrc, needsUserAvatarFetch, extractPublicIdFromUserAvatarPath, DEFAULT_AVATAR_SRC } from '@/features/friends/profilePicture';
+export { useFriendAvatarUrl } from '@/features/friends/composables/useFriendAvatarUrl';
 export type {
     FriendshipStatus,
     FriendUser,
@@ -13,13 +13,13 @@ export type {
     FriendsPageResult,
     FriendSearchQuery,
     SendFriendRequestPayload
-} from './types';
-export { buildFriendQrPayload, parseFriendQrPayload, isValidPublicId, normalizePublicId } from './qr';
-export { default as FriendListItem } from './components/FriendListItem.vue';
-export { default as UserPhotoAvatar } from './components/UserPhotoAvatar.vue';
-export { default as DiscoverSearchBar } from './components/DiscoverSearchBar.vue';
-export { default as FriendQrModal } from './components/FriendQrModal.vue';
-export { default as FriendsTab } from './components/FriendsTab.vue';
-export { default as RequestsTab } from './components/RequestsTab.vue';
-export { default as DiscoverFriendsTab } from './components/DiscoverFriendsTab.vue';
-export { default as BlockedUsersTab } from './components/BlockedUsersTab.vue';
+} from '@/features/friends/types';
+export { buildFriendQrPayload, parseFriendQrPayload, isValidPublicId, normalizePublicId } from '@/features/friends/qr';
+export { default as FriendListItem } from '@/features/friends/components/FriendListItem.vue';
+export { default as UserPhotoAvatar } from '@/features/friends/components/UserPhotoAvatar.vue';
+export { default as DiscoverSearchBar } from '@/features/friends/components/DiscoverSearchBar.vue';
+export { default as FriendQrModal } from '@/features/friends/components/FriendQrModal.vue';
+export { default as FriendsTab } from '@/features/friends/components/FriendsTab.vue';
+export { default as RequestsTab } from '@/features/friends/components/RequestsTab.vue';
+export { default as DiscoverFriendsTab } from '@/features/friends/components/DiscoverFriendsTab.vue';
+export { default as BlockedUsersTab } from '@/features/friends/components/BlockedUsersTab.vue';

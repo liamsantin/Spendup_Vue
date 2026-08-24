@@ -1,4 +1,4 @@
-import type { AuthDevice } from './types';
+import type { AuthDevice } from '@/features/auth/types';
 
 /**
  * Appareil courant : priorise le flag serveur (`isCurrentDevice` / claim JWT `did`),

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
-import { ACCOUNTS_LIST_MAX_AGE_MS } from '../accounts-store';
+import { ACCOUNTS_LIST_MAX_AGE_MS } from '@/features/accounts/stores/accounts-store';
 
 const api = vi.hoisted(() => ({
     list: vi.fn(),
@@ -56,7 +56,7 @@ vi.mock('@/features/notifications', () => ({
     })
 }));
 
-import { useAccountsStore } from '../accounts-store';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 
 const ownedAccount = {
     publicId: 'acc-1',

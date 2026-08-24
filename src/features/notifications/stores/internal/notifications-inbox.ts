@@ -1,6 +1,6 @@
-import { notificationsApi } from '../../api';
-import type { NotificationsState } from './notifications-state';
-import type { NotificationsNative } from './notifications-native';
+import { notificationsApi } from '@/features/notifications/api';
+import type { NotificationsState } from '@/features/notifications/stores/internal/notifications-state';
+import type { NotificationsNative } from '@/features/notifications/stores/internal/notifications-native';
 
 /**
  * Actions REST de l’inbox notifications.

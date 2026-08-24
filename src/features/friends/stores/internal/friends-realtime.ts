@@ -1,7 +1,7 @@
 import { useNotificationsStore } from '@/features/notifications';
 import type { AppNotification, FriendshipChange, FriendshipChangedPayload } from '@/features/notifications';
-import type { FriendsState } from './friends-state';
-import type { FriendsLists } from './friends-lists';
+import type { FriendsState } from '@/features/friends/stores/internal/friends-state';
+import type { FriendsLists } from '@/features/friends/stores/internal/friends-lists';
 
 /**
  * Pont realtime notifications → refresh listes amis.

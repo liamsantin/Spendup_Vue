@@ -7,7 +7,7 @@ import {
     isProfileDirty,
     takeProfileSnapshot,
     type ProfileSnapshot
-} from '../account-profile';
+} from '@/features/user-settings/account-profile';
 
 export type AccountProfileFields = {
     firstName: Ref<string>;

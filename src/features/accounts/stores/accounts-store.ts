@@ -1,11 +1,15 @@
 import { defineStore } from 'pinia';
 import { AppError } from '@/utils/errors/app-error';
-import { createAccountsState, ACCOUNTS_LIST_MAX_AGE_MS, ACCOUNTS_DETAIL_MAX_AGE_MS } from './internal/accounts-state';
-import { createAccountsCrud } from './internal/accounts-crud';
-import { createAccountsShares } from './internal/accounts-shares';
-import { createAccountsSnapshots } from './internal/accounts-snapshots';
-import { createAccountsRealtime } from './internal/accounts-realtime';
-import { createAccountsLifecycle } from './internal/accounts-lifecycle';
+import {
+    createAccountsState,
+    createAccountsCrud,
+    createAccountsShares,
+    createAccountsSnapshots,
+    createAccountsRealtime,
+    createAccountsLifecycle,
+    ACCOUNTS_LIST_MAX_AGE_MS,
+    ACCOUNTS_DETAIL_MAX_AGE_MS
+} from '@/features/accounts/stores/internal';
 
 export { ACCOUNTS_LIST_MAX_AGE_MS, ACCOUNTS_DETAIL_MAX_AGE_MS };
 

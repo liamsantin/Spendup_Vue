@@ -1,7 +1,7 @@
 import { computed, reactive, ref, toValue, type MaybeRefOrGetter } from 'vue';
 import { useI18n } from 'vue-i18n';
 import QRCode from 'qrcode';
-import { buildFriendQrPayload } from '../qr';
+import { buildFriendQrPayload } from '@/features/friends/qr';
 
 export function useFriendQrGenerate(options: { publicId: MaybeRefOrGetter<string> }) {
     const { t } = useI18n();

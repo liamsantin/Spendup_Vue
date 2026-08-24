@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { formatAccountBalance } from '../../format';
-import { useAccountsStore } from '../../stores/accounts-store';
-import type { Account } from '../../types';
+import { formatAccountBalance } from '@/features/accounts/format';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import type { Account } from '@/features/accounts/types';
 
 const props = defineProps<{
     account: Account;

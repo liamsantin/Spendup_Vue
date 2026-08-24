@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { UserPhotoAvatar } from '@/features/friends';
-import { useAccountsStore } from '../../stores/accounts-store';
-import type { IncomingAccountShare } from '../../types';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import type { IncomingAccountShare } from '@/features/accounts/types';
 
 const props = defineProps<{
     invite: IncomingAccountShare;

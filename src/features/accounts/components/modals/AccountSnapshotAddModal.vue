@@ -6,10 +6,10 @@ import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { parseAccountAmount, todayYmd, ymdToSnapshotIso } from '../../format';
-import { useAccountsStore } from '../../stores/accounts-store';
-import type { CreateBalanceSnapshotPayload } from '../../types';
-import AccountSnapshotForm from '../forms/AccountSnapshotForm.vue';
+import { parseAccountAmount, todayYmd, ymdToSnapshotIso } from '@/features/accounts/format';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import type { CreateBalanceSnapshotPayload } from '@/features/accounts/types';
+import AccountSnapshotForm from '@/features/accounts/components/forms/AccountSnapshotForm.vue';
 
 const props = defineProps<{
     modelValue: boolean;

@@ -1,7 +1,7 @@
-import type { AccountsState } from './accounts-state';
-import type { AccountsCrud } from './accounts-crud';
-import type { AccountsShares } from './accounts-shares';
-import type { AccountsRealtime } from './accounts-realtime';
+import type { AccountsState } from '@/features/accounts/stores/internal/accounts-state';
+import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
+import type { AccountsShares } from '@/features/accounts/stores/internal/accounts-shares';
+import type { AccountsRealtime } from '@/features/accounts/stores/internal/accounts-realtime';
 
 type LifecycleDeps = Pick<AccountsCrud, 'loadAccounts'> &
     Pick<AccountsShares, 'loadIncoming'> &

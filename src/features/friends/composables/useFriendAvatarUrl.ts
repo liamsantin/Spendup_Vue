@@ -1,7 +1,7 @@
 import { onUnmounted, ref, toValue, watch, type MaybeRefOrGetter } from 'vue';
 import { useAuthStore } from '@/features/auth';
-import { friendsApi } from '../api';
-import { DEFAULT_AVATAR_SRC, extractPublicIdFromUserAvatarPath, needsUserAvatarFetch, resolveFriendAvatarSrc } from '../profilePicture';
+import { friendsApi } from '@/features/friends/api';
+import { DEFAULT_AVATAR_SRC, extractPublicIdFromUserAvatarPath, needsUserAvatarFetch, resolveFriendAvatarSrc } from '@/features/friends/profilePicture';
 
 type SharedBlobEntry = {
     url: string;

@@ -1,8 +1,11 @@
 import { defineStore } from 'pinia';
-import { APP_HOME_ROUTE, createAuthSession } from './internal/auth-session';
-import { createAuthLogout } from './internal/auth-logout';
-import { createAuthProfile } from './internal/auth-profile';
-import { createAuthActions } from './internal/auth-actions';
+import {
+    APP_HOME_ROUTE,
+    createAuthSession,
+    createAuthLogout,
+    createAuthProfile,
+    createAuthActions
+} from '@/features/auth/stores/internal';
 
 export { APP_HOME_ROUTE };
 

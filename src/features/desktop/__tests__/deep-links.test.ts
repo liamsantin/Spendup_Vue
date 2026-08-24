@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveSpendupDeepLink } from '../deep-links';
+import { resolveSpendupDeepLink } from '@/features/desktop/deep-links';
 
 describe('resolveSpendupDeepLink', () => {
     it('mappe spendup://host/path vers /host/path si /app…', () => {

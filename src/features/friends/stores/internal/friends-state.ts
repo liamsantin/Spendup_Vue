@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
-import type { BlockedFriendItem, FriendItem, FriendRequestItem, FriendSearchItem, FriendsPageResult } from '../../types';
+import type { BlockedFriendItem, FriendItem, FriendRequestItem, FriendSearchItem, FriendsPageResult } from '@/features/friends/types';
 
 export const FRIENDS_LIST_MAX_AGE_MS = 60_000;
 export const DEFAULT_PAGE_SIZE = 20;

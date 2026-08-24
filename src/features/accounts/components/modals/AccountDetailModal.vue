@@ -9,7 +9,7 @@ import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { formatAccountBalance } from '../../format';
+import { formatAccountBalance } from '@/features/accounts/format';
 import {
     canArchiveAccount,
     canDeleteAccount,
@@ -18,11 +18,11 @@ import {
     canRestoreAccount,
     canSetPrimaryAccount,
     isPrimaryActionBlocked
-} from '../../rights';
-import { useAccountsStore } from '../../stores/accounts-store';
-import AccountBalanceSnapshotsPanel from '../panels/AccountBalanceSnapshotsPanel.vue';
-import AccountSharesPanel from '../panels/AccountSharesPanel.vue';
-import AccountFormModal from './AccountFormModal.vue';
+} from '@/features/accounts/rights';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import AccountBalanceSnapshotsPanel from '@/features/accounts/components/panels/AccountBalanceSnapshotsPanel.vue';
+import AccountSharesPanel from '@/features/accounts/components/panels/AccountSharesPanel.vue';
+import AccountFormModal from '@/features/accounts/components/modals/AccountFormModal.vue';
 
 const props = defineProps<{
     modelValue: boolean;

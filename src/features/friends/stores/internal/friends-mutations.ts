@@ -1,6 +1,6 @@
-import { friendsApi } from '../../api';
-import type { FriendsState } from './friends-state';
-import type { FriendsLists } from './friends-lists';
+import { friendsApi } from '@/features/friends/api';
+import type { FriendsState } from '@/features/friends/stores/internal/friends-state';
+import type { FriendsLists } from '@/features/friends/stores/internal/friends-lists';
 
 /**
  * Mutations métier amis (requêtes, accept/refuse, block…).

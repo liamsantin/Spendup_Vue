@@ -1,4 +1,4 @@
-import type { Currency } from './types';
+import type { Currency } from '@/features/accounts/types';
 
 export function formatAccountBalance(amount: number, currency: Currency, locale?: string): string {
     try {

@@ -1,4 +1,4 @@
-import { friendsApi } from '../../api';
+import { friendsApi } from '@/features/friends/api';
 import {
     DEFAULT_PAGE_SIZE,
     KEY_BLOCKED,
@@ -6,7 +6,7 @@ import {
     KEY_INCOMING,
     KEY_OUTGOING,
     type FriendsState
-} from './friends-state';
+} from '@/features/friends/stores/internal/friends-state';
 
 /**
  * Chargement paginé des listes amis + recherche.

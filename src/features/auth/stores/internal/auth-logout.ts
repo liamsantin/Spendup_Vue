@@ -6,7 +6,7 @@ import {
 } from '@/features/auth/session-storage';
 import { i18n } from '@/plugins/i18n';
 import { isIdleSessionMessage } from '@/features/auth/idle-session';
-import type { AuthSessionState } from './auth-session';
+import type { AuthSessionState } from '@/features/auth/stores/internal/auth-session';
 
 function t(key: string) {
     return i18n.global.t(key);

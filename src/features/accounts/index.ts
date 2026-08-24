@@ -1,5 +1,5 @@
-export { accountsApi } from './api';
-export { useAccountsStore } from './stores/accounts-store';
+export { accountsApi } from '@/features/accounts/api';
+export { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 export {
     canViewAccount,
     canCreateAccount,
@@ -11,8 +11,8 @@ export {
     canManageShares,
     isPrimaryActionBlocked,
     roleLabelKey
-} from './rights';
-export { formatAccountBalance, emptyToNull, parseAccountAmount, todayYmd, ymdToSnapshotIso, formatSnapshotDate } from './format';
+} from '@/features/accounts/rights';
+export { formatAccountBalance, emptyToNull, parseAccountAmount, todayYmd, ymdToSnapshotIso, formatSnapshotDate } from '@/features/accounts/format';
 export type {
     AccountType,
     Currency,
@@ -33,13 +33,13 @@ export type {
     AccountBalanceSnapshot,
     AccountBalanceSnapshotsListResult,
     CreateBalanceSnapshotPayload
-} from './types';
-export { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLOR_PRESETS } from './types';
-export { default as AccountsTab } from './components/tabs/AccountsTab.vue';
-export { default as InvitationsTab } from './components/tabs/InvitationsTab.vue';
-export { default as AccountListItem } from './components/list/AccountListItem.vue';
-export { default as AccountFormModal } from './components/modals/AccountFormModal.vue';
-export { default as AccountDetailModal } from './components/modals/AccountDetailModal.vue';
-export { default as AccountSharesPanel } from './components/panels/AccountSharesPanel.vue';
-export { default as AccountBalanceSnapshotsPanel } from './components/panels/AccountBalanceSnapshotsPanel.vue';
-export { default as ShareInviteModal } from './components/modals/ShareInviteModal.vue';
+} from '@/features/accounts/types';
+export { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLOR_PRESETS } from '@/features/accounts/types';
+export { default as AccountsTab } from '@/features/accounts/components/tabs/AccountsTab.vue';
+export { default as InvitationsTab } from '@/features/accounts/components/tabs/InvitationsTab.vue';
+export { default as AccountListItem } from '@/features/accounts/components/list/AccountListItem.vue';
+export { default as AccountFormModal } from '@/features/accounts/components/modals/AccountFormModal.vue';
+export { default as AccountDetailModal } from '@/features/accounts/components/modals/AccountDetailModal.vue';
+export { default as AccountSharesPanel } from '@/features/accounts/components/panels/AccountSharesPanel.vue';
+export { default as AccountBalanceSnapshotsPanel } from '@/features/accounts/components/panels/AccountBalanceSnapshotsPanel.vue';
+export { default as ShareInviteModal } from '@/features/accounts/components/modals/ShareInviteModal.vue';

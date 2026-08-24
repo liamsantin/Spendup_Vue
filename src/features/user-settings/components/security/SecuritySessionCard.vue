@@ -9,7 +9,7 @@ import {
     TRUSTED_DEVICE_DAYS_MAX,
     TRUSTED_DEVICE_DAYS_MIN,
     type UserSettings
-} from '../../types';
+} from '@/features/user-settings/types';
 
 const draft = defineModel<UserSettings>({ required: true });
 const props = defineProps<{

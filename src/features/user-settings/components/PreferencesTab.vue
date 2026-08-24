@@ -3,11 +3,11 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { useUserSettingsStore } from '../stores/user-settings-store';
-import PreferencesPrivacyCard from './preferences/PreferencesPrivacyCard.vue';
-import PreferencesRegionalCard from './preferences/PreferencesRegionalCard.vue';
-import PreferencesThemeColorsCard from './preferences/PreferencesThemeColorsCard.vue';
-import PreferencesDashboardCard from './preferences/PreferencesDashboardCard.vue';
+import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
+import PreferencesPrivacyCard from '@/features/user-settings/components/preferences/PreferencesPrivacyCard.vue';
+import PreferencesRegionalCard from '@/features/user-settings/components/preferences/PreferencesRegionalCard.vue';
+import PreferencesThemeColorsCard from '@/features/user-settings/components/preferences/PreferencesThemeColorsCard.vue';
+import PreferencesDashboardCard from '@/features/user-settings/components/preferences/PreferencesDashboardCard.vue';
 
 const store = useUserSettingsStore();
 const { draft, isDirty, draftReady, saving } = storeToRefs(store);

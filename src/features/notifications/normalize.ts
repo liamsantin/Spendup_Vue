@@ -1,4 +1,4 @@
-import type { AppNotification, NotificationReceivedPayload, NotificationsListResult } from './types';
+import type { AppNotification, NotificationReceivedPayload, NotificationsListResult } from '@/features/notifications/types';
 
 /** Parse le `metadata` API (souvent une string JSON) en objet. */
 export function parseNotificationMetadata(raw: unknown): Record<string, unknown> | null {

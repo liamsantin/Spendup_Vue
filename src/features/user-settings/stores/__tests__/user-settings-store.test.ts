@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
-import { USER_SETTINGS_DEFAULTS } from '../../types';
+import { USER_SETTINGS_DEFAULTS } from '@/features/user-settings/types';
 
 const { getSettings, putSettings, patchSettings } = vi.hoisted(() => ({
     getSettings: vi.fn(),
@@ -24,7 +24,7 @@ vi.mock('../../mappers', async () => {
     };
 });
 
-import { useUserSettingsStore } from '../user-settings-store';
+import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
 
 describe('useUserSettingsStore draft', () => {
     beforeEach(() => {

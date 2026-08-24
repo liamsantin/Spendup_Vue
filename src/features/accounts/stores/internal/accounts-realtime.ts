@@ -1,8 +1,8 @@
 import { useNotificationsStore } from '@/features/notifications';
 import type { AppNotification, FriendshipChangedPayload } from '@/features/notifications';
-import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from './accounts-state';
-import type { AccountsCrud } from './accounts-crud';
-import type { AccountsShares } from './accounts-shares';
+import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
+import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
+import type { AccountsShares } from '@/features/accounts/stores/internal/accounts-shares';
 
 type RealtimeDeps = Pick<AccountsCrud, 'loadAccounts'> & Pick<AccountsShares, 'loadIncoming' | 'loadShares' | 'refreshAll'>;
 

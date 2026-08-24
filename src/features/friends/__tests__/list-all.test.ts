@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { listAllFriends } from '../list-all';
-import type { FriendItem } from '../types';
+import { listAllFriends } from '@/features/friends/list-all';
+import type { FriendItem } from '@/features/friends/types';
 
 function friend(id: string): FriendItem {
     return {

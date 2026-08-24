@@ -1,9 +1,12 @@
 import { defineStore } from 'pinia';
-import { createNotificationsState, type LiveFriendChip } from './internal/notifications-state';
-import { createNotificationsNative } from './internal/notifications-native';
-import { createNotificationsInbox } from './internal/notifications-inbox';
-import { createNotificationsHub } from './internal/notifications-hub';
-import { createNotificationsLifecycle } from './internal/notifications-lifecycle';
+import {
+    createNotificationsState,
+    createNotificationsNative,
+    createNotificationsInbox,
+    createNotificationsHub,
+    createNotificationsLifecycle,
+    type LiveFriendChip
+} from '@/features/notifications/stores/internal';
 
 export type { LiveFriendChip };
 

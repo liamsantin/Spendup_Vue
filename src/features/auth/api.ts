@@ -1,7 +1,7 @@
 import axios, { type AxiosRequestConfig, type Method } from 'axios';
 import { authAxios, shouldSendBearerAuth } from '@/utils/helpers/axios-helpers';
-import { getDeviceInfo } from './device';
-import { normalizeAuthDevices } from './normalizeDevices';
+import { getDeviceInfo } from '@/features/auth/device';
+import { normalizeAuthDevices } from '@/features/auth/normalizeDevices';
 import type {
     ApiResponse,
     AuthSession,
@@ -12,7 +12,7 @@ import type {
     TwoFactorSetup,
     UpdateProfilePayload,
     UploadAvatarResult
-} from './types';
+} from '@/features/auth/types';
 
 function bearerHeaders(accessToken: string | null | undefined): Record<string, string> | undefined {
     if (!shouldSendBearerAuth() || !accessToken) return undefined;

@@ -1,6 +1,6 @@
-import type { FriendsState } from './friends-state';
-import type { FriendsLists } from './friends-lists';
-import type { FriendsRealtime } from './friends-realtime';
+import type { FriendsState } from '@/features/friends/stores/internal/friends-state';
+import type { FriendsLists } from '@/features/friends/stores/internal/friends-lists';
+import type { FriendsRealtime } from '@/features/friends/stores/internal/friends-realtime';
 
 export type FriendsTab = 'Friends' | 'Requests' | 'Blocked' | 'Discover';
 
@@ -27,6 +27,11 @@ export function createFriendsLifecycle(
         prefetchTimer = null;
     }
 
+    /**
+     * Schedule an idle prefetch for the given tab.
+     * @param tab - The tab to schedule the idle prefetch for.
+     * @returns void
+     */
     function scheduleIdlePrefetch(tab: FriendsTab) {
         if (import.meta.env.VITEST) return;
         cancelIdlePrefetch();

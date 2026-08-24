@@ -83,7 +83,7 @@ vi.mock('@/features/user-settings', async () => {
     };
 });
 
-import { useNotificationsStore } from '../notifications-store';
+import { useNotificationsStore } from '@/features/notifications/stores/notifications-store';
 
 type HubHandlers = {
     onSessionEnded?: (payload: { reason: string; deviceIdentifier: string | null }) => void;

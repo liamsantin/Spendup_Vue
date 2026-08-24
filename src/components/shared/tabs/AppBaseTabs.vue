@@ -2,7 +2,7 @@
 defineOptions({ name: 'AppBaseTabs' });
 
 import { computed, ref, watch, type Component } from 'vue';
-import { useAppBaseTabsOverflow } from './useAppBaseTabsOverflow';
+import { useAppBaseTabsOverflow } from '@/components/shared/tabs/useAppBaseTabsOverflow';
 
 export type AppBaseTabsPreset =
     | 'basic'

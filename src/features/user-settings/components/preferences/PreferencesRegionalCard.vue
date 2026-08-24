@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { WorldIcon } from 'vue-tabler-icons';
-import { CURRENCY_OPTIONS, LOCALE_OPTIONS, TIMEZONE_OPTIONS, type UserSettings } from '../../types';
+import { CURRENCY_OPTIONS, LOCALE_OPTIONS, TIMEZONE_OPTIONS, type UserSettings } from '@/features/user-settings/types';
 
 const draft = defineModel<UserSettings>({ required: true });
 const { t } = useI18n();

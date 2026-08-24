@@ -2,8 +2,8 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { CameraIcon } from 'vue-tabler-icons';
-import FriendQrModal from './FriendQrModal.vue';
-import { useFriendsStore } from '../stores/friends-store';
+import FriendQrModal from '@/features/friends/components/FriendQrModal.vue';
+import { useFriendsStore } from '@/features/friends/stores/friends-store';
 
 const { t } = useI18n();
 const store = useFriendsStore();

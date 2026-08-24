@@ -1,5 +1,5 @@
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
-import { normalizeAppNotification, normalizeNotificationsListResult } from './normalize';
+import { normalizeAppNotification, normalizeNotificationsListResult } from '@/features/notifications/normalize';
 import type {
     AppNotification,
     DeleteAllNotificationsResult,
@@ -7,7 +7,7 @@ import type {
     NotificationsListQuery,
     NotificationsListResult,
     UnreadCountResult
-} from './types';
+} from '@/features/notifications/types';
 
 function toQuery(params: NotificationsListQuery): string {
     const search = new URLSearchParams();

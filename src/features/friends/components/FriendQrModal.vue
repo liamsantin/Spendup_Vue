@@ -11,8 +11,8 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppBaseTabs from '@/components/shared/tabs/AppBaseTabs.vue';
 import { useAuthStore } from '@/features/auth';
-import { useFriendQrGenerate } from '../composables/useFriendQrGenerate';
-import { useFriendQrScan } from '../composables/useFriendQrScan';
+import { useFriendQrGenerate } from '@/features/friends/composables/useFriendQrGenerate';
+import { useFriendQrScan } from '@/features/friends/composables/useFriendQrScan';
 
 type FriendQrView = 'Qr' | 'Add';
 

@@ -7,10 +7,10 @@ import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.v
 import { UserPhotoAvatar } from '@/features/friends';
 import { PencilIcon } from 'vue-tabler-icons';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { useAccountsStore } from '../../stores/accounts-store';
-import type { AccountShare } from '../../types';
-import AccountShareEditModal from '../modals/AccountShareEditModal.vue';
-import ShareInviteModal from '../modals/ShareInviteModal.vue';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import type { AccountShare } from '@/features/accounts/types';
+import AccountShareEditModal from '@/features/accounts/components/modals/AccountShareEditModal.vue';
+import ShareInviteModal from '@/features/accounts/components/modals/ShareInviteModal.vue';
 
 const props = defineProps<{
     accountPublicId: string;

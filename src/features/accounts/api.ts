@@ -12,7 +12,7 @@ import type {
     InviteAccountSharePayload,
     UpdateAccountPayload,
     UpdateAccountShareRolePayload
-} from './types';
+} from '@/features/accounts/types';
 
 export const accountsApi = {
     list() {

@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '../friendChip';
+import { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '@/features/notifications/friendChip';
 import {
     isAccountShareNotificationType,
     isFriendNotificationType,
     isSafeAppNotificationPath,
     isSecurityNotificationType,
     resolveNotificationLink
-} from '../link';
-import { getFriendshipPublicId, normalizeAppNotification, parseNotificationMetadata } from '../normalize';
+} from '@/features/notifications/link';
+import { getFriendshipPublicId, normalizeAppNotification, parseNotificationMetadata } from '@/features/notifications/normalize';
 
 describe('resolveNotificationLink', () => {
     it('mappe /security* vers /app/comptes', () => {

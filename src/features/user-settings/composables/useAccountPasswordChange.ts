@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
 import { withStepUpRetry } from '@/features/auth/step-up';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { isValidAccountPassword } from '../account-profile';
+import { isValidAccountPassword } from '@/features/user-settings/account-profile';
 
 export function useAccountPasswordChange(options: {
     accountSuccess: Ref<string | null>;

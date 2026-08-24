@@ -1,19 +1,19 @@
 import { HubConnectionState } from '@microsoft/signalr';
 import { getOrCreateDeviceId } from '@/features/auth/device';
 import { i18n } from '@/plugins/i18n';
-import { getNotificationsHubState, setNotificationsHubHandlers, startNotificationsHub, stopNotificationsHub } from '../../hub';
-import { isAccountShareNotificationType, isFriendNotificationType } from '../../link';
-import { normalizeNotificationReceivedPayload } from '../../normalize';
+import { getNotificationsHubState, setNotificationsHubHandlers, startNotificationsHub, stopNotificationsHub } from '@/features/notifications/hub';
+import { isAccountShareNotificationType, isFriendNotificationType } from '@/features/notifications/link';
+import { normalizeNotificationReceivedPayload } from '@/features/notifications/normalize';
 import type {
     AppNotification,
     FriendshipChangedPayload,
     InboxClearedPayload,
     NotificationReceivedPayload,
     SessionEndedPayload
-} from '../../types';
-import type { NotificationsState } from './notifications-state';
-import type { NotificationsNative } from './notifications-native';
-import type { NotificationsInbox } from './notifications-inbox';
+} from '@/features/notifications/types';
+import type { NotificationsState } from '@/features/notifications/stores/internal/notifications-state';
+import type { NotificationsNative } from '@/features/notifications/stores/internal/notifications-native';
+import type { NotificationsInbox } from '@/features/notifications/stores/internal/notifications-inbox';
 
 function t(key: string) {
     return String(i18n.global.t(key));

@@ -1,17 +1,17 @@
-export { notificationsApi } from './api';
-export { useNotificationsStore } from './stores/notifications-store';
+export { notificationsApi } from '@/features/notifications/api';
+export { useNotificationsStore } from '@/features/notifications/stores/notifications-store';
 export {
     resolveNotificationLink,
     isSafeAppNotificationPath,
     isSecurityNotificationType,
     isFriendNotificationType,
     isAccountShareNotificationType
-} from './link';
-export { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from './friendChip';
-export { parseNotificationMetadata, getFriendshipPublicId, getAccountSharePublicId, normalizeAppNotification } from './normalize';
-export { ensureNativeNotificationPermission, setNativeNotificationNavigate, showNativeNotification } from './native-notify';
-export { default as InboxTab } from './components/InboxTab.vue';
-export { default as FriendLiveChips } from './components/FriendLiveChips.vue';
+} from '@/features/notifications/link';
+export { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '@/features/notifications/friendChip';
+export { parseNotificationMetadata, getFriendshipPublicId, getAccountSharePublicId, normalizeAppNotification } from '@/features/notifications/normalize';
+export { ensureNativeNotificationPermission, setNativeNotificationNavigate, showNativeNotification } from '@/features/notifications/native-notify';
+export { default as InboxTab } from '@/features/notifications/components/InboxTab.vue';
+export { default as FriendLiveChips } from '@/features/notifications/components/FriendLiveChips.vue';
 export type {
     AppNotification,
     NotificationType,
@@ -26,4 +26,4 @@ export type {
     InboxClearedPayload,
     SessionEndedPayload,
     NotificationsListQuery
-} from './types';
+} from '@/features/notifications/types';

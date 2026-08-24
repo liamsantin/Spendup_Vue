@@ -9,8 +9,8 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
-import { useAccountsStore } from '../../stores/accounts-store';
-import ShareInviteForm from '../forms/ShareInviteForm.vue';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import ShareInviteForm from '@/features/accounts/components/forms/ShareInviteForm.vue';
 
 const props = defineProps<{
     modelValue: boolean;

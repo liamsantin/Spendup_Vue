@@ -1,8 +1,8 @@
 import { authApi, ApiError } from '@/features/auth/api';
 import type { StepUpProof, UpdateProfilePayload } from '@/features/auth/types';
 import { i18n } from '@/plugins/i18n';
-import type { AuthSessionState } from './auth-session';
-import type { AuthLogout } from './auth-logout';
+import type { AuthSessionState } from '@/features/auth/stores/internal/auth-session';
+import type { AuthLogout } from '@/features/auth/stores/internal/auth-logout';
 
 function t(key: string) {
     return i18n.global.t(key);

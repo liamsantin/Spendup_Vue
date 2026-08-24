@@ -5,12 +5,12 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { useUserSettingsStore } from '../stores/user-settings-store';
-import SecurityTwoFactorCard from './security/SecurityTwoFactorCard.vue';
-import SecuritySessionCard from './security/SecuritySessionCard.vue';
-import SecurityDevicesCard from './security/SecurityDevicesCard.vue';
-import TwoFactorSetupDialog from './security/TwoFactorSetupDialog.vue';
-import TwoFactorDisableDialog from './security/TwoFactorDisableDialog.vue';
+import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
+import SecurityTwoFactorCard from '@/features/user-settings/components/security/SecurityTwoFactorCard.vue';
+import SecuritySessionCard from '@/features/user-settings/components/security/SecuritySessionCard.vue';
+import SecurityDevicesCard from '@/features/user-settings/components/security/SecurityDevicesCard.vue';
+import TwoFactorSetupDialog from '@/features/user-settings/components/security/TwoFactorSetupDialog.vue';
+import TwoFactorDisableDialog from '@/features/user-settings/components/security/TwoFactorDisableDialog.vue';
 
 const auth = useAuthStore();
 const store = useUserSettingsStore();

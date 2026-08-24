@@ -7,7 +7,7 @@ import type {
     NotificationConnectedPayload,
     NotificationReceivedPayload,
     SessionEndedPayload
-} from './types';
+} from '@/features/notifications/types';
 
 export type NotificationsHubHandlers = {
     onConnected?: (payload: NotificationConnectedPayload) => void;

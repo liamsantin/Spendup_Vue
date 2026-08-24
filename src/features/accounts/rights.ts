@@ -1,4 +1,4 @@
-import type { Account, AccountRole } from './types';
+import type { Account, AccountRole } from '@/features/accounts/types';
 
 export function canViewAccount(account: Pick<Account, 'myRole'>): boolean {
     return account.myRole === 'owner' || account.myRole === 'editor' || account.myRole === 'viewer';

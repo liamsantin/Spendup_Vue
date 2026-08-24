@@ -3,8 +3,8 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { useUserSettingsStore } from '../stores/user-settings-store';
-import PreferencesNotificationsCard from './preferences/PreferencesNotificationsCard.vue';
+import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
+import PreferencesNotificationsCard from '@/features/user-settings/components/preferences/PreferencesNotificationsCard.vue';
 
 const store = useUserSettingsStore();
 const { draft, isDirty, draftReady, saving } = storeToRefs(store);

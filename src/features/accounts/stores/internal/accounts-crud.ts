@@ -1,6 +1,6 @@
-import { accountsApi } from '../../api';
-import type { CreateAccountPayload, UpdateAccountPayload } from '../../types';
-import { ACCOUNTS_DETAIL_MAX_AGE_MS, KEY_ACCOUNTS, type AccountsState } from './accounts-state';
+import { accountsApi } from '@/features/accounts/api';
+import type { CreateAccountPayload, UpdateAccountPayload } from '@/features/accounts/types';
+import { ACCOUNTS_DETAIL_MAX_AGE_MS, KEY_ACCOUNTS, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 
 /**
  * Actions CRUD et chargement des comptes.

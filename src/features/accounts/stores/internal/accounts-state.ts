@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
-import type { Account, AccountBalanceSnapshot, AccountShare, IncomingAccountShare } from '../../types';
+import type { Account, AccountBalanceSnapshot, AccountShare, IncomingAccountShare } from '@/features/accounts/types';
 
 export const ACCOUNTS_LIST_MAX_AGE_MS = 60_000;
 export const ACCOUNTS_DETAIL_MAX_AGE_MS = 30_000;

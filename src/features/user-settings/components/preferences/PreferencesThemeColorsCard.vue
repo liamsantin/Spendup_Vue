@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { CheckIcon, PaletteIcon } from 'vue-tabler-icons';
-import type { UserSettings } from '../../types';
-import { DAY_THEME_COLORS, NIGHT_THEME_COLORS, normalizeHex } from '../../themeColorOptions';
+import type { UserSettings } from '@/features/user-settings/types';
+import { DAY_THEME_COLORS, NIGHT_THEME_COLORS, normalizeHex } from '@/features/user-settings/themeColorOptions';
 
 const draft = defineModel<UserSettings>({ required: true });
 const { t } = useI18n();

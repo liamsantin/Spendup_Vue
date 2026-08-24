@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import type { AppNotification, FriendshipChangedPayload } from '../../types';
+import type { AppNotification, FriendshipChangedPayload } from '@/features/notifications/types';
 
 export const DEFAULT_PAGE_SIZE = 20;
 

@@ -4,9 +4,9 @@ import type { AuthSession, StepUpProof } from '@/features/auth/types';
 import { rememberCsrfToken } from '@/features/auth/csrf';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 import { i18n } from '@/plugins/i18n';
-import { APP_HOME_ROUTE, type AuthSessionState } from './auth-session';
-import type { AuthLogout } from './auth-logout';
-import type { AuthProfile } from './auth-profile';
+import { APP_HOME_ROUTE, type AuthSessionState } from '@/features/auth/stores/internal/auth-session';
+import type { AuthLogout } from '@/features/auth/stores/internal/auth-logout';
+import type { AuthProfile } from '@/features/auth/stores/internal/auth-profile';
 
 function t(key: string) {
     return i18n.global.t(key);

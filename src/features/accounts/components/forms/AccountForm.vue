@@ -9,7 +9,7 @@ defineOptions({ name: 'AccountForm' });
 import { useI18n } from 'vue-i18n';
 import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
-import { ACCOUNT_COLOR_PRESETS, type AccountType, type Currency } from '../../types';
+import { ACCOUNT_COLOR_PRESETS, type AccountType, type Currency } from '@/features/accounts/types';
 
 export type AccountFormFields = {
     name: string;

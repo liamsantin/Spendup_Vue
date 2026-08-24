@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ColorPickerIcon, XIcon } from 'vue-tabler-icons';
-import { useAppColorPicker } from './useAppColorPicker';
+import { useAppColorPicker } from '@/components/shared/color-picker/useAppColorPicker';
 
 const props = withDefaults(
     defineProps<{

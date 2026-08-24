@@ -1,5 +1,5 @@
-import { friendsApi } from './api';
-import type { FriendItem, FriendsPageResult } from './types';
+import { friendsApi } from '@/features/friends/api';
+import type { FriendItem, FriendsPageResult } from '@/features/friends/types';
 
 export const FRIENDS_LIST_ALL_PAGE_SIZE = 100;
 /** Garde-fou anti-boucle (100 × 50 = 5000 amis max côté client). */

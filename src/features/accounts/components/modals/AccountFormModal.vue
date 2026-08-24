@@ -5,10 +5,10 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { emptyToNull, parseAccountAmount } from '../../format';
-import { useAccountsStore } from '../../stores/accounts-store';
-import { ACCOUNT_COLOR_PRESETS, ACCOUNT_TYPES, CURRENCIES, type Account, type AccountType, type Currency } from '../../types';
-import AccountForm from '../forms/AccountForm.vue';
+import { emptyToNull, parseAccountAmount } from '@/features/accounts/format';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { ACCOUNT_COLOR_PRESETS, ACCOUNT_TYPES, CURRENCIES, type Account, type AccountType, type Currency } from '@/features/accounts/types';
+import AccountForm from '@/features/accounts/components/forms/AccountForm.vue';
 
 const props = defineProps<{
     modelValue: boolean;

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useFriendAvatarUrl } from '../composables/useFriendAvatarUrl';
-import { useFriendsStore } from '../stores/friends-store';
-import type { FriendUser } from '../types';
+import { useFriendAvatarUrl } from '@/features/friends/composables/useFriendAvatarUrl';
+import { useFriendsStore } from '@/features/friends/stores/friends-store';
+import type { FriendUser } from '@/features/friends/types';
 
 const props = defineProps<{
     user: FriendUser;

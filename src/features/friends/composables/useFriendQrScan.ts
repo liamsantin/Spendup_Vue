@@ -1,7 +1,7 @@
 import { nextTick, onBeforeUnmount, ref, toValue, watch, type MaybeRefOrGetter, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Html5Qrcode } from 'html5-qrcode';
-import { parseFriendQrPayload } from '../qr';
+import { parseFriendQrPayload } from '@/features/friends/qr';
 
 export function useFriendQrScan(options: {
     modelValue: MaybeRefOrGetter<boolean>;

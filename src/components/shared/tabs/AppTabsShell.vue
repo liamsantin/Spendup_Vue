@@ -8,7 +8,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FriendLiveChips } from '@/features/notifications';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
-import AppBaseTabs, { type AppBaseTabsItem } from './AppBaseTabs.vue';
+import AppBaseTabs, { type AppBaseTabsItem } from '@/components/shared/tabs/AppBaseTabs.vue';
 
 export type ShellTab = {
     value: string;

@@ -43,7 +43,7 @@ vi.mock('@/features/notifications', () => ({
     })
 }));
 
-import { useFriendsStore } from '../friends-store';
+import { useFriendsStore } from '@/features/friends/stores/friends-store';
 
 describe('useFriendsStore', () => {
     beforeEach(() => {

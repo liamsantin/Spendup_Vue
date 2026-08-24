@@ -1,10 +1,10 @@
 import { useUserSettingsStore } from '@/features/user-settings';
-import { ensureNativeNotificationPermission } from '../../native-notify';
+import { ensureNativeNotificationPermission } from '@/features/notifications/native-notify';
 import { isTauri } from '@/utils/helpers/platform-helpers';
-import type { NotificationsState } from './notifications-state';
-import type { NotificationsNative } from './notifications-native';
-import type { NotificationsInbox } from './notifications-inbox';
-import type { NotificationsHub } from './notifications-hub';
+import type { NotificationsState } from '@/features/notifications/stores/internal/notifications-state';
+import type { NotificationsNative } from '@/features/notifications/stores/internal/notifications-native';
+import type { NotificationsInbox } from '@/features/notifications/stores/internal/notifications-inbox';
+import type { NotificationsHub } from '@/features/notifications/stores/internal/notifications-hub';
 
 type LifecycleDeps = Pick<NotificationsNative, 'clearLiveFriendChips'> &
     Pick<NotificationsInbox, 'fetchUnreadCount'> &

@@ -1,5 +1,5 @@
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
-import type { UserSettings, UserSettingsPatch } from './types';
+import type { UserSettings, UserSettingsPatch } from '@/features/user-settings/types';
 
 export const userSettingsApi = {
     get() {

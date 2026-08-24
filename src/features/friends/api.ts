@@ -9,7 +9,7 @@ import type {
     FriendSearchQuery,
     FriendsPageResult,
     SendFriendRequestPayload
-} from './types';
+} from '@/features/friends/types';
 
 function toQuery(params: Record<string, string | number | boolean | null | undefined>): string {
     const search = new URLSearchParams();

@@ -9,8 +9,8 @@ defineOptions({ name: 'AccountSnapshotForm' });
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
-import { todayYmd } from '../../format';
-import type { CreateBalanceSnapshotPayload } from '../../types';
+import { todayYmd } from '@/features/accounts/format';
+import type { CreateBalanceSnapshotPayload } from '@/features/accounts/types';
 
 const props = defineProps<{
     form: CreateBalanceSnapshotPayload;

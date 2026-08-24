@@ -5,7 +5,7 @@ vi.mock('@/utils/helpers/axios-helpers', () => ({
     getApiBaseUrl: () => 'https://api.example.test'
 }));
 
-import { extractPublicIdFromUserAvatarPath, needsUserAvatarFetch, resolveFriendAvatarSrc } from '../profilePicture';
+import { extractPublicIdFromUserAvatarPath, needsUserAvatarFetch, resolveFriendAvatarSrc } from '@/features/friends/profilePicture';
 
 describe('resolveFriendAvatarSrc', () => {
     beforeEach(() => {

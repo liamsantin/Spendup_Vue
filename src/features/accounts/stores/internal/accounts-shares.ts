@@ -1,7 +1,7 @@
-import { accountsApi } from '../../api';
-import type { ShareRole } from '../../types';
-import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from './accounts-state';
-import type { AccountsCrud } from './accounts-crud';
+import { accountsApi } from '@/features/accounts/api';
+import type { ShareRole } from '@/features/accounts/types';
+import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
+import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
 
 /**
  * Actions liées aux partages et invitations entrantes.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatSnapshotDate, parseAccountAmount, todayYmd, ymdToSnapshotIso } from '../format';
+import { formatSnapshotDate, parseAccountAmount, todayYmd, ymdToSnapshotIso } from '@/features/accounts/format';
 
 describe('snapshot date helpers', () => {
     it('ymdToSnapshotIso utilise midi UTC (pas de décalage de jour)', () => {

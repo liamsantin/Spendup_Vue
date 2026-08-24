@@ -8,8 +8,8 @@ import {
     canRestoreAccount,
     canSetPrimaryAccount,
     canViewAccount
-} from '../rights';
-import type { Account } from '../types';
+} from '@/features/accounts/rights';
+import type { Account } from '@/features/accounts/types';
 
 function account(partial: Partial<Account>): Account {
     return {

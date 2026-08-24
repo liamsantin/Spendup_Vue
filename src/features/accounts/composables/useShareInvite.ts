@@ -2,8 +2,8 @@ import { computed, reactive, ref, watch, toValue, type MaybeRefOrGetter } from '
 import { useI18n } from 'vue-i18n';
 import { listAllFriends, type FriendItem } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { useAccountsStore } from '../stores/accounts-store';
-import type { ShareRole } from '../types';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import type { ShareRole } from '@/features/accounts/types';
 
 export function useShareInvite(options: {
     accountPublicId: MaybeRefOrGetter<string>;

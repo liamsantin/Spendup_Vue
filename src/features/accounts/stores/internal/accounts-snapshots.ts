@@ -1,6 +1,6 @@
-import { accountsApi } from '../../api';
-import type { CreateBalanceSnapshotPayload } from '../../types';
-import type { AccountsState } from './accounts-state';
+import { accountsApi } from '@/features/accounts/api';
+import type { CreateBalanceSnapshotPayload } from '@/features/accounts/types';
+import type { AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 
 /**
  * Actions liées aux snapshots de solde.

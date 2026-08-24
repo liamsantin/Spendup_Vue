@@ -1,5 +1,5 @@
-import { getAccountSharePublicId, getFriendshipPublicId } from './normalize';
-import type { AppNotification, NotificationType } from './types';
+import { getAccountSharePublicId, getFriendshipPublicId } from '@/features/notifications/normalize';
+import type { AppNotification, NotificationType } from '@/features/notifications/types';
 
 /**
  * Chemins `/app…` navigables (bloque `//evil`, `/\\…`, URLs absolues).

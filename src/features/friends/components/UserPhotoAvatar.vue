@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useFriendAvatarUrl } from '../composables/useFriendAvatarUrl';
+import { useFriendAvatarUrl } from '@/features/friends/composables/useFriendAvatarUrl';
 
 const props = defineProps<{
     photoUrl?: string | null;

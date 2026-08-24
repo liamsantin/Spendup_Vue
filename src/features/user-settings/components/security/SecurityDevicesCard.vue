@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
-import { useSecurityDevices } from '../../composables/useSecurityDevices';
+import { useSecurityDevices } from '@/features/user-settings/composables/useSecurityDevices';
 
 const emit = defineEmits<{
     success: [message: string];
