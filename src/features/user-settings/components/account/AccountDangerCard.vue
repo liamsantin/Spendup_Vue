@@ -28,9 +28,7 @@ const { t } = useI18n();
                 <div class="text-subtitle-1 text-medium-emphasis text-13 pr-4">
                     {{ t('accounts.danger.warning') }}
                 </div>
-                <v-btn color="error" flat class="flex-shrink-0" @click="$emit('delete')">{{
-                    t('accounts.danger.deleteAccount')
-                }}</v-btn>
+                <v-btn color="error" flat class="flex-shrink-0" @click="$emit('delete')">{{ t('accounts.danger.deleteAccount') }}</v-btn>
             </div>
         </v-card-item>
     </v-card>

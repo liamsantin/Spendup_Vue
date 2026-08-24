@@ -10,10 +10,7 @@ import { getErrorMessage } from '@/utils/errors/app-error';
  * @param options Refs de feedback compte.
  * @returns État et actions (objet réactif).
  */
-export function useAccountEmailChange(options: {
-    accountSuccess: Ref<string | null>;
-    accountError: Ref<string | null>;
-}) {
+export function useAccountEmailChange(options: { accountSuccess: Ref<string | null>; accountError: Ref<string | null> }) {
     const auth = useAuthStore();
     const router = useRouter();
     const { t } = useI18n();

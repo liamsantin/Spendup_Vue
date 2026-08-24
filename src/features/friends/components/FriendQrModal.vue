@@ -43,15 +43,7 @@ const qrTabs = computed(() => [
 const publicId = computed(() => auth.user?.userPublicId?.trim().toUpperCase() || '');
 
 const generate = useFriendQrGenerate({ publicId });
-const {
-    scannerHost,
-    scanError,
-    scannerReady,
-    cameraStarting,
-    cameraNeedsEnable,
-    scannerElementId,
-    startScanner
-} = useFriendQrScan({
+const { scannerHost, scanError, scannerReady, cameraStarting, cameraNeedsEnable, scannerElementId, startScanner } = useFriendQrScan({
     modelValue: () => props.modelValue,
     view,
     publicId,
@@ -99,7 +91,14 @@ watch(
         <v-window v-model="view">
             <v-window-item value="Qr">
                 <div class="friend-qr-panel d-flex flex-column align-center text-center ga-3 py-2">
-                    <AppAlert v-if="generate.qrError" type="error" density="default" class="w-100" closable @dismiss="generate.qrError = null">
+                    <AppAlert
+                        v-if="generate.qrError"
+                        type="error"
+                        density="default"
+                        class="w-100"
+                        closable
+                        @dismiss="generate.qrError = null"
+                    >
                         {{ generate.qrError }}
                     </AppAlert>
                     <template v-else>

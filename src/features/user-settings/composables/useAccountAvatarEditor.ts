@@ -1,12 +1,6 @@
 import { computed, onUnmounted, reactive, ref, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-    DEFAULT_AVATAR_SRC,
-    catalogAvatarSrc,
-    isCatalogProfilePicture,
-    isUploadedProfilePicture,
-    useAuthStore
-} from '@/features/auth';
+import { DEFAULT_AVATAR_SRC, catalogAvatarSrc, isCatalogProfilePicture, isUploadedProfilePicture, useAuthStore } from '@/features/auth';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
 /**

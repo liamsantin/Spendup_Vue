@@ -124,8 +124,7 @@ async function confirmDelete() {
                                 {{ formatAccountBalance(0, account.currency, locale) }}
                             </template>
                             <template v-else>
-                                {{ balanceDiff >= 0 ? '+' : ''
-                                }}{{ formatAccountBalance(balanceDiff, account.currency, locale) }}
+                                {{ balanceDiff >= 0 ? '+' : '' }}{{ formatAccountBalance(balanceDiff, account.currency, locale) }}
                             </template>
                         </div>
                         <div class="text-body-2 text-medium-emphasis mt-1">{{ t('comptesPage.snapshots.diff') }}</div>

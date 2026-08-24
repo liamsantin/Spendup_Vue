@@ -121,10 +121,7 @@ const devices = useSecurityDevices({
                                         :title="t('security.devices.menu.untrust')"
                                         @click="devices.setDeviceTrust(device, false)"
                                     />
-                                    <v-list-item
-                                        :title="t('security.devices.menu.disconnect')"
-                                        @click="devices.openRevokeDevice(device)"
-                                    />
+                                    <v-list-item :title="t('security.devices.menu.disconnect')" @click="devices.openRevokeDevice(device)" />
                                 </v-list>
                             </v-menu>
                         </div>

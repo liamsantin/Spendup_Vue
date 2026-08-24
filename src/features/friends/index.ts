@@ -1,7 +1,12 @@
 export { friendsApi } from '@/features/friends/api';
 export { listAllFriends, FRIENDS_LIST_ALL_PAGE_SIZE, FRIENDS_LIST_ALL_MAX_PAGES } from '@/features/friends/list-all';
 export { useFriendsStore } from '@/features/friends/stores/friends-store';
-export { resolveFriendAvatarSrc, needsUserAvatarFetch, extractPublicIdFromUserAvatarPath, DEFAULT_AVATAR_SRC } from '@/features/friends/profilePicture';
+export {
+    resolveFriendAvatarSrc,
+    needsUserAvatarFetch,
+    extractPublicIdFromUserAvatarPath,
+    DEFAULT_AVATAR_SRC
+} from '@/features/friends/profilePicture';
 export { useFriendAvatarUrl } from '@/features/friends/composables/useFriendAvatarUrl';
 export type {
     FriendshipStatus,

@@ -1,9 +1,6 @@
 import { router } from '@/router';
 import { authApi } from '@/features/auth/api';
-import {
-    readAndClearLoginNotice,
-    writeLoginNotice
-} from '@/features/auth/session-storage';
+import { readAndClearLoginNotice, writeLoginNotice } from '@/features/auth/session-storage';
 import { i18n } from '@/plugins/i18n';
 import { isIdleSessionMessage } from '@/features/auth/idle-session';
 import type { AuthSessionState } from '@/features/auth/stores/internal/auth-session';
@@ -18,14 +15,7 @@ function t(key: string) {
  * @returns Les actions de logout / navigation login.
  */
 export function createAuthLogout(session: AuthSessionState) {
-    const {
-        cookieMode,
-        accessToken,
-        refreshToken,
-        returnUrl,
-        pendingIdleLogoutNotice,
-        clearSession
-    } = session;
+    const { cookieMode, accessToken, refreshToken, returnUrl, pendingIdleLogoutNotice, clearSession } = session;
 
     /** Appelle l’API logout serveur (ignore les erreurs). */
     async function clearServerSession() {

@@ -9,10 +9,7 @@ import { getErrorMessage } from '@/utils/errors/app-error';
  * @param options Refs de feedback compte.
  * @returns État et actions (objet réactif).
  */
-export function useAccountUnlinkGoogle(options: {
-    accountSuccess: Ref<string | null>;
-    accountError: Ref<string | null>;
-}) {
+export function useAccountUnlinkGoogle(options: { accountSuccess: Ref<string | null>; accountError: Ref<string | null> }) {
     const auth = useAuthStore();
     const { t } = useI18n();
 

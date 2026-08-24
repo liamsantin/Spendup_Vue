@@ -1,7 +1,12 @@
 import { HubConnectionState } from '@microsoft/signalr';
 import { getOrCreateDeviceId } from '@/features/auth/device';
 import { i18n } from '@/plugins/i18n';
-import { getNotificationsHubState, setNotificationsHubHandlers, startNotificationsHub, stopNotificationsHub } from '@/features/notifications/hub';
+import {
+    getNotificationsHubState,
+    setNotificationsHubHandlers,
+    startNotificationsHub,
+    stopNotificationsHub
+} from '@/features/notifications/hub';
 import { isAccountShareNotificationType, isFriendNotificationType } from '@/features/notifications/link';
 import { normalizeNotificationReceivedPayload } from '@/features/notifications/normalize';
 import type {

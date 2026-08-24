@@ -98,14 +98,7 @@ const { t } = useI18n();
         <template #footer="{ close }">
             <v-btn variant="text" flat :disabled="saving" @click="close">{{ t('common.cancel') }}</v-btn>
             <v-spacer />
-            <v-btn
-                color="error"
-                flat
-                type="submit"
-                form="account-delete-form"
-                :loading="saving"
-                :disabled="!canSubmit && !saving"
-            >
+            <v-btn color="error" flat type="submit" form="account-delete-form" :loading="saving" :disabled="!canSubmit && !saving">
                 {{ t('accounts.deleteModal.confirm') }}
             </v-btn>
         </template>

@@ -10,10 +10,7 @@ import { isValidAccountPassword } from '@/features/user-settings/account-profile
  * @param options Refs de feedback compte.
  * @returns État et actions (objet réactif).
  */
-export function useAccountPasswordChange(options: {
-    accountSuccess: Ref<string | null>;
-    accountError: Ref<string | null>;
-}) {
+export function useAccountPasswordChange(options: { accountSuccess: Ref<string | null>; accountError: Ref<string | null> }) {
     const auth = useAuthStore();
     const { t } = useI18n();
 
@@ -58,12 +55,7 @@ export function useAccountPasswordChange(options: {
         passwordSaving.value = true;
         try {
             await withStepUpRetry((stepUp) =>
-                auth.changePassword(
-                    requiresCurrentPassword.value ? currentPassword.value : null,
-                    newPassword.value,
-                    undefined,
-                    stepUp
-                )
+                auth.changePassword(requiresCurrentPassword.value ? currentPassword.value : null, newPassword.value, undefined, stepUp)
             );
         } catch (e: unknown) {
             passwordError.value = getErrorMessage(e);

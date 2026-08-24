@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { buildProfilePayload, emptyToNull, isProfileDirty, isValidAccountPassword, takeProfileSnapshot } from '@/features/user-settings/account-profile';
+import {
+    buildProfilePayload,
+    emptyToNull,
+    isProfileDirty,
+    isValidAccountPassword,
+    takeProfileSnapshot
+} from '@/features/user-settings/account-profile';
 
 const fields = {
     firstName: ' Alice ',

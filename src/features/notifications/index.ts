@@ -8,8 +8,17 @@ export {
     isAccountShareNotificationType
 } from '@/features/notifications/link';
 export { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '@/features/notifications/friendChip';
-export { parseNotificationMetadata, getFriendshipPublicId, getAccountSharePublicId, normalizeAppNotification } from '@/features/notifications/normalize';
-export { ensureNativeNotificationPermission, setNativeNotificationNavigate, showNativeNotification } from '@/features/notifications/native-notify';
+export {
+    parseNotificationMetadata,
+    getFriendshipPublicId,
+    getAccountSharePublicId,
+    normalizeAppNotification
+} from '@/features/notifications/normalize';
+export {
+    ensureNativeNotificationPermission,
+    setNativeNotificationNavigate,
+    showNativeNotification
+} from '@/features/notifications/native-notify';
 export { default as InboxTab } from '@/features/notifications/components/InboxTab.vue';
 export { default as FriendLiveChips } from '@/features/notifications/components/FriendLiveChips.vue';
 export type {

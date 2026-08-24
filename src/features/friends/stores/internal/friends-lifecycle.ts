@@ -11,11 +11,7 @@ export type FriendsTab = 'Friends' | 'Requests' | 'Blocked' | 'Discover';
  * @param realtime Bridge realtime.
  * @returns Les actions de cycle de vie.
  */
-export function createFriendsLifecycle(
-    state: FriendsState,
-    lists: FriendsLists,
-    realtime: FriendsRealtime
-) {
+export function createFriendsLifecycle(state: FriendsState, lists: FriendsLists, realtime: FriendsRealtime) {
     const { initialized, cache, resetListState } = state;
     const { loadFriends, loadIncoming, loadOutgoing, loadBlocked, refreshSearchIfNeeded } = lists;
     const { ensureRealtimeBridge, teardownRealtimeBridge } = realtime;

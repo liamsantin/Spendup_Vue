@@ -17,16 +17,8 @@ type ProfileDeps = Pick<AuthLogout, 'forceReLogin'>;
  * @returns Les actions profil.
  */
 export function createAuthProfile(session: AuthSessionState, deps: ProfileDeps) {
-    const {
-        cookieMode,
-        accessToken,
-        refreshToken,
-        user,
-        cookieSessionActive,
-        ensureAccessToken,
-        requireAccessToken,
-        refreshSession
-    } = session;
+    const { cookieMode, accessToken, refreshToken, user, cookieSessionActive, ensureAccessToken, requireAccessToken, refreshSession } =
+        session;
 
     const { forceReLogin } = deps;
 

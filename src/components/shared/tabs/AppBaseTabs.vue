@@ -195,23 +195,13 @@ const trackAlignClass = computed(() => {
     return undefined;
 });
 
-const {
-    trackRef,
-    rootRef,
-    pillVisible,
-    pillAnimate,
-    pillStyle,
-    isOverflowing,
-    canScrollPrev,
-    canScrollNext,
-    scrollTabs,
-    onTrackScroll
-} = useAppBaseTabsOverflow({
-    isPilled,
-    grow: () => props.grow,
-    tabs: () => props.tabs,
-    currentValue
-});
+const { trackRef, rootRef, pillVisible, pillAnimate, pillStyle, isOverflowing, canScrollPrev, canScrollNext, scrollTabs, onTrackScroll } =
+    useAppBaseTabsOverflow({
+        isPilled,
+        grow: () => props.grow,
+        tabs: () => props.tabs,
+        currentValue
+    });
 </script>
 
 <template>

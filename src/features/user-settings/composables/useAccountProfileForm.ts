@@ -44,17 +44,7 @@ export function useAccountProfileForm(options: {
     const saveConfirmOpen = ref(false);
     const baseline = ref<ProfileSnapshot | null>(null);
 
-    const {
-        firstName,
-        name,
-        phone,
-        birthDate,
-        street,
-        streetNumber,
-        countryId,
-        username,
-        profilePicture
-    } = options.fields;
+    const { firstName, name, phone, birthDate, street, streetNumber, countryId, username, profilePicture } = options.fields;
 
     const displayPublicId = computed(() => auth.user?.userPublicId || '—');
     const birthDateMax = computed(() => {
