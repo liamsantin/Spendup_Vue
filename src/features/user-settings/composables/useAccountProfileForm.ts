@@ -21,6 +21,11 @@ export type AccountProfileFields = {
     profilePicture: Ref<string | null>;
 };
 
+/**
+ * Formulaire profil compte : hydratation, dirty tracking, save / reset confirmés.
+ * @param options Champs liés, callbacks dirty / feedback / hydrate picture.
+ * @returns État et actions du formulaire (objet réactif).
+ */
 export function useAccountProfileForm(options: {
     fields: AccountProfileFields;
     onHydratePicture: (picture: string | null) => void;
@@ -60,6 +65,7 @@ export function useAccountProfileForm(options: {
         return `${y}-${m}-${d}`;
     });
 
+    /** Snapshot courant des champs profil (hors avatar / username). */
     function profileFields() {
         return {
             firstName: firstName.value,
@@ -72,14 +78,17 @@ export function useAccountProfileForm(options: {
         };
     }
 
+    /** Construit le payload API de mise à jour profil. */
     function buildProfilePayload(): UpdateProfilePayload {
         return buildPayloadFromFields(profileFields());
     }
 
+    /** Prend un snapshot pour dirty / baseline. */
     function takeSnapshot(): ProfileSnapshot {
         return takeProfileSnapshot(profileFields());
     }
 
+    /** Fixe la baseline après load / save réussi. */
     function commitBaseline() {
         baseline.value = takeSnapshot();
     }
@@ -88,6 +97,10 @@ export function useAccountProfileForm(options: {
 
     watch(isDirty, (value) => options.emitDirty(value), { immediate: true });
 
+    /**
+     * Remplit les champs depuis `/me`.
+     * @param user Profil courant, ou `null` pour vider.
+     */
     function hydrateFromUser(user: Me | null) {
         if (!user) {
             firstName.value = '';
@@ -115,6 +128,7 @@ export function useAccountProfileForm(options: {
         options.onHydratePicture(profilePicture.value);
     }
 
+    /** Copie l’identifiant public dans le presse-papiers. */
     async function copyPublicId() {
         const id = auth.user?.userPublicId;
         if (!id) return;
@@ -125,6 +139,7 @@ export function useAccountProfileForm(options: {
         }
     }
 
+    /** Charge `/me` et hydrate le formulaire. */
     async function loadProfile() {
         loading.value = true;
         profileError.value = null;
@@ -143,6 +158,7 @@ export function useAccountProfileForm(options: {
         }
     }
 
+    /** Enregistre le profil si dirty. */
     async function saveProfile() {
         if (profileSaving.value || !isDirty.value) return;
         profileSaving.value = true;
@@ -159,11 +175,13 @@ export function useAccountProfileForm(options: {
         }
     }
 
+    /** Ouvre la confirmation de sauvegarde. */
     function requestSaveProfile() {
         if (!isDirty.value || profileSaving.value) return;
         saveConfirmOpen.value = true;
     }
 
+    /** Confirme et exécute la sauvegarde. */
     async function confirmSaveProfile() {
         if (profileSaving.value) return;
         try {
@@ -174,17 +192,20 @@ export function useAccountProfileForm(options: {
         }
     }
 
+    /** Recharge le profil depuis le serveur. */
     async function resetProfile() {
         profileError.value = null;
         options.clearAccountFeedback();
         await loadProfile();
     }
 
+    /** Ouvre la confirmation d’annulation des changements. */
     function requestResetProfile() {
         if (!isDirty.value || cancelConfirming.value) return;
         cancelConfirmOpen.value = true;
     }
 
+    /** Confirme et recharge le profil. */
     async function confirmResetProfile() {
         if (cancelConfirming.value) return;
         cancelConfirming.value = true;

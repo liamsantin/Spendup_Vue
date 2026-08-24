@@ -4,6 +4,11 @@ import { useAuthStore } from '@/features/auth';
 import { withStepUpRetry } from '@/features/auth/step-up';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
+/**
+ * Modal / flux pour délier le compte Google (nécessite le mot de passe).
+ * @param options Refs de feedback compte.
+ * @returns État et actions (objet réactif).
+ */
 export function useAccountUnlinkGoogle(options: {
     accountSuccess: Ref<string | null>;
     accountError: Ref<string | null>;
@@ -16,6 +21,7 @@ export function useAccountUnlinkGoogle(options: {
     const unlinkGoogleSaving = ref(false);
     const unlinkGoogleError = ref<string | null>(null);
 
+    /** Ouvre le modal et réinitialise le champ mot de passe. */
     function openUnlinkGoogleModal() {
         unlinkGooglePassword.value = '';
         unlinkGoogleError.value = null;
@@ -24,6 +30,7 @@ export function useAccountUnlinkGoogle(options: {
         unlinkGoogleOpen.value = true;
     }
 
+    /** Valide et soumet le déliage Google. */
     async function submitUnlinkGoogle() {
         if (unlinkGoogleSaving.value) return;
         if (!unlinkGooglePassword.value) {

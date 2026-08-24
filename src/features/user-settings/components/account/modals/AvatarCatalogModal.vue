@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Modales avatar : lightbox photo + catalogue d’avatars prédéfinis.
+ */
 import { useI18n } from 'vue-i18n';
 import { CATALOG_AVATARS, DEFAULT_AVATAR_SRC, catalogAvatarSrc } from '@/features/auth';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';

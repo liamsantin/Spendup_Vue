@@ -4,6 +4,10 @@ import { useAuthStore } from '@/features/auth';
 import { withStepUpRetry } from '@/features/auth/step-up';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
+/**
+ * Modal / flux de suppression définitive du compte (mdp ou Google + step-up).
+ * @returns État et actions (objet réactif).
+ */
 export function useAccountDeletion() {
     const auth = useAuthStore();
     const { t } = useI18n();
@@ -20,6 +24,7 @@ export function useAccountDeletion() {
     const showDeletePassword = computed(() => !isGoogleOnlyAccount.value);
     const canSubmitDelete = computed(() => !!deleteGoogleIdToken.value || (!!deletePassword.value && showDeletePassword.value));
 
+    /** Ouvre le modal et réinitialise les preuves. */
     function openDeleteModal() {
         deletePassword.value = '';
         deleteGoogleIdToken.value = null;
@@ -28,6 +33,10 @@ export function useAccountDeletion() {
         deleteOpen.value = true;
     }
 
+    /**
+     * Exécute la suppression avec le payload fourni.
+     * @param payload Preuve mdp et/ou Google.
+     */
     async function runDeleteAccount(payload: { currentPassword?: string; googleIdToken?: string }) {
         if (deleteSaving.value) return;
         deleteError.value = null;
@@ -40,6 +49,7 @@ export function useAccountDeletion() {
         }
     }
 
+    /** Soumet la suppression selon la preuve disponible. */
     async function submitDeleteAccount() {
         if (deleteGoogleIdToken.value) {
             await runDeleteAccount({ googleIdToken: deleteGoogleIdToken.value });
@@ -56,12 +66,17 @@ export function useAccountDeletion() {
         deleteError.value = t('accounts.deleteModal.errors.passwordRequired');
     }
 
+    /**
+     * Enregistre le credential Google pour la suppression.
+     * @param idToken Jeton Google.
+     */
     function onDeleteGoogleCredential(idToken: string) {
         deleteGoogleIdToken.value = idToken;
         deleteError.value = null;
         deletePassword.value = '';
     }
 
+    /** Efface le credential Google stocké. */
     function clearDeleteGoogleCredential() {
         deleteGoogleIdToken.value = null;
     }

@@ -3,13 +3,17 @@ import { nextTick, onBeforeUnmount, onMounted, ref, toValue, watch, type MaybeRe
 /** Espace réservé aux deux flèches (32px × 2) quand overflow. */
 const ARROW_RESERVE_PX = 64;
 
+/**
+ * Extrait un `HTMLElement` depuis une ref Vue / Vuetify (`$el` ou nœud commentaire).
+ * @param value Valeur de ref inconnue.
+ */
 function asElement(value: unknown): HTMLElement | null {
     if (!value) return null;
     if (value instanceof HTMLElement) return value;
     const maybe = value as { $el?: unknown };
     const el = maybe.$el;
     if (el instanceof HTMLElement) return el;
-    // Vue / Vuetify: $el can be a comment node before the real root.
+    // Vue / Vuetify : `$el` peut être un nœud commentaire avant la vraie racine.
     if (el && typeof el === 'object' && 'nextElementSibling' in el) {
         const next = (el as { nextElementSibling: Element | null }).nextElementSibling;
         if (next instanceof HTMLElement) return next;
@@ -17,6 +21,10 @@ function asElement(value: unknown): HTMLElement | null {
     return null;
 }
 
+/**
+ * Mesure la largeur totale des onglets dans la piste.
+ * @param track Élément piste (slide-group).
+ */
 function measureTabsWidth(track: HTMLElement): number {
     const content = track.querySelector<HTMLElement>('.v-slide-group__content');
     if (content && content.scrollWidth > 0) return content.scrollWidth;
@@ -28,6 +36,11 @@ function measureTabsWidth(track: HTMLElement): number {
     return width;
 }
 
+/**
+ * Calcule le style du pill sous l’onglet actif.
+ * @param track Piste des onglets.
+ * @param active Onglet sélectionné.
+ */
 function measureActiveTab(track: HTMLElement, active: HTMLElement) {
     const trackRect = track.getBoundingClientRect();
     const tabRect = active.getBoundingClientRect();
@@ -38,6 +51,11 @@ function measureActiveTab(track: HTMLElement, active: HTMLElement) {
     };
 }
 
+/**
+ * Overflow / scroll et animation du pill pour `AppBaseTabs`.
+ * @param options Mode pillé, grow, liste d’onglets, valeur courante.
+ * @returns Refs DOM + état overflow / pill + helpers scroll.
+ */
 export function useAppBaseTabsOverflow(options: {
     isPilled: MaybeRefOrGetter<boolean>;
     grow: MaybeRefOrGetter<boolean>;
@@ -60,6 +78,7 @@ export function useAppBaseTabsOverflow(options: {
 
     let resizeObserver: ResizeObserver | null = null;
 
+    /** Met à jour overflow et disponibilité des flèches. */
     function updateScrollState() {
         if (!toValue(options.isPilled) || toValue(options.grow) || !trackRef.value) {
             isOverflowing.value = false;
@@ -78,7 +97,7 @@ export function useAppBaseTabsOverflow(options: {
             const pad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
             return Math.max(0, el.clientWidth - pad);
         };
-        // Parent content box (header) is the real available width — host can grow with tabs.
+        // La boîte contenu du parent (header) est la largeur réelle — le host peut grandir avec les onglets.
         const available = parent ? contentWidthOf(parent) : hostEl.clientWidth;
         if (available <= 0) return;
 
@@ -92,7 +111,7 @@ export function useAppBaseTabsOverflow(options: {
             return;
         }
 
-        // Track contraint (classe --scrollable) : position de scroll réelle.
+        // Track contrainte (classe --scrollable) : position de scroll réelle.
         const maxScroll = track.scrollWidth - track.clientWidth;
         if (maxScroll > 1) {
             canScrollPrev.value = track.scrollLeft > 1;
@@ -105,18 +124,27 @@ export function useAppBaseTabsOverflow(options: {
         canScrollNext.value = tabsWidth > available - ARROW_RESERVE_PX;
     }
 
+    /**
+     * Fait défiler la piste des onglets.
+     * @param direction `-1` précédent, `1` suivant.
+     */
     function scrollTabs(direction: -1 | 1) {
         if (!trackRef.value) return;
         const delta = Math.max(140, Math.floor(trackRef.value.clientWidth * 0.65));
         trackRef.value.scrollBy({ left: direction * delta, behavior: 'smooth' });
     }
 
+    /** Amène l’onglet actif dans la zone visible. */
     function scrollActiveIntoView() {
         if (!trackRef.value || !isOverflowing.value) return;
         const active = trackRef.value.querySelector<HTMLElement>('.v-tab--selected');
         active?.scrollIntoView({ inline: 'nearest', block: 'nearest', behavior: 'smooth' });
     }
 
+    /**
+     * Recalcule la position / taille du pill.
+     * @param animate Si `true`, active la transition CSS.
+     */
     function updatePill(animate = false) {
         if (!toValue(options.isPilled) || !trackRef.value) return;
 
@@ -133,6 +161,10 @@ export function useAppBaseTabsOverflow(options: {
         updatePill(false);
     }
 
+    /**
+     * Recalcule layout après le prochain tick (+ rAF).
+     * @param animatePill Animer le pill et scroller l’actif.
+     */
     function scheduleLayoutUpdate(animatePill = false) {
         nextTick(() => {
             updateScrollState();
@@ -145,6 +177,7 @@ export function useAppBaseTabsOverflow(options: {
         });
     }
 
+    /** Handler scroll de la piste. */
     function onTrackScroll() {
         updateScrollState();
         updatePill(false);

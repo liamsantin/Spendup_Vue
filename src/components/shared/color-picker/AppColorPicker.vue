@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Sélecteur de couleur Spend.Up — presets + panneau HSV/hex (logique dans `useAppColorPicker`).
+ */
 import { ColorPickerIcon, XIcon } from 'vue-tabler-icons';
 import { useAppColorPicker } from '@/components/shared/color-picker/useAppColorPicker';
 

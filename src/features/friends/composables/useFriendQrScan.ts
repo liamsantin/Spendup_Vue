@@ -3,6 +3,11 @@ import { useI18n } from 'vue-i18n';
 import { Html5Qrcode } from 'html5-qrcode';
 import { parseFriendQrPayload } from '@/features/friends/qr';
 
+/**
+ * Scan caméra d’un QR ami (html5-qrcode) avec gestion permission / gestes.
+ * @param options Visibilité modal, vue courante, callbacks scan / close.
+ * @returns Refs template + actions scanner (objet non réactif pour `scannerHost`).
+ */
 export function useFriendQrScan(options: {
     modelValue: MaybeRefOrGetter<boolean>;
     view: Ref<string>;
@@ -27,6 +32,7 @@ export function useFriendQrScan(options: {
     let startGeneration = 0;
     let handledScan = false;
 
+    /** Détail technique d’une erreur caméra / DOM. */
     function errorDetail(error: unknown): string {
         if (typeof error === 'string') return error;
         if (error instanceof DOMException) return `${error.name}: ${error.message}`;
@@ -34,6 +40,10 @@ export function useFriendQrScan(options: {
         return String(error ?? '');
     }
 
+    /**
+     * Message i18n utilisateur selon le type d’erreur caméra.
+     * @param error Erreur brute.
+     */
     function cameraErrorMessage(error: unknown): string {
         const detail = errorDetail(error);
         const lower = detail.toLowerCase();
@@ -48,6 +58,7 @@ export function useFriendQrScan(options: {
         return detail ? `${base} (${detail})` : base;
     }
 
+    /** Arrête et nettoie le scanner html5-qrcode. */
     async function stopScanner() {
         scannerReady.value = false;
         const current = scanner;
@@ -70,6 +81,10 @@ export function useFriendQrScan(options: {
         }
     }
 
+    /**
+     * Démarre html5-qrcode avec une config device / facingMode.
+     * @param config DeviceId ou contraintes MediaTrack.
+     */
     async function tryStartWithConfig(config: string | MediaTrackConstraints) {
         if (!scannerHost.value) {
             throw new Error('Scanner element missing');
@@ -166,6 +181,10 @@ export function useFriendQrScan(options: {
         }
     }
 
+    /**
+     * Traite un scan réussi (parse payload, ignore self-scan).
+     * @param decodedText Texte décodé du QR.
+     */
     async function onScanSuccess(decodedText: string) {
         if (handledScan) return;
         const id = parseFriendQrPayload(decodedText);
@@ -184,6 +203,7 @@ export function useFriendQrScan(options: {
         options.onScanned(id);
     }
 
+    /** Remet l’UI caméra à l’état « activer la caméra ». */
     function resetCameraUi() {
         scanError.value = null;
         cameraNeedsEnable.value = true;
@@ -224,7 +244,7 @@ export function useFriendQrScan(options: {
         void stopScanner();
     });
 
-    // Plain object (not reactive) so `scannerHost` stays a real template ref.
+    // Objet plain (non réactif) pour que `scannerHost` reste une vraie ref template.
     return {
         scannerHost,
         scanError,

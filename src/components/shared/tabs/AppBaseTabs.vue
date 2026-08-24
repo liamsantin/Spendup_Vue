@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Onglets partagés Spend.Up — presets Vuetify + mode pilled (indicateur, overflow, flèches custom).
+ */
 defineOptions({ name: 'AppBaseTabs' });
 
 import { computed, ref, watch, type Component } from 'vue';

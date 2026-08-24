@@ -2,10 +2,17 @@ import { computed, onBeforeUnmount, ref, toValue, watch, type MaybeRefOrGetter }
 
 const HEX_RE = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
 
+/** Borne une valeur numérique dans `[min, max]`. */
 function clamp(value: number, min = 0, max = 1) {
     return Math.min(max, Math.max(min, value));
 }
 
+/**
+ * Convertit HSV → hex `#RRGGBB`.
+ * @param h Teinte 0–360.
+ * @param s Saturation 0–1.
+ * @param v Valeur 0–1.
+ */
 function hsvToHex(h: number, s: number, v: number) {
     const f = (n: number) => {
         const k = (n + h / 60) % 6;
@@ -17,6 +24,10 @@ function hsvToHex(h: number, s: number, v: number) {
     return `#${f(5)}${f(3)}${f(1)}`.toUpperCase();
 }
 
+/**
+ * Convertit hex → HSV.
+ * @param hex Couleur `#RGB` ou `#RRGGBB`.
+ */
 function hexToHsv(hex: string) {
     const raw = hex.replace('#', '');
     const full =
@@ -44,6 +55,11 @@ function hexToHsv(hex: string) {
     return { h: (h + 360) % 360, s: max === 0 ? 0 : delta / max, v: max };
 }
 
+/**
+ * Logique du color picker partagé (HSV, drag, input hex, presets).
+ * @param options `modelValue`, `disabled`, `emit`.
+ * @returns État et handlers du picker.
+ */
 export function useAppColorPicker(options: {
     modelValue: MaybeRefOrGetter<string | null | undefined>;
     disabled: MaybeRefOrGetter<boolean>;
@@ -88,15 +104,21 @@ export function useAppColorPicker(options: {
         { immediate: true }
     );
 
+    /** Émet la couleur HSV courante en hex. */
     function commit() {
         hexInput.value = currentHex.value.slice(1);
         options.emit(currentHex.value);
     }
 
+    /** Ouvre le picker si non désactivé. */
     function openPicker() {
         if (!toValue(options.disabled)) isOpen.value = true;
     }
 
+    /**
+     * Met à jour saturation / valeur depuis un pointeur sur l’aire.
+     * @param event Événement pointeur.
+     */
     function updateArea(event: PointerEvent) {
         const rect = areaEl.value?.getBoundingClientRect();
         if (!rect) return;
@@ -105,6 +127,10 @@ export function useAppColorPicker(options: {
         commit();
     }
 
+    /**
+     * Met à jour la teinte depuis le slider.
+     * @param event Événement pointeur.
+     */
     function updateHue(event: PointerEvent) {
         const rect = hueEl.value?.getBoundingClientRect();
         if (!rect) return;
@@ -112,6 +138,11 @@ export function useAppColorPicker(options: {
         commit();
     }
 
+    /**
+     * Démarre un drag sur l’aire ou le slider teinte.
+     * @param target Zone ciblée.
+     * @param event Événement pointeur.
+     */
     function startDrag(target: 'area' | 'hue', event: PointerEvent) {
         dragging.value = target;
         (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
@@ -119,21 +150,31 @@ export function useAppColorPicker(options: {
         else updateHue(event);
     }
 
+    /** Suit le drag en cours. */
     function onDragMove(event: PointerEvent) {
         if (dragging.value === 'area') updateArea(event);
         else if (dragging.value === 'hue') updateHue(event);
     }
 
+    /** Termine le drag et libère la capture. */
     function endDrag(event: PointerEvent) {
         dragging.value = null;
         (event.currentTarget as HTMLElement).releasePointerCapture?.(event.pointerId);
     }
 
+    /**
+     * Décale la teinte au clavier / boutons.
+     * @param delta Décalage en degrés.
+     */
     function nudgeHue(delta: number) {
         hue.value = (hue.value + delta + 360) % 360;
         commit();
     }
 
+    /**
+     * Parse l’input hex et met à jour HSV / modèle.
+     * @param raw Texte saisi.
+     */
     function onHexInput(raw: string) {
         hexInput.value = String(raw ?? '')
             .replace(/[^0-9a-f]/gi, '')
@@ -153,11 +194,16 @@ export function useAppColorPicker(options: {
         options.emit(currentHex.value);
     }
 
+    /** Sur blur : réaligne l’input sur le modèle. */
     function onHexBlur() {
         const model = toValue(options.modelValue);
         hexInput.value = model ? model.replace('#', '').toUpperCase() : '';
     }
 
+    /**
+     * Applique une couleur preset.
+     * @param color Hex preset.
+     */
     function selectPreset(color: string) {
         const hsv = hexToHsv(color);
         hue.value = hsv.h;
@@ -166,11 +212,13 @@ export function useAppColorPicker(options: {
         commit();
     }
 
+    /** Efface la couleur (émet `null`). */
     function clearColor() {
         hexInput.value = '';
         options.emit(null);
     }
 
+    /** Ferme le picker sur Escape. */
     function onKeydown(event: KeyboardEvent) {
         if (event.key === 'Escape') isOpen.value = false;
     }

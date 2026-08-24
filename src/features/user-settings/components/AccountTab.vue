@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Onglet Compte des paramètres — orchestre profil, avatar, identifiants et modales via composables.
+ */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';

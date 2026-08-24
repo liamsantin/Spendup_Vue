@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Zone dangereuse du compte — CTA suppression (émet `delete` vers le parent / modal).
+ */
 import { useI18n } from 'vue-i18n';
 import { TrashIcon } from 'vue-tabler-icons';
 

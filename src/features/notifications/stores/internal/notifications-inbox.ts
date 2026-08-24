@@ -27,6 +27,10 @@ export function createNotificationsInbox(state: NotificationsState, native: Noti
 
     const { dismissLiveFriendChipsByNotificationId, clearLiveFriendChips } = native;
 
+    /**
+     * Vide l’inbox locale après clear serveur / SignalR.
+     * @param unread Compteur non lus à appliquer (défaut 0).
+     */
     function applyInboxCleared(unread = 0) {
         applyUnreadCount(unread);
         items.value = [];
@@ -35,11 +39,16 @@ export function createNotificationsInbox(state: NotificationsState, native: Noti
         clearLiveFriendChips();
     }
 
+    /** Récupère le badge non lus depuis l’API. */
     async function fetchUnreadCount() {
         const result = await notificationsApi.unreadCount();
         applyUnreadCount(result?.unreadCount ?? 0);
     }
 
+    /**
+     * Charge une page de l’inbox.
+     * @param options Page et mode append.
+     */
     async function loadInbox(options?: { page?: number; append?: boolean }) {
         const nextPage = options?.page ?? 1;
         const append = options?.append === true;
@@ -67,15 +76,21 @@ export function createNotificationsInbox(state: NotificationsState, native: Noti
         }
     }
 
+    /** Ouvre l’inbox (première page). */
     async function openInbox() {
         await loadInbox({ page: 1, append: false });
     }
 
+    /** Charge la page suivante si disponible. */
     async function loadMore() {
         if (!hasMore.value || loading.value || loadingMore.value) return;
         await loadInbox({ page: page.value + 1, append: true });
     }
 
+    /**
+     * Marque une notification comme lue.
+     * @param id Identifiant de la notification.
+     */
     async function markRead(id: number) {
         // Lecture depuis le dropdown / inbox : retirer le chip live associé.
         dismissLiveFriendChipsByNotificationId(id);
@@ -91,6 +106,7 @@ export function createNotificationsInbox(state: NotificationsState, native: Noti
         return updated;
     }
 
+    /** Marque toutes les notifications comme lues. */
     async function markAllRead() {
         markingAll.value = true;
         error.value = null;
@@ -108,6 +124,7 @@ export function createNotificationsInbox(state: NotificationsState, native: Noti
         }
     }
 
+    /** Supprime toutes les notifications de l’inbox. */
     async function clearAll() {
         clearingAll.value = true;
         error.value = null;

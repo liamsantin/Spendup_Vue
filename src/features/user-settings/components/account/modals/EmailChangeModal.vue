@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Modal changement d’e-mail — mot de passe et/ou Google selon les props du parent.
+ */
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';

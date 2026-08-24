@@ -35,6 +35,11 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
 
     const { fetchMe, goToLogin, forceReLogin } = deps;
 
+    /**
+     * Applique une réponse d’auth (tokens ou challenge 2FA).
+     * @param sessionPayload Session renvoyée par l’API.
+     * @returns `'ok'` ou `'2fa'`.
+     */
     async function applySession(sessionPayload: AuthSession): Promise<'ok' | '2fa'> {
         if (sessionPayload.requiresTwoFactor) {
             twoFactorToken.value = sessionPayload.twoFactorToken;
@@ -61,12 +66,18 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         return 'ok';
     }
 
+    /** Navigue vers `returnUrl` sanitisé (ou l’accueil app). */
     async function navigateAfterLogin() {
         const target = sanitizeReturnUrl(returnUrl.value, APP_HOME_ROUTE);
         returnUrl.value = null;
         await router.push(target);
     }
 
+    /**
+     * Connexion e-mail/username + mot de passe.
+     * @param identifier E-mail ou username.
+     * @param password Mot de passe.
+     */
     async function login(identifier: string, password: string) {
         const authSession = await authApi.login(identifier.trim(), password);
         const outcome = await applySession(authSession);
@@ -77,6 +88,10 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         await navigateAfterLogin();
     }
 
+    /**
+     * Connexion via Google One Tap / bouton.
+     * @param idToken Jeton d’identité Google.
+     */
     async function loginWithGoogle(idToken: string) {
         const authSession = await authApi.google(idToken);
         const outcome = await applySession(authSession);
@@ -87,6 +102,10 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         await navigateAfterLogin();
     }
 
+    /**
+     * Inscription ; redirige vers confirm-email ou connecte directement.
+     * @param payload Données d’inscription.
+     */
     async function register(payload: {
         email?: string | null;
         username?: string | null;
@@ -113,6 +132,11 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         return { outcome: 'logged-in' as const, result };
     }
 
+    /**
+     * Confirme l’e-mail d’inscription puis login auto si mot de passe en mémoire.
+     * @param email E-mail à confirmer.
+     * @param code Code de vérification.
+     */
     async function confirmEmail(email: string, code: string) {
         await authApi.confirmEmail({ email, code });
         const password = pendingPassword.value;
@@ -124,24 +148,46 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         await login(email, password);
     }
 
+    /**
+     * Renvoie l’e-mail de vérification.
+     * @param email Destinataire.
+     */
     async function resendVerification(email: string) {
         await authApi.resendVerification(email);
     }
 
+    /**
+     * Déclenche le flux mot de passe oublié.
+     * @param email Destinataire.
+     */
     async function forgotPassword(email: string) {
         await authApi.forgotPassword(email);
     }
 
+    /**
+     * Réinitialise le mot de passe via token e-mail.
+     * @param token Token de reset.
+     * @param newPassword Nouveau mot de passe.
+     */
     async function resetPassword(token: string, newPassword: string) {
         await authApi.resetPassword(token, newPassword);
         await goToLogin(t('auth.notices.passwordUpdated'));
     }
 
+    /**
+     * Confirme un changement d’e-mail puis force un re-login.
+     * @param email Nouvel e-mail.
+     * @param code Code de vérification.
+     */
     async function confirmEmailChange(email: string, code: string) {
         await authApi.confirmEmailChange(email, code);
         await forceReLogin(t('auth.notices.emailUpdated'));
     }
 
+    /**
+     * Valide le code 2FA et finalise la session.
+     * @param code Code TOTP / SMS.
+     */
     async function verifyTwoFactor(code: string) {
         if (!twoFactorToken.value) {
             throw new Error(t('auth.notices.twoFactorExpired'));
@@ -153,33 +199,54 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         await navigateAfterLogin();
     }
 
+    /** Démarre la configuration 2FA (QR / secret). */
     async function setupTwoFactor() {
         const token = await requireAccessToken();
         return authApi.setup2fa(token);
     }
 
+    /**
+     * Active la 2FA avec un code de confirmation.
+     * @param code Code TOTP.
+     */
     async function enableTwoFactor(code: string) {
         const token = await requireAccessToken();
         await authApi.enable2fa(token, code);
         await fetchMe();
     }
 
+    /**
+     * Désactive la 2FA.
+     * @param code Code TOTP.
+     */
     async function disableTwoFactor(code: string) {
         const token = await requireAccessToken();
         await authApi.disable2fa(token, code);
         await fetchMe();
     }
 
+    /** Liste les appareils / sessions connus. */
     async function listDevices() {
         const token = await requireAccessToken();
         return authApi.listDevices(token);
     }
 
+    /**
+     * Révoque un appareil.
+     * @param deviceIdentifier Identifiant de l’appareil.
+     * @param stepUp Preuve step-up optionnelle.
+     */
     async function revokeDevice(deviceIdentifier: string, stepUp?: StepUpProof) {
         const token = await requireAccessToken();
         await authApi.revokeDevice(token, deviceIdentifier, stepUp);
     }
 
+    /**
+     * Marque un appareil comme de confiance (ou non).
+     * @param deviceIdentifier Identifiant de l’appareil.
+     * @param isTrusted Nouvelle valeur.
+     * @param stepUp Preuve step-up optionnelle.
+     */
     async function setDeviceTrust(deviceIdentifier: string, isTrusted: boolean, stepUp?: StepUpProof) {
         const token = await requireAccessToken();
         await authApi.setDeviceTrust(token, deviceIdentifier, isTrusted, stepUp);

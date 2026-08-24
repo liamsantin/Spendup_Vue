@@ -31,15 +31,25 @@ export function createNotificationsState() {
     const liveFriendChips = ref<LiveFriendChip[]>([]);
 
     const hasUnread = computed(() => unreadCount.value > 0);
+    /** Contenu badge Vuetify (`undefined` si aucun non lu). */
     const badgeContent = computed(() => (unreadCount.value > 0 ? unreadCount.value : undefined));
     const hasMore = computed(() => items.value.length < totalCount.value);
     const hasItems = computed(() => items.value.length > 0 || totalCount.value > 0 || unreadCount.value > 0);
 
+    /**
+     * Applique le compteur non lus (plancher à 0).
+     * @param count Valeur serveur / SignalR.
+     */
     function applyUnreadCount(count: number) {
         unreadCount.value = Math.max(0, Number.isFinite(count) ? count : 0);
     }
 
-    /** @returns `true` si un nouvel item a été inséré (pas un update). */
+    /**
+     * Insère ou met à jour une notification dans la liste locale.
+     * @param notification Notification à upsert.
+     * @param prepend Si `true`, insère en tête.
+     * @returns `true` si un nouvel item a été inséré (pas un update).
+     */
     function upsertItem(notification: AppNotification, prepend = false): boolean {
         const idx = items.value.findIndex((n) => n.id === notification.id);
         if (idx >= 0) {

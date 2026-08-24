@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Carte appareils de session — UI branchée sur `useSecurityDevices`
+ * (liste, confiance, révocation unitaire / globale, détails).
+ */
 import { DeviceLaptopIcon, DeviceMobileIcon, DotsVerticalIcon } from 'vue-tabler-icons';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
@@ -12,6 +16,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
+/** État + actions appareils ; les succès remontent via `emit('success')`. */
 const devices = useSecurityDevices({
     onSuccess: (message) => emit('success', message)
 });

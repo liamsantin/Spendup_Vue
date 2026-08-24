@@ -4,11 +4,19 @@ import type { FriendsLists } from '@/features/friends/stores/internal/friends-li
 
 /**
  * Mutations métier amis (requêtes, accept/refuse, block…).
+ * @param state État partagé du store.
+ * @param lists Actions de chargement pour rafraîchir après mutation.
+ * @returns Les actions de mutation.
  */
 export function createFriendsMutations(state: FriendsState, lists: FriendsLists) {
     const { acting, clearError, searchQuery } = state;
     const { loadFriends, loadIncoming, loadOutgoing, loadBlocked, searchUsers } = lists;
 
+    /**
+     * Envoie une demande d’ami.
+     * @param recipientPublicId Identifiant public du destinataire.
+     * @param message Message optionnel joint à la demande.
+     */
     async function sendRequest(recipientPublicId: string, message?: string) {
         acting.value = true;
         clearError();
@@ -23,6 +31,10 @@ export function createFriendsMutations(state: FriendsState, lists: FriendsLists)
         }
     }
 
+    /**
+     * Accepte une demande entrante.
+     * @param friendshipPublicId Identifiant public de l’amitié.
+     */
     async function acceptRequest(friendshipPublicId: string) {
         acting.value = true;
         clearError();
@@ -37,6 +49,10 @@ export function createFriendsMutations(state: FriendsState, lists: FriendsLists)
         }
     }
 
+    /**
+     * Refuse une demande entrante.
+     * @param friendshipPublicId Identifiant public de l’amitié.
+     */
     async function refuseRequest(friendshipPublicId: string) {
         acting.value = true;
         clearError();
@@ -51,6 +67,10 @@ export function createFriendsMutations(state: FriendsState, lists: FriendsLists)
         }
     }
 
+    /**
+     * Annule une demande sortante.
+     * @param friendshipPublicId Identifiant public de l’amitié.
+     */
     async function cancelRequest(friendshipPublicId: string) {
         acting.value = true;
         clearError();
@@ -65,6 +85,10 @@ export function createFriendsMutations(state: FriendsState, lists: FriendsLists)
         }
     }
 
+    /**
+     * Retire un ami.
+     * @param friendshipPublicId Identifiant public de l’amitié.
+     */
     async function removeFriend(friendshipPublicId: string) {
         acting.value = true;
         clearError();
@@ -79,6 +103,10 @@ export function createFriendsMutations(state: FriendsState, lists: FriendsLists)
         }
     }
 
+    /**
+     * Bloque un utilisateur.
+     * @param userPublicId Identifiant public de l’utilisateur à bloquer.
+     */
     async function blockUser(userPublicId: string) {
         acting.value = true;
         clearError();
@@ -99,6 +127,10 @@ export function createFriendsMutations(state: FriendsState, lists: FriendsLists)
         }
     }
 
+    /**
+     * Débloque un utilisateur.
+     * @param userPublicId Identifiant public de l’utilisateur à débloquer.
+     */
     async function unblockUser(userPublicId: string) {
         acting.value = true;
         clearError();

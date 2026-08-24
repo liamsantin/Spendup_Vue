@@ -10,6 +10,8 @@ import {
 
 /**
  * Chargement paginé des listes amis + recherche.
+ * @param state État partagé du store.
+ * @returns Les actions de chargement / recherche.
  */
 export function createFriendsLists(state: FriendsState) {
     const {
@@ -50,6 +52,10 @@ export function createFriendsLists(state: FriendsState) {
         clearSearch
     } = state;
 
+    /**
+     * Charge la première page d’amis (TTL cache).
+     * @param force Si `true`, ignore le TTL et refetch.
+     */
     async function loadFriends(force = false) {
         await cache.ensure(
             KEY_FRIENDS,
@@ -70,6 +76,7 @@ export function createFriendsLists(state: FriendsState) {
         );
     }
 
+    /** Charge la page suivante d’amis. */
     async function loadMoreFriends() {
         if (!hasMoreFriends.value || loadingFriends.value || loadingMoreFriends.value) return;
         loadingMoreFriends.value = true;
@@ -85,6 +92,10 @@ export function createFriendsLists(state: FriendsState) {
         }
     }
 
+    /**
+     * Charge la première page des demandes entrantes (TTL cache).
+     * @param force Si `true`, ignore le TTL et refetch.
+     */
     async function loadIncoming(force = false) {
         await cache.ensure(
             KEY_INCOMING,
@@ -105,6 +116,7 @@ export function createFriendsLists(state: FriendsState) {
         );
     }
 
+    /** Charge la page suivante des demandes entrantes. */
     async function loadMoreIncoming() {
         if (!hasMoreIncoming.value || loadingIncoming.value || loadingMoreIncoming.value) return;
         loadingMoreIncoming.value = true;
@@ -120,6 +132,10 @@ export function createFriendsLists(state: FriendsState) {
         }
     }
 
+    /**
+     * Charge la première page des demandes sortantes (TTL cache).
+     * @param force Si `true`, ignore le TTL et refetch.
+     */
     async function loadOutgoing(force = false) {
         await cache.ensure(
             KEY_OUTGOING,
@@ -140,6 +156,7 @@ export function createFriendsLists(state: FriendsState) {
         );
     }
 
+    /** Charge la page suivante des demandes sortantes. */
     async function loadMoreOutgoing() {
         if (!hasMoreOutgoing.value || loadingOutgoing.value || loadingMoreOutgoing.value) return;
         loadingMoreOutgoing.value = true;
@@ -155,6 +172,10 @@ export function createFriendsLists(state: FriendsState) {
         }
     }
 
+    /**
+     * Charge la première page des utilisateurs bloqués (TTL cache).
+     * @param force Si `true`, ignore le TTL et refetch.
+     */
     async function loadBlocked(force = false) {
         await cache.ensure(
             KEY_BLOCKED,
@@ -175,6 +196,7 @@ export function createFriendsLists(state: FriendsState) {
         );
     }
 
+    /** Charge la page suivante des utilisateurs bloqués. */
     async function loadMoreBlocked() {
         if (!hasMoreBlocked.value || loadingBlocked.value || loadingMoreBlocked.value) return;
         loadingMoreBlocked.value = true;
@@ -190,6 +212,10 @@ export function createFriendsLists(state: FriendsState) {
         }
     }
 
+    /**
+     * Recherche d’utilisateurs (min. 2 caractères).
+     * @param q Requête de recherche (défaut : `searchQuery`).
+     */
     async function searchUsers(q = searchQuery.value) {
         searchQuery.value = q;
         const trimmed = q.trim();
@@ -213,6 +239,7 @@ export function createFriendsLists(state: FriendsState) {
         }
     }
 
+    /** Charge la page suivante des résultats de recherche. */
     async function loadMoreSearch() {
         if (!hasMoreSearch.value || searching.value || loadingMoreSearch.value) return;
         const trimmed = searchQuery.value.trim();
@@ -234,11 +261,13 @@ export function createFriendsLists(state: FriendsState) {
         }
     }
 
+    /** Relance la recherche si une requête active est présente. */
     function refreshSearchIfNeeded() {
         if (searchQuery.value.trim().length < 2) return;
         void searchUsers(searchQuery.value);
     }
 
+    /** Invalide le cache et recharge toutes les listes. */
     async function refreshAll() {
         cache.invalidate('*');
         await Promise.all([loadFriends(true), loadIncoming(true), loadOutgoing(true), loadBlocked(true)]);

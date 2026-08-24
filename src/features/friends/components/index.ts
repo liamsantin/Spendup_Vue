@@ -1,3 +1,6 @@
+/**
+ * Composants UI de la feature amis (listes, découverte, QR, avatars).
+ */
 export { default as BlockedUsersTab } from '@/features/friends/components/BlockedUsersTab.vue';
 export { default as DiscoverFriendsTab } from '@/features/friends/components/DiscoverFriendsTab.vue';
 export { default as DiscoverSearchBar } from '@/features/friends/components/DiscoverSearchBar.vue';

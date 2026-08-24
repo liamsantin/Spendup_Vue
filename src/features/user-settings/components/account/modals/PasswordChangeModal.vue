@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Modal création / changement de mot de passe (champ actuel optionnel selon le compte).
+ */
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';

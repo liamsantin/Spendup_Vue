@@ -5,6 +5,11 @@ import { withStepUpRetry } from '@/features/auth/step-up';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { isValidAccountPassword } from '@/features/user-settings/account-profile';
 
+/**
+ * Modal / flux de changement (ou définition) de mot de passe.
+ * @param options Refs de feedback compte.
+ * @returns État et actions (objet réactif).
+ */
 export function useAccountPasswordChange(options: {
     accountSuccess: Ref<string | null>;
     accountError: Ref<string | null>;
@@ -21,6 +26,7 @@ export function useAccountPasswordChange(options: {
 
     const requiresCurrentPassword = computed(() => auth.user?.hasPassword === true);
 
+    /** Ouvre le modal et réinitialise les champs. */
     function openPasswordModal() {
         currentPassword.value = '';
         newPassword.value = '';
@@ -31,6 +37,7 @@ export function useAccountPasswordChange(options: {
         passwordOpen.value = true;
     }
 
+    /** Valide et soumet le changement de mot de passe (force re-login côté auth). */
     async function submitPasswordChange() {
         if (passwordSaving.value) return;
         passwordError.value = null;

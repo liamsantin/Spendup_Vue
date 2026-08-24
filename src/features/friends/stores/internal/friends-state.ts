@@ -12,6 +12,7 @@ export const KEY_BLOCKED = 'blocked';
 
 /**
  * Crée l’état partagé du store amis (refs, cache, helpers locaux).
+ * @returns L’état et les helpers locaux du store.
  */
 export function createFriendsState() {
     const friends = ref<FriendItem[]>([]);
@@ -51,10 +52,15 @@ export function createFriendsState() {
 
     const cache = createResourceCache({ defaultMaxAgeMs: FRIENDS_LIST_MAX_AGE_MS });
 
+    /** Nombre total d’amis (serveur). */
     const friendsCount = computed(() => friendsTotalCount.value);
+    /** Nombre total de demandes entrantes. */
     const incomingCount = computed(() => incomingTotalCount.value);
+    /** Nombre total de demandes sortantes. */
     const outgoingCount = computed(() => outgoingTotalCount.value);
+    /** Nombre total d’utilisateurs bloqués. */
     const blockedCount = computed(() => blockedTotalCount.value);
+    /** Recherche autorisée dès 2 caractères. */
     const canSearch = computed(() => searchQuery.value.trim().length >= 2);
     const hasMoreFriends = computed(() => friends.value.length < friendsTotalCount.value);
     const hasMoreIncoming = computed(() => incomingRequests.value.length < incomingTotalCount.value);
@@ -62,10 +68,19 @@ export function createFriendsState() {
     const hasMoreBlocked = computed(() => blockedUsers.value.length < blockedTotalCount.value);
     const hasMoreSearch = computed(() => searchResults.value.length < searchTotalCount.value);
 
+    /** Efface l’erreur affichée. */
     function clearError() {
         error.value = null;
     }
 
+    /**
+     * Applique une page API (remplace ou concatène).
+     * @param result Réponse paginée du serveur.
+     * @param items Ref de la liste cible.
+     * @param page Ref du numéro de page.
+     * @param totalCount Ref du total.
+     * @param append Si `true`, ajoute à la liste existante.
+     */
     function applyPageResult<T>(
         result: FriendsPageResult<T> | null | undefined,
         items: { value: T[] },
@@ -79,18 +94,31 @@ export function createFriendsState() {
         totalCount.value = result?.totalCount ?? nextItems.length;
     }
 
+    /**
+     * Définit l’amitié à mettre en évidence (deep-link notif).
+     * @param friendshipPublicId Identifiant public, ou `null` pour effacer.
+     */
     function setFocusFriendship(friendshipPublicId: string | null) {
         focusFriendshipPublicId.value = friendshipPublicId?.trim() || null;
     }
 
+    /**
+     * Indique si l’amitié est actuellement ciblée par le deep-link.
+     * @param friendshipPublicId Identifiant public à comparer.
+     */
     function isFocusedFriendship(friendshipPublicId: string) {
         return !!focusFriendshipPublicId.value && focusFriendshipPublicId.value === friendshipPublicId;
     }
 
+    /**
+     * Retrouve une demande sortante pending pour un utilisateur.
+     * @param userPublicId Identifiant public de l’autre utilisateur.
+     */
     function outgoingRequestFor(userPublicId: string) {
         return outgoingRequests.value.find((r) => r.otherUser.publicId === userPublicId && r.status === 'pending');
     }
 
+    /** Vide la requête et les résultats de recherche. */
     function clearSearch() {
         searchQuery.value = '';
         searchResults.value = [];
@@ -98,6 +126,7 @@ export function createFriendsState() {
         searchTotalCount.value = 0;
     }
 
+    /** Remet listes, pages, flags de chargement et focus à zéro. */
     function resetListState() {
         friends.value = [];
         incomingRequests.value = [];

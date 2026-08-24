@@ -31,11 +31,19 @@ export function createNotificationsNative(state: NotificationsState) {
         return true;
     }
 
+    /**
+     * Affiche une notification OS native si les prefs push le permettent.
+     * @param notification Notification source.
+     */
     function maybeShowNativeOsNotification(notification: AppNotification) {
         if (!shouldShowLiveChip(String(notification.type))) return;
         void showNativeNotification(notification);
     }
 
+    /**
+     * Retire un chip live par clé.
+     * @param key Clé du chip.
+     */
     function dismissLiveFriendChip(key: string) {
         const timer = liveChipTimers.get(key);
         if (timer) {
@@ -45,16 +53,25 @@ export function createNotificationsNative(state: NotificationsState) {
         liveFriendChips.value = liveFriendChips.value.filter((chip) => chip.key !== key);
     }
 
+    /**
+     * Retire tous les chips liés à une notification.
+     * @param notificationId Id de la notification.
+     */
     function dismissLiveFriendChipsByNotificationId(notificationId: number) {
         liveFriendChips.value.filter((chip) => chip.notification.id === notificationId).forEach((chip) => dismissLiveFriendChip(chip.key));
     }
 
+    /** Vide tous les chips live et leurs timers. */
     function clearLiveFriendChips() {
         liveChipTimers.forEach((timer) => clearTimeout(timer));
         liveChipTimers.clear();
         liveFriendChips.value = [];
     }
 
+    /**
+     * Ajoute un chip live temporaire (auto-dismiss).
+     * @param notification Notification source.
+     */
     function pushLiveFriendChip(notification: AppNotification) {
         if (!isLiveChipType(String(notification.type))) return;
         if (notification.isRead) return;

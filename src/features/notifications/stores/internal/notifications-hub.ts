@@ -23,7 +23,7 @@ type HubDeps = Pick<NotificationsNative, 'pushLiveFriendChip' | 'maybeShowNative
     Pick<NotificationsInbox, 'applyInboxCleared'>;
 
 /**
- * SignalR + listeners (friend / account share / friendship changed / session ended).
+ * SignalR + listeners (amis / partage de compte / friendship changed / session ended).
  * @param state État partagé du store.
  * @param deps Helpers inbox / native utilisés par les handlers.
  * @returns Les actions hub et abonnements.
@@ -44,6 +44,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
 
     let handlingSessionEnded = false;
 
+    /** Handler SignalR : notification reçue (badge, inbox, chips, OS). */
     function onNotificationReceived(payload: NotificationReceivedPayload) {
         const normalized = normalizeNotificationReceivedPayload(payload) ?? payload;
         if (normalized?.unreadCount != null) {
@@ -78,6 +79,10 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         applyInboxCleared(payload?.unreadCount ?? 0);
     }
 
+    /**
+     * Indique si le payload `sessionEnded` cible cet appareil.
+     * @param payload Payload SignalR.
+     */
     function targetsThisDevice(payload: SessionEndedPayload): boolean {
         const target = payload?.deviceIdentifier;
         if (target == null || target === '') return true;
@@ -87,6 +92,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
     /**
      * Session invalidée (logout / stamp MDP-email / révocation appareil).
      * Coupe le hub ; force le re-login si cet appareil est concerné.
+     * @param payload Payload SignalR.
      */
     async function onSessionEnded(payload: SessionEndedPayload) {
         if (handlingSessionEnded) return;
@@ -106,6 +112,11 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         }
     }
 
+    /**
+     * Abonne un listener aux notifs amis.
+     * @param listener Callback.
+     * @returns Fonction de désabonnement.
+     */
     function subscribeToFriendNotifications(listener: (notification: AppNotification) => void) {
         friendListeners.add(listener);
         return () => {
@@ -113,6 +124,11 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         };
     }
 
+    /**
+     * Abonne un listener aux notifs de partage de compte.
+     * @param listener Callback.
+     * @returns Fonction de désabonnement.
+     */
     function subscribeToAccountShareNotifications(listener: (notification: AppNotification) => void) {
         accountShareListeners.add(listener);
         return () => {
@@ -120,6 +136,11 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         };
     }
 
+    /**
+     * Abonne un listener aux changements d’amitié (hors inbox).
+     * @param listener Callback.
+     * @returns Fonction de désabonnement.
+     */
     function subscribeToFriendshipChanged(listener: (payload: FriendshipChangedPayload) => void) {
         friendshipChangeListeners.add(listener);
         return () => {
@@ -127,6 +148,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         };
     }
 
+    /** Branche les handlers SignalR sur le hub partagé. */
     function wireHubHandlers() {
         setNotificationsHubHandlers({
             onConnected: () => {
@@ -139,17 +161,20 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         });
     }
 
+    /** Démarre la connexion SignalR. */
     async function startHub() {
         wireHubHandlers();
         await startNotificationsHub();
         hubConnected.value = getNotificationsHubState() === HubConnectionState.Connected;
     }
 
+    /** Arrête la connexion SignalR. */
     async function stopHub() {
         await stopNotificationsHub();
         hubConnected.value = false;
     }
 
+    /** Remet les flags internes (ex. garde anti-réentrance `sessionEnded`). */
     function resetHubFlags() {
         handlingSessionEnded = false;
     }

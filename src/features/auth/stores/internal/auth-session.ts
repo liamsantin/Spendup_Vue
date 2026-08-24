@@ -77,21 +77,34 @@ export function createAuthSession() {
 
     const hasVerifiedEmail = computed(() => !!user.value?.email && user.value.emailVerified);
 
+    /**
+     * Persiste l’e-mail en attente de confirmation.
+     * @param email E-mail, ou `null` pour effacer.
+     */
     function setPendingEmail(email: string | null) {
         pendingEmail.value = email;
         writePendingEmail(email);
     }
 
+    /**
+     * Stocke le mot de passe temporaire (mémoire seule).
+     * @param password Mot de passe, ou `null` pour effacer.
+     */
     function setPendingPassword(password: string | null) {
         pendingPasswordMemory = password;
         pendingPassword.value = password;
     }
 
+    /** Efface e-mail et mot de passe post-inscription. */
     function clearPendingRegistration() {
         setPendingEmail(null);
         setPendingPassword(null);
     }
 
+    /**
+     * Applique les tokens reçus (cookie-mode ou legacy storage).
+     * @param tokens Jetons d’authentification.
+     */
     function setTokens(tokens: AuthTokens) {
         const access = tokens.accessToken?.trim() ? tokens.accessToken.trim() : null;
         accessToken.value = access;
@@ -113,6 +126,7 @@ export function createAuthSession() {
         }
     }
 
+    /** Vide la session locale et reset les stores liés. */
     function clearSession() {
         accessToken.value = null;
         refreshToken.value = null;
@@ -131,6 +145,10 @@ export function createAuthSession() {
         useAccountsStore().reset();
     }
 
+    /**
+     * Rafraîchit la session (mutex partagé).
+     * @returns `true` si le refresh a réussi.
+     */
     async function refreshSession(): Promise<boolean> {
         if (!cookieMode && !refreshToken.value) return false;
         if (refreshInFlight) return refreshInFlight;
@@ -183,6 +201,10 @@ export function createAuthSession() {
         return bootstrapInFlight;
     }
 
+    /**
+     * Garantit un access token utilisable (refresh si besoin).
+     * @returns Le token, ou `null` si non authentifié.
+     */
     async function ensureAccessToken(): Promise<string | null> {
         if (cookieMode) {
             const expired = !!expiresAt.value && isAccessExpired(expiresAt.value);

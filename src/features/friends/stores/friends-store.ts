@@ -11,7 +11,9 @@ import {
 export { FRIENDS_LIST_MAX_AGE_MS };
 
 /**
- * Fetch budget (TTL 60s listes, hors invalidation realtime / refresh manuel).
+ * Façade Pinia du store amis : assemble state, listes, mutations, realtime et cycle de vie.
+ *
+ * Budget fetch (TTL 60s listes, hors invalidation realtime / refresh manuel).
  */
 export const useFriendsStore = defineStore('friends', () => {
     const state = createFriendsState();

@@ -27,6 +27,7 @@ export function createAuthLogout(session: AuthSessionState) {
         clearSession
     } = session;
 
+    /** Appelle l’API logout serveur (ignore les erreurs). */
     async function clearServerSession() {
         try {
             if (cookieMode) {
@@ -35,10 +36,11 @@ export function createAuthLogout(session: AuthSessionState) {
                 await authApi.logout(refreshToken.value, accessToken.value);
             }
         } catch {
-            // Always clear local session
+            // Toujours effacer la session locale
         }
     }
 
+    /** Déconnexion complète puis redirection vers `/`. */
     async function logout() {
         await clearServerSession();
         clearSession();
@@ -51,12 +53,19 @@ export function createAuthLogout(session: AuthSessionState) {
         return readAndClearLoginNotice();
     }
 
+    /**
+     * Redirige vers la page de login avec une notice optionnelle.
+     * @param message Message à afficher une fois sur /auth/login.
+     */
     async function goToLogin(message?: string) {
         writeLoginNotice(message ?? null);
         await router.push('/auth/login');
     }
 
-    /** Force re-login after password/email change invalidates JWT. */
+    /**
+     * Force un re-login après invalidation JWT (mdp / e-mail / idle).
+     * @param message Message optionnel (sinon notice idle si applicable).
+     */
     async function forceReLogin(message?: string) {
         const idleNotice = pendingIdleLogoutNotice.value || isIdleSessionMessage(message);
         pendingIdleLogoutNotice.value = false;

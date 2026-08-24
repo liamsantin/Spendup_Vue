@@ -80,6 +80,11 @@ const KNOWN_RAW_KEYS = new Set([
     'IsHidden'
 ]);
 
+/**
+ * Gestion des appareils / sessions de sécurité (liste, confiance, révocation).
+ * @param options Callback succès (toast / alert parent).
+ * @returns État et actions (objet réactif).
+ */
 export function useSecurityDevices(options: { onSuccess: (message: string) => void }) {
     const auth = useAuthStore();
     const { t, locale } = useI18n();
@@ -109,6 +114,10 @@ export function useSecurityDevices(options: { onSuccess: (message: string) => vo
             })
     );
 
+    /**
+     * Formate une date d’appareil pour l’UI.
+     * @param value ISO ou chaîne brute.
+     */
     function formatDeviceDate(value: string | null | undefined): string | null {
         if (!value) return null;
         const date = new Date(value);
@@ -116,6 +125,10 @@ export function useSecurityDevices(options: { onSuccess: (message: string) => vo
         return dateFormatter.value.format(date);
     }
 
+    /**
+     * Formate une valeur `raw` inconnue pour les détails.
+     * @param value Valeur arbitraire.
+     */
     function formatRawValue(value: unknown): string | null {
         if (value == null) return null;
         if (typeof value === 'boolean') return value ? t('security.devices.details.boolean.yes') : t('security.devices.details.boolean.no');
@@ -136,12 +149,17 @@ export function useSecurityDevices(options: { onSuccess: (message: string) => vo
         return String(value);
     }
 
+    /** Filtre les lignes vides du détail appareil. */
     function filterRows(rows: Array<{ label: string; value: string | null | undefined }>): DeviceDetailRow[] {
         return rows
             .filter((row): row is { label: string; value: string } => !!row.value && String(row.value).trim().length > 0)
             .map((row) => ({ label: row.label, value: String(row.value) }));
     }
 
+    /**
+     * Lignes de résumé affichées sur la carte appareil.
+     * @param device Appareil source.
+     */
     function deviceSummaryRows(device: AuthDevice): DeviceDetailRow[] {
         return filterRows([
             { label: t('security.devices.summary.firstSeen'), value: formatDeviceDate(device.firstSeenAt || device.createdAt) },
@@ -153,6 +171,10 @@ export function useSecurityDevices(options: { onSuccess: (message: string) => vo
         ]);
     }
 
+    /**
+     * Lignes détaillées de la fiche appareil (y compris clés `raw` inconnues).
+     * @param device Appareil source.
+     */
     function deviceDetailRows(device: AuthDevice): DeviceDetailRow[] {
         const location = [device.city, device.region, device.country].filter(Boolean).join(', ') || null;
         const rows: Array<{ label: string; value: string | null | undefined }> = [
@@ -196,25 +218,42 @@ export function useSecurityDevices(options: { onSuccess: (message: string) => vo
         return filterRows(rows);
     }
 
+    /**
+     * Ouvre la fiche détail d’un appareil.
+     * @param device Appareil sélectionné.
+     */
     function openDeviceDetails(device: AuthDevice) {
         detailsDevice.value = device;
         detailsOpen.value = true;
     }
 
+    /**
+     * Synchronise l’ouverture du modal détail.
+     * @param value Ouvert / fermé.
+     */
     function onDetailsOpenChange(value: boolean) {
         detailsOpen.value = value;
         if (!value) detailsDevice.value = null;
     }
 
+    /**
+     * Heuristique mobile (nom / type / UA).
+     * @param device Appareil à tester.
+     */
     function isMobileDevice(device: AuthDevice): boolean {
         const haystack = `${device.deviceName ?? ''} ${device.deviceType ?? ''} ${device.os ?? ''} ${device.browser ?? ''} ${device.userAgent ?? ''}`;
         return /mobile|android|iphone|ipad|ipod|phone|ios/i.test(haystack);
     }
 
+    /**
+     * Indique si l’appareil est celui de la session courante.
+     * @param device Appareil à tester.
+     */
     function isCurrentDevice(device: AuthDevice): boolean {
         return resolveIsCurrentDevice(device, currentDeviceId);
     }
 
+    /** Charge la liste des appareils depuis l’API. */
     async function loadDevices() {
         devicesLoading.value = true;
         devicesError.value = null;
@@ -236,6 +275,11 @@ export function useSecurityDevices(options: { onSuccess: (message: string) => vo
         return device.isTrusted === true;
     }
 
+    /**
+     * Met à jour le statut de confiance d’un appareil.
+     * @param device Appareil cible.
+     * @param isTrusted Nouvelle valeur.
+     */
     async function setDeviceTrust(device: AuthDevice, isTrusted: boolean) {
         if (trustLoadingId.value || isDeviceTrusted(device) === isTrusted) return;
         trustLoadingId.value = device.deviceIdentifier;
@@ -253,16 +297,25 @@ export function useSecurityDevices(options: { onSuccess: (message: string) => vo
         }
     }
 
+    /**
+     * Ouvre la confirmation de révocation d’un appareil.
+     * @param device Appareil cible.
+     */
     function openRevokeDevice(device: AuthDevice) {
         revokeTarget.value = device;
         revokeOpen.value = true;
     }
 
+    /**
+     * Synchronise l’ouverture du modal de révocation.
+     * @param value Ouvert / fermé.
+     */
     function onRevokeOpenChange(value: boolean) {
         revokeOpen.value = value;
         if (!value) revokeTarget.value = null;
     }
 
+    /** Confirme la révocation de l’appareil ciblé. */
     async function confirmRevokeDevice() {
         const device = revokeTarget.value;
         if (!device || revokeLoadingId.value) return;
@@ -285,6 +338,7 @@ export function useSecurityDevices(options: { onSuccess: (message: string) => vo
         }
     }
 
+    /** Révoque toutes les sessions (force re-login côté auth). */
     async function confirmRevokeAll() {
         if (revokeAllLoading.value) return;
         revokeAllLoading.value = true;

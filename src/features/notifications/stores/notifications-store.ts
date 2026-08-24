@@ -10,6 +10,9 @@ import {
 
 export type { LiveFriendChip };
 
+/**
+ * Façade Pinia du store notifications : inbox, hub SignalR, chips live et cycle de vie.
+ */
 export const useNotificationsStore = defineStore('notifications', () => {
     const state = createNotificationsState();
     const native = createNotificationsNative(state);

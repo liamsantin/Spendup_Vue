@@ -81,6 +81,7 @@ export function createNotificationsLifecycle(state: NotificationsState, deps: Li
         }
     }
 
+    /** Remet le store à zéro et coupe le hub (logout). */
     function reset() {
         sessionPromise = null;
         resetHubFlags();

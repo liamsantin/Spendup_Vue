@@ -5,7 +5,11 @@ import type { FriendsRealtime } from '@/features/friends/stores/internal/friends
 export type FriendsTab = 'Friends' | 'Requests' | 'Blocked' | 'Discover';
 
 /**
- * Bootstrap / openTab / idle prefetch / reset du store amis.
+ * Cycle de vie du store amis : onglets, bootstrap, prefetch idle, reset.
+ * @param state État partagé du store.
+ * @param lists Actions de chargement.
+ * @param realtime Bridge realtime.
+ * @returns Les actions de cycle de vie.
  */
 export function createFriendsLifecycle(
     state: FriendsState,
@@ -18,6 +22,7 @@ export function createFriendsLifecycle(
 
     let prefetchTimer: ReturnType<typeof setTimeout> | number | null = null;
 
+    /** Annule le prefetch planifié en idle. */
     function cancelIdlePrefetch() {
         if (prefetchTimer == null) return;
         if (typeof cancelIdleCallback === 'function') {
@@ -28,9 +33,8 @@ export function createFriendsLifecycle(
     }
 
     /**
-     * Schedule an idle prefetch for the given tab.
-     * @param tab - The tab to schedule the idle prefetch for.
-     * @returns void
+     * Précharge en idle les demandes si l’onglet actif n’est pas `Requests`.
+     * @param tab Onglet actuellement ouvert.
      */
     function scheduleIdlePrefetch(tab: FriendsTab) {
         if (import.meta.env.VITEST) return;
@@ -46,6 +50,10 @@ export function createFriendsLifecycle(
         prefetchTimer = setTimeout(run, 2000);
     }
 
+    /**
+     * Ouvre un onglet et charge les données associées.
+     * @param tab Onglet à ouvrir.
+     */
     async function openTab(tab: FriendsTab) {
         ensureRealtimeBridge();
         if (tab === 'Friends') {
@@ -66,6 +74,10 @@ export function createFriendsLifecycle(
         }
     }
 
+    /**
+     * Premier chargement de la page amis + prefetch idle.
+     * @param tab Onglet initial (défaut : `Friends`).
+     */
     async function bootstrap(tab: FriendsTab = 'Friends') {
         ensureRealtimeBridge();
         await openTab(tab);
@@ -75,6 +87,7 @@ export function createFriendsLifecycle(
         }
     }
 
+    /** Remet le store à zéro (logout / reset session). */
     function reset() {
         cancelIdlePrefetch();
         cache.reset();

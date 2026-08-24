@@ -9,6 +9,9 @@ import {
 
 export { APP_HOME_ROUTE };
 
+/**
+ * Façade Pinia du store auth : session, logout, profil et actions (login / 2FA / devices).
+ */
 export const useAuthStore = defineStore('auth', () => {
     const session = createAuthSession();
     const logout = createAuthLogout(session);

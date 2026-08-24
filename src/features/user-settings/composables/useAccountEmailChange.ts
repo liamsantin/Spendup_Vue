@@ -5,6 +5,11 @@ import { useAuthStore } from '@/features/auth';
 import { withStepUpRetry } from '@/features/auth/step-up';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
+/**
+ * Modal / flux de changement d’e-mail (mdp ou Google + step-up).
+ * @param options Refs de feedback compte.
+ * @returns État et actions (objet réactif).
+ */
 export function useAccountEmailChange(options: {
     accountSuccess: Ref<string | null>;
     accountError: Ref<string | null>;
@@ -31,6 +36,7 @@ export function useAccountEmailChange(options: {
         return false;
     });
 
+    /** Ouvre le modal et réinitialise les champs. */
     function openEmailModal() {
         emailDraft.value = '';
         emailCurrentPassword.value = '';
@@ -41,6 +47,7 @@ export function useAccountEmailChange(options: {
         emailOpen.value = true;
     }
 
+    /** Soumet le changement d’e-mail puis redirige vers la confirmation. */
     async function submitEmailChange() {
         if (emailSaving.value) return;
         emailError.value = null;
@@ -82,6 +89,10 @@ export function useAccountEmailChange(options: {
         }
     }
 
+    /**
+     * Reçoit le credential Google puis soumet automatiquement.
+     * @param idToken Jeton Google.
+     */
     async function onEmailGoogleCredential(idToken: string) {
         emailGoogleIdToken.value = idToken;
         emailError.value = null;

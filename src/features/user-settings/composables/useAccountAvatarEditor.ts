@@ -9,6 +9,11 @@ import {
 } from '@/features/auth';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
+/**
+ * Édition avatar : catalogue, upload, lightbox, résolution d’affichage (blob).
+ * @param profilePicture Ref liée à la photo de profil.
+ * @returns État et actions avatar (objet réactif).
+ */
 export function useAccountAvatarEditor(profilePicture: Ref<string | null>) {
     const auth = useAuthStore();
     const { t } = useI18n();
@@ -24,12 +29,17 @@ export function useAccountAvatarEditor(profilePicture: Ref<string | null>) {
 
     const avatarSrc = computed(() => avatarDisplaySrc.value || undefined);
 
+    /** Révoque l’URL blob d’affichage si présente. */
     function revokeDisplayBlob() {
         if (avatarDisplaySrc.value?.startsWith('blob:')) {
             URL.revokeObjectURL(avatarDisplaySrc.value);
         }
     }
 
+    /**
+     * Résout la source d’affichage (catalogue, blob uploadé, ou défaut).
+     * @param picture Valeur `profilePicture` courante.
+     */
     async function resolveAvatarDisplay(picture: string | null) {
         const id = ++avatarDisplayRequestId;
         pictureError.value = null;
@@ -66,16 +76,22 @@ export function useAccountAvatarEditor(profilePicture: Ref<string | null>) {
         avatarDisplaySrc.value = DEFAULT_AVATAR_SRC;
     }
 
+    /** Ouvre le modal catalogue d’avatars. */
     function openAvatarPicker() {
         pictureError.value = null;
         avatarDraft.value = isCatalogProfilePicture(profilePicture.value) ? profilePicture.value : null;
         avatarOpen.value = true;
     }
 
+    /** Ouvre la lightbox de l’avatar courant. */
     function openPictureLightbox() {
         pictureLightboxOpen.value = true;
     }
 
+    /**
+     * Upload un fichier sélectionné (jpeg/png/webp ≤ 2 Mo).
+     * @param event Événement `change` de l’input file.
+     */
     async function onPictureSelected(event: Event) {
         const input = event.target as HTMLInputElement;
         const file = input.files?.[0];
@@ -105,6 +121,7 @@ export function useAccountAvatarEditor(profilePicture: Ref<string | null>) {
         }
     }
 
+    /** Supprime l’avatar (retour au défaut). */
     async function resetPicture() {
         if (pictureSaving.value) return;
         pictureSaving.value = true;
@@ -120,6 +137,7 @@ export function useAccountAvatarEditor(profilePicture: Ref<string | null>) {
         }
     }
 
+    /** Confirme l’avatar catalogue sélectionné (`avatarDraft`). */
     async function confirmCatalogAvatar() {
         if (pictureSaving.value || !avatarDraft.value) return;
         pictureSaving.value = true;

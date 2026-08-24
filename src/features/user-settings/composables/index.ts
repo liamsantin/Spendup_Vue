@@ -1,3 +1,4 @@
+/** Module barrel : composables compte / sécurité (user-settings). */
 export * from '@/features/user-settings/composables/useAccountAvatarEditor';
 export * from '@/features/user-settings/composables/useAccountDeletion';
 export * from '@/features/user-settings/composables/useAccountEmailChange';

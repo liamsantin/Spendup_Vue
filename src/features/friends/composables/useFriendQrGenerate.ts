@@ -3,6 +3,11 @@ import { useI18n } from 'vue-i18n';
 import QRCode from 'qrcode';
 import { buildFriendQrPayload } from '@/features/friends/qr';
 
+/**
+ * Génère un QR code d’ajout d’ami à partir du publicId.
+ * @param options PublicId source (ref / getter).
+ * @returns État et action `generateQr` (objet réactif).
+ */
 export function useFriendQrGenerate(options: { publicId: MaybeRefOrGetter<string> }) {
     const { t } = useI18n();
     const qrDataUrl = ref<string | null>(null);
@@ -10,6 +15,7 @@ export function useFriendQrGenerate(options: { publicId: MaybeRefOrGetter<string
 
     const publicId = computed(() => toValue(options.publicId));
 
+    /** Génère le data-URL PNG du QR. */
     async function generateQr() {
         qrError.value = null;
         qrDataUrl.value = null;

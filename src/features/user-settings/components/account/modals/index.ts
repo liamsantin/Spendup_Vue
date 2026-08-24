@@ -1,3 +1,6 @@
+/**
+ * Modales de l’onglet Compte (avatar, username, e-mail, mot de passe, Google, suppression).
+ */
 export { default as AvatarCatalogModal } from '@/features/user-settings/components/account/modals/AvatarCatalogModal.vue';
 export { default as DeleteAccountModal } from '@/features/user-settings/components/account/modals/DeleteAccountModal.vue';
 export { default as EmailChangeModal } from '@/features/user-settings/components/account/modals/EmailChangeModal.vue';

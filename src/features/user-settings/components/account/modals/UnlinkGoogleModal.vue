@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Modal détachement Google — exige le mot de passe local avant confirmation.
+ */
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';

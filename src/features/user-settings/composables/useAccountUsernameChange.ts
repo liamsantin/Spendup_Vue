@@ -5,6 +5,11 @@ import { withStepUpRetry } from '@/features/auth/step-up';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { isValidAccountPassword } from '@/features/user-settings/account-profile';
 
+/**
+ * Modal / flux de changement (ou création) de nom d’utilisateur.
+ * @param options Refs username + feedback compte.
+ * @returns État et actions (objet réactif).
+ */
 export function useAccountUsernameChange(options: {
     username: Ref<string>;
     accountSuccess: Ref<string | null>;
@@ -21,6 +26,7 @@ export function useAccountUsernameChange(options: {
     const usernameModalIncludesPassword = ref(false);
     const usernameOpen = ref(false);
 
+    /** Ouvre le modal et préremplit le brouillon. */
     function openUsernameModal() {
         usernameDraft.value = options.username.value;
         usernamePassword.value = '';
@@ -32,6 +38,7 @@ export function useAccountUsernameChange(options: {
         usernameOpen.value = true;
     }
 
+    /** Valide et enregistre le username (éventuellement + mot de passe initial). */
     async function saveUsername() {
         if (usernameSaving.value) return;
         usernameError.value = null;
