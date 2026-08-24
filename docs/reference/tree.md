@@ -1,6 +1,6 @@
 # Inventaire — arborescence `src/`
 
-> Snapshot doc — le code prime en cas d’écart · Relu : 2026-08-13  
+> Snapshot doc — le code prime en cas d’écart · Relu : 2026-08-24  
 > Architecture : `architecture/layers.md`
 
 ```
@@ -10,19 +10,21 @@ src/
 │   ├── stores/          # app-settings-store (localStorage)
 │   └── guards/          # auth-guard (+ __tests__)
 ├── features/
-│   ├── auth/
+│   ├── accounts/        # stores/internal/ (référence split)
+│   ├── auth/            # stores/internal/ session·actions·profile·logout
 │   ├── countries/
 │   ├── dashboard/
-│   ├── friends/
-│   ├── notifications/
-│   └── user-settings/
+│   ├── desktop/         # deep-links / helpers desktop
+│   ├── friends/         # stores/internal/ + composables QR
+│   ├── notifications/   # stores/internal/
+│   └── user-settings/   # composables account/security
 ├── views/
-│   ├── app/             # dashboard, notifications, friends, parametres/…
+│   ├── app/             # dashboard, finances/comptes, notifications, friends, parametres/…
 │   ├── front-pages/
 │   ├── authentication/
 │   └── dev/             # showcase /components (dev only)
 ├── components/
-│   ├── shared/          # alert/, modal/, tabs/, chip/, switch/, radio/, …
+│   ├── shared/          # alert/, modal/, tabs/, color-picker/, chip/, switch/, radio/, …
 │   ├── auth/
 │   └── frontpages/
 ├── layouts/blank/ · full/

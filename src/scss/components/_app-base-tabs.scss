@@ -1,0 +1,307 @@
+.app-base-tabs--pilled {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    background: transparent !important;
+
+    .app-base-tabs__nav {
+        position: relative;
+        display: inline-flex;
+        align-items: stretch;
+        width: fit-content;
+        max-width: 100%;
+        min-width: 0;
+        gap: 0;
+        padding: 0;
+        border-radius: 9999px;
+        overflow: hidden;
+        background-color: rgb(var(--v-theme-surface));
+        border: 1px solid rgba(var(--v-theme-on-surface), 0.06);
+        box-shadow:
+            0 1px 2px rgba(var(--v-theme-on-surface), 0.06),
+            0 2px 8px rgba(var(--v-theme-on-surface), 0.08);
+
+        &--overflow {
+            display: flex;
+            width: 100%;
+            align-items: stretch;
+            gap: 0;
+        }
+
+        &:not(.app-base-tabs__nav--overflow).app-base-tabs__nav--center {
+            display: flex;
+            width: fit-content;
+            margin-inline: auto;
+        }
+
+        &:not(.app-base-tabs__nav--overflow).app-base-tabs__nav--end {
+            display: flex;
+            width: fit-content;
+            margin-inline-start: auto;
+        }
+    }
+
+    .app-base-tabs__arrow {
+        position: relative;
+        z-index: 3;
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        min-width: 32px;
+        height: auto;
+        min-height: 40px;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: rgb(var(--v-theme-surface));
+        color: rgba(var(--v-theme-on-surface), 0.55);
+        cursor: pointer;
+        box-shadow: none;
+
+        &--prev {
+            justify-content: center;
+            border-radius: 9999px 0 0 9999px;
+        }
+
+        &--next {
+            justify-content: center;
+            border-radius: 0 9999px 9999px 0;
+        }
+
+        &:disabled {
+            opacity: 0.28;
+            cursor: default;
+        }
+
+        &:not(:disabled):hover {
+            color: rgb(var(--v-theme-on-surface));
+        }
+
+        .app-base-tabs__arrow-icon {
+            display: block;
+            flex-shrink: 0;
+            color: inherit;
+            stroke: currentColor;
+        }
+    }
+
+    .app-base-tabs__track {
+        position: relative;
+        display: inline-flex;
+        width: fit-content;
+        max-width: 100%;
+        min-width: 0;
+        padding: 0;
+        border-radius: 0;
+        overflow: hidden;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+
+        &--scrollable {
+            flex: 1 1 auto;
+            width: 100%;
+            max-width: none;
+            min-width: 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+        }
+
+        &--grow {
+            display: flex;
+            width: 100%;
+
+            .app-base-tabs__list {
+                width: 100% !important;
+                flex: 1 1 auto !important;
+
+                .v-slide-group,
+                .v-slide-group__content {
+                    width: 100% !important;
+                    flex: 1 1 auto !important;
+                }
+
+                .v-tab {
+                    flex: 1 1 0;
+                    justify-content: center;
+                }
+            }
+        }
+    }
+
+    .app-base-tabs__pill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 0;
+        border-radius: 9999px;
+        background-color: rgb(var(--v-theme-primary));
+        pointer-events: none;
+        opacity: 0;
+        will-change: transform, width, height;
+
+        &--visible {
+            opacity: 1;
+        }
+
+        &--animate {
+            transition:
+                transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+                width 0.25s cubic-bezier(0.32, 0.72, 0, 1),
+                height 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+    }
+
+    .app-base-tabs__list {
+        --v-tabs-height: auto;
+        position: relative;
+        z-index: 1;
+        width: auto !important;
+        flex: 0 0 auto !important;
+        height: auto !important;
+        min-height: 0;
+        background: transparent !important;
+        overflow: visible;
+
+        .v-slide-group {
+            flex: 0 0 auto !important;
+            width: auto !important;
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        .v-slide-group__container {
+            height: auto !important;
+            overflow: visible !important;
+        }
+
+        .v-slide-group__content {
+            gap: 0;
+            height: auto !important;
+            align-items: center;
+            flex: 0 0 auto !important;
+        }
+
+        /* Always hide Vuetify arrows in pilled mode. */
+        .v-slide-group__prev,
+        .v-slide-group__next {
+            display: none !important;
+        }
+
+        .v-tab {
+            flex: 0 0 auto;
+            min-width: auto;
+            height: auto;
+            min-height: 40px;
+            padding: 8px 16px;
+            border-radius: 9999px !important;
+            letter-spacing: normal;
+            text-transform: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: rgba(var(--v-theme-textPrimary), 0.78);
+            background-color: transparent !important;
+            background-image: none !important;
+            box-shadow: none !important;
+            opacity: 1;
+            transition: color 0.2s ease;
+
+            .v-btn__content {
+                flex: 0 0 auto;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .app-base-tabs__icon {
+                flex-shrink: 0;
+                width: 18px;
+                height: 18px;
+            }
+
+            .app-base-tabs__label {
+                display: inline-flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                white-space: nowrap;
+
+                &::after {
+                    content: attr(data-label);
+                    height: 0;
+                    overflow: hidden;
+                    visibility: hidden;
+                    user-select: none;
+                    pointer-events: none;
+                    font-weight: 600;
+                    letter-spacing: inherit;
+                    font-size: inherit;
+                }
+            }
+
+            .v-btn__overlay,
+            .v-btn__underlay,
+            .v-ripple__container {
+                display: none !important;
+                opacity: 0 !important;
+            }
+
+            .v-tab__slider {
+                display: none;
+            }
+
+            &:hover:not(:active):not(.v-tab--selected):not(.v-tab--disabled) {
+                color: rgb(var(--v-theme-textPrimary));
+            }
+
+            &:focus,
+            &:active,
+            &:focus-visible {
+                background-color: transparent !important;
+                box-shadow: none !important;
+            }
+
+            &:active:not(.v-tab--selected):not(.v-tab--disabled) {
+                color: rgba(var(--v-theme-textPrimary), 0.78);
+            }
+
+            &.v-tab--disabled {
+                opacity: 0.4;
+            }
+        }
+
+        .app-base-tabs__tab--active,
+        .v-tab--selected {
+            font-weight: 600;
+            color: #fff !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+
+            &:hover,
+            &:focus,
+            &:active,
+            &:focus-visible {
+                color: #fff !important;
+                background-color: transparent !important;
+                box-shadow: none !important;
+            }
+
+            .app-base-tabs__chip {
+                color: #fff !important;
+                background: rgba(255, 255, 255, 0.22) !important;
+            }
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-base-tabs--pilled .app-base-tabs__pill--animate {
+        transition: none;
+    }
+}

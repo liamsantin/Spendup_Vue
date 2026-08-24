@@ -1,629 +1,78 @@
-import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { useNotificationsStore } from '@/features/notifications';
-import type { AppNotification, FriendshipChange, FriendshipChangedPayload } from '@/features/notifications';
-import { createResourceCache } from '@/utils/helpers/resource-cache';
-import { friendsApi } from '../api';
-import type { BlockedFriendItem, FriendItem, FriendRequestItem, FriendSearchItem, FriendsPageResult } from '../types';
+import { createFriendsState, FRIENDS_LIST_MAX_AGE_MS } from './internal/friends-state';
+import { createFriendsLists } from './internal/friends-lists';
+import { createFriendsMutations } from './internal/friends-mutations';
+import { createFriendsRealtime } from './internal/friends-realtime';
+import { createFriendsLifecycle } from './internal/friends-lifecycle';
 
-const DEFAULT_PAGE_SIZE = 20;
-export const FRIENDS_LIST_MAX_AGE_MS = 60_000;
+export { FRIENDS_LIST_MAX_AGE_MS };
 
-const KEY_FRIENDS = 'friends';
-const KEY_INCOMING = 'incoming';
-const KEY_OUTGOING = 'outgoing';
-const KEY_BLOCKED = 'blocked';
-
+/**
+ * Fetch budget (TTL 60s listes, hors invalidation realtime / refresh manuel).
+ */
 export const useFriendsStore = defineStore('friends', () => {
-    const friends = ref<FriendItem[]>([]);
-    const incomingRequests = ref<FriendRequestItem[]>([]);
-    const outgoingRequests = ref<FriendRequestItem[]>([]);
-    const blockedUsers = ref<BlockedFriendItem[]>([]);
-    const searchResults = ref<FriendSearchItem[]>([]);
-    const searchQuery = ref('');
-
-    const friendsPage = ref(1);
-    const incomingPage = ref(1);
-    const outgoingPage = ref(1);
-    const blockedPage = ref(1);
-    const searchPage = ref(1);
-
-    const friendsTotalCount = ref(0);
-    const incomingTotalCount = ref(0);
-    const outgoingTotalCount = ref(0);
-    const blockedTotalCount = ref(0);
-    const searchTotalCount = ref(0);
-
-    const loadingFriends = ref(false);
-    const loadingIncoming = ref(false);
-    const loadingOutgoing = ref(false);
-    const loadingBlocked = ref(false);
-    const searching = ref(false);
-    const loadingMoreFriends = ref(false);
-    const loadingMoreIncoming = ref(false);
-    const loadingMoreOutgoing = ref(false);
-    const loadingMoreBlocked = ref(false);
-    const loadingMoreSearch = ref(false);
-    const acting = ref(false);
-    const initialized = ref(false);
-    const error = ref<string | null>(null);
-    /** Deep-link notif : `?friendship=` à mettre en évidence / scroller. */
-    const focusFriendshipPublicId = ref<string | null>(null);
-
-    const cache = createResourceCache({ defaultMaxAgeMs: FRIENDS_LIST_MAX_AGE_MS });
-
-    let unsubscribeNotifications: (() => void) | null = null;
-    let unsubscribeFriendshipChanged: (() => void) | null = null;
-    let friendshipRefreshQueue: FriendshipChange[] = [];
-    let friendshipRefreshRunning = false;
-    let prefetchTimer: ReturnType<typeof setTimeout> | number | null = null;
-
-    const friendsCount = computed(() => friendsTotalCount.value);
-    const incomingCount = computed(() => incomingTotalCount.value);
-    const outgoingCount = computed(() => outgoingTotalCount.value);
-    const blockedCount = computed(() => blockedTotalCount.value);
-    const canSearch = computed(() => searchQuery.value.trim().length >= 2);
-    const hasMoreFriends = computed(() => friends.value.length < friendsTotalCount.value);
-    const hasMoreIncoming = computed(() => incomingRequests.value.length < incomingTotalCount.value);
-    const hasMoreOutgoing = computed(() => outgoingRequests.value.length < outgoingTotalCount.value);
-    const hasMoreBlocked = computed(() => blockedUsers.value.length < blockedTotalCount.value);
-    const hasMoreSearch = computed(() => searchResults.value.length < searchTotalCount.value);
-
-    function clearError() {
-        error.value = null;
-    }
-
-    function applyPageResult<T>(
-        result: FriendsPageResult<T> | null | undefined,
-        items: { value: T[] },
-        page: { value: number },
-        totalCount: { value: number },
-        append: boolean
-    ) {
-        const nextItems = Array.isArray(result?.items) ? result.items : [];
-        items.value = append ? [...items.value, ...nextItems] : nextItems;
-        page.value = result?.page ?? (append ? page.value + 1 : 1);
-        totalCount.value = result?.totalCount ?? nextItems.length;
-    }
-
-    async function loadFriends(force = false) {
-        await cache.ensure(
-            KEY_FRIENDS,
-            async () => {
-                loadingFriends.value = true;
-                clearError();
-                try {
-                    const result = await friendsApi.list(1, DEFAULT_PAGE_SIZE);
-                    applyPageResult(result, friends, friendsPage, friendsTotalCount, false);
-                } catch (e: unknown) {
-                    error.value = e instanceof Error ? e.message : String(e);
-                    throw e;
-                } finally {
-                    loadingFriends.value = false;
-                }
-            },
-            { force }
-        );
-    }
-
-    async function loadMoreFriends() {
-        if (!hasMoreFriends.value || loadingFriends.value || loadingMoreFriends.value) return;
-        loadingMoreFriends.value = true;
-        clearError();
-        try {
-            const result = await friendsApi.list(friendsPage.value + 1, DEFAULT_PAGE_SIZE);
-            applyPageResult(result, friends, friendsPage, friendsTotalCount, true);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingMoreFriends.value = false;
-        }
-    }
-
-    async function loadIncoming(force = false) {
-        await cache.ensure(
-            KEY_INCOMING,
-            async () => {
-                loadingIncoming.value = true;
-                clearError();
-                try {
-                    const result = await friendsApi.incoming(1, DEFAULT_PAGE_SIZE);
-                    applyPageResult(result, incomingRequests, incomingPage, incomingTotalCount, false);
-                } catch (e: unknown) {
-                    error.value = e instanceof Error ? e.message : String(e);
-                    throw e;
-                } finally {
-                    loadingIncoming.value = false;
-                }
-            },
-            { force }
-        );
-    }
-
-    async function loadMoreIncoming() {
-        if (!hasMoreIncoming.value || loadingIncoming.value || loadingMoreIncoming.value) return;
-        loadingMoreIncoming.value = true;
-        clearError();
-        try {
-            const result = await friendsApi.incoming(incomingPage.value + 1, DEFAULT_PAGE_SIZE);
-            applyPageResult(result, incomingRequests, incomingPage, incomingTotalCount, true);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingMoreIncoming.value = false;
-        }
-    }
-
-    async function loadOutgoing(force = false) {
-        await cache.ensure(
-            KEY_OUTGOING,
-            async () => {
-                loadingOutgoing.value = true;
-                clearError();
-                try {
-                    const result = await friendsApi.outgoing(1, DEFAULT_PAGE_SIZE);
-                    applyPageResult(result, outgoingRequests, outgoingPage, outgoingTotalCount, false);
-                } catch (e: unknown) {
-                    error.value = e instanceof Error ? e.message : String(e);
-                    throw e;
-                } finally {
-                    loadingOutgoing.value = false;
-                }
-            },
-            { force }
-        );
-    }
-
-    async function loadMoreOutgoing() {
-        if (!hasMoreOutgoing.value || loadingOutgoing.value || loadingMoreOutgoing.value) return;
-        loadingMoreOutgoing.value = true;
-        clearError();
-        try {
-            const result = await friendsApi.outgoing(outgoingPage.value + 1, DEFAULT_PAGE_SIZE);
-            applyPageResult(result, outgoingRequests, outgoingPage, outgoingTotalCount, true);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingMoreOutgoing.value = false;
-        }
-    }
-
-    async function loadBlocked(force = false) {
-        await cache.ensure(
-            KEY_BLOCKED,
-            async () => {
-                loadingBlocked.value = true;
-                clearError();
-                try {
-                    const result = await friendsApi.blocked(1, DEFAULT_PAGE_SIZE);
-                    applyPageResult(result, blockedUsers, blockedPage, blockedTotalCount, false);
-                } catch (e: unknown) {
-                    error.value = e instanceof Error ? e.message : String(e);
-                    throw e;
-                } finally {
-                    loadingBlocked.value = false;
-                }
-            },
-            { force }
-        );
-    }
-
-    async function loadMoreBlocked() {
-        if (!hasMoreBlocked.value || loadingBlocked.value || loadingMoreBlocked.value) return;
-        loadingMoreBlocked.value = true;
-        clearError();
-        try {
-            const result = await friendsApi.blocked(blockedPage.value + 1, DEFAULT_PAGE_SIZE);
-            applyPageResult(result, blockedUsers, blockedPage, blockedTotalCount, true);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingMoreBlocked.value = false;
-        }
-    }
-
-    async function searchUsers(q = searchQuery.value) {
-        searchQuery.value = q;
-        const trimmed = q.trim();
-        if (trimmed.length < 2) {
-            searchResults.value = [];
-            searchPage.value = 1;
-            searchTotalCount.value = 0;
-            return;
-        }
-
-        searching.value = true;
-        clearError();
-        try {
-            const result = await friendsApi.search({ q: trimmed, page: 1, pageSize: DEFAULT_PAGE_SIZE });
-            applyPageResult(result, searchResults, searchPage, searchTotalCount, false);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            searching.value = false;
-        }
-    }
-
-    async function loadMoreSearch() {
-        if (!hasMoreSearch.value || searching.value || loadingMoreSearch.value) return;
-        const trimmed = searchQuery.value.trim();
-        if (trimmed.length < 2) return;
-        loadingMoreSearch.value = true;
-        clearError();
-        try {
-            const result = await friendsApi.search({
-                q: trimmed,
-                page: searchPage.value + 1,
-                pageSize: DEFAULT_PAGE_SIZE
-            });
-            applyPageResult(result, searchResults, searchPage, searchTotalCount, true);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            loadingMoreSearch.value = false;
-        }
-    }
-
-    function clearSearch() {
-        searchQuery.value = '';
-        searchResults.value = [];
-        searchPage.value = 1;
-        searchTotalCount.value = 0;
-    }
-
-    function setFocusFriendship(friendshipPublicId: string | null) {
-        focusFriendshipPublicId.value = friendshipPublicId?.trim() || null;
-    }
-
-    function isFocusedFriendship(friendshipPublicId: string) {
-        return !!focusFriendshipPublicId.value && focusFriendshipPublicId.value === friendshipPublicId;
-    }
-
-    async function refreshAll() {
-        cache.invalidate('*');
-        await Promise.all([loadFriends(true), loadIncoming(true), loadOutgoing(true), loadBlocked(true)]);
-    }
-
-    async function sendRequest(recipientPublicId: string, message?: string) {
-        acting.value = true;
-        clearError();
-        try {
-            await friendsApi.sendRequest({ recipientPublicId, message: message?.trim() || null });
-            await Promise.all([loadFriends(true), loadIncoming(true), loadOutgoing(true), searchUsers(searchQuery.value)]);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            acting.value = false;
-        }
-    }
-
-    async function acceptRequest(friendshipPublicId: string) {
-        acting.value = true;
-        clearError();
-        try {
-            await friendsApi.accept(friendshipPublicId);
-            await Promise.all([loadFriends(true), loadIncoming(true), loadOutgoing(true)]);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            acting.value = false;
-        }
-    }
-
-    async function refuseRequest(friendshipPublicId: string) {
-        acting.value = true;
-        clearError();
-        try {
-            await friendsApi.refuse(friendshipPublicId);
-            await loadIncoming(true);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            acting.value = false;
-        }
-    }
-
-    async function cancelRequest(friendshipPublicId: string) {
-        acting.value = true;
-        clearError();
-        try {
-            await friendsApi.cancel(friendshipPublicId);
-            await Promise.all([loadOutgoing(true), searchUsers(searchQuery.value)]);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            acting.value = false;
-        }
-    }
-
-    function outgoingRequestFor(userPublicId: string) {
-        return outgoingRequests.value.find((r) => r.otherUser.publicId === userPublicId && r.status === 'pending');
-    }
-
-    async function removeFriend(friendshipPublicId: string) {
-        acting.value = true;
-        clearError();
-        try {
-            await friendsApi.remove(friendshipPublicId);
-            await loadFriends(true);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            acting.value = false;
-        }
-    }
-
-    async function blockUser(userPublicId: string) {
-        acting.value = true;
-        clearError();
-        try {
-            await friendsApi.block(userPublicId);
-            await Promise.all([
-                loadFriends(true),
-                loadIncoming(true),
-                loadOutgoing(true),
-                loadBlocked(true),
-                searchUsers(searchQuery.value)
-            ]);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            acting.value = false;
-        }
-    }
-
-    async function unblockUser(userPublicId: string) {
-        acting.value = true;
-        clearError();
-        try {
-            await friendsApi.unblock(userPublicId);
-            await Promise.all([loadBlocked(true), searchUsers(searchQuery.value)]);
-        } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
-            throw e;
-        } finally {
-            acting.value = false;
-        }
-    }
-
-    function refreshSearchIfNeeded() {
-        if (searchQuery.value.trim().length < 2) return;
-        void searchUsers(searchQuery.value);
-    }
-
-    function handleRealtime(notification: AppNotification) {
-        if (notification.type === 'friendRequest') {
-            void loadIncoming(true);
-            refreshSearchIfNeeded();
-            return;
-        }
-        if (notification.type === 'friendAccepted') {
-            void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true)]).then(() => {
-                refreshSearchIfNeeded();
-            });
-        }
-    }
-
-    async function applyFriendshipChange(change: FriendshipChange) {
-        if (change === 'refused') {
-            await loadOutgoing(true);
-            refreshSearchIfNeeded();
-            return;
-        }
-        if (change === 'canceled') {
-            await loadIncoming(true);
-            refreshSearchIfNeeded();
-            return;
-        }
-        if (change === 'blocked') {
-            await Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true), loadBlocked(true)]);
-            refreshSearchIfNeeded();
-            return;
-        }
-        if (change === 'removed') {
-            await loadFriends(true);
-        }
-    }
-
-    async function drainFriendshipRefreshQueue() {
-        if (friendshipRefreshRunning) return;
-        friendshipRefreshRunning = true;
-        try {
-            while (friendshipRefreshQueue.length > 0) {
-                const change = friendshipRefreshQueue.shift();
-                if (!change) continue;
-                while (friendshipRefreshQueue[0] === change) {
-                    friendshipRefreshQueue.shift();
-                }
-                await applyFriendshipChange(change);
-            }
-        } finally {
-            friendshipRefreshRunning = false;
-            if (friendshipRefreshQueue.length > 0) {
-                void drainFriendshipRefreshQueue();
-            }
-        }
-    }
-
-    function handleFriendshipChanged(payload: FriendshipChangedPayload) {
-        if (!payload?.change) return;
-        friendshipRefreshQueue.push(payload.change);
-        void drainFriendshipRefreshQueue();
-    }
-
-    function ensureRealtimeBridge() {
-        if (unsubscribeNotifications && unsubscribeFriendshipChanged) return;
-        const notifications = useNotificationsStore();
-        unsubscribeNotifications ??= notifications.subscribeToFriendNotifications(handleRealtime);
-        unsubscribeFriendshipChanged ??= notifications.subscribeToFriendshipChanged(handleFriendshipChanged);
-    }
-
-    /** Après login : écoute live même avant la première visite de /app/friends. */
-    function onAuthenticatedSession() {
-        ensureRealtimeBridge();
-    }
-
-    function cancelIdlePrefetch() {
-        if (prefetchTimer == null) return;
-        if (typeof cancelIdleCallback === 'function') {
-            cancelIdleCallback(prefetchTimer as number);
-        }
-        clearTimeout(prefetchTimer);
-        prefetchTimer = null;
-    }
-
-    function scheduleIdlePrefetch(tab: 'Friends' | 'Requests' | 'Blocked' | 'Discover') {
-        if (import.meta.env.VITEST) return;
-        cancelIdlePrefetch();
-        const run = () => {
-            prefetchTimer = null;
-            if (tab !== 'Requests') void loadIncoming().catch(() => undefined);
-        };
-        if (typeof requestIdleCallback === 'function') {
-            prefetchTimer = requestIdleCallback(run, { timeout: 2000 });
-            return;
-        }
-        prefetchTimer = setTimeout(run, 2000);
-    }
-
-    async function bootstrap(tab: 'Friends' | 'Requests' | 'Blocked' | 'Discover' = 'Friends') {
-        ensureRealtimeBridge();
-        await openTab(tab);
-        if (!initialized.value) {
-            initialized.value = true;
-            scheduleIdlePrefetch(tab);
-        }
-    }
-
-    async function openTab(tab: 'Friends' | 'Requests' | 'Blocked' | 'Discover') {
-        ensureRealtimeBridge();
-        if (tab === 'Friends') {
-            await loadFriends();
-            return;
-        }
-        if (tab === 'Requests') {
-            await Promise.all([loadIncoming(), loadOutgoing()]);
-            return;
-        }
-        if (tab === 'Blocked') {
-            await loadBlocked();
-            return;
-        }
-        if (tab === 'Discover') {
-            await loadOutgoing();
-            refreshSearchIfNeeded();
-        }
-    }
-
-    function reset() {
-        cancelIdlePrefetch();
-        cache.reset();
-        friends.value = [];
-        incomingRequests.value = [];
-        outgoingRequests.value = [];
-        blockedUsers.value = [];
-        searchResults.value = [];
-        searchQuery.value = '';
-        friendsPage.value = 1;
-        incomingPage.value = 1;
-        outgoingPage.value = 1;
-        blockedPage.value = 1;
-        searchPage.value = 1;
-        friendsTotalCount.value = 0;
-        incomingTotalCount.value = 0;
-        outgoingTotalCount.value = 0;
-        blockedTotalCount.value = 0;
-        searchTotalCount.value = 0;
-        loadingFriends.value = false;
-        loadingIncoming.value = false;
-        loadingOutgoing.value = false;
-        loadingBlocked.value = false;
-        searching.value = false;
-        loadingMoreFriends.value = false;
-        loadingMoreIncoming.value = false;
-        loadingMoreOutgoing.value = false;
-        loadingMoreBlocked.value = false;
-        loadingMoreSearch.value = false;
-        acting.value = false;
-        initialized.value = false;
-        error.value = null;
-        focusFriendshipPublicId.value = null;
-        unsubscribeNotifications?.();
-        unsubscribeNotifications = null;
-        unsubscribeFriendshipChanged?.();
-        unsubscribeFriendshipChanged = null;
-        friendshipRefreshQueue = [];
-        friendshipRefreshRunning = false;
-    }
+    const state = createFriendsState();
+    const lists = createFriendsLists(state);
+    const mutations = createFriendsMutations(state, lists);
+    const realtime = createFriendsRealtime(state, lists);
+    const lifecycle = createFriendsLifecycle(state, lists, realtime);
 
     return {
-        friends,
-        incomingRequests,
-        outgoingRequests,
-        blockedUsers,
-        searchResults,
-        searchQuery,
-        focusFriendshipPublicId,
-        loadingFriends,
-        loadingIncoming,
-        loadingOutgoing,
-        loadingBlocked,
-        searching,
-        loadingMoreFriends,
-        loadingMoreIncoming,
-        loadingMoreOutgoing,
-        loadingMoreBlocked,
-        loadingMoreSearch,
-        acting,
-        initialized,
-        error,
-        friendsCount,
-        incomingCount,
-        outgoingCount,
-        blockedCount,
-        canSearch,
-        hasMoreFriends,
-        hasMoreIncoming,
-        hasMoreOutgoing,
-        hasMoreBlocked,
-        hasMoreSearch,
-        onAuthenticatedSession,
-        bootstrap,
-        openTab,
-        refreshAll,
-        loadFriends,
-        loadMoreFriends,
-        loadIncoming,
-        loadMoreIncoming,
-        loadOutgoing,
-        loadMoreOutgoing,
-        loadBlocked,
-        loadMoreBlocked,
-        searchUsers,
-        loadMoreSearch,
-        clearSearch,
-        setFocusFriendship,
-        isFocusedFriendship,
-        sendRequest,
-        acceptRequest,
-        refuseRequest,
-        cancelRequest,
-        outgoingRequestFor,
-        removeFriend,
-        blockUser,
-        unblockUser,
-        reset
+        friends: state.friends,
+        incomingRequests: state.incomingRequests,
+        outgoingRequests: state.outgoingRequests,
+        blockedUsers: state.blockedUsers,
+        searchResults: state.searchResults,
+        searchQuery: state.searchQuery,
+        focusFriendshipPublicId: state.focusFriendshipPublicId,
+        loadingFriends: state.loadingFriends,
+        loadingIncoming: state.loadingIncoming,
+        loadingOutgoing: state.loadingOutgoing,
+        loadingBlocked: state.loadingBlocked,
+        searching: state.searching,
+        loadingMoreFriends: state.loadingMoreFriends,
+        loadingMoreIncoming: state.loadingMoreIncoming,
+        loadingMoreOutgoing: state.loadingMoreOutgoing,
+        loadingMoreBlocked: state.loadingMoreBlocked,
+        loadingMoreSearch: state.loadingMoreSearch,
+        acting: state.acting,
+        initialized: state.initialized,
+        error: state.error,
+        friendsCount: state.friendsCount,
+        incomingCount: state.incomingCount,
+        outgoingCount: state.outgoingCount,
+        blockedCount: state.blockedCount,
+        canSearch: state.canSearch,
+        hasMoreFriends: state.hasMoreFriends,
+        hasMoreIncoming: state.hasMoreIncoming,
+        hasMoreOutgoing: state.hasMoreOutgoing,
+        hasMoreBlocked: state.hasMoreBlocked,
+        hasMoreSearch: state.hasMoreSearch,
+        onAuthenticatedSession: realtime.onAuthenticatedSession,
+        bootstrap: lifecycle.bootstrap,
+        openTab: lifecycle.openTab,
+        refreshAll: lists.refreshAll,
+        loadFriends: lists.loadFriends,
+        loadMoreFriends: lists.loadMoreFriends,
+        loadIncoming: lists.loadIncoming,
+        loadMoreIncoming: lists.loadMoreIncoming,
+        loadOutgoing: lists.loadOutgoing,
+        loadMoreOutgoing: lists.loadMoreOutgoing,
+        loadBlocked: lists.loadBlocked,
+        loadMoreBlocked: lists.loadMoreBlocked,
+        searchUsers: lists.searchUsers,
+        loadMoreSearch: lists.loadMoreSearch,
+        clearSearch: lists.clearSearch,
+        setFocusFriendship: state.setFocusFriendship,
+        isFocusedFriendship: state.isFocusedFriendship,
+        sendRequest: mutations.sendRequest,
+        acceptRequest: mutations.acceptRequest,
+        refuseRequest: mutations.refuseRequest,
+        cancelRequest: mutations.cancelRequest,
+        outgoingRequestFor: state.outgoingRequestFor,
+        removeFriend: mutations.removeFriend,
+        blockUser: mutations.blockUser,
+        unblockUser: mutations.unblockUser,
+        reset: lifecycle.reset
     };
 });

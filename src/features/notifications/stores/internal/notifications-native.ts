@@ -1,0 +1,79 @@
+import { useUserSettingsStore } from '@/features/user-settings';
+import { isLiveChipType } from '../../friendChip';
+import { isAccountShareNotificationType, isFriendNotificationType, isSecurityNotificationType } from '../../link';
+import { showNativeNotification } from '../../native-notify';
+import type { AppNotification } from '../../types';
+import type { NotificationsState } from './notifications-state';
+
+const LIVE_CHIP_DISMISS_MS = 8000;
+
+/**
+ * Notifications OS (Tauri) et chips live in-app.
+ * @param state État partagé du store.
+ * @returns Les helpers chips / OS notify.
+ */
+export function createNotificationsNative(state: NotificationsState) {
+    const { liveFriendChips } = state;
+    const liveChipTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
+    /**
+     * Gate prefs push (`pushNotifications` + sous-préférences).
+     * Chips live in-app + notifications OS (Tauri). N’affecte pas l’inbox / badge / listes amis.
+     */
+    function shouldShowLiveChip(type: string): boolean {
+        const settings = useUserSettingsStore().current;
+        if (!settings.pushNotifications) return false;
+        if (isSecurityNotificationType(type) && !settings.pushSecurityAlerts) return false;
+        if (isFriendNotificationType(type) && !settings.pushFriendRequest) return false;
+        if (isAccountShareNotificationType(type) && !settings.pushFinancialAlerts) return false;
+        // Types finance futurs — coupe le chip / OS notify si désactivé.
+        if (type.toLowerCase().includes('financial') && !settings.pushFinancialAlerts) return false;
+        return true;
+    }
+
+    function maybeShowNativeOsNotification(notification: AppNotification) {
+        if (!shouldShowLiveChip(String(notification.type))) return;
+        void showNativeNotification(notification);
+    }
+
+    function dismissLiveFriendChip(key: string) {
+        const timer = liveChipTimers.get(key);
+        if (timer) {
+            clearTimeout(timer);
+            liveChipTimers.delete(key);
+        }
+        liveFriendChips.value = liveFriendChips.value.filter((chip) => chip.key !== key);
+    }
+
+    function dismissLiveFriendChipsByNotificationId(notificationId: number) {
+        liveFriendChips.value.filter((chip) => chip.notification.id === notificationId).forEach((chip) => dismissLiveFriendChip(chip.key));
+    }
+
+    function clearLiveFriendChips() {
+        liveChipTimers.forEach((timer) => clearTimeout(timer));
+        liveChipTimers.clear();
+        liveFriendChips.value = [];
+    }
+
+    function pushLiveFriendChip(notification: AppNotification) {
+        if (!isLiveChipType(String(notification.type))) return;
+        if (notification.isRead) return;
+        if (!shouldShowLiveChip(String(notification.type))) return;
+
+        const key = `${notification.id}-${Date.now()}`;
+        liveFriendChips.value = [...liveFriendChips.value, { key, notification }];
+        const timer = setTimeout(() => dismissLiveFriendChip(key), LIVE_CHIP_DISMISS_MS);
+        liveChipTimers.set(key, timer);
+    }
+
+    return {
+        shouldShowLiveChip,
+        maybeShowNativeOsNotification,
+        dismissLiveFriendChip,
+        dismissLiveFriendChipsByNotificationId,
+        clearLiveFriendChips,
+        pushLiveFriendChip
+    };
+}
+
+export type NotificationsNative = ReturnType<typeof createNotificationsNative>;

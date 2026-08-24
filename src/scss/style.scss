@@ -31,6 +31,8 @@
 @use './components/VTabs';
 @use './components/VTable';
 @use './components/VExpansionpanel';
+@use './components/app-base-tabs';
+@use './components/app-color-picker';
 
 /* Front pages */
 @use 'frontpages/layout/toolbar';
