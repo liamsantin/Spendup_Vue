@@ -178,8 +178,8 @@ describe('useAccountsStore', () => {
         api.list.mockResolvedValue({ items: [ownedAccount] });
         api.listIncomingShares.mockResolvedValue({ items: [] });
 
-        let listener: ((n: { type: string }) => void) | undefined;
-        subscribeToAccountShareNotifications.mockImplementation((fn: (n: { type: string }) => void) => {
+        let listener: ((n: { type: string; metadata?: Record<string, unknown> }) => void) | undefined;
+        subscribeToAccountShareNotifications.mockImplementation((fn: (n: { type: string; metadata?: Record<string, unknown> }) => void) => {
             listener = fn;
             return () => undefined;
         });
@@ -193,6 +193,37 @@ describe('useAccountsStore', () => {
         await vi.waitFor(() => {
             expect(api.list).toHaveBeenCalled();
             expect(api.listIncomingShares).toHaveBeenCalled();
+        });
+    });
+
+    it('accountShareRevoked retire le compte de la liste immédiatement', async () => {
+        const shared = {
+            ...ownedAccount,
+            publicId: 'acc-shared',
+            name: 'Partagé',
+            isOwned: false,
+            myRole: 'viewer' as const,
+            isPrimary: false
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount, shared] });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let listener: ((n: { type: string; metadata?: Record<string, unknown> }) => void) | undefined;
+        subscribeToAccountShareNotifications.mockImplementation((fn: (n: { type: string; metadata?: Record<string, unknown> }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        expect(store.accounts.some((a) => a.publicId === 'acc-shared')).toBe(true);
+
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        listener?.({ type: 'accountShareRevoked', metadata: { accountPublicId: 'acc-shared' } });
+
+        expect(store.accounts.some((a) => a.publicId === 'acc-shared')).toBe(false);
+        await vi.waitFor(() => {
+            expect(api.list).toHaveBeenCalled();
         });
     });
 

@@ -1,4 +1,5 @@
 import { useNotificationsStore } from '@/features/notifications';
+import { getAccountPublicId } from '@/features/notifications/normalize';
 import type { AppNotification, FriendshipChangedPayload } from '@/features/notifications';
 import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
@@ -13,7 +14,7 @@ type RealtimeDeps = Pick<AccountsCrud, 'loadAccounts'> & Pick<AccountsShares, 'l
  * @returns Les helpers de bridge realtime.
  */
 export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps) {
-    const { selectedAccount, cache } = state;
+    const { selectedAccount, cache, removeAccountLocal } = state;
     const { loadAccounts, loadIncoming, loadShares, refreshAll } = deps;
 
     let unsubscribeNotifications: (() => void) | null = null;
@@ -25,7 +26,18 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
      */
     function handleRealtime(notification: AppNotification) {
         const type = String(notification.type);
-        if (type === 'accountShareInvite' || type === 'accountShareRevoked') {
+        if (type === 'accountShareRevoked') {
+            // Soft-delete / revoke manuel : retirer tout de suite (UI), sync réseau en arrière-plan.
+            const accountPublicId = getAccountPublicId(notification.metadata);
+            if (accountPublicId) {
+                removeAccountLocal(accountPublicId);
+            }
+            cache.invalidate(KEY_INCOMING);
+            cache.invalidate(KEY_ACCOUNTS);
+            void Promise.all([loadIncoming(true), loadAccounts(true)]).catch(() => undefined);
+            return;
+        }
+        if (type === 'accountShareInvite') {
             cache.invalidate(KEY_INCOMING);
             cache.invalidate(KEY_ACCOUNTS);
             void Promise.all([loadIncoming(true), loadAccounts(true)]).catch(() => undefined);

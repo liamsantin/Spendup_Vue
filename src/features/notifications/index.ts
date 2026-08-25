@@ -12,6 +12,7 @@ export {
     parseNotificationMetadata,
     getFriendshipPublicId,
     getAccountSharePublicId,
+    getAccountPublicId,
     normalizeAppNotification
 } from '@/features/notifications/normalize';
 export {

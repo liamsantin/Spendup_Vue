@@ -37,6 +37,13 @@ export function getAccountSharePublicId(metadata: Record<string, unknown> | null
     return trimmed || null;
 }
 
+export function getAccountPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
+    const value = metadata?.accountPublicId;
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    return trimmed || null;
+}
+
 /** Normalise un item inbox / SignalR (metadata string → objet). */
 export function normalizeAppNotification(raw: unknown): AppNotification | null {
     if (!raw || typeof raw !== 'object') return null;

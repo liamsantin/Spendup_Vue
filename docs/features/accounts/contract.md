@@ -44,6 +44,7 @@ Mémoire process via `createResourceCache` (`src/utils/helpers/resource-cache.ts
 - Orchestration unique : `AppComptesPage` → `bootstrap(tab)` / `openTab(tab)`. Les tabs ne chargent plus au `onMounted`.
 - Mutations : patch local (`upsert` / filtre incoming) ; `acceptShare` recharge la liste comptes (le nouvel accès n’est pas dans le payload).
 - Après `loadAccounts`, `syncSelectedWithList()` vide la sélection si le compte a disparu (revoke / amitié).
+- `accountShareRevoked` (revoke manuel **ou** soft-delete owner) : `removeAccountLocal` immédiat via `metadata.accountPublicId`, puis sync liste en arrière-plan.
 
 ### Budget de requêtes
 
