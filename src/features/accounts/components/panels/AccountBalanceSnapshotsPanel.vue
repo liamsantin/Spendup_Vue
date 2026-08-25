@@ -190,7 +190,10 @@ async function confirmDelete() {
             </div>
 
             <div v-else class="snapshots-history">
-                <div class="text-subtitle-2 text-medium-emphasis mb-2 flex-shrink-0">{{ t('comptesPage.snapshots.history') }}</div>
+                <div class="snapshots-history__title text-subtitle-2 text-medium-emphasis mb-2 flex-shrink-0 d-flex align-center ga-2">
+                    <Receipt2Icon size="18" stroke-width="1.5" class="flex-shrink-0" />
+                    <span>{{ t('comptesPage.snapshots.history') }}</span>
+                </div>
                 <div ref="historyListRef" class="snapshots-history__list">
                     <div v-if="smAndDown" class="snapshots-history__scroll snapshots-history__scroll--native">
                         <div class="snapshots-list">
@@ -199,13 +202,9 @@ async function confirmDelete() {
                                 :key="snapshot.publicId"
                                 class="snapshots-list__item"
                             >
-                                <v-avatar size="40" rounded="md" color="lightprimary" class="flex-shrink-0">
-                                    <Receipt2Icon class="text-primary" size="20" stroke-width="1.5" />
-                                </v-avatar>
-
                                 <div class="snapshots-list__body min-width-0">
                                     <div class="d-flex align-center justify-space-between ga-2">
-                                        <div class="text-subtitle-1 font-weight-bold text-truncate">
+                                        <div class="text-body-1 font-weight-bold text-truncate">
                                             {{ formatAccountBalance(snapshot.balance, account.currency, locale) }}
                                         </div>
                                         <div class="d-flex align-center ga-1 flex-shrink-0">
@@ -214,7 +213,7 @@ async function confirmDelete() {
                                             </v-chip>
                                             <v-btn
                                                 v-if="canWrite"
-                                                size="small"
+                                                size="x-small"
                                                 variant="text"
                                                 color="error"
                                                 :disabled="store.acting"
@@ -222,15 +221,15 @@ async function confirmDelete() {
                                                 :aria-label="t('comptesPage.snapshots.deleteModal.confirm')"
                                                 @click="deleteTarget = snapshot"
                                             >
-                                                <TrashIcon size="18" />
+                                                <TrashIcon size="16" />
                                             </v-btn>
                                         </div>
                                     </div>
-                                    <div class="d-flex align-center ga-1 text-body-2 text-medium-emphasis mt-1">
-                                        <CalendarIcon size="14" stroke-width="1.5" />
+                                    <div class="d-flex align-center ga-1 text-caption text-medium-emphasis">
+                                        <CalendarIcon size="12" stroke-width="1.5" />
                                         <span>{{ formatDate(snapshot.snapshotAt) }}</span>
                                     </div>
-                                    <div v-if="snapshot.note" class="text-body-2 text-medium-emphasis text-truncate mt-1">
+                                    <div v-if="snapshot.note" class="text-caption text-medium-emphasis text-truncate">
                                         {{ snapshot.note }}
                                     </div>
                                 </div>
@@ -249,13 +248,9 @@ async function confirmDelete() {
                                 :key="snapshot.publicId"
                                 class="snapshots-list__item"
                             >
-                                <v-avatar size="40" rounded="md" color="lightprimary" class="flex-shrink-0">
-                                    <Receipt2Icon class="text-primary" size="20" stroke-width="1.5" />
-                                </v-avatar>
-
                                 <div class="snapshots-list__body min-width-0">
                                     <div class="d-flex align-center justify-space-between ga-2">
-                                        <div class="text-subtitle-1 font-weight-bold text-truncate">
+                                        <div class="text-body-1 font-weight-bold text-truncate">
                                             {{ formatAccountBalance(snapshot.balance, account.currency, locale) }}
                                         </div>
                                         <div class="d-flex align-center ga-1 flex-shrink-0">
@@ -264,7 +259,7 @@ async function confirmDelete() {
                                             </v-chip>
                                             <v-btn
                                                 v-if="canWrite"
-                                                size="small"
+                                                size="x-small"
                                                 variant="text"
                                                 color="error"
                                                 :disabled="store.acting"
@@ -272,15 +267,15 @@ async function confirmDelete() {
                                                 :aria-label="t('comptesPage.snapshots.deleteModal.confirm')"
                                                 @click="deleteTarget = snapshot"
                                             >
-                                                <TrashIcon size="18" />
+                                                <TrashIcon size="16" />
                                             </v-btn>
                                         </div>
                                     </div>
-                                    <div class="d-flex align-center ga-1 text-body-2 text-medium-emphasis mt-1">
-                                        <CalendarIcon size="14" stroke-width="1.5" />
+                                    <div class="d-flex align-center ga-1 text-caption text-medium-emphasis">
+                                        <CalendarIcon size="12" stroke-width="1.5" />
                                         <span>{{ formatDate(snapshot.snapshotAt) }}</span>
                                     </div>
-                                    <div v-if="snapshot.note" class="text-body-2 text-medium-emphasis text-truncate mt-1">
+                                    <div v-if="snapshot.note" class="text-caption text-medium-emphasis text-truncate">
                                         {{ snapshot.note }}
                                     </div>
                                 </div>
@@ -395,16 +390,16 @@ async function confirmDelete() {
 .snapshots-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
     padding-right: 4px;
 }
 
 .snapshots-list__item {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 12px;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
     background: rgb(var(--v-theme-surface));
     border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 }
@@ -412,6 +407,9 @@ async function confirmDelete() {
 .snapshots-list__body {
     flex: 1 1 auto;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .snapshots-empty {
