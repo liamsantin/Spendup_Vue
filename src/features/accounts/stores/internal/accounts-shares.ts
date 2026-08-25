@@ -2,6 +2,7 @@ import { accountsApi } from '@/features/accounts/api';
 import type { ShareRole } from '@/features/accounts/types';
 import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
+import { getErrorMessage } from '@/utils/errors/app-error';
 
 /**
  * Actions liées aux partages et invitations entrantes.
@@ -183,7 +184,13 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
             cache.touch(KEY_INCOMING);
             await crud.loadAccounts(true);
         } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
+            // Ex. amitié disparue / bloquée — afficher le message métier API, pas seulement “introuvable”.
+            error.value = getErrorMessage(e);
+            try {
+                await loadIncoming(true);
+            } catch {
+                /* ignore refresh secondary failure */
+            }
             throw e;
         } finally {
             acting.value = false;

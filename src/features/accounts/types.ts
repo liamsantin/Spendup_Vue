@@ -112,8 +112,8 @@ export type AccountBalanceSnapshotsListResult = {
 
 export type CreateBalanceSnapshotPayload = {
     balance: number;
+    /** ISO UTC (`…Z`). Le client convertit une date calendaire via `ymdToSnapshotIso`. */
     snapshotAt: string;
-    source?: BalanceSnapshotSource;
     note?: string | null;
 };
 

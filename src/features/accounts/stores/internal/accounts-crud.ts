@@ -1,6 +1,7 @@
 import { accountsApi } from '@/features/accounts/api';
 import type { CreateAccountPayload, UpdateAccountPayload } from '@/features/accounts/types';
 import { ACCOUNTS_DETAIL_MAX_AGE_MS, KEY_ACCOUNTS, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
+import { AppError } from '@/utils/errors/app-error';
 
 /**
  * Actions CRUD et chargement des comptes.
@@ -80,9 +81,11 @@ export function createAccountsCrud(state: AccountsState) {
                     }
                 } catch (e: unknown) {
                     if (requestId === detailRequestSeq) {
-                        error.value = e instanceof Error ? e.message : String(e);
-                        if (!accounts.value.some((a) => a.publicId === publicId)) {
-                            clearSelected();
+                        const err = AppError.fromUnknown(e);
+                        error.value = err.message;
+                        // Soft-delete / partage purgé : retirer de la liste et invalider caches locaux.
+                        if (err.status === 404 || !accounts.value.some((a) => a.publicId === publicId)) {
+                            removeAccountLocal(publicId);
                         }
                     }
                     throw e;

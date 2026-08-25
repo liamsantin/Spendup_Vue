@@ -22,21 +22,32 @@ export type AccountFormFields = {
     isPrimary: boolean;
 };
 
-defineProps<{
-    form: AccountFormFields;
-    isEdit: boolean;
-    showPrimarySwitch: boolean;
-    primarySwitchLocked: boolean;
-    primarySwitchHint?: string;
-    typeItems: { title: string; value: AccountType }[];
-    currencyItems: { title: string; value: Currency }[];
-}>();
+withDefaults(
+    defineProps<{
+        form: AccountFormFields;
+        isEdit: boolean;
+        showPrimarySwitch: boolean;
+        primarySwitchLocked: boolean;
+        primarySwitchHint?: string;
+        /** Verrouille type / devise / solde initial / IBAN (rôle editor). */
+        ownerFieldsLocked?: boolean;
+        typeItems: { title: string; value: AccountType }[];
+        currencyItems: { title: string; value: Currency }[];
+    }>(),
+    {
+        primarySwitchHint: undefined,
+        ownerFieldsLocked: false
+    }
+);
 
 const { t } = useI18n();
 </script>
 
 <template>
     <div class="account-form">
+        <div v-if="ownerFieldsLocked" class="text-caption text-medium-emphasis mb-1">
+            {{ t('comptesPage.form.ownerFieldsLockedHint') }}
+        </div>
         <v-row v-if="showPrimarySwitch" class="align-center" no-gutters>
             <v-col cols="auto" sm="3" class="pr-3">
                 <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.isPrimary') }}</v-label>
@@ -61,7 +72,15 @@ const { t } = useI18n();
                 <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.type') }} *</v-label>
             </v-col>
             <v-col cols="12" sm="9">
-                <v-select v-model="form.type" :items="typeItems" color="primary" variant="outlined" hide-details required />
+                <v-select
+                    v-model="form.type"
+                    :items="typeItems"
+                    color="primary"
+                    variant="outlined"
+                    hide-details
+                    required
+                    :disabled="ownerFieldsLocked"
+                />
             </v-col>
         </v-row>
         <v-row class="align-center" no-gutters>
@@ -76,7 +95,7 @@ const { t } = useI18n();
                     variant="outlined"
                     hide-details="auto"
                     required
-                    :disabled="isEdit"
+                    :disabled="isEdit || ownerFieldsLocked"
                     :hint="isEdit ? t('comptesPage.form.currencyLockedHint') : undefined"
                     :persistent-hint="isEdit"
                 />
@@ -95,6 +114,7 @@ const { t } = useI18n();
                     variant="outlined"
                     hide-details
                     required
+                    :disabled="ownerFieldsLocked"
                 />
             </v-col>
         </v-row>
@@ -103,7 +123,13 @@ const { t } = useI18n();
                 <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.iban') }}</v-label>
             </v-col>
             <v-col cols="12" sm="9">
-                <v-text-field v-model="form.iban" color="primary" variant="outlined" hide-details />
+                <v-text-field
+                    v-model="form.iban"
+                    color="primary"
+                    variant="outlined"
+                    hide-details
+                    :disabled="ownerFieldsLocked"
+                />
             </v-col>
         </v-row>
         <v-row class="align-center" no-gutters>

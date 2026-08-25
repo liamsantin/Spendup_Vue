@@ -293,6 +293,7 @@
             "subtitle": "Renseignez les informations du compte.",
             "clearColor": "Sans couleur",
             "currencyLockedHint": "La devise ne peut plus être modifiée après la création du compte.",
+            "ownerFieldsLockedHint": "Avec le rôle éditeur, seuls le nom, la couleur et le n° de compte sont modifiables.",
             "fields": {
                 "name": "Nom",
                 "type": "Type",
@@ -326,8 +327,8 @@
                 "role": "Rôle"
             },
             "roleHints": {
-                "viewer": "Consulte les soldes et les mouvements.",
-                "editor": "Peut aussi ajouter et modifier des données."
+                "viewer": "Consulte les soldes et les relevés.",
+                "editor": "Peut renommer, archiver et gérer les relevés de solde."
             },
             "errors": {
                 "friendRequired": "Choisissez un ami."

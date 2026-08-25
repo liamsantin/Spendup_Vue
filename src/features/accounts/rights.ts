@@ -8,7 +8,21 @@ export function canCreateAccount(): boolean {
     return true;
 }
 
+/** Rename léger + archive/restore + relevés (owner ou editor). */
 export function canEditAccount(account: Pick<Account, 'myRole'>): boolean {
+    return account.myRole === 'owner' || account.myRole === 'editor';
+}
+
+/**
+ * Champs structurants du compte (solde initial, IBAN, type, devise, primary).
+ * Owner seulement — un editor qui les envoie reçoit une BusinessException.
+ */
+export function canEditAccountOwnerFields(account: Pick<Account, 'myRole'>): boolean {
+    return account.myRole === 'owner';
+}
+
+/** Create / delete relevés de solde — editor+. */
+export function canWriteBalanceSnapshots(account: Pick<Account, 'myRole'>): boolean {
     return account.myRole === 'owner' || account.myRole === 'editor';
 }
 

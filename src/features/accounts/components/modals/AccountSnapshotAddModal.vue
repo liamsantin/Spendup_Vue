@@ -34,7 +34,6 @@ function emptyForm(): CreateBalanceSnapshotPayload {
     return {
         balance: 0,
         snapshotAt: todayYmd(),
-        source: 'manual',
         note: null
     };
 }
@@ -55,10 +54,10 @@ async function submitAdd() {
         return;
     }
     try {
+        // `source` est ignoré par l’API (toujours "manual") — ne pas l’envoyer.
         const payload: CreateBalanceSnapshotPayload = {
             balance,
             snapshotAt: ymdToSnapshotIso(form.value.snapshotAt),
-            source: form.value.source ?? 'manual',
             note: form.value.note?.trim() || null
         };
         await store.createBalanceSnapshot(props.accountPublicId, payload);

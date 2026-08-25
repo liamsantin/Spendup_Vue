@@ -4,10 +4,12 @@ import {
     canCreateAccount,
     canDeleteAccount,
     canEditAccount,
+    canEditAccountOwnerFields,
     canManageShares,
     canRestoreAccount,
     canSetPrimaryAccount,
-    canViewAccount
+    canViewAccount,
+    canWriteBalanceSnapshots
 } from '@/features/accounts/rights';
 import type { Account } from '@/features/accounts/types';
 
@@ -47,6 +49,18 @@ describe('accounts rights', () => {
         expect(canEditAccount(account({ myRole: 'owner' }))).toBe(true);
         expect(canEditAccount(account({ myRole: 'editor' }))).toBe(true);
         expect(canEditAccount(account({ myRole: 'viewer' }))).toBe(false);
+    });
+
+    it('limite les champs structurants du compte au owner', () => {
+        expect(canEditAccountOwnerFields(account({ myRole: 'owner' }))).toBe(true);
+        expect(canEditAccountOwnerFields(account({ myRole: 'editor' }))).toBe(false);
+        expect(canEditAccountOwnerFields(account({ myRole: 'viewer' }))).toBe(false);
+    });
+
+    it('autorise create/delete relevés pour owner et editor seulement', () => {
+        expect(canWriteBalanceSnapshots(account({ myRole: 'owner' }))).toBe(true);
+        expect(canWriteBalanceSnapshots(account({ myRole: 'editor' }))).toBe(true);
+        expect(canWriteBalanceSnapshots(account({ myRole: 'viewer' }))).toBe(false);
     });
 
     it('bloque archive/delete sur le compte primaire', () => {

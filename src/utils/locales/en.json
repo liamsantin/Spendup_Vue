@@ -293,6 +293,7 @@
             "subtitle": "Fill in the account details.",
             "clearColor": "No color",
             "currencyLockedHint": "Currency cannot be changed after the account is created.",
+            "ownerFieldsLockedHint": "With the editor role, only name, color, and account number can be changed.",
             "fields": {
                 "name": "Name",
                 "type": "Type",
@@ -326,8 +327,8 @@
                 "role": "Role"
             },
             "roleHints": {
-                "viewer": "Can view balances and activity.",
-                "editor": "Can also add and edit data."
+                "viewer": "Can view balances and snapshots.",
+                "editor": "Can rename, archive, and manage balance snapshots."
             },
             "errors": {
                 "friendRequired": "Choose a friend."

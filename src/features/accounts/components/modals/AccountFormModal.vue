@@ -6,6 +6,7 @@ import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { emptyToNull, parseAccountAmount } from '@/features/accounts/format';
+import { canEditAccountOwnerFields } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { ACCOUNT_COLOR_PRESETS, ACCOUNT_TYPES, CURRENCIES, type Account, type AccountType, type Currency } from '@/features/accounts/types';
 import AccountForm from '@/features/accounts/components/forms/AccountForm.vue';
@@ -26,6 +27,7 @@ const settings = useUserSettingsStore();
 
 const isEdit = computed(() => !!props.account);
 const isFirstOwnedAccount = computed(() => store.ownedAccounts.length === 0);
+const ownerFieldsLocked = computed(() => isEdit.value && !!props.account && !canEditAccountOwnerFields(props.account));
 const canManagePrimary = computed(() => !isEdit.value || (props.account?.isOwned === true && props.account.myRole === 'owner'));
 const showPrimarySwitch = computed(() => {
     if (!canManagePrimary.value) return false;
@@ -100,27 +102,35 @@ async function onSave() {
         localError.message = t('comptesPage.form.errors.nameRequired');
         return;
     }
-    const initialBalance = parseAccountAmount(form.initialBalance);
-    if (initialBalance == null) {
-        localError.message = t('comptesPage.form.errors.balanceInvalid');
-        return;
-    }
 
     try {
         if (props.account) {
+            // Editor : n’envoyer que name / color / accountNumber — les autres champs sont échos (API refuse sinon).
+            const lockOwner = !canEditAccountOwnerFields(props.account);
+            const initialBalance = lockOwner
+                ? props.account.initialBalance
+                : parseAccountAmount(form.initialBalance);
+            if (initialBalance == null) {
+                localError.message = t('comptesPage.form.errors.balanceInvalid');
+                return;
+            }
             const updated = await store.updateAccount(props.account.publicId, {
                 name,
-                type: form.type,
-                // Devise immuable côté client après création (aligné sur le champ disabled).
+                type: lockOwner ? props.account.type : form.type,
                 currency: props.account.currency,
                 initialBalance,
-                iban: emptyToNull(form.iban),
+                iban: lockOwner ? props.account.iban : emptyToNull(form.iban),
                 accountNumber: emptyToNull(form.accountNumber),
                 color: emptyToNull(form.color),
                 isPrimary: props.account.isPrimary
             });
             emit('saved', updated);
         } else {
+            const initialBalance = parseAccountAmount(form.initialBalance);
+            if (initialBalance == null) {
+                localError.message = t('comptesPage.form.errors.balanceInvalid');
+                return;
+            }
             const created = await store.createAccount({
                 name,
                 type: form.type,
@@ -168,6 +178,7 @@ async function onSave() {
             :show-primary-switch="showPrimarySwitch"
             :primary-switch-locked="primarySwitchLocked"
             :primary-switch-hint="primarySwitchHint"
+            :owner-fields-locked="ownerFieldsLocked"
             :type-items="typeItems"
             :currency-items="currencyItems"
         />

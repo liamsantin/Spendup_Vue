@@ -4,6 +4,8 @@ export {
     canViewAccount,
     canCreateAccount,
     canEditAccount,
+    canEditAccountOwnerFields,
+    canWriteBalanceSnapshots,
     canArchiveAccount,
     canRestoreAccount,
     canSetPrimaryAccount,

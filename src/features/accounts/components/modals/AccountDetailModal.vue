@@ -17,6 +17,7 @@ import {
     canManageShares,
     canRestoreAccount,
     canSetPrimaryAccount,
+    canWriteBalanceSnapshots,
     isPrimaryActionBlocked
 } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
@@ -84,6 +85,7 @@ watch(
             const err = AppError.fromUnknown(e);
             localError.value = err.message;
             if (err.status === 404) {
+                store.clearSelected();
                 open.value = false;
                 await router.replace({ path: '/app/finances/comptes', query: { tab: 'Accounts' } });
             }
@@ -331,7 +333,7 @@ async function confirmDelete() {
         </template>
 
         <template v-if="account" #panel-snapshots>
-            <AccountBalanceSnapshotsPanel :account="account" :can-write="canEditAccount(account)" />
+            <AccountBalanceSnapshotsPanel :account="account" :can-write="canWriteBalanceSnapshots(account)" />
         </template>
 
         <template v-if="account" #panel-shares>

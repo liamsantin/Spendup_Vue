@@ -14,6 +14,22 @@ const store = useAccountsStore();
 function formatDate(value: string) {
     return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }
+
+async function onAccept() {
+    try {
+        await store.acceptShare(props.invite.publicId);
+    } catch {
+        /* store.error affiche le message métier (ex. amitié requise) */
+    }
+}
+
+async function onRefuse() {
+    try {
+        await store.refuseShare(props.invite.publicId);
+    } catch {
+        /* store.error */
+    }
+}
 </script>
 
 <template>
@@ -56,7 +72,7 @@ function formatDate(value: string) {
                     variant="flat"
                     color="primary"
                     :disabled="store.acting"
-                    @click.stop="store.acceptShare(props.invite.publicId)"
+                    @click.stop="onAccept"
                 >
                     {{ t('comptesPage.actions.accept') }}
                 </v-btn>
@@ -65,7 +81,7 @@ function formatDate(value: string) {
                     variant="tonal"
                     color="error"
                     :disabled="store.acting"
-                    @click.stop="store.refuseShare(props.invite.publicId)"
+                    @click.stop="onRefuse"
                 >
                     {{ t('comptesPage.actions.refuse') }}
                 </v-btn>

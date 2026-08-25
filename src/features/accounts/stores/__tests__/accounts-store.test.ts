@@ -667,7 +667,6 @@ describe('useAccountsStore', () => {
         await store.createBalanceSnapshot('acc-1', {
             balance: 250,
             snapshotAt: '2026-08-23T12:00:00.000Z',
-            source: 'manual',
             note: 'ok'
         });
         expect(store.balanceSnapshots).toHaveLength(1);
