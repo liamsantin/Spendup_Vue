@@ -21,9 +21,10 @@ const { smAndDown } = useDisplay();
 
 <style scoped>
 .app-modal-panel-scroll {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-height: 0;
     height: 100%;
+    overflow: hidden;
 }
 
 .app-modal-panel-scroll--native {

@@ -159,22 +159,40 @@ const currentTab = computed({
 .app-modal-tabs__body {
     display: flex;
     flex-direction: column;
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-height: 0;
     height: 100%;
+    overflow: hidden;
 }
 
 .app-modal-tabs__window {
-    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
     min-height: 0;
     height: 100%;
+    overflow: hidden;
 }
 
 .app-modal-tabs__window :deep(.v-window__container) {
-    height: 100%;
+    flex: 1 1 0;
+    height: 100% !important;
+    max-height: 100%;
+    min-height: 0;
 }
 
 .app-modal-tabs__item {
+    display: flex;
+    flex-direction: column;
     height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.app-modal-tabs__item > * {
+    flex: 1 1 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
 }
 </style>
