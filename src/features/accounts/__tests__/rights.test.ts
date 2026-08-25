@@ -9,7 +9,8 @@ import {
     canRestoreAccount,
     canSetPrimaryAccount,
     canViewAccount,
-    canWriteBalanceSnapshots
+    canWriteBalanceSnapshots,
+    isSharedAccount
 } from '@/features/accounts/rights';
 import type { Account } from '@/features/accounts/types';
 
@@ -88,9 +89,63 @@ describe('accounts rights', () => {
         expect(canManageShares(account({ myRole: 'editor', isOwned: true }))).toBe(false);
     });
 
+    it('détecte un compte partagé pour l’affichage auteur des relevés', () => {
+        expect(isSharedAccount(account({ isOwned: false }))).toBe(true);
+        expect(isSharedAccount(account({ isOwned: true }), [])).toBe(false);
+        expect(isSharedAccount(account({ isOwned: true }), [{ role: 'pending' }])).toBe(false);
+        expect(isSharedAccount(account({ isOwned: true }), [{ role: 'editor' }])).toBe(true);
+        expect(isSharedAccount(account({ isOwned: true }), [{ role: 'viewer' }])).toBe(true);
+    });
+
     it('autorise restore uniquement sur comptes inactifs éditables', () => {
         expect(canRestoreAccount(account({ isActive: false, myRole: 'editor' }))).toBe(true);
         expect(canRestoreAccount(account({ isActive: true, myRole: 'owner' }))).toBe(false);
         expect(canRestoreAccount(account({ isActive: false, myRole: 'viewer' }))).toBe(false);
+    });
+
+    /**
+     * Matrice QA §4 — actions UI selon myRole.
+     * Voir checklist comptes : owner / editor / viewer.
+     */
+    it('respecte la matrice QA des rôles (checklist §4)', () => {
+        const owner = account({ myRole: 'owner', isOwned: true, isPrimary: false, isActive: true });
+        const editor = account({ myRole: 'editor', isOwned: false, isPrimary: false, isActive: true });
+        const viewer = account({ myRole: 'viewer', isOwned: false, isPrimary: false, isActive: true });
+
+        // Voir liste / détail
+        expect([owner, editor, viewer].every(canViewAccount)).toBe(true);
+
+        // Éditer name / color / accountNumber
+        expect(canEditAccount(owner)).toBe(true);
+        expect(canEditAccount(editor)).toBe(true);
+        expect(canEditAccount(viewer)).toBe(false);
+
+        // Éditer initialBalance / iban / type / currency / isPrimary
+        expect(canEditAccountOwnerFields(owner)).toBe(true);
+        expect(canEditAccountOwnerFields(editor)).toBe(false);
+        expect(canEditAccountOwnerFields(viewer)).toBe(false);
+
+        // Archive / restore
+        expect(canArchiveAccount(owner)).toBe(true);
+        expect(canArchiveAccount(editor)).toBe(true);
+        expect(canArchiveAccount(viewer)).toBe(false);
+        expect(canRestoreAccount({ ...owner, isActive: false })).toBe(true);
+        expect(canRestoreAccount({ ...editor, isActive: false })).toBe(true);
+        expect(canRestoreAccount({ ...viewer, isActive: false })).toBe(false);
+
+        // Delete / primary / manage shares
+        expect(canDeleteAccount(owner)).toBe(true);
+        expect(canDeleteAccount(editor)).toBe(false);
+        expect(canDeleteAccount(viewer)).toBe(false);
+        expect(canSetPrimaryAccount(owner)).toBe(true);
+        expect(canSetPrimaryAccount(editor)).toBe(false);
+        expect(canManageShares(owner)).toBe(true);
+        expect(canManageShares(editor)).toBe(false);
+        expect(canManageShares(viewer)).toBe(false);
+
+        // Create / delete relevés
+        expect(canWriteBalanceSnapshots(owner)).toBe(true);
+        expect(canWriteBalanceSnapshots(editor)).toBe(true);
+        expect(canWriteBalanceSnapshots(viewer)).toBe(false);
     });
 });

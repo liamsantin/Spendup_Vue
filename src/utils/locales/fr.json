@@ -381,6 +381,8 @@
             "matched": "À jour",
             "mismatch": "Écart détecté",
             "history": "Historique",
+            "createdBy": "Par {name}",
+            "createdByUnknown": "Auteur inconnu",
             "sources": {
                 "manual": "Manuel",
                 "bank_import": "Import bancaire",

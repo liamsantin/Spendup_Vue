@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { formatSnapshotDate, parseAccountAmount, todayYmd, ymdToSnapshotIso } from '@/features/accounts/format';
+import {
+    emptyToNull,
+    formatAccountBalance,
+    formatSnapshotDate,
+    parseAccountAmount,
+    todayYmd,
+    ymdToSnapshotIso
+} from '@/features/accounts/format';
 
 describe('snapshot date helpers', () => {
-    it('ymdToSnapshotIso utilise midi UTC (pas de décalage de jour)', () => {
+    it('ymdToSnapshotIso utilise midi UTC avec suffixe Z (checklist §5)', () => {
         expect(ymdToSnapshotIso('2026-08-23')).toBe('2026-08-23T12:00:00.000Z');
         expect(ymdToSnapshotIso(' 2026-01-01 ')).toBe('2026-01-01T12:00:00.000Z');
+        expect(ymdToSnapshotIso('2026-08-23').endsWith('Z')).toBe(true);
     });
 
     it('ymdToSnapshotIso ne décale pas vs minuit local → toISOString', () => {
@@ -46,5 +54,24 @@ describe('parseAccountAmount', () => {
         expect(parseAccountAmount(Number.NaN)).toBeNull();
         expect(parseAccountAmount(Number.POSITIVE_INFINITY)).toBeNull();
         expect(parseAccountAmount(Number('abc'))).toBeNull();
+    });
+});
+
+describe('emptyToNull (PUT owner — checklist §2)', () => {
+    it('vide iban / accountNumber / color en null', () => {
+        expect(emptyToNull('')).toBeNull();
+        expect(emptyToNull('   ')).toBeNull();
+        expect(emptyToNull(null)).toBeNull();
+        expect(emptyToNull(undefined)).toBeNull();
+        expect(emptyToNull('CH93…')).toBe('CH93…');
+        expect(emptyToNull('  #4F46E5  ')).toBe('#4F46E5');
+    });
+});
+
+describe('formatAccountBalance', () => {
+    it('affiche currentBalance / initialBalance avec la devise', () => {
+        const formatted = formatAccountBalance(100, 'CHF', 'fr-CH');
+        expect(formatted).toMatch(/100/);
+        expect(formatted.toUpperCase()).toMatch(/CHF|FR\./);
     });
 });

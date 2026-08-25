@@ -381,6 +381,8 @@
             "matched": "Up to date",
             "mismatch": "Difference found",
             "history": "History",
+            "createdBy": "By {name}",
+            "createdByUnknown": "Unknown author",
             "sources": {
                 "manual": "Manual",
                 "bank_import": "Bank import",

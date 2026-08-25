@@ -488,7 +488,10 @@ describe('useAccountsStore', () => {
                         source: 'manual',
                         note: null,
                         createdAt: '2026-01-02T00:00:00Z',
-                        updatedAt: null
+                        updatedAt: null,
+                        createdByUserPublicId: null,
+                        createdByDisplayName: null,
+                        createdByPhotoUrl: null
                     }
                 ]
             });
@@ -513,7 +516,10 @@ describe('useAccountsStore', () => {
                     source: 'manual',
                     note: null,
                     createdAt: '2026-01-01T00:00:00Z',
-                    updatedAt: null
+                    updatedAt: null,
+                    createdByUserPublicId: null,
+                    createdByDisplayName: null,
+                    createdByPhotoUrl: null
                 }
             ]
         });
@@ -580,7 +586,10 @@ describe('useAccountsStore', () => {
                     source: 'manual',
                     note: null,
                     createdAt: '2026-01-01T12:00:00.000Z',
-                    updatedAt: null
+                    updatedAt: null,
+                    createdByUserPublicId: null,
+                    createdByDisplayName: null,
+                    createdByPhotoUrl: null
                 }
             ]
         });
@@ -686,7 +695,10 @@ describe('useAccountsStore', () => {
             source: 'manual',
             note: 'ok',
             createdAt: '2026-08-23T12:00:00.000Z',
-            updatedAt: null
+            updatedAt: null,
+            createdByUserPublicId: 'u1',
+            createdByDisplayName: 'Alice',
+            createdByPhotoUrl: null
         });
         api.deleteBalanceSnapshot.mockResolvedValue(undefined);
 

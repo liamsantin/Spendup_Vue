@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CalendarIcon, PlusIcon, Receipt2Icon, TrashIcon } from 'vue-tabler-icons';
+import { CalendarIcon, PlusIcon, Receipt2Icon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import type { PerfectScrollbarExpose } from 'vue3-perfect-scrollbar';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
@@ -9,9 +9,11 @@ import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { formatAccountBalance, formatSnapshotDate } from '@/features/accounts/format';
+import { canManageShares, isSharedAccount } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { Account, AccountBalanceSnapshot } from '@/features/accounts/types';
 import AccountSnapshotAddModal from '@/features/accounts/components/modals/AccountSnapshotAddModal.vue';
+import AccountBalanceSnapshotItem from '@/features/accounts/components/panels/AccountBalanceSnapshotItem.vue';
 
 const props = defineProps<{
     account: Account;
@@ -43,6 +45,8 @@ const deleteOpen = computed({
 
 const latestSnapshot = computed(() => store.balanceSnapshots[0] ?? null);
 
+const showAuthors = computed(() => isSharedAccount(props.account, store.shares));
+
 const balanceDiff = computed(() => {
     if (!latestSnapshot.value) return null;
     return props.account.currentBalance - latestSnapshot.value.balance;
@@ -58,6 +62,10 @@ const diffColor = computed(() => {
 
 function formatDate(value: string) {
     return formatSnapshotDate(value, locale.value);
+}
+
+function authorLabel(name: string | null) {
+    return name?.trim() ? t('comptesPage.snapshots.createdBy', { name }) : t('comptesPage.snapshots.createdByUnknown');
 }
 
 async function refreshHistoryScrollbar() {
@@ -80,7 +88,12 @@ function bindHistoryResizeObserver() {
 watch(
     () => props.account.publicId,
     (id) => {
-        if (id) void store.loadBalanceSnapshots(id).catch(() => undefined);
+        if (!id) return;
+        void store.loadBalanceSnapshots(id).catch(() => undefined);
+        // Owner : charger les shares pour savoir si le compte est partagé (affichage auteur).
+        if (canManageShares(props.account)) {
+            void store.loadShares(id).catch(() => undefined);
+        }
     },
     { immediate: true }
 );
@@ -156,6 +169,9 @@ async function confirmDelete() {
                             <CalendarIcon size="14" stroke-width="1.5" />
                             <span>{{ formatDate(latestSnapshot.snapshotAt) }}</span>
                         </div>
+                        <div v-if="showAuthors" class="text-body-2 text-medium-emphasis mt-1">
+                            {{ authorLabel(latestSnapshot.createdByDisplayName) }}
+                        </div>
                     </div>
 
                     <div v-if="balanceDiff !== null" class="snapshots-summary__metric snapshots-summary__metric--diff">
@@ -197,43 +213,16 @@ async function confirmDelete() {
                 <div ref="historyListRef" class="snapshots-history__list">
                     <div v-if="smAndDown" class="snapshots-history__scroll snapshots-history__scroll--native">
                         <div class="snapshots-list">
-                            <div
+                            <AccountBalanceSnapshotItem
                                 v-for="snapshot in store.balanceSnapshots"
                                 :key="snapshot.publicId"
-                                class="snapshots-list__item"
-                            >
-                                <div class="snapshots-list__body min-width-0">
-                                    <div class="d-flex align-center justify-space-between ga-2">
-                                        <div class="text-body-1 font-weight-bold text-truncate">
-                                            {{ formatAccountBalance(snapshot.balance, account.currency, locale) }}
-                                        </div>
-                                        <div class="d-flex align-center ga-1 flex-shrink-0">
-                                            <v-chip size="x-small" variant="tonal" color="primary">
-                                                {{ t(`comptesPage.snapshots.sources.${snapshot.source}`) }}
-                                            </v-chip>
-                                            <v-btn
-                                                v-if="canWrite"
-                                                size="x-small"
-                                                variant="text"
-                                                color="error"
-                                                :disabled="store.acting"
-                                                :icon="true"
-                                                :aria-label="t('comptesPage.snapshots.deleteModal.confirm')"
-                                                @click="deleteTarget = snapshot"
-                                            >
-                                                <TrashIcon size="16" />
-                                            </v-btn>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-center ga-1 text-caption text-medium-emphasis">
-                                        <CalendarIcon size="12" stroke-width="1.5" />
-                                        <span>{{ formatDate(snapshot.snapshotAt) }}</span>
-                                    </div>
-                                    <div v-if="snapshot.note" class="text-caption text-medium-emphasis text-truncate">
-                                        {{ snapshot.note }}
-                                    </div>
-                                </div>
-                            </div>
+                                :snapshot="snapshot"
+                                :currency="account.currency"
+                                :can-write="canWrite"
+                                :show-author="showAuthors"
+                                :acting="store.acting"
+                                @delete="deleteTarget = $event"
+                            />
                         </div>
                     </div>
                     <PerfectScrollbar
@@ -243,43 +232,16 @@ async function confirmDelete() {
                         :options="historyScrollbarOptions"
                     >
                         <div class="snapshots-list">
-                            <div
+                            <AccountBalanceSnapshotItem
                                 v-for="snapshot in store.balanceSnapshots"
                                 :key="snapshot.publicId"
-                                class="snapshots-list__item"
-                            >
-                                <div class="snapshots-list__body min-width-0">
-                                    <div class="d-flex align-center justify-space-between ga-2">
-                                        <div class="text-body-1 font-weight-bold text-truncate">
-                                            {{ formatAccountBalance(snapshot.balance, account.currency, locale) }}
-                                        </div>
-                                        <div class="d-flex align-center ga-1 flex-shrink-0">
-                                            <v-chip size="x-small" variant="tonal" color="primary">
-                                                {{ t(`comptesPage.snapshots.sources.${snapshot.source}`) }}
-                                            </v-chip>
-                                            <v-btn
-                                                v-if="canWrite"
-                                                size="x-small"
-                                                variant="text"
-                                                color="error"
-                                                :disabled="store.acting"
-                                                :icon="true"
-                                                :aria-label="t('comptesPage.snapshots.deleteModal.confirm')"
-                                                @click="deleteTarget = snapshot"
-                                            >
-                                                <TrashIcon size="16" />
-                                            </v-btn>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-center ga-1 text-caption text-medium-emphasis">
-                                        <CalendarIcon size="12" stroke-width="1.5" />
-                                        <span>{{ formatDate(snapshot.snapshotAt) }}</span>
-                                    </div>
-                                    <div v-if="snapshot.note" class="text-caption text-medium-emphasis text-truncate">
-                                        {{ snapshot.note }}
-                                    </div>
-                                </div>
-                            </div>
+                                :snapshot="snapshot"
+                                :currency="account.currency"
+                                :can-write="canWrite"
+                                :show-author="showAuthors"
+                                :acting="store.acting"
+                                @delete="deleteTarget = $event"
+                            />
                         </div>
                     </PerfectScrollbar>
                 </div>
@@ -392,24 +354,6 @@ async function confirmDelete() {
     flex-direction: column;
     gap: 4px;
     padding-right: 4px;
-}
-
-.snapshots-list__item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    border-radius: 8px;
-    background: rgb(var(--v-theme-surface));
-    border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-}
-
-.snapshots-list__body {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
 }
 
 .snapshots-empty {

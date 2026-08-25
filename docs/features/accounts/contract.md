@@ -23,6 +23,13 @@
 | POST    | `/api/accounts`, `…/primary`, `…/archive`, `…/restore`, `…/shares`, `…/shares/{id}/accept\|refuse`  |
 | PUT     | `/api/accounts/{id}` (état **complet**), `/api/accounts/{id}/shares/{userPublicId}`                 |
 | DELETE  | `/api/accounts/{id}`, `/api/accounts/{id}/shares/{userPublicId}` → **204**                          |
+| GET/POST| `/api/accounts/{id}/balance-snapshots` — items incluent `createdByUserPublicId` / `createdByDisplayName` / `createdByPhotoUrl` (nullable) |
+| DELETE  | `/api/accounts/{id}/balance-snapshots/{snapshotId}` → **204**                                        |
+
+## Relevés — auteur
+
+- L’API expose toujours l’auteur sur chaque relevé (null si inconnu / soft-deleted).
+- UI : afficher l’auteur **uniquement** si le compte est partagé (`!isOwned` ou partage accepté côté owner).
 
 ## Invariants
 
@@ -65,5 +72,6 @@ Mémoire process. `reset()` désabonne les listeners (logout).
 - `stores/__tests__/accounts-store.test.ts`
 - `__tests__/rights.test.ts`
 - `__tests__/format.test.ts`
+- `__tests__/qa-checklist.test.ts` (checklist QA frontend, API mockée)
 - `src/utils/helpers/__tests__/resource-cache.test.ts`
 - `src/features/friends/__tests__/list-all.test.ts`

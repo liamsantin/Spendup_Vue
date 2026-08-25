@@ -1,7 +1,19 @@
-import type { Account, AccountRole } from '@/features/accounts/types';
+import type { Account, AccountRole, AccountShare } from '@/features/accounts/types';
 
 export function canViewAccount(account: Pick<Account, 'myRole'>): boolean {
     return account.myRole === 'owner' || account.myRole === 'editor' || account.myRole === 'viewer';
+}
+
+/**
+ * Compte partagé : reçu (`!isOwned`) ou possédé avec au moins un partage accepté.
+ * Utilisé pour afficher l’auteur des relevés de solde.
+ */
+export function isSharedAccount(
+    account: Pick<Account, 'isOwned'>,
+    shares: Pick<AccountShare, 'role'>[] = []
+): boolean {
+    if (!account.isOwned) return true;
+    return shares.some((s) => s.role === 'viewer' || s.role === 'editor');
 }
 
 export function canCreateAccount(): boolean {

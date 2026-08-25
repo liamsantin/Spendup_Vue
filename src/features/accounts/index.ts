@@ -11,6 +11,7 @@ export {
     canSetPrimaryAccount,
     canDeleteAccount,
     canManageShares,
+    isSharedAccount,
     isPrimaryActionBlocked,
     roleLabelKey
 } from '@/features/accounts/rights';

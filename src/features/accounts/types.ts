@@ -104,6 +104,10 @@ export type AccountBalanceSnapshot = {
     note: string | null;
     createdAt: string;
     updatedAt: string | null;
+    /** Auteur du relevé — peut être null si inconnu / soft-deleted. */
+    createdByUserPublicId: string | null;
+    createdByDisplayName: string | null;
+    createdByPhotoUrl: string | null;
 };
 
 export type AccountBalanceSnapshotsListResult = {
