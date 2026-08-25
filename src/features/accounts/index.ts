@@ -11,6 +11,7 @@ export {
     canSetPrimaryAccount,
     canDeleteAccount,
     canManageShares,
+    canLeaveAccountShare,
     isSharedAccount,
     isPrimaryActionBlocked,
     roleLabelKey

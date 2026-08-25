@@ -51,6 +51,16 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
                 cache.invalidate(`shares:${selectedAccount.value.publicId}`);
                 void loadShares(selectedAccount.value.publicId, true).catch(() => undefined);
             }
+            return;
+        }
+        if (type === 'accountShareLeft') {
+            // Un destinataire a quitté : owner rafraîchit la liste des shares.
+            cache.invalidate(KEY_ACCOUNTS);
+            void loadAccounts(true).catch(() => undefined);
+            if (selectedAccount.value?.isOwned) {
+                cache.invalidate(`shares:${selectedAccount.value.publicId}`);
+                void loadShares(selectedAccount.value.publicId, true).catch(() => undefined);
+            }
         }
     }
 

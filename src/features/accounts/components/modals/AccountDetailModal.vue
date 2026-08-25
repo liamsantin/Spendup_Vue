@@ -14,6 +14,7 @@ import {
     canArchiveAccount,
     canDeleteAccount,
     canEditAccount,
+    canLeaveAccountShare,
     canManageShares,
     canRestoreAccount,
     canSetPrimaryAccount,
@@ -43,6 +44,7 @@ const editOpen = ref(false);
 const archiveOpen = ref(false);
 const restoreOpen = ref(false);
 const deleteOpen = ref(false);
+const leaveOpen = ref(false);
 const suggestArchiveOpen = ref(false);
 const localError = ref<string | null>(null);
 const activeTab = ref<'details' | 'snapshots' | 'shares'>('details');
@@ -67,7 +69,13 @@ const detailTabs = computed(() => [
 const hasOverflowActions = computed(() => {
     const current = account.value;
     if (!current) return false;
-    return isPrimaryActionBlocked(current) || canArchiveAccount(current) || canRestoreAccount(current) || canDeleteAccount(current);
+    return (
+        isPrimaryActionBlocked(current) ||
+        canArchiveAccount(current) ||
+        canRestoreAccount(current) ||
+        canDeleteAccount(current) ||
+        canLeaveAccountShare(current)
+    );
 });
 
 watch(
@@ -152,6 +160,18 @@ async function confirmDelete() {
         if (err.status === 400 && canArchiveAccount(account.value)) {
             suggestArchiveOpen.value = true;
         }
+    }
+}
+
+async function confirmLeave() {
+    if (!account.value) return;
+    localError.value = null;
+    try {
+        await store.leaveShare(account.value.publicId);
+        leaveOpen.value = false;
+        open.value = false;
+    } catch (e: unknown) {
+        localError.value = getErrorMessage(e);
     }
 }
 </script>
@@ -282,6 +302,16 @@ async function confirmDelete() {
                         >
                             {{ t('comptesPage.actions.delete') }}
                         </v-btn>
+                        <v-btn
+                            v-if="canLeaveAccountShare(account)"
+                            variant="tonal"
+                            size="small"
+                            color="error"
+                            :disabled="store.acting"
+                            @click="leaveOpen = true"
+                        >
+                            {{ t('comptesPage.actions.leave') }}
+                        </v-btn>
                     </template>
 
                     <v-menu v-else-if="hasOverflowActions" location="bottom end">
@@ -325,6 +355,12 @@ async function confirmDelete() {
                                 class="text-error"
                                 :title="t('comptesPage.actions.delete')"
                                 @click="deleteOpen = true"
+                            />
+                            <v-list-item
+                                v-if="canLeaveAccountShare(account)"
+                                class="text-error"
+                                :title="t('comptesPage.actions.leave')"
+                                @click="leaveOpen = true"
                             />
                         </v-list>
                     </v-menu>
@@ -378,6 +414,16 @@ async function confirmDelete() {
         confirm-color="error"
         :loading="store.acting"
         @confirm="confirmDelete"
+    />
+
+    <AppConfirmationModal
+        v-model="leaveOpen"
+        :title="t('comptesPage.modals.leave.title')"
+        :message="t('comptesPage.modals.leave.body')"
+        :confirm-label="t('comptesPage.actions.leave')"
+        confirm-color="error"
+        :loading="store.acting"
+        @confirm="confirmLeave"
     />
 
     <AppConfirmationModal

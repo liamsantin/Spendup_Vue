@@ -267,6 +267,7 @@
             "archive": "Archive",
             "restore": "Restore",
             "delete": "Delete",
+            "leave": "Leave",
             "accept": "Accept",
             "refuse": "Refuse"
         },
@@ -365,6 +366,10 @@
             "deleteBlocked": {
                 "title": "Cannot delete",
                 "body": "This account has movements. You can archive it instead."
+            },
+            "leave": {
+                "title": "Leave this shared account?",
+                "body": "You will lose access to this account. The owner will be notified."
             }
         },
         "snapshots": {

@@ -91,7 +91,11 @@ export function isFriendNotificationType(type: string): boolean {
 /** Types partage de comptes produits en inbox. */
 export function isAccountShareNotificationType(type: string): boolean {
     return (
-        type === 'accountShareInvite' || type === 'accountShareAccepted' || type === 'accountShareRefused' || type === 'accountShareRevoked'
+        type === 'accountShareInvite' ||
+        type === 'accountShareAccepted' ||
+        type === 'accountShareRefused' ||
+        type === 'accountShareRevoked' ||
+        type === 'accountShareLeft'
     );
 }
 
@@ -102,6 +106,7 @@ function accountsTabForType(type: NotificationType | string): 'Accounts' | 'Invi
         case 'accountShareAccepted':
         case 'accountShareRefused':
         case 'accountShareRevoked':
+        case 'accountShareLeft':
             return 'Accounts';
         default:
             return null;

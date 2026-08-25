@@ -5,6 +5,7 @@ import {
     canDeleteAccount,
     canEditAccount,
     canEditAccountOwnerFields,
+    canLeaveAccountShare,
     canManageShares,
     canRestoreAccount,
     canSetPrimaryAccount,
@@ -89,6 +90,12 @@ describe('accounts rights', () => {
         expect(canManageShares(account({ myRole: 'editor', isOwned: true }))).toBe(false);
     });
 
+    it('autorise restore uniquement sur comptes inactifs éditables', () => {
+        expect(canRestoreAccount(account({ isActive: false, myRole: 'editor' }))).toBe(true);
+        expect(canRestoreAccount(account({ isActive: true, myRole: 'owner' }))).toBe(false);
+        expect(canRestoreAccount(account({ isActive: false, myRole: 'viewer' }))).toBe(false);
+    });
+
     it('détecte un compte partagé pour l’affichage auteur des relevés', () => {
         expect(isSharedAccount(account({ isOwned: false }))).toBe(true);
         expect(isSharedAccount(account({ isOwned: true }), [])).toBe(false);
@@ -97,10 +104,11 @@ describe('accounts rights', () => {
         expect(isSharedAccount(account({ isOwned: true }), [{ role: 'viewer' }])).toBe(true);
     });
 
-    it('autorise restore uniquement sur comptes inactifs éditables', () => {
-        expect(canRestoreAccount(account({ isActive: false, myRole: 'editor' }))).toBe(true);
-        expect(canRestoreAccount(account({ isActive: true, myRole: 'owner' }))).toBe(false);
-        expect(canRestoreAccount(account({ isActive: false, myRole: 'viewer' }))).toBe(false);
+    it('autorise leave uniquement pour destinataire viewer/editor', () => {
+        expect(canLeaveAccountShare(account({ isOwned: false, myRole: 'viewer' }))).toBe(true);
+        expect(canLeaveAccountShare(account({ isOwned: false, myRole: 'editor' }))).toBe(true);
+        expect(canLeaveAccountShare(account({ isOwned: true, myRole: 'owner' }))).toBe(false);
+        expect(canLeaveAccountShare(account({ isOwned: false, myRole: 'owner' }))).toBe(false);
     });
 
     /**
@@ -112,20 +120,16 @@ describe('accounts rights', () => {
         const editor = account({ myRole: 'editor', isOwned: false, isPrimary: false, isActive: true });
         const viewer = account({ myRole: 'viewer', isOwned: false, isPrimary: false, isActive: true });
 
-        // Voir liste / détail
         expect([owner, editor, viewer].every(canViewAccount)).toBe(true);
 
-        // Éditer name / color / accountNumber
         expect(canEditAccount(owner)).toBe(true);
         expect(canEditAccount(editor)).toBe(true);
         expect(canEditAccount(viewer)).toBe(false);
 
-        // Éditer initialBalance / iban / type / currency / isPrimary
         expect(canEditAccountOwnerFields(owner)).toBe(true);
         expect(canEditAccountOwnerFields(editor)).toBe(false);
         expect(canEditAccountOwnerFields(viewer)).toBe(false);
 
-        // Archive / restore
         expect(canArchiveAccount(owner)).toBe(true);
         expect(canArchiveAccount(editor)).toBe(true);
         expect(canArchiveAccount(viewer)).toBe(false);
@@ -133,7 +137,6 @@ describe('accounts rights', () => {
         expect(canRestoreAccount({ ...editor, isActive: false })).toBe(true);
         expect(canRestoreAccount({ ...viewer, isActive: false })).toBe(false);
 
-        // Delete / primary / manage shares
         expect(canDeleteAccount(owner)).toBe(true);
         expect(canDeleteAccount(editor)).toBe(false);
         expect(canDeleteAccount(viewer)).toBe(false);
@@ -143,9 +146,12 @@ describe('accounts rights', () => {
         expect(canManageShares(editor)).toBe(false);
         expect(canManageShares(viewer)).toBe(false);
 
-        // Create / delete relevés
         expect(canWriteBalanceSnapshots(owner)).toBe(true);
         expect(canWriteBalanceSnapshots(editor)).toBe(true);
         expect(canWriteBalanceSnapshots(viewer)).toBe(false);
+
+        expect(canLeaveAccountShare(owner)).toBe(false);
+        expect(canLeaveAccountShare(editor)).toBe(true);
+        expect(canLeaveAccountShare(viewer)).toBe(true);
     });
 });

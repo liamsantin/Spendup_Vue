@@ -22,7 +22,8 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         cache,
         clearError,
         setSharesForAccount,
-        activateSharesView
+        activateSharesView,
+        removeAccountLocal
     } = state;
 
     /** Incrémente à chaque `loadShares` — ignore les réponses tardives d’un autre compte. */
@@ -172,6 +173,25 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
     }
 
     /**
+     * Quitte un partage actif (destinataire) et retire le compte de la liste locale.
+     * @param accountPublicId Identifiant public du compte partagé.
+     */
+    async function leaveShare(accountPublicId: string) {
+        acting.value = true;
+        clearError();
+        try {
+            await accountsApi.leaveShare(accountPublicId);
+            removeAccountLocal(accountPublicId);
+            cache.touch(KEY_ACCOUNTS);
+        } catch (e: unknown) {
+            error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            acting.value = false;
+        }
+    }
+
+    /**
      * Accepte une invitation et recharge la liste des comptes.
      * @param sharePublicId Identifiant public de l’invitation.
      */
@@ -229,6 +249,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         inviteShare,
         updateShareRole,
         revokeShare,
+        leaveShare,
         acceptShare,
         refuseShare,
         refreshAll

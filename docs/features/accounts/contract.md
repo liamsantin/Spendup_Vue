@@ -20,7 +20,7 @@
 | Méthode | Endpoint                                                                                            |
 | ------- | --------------------------------------------------------------------------------------------------- |
 | GET     | `/api/accounts`, `/api/accounts/{id}`, `/api/accounts/{id}/shares`, `/api/accounts/shares/incoming` |
-| POST    | `/api/accounts`, `…/primary`, `…/archive`, `…/restore`, `…/shares`, `…/shares/{id}/accept\|refuse`  |
+| POST    | `/api/accounts`, `…/primary`, `…/archive`, `…/restore`, `…/shares`, `…/shares/leave`, `…/shares/{id}/accept\|refuse`  |
 | PUT     | `/api/accounts/{id}` (état **complet**), `/api/accounts/{id}/shares/{userPublicId}`                 |
 | DELETE  | `/api/accounts/{id}`, `/api/accounts/{id}/shares/{userPublicId}` → **204**                          |
 | GET/POST| `/api/accounts/{id}/balance-snapshots` — items incluent `createdByUserPublicId` / `createdByDisplayName` / `createdByPhotoUrl` (nullable) |
@@ -53,6 +53,7 @@ Mémoire process via `createResourceCache` (`src/utils/helpers/resource-cache.ts
 - Après `loadAccounts`, `syncSelectedWithList()` vide la sélection si le compte a disparu (revoke / amitié).
 - `accountShareRevoked` (revoke manuel **ou** soft-delete owner) : `removeAccountLocal` immédiat via `metadata.accountPublicId`, puis sync liste en arrière-plan.
 - `accountChanged` (`archived` / `restored`) : patch local `isActive` + refetch liste (pas d’inbox). Filet page : refetch au `visibilitychange`.
+- Destinataire d’un partage actif : bouton **Quitter** → `POST …/shares/leave` ; owner reçoit `accountShareLeft` (inbox + SignalR) et rafraîchit les shares.
 
 ### Budget de requêtes
 

@@ -68,6 +68,12 @@ export const accountsApi = {
         ) as Promise<void>;
     },
 
+    leaveShare(accountPublicId: string) {
+        return fetchWrapper.post(
+            `/api/accounts/${encodeURIComponent(accountPublicId)}/shares/leave`
+        ) as Promise<void>;
+    },
+
     listIncomingShares() {
         return fetchWrapper.get('/api/accounts/shares/incoming') as Promise<IncomingAccountSharesResult>;
     },

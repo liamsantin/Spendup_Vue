@@ -267,6 +267,7 @@
             "archive": "Archiver",
             "restore": "Restaurer",
             "delete": "Supprimer",
+            "leave": "Quitter",
             "accept": "Accepter",
             "refuse": "Refuser"
         },
@@ -365,6 +366,10 @@
             "deleteBlocked": {
                 "title": "Suppression impossible",
                 "body": "Ce compte a des mouvements. Vous pouvez l’archiver à la place."
+            },
+            "leave": {
+                "title": "Quitter ce partage ?",
+                "body": "Vous perdrez l’accès à ce compte. Le propriétaire en sera informé."
             }
         },
         "snapshots": {

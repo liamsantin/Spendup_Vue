@@ -91,6 +91,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         inviteShare: shares.inviteShare,
         updateShareRole: shares.updateShareRole,
         revokeShare: shares.revokeShare,
+        leaveShare: shares.leaveShare,
         acceptShare: shares.acceptShare,
         refuseShare: shares.refuseShare,
         refreshAll: shares.refreshAll,

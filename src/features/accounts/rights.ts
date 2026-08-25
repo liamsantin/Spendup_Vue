@@ -62,6 +62,12 @@ export function canManageShares(account: Pick<Account, 'myRole' | 'isOwned'>): b
     return account.isOwned && account.myRole === 'owner';
 }
 
+/** Quitter un partage actif — destinataire uniquement (`isOwned: false`). */
+export function canLeaveAccountShare(account: Pick<Account, 'isOwned' | 'myRole'>): boolean {
+    if (account.isOwned) return false;
+    return account.myRole === 'viewer' || account.myRole === 'editor';
+}
+
 export function isPrimaryActionBlocked(account: Pick<Account, 'isPrimary'>): boolean {
     return account.isPrimary;
 }

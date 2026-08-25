@@ -16,6 +16,7 @@ export type NotificationType =
     | 'accountShareAccepted'
     | 'accountShareRefused'
     | 'accountShareRevoked'
+    | 'accountShareLeft'
     | 'other'
     | (string & {});
 

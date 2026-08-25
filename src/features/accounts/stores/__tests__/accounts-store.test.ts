@@ -15,6 +15,7 @@ const api = vi.hoisted(() => ({
     inviteShare: vi.fn(),
     updateShareRole: vi.fn(),
     revokeShare: vi.fn(),
+    leaveShare: vi.fn(),
     listIncomingShares: vi.fn(),
     acceptShare: vi.fn(),
     refuseShare: vi.fn(),
@@ -41,6 +42,7 @@ vi.mock('../../api', () => ({
         inviteShare: (...args: unknown[]) => api.inviteShare(...args),
         updateShareRole: (...args: unknown[]) => api.updateShareRole(...args),
         revokeShare: (...args: unknown[]) => api.revokeShare(...args),
+        leaveShare: (...args: unknown[]) => api.leaveShare(...args),
         listIncomingShares: (...args: unknown[]) => api.listIncomingShares(...args),
         acceptShare: (...args: unknown[]) => api.acceptShare(...args),
         refuseShare: (...args: unknown[]) => api.refuseShare(...args),
@@ -718,6 +720,31 @@ describe('useAccountsStore', () => {
         await store.revokeShare('acc-1', 'u2');
         expect(api.revokeShare).toHaveBeenCalledWith('acc-1', 'u2');
         expect(store.shares).toHaveLength(0);
+    });
+
+    it('leaveShare retire le compte partagé de la liste locale', async () => {
+        const shared = {
+            ...ownedAccount,
+            publicId: 'acc-shared',
+            name: 'Partagé',
+            isOwned: false,
+            myRole: 'editor' as const,
+            isPrimary: false
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount, shared] });
+        api.get.mockResolvedValue(shared);
+        api.leaveShare.mockResolvedValue(undefined);
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-shared');
+        expect(store.selectedAccount?.publicId).toBe('acc-shared');
+
+        await store.leaveShare('acc-shared');
+
+        expect(api.leaveShare).toHaveBeenCalledWith('acc-shared');
+        expect(store.accounts.some((a) => a.publicId === 'acc-shared')).toBe(false);
+        expect(store.selectedAccount).toBeNull();
     });
 
     it('createBalanceSnapshot et deleteBalanceSnapshot patchent la liste locale', async () => {

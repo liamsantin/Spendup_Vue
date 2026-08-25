@@ -42,7 +42,7 @@ Hub `{apiBase}/hubs/realtime` — détails `architecture/realtime.md`.
 ## Invariants
 
 - Types inbox produit (amis) : `friendRequest`, `friendAccepted` ; anciens types friend encore deep-linkables.
-- Types inbox produit (comptes) : `accountShareInvite`, `accountShareAccepted`, `accountShareRefused`, `accountShareRevoked`.
+- Types inbox produit (comptes) : `accountShareInvite`, `accountShareAccepted`, `accountShareRefused`, `accountShareRevoked`, `accountShareLeft`.
 - Chips live : `friendRequest`, `friendAccepted`, `accountShareInvite`.
 - Prefs push (`pushNotifications` + sous-flags) :
     - **Web** : gate les **chips live** uniquement — **pas** inbox, badge, ni refresh friends / comptes.
