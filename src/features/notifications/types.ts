@@ -86,6 +86,14 @@ export type FriendshipChangedPayload = {
     friendshipPublicId: string;
 };
 
+/** Payload SignalR `accountChanged` — sync archive/restore sans inbox. */
+export type AccountChange = 'archived' | 'restored';
+
+export type AccountChangedPayload = {
+    change: AccountChange;
+    accountPublicId: string;
+};
+
 export type NotificationsListQuery = {
     page?: number;
     pageSize?: number;

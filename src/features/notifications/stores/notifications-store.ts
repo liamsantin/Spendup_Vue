@@ -52,6 +52,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         subscribeToFriendNotifications: hub.subscribeToFriendNotifications,
         subscribeToAccountShareNotifications: hub.subscribeToAccountShareNotifications,
         subscribeToFriendshipChanged: hub.subscribeToFriendshipChanged,
+        subscribeToAccountChanged: hub.subscribeToAccountChanged,
         dismissLiveFriendChip: native.dismissLiveFriendChip,
         dismissLiveFriendChipsByNotificationId: native.dismissLiveFriendChipsByNotificationId,
         fetchUnreadCount: inbox.fetchUnreadCount,

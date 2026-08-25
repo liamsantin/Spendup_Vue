@@ -12,7 +12,7 @@
 | Store     | `useAccountsStore`                                                                         |
 | API       | `accountsApi` → **`fetchWrapper`**                                                         |
 | Droits UI | `rights.ts` branché sur `myRole` / `isOwned` / `isPrimary`                                 |
-| Realtime  | Notifs `accountShare*` + `friendshipChanged` (`removed`/`blocked`) via notifications store |
+| Realtime  | Notifs `accountShare*` + SignalR `accountChanged` (archive/restore) + `friendshipChanged` via notifications store |
 | Dashboard | Module Comptes actif → `/app/finances/comptes`                                             |
 
 ## HTTP
@@ -52,6 +52,7 @@ Mémoire process via `createResourceCache` (`src/utils/helpers/resource-cache.ts
 - Mutations : patch local (`upsert` / filtre incoming) ; `acceptShare` recharge la liste comptes (le nouvel accès n’est pas dans le payload).
 - Après `loadAccounts`, `syncSelectedWithList()` vide la sélection si le compte a disparu (revoke / amitié).
 - `accountShareRevoked` (revoke manuel **ou** soft-delete owner) : `removeAccountLocal` immédiat via `metadata.accountPublicId`, puis sync liste en arrière-plan.
+- `accountChanged` (`archived` / `restored`) : patch local `isActive` + refetch liste (pas d’inbox). Filet page : refetch au `visibilitychange`.
 
 ### Budget de requêtes
 

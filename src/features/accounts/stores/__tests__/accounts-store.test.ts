@@ -25,6 +25,7 @@ const api = vi.hoisted(() => ({
 
 const subscribeToAccountShareNotifications = vi.fn();
 const subscribeToFriendshipChanged = vi.fn();
+const subscribeToAccountChanged = vi.fn();
 
 vi.mock('../../api', () => ({
     accountsApi: {
@@ -52,7 +53,8 @@ vi.mock('../../api', () => ({
 vi.mock('@/features/notifications', () => ({
     useNotificationsStore: () => ({
         subscribeToAccountShareNotifications,
-        subscribeToFriendshipChanged
+        subscribeToFriendshipChanged,
+        subscribeToAccountChanged
     })
 }));
 
@@ -96,6 +98,7 @@ describe('useAccountsStore', () => {
         Object.values(api).forEach((mock) => mock.mockReset());
         subscribeToAccountShareNotifications.mockReset().mockReturnValue(() => undefined);
         subscribeToFriendshipChanged.mockReset().mockReturnValue(() => undefined);
+        subscribeToAccountChanged.mockReset().mockReturnValue(() => undefined);
         vi.useRealTimers();
     });
 
@@ -222,6 +225,40 @@ describe('useAccountsStore', () => {
         listener?.({ type: 'accountShareRevoked', metadata: { accountPublicId: 'acc-shared' } });
 
         expect(store.accounts.some((a) => a.publicId === 'acc-shared')).toBe(false);
+        await vi.waitFor(() => {
+            expect(api.list).toHaveBeenCalled();
+        });
+    });
+
+    it('accountChanged restored met à jour isActive sans refresh manuel', async () => {
+        const shared = {
+            ...ownedAccount,
+            publicId: 'acc-shared',
+            name: 'Partagé',
+            isOwned: false,
+            myRole: 'editor' as const,
+            isPrimary: false,
+            isActive: false
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount, shared] });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+            accountListener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        expect(store.accounts.find((a) => a.publicId === 'acc-shared')?.isActive).toBe(false);
+
+        api.list.mockResolvedValue({
+            items: [ownedAccount, { ...shared, isActive: true }]
+        });
+        accountListener?.({ change: 'restored', accountPublicId: 'acc-shared' });
+
+        expect(store.accounts.find((a) => a.publicId === 'acc-shared')?.isActive).toBe(true);
         await vi.waitFor(() => {
             expect(api.list).toHaveBeenCalled();
         });

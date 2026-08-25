@@ -11,6 +11,7 @@ import { isAccountShareNotificationType, isFriendNotificationType } from '@/feat
 import { normalizeNotificationReceivedPayload } from '@/features/notifications/normalize';
 import type {
     AppNotification,
+    AccountChangedPayload,
     FriendshipChangedPayload,
     InboxClearedPayload,
     NotificationReceivedPayload,
@@ -41,6 +42,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         friendListeners,
         accountShareListeners,
         friendshipChangeListeners,
+        accountChangeListeners,
         applyUnreadCount,
         upsertItem
     } = state;
@@ -77,6 +79,12 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
     function onFriendshipChanged(payload: FriendshipChangedPayload) {
         if (!payload?.change || !payload?.friendshipPublicId) return;
         friendshipChangeListeners.forEach((listener) => listener(payload));
+    }
+
+    /** Live sans inbox : archive / restore d’un compte partagé. */
+    function onAccountChanged(payload: AccountChangedPayload) {
+        if (!payload?.change || !payload?.accountPublicId) return;
+        accountChangeListeners.forEach((listener) => listener(payload));
     }
 
     /** SignalR multi-appareils après DELETE /api/notifications. */
@@ -153,6 +161,18 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         };
     }
 
+    /**
+     * Abonne un listener aux changements de compte (archive/restore, hors inbox).
+     * @param listener Callback.
+     * @returns Fonction de désabonnement.
+     */
+    function subscribeToAccountChanged(listener: (payload: AccountChangedPayload) => void) {
+        accountChangeListeners.add(listener);
+        return () => {
+            accountChangeListeners.delete(listener);
+        };
+    }
+
     /** Branche les handlers SignalR sur le hub partagé. */
     function wireHubHandlers() {
         setNotificationsHubHandlers({
@@ -161,6 +181,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
             },
             onNotificationReceived,
             onFriendshipChanged,
+            onAccountChanged,
             onInboxCleared,
             onSessionEnded: (payload) => onSessionEnded(payload)
         });
@@ -191,7 +212,8 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         resetHubFlags,
         subscribeToFriendNotifications,
         subscribeToAccountShareNotifications,
-        subscribeToFriendshipChanged
+        subscribeToFriendshipChanged,
+        subscribeToAccountChanged
     };
 }
 

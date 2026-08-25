@@ -2,6 +2,7 @@ import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } fro
 import { useAuthStore } from '@/features/auth';
 import { getApiBaseUrl, isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 import type {
+    AccountChangedPayload,
     FriendshipChangedPayload,
     InboxClearedPayload,
     NotificationConnectedPayload,
@@ -13,6 +14,7 @@ export type NotificationsHubHandlers = {
     onConnected?: (payload: NotificationConnectedPayload) => void;
     onNotificationReceived?: (payload: NotificationReceivedPayload) => void;
     onFriendshipChanged?: (payload: FriendshipChangedPayload) => void;
+    onAccountChanged?: (payload: AccountChangedPayload) => void;
     onInboxCleared?: (payload: InboxClearedPayload) => void;
     onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
 };
@@ -35,6 +37,7 @@ function attachHandlers(conn: HubConnection) {
     conn.off('connected');
     conn.off('notificationReceived');
     conn.off('friendshipChanged');
+    conn.off('accountChanged');
     conn.off('inboxCleared');
     conn.off('sessionEnded');
 
@@ -48,6 +51,10 @@ function attachHandlers(conn: HubConnection) {
 
     conn.on('friendshipChanged', (payload: FriendshipChangedPayload) => {
         handlers.onFriendshipChanged?.(payload);
+    });
+
+    conn.on('accountChanged', (payload: AccountChangedPayload) => {
+        handlers.onAccountChanged?.(payload);
     });
 
     conn.on('inboxCleared', (payload: InboxClearedPayload) => {

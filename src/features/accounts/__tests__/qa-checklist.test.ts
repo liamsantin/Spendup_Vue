@@ -32,6 +32,7 @@ const api = vi.hoisted(() => ({
 
 const subscribeToAccountShareNotifications = vi.fn();
 const subscribeToFriendshipChanged = vi.fn();
+const subscribeToAccountChanged = vi.fn();
 
 vi.mock('../api', () => ({
     accountsApi: {
@@ -59,7 +60,8 @@ vi.mock('../api', () => ({
 vi.mock('@/features/notifications', () => ({
     useNotificationsStore: () => ({
         subscribeToAccountShareNotifications,
-        subscribeToFriendshipChanged
+        subscribeToFriendshipChanged,
+        subscribeToAccountChanged
     })
 }));
 
@@ -126,6 +128,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
         Object.values(api).forEach((mock) => mock.mockReset());
         subscribeToAccountShareNotifications.mockReset().mockReturnValue(() => undefined);
         subscribeToFriendshipChanged.mockReset().mockReturnValue(() => undefined);
+        subscribeToAccountChanged.mockReset().mockReturnValue(() => undefined);
     });
 
     describe('§1 Liste & détail', () => {

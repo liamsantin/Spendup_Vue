@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { BuildingBankIcon, BellPlusIcon } from 'vue-tabler-icons';
@@ -62,13 +62,28 @@ async function scrollToFocused() {
     }
 }
 
+/** Filet si SignalR off / event manqué : refetch à la reprise de visibilité. */
+function onVisibilityChange() {
+    if (document.visibilityState !== 'visible' || !store.initialized) return;
+    if (tab.value === 'Accounts') {
+        void store.loadAccounts(true).catch(() => undefined);
+        return;
+    }
+    void store.loadIncoming(true).catch(() => undefined);
+}
+
 onMounted(() => {
     store.setFocusAccount(accountFromQuery());
     store.setFocusShare(shareFromQuery());
+    document.addEventListener('visibilitychange', onVisibilityChange);
     void store
         .bootstrap(tab.value)
         .then(() => scrollToFocused())
         .catch(() => undefined);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('visibilitychange', onVisibilityChange);
 });
 
 watch(

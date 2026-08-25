@@ -33,6 +33,8 @@ export type {
     NotificationReceivedPayload,
     FriendshipChange,
     FriendshipChangedPayload,
+    AccountChange,
+    AccountChangedPayload,
     InboxClearedPayload,
     SessionEndedPayload,
     NotificationsListQuery
