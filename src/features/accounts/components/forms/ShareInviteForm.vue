@@ -35,6 +35,7 @@ const invite = useShareInvite({
 });
 
 const listScrollbarRef = ref<PerfectScrollbarExpose | null>(null);
+const optionsScrollbarRef = ref<PerfectScrollbarExpose | null>(null);
 const listScrollbarOptions = {
     ...PERFECT_SCROLLBAR_OPTIONS,
     wheelPropagation: false
@@ -42,11 +43,19 @@ const listScrollbarOptions = {
 
 watch(
     () =>
-        [props.isOpen, smAndDown.value, invite.filteredFriends.length, invite.loadingFriends, invite.role] as const,
+        [
+            props.isOpen,
+            smAndDown.value,
+            invite.filteredFriends.length,
+            invite.loadingFriends,
+            invite.role,
+            invite.hiddenFields.length
+        ] as const,
     async () => {
         if (!props.isOpen || smAndDown.value) return;
         await nextTick();
         listScrollbarRef.value?.ps?.update();
+        optionsScrollbarRef.value?.ps?.update();
     }
 );
 
@@ -112,14 +121,34 @@ defineExpose({
             </div>
         </div>
 
-        <div class="share-invite-form__role">
-            <div class="share-invite-form__label">{{ t('comptesPage.share.fields.role') }}</div>
-            <ShareRolePicker v-model="invite.role" />
-        </div>
+        <div class="share-invite-form__options">
+            <PerfectScrollbar
+                v-if="!smAndDown"
+                ref="optionsScrollbarRef"
+                class="share-invite-form__options-scroll"
+                :options="listScrollbarOptions"
+            >
+                <div class="share-invite-form__role">
+                    <div class="share-invite-form__label">{{ t('comptesPage.share.fields.role') }}</div>
+                    <ShareRolePicker v-model="invite.role" />
+                </div>
 
-        <div v-if="invite.role === 'viewer'" class="share-invite-form__hidden">
-            <div class="share-invite-form__label">{{ t('comptesPage.share.fields.hiddenFields') }}</div>
-            <ShareHiddenFieldsPicker v-model="invite.hiddenFields" />
+                <div v-if="invite.role === 'viewer'" class="share-invite-form__hidden">
+                    <div class="share-invite-form__label">{{ t('comptesPage.share.fields.hiddenFields') }}</div>
+                    <ShareHiddenFieldsPicker v-model="invite.hiddenFields" />
+                </div>
+            </PerfectScrollbar>
+            <div v-else class="share-invite-form__options-scroll">
+                <div class="share-invite-form__role">
+                    <div class="share-invite-form__label">{{ t('comptesPage.share.fields.role') }}</div>
+                    <ShareRolePicker v-model="invite.role" />
+                </div>
+
+                <div v-if="invite.role === 'viewer'" class="share-invite-form__hidden">
+                    <div class="share-invite-form__label">{{ t('comptesPage.share.fields.hiddenFields') }}</div>
+                    <ShareHiddenFieldsPicker v-model="invite.hiddenFields" />
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -151,7 +180,7 @@ defineExpose({
     display: flex;
     flex: 1 1 0;
     flex-direction: column;
-    min-height: 0;
+    min-height: 240px;
     overflow: hidden;
 }
 
@@ -176,17 +205,38 @@ defineExpose({
     overflow: hidden;
 }
 
-.share-invite-form__role,
-.share-invite-form__hidden {
+.share-invite-form__options {
     position: relative;
     z-index: 1;
-    flex-shrink: 0;
+    flex: 0 1 auto;
+    max-height: 180px;
+    min-height: 0;
     margin-top: 16px;
+    overflow: hidden;
     background: rgb(var(--v-theme-surface));
 }
 
+.share-invite-form__options-scroll {
+    max-height: 180px;
+    overflow: hidden;
+}
+
+.share-invite-form__role {
+    padding-bottom: 2px;
+}
+
+.share-invite-form__hidden {
+    margin-top: 16px;
+    padding-bottom: 2px;
+}
+
 @media (max-width: 599.98px) {
-    .share-invite-form__list-scroll {
+    .share-invite-form__friends {
+        min-height: 180px;
+    }
+
+    .share-invite-form__list-scroll,
+    .share-invite-form__options-scroll {
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         overscroll-behavior: contain;
@@ -197,5 +247,9 @@ defineExpose({
 .share-invite-form__list :deep(.ps) {
     height: 100% !important;
     max-height: 100%;
+}
+
+.share-invite-form__options :deep(.ps) {
+    max-height: 180px;
 }
 </style>
