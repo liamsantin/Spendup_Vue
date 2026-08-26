@@ -50,38 +50,46 @@ export function createAccountsSnapshots(state: AccountsState) {
      */
     async function loadBalanceSnapshots(accountPublicId: string, force = false) {
         const requestId = ++snapshotsRequestSeq;
-        await cache.ensure(
-            `snapshots:${accountPublicId}`,
-            async () => {
-                if (requestId === snapshotsRequestSeq) {
-                    loadingSnapshots.value = true;
-                    clearError();
-                }
-                try {
-                    const result = await accountsApi.listBalanceSnapshots(accountPublicId, { page: 1, pageSize: 50 });
-                    const items = Array.isArray(result?.items) ? result.items : [];
-                    setSnapshotsForAccount(accountPublicId, items, {
-                        page: result?.page ?? 1,
-                        pageSize: result?.pageSize ?? 50,
-                        totalCount: result?.totalCount ?? items.length,
-                        append: false
-                    });
-                } catch (e: unknown) {
-                    if (requestId === snapshotsRequestSeq) {
-                        error.value = e instanceof Error ? e.message : String(e);
+        loadingSnapshots.value = true;
+        clearError();
+        try {
+            await cache.ensure(
+                `snapshots:${accountPublicId}`,
+                async () => {
+                    try {
+                        const result = await accountsApi.listBalanceSnapshots(accountPublicId, { page: 1, pageSize: 50 });
+                        if (requestId !== snapshotsRequestSeq) return;
+                        const items = Array.isArray(result?.items) ? result.items : [];
+                        setSnapshotsForAccount(accountPublicId, items, {
+                            page: result?.page ?? 1,
+                            pageSize: result?.pageSize ?? 50,
+                            totalCount: result?.totalCount ?? items.length,
+                            append: false
+                        });
+                    } catch (e: unknown) {
+                        if (requestId === snapshotsRequestSeq) {
+                            error.value = e instanceof Error ? e.message : String(e);
+                        }
+                        throw e;
                     }
-                    throw e;
-                } finally {
-                    if (requestId === snapshotsRequestSeq) {
-                        loadingSnapshots.value = false;
-                    }
-                }
-            },
-            { force }
-        );
+                },
+                { force }
+            );
+        } finally {
+            if (requestId === snapshotsRequestSeq) {
+                loadingSnapshots.value = false;
+            }
+        }
         if (requestId === snapshotsRequestSeq && selectedAccount.value?.publicId === accountPublicId) {
             activateSnapshotsView(accountPublicId);
         }
+    }
+
+    /** Ignore les réponses relevés en vol (fermeture / changement de compte). */
+    function cancelPendingSnapshotsLoads() {
+        snapshotsRequestSeq += 1;
+        loadingSnapshots.value = false;
+        loadingMoreSnapshots.value = false;
     }
 
     /**
@@ -182,6 +190,7 @@ export function createAccountsSnapshots(state: AccountsState) {
     return {
         loadBalanceSnapshots,
         loadMoreBalanceSnapshots,
+        cancelPendingSnapshotsLoads,
         createBalanceSnapshot,
         deleteBalanceSnapshot
     };

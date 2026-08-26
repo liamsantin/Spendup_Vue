@@ -651,6 +651,96 @@ describe('useAccountsStore', () => {
         expect(store.accounts.find((a) => a.publicId === 'acc-1')?.iban).toBeNull();
     });
 
+    it('clearSelected ignore un détail tardif (pas de resélection fantôme)', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        let resolveGet: ((value: unknown) => void) | undefined;
+        api.get.mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolveGet = resolve;
+                })
+        );
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        const loadPromise = store.loadAccountDetail('acc-1');
+        expect(store.loadingDetail).toBe(true);
+
+        store.clearSelected();
+        expect(store.selectedAccount).toBeNull();
+        expect(store.loadingDetail).toBe(false);
+
+        resolveGet?.({ ...ownedAccount, iban: 'CH-late' });
+        await loadPromise;
+
+        expect(store.selectedAccount).toBeNull();
+        expect(store.accounts.find((a) => a.publicId === 'acc-1')?.iban).toBeNull();
+        expect(store.loadingDetail).toBe(false);
+    });
+
+    it('loadingDetail redevient false après bascule vers un détail en cache', async () => {
+        const accountB = { ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: false };
+        api.list.mockResolvedValue({ items: [ownedAccount, accountB] });
+        api.get.mockResolvedValue(accountB);
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-2');
+        expect(store.loadingDetail).toBe(false);
+
+        let resolveA: ((value: unknown) => void) | undefined;
+        api.get.mockImplementation((id: string) => {
+            if (id === 'acc-1') {
+                return new Promise((resolve) => {
+                    resolveA = resolve;
+                });
+            }
+            return Promise.resolve(accountB);
+        });
+
+        const loadA = store.loadAccountDetail('acc-1');
+        expect(store.loadingDetail).toBe(true);
+        await store.loadAccountDetail('acc-2');
+        expect(store.selectedAccount?.publicId).toBe('acc-2');
+        expect(store.loadingDetail).toBe(false);
+
+        resolveA?.({ ...ownedAccount, iban: 'CH-A' });
+        await loadA;
+        expect(store.loadingDetail).toBe(false);
+        expect(store.selectedAccount?.publicId).toBe('acc-2');
+    });
+
+    it('updateAccount editor n’envoie que name / accountNumber / color', async () => {
+        const shared = {
+            ...ownedAccount,
+            publicId: 'acc-shared',
+            isOwned: false,
+            myRole: 'editor' as const,
+            isPrimary: false
+        };
+        api.list.mockResolvedValue({ items: [shared] });
+        api.update.mockResolvedValue({ ...shared, name: 'OK', color: '#10B981' });
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.updateAccount('acc-shared', {
+            name: 'OK',
+            type: 'epargne',
+            currency: 'EUR',
+            initialBalance: 999,
+            iban: 'CH99',
+            accountNumber: '7',
+            color: '#10B981',
+            isPrimary: true
+        });
+
+        expect(api.update).toHaveBeenCalledWith('acc-shared', {
+            name: 'OK',
+            accountNumber: '7',
+            color: '#10B981'
+        });
+    });
+
     it('ignore des shares tardives d’un autre compte', async () => {
         const accountB = { ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: false };
         api.list.mockResolvedValue({ items: [ownedAccount, accountB] });

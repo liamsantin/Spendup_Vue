@@ -3,9 +3,11 @@ import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-
 import type { AccountsShares } from '@/features/accounts/stores/internal/accounts-shares';
 import type { AccountsRealtime } from '@/features/accounts/stores/internal/accounts-realtime';
 
-type LifecycleDeps = Pick<AccountsCrud, 'loadAccounts'> &
-    Pick<AccountsShares, 'loadIncoming'> &
-    Pick<AccountsRealtime, 'ensureRealtimeBridge' | 'teardownRealtimeBridge'>;
+type LifecycleDeps = Pick<AccountsCrud, 'loadAccounts' | 'cancelPendingDetailLoads'> &
+    Pick<AccountsShares, 'loadIncoming' | 'cancelPendingSharesLoads'> &
+    Pick<AccountsRealtime, 'ensureRealtimeBridge' | 'teardownRealtimeBridge'> & {
+        cancelPendingSnapshotsLoads: () => void;
+    };
 
 /**
  * Cycle de vie du store : onglets, bootstrap, prefetch idle, reset.
@@ -38,7 +40,15 @@ export function createAccountsLifecycle(state: AccountsState, deps: LifecycleDep
         resetSnapshotsPagination
     } = state;
 
-    const { loadAccounts, loadIncoming, ensureRealtimeBridge, teardownRealtimeBridge } = deps;
+    const {
+        loadAccounts,
+        loadIncoming,
+        ensureRealtimeBridge,
+        teardownRealtimeBridge,
+        cancelPendingDetailLoads,
+        cancelPendingSharesLoads,
+        cancelPendingSnapshotsLoads
+    } = deps;
 
     let prefetchTimer: ReturnType<typeof setTimeout> | number | null = null;
 
@@ -103,6 +113,9 @@ export function createAccountsLifecycle(state: AccountsState, deps: LifecycleDep
     /** Remet le store à zéro (logout / reset session). */
     function reset() {
         cancelIdlePrefetch();
+        cancelPendingDetailLoads();
+        cancelPendingSharesLoads();
+        cancelPendingSnapshotsLoads();
         cache.reset();
         sharesByAccountId.clear();
         snapshotsByAccountId.clear();

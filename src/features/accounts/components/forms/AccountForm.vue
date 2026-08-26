@@ -180,13 +180,10 @@ const { t } = useI18n();
                 <v-text-field
                     id="account-form-account-number"
                     v-model="form.accountNumber"
-                    type="number"
-                    min="1"
-                    max="99"
-                    step="1"
                     color="primary"
                     variant="outlined"
                     hide-details="auto"
+                    autocomplete="off"
                 />
             </v-col>
         </v-row>

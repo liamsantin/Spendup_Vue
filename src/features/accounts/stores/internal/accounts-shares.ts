@@ -68,32 +68,39 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
      */
     async function loadShares(accountPublicId: string, force = false) {
         const requestId = ++sharesRequestSeq;
-        await cache.ensure(
-            `shares:${accountPublicId}`,
-            async () => {
-                if (requestId === sharesRequestSeq) {
-                    loadingShares.value = true;
-                    clearError();
-                }
-                try {
-                    const result = await accountsApi.listShares(accountPublicId);
-                    setSharesForAccount(accountPublicId, Array.isArray(result?.items) ? result.items : []);
-                } catch (e: unknown) {
-                    if (requestId === sharesRequestSeq) {
-                        error.value = e instanceof Error ? e.message : String(e);
+        loadingShares.value = true;
+        clearError();
+        try {
+            await cache.ensure(
+                `shares:${accountPublicId}`,
+                async () => {
+                    try {
+                        const result = await accountsApi.listShares(accountPublicId);
+                        if (requestId !== sharesRequestSeq) return;
+                        setSharesForAccount(accountPublicId, Array.isArray(result?.items) ? result.items : []);
+                    } catch (e: unknown) {
+                        if (requestId === sharesRequestSeq) {
+                            error.value = e instanceof Error ? e.message : String(e);
+                        }
+                        throw e;
                     }
-                    throw e;
-                } finally {
-                    if (requestId === sharesRequestSeq) {
-                        loadingShares.value = false;
-                    }
-                }
-            },
-            { force }
-        );
+                },
+                { force }
+            );
+        } finally {
+            if (requestId === sharesRequestSeq) {
+                loadingShares.value = false;
+            }
+        }
         if (requestId === sharesRequestSeq && selectedAccount.value?.publicId === accountPublicId) {
             activateSharesView(accountPublicId);
         }
+    }
+
+    /** Ignore les réponses shares en vol (fermeture / changement de compte). */
+    function cancelPendingSharesLoads() {
+        sharesRequestSeq += 1;
+        loadingShares.value = false;
     }
 
     /**
@@ -284,6 +291,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
     return {
         loadIncoming,
         loadShares,
+        cancelPendingSharesLoads,
         inviteShare,
         updateShareRole,
         revokeShare,

@@ -82,12 +82,13 @@ export function isValidAccountColor(value: string | null | undefined): boolean {
 }
 
 /**
- * Normalise une couleur pour le PUT (`#` + majuscules) ou `null` pour vider.
+ * Normalise une couleur pour le PUT (`#` + majuscules) ou `null` pour vider / invalide.
  */
 export function normalizeAccountColor(value: string | null | undefined): string | null {
     const trimmed = emptyToNull(value);
     if (!trimmed) return null;
     const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+    if (!isValidAccountColor(withHash)) return null;
     return withHash.toUpperCase();
 }
 

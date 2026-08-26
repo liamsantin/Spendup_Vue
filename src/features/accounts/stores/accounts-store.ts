@@ -37,6 +37,9 @@ export const useAccountsStore = defineStore('accounts', () => {
     const lifecycle = createAccountsLifecycle(state, {
         loadAccounts: crud.loadAccounts,
         loadIncoming: shares.loadIncoming,
+        cancelPendingDetailLoads: crud.cancelPendingDetailLoads,
+        cancelPendingSharesLoads: shares.cancelPendingSharesLoads,
+        cancelPendingSnapshotsLoads: snapshots.cancelPendingSnapshotsLoads,
         ensureRealtimeBridge: realtime.ensureRealtimeBridge,
         teardownRealtimeBridge: realtime.teardownRealtimeBridge
     });
@@ -48,6 +51,14 @@ export const useAccountsStore = defineStore('accounts', () => {
      */
     function toAppError(e: unknown): AppError {
         return AppError.fromUnknown(e);
+    }
+
+    /** Vide la sélection et invalide les loads détail / shares / snapshots en cours. */
+    function clearSelected() {
+        crud.cancelPendingDetailLoads();
+        shares.cancelPendingSharesLoads();
+        snapshots.cancelPendingSnapshotsLoads();
+        state.clearSelected();
     }
 
     return {
@@ -82,7 +93,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         isFocusedAccount: state.isFocusedAccount,
         isFocusedShare: state.isFocusedShare,
         isPromotedAccount: state.isPromotedAccount,
-        clearSelected: state.clearSelected,
+        clearSelected,
         loadAccounts: crud.loadAccounts,
         loadAccountDetail: crud.loadAccountDetail,
         createAccount: crud.createAccount,

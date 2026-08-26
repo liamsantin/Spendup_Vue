@@ -127,12 +127,16 @@ watch(
             }
             return;
         }
+        const requestedId = id;
         activeTab.value = 'details';
         localError.value = null;
         store.clearError();
         try {
-            await store.loadAccountDetail(id);
+            await store.loadAccountDetail(requestedId);
+            // Compte / modale changés pendant l’await : ignorer le résultat.
+            if (!props.modelValue || props.accountPublicId !== requestedId) return;
         } catch (e: unknown) {
+            if (!props.modelValue || props.accountPublicId !== requestedId) return;
             const err = AppError.fromUnknown(e);
             localError.value = err.message;
             if (err.status === 404) {

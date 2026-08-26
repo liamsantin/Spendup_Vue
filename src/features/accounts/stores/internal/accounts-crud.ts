@@ -78,6 +78,7 @@ export function createAccountsCrud(state: AccountsState) {
 
     /**
      * Charge le détail d’un compte (hydrate d’abord depuis la liste).
+     * `loadingDetail` est géré hors du loader cache (cache hit / courses).
      * @param publicId Identifiant public du compte.
      * @param force Si `true`, ignore le TTL et refetch.
      * @returns Le compte sélectionné, ou `null`.
@@ -85,39 +86,39 @@ export function createAccountsCrud(state: AccountsState) {
     async function loadAccountDetail(publicId: string, force = false) {
         const requestId = ++detailRequestSeq;
         hydrateSelectedFromList(publicId);
-        await cache.ensure(
-            `detail:${publicId}`,
-            async () => {
-                if (requestId === detailRequestSeq) {
-                    loadingDetail.value = true;
-                    clearError();
-                }
-                try {
-                    const account = normalizeAccount(await accountsApi.get(publicId));
-                    // Ne pas écraser la liste avec une réponse périmée (autre détail déjà demandé).
-                    if (requestId !== detailRequestSeq) {
-                        return;
-                    }
-                    upsertAccount(account);
-                    selectedAccount.value = account;
-                } catch (e: unknown) {
-                    if (requestId === detailRequestSeq) {
-                        const err = AppError.fromUnknown(e);
-                        error.value = err.message;
-                        // Soft-delete / partage purgé : retirer de la liste et invalider caches locaux.
-                        if (err.status === 404 || !accounts.value.some((a) => a.publicId === publicId)) {
-                            removeAccountLocal(publicId);
+        loadingDetail.value = true;
+        clearError();
+        try {
+            await cache.ensure(
+                `detail:${publicId}`,
+                async () => {
+                    try {
+                        const account = normalizeAccount(await accountsApi.get(publicId));
+                        // Ne pas écraser liste / sélection avec une réponse périmée.
+                        if (requestId !== detailRequestSeq) {
+                            return;
                         }
+                        upsertAccount(account);
+                        selectedAccount.value = account;
+                    } catch (e: unknown) {
+                        if (requestId === detailRequestSeq) {
+                            const err = AppError.fromUnknown(e);
+                            error.value = err.message;
+                            // Soft-delete / partage purgé : retirer de la liste et invalider caches locaux.
+                            if (err.status === 404 || !accounts.value.some((a) => a.publicId === publicId)) {
+                                removeAccountLocal(publicId);
+                            }
+                        }
+                        throw e;
                     }
-                    throw e;
-                } finally {
-                    if (requestId === detailRequestSeq) {
-                        loadingDetail.value = false;
-                    }
-                }
-            },
-            { force, maxAgeMs: ACCOUNTS_DETAIL_MAX_AGE_MS }
-        );
+                },
+                { force, maxAgeMs: ACCOUNTS_DETAIL_MAX_AGE_MS }
+            );
+        } finally {
+            if (requestId === detailRequestSeq) {
+                loadingDetail.value = false;
+            }
+        }
         if (requestId !== detailRequestSeq) {
             // Loader périmé a quand même marqué le TTL : invalider pour forcer un refetch à la réouverture.
             cache.invalidate(`detail:${publicId}`);
@@ -127,6 +128,12 @@ export function createAccountsCrud(state: AccountsState) {
             hydrateSelectedFromList(publicId);
         }
         return selectedAccount.value;
+    }
+
+    /** Invalide les loads détail en cours (fermeture modale / reset) — ignore les réponses tardives. */
+    function cancelPendingDetailLoads() {
+        detailRequestSeq += 1;
+        loadingDetail.value = false;
     }
 
     /**
@@ -279,6 +286,7 @@ export function createAccountsCrud(state: AccountsState) {
     return {
         loadAccounts,
         loadAccountDetail,
+        cancelPendingDetailLoads,
         createAccount,
         updateAccount,
         setPrimary,

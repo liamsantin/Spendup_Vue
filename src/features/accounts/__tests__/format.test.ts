@@ -132,6 +132,8 @@ describe('account color helpers', () => {
         expect(normalizeAccountColor('  #4f46e5  ')).toBe('#4F46E5');
         expect(normalizeAccountColor('#abc')).toBe('#ABC');
         expect(normalizeAccountColor('#4f46e5aa')).toBe('#4F46E5AA');
+        expect(normalizeAccountColor('not-a-color')).toBeNull();
+        expect(normalizeAccountColor('#GGHHII')).toBeNull();
     });
 
     it('safeAccountColor ignore les valeurs API invalides', () => {
