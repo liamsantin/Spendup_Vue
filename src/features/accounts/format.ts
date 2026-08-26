@@ -12,7 +12,7 @@ export function formatAccountBalance(amount: number, currency: Currency, locale?
     }
 }
 
-/** `null` + champ dans `hiddenFields` → « caché » ; `null` hors liste → vraiment vide. */
+/** Champ listé dans `hiddenFields` → traité comme masqué (même si une valeur est présente). */
 export function isAccountFieldHidden(
     account: Pick<Account, 'hiddenFields'> | { hiddenFields?: HiddenAccountField[] | null },
     field: HiddenAccountField
@@ -25,7 +25,8 @@ export function isBalanceHidden(account: Pick<Account, 'hiddenFields'> | { hidde
 }
 
 /**
- * Affiche un solde : valeur formatée, ou tiret « caché » / vide selon `hiddenFields`.
+ * Affiche un solde : valeur formatée, ou tiret « caché » selon `hiddenFields`.
+ * Si `balanceHidden`, la valeur n’est jamais exposée (défense en profondeur).
  * @returns `{ text, hidden }` — `hidden` pour afficher un cadenas côté UI.
  */
 export function resolveAccountBalanceDisplay(
@@ -34,8 +35,11 @@ export function resolveAccountBalanceDisplay(
     balanceHidden: boolean,
     locale?: string
 ): { text: string; hidden: boolean } {
+    if (balanceHidden) {
+        return { text: '—', hidden: true };
+    }
     if (amount == null) {
-        return { text: '—', hidden: balanceHidden };
+        return { text: '—', hidden: false };
     }
     return { text: formatAccountBalance(amount, currency, locale), hidden: false };
 }

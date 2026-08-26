@@ -33,7 +33,7 @@ const avatarColor = computed(() => safeAccountColor(props.account.color) || 'lig
 const avatarTextClass = computed(() => (isLightAccountColor(props.account.color) ? 'text-primary' : 'text-white'));
 
 const accountNumberLine = computed(() => {
-    if (isAccountFieldHidden(props.account, 'accountNumber') && props.account.accountNumber == null) {
+    if (isAccountFieldHidden(props.account, 'accountNumber')) {
         return ` · ${t('comptesPage.list.accountNumberHidden')}`;
     }
     if (props.account.accountNumber) {

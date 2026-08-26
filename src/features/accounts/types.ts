@@ -29,7 +29,7 @@ export type Account = {
     myRole: AccountRole;
     /**
      * Champs masqués pour le destinataire courant.
-     * `null` présent **et** listé ici → afficher « caché » (pas « vide »).
+     * Listé ici → afficher « caché » (même si une valeur non-null est renvoyée par erreur).
      * Owner / editor : toujours `[]`.
      */
     hiddenFields: HiddenAccountField[];

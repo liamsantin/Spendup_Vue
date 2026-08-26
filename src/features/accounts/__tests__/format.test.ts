@@ -140,13 +140,15 @@ describe('formatAccountBalance', () => {
 });
 
 describe('hidden fields helpers', () => {
-    it('distingue null caché vs null vide', () => {
+    it('masque dès que le champ est dans hiddenFields (même si valeur non-null)', () => {
         expect(isAccountFieldHidden({ hiddenFields: ['iban'] }, 'iban')).toBe(true);
         expect(isAccountFieldHidden({ hiddenFields: [] }, 'iban')).toBe(false);
         expect(isBalanceHidden({ hiddenFields: ['balance'] })).toBe(true);
-        expect(resolveAccountBalanceDisplay(null, 'CHF', true).hidden).toBe(true);
-        expect(resolveAccountBalanceDisplay(null, 'CHF', false).hidden).toBe(false);
-        expect(resolveAccountBalanceDisplay(10, 'CHF', true).hidden).toBe(false);
+        expect(resolveAccountBalanceDisplay(null, 'CHF', true)).toEqual({ text: '—', hidden: true });
+        expect(resolveAccountBalanceDisplay(null, 'CHF', false)).toEqual({ text: '—', hidden: false });
+        expect(resolveAccountBalanceDisplay(10, 'CHF', true)).toEqual({ text: '—', hidden: true });
+        expect(resolveAccountBalanceDisplay(10, 'CHF', false).hidden).toBe(false);
+        expect(resolveAccountBalanceDisplay(10, 'CHF', false).text).toMatch(/10/);
     });
 
     it('valide IBAN (longueur + checksum mod-97)', () => {

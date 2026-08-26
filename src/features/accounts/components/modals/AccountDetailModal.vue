@@ -72,13 +72,13 @@ const initialBalanceDisplay = computed(() =>
 
 const showIban = computed(() => {
     if (!account.value) return false;
-    if (isAccountFieldHidden(account.value, 'iban') && account.value.iban == null) return true;
+    if (isAccountFieldHidden(account.value, 'iban')) return true;
     return !!account.value.iban;
 });
 
 const showAccountNumber = computed(() => {
     if (!account.value) return false;
-    if (isAccountFieldHidden(account.value, 'accountNumber') && account.value.accountNumber == null) return true;
+    if (isAccountFieldHidden(account.value, 'accountNumber')) return true;
     return !!account.value.accountNumber;
 });
 
@@ -288,7 +288,7 @@ async function confirmLeave() {
                     <v-col v-if="showIban" cols="12">
                         <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.iban') }}</div>
                         <div
-                            v-if="isAccountFieldHidden(account, 'iban') && account.iban == null"
+                            v-if="isAccountFieldHidden(account, 'iban')"
                             class="text-body-1 d-flex align-center ga-2 text-medium-emphasis"
                         >
                             <LockIcon size="16" stroke-width="1.5" />
@@ -299,7 +299,7 @@ async function confirmLeave() {
                     <v-col v-if="showAccountNumber" cols="12">
                         <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.accountNumber') }}</div>
                         <div
-                            v-if="isAccountFieldHidden(account, 'accountNumber') && account.accountNumber == null"
+                            v-if="isAccountFieldHidden(account, 'accountNumber')"
                             class="text-body-1 d-flex align-center ga-2 text-medium-emphasis"
                         >
                             <LockIcon size="16" stroke-width="1.5" />
