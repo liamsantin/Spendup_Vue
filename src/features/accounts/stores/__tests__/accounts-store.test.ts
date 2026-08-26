@@ -741,6 +741,99 @@ describe('useAccountsStore', () => {
         });
     });
 
+    it('revoke pendant un détail en vol ne ressuscite pas le compte', async () => {
+        const shared = {
+            ...ownedAccount,
+            publicId: 'acc-shared',
+            name: 'Partagé',
+            isOwned: false,
+            myRole: 'viewer' as const,
+            isPrimary: false
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount, shared] });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let resolveGet: ((value: unknown) => void) | undefined;
+        api.get.mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolveGet = resolve;
+                })
+        );
+
+        let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+            accountListener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        const loadPromise = store.loadAccountDetail('acc-shared');
+        expect(store.selectedAccount?.publicId).toBe('acc-shared');
+
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        accountListener?.({ change: 'revoked', accountPublicId: 'acc-shared' });
+        expect(store.accounts.some((a) => a.publicId === 'acc-shared')).toBe(false);
+        expect(store.selectedAccount).toBeNull();
+
+        resolveGet?.({ ...shared, iban: 'CH-late' });
+        await loadPromise;
+
+        expect(store.accounts.some((a) => a.publicId === 'acc-shared')).toBe(false);
+        expect(store.selectedAccount).toBeNull();
+    });
+
+    it('abort snapshots invalide le TTL (réouverture refetch)', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        let resolveSnaps: ((value: unknown) => void) | undefined;
+        api.listBalanceSnapshots.mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolveSnaps = resolve;
+                })
+        );
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        const loadPromise = store.loadBalanceSnapshots('acc-1');
+        expect(store.loadingSnapshots).toBe(true);
+
+        store.clearSelected();
+        expect(store.loadingSnapshots).toBe(false);
+
+        resolveSnaps?.({ items: [], page: 1, pageSize: 50, totalCount: 0 });
+        await loadPromise;
+
+        api.listBalanceSnapshots.mockClear();
+        api.listBalanceSnapshots.mockResolvedValue({
+            items: [
+                {
+                    publicId: 'snap-1',
+                    accountPublicId: 'acc-1',
+                    balance: 10,
+                    snapshotAt: '2026-01-01T12:00:00.000Z',
+                    source: 'manual',
+                    note: null,
+                    createdAt: '2026-01-01T12:00:00.000Z',
+                    updatedAt: null,
+                    createdByUserPublicId: null,
+                    createdByDisplayName: null,
+                    createdByPhotoUrl: null
+                }
+            ],
+            page: 1,
+            pageSize: 50,
+            totalCount: 1
+        });
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+        expect(api.listBalanceSnapshots).toHaveBeenCalled();
+        expect(store.balanceSnapshots).toHaveLength(1);
+    });
+
     it('ignore des shares tardives d’un autre compte', async () => {
         const accountB = { ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: false };
         api.list.mockResolvedValue({ items: [ownedAccount, accountB] });

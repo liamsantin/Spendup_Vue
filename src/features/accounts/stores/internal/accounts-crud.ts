@@ -85,6 +85,7 @@ export function createAccountsCrud(state: AccountsState) {
      */
     async function loadAccountDetail(publicId: string, force = false) {
         const requestId = ++detailRequestSeq;
+        const existedAtStart = accounts.value.some((a) => a.publicId === publicId);
         hydrateSelectedFromList(publicId);
         loadingDetail.value = true;
         clearError();
@@ -96,6 +97,10 @@ export function createAccountsCrud(state: AccountsState) {
                         const account = normalizeAccount(await accountsApi.get(publicId));
                         // Ne pas écraser liste / sélection avec une réponse périmée.
                         if (requestId !== detailRequestSeq) {
+                            return;
+                        }
+                        // Revoke / leave pendant le GET : ne pas ressusciter le compte.
+                        if (existedAtStart && !accounts.value.some((a) => a.publicId === account.publicId)) {
                             return;
                         }
                         upsertAccount(account);

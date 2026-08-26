@@ -26,6 +26,13 @@ export const useAccountsStore = defineStore('accounts', () => {
     const crud = createAccountsCrud(state);
     const shares = createAccountsShares(state, crud);
     const snapshots = createAccountsSnapshots(state);
+
+    state.setCancelPendingLoads(() => {
+        crud.cancelPendingDetailLoads();
+        shares.cancelPendingSharesLoads();
+        snapshots.cancelPendingSnapshotsLoads();
+    });
+
     const realtime = createAccountsRealtime(state, {
         loadAccounts: crud.loadAccounts,
         loadAccountDetail: crud.loadAccountDetail,
@@ -51,14 +58,6 @@ export const useAccountsStore = defineStore('accounts', () => {
      */
     function toAppError(e: unknown): AppError {
         return AppError.fromUnknown(e);
-    }
-
-    /** Vide la sélection et invalide les loads détail / shares / snapshots en cours. */
-    function clearSelected() {
-        crud.cancelPendingDetailLoads();
-        shares.cancelPendingSharesLoads();
-        snapshots.cancelPendingSnapshotsLoads();
-        state.clearSelected();
     }
 
     return {
@@ -93,7 +92,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         isFocusedAccount: state.isFocusedAccount,
         isFocusedShare: state.isFocusedShare,
         isPromotedAccount: state.isPromotedAccount,
-        clearSelected,
+        clearSelected: state.clearSelected,
         loadAccounts: crud.loadAccounts,
         loadAccountDetail: crud.loadAccountDetail,
         createAccount: crud.createAccount,

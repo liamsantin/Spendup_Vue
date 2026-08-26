@@ -92,7 +92,11 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
                 loadingShares.value = false;
             }
         }
-        if (requestId === sharesRequestSeq && selectedAccount.value?.publicId === accountPublicId) {
+        if (requestId !== sharesRequestSeq) {
+            cache.invalidate(`shares:${accountPublicId}`);
+            return;
+        }
+        if (selectedAccount.value?.publicId === accountPublicId) {
             activateSharesView(accountPublicId);
         }
     }

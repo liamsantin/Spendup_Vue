@@ -80,7 +80,11 @@ export function createAccountsSnapshots(state: AccountsState) {
                 loadingSnapshots.value = false;
             }
         }
-        if (requestId === snapshotsRequestSeq && selectedAccount.value?.publicId === accountPublicId) {
+        if (requestId !== snapshotsRequestSeq) {
+            cache.invalidate(`snapshots:${accountPublicId}`);
+            return;
+        }
+        if (selectedAccount.value?.publicId === accountPublicId) {
             activateSnapshotsView(accountPublicId);
         }
     }
@@ -101,6 +105,7 @@ export function createAccountsSnapshots(state: AccountsState) {
         if (loadingSnapshots.value || loadingMoreSnapshots.value) return;
         if (balanceSnapshotsLength(accountPublicId) >= snapshotsTotalCount.value) return;
 
+        const requestId = ++snapshotsRequestSeq;
         loadingMoreSnapshots.value = true;
         clearError();
         try {
@@ -109,6 +114,8 @@ export function createAccountsSnapshots(state: AccountsState) {
                 page: nextPage,
                 pageSize: snapshotsPageSize.value || 50
             });
+            if (requestId !== snapshotsRequestSeq) return;
+            if (selectedAccount.value?.publicId !== accountPublicId) return;
             const items = Array.isArray(result?.items) ? result.items : [];
             setSnapshotsForAccount(accountPublicId, items, {
                 page: result?.page ?? nextPage,
@@ -118,10 +125,14 @@ export function createAccountsSnapshots(state: AccountsState) {
             });
             cache.touch(`snapshots:${accountPublicId}`);
         } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
+            if (requestId === snapshotsRequestSeq) {
+                error.value = e instanceof Error ? e.message : String(e);
+            }
             throw e;
         } finally {
-            loadingMoreSnapshots.value = false;
+            if (requestId === snapshotsRequestSeq) {
+                loadingMoreSnapshots.value = false;
+            }
         }
     }
 

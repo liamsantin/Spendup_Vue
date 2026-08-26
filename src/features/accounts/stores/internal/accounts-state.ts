@@ -54,6 +54,12 @@ export function createAccountsState() {
     const cache = createResourceCache({ defaultMaxAgeMs: ACCOUNTS_LIST_MAX_AGE_MS });
 
     let promoteHighlightTimer: ReturnType<typeof setTimeout> | null = null;
+    /** Annule les loads détail/shares/snapshots en vol — branché par le store Pinia. */
+    let cancelPendingLoads: (() => void) | null = null;
+
+    function setCancelPendingLoads(fn: (() => void) | null) {
+        cancelPendingLoads = fn;
+    }
 
     const ownedAccounts = computed(() => accounts.value.filter((a) => a.isOwned));
     const sharedAccounts = computed(() => accounts.value.filter((a) => !a.isOwned));
@@ -200,6 +206,10 @@ export function createAccountsState() {
      * @param publicId Identifiant public du compte à retirer.
      */
     function removeAccountLocal(publicId: string) {
+        // Annule les loads en vol pour ne pas ré-upsert / re-sélectionner après revoke.
+        if (selectedAccount.value?.publicId === publicId) {
+            cancelPendingLoads?.();
+        }
         accounts.value = accounts.value.filter((a) => a.publicId !== publicId);
         if (selectedAccount.value?.publicId === publicId) {
             selectedAccount.value = null;
@@ -306,6 +316,7 @@ export function createAccountsState() {
 
     /** Vide le compte actuellement sélectionné et les vues associées. */
     function clearSelected() {
+        cancelPendingLoads?.();
         selectedAccount.value = null;
         shares.value = [];
         balanceSnapshots.value = [];
@@ -373,6 +384,7 @@ export function createAccountsState() {
         isFocusedShare,
         upsertAccount,
         removeAccountLocal,
+        setCancelPendingLoads,
         hydrateSelectedFromList,
         setSharesForAccount,
         setSnapshotsForAccount,
