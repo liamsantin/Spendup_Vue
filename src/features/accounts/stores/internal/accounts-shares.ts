@@ -1,5 +1,5 @@
 import { accountsApi } from '@/features/accounts/api';
-import type { ShareRole } from '@/features/accounts/types';
+import type { HiddenAccountField, ShareRole } from '@/features/accounts/types';
 import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
 import { getErrorMessage } from '@/utils/errors/app-error';
@@ -94,16 +94,28 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
      * @param userPublicId Identifiant public de l’utilisateur invité.
      * @param role Rôle accordé (`viewer`, `editor`, etc.).
      * @param photoUrl Photo de profil optionnelle à conserver côté UI.
+     * @param hiddenFields Champs masqués (viewer uniquement ; défaut serveur si omis).
      * @returns Le partage créé / fusionné.
      */
-    async function inviteShare(accountPublicId: string, userPublicId: string, role: ShareRole, photoUrl?: string | null) {
+    async function inviteShare(
+        accountPublicId: string,
+        userPublicId: string,
+        role: ShareRole,
+        photoUrl?: string | null,
+        hiddenFields?: HiddenAccountField[]
+    ) {
         acting.value = true;
         clearError();
         try {
-            const share = await accountsApi.inviteShare(accountPublicId, { userPublicId, role });
+            const body =
+                role === 'viewer' && hiddenFields != null
+                    ? { userPublicId, role, hiddenFields }
+                    : { userPublicId, role };
+            const share = await accountsApi.inviteShare(accountPublicId, body);
             const merged = {
                 ...share,
-                photoUrl: share.photoUrl || photoUrl || null
+                photoUrl: share.photoUrl || photoUrl || null,
+                hiddenFields: share.hiddenFields ?? []
             };
             const current = sharesByAccountId.get(accountPublicId) ?? [];
             const idx = current.findIndex((s) => s.userPublicId === userPublicId);
@@ -120,26 +132,34 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
     }
 
     /**
-     * Change le rôle d’un partage existant.
+     * Change le rôle et/ou les champs masqués d’un partage existant.
      * @param accountPublicId Identifiant public du compte.
      * @param userPublicId Identifiant public du bénéficiaire.
      * @param role Nouveau rôle.
+     * @param hiddenFields Champs masqués (viewer uniquement).
      * @returns Le partage mis à jour.
      */
-    async function updateShareRole(accountPublicId: string, userPublicId: string, role: ShareRole) {
+    async function updateShareRole(
+        accountPublicId: string,
+        userPublicId: string,
+        role: ShareRole,
+        hiddenFields?: HiddenAccountField[]
+    ) {
         acting.value = true;
         clearError();
         try {
-            const share = await accountsApi.updateShareRole(accountPublicId, userPublicId, { role });
+            const body = role === 'viewer' && hiddenFields != null ? { role, hiddenFields } : { role };
+            const share = await accountsApi.updateShareRole(accountPublicId, userPublicId, body);
+            const normalized = { ...share, hiddenFields: share.hiddenFields ?? [] };
             const current = sharesByAccountId.get(accountPublicId) ?? [];
             const idx = current.findIndex((s) => s.userPublicId === userPublicId);
             if (idx >= 0) {
-                setSharesForAccount(accountPublicId, [...current.slice(0, idx), share, ...current.slice(idx + 1)]);
+                setSharesForAccount(accountPublicId, [...current.slice(0, idx), normalized, ...current.slice(idx + 1)]);
                 cache.touch(`shares:${accountPublicId}`);
             } else {
                 await loadShares(accountPublicId, true);
             }
-            return share;
+            return normalized;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;

@@ -2,14 +2,14 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { DotsVerticalIcon, FileDescriptionIcon, Receipt2Icon, UsersIcon } from 'vue-tabler-icons';
+import { DotsVerticalIcon, FileDescriptionIcon, LockIcon, Receipt2Icon, UsersIcon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { formatAccountBalance } from '@/features/accounts/format';
+import { isAccountFieldHidden, isBalanceHidden, resolveAccountBalanceDisplay } from '@/features/accounts/format';
 import {
     canArchiveAccount,
     canDeleteAccount,
@@ -56,15 +56,41 @@ const open = computed({
 
 const account = computed(() => store.selectedAccount);
 
-const balance = computed(() =>
-    account.value ? formatAccountBalance(account.value.currentBalance, account.value.currency, locale.value) : ''
+const balanceHidden = computed(() => (account.value ? isBalanceHidden(account.value) : false));
+
+const currentBalanceDisplay = computed(() =>
+    account.value
+        ? resolveAccountBalanceDisplay(account.value.currentBalance, account.value.currency, balanceHidden.value, locale.value)
+        : { text: '', hidden: false }
 );
 
-const detailTabs = computed(() => [
-    { value: 'details', label: t('comptesPage.detail.tabs.details'), icon: FileDescriptionIcon },
-    { value: 'snapshots', label: t('comptesPage.detail.tabs.snapshots'), icon: Receipt2Icon },
-    { value: 'shares', label: t('comptesPage.detail.tabs.shares'), icon: UsersIcon }
-]);
+const initialBalanceDisplay = computed(() =>
+    account.value
+        ? resolveAccountBalanceDisplay(account.value.initialBalance, account.value.currency, balanceHidden.value, locale.value)
+        : { text: '', hidden: false }
+);
+
+const showIban = computed(() => {
+    if (!account.value) return false;
+    if (isAccountFieldHidden(account.value, 'iban') && account.value.iban == null) return true;
+    return !!account.value.iban;
+});
+
+const showAccountNumber = computed(() => {
+    if (!account.value) return false;
+    if (isAccountFieldHidden(account.value, 'accountNumber') && account.value.accountNumber == null) return true;
+    return !!account.value.accountNumber;
+});
+
+const detailTabs = computed(() => {
+    const tabs = [{ value: 'details' as const, label: t('comptesPage.detail.tabs.details'), icon: FileDescriptionIcon }];
+    // `balance` masqué → API relevés 404 pour ce viewer : ne pas exposer l’onglet.
+    if (!balanceHidden.value) {
+        tabs.push({ value: 'snapshots', label: t('comptesPage.detail.tabs.snapshots'), icon: Receipt2Icon });
+    }
+    tabs.push({ value: 'shares', label: t('comptesPage.detail.tabs.shares'), icon: UsersIcon });
+    return tabs;
+});
 
 const hasOverflowActions = computed(() => {
     const current = account.value;
@@ -100,6 +126,12 @@ watch(
         }
     }
 );
+
+watch(balanceHidden, (hidden) => {
+    if (hidden && activeTab.value === 'snapshots') {
+        activeTab.value = 'details';
+    }
+});
 
 /** Ferme la modale si le compte a disparu de la liste (revoke / amitié rompue) après sync. */
 watch(
@@ -210,21 +242,42 @@ async function confirmLeave() {
                 <v-row dense class="mb-4">
                     <v-col cols="12" sm="6">
                         <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.detail.currentBalance') }}</div>
-                        <div class="text-h5 font-weight-bold">{{ balance }}</div>
+                        <div class="text-h5 font-weight-bold d-flex align-center ga-2">
+                            <LockIcon v-if="currentBalanceDisplay.hidden" size="20" stroke-width="1.5" class="text-medium-emphasis" />
+                            <span>{{ currentBalanceDisplay.text }}</span>
+                        </div>
+                        <div v-if="currentBalanceDisplay.hidden" class="text-caption text-medium-emphasis">
+                            {{ t('comptesPage.detail.fieldHidden') }}
+                        </div>
                     </v-col>
                     <v-col cols="12" sm="6">
                         <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.detail.initialBalance') }}</div>
-                        <div class="text-subtitle-1">
-                            {{ formatAccountBalance(account.initialBalance, account.currency, locale) }}
+                        <div class="text-subtitle-1 d-flex align-center ga-2">
+                            <LockIcon v-if="initialBalanceDisplay.hidden" size="18" stroke-width="1.5" class="text-medium-emphasis" />
+                            <span>{{ initialBalanceDisplay.text }}</span>
                         </div>
                     </v-col>
-                    <v-col v-if="account.iban" cols="12">
+                    <v-col v-if="showIban" cols="12">
                         <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.iban') }}</div>
-                        <div class="text-body-1">{{ account.iban }}</div>
+                        <div
+                            v-if="isAccountFieldHidden(account, 'iban') && account.iban == null"
+                            class="text-body-1 d-flex align-center ga-2 text-medium-emphasis"
+                        >
+                            <LockIcon size="16" stroke-width="1.5" />
+                            <span>{{ t('comptesPage.detail.fieldHidden') }}</span>
+                        </div>
+                        <div v-else class="text-body-1">{{ account.iban }}</div>
                     </v-col>
-                    <v-col v-if="account.accountNumber" cols="12">
+                    <v-col v-if="showAccountNumber" cols="12">
                         <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.accountNumber') }}</div>
-                        <div class="text-body-1">{{ account.accountNumber }}</div>
+                        <div
+                            v-if="isAccountFieldHidden(account, 'accountNumber') && account.accountNumber == null"
+                            class="text-body-1 d-flex align-center ga-2 text-medium-emphasis"
+                        >
+                            <LockIcon size="16" stroke-width="1.5" />
+                            <span>{{ t('comptesPage.detail.fieldHidden') }}</span>
+                        </div>
+                        <div v-else class="text-body-1">{{ account.accountNumber }}</div>
                     </v-col>
                     <v-col cols="12" class="d-flex flex-wrap ga-2">
                         <v-chip v-if="account.isPrimary" size="small" color="primary" variant="tonal">
@@ -368,7 +421,7 @@ async function confirmLeave() {
             </AppModalPanelScroll>
         </template>
 
-        <template v-if="account" #panel-snapshots>
+        <template v-if="account && !balanceHidden" #panel-snapshots>
             <AccountBalanceSnapshotsPanel :account="account" :can-write="canWriteBalanceSnapshots(account)" />
         </template>
 

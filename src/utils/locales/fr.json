@@ -243,7 +243,8 @@
             "archived": "Archivé"
         },
         "list": {
-            "accountNumber": "N° {number}"
+            "accountNumber": "N° {number}",
+            "accountNumberHidden": "N° caché"
         },
         "roles": {
             "owner": "Propriétaire",
@@ -275,12 +276,14 @@
             "primaryNoArchive": "Le compte principal ne peut pas être archivé.",
             "primaryNoDelete": "Le compte principal ne peut pas être supprimé.",
             "primaryFirstAccount": "Le premier compte est toujours principal.",
-            "primaryChangeViaPromote": "Pour changer de compte principal, ouvrez un autre compte et utilisez « Définir comme principal »."
+            "primaryChangeViaPromote": "Pour changer de compte principal, ouvrez un autre compte et utilisez « Définir comme principal ».",
+            "archivedNoPrimary": "Impossible de définir un compte archivé comme compte primaire."
         },
         "detail": {
             "title": "Détail du compte",
             "currentBalance": "Solde actuel",
             "initialBalance": "Solde initial",
+            "fieldHidden": "Caché",
             "tabs": {
                 "details": "Détails",
                 "snapshots": "Relevé",
@@ -307,7 +310,8 @@
             },
             "errors": {
                 "nameRequired": "Le nom est obligatoire.",
-                "balanceInvalid": "Saisissez un solde valide."
+                "balanceInvalid": "Saisissez un solde valide.",
+                "ibanInvalid": "IBAN invalide."
             }
         },
         "share": {
@@ -325,7 +329,16 @@
             "pendingRole": "En attente · {role}",
             "fields": {
                 "friend": "Ami",
-                "role": "Rôle"
+                "role": "Rôle",
+                "hiddenFields": "Champs masqués"
+            },
+            "hiddenFields": {
+                "hint": "Ces informations resteront invisibles pour le lecteur.",
+                "iban": "IBAN",
+                "accountNumber": "N° de compte",
+                "balance": "Soldes",
+                "summary": "Masqués : {fields}",
+                "none": "Aucun champ masqué"
             },
             "roleHints": {
                 "viewer": "Consulte les soldes et les relevés.",
@@ -348,7 +361,9 @@
         "invitations": {
             "title": "Invitations reçues",
             "subtitle": "Acceptez ou refusez les partages de comptes.",
-            "from": "De {name}"
+            "from": "De {name}",
+            "hiddenFields": "Champs masqués : {fields}",
+            "noHiddenFields": "Tous les champs seront visibles."
         },
         "modals": {
             "archive": {
@@ -386,6 +401,7 @@
             "matched": "À jour",
             "mismatch": "Écart détecté",
             "history": "Historique",
+            "loadMore": "Charger plus",
             "createdBy": "Par {name}",
             "createdByUnknown": "Auteur inconnu",
             "sources": {

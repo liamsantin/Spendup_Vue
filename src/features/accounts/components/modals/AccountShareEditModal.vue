@@ -8,8 +8,10 @@ import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { UserPhotoAvatar } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
-import type { AccountShare, ShareRole } from '@/features/accounts/types';
+import type { AccountShare, HiddenAccountField, ShareRole } from '@/features/accounts/types';
 import ShareRolePicker from '@/features/accounts/components/forms/ShareRolePicker.vue';
+import ShareHiddenFieldsPicker from '@/features/accounts/components/forms/ShareHiddenFieldsPicker.vue';
+import { DEFAULT_VIEWER_HIDDEN_FIELDS } from '@/features/accounts/types';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -25,11 +27,26 @@ const emit = defineEmits<{
 const { t, locale } = useI18n();
 const store = useAccountsStore();
 const editRole = ref<ShareRole>('viewer');
+const editHiddenFields = ref<HiddenAccountField[]>([...DEFAULT_VIEWER_HIDDEN_FIELDS]);
 const editError = ref<string | null>(null);
 
 const open = computed({
     get: () => props.modelValue,
     set: (value: boolean) => emit('update:modelValue', value)
+});
+
+const initialRole = computed(() => {
+    if (!props.share) return 'viewer' as ShareRole;
+    return (props.share.role === 'pending' ? (props.share.invitedRole ?? 'viewer') : props.share.role) as ShareRole;
+});
+
+const canSave = computed(() => {
+    if (!props.share || props.share.role === 'pending') return false;
+    const roleChanged = editRole.value !== initialRole.value;
+    const fieldsChanged =
+        editRole.value === 'viewer' &&
+        JSON.stringify([...(props.share.hiddenFields ?? [])].sort()) !== JSON.stringify([...editHiddenFields.value].sort());
+    return roleChanged || fieldsChanged;
 });
 
 function formatDate(value: string) {
@@ -40,20 +57,21 @@ watch(
     () => [props.modelValue, props.share?.publicId] as const,
     () => {
         if (!props.modelValue || !props.share) return;
-        editRole.value = (props.share.role === 'pending' ? (props.share.invitedRole ?? 'viewer') : props.share.role) as ShareRole;
+        editRole.value = initialRole.value;
+        editHiddenFields.value = [...(props.share.hiddenFields ?? DEFAULT_VIEWER_HIDDEN_FIELDS)];
         editError.value = null;
     }
 );
 
 async function confirmEdit() {
-    if (!props.share) return;
-    if (props.share.role === 'pending' || props.share.role === editRole.value) {
+    if (!props.share || !canSave.value) {
         open.value = false;
         return;
     }
     editError.value = null;
     try {
-        await store.updateShareRole(props.accountPublicId, props.share.userPublicId, editRole.value);
+        const hidden = editRole.value === 'viewer' ? editHiddenFields.value : undefined;
+        await store.updateShareRole(props.accountPublicId, props.share.userPublicId, editRole.value, hidden);
         open.value = false;
     } catch (e: unknown) {
         editError.value = getErrorMessage(e);
@@ -91,6 +109,11 @@ function requestRevoke() {
             <ShareRolePicker v-model="editRole" :disabled="store.acting || share?.role === 'pending'" />
         </div>
 
+        <div v-if="editRole === 'viewer'" class="mb-4">
+            <div class="text-subtitle-2 mb-2">{{ t('comptesPage.share.fields.hiddenFields') }}</div>
+            <ShareHiddenFieldsPicker v-model="editHiddenFields" :disabled="store.acting || share?.role === 'pending'" />
+        </div>
+
         <v-btn variant="tonal" color="error" size="small" :disabled="store.acting" @click="requestRevoke">
             {{ share?.role === 'pending' ? t('comptesPage.share.cancelInvite') : t('comptesPage.share.revoke') }}
         </v-btn>
@@ -98,7 +121,7 @@ function requestRevoke() {
         <template #footer="{ close }">
             <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>
             <v-spacer />
-            <v-btn color="primary" flat :loading="store.acting" :disabled="store.acting || share?.role === 'pending'" @click="confirmEdit">
+            <v-btn color="primary" flat :loading="store.acting" :disabled="store.acting || !canSave" @click="confirmEdit">
                 {{ t('comptesPage.share.editConfirm') }}
             </v-btn>
         </template>

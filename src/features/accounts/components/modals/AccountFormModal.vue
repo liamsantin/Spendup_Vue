@@ -5,7 +5,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { emptyToNull, parseAccountAmount } from '@/features/accounts/format';
+import { emptyToNull, isValidIbanFormat, parseAccountAmount } from '@/features/accounts/format';
 import { canEditAccountOwnerFields } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { ACCOUNT_COLOR_PRESETS, ACCOUNT_TYPES, CURRENCIES, type Account, type AccountType, type Currency } from '@/features/accounts/types';
@@ -70,7 +70,7 @@ function resetForm() {
         form.name = props.account.name;
         form.type = props.account.type;
         form.currency = props.account.currency;
-        form.initialBalance = props.account.initialBalance;
+        form.initialBalance = props.account.initialBalance ?? 0;
         form.iban = props.account.iban ?? '';
         form.accountNumber = props.account.accountNumber ?? '';
         form.color = props.account.color;
@@ -102,13 +102,17 @@ async function onSave() {
         localError.message = t('comptesPage.form.errors.nameRequired');
         return;
     }
+    if (!isValidIbanFormat(form.iban)) {
+        localError.message = t('comptesPage.form.errors.ibanInvalid');
+        return;
+    }
 
     try {
         if (props.account) {
             // Editor : n’envoyer que name / color / accountNumber — les autres champs sont échos (API refuse sinon).
             const lockOwner = !canEditAccountOwnerFields(props.account);
             const initialBalance = lockOwner
-                ? props.account.initialBalance
+                ? (props.account.initialBalance ?? 0)
                 : parseAccountAmount(form.initialBalance);
             if (initialBalance == null) {
                 localError.message = t('comptesPage.form.errors.balanceInvalid');

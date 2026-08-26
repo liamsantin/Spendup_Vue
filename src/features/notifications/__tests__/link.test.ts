@@ -166,6 +166,7 @@ describe('notification type helpers', () => {
         expect(isAccountShareNotificationType('accountShareInvite')).toBe(true);
         expect(isAccountShareNotificationType('accountShareRevoked')).toBe(true);
         expect(isAccountShareNotificationType('accountShareLeft')).toBe(true);
+        expect(isAccountShareNotificationType('accountShareRoleChanged')).toBe(true);
         expect(isAccountShareNotificationType('friendRequest')).toBe(false);
     });
 });

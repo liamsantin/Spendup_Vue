@@ -42,8 +42,9 @@ Hub `{apiBase}/hubs/realtime` — détails `architecture/realtime.md`.
 ## Invariants
 
 - Types inbox produit (amis) : `friendRequest`, `friendAccepted` ; anciens types friend encore deep-linkables.
-- Types inbox produit (comptes) : `accountShareInvite`, `accountShareAccepted`, `accountShareRefused`, `accountShareRevoked`, `accountShareLeft`.
+- Types inbox produit (comptes) : `accountShareInvite`, `accountShareAccepted`, `accountShareRefused`, `accountShareRevoked`, `accountShareLeft`, `accountShareRoleChanged`.
 - Chips live : `friendRequest`, `friendAccepted`, `accountShareInvite`.
+- Inbox transactionnelle : la ligne est écrite même si `pushNotifications` est off — seul le push SignalR est filtré. Incoming shares / inbox REST restent la source de vérité pour les invitations en attente.
 - Prefs push (`pushNotifications` + sous-flags) :
     - **Web** : gate les **chips live** uniquement — **pas** inbox, badge, ni refresh friends / comptes.
     - **Tauri** (`isTauri`) : gate aussi les **notifications OS** natives (`plugin-notification`) sur `notificationReceived`.

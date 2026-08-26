@@ -243,7 +243,8 @@
             "archived": "Archived"
         },
         "list": {
-            "accountNumber": "No. {number}"
+            "accountNumber": "No. {number}",
+            "accountNumberHidden": "No. hidden"
         },
         "roles": {
             "owner": "Owner",
@@ -275,12 +276,14 @@
             "primaryNoArchive": "The primary account cannot be archived.",
             "primaryNoDelete": "The primary account cannot be deleted.",
             "primaryFirstAccount": "The first account is always primary.",
-            "primaryChangeViaPromote": "To change the primary account, open another account and use “Set as primary”."
+            "primaryChangeViaPromote": "To change the primary account, open another account and use “Set as primary”.",
+            "archivedNoPrimary": "Cannot set an archived account as primary."
         },
         "detail": {
             "title": "Account details",
             "currentBalance": "Current balance",
             "initialBalance": "Initial balance",
+            "fieldHidden": "Hidden",
             "tabs": {
                 "details": "Details",
                 "snapshots": "Snapshot",
@@ -307,7 +310,8 @@
             },
             "errors": {
                 "nameRequired": "Name is required.",
-                "balanceInvalid": "Enter a valid balance."
+                "balanceInvalid": "Enter a valid balance.",
+                "ibanInvalid": "Invalid IBAN."
             }
         },
         "share": {
@@ -325,7 +329,16 @@
             "pendingRole": "Pending · {role}",
             "fields": {
                 "friend": "Friend",
-                "role": "Role"
+                "role": "Role",
+                "hiddenFields": "Hidden fields"
+            },
+            "hiddenFields": {
+                "hint": "These details will stay invisible to the viewer.",
+                "iban": "IBAN",
+                "accountNumber": "Account number",
+                "balance": "Balances",
+                "summary": "Hidden: {fields}",
+                "none": "No hidden fields"
             },
             "roleHints": {
                 "viewer": "Can view balances and snapshots.",
@@ -348,7 +361,9 @@
         "invitations": {
             "title": "Incoming invitations",
             "subtitle": "Accept or refuse account shares.",
-            "from": "From {name}"
+            "from": "From {name}",
+            "hiddenFields": "Hidden fields: {fields}",
+            "noHiddenFields": "All fields will be visible."
         },
         "modals": {
             "archive": {
@@ -386,6 +401,7 @@
             "matched": "Up to date",
             "mismatch": "Difference found",
             "history": "History",
+            "loadMore": "Load more",
             "createdBy": "By {name}",
             "createdByUnknown": "Unknown author",
             "sources": {

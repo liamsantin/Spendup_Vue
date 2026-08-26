@@ -14,6 +14,7 @@ import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import { useShareInvite } from '@/features/accounts/composables/useShareInvite';
 import ShareInviteFriendList from '@/features/accounts/components/list/ShareInviteFriendList.vue';
 import ShareRolePicker from '@/features/accounts/components/forms/ShareRolePicker.vue';
+import ShareHiddenFieldsPicker from '@/features/accounts/components/forms/ShareHiddenFieldsPicker.vue';
 
 const props = defineProps<{
     accountPublicId: string;
@@ -110,6 +111,11 @@ defineExpose({
             <div class="share-invite-form__label">{{ t('comptesPage.share.fields.role') }}</div>
             <ShareRolePicker v-model="invite.role" />
         </div>
+
+        <div v-if="invite.role === 'viewer'" class="share-invite-form__hidden">
+            <div class="share-invite-form__label">{{ t('comptesPage.share.fields.hiddenFields') }}</div>
+            <ShareHiddenFieldsPicker v-model="invite.hiddenFields" />
+        </div>
     </div>
 </template>
 
@@ -166,6 +172,11 @@ defineExpose({
 }
 
 .share-invite-form__role {
+    flex-shrink: 0;
+    margin-top: 16px;
+}
+
+.share-invite-form__hidden {
     flex-shrink: 0;
     margin-top: 16px;
 }

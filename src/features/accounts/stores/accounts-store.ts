@@ -28,6 +28,7 @@ export const useAccountsStore = defineStore('accounts', () => {
     const snapshots = createAccountsSnapshots(state);
     const realtime = createAccountsRealtime(state, {
         loadAccounts: crud.loadAccounts,
+        loadAccountDetail: crud.loadAccountDetail,
         loadIncoming: shares.loadIncoming,
         loadShares: shares.loadShares,
         refreshAll: shares.refreshAll
@@ -54,11 +55,14 @@ export const useAccountsStore = defineStore('accounts', () => {
         selectedAccount: state.selectedAccount,
         shares: state.shares,
         balanceSnapshots: state.balanceSnapshots,
+        snapshotsTotalCount: state.snapshotsTotalCount,
+        hasMoreSnapshots: state.hasMoreSnapshots,
         loadingAccounts: state.loadingAccounts,
         loadingIncoming: state.loadingIncoming,
         loadingDetail: state.loadingDetail,
         loadingShares: state.loadingShares,
         loadingSnapshots: state.loadingSnapshots,
+        loadingMoreSnapshots: state.loadingMoreSnapshots,
         acting: state.acting,
         initialized: state.initialized,
         error: state.error,
@@ -96,6 +100,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         refuseShare: shares.refuseShare,
         refreshAll: shares.refreshAll,
         loadBalanceSnapshots: snapshots.loadBalanceSnapshots,
+        loadMoreBalanceSnapshots: snapshots.loadMoreBalanceSnapshots,
         createBalanceSnapshot: snapshots.createBalanceSnapshot,
         deleteBalanceSnapshot: snapshots.deleteBalanceSnapshot,
         onAuthenticatedSession: realtime.onAuthenticatedSession,

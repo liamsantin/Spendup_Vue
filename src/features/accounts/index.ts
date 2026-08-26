@@ -18,7 +18,12 @@ export {
 } from '@/features/accounts/rights';
 export {
     formatAccountBalance,
+    resolveAccountBalanceDisplay,
+    isAccountFieldHidden,
+    isBalanceHidden,
     emptyToNull,
+    normalizeIban,
+    isValidIbanFormat,
     parseAccountAmount,
     todayYmd,
     ymdToSnapshotIso,
@@ -30,6 +35,7 @@ export type {
     AccountRole,
     ShareRole,
     ShareStatusRole,
+    HiddenAccountField,
     Account,
     AccountShare,
     IncomingAccountShare,
@@ -43,9 +49,10 @@ export type {
     BalanceSnapshotSource,
     AccountBalanceSnapshot,
     AccountBalanceSnapshotsListResult,
+    ListBalanceSnapshotsQuery,
     CreateBalanceSnapshotPayload
 } from '@/features/accounts/types';
-export { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLOR_PRESETS } from '@/features/accounts/types';
+export { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLOR_PRESETS, HIDDEN_ACCOUNT_FIELDS, DEFAULT_VIEWER_HIDDEN_FIELDS } from '@/features/accounts/types';
 export { default as AccountsTab } from '@/features/accounts/components/tabs/AccountsTab.vue';
 export { default as InvitationsTab } from '@/features/accounts/components/tabs/InvitationsTab.vue';
 export { default as AccountListItem } from '@/features/accounts/components/list/AccountListItem.vue';

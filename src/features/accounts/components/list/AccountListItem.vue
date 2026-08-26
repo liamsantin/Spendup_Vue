@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { formatAccountBalance } from '@/features/accounts/format';
+import { LockIcon } from 'vue-tabler-icons';
+import { isAccountFieldHidden, resolveAccountBalanceDisplay } from '@/features/accounts/format';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { Account } from '@/features/accounts/types';
 
@@ -16,11 +17,28 @@ const emit = defineEmits<{
 const { t, locale } = useI18n();
 const store = useAccountsStore();
 
-const balance = computed(() => formatAccountBalance(props.account.currentBalance, props.account.currency, locale.value));
+const balanceDisplay = computed(() =>
+    resolveAccountBalanceDisplay(
+        props.account.currentBalance,
+        props.account.currency,
+        isAccountFieldHidden(props.account, 'balance'),
+        locale.value
+    )
+);
 const typeLabel = computed(() => t(`comptesPage.types.${props.account.type}`));
 const roleLabel = computed(() => t(`comptesPage.roles.${props.account.myRole}`));
 const focused = computed(() => store.isFocusedAccount(props.account.publicId));
 const promoted = computed(() => store.isPromotedAccount(props.account.publicId));
+
+const accountNumberLine = computed(() => {
+    if (isAccountFieldHidden(props.account, 'accountNumber') && props.account.accountNumber == null) {
+        return ` · ${t('comptesPage.list.accountNumberHidden')}`;
+    }
+    if (props.account.accountNumber) {
+        return ` · ${t('comptesPage.list.accountNumber', { number: props.account.accountNumber })}`;
+    }
+    return '';
+});
 </script>
 
 <template>
@@ -46,11 +64,13 @@ const promoted = computed(() => store.isPromotedAccount(props.account.publicId))
         <div class="account-list-item__body w-100">
             <div class="d-flex align-center justify-space-between ga-2">
                 <h6 class="text-subtitle-1 font-weight-bold mb-0 text-truncate min-width-0">{{ account.name }}</h6>
-                <div class="text-subtitle-1 font-weight-semibold text-right flex-shrink-0">{{ balance }}</div>
+                <div class="text-subtitle-1 font-weight-semibold text-right flex-shrink-0 d-flex align-center ga-1">
+                    <LockIcon v-if="balanceDisplay.hidden" size="16" stroke-width="1.5" class="text-medium-emphasis" />
+                    <span>{{ balanceDisplay.text }}</span>
+                </div>
             </div>
             <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">
-                {{ typeLabel }} · {{ account.currency
-                }}{{ account.accountNumber ? ` · ${t('comptesPage.list.accountNumber', { number: account.accountNumber })}` : '' }}
+                {{ typeLabel }} · {{ account.currency }}{{ accountNumberLine }}
             </p>
             <div v-if="account.isPrimary || !account.isActive || !account.isOwned" class="d-flex align-center ga-2 flex-wrap mt-1">
                 <v-chip v-if="account.isPrimary" size="x-small" color="primary" variant="tonal">

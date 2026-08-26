@@ -1,7 +1,14 @@
 import { accountsApi } from '@/features/accounts/api';
-import type { CreateAccountPayload, UpdateAccountPayload } from '@/features/accounts/types';
+import type { Account, CreateAccountPayload, UpdateAccountPayload } from '@/features/accounts/types';
 import { ACCOUNTS_DETAIL_MAX_AGE_MS, KEY_ACCOUNTS, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import { AppError } from '@/utils/errors/app-error';
+
+function normalizeAccount(account: Account): Account {
+    return {
+        ...account,
+        hiddenFields: Array.isArray(account.hiddenFields) ? account.hiddenFields : []
+    };
+}
 
 /**
  * Actions CRUD et chargement des comptes.
@@ -42,7 +49,7 @@ export function createAccountsCrud(state: AccountsState) {
                 clearError();
                 try {
                     const result = await accountsApi.list();
-                    accounts.value = Array.isArray(result?.items) ? result.items : [];
+                    accounts.value = (Array.isArray(result?.items) ? result.items : []).map(normalizeAccount);
                     syncSelectedWithList();
                 } catch (e: unknown) {
                     error.value = e instanceof Error ? e.message : String(e);
@@ -74,7 +81,7 @@ export function createAccountsCrud(state: AccountsState) {
                     clearError();
                 }
                 try {
-                    const account = await accountsApi.get(publicId);
+                    const account = normalizeAccount(await accountsApi.get(publicId));
                     upsertAccount(account);
                     if (requestId === detailRequestSeq) {
                         selectedAccount.value = account;
@@ -115,7 +122,7 @@ export function createAccountsCrud(state: AccountsState) {
         acting.value = true;
         clearError();
         try {
-            const account = await accountsApi.create(payload);
+            const account = normalizeAccount(await accountsApi.create(payload));
             upsertAccount(account, true);
             cache.touch(KEY_ACCOUNTS);
             cache.touch(`detail:${account.publicId}`);
@@ -142,7 +149,7 @@ export function createAccountsCrud(state: AccountsState) {
         acting.value = true;
         clearError();
         try {
-            const account = await accountsApi.update(publicId, payload);
+            const account = normalizeAccount(await accountsApi.update(publicId, payload));
             upsertAccount(account);
             cache.touch(KEY_ACCOUNTS);
             cache.touch(`detail:${publicId}`);
@@ -167,7 +174,7 @@ export function createAccountsCrud(state: AccountsState) {
         acting.value = true;
         clearError();
         try {
-            const account = await accountsApi.setPrimary(publicId);
+            const account = normalizeAccount(await accountsApi.setPrimary(publicId));
             applyPrimaryLocally(publicId, account);
             markPromoted(publicId);
             return account;
@@ -188,7 +195,7 @@ export function createAccountsCrud(state: AccountsState) {
         acting.value = true;
         clearError();
         try {
-            const account = await accountsApi.archive(publicId);
+            const account = normalizeAccount(await accountsApi.archive(publicId));
             upsertAccount(account);
             cache.touch(KEY_ACCOUNTS);
             cache.touch(`detail:${publicId}`);
@@ -210,7 +217,7 @@ export function createAccountsCrud(state: AccountsState) {
         acting.value = true;
         clearError();
         try {
-            const account = await accountsApi.restore(publicId);
+            const account = normalizeAccount(await accountsApi.restore(publicId));
             upsertAccount(account);
             cache.touch(KEY_ACCOUNTS);
             cache.touch(`detail:${publicId}`);

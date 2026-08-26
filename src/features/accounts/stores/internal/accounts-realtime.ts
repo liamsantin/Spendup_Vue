@@ -1,25 +1,65 @@
 import { useNotificationsStore } from '@/features/notifications';
-import { getAccountPublicId } from '@/features/notifications/normalize';
+import { getAccountPublicId, getAccountSharePublicId } from '@/features/notifications/normalize';
 import type { AccountChangedPayload, AppNotification, FriendshipChangedPayload } from '@/features/notifications';
 import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
 import type { AccountsShares } from '@/features/accounts/stores/internal/accounts-shares';
+import type { AccountShare, ShareStatusRole } from '@/features/accounts/types';
 
-type RealtimeDeps = Pick<AccountsCrud, 'loadAccounts'> & Pick<AccountsShares, 'loadIncoming' | 'loadShares' | 'refreshAll'>;
+type RealtimeDeps = Pick<AccountsCrud, 'loadAccounts' | 'loadAccountDetail'> &
+    Pick<AccountsShares, 'loadIncoming' | 'loadShares' | 'refreshAll'>;
 
 /**
- * Abonnements realtime (partages + amitiés + archive/restore) pour invalider / recharger le store.
+ * Abonnements realtime (partages + amitiés + archive/restore/visibilité) pour invalider / recharger le store.
  * @param state État partagé du store.
  * @param deps Actions de rechargement utilisées par les handlers.
  * @returns Les helpers de bridge realtime.
  */
 export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps) {
-    const { accounts, selectedAccount, cache, removeAccountLocal, upsertAccount } = state;
-    const { loadAccounts, loadIncoming, loadShares, refreshAll } = deps;
+    const {
+        accounts,
+        selectedAccount,
+        shares,
+        sharesByAccountId,
+        cache,
+        removeAccountLocal,
+        upsertAccount,
+        setSharesForAccount
+    } = state;
+    const { loadAccounts, loadAccountDetail, loadIncoming, loadShares, refreshAll } = deps;
 
     let unsubscribeNotifications: (() => void) | null = null;
     let unsubscribeFriendshipChanged: (() => void) | null = null;
     let unsubscribeAccountChanged: (() => void) | null = null;
+
+    function readSharesSnapshot(accountPublicId: string): AccountShare[] {
+        return (
+            sharesByAccountId.get(accountPublicId) ??
+            (selectedAccount.value?.publicId === accountPublicId ? [...shares.value] : [])
+        );
+    }
+
+    /** Pending → rôle invité (UI immédiate côté owner). */
+    function promoteAcceptedShare(accountPublicId: string, sharePublicId: string | null, current: AccountShare[]) {
+        if (!current.length) return;
+        let next = current;
+        if (sharePublicId) {
+            next = current.map((s) => {
+                if (s.publicId !== sharePublicId || s.role !== 'pending') return s;
+                const role = (s.invitedRole ?? 'viewer') as Exclude<ShareStatusRole, 'pending'>;
+                return { ...s, role, invitedRole: null };
+            });
+        } else {
+            const pending = current.filter((s) => s.role === 'pending');
+            if (pending.length !== 1) return;
+            next = current.map((s) => {
+                if (s.role !== 'pending') return s;
+                const role = (s.invitedRole ?? 'viewer') as Exclude<ShareStatusRole, 'pending'>;
+                return { ...s, role, invitedRole: null };
+            });
+        }
+        setSharesForAccount(accountPublicId, next);
+    }
 
     /**
      * Réagit aux notifs de partage (invitation, révocation, acceptation, refus).
@@ -45,22 +85,65 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
             return;
         }
         if (type === 'accountShareAccepted' || type === 'accountShareRefused') {
+            // Owner : invalider TOUS les caches shares (metadata parfois sans accountPublicId)
+            // + patch optimiste pending→rôle pour l’UI immédiate.
+            const accountPublicId =
+                getAccountPublicId(notification.metadata) ??
+                (selectedAccount.value?.isOwned ? selectedAccount.value.publicId : null);
+            const sharePublicId = getAccountSharePublicId(notification.metadata);
+            const current = accountPublicId ? readSharesSnapshot(accountPublicId) : [];
+
             cache.invalidate(KEY_ACCOUNTS);
-            void loadAccounts(true).catch(() => undefined);
-            if (selectedAccount.value && selectedAccount.value.isOwned) {
-                cache.invalidate(`shares:${selectedAccount.value.publicId}`);
-                void loadShares(selectedAccount.value.publicId, true).catch(() => undefined);
+            cache.invalidate('shares:*');
+
+            if (accountPublicId) {
+                sharesByAccountId.delete(accountPublicId);
+                if (type === 'accountShareAccepted') {
+                    promoteAcceptedShare(accountPublicId, sharePublicId, current);
+                } else if (sharePublicId) {
+                    setSharesForAccount(
+                        accountPublicId,
+                        current.filter((s) => s.publicId !== sharePublicId)
+                    );
+                }
+                void loadShares(accountPublicId, true).catch(() => undefined);
+            } else {
+                sharesByAccountId.clear();
+                if (selectedAccount.value?.isOwned) {
+                    void loadShares(selectedAccount.value.publicId, true).catch(() => undefined);
+                }
             }
+            void loadAccounts(true).catch(() => undefined);
             return;
         }
         if (type === 'accountShareLeft') {
-            // Un destinataire a quitté : owner rafraîchit la liste des shares.
+            // Destinataire a quitté : invalider le cache shares même si la modale est fermée
+            // (sinon réouverture TTL-frais réaffiche l’ancien partage).
+            const accountPublicId = getAccountPublicId(notification.metadata);
             cache.invalidate(KEY_ACCOUNTS);
-            void loadAccounts(true).catch(() => undefined);
-            if (selectedAccount.value?.isOwned) {
-                cache.invalidate(`shares:${selectedAccount.value.publicId}`);
-                void loadShares(selectedAccount.value.publicId, true).catch(() => undefined);
+            cache.invalidate('shares:*');
+            if (accountPublicId) {
+                sharesByAccountId.delete(accountPublicId);
+                if (selectedAccount.value?.publicId === accountPublicId) {
+                    setSharesForAccount(accountPublicId, []);
+                    void loadShares(accountPublicId, true).catch(() => undefined);
+                }
+            } else if (selectedAccount.value?.isOwned) {
+                const id = selectedAccount.value.publicId;
+                sharesByAccountId.delete(id);
+                void loadShares(id, true).catch(() => undefined);
+            } else {
+                sharesByAccountId.clear();
             }
+            void loadAccounts(true).catch(() => undefined);
+            return;
+        }
+        if (type === 'accountShareRoleChanged') {
+            // Destinataire : rôle modifié sur un partage actif — refetch comptes (myRole / hiddenFields).
+            cache.invalidate(KEY_ACCOUNTS);
+            const accountPublicId = getAccountPublicId(notification.metadata);
+            if (accountPublicId) cache.invalidate(`detail:${accountPublicId}`);
+            void loadAccounts(true).catch(() => undefined);
         }
     }
 
@@ -80,8 +163,8 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
     }
 
     /**
-     * Archive / restore poussé par un autre utilisateur (owner ou editor).
-     * Patch local immédiat + sync liste en arrière-plan.
+     * Archive / restore / champs masqués poussés par SignalR (pas d’inbox).
+     * Patch local immédiat quand possible + sync liste / détail en arrière-plan.
      * @param payload Événement `accountChanged`.
      */
     function handleAccountChanged(payload: AccountChangedPayload) {
@@ -89,8 +172,8 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
         const id = payload.accountPublicId.trim();
         if (!id) return;
 
-        const isActive = payload.change === 'restored';
         if (payload.change === 'archived' || payload.change === 'restored') {
+            const isActive = payload.change === 'restored';
             const current = accounts.value.find((a) => a.publicId === id);
             if (current) {
                 upsertAccount({ ...current, isActive });
@@ -98,6 +181,18 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
             cache.invalidate(KEY_ACCOUNTS);
             cache.invalidate(`detail:${id}`);
             void loadAccounts(true).catch(() => undefined);
+            return;
+        }
+
+        if (payload.change === 'visibility') {
+            // Destinataire : hiddenFields seuls ont changé — refetch liste (+ détail si ouvert).
+            cache.invalidate(KEY_ACCOUNTS);
+            cache.invalidate(`detail:${id}`);
+            cache.invalidate(`snapshots:${id}`);
+            void loadAccounts(true).catch(() => undefined);
+            if (selectedAccount.value?.publicId === id) {
+                void loadAccountDetail(id, true).catch(() => undefined);
+            }
         }
     }
 

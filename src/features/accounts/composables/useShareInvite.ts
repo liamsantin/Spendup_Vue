@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { listAllFriends, type FriendItem } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
-import type { ShareRole } from '@/features/accounts/types';
+import { DEFAULT_VIEWER_HIDDEN_FIELDS, type HiddenAccountField, type ShareRole } from '@/features/accounts/types';
 
 export function useShareInvite(options: {
     accountPublicId: MaybeRefOrGetter<string>;
@@ -18,6 +18,7 @@ export function useShareInvite(options: {
     const friendQuery = ref('');
     const selectedUserPublicId = ref<string | null>(null);
     const role = ref<ShareRole>('viewer');
+    const hiddenFields = ref<HiddenAccountField[]>([...DEFAULT_VIEWER_HIDDEN_FIELDS]);
     const localError = ref<string | null>(null);
 
     const excludedIds = computed(() => new Set(store.shares.map((s) => s.userPublicId)));
@@ -53,6 +54,7 @@ export function useShareInvite(options: {
             selectedUserPublicId.value = null;
             friendQuery.value = '';
             role.value = 'viewer';
+            hiddenFields.value = [...DEFAULT_VIEWER_HIDDEN_FIELDS];
             localError.value = null;
             void loadFriends();
         },
@@ -76,7 +78,8 @@ export function useShareInvite(options: {
                 toValue(options.accountPublicId),
                 selectedUserPublicId.value,
                 role.value,
-                friend?.user.profilePicture ?? null
+                friend?.user.profilePicture ?? null,
+                role.value === 'viewer' ? hiddenFields.value : undefined
             );
             options.close();
         } catch (e: unknown) {
@@ -91,6 +94,7 @@ export function useShareInvite(options: {
         friendQuery,
         selectedUserPublicId,
         role,
+        hiddenFields,
         localError,
         loadingFriends,
         availableFriends,

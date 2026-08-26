@@ -12,7 +12,7 @@
 | Store     | `useAccountsStore`                                                                         |
 | API       | `accountsApi` → **`fetchWrapper`**                                                         |
 | Droits UI | `rights.ts` branché sur `myRole` / `isOwned` / `isPrimary`                                 |
-| Realtime  | Notifs `accountShare*` + SignalR `accountChanged` (archive/restore) + `friendshipChanged` via notifications store |
+| Realtime  | Notifs `accountShare*` (dont `accountShareRoleChanged`) + SignalR `accountChanged` + `friendshipChanged` |
 | Dashboard | Module Comptes actif → `/app/finances/comptes`                                             |
 
 ## HTTP
@@ -23,13 +23,23 @@
 | POST    | `/api/accounts`, `…/primary`, `…/archive`, `…/restore`, `…/shares`, `…/shares/leave`, `…/shares/{id}/accept\|refuse`  |
 | PUT     | `/api/accounts/{id}` (état **complet**), `/api/accounts/{id}/shares/{userPublicId}`                 |
 | DELETE  | `/api/accounts/{id}`, `/api/accounts/{id}/shares/{userPublicId}` → **204**                          |
-| GET/POST| `/api/accounts/{id}/balance-snapshots` — items incluent `createdByUserPublicId` / `createdByDisplayName` / `createdByPhotoUrl` (nullable) |
+| GET/POST| `/api/accounts/{id}/balance-snapshots` — paginé (`page`, `pageSize`, `totalCount`) ; items incluent `createdBy*` (nullable) |
 | DELETE  | `/api/accounts/{id}/balance-snapshots/{snapshotId}` → **204**                                        |
 
-## Relevés — auteur
+## Relevés — pagination & auteur
 
+- Liste : `{ items, page, pageSize, totalCount }` via `?page=&pageSize=` (défaut 50, max 200).
 - L’API expose toujours l’auteur sur chaque relevé (null si inconnu / soft-deleted).
 - UI : afficher l’auteur **uniquement** si le compte est partagé (`!isOwned` ou partage accepté côté owner).
+- Viewer avec `balance` dans `hiddenFields` : onglet relevés masqué (API → 404).
+- `snapshotAt` en UTC (`…Z`), pas dans le futur (sélecteur borné à aujourd’hui). Aujourd’hui → `now.toISOString()` ; jour passé → midi UTC (`…T12:00:00.000Z`).
+
+## Champs masqués (viewer)
+
+- `Account.hiddenFields` : `iban` | `accountNumber` | `balance`.
+- `null` **et** listé → afficher « caché » (cadenas) ; `null` hors liste → vraiment vide.
+- Invite / update share : `hiddenFields` optionnel (défaut `["iban","accountNumber"]` pour viewer ; ignoré pour editor).
+- Changer seulement `hiddenFields` : SignalR `accountChanged` (`visibility`) pour le destinataire — pas d’inbox. Changement de rôle → `accountShareRoleChanged` uniquement.
 
 ## Invariants
 
@@ -53,6 +63,7 @@ Mémoire process via `createResourceCache` (`src/utils/helpers/resource-cache.ts
 - Après `loadAccounts`, `syncSelectedWithList()` vide la sélection si le compte a disparu (revoke / amitié).
 - `accountShareRevoked` (revoke manuel **ou** soft-delete owner) : `removeAccountLocal` immédiat via `metadata.accountPublicId`, puis sync liste en arrière-plan.
 - `accountChanged` (`archived` / `restored`) : patch local `isActive` + refetch liste (pas d’inbox). Filet page : refetch au `visibilitychange`.
+- `accountChanged` (`visibility`) : destinataire refetch liste (+ détail si ouvert) quand seuls les `hiddenFields` changent — pas d’inbox. Changement de rôle → `accountShareRoleChanged` uniquement.
 - Destinataire d’un partage actif : bouton **Quitter** → `POST …/shares/leave` ; owner reçoit `accountShareLeft` (inbox + SignalR) et rafraîchit les shares.
 
 ### Budget de requêtes

@@ -77,7 +77,8 @@ const ownedAccount = {
     createdAt: '2026-01-01T00:00:00Z',
     updatedAt: null,
     isOwned: true,
-    myRole: 'owner'
+    myRole: 'owner',
+    hiddenFields: [] as const
 };
 
 const incomingInvite = {
@@ -89,8 +90,9 @@ const incomingInvite = {
     ownerPublicId: 'u2',
     ownerDisplayName: 'Bob',
     ownerPhotoUrl: null,
-    role: 'pending',
-    invitedRole: 'viewer',
+    role: 'pending' as const,
+    invitedRole: 'viewer' as const,
+    hiddenFields: ['iban', 'accountNumber'] as const,
     createdAt: '2026-01-02T00:00:00Z'
 };
 
@@ -264,6 +266,53 @@ describe('useAccountsStore', () => {
         await vi.waitFor(() => {
             expect(api.list).toHaveBeenCalled();
         });
+    });
+
+    it('accountChanged visibility refetch la liste et le détail ouvert', async () => {
+        const shared = {
+            ...ownedAccount,
+            publicId: 'acc-shared',
+            name: 'Partagé',
+            isOwned: false,
+            myRole: 'viewer' as const,
+            isPrimary: false,
+            currentBalance: null as number | null,
+            initialBalance: null as number | null,
+            hiddenFields: ['iban', 'accountNumber'] as const
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount, shared] });
+        api.get.mockResolvedValue(shared);
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+            accountListener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        await store.loadAccountDetail('acc-shared');
+
+        const revealed = {
+            ...shared,
+            currentBalance: 120,
+            initialBalance: 100,
+            hiddenFields: [] as const
+        };
+        api.list.mockClear();
+        api.get.mockClear();
+        api.list.mockResolvedValue({ items: [ownedAccount, revealed] });
+        api.get.mockResolvedValue(revealed);
+
+        accountListener?.({ change: 'visibility', accountPublicId: 'acc-shared' });
+
+        await vi.waitFor(() => {
+            expect(api.list).toHaveBeenCalled();
+            expect(api.get).toHaveBeenCalledWith('acc-shared');
+        });
+        expect(store.accounts.find((a) => a.publicId === 'acc-shared')?.hiddenFields).toEqual([]);
+        expect(store.selectedAccount?.currentBalance).toBe(120);
     });
 
     it('crée un compte par upsert sans relister', async () => {
@@ -655,7 +704,7 @@ describe('useAccountsStore', () => {
         await store.loadAccounts(true);
         await store.loadAccountDetail('acc-1');
         await store.loadBalanceSnapshots('acc-1');
-        expect(api.listBalanceSnapshots).toHaveBeenCalledWith('acc-1');
+        expect(api.listBalanceSnapshots).toHaveBeenCalledWith('acc-1', { page: 1, pageSize: 50 });
     });
 
     it('archive puis restore patchent le compte localement', async () => {
@@ -689,6 +738,7 @@ describe('useAccountsStore', () => {
             photoUrl: null,
             role: 'pending',
             invitedRole: 'viewer',
+            hiddenFields: ['iban', 'accountNumber'],
             createdAt: '2026-01-01T00:00:00Z',
             updatedAt: '2026-01-01T00:00:00Z'
         });
@@ -699,6 +749,7 @@ describe('useAccountsStore', () => {
             photoUrl: null,
             role: 'editor',
             invitedRole: null,
+            hiddenFields: [],
             createdAt: '2026-01-01T00:00:00Z',
             updatedAt: '2026-01-02T00:00:00Z'
         });
@@ -719,6 +770,92 @@ describe('useAccountsStore', () => {
 
         await store.revokeShare('acc-1', 'u2');
         expect(api.revokeShare).toHaveBeenCalledWith('acc-1', 'u2');
+        expect(store.shares).toHaveLength(0);
+    });
+
+    it('accountShareAccepted promeut pending → rôle même si la modale est ouverte', async () => {
+        const share = {
+            publicId: 's1',
+            userPublicId: 'u-b',
+            displayName: 'Bob',
+            photoUrl: null,
+            role: 'pending' as const,
+            invitedRole: 'viewer' as const,
+            hiddenFields: ['iban', 'accountNumber'] as const,
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z'
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listShares.mockResolvedValue({ items: [share] });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let listener: ((n: { type: string; metadata?: Record<string, unknown> }) => void) | undefined;
+        subscribeToAccountShareNotifications.mockImplementation((fn: (n: { type: string; metadata?: Record<string, unknown> }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        await store.loadAccountDetail('acc-1');
+        await store.loadShares('acc-1');
+        expect(store.shares[0]?.role).toBe('pending');
+
+        api.listShares.mockResolvedValue({
+            items: [{ ...share, role: 'viewer', invitedRole: null, hiddenFields: ['iban', 'accountNumber'] }]
+        });
+        listener?.({
+            type: 'accountShareAccepted',
+            metadata: { accountPublicId: 'acc-1', sharePublicId: 's1' }
+        });
+
+        expect(store.shares[0]?.role).toBe('viewer');
+        await vi.waitFor(() => {
+            expect(api.listShares).toHaveBeenCalled();
+        });
+    });
+
+    it('accountShareLeft invalide le cache shares même si la modale est fermée', async () => {
+        const share = {
+            publicId: 's1',
+            userPublicId: 'u-b',
+            displayName: 'Bob',
+            photoUrl: null,
+            role: 'viewer' as const,
+            invitedRole: null,
+            hiddenFields: [] as const,
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: '2026-01-01T00:00:00Z'
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listShares.mockResolvedValue({ items: [share] });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let listener: ((n: { type: string; metadata?: Record<string, unknown> }) => void) | undefined;
+        subscribeToAccountShareNotifications.mockImplementation((fn: (n: { type: string; metadata?: Record<string, unknown> }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        await store.loadAccountDetail('acc-1');
+        await store.loadShares('acc-1');
+        expect(store.shares).toHaveLength(1);
+
+        store.clearSelected();
+        expect(store.selectedAccount).toBeNull();
+
+        api.listShares.mockClear();
+        api.listShares.mockResolvedValue({ items: [] });
+        listener?.({ type: 'accountShareLeft', metadata: { accountPublicId: 'acc-1' } });
+
+        // Réouverture : ne doit pas réutiliser le cache TTL avec Bob encore présent.
+        await store.loadAccountDetail('acc-1');
+        await store.loadShares('acc-1');
+        expect(api.listShares).toHaveBeenCalled();
         expect(store.shares).toHaveLength(0);
     });
 

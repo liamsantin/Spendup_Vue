@@ -10,6 +10,7 @@ import type {
     CreateBalanceSnapshotPayload,
     IncomingAccountSharesResult,
     InviteAccountSharePayload,
+    ListBalanceSnapshotsQuery,
     UpdateAccountPayload,
     UpdateAccountShareRolePayload
 } from '@/features/accounts/types';
@@ -86,9 +87,15 @@ export const accountsApi = {
         return fetchWrapper.post(`/api/accounts/shares/${encodeURIComponent(sharePublicId)}/refuse`) as Promise<void>;
     },
 
-    listBalanceSnapshots(accountPublicId: string) {
+    listBalanceSnapshots(accountPublicId: string, query: ListBalanceSnapshotsQuery = {}) {
+        const page = query.page ?? 1;
+        const pageSize = Math.min(query.pageSize ?? 50, 200);
+        const params = new URLSearchParams({
+            page: String(page),
+            pageSize: String(pageSize)
+        });
         return fetchWrapper.get(
-            `/api/accounts/${encodeURIComponent(accountPublicId)}/balance-snapshots`
+            `/api/accounts/${encodeURIComponent(accountPublicId)}/balance-snapshots?${params}`
         ) as Promise<AccountBalanceSnapshotsListResult>;
     },
 

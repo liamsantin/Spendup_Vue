@@ -52,6 +52,16 @@ function roleChipLabel(share: AccountShare) {
     return t(`comptesPage.roles.${share.role}`);
 }
 
+function hiddenFieldsSummary(share: AccountShare): string | null {
+    const effectiveRole = share.role === 'pending' ? share.invitedRole : share.role;
+    if (effectiveRole !== 'viewer') return null;
+    const fields = share.hiddenFields ?? [];
+    if (!fields.length) return t('comptesPage.share.hiddenFields.none');
+    return t('comptesPage.share.hiddenFields.summary', {
+        fields: fields.map((f) => t(`comptesPage.share.hiddenFields.${f}`)).join(', ')
+    });
+}
+
 function openEdit(share: AccountShare) {
     editTargetId.value = share.publicId;
 }
@@ -64,7 +74,8 @@ function onRevokeFromEdit(share: AccountShare) {
 watch(
     () => props.accountPublicId,
     (id) => {
-        if (id) void store.loadShares(id).catch(() => undefined);
+        // force : évite de réafficher un pending stale après accept/refuse/leave hors modale.
+        if (id) void store.loadShares(id, true).catch(() => undefined);
     },
     { immediate: true }
 );
@@ -131,6 +142,9 @@ async function confirmRevoke() {
                         <div class="min-width-0">
                             <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">{{ share.displayName }}</h6>
                             <p class="text-body-2 text-medium-emphasis mb-0">{{ formatDate(share.createdAt) }}</p>
+                            <p v-if="hiddenFieldsSummary(share)" class="text-caption text-medium-emphasis mb-0 mt-1">
+                                {{ hiddenFieldsSummary(share) }}
+                            </p>
                         </div>
                         <div class="account-share-row__meta">
                             <v-chip size="small" :color="share.role === 'pending' ? 'warning' : 'secondary'" variant="tonal">

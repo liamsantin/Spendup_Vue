@@ -17,6 +17,7 @@ export type NotificationType =
     | 'accountShareRefused'
     | 'accountShareRevoked'
     | 'accountShareLeft'
+    | 'accountShareRoleChanged'
     | 'other'
     | (string & {});
 
@@ -87,8 +88,8 @@ export type FriendshipChangedPayload = {
     friendshipPublicId: string;
 };
 
-/** Payload SignalR `accountChanged` — sync archive/restore sans inbox. */
-export type AccountChange = 'archived' | 'restored';
+/** Payload SignalR `accountChanged` — sync archive/restore/visibilité sans inbox. */
+export type AccountChange = 'archived' | 'restored' | 'visibility';
 
 export type AccountChangedPayload = {
     change: AccountChange;

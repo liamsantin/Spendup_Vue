@@ -48,7 +48,7 @@ const latestSnapshot = computed(() => store.balanceSnapshots[0] ?? null);
 const showAuthors = computed(() => isSharedAccount(props.account, store.shares));
 
 const balanceDiff = computed(() => {
-    if (!latestSnapshot.value) return null;
+    if (!latestSnapshot.value || props.account.currentBalance == null) return null;
     return props.account.currentBalance - latestSnapshot.value.balance;
 });
 
@@ -117,6 +117,15 @@ async function confirmDelete() {
     try {
         await store.deleteBalanceSnapshot(props.account.publicId, deleteTarget.value.publicId);
         deleteTarget.value = null;
+    } catch (e: unknown) {
+        localError.value = getErrorMessage(e);
+    }
+}
+
+async function onLoadMore() {
+    localError.value = null;
+    try {
+        await store.loadMoreBalanceSnapshots(props.account.publicId);
     } catch (e: unknown) {
         localError.value = getErrorMessage(e);
     }
@@ -223,6 +232,17 @@ async function confirmDelete() {
                                 :acting="store.acting"
                                 @delete="deleteTarget = $event"
                             />
+                            <div v-if="store.hasMoreSnapshots" class="py-3 text-center">
+                                <v-btn
+                                    variant="tonal"
+                                    size="small"
+                                    :loading="store.loadingMoreSnapshots"
+                                    :disabled="store.loadingMoreSnapshots"
+                                    @click="onLoadMore"
+                                >
+                                    {{ t('comptesPage.snapshots.loadMore') }}
+                                </v-btn>
+                            </div>
                         </div>
                     </div>
                     <PerfectScrollbar
@@ -242,6 +262,17 @@ async function confirmDelete() {
                                 :acting="store.acting"
                                 @delete="deleteTarget = $event"
                             />
+                            <div v-if="store.hasMoreSnapshots" class="py-3 text-center">
+                                <v-btn
+                                    variant="tonal"
+                                    size="small"
+                                    :loading="store.loadingMoreSnapshots"
+                                    :disabled="store.loadingMoreSnapshots"
+                                    @click="onLoadMore"
+                                >
+                                    {{ t('comptesPage.snapshots.loadMore') }}
+                                </v-btn>
+                            </div>
                         </div>
                     </PerfectScrollbar>
                 </div>

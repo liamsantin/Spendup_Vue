@@ -86,6 +86,7 @@ function account(partial: Partial<Account> = {}): Account {
         updatedAt: null,
         isOwned: true,
         myRole: 'owner',
+        hiddenFields: [],
         ...partial
     };
 }
@@ -102,6 +103,7 @@ function incoming(partial: Partial<IncomingAccountShare> = {}): IncomingAccountS
         ownerPhotoUrl: null,
         role: 'pending',
         invitedRole: 'editor',
+        hiddenFields: [],
         createdAt: '2026-01-02T00:00:00Z',
         ...partial
     };
@@ -588,6 +590,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                         photoUrl: null,
                         role: 'pending',
                         invitedRole: 'viewer',
+                        hiddenFields: ['iban', 'accountNumber'],
                         createdAt: '2026-01-01T00:00:00Z',
                         updatedAt: '2026-01-01T00:00:00Z'
                     },
@@ -598,6 +601,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                         photoUrl: null,
                         role: 'editor',
                         invitedRole: null,
+                        hiddenFields: [],
                         createdAt: '2026-01-01T00:00:00Z',
                         updatedAt: '2026-01-01T00:00:00Z'
                     }
@@ -633,6 +637,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                         photoUrl: null,
                         role: 'viewer',
                         invitedRole: null,
+                        hiddenFields: ['iban', 'accountNumber'],
                         createdAt: '2026-01-01T00:00:00Z',
                         updatedAt: '2026-01-01T00:00:00Z'
                     }
@@ -646,6 +651,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                     photoUrl: null,
                     role: 'editor',
                     invitedRole: null,
+                    hiddenFields: [],
                     createdAt: '2026-01-01T00:00:00Z',
                     updatedAt: '2026-01-02T00:00:00Z'
                 })
@@ -845,6 +851,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 photoUrl: null,
                 role: 'pending',
                 invitedRole: 'editor',
+                hiddenFields: [],
                 createdAt: '2026-01-01T00:00:00Z',
                 updatedAt: '2026-01-01T00:00:00Z'
             });
@@ -930,6 +937,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 photoUrl: null,
                 role: 'viewer',
                 invitedRole: null,
+                hiddenFields: ['iban', 'accountNumber'],
                 createdAt: '2026-01-01T00:00:00Z',
                 updatedAt: '2026-01-03T00:00:00Z'
             });

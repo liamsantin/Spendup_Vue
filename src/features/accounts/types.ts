@@ -6,13 +6,18 @@ export type AccountRole = 'owner' | 'viewer' | 'editor';
 export type ShareRole = 'viewer' | 'editor';
 export type ShareStatusRole = 'pending' | 'viewer' | 'editor';
 
+/** Champs masquables pour un viewer (`balance` couvre initial + current). */
+export type HiddenAccountField = 'iban' | 'accountNumber' | 'balance';
+
 export type Account = {
     publicId: string;
     name: string;
     type: AccountType;
     currency: Currency;
-    initialBalance: number;
-    currentBalance: number;
+    /** Nullable pour un viewer si `balance` est dans `hiddenFields`. */
+    initialBalance: number | null;
+    /** Nullable pour un viewer si `balance` est dans `hiddenFields`. */
+    currentBalance: number | null;
     iban: string | null;
     accountNumber: string | null;
     color: string | null;
@@ -22,6 +27,12 @@ export type Account = {
     updatedAt: string | null;
     isOwned: boolean;
     myRole: AccountRole;
+    /**
+     * Champs masqués pour le destinataire courant.
+     * `null` présent **et** listé ici → afficher « caché » (pas « vide »).
+     * Owner / editor : toujours `[]`.
+     */
+    hiddenFields: HiddenAccountField[];
 };
 
 export type AccountShare = {
@@ -31,6 +42,8 @@ export type AccountShare = {
     photoUrl: string | null;
     role: ShareStatusRole;
     invitedRole: ShareRole | null;
+    /** Champs masqués pour ce destinataire (pertinent si viewer / pending viewer). */
+    hiddenFields: HiddenAccountField[];
     createdAt: string;
     updatedAt: string;
 };
@@ -46,6 +59,8 @@ export type IncomingAccountShare = {
     ownerPhotoUrl: string | null;
     role: 'pending';
     invitedRole: ShareRole;
+    /** Aperçu des champs qui seront masqués après acceptation. */
+    hiddenFields: HiddenAccountField[];
     createdAt: string;
 };
 
@@ -87,10 +102,20 @@ export type UpdateAccountPayload = {
 export type InviteAccountSharePayload = {
     userPublicId: string;
     role: ShareRole;
+    /**
+     * Uniquement pour `viewer`. Omis → défaut `["iban","accountNumber"]`.
+     * `[]` explicite = tout visible. Ignoré pour `editor`.
+     */
+    hiddenFields?: HiddenAccountField[];
 };
 
 export type UpdateAccountShareRolePayload = {
     role: ShareRole;
+    /**
+     * Uniquement pour `viewer`. Omis → conserve l’existant (sauf bascule editor→viewer → défaut).
+     * `[]` explicite = tout visible. Ignoré pour `editor`.
+     */
+    hiddenFields?: HiddenAccountField[];
 };
 
 export type BalanceSnapshotSource = 'manual' | 'bank_import' | 'statement' | 'system';
@@ -112,11 +137,19 @@ export type AccountBalanceSnapshot = {
 
 export type AccountBalanceSnapshotsListResult = {
     items: AccountBalanceSnapshot[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+};
+
+export type ListBalanceSnapshotsQuery = {
+    page?: number;
+    pageSize?: number;
 };
 
 export type CreateBalanceSnapshotPayload = {
     balance: number;
-    /** ISO UTC (`…Z`). Le client convertit une date calendaire via `ymdToSnapshotIso`. */
+    /** ISO UTC (`…Z`). Date calendaire convertie via `ymdToSnapshotIso` (aujourd’hui = maintenant, passé = midi UTC). */
     snapshotAt: string;
     note?: string | null;
 };
@@ -126,3 +159,8 @@ export const ACCOUNT_TYPES: AccountType[] = ['courant', 'epargne', 'credit', 'ca
 export const CURRENCIES: Currency[] = ['CHF', 'EUR', 'USD', 'GBP'];
 
 export const ACCOUNT_COLOR_PRESETS = ['#4F46E5', '#0EA5E9', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#64748B'] as const;
+
+export const HIDDEN_ACCOUNT_FIELDS: HiddenAccountField[] = ['iban', 'accountNumber', 'balance'];
+
+/** Défaut serveur à l’invitation viewer si `hiddenFields` est omis. */
+export const DEFAULT_VIEWER_HIDDEN_FIELDS: HiddenAccountField[] = ['iban', 'accountNumber'];

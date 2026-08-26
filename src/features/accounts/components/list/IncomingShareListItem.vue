@@ -65,6 +65,22 @@ async function onRefuse() {
                 <p class="text-body-2 text-medium-emphasis mb-0">
                     {{ t(`comptesPage.roles.${props.invite.invitedRole}`) }} · {{ formatDate(props.invite.createdAt) }}
                 </p>
+                <p
+                    v-if="props.invite.invitedRole === 'viewer' && props.invite.hiddenFields?.length"
+                    class="text-caption text-medium-emphasis mb-0 mt-1"
+                >
+                    {{
+                        t('comptesPage.invitations.hiddenFields', {
+                            fields: props.invite.hiddenFields.map((f) => t(`comptesPage.share.hiddenFields.${f}`)).join(', ')
+                        })
+                    }}
+                </p>
+                <p
+                    v-else-if="props.invite.invitedRole === 'viewer' && !(props.invite.hiddenFields?.length)"
+                    class="text-caption text-medium-emphasis mb-0 mt-1"
+                >
+                    {{ t('comptesPage.invitations.noHiddenFields') }}
+                </p>
             </div>
             <div class="incoming-share__actions">
                 <v-btn

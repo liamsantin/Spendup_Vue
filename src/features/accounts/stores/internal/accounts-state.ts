@@ -20,6 +20,11 @@ export function createAccountsState() {
     const sharesByAccountId = new Map<string, AccountShare[]>();
     const balanceSnapshots = ref<AccountBalanceSnapshot[]>([]);
     const snapshotsByAccountId = new Map<string, AccountBalanceSnapshot[]>();
+    /** Métadonnées pagination des relevés pour le compte sélectionné. */
+    const snapshotsPage = ref(1);
+    const snapshotsPageSize = ref(50);
+    const snapshotsTotalCount = ref(0);
+    const loadingMoreSnapshots = ref(false);
 
     const loadingAccounts = ref(false);
     const loadingIncoming = ref(false);
@@ -175,6 +180,7 @@ export function createAccountsState() {
             selectedAccount.value = null;
             shares.value = [];
             balanceSnapshots.value = [];
+            resetSnapshotsPagination();
         }
         sharesByAccountId.delete(publicId);
         snapshotsByAccountId.delete(publicId);
@@ -194,6 +200,7 @@ export function createAccountsState() {
         if (selectedAccount.value?.publicId !== publicId) {
             shares.value = sharesByAccountId.get(publicId) ?? [];
             balanceSnapshots.value = snapshotsByAccountId.get(publicId) ?? [];
+            resetSnapshotsPagination();
         }
         selectedAccount.value = snapshot;
     }
@@ -215,12 +222,30 @@ export function createAccountsState() {
      * @param accountPublicId Identifiant public du compte.
      * @param items Liste des snapshots à mémoriser.
      */
-    function setSnapshotsForAccount(accountPublicId: string, items: AccountBalanceSnapshot[]) {
-        snapshotsByAccountId.set(accountPublicId, items);
+    function setSnapshotsForAccount(
+        accountPublicId: string,
+        items: AccountBalanceSnapshot[],
+        meta?: { page?: number; pageSize?: number; totalCount?: number; append?: boolean }
+    ) {
+        const next = meta?.append ? [...(snapshotsByAccountId.get(accountPublicId) ?? []), ...items] : items;
+        snapshotsByAccountId.set(accountPublicId, next);
         if (selectedAccount.value?.publicId === accountPublicId) {
-            balanceSnapshots.value = items;
+            balanceSnapshots.value = next;
+            if (meta?.page != null) snapshotsPage.value = meta.page;
+            if (meta?.pageSize != null) snapshotsPageSize.value = meta.pageSize;
+            if (meta?.totalCount != null) snapshotsTotalCount.value = meta.totalCount;
         }
     }
+
+    function resetSnapshotsPagination() {
+        snapshotsPage.value = 1;
+        snapshotsPageSize.value = 50;
+        snapshotsTotalCount.value = 0;
+    }
+
+    const hasMoreSnapshots = computed(
+        () => balanceSnapshots.value.length > 0 && balanceSnapshots.value.length < snapshotsTotalCount.value
+    );
 
     /**
      * Active la vue partages pour un compte (cache mémoire ou liste vide).
@@ -243,6 +268,7 @@ export function createAccountsState() {
         selectedAccount.value = null;
         shares.value = [];
         balanceSnapshots.value = [];
+        resetSnapshotsPagination();
     }
 
     /**
@@ -269,6 +295,11 @@ export function createAccountsState() {
         sharesByAccountId,
         balanceSnapshots,
         snapshotsByAccountId,
+        snapshotsPage,
+        snapshotsPageSize,
+        snapshotsTotalCount,
+        loadingMoreSnapshots,
+        hasMoreSnapshots,
         loadingAccounts,
         loadingIncoming,
         loadingDetail,
@@ -301,6 +332,7 @@ export function createAccountsState() {
         hydrateSelectedFromList,
         setSharesForAccount,
         setSnapshotsForAccount,
+        resetSnapshotsPagination,
         activateSharesView,
         activateSnapshotsView,
         clearSelected,

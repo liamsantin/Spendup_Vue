@@ -12,6 +12,10 @@ export function createAccountsSnapshots(state: AccountsState) {
         snapshotsByAccountId,
         selectedAccount,
         loadingSnapshots,
+        loadingMoreSnapshots,
+        snapshotsPage,
+        snapshotsPageSize,
+        snapshotsTotalCount,
         acting,
         error,
         cache,
@@ -24,7 +28,7 @@ export function createAccountsSnapshots(state: AccountsState) {
     let snapshotsRequestSeq = 0;
 
     /**
-     * Charge l’historique des snapshots de solde d’un compte.
+     * Charge l’historique des snapshots de solde d’un compte (page 1).
      * @param accountPublicId Identifiant public du compte.
      * @param force Si `true`, ignore le TTL et refetch.
      */
@@ -38,8 +42,14 @@ export function createAccountsSnapshots(state: AccountsState) {
                     clearError();
                 }
                 try {
-                    const result = await accountsApi.listBalanceSnapshots(accountPublicId);
-                    setSnapshotsForAccount(accountPublicId, Array.isArray(result?.items) ? result.items : []);
+                    const result = await accountsApi.listBalanceSnapshots(accountPublicId, { page: 1, pageSize: 50 });
+                    const items = Array.isArray(result?.items) ? result.items : [];
+                    setSnapshotsForAccount(accountPublicId, items, {
+                        page: result?.page ?? 1,
+                        pageSize: result?.pageSize ?? 50,
+                        totalCount: result?.totalCount ?? items.length,
+                        append: false
+                    });
                 } catch (e: unknown) {
                     if (requestId === snapshotsRequestSeq) {
                         error.value = e instanceof Error ? e.message : String(e);
@@ -59,6 +69,43 @@ export function createAccountsSnapshots(state: AccountsState) {
     }
 
     /**
+     * Charge la page suivante des relevés (append).
+     * @param accountPublicId Identifiant public du compte.
+     */
+    async function loadMoreBalanceSnapshots(accountPublicId: string) {
+        if (selectedAccount.value?.publicId !== accountPublicId) return;
+        if (loadingSnapshots.value || loadingMoreSnapshots.value) return;
+        if (balanceSnapshotsLength(accountPublicId) >= snapshotsTotalCount.value) return;
+
+        loadingMoreSnapshots.value = true;
+        clearError();
+        try {
+            const nextPage = snapshotsPage.value + 1;
+            const result = await accountsApi.listBalanceSnapshots(accountPublicId, {
+                page: nextPage,
+                pageSize: snapshotsPageSize.value || 50
+            });
+            const items = Array.isArray(result?.items) ? result.items : [];
+            setSnapshotsForAccount(accountPublicId, items, {
+                page: result?.page ?? nextPage,
+                pageSize: result?.pageSize ?? snapshotsPageSize.value,
+                totalCount: result?.totalCount ?? snapshotsTotalCount.value,
+                append: true
+            });
+            cache.touch(`snapshots:${accountPublicId}`);
+        } catch (e: unknown) {
+            error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            loadingMoreSnapshots.value = false;
+        }
+    }
+
+    function balanceSnapshotsLength(accountPublicId: string) {
+        return (snapshotsByAccountId.get(accountPublicId) ?? []).length;
+    }
+
+    /**
      * Crée un snapshot de solde et l’ajoute en tête de liste.
      * @param accountPublicId Identifiant public du compte.
      * @param payload Données du snapshot (solde, date, note…).
@@ -70,7 +117,9 @@ export function createAccountsSnapshots(state: AccountsState) {
         try {
             const snapshot = await accountsApi.createBalanceSnapshot(accountPublicId, payload);
             const current = snapshotsByAccountId.get(accountPublicId) ?? [];
-            setSnapshotsForAccount(accountPublicId, [snapshot, ...current]);
+            setSnapshotsForAccount(accountPublicId, [snapshot, ...current], {
+                totalCount: snapshotsTotalCount.value + 1
+            });
             cache.touch(`snapshots:${accountPublicId}`);
             return snapshot;
         } catch (e: unknown) {
@@ -94,7 +143,8 @@ export function createAccountsSnapshots(state: AccountsState) {
             const current = snapshotsByAccountId.get(accountPublicId) ?? [];
             setSnapshotsForAccount(
                 accountPublicId,
-                current.filter((s) => s.publicId !== snapshotPublicId)
+                current.filter((s) => s.publicId !== snapshotPublicId),
+                { totalCount: Math.max(0, snapshotsTotalCount.value - 1) }
             );
             cache.touch(`snapshots:${accountPublicId}`);
         } catch (e: unknown) {
@@ -107,6 +157,7 @@ export function createAccountsSnapshots(state: AccountsState) {
 
     return {
         loadBalanceSnapshots,
+        loadMoreBalanceSnapshots,
         createBalanceSnapshot,
         deleteBalanceSnapshot
     };

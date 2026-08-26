@@ -32,6 +32,7 @@ function account(partial: Partial<Account>): Account {
         updatedAt: null,
         isOwned: true,
         myRole: 'owner',
+        hiddenFields: [],
         ...partial
     };
 }

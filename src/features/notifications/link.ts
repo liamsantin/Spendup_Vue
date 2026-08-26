@@ -95,7 +95,8 @@ export function isAccountShareNotificationType(type: string): boolean {
         type === 'accountShareAccepted' ||
         type === 'accountShareRefused' ||
         type === 'accountShareRevoked' ||
-        type === 'accountShareLeft'
+        type === 'accountShareLeft' ||
+        type === 'accountShareRoleChanged'
     );
 }
 
@@ -107,6 +108,7 @@ function accountsTabForType(type: NotificationType | string): 'Accounts' | 'Invi
         case 'accountShareRefused':
         case 'accountShareRevoked':
         case 'accountShareLeft':
+        case 'accountShareRoleChanged':
             return 'Accounts';
         default:
             return null;
