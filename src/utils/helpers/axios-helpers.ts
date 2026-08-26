@@ -29,14 +29,14 @@ export function createApiAxios(): AxiosInstance {
 function needsCsrfHeader(config: InternalAxiosRequestConfig): boolean {
     if (!isAuthCookieMode()) return false;
     const method = (config.method ?? 'get').toLowerCase();
-    if (method !== 'post' && method !== 'put' && method !== 'delete' && method !== 'patch') return false;
-    const url = config.url ?? '';
-    return url.includes('/api/auth/refresh') || url.includes('/api/auth/logout');
+    // Cookie session = auth par cookie : toute mutation doit double-submit le CSRF
+    // (refresh/logout + profil / avatar / devices / etc.).
+    return method === 'post' || method === 'put' || method === 'delete' || method === 'patch';
 }
 
 /**
  * Client auth `/api/auth/*` — volontairement sans interceptor refresh
- * (évite les boucles sur login / refresh). CSRF sur refresh/logout cookie-mode.
+ * (évite les boucles sur login / refresh). CSRF sur mutations cookie-mode.
  */
 export const authAxios = createApiAxios();
 

@@ -27,8 +27,13 @@ describe('csrf', () => {
         expect(csrfHeaderRecord()).toEqual({ [CSRF_HEADER_NAME]: 'abc123' });
     });
 
-    it('priorise la mémoire (csrfToken body) sur le cookie', () => {
+    it('priorise le cookie (rotation refresh) sur la mémoire', () => {
         document.cookie = `${CSRF_COOKIE_NAME}=from-cookie; Path=/`;
+        rememberCsrfToken('from-body');
+        expect(getCsrfToken()).toBe('from-cookie');
+    });
+
+    it('utilise la mémoire si le cookie n’est pas lisible', () => {
         rememberCsrfToken('from-body');
         expect(getCsrfToken()).toBe('from-body');
     });

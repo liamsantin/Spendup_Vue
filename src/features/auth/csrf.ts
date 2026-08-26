@@ -32,12 +32,12 @@ export function readCsrfCookie(): string | null {
     return null;
 }
 
-/** Valeur à envoyer dans `X-CSRF-Token` (mémoire puis cookie). */
+/** Valeur à envoyer dans `X-CSRF-Token` (cookie d’abord — source de vérité après rotation refresh). */
 export function getCsrfToken(): string | null {
-    return memoryCsrf || readCsrfCookie();
+    return readCsrfCookie() || memoryCsrf;
 }
 
-/** Headers CSRF pour refresh / logout cookie-mode. */
+/** Headers CSRF pour mutations cookie-mode (auth + domaine). */
 export function csrfHeaderRecord(): Record<string, string> {
     const token = getCsrfToken();
     return token ? { [CSRF_HEADER_NAME]: token } : {};

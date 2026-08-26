@@ -1,5 +1,6 @@
 import axios, { type AxiosRequestConfig, type Method } from 'axios';
 import { useAuthStore } from '@/features/auth';
+import { csrfHeaderRecord } from '@/features/auth/csrf';
 import { createApiAxios, getApiBaseUrl, isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 import { AppError, unwrapSpendupEnvelope } from '@/utils/errors/app-error';
 
@@ -78,7 +79,7 @@ async function authHeader(url: string): Promise<Record<string, string>> {
     // Cookie-mode : refresh si besoin, auth via cookie `spendup_access` (pas de Bearer).
     if (isAuthCookieMode()) {
         await auth.ensureAccessToken();
-        return {};
+        return { ...csrfHeaderRecord() };
     }
 
     const token = await auth.ensureAccessToken();
