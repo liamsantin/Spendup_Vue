@@ -11,7 +11,7 @@ const route = useRoute();
 const auth = useAuthStore();
 
 /** Depuis l’app (définition / confirmation d’e-mail) vs flux auth public. */
-const fromApp = computed(() => route.query.from === 'app' || !!auth.accessToken || !!auth.refreshToken);
+const fromApp = computed(() => route.query.from === 'app' || auth.isAuthenticated);
 
 const backLabel = computed(() => (fromApp.value ? t('auth.confirmEmailChange.backToApp') : t('auth.confirmEmailChange.backToLogin')));
 const backTo = computed(() => (fromApp.value ? '/app/comptes' : '/auth/login'));

@@ -59,7 +59,14 @@ function loadGisScript(): Promise<void> {
                 return;
             }
             existing.addEventListener('load', () => resolve(), { once: true });
-            existing.addEventListener('error', () => reject(new Error(t('auth.google.scriptFailed'))), { once: true });
+            existing.addEventListener(
+                'error',
+                () => {
+                    gisScriptPromise = null;
+                    reject(new Error(t('auth.google.scriptFailed')));
+                },
+                { once: true }
+            );
             return;
         }
         const script = document.createElement('script');

@@ -325,6 +325,8 @@ export function createAccountsState() {
 
     /**
      * Aligne la sélection sur la liste courante : refresh si présent, `clearSelected` si absent (revoke / friendship).
+     * Si le détail sélectionné a un `updatedAt` plus récent que la ligne liste, on conserve le détail
+     * (évite qu’un `loadAccounts` concurrent écrase un GET détail / mutation plus frais).
      * @returns `false` si la sélection a été vidée, `true` sinon.
      */
     function syncSelectedWithList(): boolean {
@@ -334,6 +336,13 @@ export function createAccountsState() {
         if (!next) {
             clearSelected();
             return false;
+        }
+        const selectedTs = selected.updatedAt ? Date.parse(selected.updatedAt) : NaN;
+        const listTs = next.updatedAt ? Date.parse(next.updatedAt) : NaN;
+        if (!Number.isNaN(selectedTs) && !Number.isNaN(listTs) && selectedTs > listTs) {
+            // Liste plus vieille : remonter le détail dans la liste pour rester cohérent.
+            upsertAccount(selected);
+            return true;
         }
         selectedAccount.value = next;
         return true;

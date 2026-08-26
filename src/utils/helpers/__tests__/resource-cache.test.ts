@@ -151,4 +151,29 @@ describe('createResourceCache', () => {
         await Promise.all([first, second]);
         expect(loader).toHaveBeenCalledTimes(1);
     });
+
+    it('après invalidate, un soft ensure ne garde pas le TTL du GET périmé', async () => {
+        const resolvers: Array<() => void> = [];
+        const loader = vi.fn(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolvers.push(resolve);
+                })
+        );
+        const cache = createResourceCache({ defaultMaxAgeMs: 60_000, now: () => 1_000 });
+
+        const first = cache.ensure('accounts', loader);
+        cache.invalidate('accounts');
+        const softAfter = cache.ensure('accounts', loader);
+
+        expect(loader).toHaveBeenCalledTimes(1);
+        resolvers[0]?.();
+        await first;
+        await Promise.resolve();
+        // Soft après invalidate doit lancer un nouveau fetch.
+        expect(loader).toHaveBeenCalledTimes(2);
+        resolvers[1]?.();
+        await softAfter;
+        expect(cache.isFresh('accounts')).toBe(true);
+    });
 });

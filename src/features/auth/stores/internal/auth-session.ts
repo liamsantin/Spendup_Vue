@@ -64,9 +64,19 @@ export function createAuthSession() {
 
     /** Notice idle en attente si le refresh a échoué pour inactivité (lue par `forceReLogin`). */
     const pendingIdleLogoutNotice = { value: false };
+    /** Dernier refresh en échec « transient » (réseau / 5xx) — le bootstrap peut retenter. */
+    let lastRefreshTransient = false;
 
     /** Cookie-mode : cookies HttpOnly ; legacy : access/refresh en storage. */
     const isAuthenticated = computed(() => (cookieMode ? cookieSessionActive.value : !!accessToken.value || !!refreshToken.value));
+
+    function isTransientRefreshError(e: unknown): boolean {
+        const status =
+            e && typeof e === 'object' && 'status' in e && typeof (e as { status: unknown }).status === 'number'
+                ? (e as { status: number }).status
+                : 0;
+        return status === 0 || status >= 500;
+    }
 
     const displayName = computed(() => {
         if (!user.value) return '';
@@ -156,13 +166,17 @@ export function createAuthSession() {
         refreshInFlight = (async () => {
             try {
                 const tokens = await authApi.refresh(cookieMode ? null : refreshToken.value);
+                lastRefreshTransient = false;
                 setTokens(tokens);
                 return true;
             } catch (e: unknown) {
                 if (isIdleSessionError(e)) {
                     pendingIdleLogoutNotice.value = true;
                 }
-                clearSession();
+                lastRefreshTransient = isTransientRefreshError(e);
+                if (!lastRefreshTransient) {
+                    clearSession();
+                }
                 return false;
             } finally {
                 refreshInFlight = null;
@@ -186,14 +200,20 @@ export function createAuthSession() {
                 const hasUsableAccess = !!accessToken.value && !isAccessExpired(expiresAt.value);
                 if (hasUsableAccess) {
                     cookieSessionActive.value = true;
+                    bootstrapDone = true;
                     return;
                 }
                 if (cookieSessionActive.value && expiresAt.value && !isAccessExpired(expiresAt.value)) {
+                    bootstrapDone = true;
                     return;
                 }
                 await refreshSession();
+                // Échec réseau / 5xx : laisser retenter au prochain passage du guard.
+                // Échec auth (401) ou succès : ne plus retenter jusqu’au prochain clearSession.
+                if (!lastRefreshTransient) {
+                    bootstrapDone = true;
+                }
             } finally {
-                bootstrapDone = true;
                 bootstrapInFlight = null;
             }
         })();

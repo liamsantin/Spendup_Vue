@@ -48,6 +48,14 @@ export function createAccountsCrud(state: AccountsState) {
 
     /** Incrémente à chaque `loadAccountDetail` — les réponses tardives d’un id précédent sont ignorées. */
     let detailRequestSeq = 0;
+    /** Bumpé après mutation locale sur un compte — ignore un GET détail démarré avant. */
+    let detailDataGen = 0;
+
+    function bumpDetailData(publicId: string) {
+        detailDataGen += 1;
+        cache.touch(KEY_ACCOUNTS);
+        cache.touch(`detail:${publicId}`);
+    }
 
     /**
      * Charge la liste des comptes (TTL cache).
@@ -95,6 +103,7 @@ export function createAccountsCrud(state: AccountsState) {
 
         async function fetchDetail(ensureForce: boolean): Promise<boolean> {
             let applied = false;
+            const genAtStart = detailDataGen;
             await cache.ensure(
                 cacheKey,
                 async () => {
@@ -102,6 +111,9 @@ export function createAccountsCrud(state: AccountsState) {
                         const account = normalizeAccount(await accountsApi.get(publicId));
                         // Ne pas écraser liste / sélection avec une réponse périmée.
                         if (requestId !== detailRequestSeq) {
+                            return;
+                        }
+                        if (genAtStart !== detailDataGen) {
                             return;
                         }
                         // Revoke / leave pendant le GET : ne pas ressusciter le compte.
@@ -197,8 +209,7 @@ export function createAccountsCrud(state: AccountsState) {
             const body = sanitizeUpdateAccountPayload(local, payload);
             const account = normalizeAccount(await accountsApi.update(publicId, body));
             upsertAccount(account);
-            cache.touch(KEY_ACCOUNTS);
-            cache.touch(`detail:${publicId}`);
+            bumpDetailData(publicId);
             if (account.isOwned && account.isPrimary) {
                 applyPrimaryLocally(account.publicId, account);
             }
@@ -224,6 +235,7 @@ export function createAccountsCrud(state: AccountsState) {
             assertAccountAllowed(canSetPrimaryAccount(local));
             const account = normalizeAccount(await accountsApi.setPrimary(publicId));
             applyPrimaryLocally(publicId, account);
+            bumpDetailData(publicId);
             markPromoted(publicId);
             return account;
         } catch (e: unknown) {
@@ -247,8 +259,7 @@ export function createAccountsCrud(state: AccountsState) {
             assertAccountAllowed(canArchiveAccount(local));
             const account = normalizeAccount(await accountsApi.archive(publicId));
             upsertAccount(account);
-            cache.touch(KEY_ACCOUNTS);
-            cache.touch(`detail:${publicId}`);
+            bumpDetailData(publicId);
             return account;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -271,8 +282,7 @@ export function createAccountsCrud(state: AccountsState) {
             assertAccountAllowed(canRestoreAccount(local));
             const account = normalizeAccount(await accountsApi.restore(publicId));
             upsertAccount(account);
-            cache.touch(KEY_ACCOUNTS);
-            cache.touch(`detail:${publicId}`);
+            bumpDetailData(publicId);
             return account;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);

@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
+import { AppError } from '@/utils/errors/app-error';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -34,8 +35,15 @@ async function verify(submittedCode?: string) {
     try {
         await authStore.verifyTwoFactor(otp);
     } catch (e: unknown) {
-        error.value = e instanceof Error ? e.message : String(e);
-        if (String(error.value).toLowerCase().includes('token') || String(error.value).toLowerCase().includes('expired')) {
+        const err = AppError.fromUnknown(e);
+        error.value = err.message;
+        const msg = err.message.toLowerCase();
+        // Ne pas vider le challenge sur un message générique contenant « token » (ex. CSRF).
+        const challengeExpired =
+            err.status === 401 ||
+            err.status === 403 ||
+            (err.status === 400 && (msg.includes('expired') || msg.includes('invalid') || msg.includes('two-factor')));
+        if (challengeExpired) {
             authStore.twoFactorToken = null;
         }
     } finally {

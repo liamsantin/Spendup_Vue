@@ -52,6 +52,13 @@ export function createFriendsLists(state: FriendsState) {
         clearSearch
     } = state;
 
+    /** Générations page-1 : ignore un append `loadMore` démarré avant un refresh. */
+    let friendsListGen = 0;
+    let incomingListGen = 0;
+    let outgoingListGen = 0;
+    let blockedListGen = 0;
+    let searchGen = 0;
+
     /**
      * Charge la première page d’amis (TTL cache).
      * @param force Si `true`, ignore le TTL et refetch.
@@ -60,10 +67,12 @@ export function createFriendsLists(state: FriendsState) {
         await cache.ensure(
             KEY_FRIENDS,
             async () => {
+                const gen = ++friendsListGen;
                 loadingFriends.value = true;
                 clearError();
                 try {
                     const result = await friendsApi.list(1, DEFAULT_PAGE_SIZE);
+                    if (gen !== friendsListGen) return;
                     applyPageResult(result, friends, friendsPage, friendsTotalCount, false);
                 } catch (e: unknown) {
                     state.error.value = e instanceof Error ? e.message : String(e);
@@ -79,13 +88,18 @@ export function createFriendsLists(state: FriendsState) {
     /** Charge la page suivante d’amis. */
     async function loadMoreFriends() {
         if (!hasMoreFriends.value || loadingFriends.value || loadingMoreFriends.value) return;
+        const gen = friendsListGen;
+        const pageToLoad = friendsPage.value + 1;
         loadingMoreFriends.value = true;
         clearError();
         try {
-            const result = await friendsApi.list(friendsPage.value + 1, DEFAULT_PAGE_SIZE);
+            const result = await friendsApi.list(pageToLoad, DEFAULT_PAGE_SIZE);
+            if (gen !== friendsListGen) return;
             applyPageResult(result, friends, friendsPage, friendsTotalCount, true);
         } catch (e: unknown) {
-            state.error.value = e instanceof Error ? e.message : String(e);
+            if (gen === friendsListGen) {
+                state.error.value = e instanceof Error ? e.message : String(e);
+            }
             throw e;
         } finally {
             loadingMoreFriends.value = false;
@@ -100,10 +114,12 @@ export function createFriendsLists(state: FriendsState) {
         await cache.ensure(
             KEY_INCOMING,
             async () => {
+                const gen = ++incomingListGen;
                 loadingIncoming.value = true;
                 clearError();
                 try {
                     const result = await friendsApi.incoming(1, DEFAULT_PAGE_SIZE);
+                    if (gen !== incomingListGen) return;
                     applyPageResult(result, incomingRequests, incomingPage, incomingTotalCount, false);
                 } catch (e: unknown) {
                     state.error.value = e instanceof Error ? e.message : String(e);
@@ -119,13 +135,18 @@ export function createFriendsLists(state: FriendsState) {
     /** Charge la page suivante des demandes entrantes. */
     async function loadMoreIncoming() {
         if (!hasMoreIncoming.value || loadingIncoming.value || loadingMoreIncoming.value) return;
+        const gen = incomingListGen;
+        const pageToLoad = incomingPage.value + 1;
         loadingMoreIncoming.value = true;
         clearError();
         try {
-            const result = await friendsApi.incoming(incomingPage.value + 1, DEFAULT_PAGE_SIZE);
+            const result = await friendsApi.incoming(pageToLoad, DEFAULT_PAGE_SIZE);
+            if (gen !== incomingListGen) return;
             applyPageResult(result, incomingRequests, incomingPage, incomingTotalCount, true);
         } catch (e: unknown) {
-            state.error.value = e instanceof Error ? e.message : String(e);
+            if (gen === incomingListGen) {
+                state.error.value = e instanceof Error ? e.message : String(e);
+            }
             throw e;
         } finally {
             loadingMoreIncoming.value = false;
@@ -140,10 +161,12 @@ export function createFriendsLists(state: FriendsState) {
         await cache.ensure(
             KEY_OUTGOING,
             async () => {
+                const gen = ++outgoingListGen;
                 loadingOutgoing.value = true;
                 clearError();
                 try {
                     const result = await friendsApi.outgoing(1, DEFAULT_PAGE_SIZE);
+                    if (gen !== outgoingListGen) return;
                     applyPageResult(result, outgoingRequests, outgoingPage, outgoingTotalCount, false);
                 } catch (e: unknown) {
                     state.error.value = e instanceof Error ? e.message : String(e);
@@ -159,13 +182,18 @@ export function createFriendsLists(state: FriendsState) {
     /** Charge la page suivante des demandes sortantes. */
     async function loadMoreOutgoing() {
         if (!hasMoreOutgoing.value || loadingOutgoing.value || loadingMoreOutgoing.value) return;
+        const gen = outgoingListGen;
+        const pageToLoad = outgoingPage.value + 1;
         loadingMoreOutgoing.value = true;
         clearError();
         try {
-            const result = await friendsApi.outgoing(outgoingPage.value + 1, DEFAULT_PAGE_SIZE);
+            const result = await friendsApi.outgoing(pageToLoad, DEFAULT_PAGE_SIZE);
+            if (gen !== outgoingListGen) return;
             applyPageResult(result, outgoingRequests, outgoingPage, outgoingTotalCount, true);
         } catch (e: unknown) {
-            state.error.value = e instanceof Error ? e.message : String(e);
+            if (gen === outgoingListGen) {
+                state.error.value = e instanceof Error ? e.message : String(e);
+            }
             throw e;
         } finally {
             loadingMoreOutgoing.value = false;
@@ -180,10 +208,12 @@ export function createFriendsLists(state: FriendsState) {
         await cache.ensure(
             KEY_BLOCKED,
             async () => {
+                const gen = ++blockedListGen;
                 loadingBlocked.value = true;
                 clearError();
                 try {
                     const result = await friendsApi.blocked(1, DEFAULT_PAGE_SIZE);
+                    if (gen !== blockedListGen) return;
                     applyPageResult(result, blockedUsers, blockedPage, blockedTotalCount, false);
                 } catch (e: unknown) {
                     state.error.value = e instanceof Error ? e.message : String(e);
@@ -199,13 +229,18 @@ export function createFriendsLists(state: FriendsState) {
     /** Charge la page suivante des utilisateurs bloqués. */
     async function loadMoreBlocked() {
         if (!hasMoreBlocked.value || loadingBlocked.value || loadingMoreBlocked.value) return;
+        const gen = blockedListGen;
+        const pageToLoad = blockedPage.value + 1;
         loadingMoreBlocked.value = true;
         clearError();
         try {
-            const result = await friendsApi.blocked(blockedPage.value + 1, DEFAULT_PAGE_SIZE);
+            const result = await friendsApi.blocked(pageToLoad, DEFAULT_PAGE_SIZE);
+            if (gen !== blockedListGen) return;
             applyPageResult(result, blockedUsers, blockedPage, blockedTotalCount, true);
         } catch (e: unknown) {
-            state.error.value = e instanceof Error ? e.message : String(e);
+            if (gen === blockedListGen) {
+                state.error.value = e instanceof Error ? e.message : String(e);
+            }
             throw e;
         } finally {
             loadingMoreBlocked.value = false;
@@ -220,22 +255,29 @@ export function createFriendsLists(state: FriendsState) {
         searchQuery.value = q;
         const trimmed = q.trim();
         if (trimmed.length < 2) {
+            searchGen += 1;
             searchResults.value = [];
             searchPage.value = 1;
             searchTotalCount.value = 0;
             return;
         }
 
+        const gen = ++searchGen;
         searching.value = true;
         clearError();
         try {
             const result = await friendsApi.search({ q: trimmed, page: 1, pageSize: DEFAULT_PAGE_SIZE });
+            if (gen !== searchGen) return;
             applyPageResult(result, searchResults, searchPage, searchTotalCount, false);
         } catch (e: unknown) {
-            state.error.value = e instanceof Error ? e.message : String(e);
+            if (gen === searchGen) {
+                state.error.value = e instanceof Error ? e.message : String(e);
+            }
             throw e;
         } finally {
-            searching.value = false;
+            if (gen === searchGen) {
+                searching.value = false;
+            }
         }
     }
 
@@ -244,17 +286,22 @@ export function createFriendsLists(state: FriendsState) {
         if (!hasMoreSearch.value || searching.value || loadingMoreSearch.value) return;
         const trimmed = searchQuery.value.trim();
         if (trimmed.length < 2) return;
+        const gen = searchGen;
+        const pageToLoad = searchPage.value + 1;
         loadingMoreSearch.value = true;
         clearError();
         try {
             const result = await friendsApi.search({
                 q: trimmed,
-                page: searchPage.value + 1,
+                page: pageToLoad,
                 pageSize: DEFAULT_PAGE_SIZE
             });
+            if (gen !== searchGen) return;
             applyPageResult(result, searchResults, searchPage, searchTotalCount, true);
         } catch (e: unknown) {
-            state.error.value = e instanceof Error ? e.message : String(e);
+            if (gen === searchGen) {
+                state.error.value = e instanceof Error ? e.message : String(e);
+            }
             throw e;
         } finally {
             loadingMoreSearch.value = false;

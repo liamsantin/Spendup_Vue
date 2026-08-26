@@ -149,10 +149,14 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
             // Inbox (historique/badge) — le sync live passe par accountChanged.roleChanged.
             cache.invalidate(KEY_ACCOUNTS);
             const accountPublicId = getAccountPublicId(notification.metadata);
-            if (accountPublicId) cache.invalidate(`detail:${accountPublicId}`);
+            if (accountPublicId) {
+                cache.invalidate(`detail:${accountPublicId}`);
+                cache.invalidate(`shares:${accountPublicId}`);
+            }
             void loadAccounts(true).catch(() => undefined);
             if (accountPublicId && selectedAccount.value?.publicId === accountPublicId) {
                 void loadAccountDetail(accountPublicId, true).catch(() => undefined);
+                void loadShares(accountPublicId, true).catch(() => undefined);
             }
         }
     }
@@ -199,9 +203,11 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
             // Destinataire : owner a basculé viewer ↔ editor — refetch myRole / actions UI.
             cache.invalidate(KEY_ACCOUNTS);
             cache.invalidate(`detail:${id}`);
+            cache.invalidate(`shares:${id}`);
             void loadAccounts(true).catch(() => undefined);
             if (selectedAccount.value?.publicId === id) {
                 void loadAccountDetail(id, true).catch(() => undefined);
+                void loadShares(id, true).catch(() => undefined);
             }
             return;
         }

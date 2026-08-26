@@ -13,6 +13,8 @@ describe('sanitizeReturnUrl', () => {
         expect(sanitizeReturnUrl('//evil.com')).toBe('/app');
         expect(sanitizeReturnUrl('/\\evil.com')).toBe('/app');
         expect(sanitizeReturnUrl('/auth/login')).toBe('/app');
+        expect(sanitizeReturnUrl('/application')).toBe('/app');
+        expect(sanitizeReturnUrl('/app/../etc')).toBe('/app');
         expect(sanitizeReturnUrl(null)).toBe('/app');
         expect(sanitizeReturnUrl('')).toBe('/app');
     });

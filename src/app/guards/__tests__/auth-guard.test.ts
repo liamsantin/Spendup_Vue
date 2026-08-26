@@ -84,7 +84,8 @@ describe('authGuard', () => {
 
         expect(auth.fetchMe).toHaveBeenCalled();
         expect(auth.forceReLogin).toHaveBeenCalled();
-        expect(next).toHaveBeenCalledWith('/auth/login');
+        expect(auth.returnUrl).toBe('/app/settings');
+        expect(next).toHaveBeenCalledWith(false);
     });
 
     it('laisse passer si user déjà chargé', async () => {

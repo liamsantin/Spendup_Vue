@@ -42,6 +42,12 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
      */
     async function applySession(sessionPayload: AuthSession): Promise<'ok' | '2fa'> {
         if (sessionPayload.requiresTwoFactor) {
+            // Drop any prior session so /app isn't reachable with old tokens during the challenge.
+            session.accessToken.value = null;
+            session.refreshToken.value = null;
+            session.expiresAt.value = null;
+            session.cookieSessionActive.value = false;
+            session.user.value = null;
             twoFactorToken.value = sessionPayload.twoFactorToken;
             return '2fa';
         }
@@ -140,12 +146,19 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
     async function confirmEmail(email: string, code: string) {
         await authApi.confirmEmail({ email, code });
         const password = pendingPassword.value;
-        clearPendingRegistration();
         if (!password) {
+            clearPendingRegistration();
             await goToLogin(t('auth.notices.emailConfirmed'));
             return;
         }
-        await login(email, password);
+        try {
+            await login(email, password);
+            clearPendingRegistration();
+        } catch (e: unknown) {
+            // E-mail déjà confirmé : garder le mot de passe en mémoire pour un retry / login manuel.
+            setPendingEmail(null);
+            throw e;
+        }
     }
 
     /**

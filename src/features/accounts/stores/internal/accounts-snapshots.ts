@@ -53,6 +53,13 @@ export function createAccountsSnapshots(state: AccountsState) {
 
     /** Incrémente à chaque `loadBalanceSnapshots` — ignore les réponses tardives d’un autre compte. */
     let snapshotsRequestSeq = 0;
+    /** Bumpé après create/delete local — ignore un GET démarré avant. */
+    let snapshotsDataGen = 0;
+
+    function bumpSnapshotsData(accountPublicId: string) {
+        snapshotsDataGen += 1;
+        cache.touch(`snapshots:${accountPublicId}`);
+    }
 
     /**
      * Charge l’historique des snapshots de solde d’un compte (page 1).
@@ -68,12 +75,14 @@ export function createAccountsSnapshots(state: AccountsState) {
 
         async function fetchSnapshots(ensureForce: boolean): Promise<boolean> {
             let applied = false;
+            const genAtStart = snapshotsDataGen;
             await cache.ensure(
                 cacheKey,
                 async () => {
                     try {
                         const result = await accountsApi.listBalanceSnapshots(accountPublicId, { page: 1, pageSize: 50 });
                         if (requestId !== snapshotsRequestSeq) return;
+                        if (genAtStart !== snapshotsDataGen) return;
                         const items = sortSnapshotsDesc(Array.isArray(result?.items) ? result.items : []);
                         setSnapshotsForAccount(accountPublicId, items, {
                             page: result?.page ?? 1,
@@ -184,7 +193,7 @@ export function createAccountsSnapshots(state: AccountsState) {
             setSnapshotsForAccount(accountPublicId, mergeSnapshotsDesc(current, [snapshot]), {
                 totalCount: nextTotal
             });
-            cache.touch(`snapshots:${accountPublicId}`);
+            bumpSnapshotsData(accountPublicId);
             return snapshot;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -214,7 +223,7 @@ export function createAccountsSnapshots(state: AccountsState) {
                 current.filter((s) => s.publicId !== snapshotPublicId),
                 { totalCount: nextTotal }
             );
-            cache.touch(`snapshots:${accountPublicId}`);
+            bumpSnapshotsData(accountPublicId);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;

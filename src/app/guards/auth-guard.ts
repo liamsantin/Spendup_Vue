@@ -30,12 +30,13 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
                 if (!me || !auth.isAuthenticated) {
                     auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
                     await auth.forceReLogin();
-                    return next('/auth/login');
+                    // `forceReLogin` a déjà navigué vers /auth/login — annuler la nav courante.
+                    return next(false);
                 }
             } catch {
                 auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
                 await auth.forceReLogin();
-                return next('/auth/login');
+                return next(false);
             }
         }
         try {

@@ -27,6 +27,9 @@ export function createNotificationsInbox(state: NotificationsState, native: Noti
 
     const { dismissLiveFriendChipsByNotificationId, clearLiveFriendChips } = native;
 
+    /** Génération page-1 : ignore un append démarré avant un refresh. */
+    let inboxListGen = 0;
+
     /**
      * Vide l’inbox locale après clear serveur / SignalR.
      * @param unread Compteur non lus à appliquer (défaut 0).
@@ -52,6 +55,7 @@ export function createNotificationsInbox(state: NotificationsState, native: Noti
     async function loadInbox(options?: { page?: number; append?: boolean }) {
         const nextPage = options?.page ?? 1;
         const append = options?.append === true;
+        const gen = append ? inboxListGen : ++inboxListGen;
         if (append) loadingMore.value = true;
         else loading.value = true;
         error.value = null;
@@ -60,6 +64,7 @@ export function createNotificationsInbox(state: NotificationsState, native: Noti
                 page: nextPage,
                 pageSize: pageSize.value
             });
+            if (gen !== inboxListGen) return;
             const nextItems = Array.isArray(result?.items) ? result.items : [];
             items.value = append ? [...items.value, ...nextItems] : nextItems;
             page.value = result?.page ?? nextPage;
@@ -68,11 +73,15 @@ export function createNotificationsInbox(state: NotificationsState, native: Noti
             if (result?.unreadCount != null) applyUnreadCount(result.unreadCount);
             inboxLoaded.value = true;
         } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
+            if (gen === inboxListGen) {
+                error.value = e instanceof Error ? e.message : String(e);
+            }
             throw e;
         } finally {
-            loading.value = false;
-            loadingMore.value = false;
+            if (gen === inboxListGen) {
+                loading.value = false;
+                loadingMore.value = false;
+            }
         }
     }
 

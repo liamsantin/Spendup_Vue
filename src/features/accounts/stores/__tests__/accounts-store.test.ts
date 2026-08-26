@@ -1032,6 +1032,66 @@ describe('useAccountsStore', () => {
         expect(store.selectedAccount?.isActive).toBe(false);
     });
 
+    it('ne laisse pas une liste plus ancienne écraser un détail plus récent (updatedAt)', async () => {
+        const older = { ...ownedAccount, name: 'Ancien', updatedAt: '2026-01-01T00:00:00Z' };
+        const newer = { ...ownedAccount, name: 'Récent détail', updatedAt: '2026-01-02T00:00:00Z', iban: 'CH930076...' };
+        api.list.mockResolvedValueOnce({ items: [older] });
+        api.get.mockResolvedValueOnce(newer);
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        expect(store.selectedAccount?.name).toBe('Récent détail');
+
+        api.list.mockResolvedValueOnce({ items: [older] });
+        await store.loadAccounts(true);
+
+        expect(store.selectedAccount?.name).toBe('Récent détail');
+        expect(store.selectedAccount?.iban).toBe('CH930076...');
+        expect(store.accounts.find((a) => a.publicId === 'acc-1')?.name).toBe('Récent détail');
+    });
+
+    it('ignore un listShares en vol après revokeShare', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+
+        let resolveShares: ((value: { items: unknown[] }) => void) | undefined;
+        api.listShares.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveShares = resolve;
+                })
+        );
+        api.revokeShare.mockResolvedValue(undefined);
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+
+        const loadPromise = store.loadShares('acc-1', true);
+        await store.revokeShare('acc-1', 'user-2');
+        expect(store.shares.every((s) => s.userPublicId !== 'user-2')).toBe(true);
+
+        resolveShares?.({
+            items: [
+                {
+                    publicId: 'share-stale',
+                    userPublicId: 'user-2',
+                    displayName: 'Bob',
+                    photoUrl: null,
+                    role: 'viewer',
+                    invitedRole: null,
+                    hiddenFields: [],
+                    createdAt: '2026-01-01T00:00:00Z',
+                    updatedAt: '2026-01-01T00:00:00Z'
+                }
+            ]
+        });
+        await loadPromise;
+
+        expect(store.shares.every((s) => s.userPublicId !== 'user-2')).toBe(true);
+    });
+
     it('deleteAccount purge liste, sélection, shares, snapshots et invalide le cache snapshots', async () => {
         const deletable = { ...ownedAccount, isPrimary: false };
         api.list.mockResolvedValue({ items: [deletable] });

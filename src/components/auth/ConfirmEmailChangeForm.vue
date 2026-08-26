@@ -21,7 +21,7 @@ const resendGoogleIdToken = ref<string | null>(null);
 const error = ref<string | null>(null);
 const success = ref<string | null>(null);
 
-const canResend = computed(() => !!auth.accessToken || !!auth.refreshToken);
+const canResend = computed(() => auth.isAuthenticated);
 const isGoogleOnlyAccount = computed(() => auth.user?.hasPassword === false);
 const showResendPassword = computed(() => !isGoogleOnlyAccount.value);
 const showResendGoogle = computed(() => isGoogleOnlyAccount.value || auth.user?.hasGoogle !== false);

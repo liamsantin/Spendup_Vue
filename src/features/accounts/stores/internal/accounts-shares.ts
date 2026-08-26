@@ -36,6 +36,13 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
 
     /** Incrémente à chaque `loadShares` — ignore les réponses tardives d’un autre compte. */
     let sharesRequestSeq = 0;
+    /** Bumpé après mutation locale — un GET démarré avant ignore son apply. */
+    let sharesDataGen = 0;
+
+    function bumpSharesData(accountPublicId: string) {
+        sharesDataGen += 1;
+        cache.touch(`shares:${accountPublicId}`);
+    }
 
     /**
      * Charge les invitations de partage reçues.
@@ -75,12 +82,14 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
 
         async function fetchShares(ensureForce: boolean): Promise<boolean> {
             let applied = false;
+            const genAtStart = sharesDataGen;
             await cache.ensure(
                 cacheKey,
                 async () => {
                     try {
                         const result = await accountsApi.listShares(accountPublicId);
                         if (requestId !== sharesRequestSeq) return;
+                        if (genAtStart !== sharesDataGen) return;
                         setSharesForAccount(accountPublicId, Array.isArray(result?.items) ? result.items : []);
                         applied = true;
                     } catch (e: unknown) {
@@ -155,7 +164,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
             const idx = current.findIndex((s) => s.userPublicId === userPublicId);
             const next = idx >= 0 ? [...current.slice(0, idx), merged, ...current.slice(idx + 1)] : [...current, merged];
             setSharesForAccount(accountPublicId, next);
-            cache.touch(`shares:${accountPublicId}`);
+            bumpSharesData(accountPublicId);
             return merged;
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -191,7 +200,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
             const idx = current.findIndex((s) => s.userPublicId === userPublicId);
             if (idx >= 0) {
                 setSharesForAccount(accountPublicId, [...current.slice(0, idx), normalized, ...current.slice(idx + 1)]);
-                cache.touch(`shares:${accountPublicId}`);
+                bumpSharesData(accountPublicId);
             } else {
                 await loadShares(accountPublicId, true);
             }
@@ -221,7 +230,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
                 accountPublicId,
                 current.filter((s) => s.userPublicId !== userPublicId)
             );
-            cache.touch(`shares:${accountPublicId}`);
+            bumpSharesData(accountPublicId);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;

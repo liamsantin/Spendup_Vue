@@ -26,6 +26,8 @@ type CacheEntry = {
     inflight: Promise<void> | null;
     /** True when the current inflight was started with `force: true`. */
     inflightForced: boolean;
+    /** Bumped by `invalidate` so soft joiners refetch instead of keeping a stale TTL. */
+    generation: number;
 };
 
 /**
@@ -40,7 +42,7 @@ export function createResourceCache(options: ResourceCacheOptions) {
     function getOrCreate(key: string): CacheEntry {
         let entry = entries.get(key);
         if (!entry) {
-            entry = { lastFetchedAt: null, inflight: null, inflightForced: false };
+            entry = { lastFetchedAt: null, inflight: null, inflightForced: false, generation: 0 };
             entries.set(key, entry);
         }
         return entry;
@@ -55,46 +57,68 @@ export function createResourceCache(options: ResourceCacheOptions) {
     async function ensure(key: string, loader: () => Promise<void>, ensureOptions: EnsureOptions = {}): Promise<void> {
         const entry = getOrCreate(key);
         const force = !!ensureOptions.force;
-
-        while (entry.inflight) {
-            if (!force || entry.inflightForced) {
-                return entry.inflight;
-            }
-            // Force must not resolve with a non-forced fetch that started earlier.
-            await entry.inflight.catch(() => undefined);
-        }
-
         const maxAgeMs = ensureOptions.maxAgeMs ?? options.defaultMaxAgeMs;
-        if (!force && isFresh(key, maxAgeMs)) return;
+        const startGen = entry.generation;
 
-        const request = (async () => {
-            try {
-                await loader();
-                entry.lastFetchedAt = now();
-            } finally {
-                entry.inflight = null;
-                entry.inflightForced = false;
+        for (;;) {
+            if (entry.inflight) {
+                if (force && !entry.inflightForced) {
+                    // Force must not resolve with a non-forced fetch that started earlier.
+                    await entry.inflight.catch(() => undefined);
+                    continue;
+                }
+                if (force && entry.inflightForced) {
+                    return entry.inflight;
+                }
+                // Soft: wait, then re-check (invalidate may have bumped generation).
+                await entry.inflight.catch(() => undefined);
+                if (entry.generation === startGen && isFresh(key, maxAgeMs)) return;
+                continue;
             }
-        })();
 
-        entry.inflight = request;
-        entry.inflightForced = force;
-        return request;
+            if (!force && isFresh(key, maxAgeMs)) return;
+
+            const fetchGen = entry.generation;
+            const request = (async () => {
+                try {
+                    await loader();
+                    // Invalidate pendant le GET : ne pas re-marquer le TTL frais.
+                    if (entry.generation === fetchGen) {
+                        entry.lastFetchedAt = now();
+                    }
+                } finally {
+                    if (entry.inflight === request) {
+                        entry.inflight = null;
+                        entry.inflightForced = false;
+                    }
+                }
+            })();
+
+            entry.inflight = request;
+            entry.inflightForced = force;
+            await request;
+            return;
+        }
+    }
+
+    function bumpGeneration(entry: CacheEntry): void {
+        entry.lastFetchedAt = null;
+        entry.generation += 1;
     }
 
     function invalidate(keyOrPrefix: string): void {
         if (keyOrPrefix === '*') {
-            for (const entry of entries.values()) entry.lastFetchedAt = null;
+            for (const entry of entries.values()) bumpGeneration(entry);
             return;
         }
         if (keyOrPrefix.endsWith('*')) {
             const prefix = keyOrPrefix.slice(0, -1);
             for (const [key, entry] of entries) {
-                if (key.startsWith(prefix)) entry.lastFetchedAt = null;
+                if (key.startsWith(prefix)) bumpGeneration(entry);
             }
             return;
         }
-        getOrCreate(keyOrPrefix).lastFetchedAt = null;
+        bumpGeneration(getOrCreate(keyOrPrefix));
     }
 
     function touch(key: string): void {

@@ -3,7 +3,8 @@ import { authApi } from '@/features/auth/api';
 import { readAndClearLoginNotice, writeLoginNotice } from '@/features/auth/session-storage';
 import { i18n } from '@/plugins/i18n';
 import { isIdleSessionMessage } from '@/features/auth/idle-session';
-import type { AuthSessionState } from '@/features/auth/stores/internal/auth-session';
+import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
+import { APP_HOME_ROUTE, type AuthSessionState } from '@/features/auth/stores/internal/auth-session';
 
 function t(key: string) {
     return i18n.global.t(key);
@@ -53,15 +54,29 @@ export function createAuthLogout(session: AuthSessionState) {
     }
 
     /**
+     * Conserve un deep-link `/app…` pour le login suivant (idle, 401, guard).
+     * Ne remplace pas un `returnUrl` déjà posé (ex. par le guard).
+     */
+    function preserveReturnUrlForReLogin() {
+        if (returnUrl.value) return;
+        const fullPath = router.currentRoute?.value?.fullPath;
+        if (!fullPath) return;
+        returnUrl.value = sanitizeReturnUrl(fullPath, APP_HOME_ROUTE);
+    }
+
+    /**
      * Force un re-login après invalidation JWT (mdp / e-mail / idle).
+     * Préserve `returnUrl` (posé par le guard ou la route courante).
      * @param message Message optionnel (sinon notice idle si applicable).
      */
     async function forceReLogin(message?: string) {
         const idleNotice = pendingIdleLogoutNotice.value || isIdleSessionMessage(message);
         pendingIdleLogoutNotice.value = false;
+        preserveReturnUrlForReLogin();
+        const preservedReturnUrl = returnUrl.value;
         await clearServerSession();
         clearSession();
-        returnUrl.value = null;
+        returnUrl.value = preservedReturnUrl;
         await goToLogin(idleNotice ? t('security.session.idleLogoutNotice') : message);
     }
 
