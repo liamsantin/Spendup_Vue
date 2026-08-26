@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
     emptyToNull,
     formatAccountBalance,
+    formatAccountNumberLine,
     formatSnapshotDate,
     isAccountFieldHidden,
     isBalanceHidden,
@@ -166,6 +167,18 @@ describe('hidden fields helpers', () => {
         expect(resolveAccountBalanceDisplay(10, 'CHF', true)).toEqual({ text: '—', hidden: true });
         expect(resolveAccountBalanceDisplay(10, 'CHF', false).hidden).toBe(false);
         expect(resolveAccountBalanceDisplay(10, 'CHF', false).text).toMatch(/10/);
+    });
+
+    it('formatAccountNumberLine masque même si le numéro est présent', () => {
+        const labels = {
+            hidden: 'N° caché',
+            visible: (n: string) => `N° ${n}`
+        };
+        expect(formatAccountNumberLine({ accountNumber: '42', hiddenFields: ['accountNumber'] }, labels)).toBe(
+            ' · N° caché'
+        );
+        expect(formatAccountNumberLine({ accountNumber: '42', hiddenFields: [] }, labels)).toBe(' · N° 42');
+        expect(formatAccountNumberLine({ accountNumber: null, hiddenFields: [] }, labels)).toBe('');
     });
 
     it('valide IBAN (longueur + checksum mod-97)', () => {

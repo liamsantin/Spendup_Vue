@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { LockIcon } from 'vue-tabler-icons';
-import { isAccountFieldHidden, isLightAccountColor, resolveAccountBalanceDisplay, safeAccountColor } from '@/features/accounts/format';
+import { isAccountFieldHidden, isLightAccountColor, resolveAccountBalanceDisplay, safeAccountColor, formatAccountNumberLine } from '@/features/accounts/format';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { Account } from '@/features/accounts/types';
 
@@ -32,16 +32,12 @@ const promoted = computed(() => store.isPromotedAccount(props.account.publicId))
 const avatarColor = computed(() => safeAccountColor(props.account.color) || 'lightprimary');
 const avatarTextClass = computed(() => (isLightAccountColor(props.account.color) ? 'text-primary' : 'text-white'));
 
-const accountNumberLine = computed(() => {
-    if (isAccountFieldHidden(props.account, 'accountNumber')) {
-        return ` · ${t('comptesPage.list.accountNumberHidden')}`;
-    }
-    if (props.account.accountNumber) {
-        return ` · ${t('comptesPage.list.accountNumber', { number: props.account.accountNumber })}`;
-    }
-    return '';
-});
-</script>
+const accountNumberLine = computed(() =>
+    formatAccountNumberLine(props.account, {
+        hidden: t('comptesPage.list.accountNumberHidden'),
+        visible: (number) => t('comptesPage.list.accountNumber', { number })
+    })
+);</script>
 
 <template>
     <v-list-item

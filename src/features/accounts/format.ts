@@ -25,6 +25,23 @@ export function isBalanceHidden(account: Pick<Account, 'hiddenFields'> | { hidde
 }
 
 /**
+ * Ligne secondaire liste : n° de compte, ou libellé « caché » si `accountNumber` ∈ hiddenFields.
+ * @returns Suffixe préfixé par ` · `, ou chaîne vide.
+ */
+export function formatAccountNumberLine(
+    account: Pick<Account, 'accountNumber' | 'hiddenFields'>,
+    labels: { hidden: string; visible: (number: string) => string }
+): string {
+    if (isAccountFieldHidden(account, 'accountNumber')) {
+        return ` · ${labels.hidden}`;
+    }
+    if (account.accountNumber) {
+        return ` · ${labels.visible(account.accountNumber)}`;
+    }
+    return '';
+}
+
+/**
  * Affiche un solde : valeur formatée, ou tiret « caché » selon `hiddenFields`.
  * Si `balanceHidden`, la valeur n’est jamais exposée (défense en profondeur).
  * @returns `{ text, hidden }` — `hidden` pour afficher un cadenas côté UI.

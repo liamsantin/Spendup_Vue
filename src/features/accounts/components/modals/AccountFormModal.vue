@@ -6,6 +6,7 @@ import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { emptyToNull, isValidAccountColor, isValidIbanFormat, normalizeAccountColor, parseAccountAmount } from '@/features/accounts/format';
+import { buildUpdateAccountPayload, shouldValidateAccountIban } from '@/features/accounts/account-form-payload';
 import { canEditAccountOwnerFields } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import {
@@ -14,8 +15,7 @@ import {
     CURRENCIES,
     type Account,
     type AccountType,
-    type Currency,
-    type UpdateAccountPayload
+    type Currency
 } from '@/features/accounts/types';
 import AccountForm, { type AccountFormFieldErrors } from '@/features/accounts/components/forms/AccountForm.vue';
 
@@ -127,7 +127,7 @@ async function onSave() {
         hasFieldError = true;
     }
     const lockOwner = !!props.account && !canEditAccountOwnerFields(props.account);
-    if (!lockOwner && !isValidIbanFormat(form.iban)) {
+    if (shouldValidateAccountIban(props.account) && !isValidIbanFormat(form.iban)) {
         fieldErrors.iban = t('comptesPage.form.errors.ibanInvalid');
         hasFieldError = true;
     }
@@ -140,11 +140,14 @@ async function onSave() {
         if (props.account) {
             if (lockOwner) {
                 if (hasFieldError) return;
-                const payload: UpdateAccountPayload = {
+                const payload = buildUpdateAccountPayload(props.account, {
                     name,
-                    accountNumber: emptyToNull(form.accountNumber),
-                    color: normalizeAccountColor(form.color)
-                };
+                    type: form.type,
+                    initialBalance: 0,
+                    iban: form.iban,
+                    accountNumber: form.accountNumber,
+                    color: form.color
+                });
                 const updated = await store.updateAccount(props.account.publicId, payload);
                 emit('saved', updated);
             } else {
@@ -155,16 +158,14 @@ async function onSave() {
                 }
                 if (hasFieldError || initialBalance == null) return;
 
-                const payload: UpdateAccountPayload = {
+                const payload = buildUpdateAccountPayload(props.account, {
                     name,
                     type: form.type,
-                    currency: props.account.currency,
                     initialBalance,
-                    iban: emptyToNull(form.iban),
-                    accountNumber: emptyToNull(form.accountNumber),
-                    color: normalizeAccountColor(form.color),
-                    isPrimary: props.account.isPrimary
-                };
+                    iban: form.iban,
+                    accountNumber: form.accountNumber,
+                    color: form.color
+                });
                 const updated = await store.updateAccount(props.account.publicId, payload);
                 emit('saved', updated);
             }
