@@ -647,7 +647,8 @@ describe('useAccountsStore', () => {
 
         expect(store.selectedAccount?.publicId).toBe('acc-2');
         expect(store.selectedAccount?.iban).toBe('CH-B-detail');
-        expect(store.accounts.find((a) => a.publicId === 'acc-1')?.iban).toBe('CH-A-late');
+        // Réponse périmée : ne doit pas écraser la ligne liste (iban d’origine).
+        expect(store.accounts.find((a) => a.publicId === 'acc-1')?.iban).toBeNull();
     });
 
     it('ignore des shares tardives d’un autre compte', async () => {

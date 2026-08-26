@@ -94,10 +94,12 @@ export function createAccountsCrud(state: AccountsState) {
                 }
                 try {
                     const account = normalizeAccount(await accountsApi.get(publicId));
-                    upsertAccount(account);
-                    if (requestId === detailRequestSeq) {
-                        selectedAccount.value = account;
+                    // Ne pas écraser la liste avec une réponse périmée (autre détail déjà demandé).
+                    if (requestId !== detailRequestSeq) {
+                        return;
                     }
+                    upsertAccount(account);
+                    selectedAccount.value = account;
                 } catch (e: unknown) {
                     if (requestId === detailRequestSeq) {
                         const err = AppError.fromUnknown(e);
@@ -117,6 +119,8 @@ export function createAccountsCrud(state: AccountsState) {
             { force, maxAgeMs: ACCOUNTS_DETAIL_MAX_AGE_MS }
         );
         if (requestId !== detailRequestSeq) {
+            // Loader périmé a quand même marqué le TTL : invalider pour forcer un refetch à la réouverture.
+            cache.invalidate(`detail:${publicId}`);
             return selectedAccount.value;
         }
         if (selectedAccount.value?.publicId !== publicId) {
