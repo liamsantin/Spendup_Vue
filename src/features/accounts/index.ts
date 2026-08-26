@@ -28,6 +28,7 @@ export {
     isValidAccountColor,
     normalizeAccountColor,
     parseAccountAmount,
+    MAX_ACCOUNT_AMOUNT,
     safeAccountColor,
     isLightAccountColor,
     todayYmd,

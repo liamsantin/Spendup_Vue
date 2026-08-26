@@ -111,18 +111,37 @@ export function isValidIbanFormat(value: string | null | undefined): boolean {
     return ibanMod97(normalized) === 1;
 }
 
+/** Plafond absolu des montants compte / relevé (défense parsing). */
+export const MAX_ACCOUNT_AMOUNT = 1_000_000_000_000;
+
+/** Décimal strict : signe optionnel, chiffres, séparateur `.` ou `,` optionnel. */
+const ACCOUNT_AMOUNT_RE = /^[+-]?\d+([.,]\d+)?$/;
+
 /**
  * Parse un montant compte / snapshot.
- * Accepte `0` ; refuse vide, NaN, ±Infinity (pas de fallback silencieux vers 0).
+ * Accepte `number` / `string` décimaux finis ; refuse booléens, tableaux, hex, notation scientifique.
+ * Arrondit à 2 décimales ; plafonne à ±`MAX_ACCOUNT_AMOUNT`.
  * @returns Le nombre fini, ou `null` si invalide.
  */
 export function parseAccountAmount(value: unknown): number | null {
-    if (value === '' || value == null) return null;
-    if (typeof value === 'string' && value.trim() === '') return null;
-    const raw = typeof value === 'string' ? value.trim().replace(',', '.') : value;
-    const n = typeof raw === 'number' ? raw : Number(raw);
+    if (value == null || value === '') return null;
+
+    let n: number;
+    if (typeof value === 'number') {
+        n = value;
+    } else if (typeof value === 'string') {
+        const trimmed = value.trim();
+        if (!trimmed || !ACCOUNT_AMOUNT_RE.test(trimmed)) return null;
+        n = Number(trimmed.replace(',', '.'));
+    } else {
+        return null;
+    }
+
     if (!Number.isFinite(n)) return null;
-    return n;
+    if (Math.abs(n) > MAX_ACCOUNT_AMOUNT) return null;
+
+    const rounded = Number(n.toFixed(2));
+    return Object.is(rounded, -0) ? 0 : rounded;
 }
 
 /** Date calendaire locale du jour au format `YYYY-MM-DD`. */

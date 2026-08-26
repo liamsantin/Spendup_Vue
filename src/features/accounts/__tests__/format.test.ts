@@ -64,15 +64,17 @@ describe('snapshot date helpers', () => {
 });
 
 describe('parseAccountAmount', () => {
-    it('accepte 0 et les nombres finis', () => {
+    it('accepte 0 et les nombres finis (arrondi 2 décimales)', () => {
         expect(parseAccountAmount(0)).toBe(0);
         expect(parseAccountAmount('0')).toBe(0);
         expect(parseAccountAmount(-12.5)).toBe(-12.5);
         expect(parseAccountAmount('1,5')).toBe(1.5);
         expect(parseAccountAmount(' 42.10 ')).toBe(42.1);
+        expect(parseAccountAmount(1.006)).toBe(1.01);
+        expect(parseAccountAmount('1.999')).toBe(2);
     });
 
-    it('refuse vide, NaN et Infinity (pas de fallback vers 0)', () => {
+    it('refuse vide, NaN, Infinity et types / notations non décimales', () => {
         expect(parseAccountAmount('')).toBeNull();
         expect(parseAccountAmount('   ')).toBeNull();
         expect(parseAccountAmount(null)).toBeNull();
@@ -81,6 +83,21 @@ describe('parseAccountAmount', () => {
         expect(parseAccountAmount(Number.NaN)).toBeNull();
         expect(parseAccountAmount(Number.POSITIVE_INFINITY)).toBeNull();
         expect(parseAccountAmount(Number('abc'))).toBeNull();
+        expect(parseAccountAmount([])).toBeNull();
+        expect(parseAccountAmount(true)).toBeNull();
+        expect(parseAccountAmount(false)).toBeNull();
+        expect(parseAccountAmount({ value: 1 })).toBeNull();
+        expect(parseAccountAmount('0x10')).toBeNull();
+        expect(parseAccountAmount('1e2')).toBeNull();
+        expect(parseAccountAmount('1E3')).toBeNull();
+        expect(parseAccountAmount('1.')).toBeNull();
+        expect(parseAccountAmount('.5')).toBeNull();
+    });
+
+    it('refuse les montants hors plafond', () => {
+        expect(parseAccountAmount(1_000_000_000_000)).toBe(1_000_000_000_000);
+        expect(parseAccountAmount(1_000_000_000_000.01)).toBeNull();
+        expect(parseAccountAmount(-1_000_000_000_001)).toBeNull();
     });
 });
 
