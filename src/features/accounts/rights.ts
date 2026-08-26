@@ -1,4 +1,4 @@
-import type { Account, AccountRole, AccountShare } from '@/features/accounts/types';
+import type { Account, AccountRole, AccountShare, UpdateAccountPayload } from '@/features/accounts/types';
 
 export function canViewAccount(account: Pick<Account, 'myRole'>): boolean {
     return account.myRole === 'owner' || account.myRole === 'editor' || account.myRole === 'viewer';
@@ -28,10 +28,30 @@ export function canEditAccount(account: Pick<Account, 'myRole' | 'isActive'>): b
 
 /**
  * Champs structurants du compte (solde initial, IBAN, type, devise, primary).
- * Owner seulement — un editor qui les envoie reçoit une BusinessException.
+ * Owner seulement — le store omet ces champs pour un editor avant le PUT.
  */
 export function canEditAccountOwnerFields(account: Pick<Account, 'myRole'>): boolean {
     return account.myRole === 'owner';
+}
+
+/**
+ * Payload PUT : un editor ne conserve que `name` / `accountNumber` / `color`.
+ * @param account Compte local (rôle).
+ * @param payload Payload demandé (peut encore contenir des champs owner).
+ * @returns Payload sûr à envoyer à l’API.
+ */
+export function sanitizeUpdateAccountPayload(
+    account: Pick<Account, 'myRole'>,
+    payload: UpdateAccountPayload
+): UpdateAccountPayload {
+    if (canEditAccountOwnerFields(account)) {
+        return payload;
+    }
+    return {
+        name: payload.name,
+        accountNumber: payload.accountNumber,
+        color: payload.color
+    };
 }
 
 /** Create / delete relevés de solde — editor+ sur compte actif. */

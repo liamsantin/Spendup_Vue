@@ -14,7 +14,8 @@ export {
     canLeaveAccountShare,
     isSharedAccount,
     isPrimaryActionBlocked,
-    roleLabelKey
+    roleLabelKey,
+    sanitizeUpdateAccountPayload
 } from '@/features/accounts/rights';
 export {
     formatAccountBalance,

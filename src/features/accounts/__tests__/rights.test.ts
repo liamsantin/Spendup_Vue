@@ -11,7 +11,8 @@ import {
     canSetPrimaryAccount,
     canViewAccount,
     canWriteBalanceSnapshots,
-    isSharedAccount
+    isSharedAccount,
+    sanitizeUpdateAccountPayload
 } from '@/features/accounts/rights';
 import type { Account } from '@/features/accounts/types';
 
@@ -60,6 +61,25 @@ describe('accounts rights', () => {
         expect(canEditAccountOwnerFields(account({ myRole: 'owner' }))).toBe(true);
         expect(canEditAccountOwnerFields(account({ myRole: 'editor' }))).toBe(false);
         expect(canEditAccountOwnerFields(account({ myRole: 'viewer' }))).toBe(false);
+    });
+
+    it('sanitizeUpdateAccountPayload omet les champs owner pour un editor', () => {
+        const full = {
+            name: 'X',
+            type: 'epargne' as const,
+            currency: 'EUR' as const,
+            initialBalance: 999,
+            iban: 'CH99',
+            accountNumber: '42',
+            color: '#111',
+            isPrimary: true
+        };
+        expect(sanitizeUpdateAccountPayload(account({ myRole: 'owner' }), full)).toEqual(full);
+        expect(sanitizeUpdateAccountPayload(account({ myRole: 'editor' }), full)).toEqual({
+            name: 'X',
+            accountNumber: '42',
+            color: '#111'
+        });
     });
 
     it('autorise create/delete relevés pour owner et editor actifs seulement', () => {

@@ -89,18 +89,18 @@ export type CreateAccountPayload = {
 
 /**
  * PUT compte.
- * - Owner : `iban: null` vide l’IBAN.
- * - Editor : omettre `iban` (ne pas envoyer) — `null` serait aussi traité comme omis, pas un clear.
+ * - Owner : champs complets ; `iban: null` vide l’IBAN.
+ * - Editor : uniquement `name`, `accountNumber`, `color` (les champs owner sont omis côté store).
  */
 export type UpdateAccountPayload = {
     name: string;
-    type: AccountType;
-    currency: Currency;
-    initialBalance: number;
-    iban?: string | null;
     accountNumber: string | null;
     color: string | null;
-    isPrimary: boolean;
+    type?: AccountType;
+    currency?: Currency;
+    initialBalance?: number;
+    iban?: string | null;
+    isPrimary?: boolean;
 };
 
 export type InviteAccountSharePayload = {

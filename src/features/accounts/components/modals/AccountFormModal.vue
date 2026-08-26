@@ -126,7 +126,8 @@ async function onSave() {
         fieldErrors.name = t('comptesPage.form.errors.nameRequired');
         hasFieldError = true;
     }
-    if (!isValidIbanFormat(form.iban)) {
+    const lockOwner = !!props.account && !canEditAccountOwnerFields(props.account);
+    if (!lockOwner && !isValidIbanFormat(form.iban)) {
         fieldErrors.iban = t('comptesPage.form.errors.ibanInvalid');
         hasFieldError = true;
     }
@@ -137,30 +138,36 @@ async function onSave() {
 
     try {
         if (props.account) {
-            const lockOwner = !canEditAccountOwnerFields(props.account);
-            const initialBalance = lockOwner
-                ? (props.account.initialBalance ?? 0)
-                : parseAccountAmount(form.initialBalance);
-            if (initialBalance == null) {
-                fieldErrors.initialBalance = t('comptesPage.form.errors.balanceInvalid');
-                hasFieldError = true;
-            }
-            if (hasFieldError || initialBalance == null) return;
+            if (lockOwner) {
+                if (hasFieldError) return;
+                const payload: UpdateAccountPayload = {
+                    name,
+                    accountNumber: emptyToNull(form.accountNumber),
+                    color: normalizeAccountColor(form.color)
+                };
+                const updated = await store.updateAccount(props.account.publicId, payload);
+                emit('saved', updated);
+            } else {
+                const initialBalance = parseAccountAmount(form.initialBalance);
+                if (initialBalance == null) {
+                    fieldErrors.initialBalance = t('comptesPage.form.errors.balanceInvalid');
+                    hasFieldError = true;
+                }
+                if (hasFieldError || initialBalance == null) return;
 
-            const payload: UpdateAccountPayload = {
-                name,
-                type: lockOwner ? props.account.type : form.type,
-                currency: props.account.currency,
-                initialBalance,
-                accountNumber: emptyToNull(form.accountNumber),
-                color: normalizeAccountColor(form.color),
-                isPrimary: props.account.isPrimary
-            };
-            if (!lockOwner) {
-                payload.iban = emptyToNull(form.iban);
+                const payload: UpdateAccountPayload = {
+                    name,
+                    type: form.type,
+                    currency: props.account.currency,
+                    initialBalance,
+                    iban: emptyToNull(form.iban),
+                    accountNumber: emptyToNull(form.accountNumber),
+                    color: normalizeAccountColor(form.color),
+                    isPrimary: props.account.isPrimary
+                };
+                const updated = await store.updateAccount(props.account.publicId, payload);
+                emit('saved', updated);
             }
-            const updated = await store.updateAccount(props.account.publicId, payload);
-            emit('saved', updated);
         } else {
             const initialBalance = parseAccountAmount(form.initialBalance);
             if (initialBalance == null) {

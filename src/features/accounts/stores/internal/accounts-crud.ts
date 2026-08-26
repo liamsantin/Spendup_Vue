@@ -4,7 +4,8 @@ import {
     canDeleteAccount,
     canEditAccount,
     canRestoreAccount,
-    canSetPrimaryAccount
+    canSetPrimaryAccount,
+    sanitizeUpdateAccountPayload
 } from '@/features/accounts/rights';
 import type { Account, CreateAccountPayload, UpdateAccountPayload } from '@/features/accounts/types';
 import {
@@ -162,7 +163,8 @@ export function createAccountsCrud(state: AccountsState) {
         try {
             const local = requireLocalAccount(accounts.value, selectedAccount.value, publicId);
             assertAccountAllowed(canEditAccount(local));
-            const account = normalizeAccount(await accountsApi.update(publicId, payload));
+            const body = sanitizeUpdateAccountPayload(local, payload);
+            const account = normalizeAccount(await accountsApi.update(publicId, body));
             upsertAccount(account);
             cache.touch(KEY_ACCOUNTS);
             cache.touch(`detail:${publicId}`);

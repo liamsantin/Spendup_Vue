@@ -283,7 +283,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(store.accounts[0]?.color).toBeNull();
         });
 
-        it('PUT editor omet iban (rename sans clear)', async () => {
+        it('PUT editor omet les champs owner (type, solde, iban, primary…)', async () => {
             const shared = account({
                 publicId: 'acc-shared',
                 isOwned: false,
@@ -298,17 +298,26 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             await store.loadAccounts();
             await store.updateAccount('acc-shared', {
                 name: 'Renommé',
-                type: 'courant',
-                currency: 'CHF',
-                initialBalance: 0,
+                type: 'epargne',
+                currency: 'EUR',
+                initialBalance: 999,
+                iban: 'CH99',
                 accountNumber: null,
                 color: '#4F46E5',
-                isPrimary: false
+                isPrimary: true
             });
 
             const body = api.update.mock.calls.at(-1)?.[1] as Record<string, unknown>;
+            expect(body).toEqual({
+                name: 'Renommé',
+                accountNumber: null,
+                color: '#4F46E5'
+            });
             expect(body).not.toHaveProperty('iban');
-            expect(body).toMatchObject({ name: 'Renommé', color: '#4F46E5' });
+            expect(body).not.toHaveProperty('type');
+            expect(body).not.toHaveProperty('initialBalance');
+            expect(body).not.toHaveProperty('isPrimary');
+            expect(body).not.toHaveProperty('currency');
         });
 
         it('impossible de retirer le primaire sans en promouvoir un autre → erreur métier', async () => {
@@ -425,7 +434,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
     });
 
     describe('§4 Rôles — erreurs métier editor / viewer', () => {
-        it('editor qui tente de changer solde initial → erreur métier affichée', async () => {
+        it('editor qui tente de changer solde initial → champs owner stripés avant API', async () => {
             const shared = account({
                 publicId: 'acc-shared',
                 isOwned: false,
@@ -433,25 +442,26 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 isPrimary: false
             });
             api.list.mockResolvedValue({ items: [shared] });
-            api.update.mockRejectedValue(
-                new ApiError('Seuls les champs name, color et accountNumber sont modifiables', 400)
-            );
+            api.update.mockResolvedValue({ ...shared, name: 'Renommé' });
 
             const store = useAccountsStore();
             await store.loadAccounts();
-            await expect(
-                store.updateAccount('acc-shared', {
-                    name: 'Renommé',
-                    type: 'epargne',
-                    currency: 'EUR',
-                    initialBalance: 999,
-                    iban: 'CH99',
-                    accountNumber: null,
-                    color: null,
-                    isPrimary: false
-                })
-            ).rejects.toBeTruthy();
-            expect(store.error).toMatch(/name|color|accountNumber|modifiables/i);
+            await store.updateAccount('acc-shared', {
+                name: 'Renommé',
+                type: 'epargne',
+                currency: 'EUR',
+                initialBalance: 999,
+                iban: 'CH99',
+                accountNumber: null,
+                color: null,
+                isPrimary: false
+            });
+
+            expect(api.update).toHaveBeenCalledWith('acc-shared', {
+                name: 'Renommé',
+                accountNumber: null,
+                color: null
+            });
         });
 
         it('viewer qui tente PUT / archive → refus store (403), liste inchangée, pas d’appel API', async () => {
@@ -1019,14 +1029,18 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             const shared = storeA.sharedAccounts[0];
             expect(shared?.myRole).toBe('editor');
 
-            // 3. B renomme OK ; changer solde initial → erreur
+            // 3. B renomme OK ; tentative solde initial → stripé côté store (pas d’erreur API)
             api.update
                 .mockResolvedValueOnce({
                     ...shared!,
                     name: 'Épargne Bob',
                     color: '#10B981'
                 })
-                .mockRejectedValueOnce(new ApiError('Champs owner réservés', 400));
+                .mockResolvedValueOnce({
+                    ...shared!,
+                    name: 'Épargne Bob',
+                    color: '#10B981'
+                });
 
             await storeA.updateAccount('acc-epargne', {
                 name: 'Épargne Bob',
@@ -1040,18 +1054,21 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             });
             expect(storeA.accounts.find((a) => a.publicId === 'acc-epargne')?.name).toBe('Épargne Bob');
 
-            await expect(
-                storeA.updateAccount('acc-epargne', {
-                    name: 'Épargne Bob',
-                    type: 'epargne',
-                    currency: 'CHF',
-                    initialBalance: 1,
-                    iban: null,
-                    accountNumber: null,
-                    color: '#10B981',
-                    isPrimary: false
-                })
-            ).rejects.toBeTruthy();
+            await storeA.updateAccount('acc-epargne', {
+                name: 'Épargne Bob',
+                type: 'epargne',
+                currency: 'CHF',
+                initialBalance: 1,
+                iban: null,
+                accountNumber: null,
+                color: '#10B981',
+                isPrimary: false
+            });
+            expect(api.update.mock.calls.at(-1)?.[1]).toEqual({
+                name: 'Épargne Bob',
+                accountNumber: null,
+                color: '#10B981'
+            });
 
             // 4. B ajoute relevé ; visible après reload
             api.createBalanceSnapshot.mockResolvedValue(
