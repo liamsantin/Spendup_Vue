@@ -20,8 +20,9 @@ export function canCreateAccount(): boolean {
     return true;
 }
 
-/** Rename léger + archive/restore + relevés (owner ou editor). */
-export function canEditAccount(account: Pick<Account, 'myRole'>): boolean {
+/** Rename léger + édition (owner ou editor) — compte actif uniquement. */
+export function canEditAccount(account: Pick<Account, 'myRole' | 'isActive'>): boolean {
+    if (!account.isActive) return false;
     return account.myRole === 'owner' || account.myRole === 'editor';
 }
 
@@ -33,8 +34,9 @@ export function canEditAccountOwnerFields(account: Pick<Account, 'myRole'>): boo
     return account.myRole === 'owner';
 }
 
-/** Create / delete relevés de solde — editor+. */
-export function canWriteBalanceSnapshots(account: Pick<Account, 'myRole'>): boolean {
+/** Create / delete relevés de solde — editor+ sur compte actif. */
+export function canWriteBalanceSnapshots(account: Pick<Account, 'myRole' | 'isActive'>): boolean {
+    if (!account.isActive) return false;
     return account.myRole === 'owner' || account.myRole === 'editor';
 }
 
@@ -58,7 +60,9 @@ export function canDeleteAccount(account: Pick<Account, 'myRole' | 'isOwned' | '
     return account.myRole === 'owner';
 }
 
-export function canManageShares(account: Pick<Account, 'myRole' | 'isOwned'>): boolean {
+/** Inviter / gérer les partages — owner owned sur compte actif. */
+export function canManageShares(account: Pick<Account, 'myRole' | 'isOwned' | 'isActive'>): boolean {
+    if (!account.isActive) return false;
     return account.isOwned && account.myRole === 'owner';
 }
 

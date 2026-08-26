@@ -88,14 +88,20 @@ export type FriendshipChangedPayload = {
     friendshipPublicId: string;
 };
 
-/** Payload SignalR `accountChanged` — sync archive/restore/visibilité/relevés sans inbox. */
+/**
+ * Payload SignalR `accountChanged` — sync live même si pushNotifications est off
+ * (archive/restore/visibilité/relevés/révocation/changement de rôle). Les notifs inbox
+ * restent pour historique/badge ; ne pas compter uniquement sur elles pour la liste.
+ */
 export type AccountChange =
     | 'archived'
     | 'restored'
     | 'visibility'
     | 'updated'
     | 'balanceSnapshotCreated'
-    | 'balanceSnapshotDeleted';
+    | 'balanceSnapshotDeleted'
+    | 'revoked'
+    | 'roleChanged';
 
 export type AccountChangedPayload = {
     change: AccountChange;

@@ -311,7 +311,8 @@
             "errors": {
                 "nameRequired": "Name is required.",
                 "balanceInvalid": "Enter a valid balance.",
-                "ibanInvalid": "Invalid IBAN."
+                "ibanInvalid": "Invalid IBAN.",
+                "colorInvalid": "Invalid color. Use #RGB, #RRGGBB, or #RRGGBBAA."
             }
         },
         "share": {

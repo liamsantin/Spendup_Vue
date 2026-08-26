@@ -395,6 +395,80 @@ describe('useAccountsStore', () => {
         expect(store.accounts.find((a) => a.publicId === 'acc-1')?.name).toBe('Courant renommé');
     });
 
+    it('accountChanged revoked retire le compte immédiatement et vide la sélection', async () => {
+        const shared = {
+            ...ownedAccount,
+            publicId: 'acc-shared',
+            name: 'Partagé',
+            isOwned: false,
+            myRole: 'viewer' as const,
+            isPrimary: false
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount, shared] });
+        api.get.mockResolvedValue(shared);
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+            accountListener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        await store.loadAccountDetail('acc-shared');
+        expect(store.selectedAccount?.publicId).toBe('acc-shared');
+
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        accountListener?.({ change: 'revoked', accountPublicId: 'acc-shared' });
+
+        expect(store.accounts.some((a) => a.publicId === 'acc-shared')).toBe(false);
+        expect(store.selectedAccount).toBeNull();
+        await vi.waitFor(() => {
+            expect(api.list).toHaveBeenCalled();
+        });
+    });
+
+    it('accountChanged roleChanged refetch la liste et le détail ouvert (myRole)', async () => {
+        const shared = {
+            ...ownedAccount,
+            publicId: 'acc-shared',
+            name: 'Partagé',
+            isOwned: false,
+            myRole: 'editor' as const,
+            isPrimary: false
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount, shared] });
+        api.get.mockResolvedValue(shared);
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+            accountListener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        await store.loadAccountDetail('acc-shared');
+        expect(store.selectedAccount?.myRole).toBe('editor');
+
+        const asViewer = { ...shared, myRole: 'viewer' as const };
+        api.list.mockClear();
+        api.get.mockClear();
+        api.list.mockResolvedValue({ items: [ownedAccount, asViewer] });
+        api.get.mockResolvedValue(asViewer);
+
+        accountListener?.({ change: 'roleChanged', accountPublicId: 'acc-shared' });
+
+        await vi.waitFor(() => {
+            expect(api.list).toHaveBeenCalled();
+            expect(api.get).toHaveBeenCalledWith('acc-shared');
+        });
+        expect(store.accounts.find((a) => a.publicId === 'acc-shared')?.myRole).toBe('viewer');
+        expect(store.selectedAccount?.myRole).toBe('viewer');
+    });
+
     it('crée un compte par upsert sans relister', async () => {
         api.create.mockResolvedValue({ ...ownedAccount, publicId: 'acc-new', name: 'Nouveau', isPrimary: false });
 

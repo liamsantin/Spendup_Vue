@@ -5,7 +5,9 @@ import {
     formatSnapshotDate,
     isAccountFieldHidden,
     isBalanceHidden,
+    isValidAccountColor,
     isValidIbanFormat,
+    normalizeAccountColor,
     parseAccountAmount,
     resolveAccountBalanceDisplay,
     todayYmd,
@@ -83,6 +85,28 @@ describe('emptyToNull (PUT owner — checklist §2)', () => {
         expect(emptyToNull(undefined)).toBeNull();
         expect(emptyToNull('CH93…')).toBe('CH93…');
         expect(emptyToNull('  #4F46E5  ')).toBe('#4F46E5');
+    });
+});
+
+describe('account color helpers', () => {
+    it('accepte #RGB, #RRGGBB, #RRGGBBAA et refuse le reste', () => {
+        expect(isValidAccountColor(null)).toBe(true);
+        expect(isValidAccountColor('')).toBe(true);
+        expect(isValidAccountColor('#FFF')).toBe(true);
+        expect(isValidAccountColor('#4F46E5')).toBe(true);
+        expect(isValidAccountColor('#4f46e5aa')).toBe(true);
+        expect(isValidAccountColor('4F46E5')).toBe(false);
+        expect(isValidAccountColor('#GG0000')).toBe(false);
+        expect(isValidAccountColor('red')).toBe(false);
+        expect(isValidAccountColor('#12345')).toBe(false);
+    });
+
+    it('normalise en majuscules avec #, ou null pour vider', () => {
+        expect(normalizeAccountColor(null)).toBeNull();
+        expect(normalizeAccountColor('')).toBeNull();
+        expect(normalizeAccountColor('  #4f46e5  ')).toBe('#4F46E5');
+        expect(normalizeAccountColor('#abc')).toBe('#ABC');
+        expect(normalizeAccountColor('#4f46e5aa')).toBe('#4F46E5AA');
     });
 });
 

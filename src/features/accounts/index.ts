@@ -24,6 +24,8 @@ export {
     emptyToNull,
     normalizeIban,
     isValidIbanFormat,
+    isValidAccountColor,
+    normalizeAccountColor,
     parseAccountAmount,
     todayYmd,
     ymdToSnapshotIso,

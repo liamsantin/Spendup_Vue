@@ -1,6 +1,6 @@
 import { computed, onBeforeUnmount, ref, toValue, watch, type MaybeRefOrGetter } from 'vue';
 
-const HEX_RE = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i;
+const HEX_RE = /^#?([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 
 /** Borne une valeur numérique dans `[min, max]`. */
 function clamp(value: number, min = 0, max = 1) {
@@ -25,21 +25,21 @@ function hsvToHex(h: number, s: number, v: number) {
 }
 
 /**
- * Convertit hex → HSV.
- * @param hex Couleur `#RGB` ou `#RRGGBB`.
+ * Convertit hex → HSV (`#RGB`, `#RRGGBB` ou `#RRGGBBAA` — alpha ignoré pour le rendu).
+ * @param hex Couleur hex.
  */
 function hexToHsv(hex: string) {
     const raw = hex.replace('#', '');
-    const full =
+    const rgb =
         raw.length === 3
             ? raw
                   .split('')
                   .map((c) => c + c)
                   .join('')
-            : raw;
-    const r = parseInt(full.slice(0, 2), 16) / 255;
-    const g = parseInt(full.slice(2, 4), 16) / 255;
-    const b = parseInt(full.slice(4, 6), 16) / 255;
+            : raw.slice(0, 6);
+    const r = parseInt(rgb.slice(0, 2), 16) / 255;
+    const g = parseInt(rgb.slice(2, 4), 16) / 255;
+    const b = parseInt(rgb.slice(4, 6), 16) / 255;
 
     const max = Math.max(r, g, b);
     const min = Math.min(r, g, b);
@@ -178,7 +178,7 @@ export function useAppColorPicker(options: {
     function onHexInput(raw: string) {
         hexInput.value = String(raw ?? '')
             .replace(/[^0-9a-f]/gi, '')
-            .slice(0, 6);
+            .slice(0, 8);
 
         if (!hexInput.value) {
             options.emit(null);
@@ -191,6 +191,11 @@ export function useAppColorPicker(options: {
         hue.value = hsv.h;
         saturation.value = hsv.s;
         value.value = hsv.v;
+        // Préserve `#RRGGBBAA` saisi ; le picker HSV émet `#RRGGBB`.
+        if (hexInput.value.length === 8) {
+            options.emit(`#${hexInput.value.toUpperCase()}`);
+            return;
+        }
         options.emit(currentHex.value);
     }
 

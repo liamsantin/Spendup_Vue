@@ -283,6 +283,34 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(store.accounts[0]?.color).toBeNull();
         });
 
+        it('PUT editor omet iban (rename sans clear)', async () => {
+            const shared = account({
+                publicId: 'acc-shared',
+                isOwned: false,
+                myRole: 'editor',
+                isPrimary: false,
+                iban: 'CH9300762011623852957'
+            });
+            api.list.mockResolvedValue({ items: [shared] });
+            api.update.mockResolvedValue({ ...shared, name: 'Renommé', color: '#4F46E5' });
+
+            const store = useAccountsStore();
+            await store.loadAccounts();
+            await store.updateAccount('acc-shared', {
+                name: 'Renommé',
+                type: 'courant',
+                currency: 'CHF',
+                initialBalance: 0,
+                accountNumber: null,
+                color: '#4F46E5',
+                isPrimary: false
+            });
+
+            const body = api.update.mock.calls.at(-1)?.[1] as Record<string, unknown>;
+            expect(body).not.toHaveProperty('iban');
+            expect(body).toMatchObject({ name: 'Renommé', color: '#4F46E5' });
+        });
+
         it('impossible de retirer le primaire sans en promouvoir un autre → erreur métier', async () => {
             api.list.mockResolvedValue({ items: [account()] });
             api.update.mockRejectedValue(
@@ -360,6 +388,36 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             await expect(store.deleteAccount('acc-2')).rejects.toBeTruthy();
             expect(store.error).toMatch(/mouvements|Archivez/i);
             expect(store.accounts.some((a) => a.publicId === 'acc-2')).toBe(true);
+        });
+
+        it('compte archivé : PUT / share / relevé refusés côté API (UI déjà gated)', async () => {
+            const archived = account({ publicId: 'acc-2', name: 'Épargne', isPrimary: false, isActive: false });
+            api.list.mockResolvedValue({ items: [account(), archived] });
+            api.update.mockRejectedValue(new ApiError('Compte archivé', 400));
+            api.createBalanceSnapshot.mockRejectedValue(new ApiError('Compte archivé', 400));
+            api.inviteShare.mockRejectedValue(new ApiError('Compte archivé', 400));
+
+            const store = useAccountsStore();
+            await store.loadAccounts();
+
+            await expect(
+                store.updateAccount('acc-2', {
+                    name: 'X',
+                    type: 'courant',
+                    currency: 'CHF',
+                    initialBalance: 0,
+                    accountNumber: null,
+                    color: null,
+                    isPrimary: false
+                })
+            ).rejects.toMatchObject({ status: 400 });
+            await expect(
+                store.createBalanceSnapshot('acc-2', {
+                    balance: 10,
+                    snapshotAt: '2026-08-26T12:00:00.000Z'
+                })
+            ).rejects.toMatchObject({ status: 400 });
+            await expect(store.inviteShare('acc-2', 'user-b', 'viewer')).rejects.toMatchObject({ status: 400 });
         });
     });
 
@@ -671,7 +729,34 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
     });
 
     describe('§8 Realtime / inbox — pas de compte fantôme', () => {
-        it('revoke : destinataire sur la liste voit le compte disparaître sans refresh manuel', async () => {
+        it('revoke via accountChanged (push off) : destinataire voit le compte disparaître sans refresh manuel', async () => {
+            const shared = account({
+                publicId: 'acc-shared',
+                name: 'Partagé',
+                isOwned: false,
+                myRole: 'viewer',
+                isPrimary: false
+            });
+            api.list.mockResolvedValue({ items: [account(), shared] });
+            api.listIncomingShares.mockResolvedValue({ items: [] });
+
+            let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+            subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+                accountListener = fn;
+                return () => undefined;
+            });
+
+            const store = useAccountsStore();
+            await store.bootstrap('Accounts');
+            expect(store.accounts.some((a) => a.publicId === 'acc-shared')).toBe(true);
+
+            api.list.mockResolvedValue({ items: [account()] });
+            accountListener?.({ change: 'revoked', accountPublicId: 'acc-shared' });
+
+            expect(store.accounts.some((a) => a.publicId === 'acc-shared')).toBe(false);
+        });
+
+        it('revoke inbox (historique) : même retrait immédiat', async () => {
             const shared = account({
                 publicId: 'acc-shared',
                 name: 'Partagé',
@@ -700,7 +785,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(store.accounts.some((a) => a.publicId === 'acc-shared')).toBe(false);
         });
 
-        it('sur détail au moment du revoke → sélection vidée sans crash', async () => {
+        it('sur détail au moment du revoke (accountChanged) → sélection vidée sans crash', async () => {
             const shared = account({
                 publicId: 'acc-shared',
                 isOwned: false,
@@ -711,13 +796,11 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             api.get.mockResolvedValue(shared);
             api.listIncomingShares.mockResolvedValue({ items: [] });
 
-            let listener: ((n: { type: string; metadata?: Record<string, unknown> }) => void) | undefined;
-            subscribeToAccountShareNotifications.mockImplementation(
-                (fn: (n: { type: string; metadata?: Record<string, unknown> }) => void) => {
-                    listener = fn;
-                    return () => undefined;
-                }
-            );
+            let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+            subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+                accountListener = fn;
+                return () => undefined;
+            });
 
             const store = useAccountsStore();
             await store.bootstrap('Accounts');
@@ -725,14 +808,14 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(store.selectedAccount?.publicId).toBe('acc-shared');
 
             api.list.mockResolvedValue({ items: [] });
-            listener?.({ type: 'accountShareRevoked', metadata: { accountPublicId: 'acc-shared' } });
+            accountListener?.({ change: 'revoked', accountPublicId: 'acc-shared' });
 
             expect(store.selectedAccount).toBeNull();
             expect(store.shares).toEqual([]);
             expect(store.balanceSnapshots).toEqual([]);
         });
 
-        it('soft-delete owner (notif accountShareRevoked) : même retrait immédiat', async () => {
+        it('soft-delete owner (accountChanged revoked) : même retrait immédiat', async () => {
             const shared = account({
                 publicId: 'acc-epargne',
                 isOwned: false,
@@ -742,18 +825,53 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             api.list.mockResolvedValue({ items: [shared] });
             api.listIncomingShares.mockResolvedValue({ items: [] });
 
-            let listener: ((n: { type: string; metadata?: Record<string, unknown> }) => void) | undefined;
-            subscribeToAccountShareNotifications.mockImplementation(
-                (fn: (n: { type: string; metadata?: Record<string, unknown> }) => void) => {
-                    listener = fn;
-                    return () => undefined;
-                }
-            );
+            let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+            subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+                accountListener = fn;
+                return () => undefined;
+            });
 
             const store = useAccountsStore();
             await store.bootstrap('Accounts');
-            listener?.({ type: 'accountShareRevoked', metadata: { accountPublicId: 'acc-epargne' } });
+            accountListener?.({ change: 'revoked', accountPublicId: 'acc-epargne' });
             expect(store.accounts).toHaveLength(0);
+        });
+
+        it('roleChanged (accountChanged) : myRole mis à jour sans refresh manuel', async () => {
+            const shared = account({
+                publicId: 'acc-shared',
+                isOwned: false,
+                myRole: 'editor',
+                isPrimary: false
+            });
+            api.list.mockResolvedValue({ items: [shared] });
+            api.get.mockResolvedValue(shared);
+            api.listIncomingShares.mockResolvedValue({ items: [] });
+
+            let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+            subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+                accountListener = fn;
+                return () => undefined;
+            });
+
+            const store = useAccountsStore();
+            await store.bootstrap('Accounts');
+            await store.loadAccountDetail('acc-shared');
+
+            const asViewer = account({
+                publicId: 'acc-shared',
+                isOwned: false,
+                myRole: 'viewer',
+                isPrimary: false
+            });
+            api.list.mockResolvedValue({ items: [asViewer] });
+            api.get.mockResolvedValue(asViewer);
+            accountListener?.({ change: 'roleChanged', accountPublicId: 'acc-shared' });
+
+            await vi.waitFor(() => {
+                expect(store.selectedAccount?.myRole).toBe('viewer');
+                expect(store.accounts[0]?.myRole).toBe('viewer');
+            });
         });
     });
 
@@ -929,7 +1047,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             });
             expect(storeA.balanceSnapshots[0]?.source).toBe('manual');
 
-            // 5. A passe B en viewer → create relevé refusé
+            // 5. A passe B en viewer → roleChanged live + create relevé refusé
             api.updateShareRole.mockResolvedValue({
                 publicId: 's1',
                 userPublicId: 'user-b',
@@ -942,6 +1060,40 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 updatedAt: '2026-01-03T00:00:00Z'
             });
             await storeA.updateShareRole('acc-epargne', 'user-b', 'viewer');
+
+            let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+            subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+                accountListener = fn;
+                return () => undefined;
+            });
+            storeA.onAuthenticatedSession();
+            api.list.mockResolvedValue({
+                items: [
+                    account({
+                        publicId: 'acc-epargne',
+                        name: 'Épargne Bob',
+                        isOwned: false,
+                        myRole: 'viewer',
+                        isPrimary: false,
+                        currentBalance: 510
+                    })
+                ]
+            });
+            api.get.mockResolvedValue(
+                account({
+                    publicId: 'acc-epargne',
+                    name: 'Épargne Bob',
+                    isOwned: false,
+                    myRole: 'viewer',
+                    isPrimary: false,
+                    currentBalance: 510
+                })
+            );
+            accountListener?.({ change: 'roleChanged', accountPublicId: 'acc-epargne' });
+            await vi.waitFor(() => {
+                expect(storeA.accounts.find((a) => a.publicId === 'acc-epargne')?.myRole).toBe('viewer');
+            });
+
             api.createBalanceSnapshot.mockRejectedValue(new ApiError('Compte introuvable', 404));
             await expect(
                 storeA.createBalanceSnapshot('acc-epargne', {
@@ -950,19 +1102,11 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 })
             ).rejects.toMatchObject({ status: 404 });
 
-            // 6. Soft-delete épargne → revoked immédiat côté destinataire
-            let listener: ((n: { type: string; metadata?: Record<string, unknown> }) => void) | undefined;
-            subscribeToAccountShareNotifications.mockImplementation(
-                (fn: (n: { type: string; metadata?: Record<string, unknown> }) => void) => {
-                    listener = fn;
-                    return () => undefined;
-                }
-            );
-            storeA.onAuthenticatedSession();
+            // 6. Soft-delete épargne → accountChanged revoked immédiat côté destinataire
             api.list.mockResolvedValue({
                 items: [account({ publicId: 'acc-courant', name: 'Courant', isPrimary: true })]
             });
-            listener?.({ type: 'accountShareRevoked', metadata: { accountPublicId: 'acc-epargne' } });
+            accountListener?.({ change: 'revoked', accountPublicId: 'acc-epargne' });
             expect(storeA.accounts.some((a) => a.publicId === 'acc-epargne')).toBe(false);
 
             // 7. Impossible delete primaire ; créer 2e, promouvoir, puis delete ancien

@@ -12,7 +12,7 @@ type RealtimeDeps = Pick<AccountsCrud, 'loadAccounts' | 'loadAccountDetail'> &
     Pick<AccountsSnapshots, 'loadBalanceSnapshots'>;
 
 /**
- * Abonnements realtime (partages + amitiés + archive/restore/visibilité/relevés) pour invalider / recharger le store.
+ * Abonnements realtime (partages + amitiés + accountChanged) pour invalider / recharger le store.
  * @param state État partagé du store.
  * @param deps Actions de rechargement utilisées par les handlers.
  * @returns Les helpers de bridge realtime.
@@ -70,7 +70,7 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
     function handleRealtime(notification: AppNotification) {
         const type = String(notification.type);
         if (type === 'accountShareRevoked') {
-            // Soft-delete / revoke manuel : retirer tout de suite (UI), sync réseau en arrière-plan.
+            // Inbox (historique/badge) — le sync live passe par accountChanged.revoked.
             const accountPublicId = getAccountPublicId(notification.metadata);
             if (accountPublicId) {
                 removeAccountLocal(accountPublicId);
@@ -141,11 +141,14 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
             return;
         }
         if (type === 'accountShareRoleChanged') {
-            // Destinataire : rôle modifié sur un partage actif — refetch comptes (myRole / hiddenFields).
+            // Inbox (historique/badge) — le sync live passe par accountChanged.roleChanged.
             cache.invalidate(KEY_ACCOUNTS);
             const accountPublicId = getAccountPublicId(notification.metadata);
             if (accountPublicId) cache.invalidate(`detail:${accountPublicId}`);
             void loadAccounts(true).catch(() => undefined);
+            if (accountPublicId && selectedAccount.value?.publicId === accountPublicId) {
+                void loadAccountDetail(accountPublicId, true).catch(() => undefined);
+            }
         }
     }
 
@@ -165,7 +168,7 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
     }
 
     /**
-     * Archive / restore / champs masqués poussés par SignalR (pas d’inbox).
+     * Sync live via SignalR `accountChanged` (y compris pushNotifications off).
      * Patch local immédiat quand possible + sync liste / détail en arrière-plan.
      * @param payload Événement `accountChanged`.
      */
@@ -173,6 +176,26 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
         if (!payload?.accountPublicId || !payload?.change) return;
         const id = payload.accountPublicId.trim();
         if (!id) return;
+
+        if (payload.change === 'revoked') {
+            // Revoke manuel ou soft-delete owner : retirer tout de suite (UI), sync réseau en arrière-plan.
+            removeAccountLocal(id);
+            cache.invalidate(KEY_INCOMING);
+            cache.invalidate(KEY_ACCOUNTS);
+            void Promise.all([loadIncoming(true), loadAccounts(true)]).catch(() => undefined);
+            return;
+        }
+
+        if (payload.change === 'roleChanged') {
+            // Destinataire : owner a basculé viewer ↔ editor — refetch myRole / actions UI.
+            cache.invalidate(KEY_ACCOUNTS);
+            cache.invalidate(`detail:${id}`);
+            void loadAccounts(true).catch(() => undefined);
+            if (selectedAccount.value?.publicId === id) {
+                void loadAccountDetail(id, true).catch(() => undefined);
+            }
+            return;
+        }
 
         if (payload.change === 'archived' || payload.change === 'restored') {
             const isActive = payload.change === 'restored';

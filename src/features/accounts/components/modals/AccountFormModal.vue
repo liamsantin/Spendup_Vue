@@ -5,10 +5,18 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { emptyToNull, isValidIbanFormat, parseAccountAmount } from '@/features/accounts/format';
+import { emptyToNull, isValidAccountColor, isValidIbanFormat, normalizeAccountColor, parseAccountAmount } from '@/features/accounts/format';
 import { canEditAccountOwnerFields } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
-import { ACCOUNT_COLOR_PRESETS, ACCOUNT_TYPES, CURRENCIES, type Account, type AccountType, type Currency } from '@/features/accounts/types';
+import {
+    ACCOUNT_COLOR_PRESETS,
+    ACCOUNT_TYPES,
+    CURRENCIES,
+    type Account,
+    type AccountType,
+    type Currency,
+    type UpdateAccountPayload
+} from '@/features/accounts/types';
 import AccountForm from '@/features/accounts/components/forms/AccountForm.vue';
 
 const props = defineProps<{
@@ -106,10 +114,14 @@ async function onSave() {
         localError.message = t('comptesPage.form.errors.ibanInvalid');
         return;
     }
+    if (!isValidAccountColor(form.color)) {
+        localError.message = t('comptesPage.form.errors.colorInvalid');
+        return;
+    }
 
     try {
         if (props.account) {
-            // Editor : n’envoyer que name / color / accountNumber — les autres champs sont échos (API refuse sinon).
+            // Editor : omettre iban (API : null = omis, pas un clear). Autres champs owner en écho.
             const lockOwner = !canEditAccountOwnerFields(props.account);
             const initialBalance = lockOwner
                 ? (props.account.initialBalance ?? 0)
@@ -118,16 +130,19 @@ async function onSave() {
                 localError.message = t('comptesPage.form.errors.balanceInvalid');
                 return;
             }
-            const updated = await store.updateAccount(props.account.publicId, {
+            const payload: UpdateAccountPayload = {
                 name,
                 type: lockOwner ? props.account.type : form.type,
                 currency: props.account.currency,
                 initialBalance,
-                iban: lockOwner ? props.account.iban : emptyToNull(form.iban),
                 accountNumber: emptyToNull(form.accountNumber),
-                color: emptyToNull(form.color),
+                color: normalizeAccountColor(form.color),
                 isPrimary: props.account.isPrimary
-            });
+            };
+            if (!lockOwner) {
+                payload.iban = emptyToNull(form.iban);
+            }
+            const updated = await store.updateAccount(props.account.publicId, payload);
             emit('saved', updated);
         } else {
             const initialBalance = parseAccountAmount(form.initialBalance);
@@ -142,7 +157,7 @@ async function onSave() {
                 initialBalance,
                 iban: emptyToNull(form.iban),
                 accountNumber: emptyToNull(form.accountNumber),
-                color: emptyToNull(form.color),
+                color: normalizeAccountColor(form.color),
                 isPrimary: isFirstOwnedAccount.value ? true : form.isPrimary
             });
             emit('saved', created);

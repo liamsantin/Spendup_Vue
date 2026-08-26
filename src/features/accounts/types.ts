@@ -87,13 +87,17 @@ export type CreateAccountPayload = {
     isPrimary?: boolean;
 };
 
-/** PUT = état complet — envoyer tous les champs. */
+/**
+ * PUT compte.
+ * - Owner : `iban: null` vide l’IBAN.
+ * - Editor : omettre `iban` (ne pas envoyer) — `null` serait aussi traité comme omis, pas un clear.
+ */
 export type UpdateAccountPayload = {
     name: string;
     type: AccountType;
     currency: Currency;
     initialBalance: number;
-    iban: string | null;
+    iban?: string | null;
     accountNumber: string | null;
     color: string | null;
     isPrimary: boolean;

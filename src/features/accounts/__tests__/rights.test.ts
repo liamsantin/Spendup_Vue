@@ -48,10 +48,12 @@ describe('accounts rights', () => {
         expect(canCreateAccount()).toBe(true);
     });
 
-    it('autorise édition pour owner et editor seulement', () => {
+    it('autorise édition pour owner et editor actifs seulement', () => {
         expect(canEditAccount(account({ myRole: 'owner' }))).toBe(true);
         expect(canEditAccount(account({ myRole: 'editor' }))).toBe(true);
         expect(canEditAccount(account({ myRole: 'viewer' }))).toBe(false);
+        expect(canEditAccount(account({ myRole: 'owner', isActive: false }))).toBe(false);
+        expect(canEditAccount(account({ myRole: 'editor', isActive: false }))).toBe(false);
     });
 
     it('limite les champs structurants du compte au owner', () => {
@@ -60,10 +62,12 @@ describe('accounts rights', () => {
         expect(canEditAccountOwnerFields(account({ myRole: 'viewer' }))).toBe(false);
     });
 
-    it('autorise create/delete relevés pour owner et editor seulement', () => {
+    it('autorise create/delete relevés pour owner et editor actifs seulement', () => {
         expect(canWriteBalanceSnapshots(account({ myRole: 'owner' }))).toBe(true);
         expect(canWriteBalanceSnapshots(account({ myRole: 'editor' }))).toBe(true);
         expect(canWriteBalanceSnapshots(account({ myRole: 'viewer' }))).toBe(false);
+        expect(canWriteBalanceSnapshots(account({ myRole: 'owner', isActive: false }))).toBe(false);
+        expect(canWriteBalanceSnapshots(account({ myRole: 'editor', isActive: false }))).toBe(false);
     });
 
     it('bloque archive/delete sur le compte primaire', () => {
@@ -84,11 +88,12 @@ describe('accounts rights', () => {
         expect(canDeleteAccount(account({ isOwned: true, myRole: 'editor', isPrimary: false }))).toBe(false);
     });
 
-    it('limite setPrimary et shares au owner owned', () => {
+    it('limite setPrimary et shares au owner owned actif', () => {
         expect(canSetPrimaryAccount(account({ myRole: 'owner', isOwned: true, isPrimary: false }))).toBe(true);
         expect(canSetPrimaryAccount(account({ myRole: 'editor', isOwned: false }))).toBe(false);
         expect(canManageShares(account({ myRole: 'owner', isOwned: true }))).toBe(true);
         expect(canManageShares(account({ myRole: 'editor', isOwned: true }))).toBe(false);
+        expect(canManageShares(account({ myRole: 'owner', isOwned: true, isActive: false }))).toBe(false);
     });
 
     it('autorise restore uniquement sur comptes inactifs éditables', () => {
@@ -154,5 +159,21 @@ describe('accounts rights', () => {
         expect(canLeaveAccountShare(owner)).toBe(false);
         expect(canLeaveAccountShare(editor)).toBe(true);
         expect(canLeaveAccountShare(viewer)).toBe(true);
+    });
+
+    it('compte archivé : lecture seule (édition / share / relevés bloqués, restore OK)', () => {
+        const archivedOwner = account({ myRole: 'owner', isOwned: true, isPrimary: false, isActive: false });
+        const archivedEditor = account({ myRole: 'editor', isOwned: false, isPrimary: false, isActive: false });
+
+        expect(canViewAccount(archivedOwner)).toBe(true);
+        expect(canEditAccount(archivedOwner)).toBe(false);
+        expect(canEditAccount(archivedEditor)).toBe(false);
+        expect(canWriteBalanceSnapshots(archivedOwner)).toBe(false);
+        expect(canWriteBalanceSnapshots(archivedEditor)).toBe(false);
+        expect(canManageShares(archivedOwner)).toBe(false);
+        expect(canArchiveAccount(archivedOwner)).toBe(false);
+        expect(canRestoreAccount(archivedOwner)).toBe(true);
+        expect(canRestoreAccount(archivedEditor)).toBe(true);
+        expect(canDeleteAccount(archivedOwner)).toBe(true);
     });
 });

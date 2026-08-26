@@ -46,6 +46,30 @@ export function emptyToNull(value: string | null | undefined): string | null {
     return trimmed ? trimmed : null;
 }
 
+/** Formats API : `#RGB`, `#RRGGBB`, `#RRGGBBAA` (casse libre ; réponse souvent en majuscules). */
+const ACCOUNT_COLOR_RE = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
+
+/**
+ * Valide une couleur compte côté client.
+ * @returns `true` si vide/`null` (clear) ou hex accepté par l’API.
+ */
+export function isValidAccountColor(value: string | null | undefined): boolean {
+    if (value == null) return true;
+    const trimmed = value.trim();
+    if (!trimmed) return true;
+    return ACCOUNT_COLOR_RE.test(trimmed);
+}
+
+/**
+ * Normalise une couleur pour le PUT (`#` + majuscules) ou `null` pour vider.
+ */
+export function normalizeAccountColor(value: string | null | undefined): string | null {
+    const trimmed = emptyToNull(value);
+    if (!trimmed) return null;
+    const withHash = trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+    return withHash.toUpperCase();
+}
+
 /**
  * Normalise un IBAN pour contrôle client (espaces retirés, majuscules).
  * Le serveur reste autoritatif ; refuse accents / chiffres non ASCII.

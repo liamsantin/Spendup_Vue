@@ -311,7 +311,8 @@
             "errors": {
                 "nameRequired": "Le nom est obligatoire.",
                 "balanceInvalid": "Saisissez un solde valide.",
-                "ibanInvalid": "IBAN invalide."
+                "ibanInvalid": "IBAN invalide.",
+                "colorInvalid": "Couleur invalide. Utilisez #RGB, #RRGGBB ou #RRGGBBAA."
             }
         },
         "share": {
