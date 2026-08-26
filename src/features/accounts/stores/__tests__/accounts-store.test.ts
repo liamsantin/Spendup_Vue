@@ -1272,6 +1272,43 @@ describe('useAccountsStore', () => {
         });
     });
 
+    it('ignore les événements realtime malformés (pas de patch optimiste)', async () => {
+        const shared = {
+            ...ownedAccount,
+            publicId: 'acc-shared',
+            name: 'Partagé',
+            isOwned: false,
+            myRole: 'viewer' as const,
+            isPrimary: false
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount, shared] });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let shareListener: ((n: { type: string; metadata?: Record<string, unknown> }) => void) | undefined;
+        let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountShareNotifications.mockImplementation((fn: (n: { type: string; metadata?: Record<string, unknown> }) => void) => {
+            shareListener = fn;
+            return () => undefined;
+        });
+        subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+            accountListener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        const before = store.accounts.map((a) => a.publicId);
+
+        shareListener?.({ type: 'accountShareRevoked', metadata: { accountPublicId: '../etc/passwd' } });
+        shareListener?.({ type: 'accountShareRevoked', metadata: { accountPublicId: 'unknown-acc' } });
+        accountListener?.({ change: 'notARealChange', accountPublicId: 'acc-shared' });
+        accountListener?.({ change: 'revoked', accountPublicId: '' });
+        accountListener?.({ change: 'revoked', accountPublicId: 'acc-shared with spaces' });
+
+        expect(store.accounts.map((a) => a.publicId)).toEqual(before);
+        expect(store.accounts.some((a) => a.publicId === 'acc-shared')).toBe(true);
+    });
+
     it('onAuthenticatedSession branche le realtime sans charger', () => {
         const store = useAccountsStore();
         store.onAuthenticatedSession();

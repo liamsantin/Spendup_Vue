@@ -8,7 +8,7 @@ import {
     stopNotificationsHub
 } from '@/features/notifications/hub';
 import { isAccountShareNotificationType, isFriendNotificationType } from '@/features/notifications/link';
-import { normalizeNotificationReceivedPayload } from '@/features/notifications/normalize';
+import { normalizeNotificationReceivedPayload, normalizePublicId, parseAccountChangedPayload } from '@/features/notifications/normalize';
 import type {
     AppNotification,
     AccountChangedPayload,
@@ -77,14 +77,16 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
 
     /** Live sans inbox : ne touche pas au badge unread. */
     function onFriendshipChanged(payload: FriendshipChangedPayload) {
-        if (!payload?.change || !payload?.friendshipPublicId) return;
+        if (!payload?.change) return;
+        if (!normalizePublicId(payload.friendshipPublicId)) return;
         friendshipChangeListeners.forEach((listener) => listener(payload));
     }
 
     /** Live sans inbox : archive / restore d’un compte partagé. */
     function onAccountChanged(payload: AccountChangedPayload) {
-        if (!payload?.change || !payload?.accountPublicId) return;
-        accountChangeListeners.forEach((listener) => listener(payload));
+        const parsed = parseAccountChangedPayload(payload);
+        if (!parsed) return;
+        accountChangeListeners.forEach((listener) => listener(parsed));
     }
 
     /** SignalR multi-appareils après DELETE /api/notifications. */

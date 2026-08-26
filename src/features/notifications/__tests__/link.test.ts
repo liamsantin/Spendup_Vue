@@ -149,6 +149,25 @@ describe('normalizeAppNotification', () => {
         expect(n?.metadata).toEqual({ friendshipPublicId: 'f-9' });
         expect(getFriendshipPublicId(n?.metadata)).toBe('f-9');
     });
+
+    it('normalise / refuse les publicIds et payloads accountChanged', async () => {
+        const { normalizePublicId, parseAccountChangedPayload, getAccountPublicId } = await import(
+            '@/features/notifications/normalize'
+        );
+        expect(normalizePublicId('acc-1')).toBe('acc-1');
+        expect(normalizePublicId('  share_2  ')).toBe('share_2');
+        expect(normalizePublicId('../x')).toBeNull();
+        expect(normalizePublicId('a b')).toBeNull();
+        expect(normalizePublicId('')).toBeNull();
+        expect(getAccountPublicId({ accountPublicId: 'acc-ok' })).toBe('acc-ok');
+        expect(getAccountPublicId({ accountPublicId: 'bad id' })).toBeNull();
+        expect(parseAccountChangedPayload({ change: 'revoked', accountPublicId: 'acc-1' })).toEqual({
+            change: 'revoked',
+            accountPublicId: 'acc-1'
+        });
+        expect(parseAccountChangedPayload({ change: 'nope', accountPublicId: 'acc-1' })).toBeNull();
+        expect(parseAccountChangedPayload({ change: 'revoked', accountPublicId: '' })).toBeNull();
+    });
 });
 
 describe('notification type helpers', () => {

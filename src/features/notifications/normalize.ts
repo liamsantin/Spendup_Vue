@@ -1,4 +1,32 @@
-import type { AppNotification, NotificationReceivedPayload, NotificationsListResult } from '@/features/notifications/types';
+import type {
+    AccountChange,
+    AccountChangedPayload,
+    AppNotification,
+    NotificationReceivedPayload,
+    NotificationsListResult
+} from '@/features/notifications/types';
+
+/** Identifiants publics SignalR / metadata (UUID, slug) — refuse vide, espaces, chemins. */
+const PUBLIC_ID_RE = /^[A-Za-z0-9._~-]{1,128}$/;
+
+const ACCOUNT_CHANGES = new Set<AccountChange>([
+    'archived',
+    'restored',
+    'visibility',
+    'updated',
+    'balanceSnapshotCreated',
+    'balanceSnapshotDeleted',
+    'revoked',
+    'roleChanged'
+]);
+
+/** Normalise un publicId (trim + charset) ; `null` si invalide. */
+export function normalizePublicId(value: unknown): string | null {
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    if (!PUBLIC_ID_RE.test(trimmed)) return null;
+    return trimmed;
+}
 
 /** Parse le `metadata` API (souvent une string JSON) en objet. */
 export function parseNotificationMetadata(raw: unknown): Record<string, unknown> | null {
@@ -24,24 +52,29 @@ export function parseNotificationMetadata(raw: unknown): Record<string, unknown>
 }
 
 export function getFriendshipPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
-    const value = metadata?.friendshipPublicId;
-    if (typeof value !== 'string') return null;
-    const trimmed = value.trim();
-    return trimmed || null;
+    return normalizePublicId(metadata?.friendshipPublicId);
 }
 
 export function getAccountSharePublicId(metadata: Record<string, unknown> | null | undefined): string | null {
-    const value = metadata?.sharePublicId;
-    if (typeof value !== 'string') return null;
-    const trimmed = value.trim();
-    return trimmed || null;
+    return normalizePublicId(metadata?.sharePublicId);
 }
 
 export function getAccountPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
-    const value = metadata?.accountPublicId;
-    if (typeof value !== 'string') return null;
-    const trimmed = value.trim();
-    return trimmed || null;
+    return normalizePublicId(metadata?.accountPublicId);
+}
+
+/**
+ * Valide un payload SignalR `accountChanged` (change connu + publicId).
+ * @returns Payload normalisé, ou `null` si malformé.
+ */
+export function parseAccountChangedPayload(raw: unknown): AccountChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!ACCOUNT_CHANGES.has(change as AccountChange)) return null;
+    const accountPublicId = normalizePublicId(payload.accountPublicId);
+    if (!accountPublicId) return null;
+    return { change: change as AccountChange, accountPublicId };
 }
 
 /** Normalise un item inbox / SignalR (metadata string → objet). */

@@ -13,7 +13,8 @@ export {
     getFriendshipPublicId,
     getAccountSharePublicId,
     getAccountPublicId,
-    normalizeAppNotification
+    normalizeAppNotification,
+    parseAccountChangedPayload
 } from '@/features/notifications/normalize';
 export {
     ensureNativeNotificationPermission,
