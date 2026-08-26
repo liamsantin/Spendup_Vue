@@ -1,5 +1,10 @@
 import { accountsApi } from '@/features/accounts/api';
+import { canWriteBalanceSnapshots } from '@/features/accounts/rights';
 import type { AccountBalanceSnapshot, CreateBalanceSnapshotPayload } from '@/features/accounts/types';
+import {
+    assertAccountAllowed,
+    requireLocalAccount
+} from '@/features/accounts/stores/internal/accounts-authz';
 import type { AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 
 /** Ordre UI / chip écart : plus récent `snapshotAt` d’abord, puis `createdAt`. */
@@ -18,6 +23,7 @@ function sortSnapshotsDesc(items: AccountBalanceSnapshot[]): AccountBalanceSnaps
  */
 export function createAccountsSnapshots(state: AccountsState) {
     const {
+        accounts,
         snapshotsByAccountId,
         selectedAccount,
         loadingSnapshots,
@@ -125,6 +131,8 @@ export function createAccountsSnapshots(state: AccountsState) {
         beginActing();
         clearError();
         try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, accountPublicId);
+            assertAccountAllowed(canWriteBalanceSnapshots(local));
             const snapshot = await accountsApi.createBalanceSnapshot(accountPublicId, payload);
             const prev = snapshotsByAccountId.get(accountPublicId);
             const current = prev?.items ?? [];
@@ -151,6 +159,8 @@ export function createAccountsSnapshots(state: AccountsState) {
         beginActing();
         clearError();
         try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, accountPublicId);
+            assertAccountAllowed(canWriteBalanceSnapshots(local));
             await accountsApi.deleteBalanceSnapshot(accountPublicId, snapshotPublicId);
             const prev = snapshotsByAccountId.get(accountPublicId);
             const current = prev?.items ?? [];

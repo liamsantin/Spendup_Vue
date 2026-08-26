@@ -1,5 +1,11 @@
 import { accountsApi } from '@/features/accounts/api';
+import { canLeaveAccountShare, canManageShares } from '@/features/accounts/rights';
 import type { HiddenAccountField, ShareRole } from '@/features/accounts/types';
+import {
+    assertAccountAllowed,
+    requireIncomingShare,
+    requireLocalAccount
+} from '@/features/accounts/stores/internal/accounts-authz';
 import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
 import { getErrorMessage } from '@/utils/errors/app-error';
@@ -12,6 +18,7 @@ import { getErrorMessage } from '@/utils/errors/app-error';
  */
 export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCrud, 'loadAccounts'>) {
     const {
+        accounts,
         incomingShares,
         sharesByAccountId,
         selectedAccount,
@@ -108,6 +115,8 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         beginActing();
         clearError();
         try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, accountPublicId);
+            assertAccountAllowed(canManageShares(local));
             const body =
                 role === 'viewer' && hiddenFields != null
                     ? { userPublicId, role, hiddenFields }
@@ -149,6 +158,8 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         beginActing();
         clearError();
         try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, accountPublicId);
+            assertAccountAllowed(canManageShares(local));
             const body = role === 'viewer' && hiddenFields != null ? { role, hiddenFields } : { role };
             const share = await accountsApi.updateShareRole(accountPublicId, userPublicId, body);
             const normalized = { ...share, hiddenFields: share.hiddenFields ?? [] };
@@ -178,6 +189,8 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         beginActing();
         clearError();
         try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, accountPublicId);
+            assertAccountAllowed(canManageShares(local));
             await accountsApi.revokeShare(accountPublicId, userPublicId);
             const current = sharesByAccountId.get(accountPublicId) ?? [];
             setSharesForAccount(
@@ -201,6 +214,8 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         beginActing();
         clearError();
         try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, accountPublicId);
+            assertAccountAllowed(canLeaveAccountShare(local));
             await accountsApi.leaveShare(accountPublicId);
             removeAccountLocal(accountPublicId);
             cache.touch(KEY_ACCOUNTS);
@@ -220,6 +235,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         beginActing();
         clearError();
         try {
+            requireIncomingShare(incomingShares.value, sharePublicId);
             await accountsApi.acceptShare(sharePublicId);
             incomingShares.value = incomingShares.value.filter((s) => s.publicId !== sharePublicId);
             cache.touch(KEY_INCOMING);
@@ -246,6 +262,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         beginActing();
         clearError();
         try {
+            requireIncomingShare(incomingShares.value, sharePublicId);
             await accountsApi.refuseShare(sharePublicId);
             incomingShares.value = incomingShares.value.filter((s) => s.publicId !== sharePublicId);
             cache.touch(KEY_INCOMING);

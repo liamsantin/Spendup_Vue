@@ -1156,7 +1156,8 @@ describe('useAccountsStore', () => {
     });
 
     it('acting reste true tant qu’une mutation concurrente tourne', async () => {
-        api.list.mockResolvedValue({ items: [ownedAccount] });
+        const secondary = { ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: false };
+        api.list.mockResolvedValue({ items: [ownedAccount, secondary] });
         let resolveCreate!: (value: typeof ownedAccount) => void;
         let resolvePrimary!: (value: typeof ownedAccount) => void;
         api.create.mockImplementation(
@@ -1183,7 +1184,7 @@ describe('useAccountsStore', () => {
         await Promise.resolve();
         expect(store.acting).toBe(true);
 
-        const primaryPromise = store.setPrimary('acc-1');
+        const primaryPromise = store.setPrimary('acc-2');
         await Promise.resolve();
         expect(store.acting).toBe(true);
 
@@ -1191,9 +1192,62 @@ describe('useAccountsStore', () => {
         await createPromise;
         expect(store.acting).toBe(true);
 
-        resolvePrimary({ ...ownedAccount, isPrimary: true });
+        resolvePrimary({ ...secondary, isPrimary: true });
         await primaryPromise;
         expect(store.acting).toBe(false);
+    });
+
+    it('refuse les mutations hors droits sans appeler l’API', async () => {
+        const sharedViewer = {
+            ...ownedAccount,
+            publicId: 'acc-shared',
+            isOwned: false,
+            myRole: 'viewer' as const,
+            isPrimary: false
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount, sharedViewer] });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadIncoming();
+
+        await expect(store.inviteShare('acc-shared', 'u2', 'viewer')).rejects.toMatchObject({
+            status: 403,
+            code: 'account_forbidden'
+        });
+        await expect(store.leaveShare('acc-1')).rejects.toMatchObject({
+            status: 403,
+            code: 'account_forbidden'
+        });
+        await expect(store.updateAccount('acc-shared', {
+            name: 'X',
+            type: 'courant',
+            currency: 'CHF',
+            initialBalance: 0,
+            accountNumber: null,
+            color: null,
+            isPrimary: false
+        })).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
+        await expect(store.deleteAccount('acc-1')).rejects.toMatchObject({
+            status: 403,
+            code: 'account_forbidden'
+        });
+        await expect(store.acceptShare('missing-share')).rejects.toMatchObject({
+            status: 404,
+            code: 'share_invite_not_found'
+        });
+        await expect(store.createBalanceSnapshot('unknown-acc', {
+            balance: 1,
+            snapshotAt: '2026-08-23T12:00:00.000Z'
+        })).rejects.toMatchObject({ status: 404, code: 'account_not_found' });
+
+        expect(api.inviteShare).not.toHaveBeenCalled();
+        expect(api.leaveShare).not.toHaveBeenCalled();
+        expect(api.update).not.toHaveBeenCalled();
+        expect(api.remove).not.toHaveBeenCalled();
+        expect(api.acceptShare).not.toHaveBeenCalled();
+        expect(api.createBalanceSnapshot).not.toHaveBeenCalled();
     });
 
     it('accountShareRevoked ne retire pas un compte owned', async () => {

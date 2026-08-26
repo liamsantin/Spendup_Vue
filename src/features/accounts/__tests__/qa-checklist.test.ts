@@ -390,12 +390,9 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(store.accounts.some((a) => a.publicId === 'acc-2')).toBe(true);
         });
 
-        it('compte archivé : PUT / share / relevé refusés côté API (UI déjà gated)', async () => {
+        it('compte archivé : PUT / share / relevé refusés côté store (pas d’appel API)', async () => {
             const archived = account({ publicId: 'acc-2', name: 'Épargne', isPrimary: false, isActive: false });
             api.list.mockResolvedValue({ items: [account(), archived] });
-            api.update.mockRejectedValue(new ApiError('Compte archivé', 400));
-            api.createBalanceSnapshot.mockRejectedValue(new ApiError('Compte archivé', 400));
-            api.inviteShare.mockRejectedValue(new ApiError('Compte archivé', 400));
 
             const store = useAccountsStore();
             await store.loadAccounts();
@@ -410,14 +407,20 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                     color: null,
                     isPrimary: false
                 })
-            ).rejects.toMatchObject({ status: 400 });
+            ).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
             await expect(
                 store.createBalanceSnapshot('acc-2', {
                     balance: 10,
                     snapshotAt: '2026-08-26T12:00:00.000Z'
                 })
-            ).rejects.toMatchObject({ status: 400 });
-            await expect(store.inviteShare('acc-2', 'user-b', 'viewer')).rejects.toMatchObject({ status: 400 });
+            ).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
+            await expect(store.inviteShare('acc-2', 'user-b', 'viewer')).rejects.toMatchObject({
+                status: 403,
+                code: 'account_forbidden'
+            });
+            expect(api.update).not.toHaveBeenCalled();
+            expect(api.createBalanceSnapshot).not.toHaveBeenCalled();
+            expect(api.inviteShare).not.toHaveBeenCalled();
         });
     });
 
@@ -451,7 +454,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(store.error).toMatch(/name|color|accountNumber|modifiables/i);
         });
 
-        it('viewer qui tente PUT / archive → refus exposé, liste inchangée', async () => {
+        it('viewer qui tente PUT / archive → refus store (403), liste inchangée, pas d’appel API', async () => {
             const shared = account({
                 publicId: 'acc-shared',
                 isOwned: false,
@@ -459,8 +462,6 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 isPrimary: false
             });
             api.list.mockResolvedValue({ items: [shared] });
-            api.update.mockRejectedValue(new ApiError('Compte introuvable', 404));
-            api.archive.mockRejectedValue(new ApiError('Compte introuvable', 404));
 
             const store = useAccountsStore();
             await store.loadAccounts();
@@ -476,9 +477,14 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                     color: null,
                     isPrimary: false
                 })
-            ).rejects.toMatchObject({ status: 404 });
+            ).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
 
-            await expect(store.archiveAccount('acc-shared')).rejects.toMatchObject({ status: 404 });
+            await expect(store.archiveAccount('acc-shared')).rejects.toMatchObject({
+                status: 403,
+                code: 'account_forbidden'
+            });
+            expect(api.update).not.toHaveBeenCalled();
+            expect(api.archive).not.toHaveBeenCalled();
             expect(store.accounts).toHaveLength(1);
         });
     });
@@ -518,11 +524,13 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
         });
 
         it('date non-UTC refusée → message métier clair', async () => {
+            api.list.mockResolvedValue({ items: [account()] });
             api.createBalanceSnapshot.mockRejectedValue(
                 new ApiError('snapshotAt doit être une date UTC (suffixe Z)', 400)
             );
 
             const store = useAccountsStore();
+            await store.loadAccounts();
             await expect(
                 store.createBalanceSnapshot('acc-1', {
                     balance: 10,
@@ -547,16 +555,24 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(store.balanceSnapshots).toHaveLength(0);
         });
 
-        it('viewer : create relevé refusé', async () => {
-            api.createBalanceSnapshot.mockRejectedValue(new ApiError('Compte introuvable', 404));
+        it('viewer : create relevé refusé côté store (pas d’appel API)', async () => {
+            const shared = account({
+                publicId: 'acc-shared',
+                isOwned: false,
+                myRole: 'viewer',
+                isPrimary: false
+            });
+            api.list.mockResolvedValue({ items: [shared] });
 
             const store = useAccountsStore();
+            await store.loadAccounts();
             await expect(
                 store.createBalanceSnapshot('acc-shared', {
                     balance: 1,
                     snapshotAt: '2026-08-23T12:00:00.000Z'
                 })
-            ).rejects.toMatchObject({ status: 404 });
+            ).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
+            expect(api.createBalanceSnapshot).not.toHaveBeenCalled();
         });
     });
 
@@ -575,9 +591,11 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
         });
 
         it('invite non-ami / soi-même / double pending → message métier', async () => {
+            api.list.mockResolvedValue({ items: [account()] });
             api.inviteShare.mockRejectedValue(new ApiError('Le destinataire doit être un ami accepté', 400));
 
             const store = useAccountsStore();
+            await store.loadAccounts();
             await expect(store.inviteShare('acc-1', 'stranger', 'viewer')).rejects.toBeTruthy();
             expect(store.error).toMatch(/ami/i);
         });
@@ -1048,6 +1066,22 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(storeA.balanceSnapshots[0]?.source).toBe('manual');
 
             // 5. A passe B en viewer → roleChanged live + create relevé refusé
+            api.list.mockResolvedValue({
+                items: [
+                    account({ publicId: 'acc-courant', name: 'Courant', isPrimary: true }),
+                    account({
+                        publicId: 'acc-epargne',
+                        name: 'Épargne',
+                        type: 'epargne',
+                        isOwned: true,
+                        myRole: 'owner',
+                        isPrimary: false,
+                        initialBalance: 500,
+                        currentBalance: 510
+                    })
+                ]
+            });
+            await storeA.loadAccounts(true);
             api.updateShareRole.mockResolvedValue({
                 publicId: 's1',
                 userPublicId: 'user-b',
@@ -1094,13 +1128,14 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 expect(storeA.accounts.find((a) => a.publicId === 'acc-epargne')?.myRole).toBe('viewer');
             });
 
-            api.createBalanceSnapshot.mockRejectedValue(new ApiError('Compte introuvable', 404));
+            api.createBalanceSnapshot.mockClear();
             await expect(
                 storeA.createBalanceSnapshot('acc-epargne', {
                     balance: 520,
                     snapshotAt: '2026-08-24T12:00:00.000Z'
                 })
-            ).rejects.toMatchObject({ status: 404 });
+            ).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
+            expect(api.createBalanceSnapshot).not.toHaveBeenCalled();
 
             // 6. Soft-delete épargne → accountChanged revoked immédiat côté destinataire
             api.list.mockResolvedValue({

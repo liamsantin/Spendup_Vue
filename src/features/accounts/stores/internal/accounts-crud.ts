@@ -1,5 +1,16 @@
 import { accountsApi } from '@/features/accounts/api';
+import {
+    canArchiveAccount,
+    canDeleteAccount,
+    canEditAccount,
+    canRestoreAccount,
+    canSetPrimaryAccount
+} from '@/features/accounts/rights';
 import type { Account, CreateAccountPayload, UpdateAccountPayload } from '@/features/accounts/types';
+import {
+    assertAccountAllowed,
+    requireLocalAccount
+} from '@/features/accounts/stores/internal/accounts-authz';
 import { ACCOUNTS_DETAIL_MAX_AGE_MS, KEY_ACCOUNTS, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import { AppError } from '@/utils/errors/app-error';
 
@@ -149,6 +160,8 @@ export function createAccountsCrud(state: AccountsState) {
         beginActing();
         clearError();
         try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, publicId);
+            assertAccountAllowed(canEditAccount(local));
             const account = normalizeAccount(await accountsApi.update(publicId, payload));
             upsertAccount(account);
             cache.touch(KEY_ACCOUNTS);
@@ -174,6 +187,8 @@ export function createAccountsCrud(state: AccountsState) {
         beginActing();
         clearError();
         try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, publicId);
+            assertAccountAllowed(canSetPrimaryAccount(local));
             const account = normalizeAccount(await accountsApi.setPrimary(publicId));
             applyPrimaryLocally(publicId, account);
             markPromoted(publicId);
@@ -195,6 +210,8 @@ export function createAccountsCrud(state: AccountsState) {
         beginActing();
         clearError();
         try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, publicId);
+            assertAccountAllowed(canArchiveAccount(local));
             const account = normalizeAccount(await accountsApi.archive(publicId));
             upsertAccount(account);
             cache.touch(KEY_ACCOUNTS);
@@ -217,6 +234,8 @@ export function createAccountsCrud(state: AccountsState) {
         beginActing();
         clearError();
         try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, publicId);
+            assertAccountAllowed(canRestoreAccount(local));
             const account = normalizeAccount(await accountsApi.restore(publicId));
             upsertAccount(account);
             cache.touch(KEY_ACCOUNTS);
@@ -238,6 +257,8 @@ export function createAccountsCrud(state: AccountsState) {
         beginActing();
         clearError();
         try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, publicId);
+            assertAccountAllowed(canDeleteAccount(local));
             await accountsApi.remove(publicId);
             removeAccountLocal(publicId);
             cache.touch(KEY_ACCOUNTS);
