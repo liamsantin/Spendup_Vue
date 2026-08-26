@@ -256,6 +256,7 @@ export function createFriendsLists(state: FriendsState) {
         const trimmed = q.trim();
         if (trimmed.length < 2) {
             searchGen += 1;
+            searching.value = false;
             searchResults.value = [];
             searchPage.value = 1;
             searchTotalCount.value = 0;
@@ -314,6 +315,13 @@ export function createFriendsLists(state: FriendsState) {
         void searchUsers(searchQuery.value);
     }
 
+    /** Vide la recherche et invalide les réponses en vol. */
+    function clearSearchAndCancel() {
+        searchGen += 1;
+        searching.value = false;
+        clearSearch();
+    }
+
     /** Invalide le cache et recharge toutes les listes. */
     async function refreshAll() {
         cache.invalidate('*');
@@ -331,7 +339,7 @@ export function createFriendsLists(state: FriendsState) {
         loadMoreBlocked,
         searchUsers,
         loadMoreSearch,
-        clearSearch,
+        clearSearch: clearSearchAndCancel,
         refreshSearchIfNeeded,
         refreshAll
     };

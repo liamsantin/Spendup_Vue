@@ -344,7 +344,18 @@ export function createAccountsState() {
             upsertAccount(selected);
             return true;
         }
-        selectedAccount.value = next;
+        if (!Number.isNaN(selectedTs) && !Number.isNaN(listTs) && listTs > selectedTs) {
+            selectedAccount.value = next;
+            return true;
+        }
+        // Timestamps égaux / absents : la liste gagne pour les champs résumé, le détail garde IBAN etc.
+        const merged = {
+            ...next,
+            iban: next.iban ?? selected.iban,
+            accountNumber: next.accountNumber ?? selected.accountNumber
+        };
+        selectedAccount.value = merged;
+        upsertAccount(merged);
         return true;
     }
 

@@ -1000,6 +1000,7 @@
             "backToRegister": "Retour à l’inscription",
             "backToLogin": "Retour à la connexion",
             "resendSuccess": "Si un compte existe pour cet e-mail, un nouveau code a été envoyé.",
+            "retryLogin": "Réessayer la connexion",
             "errors": {
                 "missingEmail": "E-mail manquant. Reprenez l’inscription.",
                 "otp": "Saisissez le code à 6 chiffres."

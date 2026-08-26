@@ -6,10 +6,12 @@ const props = withDefaults(
         modelValue?: string;
         /** Classe optionnelle sur le conteneur (compat / styles ciblés). */
         fieldClass?: string;
+        disabled?: boolean;
     }>(),
     {
         modelValue: '',
-        fieldClass: ''
+        fieldClass: '',
+        disabled: false
     }
 );
 
@@ -95,6 +97,7 @@ function onPaste(event: ClipboardEvent) {
             inputmode="numeric"
             autocomplete="one-time-code"
             hide-details
+            :disabled="disabled"
             @update:model-value="(v) => onDigitUpdate(i, v)"
             @keydown="onDigitKeydown(i, $event)"
         />

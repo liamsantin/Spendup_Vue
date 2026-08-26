@@ -68,7 +68,10 @@ export function createResourceCache(options: ResourceCacheOptions) {
                     continue;
                 }
                 if (force && entry.inflightForced) {
-                    return entry.inflight;
+                    await entry.inflight.catch(() => undefined);
+                    // Invalidate pendant le GET forcé partagé → refetch.
+                    if (entry.generation === startGen && isFresh(key, maxAgeMs)) return;
+                    continue;
                 }
                 // Soft: wait, then re-check (invalidate may have bumped generation).
                 await entry.inflight.catch(() => undefined);

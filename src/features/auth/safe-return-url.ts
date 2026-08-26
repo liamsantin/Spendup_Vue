@@ -2,7 +2,7 @@
 const DEFAULT_RETURN = '/app';
 
 /**
- * N’accepte que des chemins internes `/app` ou `/app/…`
+ * N’accepte que des chemins internes `/app`, `/app?…`, `/app#…` ou `/app/…`
  * (bloque `//evil.com`, URLs absolues, `/application…`, `..`, etc.).
  */
 export function sanitizeReturnUrl(url: string | null | undefined, fallback: string = DEFAULT_RETURN): string {
@@ -12,6 +12,7 @@ export function sanitizeReturnUrl(url: string | null | undefined, fallback: stri
     if (trimmed.startsWith('//')) return fallback;
     if (trimmed.startsWith('/\\')) return fallback;
     if (trimmed.includes('..')) return fallback;
-    if (trimmed !== '/app' && !trimmed.startsWith('/app/')) return fallback;
+    const isAppRoot = trimmed === '/app' || trimmed.startsWith('/app?') || trimmed.startsWith('/app#');
+    if (!isAppRoot && !trimmed.startsWith('/app/')) return fallback;
     return trimmed;
 }

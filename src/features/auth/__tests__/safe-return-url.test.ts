@@ -4,6 +4,8 @@ import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 describe('sanitizeReturnUrl', () => {
     it('accepte les chemins /app', () => {
         expect(sanitizeReturnUrl('/app')).toBe('/app');
+        expect(sanitizeReturnUrl('/app?tab=1')).toBe('/app?tab=1');
+        expect(sanitizeReturnUrl('/app#section')).toBe('/app#section');
         expect(sanitizeReturnUrl('/app/comptes')).toBe('/app/comptes');
         expect(sanitizeReturnUrl('/app/comptes?tab=1')).toBe('/app/comptes?tab=1');
     });

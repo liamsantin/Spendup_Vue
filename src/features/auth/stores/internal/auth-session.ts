@@ -192,6 +192,8 @@ export function createAuthSession() {
      */
     async function bootstrapSession(): Promise<void> {
         if (!cookieMode) return;
+        // Challenge 2FA en cours : ne pas restaurer une ancienne session via refresh cookie.
+        if (twoFactorToken.value) return;
         if (bootstrapDone) return;
         if (bootstrapInFlight) return bootstrapInFlight;
 

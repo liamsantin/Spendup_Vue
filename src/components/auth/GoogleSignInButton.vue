@@ -52,22 +52,34 @@ function loadGisScript(): Promise<void> {
     if (gisScriptPromise) return gisScriptPromise;
 
     gisScriptPromise = new Promise((resolve, reject) => {
+        const fail = () => {
+            const dead = document.getElementById('google-gis');
+            dead?.remove();
+            gisScriptPromise = null;
+            reject(new Error(t('auth.google.scriptFailed')));
+        };
+
         const existing = document.getElementById('google-gis') as HTMLScriptElement | null;
         if (existing) {
             if (typeof google !== 'undefined' && google.accounts?.id) {
                 resolve();
                 return;
             }
-            existing.addEventListener('load', () => resolve(), { once: true });
-            existing.addEventListener(
-                'error',
-                () => {
-                    gisScriptPromise = null;
-                    reject(new Error(t('auth.google.scriptFailed')));
-                },
-                { once: true }
-            );
-            return;
+            // Script déjà en échec / bloqué : retirer et retenter un insert propre.
+            if (existing.dataset.gisFailed === '1') {
+                existing.remove();
+            } else {
+                existing.addEventListener('load', () => resolve(), { once: true });
+                existing.addEventListener(
+                    'error',
+                    () => {
+                        existing.dataset.gisFailed = '1';
+                        fail();
+                    },
+                    { once: true }
+                );
+                return;
+            }
         }
         const script = document.createElement('script');
         script.id = 'google-gis';
@@ -76,8 +88,8 @@ function loadGisScript(): Promise<void> {
         script.defer = true;
         script.onload = () => resolve();
         script.onerror = () => {
-            gisScriptPromise = null;
-            reject(new Error(t('auth.google.scriptFailed')));
+            script.dataset.gisFailed = '1';
+            fail();
         };
         document.head.appendChild(script);
     });

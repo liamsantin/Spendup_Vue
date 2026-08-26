@@ -41,6 +41,7 @@ export const useAuthStore = defineStore('auth', () => {
         loginWithGoogle: actions.loginWithGoogle,
         register: actions.register,
         confirmEmail: actions.confirmEmail,
+        retryPendingLogin: actions.retryPendingLogin,
         resendVerification: actions.resendVerification,
         forgotPassword: actions.forgotPassword,
         resetPassword: actions.resetPassword,

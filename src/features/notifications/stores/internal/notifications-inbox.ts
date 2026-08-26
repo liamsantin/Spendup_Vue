@@ -35,10 +35,13 @@ export function createNotificationsInbox(state: NotificationsState, native: Noti
      * @param unread Compteur non lus à appliquer (défaut 0).
      */
     function applyInboxCleared(unread = 0) {
+        inboxListGen += 1;
         applyUnreadCount(unread);
         items.value = [];
         totalCount.value = 0;
         page.value = 1;
+        loading.value = false;
+        loadingMore.value = false;
         clearLiveFriendChips();
     }
 

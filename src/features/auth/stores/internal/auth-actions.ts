@@ -3,6 +3,7 @@ import { authApi } from '@/features/auth/api';
 import type { AuthSession, StepUpProof } from '@/features/auth/types';
 import { rememberCsrfToken } from '@/features/auth/csrf';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
+import { clearStoredTokens } from '@/features/auth/session-storage';
 import { i18n } from '@/plugins/i18n';
 import { APP_HOME_ROUTE, type AuthSessionState } from '@/features/auth/stores/internal/auth-session';
 import type { AuthLogout } from '@/features/auth/stores/internal/auth-logout';
@@ -42,7 +43,10 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
      */
     async function applySession(sessionPayload: AuthSession): Promise<'ok' | '2fa'> {
         if (sessionPayload.requiresTwoFactor) {
-            // Drop any prior session so /app isn't reachable with old tokens during the challenge.
+            // Drop any prior local session so /app isn't reachable with old tokens during the challenge.
+            // HttpOnly cookies d’une ancienne session : `bootstrapSession` ignore le refresh tant que
+            // `twoFactorToken` est posé (voir auth-session).
+            clearStoredTokens();
             session.accessToken.value = null;
             session.refreshToken.value = null;
             session.expiresAt.value = null;
@@ -155,10 +159,23 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
             await login(email, password);
             clearPendingRegistration();
         } catch (e: unknown) {
-            // E-mail déjà confirmé : garder le mot de passe en mémoire pour un retry / login manuel.
+            // E-mail déjà confirmé : garder le mot de passe pour `retryPendingLogin` (UI).
             setPendingEmail(null);
             throw e;
         }
+    }
+
+    /**
+     * Relance le login auto après confirm-email si le mot de passe est encore en mémoire.
+     * @param email E-mail confirmé.
+     */
+    async function retryPendingLogin(email: string) {
+        const password = pendingPassword.value;
+        if (!password) {
+            throw new Error(t('auth.confirmEmail.errors.missingEmail'));
+        }
+        await login(email.trim(), password);
+        clearPendingRegistration();
     }
 
     /**
@@ -279,6 +296,7 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         loginWithGoogle,
         register,
         confirmEmail,
+        retryPendingLogin,
         resendVerification,
         forgotPassword,
         resetPassword,

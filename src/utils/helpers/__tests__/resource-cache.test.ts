@@ -176,4 +176,27 @@ describe('createResourceCache', () => {
         await softAfter;
         expect(cache.isFresh('accounts')).toBe(true);
     });
+
+    it('après invalidate, un force joiner refetch (ne garde pas le GET pré-invalidate)', async () => {
+        const resolvers: Array<() => void> = [];
+        const loader = vi.fn(
+            () =>
+                new Promise<void>((resolve) => {
+                    resolvers.push(resolve);
+                })
+        );
+        const cache = createResourceCache({ defaultMaxAgeMs: 60_000, now: () => 1_000 });
+
+        const forced = cache.ensure('accounts', loader, { force: true });
+        cache.invalidate('accounts');
+        const forceAfter = cache.ensure('accounts', loader, { force: true });
+
+        resolvers[0]?.();
+        await forced;
+        await Promise.resolve();
+        expect(loader).toHaveBeenCalledTimes(2);
+        resolvers[1]?.();
+        await forceAfter;
+        expect(cache.isFresh('accounts')).toBe(true);
+    });
 });

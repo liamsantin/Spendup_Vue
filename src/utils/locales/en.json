@@ -1000,6 +1000,7 @@
             "backToRegister": "Back to registration",
             "backToLogin": "Back to sign in",
             "resendSuccess": "If an account exists for this email, a new code was sent.",
+            "retryLogin": "Retry sign in",
             "errors": {
                 "missingEmail": "Email missing. Start registration again.",
                 "otp": "Enter the 6-digit code."

@@ -38,11 +38,9 @@ async function verify(submittedCode?: string) {
         const err = AppError.fromUnknown(e);
         error.value = err.message;
         const msg = err.message.toLowerCase();
-        // Ne pas vider le challenge sur un message générique contenant « token » (ex. CSRF).
+        // Uniquement challenge expiré / session invalide — pas un simple OTP faux (« invalid code »).
         const challengeExpired =
-            err.status === 401 ||
-            err.status === 403 ||
-            (err.status === 400 && (msg.includes('expired') || msg.includes('invalid') || msg.includes('two-factor')));
+            err.status === 401 || (err.status === 400 && msg.includes('expired')) || (err.status === 403 && msg.includes('expired'));
         if (challengeExpired) {
             authStore.twoFactorToken = null;
         }

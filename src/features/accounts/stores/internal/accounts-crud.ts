@@ -143,7 +143,13 @@ export function createAccountsCrud(state: AccountsState) {
         try {
             const applied = await fetchDetail(force);
             // Join d’un GET annulé (même clé) : le loader partagé early-return sans upsert — forcer un vrai GET.
-            if (requestId === detailRequestSeq && needsFetch && !applied) {
+            // Pas de retry si le compte a disparu (revoke / leave) pendant le GET.
+            if (
+                requestId === detailRequestSeq &&
+                needsFetch &&
+                !applied &&
+                accounts.value.some((a) => a.publicId === publicId)
+            ) {
                 await fetchDetail(true);
             }
         } finally {

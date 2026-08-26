@@ -16,6 +16,8 @@ const loading = ref(false);
 const resending = ref(false);
 const error = ref<string | null>(null);
 const success = ref<string | null>(null);
+/** Confirm API OK mais login auto en échec — retry login sans renvoyer l’OTP. */
+const canRetryLogin = ref(false);
 
 const hasEmail = computed(() => !!email.value);
 
@@ -43,11 +45,30 @@ async function confirm(submittedCode?: string) {
     if (loading.value) return;
     error.value = null;
     success.value = null;
+    canRetryLogin.value = false;
     loading.value = true;
     try {
         await auth.confirmEmail(email.value, otp);
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
+        // E-mail déjà confirmé côté API : proposer un retry login si le mdp est encore en mémoire.
+        canRetryLogin.value = !!auth.pendingPassword;
+    } finally {
+        loading.value = false;
+    }
+}
+
+async function retryLogin() {
+    if (!email.value || !auth.pendingPassword) return;
+    error.value = null;
+    success.value = null;
+    loading.value = true;
+    try {
+        await auth.retryPendingLogin(email.value);
+        canRetryLogin.value = false;
+    } catch (e: unknown) {
+        error.value = e instanceof Error ? e.message : String(e);
+        canRetryLogin.value = !!auth.pendingPassword;
     } finally {
         loading.value = false;
     }
@@ -77,12 +98,23 @@ async function resend() {
         <template v-if="hasEmail">
             <p class="text-subtitle-1 mb-4">{{ t('auth.confirmEmail.sentTo', { email }) }}</p>
             <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.confirmEmail.otpLabel') }}</v-label>
-            <OtpDigitsInput v-model="code" field-class="confirm-email-otp" @complete="confirm" />
-            <v-btn class="mb-1 text-medium-emphasis" variant="text" size="small" block :loading="resending" @click="resend">
+            <OtpDigitsInput v-model="code" field-class="confirm-email-otp" :disabled="canRetryLogin" @complete="confirm" />
+            <v-btn
+                v-if="!canRetryLogin"
+                class="mb-1 text-medium-emphasis"
+                variant="text"
+                size="small"
+                block
+                :loading="resending"
+                @click="resend"
+            >
                 {{ t('auth.confirmEmail.resend') }}
             </v-btn>
-            <v-btn color="primary" size="large" block flat :loading="loading" @click="confirm">
+            <v-btn v-if="!canRetryLogin" color="primary" size="large" block flat :loading="loading" @click="confirm">
                 {{ t('auth.confirmEmail.submit') }}
+            </v-btn>
+            <v-btn v-else color="primary" size="large" block flat :loading="loading" @click="retryLogin">
+                {{ t('auth.confirmEmail.retryLogin') }}
             </v-btn>
         </template>
         <template v-else>
