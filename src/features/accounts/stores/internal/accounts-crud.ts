@@ -86,12 +86,17 @@ export function createAccountsCrud(state: AccountsState) {
     async function loadAccountDetail(publicId: string, force = false) {
         const requestId = ++detailRequestSeq;
         const existedAtStart = accounts.value.some((a) => a.publicId === publicId);
+        const cacheKey = `detail:${publicId}`;
+        // Soft + TTL frais : pas de GET. Sinon un join d’inflight périmé (cancel/reopen) doit refetch.
+        const needsFetch = force || !cache.isFresh(cacheKey, ACCOUNTS_DETAIL_MAX_AGE_MS);
         hydrateSelectedFromList(publicId);
         loadingDetail.value = true;
         clearError();
-        try {
+
+        async function fetchDetail(ensureForce: boolean): Promise<boolean> {
+            let applied = false;
             await cache.ensure(
-                `detail:${publicId}`,
+                cacheKey,
                 async () => {
                     try {
                         const account = normalizeAccount(await accountsApi.get(publicId));
@@ -105,6 +110,7 @@ export function createAccountsCrud(state: AccountsState) {
                         }
                         upsertAccount(account);
                         selectedAccount.value = account;
+                        applied = true;
                     } catch (e: unknown) {
                         if (requestId === detailRequestSeq) {
                             const err = AppError.fromUnknown(e);
@@ -117,8 +123,17 @@ export function createAccountsCrud(state: AccountsState) {
                         throw e;
                     }
                 },
-                { force, maxAgeMs: ACCOUNTS_DETAIL_MAX_AGE_MS }
+                { force: ensureForce, maxAgeMs: ACCOUNTS_DETAIL_MAX_AGE_MS }
             );
+            return applied;
+        }
+
+        try {
+            const applied = await fetchDetail(force);
+            // Join d’un GET annulé (même clé) : le loader partagé early-return sans upsert — forcer un vrai GET.
+            if (requestId === detailRequestSeq && needsFetch && !applied) {
+                await fetchDetail(true);
+            }
         } finally {
             if (requestId === detailRequestSeq) {
                 loadingDetail.value = false;
@@ -126,7 +141,7 @@ export function createAccountsCrud(state: AccountsState) {
         }
         if (requestId !== detailRequestSeq) {
             // Loader périmé a quand même marqué le TTL : invalider pour forcer un refetch à la réouverture.
-            cache.invalidate(`detail:${publicId}`);
+            cache.invalidate(cacheKey);
             return selectedAccount.value;
         }
         if (selectedAccount.value?.publicId !== publicId) {

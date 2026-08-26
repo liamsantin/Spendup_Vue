@@ -68,16 +68,21 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
      */
     async function loadShares(accountPublicId: string, force = false) {
         const requestId = ++sharesRequestSeq;
+        const cacheKey = `shares:${accountPublicId}`;
+        const needsFetch = force || !cache.isFresh(cacheKey);
         loadingShares.value = true;
         clearError();
-        try {
+
+        async function fetchShares(ensureForce: boolean): Promise<boolean> {
+            let applied = false;
             await cache.ensure(
-                `shares:${accountPublicId}`,
+                cacheKey,
                 async () => {
                     try {
                         const result = await accountsApi.listShares(accountPublicId);
                         if (requestId !== sharesRequestSeq) return;
                         setSharesForAccount(accountPublicId, Array.isArray(result?.items) ? result.items : []);
+                        applied = true;
                     } catch (e: unknown) {
                         if (requestId === sharesRequestSeq) {
                             error.value = e instanceof Error ? e.message : String(e);
@@ -85,15 +90,23 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
                         throw e;
                     }
                 },
-                { force }
+                { force: ensureForce }
             );
+            return applied;
+        }
+
+        try {
+            const applied = await fetchShares(force);
+            if (requestId === sharesRequestSeq && needsFetch && !applied) {
+                await fetchShares(true);
+            }
         } finally {
             if (requestId === sharesRequestSeq) {
                 loadingShares.value = false;
             }
         }
         if (requestId !== sharesRequestSeq) {
-            cache.invalidate(`shares:${accountPublicId}`);
+            cache.invalidate(cacheKey);
             return;
         }
         if (selectedAccount.value?.publicId === accountPublicId) {
@@ -278,7 +291,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
             incomingShares.value = incomingShares.value.filter((s) => s.publicId !== sharePublicId);
             cache.touch(KEY_INCOMING);
         } catch (e: unknown) {
-            error.value = e instanceof Error ? e.message : String(e);
+            error.value = getErrorMessage(e);
             throw e;
         } finally {
             endActing();

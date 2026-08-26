@@ -678,6 +678,40 @@ describe('useAccountsStore', () => {
         expect(store.loadingDetail).toBe(false);
     });
 
+    it('clearSelected + reopen même compte applique le détail (pas de join inflight périmé)', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        const resolvers: Array<(value: unknown) => void> = [];
+        api.get.mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolvers.push(resolve);
+                })
+        );
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+
+        const first = store.loadAccountDetail('acc-1');
+        expect(api.get).toHaveBeenCalledTimes(1);
+
+        store.clearSelected();
+        const second = store.loadAccountDetail('acc-1');
+
+        // Premier GET (annulé) se résout sans upsert ; le reopen doit lancer un 2e GET.
+        resolvers[0]?.({ ...ownedAccount, iban: 'CH-stale' });
+        await first;
+        await Promise.resolve();
+
+        expect(api.get).toHaveBeenCalledTimes(2);
+        resolvers[1]?.({ ...ownedAccount, iban: 'CH-fresh' });
+        await second;
+
+        expect(store.selectedAccount?.publicId).toBe('acc-1');
+        expect(store.selectedAccount?.iban).toBe('CH-fresh');
+        expect(store.accounts.find((a) => a.publicId === 'acc-1')?.iban).toBe('CH-fresh');
+        expect(store.loadingDetail).toBe(false);
+    });
+
     it('loadingDetail redevient false après bascule vers un détail en cache', async () => {
         const accountB = { ...ownedAccount, publicId: 'acc-2', name: 'Épargne', isPrimary: false };
         api.list.mockResolvedValue({ items: [ownedAccount, accountB] });
@@ -1337,6 +1371,50 @@ describe('useAccountsStore', () => {
         await store.createBalanceSnapshot('acc-1', { balance: 200, snapshotAt: '2026-08-20T12:00:00.000Z' });
         expect(store.balanceSnapshots.map((s) => s.publicId)).toEqual(['snap-new', 'snap-old']);
         expect(store.snapshotsTotalCount).toBe(2);
+    });
+
+    it('loadBalanceSnapshots trie DESC même si l’API renvoie ASC', async () => {
+        const older = {
+            publicId: 'snap-old',
+            accountPublicId: 'acc-1',
+            balance: 100,
+            snapshotAt: '2026-08-10T12:00:00.000Z',
+            source: 'manual' as const,
+            note: null,
+            createdAt: '2026-08-10T12:00:00.000Z',
+            updatedAt: null,
+            createdByUserPublicId: null,
+            createdByDisplayName: null,
+            createdByPhotoUrl: null
+        };
+        const newer = {
+            publicId: 'snap-new',
+            accountPublicId: 'acc-1',
+            balance: 200,
+            snapshotAt: '2026-08-25T12:00:00.000Z',
+            source: 'manual' as const,
+            note: null,
+            createdAt: '2026-08-25T12:00:00.000Z',
+            updatedAt: null,
+            createdByUserPublicId: null,
+            createdByDisplayName: null,
+            createdByPhotoUrl: null
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listBalanceSnapshots.mockResolvedValue({
+            items: [older, newer],
+            page: 1,
+            pageSize: 50,
+            totalCount: 2
+        });
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+
+        expect(store.balanceSnapshots.map((s) => s.publicId)).toEqual(['snap-new', 'snap-old']);
     });
 
     it('acting reste true tant qu’une mutation concurrente tourne', async () => {

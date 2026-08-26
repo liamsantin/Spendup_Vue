@@ -16,6 +16,17 @@ function sortSnapshotsDesc(items: AccountBalanceSnapshot[]): AccountBalanceSnaps
     });
 }
 
+/** Fusionne (déduplique par `publicId`) puis trie DESC — load page / append / create. */
+function mergeSnapshotsDesc(
+    existing: readonly AccountBalanceSnapshot[],
+    incoming: readonly AccountBalanceSnapshot[]
+): AccountBalanceSnapshot[] {
+    const byId = new Map<string, AccountBalanceSnapshot>();
+    for (const s of existing) byId.set(s.publicId, s);
+    for (const s of incoming) byId.set(s.publicId, s);
+    return sortSnapshotsDesc([...byId.values()]);
+}
+
 /**
  * Actions liées aux snapshots de solde.
  * @param state État partagé du store.
@@ -50,22 +61,27 @@ export function createAccountsSnapshots(state: AccountsState) {
      */
     async function loadBalanceSnapshots(accountPublicId: string, force = false) {
         const requestId = ++snapshotsRequestSeq;
+        const cacheKey = `snapshots:${accountPublicId}`;
+        const needsFetch = force || !cache.isFresh(cacheKey);
         loadingSnapshots.value = true;
         clearError();
-        try {
+
+        async function fetchSnapshots(ensureForce: boolean): Promise<boolean> {
+            let applied = false;
             await cache.ensure(
-                `snapshots:${accountPublicId}`,
+                cacheKey,
                 async () => {
                     try {
                         const result = await accountsApi.listBalanceSnapshots(accountPublicId, { page: 1, pageSize: 50 });
                         if (requestId !== snapshotsRequestSeq) return;
-                        const items = Array.isArray(result?.items) ? result.items : [];
+                        const items = sortSnapshotsDesc(Array.isArray(result?.items) ? result.items : []);
                         setSnapshotsForAccount(accountPublicId, items, {
                             page: result?.page ?? 1,
                             pageSize: result?.pageSize ?? 50,
                             totalCount: result?.totalCount ?? items.length,
                             append: false
                         });
+                        applied = true;
                     } catch (e: unknown) {
                         if (requestId === snapshotsRequestSeq) {
                             error.value = e instanceof Error ? e.message : String(e);
@@ -73,15 +89,23 @@ export function createAccountsSnapshots(state: AccountsState) {
                         throw e;
                     }
                 },
-                { force }
+                { force: ensureForce }
             );
+            return applied;
+        }
+
+        try {
+            const applied = await fetchSnapshots(force);
+            if (requestId === snapshotsRequestSeq && needsFetch && !applied) {
+                await fetchSnapshots(true);
+            }
         } finally {
             if (requestId === snapshotsRequestSeq) {
                 loadingSnapshots.value = false;
             }
         }
         if (requestId !== snapshotsRequestSeq) {
-            cache.invalidate(`snapshots:${accountPublicId}`);
+            cache.invalidate(cacheKey);
             return;
         }
         if (selectedAccount.value?.publicId === accountPublicId) {
@@ -116,12 +140,13 @@ export function createAccountsSnapshots(state: AccountsState) {
             });
             if (requestId !== snapshotsRequestSeq) return;
             if (selectedAccount.value?.publicId !== accountPublicId) return;
-            const items = Array.isArray(result?.items) ? result.items : [];
-            setSnapshotsForAccount(accountPublicId, items, {
+            const incoming = Array.isArray(result?.items) ? result.items : [];
+            const prev = snapshotsByAccountId.get(accountPublicId)?.items ?? [];
+            setSnapshotsForAccount(accountPublicId, mergeSnapshotsDesc(prev, incoming), {
                 page: result?.page ?? nextPage,
                 pageSize: result?.pageSize ?? snapshotsPageSize.value,
                 totalCount: result?.totalCount ?? snapshotsTotalCount.value,
-                append: true
+                append: false
             });
             cache.touch(`snapshots:${accountPublicId}`);
         } catch (e: unknown) {
@@ -156,7 +181,7 @@ export function createAccountsSnapshots(state: AccountsState) {
             const prev = snapshotsByAccountId.get(accountPublicId);
             const current = prev?.items ?? [];
             const nextTotal = (prev?.totalCount ?? current.length) + 1;
-            setSnapshotsForAccount(accountPublicId, sortSnapshotsDesc([snapshot, ...current]), {
+            setSnapshotsForAccount(accountPublicId, mergeSnapshotsDesc(current, [snapshot]), {
                 totalCount: nextTotal
             });
             cache.touch(`snapshots:${accountPublicId}`);

@@ -661,6 +661,18 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 message: expect.stringMatching(/ami accepté/i)
             });
         });
+
+        it('refuse en erreur → message métier via getErrorMessage', async () => {
+            api.listIncomingShares.mockResolvedValue({ items: [incoming()] });
+            api.refuseShare.mockRejectedValue(new ApiError('Invitation déjà traitée', 400));
+
+            const store = useAccountsStore();
+            await store.loadIncoming();
+            await expect(store.refuseShare('share-1')).rejects.toMatchObject({
+                message: expect.stringMatching(/déjà traitée/i)
+            });
+            expect(store.error).toMatch(/déjà traitée/i);
+        });
     });
 
     describe('§7 Partage — manage', () => {
