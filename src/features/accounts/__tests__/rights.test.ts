@@ -76,8 +76,9 @@ describe('accounts rights', () => {
         expect(canDeleteAccount(primary)).toBe(false);
     });
 
-    it('autorise archive pour editor non-primaire actif', () => {
-        expect(canArchiveAccount(account({ myRole: 'editor', isPrimary: false, isActive: true }))).toBe(true);
+    it('autorise archive seulement pour owner owned non-primaire actif', () => {
+        expect(canArchiveAccount(account({ myRole: 'owner', isOwned: true, isPrimary: false, isActive: true }))).toBe(true);
+        expect(canArchiveAccount(account({ myRole: 'editor', isOwned: false, isPrimary: false, isActive: true }))).toBe(false);
         expect(canArchiveAccount(account({ myRole: 'viewer', isPrimary: false, isActive: true }))).toBe(false);
         expect(canArchiveAccount(account({ myRole: 'owner', isActive: false }))).toBe(false);
     });
@@ -96,8 +97,9 @@ describe('accounts rights', () => {
         expect(canManageShares(account({ myRole: 'owner', isOwned: true, isActive: false }))).toBe(false);
     });
 
-    it('autorise restore uniquement sur comptes inactifs éditables', () => {
-        expect(canRestoreAccount(account({ isActive: false, myRole: 'editor' }))).toBe(true);
+    it('autorise restore uniquement pour owner owned inactif', () => {
+        expect(canRestoreAccount(account({ isOwned: true, isActive: false, myRole: 'owner' }))).toBe(true);
+        expect(canRestoreAccount(account({ isOwned: false, isActive: false, myRole: 'editor' }))).toBe(false);
         expect(canRestoreAccount(account({ isActive: true, myRole: 'owner' }))).toBe(false);
         expect(canRestoreAccount(account({ isActive: false, myRole: 'viewer' }))).toBe(false);
     });
@@ -137,10 +139,10 @@ describe('accounts rights', () => {
         expect(canEditAccountOwnerFields(viewer)).toBe(false);
 
         expect(canArchiveAccount(owner)).toBe(true);
-        expect(canArchiveAccount(editor)).toBe(true);
+        expect(canArchiveAccount(editor)).toBe(false);
         expect(canArchiveAccount(viewer)).toBe(false);
         expect(canRestoreAccount({ ...owner, isActive: false })).toBe(true);
-        expect(canRestoreAccount({ ...editor, isActive: false })).toBe(true);
+        expect(canRestoreAccount({ ...editor, isActive: false })).toBe(false);
         expect(canRestoreAccount({ ...viewer, isActive: false })).toBe(false);
 
         expect(canDeleteAccount(owner)).toBe(true);
@@ -173,7 +175,7 @@ describe('accounts rights', () => {
         expect(canManageShares(archivedOwner)).toBe(false);
         expect(canArchiveAccount(archivedOwner)).toBe(false);
         expect(canRestoreAccount(archivedOwner)).toBe(true);
-        expect(canRestoreAccount(archivedEditor)).toBe(true);
+        expect(canRestoreAccount(archivedEditor)).toBe(false);
         expect(canDeleteAccount(archivedOwner)).toBe(true);
     });
 });

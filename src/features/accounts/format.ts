@@ -79,14 +79,32 @@ export function normalizeIban(value: string | null | undefined): string {
     return value.replace(/\s+/g, '').toUpperCase();
 }
 
+/** Modulo 97 itératif (IBAN peut dépasser Number.MAX_SAFE_INTEGER). */
+function ibanMod97(normalized: string): number {
+    const rearranged = normalized.slice(4) + normalized.slice(0, 4);
+    let remainder = 0;
+    for (const ch of rearranged) {
+        const code = ch.charCodeAt(0);
+        if (code >= 65 && code <= 90) {
+            const value = code - 55; // A=10 … Z=35
+            remainder = (remainder * 100 + value) % 97;
+        } else {
+            remainder = (remainder * 10 + (code - 48)) % 97;
+        }
+    }
+    return remainder;
+}
+
 /**
- * Validation IBAN légère : ASCII, 2 lettres pays + 2 chiffres de contrôle + reste alphanumérique.
- * @returns `true` si vide (optionnel) ou format plausible.
+ * Validation IBAN client : ASCII, longueur 15–34, structure pays+check, checksum mod-97.
+ * @returns `true` si vide (optionnel) ou IBAN plausible.
  */
 export function isValidIbanFormat(value: string | null | undefined): boolean {
     const normalized = normalizeIban(value);
     if (!normalized) return true;
-    return /^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(normalized);
+    if (normalized.length < 15 || normalized.length > 34) return false;
+    if (!/^[A-Z]{2}\d{2}[A-Z0-9]+$/.test(normalized)) return false;
+    return ibanMod97(normalized) === 1;
 }
 
 /**
@@ -115,6 +133,7 @@ export function todayYmd(now = new Date()): string {
  * Convertit une date calendaire `YYYY-MM-DD` en ISO UTC pour `snapshotAt`.
  * - Aujourd’hui (fuseau local) → heure actuelle (`now.toISOString()`), jamais fin de journée.
  * - Jour passé → midi UTC (`…T12:00:00.000Z`).
+ * - Jour futur → clamp à maintenant (jamais une date future).
  */
 export function ymdToSnapshotIso(ymd: string, now = new Date()): string {
     const trimmed = ymd.trim();
@@ -131,7 +150,11 @@ export function ymdToSnapshotIso(ymd: string, now = new Date()): string {
     }
 
     const datePart = `${match[1]}-${match[2]}-${match[3]}`;
-    if (datePart === todayYmd(now)) {
+    const today = todayYmd(now);
+    if (datePart > today) {
+        return now.toISOString();
+    }
+    if (datePart === today) {
         return now.toISOString();
     }
     return `${datePart}T12:00:00.000Z`;
@@ -147,4 +170,13 @@ export function formatSnapshotDate(value: string, locale?: string): string {
         return new Intl.DateTimeFormat(locale || undefined, { dateStyle: 'medium', timeZone: 'UTC' }).format(date);
     }
     return new Intl.DateTimeFormat(locale || undefined, { dateStyle: 'medium' }).format(new Date(value));
+}
+
+/**
+ * Couleur sûre pour l’UI (avatar) : hex API valide, sinon `null` → fallback thème.
+ */
+export function safeAccountColor(value: string | null | undefined): string | null {
+    if (value == null || !String(value).trim()) return null;
+    if (!isValidAccountColor(value)) return null;
+    return normalizeAccountColor(value);
 }

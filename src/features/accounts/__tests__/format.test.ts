@@ -10,6 +10,7 @@ import {
     normalizeAccountColor,
     parseAccountAmount,
     resolveAccountBalanceDisplay,
+    safeAccountColor,
     todayYmd,
     ymdToSnapshotIso
 } from '@/features/accounts/format';
@@ -43,6 +44,11 @@ describe('snapshot date helpers', () => {
         const iso = ymdToSnapshotIso(todayYmd(now), now);
         expect(iso).not.toMatch(/T23:59:59/);
         expect(iso).toBe(now.toISOString());
+    });
+
+    it('ymdToSnapshotIso clamp une date future à maintenant', () => {
+        const now = new Date(2026, 7, 26, 14, 0, 0);
+        expect(ymdToSnapshotIso('2026-08-30', now)).toBe(now.toISOString());
     });
 
     it('todayYmd reflète la date locale fournie', () => {
@@ -108,6 +114,13 @@ describe('account color helpers', () => {
         expect(normalizeAccountColor('#abc')).toBe('#ABC');
         expect(normalizeAccountColor('#4f46e5aa')).toBe('#4F46E5AA');
     });
+
+    it('safeAccountColor ignore les valeurs API invalides', () => {
+        expect(safeAccountColor('#4F46E5')).toBe('#4F46E5');
+        expect(safeAccountColor('red')).toBeNull();
+        expect(safeAccountColor(null)).toBeNull();
+        expect(safeAccountColor('')).toBeNull();
+    });
 });
 
 describe('formatAccountBalance', () => {
@@ -128,11 +141,14 @@ describe('hidden fields helpers', () => {
         expect(resolveAccountBalanceDisplay(10, 'CHF', true).hidden).toBe(false);
     });
 
-    it('valide le format IBAN ASCII', () => {
+    it('valide IBAN (longueur + checksum mod-97)', () => {
         expect(isValidIbanFormat('')).toBe(true);
         expect(isValidIbanFormat('CH93 0076 2011 6238 5295 7')).toBe(true);
         expect(isValidIbanFormat('ch9300762011623852957')).toBe(true);
+        expect(isValidIbanFormat('GB82WEST12345698765432')).toBe(true);
         expect(isValidIbanFormat('CH9É0076')).toBe(false);
         expect(isValidIbanFormat('1234')).toBe(false);
+        expect(isValidIbanFormat('CH00X')).toBe(false);
+        expect(isValidIbanFormat('CH9300762011623852958')).toBe(false);
     });
 });

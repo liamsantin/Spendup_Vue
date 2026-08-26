@@ -11,7 +11,7 @@
 | Route     | `/app/finances/comptes` → `AppComptesPage` (Tabs : Accounts / Invitations)                 |
 | Store     | `useAccountsStore`                                                                         |
 | API       | `accountsApi` → **`fetchWrapper`**                                                         |
-| Droits UI | `rights.ts` branché sur `myRole` / `isOwned` / `isPrimary`                                 |
+| Droits UI | `rights.ts` branché sur `myRole` / `isOwned` / `isPrimary` (archive/restore/delete/primary = owner owned) |
 | Realtime  | Notifs `accountShare*` (dont `accountShareRoleChanged`) + SignalR `accountChanged` + `friendshipChanged` |
 | Dashboard | Module Comptes actif → `/app/finances/comptes`                                             |
 
@@ -45,12 +45,14 @@
 
 - Liste = owned + partagés **acceptés** (pas les pending) ; UI sépare `isOwned` / `!isOwned`.
 - Compte **primaire** : exactement un parmi les comptes `isOwned` ; promouvoir en démote l’ancien (`POST …/primary` ou create `isPrimary: true`). Pas d’archive ni delete. Le PUT n’envoie pas un bascule `isPrimary` (400 si on tente de retirer le statut sans en promouvoir un autre).
+- Archive / restore : owner owned uniquement (editor partagé : non).
 - Devise **immuable** après création (UI disabled + PUT renvoie la devise d’origine).
 - Delete bloqué avec mouvements → message API + proposition d’archiver.
 - Partage : invite via `listAllFriends()` (pagination complète), exclus déjà présents dans `shares`.
 - `onAuthenticatedSession()` (guard) : branche realtime **sans** charger les listes ; `bootstrap(tab)` page charge **l’onglet actif** (TTL + idle prefetch incoming pour le chip).
 - Deep-link query : `?tab=Accounts|Invitations`, `?account=`, `?share=` → scroll `[data-account-id]` / `[data-share-id]`.
 - Hors scope : payment methods, transactions, foyer Family.
+- `snapshotAt` futur : clamp client à maintenant ; sélecteur borné à aujourd’hui (max réactif).
 
 ## Fetch / cache
 
@@ -61,12 +63,14 @@ Mémoire process via `createResourceCache` (`src/utils/helpers/resource-cache.ts
 - Orchestration unique : `AppComptesPage` → `bootstrap(tab)` / `openTab(tab)`. Les tabs ne chargent plus au `onMounted`.
 - Mutations : patch local (`upsert` / filtre incoming) ; `acceptShare` recharge la liste comptes (le nouvel accès n’est pas dans le payload).
 - Après `loadAccounts`, `syncSelectedWithList()` vide la sélection si le compte a disparu (revoke / amitié).
-- `accountShareRevoked` (revoke manuel **ou** soft-delete owner) : `removeAccountLocal` immédiat via `metadata.accountPublicId`, puis sync liste en arrière-plan.
+- `accountShareRevoked` / `accountChanged.revoked` (destinataire) : `removeAccountLocal` immédiat via `metadata.accountPublicId` **uniquement si le compte n’est pas owned** ; sync liste en arrière-plan. Owner : invalidate + refetch seulement.
 - `accountChanged` (`archived` / `restored`) : patch local `isActive` + refetch liste (pas d’inbox). Filet page : refetch au `visibilitychange`.
 - `accountChanged` (`updated`) : co-détenteurs (sauf acteur) après `PUT` compte — invalidate + refetch liste (+ détail si modale ouverte).
 - `accountChanged` (`visibility`) : destinataire refetch liste (+ détail si ouvert) quand seuls les `hiddenFields` changent — pas d’inbox. Changement de rôle → `accountShareRoleChanged` uniquement.
 - `accountChanged` (`balanceSnapshotCreated` / `balanceSnapshotDeleted`) : co-détenteurs (sauf acteur) invalident le cache relevés + refetch si le compte est ouvert — pas d’inbox.
 - Destinataire d’un partage actif : bouton **Quitter** → `POST …/shares/leave` ; owner reçoit `accountShareLeft` (inbox + SignalR) et rafraîchit les shares.
+- Relevés : cache mémoire par compte = `{ items, page, pageSize, totalCount }` — close/reopen (TTL OK) restaure aussi la pagination (`hasMore` / Load more).
+- Archive / restore UI : **owner owned** uniquement (pas l’editor partagé).
 
 ### Budget de requêtes
 

@@ -18,7 +18,7 @@ const props = defineProps<{
 
 const { t } = useI18n();
 
-const maxSnapshotDate = todayYmd();
+const maxSnapshotDate = computed(() => todayYmd());
 
 const snapshotAtModel = computed({
     get: () => props.form.snapshotAt || null,

@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { LockIcon } from 'vue-tabler-icons';
-import { isAccountFieldHidden, resolveAccountBalanceDisplay } from '@/features/accounts/format';
+import { isAccountFieldHidden, resolveAccountBalanceDisplay, safeAccountColor } from '@/features/accounts/format';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { Account } from '@/features/accounts/types';
 
@@ -29,6 +29,7 @@ const typeLabel = computed(() => t(`comptesPage.types.${props.account.type}`));
 const roleLabel = computed(() => t(`comptesPage.roles.${props.account.myRole}`));
 const focused = computed(() => store.isFocusedAccount(props.account.publicId));
 const promoted = computed(() => store.isPromotedAccount(props.account.publicId));
+const avatarColor = computed(() => safeAccountColor(props.account.color) || 'lightprimary');
 
 const accountNumberLine = computed(() => {
     if (isAccountFieldHidden(props.account, 'accountNumber') && props.account.accountNumber == null) {
@@ -56,7 +57,7 @@ const accountNumberLine = computed(() => {
         @click="emit('open', account)"
     >
         <template #prepend>
-            <v-avatar size="46" class="mr-3" rounded="md" :color="account.color || 'lightprimary'">
+            <v-avatar size="46" class="mr-3" rounded="md" :color="avatarColor">
                 <span class="text-subtitle-2 font-weight-bold text-white">{{ account.name.slice(0, 1).toUpperCase() }}</span>
             </v-avatar>
         </template>

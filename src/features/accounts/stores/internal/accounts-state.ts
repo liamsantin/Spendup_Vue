@@ -8,6 +8,13 @@ export const ACCOUNTS_DETAIL_MAX_AGE_MS = 30_000;
 export const KEY_ACCOUNTS = 'accounts';
 export const KEY_INCOMING = 'incoming';
 
+export type SnapshotsCacheEntry = {
+    items: AccountBalanceSnapshot[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+};
+
 /**
  * Crée l’état partagé du store comptes (refs, cache, helpers locaux).
  * @returns L’état et les helpers locaux du store.
@@ -19,7 +26,8 @@ export function createAccountsState() {
     const shares = ref<AccountShare[]>([]);
     const sharesByAccountId = new Map<string, AccountShare[]>();
     const balanceSnapshots = ref<AccountBalanceSnapshot[]>([]);
-    const snapshotsByAccountId = new Map<string, AccountBalanceSnapshot[]>();
+    /** Items + pagination des relevés, mémorisés par compte (survit close/reopen TTL). */
+    const snapshotsByAccountId = new Map<string, SnapshotsCacheEntry>();
     /** Métadonnées pagination des relevés pour le compte sélectionné. */
     const snapshotsPage = ref(1);
     const snapshotsPageSize = ref(50);
@@ -32,6 +40,8 @@ export function createAccountsState() {
     const loadingShares = ref(false);
     const loadingSnapshots = ref(false);
     const acting = ref(false);
+    /** Profondeur des mutations concurrentes — `acting` reste true tant que > 0. */
+    let actingDepth = 0;
     const initialized = ref(false);
     const error = ref<string | null>(null);
     /** Deep-link : `?account=` */
@@ -56,6 +66,21 @@ export function createAccountsState() {
     const archivedOwnedAccounts = computed(() => ownedAccounts.value.filter((a) => !a.isActive));
     const incomingCount = computed(() => incomingShares.value.length);
     const hasAccounts = computed(() => accounts.value.length > 0);
+
+    function beginActing() {
+        actingDepth += 1;
+        acting.value = true;
+    }
+
+    function endActing() {
+        actingDepth = Math.max(0, actingDepth - 1);
+        acting.value = actingDepth > 0;
+    }
+
+    function resetActing() {
+        actingDepth = 0;
+        acting.value = false;
+    }
 
     /** Annule le timer et retire le highlight de promotion. */
     function clearPromoteHighlight() {
@@ -199,8 +224,7 @@ export function createAccountsState() {
         if (!snapshot) return;
         if (selectedAccount.value?.publicId !== publicId) {
             shares.value = sharesByAccountId.get(publicId) ?? [];
-            balanceSnapshots.value = snapshotsByAccountId.get(publicId) ?? [];
-            resetSnapshotsPagination();
+            activateSnapshotsView(publicId);
         }
         selectedAccount.value = snapshot;
     }
@@ -218,7 +242,8 @@ export function createAccountsState() {
     }
 
     /**
-     * Mémorise les snapshots d’un compte. Ne touche la vue courante que si ce compte est sélectionné.
+     * Mémorise les snapshots d’un compte (items + pagination).
+     * Ne touche la vue courante que si ce compte est sélectionné.
      * @param accountPublicId Identifiant public du compte.
      * @param items Liste des snapshots à mémoriser.
      */
@@ -227,13 +252,20 @@ export function createAccountsState() {
         items: AccountBalanceSnapshot[],
         meta?: { page?: number; pageSize?: number; totalCount?: number; append?: boolean }
     ) {
-        const next = meta?.append ? [...(snapshotsByAccountId.get(accountPublicId) ?? []), ...items] : items;
+        const prev = snapshotsByAccountId.get(accountPublicId);
+        const nextItems = meta?.append ? [...(prev?.items ?? []), ...items] : items;
+        const next: SnapshotsCacheEntry = {
+            items: nextItems,
+            page: meta?.page ?? prev?.page ?? 1,
+            pageSize: meta?.pageSize ?? prev?.pageSize ?? 50,
+            totalCount: meta?.totalCount ?? prev?.totalCount ?? nextItems.length
+        };
         snapshotsByAccountId.set(accountPublicId, next);
         if (selectedAccount.value?.publicId === accountPublicId) {
-            balanceSnapshots.value = next;
-            if (meta?.page != null) snapshotsPage.value = meta.page;
-            if (meta?.pageSize != null) snapshotsPageSize.value = meta.pageSize;
-            if (meta?.totalCount != null) snapshotsTotalCount.value = meta.totalCount;
+            balanceSnapshots.value = next.items;
+            snapshotsPage.value = next.page;
+            snapshotsPageSize.value = next.pageSize;
+            snapshotsTotalCount.value = next.totalCount;
         }
     }
 
@@ -256,11 +288,20 @@ export function createAccountsState() {
     }
 
     /**
-     * Active la vue snapshots pour un compte (cache mémoire ou liste vide).
+     * Active la vue snapshots pour un compte (items + pagination depuis le cache).
      * @param accountPublicId Identifiant public du compte.
      */
     function activateSnapshotsView(accountPublicId: string) {
-        balanceSnapshots.value = snapshotsByAccountId.get(accountPublicId) ?? [];
+        const entry = snapshotsByAccountId.get(accountPublicId);
+        if (entry) {
+            balanceSnapshots.value = entry.items;
+            snapshotsPage.value = entry.page;
+            snapshotsPageSize.value = entry.pageSize;
+            snapshotsTotalCount.value = entry.totalCount;
+            return;
+        }
+        balanceSnapshots.value = [];
+        resetSnapshotsPagination();
     }
 
     /** Vide le compte actuellement sélectionné et les vues associées. */
@@ -318,6 +359,9 @@ export function createAccountsState() {
         archivedOwnedAccounts,
         incomingCount,
         hasAccounts,
+        beginActing,
+        endActing,
+        resetActing,
         clearPromoteHighlight,
         markPromoted,
         isPromotedAccount,

@@ -71,9 +71,13 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
         const type = String(notification.type);
         if (type === 'accountShareRevoked') {
             // Inbox (historique/badge) — le sync live passe par accountChanged.revoked.
+            // Destinataire seulement : ne jamais retirer un compte owned (flash owner).
             const accountPublicId = getAccountPublicId(notification.metadata);
             if (accountPublicId) {
-                removeAccountLocal(accountPublicId);
+                const current = accounts.value.find((a) => a.publicId === accountPublicId);
+                if (!current || !current.isOwned) {
+                    removeAccountLocal(accountPublicId);
+                }
             }
             cache.invalidate(KEY_INCOMING);
             cache.invalidate(KEY_ACCOUNTS);
@@ -87,11 +91,9 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
             return;
         }
         if (type === 'accountShareAccepted' || type === 'accountShareRefused') {
-            // Owner : invalider TOUS les caches shares (metadata parfois sans accountPublicId)
-            // + patch optimiste pending→rôle pour l’UI immédiate.
-            const accountPublicId =
-                getAccountPublicId(notification.metadata) ??
-                (selectedAccount.value?.isOwned ? selectedAccount.value.publicId : null);
+            // Owner : invalider TOUS les caches shares.
+            // Patch optimiste uniquement si metadata porte un accountPublicId fiable.
+            const accountPublicId = getAccountPublicId(notification.metadata);
             const sharePublicId = getAccountSharePublicId(notification.metadata);
             const current = accountPublicId ? readSharesSnapshot(accountPublicId) : [];
 
@@ -178,8 +180,12 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
         if (!id) return;
 
         if (payload.change === 'revoked') {
-            // Revoke manuel ou soft-delete owner : retirer tout de suite (UI), sync réseau en arrière-plan.
-            removeAccountLocal(id);
+            // Destinataire : revoke manuel ou soft-delete owner.
+            // Ne pas retirer un compte owned si l’event arrive aussi côté owner.
+            const current = accounts.value.find((a) => a.publicId === id);
+            if (!current || !current.isOwned) {
+                removeAccountLocal(id);
+            }
             cache.invalidate(KEY_INCOMING);
             cache.invalidate(KEY_ACCOUNTS);
             void Promise.all([loadIncoming(true), loadAccounts(true)]).catch(() => undefined);

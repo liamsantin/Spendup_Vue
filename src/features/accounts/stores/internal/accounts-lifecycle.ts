@@ -27,13 +27,15 @@ export function createAccountsLifecycle(state: AccountsState, deps: LifecycleDep
         loadingDetail,
         loadingShares,
         loadingSnapshots,
-        acting,
+        loadingMoreSnapshots,
         initialized,
         error,
         focusAccountPublicId,
         focusSharePublicId,
         cache,
-        clearPromoteHighlight
+        clearPromoteHighlight,
+        resetActing,
+        resetSnapshotsPagination
     } = state;
 
     const { loadAccounts, loadIncoming, ensureRealtimeBridge, teardownRealtimeBridge } = deps;
@@ -114,7 +116,9 @@ export function createAccountsLifecycle(state: AccountsState, deps: LifecycleDep
         loadingDetail.value = false;
         loadingShares.value = false;
         loadingSnapshots.value = false;
-        acting.value = false;
+        loadingMoreSnapshots.value = false;
+        resetActing();
+        resetSnapshotsPagination();
         initialized.value = false;
         error.value = null;
         focusAccountPublicId.value = null;

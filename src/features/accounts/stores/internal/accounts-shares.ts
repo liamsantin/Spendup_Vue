@@ -17,10 +17,11 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         selectedAccount,
         loadingIncoming,
         loadingShares,
-        acting,
         error,
         cache,
         clearError,
+        beginActing,
+        endActing,
         setSharesForAccount,
         activateSharesView,
         removeAccountLocal
@@ -104,7 +105,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         photoUrl?: string | null,
         hiddenFields?: HiddenAccountField[]
     ) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             const body =
@@ -127,7 +128,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
@@ -145,7 +146,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         role: ShareRole,
         hiddenFields?: HiddenAccountField[]
     ) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             const body = role === 'viewer' && hiddenFields != null ? { role, hiddenFields } : { role };
@@ -164,7 +165,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
@@ -174,7 +175,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
      * @param userPublicId Identifiant public du bénéficiaire à révoquer.
      */
     async function revokeShare(accountPublicId: string, userPublicId: string) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             await accountsApi.revokeShare(accountPublicId, userPublicId);
@@ -188,7 +189,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
@@ -197,7 +198,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
      * @param accountPublicId Identifiant public du compte partagé.
      */
     async function leaveShare(accountPublicId: string) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             await accountsApi.leaveShare(accountPublicId);
@@ -207,7 +208,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
@@ -216,7 +217,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
      * @param sharePublicId Identifiant public de l’invitation.
      */
     async function acceptShare(sharePublicId: string) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             await accountsApi.acceptShare(sharePublicId);
@@ -233,7 +234,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
             }
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
@@ -242,7 +243,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
      * @param sharePublicId Identifiant public de l’invitation.
      */
     async function refuseShare(sharePublicId: string) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             await accountsApi.refuseShare(sharePublicId);
@@ -252,7 +253,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 

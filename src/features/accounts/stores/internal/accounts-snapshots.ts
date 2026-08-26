@@ -1,6 +1,15 @@
 import { accountsApi } from '@/features/accounts/api';
-import type { CreateBalanceSnapshotPayload } from '@/features/accounts/types';
+import type { AccountBalanceSnapshot, CreateBalanceSnapshotPayload } from '@/features/accounts/types';
 import type { AccountsState } from '@/features/accounts/stores/internal/accounts-state';
+
+/** Ordre UI / chip écart : plus récent `snapshotAt` d’abord, puis `createdAt`. */
+function sortSnapshotsDesc(items: AccountBalanceSnapshot[]): AccountBalanceSnapshot[] {
+    return [...items].sort((a, b) => {
+        const byAt = b.snapshotAt.localeCompare(a.snapshotAt);
+        if (byAt !== 0) return byAt;
+        return b.createdAt.localeCompare(a.createdAt);
+    });
+}
 
 /**
  * Actions liées aux snapshots de solde.
@@ -16,10 +25,11 @@ export function createAccountsSnapshots(state: AccountsState) {
         snapshotsPage,
         snapshotsPageSize,
         snapshotsTotalCount,
-        acting,
         error,
         cache,
         clearError,
+        beginActing,
+        endActing,
         setSnapshotsForAccount,
         activateSnapshotsView
     } = state;
@@ -102,23 +112,25 @@ export function createAccountsSnapshots(state: AccountsState) {
     }
 
     function balanceSnapshotsLength(accountPublicId: string) {
-        return (snapshotsByAccountId.get(accountPublicId) ?? []).length;
+        return snapshotsByAccountId.get(accountPublicId)?.items.length ?? 0;
     }
 
     /**
-     * Crée un snapshot de solde et l’ajoute en tête de liste.
+     * Crée un snapshot de solde et l’insère dans la liste (triée par date).
      * @param accountPublicId Identifiant public du compte.
      * @param payload Données du snapshot (solde, date, note…).
      * @returns Le snapshot créé.
      */
     async function createBalanceSnapshot(accountPublicId: string, payload: CreateBalanceSnapshotPayload) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             const snapshot = await accountsApi.createBalanceSnapshot(accountPublicId, payload);
-            const current = snapshotsByAccountId.get(accountPublicId) ?? [];
-            setSnapshotsForAccount(accountPublicId, [snapshot, ...current], {
-                totalCount: snapshotsTotalCount.value + 1
+            const prev = snapshotsByAccountId.get(accountPublicId);
+            const current = prev?.items ?? [];
+            const nextTotal = (prev?.totalCount ?? current.length) + 1;
+            setSnapshotsForAccount(accountPublicId, sortSnapshotsDesc([snapshot, ...current]), {
+                totalCount: nextTotal
             });
             cache.touch(`snapshots:${accountPublicId}`);
             return snapshot;
@@ -126,7 +138,7 @@ export function createAccountsSnapshots(state: AccountsState) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
@@ -136,22 +148,24 @@ export function createAccountsSnapshots(state: AccountsState) {
      * @param snapshotPublicId Identifiant public du snapshot à supprimer.
      */
     async function deleteBalanceSnapshot(accountPublicId: string, snapshotPublicId: string) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             await accountsApi.deleteBalanceSnapshot(accountPublicId, snapshotPublicId);
-            const current = snapshotsByAccountId.get(accountPublicId) ?? [];
+            const prev = snapshotsByAccountId.get(accountPublicId);
+            const current = prev?.items ?? [];
+            const nextTotal = Math.max(0, (prev?.totalCount ?? current.length) - 1);
             setSnapshotsForAccount(
                 accountPublicId,
                 current.filter((s) => s.publicId !== snapshotPublicId),
-                { totalCount: Math.max(0, snapshotsTotalCount.value - 1) }
+                { totalCount: nextTotal }
             );
             cache.touch(`snapshots:${accountPublicId}`);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 

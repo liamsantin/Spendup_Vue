@@ -40,14 +40,14 @@ export function canWriteBalanceSnapshots(account: Pick<Account, 'myRole' | 'isAc
     return account.myRole === 'owner' || account.myRole === 'editor';
 }
 
-export function canArchiveAccount(account: Pick<Account, 'myRole' | 'isPrimary' | 'isActive'>): boolean {
-    if (account.isPrimary || !account.isActive) return false;
-    return account.myRole === 'owner' || account.myRole === 'editor';
+export function canArchiveAccount(account: Pick<Account, 'myRole' | 'isOwned' | 'isPrimary' | 'isActive'>): boolean {
+    if (!account.isOwned || account.isPrimary || !account.isActive) return false;
+    return account.myRole === 'owner';
 }
 
-export function canRestoreAccount(account: Pick<Account, 'myRole' | 'isActive'>): boolean {
-    if (account.isActive) return false;
-    return account.myRole === 'owner' || account.myRole === 'editor';
+export function canRestoreAccount(account: Pick<Account, 'myRole' | 'isOwned' | 'isActive'>): boolean {
+    if (!account.isOwned || account.isActive) return false;
+    return account.myRole === 'owner';
 }
 
 export function canSetPrimaryAccount(account: Pick<Account, 'myRole' | 'isOwned' | 'isPrimary' | 'isActive'>): boolean {

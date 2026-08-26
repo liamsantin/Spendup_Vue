@@ -1041,7 +1041,7 @@ describe('useAccountsStore', () => {
     it('createBalanceSnapshot et deleteBalanceSnapshot patchent la liste locale', async () => {
         api.list.mockResolvedValue({ items: [ownedAccount] });
         api.get.mockResolvedValue(ownedAccount);
-        api.listBalanceSnapshots.mockResolvedValue({ items: [] });
+        api.listBalanceSnapshots.mockResolvedValue({ items: [], page: 1, pageSize: 50, totalCount: 0 });
         api.createBalanceSnapshot.mockResolvedValue({
             publicId: 'snap-new',
             accountPublicId: 'acc-1',
@@ -1073,6 +1073,148 @@ describe('useAccountsStore', () => {
         await store.deleteBalanceSnapshot('acc-1', 'snap-new');
         expect(api.deleteBalanceSnapshot).toHaveBeenCalledWith('acc-1', 'snap-new');
         expect(store.balanceSnapshots).toHaveLength(0);
+    });
+
+    it('pagination relevés survit à clearSelected + réouverture (cache TTL)', async () => {
+        const page1 = Array.from({ length: 50 }, (_, i) => ({
+            publicId: `snap-${i}`,
+            accountPublicId: 'acc-1',
+            balance: 100 - i,
+            snapshotAt: `2026-08-${String(26 - (i % 20)).padStart(2, '0')}T12:00:00.000Z`,
+            source: 'manual' as const,
+            note: null,
+            createdAt: `2026-08-${String(26 - (i % 20)).padStart(2, '0')}T12:00:00.000Z`,
+            updatedAt: null,
+            createdByUserPublicId: null,
+            createdByDisplayName: null,
+            createdByPhotoUrl: null
+        }));
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listBalanceSnapshots.mockResolvedValue({ items: page1, page: 1, pageSize: 50, totalCount: 75 });
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+        expect(store.balanceSnapshots).toHaveLength(50);
+        expect(store.snapshotsTotalCount).toBe(75);
+        expect(store.hasMoreSnapshots).toBe(true);
+
+        api.listBalanceSnapshots.mockClear();
+        store.clearSelected();
+        expect(store.snapshotsTotalCount).toBe(0);
+
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+        expect(api.listBalanceSnapshots).not.toHaveBeenCalled();
+        expect(store.balanceSnapshots).toHaveLength(50);
+        expect(store.snapshotsTotalCount).toBe(75);
+        expect(store.hasMoreSnapshots).toBe(true);
+    });
+
+    it('createBalanceSnapshot trie par snapshotAt (pas de prepend aveugle)', async () => {
+        const newer = {
+            publicId: 'snap-new',
+            accountPublicId: 'acc-1',
+            balance: 300,
+            snapshotAt: '2026-08-25T12:00:00.000Z',
+            source: 'manual' as const,
+            note: null,
+            createdAt: '2026-08-25T12:00:00.000Z',
+            updatedAt: null,
+            createdByUserPublicId: null,
+            createdByDisplayName: null,
+            createdByPhotoUrl: null
+        };
+        const olderPayload = {
+            publicId: 'snap-old',
+            accountPublicId: 'acc-1',
+            balance: 200,
+            snapshotAt: '2026-08-20T12:00:00.000Z',
+            source: 'manual' as const,
+            note: null,
+            createdAt: '2026-08-26T12:00:00.000Z',
+            updatedAt: null,
+            createdByUserPublicId: null,
+            createdByDisplayName: null,
+            createdByPhotoUrl: null
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listBalanceSnapshots.mockResolvedValue({ items: [newer], page: 1, pageSize: 50, totalCount: 1 });
+        api.createBalanceSnapshot.mockResolvedValue(olderPayload);
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+
+        await store.createBalanceSnapshot('acc-1', { balance: 200, snapshotAt: '2026-08-20T12:00:00.000Z' });
+        expect(store.balanceSnapshots.map((s) => s.publicId)).toEqual(['snap-new', 'snap-old']);
+        expect(store.snapshotsTotalCount).toBe(2);
+    });
+
+    it('acting reste true tant qu’une mutation concurrente tourne', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        let resolveCreate!: (value: typeof ownedAccount) => void;
+        let resolvePrimary!: (value: typeof ownedAccount) => void;
+        api.create.mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolveCreate = resolve;
+                })
+        );
+        api.setPrimary.mockImplementation(
+            () =>
+                new Promise((resolve) => {
+                    resolvePrimary = resolve;
+                })
+        );
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+
+        const createPromise = store.createAccount({
+            name: 'Nouveau',
+            type: 'courant',
+            initialBalance: 0
+        });
+        await Promise.resolve();
+        expect(store.acting).toBe(true);
+
+        const primaryPromise = store.setPrimary('acc-1');
+        await Promise.resolve();
+        expect(store.acting).toBe(true);
+
+        resolveCreate({ ...ownedAccount, publicId: 'acc-new', name: 'Nouveau', isPrimary: false });
+        await createPromise;
+        expect(store.acting).toBe(true);
+
+        resolvePrimary({ ...ownedAccount, isPrimary: true });
+        await primaryPromise;
+        expect(store.acting).toBe(false);
+    });
+
+    it('accountShareRevoked ne retire pas un compte owned', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let listener: ((n: { type: string; metadata?: Record<string, unknown> }) => void) | undefined;
+        subscribeToAccountShareNotifications.mockImplementation((fn: (n: { type: string; metadata?: Record<string, unknown> }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        expect(store.accounts.some((a) => a.publicId === 'acc-1')).toBe(true);
+
+        listener?.({ type: 'accountShareRevoked', metadata: { accountPublicId: 'acc-1' } });
+        expect(store.accounts.some((a) => a.publicId === 'acc-1')).toBe(true);
+        await vi.waitFor(() => {
+            expect(api.list).toHaveBeenCalled();
+        });
     });
 
     it('onAuthenticatedSession branche le realtime sans charger', () => {

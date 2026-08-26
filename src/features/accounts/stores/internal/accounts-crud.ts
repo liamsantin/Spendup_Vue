@@ -21,17 +21,17 @@ export function createAccountsCrud(state: AccountsState) {
         selectedAccount,
         loadingAccounts,
         loadingDetail,
-        acting,
         error,
         cache,
         clearError,
+        beginActing,
+        endActing,
         upsertAccount,
         removeAccountLocal,
         hydrateSelectedFromList,
         applyPrimaryLocally,
         markPromoted,
-        syncSelectedWithList,
-        clearSelected
+        syncSelectedWithList
     } = state;
 
     /** Incrémente à chaque `loadAccountDetail` — les réponses tardives d’un id précédent sont ignorées. */
@@ -119,7 +119,7 @@ export function createAccountsCrud(state: AccountsState) {
      * @returns Le compte créé.
      */
     async function createAccount(payload: CreateAccountPayload) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             const account = normalizeAccount(await accountsApi.create(payload));
@@ -135,7 +135,7 @@ export function createAccountsCrud(state: AccountsState) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
@@ -146,7 +146,7 @@ export function createAccountsCrud(state: AccountsState) {
      * @returns Le compte mis à jour.
      */
     async function updateAccount(publicId: string, payload: UpdateAccountPayload) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             const account = normalizeAccount(await accountsApi.update(publicId, payload));
@@ -161,7 +161,7 @@ export function createAccountsCrud(state: AccountsState) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
@@ -171,7 +171,7 @@ export function createAccountsCrud(state: AccountsState) {
      * @returns Le compte promu.
      */
     async function setPrimary(publicId: string) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             const account = normalizeAccount(await accountsApi.setPrimary(publicId));
@@ -182,7 +182,7 @@ export function createAccountsCrud(state: AccountsState) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
@@ -192,7 +192,7 @@ export function createAccountsCrud(state: AccountsState) {
      * @returns Le compte archivé.
      */
     async function archiveAccount(publicId: string) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             const account = normalizeAccount(await accountsApi.archive(publicId));
@@ -204,7 +204,7 @@ export function createAccountsCrud(state: AccountsState) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
@@ -214,7 +214,7 @@ export function createAccountsCrud(state: AccountsState) {
      * @returns Le compte restauré.
      */
     async function restoreAccount(publicId: string) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             const account = normalizeAccount(await accountsApi.restore(publicId));
@@ -226,7 +226,7 @@ export function createAccountsCrud(state: AccountsState) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
@@ -235,7 +235,7 @@ export function createAccountsCrud(state: AccountsState) {
      * @param publicId Identifiant public du compte à supprimer.
      */
     async function deleteAccount(publicId: string) {
-        acting.value = true;
+        beginActing();
         clearError();
         try {
             await accountsApi.remove(publicId);
@@ -245,7 +245,7 @@ export function createAccountsCrud(state: AccountsState) {
             error.value = e instanceof Error ? e.message : String(e);
             throw e;
         } finally {
-            acting.value = false;
+            endActing();
         }
     }
 
