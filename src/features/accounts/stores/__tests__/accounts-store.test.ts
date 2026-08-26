@@ -364,6 +364,37 @@ describe('useAccountsStore', () => {
         expect(store.balanceSnapshots[0]?.publicId).toBe('snap-live');
     });
 
+    it('accountChanged updated refetch le détail si la modale est ouverte', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+            accountListener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        await store.loadAccountDetail('acc-1');
+        expect(store.selectedAccount?.name).toBe('Courant');
+
+        api.list.mockClear();
+        api.get.mockClear();
+        api.list.mockResolvedValue({ items: [{ ...ownedAccount, name: 'Courant renommé' }] });
+        api.get.mockResolvedValue({ ...ownedAccount, name: 'Courant renommé' });
+
+        accountListener?.({ change: 'updated', accountPublicId: 'acc-1' });
+
+        await vi.waitFor(() => {
+            expect(api.list).toHaveBeenCalled();
+            expect(api.get).toHaveBeenCalledWith('acc-1');
+        });
+        expect(store.selectedAccount?.name).toBe('Courant renommé');
+        expect(store.accounts.find((a) => a.publicId === 'acc-1')?.name).toBe('Courant renommé');
+    });
+
     it('crée un compte par upsert sans relister', async () => {
         api.create.mockResolvedValue({ ...ownedAccount, publicId: 'acc-new', name: 'Nouveau', isPrimary: false });
 

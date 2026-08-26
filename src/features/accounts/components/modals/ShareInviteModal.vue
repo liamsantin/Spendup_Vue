@@ -37,7 +37,7 @@ const open = computed({
         v-model="open"
         :title="t('comptesPage.share.inviteTitle')"
         :subtitle="t('comptesPage.share.inviteSubtitle')"
-        :height="smAndDown ? 520 : 600"
+        :height="smAndDown ? 580 : 680"
         :max-width="520"
         fixed-height
         :scrollable="false"

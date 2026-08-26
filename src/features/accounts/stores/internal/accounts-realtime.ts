@@ -198,6 +198,17 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
             return;
         }
 
+        if (payload.change === 'updated') {
+            // Co-détenteur (sauf acteur) : PUT compte — refetch liste (+ détail si modale ouverte).
+            cache.invalidate(KEY_ACCOUNTS);
+            cache.invalidate(`detail:${id}`);
+            void loadAccounts(true).catch(() => undefined);
+            if (selectedAccount.value?.publicId === id) {
+                void loadAccountDetail(id, true).catch(() => undefined);
+            }
+            return;
+        }
+
         if (payload.change === 'balanceSnapshotCreated' || payload.change === 'balanceSnapshotDeleted') {
             // Co-détenteur (sauf acteur) : invalider le cache relevés même si la modale est fermée.
             cache.invalidate(`snapshots:${id}`);

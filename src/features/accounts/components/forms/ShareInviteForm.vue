@@ -41,7 +41,8 @@ const listScrollbarOptions = {
 };
 
 watch(
-    () => [props.isOpen, smAndDown.value, invite.filteredFriends.length, invite.loadingFriends] as const,
+    () =>
+        [props.isOpen, smAndDown.value, invite.filteredFriends.length, invite.loadingFriends, invite.role] as const,
     async () => {
         if (!props.isOpen || smAndDown.value) return;
         await nextTick();
@@ -144,48 +145,43 @@ defineExpose({
 
 .share-invite-form__friends {
     display: flex;
-    flex: 1 1 auto;
+    flex: 1 1 0;
     flex-direction: column;
     min-height: 0;
+    overflow: hidden;
 }
 
 .share-invite-form__search {
-    flex-shrink: 0;
+    flex: 0 0 auto;
     margin-bottom: 8px;
 }
 
 .share-invite-form__list {
     display: flex;
-    flex: 1 1 auto;
+    flex: 1 1 0;
     flex-direction: column;
-    min-height: 120px;
+    min-height: 0;
     overflow: hidden;
     border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
     border-radius: 10px;
 }
 
 .share-invite-form__list-scroll {
-    flex: 1 1 auto;
+    flex: 1 1 0;
     min-height: 0;
-    height: 100%;
     overflow: hidden;
 }
 
-.share-invite-form__role {
-    flex-shrink: 0;
-    margin-top: 16px;
-}
-
+.share-invite-form__role,
 .share-invite-form__hidden {
+    position: relative;
+    z-index: 1;
     flex-shrink: 0;
     margin-top: 16px;
+    background: rgb(var(--v-theme-surface));
 }
 
 @media (max-width: 599.98px) {
-    .share-invite-form__list {
-        min-height: 0;
-    }
-
     .share-invite-form__list-scroll {
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
@@ -195,7 +191,7 @@ defineExpose({
 }
 
 .share-invite-form__list :deep(.ps) {
-    height: 100%;
+    height: 100% !important;
     max-height: 100%;
 }
 </style>

@@ -93,6 +93,7 @@ export type AccountChange =
     | 'archived'
     | 'restored'
     | 'visibility'
+    | 'updated'
     | 'balanceSnapshotCreated'
     | 'balanceSnapshotDeleted';
 
