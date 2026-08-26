@@ -70,10 +70,14 @@ defineExpose({
         </AppAlert>
 
         <div class="share-invite-form__friends">
-            <div class="share-invite-form__label">{{ t('comptesPage.share.fields.friend') }}</div>
+            <label class="share-invite-form__label" for="share-invite-friend-search">
+                {{ t('comptesPage.share.fields.friend') }}
+            </label>
             <v-text-field
+                id="share-invite-friend-search"
                 v-model="invite.friendQuery"
                 :placeholder="t('comptesPage.share.searchFriend')"
+                :aria-label="t('comptesPage.share.searchFriend')"
                 variant="outlined"
                 color="primary"
                 hide-details
@@ -82,7 +86,7 @@ defineExpose({
                 class="share-invite-form__search"
             >
                 <template #prepend-inner>
-                    <SearchIcon stroke-width="1.5" size="18" class="text-medium-emphasis" />
+                    <SearchIcon stroke-width="1.5" size="18" class="text-medium-emphasis" aria-hidden="true" />
                 </template>
             </v-text-field>
 

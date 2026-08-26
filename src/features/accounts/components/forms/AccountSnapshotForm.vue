@@ -10,10 +10,16 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import { todayYmd } from '@/features/accounts/format';
-import type { CreateBalanceSnapshotPayload } from '@/features/accounts/types';
+
+export type AccountSnapshotFormFields = {
+    balance: number;
+    snapshotAt: string;
+    note: string;
+};
 
 const props = defineProps<{
-    form: CreateBalanceSnapshotPayload;
+    form: AccountSnapshotFormFields;
+    balanceError?: string | null;
 }>();
 
 const { t } = useI18n();
@@ -38,6 +44,8 @@ const snapshotAtModel = computed({
             variant="outlined"
             density="comfortable"
             class="mb-3"
+            :error="!!balanceError"
+            :error-messages="balanceError || undefined"
             hide-details="auto"
         />
         <div class="mb-3">

@@ -180,3 +180,23 @@ export function safeAccountColor(value: string | null | undefined): string | nul
     if (!isValidAccountColor(value)) return null;
     return normalizeAccountColor(value);
 }
+
+/** Luminance relative sRGB (0–1) pour choisir le contraste du texte sur l’avatar. */
+export function isLightAccountColor(value: string | null | undefined): boolean {
+    const hex = safeAccountColor(value);
+    if (!hex) return true; // fallback lightprimary → texte foncé
+    const raw = hex.slice(1);
+    const full =
+        raw.length === 3
+            ? raw
+                  .split('')
+                  .map((c) => c + c)
+                  .join('')
+            : raw.slice(0, 6);
+    const r = parseInt(full.slice(0, 2), 16) / 255;
+    const g = parseInt(full.slice(2, 4), 16) / 255;
+    const b = parseInt(full.slice(4, 6), 16) / 255;
+    const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+    const luminance = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+    return luminance > 0.4;
+}

@@ -4,6 +4,7 @@ defineOptions({ name: 'AccountSnapshotAddModal' });
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { parseAccountAmount, todayYmd, ymdToSnapshotIso } from '@/features/accounts/format';
@@ -18,7 +19,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     'update:modelValue': [value: boolean];
-    error: [message: string];
 }>();
 
 const { t } = useI18n();
@@ -30,40 +30,53 @@ const open = computed({
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
-function emptyForm(): CreateBalanceSnapshotPayload {
+type SnapshotFormModel = {
+    balance: number;
+    snapshotAt: string;
+    note: string;
+};
+
+function emptyForm(): SnapshotFormModel {
     return {
         balance: 0,
         snapshotAt: todayYmd(),
-        note: null
+        note: ''
     };
 }
 
-const form = ref<CreateBalanceSnapshotPayload>(emptyForm());
+const form = ref<SnapshotFormModel>(emptyForm());
+const localError = ref<string | null>(null);
+const balanceError = ref<string | null>(null);
 
 watch(
     () => props.modelValue,
     (isOpen) => {
-        if (isOpen) form.value = emptyForm();
+        if (isOpen) {
+            form.value = emptyForm();
+            localError.value = null;
+            balanceError.value = null;
+        }
     }
 );
 
 async function submitAdd() {
+    localError.value = null;
+    balanceError.value = null;
     const balance = parseAccountAmount(form.value.balance);
     if (balance == null) {
-        emit('error', t('comptesPage.snapshots.errors.balanceInvalid'));
+        balanceError.value = t('comptesPage.snapshots.errors.balanceInvalid');
         return;
     }
     try {
-        // `source` est ignoré par l’API (toujours "manual") — ne pas l’envoyer.
         const payload: CreateBalanceSnapshotPayload = {
             balance,
             snapshotAt: ymdToSnapshotIso(form.value.snapshotAt),
-            note: form.value.note?.trim() || null
+            note: form.value.note.trim() || null
         };
         await store.createBalanceSnapshot(props.accountPublicId, payload);
         open.value = false;
     } catch (e: unknown) {
-        emit('error', getErrorMessage(e));
+        localError.value = getErrorMessage(e);
     }
 }
 </script>
@@ -79,7 +92,18 @@ async function submitAdd() {
         :scrollable="false"
         mobile-layout="sheet"
     >
-        <AccountSnapshotForm :form="form" />
+        <AppAlert
+            v-if="localError"
+            color="error"
+            variant="tonal"
+            class="mb-3"
+            closable
+            @dismiss="localError = null"
+        >
+            {{ localError }}
+        </AppAlert>
+
+        <AccountSnapshotForm :form="form" :balance-error="balanceError" />
 
         <template #footer="{ close }">
             <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>

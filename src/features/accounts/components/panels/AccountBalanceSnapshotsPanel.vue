@@ -159,8 +159,8 @@ async function onLoadMore() {
                 variant="tonal"
                 class="mb-3 flex-shrink-0"
                 closable
-                :dismiss-ms="3000"
-                @dismiss="
+            :dismiss-ms="6000"
+            @dismiss="
                     localError = null;
                     store.clearError();
                 "
@@ -286,7 +286,7 @@ async function onLoadMore() {
             </div>
         </div>
 
-        <AccountSnapshotAddModal v-model="addOpen" :account-public-id="account.publicId" @error="localError = $event" />
+        <AccountSnapshotAddModal v-model="addOpen" :account-public-id="account.publicId" />
 
         <AppConfirmationModal
             v-model="deleteOpen"

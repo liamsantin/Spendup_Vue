@@ -289,6 +289,7 @@
                 "snapshots": "Relevé",
                 "shares": "Partage"
             },
+            "snapshotsHiddenHint": "Les relevés sont masqués car le solde n’est pas visible pour vous.",
             "shareUnavailable": "Vous n’avez pas accès à la gestion du partage de ce compte."
         },
         "form": {
@@ -343,7 +344,7 @@
             },
             "roleHints": {
                 "viewer": "Consulte les soldes et les relevés.",
-                "editor": "Peut renommer, archiver et gérer les relevés de solde."
+                "editor": "Peut renommer le compte et gérer les relevés de solde."
             },
             "errors": {
                 "friendRequired": "Choisissez un ami."

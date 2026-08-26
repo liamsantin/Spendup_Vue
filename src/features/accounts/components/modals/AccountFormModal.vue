@@ -17,7 +17,7 @@ import {
     type Currency,
     type UpdateAccountPayload
 } from '@/features/accounts/types';
-import AccountForm from '@/features/accounts/components/forms/AccountForm.vue';
+import AccountForm, { type AccountFormFieldErrors } from '@/features/accounts/components/forms/AccountForm.vue';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -52,6 +52,12 @@ const primarySwitchHint = computed(() => {
     return undefined;
 });
 const localError = reactive({ message: null as string | null });
+const fieldErrors = reactive<AccountFormFieldErrors>({
+    name: null,
+    initialBalance: null,
+    iban: null,
+    color: null
+});
 
 const form = reactive({
     name: '',
@@ -72,8 +78,16 @@ const open = computed({
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
+function clearFieldErrors() {
+    fieldErrors.name = null;
+    fieldErrors.initialBalance = null;
+    fieldErrors.iban = null;
+    fieldErrors.color = null;
+}
+
 function resetForm() {
     localError.message = null;
+    clearFieldErrors();
     if (props.account) {
         form.name = props.account.name;
         form.type = props.account.type;
@@ -105,31 +119,34 @@ watch(
 
 async function onSave() {
     localError.message = null;
+    clearFieldErrors();
     const name = form.name.trim();
+    let hasFieldError = false;
     if (!name) {
-        localError.message = t('comptesPage.form.errors.nameRequired');
-        return;
+        fieldErrors.name = t('comptesPage.form.errors.nameRequired');
+        hasFieldError = true;
     }
     if (!isValidIbanFormat(form.iban)) {
-        localError.message = t('comptesPage.form.errors.ibanInvalid');
-        return;
+        fieldErrors.iban = t('comptesPage.form.errors.ibanInvalid');
+        hasFieldError = true;
     }
     if (!isValidAccountColor(form.color)) {
-        localError.message = t('comptesPage.form.errors.colorInvalid');
-        return;
+        fieldErrors.color = t('comptesPage.form.errors.colorInvalid');
+        hasFieldError = true;
     }
 
     try {
         if (props.account) {
-            // Editor : omettre iban (API : null = omis, pas un clear). Autres champs owner en écho.
             const lockOwner = !canEditAccountOwnerFields(props.account);
             const initialBalance = lockOwner
                 ? (props.account.initialBalance ?? 0)
                 : parseAccountAmount(form.initialBalance);
             if (initialBalance == null) {
-                localError.message = t('comptesPage.form.errors.balanceInvalid');
-                return;
+                fieldErrors.initialBalance = t('comptesPage.form.errors.balanceInvalid');
+                hasFieldError = true;
             }
+            if (hasFieldError || initialBalance == null) return;
+
             const payload: UpdateAccountPayload = {
                 name,
                 type: lockOwner ? props.account.type : form.type,
@@ -147,9 +164,11 @@ async function onSave() {
         } else {
             const initialBalance = parseAccountAmount(form.initialBalance);
             if (initialBalance == null) {
-                localError.message = t('comptesPage.form.errors.balanceInvalid');
-                return;
+                fieldErrors.initialBalance = t('comptesPage.form.errors.balanceInvalid');
+                hasFieldError = true;
             }
+            if (hasFieldError || initialBalance == null) return;
+
             const created = await store.createAccount({
                 name,
                 type: form.type,
@@ -177,7 +196,7 @@ async function onSave() {
         :max-width="640"
         :height="640"
         scrollable
-        :mobile-layout="isEdit ? 'sheet' : 'fullscreen'"
+        mobile-layout="fullscreen"
     >
         <AppAlert
             v-if="localError.message"
@@ -185,7 +204,6 @@ async function onSave() {
             variant="tonal"
             class="mb-4"
             closable
-            :dismiss-ms="3000"
             @dismiss="localError.message = null"
         >
             {{ localError.message }}
@@ -198,6 +216,7 @@ async function onSave() {
             :primary-switch-locked="primarySwitchLocked"
             :primary-switch-hint="primarySwitchHint"
             :owner-fields-locked="ownerFieldsLocked"
+            :field-errors="fieldErrors"
             :type-items="typeItems"
             :currency-items="currencyItems"
         />

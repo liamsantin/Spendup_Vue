@@ -91,13 +91,15 @@ const detailTabs = computed(() => {
             value: 'snapshots' as const,
             label: t('comptesPage.detail.tabs.snapshots'),
             icon: Receipt2Icon,
-            disabled: balanceHidden.value
+            disabled: balanceHidden.value,
+            title: balanceHidden.value ? t('comptesPage.detail.snapshotsHiddenHint') : undefined
         },
         {
             value: 'shares' as const,
             label: t('comptesPage.detail.tabs.shares'),
             icon: UsersIcon,
-            disabled: !canShares
+            disabled: !canShares,
+            title: !canShares ? t('comptesPage.detail.shareUnavailable') : undefined
         }
     ];
 });
@@ -118,11 +120,16 @@ watch(
     () => [props.modelValue, props.accountPublicId] as const,
     async ([isOpen, id]) => {
         if (!isOpen || !id) {
-            if (!isOpen) store.clearSelected();
+            if (!isOpen) {
+                store.clearSelected();
+                store.clearError();
+                localError.value = null;
+            }
             return;
         }
         activeTab.value = 'details';
         localError.value = null;
+        store.clearError();
         try {
             await store.loadAccountDetail(id);
         } catch (e: unknown) {
@@ -130,6 +137,7 @@ watch(
             localError.value = err.message;
             if (err.status === 404) {
                 store.clearSelected();
+                store.clearError();
                 open.value = false;
                 await router.replace({ path: '/app/finances/comptes', query: { tab: 'Accounts' } });
             }
@@ -231,17 +239,24 @@ async function confirmLeave() {
         :height="720"
         :max-width="640"
     >
+        <v-progress-linear
+            v-if="store.loadingDetail && account"
+            indeterminate
+            color="primary"
+            class="mb-3 flex-shrink-0"
+            height="2"
+        />
+
         <div v-if="store.loadingDetail && !account" class="py-10 text-center">
             <v-progress-circular indeterminate color="primary" size="32" />
         </div>
 
         <AppAlert
-            v-else-if="account && (localError || store.error)"
+            v-else-if="localError || store.error"
             color="error"
             variant="tonal"
             class="mb-4"
             closable
-            :dismiss-ms="3000"
             @dismiss="
                 localError = null;
                 store.clearError();

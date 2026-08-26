@@ -43,9 +43,10 @@ const initialRole = computed(() => {
 const canSave = computed(() => {
     if (!props.share || props.share.role === 'pending') return false;
     const roleChanged = editRole.value !== initialRole.value;
+    const baselineHidden = [...(props.share.hiddenFields ?? DEFAULT_VIEWER_HIDDEN_FIELDS)].sort();
     const fieldsChanged =
         editRole.value === 'viewer' &&
-        JSON.stringify([...(props.share.hiddenFields ?? [])].sort()) !== JSON.stringify([...editHiddenFields.value].sort());
+        JSON.stringify(baselineHidden) !== JSON.stringify([...editHiddenFields.value].sort());
     return roleChanged || fieldsChanged;
 });
 

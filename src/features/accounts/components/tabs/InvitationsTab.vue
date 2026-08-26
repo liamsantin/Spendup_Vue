@@ -12,6 +12,7 @@ const { smAndDown } = useDisplay();
 const store = useAccountsStore();
 
 function useVirtualList(length: number) {
+    if (store.focusSharePublicId) return false;
     return !smAndDown.value && shouldVirtualize(length);
 }
 </script>

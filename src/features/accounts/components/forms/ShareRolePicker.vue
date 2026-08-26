@@ -20,13 +20,15 @@ const options: { value: ShareRole; icon: typeof EyeIcon; hintKey: string }[] = [
 </script>
 
 <template>
-    <div class="share-role-picker">
+    <div class="share-role-picker" role="radiogroup" :aria-label="t('comptesPage.share.fields.role')">
         <button
             v-for="option in options"
             :key="option.value"
             type="button"
+            role="radio"
             class="share-role-picker__option"
             :class="{ 'share-role-picker__option--active': model === option.value }"
+            :aria-checked="model === option.value"
             :disabled="disabled"
             @click="model = option.value"
         >

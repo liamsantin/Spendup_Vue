@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { UserPhotoAvatar } from '@/features/friends';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
@@ -10,24 +11,34 @@ const props = defineProps<{
 
 const { t, locale } = useI18n();
 const store = useAccountsStore();
+const accepting = ref(false);
+const refusing = ref(false);
 
 function formatDate(value: string) {
     return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
 }
 
 async function onAccept() {
+    if (accepting.value || refusing.value || store.acting) return;
+    accepting.value = true;
     try {
         await store.acceptShare(props.invite.publicId);
     } catch {
         /* store.error affiche le message métier (ex. amitié requise) */
+    } finally {
+        accepting.value = false;
     }
 }
 
 async function onRefuse() {
+    if (accepting.value || refusing.value || store.acting) return;
+    refusing.value = true;
     try {
         await store.refuseShare(props.invite.publicId);
     } catch {
         /* store.error */
+    } finally {
+        refusing.value = false;
     }
 }
 </script>
@@ -36,7 +47,9 @@ async function onRefuse() {
     <v-list-item
         class="px-2 py-3"
         rounded="md"
+        tabindex="-1"
         :data-share-id="props.invite.publicId"
+        :aria-current="store.isFocusedShare(props.invite.publicId) ? 'true' : undefined"
         :class="{ 'bg-lightprimary': store.isFocusedShare(props.invite.publicId) }"
     >
         <template #prepend>
@@ -87,7 +100,8 @@ async function onRefuse() {
                     size="small"
                     variant="flat"
                     color="primary"
-                    :disabled="store.acting"
+                    :loading="accepting"
+                    :disabled="store.acting || refusing"
                     @click.stop="onAccept"
                 >
                     {{ t('comptesPage.actions.accept') }}
@@ -96,7 +110,8 @@ async function onRefuse() {
                     size="small"
                     variant="tonal"
                     color="error"
-                    :disabled="store.acting"
+                    :loading="refusing"
+                    :disabled="store.acting || accepting"
                     @click.stop="onRefuse"
                 >
                     {{ t('comptesPage.actions.refuse') }}

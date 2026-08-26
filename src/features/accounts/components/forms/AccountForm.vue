@@ -22,6 +22,13 @@ export type AccountFormFields = {
     isPrimary: boolean;
 };
 
+export type AccountFormFieldErrors = {
+    name?: string | null;
+    initialBalance?: string | null;
+    iban?: string | null;
+    color?: string | null;
+};
+
 withDefaults(
     defineProps<{
         form: AccountFormFields;
@@ -31,12 +38,14 @@ withDefaults(
         primarySwitchHint?: string;
         /** Verrouille type / devise / solde initial / IBAN (rôle editor). */
         ownerFieldsLocked?: boolean;
+        fieldErrors?: AccountFormFieldErrors;
         typeItems: { title: string; value: AccountType }[];
         currencyItems: { title: string; value: Currency }[];
     }>(),
     {
         primarySwitchHint: undefined,
-        ownerFieldsLocked: false
+        ownerFieldsLocked: false,
+        fieldErrors: () => ({})
     }
 );
 
@@ -50,10 +59,12 @@ const { t } = useI18n();
         </div>
         <v-row v-if="showPrimarySwitch" class="align-center" no-gutters>
             <v-col cols="auto" sm="3" class="pr-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.isPrimary') }}</v-label>
+                <label class="v-label font-weight-medium" for="account-form-is-primary">
+                    {{ t('comptesPage.form.fields.isPrimary') }}
+                </label>
             </v-col>
             <v-col cols="auto" sm="9">
-                <AppSwitch v-model="form.isPrimary" :inset="false" :disabled="primarySwitchLocked" />
+                <AppSwitch id="account-form-is-primary" v-model="form.isPrimary" :inset="false" :disabled="primarySwitchLocked" />
             </v-col>
             <v-col v-if="primarySwitchHint" cols="12">
                 <div class="text-caption text-medium-emphasis">{{ primarySwitchHint }}</div>
@@ -61,23 +72,37 @@ const { t } = useI18n();
         </v-row>
         <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.name') }} *</v-label>
+                <label class="v-label font-weight-medium" for="account-form-name">
+                    {{ t('comptesPage.form.fields.name') }} *
+                </label>
             </v-col>
             <v-col cols="12" sm="9">
-                <v-text-field v-model="form.name" color="primary" variant="outlined" hide-details required />
+                <v-text-field
+                    id="account-form-name"
+                    v-model="form.name"
+                    color="primary"
+                    variant="outlined"
+                    hide-details="auto"
+                    required
+                    :error="!!fieldErrors.name"
+                    :error-messages="fieldErrors.name || undefined"
+                />
             </v-col>
         </v-row>
         <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.type') }} *</v-label>
+                <label class="v-label font-weight-medium" for="account-form-type">
+                    {{ t('comptesPage.form.fields.type') }} *
+                </label>
             </v-col>
             <v-col cols="12" sm="9">
                 <v-select
+                    id="account-form-type"
                     v-model="form.type"
                     :items="typeItems"
                     color="primary"
                     variant="outlined"
-                    hide-details
+                    hide-details="auto"
                     required
                     :disabled="ownerFieldsLocked"
                 />
@@ -85,10 +110,13 @@ const { t } = useI18n();
         </v-row>
         <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.currency') }} *</v-label>
+                <label class="v-label font-weight-medium" for="account-form-currency">
+                    {{ t('comptesPage.form.fields.currency') }} *
+                </label>
             </v-col>
             <v-col cols="12" sm="9">
                 <v-select
+                    id="account-form-currency"
                     v-model="form.currency"
                     :items="currencyItems"
                     color="primary"
@@ -103,41 +131,54 @@ const { t } = useI18n();
         </v-row>
         <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.initialBalance') }} *</v-label>
+                <label class="v-label font-weight-medium" for="account-form-initial-balance">
+                    {{ t('comptesPage.form.fields.initialBalance') }} *
+                </label>
             </v-col>
             <v-col cols="12" sm="9">
                 <v-text-field
+                    id="account-form-initial-balance"
                     v-model.number="form.initialBalance"
                     type="number"
                     step="0.01"
                     color="primary"
                     variant="outlined"
-                    hide-details
+                    hide-details="auto"
                     required
                     :disabled="ownerFieldsLocked"
+                    :error="!!fieldErrors.initialBalance"
+                    :error-messages="fieldErrors.initialBalance || undefined"
                 />
             </v-col>
         </v-row>
         <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.iban') }}</v-label>
+                <label class="v-label font-weight-medium" for="account-form-iban">
+                    {{ t('comptesPage.form.fields.iban') }}
+                </label>
             </v-col>
             <v-col cols="12" sm="9">
                 <v-text-field
+                    id="account-form-iban"
                     v-model="form.iban"
                     color="primary"
                     variant="outlined"
-                    hide-details
+                    hide-details="auto"
                     :disabled="ownerFieldsLocked"
+                    :error="!!fieldErrors.iban"
+                    :error-messages="fieldErrors.iban || undefined"
                 />
             </v-col>
         </v-row>
         <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.accountNumber') }}</v-label>
+                <label class="v-label font-weight-medium" for="account-form-account-number">
+                    {{ t('comptesPage.form.fields.accountNumber') }}
+                </label>
             </v-col>
             <v-col cols="12" sm="9">
                 <v-text-field
+                    id="account-form-account-number"
                     v-model="form.accountNumber"
                     type="number"
                     min="1"
@@ -145,13 +186,15 @@ const { t } = useI18n();
                     step="1"
                     color="primary"
                     variant="outlined"
-                    hide-details
+                    hide-details="auto"
                 />
             </v-col>
         </v-row>
         <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
-                <v-label class="font-weight-medium">{{ t('comptesPage.form.fields.color') }}</v-label>
+                <span class="v-label font-weight-medium" id="account-form-color-label">
+                    {{ t('comptesPage.form.fields.color') }}
+                </span>
             </v-col>
             <v-col cols="12" sm="9">
                 <AppColorPicker
@@ -161,6 +204,7 @@ const { t } = useI18n();
                     :clear-label="t('comptesPage.form.clearColor')"
                     hide-label
                 />
+                <div v-if="fieldErrors.color" class="text-caption text-error mt-1">{{ fieldErrors.color }}</div>
             </v-col>
         </v-row>
     </div>

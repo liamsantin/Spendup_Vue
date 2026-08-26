@@ -11,6 +11,7 @@ import {
     parseAccountAmount,
     resolveAccountBalanceDisplay,
     safeAccountColor,
+    isLightAccountColor,
     todayYmd,
     ymdToSnapshotIso
 } from '@/features/accounts/format';
@@ -120,6 +121,13 @@ describe('account color helpers', () => {
         expect(safeAccountColor('red')).toBeNull();
         expect(safeAccountColor(null)).toBeNull();
         expect(safeAccountColor('')).toBeNull();
+    });
+
+    it('isLightAccountColor guide le contraste du texte avatar', () => {
+        expect(isLightAccountColor(null)).toBe(true);
+        expect(isLightAccountColor('#F59E0B')).toBe(true);
+        expect(isLightAccountColor('#4F46E5')).toBe(false);
+        expect(isLightAccountColor('#EF4444')).toBe(false);
     });
 });
 

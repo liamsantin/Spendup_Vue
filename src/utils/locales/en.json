@@ -289,6 +289,7 @@
                 "snapshots": "Snapshot",
                 "shares": "Sharing"
             },
+            "snapshotsHiddenHint": "Balance snapshots are hidden because the balance is not visible to you.",
             "shareUnavailable": "You do not have access to manage sharing for this account."
         },
         "form": {
@@ -343,7 +344,7 @@
             },
             "roleHints": {
                 "viewer": "Can view balances and snapshots.",
-                "editor": "Can rename, archive, and manage balance snapshots."
+                "editor": "Can rename the account and manage balance snapshots."
             },
             "errors": {
                 "friendRequired": "Choose a friend."

@@ -50,7 +50,7 @@
 - Delete bloqué avec mouvements → message API + proposition d’archiver.
 - Partage : invite via `listAllFriends()` (pagination complète), exclus déjà présents dans `shares`.
 - `onAuthenticatedSession()` (guard) : branche realtime **sans** charger les listes ; `bootstrap(tab)` page charge **l’onglet actif** (TTL + idle prefetch incoming pour le chip).
-- Deep-link query : `?tab=Accounts|Invitations`, `?account=`, `?share=` → scroll `[data-account-id]` / `[data-share-id]`.
+- Deep-link query : `?tab=Accounts|Invitations`, `?account=`, `?share=` → force l’onglet adapté, désactive temporairement le virtual-scroll, scroll + focus clavier, highlight ~2.8s puis clear. L’URL `tab` est synchronisée au switch.
 - Hors scope : payment methods, transactions, foyer Family.
 - `snapshotAt` futur : clamp client à maintenant ; sélecteur borné à aujourd’hui (max réactif).
 

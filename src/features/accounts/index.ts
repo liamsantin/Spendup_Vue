@@ -28,6 +28,7 @@ export {
     normalizeAccountColor,
     parseAccountAmount,
     safeAccountColor,
+    isLightAccountColor,
     todayYmd,
     ymdToSnapshotIso,
     formatSnapshotDate

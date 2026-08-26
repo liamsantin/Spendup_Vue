@@ -16,6 +16,8 @@ const { smAndDown } = useDisplay();
 const store = useAccountsStore();
 
 function useVirtualList(length: number) {
+    // Deep-link focus : garder la ligne dans le DOM (virtual scroll la retirerait).
+    if (store.focusAccountPublicId) return false;
     return !smAndDown.value && shouldVirtualize(length);
 }
 

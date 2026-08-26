@@ -24,6 +24,8 @@ export type AppBaseTabsItem = {
     label?: string;
     icon?: Component;
     disabled?: boolean;
+    /** Tooltip natif (utile pour un onglet disabled). */
+    title?: string;
     color?: string;
     /** Compteur / chip a droite du label (ex. invitations). */
     chip?: string | number;
@@ -273,6 +275,7 @@ const { trackRef, rootRef, pillVisible, pillAnimate, pillStyle, isOverflowing, c
                         :class="{ 'app-base-tabs__tab--disabled': item.disabled }"
                         :value="item.value"
                         :disabled="item.disabled"
+                        :title="item.disabled ? item.title : undefined"
                         :color="item.color"
                         :ripple="false"
                     >
@@ -329,6 +332,7 @@ const { trackRef, rootRef, pillVisible, pillAnimate, pillStyle, isOverflowing, c
                     :class="{ 'app-base-tabs__tab--disabled': item.disabled }"
                     :value="item.value"
                     :disabled="item.disabled"
+                    :title="item.disabled ? item.title : undefined"
                     :color="item.color"
                 >
                     <component
