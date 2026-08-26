@@ -8,6 +8,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import { getErrorMessage } from '@/utils/errors/app-error';
+import { useAuthStore } from '@/features/auth';
 import { formatAccountBalance, formatSnapshotDate } from '@/features/accounts/format';
 import { canManageShares, isSharedAccount } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
@@ -23,6 +24,7 @@ const props = defineProps<{
 const { t, locale } = useI18n();
 const { smAndDown } = useDisplay();
 const store = useAccountsStore();
+const auth = useAuthStore();
 
 const addOpen = ref(false);
 const deleteTarget = ref<AccountBalanceSnapshot | null>(null);
@@ -64,7 +66,12 @@ function formatDate(value: string) {
     return formatSnapshotDate(value, locale.value);
 }
 
-function authorLabel(name: string | null) {
+function authorLabel(snapshot: AccountBalanceSnapshot) {
+    const mine = auth.user?.userPublicId;
+    if (mine && snapshot.createdByUserPublicId === mine) {
+        return t('comptesPage.snapshots.createdByMe');
+    }
+    const name = snapshot.createdByDisplayName;
     return name?.trim() ? t('comptesPage.snapshots.createdBy', { name }) : t('comptesPage.snapshots.createdByUnknown');
 }
 
@@ -179,7 +186,7 @@ async function onLoadMore() {
                             <span>{{ formatDate(latestSnapshot.snapshotAt) }}</span>
                         </div>
                         <div v-if="showAuthors" class="text-body-2 text-medium-emphasis mt-1">
-                            {{ authorLabel(latestSnapshot.createdByDisplayName) }}
+                            {{ authorLabel(latestSnapshot) }}
                         </div>
                     </div>
 

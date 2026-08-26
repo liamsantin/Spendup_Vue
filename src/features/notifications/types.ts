@@ -88,8 +88,13 @@ export type FriendshipChangedPayload = {
     friendshipPublicId: string;
 };
 
-/** Payload SignalR `accountChanged` — sync archive/restore/visibilité sans inbox. */
-export type AccountChange = 'archived' | 'restored' | 'visibility';
+/** Payload SignalR `accountChanged` — sync archive/restore/visibilité/relevés sans inbox. */
+export type AccountChange =
+    | 'archived'
+    | 'restored'
+    | 'visibility'
+    | 'balanceSnapshotCreated'
+    | 'balanceSnapshotDeleted';
 
 export type AccountChangedPayload = {
     change: AccountChange;

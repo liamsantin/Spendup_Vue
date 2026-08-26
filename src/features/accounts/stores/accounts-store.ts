@@ -31,6 +31,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         loadAccountDetail: crud.loadAccountDetail,
         loadIncoming: shares.loadIncoming,
         loadShares: shares.loadShares,
+        loadBalanceSnapshots: snapshots.loadBalanceSnapshots,
         refreshAll: shares.refreshAll
     });
     const lifecycle = createAccountsLifecycle(state, {

@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { CalendarIcon, TrashIcon } from 'vue-tabler-icons';
+import { useAuthStore } from '@/features/auth';
 import { UserPhotoAvatar } from '@/features/friends';
 import { formatAccountBalance, formatSnapshotDate } from '@/features/accounts/format';
 import type { AccountBalanceSnapshot, Currency } from '@/features/accounts/types';
 
-defineProps<{
+const props = defineProps<{
     snapshot: AccountBalanceSnapshot;
     currency: Currency;
     canWrite: boolean;
@@ -18,14 +20,20 @@ const emit = defineEmits<{
 }>();
 
 const { t, locale } = useI18n();
+const auth = useAuthStore();
 
 function formatDate(value: string) {
     return formatSnapshotDate(value, locale.value);
 }
 
-function authorLabel(name: string | null) {
+const authorLabel = computed(() => {
+    const mine = auth.user?.userPublicId;
+    if (mine && props.snapshot.createdByUserPublicId === mine) {
+        return t('comptesPage.snapshots.createdByMe');
+    }
+    const name = props.snapshot.createdByDisplayName;
     return name?.trim() ? t('comptesPage.snapshots.createdBy', { name }) : t('comptesPage.snapshots.createdByUnknown');
-}
+});
 </script>
 
 <template>
@@ -65,7 +73,7 @@ function authorLabel(name: string | null) {
                     :size="20"
                 />
                 <span class="text-caption text-medium-emphasis text-truncate">
-                    {{ authorLabel(snapshot.createdByDisplayName) }}
+                    {{ authorLabel }}
                 </span>
             </div>
             <div v-if="snapshot.note" class="text-caption text-medium-emphasis text-truncate">

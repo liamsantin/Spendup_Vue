@@ -403,6 +403,7 @@
             "history": "Historique",
             "loadMore": "Charger plus",
             "createdBy": "Par {name}",
+            "createdByMe": "Par moi",
             "createdByUnknown": "Auteur inconnu",
             "sources": {
                 "manual": "Manuel",

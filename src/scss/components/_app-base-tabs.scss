@@ -271,8 +271,28 @@
                 color: rgba(var(--v-theme-textPrimary), 0.78);
             }
 
-            &.v-tab--disabled {
-                opacity: 0.4;
+            &.v-tab--disabled,
+            &.v-btn--disabled,
+            &.app-base-tabs__tab--disabled {
+                opacity: 1 !important;
+                color: rgba(var(--v-theme-on-surface), 0.22) !important;
+                background-color: transparent !important;
+                cursor: not-allowed;
+
+                .app-base-tabs__icon,
+                .app-base-tabs__label,
+                .app-base-tabs__chip {
+                    color: inherit !important;
+                    opacity: 1;
+                }
+
+                &:hover,
+                &:focus,
+                &:active,
+                &:focus-visible {
+                    color: rgba(var(--v-theme-on-surface), 0.22) !important;
+                    background-color: transparent !important;
+                }
             }
         }
 

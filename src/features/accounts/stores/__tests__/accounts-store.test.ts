@@ -315,6 +315,55 @@ describe('useAccountsStore', () => {
         expect(store.selectedAccount?.currentBalance).toBe(120);
     });
 
+    it('accountChanged balanceSnapshotCreated refetch les relevés si le compte est ouvert', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listBalanceSnapshots.mockResolvedValue({ items: [], page: 1, pageSize: 50, totalCount: 0 });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+            accountListener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+        expect(store.balanceSnapshots).toHaveLength(0);
+
+        api.listBalanceSnapshots.mockClear();
+        api.listBalanceSnapshots.mockResolvedValue({
+            items: [
+                {
+                    publicId: 'snap-live',
+                    accountPublicId: 'acc-1',
+                    balance: 250,
+                    snapshotAt: '2026-08-26T12:00:00.000Z',
+                    source: 'manual',
+                    note: null,
+                    createdAt: '2026-08-26T12:00:00.000Z',
+                    updatedAt: null,
+                    createdByUserPublicId: 'u-b',
+                    createdByDisplayName: 'Bob',
+                    createdByPhotoUrl: null
+                }
+            ],
+            page: 1,
+            pageSize: 50,
+            totalCount: 1
+        });
+
+        accountListener?.({ change: 'balanceSnapshotCreated', accountPublicId: 'acc-1' });
+
+        await vi.waitFor(() => {
+            expect(api.listBalanceSnapshots).toHaveBeenCalled();
+        });
+        expect(store.balanceSnapshots).toHaveLength(1);
+        expect(store.balanceSnapshots[0]?.publicId).toBe('snap-live');
+    });
+
     it('crée un compte par upsert sans relister', async () => {
         api.create.mockResolvedValue({ ...ownedAccount, publicId: 'acc-new', name: 'Nouveau', isPrimary: false });
 

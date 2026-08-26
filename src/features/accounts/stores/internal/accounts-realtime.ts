@@ -4,13 +4,15 @@ import type { AccountChangedPayload, AppNotification, FriendshipChangedPayload }
 import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
 import type { AccountsShares } from '@/features/accounts/stores/internal/accounts-shares';
+import type { AccountsSnapshots } from '@/features/accounts/stores/internal/accounts-snapshots';
 import type { AccountShare, ShareStatusRole } from '@/features/accounts/types';
 
 type RealtimeDeps = Pick<AccountsCrud, 'loadAccounts' | 'loadAccountDetail'> &
-    Pick<AccountsShares, 'loadIncoming' | 'loadShares' | 'refreshAll'>;
+    Pick<AccountsShares, 'loadIncoming' | 'loadShares' | 'refreshAll'> &
+    Pick<AccountsSnapshots, 'loadBalanceSnapshots'>;
 
 /**
- * Abonnements realtime (partages + amitiés + archive/restore/visibilité) pour invalider / recharger le store.
+ * Abonnements realtime (partages + amitiés + archive/restore/visibilité/relevés) pour invalider / recharger le store.
  * @param state État partagé du store.
  * @param deps Actions de rechargement utilisées par les handlers.
  * @returns Les helpers de bridge realtime.
@@ -26,7 +28,7 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
         upsertAccount,
         setSharesForAccount
     } = state;
-    const { loadAccounts, loadAccountDetail, loadIncoming, loadShares, refreshAll } = deps;
+    const { loadAccounts, loadAccountDetail, loadIncoming, loadShares, loadBalanceSnapshots, refreshAll } = deps;
 
     let unsubscribeNotifications: (() => void) | null = null;
     let unsubscribeFriendshipChanged: (() => void) | null = null;
@@ -192,6 +194,15 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
             void loadAccounts(true).catch(() => undefined);
             if (selectedAccount.value?.publicId === id) {
                 void loadAccountDetail(id, true).catch(() => undefined);
+            }
+            return;
+        }
+
+        if (payload.change === 'balanceSnapshotCreated' || payload.change === 'balanceSnapshotDeleted') {
+            // Co-détenteur (sauf acteur) : invalider le cache relevés même si la modale est fermée.
+            cache.invalidate(`snapshots:${id}`);
+            if (selectedAccount.value?.publicId === id) {
+                void loadBalanceSnapshots(id, true).catch(() => undefined);
             }
         }
     }

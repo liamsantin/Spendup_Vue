@@ -83,13 +83,23 @@ const showAccountNumber = computed(() => {
 });
 
 const detailTabs = computed(() => {
-    const tabs = [{ value: 'details' as const, label: t('comptesPage.detail.tabs.details'), icon: FileDescriptionIcon }];
-    // `balance` masqué → API relevés 404 pour ce viewer : ne pas exposer l’onglet.
-    if (!balanceHidden.value) {
-        tabs.push({ value: 'snapshots', label: t('comptesPage.detail.tabs.snapshots'), icon: Receipt2Icon });
-    }
-    tabs.push({ value: 'shares', label: t('comptesPage.detail.tabs.shares'), icon: UsersIcon });
-    return tabs;
+    const current = account.value;
+    const canShares = !!current && canManageShares(current);
+    return [
+        { value: 'details' as const, label: t('comptesPage.detail.tabs.details'), icon: FileDescriptionIcon },
+        {
+            value: 'snapshots' as const,
+            label: t('comptesPage.detail.tabs.snapshots'),
+            icon: Receipt2Icon,
+            disabled: balanceHidden.value
+        },
+        {
+            value: 'shares' as const,
+            label: t('comptesPage.detail.tabs.shares'),
+            icon: UsersIcon,
+            disabled: !canShares
+        }
+    ];
 });
 
 const hasOverflowActions = computed(() => {
@@ -127,8 +137,11 @@ watch(
     }
 );
 
-watch(balanceHidden, (hidden) => {
-    if (hidden && activeTab.value === 'snapshots') {
+watch([balanceHidden, account], () => {
+    if (activeTab.value === 'snapshots' && balanceHidden.value) {
+        activeTab.value = 'details';
+    }
+    if (activeTab.value === 'shares' && account.value && !canManageShares(account.value)) {
         activeTab.value = 'details';
     }
 });
@@ -421,8 +434,12 @@ async function confirmLeave() {
             </AppModalPanelScroll>
         </template>
 
-        <template v-if="account && !balanceHidden" #panel-snapshots>
-            <AccountBalanceSnapshotsPanel :account="account" :can-write="canWriteBalanceSnapshots(account)" />
+        <template v-if="account" #panel-snapshots>
+            <AccountBalanceSnapshotsPanel
+                v-if="!balanceHidden"
+                :account="account"
+                :can-write="canWriteBalanceSnapshots(account)"
+            />
         </template>
 
         <template v-if="account" #panel-shares>

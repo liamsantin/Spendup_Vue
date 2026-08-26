@@ -64,6 +64,7 @@ Mémoire process via `createResourceCache` (`src/utils/helpers/resource-cache.ts
 - `accountShareRevoked` (revoke manuel **ou** soft-delete owner) : `removeAccountLocal` immédiat via `metadata.accountPublicId`, puis sync liste en arrière-plan.
 - `accountChanged` (`archived` / `restored`) : patch local `isActive` + refetch liste (pas d’inbox). Filet page : refetch au `visibilitychange`.
 - `accountChanged` (`visibility`) : destinataire refetch liste (+ détail si ouvert) quand seuls les `hiddenFields` changent — pas d’inbox. Changement de rôle → `accountShareRoleChanged` uniquement.
+- `accountChanged` (`balanceSnapshotCreated` / `balanceSnapshotDeleted`) : co-détenteurs (sauf acteur) invalident le cache relevés + refetch si le compte est ouvert — pas d’inbox.
 - Destinataire d’un partage actif : bouton **Quitter** → `POST …/shares/leave` ; owner reçoit `accountShareLeft` (inbox + SignalR) et rafraîchit les shares.
 
 ### Budget de requêtes
