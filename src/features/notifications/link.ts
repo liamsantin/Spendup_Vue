@@ -1,16 +1,13 @@
+import { isSafeAppPath } from '@/features/auth/safe-return-url';
 import { getAccountSharePublicId, getFriendshipPublicId } from '@/features/notifications/normalize';
 import type { AppNotification, NotificationType } from '@/features/notifications/types';
 
 /**
- * Chemins `/app…` navigables (bloque `//evil`, `/\\…`, URLs absolues).
- * Aligné sur `sanitizeReturnUrl` — à utiliser avant tout `router.push` notif / OS.
+ * Chemins `/app…` navigables (bloque `//evil`, `/\\…`, `/application`, `..`).
+ * Délègue à `isSafeAppPath` — à utiliser avant tout `router.push` notif / OS.
  */
 export function isSafeAppNotificationPath(path: string | null | undefined): boolean {
-    if (!path) return false;
-    const trimmed = path.trim();
-    if (!trimmed.startsWith('/')) return false;
-    if (trimmed.startsWith('//') || trimmed.startsWith('/\\')) return false;
-    return trimmed.startsWith('/app');
+    return isSafeAppPath(path);
 }
 
 /**
@@ -32,10 +29,8 @@ export function resolveNotificationLink(
     if (!link) return null;
     const trimmed = link.trim();
     if (!trimmed.startsWith('/')) return null;
-    // Aligné sur sanitizeReturnUrl : bloque open-redirect protocol-relative / escape.
-    if (trimmed.startsWith('//') || trimmed.startsWith('/\\')) return null;
 
-    if (trimmed.startsWith('/app')) return trimmed;
+    if (isSafeAppPath(trimmed)) return trimmed;
     if (trimmed === '/security' || trimmed.startsWith('/security/')) {
         return '/app/comptes';
     }

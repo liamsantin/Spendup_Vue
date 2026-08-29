@@ -89,7 +89,7 @@ async function onRefuse() {
                     }}
                 </p>
                 <p
-                    v-else-if="props.invite.invitedRole === 'viewer' && !(props.invite.hiddenFields?.length)"
+                    v-else-if="props.invite.invitedRole === 'viewer' && !props.invite.hiddenFields?.length"
                     class="text-caption text-medium-emphasis mb-0 mt-1"
                 >
                     {{ t('comptesPage.invitations.noHiddenFields') }}

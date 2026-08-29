@@ -6,12 +6,6 @@ interface ImportMetaEnv {
     readonly VITE_GOOGLE_CLIENT_ID: string;
     /** Client OAuth Desktop Google (PKCE / Tauri) — audience acceptée côté API. */
     readonly VITE_GOOGLE_DESKTOP_CLIENT_ID: string;
-    /**
-     * Client secret du client Desktop (affiché dans Google Cloud).
-     * Requis par le token endpoint Google même pour « Application de bureau ».
-     * Embarqué dans le bundle desktop — Google considère ce secret non confidentiel pour les apps installées.
-     */
-    readonly VITE_GOOGLE_DESKTOP_CLIENT_SECRET: string;
     /** `development` | `production` */
     readonly VITE_APP_ENV: string;
     /** `true` = cookies HttpOnly + CSRF */

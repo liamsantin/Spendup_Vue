@@ -243,13 +243,7 @@ async function confirmLeave() {
         :height="720"
         :max-width="640"
     >
-        <v-progress-linear
-            v-if="store.loadingDetail && account"
-            indeterminate
-            color="primary"
-            class="mb-3 flex-shrink-0"
-            height="2"
-        />
+        <v-progress-linear v-if="store.loadingDetail && account" indeterminate color="primary" class="mb-3 flex-shrink-0" height="2" />
 
         <div v-if="store.loadingDetail && !account" class="py-10 text-center">
             <v-progress-circular indeterminate color="primary" size="32" />
@@ -291,10 +285,7 @@ async function confirmLeave() {
                     </v-col>
                     <v-col v-if="showIban" cols="12">
                         <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.iban') }}</div>
-                        <div
-                            v-if="isAccountFieldHidden(account, 'iban')"
-                            class="text-body-1 d-flex align-center ga-2 text-medium-emphasis"
-                        >
+                        <div v-if="isAccountFieldHidden(account, 'iban')" class="text-body-1 d-flex align-center ga-2 text-medium-emphasis">
                             <LockIcon size="16" stroke-width="1.5" />
                             <span>{{ t('comptesPage.detail.fieldHidden') }}</span>
                         </div>
@@ -454,11 +445,7 @@ async function confirmLeave() {
         </template>
 
         <template v-if="account" #panel-snapshots>
-            <AccountBalanceSnapshotsPanel
-                v-if="!balanceHidden"
-                :account="account"
-                :can-write="canWriteBalanceSnapshots(account)"
-            />
+            <AccountBalanceSnapshotsPanel v-if="!balanceHidden" :account="account" :can-write="canWriteBalanceSnapshots(account)" />
         </template>
 
         <template v-if="account" #panel-shares>

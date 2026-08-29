@@ -11,6 +11,16 @@ export function isAuthCookieMode(): boolean {
     return raw === 'true' || raw === '1';
 }
 
+/**
+ * Builds de production : refuse le mode legacy (refresh en localStorage).
+ * No-op en dev / test / si cookie-mode déjà actif.
+ */
+export function assertProductionAuthCookieMode(): void {
+    if (!import.meta.env.PROD) return;
+    if (isAuthCookieMode()) return;
+    throw new Error('VITE_AUTH_COOKIE_MODE must be true in production builds (HttpOnly cookies).');
+}
+
 /** En cookie-mode, le JWT access voyage dans `spendup_access` — pas de header Bearer. */
 export function shouldSendBearerAuth(): boolean {
     return !isAuthCookieMode();

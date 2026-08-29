@@ -142,6 +142,18 @@ describe('useNotificationsStore', () => {
         expect(setHandlers).toHaveBeenCalled();
     });
 
+    it('n’appelle unread-count qu’une fois par session (navigations suivantes)', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 2 });
+        const store = useNotificationsStore();
+
+        await store.onAuthenticatedSession();
+        await store.onAuthenticatedSession();
+        await store.onAuthenticatedSession();
+
+        expect(unreadCount).toHaveBeenCalledTimes(1);
+        expect(startHub).toHaveBeenCalledTimes(3);
+    });
+
     it('charge l’inbox à l’ouverture', async () => {
         list.mockResolvedValue({
             items: [

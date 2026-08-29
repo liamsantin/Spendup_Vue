@@ -14,14 +14,14 @@
 
 ## Événements consommés (front)
 
-| Event                  | Effet typique                                 |
-| ---------------------- | --------------------------------------------- |
-| `connected`            | handshake                                     |
-| `notificationReceived` | upsert inbox / badge / chips                  |
-| `friendshipChanged`    | fan-out → `friends` store (pas de badge)      |
-| `accountChanged`       | fan-out → `accounts` store (archive/restore/visibility/updated/balanceSnapshot*) |
-| `inboxCleared`         | reset liste                                   |
-| `sessionEnded`         | `forceReLogin` (tous devices ou device ciblé) |
+| Event                  | Effet typique                                                                     |
+| ---------------------- | --------------------------------------------------------------------------------- |
+| `connected`            | handshake                                                                         |
+| `notificationReceived` | upsert inbox / badge / chips                                                      |
+| `friendshipChanged`    | fan-out → `friends` store (pas de badge)                                          |
+| `accountChanged`       | fan-out → `accounts` store (archive/restore/visibility/updated/balanceSnapshot\*) |
+| `inboxCleared`         | reset liste                                                                       |
+| `sessionEnded`         | `forceReLogin` (tous devices ou device ciblé)                                     |
 
 ## Règles
 

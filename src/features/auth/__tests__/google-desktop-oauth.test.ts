@@ -72,7 +72,6 @@ describe('requestGoogleIdTokenDesktop', () => {
         vi.resetModules();
         vi.clearAllMocks();
         vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', 'desktop-client-id');
-        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', 'desktop-secret');
     });
 
     it('refuse un second flux tant que le premier est en cours', async () => {
@@ -152,10 +151,10 @@ describe('requestGoogleIdTokenDesktop', () => {
                 clientId: 'desktop-client-id',
                 code: 'auth-code-1',
                 redirectUri: 'http://127.0.0.1:33333/auth/google/callback',
-                clientSecret: 'desktop-secret',
                 codeVerifier: expect.any(String)
             })
         );
+        expect(invoke.mock.calls.some((c) => c[0] === 'google_exchange_code' && c[1] && 'clientSecret' in (c[1] as object))).toBe(false);
     });
 
     it('rejette un state OAuth invalide', async () => {
@@ -224,11 +223,10 @@ describe('requestGoogleIdTokenDesktop', () => {
     });
 
     it('refuse de démarrer si la config Desktop est incomplète', async () => {
-        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', 'id-only');
-        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', '');
+        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', '');
         const { requestGoogleIdTokenDesktop } = await loadOAuthModule();
 
-        await expect(requestGoogleIdTokenDesktop()).rejects.toThrow(/must both be configured/);
+        await expect(requestGoogleIdTokenDesktop()).rejects.toThrow(/CLIENT_ID must be configured/);
         expect(listen).not.toHaveBeenCalled();
     });
 });
@@ -240,22 +238,19 @@ describe('helpers Google desktop OAuth', () => {
         vi.unstubAllEnvs();
     });
 
-    it('isGoogleDesktopConfigured exige client ID et secret', async () => {
-        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', 'id-only');
-        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', '');
+    it('isGoogleDesktopConfigured exige seulement le client ID (secret natif)', async () => {
+        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', '');
         const incomplete = await loadOAuthModule();
         expect(incomplete.isGoogleDesktopConfigured()).toBe(false);
 
         vi.resetModules();
         vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', 'desktop-id');
-        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', 'desktop-secret');
         const complete = await loadOAuthModule();
         expect(complete.isGoogleDesktopConfigured()).toBe(true);
     });
 
     it('isGoogleDesktopCancelled reconnaît cancelled / canceled', async () => {
         vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', 'id');
-        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', 'secret');
         const { isGoogleDesktopCancelled } = await loadOAuthModule();
 
         expect(isGoogleDesktopCancelled(new Error('Google sign-in cancelled'))).toBe(true);
@@ -265,7 +260,6 @@ describe('helpers Google desktop OAuth', () => {
 
     it('cancelGoogleDesktopOAuth invoque oauth_loopback_cancel', async () => {
         vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_ID', 'id');
-        vi.stubEnv('VITE_GOOGLE_DESKTOP_CLIENT_SECRET', 'secret');
         invoke.mockResolvedValue(undefined);
         const { cancelGoogleDesktopOAuth } = await loadOAuthModule();
 

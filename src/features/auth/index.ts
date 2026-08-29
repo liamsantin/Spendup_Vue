@@ -3,7 +3,7 @@ export { getDeviceInfo, getOrCreateDeviceId, getDeviceName } from '@/features/au
 export { resolveIsCurrentDevice } from '@/features/auth/device-current';
 export { normalizeAuthDevices, normalizeAuthDevice } from '@/features/auth/normalizeDevices';
 export { useAuthStore, APP_HOME_ROUTE } from '@/features/auth/stores/auth-store';
-export { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
+export { sanitizeReturnUrl, isSafeAppPath } from '@/features/auth/safe-return-url';
 export { readPasswordResetToken, clearPasswordResetTokenFromUrl } from '@/features/auth/password-reset-token';
 export { useIdleLogout } from '@/features/auth/composables/useIdleLogout';
 export { useProfileAvatarUrl } from '@/features/auth/composables/useProfileAvatarUrl';

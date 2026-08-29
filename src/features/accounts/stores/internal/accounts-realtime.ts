@@ -18,16 +18,7 @@ type RealtimeDeps = Pick<AccountsCrud, 'loadAccounts' | 'loadAccountDetail'> &
  * @returns Les helpers de bridge realtime.
  */
 export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps) {
-    const {
-        accounts,
-        selectedAccount,
-        shares,
-        sharesByAccountId,
-        cache,
-        removeAccountLocal,
-        upsertAccount,
-        setSharesForAccount
-    } = state;
+    const { accounts, selectedAccount, shares, sharesByAccountId, cache, removeAccountLocal, upsertAccount, setSharesForAccount } = state;
     const { loadAccounts, loadAccountDetail, loadIncoming, loadShares, loadBalanceSnapshots, refreshAll } = deps;
 
     let unsubscribeNotifications: (() => void) | null = null;
@@ -35,10 +26,7 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
     let unsubscribeAccountChanged: (() => void) | null = null;
 
     function readSharesSnapshot(accountPublicId: string): AccountShare[] {
-        return (
-            sharesByAccountId.get(accountPublicId) ??
-            (selectedAccount.value?.publicId === accountPublicId ? [...shares.value] : [])
-        );
+        return sharesByAccountId.get(accountPublicId) ?? (selectedAccount.value?.publicId === accountPublicId ? [...shares.value] : []);
     }
 
     /** Pending → rôle invité (UI immédiate côté owner) — uniquement si le share cible est connu. */

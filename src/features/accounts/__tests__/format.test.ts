@@ -176,9 +176,7 @@ describe('hidden fields helpers', () => {
             hidden: 'N° caché',
             visible: (n: string) => `N° ${n}`
         };
-        expect(formatAccountNumberLine({ accountNumber: '42', hiddenFields: ['accountNumber'] }, labels)).toBe(
-            ' · N° caché'
-        );
+        expect(formatAccountNumberLine({ accountNumber: '42', hiddenFields: ['accountNumber'] }, labels)).toBe(' · N° caché');
         expect(formatAccountNumberLine({ accountNumber: '42', hiddenFields: [] }, labels)).toBe(' · N° 42');
         expect(formatAccountNumberLine({ accountNumber: null, hiddenFields: [] }, labels)).toBe('');
     });

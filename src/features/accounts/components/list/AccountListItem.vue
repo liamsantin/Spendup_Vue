@@ -2,7 +2,13 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { LockIcon } from 'vue-tabler-icons';
-import { isAccountFieldHidden, isLightAccountColor, resolveAccountBalanceDisplay, safeAccountColor, formatAccountNumberLine } from '@/features/accounts/format';
+import {
+    isAccountFieldHidden,
+    isLightAccountColor,
+    resolveAccountBalanceDisplay,
+    safeAccountColor,
+    formatAccountNumberLine
+} from '@/features/accounts/format';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { Account } from '@/features/accounts/types';
 
@@ -37,7 +43,8 @@ const accountNumberLine = computed(() =>
         hidden: t('comptesPage.list.accountNumberHidden'),
         visible: (number) => t('comptesPage.list.accountNumber', { number })
     })
-);</script>
+);
+</script>
 
 <template>
     <v-list-item
@@ -67,13 +74,7 @@ const accountNumberLine = computed(() =>
             <div class="d-flex align-center justify-space-between ga-2">
                 <h6 class="text-subtitle-1 font-weight-bold mb-0 text-truncate min-width-0">{{ account.name }}</h6>
                 <div class="text-subtitle-1 font-weight-semibold text-right flex-shrink-0 d-flex align-center ga-1">
-                    <LockIcon
-                        v-if="balanceDisplay.hidden"
-                        size="16"
-                        stroke-width="1.5"
-                        class="text-medium-emphasis"
-                        aria-hidden="true"
-                    />
+                    <LockIcon v-if="balanceDisplay.hidden" size="16" stroke-width="1.5" class="text-medium-emphasis" aria-hidden="true" />
                     <span>
                         {{ balanceDisplay.text }}
                         <span v-if="balanceDisplay.hidden" class="sr-only">{{ t('comptesPage.detail.fieldHidden') }}</span>

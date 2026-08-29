@@ -1542,15 +1542,17 @@ describe('useAccountsStore', () => {
             status: 403,
             code: 'account_forbidden'
         });
-        await expect(store.updateAccount('acc-shared', {
-            name: 'X',
-            type: 'courant',
-            currency: 'CHF',
-            initialBalance: 0,
-            accountNumber: null,
-            color: null,
-            isPrimary: false
-        })).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
+        await expect(
+            store.updateAccount('acc-shared', {
+                name: 'X',
+                type: 'courant',
+                currency: 'CHF',
+                initialBalance: 0,
+                accountNumber: null,
+                color: null,
+                isPrimary: false
+            })
+        ).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
         await expect(store.deleteAccount('acc-1')).rejects.toMatchObject({
             status: 403,
             code: 'account_forbidden'
@@ -1559,10 +1561,12 @@ describe('useAccountsStore', () => {
             status: 404,
             code: 'share_invite_not_found'
         });
-        await expect(store.createBalanceSnapshot('unknown-acc', {
-            balance: 1,
-            snapshotAt: '2026-08-23T12:00:00.000Z'
-        })).rejects.toMatchObject({ status: 404, code: 'account_not_found' });
+        await expect(
+            store.createBalanceSnapshot('unknown-acc', {
+                balance: 1,
+                snapshotAt: '2026-08-23T12:00:00.000Z'
+            })
+        ).rejects.toMatchObject({ status: 404, code: 'account_not_found' });
 
         expect(api.inviteShare).not.toHaveBeenCalled();
         expect(api.leaveShare).not.toHaveBeenCalled();

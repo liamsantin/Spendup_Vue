@@ -195,7 +195,7 @@ Email non vérifié **ou** mauvais MDP → **même message** (`Invalid email or 
 | Web (GIS)      | `VITE_GOOGLE_CLIENT_ID`         | `Authentication:Google:ClientId` (Web)                                        |
 | Desktop (PKCE) | `VITE_GOOGLE_DESKTOP_CLIENT_ID` | **Doit accepter l’`aud` Desktop** en plus du Web (config / liste d’audiences) |
 
-Redirect Desktop : client **Application de bureau** — Google affiche quand même un **Secret client** dans la console ; le token endpoint l’exige souvent (`client_secret is missing` sinon). Le renseigner en `VITE_GOOGLE_DESKTOP_CLIENT_SECRET` (embarqué dans l’app installée ; Google considère ce secret non confidentiel pour les apps desktop). Loopback `http://127.0.0.1:<port>/auth/google/callback` — pas de scheme custom.
+Redirect Desktop : client **Application de bureau** — Google affiche quand même un **Secret client** dans la console ; le token endpoint l’exige souvent (`client_secret is missing` sinon). Le renseigner en `GOOGLE_DESKTOP_CLIENT_SECRET` (lu par le shell Tauri / `build.rs`, **hors bundle JS**). Loopback `http://127.0.0.1:<port>/auth/google/callback` — pas de scheme custom.
 
 **CORS Tauri** : ajouter l’origine exacte de la WebView dans `Cors:AllowedOrigins` :
 
@@ -468,11 +468,11 @@ Variables d’env Vue recommandées :
 VITE_API_BASE_URL=http://localhost:5124
 VITE_GOOGLE_CLIENT_ID=xxxxx.apps.googleusercontent.com
 VITE_GOOGLE_DESKTOP_CLIENT_ID=yyyyy.apps.googleusercontent.com
-VITE_GOOGLE_DESKTOP_CLIENT_SECRET=GOCSPX-…
+GOOGLE_DESKTOP_CLIENT_SECRET=GOCSPX-…
 ```
 
 (`VITE_GOOGLE_CLIENT_ID` = même valeur que `Authentication:Google:ClientId` côté API.  
-`VITE_GOOGLE_DESKTOP_CLIENT_ID` + `VITE_GOOGLE_DESKTOP_CLIENT_SECRET` = client OAuth Desktop ; l’API doit accepter cet `aud`. Les deux sont requis côté app Tauri.)
+`VITE_GOOGLE_DESKTOP_CLIENT_ID` = client OAuth Desktop (JS) ; `GOOGLE_DESKTOP_CLIENT_SECRET` = secret lu par le shell Tauri — hors bundle JS ; l’API doit accepter cet `aud`.)
 
 ---
 
@@ -507,15 +507,15 @@ Collection Postman : `Postman/Spendup_Api.postman_collection.json`.
 
 ### 12.1 Cookies de session (remplace refresh en localStorage)
 
-| Changement API                                   | Détail                                                                                                                                                     |
-| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cookie refresh HttpOnly                          | Nom suggéré `spendup_rt` ; `Secure` ; `SameSite=None` (cross-site front/API) **ou** `Lax` si même site ; `Path=/api/auth` ; durée = refresh actuel (~30 j) |
-| `POST /api/auth/login` / `google` / `2fa/verify` | **Set-Cookie** refresh ; body peut omettre `refreshToken` (ou le garder en transition puis le retirer)                                                     |
-| `POST /api/auth/refresh`                         | Lit le cookie (body `refreshToken` optionnel en transition) ; **rotation** + nouveau Set-Cookie ; reuse detection inchangée                                |
-| `POST /api/auth/logout`                          | Clear-Cookie + révocation famille                                                                                                                          |
-| CORS                                             | `Allow-Credentials: true` ; `AllowedOrigins` **explicites** (pas `*`)                                                                                      |
-| Access token                                     | Cookie HttpOnly `spendup_access` (Path `/api`) ; body optionnel (`ReturnAccessTokenInBody`) ; front cookie-mode sans Bearer                                |
-| CSRF                                             | Cookie `spendup_csrf` + header `X-CSRF-Token` sur refresh/logout (déjà côté API)                                                                           |
+| Changement API                                   | Détail                                                                                                                                                                                                           |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cookie refresh HttpOnly                          | Nom suggéré `spendup_rt` ; `Secure` ; `SameSite=None` (cross-site front/API) **ou** `Lax` si même site ; `Path=/api/auth` ; durée = refresh actuel (~30 j)                                                       |
+| `POST /api/auth/login` / `google` / `2fa/verify` | **Set-Cookie** refresh ; body peut omettre `refreshToken` (ou le garder en transition puis le retirer)                                                                                                           |
+| `POST /api/auth/refresh`                         | Lit le cookie (body `refreshToken` optionnel en transition) ; **rotation** + nouveau Set-Cookie ; reuse detection inchangée                                                                                      |
+| `POST /api/auth/logout`                          | Clear-Cookie + révocation famille                                                                                                                                                                                |
+| CORS                                             | `Allow-Credentials: true` ; `AllowedOrigins` **explicites** (pas `*`)                                                                                                                                            |
+| Access token                                     | Cookie HttpOnly `spendup_access` (Path `/api`) ; body **recommandé** (`ReturnAccessTokenInBody=true`) car le hub SignalR `/hubs/realtime` est hors Path `/api` et exige un JWT mémoire pour `accessTokenFactory` |
+| CSRF                                             | Cookie `spendup_csrf` + header `X-CSRF-Token` sur refresh/logout (déjà côté API)                                                                                                                                 |
 
 Front cookie-mode : `withCredentials` + envoi `X-CSRF-Token` (`src/features/auth/csrf.ts`). Le cookie CSRF doit être **lisible JS** (`Path=/`) **ou** le body doit exposer `csrfToken`.
 

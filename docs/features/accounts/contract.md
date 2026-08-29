@@ -6,25 +6,25 @@
 
 ## Boundaries
 
-| Couche    | Détail                                                                                     |
-| --------- | ------------------------------------------------------------------------------------------ |
-| Route     | `/app/finances/comptes` → `AppComptesPage` (Tabs : Accounts / Invitations)                 |
-| Store     | `useAccountsStore`                                                                         |
-| API       | `accountsApi` → **`fetchWrapper`**                                                         |
+| Couche    | Détail                                                                                                    |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| Route     | `/app/finances/comptes` → `AppComptesPage` (Tabs : Accounts / Invitations)                                |
+| Store     | `useAccountsStore`                                                                                        |
+| API       | `accountsApi` → **`fetchWrapper`**                                                                        |
 | Droits UI | `rights.ts` branché sur `myRole` / `isOwned` / `isPrimary` (archive/restore/delete/primary = owner owned) |
-| Realtime  | Notifs `accountShare*` (dont `accountShareRoleChanged`) + SignalR `accountChanged` + `friendshipChanged` |
-| Dashboard | Module Comptes actif → `/app/finances/comptes`                                             |
+| Realtime  | Notifs `accountShare*` (dont `accountShareRoleChanged`) + SignalR `accountChanged` + `friendshipChanged`  |
+| Dashboard | Module Comptes actif → `/app/finances/comptes`                                                            |
 
 ## HTTP
 
-| Méthode | Endpoint                                                                                            |
-| ------- | --------------------------------------------------------------------------------------------------- |
-| GET     | `/api/accounts`, `/api/accounts/{id}`, `/api/accounts/{id}/shares`, `/api/accounts/shares/incoming` |
-| POST    | `/api/accounts`, `…/primary`, `…/archive`, `…/restore`, `…/shares`, `…/shares/leave`, `…/shares/{id}/accept\|refuse`  |
-| PUT     | `/api/accounts/{id}` (état **complet**), `/api/accounts/{id}/shares/{userPublicId}`                 |
-| DELETE  | `/api/accounts/{id}`, `/api/accounts/{id}/shares/{userPublicId}` → **204**                          |
-| GET/POST| `/api/accounts/{id}/balance-snapshots` — paginé (`page`, `pageSize`, `totalCount`) ; items incluent `createdBy*` (nullable) |
-| DELETE  | `/api/accounts/{id}/balance-snapshots/{snapshotId}` → **204**                                        |
+| Méthode  | Endpoint                                                                                                                    |
+| -------- | --------------------------------------------------------------------------------------------------------------------------- |
+| GET      | `/api/accounts`, `/api/accounts/{id}`, `/api/accounts/{id}/shares`, `/api/accounts/shares/incoming`                         |
+| POST     | `/api/accounts`, `…/primary`, `…/archive`, `…/restore`, `…/shares`, `…/shares/leave`, `…/shares/{id}/accept\|refuse`        |
+| PUT      | `/api/accounts/{id}` (état **complet**), `/api/accounts/{id}/shares/{userPublicId}`                                         |
+| DELETE   | `/api/accounts/{id}`, `/api/accounts/{id}/shares/{userPublicId}` → **204**                                                  |
+| GET/POST | `/api/accounts/{id}/balance-snapshots` — paginé (`page`, `pageSize`, `totalCount`) ; items incluent `createdBy*` (nullable) |
+| DELETE   | `/api/accounts/{id}/balance-snapshots/{snapshotId}` → **204**                                                               |
 
 ## Relevés — pagination & auteur
 

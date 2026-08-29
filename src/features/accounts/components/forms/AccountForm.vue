@@ -72,9 +72,7 @@ const { t } = useI18n();
         </v-row>
         <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="account-form-name">
-                    {{ t('comptesPage.form.fields.name') }} *
-                </label>
+                <label class="v-label font-weight-medium" for="account-form-name"> {{ t('comptesPage.form.fields.name') }} * </label>
             </v-col>
             <v-col cols="12" sm="9">
                 <v-text-field
@@ -91,9 +89,7 @@ const { t } = useI18n();
         </v-row>
         <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="account-form-type">
-                    {{ t('comptesPage.form.fields.type') }} *
-                </label>
+                <label class="v-label font-weight-medium" for="account-form-type"> {{ t('comptesPage.form.fields.type') }} * </label>
             </v-col>
             <v-col cols="12" sm="9">
                 <v-select

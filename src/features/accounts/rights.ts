@@ -8,10 +8,7 @@ export function canViewAccount(account: Pick<Account, 'myRole'>): boolean {
  * Compte partagé : reçu (`!isOwned`) ou possédé avec au moins un partage accepté.
  * Utilisé pour afficher l’auteur des relevés de solde.
  */
-export function isSharedAccount(
-    account: Pick<Account, 'isOwned'>,
-    shares: Pick<AccountShare, 'role'>[] = []
-): boolean {
+export function isSharedAccount(account: Pick<Account, 'isOwned'>, shares: Pick<AccountShare, 'role'>[] = []): boolean {
     if (!account.isOwned) return true;
     return shares.some((s) => s.role === 'viewer' || s.role === 'editor');
 }
@@ -40,10 +37,7 @@ export function canEditAccountOwnerFields(account: Pick<Account, 'myRole'>): boo
  * @param payload Payload demandé (peut encore contenir des champs owner).
  * @returns Payload sûr à envoyer à l’API.
  */
-export function sanitizeUpdateAccountPayload(
-    account: Pick<Account, 'myRole'>,
-    payload: UpdateAccountPayload
-): UpdateAccountPayload {
+export function sanitizeUpdateAccountPayload(account: Pick<Account, 'myRole'>, payload: UpdateAccountPayload): UpdateAccountPayload {
     if (canEditAccountOwnerFields(account)) {
         return payload;
     }

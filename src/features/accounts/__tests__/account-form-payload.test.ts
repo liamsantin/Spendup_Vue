@@ -55,9 +55,7 @@ describe('account-form-payload (formulaire verrouillé / IBAN)', () => {
     });
 
     it('editor : payload réduit (pas de type / solde / iban / primary)', () => {
-        expect(
-            buildUpdateAccountPayload(account({ myRole: 'editor', isOwned: false, isPrimary: false }), fields)
-        ).toEqual({
+        expect(buildUpdateAccountPayload(account({ myRole: 'editor', isOwned: false, isPrimary: false }), fields)).toEqual({
             name: 'Renommé',
             accountNumber: '99',
             color: '#10B981'

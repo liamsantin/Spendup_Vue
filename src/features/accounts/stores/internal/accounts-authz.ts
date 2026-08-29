@@ -12,11 +12,7 @@ export const SHARE_INVITE_NOT_FOUND_MESSAGE = 'Invitation introuvable.';
 /**
  * Résout un compte depuis la sélection ou la liste locale (défense en profondeur côté store).
  */
-export function resolveLocalAccount(
-    accounts: readonly Account[],
-    selectedAccount: Account | null,
-    publicId: string
-): Account | null {
+export function resolveLocalAccount(accounts: readonly Account[], selectedAccount: Account | null, publicId: string): Account | null {
     if (selectedAccount?.publicId === publicId) return selectedAccount;
     return accounts.find((a) => a.publicId === publicId) ?? null;
 }
@@ -24,11 +20,7 @@ export function resolveLocalAccount(
 /**
  * Exige un compte connu localement ; sinon 404 (fail-closed, pas d’appel API).
  */
-export function requireLocalAccount(
-    accounts: readonly Account[],
-    selectedAccount: Account | null,
-    publicId: string
-): Account {
+export function requireLocalAccount(accounts: readonly Account[], selectedAccount: Account | null, publicId: string): Account {
     const account = resolveLocalAccount(accounts, selectedAccount, publicId);
     if (!account) {
         throw new AppError(ACCOUNT_NOT_FOUND_MESSAGE, 404, ACCOUNT_NOT_FOUND_CODE);
@@ -46,10 +38,7 @@ export function assertAccountAllowed(allowed: boolean, message = ACCOUNT_FORBIDD
 /**
  * Exige une invitation entrante connue localement avant accept/refuse.
  */
-export function requireIncomingShare(
-    incoming: readonly IncomingAccountShare[],
-    sharePublicId: string
-): IncomingAccountShare {
+export function requireIncomingShare(incoming: readonly IncomingAccountShare[], sharePublicId: string): IncomingAccountShare {
     const invite = incoming.find((s) => s.publicId === sharePublicId);
     if (!invite) {
         throw new AppError(SHARE_INVITE_NOT_FOUND_MESSAGE, 404, SHARE_INVITE_NOT_FOUND_CODE);

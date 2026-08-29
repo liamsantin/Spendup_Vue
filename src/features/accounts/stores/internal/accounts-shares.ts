@@ -1,11 +1,7 @@
 import { accountsApi } from '@/features/accounts/api';
 import { canLeaveAccountShare, canManageShares } from '@/features/accounts/rights';
 import type { HiddenAccountField, ShareRole } from '@/features/accounts/types';
-import {
-    assertAccountAllowed,
-    requireIncomingShare,
-    requireLocalAccount
-} from '@/features/accounts/stores/internal/accounts-authz';
+import { assertAccountAllowed, requireIncomingShare, requireLocalAccount } from '@/features/accounts/stores/internal/accounts-authz';
 import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
 import { getErrorMessage } from '@/utils/errors/app-error';
@@ -150,10 +146,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
         try {
             const local = requireLocalAccount(accounts.value, selectedAccount.value, accountPublicId);
             assertAccountAllowed(canManageShares(local));
-            const body =
-                role === 'viewer' && hiddenFields != null
-                    ? { userPublicId, role, hiddenFields }
-                    : { userPublicId, role };
+            const body = role === 'viewer' && hiddenFields != null ? { userPublicId, role, hiddenFields } : { userPublicId, role };
             const share = await accountsApi.inviteShare(accountPublicId, body);
             const merged = {
                 ...share,
@@ -182,12 +175,7 @@ export function createAccountsShares(state: AccountsState, crud: Pick<AccountsCr
      * @param hiddenFields Champs masqués (viewer uniquement).
      * @returns Le partage mis à jour.
      */
-    async function updateShareRole(
-        accountPublicId: string,
-        userPublicId: string,
-        role: ShareRole,
-        hiddenFields?: HiddenAccountField[]
-    ) {
+    async function updateShareRole(accountPublicId: string, userPublicId: string, role: ShareRole, hiddenFields?: HiddenAccountField[]) {
         beginActing();
         clearError();
         try {

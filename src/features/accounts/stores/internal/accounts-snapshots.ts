@@ -1,10 +1,7 @@
 import { accountsApi } from '@/features/accounts/api';
 import { canWriteBalanceSnapshots } from '@/features/accounts/rights';
 import type { AccountBalanceSnapshot, CreateBalanceSnapshotPayload } from '@/features/accounts/types';
-import {
-    assertAccountAllowed,
-    requireLocalAccount
-} from '@/features/accounts/stores/internal/accounts-authz';
+import { assertAccountAllowed, requireLocalAccount } from '@/features/accounts/stores/internal/accounts-authz';
 import type { AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 
 /** Ordre UI / chip écart : plus récent `snapshotAt` d’abord, puis `createdAt`. */

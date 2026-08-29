@@ -38,6 +38,8 @@ export function createNotificationsLifecycle(state: NotificationsState, deps: Li
     const { clearLiveFriendChips, fetchUnreadCount, wireHubHandlers, startHub, stopHub, resetHubFlags } = deps;
 
     let sessionPromise: Promise<void> | null = null;
+    /** Évite de refetch badge + rewire à chaque navigation `/app` (auth guard). */
+    let sessionBootstrapped = false;
 
     /**
      * Le hub reste connecté même si les chips / OS notifs sont coupés :
@@ -58,8 +60,14 @@ export function createNotificationsLifecycle(state: NotificationsState, deps: Li
     /**
      * Après session authentifiée complète (pas pendant challenge 2FA) :
      * badge unread + hub SignalR (sessionEnded + pushes).
+     * Idempotent : navigations suivantes ne refont que le maintain hub.
      */
     async function onAuthenticatedSession() {
+        if (sessionBootstrapped) {
+            wireHubHandlers();
+            await syncRealtimePreference();
+            return;
+        }
         if (sessionPromise) return sessionPromise;
 
         sessionPromise = (async () => {
@@ -73,6 +81,7 @@ export function createNotificationsLifecycle(state: NotificationsState, deps: Li
                 void ensureNativeNotificationPermission();
             }
             await syncRealtimePreference();
+            sessionBootstrapped = true;
         })();
 
         try {
@@ -85,6 +94,7 @@ export function createNotificationsLifecycle(state: NotificationsState, deps: Li
     /** Remet le store à zéro et coupe le hub (logout). */
     function reset() {
         sessionPromise = null;
+        sessionBootstrapped = false;
         resetHubFlags();
         items.value = [];
         unreadCount.value = 0;

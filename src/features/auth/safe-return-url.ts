@@ -2,17 +2,25 @@
 const DEFAULT_RETURN = '/app';
 
 /**
- * N’accepte que des chemins internes `/app`, `/app?…`, `/app#…` ou `/app/…`
- * (bloque `//evil.com`, URLs absolues, `/application…`, `..`, etc.).
+ * Chemins internes `/app`, `/app?…`, `/app#…` ou `/app/…` uniquement.
+ * Bloque `//evil.com`, URLs absolues, `/application…`, `..`, etc.
+ */
+export function isSafeAppPath(url: string | null | undefined): boolean {
+    if (!url) return false;
+    const trimmed = url.trim();
+    if (!trimmed.startsWith('/')) return false;
+    if (trimmed.startsWith('//')) return false;
+    if (trimmed.startsWith('/\\')) return false;
+    if (trimmed.includes('..')) return false;
+    const isAppRoot = trimmed === '/app' || trimmed.startsWith('/app?') || trimmed.startsWith('/app#');
+    return isAppRoot || trimmed.startsWith('/app/');
+}
+
+/**
+ * N’accepte que des chemins internes `/app…` (voir `isSafeAppPath`).
+ * Sinon renvoie `fallback` (défaut `/app`).
  */
 export function sanitizeReturnUrl(url: string | null | undefined, fallback: string = DEFAULT_RETURN): string {
-    if (!url) return fallback;
-    const trimmed = url.trim();
-    if (!trimmed.startsWith('/')) return fallback;
-    if (trimmed.startsWith('//')) return fallback;
-    if (trimmed.startsWith('/\\')) return fallback;
-    if (trimmed.includes('..')) return fallback;
-    const isAppRoot = trimmed === '/app' || trimmed.startsWith('/app?') || trimmed.startsWith('/app#');
-    if (!isAppRoot && !trimmed.startsWith('/app/')) return fallback;
-    return trimmed;
+    if (!isSafeAppPath(url)) return fallback;
+    return url!.trim();
 }

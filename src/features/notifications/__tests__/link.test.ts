@@ -26,11 +26,13 @@ describe('resolveNotificationLink', () => {
         expect(resolveNotificationLink('https://evil.test')).toBeNull();
     });
 
-    it('bloque open-redirect (protocol-relative, escape, hors /app)', () => {
+    it('bloque open-redirect (protocol-relative, escape, hors /app, préfixe ambigu)', () => {
         expect(resolveNotificationLink('//evil.com')).toBeNull();
         expect(resolveNotificationLink('/\\evil.com')).toBeNull();
         expect(resolveNotificationLink('/auth/login')).toBeNull();
         expect(resolveNotificationLink('/unknown')).toBeNull();
+        expect(resolveNotificationLink('/application')).toBeNull();
+        expect(resolveNotificationLink('/app/../auth/login')).toBeNull();
     });
 
     it('deep-link amis via type + metadata', () => {
@@ -76,13 +78,16 @@ describe('resolveNotificationLink', () => {
 });
 
 describe('isSafeAppNotificationPath', () => {
-    it('n’accepte que des chemins /app internes', () => {
+    it('n’accepte que des chemins /app internes stricts', () => {
         expect(isSafeAppNotificationPath('/app')).toBe(true);
         expect(isSafeAppNotificationPath('/app/comptes')).toBe(true);
         expect(isSafeAppNotificationPath('/app/friends?tab=1')).toBe(true);
         expect(isSafeAppNotificationPath('//evil.com')).toBe(false);
         expect(isSafeAppNotificationPath('/\\evil.com')).toBe(false);
         expect(isSafeAppNotificationPath('/auth/login')).toBe(false);
+        expect(isSafeAppNotificationPath('/application')).toBe(false);
+        expect(isSafeAppNotificationPath('/app.evil.com/x')).toBe(false);
+        expect(isSafeAppNotificationPath('/app/../auth/login')).toBe(false);
         expect(isSafeAppNotificationPath('https://evil.com')).toBe(false);
         expect(isSafeAppNotificationPath(null)).toBe(false);
     });
@@ -151,9 +156,7 @@ describe('normalizeAppNotification', () => {
     });
 
     it('normalise / refuse les publicIds et payloads accountChanged', async () => {
-        const { normalizePublicId, parseAccountChangedPayload, getAccountPublicId } = await import(
-            '@/features/notifications/normalize'
-        );
+        const { normalizePublicId, parseAccountChangedPayload, getAccountPublicId } = await import('@/features/notifications/normalize');
         expect(normalizePublicId('acc-1')).toBe('acc-1');
         expect(normalizePublicId('  share_2  ')).toBe('share_2');
         expect(normalizePublicId('../x')).toBeNull();

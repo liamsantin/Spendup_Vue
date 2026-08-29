@@ -285,9 +285,7 @@ export function createAccountsState() {
         snapshotsTotalCount.value = 0;
     }
 
-    const hasMoreSnapshots = computed(
-        () => balanceSnapshots.value.length > 0 && balanceSnapshots.value.length < snapshotsTotalCount.value
-    );
+    const hasMoreSnapshots = computed(() => balanceSnapshots.value.length > 0 && balanceSnapshots.value.length < snapshotsTotalCount.value);
 
     /**
      * Active la vue partages pour un compte (cache mémoire ou liste vide).

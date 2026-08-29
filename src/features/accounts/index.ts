@@ -61,7 +61,13 @@ export type {
     ListBalanceSnapshotsQuery,
     CreateBalanceSnapshotPayload
 } from '@/features/accounts/types';
-export { ACCOUNT_TYPES, CURRENCIES, ACCOUNT_COLOR_PRESETS, HIDDEN_ACCOUNT_FIELDS, DEFAULT_VIEWER_HIDDEN_FIELDS } from '@/features/accounts/types';
+export {
+    ACCOUNT_TYPES,
+    CURRENCIES,
+    ACCOUNT_COLOR_PRESETS,
+    HIDDEN_ACCOUNT_FIELDS,
+    DEFAULT_VIEWER_HIDDEN_FIELDS
+} from '@/features/accounts/types';
 export { default as AccountsTab } from '@/features/accounts/components/tabs/AccountsTab.vue';
 export { default as InvitationsTab } from '@/features/accounts/components/tabs/InvitationsTab.vue';
 export { default as AccountListItem } from '@/features/accounts/components/list/AccountListItem.vue';

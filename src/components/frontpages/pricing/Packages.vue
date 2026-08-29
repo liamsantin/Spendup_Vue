@@ -69,7 +69,7 @@ function isInternalLink(url: string): boolean {
                                 class="text-body-1 d-flex align-center font-weight-medium"
                             >
                                 <CircleXIcon v-if="desc.icon" stroke-width="1.5" size="20" class="mr-2" />
-                                <span v-html="desc.listtitle" />
+                                <span>{{ desc.listtitle }}</span>
                             </v-list-item-title>
                             <v-list-item-title
                                 v-else
@@ -77,7 +77,7 @@ function isInternalLink(url: string): boolean {
                                 class="text-body-1 d-flex align-center font-weight-medium"
                             >
                                 <CircleCheckIcon v-if="desc.icon" stroke-width="1.5" size="20" class="mr-2 text-secondary" />
-                                <span v-html="desc.listtitle" />
+                                <span>{{ desc.listtitle }}</span>
                             </v-list-item-title>
                         </v-list-item>
                     </v-list>
@@ -90,6 +90,7 @@ function isInternalLink(url: string): boolean {
                         :to="isInternalLink(card.url) ? card.url : undefined"
                         :href="isInternalLink(card.url) ? undefined : card.url"
                         :target="isInternalLink(card.url) ? undefined : '_blank'"
+                        :rel="isInternalLink(card.url) ? undefined : 'noopener noreferrer'"
                         block
                     >
                         {{ card.buttontext }}

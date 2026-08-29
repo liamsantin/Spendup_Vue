@@ -159,8 +159,8 @@ async function onLoadMore() {
                 variant="tonal"
                 class="mb-3 flex-shrink-0"
                 closable
-            :dismiss-ms="6000"
-            @dismiss="
+                :dismiss-ms="6000"
+                @dismiss="
                     localError = null;
                     store.clearError();
                 "
@@ -252,12 +252,7 @@ async function onLoadMore() {
                             </div>
                         </div>
                     </div>
-                    <PerfectScrollbar
-                        v-else
-                        ref="historyScrollbarRef"
-                        class="snapshots-history__scroll"
-                        :options="historyScrollbarOptions"
-                    >
+                    <PerfectScrollbar v-else ref="historyScrollbarRef" class="snapshots-history__scroll" :options="historyScrollbarOptions">
                         <div class="snapshots-list">
                             <AccountBalanceSnapshotItem
                                 v-for="snapshot in store.balanceSnapshots"

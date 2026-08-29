@@ -8,10 +8,7 @@ import {
     sanitizeUpdateAccountPayload
 } from '@/features/accounts/rights';
 import type { Account, CreateAccountPayload, UpdateAccountPayload } from '@/features/accounts/types';
-import {
-    assertAccountAllowed,
-    requireLocalAccount
-} from '@/features/accounts/stores/internal/accounts-authz';
+import { assertAccountAllowed, requireLocalAccount } from '@/features/accounts/stores/internal/accounts-authz';
 import { ACCOUNTS_DETAIL_MAX_AGE_MS, KEY_ACCOUNTS, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import { AppError } from '@/utils/errors/app-error';
 
@@ -144,12 +141,7 @@ export function createAccountsCrud(state: AccountsState) {
             const applied = await fetchDetail(force);
             // Join d’un GET annulé (même clé) : le loader partagé early-return sans upsert — forcer un vrai GET.
             // Pas de retry si le compte a disparu (revoke / leave) pendant le GET.
-            if (
-                requestId === detailRequestSeq &&
-                needsFetch &&
-                !applied &&
-                accounts.value.some((a) => a.publicId === publicId)
-            ) {
+            if (requestId === detailRequestSeq && needsFetch && !applied && accounts.value.some((a) => a.publicId === publicId)) {
                 await fetchDetail(true);
             }
         } finally {

@@ -82,7 +82,10 @@ export function createResourceCache(options: ResourceCacheOptions) {
             if (!force && isFresh(key, maxAgeMs)) return;
 
             const fetchGen = entry.generation;
-            const request = (async () => {
+            // Holder so the finally clause can identity-check this fetch without TS2454
+            // (`const request = (async () => request)()` is used-before-assigned).
+            const inflight = { promise: undefined as Promise<void> | undefined };
+            inflight.promise = (async () => {
                 try {
                     await loader();
                     // Invalidate pendant le GET : ne pas re-marquer le TTL frais.
@@ -90,16 +93,16 @@ export function createResourceCache(options: ResourceCacheOptions) {
                         entry.lastFetchedAt = now();
                     }
                 } finally {
-                    if (entry.inflight === request) {
+                    if (entry.inflight === inflight.promise) {
                         entry.inflight = null;
                         entry.inflightForced = false;
                     }
                 }
             })();
 
-            entry.inflight = request;
+            entry.inflight = inflight.promise;
             entry.inflightForced = force;
-            await request;
+            await inflight.promise;
             return;
         }
     }

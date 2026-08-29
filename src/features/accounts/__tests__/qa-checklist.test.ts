@@ -203,15 +203,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
 
     describe('§2 Création & édition (owner)', () => {
         it('expose tous les types de compte acceptés', () => {
-            expect(ACCOUNT_TYPES).toEqual([
-                'courant',
-                'epargne',
-                'credit',
-                'cash',
-                'investissement',
-                'crypto',
-                'other'
-            ]);
+            expect(ACCOUNT_TYPES).toEqual(['courant', 'epargne', 'credit', 'cash', 'investissement', 'crypto', 'other']);
         });
 
         it('création sans currency dans le payload (défaut settings / CHF côté form)', async () => {
@@ -239,9 +231,9 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             api.create.mockRejectedValue(new ApiError('IBAN invalide', 400, 'INVALID_IBAN'));
 
             const store = useAccountsStore();
-            await expect(
-                store.createAccount({ name: 'X', type: 'courant', initialBalance: 0, iban: 'XX' })
-            ).rejects.toMatchObject({ message: 'IBAN invalide' });
+            await expect(store.createAccount({ name: 'X', type: 'courant', initialBalance: 0, iban: 'XX' })).rejects.toMatchObject({
+                message: 'IBAN invalide'
+            });
             expect(store.error).toBe('IBAN invalide');
         });
 
@@ -249,17 +241,13 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             api.create.mockRejectedValue(new ApiError('Un compte avec ce nom et ce type existe déjà', 400));
 
             const store = useAccountsStore();
-            await expect(
-                store.createAccount({ name: 'Courant', type: 'courant', initialBalance: 0 })
-            ).rejects.toBeTruthy();
+            await expect(store.createAccount({ name: 'Courant', type: 'courant', initialBalance: 0 })).rejects.toBeTruthy();
             expect(store.error).toContain('nom');
         });
 
         it('PUT owner envoie null pour vider iban / accountNumber / color', async () => {
             api.list.mockResolvedValue({ items: [account({ iban: 'CH00', accountNumber: '1', color: '#fff' })] });
-            api.update.mockResolvedValue(
-                account({ iban: null, accountNumber: null, color: null, isPrimary: true })
-            );
+            api.update.mockResolvedValue(account({ iban: null, accountNumber: null, color: null, isPrimary: true }));
 
             const store = useAccountsStore();
             await store.loadAccounts();
@@ -274,10 +262,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 isPrimary: true
             });
 
-            expect(api.update).toHaveBeenCalledWith(
-                'acc-1',
-                expect.objectContaining({ iban: null, accountNumber: null, color: null })
-            );
+            expect(api.update).toHaveBeenCalledWith('acc-1', expect.objectContaining({ iban: null, accountNumber: null, color: null }));
             expect(store.accounts[0]?.iban).toBeNull();
             expect(store.accounts[0]?.accountNumber).toBeNull();
             expect(store.accounts[0]?.color).toBeNull();
@@ -322,9 +307,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
 
         it('impossible de retirer le primaire sans en promouvoir un autre → erreur métier', async () => {
             api.list.mockResolvedValue({ items: [account()] });
-            api.update.mockRejectedValue(
-                new ApiError('Impossible de retirer le statut primaire sans en promouvoir un autre', 400)
-            );
+            api.update.mockRejectedValue(new ApiError('Impossible de retirer le statut primaire sans en promouvoir un autre', 400));
 
             const store = useAccountsStore();
             await store.loadAccounts();
@@ -388,9 +371,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
         it('soft-delete bloqué s’il reste des mouvements → message métier', async () => {
             const secondary = account({ publicId: 'acc-2', name: 'Épargne', isPrimary: false });
             api.list.mockResolvedValue({ items: [account(), secondary] });
-            api.remove.mockRejectedValue(
-                new ApiError('Impossible de supprimer : des mouvements existent. Archivez le compte.', 400)
-            );
+            api.remove.mockRejectedValue(new ApiError('Impossible de supprimer : des mouvements existent. Archivez le compte.', 400));
 
             const store = useAccountsStore();
             await store.loadAccounts();
@@ -535,9 +516,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
 
         it('date non-UTC refusée → message métier clair', async () => {
             api.list.mockResolvedValue({ items: [account()] });
-            api.createBalanceSnapshot.mockRejectedValue(
-                new ApiError('snapshotAt doit être une date UTC (suffixe Z)', 400)
-            );
+            api.createBalanceSnapshot.mockRejectedValue(new ApiError('snapshotAt doit être une date UTC (suffixe Z)', 400));
 
             const store = useAccountsStore();
             await store.loadAccounts();
@@ -1014,9 +993,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 updatedAt: '2026-01-01T00:00:00Z'
             });
             api.listShares.mockResolvedValue({ items: [] });
-            api.get.mockResolvedValue(
-                account({ publicId: 'acc-epargne', name: 'Épargne', type: 'epargne', isPrimary: false })
-            );
+            api.get.mockResolvedValue(account({ publicId: 'acc-epargne', name: 'Épargne', type: 'epargne', isPrimary: false }));
             await storeA.loadAccountDetail('acc-epargne');
             await storeA.loadShares('acc-epargne');
             await storeA.inviteShare('acc-epargne', 'user-b', 'editor');
@@ -1083,9 +1060,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             });
 
             // 4. B ajoute relevé ; visible après reload
-            api.createBalanceSnapshot.mockResolvedValue(
-                snapshot({ publicId: 'snap-b', accountPublicId: 'acc-epargne', source: 'manual' })
-            );
+            api.createBalanceSnapshot.mockResolvedValue(snapshot({ publicId: 'snap-b', accountPublicId: 'acc-epargne', source: 'manual' }));
             api.listBalanceSnapshots.mockResolvedValue({ items: [] });
             await storeA.loadBalanceSnapshots('acc-epargne');
             await storeA.createBalanceSnapshot('acc-epargne', {
@@ -1183,13 +1158,9 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             api.remove.mockRejectedValue(new ApiError('Impossible de supprimer le compte primaire', 400));
             await expect(storeOwner.deleteAccount('acc-courant')).rejects.toBeTruthy();
 
-            api.create.mockResolvedValue(
-                account({ publicId: 'acc-new-primary', name: 'Nouveau', isPrimary: false })
-            );
+            api.create.mockResolvedValue(account({ publicId: 'acc-new-primary', name: 'Nouveau', isPrimary: false }));
             await storeOwner.createAccount({ name: 'Nouveau', type: 'courant', initialBalance: 0 });
-            api.setPrimary.mockResolvedValue(
-                account({ publicId: 'acc-new-primary', name: 'Nouveau', isPrimary: true })
-            );
+            api.setPrimary.mockResolvedValue(account({ publicId: 'acc-new-primary', name: 'Nouveau', isPrimary: true }));
             await storeOwner.setPrimary('acc-new-primary');
             api.remove.mockResolvedValue(undefined);
             await storeOwner.deleteAccount('acc-courant');

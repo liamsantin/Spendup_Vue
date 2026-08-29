@@ -9,14 +9,7 @@ import { emptyToNull, isValidAccountColor, isValidIbanFormat, normalizeAccountCo
 import { buildUpdateAccountPayload, shouldValidateAccountIban } from '@/features/accounts/account-form-payload';
 import { canEditAccountOwnerFields } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
-import {
-    ACCOUNT_COLOR_PRESETS,
-    ACCOUNT_TYPES,
-    CURRENCIES,
-    type Account,
-    type AccountType,
-    type Currency
-} from '@/features/accounts/types';
+import { ACCOUNT_COLOR_PRESETS, ACCOUNT_TYPES, CURRENCIES, type Account, type AccountType, type Currency } from '@/features/accounts/types';
 import AccountForm, { type AccountFormFieldErrors } from '@/features/accounts/components/forms/AccountForm.vue';
 
 const props = defineProps<{
@@ -206,14 +199,7 @@ async function onSave() {
         scrollable
         mobile-layout="fullscreen"
     >
-        <AppAlert
-            v-if="localError.message"
-            color="error"
-            variant="tonal"
-            class="mb-4"
-            closable
-            @dismiss="localError.message = null"
-        >
+        <AppAlert v-if="localError.message" color="error" variant="tonal" class="mb-4" closable @dismiss="localError.message = null">
             {{ localError.message }}
         </AppAlert>
 

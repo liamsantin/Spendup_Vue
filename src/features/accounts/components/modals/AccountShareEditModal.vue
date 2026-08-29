@@ -45,8 +45,7 @@ const canSave = computed(() => {
     const roleChanged = editRole.value !== initialRole.value;
     const baselineHidden = [...(props.share.hiddenFields ?? DEFAULT_VIEWER_HIDDEN_FIELDS)].sort();
     const fieldsChanged =
-        editRole.value === 'viewer' &&
-        JSON.stringify(baselineHidden) !== JSON.stringify([...editHiddenFields.value].sort());
+        editRole.value === 'viewer' && JSON.stringify(baselineHidden) !== JSON.stringify([...editHiddenFields.value].sort());
     return roleChanged || fieldsChanged;
 });
 

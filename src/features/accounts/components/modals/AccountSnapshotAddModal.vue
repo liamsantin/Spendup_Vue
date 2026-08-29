@@ -92,14 +92,7 @@ async function submitAdd() {
         :scrollable="false"
         mobile-layout="sheet"
     >
-        <AppAlert
-            v-if="localError"
-            color="error"
-            variant="tonal"
-            class="mb-3"
-            closable
-            @dismiss="localError = null"
-        >
+        <AppAlert v-if="localError" color="error" variant="tonal" class="mb-3" closable @dismiss="localError = null">
             {{ localError }}
         </AppAlert>
 

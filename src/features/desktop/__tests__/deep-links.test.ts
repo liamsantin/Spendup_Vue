@@ -17,6 +17,8 @@ describe('resolveSpendupDeepLink', () => {
         expect(resolveSpendupDeepLink('https://evil.test/app')).toBeNull();
         expect(resolveSpendupDeepLink('spendup://auth/login')).toBeNull();
         expect(resolveSpendupDeepLink('spendup://evil.com/phishing')).toBeNull();
+        expect(resolveSpendupDeepLink('spendup://application/x')).toBeNull();
+        expect(resolveSpendupDeepLink('spendup://app.evil.com/x')).toBeNull();
         expect(resolveSpendupDeepLink('spendup:user:762H2M3')).toBeNull();
     });
 
