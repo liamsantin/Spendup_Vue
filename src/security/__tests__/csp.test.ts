@@ -63,6 +63,8 @@ describe('tauri.conf.json CSP', () => {
         expect(csp['connect-src']).toContain('ipc:');
         expect(csp['connect-src']).toContain('http://ipc.localhost');
         expect(csp['connect-src']).toContain('https://accounts.google.com');
+        expect(csp['connect-src']).toContain('https://api-spendup.ch');
+        expect(csp['connect-src']).toContain('wss://api-spendup.ch');
         expect(csp['connect-src']).toContain('wss://localhost:*');
         expect(csp['connect-src']).not.toMatch(/(?:^|\s)https:(?=\s|$)/);
         expect(csp['connect-src']).not.toMatch(/(?:^|\s)wss:(?=\s|$)/);
