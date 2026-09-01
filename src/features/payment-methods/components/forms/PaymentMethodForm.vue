@@ -55,6 +55,16 @@ function onLastFourInput(value: string) {
 <template>
     <div class="payment-method-form">
         <v-row class="align-center" no-gutters>
+            <v-col cols="auto" sm="3" class="pr-3">
+                <label class="v-label font-weight-medium" for="pm-form-active">
+                    {{ t('paymentMethodsPage.form.fields.isActive') }}
+                </label>
+            </v-col>
+            <v-col cols="auto" sm="9">
+                <AppSwitch id="pm-form-active" v-model="form.isActive" :inset="false" />
+            </v-col>
+        </v-row>
+        <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="pm-form-account">
                     {{ t('paymentMethodsPage.form.fields.account') }} *
@@ -166,15 +176,23 @@ function onLastFourInput(value: string) {
                 <div v-if="fieldErrors.expirationDate" class="text-caption text-error mt-1">{{ fieldErrors.expirationDate }}</div>
             </v-col>
         </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="auto" sm="3" class="pr-3">
-                <label class="v-label font-weight-medium" for="pm-form-active">
-                    {{ t('paymentMethodsPage.form.fields.isActive') }}
-                </label>
-            </v-col>
-            <v-col cols="auto" sm="9">
-                <AppSwitch id="pm-form-active" v-model="form.isActive" :inset="false" />
-            </v-col>
-        </v-row>
     </div>
 </template>
+
+<style scoped>
+.payment-method-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+@media (max-width: 599.98px) {
+    .payment-method-form {
+        gap: 12px;
+    }
+
+    .payment-method-form :deep(.v-label) {
+        margin-bottom: 4px;
+    }
+}
+</style>

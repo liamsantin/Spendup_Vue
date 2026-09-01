@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { canWritePaymentMethods } from '@/features/payment-methods/rights';
@@ -156,13 +157,7 @@ async function confirmDelete() {
         </AppAlert>
 
         <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-4">
-            <v-switch
-                v-model="showInactive"
-                color="primary"
-                hide-details
-                density="compact"
-                :label="t('paymentMethodsPage.filters.showInactive')"
-            />
+            <AppSwitch v-model="showInactive" :inset="false" :label="t('paymentMethodsPage.filters.showInactive')" />
         </div>
 
         <div v-if="store.loading && !store.items.length" class="py-8 text-center">
