@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { BellPlusIcon, ShieldLockIcon, UserHeartIcon, UsersIcon } from 'vue-tabler-icons';
 import AppTabsShell from '@/components/shared/tabs/AppTabsShell.vue';
 import { BlockedUsersTab, DiscoverFriendsTab, DiscoverSearchBar, FriendsTab, RequestsTab, useFriendsStore } from '@/features/friends';
@@ -11,6 +11,7 @@ type FriendTab = (typeof FRIEND_TABS)[number];
 
 const { t } = useI18n();
 const route = useRoute();
+const router = useRouter();
 const store = useFriendsStore();
 
 function tabFromQuery(): FriendTab {
@@ -27,6 +28,7 @@ function friendshipFromQuery(): string | null {
 }
 
 const tab = ref<FriendTab>(tabFromQuery());
+const syncingTabFromRoute = ref(false);
 
 const tabs = computed(() => [
     { value: 'Friends', label: t('friendsPage.tabs.friends'), icon: UsersIcon },
@@ -50,8 +52,23 @@ async function scrollToFocusedFriendship() {
     }
 }
 
+function syncTabQuery(value: FriendTab) {
+    const nextQuery: Record<string, string | string[] | undefined> = {
+        ...route.query,
+        tab: value
+    };
+    if (value !== 'Friends' && value !== 'Requests') {
+        delete nextQuery.friendship;
+    }
+    if (route.query.tab === value && String(route.query.friendship ?? '') === String(nextQuery.friendship ?? '')) {
+        return;
+    }
+    void router.replace({ query: nextQuery });
+}
+
 onMounted(() => {
     store.setFocusFriendship(friendshipFromQuery());
+    syncTabQuery(tab.value);
     void store
         .bootstrap(tab.value)
         .then(() => scrollToFocusedFriendship())
@@ -61,7 +78,13 @@ onMounted(() => {
 watch(
     () => route.query.tab,
     () => {
-        tab.value = tabFromQuery();
+        const next = tabFromQuery();
+        if (next === tab.value) return;
+        syncingTabFromRoute.value = true;
+        tab.value = next;
+        void nextTick(() => {
+            syncingTabFromRoute.value = false;
+        });
     }
 );
 
@@ -74,12 +97,13 @@ watch(
 );
 
 watch(tab, (value) => {
-    if (value === 'Friends' || value === 'Requests' || value === 'Blocked' || value === 'Discover') {
-        void store
-            .openTab(value)
-            .then(() => scrollToFocusedFriendship())
-            .catch(() => undefined);
+    if (!syncingTabFromRoute.value) {
+        syncTabQuery(value);
     }
+    void store
+        .openTab(value)
+        .then(() => scrollToFocusedFriendship())
+        .catch(() => undefined);
 });
 </script>
 
