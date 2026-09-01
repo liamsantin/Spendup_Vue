@@ -33,6 +33,12 @@ vi.mock('@/features/accounts', () => ({
     })
 }));
 
+vi.mock('@/features/payment-methods/stores/payment-methods-store', () => ({
+    usePaymentMethodsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
 vi.mock('@/features/user-settings', () => ({
     useUserSettingsStore: () => ({
         ensureLoaded: vi.fn().mockResolvedValue(undefined),

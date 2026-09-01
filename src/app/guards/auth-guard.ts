@@ -3,6 +3,7 @@ import { useAuthStore, APP_HOME_ROUTE } from '@/features/auth';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 import { useFriendsStore } from '@/features/friends';
 import { useAccountsStore } from '@/features/accounts';
+import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { useNotificationsStore } from '@/features/notifications';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isDevAppEnv } from '@/utils/helpers/env-helpers';
@@ -51,6 +52,7 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
         }
         useFriendsStore().onAuthenticatedSession();
         useAccountsStore().onAuthenticatedSession();
+        usePaymentMethodsStore().onAuthenticatedSession();
         return next();
     }
 

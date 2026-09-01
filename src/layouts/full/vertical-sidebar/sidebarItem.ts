@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, CreditCardIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -45,6 +45,11 @@ const sidebarItem: menu[] = [
         title: 'nav.items.accounts',
         icon: BuildingBankIcon,
         to: '/app/finances/comptes'
+    },
+    {
+        title: 'nav.items.paymentMethods',
+        icon: CreditCardIcon,
+        to: '/app/finances/moyens-de-paiement'
     },
     { header: 'nav.headers.settings' },
     {

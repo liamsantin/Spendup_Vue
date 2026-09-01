@@ -17,7 +17,10 @@ const ACCOUNT_CHANGES = new Set<AccountChange>([
     'balanceSnapshotCreated',
     'balanceSnapshotDeleted',
     'revoked',
-    'roleChanged'
+    'roleChanged',
+    'paymentMethodCreated',
+    'paymentMethodUpdated',
+    'paymentMethodDeleted'
 ]);
 
 /** Normalise un publicId (trim + charset) ; `null` si invalide. */

@@ -38,6 +38,7 @@
             "friends": "Friends",
             "accounts": "Accounts",
             "transactions": "Transactions",
+            "paymentMethods": "Payment methods",
             "preferences": "My account"
         },
         "subCaptions": {
@@ -287,6 +288,7 @@
             "tabs": {
                 "details": "Details",
                 "snapshots": "Snapshot",
+                "paymentMethods": "Payment methods",
                 "shares": "Sharing"
             },
             "snapshotsHiddenHint": "Balance snapshots are hidden because the balance is not visible to you.",
@@ -441,6 +443,81 @@
             "title": "Delete all notifications?",
             "body": "This cannot be undone. All your notifications will be removed.",
             "confirm": "Delete all"
+        }
+    },
+    "paymentMethodsPage": {
+        "title": "Payment methods",
+        "subtitle": "Cards, transfers and wallets linked to your accounts.",
+        "loadMore": "Load more",
+        "unknownAccount": "Account",
+        "badges": {
+            "inactive": "Inactive"
+        },
+        "filters": {
+            "showInactive": "Show inactive"
+        },
+        "empty": {
+            "wallet": "No payment methods yet.",
+            "account": "No payment methods on this account."
+        },
+        "actions": {
+            "create": "Add",
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "list": {
+            "expires": "Exp. {date}"
+        },
+        "detail": {
+            "title": "Payment methods",
+            "subtitle": "Methods linked to this account."
+        },
+        "deleteModal": {
+            "title": "Delete this payment method?",
+            "body": "It will disappear from lists. The label can be reused."
+        },
+        "errors": {
+            "notFound": "Payment method not found."
+        },
+        "types": {
+            "carte": "Card",
+            "virement": "Bank transfer",
+            "prelevement": "Direct debit",
+            "cash": "Cash",
+            "twint": "TWINT",
+            "paypal": "PayPal",
+            "applePay": "Apple Pay",
+            "googlePay": "Google Pay",
+            "other": "Other"
+        },
+        "form": {
+            "createTitle": "New payment method",
+            "editTitle": "Edit payment method",
+            "subtitle": "Full card numbers are never requested.",
+            "referencePlaceholder": "IBAN, PayPal email… (not a card number)",
+            "lastFourPlaceholder": "4242",
+            "expirationPlaceholder": "Expiration date",
+            "fields": {
+                "account": "Account",
+                "type": "Type",
+                "label": "Label",
+                "reference": "Reference",
+                "lastFourDigits": "Last 4 digits",
+                "expirationDate": "Expiration",
+                "isActive": "Active"
+            },
+            "errors": {
+                "accountRequired": "Choose an account.",
+                "typeInvalid": "Invalid type.",
+                "labelRequired": "Label is required.",
+                "labelTooLong": "Label is too long (150 characters max).",
+                "labelDuplicate": "This label already exists on this account.",
+                "referenceTooLong": "Reference is too long (100 characters max).",
+                "lastFourInvalid": "Enter exactly 4 digits, or leave empty.",
+                "expirationInvalid": "Invalid expiration date.",
+                "expirationPast": "An active method cannot already be expired.",
+                "isActiveRequired": "Active status is required."
+            }
         }
     },
     "friendsPage": {

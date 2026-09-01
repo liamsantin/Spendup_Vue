@@ -101,7 +101,10 @@ export type AccountChange =
     | 'balanceSnapshotCreated'
     | 'balanceSnapshotDeleted'
     | 'revoked'
-    | 'roleChanged';
+    | 'roleChanged'
+    | 'paymentMethodCreated'
+    | 'paymentMethodUpdated'
+    | 'paymentMethodDeleted';
 
 export type AccountChangedPayload = {
     change: AccountChange;

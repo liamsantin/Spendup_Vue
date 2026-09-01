@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { DotsVerticalIcon, FileDescriptionIcon, LockIcon, Receipt2Icon, UsersIcon } from 'vue-tabler-icons';
+import { DotsVerticalIcon, CreditCardIcon, FileDescriptionIcon, LockIcon, Receipt2Icon, UsersIcon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
@@ -25,6 +25,7 @@ import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import AccountBalanceSnapshotsPanel from '@/features/accounts/components/panels/AccountBalanceSnapshotsPanel.vue';
 import AccountSharesPanel from '@/features/accounts/components/panels/AccountSharesPanel.vue';
 import AccountFormModal from '@/features/accounts/components/modals/AccountFormModal.vue';
+import { AccountPaymentMethodsPanel } from '@/features/payment-methods';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -47,7 +48,7 @@ const deleteOpen = ref(false);
 const leaveOpen = ref(false);
 const suggestArchiveOpen = ref(false);
 const localError = ref<string | null>(null);
-const activeTab = ref<'details' | 'snapshots' | 'shares'>('details');
+const activeTab = ref<'details' | 'snapshots' | 'paymentMethods' | 'shares'>('details');
 
 const open = computed({
     get: () => props.modelValue,
@@ -93,6 +94,11 @@ const detailTabs = computed(() => {
             icon: Receipt2Icon,
             disabled: balanceHidden.value,
             title: balanceHidden.value ? t('comptesPage.detail.snapshotsHiddenHint') : undefined
+        },
+        {
+            value: 'paymentMethods' as const,
+            label: t('comptesPage.detail.tabs.paymentMethods'),
+            icon: CreditCardIcon
         },
         {
             value: 'shares' as const,
@@ -446,6 +452,10 @@ async function confirmLeave() {
 
         <template v-if="account" #panel-snapshots>
             <AccountBalanceSnapshotsPanel v-if="!balanceHidden" :account="account" :can-write="canWriteBalanceSnapshots(account)" />
+        </template>
+
+        <template v-if="account" #panel-paymentMethods>
+            <AccountPaymentMethodsPanel :account="account" />
         </template>
 
         <template v-if="account" #panel-shares>

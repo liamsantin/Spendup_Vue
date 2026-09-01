@@ -38,6 +38,7 @@
             "friends": "Amis",
             "accounts": "Comptes",
             "transactions": "Transactions",
+            "paymentMethods": "Moyens de paiement",
             "preferences": "Mon compte"
         },
         "subCaptions": {
@@ -287,6 +288,7 @@
             "tabs": {
                 "details": "Détails",
                 "snapshots": "Relevé",
+                "paymentMethods": "Moyens de paiement",
                 "shares": "Partage"
             },
             "snapshotsHiddenHint": "Les relevés sont masqués car le solde n’est pas visible pour vous.",
@@ -441,6 +443,81 @@
             "title": "Supprimer toutes les notifications ?",
             "body": "Cette action est définitive. Toutes vos notifications seront effacées.",
             "confirm": "Tout supprimer"
+        }
+    },
+    "paymentMethodsPage": {
+        "title": "Moyens de paiement",
+        "subtitle": "Cartes, virements et portefeuilles liés à vos comptes.",
+        "loadMore": "Charger plus",
+        "unknownAccount": "Compte",
+        "badges": {
+            "inactive": "Inactif"
+        },
+        "filters": {
+            "showInactive": "Afficher les inactifs"
+        },
+        "empty": {
+            "wallet": "Aucun moyen de paiement pour l’instant.",
+            "account": "Aucun moyen de paiement sur ce compte."
+        },
+        "actions": {
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer"
+        },
+        "list": {
+            "expires": "Exp. {date}"
+        },
+        "detail": {
+            "title": "Moyens de paiement",
+            "subtitle": "Méthodes liées à ce compte."
+        },
+        "deleteModal": {
+            "title": "Supprimer ce moyen de paiement ?",
+            "body": "Il disparaîtra des listes. Le libellé pourra être réutilisé."
+        },
+        "errors": {
+            "notFound": "Moyen de paiement introuvable."
+        },
+        "types": {
+            "carte": "Carte",
+            "virement": "Virement",
+            "prelevement": "Prélèvement",
+            "cash": "Espèces",
+            "twint": "TWINT",
+            "paypal": "PayPal",
+            "applePay": "Apple Pay",
+            "googlePay": "Google Pay",
+            "other": "Autre"
+        },
+        "form": {
+            "createTitle": "Nouveau moyen de paiement",
+            "editTitle": "Modifier le moyen de paiement",
+            "subtitle": "Les numéros de carte complets ne sont jamais demandés.",
+            "referencePlaceholder": "IBAN, e-mail PayPal… (pas un numéro de carte)",
+            "lastFourPlaceholder": "4242",
+            "expirationPlaceholder": "Date d’expiration",
+            "fields": {
+                "account": "Compte",
+                "type": "Type",
+                "label": "Libellé",
+                "reference": "Référence",
+                "lastFourDigits": "4 derniers chiffres",
+                "expirationDate": "Expiration",
+                "isActive": "Actif"
+            },
+            "errors": {
+                "accountRequired": "Choisissez un compte.",
+                "typeInvalid": "Type invalide.",
+                "labelRequired": "Le libellé est obligatoire.",
+                "labelTooLong": "Le libellé est trop long (150 caractères max).",
+                "labelDuplicate": "Ce libellé existe déjà sur ce compte.",
+                "referenceTooLong": "La référence est trop longue (100 caractères max).",
+                "lastFourInvalid": "Saisissez exactement 4 chiffres, ou laissez vide.",
+                "expirationInvalid": "Date d’expiration invalide.",
+                "expirationPast": "Un moyen actif ne peut pas être déjà expiré.",
+                "isActiveRequired": "Le statut actif est obligatoire."
+            }
         }
     },
     "friendsPage": {

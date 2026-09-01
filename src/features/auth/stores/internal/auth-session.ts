@@ -17,6 +17,7 @@ import { useUserSettingsStore } from '@/features/user-settings';
 import { useNotificationsStore } from '@/features/notifications/stores/notifications-store';
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { isIdleSessionError } from '@/features/auth/idle-session';
 import { clearCsrfToken, rememberCsrfToken } from '@/features/auth/csrf';
 import { isAuthCookieMode } from '@/utils/helpers/axios-helpers';
@@ -153,6 +154,7 @@ export function createAuthSession() {
         useNotificationsStore().reset();
         useFriendsStore().reset();
         useAccountsStore().reset();
+        usePaymentMethodsStore().reset();
     }
 
     /**

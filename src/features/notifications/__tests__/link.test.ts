@@ -168,6 +168,18 @@ describe('normalizeAppNotification', () => {
             change: 'revoked',
             accountPublicId: 'acc-1'
         });
+        expect(parseAccountChangedPayload({ change: 'paymentMethodCreated', accountPublicId: 'acc-1' })).toEqual({
+            change: 'paymentMethodCreated',
+            accountPublicId: 'acc-1'
+        });
+        expect(parseAccountChangedPayload({ change: 'paymentMethodUpdated', accountPublicId: 'acc-1' })).toEqual({
+            change: 'paymentMethodUpdated',
+            accountPublicId: 'acc-1'
+        });
+        expect(parseAccountChangedPayload({ change: 'paymentMethodDeleted', accountPublicId: 'acc-1' })).toEqual({
+            change: 'paymentMethodDeleted',
+            accountPublicId: 'acc-1'
+        });
         expect(parseAccountChangedPayload({ change: 'nope', accountPublicId: 'acc-1' })).toBeNull();
         expect(parseAccountChangedPayload({ change: 'revoked', accountPublicId: '' })).toBeNull();
     });

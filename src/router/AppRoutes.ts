@@ -41,6 +41,11 @@ const AppRoutes = {
             component: () => import('@/views/app/finances/comptes/AppComptesPage.vue')
         },
         {
+            name: 'AppPaymentMethods',
+            path: 'finances/moyens-de-paiement',
+            component: () => import('@/views/app/finances/payment-methods/AppPaymentMethodsPage.vue')
+        },
+        {
             path: 'applications',
             redirect: '/app/comptes'
         }
