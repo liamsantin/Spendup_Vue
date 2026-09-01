@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { BanIcon, DotsVerticalIcon, PencilIcon, UserMinusIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import FriendListItem from '@/features/friends/components/FriendListItem.vue';
@@ -78,21 +79,38 @@ async function confirmRemoveFriend() {
                 :subtitle="t('friendsPage.friends.since', { date: formatDate(friend.friendsSince) })"
             >
                 <template #actions>
-                    <v-btn size="small" variant="text" color="primary" :disabled="store.acting" @click.stop="openNicknameModal(friend)">
-                        {{ t('friendsPage.actions.nickname') }}
-                    </v-btn>
-                    <v-btn size="small" variant="text" color="error" :disabled="store.acting" @click.stop="openRemoveFriend(friend)">
-                        {{ t('friendsPage.actions.remove') }}
-                    </v-btn>
-                    <v-btn
-                        size="small"
-                        variant="text"
-                        color="warning"
-                        :disabled="store.acting"
-                        @click.stop="store.blockUser(friend.user.publicId)"
-                    >
-                        {{ t('friendsPage.actions.block') }}
-                    </v-btn>
+                    <v-menu location="bottom end">
+                        <template #activator="{ props: menuProps }">
+                            <v-btn
+                                v-bind="menuProps"
+                                icon
+                                size="small"
+                                variant="text"
+                                color="primary"
+                                :disabled="store.acting"
+                                :aria-label="t('common.more')"
+                            >
+                                <DotsVerticalIcon size="20" stroke-width="1.75" />
+                            </v-btn>
+                        </template>
+                        <v-list density="compact" min-width="200">
+                            <v-list-item :title="t('friendsPage.actions.nickname')" @click="openNicknameModal(friend)">
+                                <template #prepend>
+                                    <PencilIcon size="18" stroke-width="1.75" class="text-primary mr-2" />
+                                </template>
+                            </v-list-item>
+                            <v-list-item class="text-error" :title="t('friendsPage.actions.remove')" @click="openRemoveFriend(friend)">
+                                <template #prepend>
+                                    <UserMinusIcon size="18" stroke-width="1.75" class="mr-2" />
+                                </template>
+                            </v-list-item>
+                            <v-list-item class="text-warning" :title="t('friendsPage.actions.block')" @click="store.blockUser(friend.user.publicId)">
+                                <template #prepend>
+                                    <BanIcon size="18" stroke-width="1.75" class="mr-2" />
+                                </template>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
                 </template>
             </FriendListItem>
         </v-list>
