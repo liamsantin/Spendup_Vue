@@ -17,7 +17,11 @@ const store = useFriendsStore();
 const title = computed(() => getFriendDisplayName(props.user, props.nickname));
 const secondaryLine = computed(() => {
     if (props.nickname?.trim()) {
-        return getFriendProfileLabel(props.user);
+        const profile = getFriendProfileLabel(props.user);
+        if (props.subtitle) {
+            return `${profile} · ${props.subtitle}`;
+        }
+        return profile;
     }
     return props.subtitle || props.user.username || props.user.publicId;
 });
