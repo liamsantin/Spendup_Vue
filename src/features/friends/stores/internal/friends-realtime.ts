@@ -53,6 +53,10 @@ export function createFriendsRealtime(state: FriendsState, lists: FriendsLists) 
         }
         if (change === 'removed') {
             await loadFriends(true);
+            return;
+        }
+        if (change === 'nicknameUpdated') {
+            await loadFriends(true);
         }
     }
 

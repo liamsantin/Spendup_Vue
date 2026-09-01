@@ -78,6 +78,7 @@ export const useFriendsStore = defineStore('friends', () => {
         removeFriend: mutations.removeFriend,
         blockUser: mutations.blockUser,
         unblockUser: mutations.unblockUser,
+        updateNickname: mutations.updateNickname,
         reset: lifecycle.reset
     };
 });

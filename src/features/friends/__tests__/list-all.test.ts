@@ -12,6 +12,7 @@ function friend(id: string): FriendItem {
             name: null,
             profilePicture: null
         },
+        nickname: null,
         friendsSince: '2026-01-01T00:00:00Z'
     };
 }

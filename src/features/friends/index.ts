@@ -1,4 +1,6 @@
 export { friendsApi } from '@/features/friends/api';
+export { getFriendDisplayName, getFriendProfileLabel, getFriendDisplayNameFromItem } from '@/features/friends/display-name';
+export { FRIEND_NICKNAME_MAX_LENGTH, normalizeFriendNickname, validateFriendNickname } from '@/features/friends/nickname';
 export { listAllFriends, FRIENDS_LIST_ALL_PAGE_SIZE, FRIENDS_LIST_ALL_MAX_PAGES } from '@/features/friends/list-all';
 export { useFriendsStore } from '@/features/friends/stores/friends-store';
 export {
@@ -17,10 +19,12 @@ export type {
     FriendSearchItem,
     FriendsPageResult,
     FriendSearchQuery,
-    SendFriendRequestPayload
+    SendFriendRequestPayload,
+    UpdateFriendNicknamePayload
 } from '@/features/friends/types';
 export { buildFriendQrPayload, parseFriendQrPayload, isValidPublicId, normalizePublicId } from '@/features/friends/qr';
 export { default as FriendListItem } from '@/features/friends/components/FriendListItem.vue';
+export { default as FriendNicknameModal } from '@/features/friends/components/FriendNicknameModal.vue';
 export { default as UserPhotoAvatar } from '@/features/friends/components/UserPhotoAvatar.vue';
 export { default as DiscoverSearchBar } from '@/features/friends/components/DiscoverSearchBar.vue';
 export { default as FriendQrModal } from '@/features/friends/components/FriendQrModal.vue';

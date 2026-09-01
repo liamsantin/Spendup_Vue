@@ -8,7 +8,8 @@ import type {
     FriendSearchItem,
     FriendSearchQuery,
     FriendsPageResult,
-    SendFriendRequestPayload
+    SendFriendRequestPayload,
+    UpdateFriendNicknamePayload
 } from '@/features/friends/types';
 
 function toQuery(params: Record<string, string | number | boolean | null | undefined>): string {
@@ -71,6 +72,10 @@ export const friendsApi = {
 
     remove(friendshipPublicId: string) {
         return fetchWrapper.delete(`/api/friends/${friendshipPublicId}`) as Promise<void>;
+    },
+
+    updateNickname(friendshipPublicId: string, body: UpdateFriendNicknamePayload) {
+        return fetchWrapper.patch(`/api/friends/${friendshipPublicId}`, body) as Promise<FriendItem>;
     },
 
     block(userPublicId: string) {

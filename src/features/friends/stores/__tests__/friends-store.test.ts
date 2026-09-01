@@ -12,6 +12,7 @@ const api = vi.hoisted(() => ({
     refuse: vi.fn(),
     cancel: vi.fn(),
     remove: vi.fn(),
+    updateNickname: vi.fn(),
     block: vi.fn(),
     unblock: vi.fn()
 }));
@@ -31,6 +32,7 @@ vi.mock('../../api', () => ({
         refuse: (...args: unknown[]) => api.refuse(...args),
         cancel: (...args: unknown[]) => api.cancel(...args),
         remove: (...args: unknown[]) => api.remove(...args),
+        updateNickname: (...args: unknown[]) => api.updateNickname(...args),
         block: (...args: unknown[]) => api.block(...args),
         unblock: (...args: unknown[]) => api.unblock(...args)
     }
@@ -59,6 +61,7 @@ describe('useFriendsStore', () => {
                 {
                     friendshipPublicId: 'f1',
                     user: { publicId: 'U1', username: 'alice', firstName: null, name: null, profilePicture: null },
+                    nickname: null,
                     friendsSince: '2026-01-01'
                 }
             ],
@@ -300,6 +303,59 @@ describe('useFriendsStore', () => {
         expect(api.list).not.toHaveBeenCalled();
     });
 
+    it('sur friendshipChanged nicknameUpdated rafraîchit la liste amis', async () => {
+        api.list.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        let listener: ((p: { change: string; friendshipPublicId: string }) => void) | undefined;
+        subscribeToFriendshipChanged.mockImplementation((fn: (p: { change: string; friendshipPublicId: string }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useFriendsStore();
+        store.onAuthenticatedSession();
+        api.list.mockClear();
+
+        listener?.({ change: 'nicknameUpdated', friendshipPublicId: 'fr-5' });
+        await vi.waitFor(() => expect(api.list).toHaveBeenCalled());
+    });
+
+    it('updateNickname patch la liste locale avec la réponse API', async () => {
+        const existing = {
+            friendshipPublicId: 'f1',
+            user: { publicId: 'U1', username: 'alice', firstName: null, name: null, profilePicture: null },
+            nickname: null,
+            friendsSince: '2026-01-01'
+        };
+        const updated = { ...existing, nickname: 'Mon pote' };
+
+        api.updateNickname.mockResolvedValue(updated);
+
+        const store = useFriendsStore();
+        store.friends = [existing];
+
+        await store.updateNickname('f1', 'Mon pote');
+
+        expect(api.updateNickname).toHaveBeenCalledWith('f1', { nickname: 'Mon pote' });
+        expect(store.friends[0]?.nickname).toBe('Mon pote');
+    });
+
+    it('updateNickname rejette un surnom trop long côté client', async () => {
+        const store = useFriendsStore();
+        store.friends = [
+            {
+                friendshipPublicId: 'f1',
+                user: { publicId: 'U1', username: 'alice', firstName: null, name: null, profilePicture: null },
+                nickname: null,
+                friendsSince: '2026-01-01'
+            }
+        ];
+
+        await expect(store.updateNickname('f1', 'a'.repeat(65))).rejects.toThrow();
+        expect(api.updateNickname).not.toHaveBeenCalled();
+        expect(store.error).toContain('64');
+    });
+
     it('loadMoreFriends append les pages suivantes', async () => {
         api.list
             .mockResolvedValueOnce({
@@ -307,6 +363,7 @@ describe('useFriendsStore', () => {
                     {
                         friendshipPublicId: 'f1',
                         user: { publicId: 'U1', username: 'alice', firstName: null, name: null, profilePicture: null },
+                        nickname: null,
                         friendsSince: '2026-01-01'
                     }
                 ],
@@ -319,6 +376,7 @@ describe('useFriendsStore', () => {
                     {
                         friendshipPublicId: 'f2',
                         user: { publicId: 'U2', username: 'bob', firstName: null, name: null, profilePicture: null },
+                        nickname: null,
                         friendsSince: '2026-01-02'
                     }
                 ],

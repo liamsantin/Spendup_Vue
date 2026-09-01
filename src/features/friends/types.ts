@@ -15,7 +15,13 @@ export type FriendUser = {
 export type FriendItem = {
     friendshipPublicId: string;
     user: FriendUser;
+    /** Surnom personnel de l’utilisateur courant pour cet ami ; null si absent. */
+    nickname: string | null;
     friendsSince: string;
+};
+
+export type UpdateFriendNicknamePayload = {
+    nickname: string | null;
 };
 
 export type FriendRequestItem = {

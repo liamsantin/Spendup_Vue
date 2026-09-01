@@ -16,7 +16,7 @@ import {
     XIcon
 } from 'vue-tabler-icons';
 import { searchSugg } from '@/data/admin/headerData';
-import { friendsApi, UserPhotoAvatar, useFriendsStore } from '@/features/friends';
+import { friendsApi, getFriendDisplayName, UserPhotoAvatar, useFriendsStore } from '@/features/friends';
 import type { FriendSearchItem } from '@/features/friends';
 import type { searchType } from '@/types/HeaderTypes';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
@@ -72,8 +72,7 @@ const hasFriendResults = computed(() => friendResults.value.length > 0);
 const hasResults = computed(() => hasPageResults.value || hasFriendResults.value || (canSearchFriends.value && friendsLoading.value));
 
 function friendLabel(user: FriendSearchItem): string {
-    const fullName = [user.firstName, user.name].filter(Boolean).join(' ').trim();
-    return fullName || user.username || user.publicId;
+    return getFriendDisplayName(user);
 }
 
 function friendSubtitle(user: FriendSearchItem): string {

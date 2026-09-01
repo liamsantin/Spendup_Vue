@@ -1,19 +1,26 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useFriendAvatarUrl } from '@/features/friends/composables/useFriendAvatarUrl';
+import { getFriendDisplayName, getFriendProfileLabel } from '@/features/friends/display-name';
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
 import type { FriendUser } from '@/features/friends/types';
 
 const props = defineProps<{
     user: FriendUser;
     friendshipPublicId?: string | null;
+    nickname?: string | null;
     subtitle?: string | null;
     highlight?: boolean;
 }>();
 
 const store = useFriendsStore();
-const fullName = computed(() => [props.user.firstName, props.user.name].filter(Boolean).join(' ').trim());
-const title = computed(() => fullName.value || props.user.username || props.user.publicId);
+const title = computed(() => getFriendDisplayName(props.user, props.nickname));
+const secondaryLine = computed(() => {
+    if (props.nickname?.trim()) {
+        return getFriendProfileLabel(props.user);
+    }
+    return props.subtitle || props.user.username || props.user.publicId;
+});
 const focused = computed(
     () => props.highlight === true || (!!props.friendshipPublicId && store.isFocusedFriendship(props.friendshipPublicId))
 );
@@ -45,7 +52,7 @@ const { avatarSrc } = useFriendAvatarUrl(
             <div class="min-width-0">
                 <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">{{ title }}</h6>
                 <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">
-                    {{ subtitle || user.username || user.publicId }}
+                    {{ secondaryLine }}
                 </p>
             </div>
             <div class="d-flex flex-wrap justify-end ga-2 friend-list-item__actions" @click.stop>

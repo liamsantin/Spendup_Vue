@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import FriendListItem from '@/features/friends/components/FriendListItem.vue';
+import { getFriendDisplayName } from '@/features/friends/display-name';
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
 import type { FriendSearchItem } from '@/features/friends/types';
 
@@ -14,12 +15,7 @@ const requestOpen = ref(false);
 const requestTarget = ref<FriendSearchItem | null>(null);
 const requestMessage = ref('');
 
-const requestDisplayName = computed(() => {
-    const user = requestTarget.value;
-    if (!user) return '';
-    const fullName = [user.firstName, user.name].filter(Boolean).join(' ').trim();
-    return fullName || user.username || user.publicId;
-});
+const requestDisplayName = computed(() => (requestTarget.value ? getFriendDisplayName(requestTarget.value) : ''));
 
 function outgoingPendingId(user: FriendSearchItem): string | undefined {
     if (user.friendshipStatus !== 'pending') return undefined;

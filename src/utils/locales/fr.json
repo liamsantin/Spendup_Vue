@@ -457,7 +457,17 @@
             "cancel": "Annuler",
             "remove": "Retirer",
             "block": "Bloquer",
-            "unblock": "Débloquer"
+            "unblock": "Débloquer",
+            "nickname": "Surnom"
+        },
+        "nicknameModal": {
+            "title": "Modifier le surnom",
+            "subtitle": "Pour {name}",
+            "label": "Surnom",
+            "placeholder": "Ex. Mon pote",
+            "hint": "Visible uniquement par vous. L’autre personne ne le verra pas.",
+            "save": "Enregistrer",
+            "remove": "Supprimer le surnom"
         },
         "removeModal": {
             "title": "Retirer cet ami ?",

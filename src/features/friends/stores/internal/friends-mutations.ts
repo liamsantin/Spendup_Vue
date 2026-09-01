@@ -1,4 +1,5 @@
 import { friendsApi } from '@/features/friends/api';
+import { normalizeFriendNickname, validateFriendNickname } from '@/features/friends/nickname';
 import type { FriendsState } from '@/features/friends/stores/internal/friends-state';
 import type { FriendsLists } from '@/features/friends/stores/internal/friends-lists';
 
@@ -9,7 +10,7 @@ import type { FriendsLists } from '@/features/friends/stores/internal/friends-li
  * @returns Les actions de mutation.
  */
 export function createFriendsMutations(state: FriendsState, lists: FriendsLists) {
-    const { acting, clearError, searchQuery } = state;
+    const { acting, clearError, searchQuery, friends } = state;
     const { loadFriends, loadIncoming, loadOutgoing, loadBlocked, searchUsers } = lists;
 
     /**
@@ -145,6 +146,31 @@ export function createFriendsMutations(state: FriendsState, lists: FriendsLists)
         }
     }
 
+    /**
+     * Définit, modifie ou supprime le surnom personnel pour un ami accepté.
+     * @param friendshipPublicId Identifiant public de l’amitié.
+     * @param rawNickname Valeur saisie (trim ; vide → suppression).
+     */
+    async function updateNickname(friendshipPublicId: string, rawNickname: string | null) {
+        acting.value = true;
+        clearError();
+        try {
+            const nickname = normalizeFriendNickname(rawNickname);
+            validateFriendNickname(nickname);
+            const updated = await friendsApi.updateNickname(friendshipPublicId, { nickname });
+            const index = friends.value.findIndex((item) => item.friendshipPublicId === friendshipPublicId);
+            if (index >= 0) {
+                friends.value[index] = updated;
+            }
+            return updated;
+        } catch (e: unknown) {
+            state.error.value = e instanceof Error ? e.message : String(e);
+            throw e;
+        } finally {
+            acting.value = false;
+        }
+    }
+
     return {
         sendRequest,
         acceptRequest,
@@ -152,6 +178,7 @@ export function createFriendsMutations(state: FriendsState, lists: FriendsLists)
         cancelRequest,
         removeFriend,
         blockUser,
-        unblockUser
+        unblockUser,
+        updateNickname
     };
 }

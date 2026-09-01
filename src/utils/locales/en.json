@@ -457,7 +457,17 @@
             "cancel": "Cancel",
             "remove": "Remove",
             "block": "Block",
-            "unblock": "Unblock"
+            "unblock": "Unblock",
+            "nickname": "Nickname"
+        },
+        "nicknameModal": {
+            "title": "Edit nickname",
+            "subtitle": "For {name}",
+            "label": "Nickname",
+            "placeholder": "e.g. My buddy",
+            "hint": "Only visible to you. The other person will not see it.",
+            "save": "Save",
+            "remove": "Remove nickname"
         },
         "removeModal": {
             "title": "Remove this friend?",

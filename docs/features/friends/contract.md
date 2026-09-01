@@ -20,13 +20,15 @@
 | ------- | ------------------------------------------------------------------------------------------------- |
 | GET     | `/api/friends`, `/requests/incoming`, `/requests/outgoing`, `/blocked`, `/search?q&page&pageSize` |
 | POST    | `/api/friends/requests`, `…/accept\|refuse\|cancel`, `/{userPublicId}/block`                      |
+| PATCH   | `/api/friends/{friendshipPublicId}` — `{ "nickname": string \| null }` (surnom personnel)         |
 | DELETE  | `/api/friends/{friendshipPublicId}`, `/{userPublicId}/block`                                      |
 
 ## Invariants
 
 - Search : minimum **2** caractères (`canSearch`) ; sinon clear results.
 - `onAuthenticatedSession()` (guard) : branche realtime **sans** charger les listes ; `bootstrap(tab)` page charge **l’onglet actif** (TTL 60s, `openTab` = ensure).
-- Realtime : notifs `friendRequest` / `friendAccepted` ; `friendshipChanged` (`refused|canceled|blocked|removed`) via **queue de refresh sérialisée** (dédupe).
+- Realtime : notifs `friendRequest` / `friendAccepted` ; `friendshipChanged` (`refused|canceled|blocked|removed|nicknameUpdated`) via **queue de refresh sérialisée** (dédupe).
+- `GET /api/friends` : champ `nickname` (surnom personnel, `null` si absent) ; affichage prioritaire via `getFriendDisplayName`.
 - Deep-link query : `?tab=Friends|Requests|Discover|Blocked`, `?friendship=` → scroll `[data-friendship-id]`.
 - QR : `spendup:user:{7×[0-9A-Z]}` ou public id nu (`qr.ts`).
 

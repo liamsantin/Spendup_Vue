@@ -35,6 +35,7 @@ const { t } = useI18n();
             v-for="friend in friends"
             :key="friend.user.publicId"
             :user="friend.user"
+            :nickname="friend.nickname"
             :highlight="selectedUserPublicId === friend.user.publicId"
             @click="emit('select', friend.user.publicId)"
         >

@@ -81,7 +81,7 @@ export type NotificationReceivedPayload = {
 };
 
 /** Payload SignalR `friendshipChanged` — live sans inbox / badge. */
-export type FriendshipChange = 'refused' | 'canceled' | 'blocked' | 'removed';
+export type FriendshipChange = 'refused' | 'canceled' | 'blocked' | 'removed' | 'nicknameUpdated';
 
 export type FriendshipChangedPayload = {
     change: FriendshipChange;

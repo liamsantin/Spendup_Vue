@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import FriendListItem from '@/features/friends/components/FriendListItem.vue';
+import FriendNicknameModal from '@/features/friends/components/FriendNicknameModal.vue';
+import { getFriendDisplayNameFromItem } from '@/features/friends/display-name';
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
 import type { FriendItem } from '@/features/friends/types';
 
@@ -12,13 +14,10 @@ const store = useFriendsStore();
 
 const removeOpen = ref(false);
 const removeTarget = ref<FriendItem | null>(null);
+const nicknameOpen = ref(false);
+const nicknameTarget = ref<FriendItem | null>(null);
 
-const removeDisplayName = computed(() => {
-    const user = removeTarget.value?.user;
-    if (!user) return '';
-    const fullName = [user.firstName, user.name].filter(Boolean).join(' ').trim();
-    return fullName || user.username || user.publicId;
-});
+const removeDisplayName = computed(() => (removeTarget.value ? getFriendDisplayNameFromItem(removeTarget.value) : ''));
 
 function formatDate(value: string) {
     return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium' }).format(new Date(value));
@@ -32,6 +31,16 @@ function openRemoveFriend(friend: FriendItem) {
 function onRemoveOpenChange(open: boolean) {
     removeOpen.value = open;
     if (!open) removeTarget.value = null;
+}
+
+function openNicknameModal(friend: FriendItem) {
+    nicknameTarget.value = friend;
+    nicknameOpen.value = true;
+}
+
+function onNicknameOpenChange(open: boolean) {
+    nicknameOpen.value = open;
+    if (!open) nicknameTarget.value = null;
 }
 
 async function confirmRemoveFriend() {
@@ -65,9 +74,13 @@ async function confirmRemoveFriend() {
                 :key="friend.friendshipPublicId"
                 :friendship-public-id="friend.friendshipPublicId"
                 :user="friend.user"
+                :nickname="friend.nickname"
                 :subtitle="t('friendsPage.friends.since', { date: formatDate(friend.friendsSince) })"
             >
                 <template #actions>
+                    <v-btn size="small" variant="text" color="primary" :disabled="store.acting" @click.stop="openNicknameModal(friend)">
+                        {{ t('friendsPage.actions.nickname') }}
+                    </v-btn>
                     <v-btn size="small" variant="text" color="error" :disabled="store.acting" @click.stop="openRemoveFriend(friend)">
                         {{ t('friendsPage.actions.remove') }}
                     </v-btn>
@@ -95,6 +108,8 @@ async function confirmRemoveFriend() {
             </v-btn>
         </div>
     </template>
+
+    <FriendNicknameModal v-model="nicknameOpen" :friend="nicknameTarget" @update:model-value="onNicknameOpenChange" />
 
     <AppConfirmationModal
         :model-value="removeOpen"
