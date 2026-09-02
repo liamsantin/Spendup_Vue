@@ -30,6 +30,8 @@ export interface sidebarTheme {
     icon: Component;
     items: menu[];
     match: (path: string) => boolean;
+    /** Sépare ce thème des icônes précédentes dans la rail. */
+    dividerBefore?: boolean;
 }
 
 const sidebarThemes: sidebarTheme[] = [
@@ -83,6 +85,7 @@ const sidebarThemes: sidebarTheme[] = [
         id: 'settings',
         title: 'nav.headers.settings',
         icon: SettingsIcon,
+        dividerBefore: true,
         match: (path) => path.startsWith('/app/comptes'),
         items: [
             { header: 'nav.headers.settings' },

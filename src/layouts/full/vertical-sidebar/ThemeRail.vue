@@ -28,22 +28,23 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
             >
                 <Menu2Icon size="26" stroke-width="1.5" />
             </v-btn>
-            <v-btn
-                v-for="theme in themes"
-                :key="theme.id"
-                icon
-                variant="text"
-                rounded="lg"
-                size="48"
-                class="theme-rail__btn"
-                :class="{ 'theme-rail__btn--active': theme.id === activeThemeId }"
-                :aria-label="t(theme.title)"
-                :aria-pressed="theme.id === activeThemeId"
-                @click="selectTheme(theme.id)"
-            >
-                <component :is="theme.icon" size="26" stroke-width="1.5" />
-                <v-tooltip activator="parent" location="end">{{ t(theme.title) }}</v-tooltip>
-            </v-btn>
+            <template v-for="theme in themes" :key="theme.id">
+                <v-divider v-if="theme.dividerBefore" class="theme-rail__divider" />
+                <v-btn
+                    icon
+                    variant="text"
+                    rounded="lg"
+                    size="48"
+                    class="theme-rail__btn"
+                    :class="{ 'theme-rail__btn--active': theme.id === activeThemeId }"
+                    :aria-label="t(theme.title)"
+                    :aria-pressed="theme.id === activeThemeId"
+                    @click="selectTheme(theme.id)"
+                >
+                    <component :is="theme.icon" size="26" stroke-width="1.5" />
+                    <v-tooltip activator="parent" location="end">{{ t(theme.title) }}</v-tooltip>
+                </v-btn>
+            </template>
         </div>
         <v-spacer />
         <v-btn icon variant="text" rounded="lg" size="48" class="theme-rail__btn" :aria-label="t('common.logout')" @click="authStore.logout()">

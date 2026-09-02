@@ -15,6 +15,13 @@
     color: rgb(var(--v-theme-textSecondary));
 }
 
+.theme-rail__divider {
+    width: calc(100% + 16px);
+    margin-inline: -8px;
+    border-color: rgb(var(--v-theme-borderColor)) !important;
+    opacity: 1;
+}
+
 .theme-rail__btn--active {
     background: rgb(var(--v-theme-primary)) !important;
     color: rgb(var(--v-theme-on-primary)) !important;
