@@ -55,6 +55,7 @@
 }
 
 .theme-rail__btn--active {
+    --rail-icon-tone-stroke: currentColor;
     background: rgb(var(--v-theme-primary)) !important;
     color: rgb(var(--v-theme-on-primary)) !important;
 }

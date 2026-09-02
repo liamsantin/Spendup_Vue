@@ -1,5 +1,7 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, CreditCardIcon, UserCircleIcon, UsersIcon, SettingsIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, CreditCardIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
+import SettingsRailIcon from './rail-icons/SettingsRailIcon.vue';
+import FinancesRailIcon from './rail-icons/FinancesRailIcon.vue';
 
 export const THEME_RAIL_WIDTH = 80;
 export const CONTENT_SIDEBAR_WIDTH = 250;
@@ -65,7 +67,7 @@ const sidebarThemes: sidebarTheme[] = [
     {
         id: 'finances',
         title: 'nav.headers.finances',
-        icon: BuildingBankIcon,
+        icon: FinancesRailIcon,
         match: (path) => path.startsWith('/app/finances'),
         items: [
             { header: 'nav.headers.finances' },
@@ -84,7 +86,7 @@ const sidebarThemes: sidebarTheme[] = [
     {
         id: 'settings',
         title: 'nav.headers.settings',
-        icon: SettingsIcon,
+        icon: SettingsRailIcon,
         dividerBefore: true,
         match: (path) => path.startsWith('/app/comptes'),
         items: [
