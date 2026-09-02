@@ -1,13 +1,14 @@
 import type { Component } from 'vue';
 import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, CreditCardIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
 import DashboardRailIcon from './rail-icons/DashboardRailIcon.vue';
+import FriendsRailIcon from './rail-icons/FriendsRailIcon.vue';
 import SettingsRailIcon from './rail-icons/SettingsRailIcon.vue';
 import FinancesRailIcon from './rail-icons/FinancesRailIcon.vue';
 
 export const THEME_RAIL_WIDTH = 80;
 export const CONTENT_SIDEBAR_WIDTH = 250;
 
-export type SidebarThemeId = 'spendup' | 'finances' | 'settings';
+export type SidebarThemeId = 'spendup' | 'friends' | 'finances' | 'settings';
 
 export interface menu {
     header?: string;
@@ -42,7 +43,7 @@ const sidebarThemes: sidebarTheme[] = [
         id: 'spendup',
         title: 'nav.headers.spendup',
         icon: DashboardRailIcon,
-        match: (path) => path === '/app' || path.startsWith('/app/notifications') || path.startsWith('/app/friends'),
+        match: (path) => path === '/app' || path.startsWith('/app/notifications'),
         items: [
             { header: 'nav.headers.spendup' },
             {
@@ -57,7 +58,16 @@ const sidebarThemes: sidebarTheme[] = [
                 to: '/app/notifications',
                 chipColor: 'surface',
                 chipBgColor: 'primary'
-            },
+            }
+        ]
+    },
+    {
+        id: 'friends',
+        title: 'nav.headers.friends',
+        icon: FriendsRailIcon,
+        match: (path) => path.startsWith('/app/friends'),
+        items: [
+            { header: 'nav.headers.friends' },
             {
                 title: 'nav.items.friends',
                 icon: UsersIcon,

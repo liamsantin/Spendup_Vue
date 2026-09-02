@@ -29,7 +29,8 @@
     "nav": {
         "toggleMenu": "Ouvrir ou fermer le menu",
         "headers": {
-            "spendup": "Spend.Up",
+            "spendup": "Général",
+            "friends": "Amis",
             "finances": "Finances",
             "settings": "Préférences"
         },

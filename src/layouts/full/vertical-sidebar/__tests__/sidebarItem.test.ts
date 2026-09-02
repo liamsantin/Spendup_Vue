@@ -5,7 +5,7 @@ describe('themeIdFromPath', () => {
     it('mappe le dashboard et les routes Spend.Up', () => {
         expect(themeIdFromPath('/app')).toBe('spendup');
         expect(themeIdFromPath('/app/notifications')).toBe('spendup');
-        expect(themeIdFromPath('/app/friends')).toBe('spendup');
+        expect(themeIdFromPath('/app/friends')).toBe('friends');
     });
 
     it('mappe les finances et les préférences', () => {
