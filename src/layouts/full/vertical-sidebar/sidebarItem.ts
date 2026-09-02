@@ -2,7 +2,7 @@ import type { Component } from 'vue';
 import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, CreditCardIcon, UserCircleIcon, UsersIcon, SettingsIcon } from 'vue-tabler-icons';
 
 export const THEME_RAIL_WIDTH = 80;
-export const CONTENT_SIDEBAR_WIDTH = 270;
+export const CONTENT_SIDEBAR_WIDTH = 250;
 
 export type SidebarThemeId = 'spendup' | 'finances' | 'settings';
 
