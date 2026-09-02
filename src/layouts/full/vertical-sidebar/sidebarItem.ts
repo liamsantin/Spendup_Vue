@@ -8,7 +8,7 @@ import FinancesRailIcon from './rail-icons/FinancesRailIcon.vue';
 export const THEME_RAIL_WIDTH = 80;
 export const CONTENT_SIDEBAR_WIDTH = 250;
 
-export type SidebarThemeId = 'spendup' | 'friends' | 'finances' | 'settings';
+export type SidebarThemeId = 'general' | 'friends' | 'finances' | 'settings';
 
 export interface menu {
     header?: string;
@@ -40,12 +40,12 @@ export interface sidebarTheme {
 
 const sidebarThemes: sidebarTheme[] = [
     {
-        id: 'spendup',
-        title: 'nav.headers.spendup',
+        id: 'general',
+        title: 'nav.headers.general',
         icon: DashboardRailIcon,
         match: (path) => path === '/app' || path.startsWith('/app/notifications'),
         items: [
-            { header: 'nav.headers.spendup' },
+            { header: 'nav.headers.general' },
             {
                 title: 'nav.items.dashboard',
                 icon: LayoutDashboardIcon,
@@ -113,7 +113,7 @@ const sidebarThemes: sidebarTheme[] = [
 ];
 
 export function themeIdFromPath(path: string): SidebarThemeId {
-    return sidebarThemes.find((theme) => theme.match(path))?.id ?? 'spendup';
+    return sidebarThemes.find((theme) => theme.match(path))?.id ?? 'general';
 }
 
 export default sidebarThemes;

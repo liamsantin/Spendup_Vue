@@ -48,7 +48,7 @@ describe('useSidebarNav', () => {
     it('reset Pinia isole le thème entre tests', () => {
         useSidebarNavStore().activeThemeId = 'settings';
         useSidebarNavStore().reset();
-        expect(useSidebarNavStore().activeThemeId).toBe('spendup');
+        expect(useSidebarNavStore().activeThemeId).toBe('general');
     });
 
     it('ajoute le chip notifications si unread > 0', () => {

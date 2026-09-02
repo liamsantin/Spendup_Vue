@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { themeIdFromPath } from '../sidebarItem';
 
 describe('themeIdFromPath', () => {
-    it('mappe le dashboard et les routes Spend.Up', () => {
-        expect(themeIdFromPath('/app')).toBe('spendup');
-        expect(themeIdFromPath('/app/notifications')).toBe('spendup');
+    it('mappe le dashboard et les routes Général', () => {
+        expect(themeIdFromPath('/app')).toBe('general');
+        expect(themeIdFromPath('/app/notifications')).toBe('general');
         expect(themeIdFromPath('/app/friends')).toBe('friends');
     });
 
@@ -14,7 +14,7 @@ describe('themeIdFromPath', () => {
         expect(themeIdFromPath('/app/comptes')).toBe('settings');
     });
 
-    it('retombe sur spendup pour une route inconnue', () => {
-        expect(themeIdFromPath('/app/inconnu')).toBe('spendup');
+    it('retombe sur general pour une route inconnue', () => {
+        expect(themeIdFromPath('/app/inconnu')).toBe('general');
     });
 });
