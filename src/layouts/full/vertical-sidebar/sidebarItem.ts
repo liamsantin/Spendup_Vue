@@ -65,6 +65,7 @@ const sidebarThemes: sidebarTheme[] = [
         id: 'friends',
         title: 'nav.headers.friends',
         icon: FriendsRailIcon,
+        dividerBefore: true,
         match: (path) => path.startsWith('/app/friends'),
         items: [
             { header: 'nav.headers.friends' },

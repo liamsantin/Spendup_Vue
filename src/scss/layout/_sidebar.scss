@@ -48,8 +48,11 @@
 }
 
 .theme-rail__divider {
-    width: calc(100% + 16px);
-    margin-inline: -8px;
+    align-self: center;
+    flex: 0 0 auto;
+    width: 40px !important;
+    max-width: 40px;
+    margin-inline: auto;
     border-color: rgb(var(--v-theme-borderColor)) !important;
     opacity: 1;
 }

@@ -3,8 +3,8 @@ defineOptions({ name: 'ThemeRail' });
 
 import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
-import { Menu2Icon } from 'vue-tabler-icons';
 import LogoutRailIcon from './rail-icons/LogoutRailIcon.vue';
+import MenuRailIcon from './rail-icons/MenuRailIcon.vue';
 import { useAuthStore } from '@/features/auth';
 import { useSidebarNav } from './useSidebarNav';
 
@@ -26,7 +26,7 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
                 :aria-label="t('nav.toggleMenu')"
                 @click="toggleContentSidebar"
             >
-                <Menu2Icon size="26" stroke-width="1.5" />
+                <MenuRailIcon size="26" />
             </v-btn>
         </div>
         <div class="theme-rail__themes" :class="{ 'theme-rail__themes--mobile': !lgAndUp }">
