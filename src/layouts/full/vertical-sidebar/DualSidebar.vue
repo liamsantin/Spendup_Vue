@@ -84,7 +84,7 @@ watch(
         v-model="menuOpen"
     >
         <div class="mobile-dual-sidebar__row">
-            <div class="theme-rail theme-rail--embedded">
+            <div class="theme-rail theme-rail--embedded" :style="{ width: `${THEME_RAIL_WIDTH}px` }">
                 <ThemeRail />
             </div>
             <div class="leftSidebar leftSidebar--embedded">
