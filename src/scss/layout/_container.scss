@@ -17,7 +17,7 @@ html {
     box-sizing: border-box;
     height: calc(100dvh - var(--v-layout-top, 70px));
     min-height: calc(100vh - var(--v-layout-top, 70px));
-    padding: 0 8px 16px;
+    padding: 4px 8px 16px;
 }
 
 .page-content {
