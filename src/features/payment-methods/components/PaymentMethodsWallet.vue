@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
-import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { canWritePaymentMethods } from '@/features/payment-methods/rights';
@@ -13,13 +12,19 @@ import type { PaymentMethod } from '@/features/payment-methods/types';
 import PaymentMethodListItem from '@/features/payment-methods/components/list/PaymentMethodListItem.vue';
 import PaymentMethodFormModal from '@/features/payment-methods/components/modals/PaymentMethodFormModal.vue';
 
+const props = withDefaults(
+    defineProps<{
+        showInactive?: boolean;
+    }>(),
+    { showInactive: true }
+);
+
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const accountsStore = useAccountsStore();
 const store = usePaymentMethodsStore();
 
-const showInactive = ref(true);
 const createOpen = ref(false);
 const editTarget = ref<PaymentMethod | null>(null);
 const deleteTarget = ref<PaymentMethod | null>(null);
@@ -49,7 +54,7 @@ const filterAccountId = computed(() => accountFromQuery());
 const canCreate = computed(() => accountsStore.accounts.some((a) => canWritePaymentMethods(a)));
 
 const visibleItems = computed(() => {
-    const list = showInactive.value ? store.items : store.items.filter((item) => item.isActive);
+    const list = props.showInactive ? store.items : store.items.filter((item) => item.isActive);
     const accountId = filterAccountId.value;
     return accountId ? list.filter((item) => item.accountPublicId === accountId) : list;
 });
@@ -155,10 +160,6 @@ async function confirmDelete() {
         >
             {{ localError || store.error }}
         </AppAlert>
-
-        <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-4">
-            <AppSwitch v-model="showInactive" :inset="false" :label="t('paymentMethodsPage.filters.showInactive')" />
-        </div>
 
         <div v-if="store.loading && !store.items.length" class="py-8 text-center">
             <v-progress-circular indeterminate color="primary" size="32" />

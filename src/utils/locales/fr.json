@@ -461,6 +461,7 @@
             "account": "Aucun moyen de paiement sur ce compte."
         },
         "actions": {
+            "filter": "Filtre",
             "create": "Ajouter",
             "edit": "Modifier",
             "delete": "Supprimer"

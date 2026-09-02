@@ -461,6 +461,7 @@
             "account": "No payment methods on this account."
         },
         "actions": {
+            "filter": "Filter",
             "create": "Add",
             "edit": "Edit",
             "delete": "Delete"
