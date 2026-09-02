@@ -72,8 +72,7 @@ export function createPaymentMethodsCrud(state: PaymentMethodsState) {
 
     function assertCanWrite(accountPublicId: string) {
         const account = useAccountsStore().accounts.find((a) => a.publicId === accountPublicId);
-        if (!account) return;
-        if (!canWritePaymentMethods(account)) {
+        if (!account || !canWritePaymentMethods(account)) {
             throw new AppError(PAYMENT_METHOD_FORBIDDEN_MESSAGE, 403, PAYMENT_METHOD_FORBIDDEN_CODE);
         }
     }

@@ -6,6 +6,7 @@ import { useRoute } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { CONTENT_SIDEBAR_WIDTH, THEME_RAIL_WIDTH } from './sidebarItem';
+import { shouldCloseMobileNavOnPathChange } from './nav-overlay';
 import { useSidebarNav } from './useSidebarNav';
 import ThemeRail from './ThemeRail.vue';
 import VerticalSidebar from './VerticalSidebar.vue';
@@ -31,7 +32,7 @@ watch(
     () => route.path,
     (path, prev) => {
         syncThemeFromRoute(path);
-        if (prev != null && !lgAndUp.value) {
+        if (shouldCloseMobileNavOnPathChange(prev, lgAndUp.value)) {
             appSettings.Sidebar_drawer = false;
         }
     },

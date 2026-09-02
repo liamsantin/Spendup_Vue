@@ -1,20 +1,26 @@
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { useNotificationsStore } from '@/features/notifications';
+import { useSidebarNavStore } from './sidebar-nav-store';
 import sidebarThemes, { themeIdFromPath, type menu, type SidebarThemeId } from './sidebarItem';
-
-const activeThemeId = ref<SidebarThemeId>('spendup');
 
 export function useSidebarNav() {
     const appSettings = useAppSettingsStore();
     const notifications = useNotificationsStore();
     const { lgAndUp } = useDisplay();
+    const navStore = useSidebarNavStore();
 
     const themes = sidebarThemes;
+    const activeThemeId = computed({
+        get: () => navStore.activeThemeId,
+        set: (id: SidebarThemeId) => {
+            navStore.activeThemeId = id;
+        }
+    });
 
     const sidebarMenu = computed<menu[]>(() => {
-        const theme = sidebarThemes.find((item) => item.id === activeThemeId.value) ?? sidebarThemes[0];
+        const theme = sidebarThemes.find((item) => item.id === navStore.activeThemeId) ?? sidebarThemes[0];
         return theme.items.map((item) => {
             if (item.to !== '/app/notifications') return item;
             const count = notifications.unreadCount;
@@ -31,11 +37,11 @@ export function useSidebarNav() {
     });
 
     function syncThemeFromRoute(path: string) {
-        activeThemeId.value = themeIdFromPath(path);
+        navStore.activeThemeId = themeIdFromPath(path);
     }
 
     function selectTheme(id: SidebarThemeId) {
-        activeThemeId.value = id;
+        navStore.activeThemeId = id;
         appSettings.Sidebar_drawer = true;
     }
 

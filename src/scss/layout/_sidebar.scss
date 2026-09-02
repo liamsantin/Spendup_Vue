@@ -108,15 +108,17 @@
 
 .mobile-dual-overlay {
     position: fixed;
-    inset: 0;
-    z-index: 2400;
+    inset-block-start: var(--v-layout-top, 70px);
+    inset-block-end: 0;
+    inset-inline: 0;
+    z-index: 1000;
     pointer-events: none;
 }
 
 .mobile-dual-overlay__scrim {
     position: absolute;
     inset: 0;
-    left: var(--theme-rail-width, 80px);
+    inset-inline-start: var(--theme-rail-width, 80px);
     background: rgba(var(--v-theme-on-surface), 0.5);
     pointer-events: auto;
 }
@@ -124,17 +126,19 @@
 .mobile-dual-overlay__rail,
 .mobile-dual-overlay__menu {
     position: absolute;
-    top: 0;
-    height: 100%;
+    inset-block: 0;
     pointer-events: auto;
 }
 
 .mobile-dual-overlay__rail {
-    left: 0;
+    inset-inline-start: 0;
+    width: var(--theme-rail-width, 80px);
     z-index: 2;
 }
 
 .mobile-dual-overlay__menu {
+    inset-inline-start: var(--theme-rail-width, 80px);
+    width: var(--content-sidebar-width, 250px);
     z-index: 1;
     background: rgb(var(--v-theme-surface));
     box-shadow:

@@ -137,6 +137,16 @@ describe('usePaymentMethodsStore', () => {
         expect(api.create).not.toHaveBeenCalled();
     });
 
+    it('refuse l’écriture si le compte est absent du store', async () => {
+        accountsList.length = 0;
+        const store = usePaymentMethodsStore();
+        await expect(store.createPaymentMethod(form({ label: 'Visa perso' }))).rejects.toMatchObject({
+            status: 403,
+            code: 'payment_method_forbidden'
+        });
+        expect(api.create).not.toHaveBeenCalled();
+    });
+
     it('propage le message 400 serveur', async () => {
         api.list.mockResolvedValue({ items: [], page: 1, pageSize: 50, totalCount: 0 });
         api.create.mockRejectedValue(new AppError('Compte archivé, restaurer d’abord.', 400));

@@ -1,27 +1,8 @@
 <script setup lang="ts">
 defineOptions({ name: 'RailIcon' });
 
-import dashboard from '@/assets/icons/rail/dashboard.svg?raw';
-import friends from '@/assets/icons/rail/friends.svg?raw';
-import settings from '@/assets/icons/rail/settings.svg?raw';
-import finances from '@/assets/icons/rail/finances.svg?raw';
-import logout from '@/assets/icons/rail/logout.svg?raw';
-import menu from '@/assets/icons/rail/menu.svg?raw';
-
-const icons = {
-    dashboard,
-    friends,
-    settings,
-    finances,
-    logout,
-    menu
-} as const;
-
-export type RailIconName = keyof typeof icons;
-
 withDefaults(
     defineProps<{
-        name: RailIconName;
         size?: number;
     }>(),
     { size: 26 }
@@ -29,7 +10,9 @@ withDefaults(
 </script>
 
 <template>
-    <span class="rail-icon" :style="{ width: `${size}px`, height: `${size}px` }" v-html="icons[name]" />
+    <span class="rail-icon" :style="{ width: `${size}px`, height: `${size}px` }">
+        <slot />
+    </span>
 </template>
 
 <style scoped lang="scss">
