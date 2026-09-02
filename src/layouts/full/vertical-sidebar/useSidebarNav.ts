@@ -35,12 +35,6 @@ export function useSidebarNav() {
     }
 
     function selectTheme(id: SidebarThemeId) {
-        if (id === activeThemeId.value) {
-            if (lgAndUp.value) {
-                toggleContentSidebar();
-            }
-            return;
-        }
         activeThemeId.value = id;
         appSettings.Sidebar_drawer = true;
     }

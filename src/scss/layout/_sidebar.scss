@@ -1,7 +1,7 @@
 @use '../variables' as *;
 
 .theme-rail {
-    background: rgb(var(--v-theme-background)) !important;
+    background: rgb(var(--v-theme-lightprimary)) !important;
     border-right: 1px solid rgb(var(--v-theme-borderColor)) !important;
 }
 

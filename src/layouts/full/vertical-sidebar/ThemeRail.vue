@@ -2,11 +2,13 @@
 defineOptions({ name: 'ThemeRail' });
 
 import { useI18n } from 'vue-i18n';
+import { useDisplay } from 'vuetify';
 import { Menu2Icon, PowerIcon } from 'vue-tabler-icons';
 import { useAuthStore } from '@/features/auth';
 import { useSidebarNav } from './useSidebarNav';
 
 const { t } = useI18n();
+const { lgAndUp } = useDisplay();
 const authStore = useAuthStore();
 const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarNav();
 </script>
@@ -15,6 +17,7 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
     <div class="theme-rail__inner d-flex flex-column align-center fill-height px-2 py-4">
         <div class="d-flex flex-column ga-2">
             <v-btn
+                v-if="lgAndUp"
                 icon
                 variant="text"
                 rounded="lg"
