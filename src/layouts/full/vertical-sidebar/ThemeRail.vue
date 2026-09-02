@@ -15,9 +15,8 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
 
 <template>
     <div class="theme-rail__inner">
-        <div class="theme-rail__brand">
+        <div v-if="lgAndUp" class="theme-rail__brand">
             <v-btn
-                v-if="lgAndUp"
                 icon
                 variant="text"
                 rounded="lg"
@@ -29,7 +28,7 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
                 <Menu2Icon size="26" stroke-width="1.5" />
             </v-btn>
         </div>
-        <div class="theme-rail__themes">
+        <div class="theme-rail__themes" :class="{ 'theme-rail__themes--mobile': !lgAndUp }">
             <template v-for="theme in themes" :key="theme.id">
                 <v-divider v-if="theme.dividerBefore" class="theme-rail__divider" />
                 <v-btn

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
 import DualSidebar from './vertical-sidebar/DualSidebar.vue';
+import { THEME_RAIL_WIDTH } from './vertical-sidebar/sidebarItem';
 import VerticalHeaderVue from './vertical-header/VerticalHeader.vue';
 import HorizontalHeader from './horizontal-header/HorizontalHeader.vue';
 import HorizontalSidebar from './horizontal-sidebar/HorizontalSidebar.vue';
@@ -16,6 +17,7 @@ useIdleLogout();
     <v-locale-provider :locale="appSettings.locale">
         <v-app
             :theme="appSettings.actTheme"
+            :style="{ '--theme-rail-width': `${THEME_RAIL_WIDTH}px` }"
             :class="[
                 appSettings.actTheme,
                 appSettings.setHorizontalLayout ? 'horizontalLayout' : 'verticalLayout',
