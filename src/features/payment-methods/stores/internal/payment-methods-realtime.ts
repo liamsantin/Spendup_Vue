@@ -23,7 +23,7 @@ export function createPaymentMethodsRealtime(state: PaymentMethodsState, deps: R
         if (change === 'revoked') {
             removeByAccount(accountPublicId);
             cache.invalidate(KEY_GLOBAL);
-            if (initialized.value) {
+            if (initialized.value && state.activeListKey.value === KEY_GLOBAL) {
                 void loadList({ force: true }).catch(() => undefined);
             }
             return;

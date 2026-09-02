@@ -156,7 +156,23 @@ describe('usePaymentMethodsStore', () => {
         expect(store.error).toBe('Moyen de paiement introuvable.');
     });
 
-    it('refetch sur paymentMethodCreated et purge sur revoked', async () => {
+    it('après create sur un compte, charge vraiment la liste globale (pas de TTL à vide)', async () => {
+        api.list.mockResolvedValue({ items: [], page: 1, pageSize: 50, totalCount: 0 });
+        api.create.mockResolvedValue(visa);
+        const store = usePaymentMethodsStore();
+        await store.loadList({ accountPublicId: 'acc-1' });
+
+        await store.createPaymentMethod(form({ label: 'Visa perso' }));
+        api.list.mockClear();
+        api.list.mockResolvedValue({ items: [visa], page: 1, pageSize: 50, totalCount: 1 });
+
+        await store.loadList();
+        expect(api.list).toHaveBeenCalledWith({ accountPublicId: undefined, page: 1, pageSize: 50 });
+        expect(store.items).toHaveLength(1);
+        expect(store.activeAccountPublicId).toBeNull();
+    });
+
+    it('refetch sur paymentMethodCreated et purge sur revoked (liste globale)', async () => {
         api.list.mockResolvedValue({ items: [visa], page: 1, pageSize: 50, totalCount: 1 });
         let listener: ((payload: { change: string; accountPublicId: string }) => void) | undefined;
         subscribeToAccountChanged.mockImplementation((fn: typeof listener) => {
@@ -179,9 +195,71 @@ describe('usePaymentMethodsStore', () => {
         api.list.mockResolvedValue({ items: [], page: 1, pageSize: 50, totalCount: 0 });
         listener?.({ change: 'revoked', accountPublicId: 'acc-1' });
         await vi.waitFor(() => {
-            expect(api.list).toHaveBeenCalled();
+            expect(api.list).toHaveBeenCalledWith({ accountPublicId: undefined, page: 1, pageSize: 50 });
         });
         expect(store.items.every((item) => item.accountPublicId !== 'acc-1')).toBe(true);
+    });
+
+    it('revoked sur un autre compte ne bascule pas la liste active', async () => {
+        const acc2Method: PaymentMethod = { ...visa, publicId: 'pm-2', accountPublicId: 'acc-2', label: 'Twint' };
+        let listener: ((payload: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountChanged.mockImplementation((fn: typeof listener) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        api.list.mockResolvedValue({ items: [acc2Method], page: 1, pageSize: 50, totalCount: 1 });
+        const store = usePaymentMethodsStore();
+        await store.bootstrap('acc-2');
+        expect(store.activeAccountPublicId).toBe('acc-2');
+
+        api.list.mockClear();
+        listener?.({ change: 'revoked', accountPublicId: 'acc-1' });
+        await Promise.resolve();
+        expect(api.list).not.toHaveBeenCalled();
+        expect(store.activeAccountPublicId).toBe('acc-2');
+        expect(store.items).toEqual([acc2Method]);
+    });
+
+    it('refetch d’un autre compte n’écrase pas totalCount / hasMore de la liste globale', async () => {
+        const acc2Method: PaymentMethod = { ...visa, publicId: 'pm-2', accountPublicId: 'acc-2', label: 'Twint' };
+        let listener: ((payload: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountChanged.mockImplementation((fn: typeof listener) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const page1 = [visa, acc2Method];
+        api.list.mockResolvedValue({ items: page1, page: 1, pageSize: 50, totalCount: 200 });
+        const store = usePaymentMethodsStore();
+        await store.bootstrap();
+        expect(store.hasMore).toBe(true);
+
+        api.list.mockResolvedValue({ items: [acc2Method], page: 1, pageSize: 50, totalCount: 1 });
+        await store.loadList({ accountPublicId: 'acc-2', force: true });
+        expect(store.activeAccountPublicId).toBe('acc-2');
+
+        api.list.mockClear();
+        api.list.mockResolvedValue({
+            items: [visa, { ...visa, publicId: 'pm-3', label: 'Nouvelle carte' }],
+            page: 1,
+            pageSize: 50,
+            totalCount: 12
+        });
+        listener?.({ change: 'paymentMethodCreated', accountPublicId: 'acc-1' });
+        await vi.waitFor(() => {
+            expect(api.list).toHaveBeenCalledWith({ accountPublicId: 'acc-1', page: 1, pageSize: 50 });
+        });
+        expect(store.activeAccountPublicId).toBe('acc-2');
+        expect(store.items).toEqual([acc2Method]);
+
+        api.list.mockClear();
+        api.list.mockResolvedValue({ items: page1, page: 1, pageSize: 50, totalCount: 201 });
+        await store.loadList();
+        expect(api.list).toHaveBeenCalledWith({ accountPublicId: undefined, page: 1, pageSize: 50 });
+        expect(store.totalCount).toBe(201);
+        expect(store.hasMore).toBe(true);
+        expect(store.items).toHaveLength(2);
     });
 
     it('onAuthenticatedSession branche le realtime sans charger', () => {

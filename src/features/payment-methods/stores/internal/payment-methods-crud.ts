@@ -82,6 +82,17 @@ export function createPaymentMethodsCrud(state: PaymentMethodsState) {
         error.value = PAYMENT_METHOD_NOT_FOUND_MESSAGE;
     }
 
+    /** Ne marque une liste comme fraîche que si elle a déjà été hydratée (évite un TTL sur une liste globale vide). */
+    function touchHydratedListCaches(accountPublicId?: string | null) {
+        if (accountPublicId) cache.touch(listCacheKey(accountPublicId));
+        if (itemsByListKey.has(KEY_GLOBAL)) cache.touch(KEY_GLOBAL);
+    }
+
+    function dropGlobalListSnapshot() {
+        itemsByListKey.delete(KEY_GLOBAL);
+        cache.invalidate(KEY_GLOBAL);
+    }
+
     /**
      * Charge une page de moyens (globale ou filtrée par compte).
      */
@@ -202,8 +213,7 @@ export function createPaymentMethodsCrud(state: PaymentMethodsState) {
             }
             const created = await paymentMethodsApi.create(built.payload);
             upsertItem(created);
-            cache.touch(listCacheKey(created.accountPublicId));
-            cache.touch(KEY_GLOBAL);
+            touchHydratedListCaches(created.accountPublicId);
             return created;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
@@ -225,8 +235,7 @@ export function createPaymentMethodsCrud(state: PaymentMethodsState) {
             }
             const updated = await paymentMethodsApi.update(publicId, built.payload);
             upsertItem(updated);
-            cache.touch(listCacheKey(updated.accountPublicId));
-            cache.touch(KEY_GLOBAL);
+            touchHydratedListCaches(updated.accountPublicId);
             return updated;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
@@ -249,8 +258,7 @@ export function createPaymentMethodsCrud(state: PaymentMethodsState) {
             if (accountPublicId) assertCanWrite(accountPublicId);
             await paymentMethodsApi.remove(publicId);
             removeItemLocal(publicId, accountPublicId);
-            if (accountPublicId) cache.touch(listCacheKey(accountPublicId));
-            cache.touch(KEY_GLOBAL);
+            touchHydratedListCaches(accountPublicId);
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
             if (err.status === 404) {
@@ -267,15 +275,16 @@ export function createPaymentMethodsCrud(state: PaymentMethodsState) {
 
     async function refetchAccount(accountPublicId: string) {
         cache.invalidate(listCacheKey(accountPublicId));
-        cache.invalidate(KEY_GLOBAL);
         const currentAccount = activeListKey.value === KEY_GLOBAL ? null : activeListKey.value.slice(5);
         if (!currentAccount || currentAccount === accountPublicId) {
+            cache.invalidate(KEY_GLOBAL);
             await loadList({
                 accountPublicId: currentAccount ?? undefined,
                 force: true
             }).catch(() => undefined);
             return;
         }
+        dropGlobalListSnapshot();
         try {
             const result = await paymentMethodsApi.list({
                 accountPublicId,
@@ -288,13 +297,7 @@ export function createPaymentMethodsCrud(state: PaymentMethodsState) {
                 pageSize: result?.pageSize ?? PAYMENT_METHOD_PAGE_SIZE_DEFAULT,
                 totalCount: result?.totalCount ?? nextItems.length
             });
-            const global = itemsByListKey.get(KEY_GLOBAL);
-            if (global) {
-                const rest = global.items.filter((item) => item.accountPublicId !== accountPublicId);
-                setList(KEY_GLOBAL, [...rest, ...nextItems], {
-                    totalCount: rest.length + (result?.totalCount ?? nextItems.length)
-                });
-            }
+            cache.touch(listCacheKey(accountPublicId));
         } catch {
             // ignore background realtime errors
         }
