@@ -1,4 +1,5 @@
 import type { appsLinkType, profileType, quickLinksType, searchType } from '@/types/HeaderTypes';
+import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 
 import proUser1 from '@/assets/images/svgs/icon-account.svg';
 import proFriends from '@/assets/images/svgs/icon-friends.svg';
@@ -16,7 +17,7 @@ const profileDD: profileType[] = [
         avatar: proUser1,
         titleKey: 'header.profile.menu.preferences.title',
         subtitleKey: 'header.profile.menu.preferences.subtitle',
-        href: '/app/comptes'
+        href: SETTINGS_PATHS.account
     },
     {
         avatar: proFriends,
@@ -51,7 +52,7 @@ const searchSugg: searchType[] = [
     {
         titleKey: 'header.search.suggestions.preferences.title',
         subtitleKey: 'header.search.suggestions.preferences.subtitle',
-        href: '/app/comptes',
+        href: SETTINGS_PATHS.account,
         icon: 'account',
         group: 'app'
     },
@@ -145,7 +146,7 @@ const quickLink: quickLinksType[] = [
     },
     {
         titleKey: 'header.appsSidebar.quickLinks.preferences',
-        href: '/app/comptes'
+        href: SETTINGS_PATHS.account
     }
 ];
 

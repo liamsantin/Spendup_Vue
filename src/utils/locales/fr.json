@@ -41,7 +41,10 @@
             "accounts": "Comptes",
             "transactions": "Transactions",
             "paymentMethods": "Moyens de paiement",
-            "preferences": "Mon compte"
+            "profile": "Profil",
+            "preferences": "Préférences",
+            "notificationSettings": "Notifications",
+            "security": "Sécurité"
         },
         "subCaptions": {
             "soon": "Bientôt"
@@ -621,6 +624,20 @@
             "preferences": "Préférences",
             "notifications": "Notifications",
             "security": "Sécurité"
+        },
+        "pages": {
+            "account": {
+                "subtitle": "Photo, informations personnelles et identifiants."
+            },
+            "preferences": {
+                "subtitle": "Confidentialité, région, thème et tableau de bord."
+            },
+            "notifications": {
+                "subtitle": "E-mail, alertes in-app et fréquence du résumé."
+            },
+            "security": {
+                "subtitle": "Double authentification, appareils et session."
+            }
         },
         "leaveDirtyConfirm": "Vous avez des modifications non enregistrées. Quitter cette page ?",
         "leaveDirtyModal": {

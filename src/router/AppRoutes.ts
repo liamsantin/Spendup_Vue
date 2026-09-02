@@ -5,9 +5,12 @@
  * Les vues :
  *   dashboard / notifications → views/app/<page>/
  *   Paramètres               → views/app/parametres/
- *   Finances (à venir)       → views/app/finances/
+ *   Finances                 → views/app/finances/
  */
-const AppRoutes = {
+import type { RouteRecordRaw } from 'vue-router';
+import { SETTINGS_PATHS, resolveLegacySettingsRedirect } from '@/features/user-settings/settings-paths';
+
+const AppRoutes: RouteRecordRaw = {
     path: '/app',
     meta: {
         requiresAuth: true
@@ -19,11 +22,6 @@ const AppRoutes = {
             name: 'AppDashboard',
             path: '',
             component: () => import('@/views/app/dashboard/AppDashboardView.vue')
-        },
-        {
-            name: 'AppAccounts',
-            path: 'comptes',
-            component: () => import('@/views/app/parametres/accounts/AppAccountsPage.vue')
         },
         {
             name: 'AppNotifications',
@@ -46,8 +44,36 @@ const AppRoutes = {
             component: () => import('@/views/app/finances/payment-methods/AppPaymentMethodsPage.vue')
         },
         {
+            path: 'parametres',
+            redirect: SETTINGS_PATHS.account
+        },
+        {
+            name: 'AppSettingsAccount',
+            path: 'parametres/compte',
+            component: () => import('@/views/app/parametres/compte/AppSettingsAccountPage.vue')
+        },
+        {
+            name: 'AppSettingsPreferences',
+            path: 'parametres/preferences',
+            component: () => import('@/views/app/parametres/preferences/AppSettingsPreferencesPage.vue')
+        },
+        {
+            name: 'AppSettingsNotifications',
+            path: 'parametres/notifications',
+            component: () => import('@/views/app/parametres/notifications/AppSettingsNotificationsPage.vue')
+        },
+        {
+            name: 'AppSettingsSecurity',
+            path: 'parametres/securite',
+            component: () => import('@/views/app/parametres/securite/AppSettingsSecurityPage.vue')
+        },
+        {
+            path: 'comptes',
+            redirect: (to) => resolveLegacySettingsRedirect(to)
+        },
+        {
             path: 'applications',
-            redirect: '/app/comptes'
+            redirect: SETTINGS_PATHS.account
         }
     ]
 };

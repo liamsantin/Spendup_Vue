@@ -6,4 +6,6 @@ export * from '@/features/user-settings/composables/useAccountPasswordChange';
 export * from '@/features/user-settings/composables/useAccountProfileForm';
 export * from '@/features/user-settings/composables/useAccountUnlinkGoogle';
 export * from '@/features/user-settings/composables/useAccountUsernameChange';
+export * from '@/features/user-settings/composables/useDirtyPageGuard';
 export * from '@/features/user-settings/composables/useSecurityDevices';
+export * from '@/features/user-settings/composables/useSettingsFormPage';

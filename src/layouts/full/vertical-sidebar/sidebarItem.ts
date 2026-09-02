@@ -1,5 +1,15 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, CreditCardIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
+import {
+    AdjustmentsHorizontalIcon,
+    BellIcon,
+    BuildingBankIcon,
+    CreditCardIcon,
+    LayoutDashboardIcon,
+    LockIcon,
+    UserCircleIcon,
+    UsersIcon
+} from 'vue-tabler-icons';
+import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import DashboardRailIcon from './rail-icons/DashboardRailIcon.vue';
 import FriendsRailIcon from './rail-icons/FriendsRailIcon.vue';
 import SettingsRailIcon from './rail-icons/SettingsRailIcon.vue';
@@ -43,7 +53,7 @@ const sidebarThemes: sidebarTheme[] = [
         id: 'general',
         title: 'nav.headers.general',
         icon: DashboardRailIcon,
-        match: (path) => path === '/app' || path.startsWith('/app/notifications'),
+        match: (path) => path === '/app' || path === '/app/notifications' || path.startsWith('/app/notifications/'),
         items: [
             { header: 'nav.headers.general' },
             {
@@ -100,13 +110,28 @@ const sidebarThemes: sidebarTheme[] = [
         title: 'nav.headers.settings',
         icon: SettingsRailIcon,
         dividerBefore: true,
-        match: (path) => path.startsWith('/app/comptes'),
+        match: (path) => path.startsWith('/app/parametres') || path.startsWith('/app/comptes'),
         items: [
             { header: 'nav.headers.settings' },
             {
-                title: 'nav.items.preferences',
+                title: 'nav.items.profile',
                 icon: UserCircleIcon,
-                to: '/app/comptes'
+                to: SETTINGS_PATHS.account
+            },
+            {
+                title: 'nav.items.preferences',
+                icon: AdjustmentsHorizontalIcon,
+                to: SETTINGS_PATHS.preferences
+            },
+            {
+                title: 'nav.items.notificationSettings',
+                icon: BellIcon,
+                to: SETTINGS_PATHS.notifications
+            },
+            {
+                title: 'nav.items.security',
+                icon: LockIcon,
+                to: SETTINGS_PATHS.security
             }
         ]
     }

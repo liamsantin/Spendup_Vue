@@ -41,7 +41,10 @@
             "accounts": "Accounts",
             "transactions": "Transactions",
             "paymentMethods": "Payment methods",
-            "preferences": "My account"
+            "profile": "Profile",
+            "preferences": "Preferences",
+            "notificationSettings": "Notifications",
+            "security": "Security"
         },
         "subCaptions": {
             "soon": "Soon"
@@ -621,6 +624,20 @@
             "preferences": "Preferences",
             "notifications": "Notifications",
             "security": "Security"
+        },
+        "pages": {
+            "account": {
+                "subtitle": "Photo, personal details and sign-in info."
+            },
+            "preferences": {
+                "subtitle": "Privacy, region, theme and dashboard."
+            },
+            "notifications": {
+                "subtitle": "Email, in-app alerts and digest frequency."
+            },
+            "security": {
+                "subtitle": "Two-factor authentication, devices and session."
+            }
         },
         "leaveDirtyConfirm": "You have unsaved changes. Leave this page?",
         "leaveDirtyModal": {

@@ -10,15 +10,23 @@ import {
 import { getFriendshipPublicId, normalizeAppNotification, parseNotificationMetadata } from '@/features/notifications/normalize';
 
 describe('resolveNotificationLink', () => {
-    it('mappe /security* vers /app/comptes', () => {
-        expect(resolveNotificationLink('/security')).toBe('/app/comptes');
-        expect(resolveNotificationLink('/security/devices')).toBe('/app/comptes');
+    it('mappe /security* vers /app/parametres/securite', () => {
+        expect(resolveNotificationLink('/security')).toBe('/app/parametres/securite');
+        expect(resolveNotificationLink('/security/devices')).toBe('/app/parametres/securite');
+    });
+
+    it('réécrit /app/comptes?tab= vers les pages paramètres', () => {
+        expect(resolveNotificationLink('/app/comptes')).toBe('/app/parametres/compte');
+        expect(resolveNotificationLink('/app/comptes?tab=Preferences')).toBe('/app/parametres/preferences');
+        expect(resolveNotificationLink('/app/comptes?tab=Notifications')).toBe('/app/parametres/notifications');
+        expect(resolveNotificationLink('/app/comptes?tab=Security')).toBe('/app/parametres/securite');
+        expect(resolveNotificationLink('/app/applications')).toBe('/app/parametres/compte');
     });
 
     it('conserve les routes /app', () => {
         expect(resolveNotificationLink('/app')).toBe('/app');
-        expect(resolveNotificationLink('/app/comptes')).toBe('/app/comptes');
         expect(resolveNotificationLink('/app/friends?tab=Friends')).toBe('/app/friends?tab=Friends');
+        expect(resolveNotificationLink('/app/parametres/compte')).toBe('/app/parametres/compte');
     });
 
     it('ignore les valeurs vides ou non relatives', () => {

@@ -1,6 +1,7 @@
 import { isSafeAppPath } from '@/features/auth/safe-return-url';
 import { getAccountSharePublicId, getFriendshipPublicId } from '@/features/notifications/normalize';
 import type { AppNotification, NotificationType } from '@/features/notifications/types';
+import { rewriteLegacySettingsLink } from '@/features/user-settings/settings-paths';
 
 /**
  * Chemins `/app…` navigables (bloque `//evil`, `/\\…`, `/application`, `..`).
@@ -12,7 +13,8 @@ export function isSafeAppNotificationPath(path: string | null | undefined): bool
 
 /**
  * Mappe les `link` API (chemins logiques) vers les routes front réelles.
- * Ex. `/security/devices` → `/app/comptes` (onglet Sécurité).
+ * Ex. `/security/devices` → `/app/parametres/securite` ;
+ * `/app/comptes?tab=Security` → `/app/parametres/securite`.
  * Avec une notif ami + metadata, ajoute `?tab=` / `?friendship=`.
  * Ne renvoie jamais de chemin hors `/app…` (open-redirect).
  */
@@ -30,9 +32,12 @@ export function resolveNotificationLink(
     const trimmed = link.trim();
     if (!trimmed.startsWith('/')) return null;
 
+    const legacySettings = rewriteLegacySettingsLink(trimmed);
+    if (legacySettings) return legacySettings;
+
     if (isSafeAppPath(trimmed)) return trimmed;
     if (trimmed === '/security' || trimmed.startsWith('/security/')) {
-        return '/app/comptes';
+        return '/app/parametres/securite';
     }
     if (trimmed === '/friends' || trimmed.startsWith('/friends/')) {
         return '/app/friends';

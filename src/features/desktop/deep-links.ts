@@ -5,7 +5,7 @@ import { isTauri } from '@/utils/helpers/platform-helpers';
 /**
  * Convertit une URL `spendup://…` en chemin Vue interne `/app…`.
  * Ex. `spendup://app/friends` → `/app/friends`
- *     `spendup:///app/comptes?tab=1` → `/app/comptes?tab=1`
+ *     `spendup:///app/comptes?tab=Security` → `/app/comptes?tab=Security` (redirect vue-router)
  * Refuse tout hors scheme `spendup:` ou chemin non `/app…` (open-redirect).
  */
 export function resolveSpendupDeepLink(raw: string | null | undefined): string | null {

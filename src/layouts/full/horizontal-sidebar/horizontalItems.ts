@@ -1,5 +1,15 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, CreditCardIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
+import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
+import {
+    AdjustmentsHorizontalIcon,
+    BellIcon,
+    BuildingBankIcon,
+    CreditCardIcon,
+    LayoutDashboardIcon,
+    LockIcon,
+    UserCircleIcon,
+    UsersIcon
+} from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -51,9 +61,24 @@ const horizontalItems: menu[] = [
         to: '/app/finances/moyens-de-paiement'
     },
     {
-        title: 'nav.items.preferences',
+        title: 'nav.items.profile',
         icon: UserCircleIcon,
-        to: '/app/comptes'
+        to: SETTINGS_PATHS.account
+    },
+    {
+        title: 'nav.items.preferences',
+        icon: AdjustmentsHorizontalIcon,
+        to: SETTINGS_PATHS.preferences
+    },
+    {
+        title: 'nav.items.notificationSettings',
+        icon: BellIcon,
+        to: SETTINGS_PATHS.notifications
+    },
+    {
+        title: 'nav.items.security',
+        icon: LockIcon,
+        to: SETTINGS_PATHS.security
     }
 ];
 

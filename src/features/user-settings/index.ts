@@ -1,5 +1,11 @@
 export { userSettingsApi } from '@/features/user-settings/api';
 export { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
+export {
+    SETTINGS_PATHS,
+    isLegacySettingsPath,
+    rewriteLegacySettingsLink,
+    resolveLegacySettingsRedirect
+} from '@/features/user-settings/settings-paths';
 export type { UserSettings, UserSettingsPatch } from '@/features/user-settings/types';
 export { localeToAppLocale, applyUserSettingsToRuntime, normalizeSecuritySettings, diffSettings } from '@/features/user-settings/mappers';
 export {
@@ -17,3 +23,4 @@ export { default as NotificationsTab } from '@/features/user-settings/components
 export { default as SecurityTab } from '@/features/user-settings/components/SecurityTab.vue';
 export { default as TwoFactorSetupDialog } from '@/features/user-settings/components/security/TwoFactorSetupDialog.vue';
 export { default as TwoFactorDisableDialog } from '@/features/user-settings/components/security/TwoFactorDisableDialog.vue';
+export { useSettingsFormPage } from '@/features/user-settings/composables/useSettingsFormPage';

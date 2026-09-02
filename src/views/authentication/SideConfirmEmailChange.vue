@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import ConfirmEmailChangeForm from '@/components/auth/ConfirmEmailChangeForm.vue';
 import { useAuthStore } from '@/features/auth';
+import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -14,7 +15,7 @@ const auth = useAuthStore();
 const fromApp = computed(() => route.query.from === 'app' || auth.isAuthenticated);
 
 const backLabel = computed(() => (fromApp.value ? t('auth.confirmEmailChange.backToApp') : t('auth.confirmEmailChange.backToLogin')));
-const backTo = computed(() => (fromApp.value ? '/app/comptes' : '/auth/login'));
+const backTo = computed(() => (fromApp.value ? SETTINGS_PATHS.account : '/auth/login'));
 </script>
 
 <template>
