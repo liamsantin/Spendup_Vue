@@ -14,8 +14,8 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
 </script>
 
 <template>
-    <div class="theme-rail__inner d-flex flex-column align-center fill-height px-2 py-4">
-        <div class="d-flex flex-column ga-2">
+    <div class="theme-rail__inner">
+        <div class="theme-rail__brand">
             <v-btn
                 v-if="lgAndUp"
                 icon
@@ -28,6 +28,8 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
             >
                 <Menu2Icon size="26" stroke-width="1.5" />
             </v-btn>
+        </div>
+        <div class="theme-rail__themes">
             <template v-for="theme in themes" :key="theme.id">
                 <v-divider v-if="theme.dividerBefore" class="theme-rail__divider" />
                 <v-btn

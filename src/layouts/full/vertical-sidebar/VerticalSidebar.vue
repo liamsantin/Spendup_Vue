@@ -14,7 +14,7 @@ const { sidebarMenu } = useSidebarNav();
 
 <template>
     <div class="sidebar-nav">
-        <div class="pa-5">
+        <div class="sidebar-nav__brand">
             <Logo />
         </div>
         <perfect-scrollbar class="scrollnavbar" :options="PERFECT_SCROLLBAR_OPTIONS">
