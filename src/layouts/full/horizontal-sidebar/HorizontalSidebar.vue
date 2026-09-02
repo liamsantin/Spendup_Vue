@@ -6,7 +6,7 @@ import { useNotificationsStore } from '@/features/notifications';
 import HorizontalItems, { type menu } from './horizontalItems';
 import NavItem from './NavItem/Index.vue';
 import NavCollapse from './NavCollapse/Index.vue';
-import VerticalSidebar from '../vertical-sidebar/VerticalSidebar.vue';
+import DualSidebar from '../vertical-sidebar/DualSidebar.vue';
 
 const appSettings = useAppSettingsStore();
 const notifications = useNotificationsStore();
@@ -47,7 +47,7 @@ const sidebarMenu = computed<menu[]>(() =>
         </div>
     </template>
     <div v-else class="mobile-menu">
-        <VerticalSidebar />
+        <DualSidebar />
     </div>
 </template>
 <style lang="scss"></style>

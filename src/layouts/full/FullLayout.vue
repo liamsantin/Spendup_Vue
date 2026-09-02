@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
-import VerticalSidebarVue from './vertical-sidebar/VerticalSidebar.vue';
+import DualSidebar from './vertical-sidebar/DualSidebar.vue';
 import VerticalHeaderVue from './vertical-header/VerticalHeader.vue';
 import HorizontalHeader from './horizontal-header/HorizontalHeader.vue';
 import HorizontalSidebar from './horizontal-sidebar/HorizontalSidebar.vue';
@@ -18,12 +18,11 @@ useIdleLogout();
             :theme="appSettings.actTheme"
             :class="[
                 appSettings.actTheme,
-                appSettings.mini_sidebar ? 'mini-sidebar' : '',
                 appSettings.setHorizontalLayout ? 'horizontalLayout' : 'verticalLayout',
                 appSettings.setBorderCard ? 'cardBordered' : ''
             ]"
         >
-            <VerticalSidebarVue v-if="!appSettings.setHorizontalLayout" />
+            <DualSidebar v-if="!appSettings.setHorizontalLayout" />
             <VerticalHeaderVue v-if="!appSettings.setHorizontalLayout" />
             <HorizontalHeader v-if="appSettings.setHorizontalLayout" />
             <HorizontalSidebar v-if="appSettings.setHorizontalLayout" />

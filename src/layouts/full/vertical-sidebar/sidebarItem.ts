@@ -1,5 +1,10 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, CreditCardIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
+import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, CreditCardIcon, UserCircleIcon, UsersIcon, SettingsIcon } from 'vue-tabler-icons';
+
+export const THEME_RAIL_WIDTH = 72;
+export const CONTENT_SIDEBAR_WIDTH = 270;
+
+export type SidebarThemeId = 'spendup' | 'finances' | 'settings';
 
 export interface menu {
     header?: string;
@@ -19,44 +24,79 @@ export interface menu {
     exact?: boolean;
 }
 
-/** Menu sidebar zone authentifiée (/app). Les title/header sont des clés i18n. */
-const sidebarItem: menu[] = [
-    { header: 'nav.headers.spendup' },
+export interface sidebarTheme {
+    id: SidebarThemeId;
+    title: string;
+    icon: Component;
+    items: menu[];
+    match: (path: string) => boolean;
+}
+
+const sidebarThemes: sidebarTheme[] = [
     {
-        title: 'nav.items.dashboard',
+        id: 'spendup',
+        title: 'nav.headers.spendup',
         icon: LayoutDashboardIcon,
-        to: '/app',
-        exact: true
+        match: (path) => path === '/app' || path.startsWith('/app/notifications') || path.startsWith('/app/friends'),
+        items: [
+            { header: 'nav.headers.spendup' },
+            {
+                title: 'nav.items.dashboard',
+                icon: LayoutDashboardIcon,
+                to: '/app',
+                exact: true
+            },
+            {
+                title: 'nav.items.notifications',
+                icon: BellIcon,
+                to: '/app/notifications',
+                chipColor: 'surface',
+                chipBgColor: 'primary'
+            },
+            {
+                title: 'nav.items.friends',
+                icon: UsersIcon,
+                to: '/app/friends'
+            }
+        ]
     },
     {
-        title: 'nav.items.notifications',
-        icon: BellIcon,
-        to: '/app/notifications',
-        chipColor: 'surface',
-        chipBgColor: 'primary'
-    },
-    {
-        title: 'nav.items.friends',
-        icon: UsersIcon,
-        to: '/app/friends'
-    },
-    { header: 'nav.headers.finances' },
-    {
-        title: 'nav.items.accounts',
+        id: 'finances',
+        title: 'nav.headers.finances',
         icon: BuildingBankIcon,
-        to: '/app/finances/comptes'
+        match: (path) => path.startsWith('/app/finances'),
+        items: [
+            { header: 'nav.headers.finances' },
+            {
+                title: 'nav.items.accounts',
+                icon: BuildingBankIcon,
+                to: '/app/finances/comptes'
+            },
+            {
+                title: 'nav.items.paymentMethods',
+                icon: CreditCardIcon,
+                to: '/app/finances/moyens-de-paiement'
+            }
+        ]
     },
     {
-        title: 'nav.items.paymentMethods',
-        icon: CreditCardIcon,
-        to: '/app/finances/moyens-de-paiement'
-    },
-    { header: 'nav.headers.settings' },
-    {
-        title: 'nav.items.preferences',
-        icon: UserCircleIcon,
-        to: '/app/comptes'
+        id: 'settings',
+        title: 'nav.headers.settings',
+        icon: SettingsIcon,
+        match: (path) => path.startsWith('/app/comptes'),
+        items: [
+            { header: 'nav.headers.settings' },
+            {
+                title: 'nav.items.preferences',
+                icon: UserCircleIcon,
+                to: '/app/comptes'
+            }
+        ]
     }
 ];
 
-export default sidebarItem;
+export function themeIdFromPath(path: string): SidebarThemeId {
+    return sidebarThemes.find((theme) => theme.match(path))?.id ?? 'spendup';
+}
+
+export default sidebarThemes;

@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
+import { useSidebarNav } from '../vertical-sidebar/useSidebarNav';
 import { GridDotsIcon, Menu2Icon } from 'vue-tabler-icons';
 import NotificationDD from './NotificationDD.vue';
 import Navigations from './Navigations.vue';
@@ -10,25 +11,15 @@ import RightMobileSidebar from './RightMobileSidebar.vue';
 import Searchbar from './Searchbar.vue';
 
 const appSettings = useAppSettingsStore();
+const { toggleContentSidebar } = useSidebarNav();
 const appsdrawer = ref(false);
-const priority = ref(appSettings.setHorizontalLayout ? 0 : 0);
-watch(priority, (newPriority) => {
-    priority.value = newPriority;
-});
+/** Après les deux drawers (order 0–1) pour que le header commence à droite de la sidebar menu. */
+const HEADER_LAYOUT_ORDER = 2;
 </script>
 
 <template>
-    <v-app-bar elevation="0" :priority="priority" height="70" class="">
-        <v-btn
-            class="hidden-md-and-down"
-            icon
-            color="primary"
-            variant="text"
-            @click.stop="appSettings.SET_MINI_SIDEBAR(!appSettings.mini_sidebar)"
-        >
-            <Menu2Icon size="20" stroke-width="1.5" />
-        </v-btn>
-        <v-btn class="hidden-lg-and-up" icon variant="flat" @click.stop="appSettings.SET_SIDEBAR_DRAWER" size="small">
+    <v-app-bar elevation="0" :order="HEADER_LAYOUT_ORDER" height="70">
+        <v-btn class="hidden-lg-and-up" icon variant="flat" @click.stop="toggleContentSidebar" size="small">
             <Menu2Icon size="20" stroke-width="1.5" />
         </v-btn>
 

@@ -27,6 +27,7 @@
         "cancel": "Annuler"
     },
     "nav": {
+        "toggleMenu": "Ouvrir ou fermer le menu",
         "headers": {
             "spendup": "Spend.Up",
             "finances": "Finances",
