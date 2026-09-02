@@ -1,10 +1,12 @@
 <script setup lang="ts">
 defineOptions({ name: 'RailIcon' });
 
+import dashboard from '@/assets/icons/rail/dashboard.svg?raw';
 import settings from '@/assets/icons/rail/settings.svg?raw';
 import finances from '@/assets/icons/rail/finances.svg?raw';
 
 const icons = {
+    dashboard,
     settings,
     finances
 } as const;

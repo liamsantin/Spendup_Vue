@@ -1,5 +1,6 @@
 import type { Component } from 'vue';
 import { LayoutDashboardIcon, BellIcon, BuildingBankIcon, CreditCardIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
+import DashboardRailIcon from './rail-icons/DashboardRailIcon.vue';
 import SettingsRailIcon from './rail-icons/SettingsRailIcon.vue';
 import FinancesRailIcon from './rail-icons/FinancesRailIcon.vue';
 
@@ -40,7 +41,7 @@ const sidebarThemes: sidebarTheme[] = [
     {
         id: 'spendup',
         title: 'nav.headers.spendup',
-        icon: LayoutDashboardIcon,
+        icon: DashboardRailIcon,
         match: (path) => path === '/app' || path.startsWith('/app/notifications') || path.startsWith('/app/friends'),
         items: [
             { header: 'nav.headers.spendup' },
