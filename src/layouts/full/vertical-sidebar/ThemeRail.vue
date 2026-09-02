@@ -3,7 +3,8 @@ defineOptions({ name: 'ThemeRail' });
 
 import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
-import { Menu2Icon, PowerIcon } from 'vue-tabler-icons';
+import { Menu2Icon } from 'vue-tabler-icons';
+import LogoutRailIcon from './rail-icons/LogoutRailIcon.vue';
 import { useAuthStore } from '@/features/auth';
 import { useSidebarNav } from './useSidebarNav';
 
@@ -49,7 +50,7 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
         </div>
         <v-spacer />
         <v-btn icon variant="text" rounded="lg" size="48" class="theme-rail__btn" :aria-label="t('common.logout')" @click="authStore.logout()">
-            <PowerIcon size="26" stroke-width="1.5" />
+            <LogoutRailIcon size="26" />
             <v-tooltip activator="parent" location="end">{{ t('common.logout') }}</v-tooltip>
         </v-btn>
     </div>

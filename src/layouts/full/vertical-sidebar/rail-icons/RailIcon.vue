@@ -5,12 +5,14 @@ import dashboard from '@/assets/icons/rail/dashboard.svg?raw';
 import friends from '@/assets/icons/rail/friends.svg?raw';
 import settings from '@/assets/icons/rail/settings.svg?raw';
 import finances from '@/assets/icons/rail/finances.svg?raw';
+import logout from '@/assets/icons/rail/logout.svg?raw';
 
 const icons = {
     dashboard,
     friends,
     settings,
-    finances
+    finances,
+    logout
 } as const;
 
 export type RailIconName = keyof typeof icons;
