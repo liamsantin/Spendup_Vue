@@ -450,6 +450,7 @@
         "subtitle": "Cards, transfers and wallets linked to your accounts.",
         "loadMore": "Load more",
         "unknownAccount": "Account",
+        "groupTitle": "Account: {name}",
         "badges": {
             "inactive": "Inactive"
         },

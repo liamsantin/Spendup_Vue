@@ -450,6 +450,7 @@
         "subtitle": "Cartes, virements et portefeuilles liés à vos comptes.",
         "loadMore": "Charger plus",
         "unknownAccount": "Compte",
+        "groupTitle": "Compte : {name}",
         "badges": {
             "inactive": "Inactif"
         },

@@ -169,7 +169,7 @@ async function confirmDelete() {
         </div>
         <div v-else>
             <section v-for="group in groups" :key="group.accountPublicId" class="mb-6">
-                <h5 class="text-subtitle-1 font-weight-bold mb-2">{{ group.accountName }}</h5>
+                <h5 class="text-subtitle-1 font-weight-bold mb-2">{{ t('paymentMethodsPage.groupTitle', { name: group.accountName }) }}</h5>
                 <v-list class="py-0">
                     <PaymentMethodListItem
                         v-for="method in group.items"
