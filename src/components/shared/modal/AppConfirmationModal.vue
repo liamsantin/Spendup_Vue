@@ -67,24 +67,22 @@ defineExpose({ close });
 
 <template>
     <v-dialog v-model="open" :max-width="maxWidth" :persistent="persistent">
-        <v-card rounded="md" class="app-confirmation-modal">
+        <v-card rounded="md" class="app-confirmation-modal su-modal">
             <div class="app-confirmation-modal__header">
-                <div class="pr-10">
+                <div class="pr-12">
                     <h5 class="text-h5">{{ title }}</h5>
                     <p v-if="message" class="text-subtitle-1 text-medium-emphasis mt-1 mb-0">{{ message }}</p>
                     <slot name="header-extra" />
                 </div>
-                <v-btn
-                    class="app-confirmation-modal__close"
-                    icon
-                    variant="text"
-                    size="small"
+                <button
+                    type="button"
+                    class="su-orb app-confirmation-modal__close"
                     :aria-label="t('common.close')"
                     :disabled="loading"
                     @click="close"
                 >
-                    <XIcon size="20" />
-                </v-btn>
+                    <XIcon :size="18" stroke-width="1.5" />
+                </button>
             </div>
 
             <v-divider class="flex-grow-0" />

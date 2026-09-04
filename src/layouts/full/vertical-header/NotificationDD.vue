@@ -79,7 +79,7 @@ async function onItemClick(item: AppNotification) {
                 </v-badge>
             </v-btn>
         </template>
-        <v-sheet rounded="md" width="360" elevation="10">
+        <v-sheet rounded="md" width="360" elevation="0" class="su-menu">
             <div class="px-8 pb-4 pt-6">
                 <div class="d-flex align-center justify-space-between">
                     <h6 class="text-h5">{{ t('header.notifications.title') }}</h6>

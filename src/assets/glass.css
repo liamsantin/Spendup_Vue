@@ -199,6 +199,10 @@
     transform: none;
 }
 
+.su-orb--danger {
+    color: #b42318;
+}
+
 .su-search__icon {
     flex: none;
     margin-left: 2px;
@@ -582,8 +586,57 @@
 }
 
 .su-panel__head > .su-btn,
-.su-panel__head > .su-panel__chip {
+.su-panel__head > .su-panel__chip,
+.su-panel__actions {
     margin-left: auto;
+}
+
+.su-panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.su-panel .su-empty,
+.su-panel .su-loading {
+    min-height: 120px;
+    padding: 24px 12px;
+}
+
+.su-panel--danger {
+    border-color: rgba(180, 35, 24, 0.22);
+}
+
+.su-panel__icon--danger {
+    color: #b42318;
+    background: rgba(180, 35, 24, 0.08);
+}
+
+.su-panel__icon--photo {
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    overflow: hidden;
+    border-radius: 18px;
+}
+
+.su-panel__icon--photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.su-tab:disabled {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+}
+
+.su-tabs--grow {
+    margin-left: 0;
+    width: 100%;
 }
 
 .su-page--embedded .su-tabs {
@@ -725,4 +778,145 @@
     .su-search {
         animation: none;
     }
+}
+
+/* Overlays (modales, menus) — hors .su-page, teleport body. */
+
+.v-overlay:has(.su-modal) .v-overlay__scrim {
+    background: var(--scrim) !important;
+    backdrop-filter: blur(10px) saturate(140%);
+}
+
+.su-modal.v-card {
+    background: var(--surface-overlay) !important;
+    border: 1px solid var(--stroke) !important;
+    box-shadow: var(--shadow-overlay) !important;
+    backdrop-filter: var(--blur);
+    color: var(--ink);
+    font-family: var(--font-ui);
+}
+
+.su-modal .text-h5,
+.su-modal h5 {
+    margin: 0;
+    font-family: var(--font-ui);
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.03em;
+    line-height: 1.25;
+    color: var(--ink);
+}
+
+.su-modal .text-subtitle-1,
+.su-modal .text-medium-emphasis {
+    color: var(--ink-muted) !important;
+}
+
+.su-modal .v-divider {
+    border-color: var(--hair) !important;
+    opacity: 1;
+}
+
+.app-modal-base__close.su-orb,
+.app-confirmation-modal__close.su-orb {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+}
+
+.app-modal-base__footer,
+.app-confirmation-modal__footer {
+    gap: 8px;
+    padding: 10px 16px 14px;
+    background: transparent;
+}
+
+.app-modal-base .v-btn,
+.app-confirmation-modal .v-btn {
+    text-transform: none !important;
+    letter-spacing: -0.01em;
+    font-weight: 580;
+    border-radius: 17px !important;
+    box-shadow: none !important;
+}
+
+.app-modal-base .v-btn.bg-primary,
+.app-modal-base .v-btn--variant-flat.bg-primary,
+.app-confirmation-modal .v-btn.bg-primary,
+.app-confirmation-modal .v-btn--variant-flat.bg-primary {
+    background: var(--ink) !important;
+    color: var(--on-ink) !important;
+    box-shadow: var(--shadow-ink) !important;
+}
+
+.app-modal-base .v-btn.bg-error,
+.app-confirmation-modal .v-btn.bg-error,
+.app-modal-base .v-btn.text-error,
+.app-confirmation-modal .v-btn.text-error {
+    color: #b42318 !important;
+}
+
+.su-menu.v-sheet,
+.v-overlay__content > .v-list {
+    background: var(--surface-overlay) !important;
+    border: 1px solid var(--stroke);
+    box-shadow: var(--shadow-overlay);
+    backdrop-filter: var(--blur);
+    border-radius: var(--radius-overlay) !important;
+    overflow: hidden;
+    color: var(--ink);
+    font-family: var(--font-ui);
+}
+
+.su-menu .v-list {
+    background: transparent !important;
+}
+
+.su-menu .text-h5,
+.su-menu .text-h6 {
+    font-family: var(--font-ui);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.app-modal-base .v-field,
+.su-page .v-field,
+.su-panel .v-field,
+.su-menu .v-field {
+    border-radius: 14px !important;
+}
+
+.app-modal-base .v-field__outline,
+.su-page .v-field__outline,
+.su-panel .v-field__outline,
+.su-menu .v-field__outline {
+    --v-field-border-opacity: 0.16;
+}
+
+.app-modal-base .v-label,
+.su-page .v-label,
+.su-panel .v-label {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 560;
+    color: var(--ink-mute);
+}
+
+.app-modal-base .v-alert,
+.su-page .v-alert,
+.su-panel .v-alert {
+    border-radius: var(--radius-leaf) !important;
+    box-shadow: none !important;
+}
+
+.su-panel .v-sheet.hover-btns {
+    background: var(--surface-raised) !important;
+    box-shadow: var(--shadow-pill-soft) !important;
+    border: 1px solid var(--stroke) !important;
+    border-radius: 16px !important;
+}
+
+.su-tabs--modal {
+    margin: 0;
+    width: 100%;
 }

@@ -54,7 +54,7 @@ async function onLogout() {
                 </v-avatar>
             </v-btn>
         </template>
-        <v-sheet rounded="md" width="360" elevation="10">
+        <v-sheet rounded="md" width="360" elevation="0" class="su-menu">
             <div class="px-8 pt-6">
                 <h6 class="text-h5 font-weight-medium">{{ t('header.profile.title') }}</h6>
                 <div class="d-flex align-center mt-4 pb-6">
@@ -91,7 +91,9 @@ async function onLogout() {
                 </v-list-item>
             </v-list>
             <div class="pt-4 pb-6 px-8 text-center">
-                <v-btn color="primary" variant="outlined" block @click="onLogout">{{ t('header.profile.logout') }}</v-btn>
+                <button type="button" class="su-btn su-btn--ink" style="width: 100%" @click="onLogout">
+                    {{ t('header.profile.logout') }}
+                </button>
             </div>
         </v-sheet>
     </v-menu>

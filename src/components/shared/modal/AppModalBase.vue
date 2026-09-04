@@ -173,7 +173,7 @@ defineExpose({
     >
         <v-card
             :rounded="cardRounded"
-            class="app-modal-base"
+            class="app-modal-base su-modal"
             :class="{
                 'app-modal-base--fixed-height': fixedHeight,
                 'app-modal-base--mobile': isFullscreen,
@@ -182,14 +182,14 @@ defineExpose({
             :style="cardStyle"
         >
             <div class="app-modal-base__header">
-                <div class="pr-10">
+                <div class="pr-12">
                     <h5 class="text-h5">{{ title }}</h5>
                     <div v-if="subtitle" class="text-subtitle-1 text-medium-emphasis mt-1">{{ subtitle }}</div>
                     <slot name="header-extra" />
                 </div>
-                <v-btn class="app-modal-base__close" icon variant="text" size="small" :aria-label="t('common.close')" @click="close">
-                    <XIcon size="20" />
-                </v-btn>
+                <button type="button" class="su-orb app-modal-base__close" :aria-label="t('common.close')" @click="close">
+                    <XIcon :size="18" stroke-width="1.5" />
+                </button>
             </div>
 
             <v-divider class="flex-grow-0" />

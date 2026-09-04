@@ -1,13 +1,12 @@
 <script setup lang="ts">
 /**
- * Shell modal à onglets — AppModalBase + AppBaseTabs.
+ * Shell modal à onglets — AppModalBase + onglets verre.
  * Tabs hors scroll (toolbar) ; chaque panel scrolle dans le body.
  */
 defineOptions({ name: 'AppModalTabs' });
 
 import { computed, ref, watch } from 'vue';
-import { useDisplay } from 'vuetify';
-import AppBaseTabs, { type AppBaseTabsItem, type AppBaseTabsPreset } from '../tabs/AppBaseTabs.vue';
+import type { AppBaseTabsItem, AppBaseTabsPreset } from '../tabs/AppBaseTabs.vue';
 import AppModalBase from './AppModalBase.vue';
 
 const props = withDefaults(
@@ -50,10 +49,6 @@ const emit = defineEmits<{
     'update:modelValue': [value: boolean];
     'update:tab': [value: string];
 }>();
-
-const { smAndDown } = useDisplay();
-/** En pilled, on préfère le scroll + flèches custom plutôt que grow (labels tronqués). */
-const tabsGrow = computed(() => !props.pilled && (props.grow || smAndDown.value));
 
 const open = computed({
     get: () => props.modelValue,
@@ -108,17 +103,23 @@ const currentTab = computed({
 
         <template #toolbar>
             <div class="app-modal-tabs__toolbar">
-                <AppBaseTabs
-                    v-model="currentTab"
-                    :tabs="tabs"
-                    :preset="preset"
-                    :color="color"
-                    :bg-color="bgColor"
-                    :align-tabs="alignTabs"
-                    :grow="tabsGrow"
-                    :pilled="pilled"
-                    :show-panels="false"
-                />
+                <nav class="su-tabs su-tabs--modal su-tabs--grow" :aria-label="title">
+                    <button
+                        v-for="item in tabs"
+                        :key="item.value"
+                        type="button"
+                        class="su-tab"
+                        :class="{ 'is-active': currentTab === item.value }"
+                        :disabled="item.disabled"
+                        :title="item.title"
+                        :aria-current="currentTab === item.value ? 'page' : undefined"
+                        @click="currentTab = item.value"
+                    >
+                        <component :is="item.icon" v-if="item.icon" :size="18" stroke-width="1.6" />
+                        {{ item.label }}
+                        <span v-if="item.chip" class="su-tab__chip">{{ item.chip }}</span>
+                    </button>
+                </nav>
             </div>
         </template>
 
@@ -145,15 +146,8 @@ const currentTab = computed({
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    padding: 4px;
+    padding: 0 16px 10px;
     box-sizing: border-box;
-}
-
-.app-modal-tabs__toolbar :deep(.app-base-tabs) {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    flex: 1 1 auto;
 }
 
 .app-modal-tabs__body {

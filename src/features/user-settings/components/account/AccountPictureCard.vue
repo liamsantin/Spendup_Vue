@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import { DEFAULT_AVATAR_SRC } from '@/features/auth';
 
 defineProps<{
@@ -28,8 +29,21 @@ function openFilePicker() {
 </script>
 
 <template>
-    <v-card elevation="10">
-        <v-card-item>
+    <AppGlassCard :title="t('accounts.picture.title')" :subtitle="t('accounts.picture.subtitle')" icon-photo>
+        <template #icon>
+            <img
+                :src="avatarSrc || DEFAULT_AVATAR_SRC"
+                :alt="t('accounts.picture.alt')"
+                role="button"
+                tabindex="0"
+                :aria-label="t('accounts.picture.enlargeAria')"
+                class="account-picture-avatar"
+                @click="emit('openLightbox')"
+                @keydown.enter.prevent="emit('openLightbox')"
+                @keydown.space.prevent="emit('openLightbox')"
+            />
+        </template>
+        <template #actions>
             <input
                 ref="fileInputRef"
                 type="file"
@@ -37,45 +51,20 @@ function openFilePicker() {
                 accept="image/jpeg,image/png,image/webp"
                 @change="emit('upload', $event)"
             />
-
-            <div class="d-flex align-center justify-space-between flex-wrap ga-4">
-                <div class="d-flex align-center ga-4 min-w-0">
-                    <v-avatar
-                        size="72"
-                        color="lightprimary"
-                        class="flex-shrink-0 account-picture-avatar"
-                        role="button"
-                        tabindex="0"
-                        :aria-label="t('accounts.picture.enlargeAria')"
-                        @click="emit('openLightbox')"
-                        @keydown.enter.prevent="emit('openLightbox')"
-                        @keydown.space.prevent="emit('openLightbox')"
-                    >
-                        <v-img :src="avatarSrc || DEFAULT_AVATAR_SRC" :alt="t('accounts.picture.alt')" cover />
-                    </v-avatar>
-                    <div class="min-w-0">
-                        <h4 class="text-h4 mb-0">{{ t('accounts.picture.title') }}</h4>
-                        <div class="text-subtitle-1 text-medium-emphasis text-10 mt-1">
-                            {{ t('accounts.picture.subtitle') }}
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex flex-wrap ga-2">
-                    <v-btn color="primary" variant="tonal" flat :disabled="saving" @click="emit('chooseAvatar')">{{
-                        t('accounts.picture.avatar')
-                    }}</v-btn>
-                    <v-btn color="primary" flat :loading="saving" @click="openFilePicker">{{ t('accounts.picture.upload') }}</v-btn>
-                    <v-btn color="error" variant="outlined" flat :disabled="saving || !profilePicture" @click="emit('reset')">
-                        {{ t('accounts.picture.reset') }}
-                    </v-btn>
-                </div>
-            </div>
-
-            <AppAlert v-if="error" type="warning" class="mt-4" closable @dismiss="emit('dismissError')">
-                {{ error }}
-            </AppAlert>
-        </v-card-item>
-    </v-card>
+            <button type="button" class="su-btn" :disabled="saving" @click="emit('chooseAvatar')">
+                {{ t('accounts.picture.avatar') }}
+            </button>
+            <button type="button" class="su-btn su-btn--ink" :disabled="saving" @click="openFilePicker">
+                {{ t('accounts.picture.upload') }}
+            </button>
+            <button type="button" class="su-btn su-btn--danger" :disabled="saving || !profilePicture" @click="emit('reset')">
+                {{ t('accounts.picture.reset') }}
+            </button>
+        </template>
+        <AppAlert v-if="error" type="warning" class="su-alert" closable @dismiss="emit('dismissError')">
+            {{ error }}
+        </AppAlert>
+    </AppGlassCard>
 </template>
 
 <style scoped>

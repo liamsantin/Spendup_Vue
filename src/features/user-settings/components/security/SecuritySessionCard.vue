@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ClockHour4Icon } from 'vue-tabler-icons';
+import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import {
     IDLE_LOGOUT_MINUTES_DEFAULT,
     IDLE_LOGOUT_MINUTES_MAX,
@@ -56,72 +57,62 @@ function onTrustedDaysBlur() {
 </script>
 
 <template>
-    <v-card elevation="10">
-        <v-card-item>
-            <div class="d-flex align-center ga-3 flex-wrap">
-                <v-avatar size="48" rounded="md" color="lightprimary">
-                    <ClockHour4Icon class="text-primary" size="25" />
-                </v-avatar>
-                <div>
-                    <h4 class="text-h4 mb-0">{{ t('security.session.title') }}</h4>
-                    <div class="text-subtitle-1 text-medium-emphasis text-10">
-                        {{ t('security.session.subtitle') }}
-                    </div>
+    <AppGlassCard :title="t('security.session.title')" :subtitle="t('security.session.subtitle')">
+        <template #icon>
+            <ClockHour4Icon :size="20" stroke-width="1.5" />
+        </template>
+        <v-row dense>
+            <v-col cols="12">
+                <v-switch
+                    :model-value="idleEnabled"
+                    color="primary"
+                    hide-details
+                    :label="t('security.session.idleLogoutEnabled')"
+                    @update:model-value="onIdleToggle"
+                />
+                <div class="text-subtitle-2 text-medium-emphasis mt-1">
+                    {{ t('security.session.idleLogoutHint') }}
                 </div>
-            </div>
-            <v-row dense class="mt-4">
-                <v-col cols="12">
-                    <v-switch
-                        :model-value="idleEnabled"
-                        color="primary"
-                        hide-details
-                        :label="t('security.session.idleLogoutEnabled')"
-                        @update:model-value="onIdleToggle"
-                    />
-                    <div class="text-subtitle-2 text-medium-emphasis mt-1">
-                        {{ t('security.session.idleLogoutHint') }}
-                    </div>
-                </v-col>
-                <v-col cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('security.session.idleLogoutMinutes') }}</v-label>
-                    <v-text-field
-                        v-model.number="draft.idleLogoutMinutes"
-                        type="number"
-                        :min="IDLE_LOGOUT_MINUTES_MIN"
-                        :max="IDLE_LOGOUT_MINUTES_MAX"
-                        variant="outlined"
-                        :hint="t('security.session.idleLogoutRange', { min: IDLE_LOGOUT_MINUTES_MIN, max: IDLE_LOGOUT_MINUTES_MAX })"
-                        persistent-hint
-                        :disabled="!idleEnabled"
-                        @blur="onIdleMinutesBlur"
-                    />
-                </v-col>
-                <v-col cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('security.session.trustedDeviceDurationDays') }}</v-label>
-                    <v-text-field
-                        v-model.number="draft.trustedDeviceDurationDays"
-                        type="number"
-                        :min="TRUSTED_DEVICE_DAYS_MIN"
-                        :max="TRUSTED_DEVICE_DAYS_MAX"
-                        variant="outlined"
-                        :hint="t('security.session.trustedDeviceHint')"
-                        persistent-hint
-                        @blur="onTrustedDaysBlur"
-                    />
-                </v-col>
-                <v-col cols="12">
-                    <v-switch
-                        v-model="draft.require2faForSensitiveActions"
-                        color="primary"
-                        hide-details
-                        :disabled="require2faDisabled"
-                        :label="t('security.session.require2faForSensitiveActions')"
-                    />
-                    <div class="text-subtitle-2 text-medium-emphasis mt-1">
-                        {{ require2faDisabled ? t('security.session.require2faNeedsTwoFactor') : t('security.session.require2faHint') }}
-                    </div>
-                </v-col>
-            </v-row>
-        </v-card-item>
-    </v-card>
+            </v-col>
+            <v-col cols="12" md="6">
+                <v-label class="mb-2 font-weight-medium">{{ t('security.session.idleLogoutMinutes') }}</v-label>
+                <v-text-field
+                    v-model.number="draft.idleLogoutMinutes"
+                    type="number"
+                    :min="IDLE_LOGOUT_MINUTES_MIN"
+                    :max="IDLE_LOGOUT_MINUTES_MAX"
+                    variant="outlined"
+                    :hint="t('security.session.idleLogoutRange', { min: IDLE_LOGOUT_MINUTES_MIN, max: IDLE_LOGOUT_MINUTES_MAX })"
+                    persistent-hint
+                    :disabled="!idleEnabled"
+                    @blur="onIdleMinutesBlur"
+                />
+            </v-col>
+            <v-col cols="12" md="6">
+                <v-label class="mb-2 font-weight-medium">{{ t('security.session.trustedDeviceDurationDays') }}</v-label>
+                <v-text-field
+                    v-model.number="draft.trustedDeviceDurationDays"
+                    type="number"
+                    :min="TRUSTED_DEVICE_DAYS_MIN"
+                    :max="TRUSTED_DEVICE_DAYS_MAX"
+                    variant="outlined"
+                    :hint="t('security.session.trustedDeviceHint')"
+                    persistent-hint
+                    @blur="onTrustedDaysBlur"
+                />
+            </v-col>
+            <v-col cols="12">
+                <v-switch
+                    v-model="draft.require2faForSensitiveActions"
+                    color="primary"
+                    hide-details
+                    :disabled="require2faDisabled"
+                    :label="t('security.session.require2faForSensitiveActions')"
+                />
+                <div class="text-subtitle-2 text-medium-emphasis mt-1">
+                    {{ require2faDisabled ? t('security.session.require2faNeedsTwoFactor') : t('security.session.require2faHint') }}
+                </div>
+            </v-col>
+        </v-row>
+    </AppGlassCard>
 </template>

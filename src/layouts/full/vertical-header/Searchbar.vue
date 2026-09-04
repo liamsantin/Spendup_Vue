@@ -212,7 +212,7 @@ onUnmounted(() => {
                 <SearchIcon stroke-width="1.5" size="20" />
             </v-btn>
         </template>
-        <v-sheet width="360" elevation="10" rounded="md" @keydown="onKeydown">
+        <v-sheet width="360" elevation="0" rounded="md" class="su-menu" @keydown="onKeydown">
             <div class="pa-5 pb-4">
                 <v-text-field
                     ref="searchInput"

@@ -54,28 +54,25 @@ const expiration = computed(() => formatExpirationDate(props.method.expirationDa
         </div>
 
         <template v-if="canWrite" #append>
-            <div class="d-flex align-center ga-1">
-                <v-btn
-                    size="small"
-                    variant="text"
-                    icon
+            <div class="su-person__actions">
+                <button
+                    type="button"
+                    class="su-orb"
                     :disabled="acting"
                     :aria-label="t('paymentMethodsPage.actions.edit')"
                     @click.stop="emit('edit', method)"
                 >
-                    <PencilIcon size="18" />
-                </v-btn>
-                <v-btn
-                    size="small"
-                    variant="text"
-                    color="error"
-                    icon
+                    <PencilIcon :size="16" stroke-width="1.6" />
+                </button>
+                <button
+                    type="button"
+                    class="su-orb su-orb--danger"
                     :disabled="acting"
                     :aria-label="t('paymentMethodsPage.actions.delete')"
                     @click.stop="emit('delete', method)"
                 >
-                    <TrashIcon size="18" />
-                </v-btn>
+                    <TrashIcon :size="16" stroke-width="1.6" />
+                </button>
             </div>
         </template>
     </v-list-item>

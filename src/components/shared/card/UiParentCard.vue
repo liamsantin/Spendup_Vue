@@ -4,20 +4,16 @@ defineProps({
 });
 </script>
 
-// ===============================|| Ui Parent Card||=============================== //
 <template>
-    <v-card elevation="10">
-        <v-card-item class="py-4 px-4 px-sm-6">
-            <div class="d-sm-flex align-center justify-space-between">
-                <v-card-title class="text-h5">{{ title }}</v-card-title>
-                <!-- <template v-slot:append> -->
-                <slot name="action"></slot>
-                <!-- </template> -->
+    <section class="su-surface su-panel">
+        <header v-if="title || $slots.action" class="su-panel__head">
+            <h2>{{ title }}</h2>
+            <div v-if="$slots.action" class="su-panel__actions">
+                <slot name="action" />
             </div>
-        </v-card-item>
-        <v-divider></v-divider>
-        <v-card-text>
+        </header>
+        <div class="su-panel__body">
             <slot />
-        </v-card-text>
-    </v-card>
+        </div>
+    </section>
 </template>

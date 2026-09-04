@@ -30,10 +30,10 @@ const resolvedIcon = computed(() => props.icon ?? AdjustmentsHorizontalIcon);
 <template>
     <v-menu :location="location" :close-on-content-click="false">
         <template #activator="{ props: menuProps }">
-            <v-btn color="primary" variant="tonal" flat v-bind="menuProps">
-                <component :is="resolvedIcon" size="18" class="mr-1" />
+            <button type="button" class="su-btn" v-bind="menuProps">
+                <component :is="resolvedIcon" :size="16" stroke-width="1.6" />
                 {{ label }}
-            </v-btn>
+            </button>
         </template>
         <v-list density="compact" :min-width="minWidth" class="py-1">
             <slot />

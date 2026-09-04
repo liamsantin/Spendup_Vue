@@ -2,6 +2,7 @@
 import { useI18n } from 'vue-i18n';
 import { ShieldCheckIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 
 defineProps<{
     enabled: boolean;
@@ -18,50 +19,39 @@ const { t } = useI18n();
 </script>
 
 <template>
-    <v-card elevation="10">
-        <v-card-item>
-            <div class="d-flex align-center justify-space-between flex-wrap ga-3">
-                <div class="d-flex align-center ga-3 flex-wrap">
-                    <v-avatar size="48" rounded="md" color="lightprimary">
-                        <ShieldCheckIcon class="text-primary" size="25" />
-                    </v-avatar>
-                    <h4 class="text-h4 mb-0">{{ t('security.twoFactor.title') }}</h4>
-                </div>
-                <v-chip :color="enabled ? 'success' : 'default'" variant="tonal" size="small">
-                    {{ enabled ? t('security.twoFactor.status.enabled') : t('security.twoFactor.status.disabled') }}
-                </v-chip>
-            </div>
-            <div class="text-subtitle-1 text-medium-emphasis text-10 my-3">
-                {{ t('security.twoFactor.subtitle') }}
-            </div>
+    <AppGlassCard :title="t('security.twoFactor.title')" :subtitle="t('security.twoFactor.subtitle')">
+        <template #icon>
+            <ShieldCheckIcon :size="20" stroke-width="1.5" />
+        </template>
+        <template #actions>
+            <span class="su-chip">{{ enabled ? t('security.twoFactor.status.enabled') : t('security.twoFactor.status.disabled') }}</span>
+        </template>
+        <AppAlert
+            v-if="successMessage"
+            color="success"
+            variant="tonal"
+            density="default"
+            closable
+            :dismiss-ms="5000"
+            class="mt-4"
+            @dismiss="emit('dismissSuccess')"
+        >
+            <template #prepend>
+                <v-icon class="text-24" icon="$success" />
+            </template>
+            <div>{{ successMessage }}</div>
+        </AppAlert>
 
-            <AppAlert
-                v-if="successMessage"
-                color="success"
-                variant="tonal"
-                density="default"
-                closable
-                :dismiss-ms="5000"
-                class="mt-4"
-                @dismiss="emit('dismissSuccess')"
-            >
-                <template #prepend>
-                    <v-icon class="text-24" icon="$success" />
-                </template>
-                <div>{{ successMessage }}</div>
-            </AppAlert>
-
-            <div class="d-sm-flex justify-space-between align-sm-center mt-4">
-                <div class="text-subtitle-1 text-medium-emphasis text-13 pr-5">
-                    {{ t('security.twoFactor.description') }}
-                </div>
-                <v-btn v-if="!enabled" color="primary" class="mt-sm-0 mt-3" flat @click="emit('enable')">
-                    {{ t('security.twoFactor.enable') }}
-                </v-btn>
-                <v-btn v-else color="error" class="mt-sm-0 mt-3" variant="outlined" flat @click="emit('disable')">
-                    {{ t('security.twoFactor.disable') }}
-                </v-btn>
+        <div class="d-sm-flex justify-space-between align-sm-center mt-2">
+            <div class="text-subtitle-1 text-medium-emphasis text-13 pr-5">
+                {{ t('security.twoFactor.description') }}
             </div>
-        </v-card-item>
-    </v-card>
+            <button v-if="!enabled" type="button" class="su-btn su-btn--ink mt-sm-0 mt-3" @click="emit('enable')">
+                {{ t('security.twoFactor.enable') }}
+            </button>
+            <button v-else type="button" class="su-btn su-btn--danger mt-sm-0 mt-3" @click="emit('disable')">
+                {{ t('security.twoFactor.disable') }}
+            </button>
+        </div>
+    </AppGlassCard>
 </template>
