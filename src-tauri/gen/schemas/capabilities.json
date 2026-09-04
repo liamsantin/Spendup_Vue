@@ -1,1 +1,0 @@
-{"default":{"identifier":"default","description":"Default desktop capabilities for Spend.Up","local":true,"windows":["main"],"permissions":["core:default","core:event:default","opener:default","deep-link:default","notification:default","allow-oauth-loopback-wait","allow-oauth-loopback-cancel","allow-google-exchange-code"]}}

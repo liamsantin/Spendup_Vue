@@ -1,80 +1,45 @@
 {
-    "name": "spendup",
-    "version": "0.1.0",
-    "type": "module",
-    "scripts": {
-        "dev": "vite",
-        "build": "vue-tsc --noEmit && vite build",
-        "preview": "vite preview --port 5050",
-        "typecheck": "vue-tsc --noEmit",
-        "test": "vitest run",
-        "test:watch": "vitest",
-        "lint": "eslint .",
-        "lint:fix": "eslint . --fix",
-        "format": "prettier --write .",
-        "format:check": "prettier --check .",
-        "validate": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build",
-        "tauri": "tauri",
-        "tauri:dev": "tauri dev",
-        "tauri:build": "tauri build",
-        "tauri:publish-msi": "node scripts/publish-windows-msi.mjs",
-        "tauri:sync-msi": "node scripts/publish-windows-msi.mjs --copy-only",
-        "prepare": "husky"
-    },
-    "dependencies": {
-        "@microsoft/signalr": "^10.0.0",
-        "@tauri-apps/api": "^2.11.1",
-        "@tauri-apps/plugin-deep-link": "^2.4.9",
-        "@tauri-apps/plugin-notification": "^2.3.3",
-        "@tauri-apps/plugin-opener": "^2.5.4",
-        "axios": "^1.19.0",
-        "html5-qrcode": "^2.3.8",
-        "pinia": "^3.0.4",
-        "qrcode": "^1.5.4",
-        "vee-validate": "^4.15.1",
-        "vue": "^3.5.38",
-        "vue-i18n": "^9.14.5",
-        "vue-router": "^4.6.4",
-        "vue-tabler-icons": "^2.21.0",
-        "vue3-perfect-scrollbar": "^2.0.0",
-        "vuetify": "^3.12.8"
-    },
-    "devDependencies": {
-        "@tauri-apps/cli": "^2.11.4",
-        "@tsconfig/node22": "^22.0.2",
-        "@types/node": "^22.19.21",
-        "@types/qrcode": "^1.5.6",
-        "@vitejs/plugin-vue": "^6.0.7",
-        "@vue/eslint-config-prettier": "^10.2.0",
-        "@vue/eslint-config-typescript": "^14.8.0",
-        "@vue/test-utils": "^2.4.11",
-        "@vue/tsconfig": "^0.9.1",
-        "esbuild": "^0.28.1",
-        "eslint": "^10.5.0",
-        "eslint-plugin-vue": "^10.9.2",
-        "husky": "^9.1.7",
-        "jsdom": "^29.1.1",
-        "lint-staged": "^16.4.0",
-        "prettier": "^3.8.4",
-        "sass": "^1.85.1",
-        "typescript": "^5.9.3",
-        "typescript-eslint": "^8.61.1",
-        "vite": "^8.0.16",
-        "vite-plugin-vuetify": "^2.1.3",
-        "vitest": "^4.1.10",
-        "vue-eslint-parser": "^10.4.1",
-        "vue-tsc": "^2.2.12"
-    },
-    "lint-staged": {
-        "*.{js,mjs,cjs,ts,vue}": [
-            "eslint --fix",
-            "prettier --write"
-        ],
-        "*.{json,md,scss,css,html,yml,yaml}": [
-            "prettier --write"
-        ]
-    },
-    "allowScripts": {
-        "esbuild@0.28.1": true
-    }
+  "name": "sidebardesign",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "run-p type-check \"build-only {@}\" --",
+    "preview": "vite preview",
+    "build-only": "vite build",
+    "type-check": "vue-tsc --build",
+    "lint": "run-s \"lint:*\"",
+    "lint:oxlint": "oxlint . --fix",
+    "lint:eslint": "eslint . --fix --cache",
+    "format": "oxfmt src/"
+  },
+  "dependencies": {
+    "pinia": "^4.0.2",
+    "vue": "^3.5.40",
+    "vue-router": "^5.2.0"
+  },
+  "devDependencies": {
+    "@tsconfig/node24": "^24.0.4",
+    "@types/node": "^24.13.3",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vitejs/plugin-vue-jsx": "^5.1.6",
+    "@vue/eslint-config-typescript": "^14.9.0",
+    "@vue/tsconfig": "^0.9.1",
+    "eslint": "^10.7.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-oxlint": "~1.73.0",
+    "eslint-plugin-vue": "~10.9.2",
+    "jiti": "^2.7.0",
+    "npm-run-all2": "^9.0.2",
+    "oxfmt": "^0.59.0",
+    "typescript": "~6.0.0",
+    "vite": "^8.1.5",
+    "vite-plugin-vue-devtools": "^8.1.5",
+    "vue-eslint-parser": "^10.4.1",
+    "vue-tsc": "^3.3.7"
+  },
+  "engines": {
+    "node": "^22.18.0 || >=24.12.0"
+  }
 }
