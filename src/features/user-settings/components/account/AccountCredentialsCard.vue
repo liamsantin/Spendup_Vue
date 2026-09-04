@@ -44,8 +44,8 @@ const { t } = useI18n();
                 {{ t('accounts.credentials.enterCode') }}
             </v-btn>
         </AppAlert>
-        <div class="mt-6">
-            <v-row dense>
+        <div class="mt-2">
+            <v-row>
                 <v-col cols="12" md="6">
                     <v-label class="mb-2 font-weight-medium">{{ t('accounts.credentials.fields.username') }}</v-label>
                     <v-text-field

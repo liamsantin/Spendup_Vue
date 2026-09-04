@@ -9,7 +9,7 @@ withDefaults(
         subtitle?: string;
         /** Conservé pour compatibilité des pages existantes (non affiché). */
         icon?: unknown;
-        /** Masquer la barre d’actions bas (défaut : masquée). */
+        /** Masquer Enregistrer / Annuler (défaut : masqués). */
         hideActions?: boolean;
         saveDisabled?: boolean;
         cancelDisabled?: boolean;
@@ -36,8 +36,16 @@ const emit = defineEmits<{
         <header class="su-hero">
             <div class="su-hero__top">
                 <h1>{{ title }}</h1>
-                <div v-if="$slots.actions" class="su-hero__actions">
+                <div v-if="$slots.actions || !hideActions" class="su-hero__actions">
                     <slot name="actions" />
+                    <template v-if="!hideActions">
+                        <button type="button" class="su-btn su-btn--ghost" :disabled="cancelDisabled" @click="emit('cancel')">
+                            {{ t('shell.cancel') }}
+                        </button>
+                        <button type="button" class="su-btn su-btn--ink" :disabled="saveDisabled || saveLoading" @click="emit('save')">
+                            {{ t('shell.save') }}
+                        </button>
+                    </template>
                 </div>
             </div>
             <p v-if="subtitle">{{ subtitle }}</p>
@@ -46,14 +54,5 @@ const emit = defineEmits<{
         <div class="su-body">
             <slot />
         </div>
-
-        <footer v-if="!hideActions" class="su-footer">
-            <button type="button" class="su-btn su-btn--ink" :disabled="saveDisabled || saveLoading" @click="emit('save')">
-                {{ t('shell.save') }}
-            </button>
-            <button type="button" class="su-btn su-btn--danger" :disabled="cancelDisabled" @click="emit('cancel')">
-                {{ t('shell.cancel') }}
-            </button>
-        </footer>
     </div>
 </template>

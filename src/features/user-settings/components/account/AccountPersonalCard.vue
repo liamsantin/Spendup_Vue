@@ -50,8 +50,8 @@ const birthDateModel = computed({
         <AppAlert v-if="error" type="error" class="su-alert" closable @dismiss="emit('dismissError')">
             {{ error }}
         </AppAlert>
-        <div class="mt-2">
-            <v-row dense>
+        <div>
+            <v-row>
                 <v-col cols="12" md="6">
                     <v-label class="mb-2 font-weight-medium">{{ t('accounts.personal.fields.firstName') }}</v-label>
                     <v-text-field v-model="firstName" color="primary" variant="outlined" hide-details :disabled="loading" />

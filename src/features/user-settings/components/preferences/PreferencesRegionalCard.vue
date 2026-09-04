@@ -23,7 +23,7 @@ const firstDayItems = computed(() =>
         <template #icon>
             <WorldIcon :size="20" stroke-width="1.5" />
         </template>
-        <v-row dense>
+        <v-row>
             <v-col cols="12" md="6">
                 <v-label class="mb-2 font-weight-medium">{{ t('userSettings.regional.locale') }}</v-label>
                 <v-select

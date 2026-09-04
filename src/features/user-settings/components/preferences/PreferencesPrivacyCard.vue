@@ -27,7 +27,7 @@ const friendRequestItems = computed(() => [
         <template #icon>
             <EyeIcon :size="20" stroke-width="1.5" />
         </template>
-        <v-row dense>
+        <v-row>
             <v-col cols="12" md="6">
                 <v-label class="mb-2 font-weight-medium">{{ t('userSettings.privacy.profileVisibility') }}</v-label>
                 <v-select
@@ -61,7 +61,7 @@ const friendRequestItems = computed(() => [
                     hide-details
                 />
             </v-col>
-            <v-col cols="12" md="6" class="d-flex align-center">
+            <v-col cols="12" md="6" class="d-flex align-end">
                 <v-switch
                     v-model="draft.discoverableInSearch"
                     color="primary"

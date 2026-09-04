@@ -89,6 +89,14 @@ function selectTab(value: string) {
                         <span v-if="item.chip" class="su-tab__chip">{{ item.chip }}</span>
                     </button>
                 </nav>
+                <div v-if="!hideActions" class="su-hero__actions">
+                    <button type="button" class="su-btn su-btn--ghost" :disabled="cancelDisabled" @click="emit('cancel')">
+                        {{ t('shell.cancel') }}
+                    </button>
+                    <button type="button" class="su-btn su-btn--ink" :disabled="saveDisabled || saveLoading" @click="emit('save')">
+                        {{ t('shell.save') }}
+                    </button>
+                </div>
             </div>
             <p v-if="subtitle">{{ subtitle }}</p>
             <div v-if="$slots.toolbar" class="su-toolbar">
@@ -101,14 +109,5 @@ function selectTab(value: string) {
         <div class="su-body">
             <slot />
         </div>
-
-        <footer v-if="!hideActions" class="su-footer">
-            <button type="button" class="su-btn su-btn--ink" :disabled="saveDisabled || saveLoading" @click="emit('save')">
-                {{ t('shell.save') }}
-            </button>
-            <button type="button" class="su-btn su-btn--danger" :disabled="cancelDisabled" @click="emit('cancel')">
-                {{ t('shell.cancel') }}
-            </button>
-        </footer>
     </div>
 </template>

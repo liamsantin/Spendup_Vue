@@ -20,7 +20,7 @@ const dashboardViewItems = computed(() => [
         <template #icon>
             <LayoutDashboardIcon :size="20" stroke-width="1.5" />
         </template>
-        <v-row dense>
+        <v-row>
             <v-col cols="12" md="6">
                 <v-label class="mb-2 font-weight-medium">{{ t('userSettings.dashboard.defaultView') }}</v-label>
                 <v-select
@@ -32,7 +32,7 @@ const dashboardViewItems = computed(() => [
                     hide-details
                 />
             </v-col>
-            <v-col cols="12" md="6" class="d-flex flex-column justify-center">
+            <v-col cols="12" md="6" class="d-flex flex-column justify-end">
                 <v-switch
                     v-model="draft.showBalanceOnDashboard"
                     color="primary"

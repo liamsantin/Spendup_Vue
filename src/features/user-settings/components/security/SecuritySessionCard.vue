@@ -61,7 +61,7 @@ function onTrustedDaysBlur() {
         <template #icon>
             <ClockHour4Icon :size="20" stroke-width="1.5" />
         </template>
-        <v-row dense>
+        <v-row>
             <v-col cols="12">
                 <v-switch
                     :model-value="idleEnabled"
