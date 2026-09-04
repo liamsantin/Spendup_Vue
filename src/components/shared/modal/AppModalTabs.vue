@@ -185,8 +185,8 @@ const currentTab = computed({
 }
 
 .app-modal-tabs__tab.is-active {
-    color: var(--ink);
-    background: var(--hair);
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.12);
 }
 
 .app-modal-tabs__tab:disabled {
@@ -214,8 +214,8 @@ const currentTab = computed({
 }
 
 .app-modal-tabs__tab.is-active .app-modal-tabs__chip {
-    background: var(--thread);
-    color: var(--ink);
+    background: rgb(var(--v-theme-primary));
+    color: #fff;
 }
 
 .app-modal-tabs__body {

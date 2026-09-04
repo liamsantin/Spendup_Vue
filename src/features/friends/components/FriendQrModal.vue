@@ -205,8 +205,8 @@ watch(
 }
 
 .app-modal-tabs__tab.is-active {
-    color: var(--ink);
-    background: var(--hair);
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.12);
 }
 
 .app-modal-tabs__tab:disabled {
@@ -224,7 +224,7 @@ watch(
 }
 
 .friend-qr-panel__img {
-    border-radius: 8px;
+    border-radius: 16px;
     overflow: hidden;
     background: #fff;
 }
@@ -238,7 +238,7 @@ watch(
 .friend-qr-scanner {
     width: 100%;
     min-height: 240px;
-    border-radius: 8px;
+    border-radius: 16px;
     overflow: hidden;
     background: rgba(var(--v-theme-on-surface), 0.06);
 }
@@ -252,12 +252,12 @@ watch(
     align-items: center;
     justify-content: center;
     gap: 12px;
-    border-radius: 8px;
+    border-radius: 16px;
     background: rgba(var(--v-theme-surface), 0.92);
 }
 
 .friend-qr-scanner :deep(video) {
     width: 100%;
-    border-radius: 8px;
+    border-radius: 16px;
 }
 </style>

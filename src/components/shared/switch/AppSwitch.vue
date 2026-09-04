@@ -1,13 +1,8 @@
 <script setup lang="ts">
 /**
  * Wrapper autour de `v-switch` (Vuetify).
- * Reprend les conventions du template Modernize : `inset`, couleur `primary`,
- * `hide-details` et densité `default` — le thème (`scss/components/_VSwitch.scss`)
- * ne stylise que `.v-selection-control--density-default`.
+ * Piste verre, curseur blanc, couleur active = primaire du thème.
  * Autres props / attrs / slots de `v-switch` passent tels quels.
- *
- * Référence visuelle : `_template/modernize/components/ui-components/list/SwitchList.vue`
- * et `_template/modernize/components/forms/form-elements/switch/`.
  */
 defineOptions({ name: 'AppSwitch', inheritAttrs: false });
 

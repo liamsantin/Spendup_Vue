@@ -64,11 +64,7 @@ async function confirmSendRequest() {
             <span class="su-empty__mark"><UserHeartIcon :size="24" stroke-width="1.5" /></span>
             {{ t('friendsPage.empty.search') }}
         </div>
-        <div v-else-if="store.searchQuery.trim().length < 2" class="su-empty">
-            <span class="su-empty__mark"><UserHeartIcon :size="24" stroke-width="1.5" /></span>
-            {{ t('friendsPage.discover.startTyping') }}
-        </div>
-        <div v-else class="su-surface">
+        <div v-else-if="store.searchResults.length" class="su-surface">
             <FriendListItem
                 v-for="(user, i) in store.searchResults"
                 :key="user.publicId"

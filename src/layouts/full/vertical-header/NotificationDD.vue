@@ -139,10 +139,10 @@ async function onItemClick(item: AppNotification) {
 
 <style scoped>
 .header-notif-badge :deep(.v-badge__badge) {
-    background: var(--ink) !important;
-    color: var(--on-ink) !important;
+    background: rgb(var(--v-theme-primary)) !important;
+    color: #fff !important;
     border: 0;
-    box-shadow: var(--shadow-ink);
+    box-shadow: 0 8px 18px -10px rgba(var(--v-theme-primary), 0.8);
     font-weight: 600;
 }
 

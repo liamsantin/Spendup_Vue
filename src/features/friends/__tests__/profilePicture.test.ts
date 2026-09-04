@@ -19,6 +19,7 @@ describe('resolveFriendAvatarSrc', () => {
 
     it('mappe un avatar catalogue', () => {
         expect(resolveFriendAvatarSrc('/avatar/user-2')).toBe(catalogAvatarSrc('/avatar/user-2'));
+        expect(resolveFriendAvatarSrc('/avatar/joane')).toBe(catalogAvatarSrc('/avatar/joane'));
     });
 
     it('préfixe les chemins relatifs API', () => {

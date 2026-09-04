@@ -2,7 +2,7 @@
 /**
  * Wrapper autour de `v-radio-group` / `v-radio` (Vuetify).
  * Fournit un rendu simple base sur une liste d'options, avec les
- * conventions Spend.Up / Modernize pour les formulaires.
+ * conventions Spend.Up (couleur primaire du thème).
  */
 defineOptions({ name: 'AppRadioButton', inheritAttrs: false });
 

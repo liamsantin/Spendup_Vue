@@ -1,3 +1,4 @@
+import joane from '@/assets/images/profile/avatar/joane.jpg';
 import user1 from '@/assets/images/profile/avatar/user-1.jpg';
 import user2 from '@/assets/images/profile/avatar/user-2.jpg';
 import user3 from '@/assets/images/profile/avatar/user-3.jpg';
@@ -35,8 +36,9 @@ export const AVATAR_CATALOG_PREFIX = '/avatar/';
 /** Image affichée quand `profilePicture` est `null`. */
 export const DEFAULT_AVATAR_SRC = user1;
 
-/** Chemins catalogue (assets `src/assets/images/profile/avatar/user-*.jpg`). */
+/** Chemins catalogue (Joane + `src/assets/images/profile/avatar/user-*.jpg`). */
 export const CATALOG_AVATARS = [
+    '/avatar/joane',
     '/avatar/user-1',
     '/avatar/user-2',
     '/avatar/user-3',
@@ -72,6 +74,7 @@ export const CATALOG_AVATARS = [
 export type CatalogAvatarPath = (typeof CATALOG_AVATARS)[number];
 
 const CATALOG_SRC_BY_PATH: Record<string, string> = {
+    '/avatar/joane': joane,
     '/avatar/user-1': user1,
     '/avatar/user-2': user2,
     '/avatar/user-3': user3,

@@ -3,7 +3,6 @@
  * Wrapper autour de `v-chip` (Vuetify).
  * Props Spend.Up : `closable` + `visible` (présence du chip, distinct de la sélection).
  * Autres props / attrs / slots de `v-chip` passent telles quelles.
- * Référence visuelle : `_template/modernize/components/ui-components/chip/`.
  */
 defineOptions({ name: 'AppChip', inheritAttrs: false });
 

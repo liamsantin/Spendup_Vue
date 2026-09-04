@@ -73,7 +73,7 @@ defineExpose({ close });
 </script>
 
 <template>
-    <v-dialog v-model="open" :max-width="maxWidth" :persistent="persistent">
+    <v-dialog v-model="open" :max-width="maxWidth" :persistent="persistent" transition="fade-transition">
         <v-card rounded="md" class="app-confirmation-modal su-modal">
             <div class="app-confirmation-modal__header">
                 <div class="pr-12">

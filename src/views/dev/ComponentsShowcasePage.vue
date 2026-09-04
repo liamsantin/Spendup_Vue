@@ -69,7 +69,7 @@ const filterHidden = ref(false);
             embedded
         >
             <div v-if="tab === 'chrome'" class="su-showcase__grid">
-                <AppGlassCard title="Onglets page" subtitle="su-tabs — pastilles encre, comme Amis / Comptes.">
+                <AppGlassCard title="Onglets page" subtitle="su-tabs — pastille à la couleur du thème.">
                     <nav class="su-tabs" aria-label="Démo onglets">
                         <button
                             v-for="item in pageTabs"
@@ -170,7 +170,7 @@ const filterHidden = ref(false);
             </div>
 
             <div v-else-if="tab === 'forms'" class="su-showcase__grid">
-                <AppGlassCard title="Interrupteurs" subtitle="AppSwitch — piste encre dans le panneau.">
+                <AppGlassCard title="Interrupteurs" subtitle="AppSwitch — piste du thème, curseur blanc.">
                     <div class="su-showcase__row">
                         <AppSwitch v-model="switchOn" label="Activé" />
                         <AppSwitch v-model="switchOff" label="Inactif" />

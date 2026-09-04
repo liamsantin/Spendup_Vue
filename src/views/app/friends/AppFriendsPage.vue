@@ -29,6 +29,7 @@ function friendshipFromQuery(): string | null {
 
 const tab = ref<FriendTab>(tabFromQuery());
 const syncingTabFromRoute = ref(false);
+const discoverSearching = computed(() => tab.value === 'Discover' && store.searchQuery.trim().length > 0);
 
 const tabs = computed(() => [
     { value: 'Friends' as const, label: t('friendsPage.tabs.friends'), icon: UsersIcon },
@@ -121,8 +122,8 @@ watch(tab, (value) => {
 </script>
 
 <template>
-    <div class="su-page">
-        <header class="su-hero">
+    <div class="su-page" :class="{ 'su-page--discover-idle': tab === 'Discover' && !discoverSearching }">
+        <header class="su-hero" :class="{ 'su-hero--searching': discoverSearching }">
             <div class="su-hero__top">
                 <h1>{{ t('friendsPage.title') }}</h1>
                 <nav class="su-tabs" :aria-label="t('friendsPage.title')">
@@ -141,9 +142,11 @@ watch(tab, (value) => {
                     </button>
                 </nav>
             </div>
-            <p>{{ t('friendsPage.subtitle') }}</p>
+            <p v-show="!discoverSearching">{{ t('friendsPage.subtitle') }}</p>
+        </header>
 
-            <div v-if="tab === 'Discover'" class="su-search">
+        <div v-if="tab === 'Discover'" class="su-discover-search-slot" :class="{ 'su-discover-search-slot--idle': !discoverSearching }">
+            <div class="su-search" :class="discoverSearching ? 'su-search--docked' : 'su-search--center'">
                 <button
                     class="su-search__orb"
                     type="button"
@@ -172,7 +175,7 @@ watch(tab, (value) => {
                     <XIcon :size="16" stroke-width="1.5" />
                 </button>
             </div>
-        </header>
+        </div>
 
         <div class="su-body">
             <Transition name="su-pane" mode="out-in">

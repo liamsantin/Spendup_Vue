@@ -68,9 +68,9 @@ const { tag, attrs } = useLinkTag(() => props.leaf);
     background: var(--surface-hover-soft);
 }
 .leaf.is-active {
-    color: var(--ink);
-    background: var(--surface-raised);
-    box-shadow: var(--shadow-pill-soft);
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.12);
+    box-shadow: none;
 }
 .leaf :deep(svg) {
     display: block;
@@ -117,7 +117,7 @@ const { tag, attrs } = useLinkTag(() => props.leaf);
         background: transparent;
     }
     .leaf.is-active:hover {
-        background: var(--surface-raised);
+        background: rgba(var(--v-theme-primary), 0.12);
     }
 }
 </style>

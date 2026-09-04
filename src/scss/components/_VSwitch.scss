@@ -13,10 +13,10 @@
     &.v-selection-control--dirty {
         .v-selection-control__wrapper.text-primary {
             .v-switch__track {
-                background-color: rgba(var(--v-theme-primary), 0.6) !important;
+                background-color: rgb(var(--v-theme-primary)) !important;
             }
             .v-switch__thumb {
-                background-color: rgb(var(--v-theme-primary)) !important;
+                background-color: #fff !important;
             }
         }
         .v-selection-control__wrapper.text-secondary {

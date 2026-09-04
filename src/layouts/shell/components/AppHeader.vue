@@ -103,7 +103,7 @@ const { t } = useI18n();
 }
 
 .bar :deep(.su-orb:hover) {
-    color: var(--ink);
+    color: rgb(var(--v-theme-primary));
 }
 
 .bar__new :deep(.su-btn) {

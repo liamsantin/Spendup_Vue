@@ -111,14 +111,14 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
     box-shadow: var(--shadow-hover);
 }
 .item.is-open {
-    background: var(--ink);
-    color: var(--on-ink);
-    box-shadow: var(--shadow-ink);
+    background: rgb(var(--v-theme-primary));
+    color: #fff;
+    box-shadow: 0 14px 28px -16px rgba(var(--v-theme-primary), 0.7);
 }
-/* replié, la ligne courante reste la pastille blanche du rail */
+/* replié, la ligne courante reste la pastille du rail */
 .sidebar:not(.is-expanded) .item.is-open {
-    background: var(--surface-raised);
-    color: var(--ink);
+    background: rgba(var(--v-theme-primary), 0.14);
+    color: rgb(var(--v-theme-primary));
     box-shadow: var(--shadow-pill);
 }
 
@@ -213,8 +213,8 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
     margin-right: 14px;
     padding: 0 7px;
     border-radius: 12px;
-    background: var(--ink);
-    color: var(--on-ink);
+    background: rgb(var(--v-theme-primary));
+    color: #fff;
     font-size: 12px;
     font-weight: 600;
 }
@@ -276,7 +276,7 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
         box-shadow 0.3s;
 }
 .sub__row.is-active::before {
-    background: var(--ink);
+    background: rgb(var(--v-theme-primary));
     box-shadow: 0 0 0 4px var(--hair);
 }
 .is-expanded .sub__row::before {
@@ -297,7 +297,7 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
         transform: none;
     }
     .item.is-open:hover {
-        background: var(--ink);
+        background: rgb(var(--v-theme-primary));
     }
 }
 </style>
