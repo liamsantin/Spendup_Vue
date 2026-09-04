@@ -5,13 +5,18 @@ import { getFriendDisplayName, getFriendProfileLabel } from '@/features/friends/
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
 import type { FriendUser } from '@/features/friends/types';
 
-const props = defineProps<{
-    user: FriendUser;
-    friendshipPublicId?: string | null;
-    nickname?: string | null;
-    subtitle?: string | null;
-    highlight?: boolean;
-}>();
+const props = withDefaults(
+    defineProps<{
+        user: FriendUser;
+        friendshipPublicId?: string | null;
+        nickname?: string | null;
+        subtitle?: string | null;
+        highlight?: boolean;
+        variant?: 'default' | 'glass';
+        index?: number;
+    }>(),
+    { variant: 'default', index: 0 }
+);
 
 const store = useFriendsStore();
 const title = computed(() => getFriendDisplayName(props.user, props.nickname));
@@ -36,8 +41,25 @@ const { avatarSrc } = useFriendAvatarUrl(
 </script>
 
 <template>
+    <div
+        v-if="variant === 'glass'"
+        class="su-person"
+        :class="{ 'is-focused': focused }"
+        :style="{ '--i': index }"
+        :data-friendship-id="friendshipPublicId || undefined"
+    >
+        <img class="su-person__avatar" :src="avatarSrc" width="44" height="44" :alt="title" />
+        <div class="su-person__meta">
+            <p class="su-person__name">{{ title }}</p>
+            <p class="su-person__sub">{{ secondaryLine }}</p>
+        </div>
+        <div class="su-person__actions" @click.stop>
+            <slot name="actions" />
+        </div>
+    </div>
     <!-- `link` active le hover Vuetify (comme les items notifications cliquables). -->
     <v-list-item
+        v-else
         link
         color="primary"
         class="friend-list-item px-2 py-3"

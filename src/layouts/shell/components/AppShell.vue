@@ -128,8 +128,13 @@ const emit = defineEmits<{
     flex: 1 1 auto;
     min-height: 0;
     width: 100%;
-    overflow: auto;
+    overflow: hidden;
     padding: 4px 4px 8px;
+}
+
+.shell__content > :deep(.page-content) > * {
+    flex: 1 1 auto;
+    min-height: 0;
 }
 
 @media (max-width: 767px) {

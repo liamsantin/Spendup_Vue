@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import BaseBreadcrumb from '@/components/shared/breadcrumb/BaseBreadcrumb.vue';
 import { DashboardContent } from '@/features/dashboard';
 
 const { t } = useI18n();
-
-const page = computed(() => ({ title: t('dashboard.pageTitle') }));
-const breadcrumbs = computed(() => [
-    { text: t('dashboard.breadcrumbs.application'), disabled: false, href: '/app' },
-    { text: t('dashboard.breadcrumbs.dashboard'), disabled: true, href: '/app' }
-]);
 </script>
 
 <template>
-    <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs" />
-    <DashboardContent />
+    <div class="su-page">
+        <header class="su-hero">
+            <div class="su-hero__top">
+                <h1>{{ t('dashboard.pageTitle') }}</h1>
+            </div>
+            <p>{{ t('dashboard.subtitle') }}</p>
+        </header>
+        <div class="su-body">
+            <DashboardContent />
+        </div>
+    </div>
 </template>

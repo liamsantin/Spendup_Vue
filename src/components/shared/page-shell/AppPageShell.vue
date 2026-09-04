@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 
 const { t } = useI18n();
 
@@ -8,7 +7,7 @@ withDefaults(
     defineProps<{
         title: string;
         subtitle?: string;
-        /** Composant icône vue-tabler (optionnel). */
+        /** Conservé pour compatibilité des pages existantes (non affiché). */
         icon?: unknown;
         /** Masquer la barre d’actions bas (défaut : masquée). */
         hideActions?: boolean;
@@ -33,93 +32,28 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <div class="settings-page">
-        <v-card elevation="10" rounded="md" class="settings-page-card">
-            <div class="app-page-shell-header">
-                <div class="d-flex align-center ga-3 min-width-0">
-                    <v-avatar v-if="icon" class="bg-lightprimary text-primary flex-shrink-0" rounded="md" size="46">
-                        <component :is="icon" size="23" />
-                    </v-avatar>
-                    <div class="min-width-0">
-                        <h4 class="text-h5 mb-0">{{ title }}</h4>
-                        <div v-if="subtitle" class="text-subtitle-1 textSecondary mt-1 text-truncate">
-                            {{ subtitle }}
-                        </div>
-                    </div>
-                </div>
-                <div v-if="$slots.actions" class="d-flex align-center ga-2 flex-shrink-0">
+    <div class="su-page">
+        <header class="su-hero">
+            <div class="su-hero__top">
+                <h1>{{ title }}</h1>
+                <div v-if="$slots.actions" class="su-hero__actions">
                     <slot name="actions" />
                 </div>
             </div>
+            <p v-if="subtitle">{{ subtitle }}</p>
+        </header>
 
-            <perfect-scrollbar class="settings-tabs-scroll" :options="PERFECT_SCROLLBAR_OPTIONS">
-                <v-card-text class="pa-sm-6 pa-3">
-                    <slot />
-                </v-card-text>
-            </perfect-scrollbar>
+        <div class="su-body">
+            <slot />
+        </div>
 
-            <template v-if="!hideActions">
-                <v-divider class="flex-grow-0" />
-                <div class="settings-actions-bar">
-                    <v-btn color="primary" class="mr-3" flat :loading="saveLoading" :disabled="saveDisabled" @click="emit('save')">
-                        {{ t('shell.save') }}
-                    </v-btn>
-                    <v-btn class="bg-lighterror text-error" flat :disabled="cancelDisabled" @click="emit('cancel')">
-                        {{ t('shell.cancel') }}
-                    </v-btn>
-                </div>
-            </template>
-        </v-card>
+        <footer v-if="!hideActions" class="su-footer">
+            <button type="button" class="su-btn su-btn--ink" :disabled="saveDisabled || saveLoading" @click="emit('save')">
+                {{ t('shell.save') }}
+            </button>
+            <button type="button" class="su-btn su-btn--danger" :disabled="cancelDisabled" @click="emit('cancel')">
+                {{ t('shell.cancel') }}
+            </button>
+        </footer>
     </div>
 </template>
-
-<style scoped>
-.settings-page {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.settings-page-card {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.app-page-shell-header {
-    flex-grow: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    min-height: 72px;
-    padding: 14px 24px;
-    background: rgb(var(--v-theme-grey100));
-}
-
-.settings-tabs-scroll {
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 0;
-}
-
-.settings-actions-bar {
-    flex-shrink: 0;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 12px 24px;
-    background: rgb(var(--v-theme-surface));
-}
-
-@media screen and (max-width: 767px) {
-    .app-page-shell-header {
-        min-height: 68px;
-        padding: 12px 16px;
-    }
-}
-</style>

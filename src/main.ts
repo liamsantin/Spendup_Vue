@@ -6,6 +6,7 @@ import vuetify from './plugins/vuetify';
 import '@/scss/style.scss';
 import '@/layouts/shell/assets/tokens.css';
 import '@/layouts/shell/assets/motion.css';
+import '@/assets/glass.css';
 import 'vue3-perfect-scrollbar/style.css';
 import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 

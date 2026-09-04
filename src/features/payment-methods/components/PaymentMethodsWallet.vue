@@ -151,7 +151,7 @@ async function confirmDelete() {
             color="error"
             variant="tonal"
             density="default"
-            class="mb-4"
+            class="su-alert"
             closable
             @dismiss="
                 localError = null;
@@ -161,15 +161,19 @@ async function confirmDelete() {
             {{ localError || store.error }}
         </AppAlert>
 
-        <div v-if="store.loading && !store.items.length" class="py-8 text-center">
-            <v-progress-circular indeterminate color="primary" size="32" />
+        <div v-if="store.loading && !store.items.length" class="su-loading">
+            <span class="su-spin" />
         </div>
-        <div v-else-if="!visibleItems.length" class="py-8 text-center text-medium-emphasis">
+        <div v-else-if="!visibleItems.length" class="su-empty">
             {{ t('paymentMethodsPage.empty.wallet') }}
         </div>
-        <div v-else>
-            <section v-for="group in groups" :key="group.accountPublicId" class="mb-6">
-                <h5 class="text-subtitle-1 font-weight-bold mb-2">{{ t('paymentMethodsPage.groupTitle', { name: group.accountName }) }}</h5>
+        <div v-else class="su-stack">
+            <section v-for="group in groups" :key="group.accountPublicId" class="su-surface">
+                <header class="su-panel__head">
+                    <div>
+                        <h2>{{ t('paymentMethodsPage.groupTitle', { name: group.accountName }) }}</h2>
+                    </div>
+                </header>
                 <v-list class="py-0">
                     <PaymentMethodListItem
                         v-for="method in group.items"
@@ -184,10 +188,10 @@ async function confirmDelete() {
             </section>
         </div>
 
-        <div v-if="store.hasMore" class="text-center mt-2">
-            <v-btn variant="text" :loading="store.loadingMore" @click="store.loadMore()">
+        <div v-if="store.hasMore" class="su-more">
+            <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
                 {{ t('paymentMethodsPage.loadMore') }}
-            </v-btn>
+            </button>
         </div>
 
         <PaymentMethodFormModal v-model="createOpen" :default-account-public-id="filterAccountId" />

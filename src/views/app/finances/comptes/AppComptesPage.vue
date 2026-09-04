@@ -187,14 +187,10 @@ watch(tab, (value) => {
 </script>
 
 <template>
-    <AppTabsShell v-model="tab" :tabs="tabs" align-tabs="center" hide-actions>
-        <v-window v-model="tab">
-            <v-window-item value="Accounts">
-                <AccountsTab />
-            </v-window-item>
-            <v-window-item value="Invitations">
-                <InvitationsTab />
-            </v-window-item>
-        </v-window>
+    <AppTabsShell v-model="tab" :tabs="tabs" :title="t('comptesPage.title')" :subtitle="t('comptesPage.subtitle')" hide-actions>
+        <Transition name="su-pane" mode="out-in">
+            <AccountsTab v-if="tab === 'Accounts'" key="Accounts" />
+            <InvitationsTab v-else key="Invitations" />
+        </Transition>
     </AppTabsShell>
 </template>

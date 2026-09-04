@@ -2,9 +2,8 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { BellPlusIcon, ShieldLockIcon, UserHeartIcon, UsersIcon } from 'vue-tabler-icons';
-import AppTabsShell from '@/components/shared/tabs/AppTabsShell.vue';
-import { BlockedUsersTab, DiscoverFriendsTab, DiscoverSearchBar, FriendsTab, RequestsTab, useFriendsStore } from '@/features/friends';
+import { BellPlusIcon, CameraIcon, SearchIcon, ShieldLockIcon, UserHeartIcon, UsersIcon, XIcon } from 'vue-tabler-icons';
+import { BlockedUsersTab, DiscoverFriendsTab, FriendQrModal, FriendsTab, RequestsTab, useFriendsStore } from '@/features/friends';
 
 const FRIEND_TABS = ['Friends', 'Requests', 'Discover', 'Blocked'] as const;
 type FriendTab = (typeof FRIEND_TABS)[number];
@@ -13,6 +12,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useFriendsStore();
+const qrOpen = ref(false);
 
 function tabFromQuery(): FriendTab {
     const raw = route.query.tab;
@@ -31,15 +31,15 @@ const tab = ref<FriendTab>(tabFromQuery());
 const syncingTabFromRoute = ref(false);
 
 const tabs = computed(() => [
-    { value: 'Friends', label: t('friendsPage.tabs.friends'), icon: UsersIcon },
+    { value: 'Friends' as const, label: t('friendsPage.tabs.friends'), icon: UsersIcon },
     {
-        value: 'Requests',
+        value: 'Requests' as const,
         label: t('friendsPage.tabs.requests'),
         icon: BellPlusIcon,
         chip: store.incomingCount > 0 ? store.incomingCount : undefined
     },
-    { value: 'Discover', label: t('friendsPage.tabs.discover'), icon: UserHeartIcon },
-    { value: 'Blocked', label: t('friendsPage.tabs.blocked'), icon: ShieldLockIcon }
+    { value: 'Discover' as const, label: t('friendsPage.tabs.discover'), icon: UserHeartIcon },
+    { value: 'Blocked' as const, label: t('friendsPage.tabs.blocked'), icon: ShieldLockIcon }
 ]);
 
 async function scrollToFocusedFriendship() {
@@ -64,6 +64,19 @@ function syncTabQuery(value: FriendTab) {
         return;
     }
     void router.replace({ query: nextQuery });
+}
+
+function selectTab(value: FriendTab) {
+    tab.value = value;
+}
+
+async function onQrScanned(publicId: string) {
+    tab.value = 'Discover';
+    try {
+        await store.searchUsers(publicId);
+    } catch {
+        // erreur via store.error
+    }
 }
 
 onMounted(() => {
@@ -108,24 +121,68 @@ watch(tab, (value) => {
 </script>
 
 <template>
-    <AppTabsShell v-model="tab" :tabs="tabs" align-tabs="center" hide-actions>
-        <template v-if="tab === 'Discover'" #toolbar>
-            <DiscoverSearchBar />
-        </template>
+    <div class="su-page">
+        <header class="su-hero">
+            <div class="su-hero__top">
+                <h1>{{ t('friendsPage.title') }}</h1>
+                <nav class="su-tabs" :aria-label="t('friendsPage.title')">
+                    <button
+                        v-for="item in tabs"
+                        :key="item.value"
+                        type="button"
+                        class="su-tab"
+                        :class="{ 'is-active': tab === item.value }"
+                        :aria-current="tab === item.value ? 'page' : undefined"
+                        @click="selectTab(item.value)"
+                    >
+                        <component :is="item.icon" :size="18" stroke-width="1.6" />
+                        {{ item.label }}
+                        <span v-if="item.chip" class="su-tab__chip">{{ item.chip }}</span>
+                    </button>
+                </nav>
+            </div>
+            <p>{{ t('friendsPage.subtitle') }}</p>
 
-        <v-window v-model="tab">
-            <v-window-item value="Friends">
-                <FriendsTab />
-            </v-window-item>
-            <v-window-item value="Requests">
-                <RequestsTab />
-            </v-window-item>
-            <v-window-item value="Discover">
-                <DiscoverFriendsTab />
-            </v-window-item>
-            <v-window-item value="Blocked">
-                <BlockedUsersTab />
-            </v-window-item>
-        </v-window>
-    </AppTabsShell>
+            <div v-if="tab === 'Discover'" class="su-search">
+                <button
+                    class="su-search__orb"
+                    type="button"
+                    :aria-label="t('friendsPage.discover.openQr')"
+                    :title="t('friendsPage.discover.openQr')"
+                    @click="qrOpen = true"
+                >
+                    <CameraIcon :size="20" stroke-width="1.5" />
+                </button>
+                <SearchIcon :size="18" stroke-width="1.5" class="su-search__icon" />
+                <input
+                    class="su-search__input"
+                    type="search"
+                    :value="store.searchQuery"
+                    :placeholder="t('friendsPage.discover.searchLabel')"
+                    :aria-label="t('friendsPage.discover.searchLabel')"
+                    @input="store.searchUsers(String(($event.target as HTMLInputElement).value || ''))"
+                />
+                <button
+                    v-if="store.searchQuery"
+                    class="su-search__orb"
+                    type="button"
+                    :aria-label="t('header.search.clear')"
+                    @click="store.clearSearch()"
+                >
+                    <XIcon :size="16" stroke-width="1.5" />
+                </button>
+            </div>
+        </header>
+
+        <div class="su-body">
+            <Transition name="su-pane" mode="out-in">
+                <FriendsTab v-if="tab === 'Friends'" key="Friends" />
+                <RequestsTab v-else-if="tab === 'Requests'" key="Requests" />
+                <DiscoverFriendsTab v-else-if="tab === 'Discover'" key="Discover" />
+                <BlockedUsersTab v-else key="Blocked" />
+            </Transition>
+        </div>
+
+        <FriendQrModal v-model="qrOpen" @scanned="onQrScanned" />
+    </div>
 </template>

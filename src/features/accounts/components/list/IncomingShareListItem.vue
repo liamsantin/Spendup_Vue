@@ -96,26 +96,17 @@ async function onRefuse() {
                 </p>
             </div>
             <div class="incoming-share__actions">
-                <v-btn
-                    size="small"
-                    variant="flat"
-                    color="primary"
-                    :loading="accepting"
-                    :disabled="store.acting || refusing"
-                    @click.stop="onAccept"
-                >
+                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || refusing || accepting" @click.stop="onAccept">
                     {{ t('comptesPage.actions.accept') }}
-                </v-btn>
-                <v-btn
-                    size="small"
-                    variant="tonal"
-                    color="error"
-                    :loading="refusing"
-                    :disabled="store.acting || accepting"
+                </button>
+                <button
+                    type="button"
+                    class="su-btn su-btn--danger"
+                    :disabled="store.acting || accepting || refusing"
                     @click.stop="onRefuse"
                 >
                     {{ t('comptesPage.actions.refuse') }}
-                </v-btn>
+                </button>
             </div>
         </div>
     </v-list-item>
@@ -148,7 +139,7 @@ async function onRefuse() {
         justify-content: stretch;
     }
 
-    .incoming-share__actions :deep(.v-btn) {
+    .incoming-share__actions :deep(.su-btn) {
         flex: 1 1 0;
     }
 }

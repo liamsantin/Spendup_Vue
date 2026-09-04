@@ -196,6 +196,7 @@
     },
     "dashboard": {
         "pageTitle": "Dashboard",
+        "subtitle": "Overview of your workspace",
         "breadcrumbs": {
             "application": "Application",
             "dashboard": "Dashboard"
@@ -530,6 +531,8 @@
         }
     },
     "friendsPage": {
+        "title": "Friends",
+        "subtitle": "Your people, pending requests, and new connections.",
         "tabs": {
             "friends": "Friends",
             "requests": "Requests",

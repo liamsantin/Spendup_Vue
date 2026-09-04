@@ -1,14 +1,12 @@
 <script setup lang="ts">
 /**
- * Shell de page à onglets — card + AppBaseTabs (style segmented) + scroll + actions.
+ * Shell de page à onglets — hero verre + onglets pill + corps scrollable.
  */
 defineOptions({ name: 'AppTabsShell' });
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FriendLiveChips } from '@/features/notifications';
-import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
-import AppBaseTabs, { type AppBaseTabsItem } from '@/components/shared/tabs/AppBaseTabs.vue';
 
 export type ShellTab = {
     value: string;
@@ -23,22 +21,26 @@ const props = withDefaults(
     defineProps<{
         tabs: ShellTab[];
         modelValue: string;
+        title?: string;
+        subtitle?: string;
         saveDisabled?: boolean;
         cancelDisabled?: boolean;
         saveLoading?: boolean;
         /** Masquer la barre d’actions (onglets sans save). */
         hideActions?: boolean;
-        /** Alignement des onglets (`v-tabs` align-tabs). */
+        /** Alignement des onglets — conservé pour compatibilité. */
         alignTabs?: 'start' | 'title' | 'center' | 'end';
         /**
-         * Mode modal / embarqué : pas de FriendLiveChips, card plate,
+         * Mode modal / embarqué : pas de FriendLiveChips,
          * contenu sans scroll forcé plein écran.
          */
         embedded?: boolean;
-        /** Style onglets « pill » (indicateur animé). Activé par défaut. */
+        /** Conservé pour compatibilité (les onglets verre sont toujours pill). */
         pilled?: boolean;
     }>(),
     {
+        title: undefined,
+        subtitle: undefined,
         saveDisabled: true,
         cancelDisabled: true,
         saveLoading: false,
@@ -62,146 +64,51 @@ const currentTab = computed({
     set: (value: string) => emit('update:modelValue', value)
 });
 
-const baseTabs = computed<AppBaseTabsItem[]>(() =>
-    props.tabs.map((tab) => ({
-        value: tab.value,
-        label: tab.label,
-        icon: tab.icon as AppBaseTabsItem['icon'],
-        chip: tab.chip
-    }))
-);
+function selectTab(value: string) {
+    currentTab.value = value;
+}
 </script>
 
 <template>
-    <div class="settings-page" :class="{ 'settings-page--embedded': props.embedded }">
-        <v-card
-            :elevation="props.embedded ? 0 : 10"
-            :rounded="props.embedded ? 0 : 'md'"
-            class="settings-page-card"
-            :class="{ 'settings-page-card--embedded': props.embedded }"
-        >
-            <FriendLiveChips v-if="!props.embedded" />
-
-            <div class="settings-tabs-header flex-grow-0">
-                <AppBaseTabs
-                    v-model="currentTab"
-                    :tabs="baseTabs"
-                    :align-tabs="alignTabs"
-                    :pilled="pilled"
-                    :show-panels="false"
-                    show-arrows="never"
-                    :show-divider="false"
-                />
+    <div class="su-page" :class="{ 'su-page--embedded': props.embedded }">
+        <header class="su-hero">
+            <div class="su-hero__top">
+                <h1 v-if="title">{{ title }}</h1>
+                <nav class="su-tabs" :aria-label="title">
+                    <button
+                        v-for="item in tabs"
+                        :key="item.value"
+                        type="button"
+                        class="su-tab"
+                        :class="{ 'is-active': currentTab === item.value }"
+                        :aria-current="currentTab === item.value ? 'page' : undefined"
+                        @click="selectTab(item.value)"
+                    >
+                        <component :is="item.icon" v-if="item.icon" :size="18" stroke-width="1.6" />
+                        {{ item.label }}
+                        <span v-if="item.chip" class="su-tab__chip">{{ item.chip }}</span>
+                    </button>
+                </nav>
             </div>
-
-            <v-divider v-if="!props.pilled" class="flex-grow-0" />
-
-            <div v-if="$slots.toolbar" class="settings-tabs-toolbar flex-grow-0">
+            <p v-if="subtitle">{{ subtitle }}</p>
+            <div v-if="$slots.toolbar" class="su-toolbar">
                 <slot name="toolbar" />
             </div>
+        </header>
 
-            <perfect-scrollbar v-if="!props.embedded" class="settings-tabs-scroll" :options="PERFECT_SCROLLBAR_OPTIONS">
-                <v-card-text class="pa-sm-6 pa-3">
-                    <slot />
-                </v-card-text>
-            </perfect-scrollbar>
+        <FriendLiveChips v-if="!props.embedded" />
 
-            <v-card-text v-else class="pa-sm-6 pa-3 settings-tabs-body--embedded">
-                <slot />
-            </v-card-text>
+        <div class="su-body">
+            <slot />
+        </div>
 
-            <template v-if="!hideActions">
-                <v-divider class="flex-grow-0" />
-                <div class="settings-actions-bar">
-                    <v-btn color="primary" class="mr-3" flat :loading="saveLoading" :disabled="saveDisabled" @click="emit('save')">
-                        {{ t('shell.save') }}
-                    </v-btn>
-                    <v-btn class="bg-lighterror text-error" flat :disabled="cancelDisabled" @click="emit('cancel')">
-                        {{ t('shell.cancel') }}
-                    </v-btn>
-                </div>
-            </template>
-        </v-card>
+        <footer v-if="!hideActions" class="su-footer">
+            <button type="button" class="su-btn su-btn--ink" :disabled="saveDisabled || saveLoading" @click="emit('save')">
+                {{ t('shell.save') }}
+            </button>
+            <button type="button" class="su-btn su-btn--danger" :disabled="cancelDisabled" @click="emit('cancel')">
+                {{ t('shell.cancel') }}
+            </button>
+        </footer>
     </div>
 </template>
-
-<style scoped>
-.settings-page {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.settings-page--embedded {
-    flex: 0 0 auto;
-    min-height: unset;
-}
-
-.settings-page-card {
-    position: relative;
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.settings-page-card--embedded {
-    flex: 0 0 auto;
-    min-height: unset;
-    background: transparent !important;
-}
-
-.settings-tabs-header {
-    display: flex;
-    justify-content: center;
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    padding: 12px 16px 8px;
-    box-sizing: border-box;
-}
-
-.settings-tabs-header :deep(.app-base-tabs) {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    flex: 1 1 auto;
-}
-
-@media screen and (max-width: 767px) {
-    .settings-tabs-header {
-        padding: 10px 12px 6px;
-    }
-
-    .settings-tabs-toolbar {
-        padding: 12px 16px 4px;
-    }
-}
-
-.settings-tabs-scroll {
-    flex: 1 1 auto;
-    min-height: 0;
-    height: 0;
-}
-
-.settings-tabs-body--embedded {
-    flex: 0 0 auto;
-}
-
-.settings-tabs-toolbar {
-    flex-shrink: 0;
-    padding: 12px 24px 4px;
-    background: rgb(var(--v-theme-surface));
-}
-
-.settings-actions-bar {
-    flex-shrink: 0;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 12px 24px;
-    background: rgb(var(--v-theme-surface));
-}
-</style>

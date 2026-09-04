@@ -37,7 +37,7 @@ function openDetail(account: Account) {
         color="error"
         variant="tonal"
         density="default"
-        class="mb-4"
+        class="su-alert"
         closable
         :dismiss-ms="3000"
         @dismiss="store.clearError()"
@@ -45,138 +45,103 @@ function openDetail(account: Account) {
         {{ store.error }}
     </AppAlert>
 
-    <div class="accounts-tab-content">
-        <v-row>
-            <v-col cols="12" md="6" class="pa-3">
-                <v-card elevation="10">
-                    <v-card-item>
-                        <div class="d-flex align-center justify-space-between ga-3 flex-wrap">
-                            <div class="d-flex align-center ga-3 min-width-0">
-                                <v-avatar size="48" rounded="md" color="lightprimary">
-                                    <BuildingBankIcon class="text-primary" size="25" />
-                                </v-avatar>
-                                <div class="min-width-0">
-                                    <h4 class="text-h5 text-sm-h4 mb-0">{{ t('comptesPage.sections.owned') }}</h4>
-                                    <div class="text-subtitle-1 text-medium-emphasis text-10">
-                                        {{ t('comptesPage.sections.ownedSubtitle') }}
-                                    </div>
-                                </div>
-                            </div>
-                            <v-btn class="d-none d-sm-inline-flex" color="primary" @click="createOpen = true">
-                                <PlusIcon size="18" class="mr-1" />
-                                {{ t('comptesPage.actions.create') }}
-                            </v-btn>
-                        </div>
-                        <v-btn class="mt-4 d-sm-none" block color="primary" @click="createOpen = true">
-                            <PlusIcon size="18" class="mr-1" />
-                            {{ t('comptesPage.actions.create') }}
-                        </v-btn>
+    <div class="su-split">
+        <section class="su-surface">
+            <header class="su-panel__head">
+                <span class="su-panel__icon"><BuildingBankIcon :size="20" stroke-width="1.5" /></span>
+                <div>
+                    <h2>{{ t('comptesPage.sections.owned') }}</h2>
+                    <p>{{ t('comptesPage.sections.ownedSubtitle') }}</p>
+                </div>
+                <button type="button" class="su-btn su-btn--ink" @click="createOpen = true">
+                    <PlusIcon :size="16" stroke-width="1.6" />
+                    {{ t('comptesPage.actions.create') }}
+                </button>
+            </header>
 
-                        <div class="mt-4">
-                            <div v-if="store.loadingAccounts && !store.ownedAccounts.length" class="py-6 text-center">
-                                <v-progress-circular indeterminate color="primary" size="28" />
-                            </div>
-                            <div v-else-if="!store.ownedAccounts.length" class="py-6 text-center text-medium-emphasis">
-                                {{ t('comptesPage.empty.owned') }}
-                            </div>
-                            <template v-else>
-                                <div v-if="store.activeOwnedAccounts.length" class="mb-2">
-                                    <v-virtual-scroll
-                                        v-if="useVirtualList(store.activeOwnedAccounts.length)"
-                                        :items="store.activeOwnedAccounts"
-                                        height="480"
-                                        :item-height="96"
-                                        class="v-list py-0 theme-list accounts-list"
-                                    >
-                                        <template #default="{ item }">
-                                            <AccountListItem :account="item" @open="openDetail" />
-                                        </template>
-                                    </v-virtual-scroll>
-                                    <TransitionGroup v-else name="account-move" tag="div" class="v-list py-0 theme-list accounts-list">
-                                        <AccountListItem
-                                            v-for="account in store.activeOwnedAccounts"
-                                            :key="account.publicId"
-                                            :account="account"
-                                            @open="openDetail"
-                                        />
-                                    </TransitionGroup>
-                                </div>
-                                <div v-if="store.archivedOwnedAccounts.length" class="mt-4">
-                                    <div class="text-subtitle-2 text-medium-emphasis mb-2">
-                                        {{ t('comptesPage.sections.archived') }}
-                                    </div>
-                                    <v-virtual-scroll
-                                        v-if="useVirtualList(store.archivedOwnedAccounts.length)"
-                                        :items="store.archivedOwnedAccounts"
-                                        height="360"
-                                        :item-height="96"
-                                        class="v-list py-0 theme-list"
-                                    >
-                                        <template #default="{ item }">
-                                            <AccountListItem :account="item" @open="openDetail" />
-                                        </template>
-                                    </v-virtual-scroll>
-                                    <v-list v-else class="py-0 theme-list">
-                                        <AccountListItem
-                                            v-for="account in store.archivedOwnedAccounts"
-                                            :key="account.publicId"
-                                            :account="account"
-                                            @open="openDetail"
-                                        />
-                                    </v-list>
-                                </div>
-                            </template>
-                        </div>
-                    </v-card-item>
-                </v-card>
-            </v-col>
+            <div v-if="store.loadingAccounts && !store.ownedAccounts.length" class="su-loading">
+                <span class="su-spin" />
+            </div>
+            <div v-else-if="!store.ownedAccounts.length" class="su-empty">
+                {{ t('comptesPage.empty.owned') }}
+            </div>
+            <template v-else>
+                <div v-if="store.activeOwnedAccounts.length" class="accounts-list">
+                    <v-virtual-scroll
+                        v-if="useVirtualList(store.activeOwnedAccounts.length)"
+                        :items="store.activeOwnedAccounts"
+                        height="480"
+                        :item-height="96"
+                        class="v-list py-0 theme-list"
+                    >
+                        <template #default="{ item }">
+                            <AccountListItem :account="item" @open="openDetail" />
+                        </template>
+                    </v-virtual-scroll>
+                    <TransitionGroup v-else name="account-move" tag="div" class="v-list py-0 theme-list">
+                        <AccountListItem
+                            v-for="account in store.activeOwnedAccounts"
+                            :key="account.publicId"
+                            :account="account"
+                            @open="openDetail"
+                        />
+                    </TransitionGroup>
+                </div>
+                <div v-if="store.archivedOwnedAccounts.length">
+                    <div class="su-section-label">{{ t('comptesPage.sections.archived') }}</div>
+                    <v-virtual-scroll
+                        v-if="useVirtualList(store.archivedOwnedAccounts.length)"
+                        :items="store.archivedOwnedAccounts"
+                        height="360"
+                        :item-height="96"
+                        class="v-list py-0 theme-list"
+                    >
+                        <template #default="{ item }">
+                            <AccountListItem :account="item" @open="openDetail" />
+                        </template>
+                    </v-virtual-scroll>
+                    <v-list v-else class="py-0 theme-list">
+                        <AccountListItem
+                            v-for="account in store.archivedOwnedAccounts"
+                            :key="account.publicId"
+                            :account="account"
+                            @open="openDetail"
+                        />
+                    </v-list>
+                </div>
+            </template>
+        </section>
 
-            <v-col cols="12" md="6" class="pa-3">
-                <v-card elevation="10">
-                    <v-card-item>
-                        <div class="d-flex align-center ga-3 min-width-0">
-                            <v-avatar size="48" rounded="md" color="lightprimary">
-                                <ShareIcon class="text-primary" size="25" />
-                            </v-avatar>
-                            <div class="min-width-0">
-                                <h4 class="text-h5 text-sm-h4 mb-0">{{ t('comptesPage.sections.shared') }}</h4>
-                                <div class="text-subtitle-1 text-medium-emphasis text-10">
-                                    {{ t('comptesPage.sections.sharedSubtitle') }}
-                                </div>
-                            </div>
-                        </div>
+        <section class="su-surface">
+            <header class="su-panel__head">
+                <span class="su-panel__icon"><ShareIcon :size="20" stroke-width="1.5" /></span>
+                <div>
+                    <h2>{{ t('comptesPage.sections.shared') }}</h2>
+                    <p>{{ t('comptesPage.sections.sharedSubtitle') }}</p>
+                </div>
+            </header>
 
-                        <div class="mt-4">
-                            <div v-if="store.loadingAccounts && !store.sharedAccounts.length" class="py-6 text-center">
-                                <v-progress-circular indeterminate color="primary" size="28" />
-                            </div>
-                            <div v-else-if="!store.sharedAccounts.length" class="py-6 text-center text-medium-emphasis">
-                                {{ t('comptesPage.empty.shared') }}
-                            </div>
-                            <v-virtual-scroll
-                                v-else-if="useVirtualList(store.sharedAccounts.length)"
-                                :items="store.sharedAccounts"
-                                height="480"
-                                :item-height="96"
-                                class="v-list py-0 theme-list"
-                            >
-                                <template #default="{ item }">
-                                    <AccountListItem :account="item" @open="openDetail" />
-                                </template>
-                            </v-virtual-scroll>
-                            <v-list v-else class="py-0 theme-list">
-                                <AccountListItem
-                                    v-for="account in store.sharedAccounts"
-                                    :key="account.publicId"
-                                    :account="account"
-                                    @open="openDetail"
-                                />
-                            </v-list>
-                        </div>
-                    </v-card-item>
-                </v-card>
-            </v-col>
-        </v-row>
+            <div v-if="store.loadingAccounts && !store.sharedAccounts.length" class="su-loading">
+                <span class="su-spin" />
+            </div>
+            <div v-else-if="!store.sharedAccounts.length" class="su-empty">
+                {{ t('comptesPage.empty.shared') }}
+            </div>
+            <v-virtual-scroll
+                v-else-if="useVirtualList(store.sharedAccounts.length)"
+                :items="store.sharedAccounts"
+                height="480"
+                :item-height="96"
+                class="v-list py-0 theme-list"
+            >
+                <template #default="{ item }">
+                    <AccountListItem :account="item" @open="openDetail" />
+                </template>
+            </v-virtual-scroll>
+            <v-list v-else class="py-0 theme-list">
+                <AccountListItem v-for="account in store.sharedAccounts" :key="account.publicId" :account="account" @open="openDetail" />
+            </v-list>
+        </section>
     </div>
 
     <AccountFormModal v-model="createOpen" />
@@ -184,11 +149,6 @@ function openDetail(account: Account) {
 </template>
 
 <style scoped>
-.accounts-tab-content {
-    padding: 4px 2px 12px;
-}
-
-/* Le pulse de promotion agrandit brièvement l’item : on clippe pour éviter une scrollbar. */
 .accounts-list {
     overflow-x: clip;
 }
@@ -200,6 +160,13 @@ function openDetail(account: Account) {
 @media (prefers-reduced-motion: reduce) {
     .account-move-move {
         transition: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .su-panel__head > .su-btn {
+        width: 100%;
+        margin-left: 0;
     }
 }
 </style>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CreditCardIcon, PlusIcon } from 'vue-tabler-icons';
+import { PlusIcon } from 'vue-tabler-icons';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
@@ -22,17 +22,17 @@ function onCreate() {
 </script>
 
 <template>
-    <AppPageShell :title="t('paymentMethodsPage.title')" :subtitle="t('paymentMethodsPage.subtitle')" :icon="CreditCardIcon">
+    <AppPageShell :title="t('paymentMethodsPage.title')" :subtitle="t('paymentMethodsPage.subtitle')">
         <template #actions>
             <AppDropdownFilter :label="t('paymentMethodsPage.actions.filter')">
                 <v-list-item>
                     <AppSwitch v-model="showInactive" :inset="false" :label="t('paymentMethodsPage.filters.showInactive')" />
                 </v-list-item>
             </AppDropdownFilter>
-            <v-btn v-if="canCreate" color="primary" :disabled="store.acting" @click="onCreate">
-                <PlusIcon size="18" class="mr-1" />
+            <button v-if="canCreate" type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onCreate">
+                <PlusIcon :size="16" stroke-width="1.6" />
                 {{ t('paymentMethodsPage.actions.create') }}
-            </v-btn>
+            </button>
         </template>
 
         <PaymentMethodsWallet ref="walletRef" :show-inactive="showInactive" />

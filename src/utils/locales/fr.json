@@ -196,6 +196,7 @@
     },
     "dashboard": {
         "pageTitle": "Tableau de bord",
+        "subtitle": "Vue d’ensemble de votre espace",
         "breadcrumbs": {
             "application": "Application",
             "dashboard": "Tableau de bord"
@@ -530,6 +531,8 @@
         }
     },
     "friendsPage": {
+        "title": "Amis",
+        "subtitle": "Retrouvez vos proches, les demandes en attente et de nouvelles personnes.",
         "tabs": {
             "friends": "Mes amis",
             "requests": "Demandes",

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { BellIcon } from 'vue-tabler-icons';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import { InboxTab, useNotificationsStore } from '@/features/notifications';
@@ -37,23 +36,20 @@ async function confirmClearAll() {
 </script>
 
 <template>
-    <AppPageShell :title="t('notificationsPage.title')" :subtitle="t('notificationsPage.subtitle')" :icon="BellIcon">
+    <AppPageShell :title="t('notificationsPage.title')" :subtitle="t('notificationsPage.subtitle')">
         <template #actions>
-            <v-chip v-if="store.hasUnread" color="primary" variant="flat" size="small" class="text-white">
-                {{ unreadLabel }}
-            </v-chip>
-            <v-btn
-                color="primary"
-                variant="outlined"
-                :loading="store.markingAll"
+            <span v-if="store.hasUnread" class="su-chip">{{ unreadLabel }}</span>
+            <button
+                type="button"
+                class="su-btn"
                 :disabled="!store.hasUnread || store.markingAll || store.clearingAll"
                 @click="onMarkAllRead"
             >
                 {{ t('header.notifications.markAllRead') }}
-            </v-btn>
-            <v-btn color="error" variant="outlined" :loading="store.clearingAll" :disabled="!canClearAll" @click="openClearAll">
+            </button>
+            <button type="button" class="su-btn su-btn--danger" :disabled="!canClearAll" @click="openClearAll">
                 {{ t('header.notifications.clearAll') }}
-            </v-btn>
+            </button>
         </template>
 
         <InboxTab />
