@@ -5,6 +5,7 @@ import BaseIcon from './BaseIcon.vue';
 import BurgerButton from './BurgerButton.vue';
 import NavLeaf from './NavLeaf.vue';
 import NavRow from './NavRow.vue';
+import Logo from '@/layouts/full/logo/Logo.vue';
 import { useIsMobile } from '../composables/useBreakpoint';
 import { useScrollLock } from '../composables/useScrollLock';
 import { SHELL_DETAIL_ENABLED } from '../config';
@@ -115,7 +116,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
                 <nav class="rail" :aria-label="title">
                     <header class="head">
                         <BurgerButton :open="open" :label="t('nav.toggleMenu')" @click="toggle" />
-                        <span class="head__title">{{ title }}</span>
+                        <div class="head__title">
+                            <Logo />
+                        </div>
                         <button class="head__close" type="button" :aria-label="t('nav.closeMenu')" @click="open = false">
                             <BaseIcon name="close" :size="18" />
                         </button>
@@ -269,20 +272,42 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 .head__title {
     flex: 1;
     min-width: 0;
-    white-space: nowrap;
-    font-size: 20px;
-    font-weight: 650;
-    letter-spacing: -0.02em;
     opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     transform: translateX(-8px);
     transition:
         opacity 0.45s var(--ease),
-        transform 0.55s var(--ease);
+        transform 0.55s var(--ease),
+        visibility 0s linear 0.45s;
 }
 .is-expanded .head__title {
     opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
     transform: none;
     transition-delay: 0.1s;
+    transition:
+        opacity 0.45s var(--ease) 0.1s,
+        transform 0.55s var(--ease) 0.1s,
+        visibility 0s linear 0s;
+}
+.head__title :deep(.spendup-logo) {
+    min-width: 0;
+    gap: 7px;
+}
+.head__title :deep(.spendup-logo__icon) {
+    width: 26px;
+    height: 26px;
+}
+.head__title :deep(.spendup-logo__text) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--ink) !important;
+    font-size: 17px !important;
+    font-weight: 650 !important;
+    line-height: 1;
+    letter-spacing: -0.02em;
 }
 
 .rule {
