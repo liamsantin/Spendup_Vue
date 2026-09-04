@@ -187,7 +187,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 
         <!-- poignée : accrochée au bord extérieur de la surface, elle suit l'expansion -->
         <button class="handle" type="button" :aria-expanded="open" :aria-label="t('nav.toggleMenu')" @click="toggle">
-            <BaseIcon name="chevron-right" :size="14" />
+            <BaseIcon name="chevron-right" :size="16" />
         </button>
 
         <!-- voile de fond, uniquement sur mobile -->
@@ -455,13 +455,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
     position: absolute;
     z-index: 3;
     top: 50%;
-    right: -10px;
+    right: -12px;
     display: grid;
     place-items: center;
-    width: 18px;
-    height: 34px;
-    margin-top: -17px;
-    border-radius: 10px;
+    width: 22px;
+    height: 40px;
+    margin-top: -20px;
+    border-radius: 11px;
     background: var(--surface-raised);
     color: var(--ink-muted);
     box-shadow: var(--shadow-handle);
