@@ -71,11 +71,12 @@ const emit = defineEmits<{
 
 <style scoped>
 .shell {
+    --shell-pad: 12px;
     position: relative;
     display: flex;
     height: 100dvh;
     min-height: 100vh;
-    padding: 28px;
+    padding: var(--shell-pad);
     gap: 20px;
     overflow: hidden;
     background:
@@ -98,7 +99,7 @@ const emit = defineEmits<{
 .shell__aside {
     position: relative;
     z-index: 2;
-    height: calc(100vh - 56px);
+    height: calc(100vh - 2 * var(--shell-pad));
 }
 
 .shell__main {
@@ -133,7 +134,7 @@ const emit = defineEmits<{
 
 @media (max-width: 767px) {
     .shell {
-        padding: 14px;
+        --shell-pad: 8px;
         /* plus de rail dans le flux : le header occupe toute la largeur */
         gap: 0;
     }
@@ -145,7 +146,7 @@ const emit = defineEmits<{
     }
     .shell__aside {
         width: 0;
-        height: calc(100dvh - 28px);
+        height: calc(100dvh - 2 * var(--shell-pad));
     }
     .shell__main {
         gap: 12px;
