@@ -200,17 +200,9 @@ onUnmounted(() => {
 <template>
     <v-menu v-model="menuOpen" :close-on-content-click="false" :scrim="scrim" :opacity="opacity">
         <template #activator="{ props }">
-            <v-btn
-                icon
-                class="custom-hover-primary"
-                size="small"
-                variant="text"
-                color="primary"
-                v-bind="props"
-                :aria-label="t('header.search.placeholder')"
-            >
-                <SearchIcon stroke-width="1.5" size="20" />
-            </v-btn>
+            <button type="button" class="su-orb" v-bind="props" :aria-label="t('header.search.placeholder')">
+                <SearchIcon stroke-width="1.5" :size="20" />
+            </button>
         </template>
         <v-sheet width="360" elevation="0" rounded="md" class="su-menu" @keydown="onKeydown">
             <div class="pa-5 pb-4">

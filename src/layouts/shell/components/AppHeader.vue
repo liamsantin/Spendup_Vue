@@ -98,18 +98,22 @@ const { t } = useI18n();
     display: none;
 }
 
+.bar :deep(.su-orb),
 .bar :deep(.v-btn) {
     color: var(--ink-mute);
 }
 
+.bar :deep(.su-orb:hover),
 .bar :deep(.v-btn:hover) {
     color: var(--ink);
 }
 
-.bar__new :deep(.v-btn) {
+.bar__new :deep(.su-btn) {
+    height: 40px;
     min-height: 40px;
-    border-radius: 22px;
-    box-shadow: none;
+    padding: 0 14px;
+    border-radius: 20px;
+    font-size: 13.5px;
 }
 
 @media (max-width: 767px) {
@@ -129,9 +133,10 @@ const { t } = useI18n();
         margin: 0 2px;
     }
 
-    .bar__new :deep(.v-btn) {
+    .bar__new :deep(.su-btn) {
         min-height: 36px;
-        padding-inline: 10px;
+        height: 36px;
+        padding-inline: 12px;
     }
 }
 </style>

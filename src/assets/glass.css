@@ -634,11 +634,6 @@
     pointer-events: none;
 }
 
-.su-tabs--grow {
-    margin-left: 0;
-    width: 100%;
-}
-
 .su-page--embedded .su-tabs {
     margin-left: 0;
 }
@@ -914,9 +909,4 @@
     box-shadow: var(--shadow-pill-soft) !important;
     border: 1px solid var(--stroke) !important;
     border-radius: 16px !important;
-}
-
-.su-tabs--modal {
-    margin: 0;
-    width: 100%;
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Shell modal à onglets — AppModalBase + onglets verre.
+ * Shell modal à onglets — AppModalBase + bandeau d’onglets plat.
  * Tabs hors scroll (toolbar) ; chaque panel scrolle dans le body.
  */
 defineOptions({ name: 'AppModalTabs' });
@@ -103,21 +103,21 @@ const currentTab = computed({
 
         <template #toolbar>
             <div class="app-modal-tabs__toolbar">
-                <nav class="su-tabs su-tabs--modal su-tabs--grow" :aria-label="title">
+                <nav class="app-modal-tabs__nav" :aria-label="title">
                     <button
                         v-for="item in tabs"
                         :key="item.value"
                         type="button"
-                        class="su-tab"
+                        class="app-modal-tabs__tab"
                         :class="{ 'is-active': currentTab === item.value }"
                         :disabled="item.disabled"
                         :title="item.title"
                         :aria-current="currentTab === item.value ? 'page' : undefined"
                         @click="currentTab = item.value"
                     >
-                        <component :is="item.icon" v-if="item.icon" :size="18" stroke-width="1.6" />
+                        <component :is="item.icon" v-if="item.icon" :size="16" stroke-width="1.6" />
                         {{ item.label }}
-                        <span v-if="item.chip" class="su-tab__chip">{{ item.chip }}</span>
+                        <span v-if="item.chip" class="app-modal-tabs__chip">{{ item.chip }}</span>
                     </button>
                 </nav>
             </div>
@@ -142,12 +142,80 @@ const currentTab = computed({
 <style scoped>
 .app-modal-tabs__toolbar {
     display: flex;
-    justify-content: center;
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    padding: 0 16px 10px;
+    padding: 8px 16px 8px;
     box-sizing: border-box;
+}
+
+.app-modal-tabs__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    width: 100%;
+    min-width: 0;
+}
+
+.app-modal-tabs__tab {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--ink-mute);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 550;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background 0.25s var(--ease),
+        color 0.25s var(--ease);
+}
+
+.app-modal-tabs__tab:hover:not(:disabled):not(.is-active) {
+    color: var(--ink);
+    background: var(--hair);
+}
+
+.app-modal-tabs__tab.is-active {
+    color: var(--ink);
+    background: var(--hair);
+}
+
+.app-modal-tabs__tab:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.app-modal-tabs__tab svg {
+    flex: none;
+    opacity: 0.75;
+}
+
+.app-modal-tabs__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--hair);
+    color: var(--ink-mute);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.app-modal-tabs__tab.is-active .app-modal-tabs__chip {
+    background: var(--thread);
+    color: var(--ink);
 }
 
 .app-modal-tabs__body {

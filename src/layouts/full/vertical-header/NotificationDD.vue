@@ -73,11 +73,15 @@ async function onItemClick(item: AppNotification) {
 <template>
     <v-menu :model-value="menuOpen" :close-on-content-click="false" :scrim="scrim" :opacity="opacity" @update:model-value="onMenuUpdate">
         <template #activator="{ props }">
-            <v-btn icon variant="text" color="primary" class="custom-hover-primary" v-bind="props">
-                <v-badge :content="notifications.badgeContent" :model-value="notifications.hasUnread" color="primary">
-                    <BellRingingIcon stroke-width="1.5" size="22" />
+            <button type="button" class="su-orb" v-bind="props" :aria-label="t('header.notifications.title')">
+                <v-badge
+                    class="header-notif-badge"
+                    :content="notifications.badgeContent"
+                    :model-value="notifications.hasUnread"
+                >
+                    <BellRingingIcon stroke-width="1.5" :size="20" />
                 </v-badge>
-            </v-btn>
+            </button>
         </template>
         <v-sheet rounded="md" width="360" elevation="0" class="su-menu">
             <div class="px-8 pb-4 pt-6">
@@ -146,3 +150,13 @@ async function onItemClick(item: AppNotification) {
         </v-sheet>
     </v-menu>
 </template>
+
+<style scoped>
+.header-notif-badge :deep(.v-badge__badge) {
+    background: var(--ink) !important;
+    color: var(--on-ink) !important;
+    border: 0;
+    box-shadow: var(--shadow-ink);
+    font-weight: 600;
+}
+</style>
