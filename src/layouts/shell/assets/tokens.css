@@ -1,0 +1,78 @@
+/*
+ * Jetons de design du layout.
+ *
+ * Tout le rendu de la sidebar et du header passe par ces variables : pour rhabiller
+ * le template dans un autre projet, il suffit de redéfinir ce bloc (ou de surcharger
+ * les variables sur un conteneur parent). Aucun composant ne contient de couleur
+ * ni de dimension en dur.
+ */
+:root {
+    color-scheme: light;
+
+    /* ── couleurs ───────────────────────────────────────── */
+    --ink: #101014;
+    --ink-soft: rgba(16, 16, 20, 0.82);
+    --ink-mute: rgba(16, 16, 20, 0.72);
+    --ink-muted: #6b6b73;
+    --on-ink: #ffffff;
+    --hair: rgba(16, 16, 20, 0.08);
+    --thread: rgba(16, 16, 20, 0.16);
+    --thread-node: rgba(16, 16, 20, 0.3);
+    --accent: #ff5fa2;
+
+    /* ── surfaces en verre ──────────────────────────────── */
+    --surface: rgba(255, 255, 255, 0.62);
+    --surface-overlay: rgba(255, 255, 255, 0.93);
+    --surface-hover: rgba(255, 255, 255, 0.95);
+    --surface-hover-soft: rgba(255, 255, 255, 0.86);
+    --surface-raised: #ffffff;
+    --stroke: rgba(255, 255, 255, 0.85);
+    --blur: blur(22px) saturate(180%);
+
+    /* ── ombres ─────────────────────────────────────────── */
+    --shadow-rest: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 24px 60px -28px rgba(16, 16, 20, 0.35), 0 2px 10px -4px rgba(16, 16, 20, 0.12);
+    --shadow-lifted:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 34px 80px -34px rgba(16, 16, 20, 0.4), 0 2px 12px -6px rgba(16, 16, 20, 0.14);
+    --shadow-overlay: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 34px 80px -34px rgba(16, 16, 20, 0.45);
+    --shadow-hover: 0 10px 24px -14px rgba(16, 16, 20, 0.4);
+    --shadow-pill: 0 6px 18px -6px rgba(16, 16, 20, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.9);
+    --shadow-pill-soft: 0 12px 26px -16px rgba(16, 16, 20, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.9);
+    --shadow-ink: 0 14px 30px -14px rgba(16, 16, 20, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+    --shadow-handle: 0 6px 16px -8px rgba(16, 16, 20, 0.5);
+    --scrim: rgba(16, 16, 20, 0.32);
+
+    /* ── géométrie ──────────────────────────────────────── */
+    /* --gutter + --slot garantissent que l'icône ne bouge pas d'un pixel
+     entre l'état replié et l'état déployé : son centre vaut toujours
+     --gutter + --slot / 2, soit --rail-w / 2. Ne modifier qu'ensemble. */
+    --gutter: 16px;
+    --slot: 44px;
+    --rail-w: 76px;
+    --rail-open-w: 288px;
+    --detail-w: 248px;
+    --row-gap: 8px;
+
+    /* légèrement moins que la pilule parfaite (38 px pour un rail de 76) :
+     la surface garde un galbe franc sans devenir une gélule */
+    --radius-surface: 30px;
+    --radius-overlay: 26px;
+    --radius-header: 26px;
+    --radius-header-mobile: 22px;
+    --radius-pill: 22px;
+    --radius-leaf: 16px;
+
+    --header-h: 68px;
+    --header-h-mobile: 58px;
+
+    /* ── mouvement ──────────────────────────────────────── */
+    --ease: cubic-bezier(0.19, 1, 0.22, 1);
+    --spring: cubic-bezier(0.34, 1.32, 0.44, 1);
+    --dur-expand: 0.72s;
+    --dur-slide: 0.55s;
+
+    /* ── typographie ────────────────────────────────────── */
+    --font-ui: 'Plus Jakarta Sans', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+
+    /* Le point de rupture vit dans useBreakpoint.ts (MOBILE_BREAKPOINT) : une media
+     query ne peut pas lire une variable CSS. Les deux doivent rester alignés. */
+}

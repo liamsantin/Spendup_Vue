@@ -117,15 +117,6 @@ const emit = defineEmits<{
 }
 
 @media screen and (max-width: 767px) {
-    .settings-page {
-        width: 100vw;
-        margin-left: calc(50% - 50vw);
-    }
-
-    .settings-page-card {
-        border-radius: 0 !important;
-    }
-
     .app-page-shell-header {
         min-height: 68px;
         padding: 12px 16px;

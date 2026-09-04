@@ -171,15 +171,6 @@ const baseTabs = computed<AppBaseTabsItem[]>(() =>
 }
 
 @media screen and (max-width: 767px) {
-    .settings-page:not(.settings-page--embedded) {
-        width: 100vw;
-        margin-left: calc(50% - 50vw);
-    }
-
-    .settings-page:not(.settings-page--embedded) .settings-page-card {
-        border-radius: 0 !important;
-    }
-
     .settings-tabs-header {
         padding: 10px 12px 6px;
     }

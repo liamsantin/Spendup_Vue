@@ -27,6 +27,8 @@
         "cancel": "Annuler"
     },
     "nav": {
+        "menu": "Menu",
+        "closeMenu": "Fermer le menu",
         "toggleMenu": "Ouvrir ou fermer le menu",
         "headers": {
             "general": "Général",

@@ -1,46 +1,54 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router';
-import DualSidebar from './vertical-sidebar/DualSidebar.vue';
-import { CONTENT_SIDEBAR_WIDTH, THEME_RAIL_WIDTH } from './vertical-sidebar/sidebarItem';
-import VerticalHeaderVue from './vertical-header/VerticalHeader.vue';
-import HorizontalHeader from './horizontal-header/HorizontalHeader.vue';
-import HorizontalSidebar from './horizontal-sidebar/HorizontalSidebar.vue';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { useIdleLogout } from '@/features/auth/composables/useIdleLogout';
 import StepUpDialog from '@/features/auth/components/StepUpDialog.vue';
+import AppShell from '@/layouts/shell/components/AppShell.vue';
+import { useShellNav } from '@/layouts/shell/composables/useShellNav';
 
 const appSettings = useAppSettingsStore();
 useIdleLogout();
+
+const { open, openId, activeId, primaryNav, secondaryNav, unreadCount, title } = useShellNav();
 </script>
 
 <template>
     <v-locale-provider :locale="appSettings.locale">
         <v-app
             :theme="appSettings.actTheme"
-            :style="{
-                '--theme-rail-width': `${THEME_RAIL_WIDTH}px`,
-                '--content-sidebar-width': `${CONTENT_SIDEBAR_WIDTH}px`
-            }"
-            :class="[
-                appSettings.actTheme,
-                appSettings.setHorizontalLayout ? 'horizontalLayout' : 'verticalLayout',
-                appSettings.setBorderCard ? 'cardBordered' : ''
-            ]"
+            class="app-shell-host"
+            :class="[appSettings.actTheme, appSettings.setBorderCard ? 'cardBordered' : '']"
         >
-            <DualSidebar v-if="!appSettings.setHorizontalLayout" />
-            <VerticalHeaderVue v-if="!appSettings.setHorizontalLayout" />
-            <HorizontalHeader v-if="appSettings.setHorizontalLayout" />
-            <HorizontalSidebar v-if="appSettings.setHorizontalLayout" />
-
-            <v-main id="main-content" tabindex="-1">
-                <v-container fluid class="page-wrapper">
-                    <div class="page-content" :class="appSettings.boxed ? 'maxWidth' : ''">
-                        <RouterView />
-                    </div>
-                </v-container>
-            </v-main>
+            <AppShell
+                v-model:open="open"
+                v-model:open-id="openId"
+                v-model:active-id="activeId"
+                :items="primaryNav"
+                :bottom-items="secondaryNav"
+                :notifications="unreadCount"
+                :title="title"
+            >
+                <div class="page-content" :class="appSettings.boxed ? 'maxWidth' : ''">
+                    <RouterView />
+                </div>
+            </AppShell>
 
             <StepUpDialog />
         </v-app>
     </v-locale-provider>
 </template>
+
+<style scoped>
+.app-shell-host {
+    background: transparent !important;
+    height: 100%;
+    overflow: hidden;
+}
+
+.app-shell-host :deep(.v-application__wrap) {
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100%;
+    overflow: hidden;
+}
+</style>
