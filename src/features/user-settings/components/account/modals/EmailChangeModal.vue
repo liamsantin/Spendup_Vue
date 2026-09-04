@@ -80,19 +80,16 @@ const { t } = useI18n();
         </form>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat :disabled="saving" @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn
+            <button type="button" class="su-btn su-btn--ghost" :disabled="saving" @click="close">{{ t('common.cancel') }}</button>
+            <button
                 v-if="showEmailPassword"
-                color="primary"
-                flat
                 type="submit"
                 form="account-email-form"
-                :loading="saving"
-                :disabled="!canSubmit"
+                class="su-btn su-btn--ink"
+                :disabled="saving || !canSubmit"
             >
                 {{ t('accounts.emailModal.continue') }}
-            </v-btn>
+            </button>
         </template>
     </AppModalBase>
 </template>

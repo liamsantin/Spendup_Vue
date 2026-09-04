@@ -79,10 +79,10 @@ async function confirmDelete() {
                 <h5 class="text-h6 mb-0">{{ t('paymentMethodsPage.detail.title') }}</h5>
                 <div class="text-body-2 text-medium-emphasis">{{ t('paymentMethodsPage.detail.subtitle') }}</div>
             </div>
-            <v-btn v-if="canWrite" color="primary" variant="tonal" size="small" @click="createOpen = true">
-                <PlusIcon size="16" class="mr-1" />
+            <button v-if="canWrite" type="button" class="su-btn su-btn--ink" @click="createOpen = true">
+                <PlusIcon size="16" stroke-width="1.6" />
                 {{ t('paymentMethodsPage.actions.create') }}
-            </v-btn>
+            </button>
         </div>
 
         <AppAlert
@@ -100,7 +100,7 @@ async function confirmDelete() {
         </AppAlert>
 
         <div v-if="store.loading && !items.length" class="py-8 text-center">
-            <v-progress-circular indeterminate color="primary" size="28" />
+            <span class="su-spin" />
         </div>
         <div v-else-if="!items.length" class="py-8 text-center text-medium-emphasis">
             {{ t('paymentMethodsPage.empty.account') }}
@@ -118,9 +118,9 @@ async function confirmDelete() {
         </v-list>
 
         <div v-if="store.hasMore && store.activeAccountPublicId === account.publicId" class="text-center mt-3">
-            <v-btn variant="text" :loading="store.loadingMore" @click="store.loadMore()">
+            <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
                 {{ t('paymentMethodsPage.loadMore') }}
-            </v-btn>
+            </button>
         </div>
 
         <PaymentMethodFormModal v-model="createOpen" :default-account-public-id="account.publicId" />

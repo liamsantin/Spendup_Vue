@@ -44,102 +44,75 @@ async function onRefuse() {
 </script>
 
 <template>
-    <v-list-item
-        class="px-2 py-3"
-        rounded="md"
+    <div
+        class="su-person incoming-share"
         tabindex="-1"
         :data-share-id="props.invite.publicId"
         :aria-current="store.isFocusedShare(props.invite.publicId) ? 'true' : undefined"
-        :class="{ 'bg-lightprimary': store.isFocusedShare(props.invite.publicId) }"
+        :class="{ 'is-focused': store.isFocusedShare(props.invite.publicId) }"
     >
-        <template #prepend>
-            <UserPhotoAvatar
-                class="mr-3"
-                :photo-url="props.invite.ownerPhotoUrl"
-                :user-public-id="props.invite.ownerPublicId"
-                :fallback-label="props.invite.ownerDisplayName"
-                :size="46"
-            />
-        </template>
-
-        <div class="incoming-share w-100">
-            <div class="incoming-share__text min-width-0">
-                <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">
-                    {{ props.invite.accountName }}
-                </h6>
-                <p class="text-body-2 text-medium-emphasis mb-1 text-truncate">
-                    {{
-                        t('comptesPage.invitations.from', {
-                            name: props.invite.ownerDisplayName
-                        })
-                    }}
-                    · {{ t(`comptesPage.types.${props.invite.accountType}`) }} · {{ props.invite.currency }}
-                </p>
-                <p class="text-body-2 text-medium-emphasis mb-0">
-                    {{ t(`comptesPage.roles.${props.invite.invitedRole}`) }} · {{ formatDate(props.invite.createdAt) }}
-                </p>
-                <p
-                    v-if="props.invite.invitedRole === 'viewer' && props.invite.hiddenFields?.length"
-                    class="text-caption text-medium-emphasis mb-0 mt-1"
-                >
-                    {{
-                        t('comptesPage.invitations.hiddenFields', {
-                            fields: props.invite.hiddenFields.map((f) => t(`comptesPage.share.hiddenFields.${f}`)).join(', ')
-                        })
-                    }}
-                </p>
-                <p
-                    v-else-if="props.invite.invitedRole === 'viewer' && !props.invite.hiddenFields?.length"
-                    class="text-caption text-medium-emphasis mb-0 mt-1"
-                >
-                    {{ t('comptesPage.invitations.noHiddenFields') }}
-                </p>
-            </div>
-            <div class="incoming-share__actions">
-                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || refusing || accepting" @click.stop="onAccept">
-                    {{ t('comptesPage.actions.accept') }}
-                </button>
-                <button
-                    type="button"
-                    class="su-btn su-btn--danger"
-                    :disabled="store.acting || accepting || refusing"
-                    @click.stop="onRefuse"
-                >
-                    {{ t('comptesPage.actions.refuse') }}
-                </button>
-            </div>
+        <UserPhotoAvatar
+            :photo-url="props.invite.ownerPhotoUrl"
+            :user-public-id="props.invite.ownerPublicId"
+            :fallback-label="props.invite.ownerDisplayName"
+            :size="44"
+        />
+        <div class="su-person__meta">
+            <p class="su-person__name">{{ props.invite.accountName }}</p>
+            <p class="su-person__sub">
+                {{
+                    t('comptesPage.invitations.from', {
+                        name: props.invite.ownerDisplayName
+                    })
+                }}
+                · {{ t(`comptesPage.types.${props.invite.accountType}`) }} · {{ props.invite.currency }}
+            </p>
+            <p class="su-person__sub">
+                {{ t(`comptesPage.roles.${props.invite.invitedRole}`) }} · {{ formatDate(props.invite.createdAt) }}
+            </p>
+            <p v-if="props.invite.invitedRole === 'viewer' && props.invite.hiddenFields?.length" class="incoming-share__note">
+                {{
+                    t('comptesPage.invitations.hiddenFields', {
+                        fields: props.invite.hiddenFields.map((f) => t(`comptesPage.share.hiddenFields.${f}`)).join(', ')
+                    })
+                }}
+            </p>
+            <p v-else-if="props.invite.invitedRole === 'viewer' && !props.invite.hiddenFields?.length" class="incoming-share__note">
+                {{ t('comptesPage.invitations.noHiddenFields') }}
+            </p>
         </div>
-    </v-list-item>
+        <div class="su-person__actions incoming-share__actions">
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || refusing || accepting" @click.stop="onAccept">
+                {{ t('comptesPage.actions.accept') }}
+            </button>
+            <button type="button" class="su-btn su-btn--danger" :disabled="store.acting || accepting || refusing" @click.stop="onRefuse">
+                {{ t('comptesPage.actions.refuse') }}
+            </button>
+        </div>
+    </div>
 </template>
 
 <style scoped>
 .incoming-share {
-    display: flex;
+    cursor: default;
     align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
 }
 
-.incoming-share__actions {
-    display: flex;
-    flex-shrink: 0;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 8px;
+.incoming-share__note {
+    margin: 4px 0 0;
+    color: var(--ink-muted);
+    font-size: 12.5px;
+    line-height: 1.4;
+    white-space: normal;
 }
 
 @media (max-width: 599.98px) {
-    .incoming-share {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
     .incoming-share__actions {
         width: 100%;
         justify-content: stretch;
     }
 
-    .incoming-share__actions :deep(.su-btn) {
+    .incoming-share__actions .su-btn {
         flex: 1 1 0;
     }
 }

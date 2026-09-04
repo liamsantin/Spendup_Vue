@@ -53,6 +53,13 @@ const open = computed({
 const resolvedCancelLabel = computed(() => props.cancelLabel ?? t('common.cancel'));
 const resolvedConfirmLabel = computed(() => props.confirmLabel ?? t('common.yes'));
 
+const confirmBtnClass = computed(() => {
+    const extras = props.confirmClass ? ` ${props.confirmClass}` : '';
+    if (props.confirmColor === 'error' || props.confirmClass?.includes('error')) return `su-btn su-btn--danger${extras}`;
+    if (props.confirmColor === 'warning') return `su-btn su-btn--warn${extras}`;
+    return `su-btn su-btn--ink${extras}`;
+});
+
 function close() {
     open.value = false;
 }
@@ -89,20 +96,19 @@ defineExpose({ close });
 
             <div class="app-confirmation-modal__footer">
                 <slot name="footer" :close="close" :confirm="onConfirm">
-                    <v-btn variant="text" flat :disabled="loading || disabled" @click="close">
+                    <button type="button" class="su-btn su-btn--ghost" :disabled="loading || disabled" @click="close">
                         {{ resolvedCancelLabel }}
-                    </v-btn>
-                    <v-spacer />
-                    <v-btn
-                        :color="confirmColor || undefined"
-                        :class="confirmClass"
-                        flat
-                        :loading="loading"
-                        :disabled="disabled"
+                    </button>
+                    <button
+                        type="button"
+                        :class="confirmBtnClass"
+                        :disabled="loading || disabled"
+                        :aria-busy="loading || undefined"
                         @click="onConfirm"
                     >
+                        <span v-if="loading" class="su-spin" aria-hidden="true" />
                         {{ resolvedConfirmLabel }}
-                    </v-btn>
+                    </button>
                 </slot>
             </div>
         </v-card>

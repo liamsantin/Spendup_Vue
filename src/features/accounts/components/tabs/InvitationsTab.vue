@@ -52,14 +52,14 @@ function useVirtualList(length: number) {
                 v-else-if="useVirtualList(store.incomingShares.length)"
                 :items="store.incomingShares"
                 height="480"
-                :item-height="88"
-                class="v-list py-0 theme-list"
+                :item-height="120"
+                class="py-0"
             >
                 <template #default="{ item }">
                     <IncomingShareListItem :invite="item" />
                 </template>
             </v-virtual-scroll>
-            <v-list v-else class="py-0 theme-list">
+            <v-list v-else class="py-0">
                 <IncomingShareListItem v-for="invite in store.incomingShares" :key="invite.publicId" :invite="invite" />
             </v-list>
         </section>

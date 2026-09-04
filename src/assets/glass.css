@@ -312,6 +312,7 @@
 }
 
 .su-person {
+    appearance: none;
     display: flex;
     align-items: center;
     gap: 14px;
@@ -323,7 +324,9 @@
     border-radius: var(--radius-leaf);
     background: transparent;
     color: inherit;
+    font: inherit;
     text-align: left;
+    text-decoration: none;
     cursor: pointer;
     animation: su-row 0.55s var(--ease) both;
     animation-delay: calc(var(--i, 0) * 45ms);
@@ -350,6 +353,23 @@
     object-fit: cover;
     background: var(--hair);
     box-shadow: 0 8px 18px -12px rgba(16, 16, 20, 0.45);
+}
+
+.su-person__avatar--tile {
+    display: grid;
+    place-items: center;
+    border-radius: 14px;
+}
+
+.su-person > .v-avatar,
+.su-avatar {
+    flex: none;
+    background: var(--hair) !important;
+    color: var(--ink) !important;
+}
+
+.v-virtual-scroll .su-person {
+    animation: none;
 }
 
 .su-person__meta {
@@ -496,6 +516,12 @@
     border-top-color: var(--ink);
     border-radius: 50%;
     animation: su-spin 0.7s linear infinite;
+}
+
+.su-btn .su-spin,
+.su-orb .su-spin {
+    width: 14px;
+    height: 14px;
 }
 
 .su-more {
@@ -871,8 +897,22 @@
 .app-modal-base__footer,
 .app-confirmation-modal__footer {
     gap: 8px;
+    width: 100%;
     padding: 10px 16px 14px;
     background: transparent;
+}
+
+.app-modal-base__footer {
+    justify-content: flex-end;
+}
+
+.app-confirmation-modal__footer {
+    justify-content: space-between;
+}
+
+.app-modal-base__footer .su-btn--ghost,
+.app-confirmation-modal__footer .su-btn--ghost {
+    margin-right: auto;
 }
 
 .app-modal-base .v-btn,
@@ -981,4 +1021,77 @@
     box-shadow: var(--shadow-pill-soft) !important;
     border: 1px solid var(--stroke) !important;
     border-radius: 16px !important;
+}
+
+/* Neutralise le rose Vuetify (lightprimary / primary) dans le chrome app. */
+.su-page .bg-lightprimary,
+.su-modal .bg-lightprimary,
+.su-menu .bg-lightprimary,
+.su-page .v-list-item.bg-lightprimary,
+.su-modal .v-list-item.bg-lightprimary,
+.su-menu .v-list-item.bg-lightprimary {
+    background: var(--surface-raised) !important;
+    color: var(--ink) !important;
+    box-shadow: var(--shadow-pill-soft);
+}
+
+.su-page .v-avatar.bg-lightprimary,
+.su-modal .v-avatar.bg-lightprimary,
+.su-menu .v-avatar.bg-lightprimary,
+.su-page .v-avatar.bg-primary,
+.su-modal .v-avatar.bg-primary {
+    background: var(--hair) !important;
+    color: var(--ink) !important;
+}
+
+.su-page .v-chip.bg-primary,
+.su-page .v-chip.text-primary,
+.su-modal .v-chip.bg-primary,
+.su-menu .v-chip.bg-primary {
+    background: var(--hair) !important;
+    color: var(--ink) !important;
+}
+
+.su-page .v-list-item--active > .v-list-item__overlay,
+.su-modal .v-list-item--active > .v-list-item__overlay,
+.su-menu .v-list-item--active > .v-list-item__overlay {
+    opacity: 0.06;
+}
+
+.su-page .v-progress-circular,
+.su-modal .v-progress-circular {
+    color: var(--ink) !important;
+}
+
+.su-showcase {
+    min-height: 100dvh;
+    padding: 28px 20px 56px;
+    color: var(--ink);
+    font-family: var(--font-ui);
+    background:
+        radial-gradient(1200px 700px at 12% -10%, #ffffff 0%, rgba(255, 255, 255, 0) 60%),
+        linear-gradient(160deg, #f3f3f5 0%, #e9e9ee 48%, #dedee5 100%);
+}
+
+.su-showcase .su-page {
+    max-width: 960px;
+    margin: 0 auto;
+    height: auto;
+    min-height: calc(100dvh - 84px);
+}
+
+.su-showcase .su-body {
+    overflow: visible;
+}
+
+.su-showcase__grid {
+    display: grid;
+    gap: 20px;
+}
+
+.su-showcase__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
 }

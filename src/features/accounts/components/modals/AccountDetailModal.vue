@@ -252,7 +252,7 @@ async function confirmLeave() {
         <v-progress-linear v-if="store.loadingDetail && account" indeterminate color="primary" class="mb-3 flex-shrink-0" height="2" />
 
         <div v-if="store.loadingDetail && !account" class="py-10 text-center">
-            <v-progress-circular indeterminate color="primary" size="32" />
+            <span class="su-spin" />
         </div>
 
         <AppAlert
@@ -322,92 +322,87 @@ async function confirmLeave() {
                 </v-row>
 
                 <div class="d-flex flex-wrap ga-2">
-                    <v-btn
+                    <button
                         v-if="canEditAccount(account)"
-                        color="primary"
-                        variant="tonal"
-                        size="small"
+                        type="button"
+                        class="su-btn su-btn--ink"
                         :disabled="store.acting"
                         @click="editOpen = true"
                     >
                         {{ t('comptesPage.actions.edit') }}
-                    </v-btn>
-                    <v-btn v-if="canSetPrimaryAccount(account)" variant="tonal" size="small" :disabled="store.acting" @click="onSetPrimary">
+                    </button>
+                    <button
+                        v-if="canSetPrimaryAccount(account)"
+                        type="button"
+                        class="su-btn"
+                        :disabled="store.acting"
+                        @click="onSetPrimary"
+                    >
                         {{ t('comptesPage.actions.setPrimary') }}
-                    </v-btn>
+                    </button>
 
                     <template v-if="!smAndDown">
                         <v-tooltip v-if="isPrimaryActionBlocked(account)" location="top">
                             <template #activator="{ props: tip }">
                                 <div v-bind="tip">
-                                    <v-btn variant="tonal" size="small" disabled>{{ t('comptesPage.actions.archive') }}</v-btn>
+                                    <button type="button" class="su-btn" disabled>{{ t('comptesPage.actions.archive') }}</button>
                                 </div>
                             </template>
                             <span>{{ t('comptesPage.hints.primaryNoArchive') }}</span>
                         </v-tooltip>
-                        <v-btn
+                        <button
                             v-else-if="canArchiveAccount(account)"
-                            variant="tonal"
-                            size="small"
+                            type="button"
+                            class="su-btn"
                             :disabled="store.acting"
                             @click="archiveOpen = true"
                         >
                             {{ t('comptesPage.actions.archive') }}
-                        </v-btn>
-                        <v-btn
+                        </button>
+                        <button
                             v-if="canRestoreAccount(account)"
-                            variant="tonal"
-                            size="small"
-                            color="success"
+                            type="button"
+                            class="su-btn su-btn--ink"
                             :disabled="store.acting"
                             @click="restoreOpen = true"
                         >
                             {{ t('comptesPage.actions.restore') }}
-                        </v-btn>
+                        </button>
                         <v-tooltip v-if="isPrimaryActionBlocked(account) && account.isOwned" location="top">
                             <template #activator="{ props: tip }">
                                 <div v-bind="tip">
-                                    <v-btn variant="tonal" size="small" color="error" disabled>
+                                    <button type="button" class="su-btn su-btn--danger" disabled>
                                         {{ t('comptesPage.actions.delete') }}
-                                    </v-btn>
+                                    </button>
                                 </div>
                             </template>
                             <span>{{ t('comptesPage.hints.primaryNoDelete') }}</span>
                         </v-tooltip>
-                        <v-btn
+                        <button
                             v-else-if="canDeleteAccount(account)"
-                            variant="tonal"
-                            size="small"
-                            color="error"
+                            type="button"
+                            class="su-btn su-btn--danger"
                             :disabled="store.acting"
                             @click="deleteOpen = true"
                         >
                             {{ t('comptesPage.actions.delete') }}
-                        </v-btn>
-                        <v-btn
+                        </button>
+                        <button
                             v-if="canLeaveAccountShare(account)"
-                            variant="tonal"
-                            size="small"
-                            color="error"
+                            type="button"
+                            class="su-btn su-btn--danger"
                             :disabled="store.acting"
                             @click="leaveOpen = true"
                         >
                             {{ t('comptesPage.actions.leave') }}
-                        </v-btn>
+                        </button>
                     </template>
 
                     <v-menu v-else-if="hasOverflowActions" location="bottom end">
                         <template #activator="{ props: menuProps }">
-                            <v-btn
-                                v-bind="menuProps"
-                                variant="tonal"
-                                size="small"
-                                icon
-                                :aria-label="t('common.more')"
-                                :disabled="store.acting"
-                            >
-                                <DotsVerticalIcon size="18" />
-                            </v-btn>
+                            <button v-bind="menuProps" type="button" class="su-orb" :aria-label="t('common.more')" :disabled="store.acting">
+                                <DotsVerticalIcon size="18" stroke-width="1.75" />
+                            </button>
                         </template>
                         <v-list density="compact" min-width="220">
                             <v-list-item
@@ -466,8 +461,7 @@ async function confirmLeave() {
         </template>
 
         <template #footer="{ close }">
-            <v-spacer v-if="!smAndDown" />
-            <v-btn color="primary" flat :block="smAndDown" @click="close">{{ t('common.close') }}</v-btn>
+            <button type="button" class="su-btn su-btn--ink" @click="close">{{ t('common.close') }}</button>
         </template>
     </AppModalTabs>
 

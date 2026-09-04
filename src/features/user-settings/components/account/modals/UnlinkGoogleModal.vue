@@ -51,11 +51,10 @@ const { t } = useI18n();
         </form>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat :disabled="saving" @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="error" flat type="submit" form="account-unlink-google-form" :loading="saving" :disabled="!password">
+            <button type="button" class="su-btn su-btn--ghost" :disabled="saving" @click="close">{{ t('common.cancel') }}</button>
+            <button type="submit" form="account-unlink-google-form" class="su-btn su-btn--danger" :disabled="saving || !password">
                 {{ t('accounts.unlinkGoogleModal.confirm') }}
-            </v-btn>
+            </button>
         </template>
     </AppModalBase>
 </template>

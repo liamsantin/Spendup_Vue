@@ -15,7 +15,7 @@ const props = withDefaults(
         variant?: 'default' | 'glass';
         index?: number;
     }>(),
-    { variant: 'default', index: 0 }
+    { variant: 'glass', index: 0 }
 );
 
 const store = useFriendsStore();

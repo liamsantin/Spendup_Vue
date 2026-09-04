@@ -68,15 +68,14 @@ const { t } = useI18n();
                     <div class="text-subtitle-2 text-medium-emphasis w-100">{{ t('accounts.deleteModal.or') }}</div>
                 </div>
 
-                <v-btn
+                <button
                     v-if="!passwordExpanded && !googleIdToken"
-                    variant="text"
-                    color="primary"
-                    class="mb-2 px-0"
+                    type="button"
+                    class="su-btn su-btn--ghost mb-2"
                     @click="emit('update:passwordExpanded', true)"
                 >
                     {{ t('accounts.deleteModal.usePassword') }}
-                </v-btn>
+                </button>
 
                 <template v-if="passwordExpanded && !googleIdToken">
                     <v-label class="mb-1 font-weight-medium">{{ t('accounts.deleteModal.fields.currentPassword') }}</v-label>
@@ -96,11 +95,10 @@ const { t } = useI18n();
         </form>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat :disabled="saving" @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="error" flat type="submit" form="account-delete-form" :loading="saving" :disabled="!canSubmit && !saving">
+            <button type="button" class="su-btn su-btn--ghost" :disabled="saving" @click="close">{{ t('common.cancel') }}</button>
+            <button type="submit" form="account-delete-form" class="su-btn su-btn--danger" :disabled="saving || !canSubmit">
                 {{ t('accounts.deleteModal.confirm') }}
-            </v-btn>
+            </button>
         </template>
     </AppModalBase>
 </template>

@@ -114,16 +114,15 @@ function requestRevoke() {
             <ShareHiddenFieldsPicker v-model="editHiddenFields" :disabled="store.acting || share?.role === 'pending'" />
         </div>
 
-        <v-btn variant="tonal" color="error" size="small" :disabled="store.acting" @click="requestRevoke">
+        <button type="button" class="su-btn su-btn--danger" :disabled="store.acting" @click="requestRevoke">
             {{ share?.role === 'pending' ? t('comptesPage.share.cancelInvite') : t('comptesPage.share.revoke') }}
-        </v-btn>
+        </button>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="primary" flat :loading="store.acting" :disabled="store.acting || !canSave" @click="confirmEdit">
+            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">{{ t('common.cancel') }}</button>
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="confirmEdit">
                 {{ t('comptesPage.share.editConfirm') }}
-            </v-btn>
+            </button>
         </template>
     </AppModalBase>
 </template>

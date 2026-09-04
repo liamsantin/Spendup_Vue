@@ -71,11 +71,10 @@ const { t } = useI18n();
         </div>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat :disabled="pictureSaving" @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="primary" flat :loading="pictureSaving" :disabled="!avatarDraft" @click="emit('confirmCatalog')">
+            <button type="button" class="su-btn su-btn--ghost" :disabled="pictureSaving" @click="close">{{ t('common.cancel') }}</button>
+            <button type="button" class="su-btn su-btn--ink" :disabled="pictureSaving || !avatarDraft" @click="emit('confirmCatalog')">
                 {{ t('accounts.picture.catalogModal.apply') }}
-            </v-btn>
+            </button>
         </template>
     </AppModalBase>
 </template>

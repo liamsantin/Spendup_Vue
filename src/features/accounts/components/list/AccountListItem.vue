@@ -35,8 +35,8 @@ const typeLabel = computed(() => t(`comptesPage.types.${props.account.type}`));
 const roleLabel = computed(() => t(`comptesPage.roles.${props.account.myRole}`));
 const focused = computed(() => store.isFocusedAccount(props.account.publicId));
 const promoted = computed(() => store.isPromotedAccount(props.account.publicId));
-const avatarColor = computed(() => safeAccountColor(props.account.color) || 'lightprimary');
-const avatarTextClass = computed(() => (isLightAccountColor(props.account.color) ? 'text-primary' : 'text-white'));
+const avatarColor = computed(() => safeAccountColor(props.account.color));
+const avatarOnDark = computed(() => Boolean(avatarColor.value) && !isLightAccountColor(props.account.color));
 
 const accountNumberLine = computed(() =>
     formatAccountNumberLine(props.account, {
@@ -47,59 +47,87 @@ const accountNumberLine = computed(() =>
 </script>
 
 <template>
-    <v-list-item
-        link
-        color="primary"
-        class="account-list-item px-2 py-3"
-        rounded="md"
-        tabindex="-1"
+    <button
+        type="button"
+        class="su-person account-list-item"
         :data-account-id="account.publicId"
         :aria-current="focused ? 'true' : undefined"
         :class="{
-            'bg-lightprimary': focused,
+            'is-focused': focused,
             'opacity-60': !account.isActive,
             'account-list-item--promoted': promoted
         }"
         @click="emit('open', account)"
     >
-        <template #prepend>
-            <v-avatar size="46" class="mr-3" rounded="md" :color="avatarColor">
-                <span class="text-subtitle-2 font-weight-bold" :class="avatarTextClass">
-                    {{ account.name.slice(0, 1).toUpperCase() }}
-                </span>
-            </v-avatar>
-        </template>
-
-        <div class="account-list-item__body w-100">
-            <div class="d-flex align-center justify-space-between ga-2">
-                <h6 class="text-subtitle-1 font-weight-bold mb-0 text-truncate min-width-0">{{ account.name }}</h6>
-                <div class="text-subtitle-1 font-weight-semibold text-right flex-shrink-0 d-flex align-center ga-1">
-                    <LockIcon v-if="balanceDisplay.hidden" size="16" stroke-width="1.5" class="text-medium-emphasis" aria-hidden="true" />
+        <span
+            class="su-person__avatar su-person__avatar--tile account-list-item__avatar"
+            :class="{ 'account-list-item__avatar--on-dark': avatarOnDark }"
+            :style="avatarColor ? { background: avatarColor } : undefined"
+        >
+            {{ account.name.slice(0, 1).toUpperCase() }}
+        </span>
+        <div class="su-person__meta">
+            <div class="account-list-item__title">
+                <p class="su-person__name">{{ account.name }}</p>
+                <div class="account-list-item__balance">
+                    <LockIcon v-if="balanceDisplay.hidden" size="16" stroke-width="1.5" aria-hidden="true" />
                     <span>
                         {{ balanceDisplay.text }}
                         <span v-if="balanceDisplay.hidden" class="sr-only">{{ t('comptesPage.detail.fieldHidden') }}</span>
                     </span>
                 </div>
             </div>
-            <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">
-                {{ typeLabel }} · {{ account.currency }}{{ accountNumberLine }}
-            </p>
-            <div v-if="account.isPrimary || !account.isActive || !account.isOwned" class="d-flex align-center ga-2 flex-wrap mt-1">
-                <v-chip v-if="account.isPrimary" size="x-small" color="primary" variant="tonal">
-                    {{ t('comptesPage.badges.primary') }}
-                </v-chip>
-                <v-chip v-if="!account.isActive" size="x-small" color="warning" variant="tonal">
-                    {{ t('comptesPage.badges.archived') }}
-                </v-chip>
-                <v-chip v-if="!account.isOwned" size="x-small" color="secondary" variant="tonal">
-                    {{ roleLabel }}
-                </v-chip>
+            <p class="su-person__sub">{{ typeLabel }} · {{ account.currency }}{{ accountNumberLine }}</p>
+            <div v-if="account.isPrimary || !account.isActive || !account.isOwned" class="account-list-item__chips">
+                <span v-if="account.isPrimary" class="su-chip">{{ t('comptesPage.badges.primary') }}</span>
+                <span v-if="!account.isActive" class="su-chip su-btn--warn">{{ t('comptesPage.badges.archived') }}</span>
+                <span v-if="!account.isOwned" class="su-chip">{{ roleLabel }}</span>
             </div>
         </div>
-    </v-list-item>
+    </button>
 </template>
 
 <style scoped>
+.account-list-item__avatar {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.account-list-item__avatar--on-dark {
+    color: #fff;
+}
+
+.account-list-item__title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+}
+
+.account-list-item__title .su-person__name {
+    min-width: 0;
+}
+
+.account-list-item__balance {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 4px;
+    color: var(--ink);
+    font-size: 14.5px;
+    font-weight: 600;
+}
+
+.account-list-item__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+}
+
 .account-list-item--promoted {
     animation: account-promote-pulse 0.9s ease;
 }
@@ -110,7 +138,7 @@ const accountNumberLine = computed(() =>
         transform: scale(1);
     }
     35% {
-        background-color: rgba(var(--v-theme-primary), 0.12);
+        background-color: var(--hair);
         transform: scale(1.015);
     }
     100% {

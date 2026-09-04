@@ -99,11 +99,10 @@ async function submitAdd() {
         <AccountSnapshotForm :form="form" :balance-error="balanceError" />
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat :disabled="store.acting" @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="primary" flat :loading="store.acting" :disabled="store.acting" @click="submitAdd">
+            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">{{ t('common.cancel') }}</button>
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="submitAdd">
                 {{ t('comptesPage.snapshots.add') }}
-            </v-btn>
+            </button>
         </template>
     </AppModalBase>
 </template>

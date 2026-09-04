@@ -122,7 +122,7 @@ defineExpose({
 
             <v-col cols="12" md="9">
                 <div v-if="loading" class="d-flex justify-center py-6">
-                    <v-progress-circular indeterminate color="primary" size="28" />
+                    <span class="su-spin" />
                 </div>
                 <SecuritySessionCard v-else v-model="draft" :two-factor-enabled="twoFactorEnabled" />
             </v-col>

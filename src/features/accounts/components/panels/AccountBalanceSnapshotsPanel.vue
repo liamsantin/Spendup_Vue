@@ -146,10 +146,10 @@ async function onLoadMore() {
                 <h5 class="text-h6 mb-0">{{ t('comptesPage.snapshots.title') }}</h5>
                 <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.snapshots.subtitle') }}</div>
             </div>
-            <v-btn v-if="canWrite" color="primary" variant="tonal" size="small" @click="addOpen = true">
-                <PlusIcon size="16" class="mr-1" />
+            <button v-if="canWrite" type="button" class="su-btn su-btn--ink" @click="addOpen = true">
+                <PlusIcon size="16" stroke-width="1.6" />
                 {{ t('comptesPage.snapshots.add') }}
-            </v-btn>
+            </button>
         </div>
 
         <div class="snapshots-panel__body">
@@ -206,7 +206,7 @@ async function onLoadMore() {
             </div>
 
             <div v-if="store.loadingSnapshots && !store.balanceSnapshots.length" class="py-8 text-center flex-shrink-0">
-                <v-progress-circular indeterminate color="primary" size="28" />
+                <span class="su-spin" />
             </div>
 
             <div v-else-if="!store.balanceSnapshots.length" class="snapshots-empty text-center py-8 px-4 flex-shrink-0">
@@ -215,10 +215,10 @@ async function onLoadMore() {
                 </v-avatar>
                 <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('comptesPage.snapshots.empty') }}</div>
                 <div class="text-body-2 text-medium-emphasis mb-4">{{ t('comptesPage.snapshots.emptyHint') }}</div>
-                <v-btn v-if="canWrite" color="primary" variant="flat" size="small" @click="addOpen = true">
-                    <PlusIcon size="16" class="mr-1" />
+                <button v-if="canWrite" type="button" class="su-btn su-btn--ink" @click="addOpen = true">
+                    <PlusIcon size="16" stroke-width="1.6" />
                     {{ t('comptesPage.snapshots.add') }}
-                </v-btn>
+                </button>
             </div>
 
             <div v-else class="snapshots-history">
@@ -240,15 +240,14 @@ async function onLoadMore() {
                                 @delete="deleteTarget = $event"
                             />
                             <div v-if="store.hasMoreSnapshots" class="py-3 text-center">
-                                <v-btn
-                                    variant="tonal"
-                                    size="small"
-                                    :loading="store.loadingMoreSnapshots"
+                                <button
+                                    type="button"
+                                    class="su-btn su-btn--ghost"
                                     :disabled="store.loadingMoreSnapshots"
                                     @click="onLoadMore"
                                 >
                                     {{ t('comptesPage.snapshots.loadMore') }}
-                                </v-btn>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -265,15 +264,14 @@ async function onLoadMore() {
                                 @delete="deleteTarget = $event"
                             />
                             <div v-if="store.hasMoreSnapshots" class="py-3 text-center">
-                                <v-btn
-                                    variant="tonal"
-                                    size="small"
-                                    :loading="store.loadingMoreSnapshots"
+                                <button
+                                    type="button"
+                                    class="su-btn su-btn--ghost"
                                     :disabled="store.loadingMoreSnapshots"
                                     @click="onLoadMore"
                                 >
                                     {{ t('comptesPage.snapshots.loadMore') }}
-                                </v-btn>
+                                </button>
                             </div>
                         </div>
                     </PerfectScrollbar>

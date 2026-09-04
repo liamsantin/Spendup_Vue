@@ -80,9 +80,8 @@ const { t } = useI18n();
         </form>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat :disabled="saving" @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="primary" flat type="submit" form="account-username-form" :loading="saving">{{ t('common.save') }}</v-btn>
+            <button type="button" class="su-btn su-btn--ghost" :disabled="saving" @click="close">{{ t('common.cancel') }}</button>
+            <button type="submit" form="account-username-form" class="su-btn su-btn--ink" :disabled="saving">{{ t('common.save') }}</button>
         </template>
     </AppModalBase>
 </template>

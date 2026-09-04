@@ -72,9 +72,10 @@ async function disable(submittedCode?: string) {
         <AppAlert v-if="error" type="error" class="mt-4">{{ error }}</AppAlert>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="error" flat :loading="loading" @click="disable()">{{ t('security.disableDialog.confirm') }}</v-btn>
+            <button type="button" class="su-btn su-btn--ghost" :disabled="loading" @click="close">{{ t('common.cancel') }}</button>
+            <button type="button" class="su-btn su-btn--danger" :disabled="loading" @click="disable()">
+                {{ t('security.disableDialog.confirm') }}
+            </button>
         </template>
     </AppModalBase>
 </template>

@@ -21,7 +21,7 @@ const { avatarSrc } = useFriendAvatarUrl(
 </script>
 
 <template>
-    <v-avatar :size="sizePx" color="lightprimary" :start="start">
+    <v-avatar :size="sizePx" class="su-avatar" :start="start">
         <v-img :src="avatarSrc" :width="sizePx" :height="sizePx" cover eager :alt="fallbackLabel || 'avatar'" />
     </v-avatar>
 </template>

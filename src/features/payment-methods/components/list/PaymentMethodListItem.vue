@@ -24,37 +24,22 @@ const expiration = computed(() => formatExpirationDate(props.method.expirationDa
 </script>
 
 <template>
-    <v-list-item
-        class="payment-method-list-item px-2 py-3"
-        rounded="md"
-        :class="{ 'opacity-60': !method.isActive }"
-        :data-payment-method-id="method.publicId"
-    >
-        <template #prepend>
-            <v-avatar size="46" class="mr-3 bg-lightprimary text-primary" rounded="md">
-                <CreditCardIcon size="22" />
-            </v-avatar>
-        </template>
-
-        <div class="w-100">
-            <div class="d-flex align-center justify-space-between ga-2">
-                <h6 class="text-subtitle-1 font-weight-bold mb-0 text-truncate min-width-0">{{ method.label }}</h6>
-                <v-chip v-if="!method.isActive" size="x-small" color="warning" variant="tonal" class="flex-shrink-0">
-                    {{ t('paymentMethodsPage.badges.inactive') }}
-                </v-chip>
-            </div>
-            <div class="text-body-2 text-medium-emphasis text-truncate">
+    <div class="su-person payment-method-list-item" :class="{ 'opacity-60': !method.isActive }" :data-payment-method-id="method.publicId">
+        <span class="su-person__avatar su-person__avatar--tile">
+            <CreditCardIcon size="22" />
+        </span>
+        <div class="su-person__meta">
+            <p class="su-person__name">{{ method.label }}</p>
+            <p class="su-person__sub">
                 {{ typeLabel }}
                 <template v-if="lastFour"> · {{ lastFour }}</template>
                 <template v-if="expiration"> · {{ t('paymentMethodsPage.list.expires', { date: expiration }) }}</template>
-            </div>
-            <div v-if="method.reference" class="text-caption text-medium-emphasis text-truncate">
-                {{ method.reference }}
-            </div>
+            </p>
+            <p v-if="method.reference" class="su-person__sub">{{ method.reference }}</p>
         </div>
-
-        <template v-if="canWrite" #append>
-            <div class="su-person__actions">
+        <div class="su-person__actions">
+            <span v-if="!method.isActive" class="su-chip su-btn--warn">{{ t('paymentMethodsPage.badges.inactive') }}</span>
+            <template v-if="canWrite">
                 <button
                     type="button"
                     class="su-orb"
@@ -73,7 +58,13 @@ const expiration = computed(() => formatExpirationDate(props.method.expirationDa
                 >
                     <TrashIcon :size="16" stroke-width="1.6" />
                 </button>
-            </div>
-        </template>
-    </v-list-item>
+            </template>
+        </div>
+    </div>
 </template>
+
+<style scoped>
+.payment-method-list-item {
+    cursor: default;
+}
+</style>

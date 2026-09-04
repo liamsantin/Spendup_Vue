@@ -74,11 +74,7 @@ async function onItemClick(item: AppNotification) {
     <v-menu :model-value="menuOpen" :close-on-content-click="false" :scrim="scrim" :opacity="opacity" @update:model-value="onMenuUpdate">
         <template #activator="{ props }">
             <button type="button" class="su-orb" v-bind="props" :aria-label="t('header.notifications.title')">
-                <v-badge
-                    class="header-notif-badge"
-                    :content="notifications.badgeContent"
-                    :model-value="notifications.hasUnread"
-                >
+                <v-badge class="header-notif-badge" :content="notifications.badgeContent" :model-value="notifications.hasUnread">
                     <BellRingingIcon stroke-width="1.5" :size="20" />
                 </v-badge>
             </button>
@@ -88,23 +84,18 @@ async function onItemClick(item: AppNotification) {
                 <div class="d-flex align-center justify-space-between">
                     <h6 class="text-h5">{{ t('header.notifications.title') }}</h6>
                     <div class="d-flex align-center ga-1">
-                        <v-chip v-if="notifications.hasUnread" color="primary" variant="flat" size="small" class="text-white">
-                            {{ unreadLabel }}
-                        </v-chip>
-                        <v-btn
-                            icon
-                            variant="text"
-                            color="primary"
-                            size="small"
-                            class="custom-hover-primary"
-                            :loading="notifications.markingAll"
+                        <span v-if="notifications.hasUnread" class="su-chip">{{ unreadLabel }}</span>
+                        <button
+                            type="button"
+                            class="su-orb"
                             :disabled="!notifications.hasUnread || notifications.markingAll"
                             :aria-label="t('header.notifications.markAllRead')"
                             :title="t('header.notifications.markAllRead')"
                             @click="onMarkAllRead"
                         >
-                            <ChecksIcon stroke-width="1.5" size="20" />
-                        </v-btn>
+                            <span v-if="notifications.markingAll" class="su-spin notification-dd__spin" aria-hidden="true" />
+                            <ChecksIcon v-else stroke-width="1.5" size="20" />
+                        </button>
                     </div>
                 </div>
             </div>
@@ -119,33 +110,28 @@ async function onItemClick(item: AppNotification) {
                 {{ t('header.notifications.empty') }}
             </div>
             <perfect-scrollbar v-else style="height: 280px" :options="PERFECT_SCROLLBAR_OPTIONS">
-                <v-list class="py-0 theme-list" lines="two">
-                    <v-list-item
+                <div class="px-2 py-1">
+                    <button
                         v-for="item in notifications.items"
                         :key="item.id"
-                        :value="item.id"
-                        color="primary"
-                        class="py-4 px-8"
-                        :class="{ 'bg-lightprimary': !item.isRead }"
+                        type="button"
+                        class="su-person"
+                        :class="{ 'is-focused': !item.isRead }"
                         @click="onItemClick(item)"
                     >
-                        <template #prepend>
-                            <UserPhotoAvatar class="mr-3" :photo-url="item.photoUrl" :fallback-label="item.title" :size="48" />
-                        </template>
-                        <div>
-                            <h6 class="text-subtitle-1 font-weight-bold mb-1">{{ item.title }}</h6>
+                        <UserPhotoAvatar :photo-url="item.photoUrl" :fallback-label="item.title" :size="44" />
+                        <div class="su-person__meta">
+                            <p class="su-person__name">{{ item.title }}</p>
+                            <p class="su-person__sub">{{ item.subtitle || item.message || formatCreatedAt(item.createdAt) }}</p>
                         </div>
-                        <p class="text-subtitle-1 font-weight-regular textSecondary mb-0">
-                            {{ item.subtitle || item.message || formatCreatedAt(item.createdAt) }}
-                        </p>
-                    </v-list-item>
-                </v-list>
+                    </button>
+                </div>
             </perfect-scrollbar>
 
             <div class="py-4 px-6 text-center">
-                <v-btn color="primary" variant="outlined" block :to="'/app/notifications'" @click="closeMenu">
+                <router-link class="su-btn su-btn--ink" style="width: 100%" to="/app/notifications" @click="closeMenu">
                     {{ t('header.notifications.viewAll') }}
-                </v-btn>
+                </router-link>
             </div>
         </v-sheet>
     </v-menu>
@@ -158,5 +144,10 @@ async function onItemClick(item: AppNotification) {
     border: 0;
     box-shadow: var(--shadow-ink);
     font-weight: 600;
+}
+
+.notification-dd__spin {
+    width: 18px;
+    height: 18px;
 }
 </style>

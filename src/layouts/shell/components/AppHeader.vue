@@ -98,13 +98,11 @@ const { t } = useI18n();
     display: none;
 }
 
-.bar :deep(.su-orb),
-.bar :deep(.v-btn) {
+.bar :deep(.su-orb) {
     color: var(--ink-mute);
 }
 
-.bar :deep(.su-orb:hover),
-.bar :deep(.v-btn:hover) {
+.bar :deep(.su-orb:hover) {
     color: var(--ink);
 }
 

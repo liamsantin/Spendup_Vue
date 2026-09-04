@@ -99,9 +99,9 @@ async function confirmRevoke() {
                 <h5 class="text-h6 mb-0">{{ t('comptesPage.share.title') }}</h5>
                 <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.share.subtitle') }}</div>
             </div>
-            <v-btn color="primary" variant="tonal" size="small" @click="inviteOpen = true">
+            <button type="button" class="su-btn su-btn--ink" @click="inviteOpen = true">
                 {{ t('comptesPage.share.invite') }}
-            </v-btn>
+            </button>
         </div>
 
         <AppModalPanelScroll>
@@ -121,12 +121,12 @@ async function confirmRevoke() {
             </AppAlert>
 
             <div v-if="store.loadingShares && !store.shares.length" class="py-6 text-center">
-                <v-progress-circular indeterminate color="primary" size="28" />
+                <span class="su-spin" />
             </div>
             <div v-else-if="!store.shares.length" class="py-6 text-center text-medium-emphasis">
                 {{ t('comptesPage.share.empty') }}
             </div>
-            <v-list v-else class="py-0 theme-list">
+            <v-list v-else class="py-0">
                 <v-list-item v-for="share in store.shares" :key="share.publicId" class="px-2 py-3" rounded="md">
                     <template #prepend>
                         <UserPhotoAvatar
@@ -150,16 +150,15 @@ async function confirmRevoke() {
                             <v-chip size="small" :color="share.role === 'pending' ? 'warning' : 'secondary'" variant="tonal">
                                 {{ roleChipLabel(share) }}
                             </v-chip>
-                            <v-btn
-                                size="small"
-                                variant="text"
-                                :icon="true"
+                            <button
+                                type="button"
+                                class="su-orb"
                                 :aria-label="t('comptesPage.share.editTitle')"
                                 :disabled="store.acting"
                                 @click="openEdit(share)"
                             >
-                                <PencilIcon size="18" />
-                            </v-btn>
+                                <PencilIcon size="18" stroke-width="1.75" />
+                            </button>
                         </div>
                     </div>
                 </v-list-item>

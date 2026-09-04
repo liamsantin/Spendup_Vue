@@ -105,16 +105,15 @@ async function removeNickname() {
         />
 
         <template #footer="{ close }">
-            <v-btn v-if="hasNickname" variant="text" color="error" flat :disabled="store.acting" @click="removeNickname">
+            <button v-if="hasNickname" type="button" class="su-btn su-btn--danger" :disabled="store.acting" @click="removeNickname">
                 {{ t('friendsPage.nicknameModal.remove') }}
-            </v-btn>
-            <v-spacer />
-            <v-btn variant="text" flat :disabled="store.acting" @click="close">
+            </button>
+            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
-            </v-btn>
-            <v-btn color="primary" flat :loading="store.acting" @click="saveNickname">
+            </button>
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="saveNickname">
                 {{ t('friendsPage.nicknameModal.save') }}
-            </v-btn>
+            </button>
         </template>
     </AppModalBase>
 </template>

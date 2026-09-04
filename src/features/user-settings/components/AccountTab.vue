@@ -88,7 +88,7 @@ defineExpose({
 <template>
     <div class="account-tab">
         <div v-if="profile.loading && !profile.baseline" class="d-flex justify-center py-10">
-            <v-progress-circular indeterminate color="primary" size="36" />
+            <span class="su-spin" />
         </div>
 
         <v-row v-else class="justify-center py-1" no-gutters>
@@ -222,8 +222,7 @@ defineExpose({
             :message="t('accounts.cancelConfirmModal.body')"
             :cancel-label="t('accounts.cancelConfirmModal.back')"
             :confirm-label="t('accounts.cancelConfirmModal.confirm')"
-            confirm-color=""
-            confirm-class="bg-lighterror text-error"
+            confirm-color="error"
             :loading="profile.cancelConfirming"
             @confirm="profile.confirmResetProfile"
         />

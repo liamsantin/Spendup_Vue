@@ -162,13 +162,12 @@ async function onSave() {
         />
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat :disabled="store.acting" @click="close">
+            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
-            </v-btn>
-            <v-spacer />
-            <v-btn color="primary" flat :loading="store.acting" :disabled="store.acting" @click="onSave">
+            </button>
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onSave">
                 {{ t('common.save') }}
-            </v-btn>
+            </button>
         </template>
     </AppModalBase>
 </template>

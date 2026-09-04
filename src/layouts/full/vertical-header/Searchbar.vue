@@ -237,92 +237,56 @@ onUnmounted(() => {
             </div>
 
             <perfect-scrollbar v-else style="max-height: 360px" :options="PERFECT_SCROLLBAR_OPTIONS">
-                <div v-if="appItems.length" class="pt-4">
-                    <h6 class="text-subtitle-2 text-medium-emphasis px-5 mb-1">{{ t('header.search.sectionApp') }}</h6>
-                    <v-list class="py-0" lines="two">
-                        <v-list-item
-                            v-for="item in appItems"
-                            :key="item.href"
-                            :value="item.href"
-                            color="primary"
-                            class="px-5 py-2"
-                            @click="goTo(item)"
-                        >
-                            <template #prepend>
-                                <v-avatar size="40" color="lightprimary" rounded="md" class="mr-3">
-                                    <component :is="iconFor(item)" size="20" stroke-width="1.5" class="text-primary" />
-                                </v-avatar>
-                            </template>
-                            <v-list-item-title class="text-subtitle-1 font-weight-bold">
-                                {{ t(item.titleKey) }}
-                            </v-list-item-title>
-                            <v-list-item-subtitle class="text-body-2">
-                                {{ t(item.subtitleKey) }}
-                            </v-list-item-subtitle>
-                        </v-list-item>
-                    </v-list>
+                <div v-if="appItems.length" class="pt-2 px-2">
+                    <h6 class="text-subtitle-2 text-medium-emphasis px-3 mb-1">{{ t('header.search.sectionApp') }}</h6>
+                    <button v-for="item in appItems" :key="item.href" type="button" class="su-person" @click="goTo(item)">
+                        <span class="su-person__avatar su-person__avatar--tile">
+                            <component :is="iconFor(item)" size="20" stroke-width="1.5" />
+                        </span>
+                        <div class="su-person__meta">
+                            <p class="su-person__name">{{ t(item.titleKey) }}</p>
+                            <p class="su-person__sub">{{ t(item.subtitleKey) }}</p>
+                        </div>
+                    </button>
                 </div>
 
-                <div v-if="siteItems.length" :class="appItems.length ? 'pt-2' : 'pt-4'">
-                    <h6 class="text-subtitle-2 text-medium-emphasis px-5 mb-1">{{ t('header.search.sectionSite') }}</h6>
-                    <v-list class="py-0" lines="two">
-                        <v-list-item
-                            v-for="item in siteItems"
-                            :key="item.href"
-                            :value="item.href"
-                            color="primary"
-                            class="px-5 py-2"
-                            @click="goTo(item)"
-                        >
-                            <template #prepend>
-                                <v-avatar size="40" color="lightprimary" rounded="md" class="mr-3">
-                                    <component :is="iconFor(item)" size="20" stroke-width="1.5" class="text-primary" />
-                                </v-avatar>
-                            </template>
-                            <v-list-item-title class="text-subtitle-1 font-weight-bold">
-                                {{ t(item.titleKey) }}
-                            </v-list-item-title>
-                            <v-list-item-subtitle class="text-body-2">
-                                {{ t(item.subtitleKey) }}
-                            </v-list-item-subtitle>
-                        </v-list-item>
-                    </v-list>
+                <div v-if="siteItems.length" class="px-2" :class="appItems.length ? 'pt-1' : 'pt-2'">
+                    <h6 class="text-subtitle-2 text-medium-emphasis px-3 mb-1">{{ t('header.search.sectionSite') }}</h6>
+                    <button v-for="item in siteItems" :key="item.href" type="button" class="su-person" @click="goTo(item)">
+                        <span class="su-person__avatar su-person__avatar--tile">
+                            <component :is="iconFor(item)" size="20" stroke-width="1.5" />
+                        </span>
+                        <div class="su-person__meta">
+                            <p class="su-person__name">{{ t(item.titleKey) }}</p>
+                            <p class="su-person__sub">{{ t(item.subtitleKey) }}</p>
+                        </div>
+                    </button>
                 </div>
 
-                <div v-if="canSearchFriends" :class="hasPageResults ? 'pt-2 pb-3' : 'pt-4 pb-3'">
-                    <h6 class="text-subtitle-2 text-medium-emphasis px-5 mb-1">{{ t('header.search.sectionFriends') }}</h6>
-                    <div v-if="friendsError" class="px-5 py-3 text-error text-body-2">{{ friendsError }}</div>
-                    <div v-else-if="friendsLoading && !hasFriendResults" class="px-5 py-4 text-medium-emphasis text-body-2">
+                <div v-if="canSearchFriends" class="px-2" :class="hasPageResults ? 'pt-1 pb-3' : 'pt-2 pb-3'">
+                    <h6 class="text-subtitle-2 text-medium-emphasis px-3 mb-1">{{ t('header.search.sectionFriends') }}</h6>
+                    <div v-if="friendsError" class="px-3 py-3 text-error text-body-2">{{ friendsError }}</div>
+                    <div v-else-if="friendsLoading && !hasFriendResults" class="px-3 py-4 text-medium-emphasis text-body-2">
                         {{ t('header.search.friendsLoading') }}
                     </div>
-                    <div v-else-if="!hasFriendResults" class="px-5 py-4 text-medium-emphasis text-body-2">
+                    <div v-else-if="!hasFriendResults" class="px-3 py-4 text-medium-emphasis text-body-2">
                         {{ t('header.search.friendsEmpty') }}
                     </div>
-                    <v-list v-else class="py-0" lines="two">
-                        <v-list-item
+                    <template v-else>
+                        <button
                             v-for="user in friendResults"
                             :key="user.publicId"
-                            :value="user.publicId"
-                            color="primary"
-                            class="px-5 py-2"
+                            type="button"
+                            class="su-person"
                             @click="goToFriend(user)"
                         >
-                            <template #prepend>
-                                <UserPhotoAvatar
-                                    class="mr-3"
-                                    :photo-url="user.profilePicture"
-                                    :fallback-label="friendLabel(user)"
-                                    :size="40"
-                                />
-                            </template>
-                            <v-list-item-title class="text-subtitle-1 font-weight-bold">
-                                {{ friendLabel(user) }}
-                            </v-list-item-title>
-                            <v-list-item-subtitle class="text-body-2">
-                                {{ friendSubtitle(user) }}
-                            </v-list-item-subtitle>
-                        </v-list-item>
-                    </v-list>
+                            <UserPhotoAvatar :photo-url="user.profilePicture" :fallback-label="friendLabel(user)" :size="44" />
+                            <div class="su-person__meta">
+                                <p class="su-person__name">{{ friendLabel(user) }}</p>
+                                <p class="su-person__sub">{{ friendSubtitle(user) }}</p>
+                            </div>
+                        </button>
+                    </template>
                 </div>
             </perfect-scrollbar>
         </v-sheet>

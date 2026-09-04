@@ -35,7 +35,7 @@ const resolvedIcon = computed(() => props.icon ?? AdjustmentsHorizontalIcon);
                 {{ label }}
             </button>
         </template>
-        <v-list density="compact" :min-width="minWidth" class="py-1">
+        <v-list density="compact" :min-width="minWidth" class="py-1 su-menu">
             <slot />
         </v-list>
     </v-menu>

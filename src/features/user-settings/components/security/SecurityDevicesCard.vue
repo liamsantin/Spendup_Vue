@@ -164,28 +164,25 @@ const devices = useSecurityDevices({
         </div>
 
         <template #footer="{ close }">
-            <v-btn
+            <button
                 v-if="devices.detailsDevice && !devices.isDeviceTrusted(devices.detailsDevice)"
-                color="primary"
-                variant="tonal"
-                flat
-                :loading="devices.trustLoadingId === devices.detailsDevice.deviceIdentifier"
+                type="button"
+                class="su-btn su-btn--ghost"
+                :disabled="devices.trustLoadingId === devices.detailsDevice.deviceIdentifier"
                 @click="devices.setDeviceTrust(devices.detailsDevice, true)"
             >
                 {{ t('security.devices.details.trust') }}
-            </v-btn>
-            <v-btn
+            </button>
+            <button
                 v-else-if="devices.detailsDevice"
-                color="default"
-                variant="tonal"
-                flat
-                :loading="devices.trustLoadingId === devices.detailsDevice.deviceIdentifier"
+                type="button"
+                class="su-btn su-btn--ghost"
+                :disabled="devices.trustLoadingId === devices.detailsDevice.deviceIdentifier"
                 @click="devices.setDeviceTrust(devices.detailsDevice, false)"
             >
                 {{ t('security.devices.details.untrust') }}
-            </v-btn>
-            <v-spacer />
-            <v-btn color="primary" flat @click="close">{{ t('security.devices.details.close') }}</v-btn>
+            </button>
+            <button type="button" class="su-btn su-btn--ink" @click="close">{{ t('security.devices.details.close') }}</button>
         </template>
     </AppModalBase>
 </template>

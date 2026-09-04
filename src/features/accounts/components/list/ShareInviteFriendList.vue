@@ -22,7 +22,7 @@ const { t } = useI18n();
 
 <template>
     <div v-if="loading" class="share-invite-friend-list__placeholder">
-        <v-progress-circular indeterminate color="primary" size="28" />
+        <span class="su-spin" />
     </div>
     <div v-else-if="!hasAvailable" class="share-invite-friend-list__placeholder text-medium-emphasis text-body-2">
         {{ t('comptesPage.share.emptyFriends') }}
@@ -30,7 +30,7 @@ const { t } = useI18n();
     <div v-else-if="!friends.length" class="share-invite-friend-list__placeholder text-medium-emphasis text-body-2">
         {{ t('comptesPage.share.noMatchingFriends') }}
     </div>
-    <v-list v-else class="py-0 theme-list">
+    <div v-else>
         <FriendListItem
             v-for="friend in friends"
             :key="friend.user.publicId"
@@ -40,10 +40,10 @@ const { t } = useI18n();
             @click="emit('select', friend.user.publicId)"
         >
             <template #actions>
-                <CircleCheckIcon v-if="selectedUserPublicId === friend.user.publicId" class="text-primary" :size="22" stroke-width="1.8" />
+                <CircleCheckIcon v-if="selectedUserPublicId === friend.user.publicId" :size="22" stroke-width="1.8" />
             </template>
         </FriendListItem>
-    </v-list>
+    </div>
 </template>
 
 <style scoped>

@@ -40,9 +40,9 @@ const { t } = useI18n();
         </AppAlert>
         <AppAlert v-if="pendingEmail" color="warning" variant="tonal" class="mt-4">
             {{ t('accounts.credentials.pendingEmail', { email: pendingEmail }) }}
-            <v-btn variant="text" color="warning" size="small" class="ml-1" @click="emit('confirmPendingEmail')">
+            <button type="button" class="su-btn su-btn--warn ml-1" @click="emit('confirmPendingEmail')">
                 {{ t('accounts.credentials.enterCode') }}
-            </v-btn>
+            </button>
         </AppAlert>
         <div class="mt-2">
             <v-row>

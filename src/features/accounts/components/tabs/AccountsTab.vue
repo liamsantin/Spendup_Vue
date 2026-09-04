@@ -72,14 +72,14 @@ function openDetail(account: Account) {
                             v-if="useVirtualList(store.activeOwnedAccounts.length)"
                             :items="store.activeOwnedAccounts"
                             height="480"
-                            :item-height="96"
-                            class="v-list py-0 theme-list"
+                            :item-height="108"
+                            class="py-0"
                         >
                             <template #default="{ item }">
                                 <AccountListItem :account="item" @open="openDetail" />
                             </template>
                         </v-virtual-scroll>
-                        <TransitionGroup v-else name="account-move" tag="div" class="v-list py-0 theme-list">
+                        <TransitionGroup v-else name="account-move" tag="div" class="py-0">
                             <AccountListItem
                                 v-for="account in store.activeOwnedAccounts"
                                 :key="account.publicId"
@@ -94,14 +94,14 @@ function openDetail(account: Account) {
                             v-if="useVirtualList(store.archivedOwnedAccounts.length)"
                             :items="store.archivedOwnedAccounts"
                             height="360"
-                            :item-height="96"
-                            class="v-list py-0 theme-list"
+                            :item-height="108"
+                            class="py-0"
                         >
                             <template #default="{ item }">
                                 <AccountListItem :account="item" @open="openDetail" />
                             </template>
                         </v-virtual-scroll>
-                        <v-list v-else class="py-0 theme-list">
+                        <v-list v-else class="py-0">
                             <AccountListItem
                                 v-for="account in store.archivedOwnedAccounts"
                                 :key="account.publicId"
@@ -132,14 +132,14 @@ function openDetail(account: Account) {
                     v-else-if="useVirtualList(store.sharedAccounts.length)"
                     :items="store.sharedAccounts"
                     height="480"
-                    :item-height="96"
-                    class="v-list py-0 theme-list"
+                    :item-height="108"
+                    class="py-0"
                 >
                     <template #default="{ item }">
                         <AccountListItem :account="item" @open="openDetail" />
                     </template>
                 </v-virtual-scroll>
-                <v-list v-else class="py-0 theme-list">
+                <v-list v-else class="py-0">
                     <AccountListItem
                         v-for="account in store.sharedAccounts"
                         :key="account.publicId"

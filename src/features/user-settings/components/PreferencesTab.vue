@@ -66,7 +66,7 @@ defineExpose({
 <template>
     <div class="preferences-tab">
         <div v-if="loading" class="d-flex justify-center py-10">
-            <v-progress-circular indeterminate color="primary" size="36" />
+            <span class="su-spin" />
         </div>
 
         <v-row v-else class="justify-center py-1" no-gutters>

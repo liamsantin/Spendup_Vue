@@ -70,7 +70,7 @@ defineExpose({
             </v-col>
             <v-col cols="12" md="9">
                 <div v-if="loading" class="d-flex justify-center py-6">
-                    <v-progress-circular indeterminate color="primary" size="28" />
+                    <span class="su-spin" />
                 </div>
                 <PreferencesNotificationsCard v-else v-model="draft" />
             </v-col>

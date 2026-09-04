@@ -9,7 +9,6 @@ import { useI18n } from 'vue-i18n';
 import { CameraIcon, QrcodeIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
-import AppBaseTabs from '@/components/shared/tabs/AppBaseTabs.vue';
 import { useAuthStore } from '@/features/auth';
 import { useFriendQrGenerate } from '@/features/friends/composables/useFriendQrGenerate';
 import { useFriendQrScan } from '@/features/friends/composables/useFriendQrScan';
@@ -83,8 +82,21 @@ watch(
         @update:model-value="onOpenChange"
     >
         <template #toolbar>
-            <div class="friend-qr-modal__tabs">
-                <AppBaseTabs v-model="view" :tabs="qrTabs" align-tabs="center" :show-panels="false" />
+            <div class="app-modal-tabs__toolbar">
+                <nav class="app-modal-tabs__nav" :aria-label="t('friendsPage.qr.title')">
+                    <button
+                        v-for="item in qrTabs"
+                        :key="item.value"
+                        type="button"
+                        class="app-modal-tabs__tab"
+                        :class="{ 'is-active': view === item.value }"
+                        :aria-current="view === item.value ? 'page' : undefined"
+                        @click="view = item.value"
+                    >
+                        <component :is="item.icon" v-if="item.icon" :size="16" stroke-width="1.6" />
+                        {{ item.label }}
+                    </button>
+                </nav>
             </div>
         </template>
 
@@ -104,8 +116,8 @@ watch(
                     <template v-else>
                         <p class="text-body-2 text-medium-emphasis mb-0">{{ t('friendsPage.qr.showHint') }}</p>
                         <v-img v-if="generate.qrDataUrl" :src="generate.qrDataUrl" width="240" height="240" class="friend-qr-panel__img" />
-                        <v-progress-circular v-else indeterminate color="primary" size="32" />
-                        <div v-if="publicId" class="text-subtitle-1 font-weight-semibold textPrimary">
+                        <span v-else class="su-spin" />
+                        <div v-if="publicId" class="text-subtitle-1 font-weight-semibold">
                             {{ t('friendsPage.qr.yourId', { id: publicId }) }}
                         </div>
                     </template>
@@ -120,14 +132,14 @@ watch(
                         {{ scanError }}
                     </AppAlert>
 
-                    <v-btn v-if="cameraNeedsEnable && !cameraStarting" color="primary" flat @click="startScanner">
-                        <CameraIcon class="mr-2" size="18" stroke-width="1.5" />
+                    <button v-if="cameraNeedsEnable && !cameraStarting" type="button" class="su-btn su-btn--ink" @click="startScanner">
+                        <CameraIcon size="18" stroke-width="1.5" />
                         {{ t('friendsPage.qr.enableCamera') }}
-                    </v-btn>
+                    </button>
 
                     <div v-if="!cameraNeedsEnable || cameraStarting || scannerReady" class="friend-qr-scanner-wrap">
                         <div v-if="cameraStarting" class="friend-qr-scanner-loading">
-                            <v-progress-circular indeterminate color="primary" size="36" />
+                            <span class="su-spin" />
                             <p class="text-body-2 text-medium-emphasis mb-0">{{ t('friendsPage.qr.enableCamera') }}…</p>
                         </div>
                         <div
@@ -142,17 +154,69 @@ watch(
         </v-window>
 
         <template #footer="{ close }">
-            <v-spacer />
-            <v-btn color="primary" flat @click="close">{{ t('common.close') }}</v-btn>
+            <button type="button" class="su-btn su-btn--ink" @click="close">{{ t('common.close') }}</button>
         </template>
     </AppModalBase>
 </template>
 
 <style scoped>
-.friend-qr-modal__tabs {
+.app-modal-tabs__toolbar {
     display: flex;
-    justify-content: center;
-    padding: 4px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 8px 16px 8px;
+    box-sizing: border-box;
+}
+
+.app-modal-tabs__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    width: 100%;
+    min-width: 0;
+}
+
+.app-modal-tabs__tab {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--ink-mute);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 550;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background 0.25s var(--ease),
+        color 0.25s var(--ease);
+}
+
+.app-modal-tabs__tab:hover:not(:disabled):not(.is-active) {
+    color: var(--ink);
+    background: var(--hair);
+}
+
+.app-modal-tabs__tab.is-active {
+    color: var(--ink);
+    background: var(--hair);
+}
+
+.app-modal-tabs__tab:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.app-modal-tabs__tab svg {
+    flex: none;
+    opacity: 0.75;
 }
 
 .friend-qr-panel {

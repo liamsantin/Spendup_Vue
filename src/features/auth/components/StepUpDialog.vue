@@ -96,9 +96,8 @@ function onOpenChange(value: boolean) {
         </div>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="primary" flat :disabled="!canSubmit" @click="submit">{{ t('auth.stepUp.confirm') }}</v-btn>
+            <button type="button" class="su-btn su-btn--ghost" @click="close">{{ t('common.cancel') }}</button>
+            <button type="button" class="su-btn su-btn--ink" :disabled="!canSubmit" @click="submit">{{ t('auth.stepUp.confirm') }}</button>
         </template>
     </AppModalBase>
 </template>

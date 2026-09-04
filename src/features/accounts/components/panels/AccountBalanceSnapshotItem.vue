@@ -47,18 +47,16 @@ const authorLabel = computed(() => {
                     <v-chip size="x-small" variant="tonal" color="primary">
                         {{ t(`comptesPage.snapshots.sources.${snapshot.source}`) }}
                     </v-chip>
-                    <v-btn
+                    <button
                         v-if="canWrite"
-                        size="x-small"
-                        variant="text"
-                        color="error"
+                        type="button"
+                        class="su-orb su-orb--danger"
                         :disabled="acting"
-                        :icon="true"
                         :aria-label="t('comptesPage.snapshots.deleteModal.confirm')"
                         @click="emit('delete', snapshot)"
                     >
-                        <TrashIcon size="16" />
-                    </v-btn>
+                        <TrashIcon size="16" stroke-width="1.75" />
+                    </button>
                 </div>
             </div>
             <div class="d-flex align-center ga-1 text-caption text-medium-emphasis">

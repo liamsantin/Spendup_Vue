@@ -48,19 +48,15 @@ async function onLogout() {
 <template>
     <v-menu v-model="menuOpen" :close-on-content-click="false" :scrim="scrim" :opacity="opacity">
         <template v-slot:activator="{ props }">
-            <v-btn class="custom-hover-primary" variant="text" v-bind="props" icon>
-                <v-avatar size="35">
-                    <img :src="avatarSrc" width="35" height="35" alt="user" class="obj-cover" />
-                </v-avatar>
-            </v-btn>
+            <button type="button" class="su-orb" v-bind="props" :aria-label="t('header.profile.title')">
+                <img :src="avatarSrc" width="32" height="32" alt="" class="obj-cover profile-dd__orb-photo" />
+            </button>
         </template>
         <v-sheet rounded="md" width="360" elevation="0" class="su-menu">
             <div class="px-8 pt-6">
                 <h6 class="text-h5 font-weight-medium">{{ t('header.profile.title') }}</h6>
                 <div class="d-flex align-center mt-4 pb-6">
-                    <v-avatar size="80">
-                        <img :src="avatarSrc" width="80" height="80" alt="user" class="obj-cover" />
-                    </v-avatar>
+                    <img :src="avatarSrc" width="80" height="80" alt="" class="obj-cover profile-dd__photo" />
                     <div class="ml-3 min-w-0">
                         <h6 class="text-h6 mb-n1">{{ displayName }}</h6>
                         <div v-for="detail in profileDetails" :key="detail.key" class="d-flex align-center mt-1">
@@ -71,25 +67,17 @@ async function onLogout() {
                 </div>
                 <v-divider></v-divider>
             </div>
-            <v-list class="py-0 theme-list" lines="two">
-                <v-list-item
-                    v-for="item in profileDD"
-                    :key="item.titleKey"
-                    class="py-4 px-8 custom-text-primary"
-                    :to="item.href"
-                    @click="closeMenu"
-                >
-                    <template v-slot:prepend>
-                        <v-avatar size="48" color="lightprimary" class="mr-3" rounded="md">
-                            <img :src="item.avatar" width="24" height="24" :alt="t(item.titleKey)" />
-                        </v-avatar>
-                    </template>
-                    <div>
-                        <h6 class="text-subtitle-1 font-weight-bold mb-2 custom-title">{{ t(item.titleKey) }}</h6>
+            <div class="px-2 py-2">
+                <router-link v-for="item in profileDD" :key="item.titleKey" class="su-person" :to="item.href" @click="closeMenu">
+                    <span class="su-person__avatar profile-dd__icon">
+                        <img :src="item.avatar" width="24" height="24" :alt="t(item.titleKey)" />
+                    </span>
+                    <div class="su-person__meta">
+                        <p class="su-person__name">{{ t(item.titleKey) }}</p>
+                        <p class="su-person__sub">{{ t(item.subtitleKey) }}</p>
                     </div>
-                    <p class="text-subtitle-1 font-weight-regular textSecondary">{{ t(item.subtitleKey) }}</p>
-                </v-list-item>
-            </v-list>
+                </router-link>
+            </div>
             <div class="pt-4 pb-6 px-8 text-center">
                 <button type="button" class="su-btn su-btn--ink" style="width: 100%" @click="onLogout">
                     {{ t('header.profile.logout') }}
@@ -98,3 +86,17 @@ async function onLogout() {
         </v-sheet>
     </v-menu>
 </template>
+
+<style scoped>
+.profile-dd__orb-photo,
+.profile-dd__photo {
+    display: block;
+    border-radius: 50%;
+}
+
+.profile-dd__icon {
+    display: grid;
+    place-items: center;
+    background: var(--hair);
+}
+</style>
