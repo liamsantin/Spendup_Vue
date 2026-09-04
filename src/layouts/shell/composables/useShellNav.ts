@@ -1,8 +1,13 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
+import { AdjustmentsHorizontalIcon, BellIcon, BuildingBankIcon, CreditCardIcon, LockIcon, UserCircleIcon } from 'vue-tabler-icons';
 import { useNotificationsStore } from '@/features/notifications';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
+import DashboardRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/DashboardRailIcon.vue';
+import FinancesRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/FinancesRailIcon.vue';
+import FriendsRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/FriendsRailIcon.vue';
+import SettingsRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/SettingsRailIcon.vue';
 import type { NavItem, NavLeaf } from '../types/navigation';
 
 export const SHELL_NAV_IDS = {
@@ -65,13 +70,13 @@ export function useShellNav() {
         {
             id: SHELL_NAV_IDS.accounts,
             label: t('nav.items.accounts'),
-            icon: 'building',
+            icon: BuildingBankIcon,
             to: '/app/finances/comptes'
         },
         {
             id: SHELL_NAV_IDS.paymentMethods,
             label: t('nav.items.paymentMethods'),
-            icon: 'credit-card',
+            icon: CreditCardIcon,
             to: '/app/finances/moyens-de-paiement'
         }
     ]);
@@ -80,25 +85,25 @@ export function useShellNav() {
         {
             id: SHELL_NAV_IDS.profile,
             label: t('nav.items.profile'),
-            icon: 'user',
+            icon: UserCircleIcon,
             to: SETTINGS_PATHS.account
         },
         {
             id: SHELL_NAV_IDS.preferences,
             label: t('nav.items.preferences'),
-            icon: 'sliders',
+            icon: AdjustmentsHorizontalIcon,
             to: SETTINGS_PATHS.preferences
         },
         {
             id: SHELL_NAV_IDS.notificationSettings,
             label: t('nav.items.notificationSettings'),
-            icon: 'bell',
+            icon: BellIcon,
             to: SETTINGS_PATHS.notifications
         },
         {
             id: SHELL_NAV_IDS.security,
             label: t('nav.items.security'),
-            icon: 'lock',
+            icon: LockIcon,
             to: SETTINGS_PATHS.security
         }
     ]);
@@ -107,13 +112,13 @@ export function useShellNav() {
         {
             id: SHELL_NAV_IDS.dashboard,
             label: t('nav.items.dashboard'),
-            icon: 'home',
+            icon: DashboardRailIcon,
             to: '/app'
         },
         {
             id: SHELL_NAV_IDS.notifications,
             label: t('nav.items.notifications'),
-            icon: 'bell',
+            icon: BellIcon,
             to: '/app/notifications',
             badge: unreadCount.value > 0 ? unreadCount.value : undefined,
             dot: unreadCount.value > 0
@@ -121,13 +126,13 @@ export function useShellNav() {
         {
             id: SHELL_NAV_IDS.friends,
             label: t('nav.items.friends'),
-            icon: 'contacts',
+            icon: FriendsRailIcon,
             to: '/app/friends'
         },
         {
             id: SHELL_NAV_IDS.finances,
             label: t('nav.headers.finances'),
-            icon: 'finance',
+            icon: FinancesRailIcon,
             children: financeLeaves.value,
             detail: [
                 {
@@ -143,7 +148,7 @@ export function useShellNav() {
         {
             id: SHELL_NAV_IDS.settings,
             label: t('nav.headers.settings'),
-            icon: 'settings',
+            icon: SettingsRailIcon,
             children: settingsLeaves.value,
             detail: [
                 {

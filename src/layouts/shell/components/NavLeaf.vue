@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseIcon from './BaseIcon.vue';
+import ShellNavIcon from './ShellNavIcon.vue';
 import { useLinkTag } from '../composables/useLinkTag';
 import type { NavLeaf } from '../types/navigation';
 
@@ -24,7 +24,7 @@ const { tag, attrs } = useLinkTag(() => props.leaf);
         :aria-current="active ? 'page' : undefined"
         @click="emit('select', leaf)"
     >
-        <BaseIcon :name="leaf.icon" :size="20" />
+        <ShellNavIcon :icon="leaf.icon" :size="20" />
         <span class="leaf__label">{{ leaf.label }}</span>
     </component>
 </template>
@@ -49,6 +49,7 @@ const { tag, attrs } = useLinkTag(() => props.leaf);
     white-space: nowrap;
     text-align: left;
     text-decoration: none;
+    --rail-icon-tone-stroke: currentColor;
     /* replié, la ligne s'efface derrière son point sur le fil ; `visibility`
      la sort aussi de l'ordre de tabulation, ce que `opacity` ne fait pas. */
     visibility: hidden;
@@ -70,6 +71,11 @@ const { tag, attrs } = useLinkTag(() => props.leaf);
     color: var(--ink);
     background: var(--surface-raised);
     box-shadow: var(--shadow-pill-soft);
+}
+.leaf :deep(svg) {
+    display: block;
+    flex: none;
+    color: inherit;
 }
 .leaf--wide {
     padding: 10px 14px;

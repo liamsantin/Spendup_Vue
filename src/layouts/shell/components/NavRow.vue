@@ -2,6 +2,7 @@
 import { computed, useId } from 'vue';
 import BaseIcon from './BaseIcon.vue';
 import NavLeaf from './NavLeaf.vue';
+import ShellNavIcon from './ShellNavIcon.vue';
 import { useLinkTag } from '../composables/useLinkTag';
 import type { NavItem, NavLeaf as NavLeafType } from '../types/navigation';
 
@@ -46,7 +47,7 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
             @click="emit('toggle', item)"
         >
             <span class="item__icon">
-                <BaseIcon :name="item.icon" />
+                <ShellNavIcon :icon="item.icon" />
                 <span v-if="item.dot" class="item__dot" />
             </span>
             <span class="item__label">{{ item.label }}</span>
@@ -128,8 +129,14 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
     place-items: center;
     width: var(--slot);
     height: var(--slot);
+    /* les icônes rail gardent leur accent aligné sur la couleur du texte */
+    --rail-icon-tone-stroke: currentColor;
     /* le survol ne joue que sur transform : l'icône grossit sans quitter son centre */
     transition: transform 0.35s var(--spring);
+}
+.item__icon :deep(svg) {
+    display: block;
+    color: inherit;
 }
 .item:hover .item__icon {
     transform: scale(1.08);

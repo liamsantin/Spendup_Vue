@@ -7,6 +7,7 @@ import NavLeaf from './NavLeaf.vue';
 import NavRow from './NavRow.vue';
 import { useIsMobile } from '../composables/useBreakpoint';
 import { useScrollLock } from '../composables/useScrollLock';
+import { SHELL_DETAIL_ENABLED } from '../config';
 import type { NavItem, NavLeaf as NavLeafType } from '../types/navigation';
 
 const props = withDefaults(
@@ -38,8 +39,8 @@ const surface = ref<HTMLElement | null>(null);
 
 const allItems = computed(() => [...props.items, ...props.bottomItems]);
 const openItem = computed<NavItem | null>(() => allItems.value.find((item) => item.id === openId.value) ?? null);
-const detailGroups = computed(() => (open.value && openItem.value?.detail) || []);
-const hasDetail = computed(() => detailGroups.value.length > 0);
+const detailGroups = computed(() => (SHELL_DETAIL_ENABLED && open.value && openItem.value?.detail) || []);
+const hasDetail = computed(() => SHELL_DETAIL_ENABLED && detailGroups.value.length > 0);
 
 function toggle() {
     open.value = !open.value;
@@ -61,7 +62,7 @@ function toggleItem(item: NavItem) {
     const closing = openId.value === item.id;
     openId.value = closing ? null : item.id;
     // sur mobile, ouvrir un onglet pousse vers le panneau de détail
-    if (isMobile.value && !closing && !!item.detail?.length) mobilePane.value = 'detail';
+    if (SHELL_DETAIL_ENABLED && isMobile.value && !closing && !!item.detail?.length) mobilePane.value = 'detail';
 }
 
 function selectLeaf(leaf: NavLeafType) {
@@ -100,7 +101,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 </script>
 
 <template>
-    <div class="sidebar" :class="{ 'is-expanded': open }">
+    <div class="sidebar" :class="{ 'is-expanded': open, 'detail-off': !SHELL_DETAIL_ENABLED }">
         <div
             ref="surface"
             class="surface"
@@ -530,6 +531,20 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
     }
     .panel__inner {
         width: 100%;
+    }
+
+    /* bloc ③ coupé : un seul panneau, le markup du détail reste en place */
+    .detail-off .slider,
+    .detail-off .slider.show-detail {
+        width: 100%;
+        transform: none;
+    }
+    .detail-off .rail,
+    .detail-off.is-expanded .rail {
+        width: 100%;
+    }
+    .detail-off .panel {
+        display: none;
     }
 
     /* le burger vit dans le header sur mobile : ici une croix suffit */

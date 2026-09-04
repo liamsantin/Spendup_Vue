@@ -1,3 +1,4 @@
+import type { Component } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 
 /** Icônes fournies par BaseIcon. Le type ferme la porte aux fautes de frappe. */
@@ -29,11 +30,14 @@ export type IconName =
     | 'threads'
     | 'user';
 
+/** Pictogramme d’une entrée : nom du jeu BaseIcon, ou composant (rail / tabler). */
+export type NavIcon = IconName | Component;
+
 /** Entrée terminale : un sous-onglet ou une ligne de la colonne de détail. */
 export interface NavLeaf {
     id: string;
     label: string;
-    icon: IconName;
+    icon: NavIcon;
     /** Rend la ligne comme <RouterLink> vers cette destination. */
     to?: RouteLocationRaw;
     /** Rend la ligne comme <a href>. Ignoré si `to` est fourni. */
