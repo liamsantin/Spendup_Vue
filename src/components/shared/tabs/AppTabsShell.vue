@@ -73,7 +73,10 @@ function selectTab(value: string) {
     <div class="su-page" :class="{ 'su-page--embedded': props.embedded }">
         <header class="su-hero">
             <div class="su-hero__top">
-                <h1 v-if="title">{{ title }}</h1>
+                <div class="su-hero__heading">
+                    <h1 v-if="title">{{ title }}</h1>
+                    <p v-if="subtitle">{{ subtitle }}</p>
+                </div>
                 <nav class="su-tabs" :aria-label="title">
                     <button
                         v-for="item in tabs"
@@ -98,7 +101,6 @@ function selectTab(value: string) {
                     </button>
                 </div>
             </div>
-            <p v-if="subtitle">{{ subtitle }}</p>
             <div v-if="$slots.toolbar" class="su-toolbar">
                 <slot name="toolbar" />
             </div>
