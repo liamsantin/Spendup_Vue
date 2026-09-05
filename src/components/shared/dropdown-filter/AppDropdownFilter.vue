@@ -6,6 +6,7 @@
 defineOptions({ name: 'AppDropdownFilter' });
 
 import { computed } from 'vue';
+import type { Anchor } from 'vuetify';
 import { AdjustmentsHorizontalIcon } from 'vue-tabler-icons';
 
 const props = withDefaults(
@@ -14,7 +15,7 @@ const props = withDefaults(
         label: string;
         /** Icône vue-tabler à gauche du libellé. */
         icon?: unknown;
-        location?: string;
+        location?: Anchor;
         minWidth?: number | string;
     }>(),
     {

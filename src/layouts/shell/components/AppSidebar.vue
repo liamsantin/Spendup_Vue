@@ -9,7 +9,7 @@ import Logo from '@/layouts/full/logo/Logo.vue';
 import { useIsMobile } from '../composables/useBreakpoint';
 import { useScrollLock } from '../composables/useScrollLock';
 import { SHELL_DETAIL_ENABLED } from '../config';
-import type { NavItem, NavLeaf as NavLeafType } from '../types/navigation';
+import type { NavGroup, NavItem, NavLeaf as NavLeafType } from '../types/navigation';
 
 const props = withDefaults(
     defineProps<{
@@ -40,7 +40,10 @@ const surface = ref<HTMLElement | null>(null);
 
 const allItems = computed(() => [...props.items, ...props.bottomItems]);
 const openItem = computed<NavItem | null>(() => allItems.value.find((item) => item.id === openId.value) ?? null);
-const detailGroups = computed(() => (SHELL_DETAIL_ENABLED && open.value && openItem.value?.detail) || []);
+const detailGroups = computed<NavGroup[]>(() => {
+    if (!SHELL_DETAIL_ENABLED || !open.value) return [];
+    return openItem.value?.detail ?? [];
+});
 const hasDetail = computed(() => SHELL_DETAIL_ENABLED && detailGroups.value.length > 0);
 
 function toggle() {

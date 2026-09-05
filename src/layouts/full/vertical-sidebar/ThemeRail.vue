@@ -26,7 +26,7 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
                 :aria-label="t('nav.toggleMenu')"
                 @click="toggleContentSidebar"
             >
-                <MenuRailIcon size="26" />
+                <MenuRailIcon :size="26" />
             </v-btn>
         </div>
         <div class="theme-rail__themes" :class="{ 'theme-rail__themes--mobile': !lgAndUp }">
@@ -50,7 +50,7 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
         </div>
         <v-spacer />
         <v-btn icon variant="text" rounded="lg" size="48" class="theme-rail__btn" :aria-label="t('common.logout')" @click="authStore.logout()">
-            <LogoutRailIcon size="26" />
+            <LogoutRailIcon :size="26" />
             <v-tooltip activator="parent" location="end">{{ t('common.logout') }}</v-tooltip>
         </v-btn>
     </div>

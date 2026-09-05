@@ -35,8 +35,8 @@ const open = computed({
 
 const view = ref<FriendQrView>('Qr');
 const qrTabs = computed(() => [
-    { value: 'Qr', label: t('friendsPage.qr.tabs.qr'), icon: QrcodeIcon },
-    { value: 'Add', label: t('friendsPage.qr.tabs.add'), icon: CameraIcon }
+    { value: 'Qr' as const, label: t('friendsPage.qr.tabs.qr'), icon: QrcodeIcon },
+    { value: 'Add' as const, label: t('friendsPage.qr.tabs.add'), icon: CameraIcon }
 ]);
 
 const publicId = computed(() => auth.user?.userPublicId?.trim().toUpperCase() || '');
