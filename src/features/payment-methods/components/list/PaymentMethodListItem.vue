@@ -21,10 +21,21 @@ const { t, locale } = useI18n();
 const typeLabel = computed(() => t(`paymentMethodsPage.types.${props.method.type}`));
 const lastFour = computed(() => formatLastFourDigits(props.method.lastFourDigits));
 const expiration = computed(() => formatExpirationDate(props.method.expirationDate, locale.value));
+
+function onDoubleClick(event: MouseEvent) {
+    if (!props.canWrite || props.acting) return;
+    if (event.target instanceof Element && event.target.closest('button')) return;
+    emit('edit', props.method);
+}
 </script>
 
 <template>
-    <div class="su-person payment-method-list-item" :class="{ 'opacity-60': !method.isActive }" :data-payment-method-id="method.publicId">
+    <div
+        class="su-person payment-method-list-item"
+        :class="{ 'opacity-60': !method.isActive, 'payment-method-list-item--editable': canWrite && !acting }"
+        :data-payment-method-id="method.publicId"
+        @dblclick="onDoubleClick"
+    >
         <span class="su-person__avatar su-person__avatar--tile">
             <CreditCardIcon size="22" />
         </span>
@@ -66,5 +77,9 @@ const expiration = computed(() => formatExpirationDate(props.method.expirationDa
 <style scoped>
 .payment-method-list-item {
     cursor: default;
+}
+
+.payment-method-list-item--editable {
+    cursor: pointer;
 }
 </style>

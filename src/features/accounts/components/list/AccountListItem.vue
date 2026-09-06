@@ -18,6 +18,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     open: [account: Account];
+    edit: [account: Account];
 }>();
 
 const { t, locale } = useI18n();
@@ -58,6 +59,7 @@ const accountNumberLine = computed(() =>
             'account-list-item--promoted': promoted
         }"
         @click="emit('open', account)"
+        @dblclick="emit('edit', account)"
     >
         <span
             class="su-person__avatar su-person__avatar--tile account-list-item__avatar"

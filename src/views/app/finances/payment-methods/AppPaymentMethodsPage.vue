@@ -17,6 +17,7 @@ const showInactive = ref(true);
 const canCreate = computed(() => accountsStore.accounts.some((a) => canWritePaymentMethods(a)));
 
 function onCreate() {
+    if (!canCreate.value || store.acting) return;
     walletRef.value?.openCreate();
 }
 </script>
@@ -29,7 +30,7 @@ function onCreate() {
                     <AppSwitch v-model="showInactive" :inset="false" :label="t('paymentMethodsPage.filters.showInactive')" />
                 </v-list-item>
             </AppDropdownFilter>
-            <button v-if="canCreate" type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onCreate">
+            <button type="button" class="su-btn su-btn--ink" :disabled="!canCreate || store.acting" @click="onCreate">
                 <PlusIcon :size="16" stroke-width="1.6" />
                 {{ t('paymentMethodsPage.actions.create') }}
             </button>

@@ -5,6 +5,7 @@ import { BuildingBankIcon, PlusIcon, ShareIcon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { shouldVirtualize } from '@/utils/helpers/list-virtualization';
+import { canEditAccount } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { Account } from '@/features/accounts/types';
 import AccountDetailModal from '@/features/accounts/components/modals/AccountDetailModal.vue';
@@ -24,10 +25,21 @@ function useVirtualList(length: number) {
 const createOpen = ref(false);
 const detailOpen = ref(false);
 const detailAccountId = ref<string | null>(null);
+const editAccount = ref<Account | null>(null);
 
 function openDetail(account: Account) {
     detailAccountId.value = account.publicId;
     detailOpen.value = true;
+}
+
+function openEdit(account: Account) {
+    if (!canEditAccount(account)) return;
+    detailOpen.value = false;
+    editAccount.value = account;
+}
+
+function setEditOpen(value: boolean) {
+    if (!value) editAccount.value = null;
 }
 </script>
 
@@ -76,7 +88,7 @@ function openDetail(account: Account) {
                             class="py-0"
                         >
                             <template #default="{ item }">
-                                <AccountListItem :account="item" @open="openDetail" />
+                                <AccountListItem :account="item" @open="openDetail" @edit="openEdit" />
                             </template>
                         </v-virtual-scroll>
                         <TransitionGroup v-else name="account-move" tag="div" class="py-0">
@@ -85,6 +97,7 @@ function openDetail(account: Account) {
                                 :key="account.publicId"
                                 :account="account"
                                 @open="openDetail"
+                                @edit="openEdit"
                             />
                         </TransitionGroup>
                     </div>
@@ -98,7 +111,7 @@ function openDetail(account: Account) {
                             class="py-0"
                         >
                             <template #default="{ item }">
-                                <AccountListItem :account="item" @open="openDetail" />
+                                <AccountListItem :account="item" @open="openDetail" @edit="openEdit" />
                             </template>
                         </v-virtual-scroll>
                         <v-list v-else class="py-0">
@@ -107,6 +120,7 @@ function openDetail(account: Account) {
                                 :key="account.publicId"
                                 :account="account"
                                 @open="openDetail"
+                                @edit="openEdit"
                             />
                         </v-list>
                     </div>
@@ -136,7 +150,7 @@ function openDetail(account: Account) {
                     class="py-0"
                 >
                     <template #default="{ item }">
-                        <AccountListItem :account="item" @open="openDetail" />
+                        <AccountListItem :account="item" @open="openDetail" @edit="openEdit" />
                     </template>
                 </v-virtual-scroll>
                 <v-list v-else class="py-0">
@@ -145,12 +159,14 @@ function openDetail(account: Account) {
                         :key="account.publicId"
                         :account="account"
                         @open="openDetail"
+                        @edit="openEdit"
                     />
                 </v-list>
             </section>
         </div>
 
         <AccountFormModal v-model="createOpen" />
+        <AccountFormModal :model-value="!!editAccount" :account="editAccount" @update:model-value="setEditOpen" />
         <AccountDetailModal v-model="detailOpen" :account-public-id="detailAccountId" />
     </div>
 </template>

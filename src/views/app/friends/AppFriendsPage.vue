@@ -145,8 +145,8 @@ watch(tab, (value) => {
             <p v-show="!discoverSearching">{{ t('friendsPage.subtitle') }}</p>
         </header>
 
-        <div v-if="tab === 'Discover'" class="su-discover-search-slot" :class="{ 'su-discover-search-slot--idle': !discoverSearching }">
-            <div class="su-search" :class="discoverSearching ? 'su-search--docked' : 'su-search--center'">
+        <div v-if="tab === 'Discover'" class="su-discover-search-slot">
+            <div class="su-search su-search--discover">
                 <button
                     class="su-search__orb"
                     type="button"
