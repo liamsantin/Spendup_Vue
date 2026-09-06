@@ -304,8 +304,8 @@ async function onLoadMore() {
     height: 100%;
     min-height: 0;
     overflow: hidden;
-    /* Marge pour le scale hover des boutons en en-tête. */
-    padding: 4px;
+    /* Marge pour le scale hover des boutons / orbs en en-tête. */
+    padding: 6px;
     box-sizing: border-box;
 }
 

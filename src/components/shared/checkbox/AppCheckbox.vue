@@ -55,6 +55,11 @@ const model = defineModel<boolean | null>({ default: false });
 .app-checkbox :deep(.v-selection-control) {
     min-height: 32px;
     align-items: center;
+    overflow: visible;
+}
+
+.app-checkbox :deep(.v-selection-control__wrapper) {
+    overflow: visible;
 }
 
 .app-checkbox :deep(.v-selection-control--density-default),

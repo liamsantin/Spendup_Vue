@@ -44,6 +44,13 @@ const model = defineModel<boolean>({ default: false });
 .app-switch :deep(.v-selection-control) {
     min-height: 32px;
     align-items: center;
+    /* Laisse peindre le state-layer / ripple Vuetify hors de la piste. */
+    overflow: visible;
+}
+
+.app-switch :deep(.v-selection-control__wrapper),
+.app-switch :deep(.v-selection-control__input) {
+    overflow: visible;
 }
 
 .app-switch :deep(.v-selection-control .v-label) {

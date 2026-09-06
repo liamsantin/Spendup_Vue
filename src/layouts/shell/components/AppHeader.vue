@@ -80,6 +80,9 @@ const { t } = useI18n();
     align-items: center;
     gap: 6px;
     flex: none;
+    /* Room for .su-orb hover scale at the header edge. */
+    padding: 2px;
+    margin: -2px;
 }
 
 .bar__spacer {

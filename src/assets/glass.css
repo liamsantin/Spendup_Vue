@@ -23,7 +23,7 @@
 
 .su-hero {
     flex: none;
-    padding: 8px 8px 0;
+    padding: 8px 10px 0;
     animation: su-in 0.7s var(--ease) both;
 }
 
@@ -64,9 +64,9 @@
     justify-content: flex-end;
     gap: 8px;
     flex: none;
-    /* Room for .su-btn hover scale at the page edge. */
-    padding: 2px;
-    margin: -2px;
+    /* Room for .su-btn / switch hover near the page edge. */
+    padding: 4px;
+    margin: -4px;
 }
 
 .su-tabs {
@@ -76,7 +76,7 @@
     min-width: 0;
     max-width: 100%;
     gap: 4px;
-    padding: 5px;
+    padding: 6px;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
@@ -293,7 +293,7 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
-    padding: 16px 8px 12px;
+    padding: 16px 10px 12px;
     scrollbar-width: thin;
 }
 
@@ -452,6 +452,9 @@
     align-items: center;
     gap: 6px;
     flex: none;
+    /* Room for .su-btn scale near the row edge. */
+    padding: 2px;
+    margin: -2px;
 }
 
 .su-btn {
@@ -687,6 +690,7 @@
 
 .su-panel__body {
     padding: 4px 16px 20px;
+    overflow: visible;
 }
 
 .su-panel__body .v-row {
@@ -967,6 +971,12 @@
     right: 14px;
 }
 
+/* Evite le clipping du scale(1.06) contre le coin de la modale (overflow:hidden). */
+.app-modal-base__header,
+.app-confirmation-modal__header {
+    overflow: visible;
+}
+
 .app-modal-base__footer,
 .app-confirmation-modal__footer {
     gap: 8px;
@@ -1041,10 +1051,16 @@
     overflow: hidden;
     color: var(--ink);
     font-family: var(--font-ui);
+    /* Marge pour state-layer switch / scale des contrôles collés au bord du menu. */
+    padding: 8px 6px !important;
 }
 
 .su-menu .v-list {
     background: transparent !important;
+}
+
+.su-menu .v-list-item {
+    overflow: visible;
 }
 
 .app-select-menu {
@@ -1205,6 +1221,13 @@
 .su-panel .v-switch .v-selection-control {
     min-height: 32px;
     align-items: center;
+    overflow: visible;
+}
+
+.su-page .v-switch .v-selection-control,
+.su-modal .v-switch .v-selection-control,
+.su-showcase .v-switch .v-selection-control {
+    overflow: visible;
 }
 
 .su-panel .v-switch .v-label {

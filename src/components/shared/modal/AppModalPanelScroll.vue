@@ -25,6 +25,9 @@ const { smAndDown } = useDisplay();
     min-height: 0;
     height: 100%;
     overflow: hidden;
+    /* Marge pour scale hover (.su-btn / .su-orb) collés aux bords du panel. */
+    padding: 6px;
+    box-sizing: border-box;
 }
 
 .app-modal-panel-scroll--native {

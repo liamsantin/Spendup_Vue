@@ -267,8 +267,8 @@ const currentTab = computed({
     height: 100%;
     min-height: 0;
     overflow: hidden;
-    /* Marge interne : le scale hover des .su-btn peut peindre ici sans coupe. */
-    padding: 4px;
+    /* Marge interne : le scale hover des .su-btn / .su-orb peut peindre ici sans coupe. */
+    padding: 6px;
     box-sizing: border-box;
 }
 
