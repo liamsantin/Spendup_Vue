@@ -418,6 +418,8 @@
             "diffShort": "Écart",
             "matched": "À jour",
             "mismatch": "Écart détecté",
+            "summaryTitle": "Synthèse",
+            "summarySubtitle": "Dernier solde déclaré et écart avec le solde calculé.",
             "history": "Historique",
             "loadMore": "Charger plus",
             "createdBy": "Par {name}",

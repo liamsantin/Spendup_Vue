@@ -418,6 +418,8 @@
             "diffShort": "Difference",
             "matched": "Up to date",
             "mismatch": "Difference found",
+            "summaryTitle": "Summary",
+            "summarySubtitle": "Last declared balance and difference from the calculated balance.",
             "history": "History",
             "loadMore": "Load more",
             "createdBy": "By {name}",

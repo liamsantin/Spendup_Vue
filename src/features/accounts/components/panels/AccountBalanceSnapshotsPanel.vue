@@ -5,6 +5,7 @@ import { CalendarIcon, PlusIcon, Receipt2Icon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import type { PerfectScrollbarExpose } from 'vue3-perfect-scrollbar';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppAccordion from '@/components/shared/accordion/AppAccordion.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import { getErrorMessage } from '@/utils/errors/app-error';
@@ -27,6 +28,7 @@ const store = useAccountsStore();
 const auth = useAuthStore();
 
 const addOpen = ref(false);
+const summaryOpen = ref(false);
 const deleteTarget = ref<AccountBalanceSnapshot | null>(null);
 const localError = ref<string | null>(null);
 const historyListRef = ref<HTMLElement | null>(null);
@@ -55,6 +57,17 @@ const balanceDiff = computed(() => {
 });
 
 const isMatched = computed(() => balanceDiff.value !== null && Math.abs(balanceDiff.value) < 0.005);
+
+watch(
+    isMatched,
+    (matched) => {
+        // Ouvre la synthèse si un écart est détecté (sinon reste replié pour laisser place à l’historique).
+        if (latestSnapshot.value && matched === false) {
+            summaryOpen.value = true;
+        }
+    },
+    { immediate: true }
+);
 
 const diffColor = computed(() => {
     if (balanceDiff.value === null) return 'medium-emphasis';
@@ -106,7 +119,7 @@ watch(
 );
 
 watch(
-    () => [smAndDown.value, store.balanceSnapshots.length, store.loadingSnapshots] as const,
+    () => [smAndDown.value, store.balanceSnapshots.length, store.loadingSnapshots, summaryOpen.value] as const,
     async () => {
         await refreshHistoryScrollbar();
         bindHistoryResizeObserver();
@@ -167,42 +180,50 @@ async function onLoadMore() {
                 {{ localError || store.error }}
             </AppAlert>
 
-            <div v-if="latestSnapshot" class="snapshots-summary mb-4 flex-shrink-0">
-                <div class="snapshots-summary__status mb-3">
+            <AppAccordion
+                v-if="latestSnapshot"
+                v-model="summaryOpen"
+                class="mb-4 flex-shrink-0"
+                :title="t('comptesPage.snapshots.summaryTitle')"
+                :subtitle="t('comptesPage.snapshots.summarySubtitle')"
+            >
+                <template #extra>
                     <v-chip size="small" :color="isMatched ? 'success' : diffColor" variant="tonal">
                         {{ isMatched ? t('comptesPage.snapshots.matched') : t('comptesPage.snapshots.mismatch') }}
                     </v-chip>
-                </div>
+                </template>
 
-                <div class="snapshots-summary__grid">
-                    <div class="snapshots-summary__metric">
-                        <div class="text-caption text-medium-emphasis mb-1">{{ t('comptesPage.snapshots.latestDeclared') }}</div>
-                        <div class="text-h6 font-weight-bold mb-1">
-                            {{ formatAccountBalance(latestSnapshot.balance, account.currency, locale) }}
+                <div class="snapshots-summary">
+                    <div class="snapshots-summary__grid">
+                        <div class="snapshots-summary__metric">
+                            <div class="text-caption text-medium-emphasis mb-1">{{ t('comptesPage.snapshots.latestDeclared') }}</div>
+                            <div class="text-h6 font-weight-bold mb-1">
+                                {{ formatAccountBalance(latestSnapshot.balance, account.currency, locale) }}
+                            </div>
+                            <div class="d-flex align-center ga-1 text-body-2 text-medium-emphasis">
+                                <CalendarIcon size="14" stroke-width="1.5" />
+                                <span>{{ formatDate(latestSnapshot.snapshotAt) }}</span>
+                            </div>
+                            <div v-if="showAuthors" class="text-body-2 text-medium-emphasis mt-1">
+                                {{ authorLabel(latestSnapshot) }}
+                            </div>
                         </div>
-                        <div class="d-flex align-center ga-1 text-body-2 text-medium-emphasis">
-                            <CalendarIcon size="14" stroke-width="1.5" />
-                            <span>{{ formatDate(latestSnapshot.snapshotAt) }}</span>
-                        </div>
-                        <div v-if="showAuthors" class="text-body-2 text-medium-emphasis mt-1">
-                            {{ authorLabel(latestSnapshot) }}
+
+                        <div v-if="balanceDiff !== null" class="snapshots-summary__metric snapshots-summary__metric--diff">
+                            <div class="text-caption text-medium-emphasis mb-1">{{ t('comptesPage.snapshots.diffShort') }}</div>
+                            <div :class="`text-h6 font-weight-bold text-${diffColor}`">
+                                <template v-if="isMatched">
+                                    {{ formatAccountBalance(0, account.currency, locale) }}
+                                </template>
+                                <template v-else>
+                                    {{ balanceDiff >= 0 ? '+' : '' }}{{ formatAccountBalance(balanceDiff, account.currency, locale) }}
+                                </template>
+                            </div>
+                            <div class="text-body-2 text-medium-emphasis mt-1">{{ t('comptesPage.snapshots.diff') }}</div>
                         </div>
                     </div>
-
-                    <div v-if="balanceDiff !== null" class="snapshots-summary__metric snapshots-summary__metric--diff">
-                        <div class="text-caption text-medium-emphasis mb-1">{{ t('comptesPage.snapshots.diffShort') }}</div>
-                        <div :class="`text-h6 font-weight-bold text-${diffColor}`">
-                            <template v-if="isMatched">
-                                {{ formatAccountBalance(0, account.currency, locale) }}
-                            </template>
-                            <template v-else>
-                                {{ balanceDiff >= 0 ? '+' : '' }}{{ formatAccountBalance(balanceDiff, account.currency, locale) }}
-                            </template>
-                        </div>
-                        <div class="text-body-2 text-medium-emphasis mt-1">{{ t('comptesPage.snapshots.diff') }}</div>
-                    </div>
                 </div>
-            </div>
+            </AppAccordion>
 
             <div v-if="store.loadingSnapshots && !store.balanceSnapshots.length" class="py-8 text-center flex-shrink-0">
                 <span class="su-spin" />
@@ -322,10 +343,9 @@ async function onLoadMore() {
 }
 
 .snapshots-summary {
-    padding: 16px;
-    border-radius: 12px;
-    background: rgba(var(--v-theme-lightprimary), 0.55);
-    border: 1px solid rgba(var(--v-theme-primary), 0.12);
+    padding: 0;
+    background: transparent;
+    border: 0;
 }
 
 .snapshots-summary__grid {

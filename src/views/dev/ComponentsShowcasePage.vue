@@ -7,6 +7,7 @@ defineOptions({ name: 'ComponentsShowcasePage' });
 import { ref } from 'vue';
 import { BellPlusIcon, BuildingBankIcon, ChecksIcon, PlusIcon, SearchIcon, UserCircleIcon, XIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppAccordion from '@/components/shared/accordion/AppAccordion.vue';
 import AppCheckbox from '@/components/shared/checkbox/AppCheckbox.vue';
 import AppChip from '@/components/shared/chip/AppChip.vue';
 import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue';
@@ -59,6 +60,7 @@ const dateValue = ref<string | null>('1998-04-12');
 const colorValue = ref<string | null>(ACCOUNT_COLOR_PRESETS[0]);
 const chipVisible = ref(true);
 const filterHidden = ref(false);
+const accordionOpen = ref(false);
 </script>
 
 <template>
@@ -209,6 +211,21 @@ const filterHidden = ref(false);
                     <AppDropdownFilter label="Filtres">
                         <AppSwitch v-model="filterHidden" label="Masquer les archivés" class="px-3 py-2" />
                     </AppDropdownFilter>
+                </AppGlassCard>
+
+                <AppGlassCard title="Accordion" subtitle="AppAccordion — panneau verre repliable.">
+                    <AppAccordion
+                        v-model="accordionOpen"
+                        title="Synthèse"
+                        subtitle="Dernier solde et écart détecté."
+                    >
+                        <template #extra>
+                            <span class="su-chip">À jour</span>
+                        </template>
+                        <p class="text-body-2 text-medium-emphasis mb-0">
+                            Contenu déplié — métriques, détails, etc.
+                        </p>
+                    </AppAccordion>
                 </AppGlassCard>
             </div>
 
