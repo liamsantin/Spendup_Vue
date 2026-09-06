@@ -125,14 +125,7 @@ const hasOverflowActions = computed(() => {
 watch(
     () => [props.modelValue, props.accountPublicId] as const,
     async ([isOpen, id]) => {
-        if (!isOpen || !id) {
-            if (!isOpen) {
-                store.clearSelected();
-                store.clearError();
-                localError.value = null;
-            }
-            return;
-        }
+        if (!isOpen || !id) return;
         const requestedId = id;
         activeTab.value = 'details';
         localError.value = null;
@@ -154,6 +147,13 @@ watch(
         }
     }
 );
+
+function onAfterLeave() {
+    if (props.modelValue) return;
+    store.clearSelected();
+    store.clearError();
+    localError.value = null;
+}
 
 watch([balanceHidden, account], () => {
     if (activeTab.value === 'snapshots' && balanceHidden.value) {
@@ -248,6 +248,7 @@ async function confirmLeave() {
         :tabs="detailTabs"
         :height="720"
         :max-width="640"
+        @after-leave="onAfterLeave"
     >
         <v-progress-linear v-if="store.loadingDetail && account" indeterminate color="primary" class="mb-3 flex-shrink-0" height="2" />
 

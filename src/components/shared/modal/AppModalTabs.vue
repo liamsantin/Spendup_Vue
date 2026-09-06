@@ -48,6 +48,7 @@ const props = withDefaults(
 const emit = defineEmits<{
     'update:modelValue': [value: boolean];
     'update:tab': [value: string];
+    'after-leave': [];
 }>();
 
 const open = computed({
@@ -96,6 +97,7 @@ const currentTab = computed({
         :show-footer="showFooter"
         :scrollable="false"
         :mobile-layout="mobileLayout"
+        @after-leave="emit('after-leave')"
     >
         <template v-if="$slots['header-extra']" #header-extra>
             <slot name="header-extra" />

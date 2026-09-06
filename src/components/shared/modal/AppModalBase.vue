@@ -64,6 +64,7 @@ const props = withDefaults(
 const emit = defineEmits<{
     'update:modelValue': [value: boolean];
     'after-enter': [];
+    'after-leave': [];
 }>();
 
 const scrollbarRef = ref<PerfectScrollbarExpose | null>(null);
@@ -170,6 +171,7 @@ defineExpose({
         :content-props="overlayContentProps"
         :persistent="persistent"
         @after-enter="onAfterEnter"
+        @after-leave="emit('after-leave')"
     >
         <v-card
             :rounded="cardRounded"
