@@ -61,6 +61,12 @@
             "clearAll": "Delete all",
             "empty": "No notifications",
             "loading": "Loading…",
+            "ago": {
+                "justNow": "just now",
+                "minutes": "{count}min ago",
+                "hours": "{value} ago",
+                "days": "{count}d ago"
+            },
             "items": {
                 "welcome": {
                     "title": "Welcome to Spend.Up",

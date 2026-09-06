@@ -61,6 +61,12 @@
             "clearAll": "Tout supprimer",
             "empty": "Aucune notification",
             "loading": "Chargement…",
+            "ago": {
+                "justNow": "à l'instant",
+                "minutes": "il y a {count}min",
+                "hours": "il y a {value}",
+                "days": "il y a {count}j"
+            },
             "items": {
                 "welcome": {
                     "title": "Bienvenue sur Spend.Up",

@@ -28,6 +28,20 @@ function formatCreatedAt(iso: string): string {
     }
 }
 
+function formatRelativeAgo(iso: string): string {
+    const then = new Date(iso).getTime();
+    if (Number.isNaN(then)) return '';
+    const totalMinutes = Math.max(0, Math.floor((Date.now() - then) / 60_000));
+    if (totalMinutes < 1) return t('header.notifications.ago.justNow');
+    if (totalMinutes < 60) return t('header.notifications.ago.minutes', { count: totalMinutes });
+    if (totalMinutes < 24 * 60) {
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        return t('header.notifications.ago.hours', { value: `${hours}h${String(minutes).padStart(2, '0')}` });
+    }
+    return t('header.notifications.ago.days', { count: Math.floor(totalMinutes / (24 * 60)) });
+}
+
 async function onMenuUpdate(open: boolean) {
     menuOpen.value = open;
     if (open) {
@@ -121,8 +135,12 @@ async function onItemClick(item: AppNotification) {
                     >
                         <UserPhotoAvatar :photo-url="item.photoUrl" :fallback-label="item.title" :size="44" />
                         <div class="su-person__meta">
+                            <div class="notification-dd__when">
+                                <p class="notification-dd__time">{{ formatCreatedAt(item.createdAt) }}</p>
+                                <p class="notification-dd__ago">{{ formatRelativeAgo(item.createdAt) }}</p>
+                            </div>
                             <p class="su-person__name">{{ item.title }}</p>
-                            <p class="su-person__sub">{{ item.subtitle || item.message || formatCreatedAt(item.createdAt) }}</p>
+                            <p v-if="item.subtitle || item.message" class="su-person__sub">{{ item.subtitle || item.message }}</p>
                         </div>
                     </button>
                 </div>
@@ -144,6 +162,34 @@ async function onItemClick(item: AppNotification) {
     border: 0;
     box-shadow: 0 8px 18px -10px rgba(var(--v-theme-primary), 0.8);
     font-weight: 600;
+}
+
+.notification-dd__when {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 2px;
+}
+
+.notification-dd__time,
+.notification-dd__ago {
+    margin: 0;
+    color: var(--ink-mute);
+    font-size: 10.5px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+.notification-dd__time {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notification-dd__ago {
+    flex: none;
 }
 
 .notification-dd__spin {
