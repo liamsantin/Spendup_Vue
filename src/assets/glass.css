@@ -947,9 +947,13 @@
     border-bottom: 1px solid var(--hair);
 }
 
+.app-modal-base:has(.app-modal-tabs__toolbar) .app-modal-base__header {
+    border-bottom: 0;
+}
+
 .app-modal-tabs__toolbar {
     border-top: 0;
-    border-bottom: 1px solid var(--hair);
+    border-bottom: 0;
 }
 
 .app-modal-base__close.su-orb,

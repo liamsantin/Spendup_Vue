@@ -165,16 +165,28 @@ watch(
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    padding: 8px 16px 8px;
+    padding: 4px 24px 10px;
     box-sizing: border-box;
 }
 
 .app-modal-tabs__nav {
     display: flex;
-    flex-wrap: wrap;
-    gap: 2px;
-    width: 100%;
+    flex-wrap: nowrap;
+    gap: 3px;
+    width: fit-content;
+    max-width: 100%;
     min-width: 0;
+    padding: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    border: 1px solid rgba(var(--v-theme-primary), 0.11);
+    border-radius: 14px;
+    background: rgba(var(--v-theme-primary), 0.045);
+}
+
+.app-modal-tabs__nav::-webkit-scrollbar {
+    display: none;
 }
 
 .app-modal-tabs__tab {
@@ -182,7 +194,7 @@ watch(
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    height: 34px;
+    height: 36px;
     padding: 0 12px;
     border: 0;
     border-radius: 10px;
@@ -196,17 +208,21 @@ watch(
     cursor: pointer;
     transition:
         background 0.25s var(--ease),
-        color 0.25s var(--ease);
+        color 0.25s var(--ease),
+        box-shadow 0.25s var(--ease);
 }
 
 .app-modal-tabs__tab:hover:not(:disabled):not(.is-active) {
     color: var(--ink);
-    background: var(--hair);
+    background: rgba(255, 255, 255, 0.48);
 }
 
 .app-modal-tabs__tab.is-active {
     color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.12);
+    background: var(--surface-raised);
+    box-shadow:
+        0 1px 2px rgba(16, 16, 20, 0.08),
+        0 5px 14px -8px rgba(16, 16, 20, 0.38);
 }
 
 .app-modal-tabs__tab:disabled {
