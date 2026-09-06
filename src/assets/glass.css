@@ -287,6 +287,12 @@
     font-weight: 500;
 }
 
+@media (pointer: coarse), (max-width: 959.98px) {
+    .su-search__input {
+        font-size: 16px;
+    }
+}
+
 .su-search__input::-webkit-search-cancel-button {
     display: none;
 }

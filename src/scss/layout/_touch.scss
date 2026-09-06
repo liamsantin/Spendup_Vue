@@ -1,4 +1,5 @@
-// Évite le zoom au double-tap sur iOS Safari (touch-action + font-size ≥ 16px sur les champs)
+// Évite le zoom iOS/Android au focus : Safari zoome si le champ a une police < 16px.
+// Les overrides Vuetify / glass (0.875rem, 14px) passent après : il faut gagner en spécificité.
 html,
 body,
 #app {
@@ -7,8 +8,13 @@ body,
     touch-action: manipulation;
 }
 
-input,
-textarea,
-select {
-    font-size: 16px;
+@media (pointer: coarse), (max-width: 959.98px) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='hidden']):not([type='file']):not([type='button']):not([type='submit']):not([type='reset']),
+    textarea,
+    select,
+    .v-field__input,
+    .v-text-field input,
+    .v-textarea textarea {
+        font-size: 16px !important;
+    }
 }
