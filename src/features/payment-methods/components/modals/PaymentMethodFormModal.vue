@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
@@ -33,7 +33,12 @@ const { t } = useI18n();
 const accountsStore = useAccountsStore();
 const store = usePaymentMethodsStore();
 
-const isEdit = computed(() => !!props.method);
+/**
+ * Figé à l’ouverture : le parent peut passer `method` à null dès la fermeture,
+ * avant la fin de l’animation — sans ça le titre bascule en « Nouveau… ».
+ */
+const isEdit = ref(false);
+const editMethod = ref<PaymentMethod | null>(null);
 
 const writableAccounts = computed(() => accountsStore.accounts.filter((a) => canWritePaymentMethods(a)));
 
@@ -61,8 +66,8 @@ const open = computed({
 
 /** En édition : Enregistrer seulement s’il y a un changement. */
 const canSave = computed(() => {
-    if (!isEdit.value || !props.method) return true;
-    return isPaymentMethodFormDirty(props.method, form);
+    if (!isEdit.value || !editMethod.value) return true;
+    return isPaymentMethodFormDirty(editMethod.value, form);
 });
 
 function clearFieldErrors() {
@@ -91,14 +96,15 @@ function applyPayloadErrors(code: PaymentMethodPayloadErrorCode, field?: string)
 function resetForm() {
     localError.message = null;
     clearFieldErrors();
-    if (props.method) {
-        form.accountPublicId = props.method.accountPublicId;
-        form.type = props.method.type;
-        form.label = props.method.label;
-        form.reference = props.method.reference ?? '';
-        form.lastFourDigits = props.method.lastFourDigits ?? '';
-        form.expirationDate = props.method.expirationDate;
-        form.isActive = props.method.isActive;
+    const method = editMethod.value;
+    if (method) {
+        form.accountPublicId = method.accountPublicId;
+        form.type = method.type;
+        form.label = method.label;
+        form.reference = method.reference ?? '';
+        form.lastFourDigits = method.lastFourDigits ?? '';
+        form.expirationDate = method.expirationDate;
+        form.isActive = method.isActive;
         return;
     }
     form.accountPublicId = props.defaultAccountPublicId?.trim() || writableAccounts.value[0]?.publicId || '';
@@ -113,7 +119,10 @@ function resetForm() {
 watch(
     () => props.modelValue,
     (value) => {
-        if (value) resetForm();
+        if (!value) return;
+        isEdit.value = !!props.method;
+        editMethod.value = props.method ?? null;
+        resetForm();
     }
 );
 
@@ -123,7 +132,7 @@ async function onSave() {
     clearFieldErrors();
     const siblings = store.allKnownItems();
     const built = isEdit.value
-        ? buildUpdatePaymentMethodPayload(form, siblings, props.method?.publicId)
+        ? buildUpdatePaymentMethodPayload(form, siblings, editMethod.value?.publicId)
         : buildCreatePaymentMethodPayload(form, siblings);
     if (!built.ok) {
         applyPayloadErrors(built.code, built.field);
@@ -131,8 +140,8 @@ async function onSave() {
     }
     try {
         const saved =
-            isEdit.value && props.method
-                ? await store.updatePaymentMethod(props.method.publicId, form)
+            isEdit.value && editMethod.value
+                ? await store.updatePaymentMethod(editMethod.value.publicId, form)
                 : await store.createPaymentMethod(form);
         emit('saved', saved);
         open.value = false;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
@@ -26,22 +26,28 @@ const { t } = useI18n();
 const store = useAccountsStore();
 const settings = useUserSettingsStore();
 
-const isEdit = computed(() => !!props.account);
+/**
+ * Figé à l’ouverture : le parent peut passer `account` à null dès la fermeture,
+ * avant la fin de l’animation — sans ça le titre bascule en mode création.
+ */
+const isEdit = ref(false);
+const editAccount = ref<Account | null>(null);
+
 const isFirstOwnedAccount = computed(() => store.ownedAccounts.length === 0);
-const ownerFieldsLocked = computed(() => isEdit.value && !!props.account && !canEditAccountOwnerFields(props.account));
-const canManagePrimary = computed(() => !isEdit.value || (props.account?.isOwned === true && props.account.myRole === 'owner'));
+const ownerFieldsLocked = computed(() => isEdit.value && !!editAccount.value && !canEditAccountOwnerFields(editAccount.value));
+const canManagePrimary = computed(() => !isEdit.value || (editAccount.value?.isOwned === true && editAccount.value.myRole === 'owner'));
 const showPrimarySwitch = computed(() => {
     if (!canManagePrimary.value) return false;
     if (!isEdit.value) return true;
-    return !!props.account?.isPrimary;
+    return !!editAccount.value?.isPrimary;
 });
 const primarySwitchLocked = computed(() => {
     if (!isEdit.value) return isFirstOwnedAccount.value;
-    return !!props.account?.isPrimary;
+    return !!editAccount.value?.isPrimary;
 });
 const primarySwitchHint = computed(() => {
     if (!isEdit.value && isFirstOwnedAccount.value) return t('comptesPage.hints.primaryFirstAccount');
-    if (isEdit.value && props.account?.isPrimary) return t('comptesPage.hints.primaryChangeViaPromote');
+    if (isEdit.value && editAccount.value?.isPrimary) return t('comptesPage.hints.primaryChangeViaPromote');
     return undefined;
 });
 const localError = reactive({ message: null as string | null });
@@ -73,8 +79,8 @@ const open = computed({
 
 /** En édition : Enregistrer seulement s’il y a un changement. */
 const canSave = computed(() => {
-    if (!isEdit.value || !props.account) return true;
-    return isAccountFormDirty(props.account, {
+    if (!isEdit.value || !editAccount.value) return true;
+    return isAccountFormDirty(editAccount.value, {
         name: form.name,
         type: form.type,
         initialBalance: form.initialBalance,
@@ -94,15 +100,16 @@ function clearFieldErrors() {
 function resetForm() {
     localError.message = null;
     clearFieldErrors();
-    if (props.account) {
-        form.name = props.account.name;
-        form.type = props.account.type;
-        form.currency = props.account.currency;
-        form.initialBalance = props.account.initialBalance ?? 0;
-        form.iban = props.account.iban ?? '';
-        form.accountNumber = props.account.accountNumber ?? '';
-        form.color = props.account.color;
-        form.isPrimary = props.account.isPrimary;
+    const account = editAccount.value;
+    if (account) {
+        form.name = account.name;
+        form.type = account.type;
+        form.currency = account.currency;
+        form.initialBalance = account.initialBalance ?? 0;
+        form.iban = account.iban ?? '';
+        form.accountNumber = account.accountNumber ?? '';
+        form.color = account.color;
+        form.isPrimary = account.isPrimary;
         return;
     }
     form.name = '';
@@ -119,7 +126,10 @@ function resetForm() {
 watch(
     () => props.modelValue,
     (value) => {
-        if (value) resetForm();
+        if (!value) return;
+        isEdit.value = !!props.account;
+        editAccount.value = props.account ?? null;
+        resetForm();
     }
 );
 
@@ -133,8 +143,9 @@ async function onSave() {
         fieldErrors.name = t('comptesPage.form.errors.nameRequired');
         hasFieldError = true;
     }
-    const lockOwner = !!props.account && !canEditAccountOwnerFields(props.account);
-    if (shouldValidateAccountIban(props.account) && !isValidIbanFormat(form.iban)) {
+    const account = editAccount.value;
+    const lockOwner = !!account && !canEditAccountOwnerFields(account);
+    if (shouldValidateAccountIban(account) && !isValidIbanFormat(form.iban)) {
         fieldErrors.iban = t('comptesPage.form.errors.ibanInvalid');
         hasFieldError = true;
     }
@@ -144,10 +155,10 @@ async function onSave() {
     }
 
     try {
-        if (props.account) {
+        if (account) {
             if (lockOwner) {
                 if (hasFieldError) return;
-                const payload = buildUpdateAccountPayload(props.account, {
+                const payload = buildUpdateAccountPayload(account, {
                     name,
                     type: form.type,
                     initialBalance: 0,
@@ -155,7 +166,7 @@ async function onSave() {
                     accountNumber: form.accountNumber,
                     color: form.color
                 });
-                const updated = await store.updateAccount(props.account.publicId, payload);
+                const updated = await store.updateAccount(account.publicId, payload);
                 emit('saved', updated);
             } else {
                 const initialBalance = parseAccountAmount(form.initialBalance);
@@ -165,7 +176,7 @@ async function onSave() {
                 }
                 if (hasFieldError || initialBalance == null) return;
 
-                const payload = buildUpdateAccountPayload(props.account, {
+                const payload = buildUpdateAccountPayload(account, {
                     name,
                     type: form.type,
                     initialBalance,
@@ -173,7 +184,7 @@ async function onSave() {
                     accountNumber: form.accountNumber,
                     color: form.color
                 });
-                const updated = await store.updateAccount(props.account.publicId, payload);
+                const updated = await store.updateAccount(account.publicId, payload);
                 emit('saved', updated);
             }
         } else {
