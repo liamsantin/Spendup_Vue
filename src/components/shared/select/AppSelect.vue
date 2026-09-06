@@ -152,7 +152,9 @@ function select(value: T) {
     background: var(--surface-raised);
     color: var(--ink);
     font: inherit;
+    font-size: 0.875rem;
     font-weight: 600;
+    line-height: 1.5;
     text-align: left;
     cursor: pointer;
     transition:
