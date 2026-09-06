@@ -741,7 +741,7 @@
 
 .su-panel__body .text-h6 {
     margin: 8px 10px 12px;
-    font-family: var(--font-ui);
+    font-family: var(--font-heading);
     font-size: 13.5px;
     font-weight: 620;
     letter-spacing: -0.01em;
@@ -802,7 +802,7 @@
 .su-page .v-card-item .text-h4,
 .su-page .v-card-item .text-h5,
 .su-page .v-card-item .text-h6 {
-    font-family: var(--font-ui);
+    font-family: var(--font-heading);
     letter-spacing: -0.02em;
     color: var(--ink);
 }
@@ -955,7 +955,7 @@
 .su-modal .text-h5,
 .su-modal h5 {
     margin: 0;
-    font-family: var(--font-ui);
+    font-family: var(--font-heading);
     font-size: 18px;
     font-weight: 650;
     letter-spacing: -0.03em;
@@ -1193,7 +1193,7 @@
 
 .su-menu .text-h5,
 .su-menu .text-h6 {
-    font-family: var(--font-ui);
+    font-family: var(--font-heading);
     letter-spacing: -0.02em;
     color: var(--ink);
 }

@@ -72,8 +72,24 @@
     --dur-slide: 0.55s;
 
     /* ── typographie ────────────────────────────────────── */
-    --font-ui: 'Plus Jakarta Sans', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-ui: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-heading: 'Urbanist', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 
     /* Le point de rupture vit dans useBreakpoint.ts (MOBILE_BREAKPOINT) : une media
      query ne peut pas lire une variable CSS. Les deux doivent rester alignés. */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.text-h1,
+.text-h2,
+.text-h3,
+.text-h4,
+.text-h5,
+.text-h6 {
+    font-family: var(--font-heading);
 }
