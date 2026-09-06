@@ -1157,8 +1157,16 @@
 .su-menu .v-field {
     --v-field-input-padding-top: 10px;
     --v-field-input-padding-bottom: 10px;
-    border-radius: 14px !important;
+    border-radius: var(--radius-field) !important;
     background: rgba(255, 255, 255, 0.55);
+}
+
+.v-field--variant-outlined .v-field__outline__start {
+    border-radius: var(--radius-field) 0 0 var(--radius-field) !important;
+}
+
+.v-field--variant-outlined .v-field__outline__end {
+    border-radius: 0 var(--radius-field) var(--radius-field) 0 !important;
 }
 
 .app-modal-base .v-field__outline,
