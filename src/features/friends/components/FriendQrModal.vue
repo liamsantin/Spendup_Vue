@@ -94,7 +94,7 @@ watch(
                         @click="view = item.value"
                     >
                         <component :is="item.icon" v-if="item.icon" :size="16" stroke-width="1.6" />
-                        {{ item.label }}
+                        <span class="app-modal-tabs__label">{{ item.label }}</span>
                     </button>
                 </nav>
             </div>
@@ -164,24 +164,26 @@ watch(
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    padding: 4px 24px 10px;
+    padding: 2px 24px 12px;
     box-sizing: border-box;
 }
 
 .app-modal-tabs__nav {
     display: flex;
     flex-wrap: nowrap;
-    gap: 3px;
-    width: fit-content;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
     max-width: 100%;
     min-width: 0;
-    padding: 4px;
+    padding: 0;
     overflow-x: auto;
     overflow-y: hidden;
     scrollbar-width: none;
-    border: 1px solid rgba(var(--v-theme-primary), 0.11);
-    border-radius: 14px;
-    background: rgba(var(--v-theme-primary), 0.045);
+    border: 0;
+    background: transparent;
+    box-sizing: border-box;
 }
 
 .app-modal-tabs__nav::-webkit-scrollbar {
@@ -190,13 +192,17 @@ watch(
 
 .app-modal-tabs__tab {
     appearance: none;
+    position: relative;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    height: 36px;
+    flex: 0 0 auto;
+    min-width: 0;
+    height: 34px;
     padding: 0 12px;
     border: 0;
-    border-radius: 10px;
+    border-radius: 17px;
     background: transparent;
     color: var(--ink-mute);
     font: inherit;
@@ -206,22 +212,22 @@ watch(
     white-space: nowrap;
     cursor: pointer;
     transition:
-        background 0.25s var(--ease),
         color 0.25s var(--ease),
-        box-shadow 0.25s var(--ease);
+        background 0.25s var(--ease),
+        box-shadow 0.3s var(--ease),
+        transform 0.35s var(--spring);
 }
 
 .app-modal-tabs__tab:hover:not(:disabled):not(.is-active) {
     color: var(--ink);
-    background: rgba(255, 255, 255, 0.48);
+    background: rgba(var(--v-theme-primary), 0.05);
 }
 
 .app-modal-tabs__tab.is-active {
     color: rgb(var(--v-theme-primary));
-    background: var(--surface-raised);
-    box-shadow:
-        0 1px 2px rgba(16, 16, 20, 0.08),
-        0 5px 14px -8px rgba(16, 16, 20, 0.38);
+    background: rgba(var(--v-theme-primary), 0.12);
+    font-weight: 600;
+    box-shadow: none;
 }
 
 .app-modal-tabs__tab:disabled {
@@ -231,7 +237,17 @@ watch(
 
 .app-modal-tabs__tab svg {
     flex: none;
-    opacity: 0.75;
+    opacity: 0.65;
+}
+
+.app-modal-tabs__tab.is-active svg {
+    opacity: 1;
+}
+
+.app-modal-tabs__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .friend-qr-panel {
