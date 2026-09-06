@@ -8,7 +8,7 @@ interface ImportMetaEnv {
     readonly VITE_GOOGLE_DESKTOP_CLIENT_ID: string;
     /** `development` | `production` */
     readonly VITE_APP_ENV: string;
-    /** `true` = cookies HttpOnly + CSRF */
+    /** `true` = cookies HttpOnly + CSRF (same-site). Défaut / prod = Bearer (`false`). */
     readonly VITE_AUTH_COOKIE_MODE: string;
 }
 

@@ -9,7 +9,7 @@
 | `VITE_GOOGLE_CLIENT_ID`         | GIS web — aligné API Web Client ID                             |
 | `VITE_GOOGLE_DESKTOP_CLIENT_ID` | OAuth Desktop PKCE (Tauri) — API doit accepter cet `aud`       |
 | `GOOGLE_DESKTOP_CLIENT_SECRET`  | Secret Desktop — **natif only** (build.rs / Rust, pas `VITE_`) |
-| `VITE_AUTH_COOKIE_MODE`         | `true` → cookies HttpOnly + CSRF (**obligatoire en prod**)     |
+| `VITE_AUTH_COOKIE_MODE`         | `false` → Bearer (défaut / **prod**). `true` → cookies + CSRF (same-site only) |
 | `VITE_PRICING_PAGE`             | `true`/`1` → page Tarifs                                       |
 | `VITE_APP_ENV`                  | `development` → routes `devOnly`                               |
 

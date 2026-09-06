@@ -5,20 +5,23 @@ export function getApiBaseUrl(): string {
     return (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
 }
 
-/** Activer uniquement quand l’API expose refresh (+ access) en cookie HttpOnly. */
+/**
+ * Cookie HttpOnly + CSRF (same-site). Défaut / prod = Bearer :
+ * front et API sont cross-site ; les cookies tiers sont refusés sur mobile.
+ */
 export function isAuthCookieMode(): boolean {
     const raw = String(import.meta.env.VITE_AUTH_COOKIE_MODE ?? '').toLowerCase();
     return raw === 'true' || raw === '1';
 }
 
 /**
- * Builds de production : refuse le mode legacy (refresh en localStorage).
- * No-op en dev / test / si cookie-mode déjà actif.
+ * Builds de production : refuse le mode cookie (cookies tiers → 401 mobile).
+ * No-op en dev / test / si Bearer déjà actif.
  */
-export function assertProductionAuthCookieMode(): void {
+export function assertProductionAuthBearerMode(): void {
     if (!import.meta.env.PROD) return;
-    if (isAuthCookieMode()) return;
-    throw new Error('VITE_AUTH_COOKIE_MODE must be true in production builds (HttpOnly cookies).');
+    if (!isAuthCookieMode()) return;
+    throw new Error('VITE_AUTH_COOKIE_MODE must be false in production builds (Bearer; third-party cookies blocked on mobile).');
 }
 
 /** En cookie-mode, le JWT access voyage dans `spendup_access` — pas de header Bearer. */

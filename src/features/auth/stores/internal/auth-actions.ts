@@ -36,6 +36,16 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
 
     const { fetchMe, goToLogin, forceReLogin } = deps;
 
+    function assertBearerTokens(access: string, refresh: string | null | undefined) {
+        if (cookieMode) return;
+        if (!access) {
+            throw new Error('Jeton d’accès manquant dans la réponse d’authentification.');
+        }
+        if (!refresh) {
+            throw new Error('Jeton de rafraîchissement manquant dans la réponse d’authentification.');
+        }
+    }
+
     /**
      * Applique une réponse d’auth (tokens ou challenge 2FA).
      * @param sessionPayload Session renvoyée par l’API.
@@ -55,14 +65,11 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
             twoFactorToken.value = sessionPayload.twoFactorToken;
             return '2fa';
         }
-        rememberCsrfToken(sessionPayload.csrfToken);
+        if (cookieMode) {
+            rememberCsrfToken(sessionPayload.csrfToken);
+        }
         const access = sessionPayload.accessToken?.trim() || '';
-        if (!cookieMode && !access) {
-            throw new Error('Jeton d’accès manquant dans la réponse d’authentification.');
-        }
-        if (!cookieMode && !sessionPayload.refreshToken) {
-            throw new Error('Jeton de rafraîchissement manquant dans la réponse d’authentification.');
-        }
+        assertBearerTokens(access, sessionPayload.refreshToken);
         // Cookie-mode : access peut être vide si uniquement dans `spendup_access`.
         setTokens({
             accessToken: access,
@@ -223,6 +230,7 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
             throw new Error(t('auth.notices.twoFactorExpired'));
         }
         const tokens = await authApi.verify2fa(twoFactorToken.value, code);
+        assertBearerTokens(tokens.accessToken?.trim() || '', tokens.refreshToken);
         setTokens(tokens);
         twoFactorToken.value = null;
         await fetchMe();

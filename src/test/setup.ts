@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, vi } from 'vitest';
 
 beforeEach(() => {
-    /** Les tests ne doivent pas hériter du .env local (cookie mode). */
+    /** Les tests Bearer ne doivent pas hériter d’un cookie-mode local. */
     vi.stubEnv('VITE_AUTH_COOKIE_MODE', 'false');
 });
 

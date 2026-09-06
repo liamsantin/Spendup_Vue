@@ -159,7 +159,7 @@ export const authApi = {
     },
 
     /**
-     * Refresh : cookie HttpOnly et/ou body `refreshToken`.
+     * Refresh : body `{ refreshToken }` en Bearer ; cookie HttpOnly si cookie-mode.
      * `deviceIdentifier` optionnel — s’il est envoyé, doit matcher la session (sinon 401).
      */
     refresh(refreshToken?: string | null) {
@@ -170,7 +170,7 @@ export const authApi = {
         });
     },
 
-    /** Session courante — body refresh optionnel en mode cookie. */
+    /** Révocation : body `refreshToken` en Bearer ; cookie-mode sans body. */
     logout(refreshToken?: string | null, accessToken?: string | null) {
         return authHttp.post<null>('/api/auth/logout', refreshToken ? { refreshToken } : {}, accessToken);
     },

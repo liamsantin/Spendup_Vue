@@ -8,7 +8,7 @@
 | Élément   | Valeur                                                  |
 | --------- | ------------------------------------------------------- |
 | URL       | `{VITE_API_BASE_URL}/hubs/realtime`                     |
-| Auth      | `accessTokenFactory` + `withCredentials` en cookie-mode |
+| Auth      | `accessTokenFactory` (Bearer header / `?access_token=`) |
 | Lifecycle | démarré par `notifications` store après session auth    |
 | Reconnect | auto + retry après `refreshSession` si échec start      |
 

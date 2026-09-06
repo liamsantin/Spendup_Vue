@@ -70,6 +70,22 @@ describe('fetchWrapper', () => {
         expect(forceReLogin).not.toHaveBeenCalled();
     });
 
+    it('attache Authorization Bearer et n’envoie pas de CSRF', async () => {
+        axiosRequest.mockResolvedValue({
+            status: 200,
+            data: { success: true, message: null, result: { ok: true } },
+            statusText: 'OK'
+        });
+
+        await fetchWrapper.get('/api/countries');
+
+        expect(axiosRequest).toHaveBeenCalledWith(
+            expect.objectContaining({
+                headers: { Authorization: 'Bearer access-token' }
+            })
+        );
+    });
+
     it('force le re-login si le retry après refresh renvoie encore 401', async () => {
         axiosRequest.mockResolvedValue({
             status: 401,

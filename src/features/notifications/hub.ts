@@ -24,16 +24,15 @@ let handlers: NotificationsHubHandlers = {};
 let startPromise: Promise<void> | null = null;
 
 /** Cookie `spendup_access` est Path=/api — hors scope du hub `/hubs/realtime`. */
-export const HUB_ACCESS_TOKEN_REQUIRED =
-    'SignalR requires an access token in memory (API: ReturnAccessTokenInBody=true, or cookie Path covering /hubs).';
+export const HUB_ACCESS_TOKEN_REQUIRED = 'SignalR requires an access token in memory (API: ReturnAccessTokenInBody=true).';
 
 function hubUrl(): string {
     return `${getApiBaseUrl()}/hubs/realtime`;
 }
 
 /**
- * Jeton pour negotiate/WebSocket (`?access_token=`).
- * En cookie-mode le cookie HttpOnly ne couvre pas `/hubs` → un access JWT mémoire est obligatoire.
+ * JWT pour negotiate / WebSocket.
+ * Le client SignalR pose `Authorization: Bearer` (HTTP) et `?access_token=` (WebSocket).
  */
 async function accessTokenFactory(): Promise<string> {
     const auth = useAuthStore();

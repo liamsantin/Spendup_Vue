@@ -21,7 +21,7 @@ vi.mock('@/features/auth', () => ({
 
 vi.mock('@/utils/helpers/axios-helpers', () => ({
     getApiBaseUrl: () => 'http://localhost:5124',
-    isAuthCookieMode: () => true
+    isAuthCookieMode: () => false
 }));
 
 vi.mock('@microsoft/signalr', () => {
@@ -61,7 +61,7 @@ describe('notifications hub access token', () => {
         refreshSession.mockReset().mockResolvedValue(false);
     });
 
-    it('échoue clairement sans JWT mémoire (cookie Path=/api hors /hubs)', async () => {
+    it('échoue clairement sans JWT mémoire', async () => {
         const { startNotificationsHub, HUB_ACCESS_TOKEN_REQUIRED } = await import('../hub');
         await expect(startNotificationsHub()).rejects.toThrow(HUB_ACCESS_TOKEN_REQUIRED);
     });

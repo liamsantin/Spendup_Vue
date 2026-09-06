@@ -1,27 +1,32 @@
-# ADR 0003 — Auth cookie mode (P1)
+# ADR 0003 — Auth Bearer (cross-site)
 
-- **Statut :** accepted
-- **Date :** 2026-08-13
+- **Statut :** superseded (cookie P1) → **accepted Bearer**
+- **Date :** 2026-09-06
+- **Remplace :** cookie HttpOnly (`VITE_AUTH_COOKIE_MODE=true`) comme mode prod
 
 ## Contexte
 
-Stocker refresh (et access) en JS storage expose au XSS. L’API Spend.Up propose cookies HttpOnly + CSRF.
+Front (`spendup-vue.onrender.com`) et API (`api-spendup.ch`) sont **cross-site**. Les cookies de session (`spendup_access`, `spendup_refresh`, `spendup_csrf`) sont des cookies tiers : refusés ou non renvoyés sur mobile (Safari / iOS) → 401 après login. CORS / `SameSite=None` côté API ne suffisent pas.
 
 ## Décision
 
-Activer le mode cookie via `VITE_AUTH_COOKIE_MODE=true` : access/refresh en cookies HttpOnly, `withCredentials`, CSRF double-submit sur refresh/logout, pas de Bearer côté JS en ce mode. Voir `features/auth/contract.md` § P1.
+Mode **Bearer** par défaut (`VITE_AUTH_COOKIE_MODE=false`, obligatoire en build production) :
+
+- Lire `accessToken`, `refreshToken`, `expiresAt` dans le JSON (login / Google / 2FA / refresh).
+- Header `Authorization: Bearer {accessToken}` sur les appels authentifiés.
+- Refresh / logout : `{ refreshToken }` dans le body — pas de `X-CSRF-Token`.
+- SignalR : JWT via `accessTokenFactory` (`Authorization` et/ou `?access_token=`).
+- Stockage : mémoire Pinia + `sessionStorage` (pas `localStorage`).
+
+Cookie-mode reste disponible en opt-in same-site uniquement (dev).
 
 ## Conséquences
 
 ### Positives
 
-- Surface XSS réduite pour les jetons ; alignement API sécurité.
+- Auth mobile / cross-site sans dépendance aux cookies tiers.
 
 ### Négatives / trade-offs
 
-- CORS credentials stricts ; complexité CSRF ; deux modes à maintenir pendant transition éventuelle.
-
-## Alternatives rejetées
-
-- Refresh durable en `localStorage`.
-- Access only en mémoire sans cookie (UX refresh plus fragile cross-tab).
+- Jetons accessibles au JS → surface XSS (mitigée : pas de `localStorage`, CSP, refresh court).
+- L’API prod doit renvoyer les tokens dans le body (`ReturnAccessTokenInBody` + `ReturnRefreshTokenInBody`).

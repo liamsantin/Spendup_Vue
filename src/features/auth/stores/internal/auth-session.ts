@@ -69,7 +69,7 @@ export function createAuthSession() {
     /** Dernier refresh en échec « transient » (réseau / 5xx) — le bootstrap peut retenter. */
     let lastRefreshTransient = false;
 
-    /** Cookie-mode : cookies HttpOnly ; legacy : access/refresh en storage. */
+    /** Cookie-mode : cookies HttpOnly ; Bearer : access/refresh en mémoire + sessionStorage. */
     const isAuthenticated = computed(() => (cookieMode ? cookieSessionActive.value : !!accessToken.value || !!refreshToken.value));
 
     function isTransientRefreshError(e: unknown): boolean {
@@ -114,7 +114,7 @@ export function createAuthSession() {
     }
 
     /**
-     * Applique les tokens reçus (cookie-mode ou legacy storage).
+     * Applique les tokens reçus (cookie-mode ou Bearer sessionStorage).
      * @param tokens Jetons d’authentification.
      */
     function setTokens(tokens: AuthTokens) {

@@ -31,7 +31,7 @@ En Dev, déjà autorisées notamment :
 
 En prod : ajouter l’origine du site Vue (ex. `https://app.spendup.ch`) dans la config API / variables d’env.
 
-**P1 (actif côté Vue si `VITE_AUTH_COOKIE_MODE=true`) :** refresh **et** access en cookies HttpOnly (`spendup_refresh`, `spendup_access`) ; le front n’écrit plus ces jetons en storage JS et **n’envoie plus de Bearer** (credentials + cookie). CSRF double-submit sur refresh/logout.
+**Bearer (défaut / prod, `VITE_AUTH_COOKIE_MODE=false`) :** `accessToken` + `refreshToken` dans le JSON ; header `Authorization: Bearer` ; pas de CSRF. Cookie-mode (`true`) reste un opt-in same-site (cookies HttpOnly + CSRF) — inutilisable en cross-site mobile.
 
 ---
 
@@ -76,7 +76,7 @@ JSON en **camelCase** (ASP.NET Core par défaut).
 | ---------------- | ------------------------------------------------------------------- | ------------ | ------------------------------------------------------------- |
 | `accessToken`    | Pinia + `sessionStorage` (`spendup_access_token`)                   | **15 min**   | Header `Authorization: Bearer {accessToken}`                  |
 | `expiresAt`      | Pinia + `sessionStorage` (`spendup_access_expires_at`) — ISO string | = access     | Refresh **proactif** (~30 s avant expiration)                 |
-| `refreshToken`   | **Cookie HttpOnly** (mode P1) — plus en `localStorage`              | **30 jours** | `POST /api/auth/refresh` (cookie, body optionnel)             |
+| `refreshToken`   | Pinia + `sessionStorage` (`spendup_refresh_token`) — jamais `localStorage` | **30 jours** | `POST /api/auth/refresh` body `{ refreshToken }`              |
 | `twoFactorToken` | mémoire courte uniquement                                           | **5 min**    | Uniquement `POST /api/auth/2fa/verify` — **jamais** sur `/me` |
 
 **Pending register (front) :**
@@ -503,9 +503,9 @@ Collection Postman : `Postman/Spendup_Api.postman_collection.json`.
 
 ## 12. P1 — Contrat API cible (remédiation sécurité)
 
-État front P1 : cookies, idle logout, reset `#token=`, step-up, appareils, settings session, **CSP enforce prod** (12.6).
+État front prod : **Bearer** (ADR 0003). Le cookie-mode P1 ci-dessous reste un opt-in same-site (`VITE_AUTH_COOKIE_MODE=true`), pas le chemin mobile / cross-site.
 
-### 12.1 Cookies de session (remplace refresh en localStorage)
+### 12.1 Cookies de session (opt-in same-site — pas le mode prod)
 
 | Changement API                                   | Détail                                                                                                                                                                                                           |
 | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
