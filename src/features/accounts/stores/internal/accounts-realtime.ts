@@ -235,7 +235,7 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
             return;
         }
 
-        if (change === 'balanceSnapshotCreated' || change === 'balanceSnapshotDeleted') {
+        if (change === 'balanceSnapshotCreated' || change === 'balanceSnapshotUpdated' || change === 'balanceSnapshotDeleted') {
             // Co-détenteur (sauf acteur) : invalider le cache relevés même si la modale est fermée.
             cache.invalidate(`snapshots:${id}`);
             if (selectedAccount.value?.publicId === id) {

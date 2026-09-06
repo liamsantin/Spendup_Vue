@@ -99,6 +99,7 @@ export type AccountChange =
     | 'visibility'
     | 'updated'
     | 'balanceSnapshotCreated'
+    | 'balanceSnapshotUpdated'
     | 'balanceSnapshotDeleted'
     | 'revoked'
     | 'roleChanged'

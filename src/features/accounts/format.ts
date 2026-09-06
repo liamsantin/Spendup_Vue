@@ -202,6 +202,32 @@ export function ymdToSnapshotIso(ymd: string, now = new Date()): string {
 }
 
 /**
+ * Extrait le jour calendaire `YYYY-MM-DD` d’un `snapshotAt` ISO (partie date, pas de conversion locale).
+ */
+export function snapshotIsoToYmd(iso: string, now = new Date()): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso.trim());
+    if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+    const parsed = new Date(iso);
+    if (Number.isNaN(parsed.getTime())) return todayYmd(now);
+    const y = parsed.getUTCFullYear();
+    const m = String(parsed.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(parsed.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+/**
+ * PUT relevé : conserve l’heure d’origine si le jour calendaire n’a pas changé.
+ * Sinon même règle que create (`ymdToSnapshotIso`).
+ */
+export function snapshotAtForUpdate(formYmd: string, originalIso: string, now = new Date()): string {
+    const trimmedIso = originalIso.trim();
+    if (snapshotIsoToYmd(trimmedIso, now) === formYmd.trim() && /Z$/i.test(trimmedIso)) {
+        return trimmedIso;
+    }
+    return ymdToSnapshotIso(formYmd, now);
+}
+
+/**
  * Affiche la date calendaire d’un `snapshotAt` (sémantique date-only) sans dérive timezone.
  */
 export function formatSnapshotDate(value: string, locale?: string): string {

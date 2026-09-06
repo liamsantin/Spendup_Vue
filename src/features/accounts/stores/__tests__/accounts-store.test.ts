@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
+import { ApiError } from '@/features/auth/api';
 import { ACCOUNTS_LIST_MAX_AGE_MS } from '@/features/accounts/stores/accounts-store';
 
 const api = vi.hoisted(() => ({
@@ -21,6 +22,7 @@ const api = vi.hoisted(() => ({
     refuseShare: vi.fn(),
     listBalanceSnapshots: vi.fn(),
     createBalanceSnapshot: vi.fn(),
+    updateBalanceSnapshot: vi.fn(),
     deleteBalanceSnapshot: vi.fn()
 }));
 
@@ -48,6 +50,7 @@ vi.mock('../../api', () => ({
         refuseShare: (...args: unknown[]) => api.refuseShare(...args),
         listBalanceSnapshots: (...args: unknown[]) => api.listBalanceSnapshots(...args),
         createBalanceSnapshot: (...args: unknown[]) => api.createBalanceSnapshot(...args),
+        updateBalanceSnapshot: (...args: unknown[]) => api.updateBalanceSnapshot(...args),
         deleteBalanceSnapshot: (...args: unknown[]) => api.deleteBalanceSnapshot(...args)
     }
 }));
@@ -362,6 +365,75 @@ describe('useAccountsStore', () => {
         });
         expect(store.balanceSnapshots).toHaveLength(1);
         expect(store.balanceSnapshots[0]?.publicId).toBe('snap-live');
+    });
+
+    it('accountChanged balanceSnapshotUpdated refetch les relevés si le compte est ouvert', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listBalanceSnapshots.mockResolvedValue({
+            items: [
+                {
+                    publicId: 'snap-1',
+                    accountPublicId: 'acc-1',
+                    balance: 250,
+                    snapshotAt: '2026-08-18T09:00:00Z',
+                    source: 'manual',
+                    note: 'avant',
+                    createdAt: '2026-08-18T09:00:00Z',
+                    updatedAt: null,
+                    createdByUserPublicId: 'u-a',
+                    createdByDisplayName: 'Alice',
+                    createdByPhotoUrl: null
+                }
+            ],
+            page: 1,
+            pageSize: 50,
+            totalCount: 1
+        });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+            accountListener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+        expect(store.balanceSnapshots[0]?.note).toBe('avant');
+
+        api.listBalanceSnapshots.mockClear();
+        api.listBalanceSnapshots.mockResolvedValue({
+            items: [
+                {
+                    publicId: 'snap-1',
+                    accountPublicId: 'acc-1',
+                    balance: 2500,
+                    snapshotAt: '2026-08-18T09:00:00Z',
+                    source: 'manual',
+                    note: 'Solde corrigé',
+                    createdAt: '2026-08-18T09:00:00Z',
+                    updatedAt: '2026-09-06T10:00:00Z',
+                    createdByUserPublicId: 'u-a',
+                    createdByDisplayName: 'Alice',
+                    createdByPhotoUrl: null
+                }
+            ],
+            page: 1,
+            pageSize: 50,
+            totalCount: 1
+        });
+
+        accountListener?.({ change: 'balanceSnapshotUpdated', accountPublicId: 'acc-1' });
+
+        await vi.waitFor(() => {
+            expect(api.listBalanceSnapshots).toHaveBeenCalled();
+        });
+        expect(store.balanceSnapshots[0]?.balance).toBe(2500);
+        expect(store.balanceSnapshots[0]?.note).toBe('Solde corrigé');
+        expect(store.balanceSnapshots[0]?.createdByDisplayName).toBe('Alice');
     });
 
     it('accountChanged updated refetch le détail si la modale est ouverte', async () => {
@@ -1433,6 +1505,107 @@ describe('useAccountsStore', () => {
         expect(store.snapshotsTotalCount).toBe(2);
     });
 
+    it('updateBalanceSnapshot patche l’item, re-trie et ne touche pas currentBalance', async () => {
+        const older = {
+            publicId: 'snap-old',
+            accountPublicId: 'acc-1',
+            balance: 100,
+            snapshotAt: '2026-08-10T12:00:00.000Z',
+            source: 'manual' as const,
+            note: 'old',
+            createdAt: '2026-08-10T12:00:00.000Z',
+            updatedAt: null,
+            createdByUserPublicId: 'u-a',
+            createdByDisplayName: 'Alice',
+            createdByPhotoUrl: null
+        };
+        const newer = {
+            publicId: 'snap-new',
+            accountPublicId: 'acc-1',
+            balance: 200,
+            snapshotAt: '2026-08-25T12:00:00.000Z',
+            source: 'manual' as const,
+            note: null,
+            createdAt: '2026-08-25T12:00:00.000Z',
+            updatedAt: null,
+            createdByUserPublicId: 'u-a',
+            createdByDisplayName: 'Alice',
+            createdByPhotoUrl: null
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listBalanceSnapshots.mockResolvedValue({ items: [newer, older], page: 1, pageSize: 50, totalCount: 2 });
+        api.updateBalanceSnapshot.mockResolvedValue({
+            ...older,
+            balance: 2500,
+            snapshotAt: '2026-08-26T09:00:00.000Z',
+            note: 'Solde corrigé',
+            updatedAt: '2026-09-06T10:00:00Z'
+        });
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+        const balanceBefore = store.selectedAccount?.currentBalance;
+
+        await store.updateBalanceSnapshot('acc-1', 'snap-old', {
+            balance: 2500,
+            snapshotAt: '2026-08-26T09:00:00.000Z',
+            note: 'Solde corrigé'
+        });
+
+        expect(api.updateBalanceSnapshot).toHaveBeenCalledWith(
+            'acc-1',
+            'snap-old',
+            expect.objectContaining({
+                balance: 2500,
+                snapshotAt: '2026-08-26T09:00:00.000Z',
+                note: 'Solde corrigé'
+            })
+        );
+        expect(store.balanceSnapshots.map((s) => s.publicId)).toEqual(['snap-old', 'snap-new']);
+        expect(store.balanceSnapshots[0]?.balance).toBe(2500);
+        expect(store.balanceSnapshots[0]?.createdByDisplayName).toBe('Alice');
+        expect(store.snapshotsTotalCount).toBe(2);
+        expect(store.selectedAccount?.currentBalance).toBe(balanceBefore);
+    });
+
+    it('updateBalanceSnapshot 404 retire l’item de la liste', async () => {
+        const item = {
+            publicId: 'snap-1',
+            accountPublicId: 'acc-1',
+            balance: 100,
+            snapshotAt: '2026-08-10T12:00:00.000Z',
+            source: 'manual' as const,
+            note: null,
+            createdAt: '2026-08-10T12:00:00.000Z',
+            updatedAt: null,
+            createdByUserPublicId: null,
+            createdByDisplayName: null,
+            createdByPhotoUrl: null
+        };
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.get.mockResolvedValue(ownedAccount);
+        api.listBalanceSnapshots.mockResolvedValue({ items: [item], page: 1, pageSize: 50, totalCount: 1 });
+        api.updateBalanceSnapshot.mockRejectedValue(new ApiError('Not found', 404));
+
+        const store = useAccountsStore();
+        await store.loadAccounts();
+        await store.loadAccountDetail('acc-1');
+        await store.loadBalanceSnapshots('acc-1');
+
+        await expect(
+            store.updateBalanceSnapshot('acc-1', 'snap-1', {
+                balance: 1,
+                snapshotAt: '2026-08-10T12:00:00.000Z',
+                note: null
+            })
+        ).rejects.toMatchObject({ status: 404 });
+        expect(store.balanceSnapshots).toHaveLength(0);
+        expect(store.error).toMatch(/introuvable/i);
+    });
+
     it('loadBalanceSnapshots trie DESC même si l’API renvoie ASC', async () => {
         const older = {
             publicId: 'snap-old',
@@ -1567,6 +1740,13 @@ describe('useAccountsStore', () => {
                 snapshotAt: '2026-08-23T12:00:00.000Z'
             })
         ).rejects.toMatchObject({ status: 404, code: 'account_not_found' });
+        await expect(
+            store.updateBalanceSnapshot('unknown-acc', 'snap-1', {
+                balance: 1,
+                snapshotAt: '2026-08-23T12:00:00.000Z',
+                note: null
+            })
+        ).rejects.toMatchObject({ status: 404, code: 'account_not_found' });
 
         expect(api.inviteShare).not.toHaveBeenCalled();
         expect(api.leaveShare).not.toHaveBeenCalled();
@@ -1574,6 +1754,7 @@ describe('useAccountsStore', () => {
         expect(api.remove).not.toHaveBeenCalled();
         expect(api.acceptShare).not.toHaveBeenCalled();
         expect(api.createBalanceSnapshot).not.toHaveBeenCalled();
+        expect(api.updateBalanceSnapshot).not.toHaveBeenCalled();
     });
 
     it('accountShareRevoked ne retire pas un compte owned', async () => {

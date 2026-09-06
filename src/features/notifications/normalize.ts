@@ -15,6 +15,7 @@ const ACCOUNT_CHANGES = new Set<AccountChange>([
     'visibility',
     'updated',
     'balanceSnapshotCreated',
+    'balanceSnapshotUpdated',
     'balanceSnapshotDeleted',
     'revoked',
     'roleChanged',

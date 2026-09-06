@@ -1,7 +1,13 @@
 import { accountsApi } from '@/features/accounts/api';
 import { canWriteBalanceSnapshots } from '@/features/accounts/rights';
-import type { AccountBalanceSnapshot, CreateBalanceSnapshotPayload } from '@/features/accounts/types';
-import { assertAccountAllowed, requireLocalAccount } from '@/features/accounts/stores/internal/accounts-authz';
+import type { AccountBalanceSnapshot, CreateBalanceSnapshotPayload, UpdateBalanceSnapshotPayload } from '@/features/accounts/types';
+import { AppError } from '@/utils/errors/app-error';
+import {
+    ACCOUNT_NOT_FOUND_CODE,
+    assertAccountAllowed,
+    requireLocalAccount,
+    SNAPSHOT_NOT_FOUND_MESSAGE
+} from '@/features/accounts/stores/internal/accounts-authz';
 import type { AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 
 /** Ordre UI / chip écart : plus récent `snapshotAt` d’abord, puis `createdAt`. */
@@ -171,6 +177,18 @@ export function createAccountsSnapshots(state: AccountsState) {
         return snapshotsByAccountId.get(accountPublicId)?.items.length ?? 0;
     }
 
+    function removeSnapshotLocal(accountPublicId: string, snapshotPublicId: string) {
+        const prev = snapshotsByAccountId.get(accountPublicId);
+        const current = prev?.items ?? [];
+        if (!current.some((s) => s.publicId === snapshotPublicId)) return;
+        const nextTotal = Math.max(0, (prev?.totalCount ?? current.length) - 1);
+        setSnapshotsForAccount(
+            accountPublicId,
+            current.filter((s) => s.publicId !== snapshotPublicId),
+            { totalCount: nextTotal }
+        );
+    }
+
     /**
      * Crée un snapshot de solde et l’insère dans la liste (triée par date).
      * @param accountPublicId Identifiant public du compte.
@@ -201,6 +219,47 @@ export function createAccountsSnapshots(state: AccountsState) {
     }
 
     /**
+     * Corrige un relevé manuel (solde, date, note). Ne change pas `currentBalance`.
+     * @param accountPublicId Identifiant public du compte.
+     * @param snapshotPublicId Identifiant public du relevé.
+     * @param payload PUT complet (note vide → `null`).
+     * @returns Le relevé mis à jour.
+     */
+    async function updateBalanceSnapshot(
+        accountPublicId: string,
+        snapshotPublicId: string,
+        payload: UpdateBalanceSnapshotPayload
+    ) {
+        beginActing();
+        clearError();
+        try {
+            const local = requireLocalAccount(accounts.value, selectedAccount.value, accountPublicId);
+            assertAccountAllowed(canWriteBalanceSnapshots(local));
+            const snapshot = await accountsApi.updateBalanceSnapshot(accountPublicId, snapshotPublicId, payload);
+            const prev = snapshotsByAccountId.get(accountPublicId);
+            const current = prev?.items ?? [];
+            const without = current.filter((s) => s.publicId !== snapshot.publicId);
+            setSnapshotsForAccount(accountPublicId, mergeSnapshotsDesc(without, [snapshot]), {
+                totalCount: prev?.totalCount ?? without.length + 1
+            });
+            bumpSnapshotsData(accountPublicId);
+            return snapshot;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            if (err.status === 404 && err.code !== ACCOUNT_NOT_FOUND_CODE) {
+                removeSnapshotLocal(accountPublicId, snapshotPublicId);
+                bumpSnapshotsData(accountPublicId);
+                error.value = SNAPSHOT_NOT_FOUND_MESSAGE;
+            } else {
+                error.value = err.message;
+            }
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    /**
      * Supprime un snapshot de solde.
      * @param accountPublicId Identifiant public du compte.
      * @param snapshotPublicId Identifiant public du snapshot à supprimer.
@@ -212,14 +271,7 @@ export function createAccountsSnapshots(state: AccountsState) {
             const local = requireLocalAccount(accounts.value, selectedAccount.value, accountPublicId);
             assertAccountAllowed(canWriteBalanceSnapshots(local));
             await accountsApi.deleteBalanceSnapshot(accountPublicId, snapshotPublicId);
-            const prev = snapshotsByAccountId.get(accountPublicId);
-            const current = prev?.items ?? [];
-            const nextTotal = Math.max(0, (prev?.totalCount ?? current.length) - 1);
-            setSnapshotsForAccount(
-                accountPublicId,
-                current.filter((s) => s.publicId !== snapshotPublicId),
-                { totalCount: nextTotal }
-            );
+            removeSnapshotLocal(accountPublicId, snapshotPublicId);
             bumpSnapshotsData(accountPublicId);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -234,6 +286,7 @@ export function createAccountsSnapshots(state: AccountsState) {
         loadMoreBalanceSnapshots,
         cancelPendingSnapshotsLoads,
         createBalanceSnapshot,
+        updateBalanceSnapshot,
         deleteBalanceSnapshot
     };
 }

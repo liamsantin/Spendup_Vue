@@ -36,6 +36,8 @@ export {
     isLightAccountColor,
     todayYmd,
     ymdToSnapshotIso,
+    snapshotIsoToYmd,
+    snapshotAtForUpdate,
     formatSnapshotDate
 } from '@/features/accounts/format';
 export type {
@@ -59,7 +61,8 @@ export type {
     AccountBalanceSnapshot,
     AccountBalanceSnapshotsListResult,
     ListBalanceSnapshotsQuery,
-    CreateBalanceSnapshotPayload
+    CreateBalanceSnapshotPayload,
+    UpdateBalanceSnapshotPayload
 } from '@/features/accounts/types';
 export {
     ACCOUNT_TYPES,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CalendarIcon, TrashIcon } from 'vue-tabler-icons';
+import { CalendarIcon, PencilIcon, TrashIcon } from 'vue-tabler-icons';
 import { useAuthStore } from '@/features/auth';
 import { UserPhotoAvatar } from '@/features/friends';
 import { formatAccountBalance, formatSnapshotDate } from '@/features/accounts/format';
@@ -17,6 +17,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+    edit: [snapshot: AccountBalanceSnapshot];
     delete: [snapshot: AccountBalanceSnapshot];
 }>();
 
@@ -49,6 +50,16 @@ const authorLabel = computed(() => {
                     <v-chip size="x-small" variant="tonal" color="primary">
                         {{ t(`comptesPage.snapshots.sources.${snapshot.source}`) }}
                     </v-chip>
+                    <button
+                        v-if="canWrite && snapshot.source === 'manual'"
+                        type="button"
+                        class="su-orb"
+                        :disabled="acting"
+                        :aria-label="t('comptesPage.snapshots.edit')"
+                        @click="emit('edit', snapshot)"
+                    >
+                        <PencilIcon size="16" stroke-width="1.75" />
+                    </button>
                     <button
                         v-if="canWrite"
                         type="button"

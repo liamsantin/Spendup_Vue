@@ -113,6 +113,7 @@ export const useAccountsStore = defineStore('accounts', () => {
         loadBalanceSnapshots: snapshots.loadBalanceSnapshots,
         loadMoreBalanceSnapshots: snapshots.loadMoreBalanceSnapshots,
         createBalanceSnapshot: snapshots.createBalanceSnapshot,
+        updateBalanceSnapshot: snapshots.updateBalanceSnapshot,
         deleteBalanceSnapshot: snapshots.deleteBalanceSnapshot,
         onAuthenticatedSession: realtime.onAuthenticatedSession,
         bootstrap: lifecycle.bootstrap,

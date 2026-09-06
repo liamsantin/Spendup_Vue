@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { CalendarIcon, PlusIcon, Receipt2Icon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
@@ -11,7 +11,7 @@ import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAuthStore } from '@/features/auth';
 import { formatAccountBalance, formatSnapshotDate } from '@/features/accounts/format';
-import { canManageShares, isSharedAccount } from '@/features/accounts/rights';
+import { canManageShares, canRestoreAccount, isSharedAccount } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { Account, AccountBalanceSnapshot } from '@/features/accounts/types';
 import AccountSnapshotAddModal from '@/features/accounts/components/modals/AccountSnapshotAddModal.vue';
@@ -27,7 +27,8 @@ const { smAndDown } = useDisplay();
 const store = useAccountsStore();
 const auth = useAuthStore();
 
-const addOpen = ref(false);
+const formOpen = ref(false);
+const editTarget = ref<AccountBalanceSnapshot | null>(null);
 const summaryOpen = ref(false);
 const deleteTarget = ref<AccountBalanceSnapshot | null>(null);
 const localError = ref<string | null>(null);
@@ -50,6 +51,7 @@ const deleteOpen = computed({
 const latestSnapshot = computed(() => store.balanceSnapshots[0] ?? null);
 
 const showAuthors = computed(() => isSharedAccount(props.account, store.shares));
+const canRestore = computed(() => canRestoreAccount(props.account));
 
 const balanceDiff = computed(() => {
     if (!latestSnapshot.value || props.account.currentBalance == null) return null;
@@ -126,7 +128,34 @@ watch(
     }
 );
 
+watch(formOpen, (open) => {
+    if (!open) editTarget.value = null;
+});
+
+function openAdd() {
+    editTarget.value = null;
+    formOpen.value = true;
+}
+
+function openEdit(snapshot: AccountBalanceSnapshot) {
+    editTarget.value = snapshot;
+    formOpen.value = true;
+}
+
+/** Filet si SignalR off / event manqué : refetch à la reprise de visibilité. */
+function onVisibilityChange() {
+    if (document.visibilityState !== 'visible') return;
+    const id = props.account.publicId;
+    if (!id) return;
+    void store.loadBalanceSnapshots(id, true).catch(() => undefined);
+}
+
+onMounted(() => {
+    document.addEventListener('visibilitychange', onVisibilityChange);
+});
+
 onBeforeUnmount(() => {
+    document.removeEventListener('visibilitychange', onVisibilityChange);
     historyResizeObserver?.disconnect();
     historyResizeObserver = null;
 });
@@ -159,7 +188,7 @@ async function onLoadMore() {
                 <h5 class="text-h6 mb-0">{{ t('comptesPage.snapshots.title') }}</h5>
                 <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.snapshots.subtitle') }}</div>
             </div>
-            <button v-if="canWrite" type="button" class="su-btn su-btn--ink" @click="addOpen = true">
+            <button v-if="canWrite" type="button" class="su-btn su-btn--ink" @click="openAdd">
                 <PlusIcon size="16" stroke-width="1.6" />
                 {{ t('comptesPage.snapshots.add') }}
             </button>
@@ -235,7 +264,7 @@ async function onLoadMore() {
                 </v-avatar>
                 <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('comptesPage.snapshots.empty') }}</div>
                 <div class="text-body-2 text-medium-emphasis mb-4">{{ t('comptesPage.snapshots.emptyHint') }}</div>
-                <button v-if="canWrite" type="button" class="su-btn su-btn--ink" @click="addOpen = true">
+                <button v-if="canWrite" type="button" class="su-btn su-btn--ink" @click="openAdd">
                     <PlusIcon size="16" stroke-width="1.6" />
                     {{ t('comptesPage.snapshots.add') }}
                 </button>
@@ -258,6 +287,7 @@ async function onLoadMore() {
                                 :show-author="showAuthors"
                                 :acting="store.acting"
                                 :latest="index === 0"
+                                @edit="openEdit"
                                 @delete="deleteTarget = $event"
                             />
                             <div v-if="store.hasMoreSnapshots" class="py-3 text-center">
@@ -283,6 +313,7 @@ async function onLoadMore() {
                                 :show-author="showAuthors"
                                 :acting="store.acting"
                                 :latest="index === 0"
+                                @edit="openEdit"
                                 @delete="deleteTarget = $event"
                             />
                             <div v-if="store.hasMoreSnapshots" class="py-3 text-center">
@@ -301,7 +332,12 @@ async function onLoadMore() {
             </div>
         </div>
 
-        <AccountSnapshotAddModal v-model="addOpen" :account-public-id="account.publicId" />
+        <AccountSnapshotAddModal
+            v-model="formOpen"
+            :account-public-id="account.publicId"
+            :snapshot="editTarget"
+            :can-restore="canRestore"
+        />
 
         <AppConfirmationModal
             v-model="deleteOpen"

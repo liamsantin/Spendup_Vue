@@ -12,7 +12,8 @@ import type {
     InviteAccountSharePayload,
     ListBalanceSnapshotsQuery,
     UpdateAccountPayload,
-    UpdateAccountShareRolePayload
+    UpdateAccountShareRolePayload,
+    UpdateBalanceSnapshotPayload
 } from '@/features/accounts/types';
 
 export const accountsApi = {
@@ -100,6 +101,13 @@ export const accountsApi = {
     createBalanceSnapshot(accountPublicId: string, body: CreateBalanceSnapshotPayload) {
         return fetchWrapper.post(
             `/api/accounts/${encodeURIComponent(accountPublicId)}/balance-snapshots`,
+            body
+        ) as Promise<AccountBalanceSnapshot>;
+    },
+
+    updateBalanceSnapshot(accountPublicId: string, snapshotPublicId: string, body: UpdateBalanceSnapshotPayload) {
+        return fetchWrapper.put(
+            `/api/accounts/${encodeURIComponent(accountPublicId)}/balance-snapshots/${encodeURIComponent(snapshotPublicId)}`,
             body
         ) as Promise<AccountBalanceSnapshot>;
     },

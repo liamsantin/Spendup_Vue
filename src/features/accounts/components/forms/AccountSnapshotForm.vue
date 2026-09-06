@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Champs d’ajout d’un relevé de solde. Indépendant du shell modal.
+ * Champs d’un relevé de solde (création ou correction). Indépendant du shell modal.
  * `form` est un objet réactif détenu par le parent ; la mutation des champs est intentionnelle.
  */
 /* eslint-disable vue/no-mutating-props -- shared reactive form owned by parent */
@@ -63,7 +63,6 @@ const snapshotAtModel = computed({
             :label="t('comptesPage.snapshots.fields.note')"
             variant="outlined"
             density="comfortable"
-            maxlength="255"
             hide-details="auto"
         />
     </div>

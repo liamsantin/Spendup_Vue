@@ -48,7 +48,7 @@ export function sanitizeUpdateAccountPayload(account: Pick<Account, 'myRole'>, p
     };
 }
 
-/** Create / delete relevés de solde — editor+ sur compte actif. */
+/** Créer / modifier / supprimer des relevés de solde — editor+ sur compte actif. */
 export function canWriteBalanceSnapshots(account: Pick<Account, 'myRole' | 'isActive'>): boolean {
     if (!account.isActive) return false;
     return account.myRole === 'owner' || account.myRole === 'editor';

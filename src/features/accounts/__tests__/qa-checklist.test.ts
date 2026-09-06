@@ -28,6 +28,7 @@ const api = vi.hoisted(() => ({
     refuseShare: vi.fn(),
     listBalanceSnapshots: vi.fn(),
     createBalanceSnapshot: vi.fn(),
+    updateBalanceSnapshot: vi.fn(),
     deleteBalanceSnapshot: vi.fn()
 }));
 
@@ -55,6 +56,7 @@ vi.mock('../api', () => ({
         refuseShare: (...args: unknown[]) => api.refuseShare(...args),
         listBalanceSnapshots: (...args: unknown[]) => api.listBalanceSnapshots(...args),
         createBalanceSnapshot: (...args: unknown[]) => api.createBalanceSnapshot(...args),
+        updateBalanceSnapshot: (...args: unknown[]) => api.updateBalanceSnapshot(...args),
         deleteBalanceSnapshot: (...args: unknown[]) => api.deleteBalanceSnapshot(...args)
     }
 }));
@@ -404,12 +406,20 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                     snapshotAt: '2026-08-26T12:00:00.000Z'
                 })
             ).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
+            await expect(
+                store.updateBalanceSnapshot('acc-2', 'snap-1', {
+                    balance: 10,
+                    snapshotAt: '2026-08-26T12:00:00.000Z',
+                    note: null
+                })
+            ).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
             await expect(store.inviteShare('acc-2', 'user-b', 'viewer')).rejects.toMatchObject({
                 status: 403,
                 code: 'account_forbidden'
             });
             expect(api.update).not.toHaveBeenCalled();
             expect(api.createBalanceSnapshot).not.toHaveBeenCalled();
+            expect(api.updateBalanceSnapshot).not.toHaveBeenCalled();
             expect(api.inviteShare).not.toHaveBeenCalled();
         });
     });
@@ -544,7 +554,70 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(store.balanceSnapshots).toHaveLength(0);
         });
 
-        it('viewer : create relevé refusé côté store (pas d’appel API)', async () => {
+        it('corriger un relevé UTC → item patché et re-trié, currentBalance inchangé', async () => {
+            api.list.mockResolvedValue({ items: [account({ currentBalance: 100 })] });
+            api.get.mockResolvedValue(account({ currentBalance: 100 }));
+            api.listBalanceSnapshots.mockResolvedValue({
+                items: [
+                    snapshot({ publicId: 'snap-new', snapshotAt: '2026-08-25T12:00:00.000Z', balance: 200 }),
+                    snapshot({ publicId: 'snap-old', snapshotAt: '2026-08-10T12:00:00.000Z', balance: 100, createdByDisplayName: 'Alice' })
+                ]
+            });
+            api.updateBalanceSnapshot.mockResolvedValue(
+                snapshot({
+                    publicId: 'snap-old',
+                    balance: 2500,
+                    snapshotAt: '2026-08-26T09:00:00Z',
+                    note: 'Solde corrigé',
+                    createdByDisplayName: 'Alice',
+                    updatedAt: '2026-09-06T10:00:00Z'
+                })
+            );
+
+            const store = useAccountsStore();
+            await store.loadAccounts();
+            await store.loadAccountDetail('acc-1');
+            await store.loadBalanceSnapshots('acc-1');
+
+            await store.updateBalanceSnapshot('acc-1', 'snap-old', {
+                balance: 2500,
+                snapshotAt: '2026-08-26T09:00:00Z',
+                note: 'Solde corrigé'
+            });
+
+            expect(api.updateBalanceSnapshot).toHaveBeenCalledWith(
+                'acc-1',
+                'snap-old',
+                expect.objectContaining({ note: 'Solde corrigé' })
+            );
+            expect(store.balanceSnapshots[0]?.publicId).toBe('snap-old');
+            expect(store.balanceSnapshots[0]?.balance).toBe(2500);
+            expect(store.balanceSnapshots[0]?.createdByDisplayName).toBe('Alice');
+            expect(store.selectedAccount?.currentBalance).toBe(100);
+        });
+
+        it('PUT relevé 404 → item retiré de la liste', async () => {
+            api.list.mockResolvedValue({ items: [account()] });
+            api.get.mockResolvedValue(account());
+            api.listBalanceSnapshots.mockResolvedValue({ items: [snapshot()] });
+            api.updateBalanceSnapshot.mockRejectedValue(new ApiError('Not found', 404));
+
+            const store = useAccountsStore();
+            await store.loadAccounts();
+            await store.loadAccountDetail('acc-1');
+            await store.loadBalanceSnapshots('acc-1');
+
+            await expect(
+                store.updateBalanceSnapshot('acc-1', 'snap-1', {
+                    balance: 1,
+                    snapshotAt: '2026-08-23T12:00:00.000Z',
+                    note: null
+                })
+            ).rejects.toMatchObject({ status: 404 });
+            expect(store.balanceSnapshots).toHaveLength(0);
+        });
+
+        it('viewer : create / update relevé refusés côté store (pas d’appel API)', async () => {
             const shared = account({
                 publicId: 'acc-shared',
                 isOwned: false,
@@ -561,7 +634,15 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                     snapshotAt: '2026-08-23T12:00:00.000Z'
                 })
             ).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
+            await expect(
+                store.updateBalanceSnapshot('acc-shared', 'snap-1', {
+                    balance: 1,
+                    snapshotAt: '2026-08-23T12:00:00.000Z',
+                    note: null
+                })
+            ).rejects.toMatchObject({ status: 403, code: 'account_forbidden' });
             expect(api.createBalanceSnapshot).not.toHaveBeenCalled();
+            expect(api.updateBalanceSnapshot).not.toHaveBeenCalled();
         });
     });
 

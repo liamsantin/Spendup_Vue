@@ -14,7 +14,9 @@ import {
     safeAccountColor,
     isLightAccountColor,
     todayYmd,
-    ymdToSnapshotIso
+    ymdToSnapshotIso,
+    snapshotIsoToYmd,
+    snapshotAtForUpdate
 } from '@/features/accounts/format';
 
 describe('snapshot date helpers', () => {
@@ -51,6 +53,18 @@ describe('snapshot date helpers', () => {
     it('ymdToSnapshotIso clamp une date future à maintenant', () => {
         const now = new Date(2026, 7, 26, 14, 0, 0);
         expect(ymdToSnapshotIso('2026-08-30', now)).toBe(now.toISOString());
+    });
+
+    it('snapshotIsoToYmd lit le jour calendaire sans conversion locale', () => {
+        expect(snapshotIsoToYmd('2026-08-18T09:00:00Z')).toBe('2026-08-18');
+        expect(snapshotIsoToYmd('2026-08-18T00:00:00.000Z')).toBe('2026-08-18');
+        expect(snapshotIsoToYmd(' 2026-01-02T12:00:00.000Z ')).toBe('2026-01-02');
+    });
+
+    it('snapshotAtForUpdate conserve l’heure si le jour n’a pas changé', () => {
+        const now = new Date(2026, 8, 6, 19, 0, 0);
+        expect(snapshotAtForUpdate('2026-08-18', '2026-08-18T09:00:00Z', now)).toBe('2026-08-18T09:00:00Z');
+        expect(snapshotAtForUpdate('2026-08-10', '2026-08-18T09:00:00Z', now)).toBe('2026-08-10T12:00:00.000Z');
     });
 
     it('todayYmd reflète la date locale fournie', () => {

@@ -158,6 +158,13 @@ export type CreateBalanceSnapshotPayload = {
     note?: string | null;
 };
 
+/** PUT complet — mêmes champs que create. Ne pas envoyer `source`. `note: null` efface. */
+export type UpdateBalanceSnapshotPayload = {
+    balance: number;
+    snapshotAt: string;
+    note: string | null;
+};
+
 export const ACCOUNT_TYPES: AccountType[] = ['courant', 'epargne', 'credit', 'cash', 'investissement', 'crypto', 'other'];
 
 export const CURRENCIES: Currency[] = ['CHF', 'EUR', 'USD', 'GBP'];

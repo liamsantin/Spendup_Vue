@@ -82,7 +82,7 @@ describe('accounts rights', () => {
         });
     });
 
-    it('autorise create/delete relevés pour owner et editor actifs seulement', () => {
+    it('autorise create/update/delete relevés pour owner et editor actifs seulement', () => {
         expect(canWriteBalanceSnapshots(account({ myRole: 'owner' }))).toBe(true);
         expect(canWriteBalanceSnapshots(account({ myRole: 'editor' }))).toBe(true);
         expect(canWriteBalanceSnapshots(account({ myRole: 'viewer' }))).toBe(false);

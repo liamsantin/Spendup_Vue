@@ -409,8 +409,11 @@
             "title": "Balance Snapshots",
             "subtitle": "Declared bank balances.",
             "add": "Add",
+            "edit": "Edit",
             "addTitle": "New balance snapshot",
             "addSubtitle": "Enter the balance you see in your banking app.",
+            "editTitle": "Correct snapshot",
+            "editSubtitle": "The account’s calculated balance does not change.",
             "empty": "No snapshots yet.",
             "emptyHint": "Add the balance shown by your bank to track discrepancies.",
             "latestDeclared": "Last declared balance",
@@ -442,7 +445,10 @@
                 "confirm": "Delete"
             },
             "errors": {
-                "balanceInvalid": "Enter a valid balance."
+                "balanceInvalid": "Enter a valid balance.",
+                "notFound": "Snapshot not found.",
+                "noteTooLong": "The note cannot exceed 255 characters.",
+                "archived": "This account is archived. Restore it before correcting a snapshot."
             }
         }
     },

@@ -8,6 +8,7 @@ export const SHARE_INVITE_NOT_FOUND_CODE = 'share_invite_not_found';
 export const ACCOUNT_FORBIDDEN_MESSAGE = 'Action non autorisée sur ce compte.';
 export const ACCOUNT_NOT_FOUND_MESSAGE = 'Compte introuvable.';
 export const SHARE_INVITE_NOT_FOUND_MESSAGE = 'Invitation introuvable.';
+export const SNAPSHOT_NOT_FOUND_MESSAGE = 'Relevé introuvable.';
 
 /**
  * Résout un compte depuis la sélection ou la liste locale (défense en profondeur côté store).

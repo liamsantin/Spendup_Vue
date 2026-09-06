@@ -409,8 +409,11 @@
             "title": "Relevés de solde",
             "subtitle": "Soldes bancaires déclarés manuellement.",
             "add": "Ajouter",
+            "edit": "Modifier",
             "addTitle": "Nouveau relevé de solde",
             "addSubtitle": "Saisissez le solde constaté dans votre application bancaire.",
+            "editTitle": "Corriger le relevé",
+            "editSubtitle": "Le solde calculé du compte ne change pas.",
             "empty": "Aucun relevé pour l’instant.",
             "emptyHint": "Ajoutez le solde affiché dans votre banque pour suivre les écarts.",
             "latestDeclared": "Dernier solde déclaré",
@@ -442,7 +445,10 @@
                 "confirm": "Supprimer"
             },
             "errors": {
-                "balanceInvalid": "Saisissez un solde valide."
+                "balanceInvalid": "Saisissez un solde valide.",
+                "notFound": "Relevé introuvable.",
+                "noteTooLong": "La note ne peut pas dépasser 255 caractères.",
+                "archived": "Ce compte est archivé. Restaurez-le avant de corriger un relevé."
             }
         }
     },

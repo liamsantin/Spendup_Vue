@@ -6,15 +6,17 @@ import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
-import { getErrorMessage } from '@/utils/errors/app-error';
-import { parseAccountAmount, todayYmd, ymdToSnapshotIso } from '@/features/accounts/format';
+import { AppError, getErrorMessage } from '@/utils/errors/app-error';
+import { parseAccountAmount, snapshotAtForUpdate, snapshotIsoToYmd, todayYmd, ymdToSnapshotIso } from '@/features/accounts/format';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
-import type { CreateBalanceSnapshotPayload } from '@/features/accounts/types';
+import type { AccountBalanceSnapshot, CreateBalanceSnapshotPayload, UpdateBalanceSnapshotPayload } from '@/features/accounts/types';
 import AccountSnapshotForm from '@/features/accounts/components/forms/AccountSnapshotForm.vue';
 
 const props = defineProps<{
     modelValue: boolean;
     accountPublicId: string;
+    snapshot?: AccountBalanceSnapshot | null;
+    canRestore?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -44,22 +46,41 @@ function emptyForm(): SnapshotFormModel {
     };
 }
 
+function formFromSnapshot(snapshot: AccountBalanceSnapshot): SnapshotFormModel {
+    return {
+        balance: snapshot.balance,
+        snapshotAt: snapshotIsoToYmd(snapshot.snapshotAt),
+        note: snapshot.note ?? ''
+    };
+}
+
+const isEdit = ref(false);
+const editSnapshot = ref<AccountBalanceSnapshot | null>(null);
 const form = ref<SnapshotFormModel>(emptyForm());
 const localError = ref<string | null>(null);
 const balanceError = ref<string | null>(null);
+const archivedBlocked = ref(false);
 
 watch(
     () => props.modelValue,
     (isOpen) => {
         if (isOpen) {
-            form.value = emptyForm();
+            isEdit.value = !!props.snapshot;
+            editSnapshot.value = props.snapshot ?? null;
+            form.value = editSnapshot.value ? formFromSnapshot(editSnapshot.value) : emptyForm();
             localError.value = null;
             balanceError.value = null;
+            archivedBlocked.value = false;
         }
     }
 );
 
-async function submitAdd() {
+function isArchivedAccountError(err: AppError) {
+    return err.status === 400 && /archiv/i.test(err.message);
+}
+
+async function submit() {
+    if (archivedBlocked.value) return;
     localError.value = null;
     balanceError.value = null;
     const balance = parseAccountAmount(form.value.balance);
@@ -67,14 +88,49 @@ async function submitAdd() {
         balanceError.value = t('comptesPage.snapshots.errors.balanceInvalid');
         return;
     }
+    if (form.value.note.length > 255) {
+        localError.value = t('comptesPage.snapshots.errors.noteTooLong');
+        return;
+    }
+    const note = form.value.note.trim() || null;
     try {
-        const payload: CreateBalanceSnapshotPayload = {
-            balance,
-            snapshotAt: ymdToSnapshotIso(form.value.snapshotAt),
-            note: form.value.note.trim() || null
-        };
-        await store.createBalanceSnapshot(props.accountPublicId, payload);
+        if (isEdit.value && editSnapshot.value) {
+            const payload: UpdateBalanceSnapshotPayload = {
+                balance,
+                snapshotAt: snapshotAtForUpdate(form.value.snapshotAt, editSnapshot.value.snapshotAt),
+                note
+            };
+            await store.updateBalanceSnapshot(props.accountPublicId, editSnapshot.value.publicId, payload);
+        } else {
+            const payload: CreateBalanceSnapshotPayload = {
+                balance,
+                snapshotAt: ymdToSnapshotIso(form.value.snapshotAt),
+                note
+            };
+            await store.createBalanceSnapshot(props.accountPublicId, payload);
+        }
         open.value = false;
+    } catch (e: unknown) {
+        const err = AppError.fromUnknown(e);
+        if (err.status === 404) {
+            localError.value = t('comptesPage.snapshots.errors.notFound');
+            open.value = false;
+            return;
+        }
+        if (isArchivedAccountError(err)) {
+            archivedBlocked.value = true;
+            localError.value = t('comptesPage.snapshots.errors.archived');
+            return;
+        }
+        localError.value = getErrorMessage(e);
+    }
+}
+
+async function restoreThenContinue() {
+    localError.value = null;
+    try {
+        await store.restoreAccount(props.accountPublicId);
+        archivedBlocked.value = false;
     } catch (e: unknown) {
         localError.value = getErrorMessage(e);
     }
@@ -84,8 +140,8 @@ async function submitAdd() {
 <template>
     <AppModalBase
         v-model="open"
-        :title="t('comptesPage.snapshots.addTitle')"
-        :subtitle="t('comptesPage.snapshots.addSubtitle')"
+        :title="isEdit ? t('comptesPage.snapshots.editTitle') : t('comptesPage.snapshots.addTitle')"
+        :subtitle="isEdit ? t('comptesPage.snapshots.editSubtitle') : t('comptesPage.snapshots.addSubtitle')"
         :max-width="480"
         :height="smAndDown ? 460 : undefined"
         :fixed-height="smAndDown"
@@ -96,12 +152,22 @@ async function submitAdd() {
             {{ localError }}
         </AppAlert>
 
+        <button
+            v-if="archivedBlocked && canRestore"
+            type="button"
+            class="su-btn su-btn--ink mb-3"
+            :disabled="store.acting"
+            @click="restoreThenContinue"
+        >
+            {{ t('comptesPage.actions.restore') }}
+        </button>
+
         <AccountSnapshotForm :form="form" :balance-error="balanceError" />
 
         <template #footer="{ close }">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">{{ t('common.cancel') }}</button>
-            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="submitAdd">
-                {{ t('comptesPage.snapshots.add') }}
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || archivedBlocked" @click="submit">
+                {{ isEdit ? t('common.save') : t('comptesPage.snapshots.add') }}
             </button>
         </template>
     </AppModalBase>
