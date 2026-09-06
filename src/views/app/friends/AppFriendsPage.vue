@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { BellPlusIcon, CameraIcon, SearchIcon, ShieldLockIcon, UserHeartIcon, UsersIcon, XIcon } from 'vue-tabler-icons';
+import AppTabsShell from '@/components/shared/tabs/AppTabsShell.vue';
 import { BlockedUsersTab, DiscoverFriendsTab, FriendQrModal, FriendsTab, RequestsTab, useFriendsStore } from '@/features/friends';
 
 const FRIEND_TABS = ['Friends', 'Requests', 'Discover', 'Blocked'] as const;
@@ -67,10 +68,6 @@ function syncTabQuery(value: FriendTab) {
     void router.replace({ query: nextQuery });
 }
 
-function selectTab(value: FriendTab) {
-    tab.value = value;
-}
-
 async function onQrScanned(publicId: string) {
     tab.value = 'Discover';
     try {
@@ -122,30 +119,16 @@ watch(tab, (value) => {
 </script>
 
 <template>
-    <div class="su-page" :class="{ 'su-page--discover-idle': tab === 'Discover' && !discoverSearching }">
-        <header class="su-hero" :class="{ 'su-hero--searching': discoverSearching }">
-            <div class="su-hero__top">
-                <h1>{{ t('friendsPage.title') }}</h1>
-                <nav class="su-tabs" :aria-label="t('friendsPage.title')">
-                    <button
-                        v-for="item in tabs"
-                        :key="item.value"
-                        type="button"
-                        class="su-tab"
-                        :class="{ 'is-active': tab === item.value }"
-                        :aria-current="tab === item.value ? 'page' : undefined"
-                        @click="selectTab(item.value)"
-                    >
-                        <component :is="item.icon" :size="18" stroke-width="1.6" />
-                        {{ item.label }}
-                        <span v-if="item.chip" class="su-tab__chip">{{ item.chip }}</span>
-                    </button>
-                </nav>
-            </div>
-            <p v-show="!discoverSearching">{{ t('friendsPage.subtitle') }}</p>
-        </header>
-
-        <div v-if="tab === 'Discover'" class="su-discover-search-slot">
+    <AppTabsShell
+        v-model="tab"
+        :tabs="tabs"
+        :title="t('friendsPage.title')"
+        :subtitle="discoverSearching ? undefined : t('friendsPage.subtitle')"
+        hide-actions
+        :class="{ 'su-page--discover-idle': tab === 'Discover' && !discoverSearching }"
+        :hero-class="{ 'su-hero--searching': discoverSearching }"
+    >
+        <template v-if="tab === 'Discover'" #toolbar>
             <div class="su-search su-search--discover">
                 <button
                     class="su-search__orb"
@@ -175,17 +158,15 @@ watch(tab, (value) => {
                     <XIcon :size="16" stroke-width="1.5" />
                 </button>
             </div>
-        </div>
+        </template>
 
-        <div class="su-body">
-            <Transition name="su-pane" mode="out-in">
-                <FriendsTab v-if="tab === 'Friends'" key="Friends" />
-                <RequestsTab v-else-if="tab === 'Requests'" key="Requests" />
-                <DiscoverFriendsTab v-else-if="tab === 'Discover'" key="Discover" />
-                <BlockedUsersTab v-else key="Blocked" />
-            </Transition>
-        </div>
+        <Transition name="su-pane" mode="out-in">
+            <FriendsTab v-if="tab === 'Friends'" key="Friends" />
+            <RequestsTab v-else-if="tab === 'Requests'" key="Requests" />
+            <DiscoverFriendsTab v-else-if="tab === 'Discover'" key="Discover" />
+            <BlockedUsersTab v-else key="Blocked" />
+        </Transition>
+    </AppTabsShell>
 
-        <FriendQrModal v-model="qrOpen" @scanned="onQrScanned" />
-    </div>
+    <FriendQrModal v-model="qrOpen" @scanned="onQrScanned" />
 </template>

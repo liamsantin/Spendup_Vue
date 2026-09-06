@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Shell de page simple — hero verre (titre + actions sur une ligne, sous-titre dessous) + corps.
+ * Même alignement vertical du bloc de droite que AppTabsShell.
+ */
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -35,7 +39,9 @@ const emit = defineEmits<{
     <div class="su-page">
         <header class="su-hero">
             <div class="su-hero__top">
-                <h1>{{ title }}</h1>
+                <div class="su-hero__heading">
+                    <h1>{{ title }}</h1>
+                </div>
                 <div v-if="$slots.actions || !hideActions" class="su-hero__actions">
                     <slot name="actions" />
                     <template v-if="!hideActions">

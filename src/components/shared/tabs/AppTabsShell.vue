@@ -37,6 +37,8 @@ const props = withDefaults(
         embedded?: boolean;
         /** Conservé pour compatibilité (les onglets verre sont toujours pill). */
         pilled?: boolean;
+        /** Classes additionnelles sur le hero (ex. état recherche Discover). */
+        heroClass?: string | Record<string, boolean> | Array<string | Record<string, boolean>>;
     }>(),
     {
         title: undefined,
@@ -47,7 +49,8 @@ const props = withDefaults(
         hideActions: false,
         alignTabs: 'start',
         embedded: false,
-        pilled: true
+        pilled: true,
+        heroClass: undefined
     }
 );
 
@@ -71,11 +74,10 @@ function selectTab(value: string) {
 
 <template>
     <div class="su-page" :class="{ 'su-page--embedded': props.embedded }">
-        <header class="su-hero">
+        <header class="su-hero" :class="props.heroClass">
             <div class="su-hero__top">
                 <div class="su-hero__heading">
                     <h1 v-if="title">{{ title }}</h1>
-                    <p v-if="subtitle">{{ subtitle }}</p>
                 </div>
                 <nav class="su-tabs" :aria-label="title">
                     <button
@@ -101,6 +103,7 @@ function selectTab(value: string) {
                     </button>
                 </div>
             </div>
+            <p v-if="subtitle">{{ subtitle }}</p>
             <div v-if="$slots.toolbar" class="su-toolbar">
                 <slot name="toolbar" />
             </div>

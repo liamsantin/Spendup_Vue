@@ -33,11 +33,17 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px 16px;
+    /* Hauteur min = barre d’onglets (40 + 2×6) pour un ancrage vertical identique
+       même quand la page n’a pas de tabs (AppPageShell / actions seules). */
+    min-height: 52px;
 }
 
 .su-hero__heading {
     flex: 1 1 12rem;
     min-width: 0;
+    display: flex;
+    align-items: center;
+    min-height: 52px;
 }
 
 .su-hero h1 {
@@ -50,7 +56,7 @@
 }
 
 .su-hero p {
-    margin: 8px 0 0;
+    margin: 0 0 12px;
     max-width: 46ch;
     color: var(--ink-muted);
     font-size: 14.5px;
@@ -190,7 +196,7 @@
 
 .su-search--discover {
     width: min(520px, 100%);
-    margin: 8px 0 0;
+    margin: 0;
 }
 
 .su-search:focus-within {
