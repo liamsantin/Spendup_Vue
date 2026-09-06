@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { UserPhotoAvatar } from '@/features/friends';
+import { UserPhotoAvatar, useFriendNicknameLabels } from '@/features/friends';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { IncomingAccountShare } from '@/features/accounts/types';
 
@@ -11,8 +11,15 @@ const props = defineProps<{
 
 const { t, locale } = useI18n();
 const store = useAccountsStore();
+const { ensureLoaded: ensureNicknameLabels, labelFor } = useFriendNicknameLabels();
 const accepting = ref(false);
 const refusing = ref(false);
+
+const ownerLabel = computed(() => labelFor(props.invite.ownerPublicId, props.invite.ownerDisplayName));
+
+onMounted(() => {
+    void ensureNicknameLabels().catch(() => undefined);
+});
 
 function formatDate(value: string) {
     return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
@@ -54,7 +61,7 @@ async function onRefuse() {
         <UserPhotoAvatar
             :photo-url="props.invite.ownerPhotoUrl"
             :user-public-id="props.invite.ownerPublicId"
-            :fallback-label="props.invite.ownerDisplayName"
+            :fallback-label="ownerLabel"
             :size="44"
         />
         <div class="su-person__meta">
@@ -62,7 +69,7 @@ async function onRefuse() {
             <p class="su-person__sub">
                 {{
                     t('comptesPage.invitations.from', {
-                        name: props.invite.ownerDisplayName
+                        name: ownerLabel
                     })
                 }}
                 · {{ t(`comptesPage.types.${props.invite.accountType}`) }} · {{ props.invite.currency }}

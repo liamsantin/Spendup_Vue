@@ -10,6 +10,7 @@ import { usePaymentMethodsStore } from '@/features/payment-methods/stores/paymen
 import {
     buildCreatePaymentMethodPayload,
     buildUpdatePaymentMethodPayload,
+    isPaymentMethodFormDirty,
     type PaymentMethodFormFields,
     type PaymentMethodPayloadErrorCode
 } from '@/features/payment-methods/payload';
@@ -56,6 +57,12 @@ const form = reactive<PaymentMethodFormFields>({
 const open = computed({
     get: () => props.modelValue,
     set: (value: boolean) => emit('update:modelValue', value)
+});
+
+/** En édition : Enregistrer seulement s’il y a un changement. */
+const canSave = computed(() => {
+    if (!isEdit.value || !props.method) return true;
+    return isPaymentMethodFormDirty(props.method, form);
 });
 
 function clearFieldErrors() {
@@ -111,6 +118,7 @@ watch(
 );
 
 async function onSave() {
+    if (isEdit.value && !canSave.value) return;
     localError.message = null;
     clearFieldErrors();
     const siblings = store.allKnownItems();
@@ -165,7 +173,7 @@ async function onSave() {
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
-            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onSave">
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
                 {{ t('common.save') }}
             </button>
         </template>

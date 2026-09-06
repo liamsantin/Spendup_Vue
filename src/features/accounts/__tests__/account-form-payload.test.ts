@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildUpdateAccountPayload, shouldValidateAccountIban } from '@/features/accounts/account-form-payload';
+import { buildUpdateAccountPayload, isAccountFormDirty, shouldValidateAccountIban } from '@/features/accounts/account-form-payload';
 import type { Account } from '@/features/accounts/types';
 
 function account(partial: Partial<Account> = {}): Account {
@@ -60,5 +60,45 @@ describe('account-form-payload (formulaire verrouillé / IBAN)', () => {
             accountNumber: '99',
             color: '#10B981'
         });
+    });
+});
+
+describe('isAccountFormDirty', () => {
+    it('retourne false si rien n’a changé (owner)', () => {
+        const acc = account();
+        expect(
+            isAccountFormDirty(acc, {
+                name: acc.name,
+                type: acc.type,
+                initialBalance: acc.initialBalance ?? 0,
+                iban: acc.iban ?? '',
+                accountNumber: acc.accountNumber ?? '',
+                color: acc.color
+            })
+        ).toBe(false);
+    });
+
+    it('détecte un changement de nom et ignore type/iban pour un editor', () => {
+        const acc = account({ myRole: 'editor', isOwned: false });
+        expect(
+            isAccountFormDirty(acc, {
+                name: acc.name,
+                type: 'epargne',
+                initialBalance: 0,
+                iban: 'CHANGED',
+                accountNumber: acc.accountNumber ?? '',
+                color: acc.color
+            })
+        ).toBe(false);
+        expect(
+            isAccountFormDirty(acc, {
+                name: 'Autre',
+                type: acc.type,
+                initialBalance: acc.initialBalance ?? 0,
+                iban: acc.iban ?? '',
+                accountNumber: acc.accountNumber ?? '',
+                color: acc.color
+            })
+        ).toBe(true);
     });
 });

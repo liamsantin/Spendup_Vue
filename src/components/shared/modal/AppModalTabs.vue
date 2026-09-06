@@ -267,12 +267,16 @@ const currentTab = computed({
     height: 100%;
     min-height: 0;
     overflow: hidden;
+    /* Marge interne : le scale hover des .su-btn peut peindre ici sans coupe. */
+    padding: 4px;
+    box-sizing: border-box;
 }
 
 .app-modal-tabs__item > * {
     flex: 1 1 0;
     min-height: 0;
     height: 100%;
-    overflow: hidden;
+    /* visible : laisse le hover scale déborder vers le padding du parent ; le scroll reste sur AppModalPanelScroll. */
+    overflow: visible;
 }
 </style>

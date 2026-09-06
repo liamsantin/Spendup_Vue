@@ -3,6 +3,7 @@ import {
     buildCreatePaymentMethodPayload,
     buildUpdatePaymentMethodPayload,
     isDuplicateLabel,
+    isPaymentMethodFormDirty,
     parseLastFourDigits
 } from '@/features/payment-methods/payload';
 import type { PaymentMethod } from '@/features/payment-methods/types';
@@ -84,5 +85,11 @@ describe('payment-method payload', () => {
         expect(result).toMatchObject({ ok: false, code: 'expirationPast' });
         const inactive = buildCreatePaymentMethodPayload(fields({ expirationDate: '2026-08-31', isActive: false }), [], now);
         expect(inactive.ok).toBe(true);
+    });
+
+    it('isPaymentMethodFormDirty : false sans changement, true si label change', () => {
+        const pm = method();
+        expect(isPaymentMethodFormDirty(pm, fields())).toBe(false);
+        expect(isPaymentMethodFormDirty(pm, fields({ label: 'Autre' }))).toBe(true);
     });
 });

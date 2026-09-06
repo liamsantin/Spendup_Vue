@@ -29,7 +29,10 @@ export function useShareInvite(options: {
         const query = friendQuery.value.trim().toLowerCase();
         if (!query) return availableFriends.value;
         return availableFriends.value.filter((f) => {
-            const haystack = [f.user.firstName, f.user.name, f.user.username, f.user.publicId].filter(Boolean).join(' ').toLowerCase();
+            const haystack = [f.nickname, f.user.firstName, f.user.name, f.user.username, f.user.publicId]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
             return haystack.includes(query);
         });
     });

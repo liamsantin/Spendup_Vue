@@ -74,7 +74,7 @@ async function confirmDelete() {
 
 <template>
     <div class="account-payment-methods-panel d-flex flex-column h-100">
-        <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-4 px-1">
+        <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-4 px-2">
             <div class="min-width-0">
                 <h5 class="text-h6 mb-0">{{ t('paymentMethodsPage.detail.title') }}</h5>
                 <div class="text-body-2 text-medium-emphasis">{{ t('paymentMethodsPage.detail.subtitle') }}</div>

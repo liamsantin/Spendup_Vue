@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
-import { UserPhotoAvatar } from '@/features/friends';
+import { UserPhotoAvatar, useFriendNicknameLabels } from '@/features/friends';
 import { PencilIcon } from 'vue-tabler-icons';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
@@ -18,6 +18,7 @@ const props = defineProps<{
 
 const { t, locale } = useI18n();
 const store = useAccountsStore();
+const { ensureLoaded: ensureNicknameLabels, labelFor } = useFriendNicknameLabels();
 
 const inviteOpen = ref(false);
 const editTargetId = ref<string | null>(null);
@@ -40,6 +41,14 @@ const revokeOpen = computed({
         if (!value) revokeTarget.value = null;
     }
 });
+
+const revokeTargetLabel = computed(() =>
+    revokeTarget.value ? labelFor(revokeTarget.value.userPublicId, revokeTarget.value.displayName) : ''
+);
+
+function shareLabel(share: AccountShare) {
+    return labelFor(share.userPublicId, share.displayName);
+}
 
 function formatDate(value: string) {
     return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
@@ -75,7 +84,10 @@ watch(
     () => props.accountPublicId,
     (id) => {
         // force : évite de réafficher un pending stale après accept/refuse/leave hors modale.
-        if (id) void store.loadShares(id, true).catch(() => undefined);
+        if (id) {
+            void store.loadShares(id, true).catch(() => undefined);
+            void ensureNicknameLabels().catch(() => undefined);
+        }
     },
     { immediate: true }
 );
@@ -132,14 +144,14 @@ async function confirmRevoke() {
                             class="mr-3"
                             :photo-url="share.photoUrl"
                             :user-public-id="share.userPublicId"
-                            :fallback-label="share.displayName"
+                            :fallback-label="shareLabel(share)"
                             :size="42"
                         />
                     </template>
 
                     <div class="account-share-row w-100">
                         <div class="min-width-0">
-                            <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">{{ share.displayName }}</h6>
+                            <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">{{ shareLabel(share) }}</h6>
                             <p class="text-body-2 text-medium-emphasis mb-0">{{ formatDate(share.createdAt) }}</p>
                             <p v-if="hiddenFieldsSummary(share)" class="text-caption text-medium-emphasis mb-0 mt-1">
                                 {{ hiddenFieldsSummary(share) }}
@@ -175,8 +187,8 @@ async function confirmRevoke() {
             "
             :message="
                 revokeTarget?.role === 'pending'
-                    ? t('comptesPage.share.cancelInviteModal.body', { name: revokeTarget?.displayName })
-                    : t('comptesPage.share.revokeModal.body', { name: revokeTarget?.displayName })
+                    ? t('comptesPage.share.cancelInviteModal.body', { name: revokeTargetLabel })
+                    : t('comptesPage.share.revokeModal.body', { name: revokeTargetLabel })
             "
             :confirm-label="revokeTarget?.role === 'pending' ? t('comptesPage.share.cancelInvite') : t('comptesPage.share.revoke')"
             confirm-color="error"

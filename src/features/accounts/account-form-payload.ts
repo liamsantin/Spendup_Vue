@@ -1,4 +1,4 @@
-import { emptyToNull, normalizeAccountColor } from '@/features/accounts/format';
+import { emptyToNull, normalizeAccountColor, normalizeIban } from '@/features/accounts/format';
 import { canEditAccountOwnerFields } from '@/features/accounts/rights';
 import type { Account, AccountType, UpdateAccountPayload } from '@/features/accounts/types';
 
@@ -45,4 +45,24 @@ export function buildUpdateAccountPayload(
         color: normalizeAccountColor(fields.color),
         isPrimary: account.isPrimary
     };
+}
+
+/**
+ * True si le formulaire d’édition diffère des valeurs actuelles du compte
+ * (champs éditables selon le rôle).
+ */
+export function isAccountFormDirty(
+    account: Pick<Account, 'name' | 'type' | 'initialBalance' | 'iban' | 'accountNumber' | 'color' | 'myRole'>,
+    fields: AccountFormUpdateFields
+): boolean {
+    if (fields.name.trim() !== account.name.trim()) return true;
+    if (emptyToNull(fields.accountNumber) !== emptyToNull(account.accountNumber)) return true;
+    if (normalizeAccountColor(fields.color) !== normalizeAccountColor(account.color)) return true;
+
+    if (!canEditAccountOwnerFields(account)) return false;
+
+    if (fields.type !== account.type) return true;
+    if (Number(fields.initialBalance) !== Number(account.initialBalance ?? 0)) return true;
+    if (normalizeIban(fields.iban) !== normalizeIban(account.iban)) return true;
+    return false;
 }

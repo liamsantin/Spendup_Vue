@@ -1,5 +1,11 @@
 export { friendsApi } from '@/features/friends/api';
-export { getFriendDisplayName, getFriendProfileLabel, getFriendDisplayNameFromItem } from '@/features/friends/display-name';
+export {
+    getFriendDisplayName,
+    getFriendProfileLabel,
+    getFriendDisplayNameFromItem,
+    resolveLabeledName,
+    buildFriendNicknameByUserId
+} from '@/features/friends/display-name';
 export { FRIEND_NICKNAME_MAX_LENGTH, normalizeFriendNickname, validateFriendNickname } from '@/features/friends/nickname';
 export { listAllFriends, FRIENDS_LIST_ALL_PAGE_SIZE, FRIENDS_LIST_ALL_MAX_PAGES } from '@/features/friends/list-all';
 export { useFriendsStore } from '@/features/friends/stores/friends-store';
@@ -10,6 +16,10 @@ export {
     DEFAULT_AVATAR_SRC
 } from '@/features/friends/profilePicture';
 export { useFriendAvatarUrl } from '@/features/friends/composables/useFriendAvatarUrl';
+export {
+    useFriendNicknameLabels,
+    invalidateFriendNicknameLabelsCache
+} from '@/features/friends/composables/useFriendNicknameLabels';
 export type {
     FriendshipStatus,
     FriendUser,

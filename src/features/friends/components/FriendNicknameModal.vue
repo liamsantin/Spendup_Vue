@@ -29,6 +29,9 @@ const open = computed({
 
 const displayName = computed(() => (props.friend ? getFriendDisplayNameFromItem(props.friend) : ''));
 const hasNickname = computed(() => !!props.friend?.nickname?.trim());
+const canSave = computed(
+    () => normalizeFriendNickname(draft.value) !== normalizeFriendNickname(props.friend?.nickname ?? null)
+);
 
 watch(
     () => [props.modelValue, props.friend?.friendshipPublicId, props.friend?.nickname] as const,
@@ -111,7 +114,7 @@ async function removeNickname() {
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
-            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="saveNickname">
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="saveNickname">
                 {{ t('friendsPage.nicknameModal.save') }}
             </button>
         </template>

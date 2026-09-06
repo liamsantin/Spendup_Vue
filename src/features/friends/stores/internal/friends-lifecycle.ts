@@ -1,6 +1,7 @@
 import type { FriendsState } from '@/features/friends/stores/internal/friends-state';
 import type { FriendsLists } from '@/features/friends/stores/internal/friends-lists';
 import type { FriendsRealtime } from '@/features/friends/stores/internal/friends-realtime';
+import { invalidateFriendNicknameLabelsCache } from '@/features/friends/friend-nickname-labels-cache';
 
 export type FriendsTab = 'Friends' | 'Requests' | 'Blocked' | 'Discover';
 
@@ -89,6 +90,7 @@ export function createFriendsLifecycle(state: FriendsState, lists: FriendsLists,
         cache.reset();
         resetListState();
         teardownRealtimeBridge();
+        invalidateFriendNicknameLabelsCache();
     }
 
     return {

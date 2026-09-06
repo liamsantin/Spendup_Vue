@@ -6,7 +6,7 @@ import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { emptyToNull, isValidAccountColor, isValidIbanFormat, normalizeAccountColor, parseAccountAmount } from '@/features/accounts/format';
-import { buildUpdateAccountPayload, shouldValidateAccountIban } from '@/features/accounts/account-form-payload';
+import { buildUpdateAccountPayload, isAccountFormDirty, shouldValidateAccountIban } from '@/features/accounts/account-form-payload';
 import { canEditAccountOwnerFields } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { ACCOUNT_COLOR_PRESETS, ACCOUNT_TYPES, CURRENCIES, type Account, type AccountType, type Currency } from '@/features/accounts/types';
@@ -71,6 +71,19 @@ const open = computed({
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
+/** En édition : Enregistrer seulement s’il y a un changement. */
+const canSave = computed(() => {
+    if (!isEdit.value || !props.account) return true;
+    return isAccountFormDirty(props.account, {
+        name: form.name,
+        type: form.type,
+        initialBalance: form.initialBalance,
+        iban: form.iban,
+        accountNumber: form.accountNumber,
+        color: form.color
+    });
+});
+
 function clearFieldErrors() {
     fieldErrors.name = null;
     fieldErrors.initialBalance = null;
@@ -111,6 +124,7 @@ watch(
 );
 
 async function onSave() {
+    if (isEdit.value && !canSave.value) return;
     localError.message = null;
     clearFieldErrors();
     const name = form.name.trim();
@@ -219,7 +233,7 @@ async function onSave() {
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
-            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onSave">
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
                 {{ t('common.save') }}
             </button>
         </template>

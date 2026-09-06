@@ -168,3 +168,24 @@ export function buildUpdatePaymentMethodPayload(
     };
     return { ok: true, payload };
 }
+
+/**
+ * True si le formulaire d’édition diffère des valeurs actuelles du moyen de paiement.
+ * (`accountPublicId` n’est pas éditable à la mise à jour.)
+ */
+export function isPaymentMethodFormDirty(
+    method: Pick<PaymentMethod, 'type' | 'label' | 'reference' | 'lastFourDigits' | 'expirationDate' | 'isActive'>,
+    fields: PaymentMethodFormFields
+): boolean {
+    if (fields.type !== method.type) return true;
+    if (normalizeLabel(fields.label) !== normalizeLabel(method.label)) return true;
+    if (emptyToNull(fields.reference) !== emptyToNull(method.reference)) return true;
+
+    const formLast4 = parseLastFourDigits(fields.lastFourDigits);
+    const currentLast4 = emptyToNull(method.lastFourDigits);
+    if (!formLast4.ok || formLast4.value !== currentLast4) return true;
+
+    if (emptyToNull(fields.expirationDate) !== emptyToNull(method.expirationDate)) return true;
+    if (fields.isActive !== method.isActive) return true;
+    return false;
+}

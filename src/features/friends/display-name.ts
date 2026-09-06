@@ -25,3 +25,23 @@ export function getFriendProfileLabel(user: FriendUser): string {
 export function getFriendDisplayNameFromItem(friend: FriendItem): string {
     return getFriendDisplayName(friend.user, friend.nickname);
 }
+
+/** Surnom trimé s’il est défini, sinon le libellé API / profil fourni. */
+export function resolveLabeledName(fallback: string, nickname?: string | null): string {
+    const trimmedNickname = nickname?.trim();
+    return trimmedNickname || fallback;
+}
+
+/** Index `userPublicId → surnom` pour les amis qui en ont un. */
+export function buildFriendNicknameByUserId(
+    friends: Array<{ user: { publicId: string }; nickname?: string | null }>
+): Map<string, string> {
+    const map = new Map<string, string>();
+    for (const friend of friends) {
+        const nickname = friend.nickname?.trim();
+        if (nickname && friend.user.publicId) {
+            map.set(friend.user.publicId, nickname);
+        }
+    }
+    return map;
+}

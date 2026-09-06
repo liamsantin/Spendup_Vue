@@ -1,4 +1,4 @@
-export { buildUpdateAccountPayload, shouldValidateAccountIban } from '@/features/accounts/account-form-payload';
+export { buildUpdateAccountPayload, isAccountFormDirty, shouldValidateAccountIban } from '@/features/accounts/account-form-payload';
 export type { AccountFormUpdateFields } from '@/features/accounts/account-form-payload';
 export { accountsApi } from '@/features/accounts/api';
 export { useAccountsStore } from '@/features/accounts/stores/accounts-store';

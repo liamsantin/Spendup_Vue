@@ -5,7 +5,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
-import { UserPhotoAvatar } from '@/features/friends';
+import { UserPhotoAvatar, useFriendNicknameLabels } from '@/features/friends';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { AccountShare, HiddenAccountField, ShareRole } from '@/features/accounts/types';
@@ -26,6 +26,7 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n();
 const store = useAccountsStore();
+const { ensureLoaded: ensureNicknameLabels, labelFor } = useFriendNicknameLabels();
 const editRole = ref<ShareRole>('viewer');
 const editHiddenFields = ref<HiddenAccountField[]>([...DEFAULT_VIEWER_HIDDEN_FIELDS]);
 const editError = ref<string | null>(null);
@@ -39,6 +40,10 @@ const initialRole = computed(() => {
     if (!props.share) return 'viewer' as ShareRole;
     return (props.share.role === 'pending' ? (props.share.invitedRole ?? 'viewer') : props.share.role) as ShareRole;
 });
+
+const personLabel = computed(() =>
+    props.share ? labelFor(props.share.userPublicId, props.share.displayName) : ''
+);
 
 const canSave = computed(() => {
     if (!props.share || props.share.role === 'pending') return false;
@@ -60,6 +65,7 @@ watch(
         editRole.value = initialRole.value;
         editHiddenFields.value = [...(props.share.hiddenFields ?? DEFAULT_VIEWER_HIDDEN_FIELDS)];
         editError.value = null;
+        void ensureNicknameLabels().catch(() => undefined);
     }
 );
 
@@ -91,11 +97,11 @@ function requestRevoke() {
             <UserPhotoAvatar
                 :photo-url="share.photoUrl"
                 :user-public-id="share.userPublicId"
-                :fallback-label="share.displayName"
+                :fallback-label="personLabel"
                 :size="42"
             />
             <div class="min-width-0">
-                <div class="text-subtitle-1 font-weight-bold text-truncate">{{ share.displayName }}</div>
+                <div class="text-subtitle-1 font-weight-bold text-truncate">{{ personLabel }}</div>
                 <div class="text-body-2 text-medium-emphasis">{{ formatDate(share.createdAt) }}</div>
             </div>
         </div>
