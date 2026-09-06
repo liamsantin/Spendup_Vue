@@ -39,8 +39,8 @@ const authorLabel = computed(() => {
 <template>
     <div class="snapshots-list__item">
         <div class="snapshots-list__body min-width-0">
-            <div class="d-flex align-center justify-space-between ga-2">
-                <div class="text-body-1 font-weight-bold text-truncate">
+            <div class="snapshots-list__primary d-flex align-center justify-space-between ga-2">
+                <div class="snapshots-list__amount text-body-1 font-weight-bold text-truncate">
                     {{ formatAccountBalance(snapshot.balance, currency, locale) }}
                 </div>
                 <div class="d-flex align-center ga-1 flex-shrink-0">
@@ -59,7 +59,7 @@ const authorLabel = computed(() => {
                     </button>
                 </div>
             </div>
-            <div class="d-flex align-center ga-1 text-caption text-medium-emphasis">
+            <div class="snapshots-list__date d-flex align-center ga-1 text-caption text-medium-emphasis">
                 <CalendarIcon size="12" stroke-width="1.5" />
                 <span>{{ formatDate(snapshot.snapshotAt) }}</span>
             </div>
@@ -74,7 +74,7 @@ const authorLabel = computed(() => {
                     {{ authorLabel }}
                 </span>
             </div>
-            <div v-if="snapshot.note" class="text-caption text-medium-emphasis text-truncate">
+            <div v-if="snapshot.note" class="snapshots-list__note text-caption text-medium-emphasis text-truncate">
                 {{ snapshot.note }}
             </div>
         </div>
@@ -86,8 +86,8 @@ const authorLabel = computed(() => {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 10px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: var(--radius-leaf);
     background: rgb(var(--v-theme-surface));
     border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
 }
@@ -97,10 +97,20 @@ const authorLabel = computed(() => {
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0;
 }
 
-.snapshots-list__author {
-    margin-top: 2px;
+.snapshots-list__amount {
+    line-height: 1.2;
+}
+
+.snapshots-list__date {
+    margin-top: 1px;
+    line-height: 1.2;
+}
+
+.snapshots-list__author,
+.snapshots-list__note {
+    margin-top: 4px;
 }
 </style>
