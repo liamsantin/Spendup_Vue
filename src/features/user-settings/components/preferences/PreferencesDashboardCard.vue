@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { LayoutDashboardIcon } from 'vue-tabler-icons';
 import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
+import AppSelect from '@/components/shared/select/AppSelect.vue';
 import type { UserSettings } from '@/features/user-settings/types';
 
 const draft = defineModel<UserSettings>({ required: true });
@@ -23,12 +24,12 @@ const dashboardViewItems = computed(() => [
         <v-row>
             <v-col cols="12" md="6">
                 <v-label class="mb-2 font-weight-medium">{{ t('userSettings.dashboard.defaultView') }}</v-label>
-                <v-select
+                <AppSelect
                     v-model="draft.defaultDashboardView"
                     :items="dashboardViewItems"
                     item-title="title"
                     item-value="value"
-                    variant="outlined"
+                    :label="t('userSettings.dashboard.defaultView')"
                     hide-details
                 />
             </v-col>

@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { WorldIcon } from 'vue-tabler-icons';
 import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
+import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { CURRENCY_OPTIONS, LOCALE_OPTIONS, TIMEZONE_OPTIONS, type UserSettings } from '@/features/user-settings/types';
 
 const draft = defineModel<UserSettings>({ required: true });
@@ -26,38 +27,38 @@ const firstDayItems = computed(() =>
         <v-row>
             <v-col cols="12" md="6">
                 <v-label class="mb-2 font-weight-medium">{{ t('userSettings.regional.locale') }}</v-label>
-                <v-select
+                <AppSelect
                     v-model="draft.locale"
                     :items="localeItems"
                     item-title="title"
                     item-value="value"
-                    variant="outlined"
+                    :label="t('userSettings.regional.locale')"
                     hide-details
                 />
             </v-col>
             <v-col cols="12" md="6">
                 <v-label class="mb-2 font-weight-medium">{{ t('userSettings.regional.timezone') }}</v-label>
-                <v-select v-model="draft.timezone" :items="TIMEZONE_OPTIONS" variant="outlined" hide-details />
+                <AppSelect v-model="draft.timezone" :items="TIMEZONE_OPTIONS" :label="t('userSettings.regional.timezone')" hide-details />
             </v-col>
             <v-col cols="12" md="6">
                 <v-label class="mb-2 font-weight-medium">{{ t('userSettings.regional.defaultCurrency') }}</v-label>
-                <v-select
+                <AppSelect
                     v-model="draft.defaultCurrency"
                     :items="currencyItems"
                     item-title="title"
                     item-value="value"
-                    variant="outlined"
+                    :label="t('userSettings.regional.defaultCurrency')"
                     hide-details
                 />
             </v-col>
             <v-col cols="12" md="6">
                 <v-label class="mb-2 font-weight-medium">{{ t('userSettings.regional.firstDayOfWeek') }}</v-label>
-                <v-select
+                <AppSelect
                     v-model="draft.firstDayOfWeek"
                     :items="firstDayItems"
                     item-title="title"
                     item-value="value"
-                    variant="outlined"
+                    :label="t('userSettings.regional.firstDayOfWeek')"
                     hide-details
                 />
             </v-col>

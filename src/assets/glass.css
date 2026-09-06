@@ -1037,6 +1037,112 @@
     background: transparent !important;
 }
 
+.app-select-menu {
+    margin-top: 6px;
+    border-radius: 16px !important;
+    overflow: hidden;
+}
+
+.app-select-menu__surface {
+    overflow: hidden;
+    background: #fff !important;
+    border: 1px solid var(--thread);
+    border-radius: 16px !important;
+    box-shadow: var(--shadow-overlay);
+    color: var(--ink);
+}
+
+.app-select-menu__scroll {
+    position: relative;
+    max-height: min(310px, 55dvh);
+}
+
+.app-select-menu__options {
+    display: grid;
+    gap: 3px;
+    padding: 7px 13px 7px 7px;
+}
+
+.app-select-menu__option {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 43px;
+    padding: 0 10px 0 13px;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: var(--ink-mute);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.app-select-menu__option:hover,
+.app-select-menu__option:focus-visible {
+    outline: none;
+    background: var(--surface-hover);
+    color: var(--ink);
+}
+
+.app-select-menu__option.is-selected {
+    background: rgba(var(--v-theme-primary), 0.09) !important;
+    color: var(--ink) !important;
+    font-weight: 600;
+}
+
+.app-select-menu__check {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    flex: none;
+    border-radius: 50%;
+    background: rgb(var(--v-theme-primary));
+    color: #fff;
+}
+
+.app-select-menu .ps--active-y > .ps__rail-y {
+    right: 3px !important;
+    width: 7px !important;
+    background: transparent !important;
+    opacity: 1 !important;
+}
+
+.app-select-menu .ps__thumb-y {
+    right: 1px !important;
+    width: 5px !important;
+    border-radius: 999px !important;
+    background: rgba(var(--v-theme-primary), 0.38) !important;
+}
+
+@media (max-width: 959.98px) {
+    .app-select-menu {
+        position: fixed !important;
+        inset: auto 12px 12px !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        margin: 0;
+        border-radius: 22px !important;
+    }
+
+    .app-select-menu__surface {
+        width: 100%;
+        border-radius: 22px !important;
+    }
+
+    .app-select-menu__scroll {
+        max-height: min(310px, 70dvh);
+    }
+}
+
 .su-menu .text-h5,
 .su-menu .text-h6 {
     font-family: var(--font-ui);

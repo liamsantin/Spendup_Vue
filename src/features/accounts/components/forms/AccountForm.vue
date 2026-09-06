@@ -8,6 +8,7 @@ defineOptions({ name: 'AccountForm' });
 
 import { useI18n } from 'vue-i18n';
 import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue';
+import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import { ACCOUNT_COLOR_PRESETS, type AccountType, type Currency } from '@/features/accounts/types';
 
@@ -92,15 +93,14 @@ const { t } = useI18n();
                 <label class="v-label font-weight-medium" for="account-form-type"> {{ t('comptesPage.form.fields.type') }} * </label>
             </v-col>
             <v-col cols="12" sm="9">
-                <v-select
+                <AppSelect
                     id="account-form-type"
                     v-model="form.type"
                     :items="typeItems"
-                    color="primary"
-                    variant="outlined"
+                    :label="t('comptesPage.form.fields.type')"
+                    :disabled="ownerFieldsLocked"
                     hide-details="auto"
                     required
-                    :disabled="ownerFieldsLocked"
                 />
             </v-col>
         </v-row>
@@ -111,12 +111,11 @@ const { t } = useI18n();
                 </label>
             </v-col>
             <v-col cols="12" sm="9">
-                <v-select
+                <AppSelect
                     id="account-form-currency"
                     v-model="form.currency"
                     :items="currencyItems"
-                    color="primary"
-                    variant="outlined"
+                    :label="t('comptesPage.form.fields.currency')"
                     hide-details="auto"
                     required
                     :disabled="isEdit || ownerFieldsLocked"

@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MailIcon } from 'vue-tabler-icons';
 import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
+import AppSelect from '@/components/shared/select/AppSelect.vue';
 import type { UserSettings } from '@/features/user-settings/types';
 
 const draft = defineModel<UserSettings>({ required: true });
@@ -75,12 +76,12 @@ const digestItems = computed(() => [
             />
 
             <v-label class="mb-2 font-weight-medium">{{ t('userSettings.notifications.digestFrequency') }}</v-label>
-            <v-select
+            <AppSelect
                 v-model="draft.notificationDigestFrequency"
                 :items="digestItems"
                 item-title="title"
                 item-value="value"
-                variant="outlined"
+                :label="t('userSettings.notifications.digestFrequency')"
                 hide-details
             />
         </div>

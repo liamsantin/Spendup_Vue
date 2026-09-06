@@ -8,6 +8,7 @@ defineOptions({ name: 'PaymentMethodForm' });
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
+import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import { todayUtcYmd } from '@/features/payment-methods/format';
 import { PAYMENT_METHOD_LABEL_MAX, PAYMENT_METHOD_REFERENCE_MAX, type PaymentMethodType } from '@/features/payment-methods/types';
@@ -71,13 +72,12 @@ function onLastFourInput(value: string) {
                 </label>
             </v-col>
             <v-col cols="12" sm="9">
-                <v-select
+                <AppSelect
                     id="pm-form-account"
                     v-model="form.accountPublicId"
                     :items="accountItems"
                     :disabled="isEdit"
-                    color="primary"
-                    variant="outlined"
+                    :label="t('paymentMethodsPage.form.fields.account')"
                     hide-details="auto"
                     :error="!!fieldErrors.accountPublicId"
                     :error-messages="fieldErrors.accountPublicId || undefined"
@@ -89,12 +89,11 @@ function onLastFourInput(value: string) {
                 <label class="v-label font-weight-medium" for="pm-form-type"> {{ t('paymentMethodsPage.form.fields.type') }} * </label>
             </v-col>
             <v-col cols="12" sm="9">
-                <v-select
+                <AppSelect
                     id="pm-form-type"
                     v-model="form.type"
                     :items="typeItems"
-                    color="primary"
-                    variant="outlined"
+                    :label="t('paymentMethodsPage.form.fields.type')"
                     hide-details="auto"
                     :error="!!fieldErrors.type"
                     :error-messages="fieldErrors.type || undefined"

@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { EyeIcon } from 'vue-tabler-icons';
 import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
+import AppSelect from '@/components/shared/select/AppSelect.vue';
 import type { UserSettings } from '@/features/user-settings/types';
 
 const draft = defineModel<UserSettings>({ required: true });
@@ -30,34 +31,34 @@ const friendRequestItems = computed(() => [
         <v-row>
             <v-col cols="12" md="6">
                 <v-label class="mb-2 font-weight-medium">{{ t('userSettings.privacy.profileVisibility') }}</v-label>
-                <v-select
+                <AppSelect
                     v-model="draft.profileVisibility"
                     :items="visibilityItems"
                     item-title="title"
                     item-value="value"
-                    variant="outlined"
+                    :label="t('userSettings.privacy.profileVisibility')"
                     hide-details
                 />
             </v-col>
             <v-col cols="12" md="6">
                 <v-label class="mb-2 font-weight-medium">{{ t('userSettings.privacy.profilePictureVisibility') }}</v-label>
-                <v-select
+                <AppSelect
                     v-model="draft.profilePictureVisibility"
                     :items="visibilityItems"
                     item-title="title"
                     item-value="value"
-                    variant="outlined"
+                    :label="t('userSettings.privacy.profilePictureVisibility')"
                     hide-details
                 />
             </v-col>
             <v-col cols="12" md="6">
                 <v-label class="mb-2 font-weight-medium">{{ t('userSettings.privacy.friendRequestsFrom') }}</v-label>
-                <v-select
+                <AppSelect
                     v-model="draft.friendRequestsFrom"
                     :items="friendRequestItems"
                     item-title="title"
                     item-value="value"
-                    variant="outlined"
+                    :label="t('userSettings.privacy.friendRequestsFrom')"
                     hide-details
                 />
             </v-col>
