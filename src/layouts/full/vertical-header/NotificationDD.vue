@@ -147,7 +147,7 @@ async function onItemClick(item: AppNotification) {
             </perfect-scrollbar>
 
             <div class="py-4 px-6 text-center">
-                <router-link class="su-btn su-btn--ink" style="width: 100%" to="/app/notifications" @click="closeMenu">
+                <router-link class="su-btn su-btn--ink notification-dd__view-all" to="/app/notifications" @click="closeMenu">
                     {{ t('header.notifications.viewAll') }}
                 </router-link>
             </div>
@@ -160,7 +160,7 @@ async function onItemClick(item: AppNotification) {
     background: rgb(var(--v-theme-primary)) !important;
     color: #fff !important;
     border: 0;
-    box-shadow: 0 8px 18px -10px rgba(var(--v-theme-primary), 0.8);
+    box-shadow: 0 6px 14px -10px rgba(var(--v-theme-primary), 0.45);
     font-weight: 600;
 }
 
@@ -195,5 +195,14 @@ async function onItemClick(item: AppNotification) {
 .notification-dd__spin {
     width: 18px;
     height: 18px;
+}
+
+.notification-dd__view-all {
+    width: 100%;
+    box-shadow: 0 8px 18px -14px rgba(var(--v-theme-primary), 0.35);
+}
+
+.notification-dd__view-all:hover {
+    box-shadow: 0 10px 22px -12px rgba(var(--v-theme-primary), 0.42);
 }
 </style>

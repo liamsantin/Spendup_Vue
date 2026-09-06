@@ -127,7 +127,7 @@
 .su-tab.is-active {
     color: #fff;
     background: rgb(var(--v-theme-primary));
-    box-shadow: 0 14px 28px -16px rgba(var(--v-theme-primary), 0.7);
+    box-shadow: 0 10px 22px -16px rgba(var(--v-theme-primary), 0.45);
 }
 
 .su-tab:active {
@@ -367,9 +367,9 @@
     gap: 14px;
     width: 100%;
     min-height: 64px;
-    padding: 10px 12px;
-    margin: 2px 0;
-    border: 0;
+    padding: 10px 14px;
+    margin: 4px 0;
+    border: 1px solid transparent;
     border-radius: var(--radius-leaf);
     background: transparent;
     color: inherit;
@@ -381,7 +381,9 @@
     animation-delay: calc(var(--i, 0) * 45ms);
     transition:
         background 0.25s var(--ease),
-        box-shadow 0.25s var(--ease),
+        box-shadow 0.3s var(--ease),
+        border-color 0.25s var(--ease),
+        margin 0.3s var(--ease),
         transform 0.4s var(--spring);
 }
 
@@ -389,9 +391,19 @@
     background: var(--surface-hover-soft);
 }
 
+/* Non-lu / focus : relief doux, ombre plus diffuse (moins « collée » à la card). */
 .su-person.is-focused {
-    background: rgba(var(--v-theme-primary), 0.1);
-    box-shadow: var(--shadow-pill-soft);
+    background: rgba(var(--v-theme-primary), 0.055);
+    border-color: rgba(var(--v-theme-primary), 0.1);
+    box-shadow:
+        0 1px 2px rgba(16, 16, 20, 0.03),
+        0 16px 36px -18px rgba(16, 16, 20, 0.2),
+        0 6px 14px -10px rgba(var(--v-theme-primary), 0.12);
+    margin-block: 10px;
+}
+
+.su-person.is-focused:hover {
+    background: rgba(var(--v-theme-primary), 0.07);
 }
 
 .su-person__avatar {
@@ -498,7 +510,12 @@
 .su-btn--ink {
     background: rgb(var(--v-theme-primary));
     color: #fff;
-    box-shadow: 0 14px 28px -16px rgba(var(--v-theme-primary), 0.7);
+    /* Glow primary plus discret — moins « flash » sur les CTA. */
+    box-shadow: 0 10px 22px -16px rgba(var(--v-theme-primary), 0.42);
+}
+
+.su-btn--ink:hover:not(:disabled) {
+    box-shadow: 0 12px 26px -14px rgba(var(--v-theme-primary), 0.5);
 }
 
 .su-btn--ghost {
@@ -513,15 +530,20 @@
 }
 
 .su-btn--danger {
-    color: #b42318;
-    background: rgba(180, 35, 24, 0.08);
+    color: #9f2d23;
+    background: rgba(180, 35, 24, 0.06);
     box-shadow: none;
 }
 
 .su-btn--warn {
-    color: #9a6700;
-    background: rgba(154, 103, 0, 0.1);
+    color: #8a5a00;
+    background: rgba(154, 103, 0, 0.08);
     box-shadow: none;
+}
+
+/* Actions dans une ligne personne : CTA un cran plus soft. */
+.su-person__actions .su-btn--ink {
+    box-shadow: 0 6px 16px -12px rgba(var(--v-theme-primary), 0.35);
 }
 
 .su-chip {
