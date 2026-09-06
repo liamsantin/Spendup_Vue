@@ -10,7 +10,7 @@ Front (`spendup-vue.onrender.com`) et API (`api-spendup.ch`) sont **cross-site**
 
 ## Décision
 
-Mode **Bearer** par défaut (`VITE_AUTH_COOKIE_MODE=false`, obligatoire en build production) :
+Mode **Bearer** par défaut — **forcé en production** (les cookies tiers cassent Safari / iOS) :
 
 - Lire `accessToken`, `refreshToken`, `expiresAt` dans le JSON (login / Google / 2FA / refresh).
 - Header `Authorization: Bearer {accessToken}` sur les appels authentifiés.

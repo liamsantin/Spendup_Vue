@@ -6,22 +6,14 @@ export function getApiBaseUrl(): string {
 }
 
 /**
- * Cookie HttpOnly + CSRF (same-site). Défaut / prod = Bearer :
- * front et API sont cross-site ; les cookies tiers sont refusés sur mobile.
+ * Cookie HttpOnly + CSRF — same-site / dev only.
+ * En production le SPA est toujours Bearer (front et API sont cross-site ;
+ * un throw ici viderait toute la page).
  */
 export function isAuthCookieMode(): boolean {
+    if (import.meta.env.PROD) return false;
     const raw = String(import.meta.env.VITE_AUTH_COOKIE_MODE ?? '').toLowerCase();
     return raw === 'true' || raw === '1';
-}
-
-/**
- * Builds de production : refuse le mode cookie (cookies tiers → 401 mobile).
- * No-op en dev / test / si Bearer déjà actif.
- */
-export function assertProductionAuthBearerMode(): void {
-    if (!import.meta.env.PROD) return;
-    if (!isAuthCookieMode()) return;
-    throw new Error('VITE_AUTH_COOKIE_MODE must be false in production builds (Bearer; third-party cookies blocked on mobile).');
 }
 
 /** En cookie-mode, le JWT access voyage dans `spendup_access` — pas de header Bearer. */

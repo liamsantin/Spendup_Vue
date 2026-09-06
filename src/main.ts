@@ -14,9 +14,6 @@ import { i18n } from '@/plugins/i18n';
 import { registerDesktopDeepLinks } from '@/features/desktop';
 import { setNativeNotificationNavigate } from '@/features/notifications';
 import { isTauri } from '@/utils/helpers/platform-helpers';
-import { assertProductionAuthBearerMode } from '@/utils/helpers/axios-helpers';
-
-assertProductionAuthBearerMode();
 
 const app = createApp(App);
 app.use(createPinia());
