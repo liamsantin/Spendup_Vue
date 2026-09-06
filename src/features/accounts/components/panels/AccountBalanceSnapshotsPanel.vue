@@ -242,21 +242,22 @@ async function onLoadMore() {
             </div>
 
             <div v-else class="snapshots-history">
-                <div class="snapshots-history__title text-subtitle-2 text-medium-emphasis mb-2 flex-shrink-0 d-flex align-center ga-2">
-                    <Receipt2Icon size="18" stroke-width="1.5" class="flex-shrink-0" />
+                <div class="snapshots-history__title flex-shrink-0 d-flex align-center ga-2">
+                    <Receipt2Icon size="16" stroke-width="1.6" class="flex-shrink-0" />
                     <span>{{ t('comptesPage.snapshots.history') }}</span>
                 </div>
                 <div ref="historyListRef" class="snapshots-history__list">
                     <div v-if="smAndDown" class="snapshots-history__scroll snapshots-history__scroll--native">
                         <div class="snapshots-list">
                             <AccountBalanceSnapshotItem
-                                v-for="snapshot in store.balanceSnapshots"
+                                v-for="(snapshot, index) in store.balanceSnapshots"
                                 :key="snapshot.publicId"
                                 :snapshot="snapshot"
                                 :currency="account.currency"
                                 :can-write="canWrite"
                                 :show-author="showAuthors"
                                 :acting="store.acting"
+                                :latest="index === 0"
                                 @delete="deleteTarget = $event"
                             />
                             <div v-if="store.hasMoreSnapshots" class="py-3 text-center">
@@ -274,13 +275,14 @@ async function onLoadMore() {
                     <PerfectScrollbar v-else ref="historyScrollbarRef" class="snapshots-history__scroll" :options="historyScrollbarOptions">
                         <div class="snapshots-list">
                             <AccountBalanceSnapshotItem
-                                v-for="snapshot in store.balanceSnapshots"
+                                v-for="(snapshot, index) in store.balanceSnapshots"
                                 :key="snapshot.publicId"
                                 :snapshot="snapshot"
                                 :currency="account.currency"
                                 :can-write="canWrite"
                                 :show-author="showAuthors"
                                 :acting="store.acting"
+                                :latest="index === 0"
                                 @delete="deleteTarget = $event"
                             />
                             <div v-if="store.hasMoreSnapshots" class="py-3 text-center">
@@ -374,12 +376,22 @@ async function onLoadMore() {
     overflow: hidden;
 }
 
+.snapshots-history__title {
+    margin-bottom: 10px;
+    color: var(--ink-mute);
+    font-size: 12.5px;
+    font-weight: 620;
+    letter-spacing: 0.01em;
+}
+
 .snapshots-history__list {
     display: flex;
     flex: 1 1 0;
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 18px), transparent);
+    mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 18px), transparent);
 }
 
 .snapshots-history__scroll {
@@ -403,14 +415,32 @@ async function onLoadMore() {
 }
 
 .snapshots-list {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    padding-right: 4px;
+    gap: 8px;
+    /* Assez de marge à gauche pour le point + halo (sinon overflow du scroll les coupe). */
+    padding: 2px 4px 22px 28px;
+}
+
+.snapshots-list::before {
+    content: '';
+    position: absolute;
+    top: 14px;
+    bottom: 28px;
+    left: 13px;
+    width: 2px;
+    border-radius: 99px;
+    background: linear-gradient(
+        180deg,
+        rgba(var(--v-theme-primary), 0.38) 0%,
+        rgba(var(--v-theme-primary), 0.14) 55%,
+        rgba(var(--v-theme-primary), 0.04) 100%
+    );
 }
 
 .snapshots-empty {
-    border-radius: 12px;
+    border-radius: var(--radius-leaf);
     border: 1px dashed rgba(var(--v-theme-on-surface), 0.14);
     background: rgba(var(--v-theme-on-surface), 0.02);
 }

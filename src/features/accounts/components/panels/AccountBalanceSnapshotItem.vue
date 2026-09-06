@@ -13,6 +13,7 @@ const props = defineProps<{
     canWrite: boolean;
     showAuthor: boolean;
     acting: boolean;
+    latest?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -37,10 +38,11 @@ const authorLabel = computed(() => {
 </script>
 
 <template>
-    <div class="snapshots-list__item">
+    <div class="snapshots-list__item" :class="{ 'is-latest': latest }">
+        <span class="snapshots-list__marker" aria-hidden="true" />
         <div class="snapshots-list__body min-width-0">
             <div class="snapshots-list__primary d-flex align-center justify-space-between ga-2">
-                <div class="snapshots-list__amount text-body-1 font-weight-bold text-truncate">
+                <div class="snapshots-list__amount text-truncate">
                     {{ formatAccountBalance(snapshot.balance, currency, locale) }}
                 </div>
                 <div class="d-flex align-center ga-1 flex-shrink-0">
@@ -59,7 +61,7 @@ const authorLabel = computed(() => {
                     </button>
                 </div>
             </div>
-            <div class="snapshots-list__date d-flex align-center ga-1 text-caption text-medium-emphasis">
+            <div class="snapshots-list__date d-flex align-center ga-1">
                 <CalendarIcon size="12" stroke-width="1.5" />
                 <span>{{ formatDate(snapshot.snapshotAt) }}</span>
             </div>
@@ -83,13 +85,37 @@ const authorLabel = computed(() => {
 
 <style scoped>
 .snapshots-list__item {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
     border-radius: var(--radius-leaf);
-    background: rgb(var(--v-theme-surface));
+    background: var(--surface-raised);
     border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+}
+
+.snapshots-list__marker {
+    position: absolute;
+    top: 50%;
+    left: -19px;
+    z-index: 1;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    border-radius: 50%;
+    background: var(--surface-overlay);
+    border: 2px solid rgba(var(--v-theme-primary), 0.32);
+    box-shadow: 0 0 0 3px var(--surface-overlay);
+    pointer-events: none;
+}
+
+.snapshots-list__item.is-latest .snapshots-list__marker {
+    background: rgb(var(--v-theme-primary));
+    border-color: rgb(var(--v-theme-primary));
+    box-shadow:
+        0 0 0 3px var(--surface-overlay),
+        0 0 0 6px rgba(var(--v-theme-primary), 0.14);
 }
 
 .snapshots-list__body {
@@ -101,16 +127,23 @@ const authorLabel = computed(() => {
 }
 
 .snapshots-list__amount {
-    line-height: 1.2;
+    font-size: 14.5px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    color: var(--ink);
 }
 
 .snapshots-list__date {
     margin-top: 1px;
-    line-height: 1.2;
+    color: var(--ink-muted);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.15;
 }
 
 .snapshots-list__author,
 .snapshots-list__note {
-    margin-top: 4px;
+    margin-top: 6px;
 }
 </style>
