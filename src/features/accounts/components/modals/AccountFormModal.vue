@@ -199,7 +199,7 @@ async function onSave() {
         scrollable
         mobile-layout="fullscreen"
     >
-        <AppAlert v-if="localError.message" color="error" variant="tonal" class="mb-4" closable @dismiss="localError.message = null">
+        <AppAlert v-if="localError.message" type="error" class="mb-4" closable @dismiss="localError.message = null">
             {{ localError.message }}
         </AppAlert>
 

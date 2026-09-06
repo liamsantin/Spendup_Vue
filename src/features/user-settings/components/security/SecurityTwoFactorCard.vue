@@ -28,18 +28,13 @@ const { t } = useI18n();
         </template>
         <AppAlert
             v-if="successMessage"
-            color="success"
-            variant="tonal"
-            density="default"
+            type="success"
             closable
             :dismiss-ms="5000"
             class="mt-4"
             @dismiss="emit('dismissSuccess')"
         >
-            <template #prepend>
-                <v-icon class="text-24" icon="$success" />
-            </template>
-            <div>{{ successMessage }}</div>
+            {{ successMessage }}
         </AppAlert>
 
         <div class="d-sm-flex justify-space-between align-sm-center mt-2">

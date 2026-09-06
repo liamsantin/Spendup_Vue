@@ -7,6 +7,7 @@ defineOptions({ name: 'ComponentsShowcasePage' });
 import { ref } from 'vue';
 import { BellPlusIcon, BuildingBankIcon, ChecksIcon, PlusIcon, SearchIcon, UserCircleIcon, XIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppCheckbox from '@/components/shared/checkbox/AppCheckbox.vue';
 import AppChip from '@/components/shared/chip/AppChip.vue';
 import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
@@ -51,6 +52,8 @@ const confirmationDangerOpen = ref(false);
 
 const switchOn = ref(true);
 const switchOff = ref(false);
+const checkboxOn = ref(true);
+const checkboxOff = ref(false);
 const radioRole = ref('viewer');
 const dateValue = ref<string | null>('1998-04-12');
 const colorValue = ref<string | null>(ACCOUNT_COLOR_PRESETS[0]);
@@ -177,6 +180,13 @@ const filterHidden = ref(false);
                     </div>
                 </AppGlassCard>
 
+                <AppGlassCard title="Cases à cocher" subtitle="AppCheckbox — case arrondie, coche du thème.">
+                    <div class="su-showcase__row">
+                        <AppCheckbox v-model="checkboxOn" label="Coché" />
+                        <AppCheckbox v-model="checkboxOff" label="Non coché" />
+                    </div>
+                </AppGlassCard>
+
                 <AppGlassCard title="Radios" subtitle="AppRadioButton.">
                     <AppRadioButton
                         v-model="radioRole"
@@ -298,10 +308,10 @@ const filterHidden = ref(false);
             <div v-else class="su-showcase__grid">
                 <AppGlassCard title="Alertes" subtitle="AppAlert.">
                     <div class="su-showcase__grid" style="gap: 10px">
-                        <AppAlert type="success" variant="tonal" density="default">Opération réussie.</AppAlert>
-                        <AppAlert type="info" variant="tonal" density="default">Information utile.</AppAlert>
-                        <AppAlert type="warning" variant="tonal" density="default">Vérifiez ce champ.</AppAlert>
-                        <AppAlert type="error" variant="tonal" density="default" closable>Une erreur s’est produite.</AppAlert>
+                        <AppAlert type="success">Opération réussie.</AppAlert>
+                        <AppAlert type="info">Information utile.</AppAlert>
+                        <AppAlert type="warning">Vérifiez ce champ.</AppAlert>
+                        <AppAlert type="error" closable>Une erreur s’est produite.</AppAlert>
                     </div>
                 </AppGlassCard>
 

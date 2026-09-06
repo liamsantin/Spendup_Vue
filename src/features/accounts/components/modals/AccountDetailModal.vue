@@ -258,8 +258,7 @@ async function confirmLeave() {
 
         <AppAlert
             v-else-if="localError || store.error"
-            color="error"
-            variant="tonal"
+            type="error"
             class="mb-4"
             closable
             @dismiss="

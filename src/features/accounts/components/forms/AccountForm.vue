@@ -65,7 +65,7 @@ const { t } = useI18n();
                 </label>
             </v-col>
             <v-col cols="auto" sm="9">
-                <AppSwitch id="account-form-is-primary" v-model="form.isPrimary" :inset="false" :disabled="primarySwitchLocked" />
+                <AppSwitch id="account-form-is-primary" v-model="form.isPrimary" :disabled="primarySwitchLocked" />
             </v-col>
             <v-col v-if="primarySwitchHint" cols="12">
                 <div class="text-caption text-medium-emphasis">{{ primarySwitchHint }}</div>
@@ -207,6 +207,10 @@ const { t } = useI18n();
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.account-form .v-row:has(.app-switch) .v-label {
+    margin-bottom: 0 !important;
 }
 
 @media (max-width: 599.98px) {

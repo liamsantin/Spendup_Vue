@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { MailIcon } from 'vue-tabler-icons';
 import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
+import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import type { UserSettings } from '@/features/user-settings/types';
 
 const draft = defineModel<UserSettings>({ required: true });
@@ -23,54 +24,40 @@ const digestItems = computed(() => [
         </template>
         <div>
             <h6 class="text-h6 mb-2">{{ t('userSettings.notifications.emailSection') }}</h6>
-            <v-switch
+            <AppSwitch
                 v-model="draft.emailSecurityAlerts"
-                color="primary"
-                hide-details
                 class="mb-2"
                 :label="t('userSettings.notifications.emailSecurityAlerts')"
             />
-            <v-switch
+            <AppSwitch
                 v-model="draft.emailFriendRequest"
-                color="primary"
-                hide-details
                 class="mb-2"
                 :label="t('userSettings.notifications.emailFriendRequest')"
             />
-            <v-switch
+            <AppSwitch
                 v-model="draft.emailFinancialAlerts"
-                color="primary"
-                hide-details
                 class="mb-4"
                 :label="t('userSettings.notifications.emailFinancialAlerts')"
             />
 
             <h6 class="text-h6 mb-2">{{ t('userSettings.notifications.pushSection') }}</h6>
-            <v-switch
+            <AppSwitch
                 v-model="draft.pushNotifications"
-                color="primary"
-                hide-details
                 class="mb-2"
                 :label="t('userSettings.notifications.pushNotifications')"
             />
-            <v-switch
+            <AppSwitch
                 v-model="draft.pushSecurityAlerts"
-                color="primary"
-                hide-details
                 class="mb-2"
                 :label="t('userSettings.notifications.pushSecurityAlerts')"
             />
-            <v-switch
+            <AppSwitch
                 v-model="draft.pushFriendRequest"
-                color="primary"
-                hide-details
                 class="mb-2"
                 :label="t('userSettings.notifications.pushFriendRequest')"
             />
-            <v-switch
+            <AppSwitch
                 v-model="draft.pushFinancialAlerts"
-                color="primary"
-                hide-details
                 class="mb-4"
                 :label="t('userSettings.notifications.pushFinancialAlerts')"
             />

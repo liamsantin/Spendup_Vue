@@ -52,8 +52,7 @@ const { t } = useI18n();
             <template v-if="showDeleteGoogle">
                 <AppAlert
                     v-if="googleIdToken"
-                    color="success"
-                    variant="tonal"
+                    type="success"
                     class="mb-3"
                     closable
                     @dismiss="emit('clearGoogleCredential')"

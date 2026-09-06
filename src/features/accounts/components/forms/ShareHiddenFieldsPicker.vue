@@ -7,6 +7,7 @@ defineOptions({ name: 'ShareHiddenFieldsPicker' });
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import AppCheckbox from '@/components/shared/checkbox/AppCheckbox.vue';
 import { HIDDEN_ACCOUNT_FIELDS, type HiddenAccountField } from '@/features/accounts/types';
 
 const props = withDefaults(
@@ -45,15 +46,12 @@ function toggle(field: HiddenAccountField, checked: boolean | null) {
     <div class="share-hidden-fields">
         <div class="text-body-2 text-medium-emphasis mb-2">{{ t('comptesPage.share.hiddenFields.hint') }}</div>
         <div class="d-flex flex-column ga-1">
-            <v-checkbox
+            <AppCheckbox
                 v-for="field in HIDDEN_ACCOUNT_FIELDS"
                 :key="field"
                 :model-value="selected.has(field)"
                 :label="t(`comptesPage.share.hiddenFields.${field}`)"
                 :disabled="disabled"
-                density="compact"
-                color="primary"
-                hide-details
                 @update:model-value="toggle(field, $event)"
             />
         </div>

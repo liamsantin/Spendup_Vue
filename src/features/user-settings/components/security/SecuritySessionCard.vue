@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ClockHour4Icon } from 'vue-tabler-icons';
 import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
+import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import {
     IDLE_LOGOUT_MINUTES_DEFAULT,
     IDLE_LOGOUT_MINUTES_MAX,
@@ -63,10 +64,8 @@ function onTrustedDaysBlur() {
         </template>
         <v-row>
             <v-col cols="12">
-                <v-switch
+                <AppSwitch
                     :model-value="idleEnabled"
-                    color="primary"
-                    hide-details
                     :label="t('security.session.idleLogoutEnabled')"
                     @update:model-value="onIdleToggle"
                 />
@@ -102,10 +101,8 @@ function onTrustedDaysBlur() {
                 />
             </v-col>
             <v-col cols="12">
-                <v-switch
+                <AppSwitch
                     v-model="draft.require2faForSensitiveActions"
-                    color="primary"
-                    hide-details
                     :disabled="require2faDisabled"
                     :label="t('security.session.require2faForSensitiveActions')"
                 />

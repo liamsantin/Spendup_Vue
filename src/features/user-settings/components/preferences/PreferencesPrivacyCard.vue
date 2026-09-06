@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { EyeIcon } from 'vue-tabler-icons';
 import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
+import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import type { UserSettings } from '@/features/user-settings/types';
 
 const draft = defineModel<UserSettings>({ required: true });
@@ -63,12 +64,7 @@ const friendRequestItems = computed(() => [
                 />
             </v-col>
             <v-col cols="12" md="6" class="d-flex align-end">
-                <v-switch
-                    v-model="draft.discoverableInSearch"
-                    color="primary"
-                    hide-details
-                    :label="t('userSettings.privacy.discoverableInSearch')"
-                />
+                <AppSwitch v-model="draft.discoverableInSearch" :label="t('userSettings.privacy.discoverableInSearch')" />
             </v-col>
         </v-row>
     </AppGlassCard>

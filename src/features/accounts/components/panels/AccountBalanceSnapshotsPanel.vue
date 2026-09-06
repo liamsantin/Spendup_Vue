@@ -155,8 +155,7 @@ async function onLoadMore() {
         <div class="snapshots-panel__body">
             <AppAlert
                 v-if="localError || store.error"
-                color="error"
-                variant="tonal"
+                type="error"
                 class="mb-3 flex-shrink-0"
                 closable
                 :dismiss-ms="6000"

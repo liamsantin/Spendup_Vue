@@ -34,7 +34,7 @@ async function onSubmit() {
 
 <template>
     <v-form v-model="valid" @submit.prevent="onSubmit" class="mt-2">
-        <AppAlert type="info" variant="tonal" class="mb-4">{{ t('auth.forgotPassword.verifiedEmailHint') }}</AppAlert>
+        <AppAlert type="info" class="mb-4">{{ t('auth.forgotPassword.verifiedEmailHint') }}</AppAlert>
         <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.forgotPassword.email') }}</v-label>
         <VTextField v-model="email" :rules="emailRules" required hide-details type="email" autocomplete="email" />
         <v-btn size="large" color="primary" block type="submit" class="mt-4" :loading="loading" :disabled="!valid" flat>

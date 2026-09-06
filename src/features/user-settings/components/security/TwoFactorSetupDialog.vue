@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import QRCode from 'qrcode';
 import { useAuthStore, type TwoFactorSetup } from '@/features/auth';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppCheckbox from '@/components/shared/checkbox/AppCheckbox.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 
@@ -151,7 +152,7 @@ async function enable(submittedCode?: string) {
                 </button>
             </div>
 
-            <AppAlert type="warning" variant="tonal" class="mb-4">
+            <AppAlert type="warning" class="mb-4">
                 {{ t('security.setupDialog.recoveryWarning') }}
             </AppAlert>
 
@@ -171,7 +172,7 @@ async function enable(submittedCode?: string) {
                 </button>
             </v-sheet>
 
-            <v-checkbox v-model="codesAcknowledged" hide-details color="primary" :label="t('security.setupDialog.acknowledge')" />
+            <AppCheckbox v-model="codesAcknowledged" :label="t('security.setupDialog.acknowledge')" />
         </template>
 
         <template v-else-if="step === 'verify'">

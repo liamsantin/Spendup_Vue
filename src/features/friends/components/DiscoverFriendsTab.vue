@@ -53,7 +53,7 @@ async function confirmSendRequest() {
 
 <template>
     <div>
-        <AppAlert v-if="store.error" type="error" density="default" class="su-alert" closable @dismiss="store.error = null">
+        <AppAlert v-if="store.error" type="error" class="su-alert" closable @dismiss="store.error = null">
             {{ store.error }}
         </AppAlert>
 

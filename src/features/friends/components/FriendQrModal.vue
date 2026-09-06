@@ -106,7 +106,6 @@ watch(
                     <AppAlert
                         v-if="generate.qrError"
                         type="error"
-                        density="default"
                         class="w-100"
                         closable
                         @dismiss="generate.qrError = null"
@@ -128,7 +127,7 @@ watch(
                 <div class="friend-qr-panel d-flex flex-column align-center ga-3 py-2">
                     <p class="text-body-2 text-medium-emphasis text-center mb-0">{{ t('friendsPage.qr.scanHint') }}</p>
 
-                    <AppAlert v-if="scanError" type="warning" density="default" class="w-100">
+                    <AppAlert v-if="scanError" type="warning" class="w-100">
                         {{ scanError }}
                     </AppAlert>
 

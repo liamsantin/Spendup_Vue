@@ -56,7 +56,7 @@ async function onGoogleCredential(idToken: string) {
 
 <template>
     <div class="auth-form">
-        <AppAlert v-if="notice" type="info" variant="tonal" class="mb-4">{{ notice }}</AppAlert>
+        <AppAlert v-if="notice" type="info" class="mb-4">{{ notice }}</AppAlert>
 
         <GoogleSignInButton class="mb-4" :label="t('auth.google.signIn')" @credential="onGoogleCredential" />
 

@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { LayoutDashboardIcon } from 'vue-tabler-icons';
 import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
+import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import type { UserSettings } from '@/features/user-settings/types';
 
 const draft = defineModel<UserSettings>({ required: true });
@@ -34,19 +35,12 @@ const dashboardViewItems = computed(() => [
                 />
             </v-col>
             <v-col cols="12" md="6" class="d-flex flex-column justify-end">
-                <v-switch
+                <AppSwitch
                     v-model="draft.showBalanceOnDashboard"
-                    color="primary"
-                    hide-details
                     class="mb-2"
                     :label="t('userSettings.dashboard.showBalance')"
                 />
-                <v-switch
-                    v-model="draft.hideSensitiveAmounts"
-                    color="primary"
-                    hide-details
-                    :label="t('userSettings.dashboard.hideSensitiveAmounts')"
-                />
+                <AppSwitch v-model="draft.hideSensitiveAmounts" :label="t('userSettings.dashboard.hideSensitiveAmounts')" />
             </v-col>
         </v-row>
     </AppGlassCard>

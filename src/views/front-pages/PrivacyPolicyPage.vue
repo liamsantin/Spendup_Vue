@@ -4,6 +4,7 @@ import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
 import ContactBar from '@/components/frontpages/shared/ContactBar.vue';
 import TextBannerCard from '@/components/frontpages/shared/TextBannerCard.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 </script>
 
 <template>
@@ -180,9 +181,9 @@ import TextBannerCard from '@/components/frontpages/shared/TextBannerCard.vue';
                         L'utilisateur peut consulter ses sessions actives et révoquer les appareils connectés à son compte afin de conserver
                         le contrôle sur les accès autorisés.
                     </p>
-                    <v-alert type="warning" variant="tonal" density="comfortable" class="text-body-2 rounded-lg mb-0" border="start">
+                    <AppAlert type="warning" class="text-body-2 mb-0">
                         Malgré toutes les précautions mises en œuvre, aucun système informatique ne peut garantir une sécurité absolue.
-                    </v-alert>
+                    </AppAlert>
                 </section>
 
                 <v-divider class="my-10" />

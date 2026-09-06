@@ -1,24 +1,31 @@
 <script setup lang="ts">
 /**
- * Wrapper autour de `v-alert` (Vuetify).
- * Props Spend.Up : `dismissMs` (auto-fermeture + barre basse), `closable`.
- * Autres props / attrs / slots de `v-alert` passent telles quelles.
+ * Alerte Spend.Up : unique style `tonal` + densité `default`.
+ * Props : `type`, `closable`, `dismissMs`. Autres attrs / slots de `v-alert` passent telles quelles
+ * (sauf `variant`, `density` et `color`, figés / mappés vers `type`).
  */
 defineOptions({ name: 'AppAlert', inheritAttrs: false });
 
 import { computed, onBeforeUnmount, onMounted, ref, useAttrs, useSlots, watch } from 'vue';
 
-const ALERT_ICONS: Record<string, string> = {
+const ALERT_TYPES = ['error', 'warning', 'info', 'success'] as const;
+type AlertType = (typeof ALERT_TYPES)[number];
+
+const ALERT_ICONS: Record<AlertType, string> = {
     error: '$error',
     warning: '$warning',
     info: '$info',
     success: '$success'
 };
 
+function isAlertType(value: unknown): value is AlertType {
+    return typeof value === 'string' && (ALERT_TYPES as readonly string[]).includes(value);
+}
+
 const props = withDefaults(
     defineProps<{
-        /** Densité Vuetify — compact par défaut (formulaires auth, feedback court). */
-        density?: 'default' | 'comfortable' | 'compact';
+        /** Sémantique de l’alerte. */
+        type?: AlertType;
         /** Affiche la croix de fermeture (v-alert closable). */
         closable?: boolean;
         /**
@@ -30,7 +37,7 @@ const props = withDefaults(
         modelValue?: boolean;
     }>(),
     {
-        density: 'compact',
+        type: undefined,
         closable: false,
         dismissMs: undefined,
         modelValue: undefined
@@ -45,10 +52,21 @@ const emit = defineEmits<{
 const attrs = useAttrs();
 const slots = useSlots();
 
+const resolvedType = computed<AlertType | undefined>(() => {
+    if (props.type) return props.type;
+    if (isAlertType(attrs.type)) return attrs.type;
+    if (isAlertType(attrs.color)) return attrs.color;
+    return undefined;
+});
+
 const alertAttrs = computed(() => {
     const rest: Record<string, unknown> = { ...attrs };
     delete rest.class;
     delete rest.style;
+    delete rest.variant;
+    delete rest.density;
+    delete rest.type;
+    delete rest.color;
     return rest;
 });
 
@@ -59,23 +77,12 @@ const isControlled = computed(() => props.modelValue !== undefined);
 
 const visible = computed(() => (isControlled.value ? props.modelValue !== false : internalVisible.value));
 
-const themeColorKey = computed(() => {
-    const color = attrs.color;
-    const type = attrs.type;
-    if (typeof color === 'string' && color) return color;
-    if (typeof type === 'string' && type) return type;
-    return 'primary';
-});
+const themeColorKey = computed(() => resolvedType.value ?? 'primary');
 
 const defaultPrependIcon = computed(() => {
     if (slots.prepend) return null;
-    const variant = attrs.variant;
-    if (variant !== 'tonal' && variant !== 'outlined') return null;
-    const type = attrs.type;
-    const color = attrs.color;
-    if (typeof type === 'string' && ALERT_ICONS[type]) return ALERT_ICONS[type];
-    if (typeof color === 'string' && ALERT_ICONS[color]) return ALERT_ICONS[color];
-    return null;
+    const type = resolvedType.value;
+    return type ? ALERT_ICONS[type] : null;
 });
 
 const progressStyle = computed(() => {
@@ -134,8 +141,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div v-if="visible" class="app-alert-wrap">
-        <v-alert :density="density" :closable="closable" v-bind="alertAttrs" @click:close="dismiss">
+    <div v-if="visible" class="app-alert-wrap" :class="attrs.class" :style="attrs.style">
+        <v-alert variant="tonal" density="default" :type="resolvedType" :closable="closable" v-bind="alertAttrs" @click:close="dismiss">
             <template v-if="defaultPrependIcon" #prepend>
                 <v-icon class="text-24" :icon="defaultPrependIcon" />
             </template>

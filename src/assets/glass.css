@@ -702,7 +702,7 @@
 
 .su-panel__body .v-col:has(> .v-switch:only-child) {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
 }
 
 .su-panel__body .v-switch + .v-switch {
@@ -1197,13 +1197,16 @@
 }
 
 .su-panel .v-switch .v-selection-control {
-    min-height: 44px;
+    min-height: 32px;
+    align-items: center;
 }
 
 .su-panel .v-switch .v-label {
-    margin-bottom: 0 !important;
+    height: auto;
+    margin: 0 !important;
     color: var(--ink);
     font-size: 14px;
+    line-height: 1.25;
 }
 
 .su-panel .v-switch .v-switch__track,

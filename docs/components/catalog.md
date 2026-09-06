@@ -8,6 +8,7 @@
 | Besoin                    | Composant                                | Doc                          |
 | ------------------------- | ---------------------------------------- | ---------------------------- |
 | Feedback / notice         | `AppAlert` — **pas** `v-alert`           | `alert.md`                   |
+| Case à cocher             | `AppCheckbox` — **pas** `v-checkbox`     | `checkbox.md`                |
 | Modale métier             | `AppModalBase` — **pas** `v-dialog` brut | `modal-base.md`              |
 | Modale métier à onglets   | `AppModalTabs`                           | `modal-tabs.md`              |
 | Page `/app` multi-onglets | `AppTabsShell`                           | `patterns/app-tabs-shell.md` |

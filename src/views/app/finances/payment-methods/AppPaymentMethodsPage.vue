@@ -27,7 +27,7 @@ function onCreate() {
         <template #actions>
             <AppDropdownFilter :label="t('paymentMethodsPage.actions.filter')">
                 <v-list-item>
-                    <AppSwitch v-model="showInactive" :inset="false" :label="t('paymentMethodsPage.filters.showInactive')" />
+                    <AppSwitch v-model="showInactive" :label="t('paymentMethodsPage.filters.showInactive')" />
                 </v-list-item>
             </AppDropdownFilter>
             <button type="button" class="su-btn su-btn--ink" :disabled="!canCreate || store.acting" @click="onCreate">

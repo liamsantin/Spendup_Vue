@@ -107,8 +107,7 @@ async function confirmRevoke() {
         <AppModalPanelScroll>
             <AppAlert
                 v-if="localError || store.error"
-                color="error"
-                variant="tonal"
+                type="error"
                 class="mb-3"
                 closable
                 :dismiss-ms="3000"

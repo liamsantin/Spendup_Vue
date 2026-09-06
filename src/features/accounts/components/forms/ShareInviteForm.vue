@@ -68,8 +68,7 @@ defineExpose({
     <div class="share-invite-form">
         <AppAlert
             v-if="invite.localError"
-            color="error"
-            variant="tonal"
+            type="error"
             class="share-invite-form__alert"
             closable
             :dismiss-ms="3000"

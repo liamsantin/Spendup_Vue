@@ -25,4 +25,4 @@
 - Casser les routes FR existantes.
 - Grosses modifs structurelles sans confirmation.
 - Features / docs features vides sans code.
-- `v-alert` / `v-dialog` bruts pour feedback / modales métier.
+- `v-alert` / `v-dialog` / `v-checkbox` bruts pour feedback / modales / cases à cocher.

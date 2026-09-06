@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { CircleCheckIcon } from 'vue-tabler-icons';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import type { DomainCard } from '@/data/front-pages/spendup-additional-domains';
 
 defineProps<{
@@ -68,16 +69,9 @@ defineProps<{
                         </v-col>
                     </v-row>
 
-                    <v-alert
-                        v-if="alert"
-                        type="info"
-                        variant="tonal"
-                        border="start"
-                        border-color="primary"
-                        class="su-alert rounded-lg elevation-0 mt-4"
-                    >
-                        <p class="text-body-1 text-medium-emphasis mb-0 lh-lg">{{ alert }}</p>
-                    </v-alert>
+                    <AppAlert v-if="alert" type="info" class="mt-4">
+                        {{ alert }}
+                    </AppAlert>
                 </div>
 
                 <div class="su-domain-center__image">

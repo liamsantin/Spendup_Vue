@@ -78,9 +78,9 @@ const birthDateModel = computed({
                 </v-col>
                 <v-col cols="12" md="5">
                     <v-label class="mb-2 font-weight-medium">{{ t('accounts.personal.fields.country') }}</v-label>
-                    <v-alert v-if="countriesError" type="error" variant="tonal" density="compact" class="mb-2">
+                    <AppAlert v-if="countriesError" type="error" class="mb-2">
                         {{ countriesError }}
-                    </v-alert>
+                    </AppAlert>
                     <v-autocomplete
                         v-model="countryId"
                         :items="countries"

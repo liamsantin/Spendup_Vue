@@ -4,9 +4,9 @@ import SpendupExpansionPanels from '@/components/frontpages/home/sections/Spendu
 import SpendupPlatformCentralSection from '@/components/frontpages/home/sections/SpendupPlatformCentralSection.vue';
 import SpendupAccessibleSection from '@/components/frontpages/home/sections/SpendupAccessibleSection.vue';
 import SpendupWindowsDownloadSection from '@/components/frontpages/home/sections/SpendupWindowsDownloadSection.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import {
     LayoutDashboardIcon,
-    AlertTriangleIcon,
     ShieldLockIcon,
     UserIcon,
     UsersIcon,
@@ -168,27 +168,13 @@ const faqAccordionItems = computed(() => faqs.map((_, index) => ({ key: index })
 
     <section class="py-10">
         <v-container class="max-width-1218">
-            <v-alert
-                variant="tonal"
-                color="warning"
-                border="start"
-                border-color="warning"
-                class="su-alert rounded-lg elevation-1"
-                prominent
-            >
-                <template #prepend>
-                    <div class="su-alert-icon rounded-lg d-flex align-center justify-center bg-warning">
-                        <AlertTriangleIcon size="28" class="text-white" stroke-width="1.5" />
-                    </div>
-                </template>
-
+            <AppAlert type="warning">
                 <div class="text-h6 font-weight-bold textPrimary mb-1">Important — Version bêta</div>
-
                 <p class="text-body-1 text-medium-emphasis mb-0 lh-lg">
                     Spend.Up est actuellement en version bêta. Les données peuvent être réinitialisées ou perdues sans préavis. Nous vous
                     recommandons de ne pas y stocker d'informations sensibles ou définitives.
                 </p>
-            </v-alert>
+            </AppAlert>
         </v-container>
     </section>
 

@@ -87,8 +87,7 @@ async function confirmDelete() {
 
         <AppAlert
             v-if="localError || store.error"
-            color="error"
-            variant="tonal"
+            type="error"
             class="mb-3"
             closable
             @dismiss="

@@ -32,13 +32,13 @@ const { t } = useI18n();
         <template #icon>
             <KeyIcon :size="20" stroke-width="1.5" />
         </template>
-        <AppAlert v-if="success" color="success" variant="tonal" class="mt-4" closable :dismiss-ms="5000" @dismiss="emit('dismissSuccess')">
+        <AppAlert v-if="success" type="success" class="mt-4" closable :dismiss-ms="5000" @dismiss="emit('dismissSuccess')">
             {{ success }}
         </AppAlert>
         <AppAlert v-if="error" type="error" class="mt-4" closable @dismiss="emit('dismissError')">
             {{ error }}
         </AppAlert>
-        <AppAlert v-if="pendingEmail" color="warning" variant="tonal" class="mt-4">
+        <AppAlert v-if="pendingEmail" type="warning" class="mt-4">
             {{ t('accounts.credentials.pendingEmail', { email: pendingEmail }) }}
             <button type="button" class="su-btn su-btn--warn ml-1" @click="emit('confirmPendingEmail')">
                 {{ t('accounts.credentials.enterCode') }}

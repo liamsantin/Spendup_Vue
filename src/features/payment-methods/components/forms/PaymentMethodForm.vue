@@ -62,7 +62,7 @@ function onLastFourInput(value: string) {
                 </label>
             </v-col>
             <v-col cols="auto" sm="9">
-                <AppSwitch id="pm-form-active" v-model="form.isActive" :inset="false" />
+                <AppSwitch id="pm-form-active" v-model="form.isActive" />
             </v-col>
         </v-row>
         <v-row class="align-center" no-gutters>
@@ -183,6 +183,10 @@ function onLastFourInput(value: string) {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.payment-method-form .v-row:has(.app-switch) .v-label {
+    margin-bottom: 0 !important;
 }
 
 @media (max-width: 599.98px) {
