@@ -45,6 +45,16 @@ const filterAccountId = computed({
     set: (value: string) => patchQuery({ account: value || undefined })
 });
 
+const filteredAccount = computed(
+    () => accountsStore.accounts.find((a) => a.publicId === filterAccountId.value) ?? null
+);
+
+const pageTitle = computed(() =>
+    filteredAccount.value
+        ? t('transactionsPage.titleForAccount', { name: filteredAccount.value.name })
+        : t('transactionsPage.title')
+);
+
 const filterType = computed({
     get: () => parseType(queryString('type')),
     set: (value: string) => patchQuery({ type: value || undefined })
@@ -87,7 +97,7 @@ function onCreate() {
 </script>
 
 <template>
-    <AppPageShell :title="t('transactionsPage.title')" :subtitle="t('transactionsPage.subtitle')">
+    <AppPageShell :title="pageTitle" :subtitle="t('transactionsPage.subtitle')">
         <template #tabs>
             <nav class="su-tabs" :aria-label="t('transactionsPage.filters.type')">
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterType }" @click="filterType = ''">

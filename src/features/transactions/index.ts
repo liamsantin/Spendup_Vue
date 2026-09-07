@@ -38,4 +38,3 @@ export { TRANSACTION_TYPES, TRANSACTION_LABEL_MAX } from '@/features/transaction
 export { default as TransactionsTimeline } from '@/features/transactions/components/TransactionsTimeline.vue';
 export { default as TransactionListItem } from '@/features/transactions/components/list/TransactionListItem.vue';
 export { default as TransactionFormModal } from '@/features/transactions/components/modals/TransactionFormModal.vue';
-export { default as AccountTransactionsPanel } from '@/features/transactions/components/panels/AccountTransactionsPanel.vue';

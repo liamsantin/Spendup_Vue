@@ -304,10 +304,10 @@
             "tabs": {
                 "details": "Details",
                 "snapshots": "Snapshot",
-                "transactions": "Transactions",
                 "paymentMethods": "Payment methods",
                 "shares": "Sharing"
             },
+            "seeAllTransactions": "View all transactions",
             "snapshotsHiddenHint": "Balance snapshots are hidden because the balance is not visible to you.",
             "shareUnavailable": "You do not have access to manage sharing for this account."
         },
@@ -610,6 +610,7 @@
     },
     "transactionsPage": {
         "title": "Transactions",
+        "titleForAccount": "Account transactions: {name}",
         "subtitle": "Expenses, income and transfers across your accounts.",
         "loadMore": "Load more",
         "unknownAccount": "Account",
@@ -645,10 +646,6 @@
             "createdBy": "Entered by {name}",
             "createdByUnknown": "Entered by a user",
             "myCategory": "My category: {name}"
-        },
-        "detail": {
-            "title": "Transactions",
-            "subtitle": "Movements on this account."
         },
         "deleteModal": {
             "title": "Delete this transaction?",

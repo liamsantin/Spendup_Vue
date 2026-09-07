@@ -304,10 +304,10 @@
             "tabs": {
                 "details": "Détails",
                 "snapshots": "Relevé",
-                "transactions": "Transactions",
                 "paymentMethods": "Moyens de paiement",
                 "shares": "Partage"
             },
+            "seeAllTransactions": "Voir toutes les transactions",
             "snapshotsHiddenHint": "Les relevés sont masqués car le solde n’est pas visible pour vous.",
             "shareUnavailable": "Vous n’avez pas accès à la gestion du partage de ce compte."
         },
@@ -610,6 +610,7 @@
     },
     "transactionsPage": {
         "title": "Transactions",
+        "titleForAccount": "Transactions du compte : {name}",
         "subtitle": "Dépenses, revenus et transferts sur vos comptes.",
         "loadMore": "Charger plus",
         "unknownAccount": "Compte",
@@ -645,10 +646,6 @@
             "createdBy": "Saisi par {name}",
             "createdByUnknown": "Saisi par un utilisateur",
             "myCategory": "Ma catégorie : {name}"
-        },
-        "detail": {
-            "title": "Transactions",
-            "subtitle": "Mouvements de ce compte."
         },
         "deleteModal": {
             "title": "Supprimer cette transaction ?",
