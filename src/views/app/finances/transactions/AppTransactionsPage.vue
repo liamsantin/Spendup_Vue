@@ -27,11 +27,6 @@ const accountItems = computed(() => [
     ...accountsStore.accounts.map((a) => ({ title: a.name, value: a.publicId }))
 ]);
 
-const typeItems = computed(() => [
-    { title: t('transactionsPage.filters.allTypes'), value: '' },
-    ...TRANSACTION_TYPES.map((value) => ({ title: t(`transactionsPage.types.${value}`), value }))
-]);
-
 const categoryItems = computed(() =>
     categorySelectItems(categoriesStore.items, { noneTitle: t('transactionsPage.filters.allCategories') })
 );
@@ -96,7 +91,6 @@ function onCreate() {
         <template #actions>
             <AppDropdownFilter :label="t('transactionsPage.actions.filter')" :min-width="300">
                 <div class="pa-3 d-flex flex-column ga-3">
-                    <AppSelect v-model="filterType" :items="typeItems" :label="t('transactionsPage.filters.type')" hide-details />
                     <AppSelect
                         v-model="filterAccountId"
                         :items="accountItems"
@@ -109,6 +103,7 @@ function onCreate() {
                         :label="t('transactionsPage.filters.category')"
                         hide-details
                     />
+                    <v-divider class="my-1" />
                     <AppDatePicker
                         v-model="filterFrom"
                         :label="t('transactionsPage.filters.from')"
