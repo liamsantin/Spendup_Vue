@@ -7,7 +7,7 @@
     position: relative;
     overflow: hidden;
     min-height: 665px;
-    padding: 88px 0 105px;
+    padding: 168px 0 105px;
     background:
         radial-gradient(circle at 9% 0%, rgba(var(--v-theme-secondary), 0.11), transparent 29%),
         radial-gradient(circle at 88% 25%, rgba(var(--v-theme-primary), 0.14), transparent 31%),
@@ -559,7 +559,7 @@
 
 @media (max-width: 959px) {
     .features-hero {
-        padding: 72px 0 98px;
+        padding: 152px 0 98px;
         text-align: center;
     }
 
@@ -624,7 +624,7 @@
 
 @media (max-width: 599px) {
     .features-hero {
-        padding: 55px 0 80px;
+        padding: 135px 0 80px;
     }
 
     .features-hero__copy h1 {

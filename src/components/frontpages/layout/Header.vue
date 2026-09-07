@@ -49,7 +49,7 @@ watch(
         <v-app-bar
             :height="HEADER_HEIGHT"
             class="front-lp-header"
-            color="white"
+            :color="isScrolled ? 'white' : 'transparent'"
             flat
             fixed
             elevation="0"
@@ -61,10 +61,11 @@ watch(
                         <Logo home-to="/" />
                     </div>
 
+                    <div class="header-nav-center d-lg-flex d-none align-center">
+                        <Navigations :mobile="false" />
+                    </div>
+
                     <div class="header-actions ms-auto d-flex align-center ga-2">
-                        <div class="d-lg-flex d-none align-center">
-                            <Navigations :mobile="false" />
-                        </div>
                         <v-btn
                             class="custom-hover-primary bg-primary d-md-flex d-none text-white h-43 px-5 transform-none flex-shrink-0"
                             flat
@@ -114,8 +115,6 @@ watch(
                 </v-toolbar>
             </v-container>
         </v-app-bar>
-
-        <div class="front-header-spacer" aria-hidden="true" />
 
         <!-- Drawer latéral — conservé pour usage futur -->
         <v-navigation-drawer v-if="useDrawerNav" v-model="appsdrawer" class="lp-drawer" location="left" temporary width="300">

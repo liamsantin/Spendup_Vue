@@ -6,7 +6,7 @@
 .home-hero {
     position: relative;
     overflow: hidden;
-    padding: 88px 0 104px;
+    padding: 168px 0 104px;
     background:
         radial-gradient(circle at 7% 4%, rgba(var(--v-theme-secondary), 0.11), transparent 28%),
         radial-gradient(circle at 94% 25%, rgba(var(--v-theme-primary), 0.15), transparent 31%),
@@ -663,7 +663,7 @@
 
 @media (max-width: 1263px) {
     .home-hero {
-        padding-top: 75px;
+        padding-top: 155px;
     }
 
     .hero-product {
@@ -677,7 +677,7 @@
 
 @media (max-width: 959px) {
     .home-hero {
-        padding: 70px 0 90px;
+        padding: 150px 0 90px;
         text-align: center;
     }
 
@@ -750,7 +750,7 @@
 
 @media (max-width: 599px) {
     .home-hero {
-        padding: 55px 0 76px;
+        padding: 135px 0 76px;
     }
 
     .home-title {

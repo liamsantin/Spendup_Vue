@@ -1,22 +1,27 @@
 .front-lp-header {
     z-index: 1006 !important;
-    background-color: #ffffff !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transition:
+        background 0.25s ease,
+        box-shadow 0.25s ease,
+        backdrop-filter 0.25s ease;
 
     .v-toolbar {
-        background: #ffffff !important;
+        background: transparent !important;
     }
 
     &.v-app-bar .v-toolbar__content {
         padding: 0;
-        background: #ffffff !important;
+        background: transparent !important;
     }
 
     .v-toolbar__content {
-        background: #ffffff !important;
+        background: transparent !important;
     }
 
     &.v-toolbar {
-        background: #ffffff !important;
+        background: transparent !important;
         top: 0 !important;
     }
 
@@ -25,9 +30,19 @@
     }
 
     &--scrolled {
+        background: #ffffff !important;
+        background-color: #ffffff !important;
+        backdrop-filter: none;
         box-shadow:
             0 1px 0 rgba(15, 23, 42, 0.05),
             0 6px 16px rgba(15, 23, 42, 0.04) !important;
+
+        .v-toolbar,
+        .v-toolbar__content,
+        &.v-app-bar .v-toolbar__content {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+        }
     }
 }
 //

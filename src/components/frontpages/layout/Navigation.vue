@@ -20,8 +20,6 @@ const navigation = computed(() => {
     const items = [
         { menu: 'Accueil', href: '/', badge: false },
         { menu: 'Fonctionnalités', href: '/fonctionnalites', badge: false },
-        { menu: "Conditions d'utilisation", href: '/conditions-utilisation', badge: false },
-        { menu: 'Politique de confidentialité', href: '/politique-confidentialite', badge: false },
         ...(isPricingPageEnabled() ? [{ menu: 'Tarifs', href: '/tarifs', badge: false }] : []),
         { menu: 'À propos', href: '/a-propos', badge: false }
     ];

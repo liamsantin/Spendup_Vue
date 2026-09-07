@@ -1,20 +1,41 @@
 <script setup lang="ts">
+import { DatabaseExportIcon, LockIcon, ShieldCheckIcon } from 'vue-tabler-icons';
 import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
 import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
-import TextBannerCard from '@/components/frontpages/shared/TextBannerCard.vue';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 </script>
 
 <template>
-    <div class="front-wraper">
+    <div class="front-wraper legal-page">
         <AnnounceBar />
         <Header />
 
-        <TextBannerCard caption="Protection des données personnelles" title="Politique de confidentialité" />
+        <section class="legal-hero">
+            <v-container class="max-width-1218">
+                <div class="legal-hero__icon"><LockIcon size="30" stroke-width="1.5" /></div>
+                <span class="legal-kicker">Protection des données personnelles</span>
+                <h1 class="textPrimary">Politique de confidentialité</h1>
+                <p class="text-medium-emphasis">
+                    Découvrez quelles données sont utilisées, pourquoi elles le sont et comment vous gardez le contrôle.
+                </p>
+                <div class="legal-hero__meta">
+                    <span><ShieldCheckIcon size="16" /> Données protégées</span>
+                    <span><DatabaseExportIcon size="16" /> Export et suppression</span>
+                </div>
+            </v-container>
+        </section>
 
-        <div class="py-12 py-md-16">
+        <main class="legal-main">
             <v-container class="max-width-1218 privacy-body">
+                <div class="legal-intro">
+                    <strong>Notre engagement</strong>
+                    <p>
+                        Vos données ne sont jamais vendues. Elles sont utilisées uniquement pour faire fonctionner Spendup, sécuriser votre
+                        compte et vous fournir les fonctionnalités demandées.
+                    </p>
+                </div>
+
                 <section class="mb-10">
                     <h2 class="text-h5 font-weight-bold textPrimary mb-4">1. Introduction</h2>
                     <p class="text-body-1 text-medium-emphasis lh-lg mb-4">
@@ -305,12 +326,13 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
                     <v-btn variant="outlined" color="primary" class="text-none" to="/">Retour à l'accueil</v-btn>
                 </div>
             </v-container>
-        </div>
+        </main>
 
         <Footer />
     </div>
 </template>
 
 <style scoped lang="scss">
+@use '@/scss/frontpages/pages/legal';
 @use '@/scss/frontpages/pages/privacy';
 </style>

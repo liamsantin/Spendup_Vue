@@ -7,7 +7,7 @@
 .pricing-hero {
     position: relative;
     overflow: hidden;
-    padding: 92px 0 150px;
+    padding: 172px 0 150px;
     text-align: center;
     background:
         radial-gradient(circle at 16% 0%, rgba(var(--v-theme-secondary), 0.12), transparent 29%),
@@ -393,7 +393,7 @@
 
 @media (max-width: 959px) {
     .pricing-hero {
-        padding: 75px 0 128px;
+        padding: 155px 0 128px;
     }
 
     .pricing-title {
@@ -408,7 +408,7 @@
 
 @media (max-width: 599px) {
     .pricing-hero {
-        padding: 58px 0 110px;
+        padding: 138px 0 110px;
     }
 
     .pricing-title {

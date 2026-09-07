@@ -6,7 +6,7 @@
 .about-hero {
     position: relative;
     overflow: hidden;
-    padding: 88px 0 112px;
+    padding: 168px 0 112px;
     background:
         radial-gradient(circle at 8% 0%, rgba(var(--v-theme-secondary), 0.11), transparent 29%),
         radial-gradient(circle at 91% 22%, rgba(var(--v-theme-primary), 0.14), transparent 31%),
@@ -461,7 +461,7 @@
 
 @media (max-width: 959px) {
     .about-hero {
-        padding: 72px 0 95px;
+        padding: 152px 0 95px;
         text-align: center;
     }
 
@@ -524,7 +524,7 @@
 
 @media (max-width: 599px) {
     .about-hero {
-        padding: 55px 0 78px;
+        padding: 135px 0 78px;
     }
 
     .about-hero__copy h1 {
