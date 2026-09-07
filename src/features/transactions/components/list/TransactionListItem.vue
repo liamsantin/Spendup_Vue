@@ -109,8 +109,8 @@ function onDoubleClick(event: MouseEvent) {
         :data-transaction-id="transaction.publicId"
         @dblclick="onDoubleClick"
     >
-        <span class="su-person__avatar su-person__avatar--tile" :class="`transaction-list-item__icon--${typeColor}`">
-            <component :is="typeIcon" size="22" />
+        <span class="su-person__avatar su-person__avatar--tile transaction-list-item__icon" :class="`transaction-list-item__icon--${typeColor}`">
+            <component :is="typeIcon" size="20" stroke-width="2.4" />
         </span>
         <div class="su-person__meta">
             <p class="su-person__name">{{ transaction.label }}</p>
@@ -187,16 +187,23 @@ function onDoubleClick(event: MouseEvent) {
     }
 }
 
+.transaction-list-item__icon {
+    box-shadow: none;
+}
+
 .transaction-list-item__icon--error {
     color: rgb(var(--v-theme-error));
+    background: rgba(var(--v-theme-error), 0.12);
 }
 
 .transaction-list-item__icon--success {
     color: rgb(var(--v-theme-success));
+    background: rgba(var(--v-theme-success), 0.12);
 }
 
 .transaction-list-item__icon--primary {
     color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.12);
 }
 
 .transaction-list-item__amount {
