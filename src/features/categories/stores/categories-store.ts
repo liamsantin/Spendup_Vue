@@ -43,6 +43,7 @@ export const useCategoriesStore = defineStore('categories', () => {
         createCategory: crud.createCategory,
         updateCategory: crud.updateCategory,
         deleteCategory: crud.deleteCategory,
+        deleteAllCategories: crud.deleteAllCategories,
         refetchTree: crud.refetchTree,
         countLinkedTransactions: crud.countLinkedTransactions,
         applyCategoryPlan: crud.applyCategoryPlan,

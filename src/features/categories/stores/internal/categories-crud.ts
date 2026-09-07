@@ -203,6 +203,64 @@ export function createCategoriesCrud(state: CategoriesState) {
         }
     }
 
+    /**
+     * Supprime tout l’arbre : enfants d’abord, puis racines.
+     * Les catégories encore liées à des transactions sont ignorées (API 400).
+     */
+    async function deleteAllCategories(): Promise<{ deleted: number; failed: number }> {
+        beginActing();
+        clearError();
+        let deleted = 0;
+        let failed = 0;
+        try {
+            const roots = [...treeRoots()];
+            for (const root of roots) {
+                for (const child of [...(root.children ?? [])]) {
+                    try {
+                        await categoriesApi.remove(child.publicId);
+                        removeItemLocal(child.publicId);
+                        rememberLocalMutation(child.publicId);
+                        deleted += 1;
+                    } catch (e: unknown) {
+                        const err = AppError.fromUnknown(e);
+                        if (err.status === 404) {
+                            removeItemLocal(child.publicId);
+                            deleted += 1;
+                        } else {
+                            failed += 1;
+                        }
+                    }
+                }
+                try {
+                    await categoriesApi.remove(root.publicId);
+                    removeItemLocal(root.publicId);
+                    rememberLocalMutation(root.publicId);
+                    deleted += 1;
+                } catch (e: unknown) {
+                    const err = AppError.fromUnknown(e);
+                    if (err.status === 404) {
+                        removeItemLocal(root.publicId);
+                        deleted += 1;
+                    } else {
+                        failed += 1;
+                    }
+                }
+            }
+            cache.touch(KEY_TREE);
+            invalidateFilteredLists();
+            if (failed > 0) {
+                await refetchTree().catch(() => undefined);
+            }
+            return { deleted, failed };
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
     async function refetchTree() {
         cache.invalidate(KEY_TREE);
         invalidateFilteredLists();
@@ -315,6 +373,7 @@ export function createCategoriesCrud(state: CategoriesState) {
         createCategory,
         updateCategory,
         deleteCategory,
+        deleteAllCategories,
         refetchTree,
         countLinkedTransactions,
         applyCategoryPlan
