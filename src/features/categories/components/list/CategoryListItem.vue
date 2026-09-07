@@ -23,6 +23,7 @@ const { t } = useI18n();
 
 const isRoot = computed(() => !props.category.parentPublicId);
 const hasChildren = computed(() => (props.category.children?.length ?? 0) > 0);
+const childrenCount = computed(() => props.category.children?.length ?? 0);
 const typeLabel = computed(() => t(`categoriesPage.types.${props.category.type}`));
 const swatchStyle = computed(() => {
     const color = props.category.color;
@@ -38,15 +39,19 @@ function onDoubleClick(event: MouseEvent) {
 
 <template>
     <div
-        class="su-person category-list-item"
-        :class="{ 'category-list-item--nested': nested, 'category-list-item--editable': !acting }"
+        class="category-row"
+        :class="{
+            'category-row--nested': nested,
+            'category-row--editable': !acting,
+            'category-row--root': isRoot
+        }"
         :data-category-id="category.publicId"
         @dblclick="onDoubleClick"
     >
         <button
             v-if="isRoot"
             type="button"
-            class="category-list-item__toggle"
+            class="category-row__toggle"
             :class="{ 'is-expanded': expanded, 'is-empty': !hasChildren }"
             :disabled="!hasChildren"
             :aria-label="expanded ? t('categoriesPage.actions.collapse') : t('categoriesPage.actions.expand')"
@@ -54,20 +59,20 @@ function onDoubleClick(event: MouseEvent) {
         >
             <ChevronDownIcon v-if="hasChildren" :size="16" stroke-width="1.8" />
         </button>
-        <span
-            class="su-person__avatar su-person__avatar--tile category-list-item__icon"
-            :style="swatchStyle"
-            :class="{ 'category-list-item__icon--empty': !category.color }"
-        >
+
+        <span class="category-row__icon" :style="swatchStyle" :class="{ 'category-row__icon--empty': !category.color }">
             <component :is="resolveCategoryIcon(category.icone)" size="18" stroke-width="1.8" />
         </span>
-        <div class="su-person__meta">
-            <p class="su-person__name">{{ category.name }}</p>
-            <p class="su-person__sub">
-                <span class="category-list-item__badge" :class="`is-${category.type}`">{{ typeLabel }}</span>
-            </p>
+
+        <div class="category-row__meta">
+            <div class="category-row__title">
+                <p class="category-row__name">{{ category.name }}</p>
+                <span class="category-row__badge" :class="`is-${category.type}`">{{ typeLabel }}</span>
+                <span v-if="isRoot && childrenCount" class="category-row__count">{{ childrenCount }}</span>
+            </div>
         </div>
-        <div class="su-person__actions">
+
+        <div class="category-row__actions">
             <button
                 v-if="isRoot"
                 type="button"
@@ -101,85 +106,174 @@ function onDoubleClick(event: MouseEvent) {
 </template>
 
 <style scoped>
-.category-list-item {
-    cursor: default;
+.category-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 52px;
+    padding: 8px 10px;
+    box-sizing: border-box;
+    border-radius: 12px;
+    color: inherit;
+    transition: background 0.2s ease;
 }
 
-.category-list-item--editable {
+.category-row--editable {
     cursor: pointer;
 }
 
-.category-list-item--nested {
-    margin-left: 28px;
+.category-row:hover {
+    background: var(--surface-hover-soft);
 }
 
-.category-list-item__toggle {
+.category-row--nested {
+    min-height: 44px;
+    padding-left: 8px;
+}
+
+.category-row__toggle {
     appearance: none;
     display: grid;
     place-items: center;
     width: 28px;
     height: 28px;
-    margin-right: 2px;
     border: 0;
     border-radius: 8px;
     background: transparent;
-    color: var(--ink-mute);
+    color: var(--ink-mute, var(--ink-muted));
     cursor: pointer;
     flex: none;
     transition: transform 0.2s ease;
 }
 
-.category-list-item__toggle.is-empty {
+.category-row__toggle:hover:not(:disabled) {
+    background: var(--hair);
+}
+
+.category-row__toggle.is-empty {
     cursor: default;
     opacity: 0;
+    pointer-events: none;
 }
 
-.category-list-item__toggle.is-expanded {
-    transform: rotate(0deg);
-}
-
-.category-list-item__toggle:not(.is-expanded) {
+.category-row__toggle:not(.is-expanded) {
     transform: rotate(-90deg);
 }
 
-.category-list-item__icon {
+.category-row__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
     color: inherit;
+    box-shadow: 0 6px 14px -10px rgba(16, 16, 20, 0.35);
 }
 
-.category-list-item__icon--empty {
+.category-row__icon--empty {
     background: rgba(var(--v-theme-primary), 0.1);
     color: rgb(var(--v-theme-primary));
 }
 
-.category-list-item__badge {
+.category-row__meta {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.category-row__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.category-row__name {
+    margin: 0;
+    min-width: 0;
+    font-size: 14.5px;
+    font-weight: 620;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.category-row__badge {
+    flex: none;
     display: inline-flex;
     align-items: center;
-    padding: 1px 8px;
+    padding: 2px 8px;
     border-radius: 999px;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.01em;
+    line-height: 1.2;
     background: rgba(var(--v-theme-primary), 0.1);
     color: rgb(var(--v-theme-primary));
 }
 
-.category-list-item__badge.is-depense {
+.category-row__badge.is-depense {
     background: rgba(var(--v-theme-error), 0.12);
     color: rgb(var(--v-theme-error));
 }
 
-.category-list-item__badge.is-revenu {
+.category-row__badge.is-revenu {
     background: rgba(var(--v-theme-success), 0.12);
     color: rgb(var(--v-theme-success));
 }
 
-.category-list-item__badge.is-transfert {
+.category-row__badge.is-transfert {
     background: rgba(var(--v-theme-primary), 0.12);
     color: rgb(var(--v-theme-primary));
 }
 
-.category-list-item__badge.is-mixte {
+.category-row__badge.is-mixte {
     background: rgba(var(--v-theme-secondary), 0.16);
     color: rgb(var(--v-theme-secondary));
+}
+
+.category-row__count {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--hair);
+    color: var(--ink-muted);
+    font-size: 0.7rem;
+    font-weight: 650;
+}
+
+.category-row__actions {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 2px;
+    margin: -2px;
+}
+
+@media (max-width: 600px) {
+    .category-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .category-row__actions {
+        width: 100%;
+        justify-content: flex-start;
+        padding-left: 38px;
+    }
+
+    .category-row--nested .category-row__actions {
+        padding-left: 8px;
+    }
 }
 </style>

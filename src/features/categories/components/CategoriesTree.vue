@@ -174,31 +174,34 @@ defineExpose({ openCreate });
             </button>
         </div>
         <div v-else class="su-stack">
-            <section class="su-surface">
-                <v-list class="py-0">
-                    <template v-for="root in store.items" :key="root.publicId">
+            <section class="su-surface categories-tree">
+                <div
+                    v-for="root in store.items"
+                    :key="root.publicId"
+                    class="categories-tree__group"
+                    :class="{ 'is-expanded': expandedIds.has(root.publicId) && (root.children?.length ?? 0) > 0 }"
+                >
+                    <CategoryListItem
+                        :category="root"
+                        :expanded="expandedIds.has(root.publicId)"
+                        :acting="store.acting"
+                        @edit="editTarget = $event"
+                        @delete="requestDelete"
+                        @add-child="openCreate"
+                        @toggle="toggleExpanded"
+                    />
+                    <div v-if="expandedIds.has(root.publicId) && root.children?.length" class="categories-tree__children">
                         <CategoryListItem
-                            :category="root"
-                            :expanded="expandedIds.has(root.publicId)"
+                            v-for="child in root.children"
+                            :key="child.publicId"
+                            :category="child"
+                            nested
                             :acting="store.acting"
                             @edit="editTarget = $event"
                             @delete="requestDelete"
-                            @add-child="openCreate"
-                            @toggle="toggleExpanded"
                         />
-                        <template v-if="expandedIds.has(root.publicId)">
-                            <CategoryListItem
-                                v-for="child in root.children"
-                                :key="child.publicId"
-                                :category="child"
-                                nested
-                                :acting="store.acting"
-                                @edit="editTarget = $event"
-                                @delete="requestDelete"
-                            />
-                        </template>
-                    </template>
-                </v-list>
+                    </div>
+                </div>
             </section>
         </div>
 
@@ -216,3 +219,41 @@ defineExpose({ openCreate });
         />
     </div>
 </template>
+
+<style scoped>
+.categories-tree {
+    overflow-x: hidden;
+    min-width: 0;
+}
+
+.categories-tree__group {
+    min-width: 0;
+    border-radius: 14px;
+    transition: background 0.2s ease;
+}
+
+.categories-tree__group + .categories-tree__group {
+    margin-top: 2px;
+}
+
+.categories-tree__group.is-expanded {
+    background: rgba(var(--v-theme-on-surface), 0.025);
+    padding-bottom: 4px;
+}
+
+.categories-tree__children {
+    min-width: 0;
+    margin: 0 8px 0 38px;
+    padding-left: 12px;
+    border-left: 1px solid var(--stroke);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+@media (max-width: 600px) {
+    .categories-tree__children {
+        margin-left: 24px;
+    }
+}
+</style>
