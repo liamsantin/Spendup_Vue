@@ -24,43 +24,15 @@ const digestItems = computed(() => [
         </template>
         <div>
             <h6 class="text-h6 mb-2">{{ t('userSettings.notifications.emailSection') }}</h6>
-            <AppSwitch
-                v-model="draft.emailSecurityAlerts"
-                class="mb-2"
-                :label="t('userSettings.notifications.emailSecurityAlerts')"
-            />
-            <AppSwitch
-                v-model="draft.emailFriendRequest"
-                class="mb-2"
-                :label="t('userSettings.notifications.emailFriendRequest')"
-            />
-            <AppSwitch
-                v-model="draft.emailFinancialAlerts"
-                class="mb-4"
-                :label="t('userSettings.notifications.emailFinancialAlerts')"
-            />
+            <AppSwitch v-model="draft.emailSecurityAlerts" class="mb-2" :label="t('userSettings.notifications.emailSecurityAlerts')" />
+            <AppSwitch v-model="draft.emailFriendRequest" class="mb-2" :label="t('userSettings.notifications.emailFriendRequest')" />
+            <AppSwitch v-model="draft.emailFinancialAlerts" class="mb-4" :label="t('userSettings.notifications.emailFinancialAlerts')" />
 
             <h6 class="text-h6 mb-2">{{ t('userSettings.notifications.pushSection') }}</h6>
-            <AppSwitch
-                v-model="draft.pushNotifications"
-                class="mb-2"
-                :label="t('userSettings.notifications.pushNotifications')"
-            />
-            <AppSwitch
-                v-model="draft.pushSecurityAlerts"
-                class="mb-2"
-                :label="t('userSettings.notifications.pushSecurityAlerts')"
-            />
-            <AppSwitch
-                v-model="draft.pushFriendRequest"
-                class="mb-2"
-                :label="t('userSettings.notifications.pushFriendRequest')"
-            />
-            <AppSwitch
-                v-model="draft.pushFinancialAlerts"
-                class="mb-4"
-                :label="t('userSettings.notifications.pushFinancialAlerts')"
-            />
+            <AppSwitch v-model="draft.pushNotifications" class="mb-2" :label="t('userSettings.notifications.pushNotifications')" />
+            <AppSwitch v-model="draft.pushSecurityAlerts" class="mb-2" :label="t('userSettings.notifications.pushSecurityAlerts')" />
+            <AppSwitch v-model="draft.pushFriendRequest" class="mb-2" :label="t('userSettings.notifications.pushFriendRequest')" />
+            <AppSwitch v-model="draft.pushFinancialAlerts" class="mb-4" :label="t('userSettings.notifications.pushFinancialAlerts')" />
 
             <v-label class="mb-2 font-weight-medium">{{ t('userSettings.notifications.digestFrequency') }}</v-label>
             <AppSelect

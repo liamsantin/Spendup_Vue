@@ -35,11 +35,7 @@ const dashboardViewItems = computed(() => [
                 />
             </v-col>
             <v-col cols="12" md="6" class="d-flex flex-column justify-end">
-                <AppSwitch
-                    v-model="draft.showBalanceOnDashboard"
-                    class="mb-2"
-                    :label="t('userSettings.dashboard.showBalance')"
-                />
+                <AppSwitch v-model="draft.showBalanceOnDashboard" class="mb-2" :label="t('userSettings.dashboard.showBalance')" />
                 <AppSwitch v-model="draft.hideSensitiveAmounts" :label="t('userSettings.dashboard.hideSensitiveAmounts')" />
             </v-col>
         </v-row>

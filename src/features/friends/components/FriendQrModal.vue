@@ -103,13 +103,7 @@ watch(
         <v-window v-model="view">
             <v-window-item value="Qr">
                 <div class="friend-qr-panel d-flex flex-column align-center text-center ga-3 py-2">
-                    <AppAlert
-                        v-if="generate.qrError"
-                        type="error"
-                        class="w-100"
-                        closable
-                        @dismiss="generate.qrError = null"
-                    >
+                    <AppAlert v-if="generate.qrError" type="error" class="w-100" closable @dismiss="generate.qrError = null">
                         {{ generate.qrError }}
                     </AppAlert>
                     <template v-else>

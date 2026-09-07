@@ -53,14 +53,7 @@ onUnmounted(() => {
 
 <template>
     <Transition name="mobile-dual">
-        <div
-            v-if="open"
-            ref="overlayEl"
-            class="mobile-dual-overlay"
-            role="dialog"
-            aria-modal="true"
-            :aria-label="t('nav.toggleMenu')"
-        >
+        <div v-if="open" ref="overlayEl" class="mobile-dual-overlay" role="dialog" aria-modal="true" :aria-label="t('nav.toggleMenu')">
             <div class="mobile-dual-overlay__scrim" @click="open = false" />
             <div class="theme-rail theme-rail--embedded mobile-dual-overlay__rail">
                 <ThemeRail />

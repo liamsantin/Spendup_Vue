@@ -26,14 +26,7 @@ const { t } = useI18n();
         <template #actions>
             <span class="su-chip">{{ enabled ? t('security.twoFactor.status.enabled') : t('security.twoFactor.status.disabled') }}</span>
         </template>
-        <AppAlert
-            v-if="successMessage"
-            type="success"
-            closable
-            :dismiss-ms="5000"
-            class="mt-4"
-            @dismiss="emit('dismissSuccess')"
-        >
+        <AppAlert v-if="successMessage" type="success" closable :dismiss-ms="5000" class="mt-4" @dismiss="emit('dismissSuccess')">
             {{ successMessage }}
         </AppAlert>
 

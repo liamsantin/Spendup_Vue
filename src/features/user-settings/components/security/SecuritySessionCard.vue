@@ -64,11 +64,7 @@ function onTrustedDaysBlur() {
         </template>
         <v-row>
             <v-col cols="12">
-                <AppSwitch
-                    :model-value="idleEnabled"
-                    :label="t('security.session.idleLogoutEnabled')"
-                    @update:model-value="onIdleToggle"
-                />
+                <AppSwitch :model-value="idleEnabled" :label="t('security.session.idleLogoutEnabled')" @update:model-value="onIdleToggle" />
                 <div class="text-subtitle-2 text-medium-emphasis mt-1">
                     {{ t('security.session.idleLogoutHint') }}
                 </div>

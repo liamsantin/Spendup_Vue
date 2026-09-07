@@ -19,7 +19,16 @@ withDefaults(defineProps<{ size?: number }>(), { size: 26 });
                 stroke-linecap="round"
                 stroke-linejoin="round"
             />
-            <circle class="rail-icon-tone" cx="12.175" cy="11.8891" r="2.63616" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <circle
+                class="rail-icon-tone"
+                cx="12.175"
+                cy="11.8891"
+                r="2.63616"
+                fill="none"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+            />
         </svg>
     </RailIcon>
 </template>

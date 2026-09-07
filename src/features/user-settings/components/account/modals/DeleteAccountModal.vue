@@ -50,13 +50,7 @@ const { t } = useI18n();
             </p>
 
             <template v-if="showDeleteGoogle">
-                <AppAlert
-                    v-if="googleIdToken"
-                    type="success"
-                    class="mb-3"
-                    closable
-                    @dismiss="emit('clearGoogleCredential')"
-                >
+                <AppAlert v-if="googleIdToken" type="success" class="mb-3" closable @dismiss="emit('clearGoogleCredential')">
                     {{ t('accounts.deleteModal.googleVerified') }}
                 </AppAlert>
                 <GoogleSignInButton v-else class="mb-4" @credential="emit('googleCredential', $event)" />

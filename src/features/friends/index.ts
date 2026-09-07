@@ -16,10 +16,7 @@ export {
     DEFAULT_AVATAR_SRC
 } from '@/features/friends/profilePicture';
 export { useFriendAvatarUrl } from '@/features/friends/composables/useFriendAvatarUrl';
-export {
-    useFriendNicknameLabels,
-    invalidateFriendNicknameLabelsCache
-} from '@/features/friends/composables/useFriendNicknameLabels';
+export { useFriendNicknameLabels, invalidateFriendNicknameLabelsCache } from '@/features/friends/composables/useFriendNicknameLabels';
 export type {
     FriendshipStatus,
     FriendUser,

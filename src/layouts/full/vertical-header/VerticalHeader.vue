@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { useSidebarNav } from '../vertical-sidebar/useSidebarNav';
 import { GridDotsIcon, Menu2Icon } from 'vue-tabler-icons';
 import NotificationDD from './NotificationDD.vue';
@@ -10,7 +9,6 @@ import ProfileDD from './ProfileDD.vue';
 import RightMobileSidebar from './RightMobileSidebar.vue';
 import Searchbar from './Searchbar.vue';
 
-const appSettings = useAppSettingsStore();
 const { toggleContentSidebar } = useSidebarNav();
 const appsdrawer = ref(false);
 /** Après les deux drawers (order 0–1) pour que le header commence à droite de la sidebar menu. */

@@ -19,14 +19,7 @@ function useVirtualList(length: number) {
 
 <template>
     <div>
-        <AppAlert
-            v-if="store.error"
-            type="error"
-            class="su-alert"
-            closable
-            :dismiss-ms="3000"
-            @dismiss="store.clearError()"
-        >
+        <AppAlert v-if="store.error" type="error" class="su-alert" closable :dismiss-ms="3000" @dismiss="store.clearError()">
             {{ store.error }}
         </AppAlert>
 

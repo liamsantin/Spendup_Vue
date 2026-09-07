@@ -164,7 +164,8 @@ describe('normalizeAppNotification', () => {
     });
 
     it('normalise / refuse les publicIds et payloads accountChanged', async () => {
-        const { normalizePublicId, parseAccountChangedPayload, parseCategoryChangedPayload, getAccountPublicId } = await import('@/features/notifications/normalize');
+        const { normalizePublicId, parseAccountChangedPayload, parseCategoryChangedPayload, getAccountPublicId } =
+            await import('@/features/notifications/normalize');
         expect(normalizePublicId('acc-1')).toBe('acc-1');
         expect(normalizePublicId('  share_2  ')).toBe('share_2');
         expect(normalizePublicId('../x')).toBeNull();

@@ -49,7 +49,15 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
             </template>
         </div>
         <v-spacer />
-        <v-btn icon variant="text" rounded="lg" size="48" class="theme-rail__btn" :aria-label="t('common.logout')" @click="authStore.logout()">
+        <v-btn
+            icon
+            variant="text"
+            rounded="lg"
+            size="48"
+            class="theme-rail__btn"
+            :aria-label="t('common.logout')"
+            @click="authStore.logout()"
+        >
             <LogoutRailIcon :size="26" />
             <v-tooltip activator="parent" location="end">{{ t('common.logout') }}</v-tooltip>
         </v-btn>

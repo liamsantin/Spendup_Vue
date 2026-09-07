@@ -7,10 +7,7 @@ vi.mock('@/features/friends/list-all', () => ({
     listAllFriends: (...args: unknown[]) => listAllFriends(...args)
 }));
 
-import {
-    invalidateFriendNicknameLabelsCache,
-    useFriendNicknameLabels
-} from '@/features/friends/composables/useFriendNicknameLabels';
+import { invalidateFriendNicknameLabelsCache, useFriendNicknameLabels } from '@/features/friends/composables/useFriendNicknameLabels';
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
 
 describe('useFriendNicknameLabels', () => {

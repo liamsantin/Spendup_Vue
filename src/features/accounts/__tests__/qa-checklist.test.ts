@@ -585,11 +585,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 note: 'Solde corrigé'
             });
 
-            expect(api.updateBalanceSnapshot).toHaveBeenCalledWith(
-                'acc-1',
-                'snap-old',
-                expect.objectContaining({ note: 'Solde corrigé' })
-            );
+            expect(api.updateBalanceSnapshot).toHaveBeenCalledWith('acc-1', 'snap-old', expect.objectContaining({ note: 'Solde corrigé' }));
             expect(store.balanceSnapshots[0]?.publicId).toBe('snap-old');
             expect(store.balanceSnapshots[0]?.balance).toBe(2500);
             expect(store.balanceSnapshots[0]?.createdByDisplayName).toBe('Alice');

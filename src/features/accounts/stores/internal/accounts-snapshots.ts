@@ -225,11 +225,7 @@ export function createAccountsSnapshots(state: AccountsState) {
      * @param payload PUT complet (note vide → `null`).
      * @returns Le relevé mis à jour.
      */
-    async function updateBalanceSnapshot(
-        accountPublicId: string,
-        snapshotPublicId: string,
-        payload: UpdateBalanceSnapshotPayload
-    ) {
+    async function updateBalanceSnapshot(accountPublicId: string, snapshotPublicId: string, payload: UpdateBalanceSnapshotPayload) {
         beginActing();
         clearError();
         try {

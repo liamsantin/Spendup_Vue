@@ -29,9 +29,7 @@ const open = computed({
 
 const displayName = computed(() => (props.friend ? getFriendDisplayNameFromItem(props.friend) : ''));
 const hasNickname = computed(() => !!props.friend?.nickname?.trim());
-const canSave = computed(
-    () => normalizeFriendNickname(draft.value) !== normalizeFriendNickname(props.friend?.nickname ?? null)
-);
+const canSave = computed(() => normalizeFriendNickname(draft.value) !== normalizeFriendNickname(props.friend?.nickname ?? null));
 
 watch(
     () => [props.modelValue, props.friend?.friendshipPublicId, props.friend?.nickname] as const,

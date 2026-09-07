@@ -214,17 +214,11 @@ const accordionOpen = ref(false);
                 </AppGlassCard>
 
                 <AppGlassCard title="Accordion" subtitle="AppAccordion — panneau verre repliable.">
-                    <AppAccordion
-                        v-model="accordionOpen"
-                        title="Synthèse"
-                        subtitle="Dernier solde et écart détecté."
-                    >
+                    <AppAccordion v-model="accordionOpen" title="Synthèse" subtitle="Dernier solde et écart détecté.">
                         <template #extra>
                             <span class="su-chip">À jour</span>
                         </template>
-                        <p class="text-body-2 text-medium-emphasis mb-0">
-                            Contenu déplié — métriques, détails, etc.
-                        </p>
+                        <p class="text-body-2 text-medium-emphasis mb-0">Contenu déplié — métriques, détails, etc.</p>
                     </AppAccordion>
                 </AppGlassCard>
             </div>

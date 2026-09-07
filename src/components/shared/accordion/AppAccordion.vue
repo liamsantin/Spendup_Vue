@@ -36,13 +36,7 @@ function toggle() {
 
 <template>
     <section class="app-accordion" :class="{ 'is-open': expanded, 'is-disabled': disabled }">
-        <button
-            type="button"
-            class="app-accordion__trigger"
-            :aria-expanded="expanded"
-            :disabled="disabled"
-            @click="toggle"
-        >
+        <button type="button" class="app-accordion__trigger" :aria-expanded="expanded" :disabled="disabled" @click="toggle">
             <span class="app-accordion__lead">
                 <span class="app-accordion__titles">
                     <span class="app-accordion__title">

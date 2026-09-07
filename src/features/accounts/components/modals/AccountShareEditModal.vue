@@ -41,9 +41,7 @@ const initialRole = computed(() => {
     return (props.share.role === 'pending' ? (props.share.invitedRole ?? 'viewer') : props.share.role) as ShareRole;
 });
 
-const personLabel = computed(() =>
-    props.share ? labelFor(props.share.userPublicId, props.share.displayName) : ''
-);
+const personLabel = computed(() => (props.share ? labelFor(props.share.userPublicId, props.share.displayName) : ''));
 
 const canSave = computed(() => {
     if (!props.share || props.share.role === 'pending') return false;
@@ -94,12 +92,7 @@ function requestRevoke() {
 <template>
     <AppModalBase v-model="open" :title="t('comptesPage.share.editTitle')" :max-width="420" :scrollable="false" mobile-layout="sheet">
         <div v-if="share" class="d-flex align-center ga-3 mb-5">
-            <UserPhotoAvatar
-                :photo-url="share.photoUrl"
-                :user-public-id="share.userPublicId"
-                :fallback-label="personLabel"
-                :size="42"
-            />
+            <UserPhotoAvatar :photo-url="share.photoUrl" :user-public-id="share.userPublicId" :fallback-label="personLabel" :size="42" />
             <div class="min-width-0">
                 <div class="text-subtitle-1 font-weight-bold text-truncate">{{ personLabel }}</div>
                 <div class="text-body-2 text-medium-emphasis">{{ formatDate(share.createdAt) }}</div>

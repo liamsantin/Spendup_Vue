@@ -29,7 +29,15 @@ const model = defineModel<boolean>({ default: false });
 </script>
 
 <template>
-    <v-switch class="app-switch" v-model="model" :inset="inset" :color="color" :hide-details="hideDetails" :density="density" v-bind="$attrs">
+    <v-switch
+        class="app-switch"
+        v-model="model"
+        :inset="inset"
+        :color="color"
+        :hide-details="hideDetails"
+        :density="density"
+        v-bind="$attrs"
+    >
         <template v-for="(_, name) in $slots" #[name]="slotData">
             <slot :name="name" v-bind="slotData || {}" />
         </template>
