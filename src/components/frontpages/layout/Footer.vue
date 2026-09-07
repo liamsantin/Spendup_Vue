@@ -1,59 +1,94 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { FooterMenu1, FooterMenu2, FooterMenu3 } from '@/data/front-pages/front-pages-data';
+import { ArrowRightIcon, DatabaseExportIcon, LockIcon, MapPinIcon, ShieldCheckIcon } from 'vue-tabler-icons';
+import Logo from '@/layouts/full/logo/Logo.vue';
 import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 
-const footerMenu2 = computed(() => FooterMenu2.filter((item) => item.link !== '/tarifs' || isPricingPageEnabled()));
+const productLinks = computed(() => [
+    { label: 'Fonctionnalités', to: '/fonctionnalites' },
+    ...(isPricingPageEnabled() ? [{ label: 'Tarifs', to: '/tarifs' }] : []),
+    { label: 'Créer un compte', to: '/auth/register' },
+    { label: 'Se connecter', to: '/auth/login' }
+]);
+
+const companyLinks = [
+    { label: 'À propos', to: '/a-propos' },
+    { label: 'Application', to: '/app' },
+    { label: 'Télécharger pour Windows', href: '/downloads/SpendUp-Setup-x64.msi' }
+];
+
+const legalLinks = [
+    { label: "Conditions d'utilisation", to: '/conditions-utilisation' },
+    { label: 'Politique de confidentialité', to: '/politique-confidentialite' }
+];
+
+const trustItems = [
+    { icon: MapPinIcon, label: 'Données en Suisse' },
+    { icon: LockIcon, label: '2FA incluse' },
+    { icon: DatabaseExportIcon, label: 'Export libre' }
+];
 </script>
 
 <template>
-    <div class="space-p-96">
-        <v-container class="max-width-1218">
-            <v-row>
-                <v-col cols="12" lg="4" sm="6">
-                    <h5 class="text-17 textPrimary mb-sm-7 mb-6">Parcourir</h5>
-                    <div class="d-flex flex-column ga-4">
-                        <div v-for="item in FooterMenu1" :key="item.menu">
-                            <v-btn variant="text" :to="item.link" exact class="text-hover-primary link-btn opacity-80">
-                                {{ item.menu }}
-                            </v-btn>
-                        </div>
-                    </div>
-                </v-col>
-                <v-col cols="12" lg="4" sm="6">
-                    <h5 class="text-17 textPrimary mb-sm-7 mb-6">Liens</h5>
-                    <div class="d-flex flex-column ga-4">
-                        <div v-for="item in footerMenu2" :key="item.menu">
-                            <v-btn variant="text" :to="item.link" exact class="text-hover-primary link-btn opacity-80">
-                                {{ item.menu }}
-                            </v-btn>
-                        </div>
-                    </div>
-                </v-col>
-                <v-col cols="12" lg="4" sm="6">
-                    <h5 class="text-17 textPrimary mb-sm-7 mb-6">Ressources</h5>
-                    <div class="d-flex flex-column ga-4">
-                        <div v-for="item in FooterMenu3" :key="item.menu">
-                            <v-btn variant="text" :to="item.link" exact class="text-hover-primary link-btn opacity-80">
-                                {{ item.menu }}
-                            </v-btn>
-                        </div>
-                    </div>
-                </v-col>
-            </v-row>
-        </v-container>
-    </div>
-    <v-container class="max-width-1218 px-md-0 px-3 py-0">
-        <div class="py-sm-10 py-6 border-t">
-            <div class="d-sm-flex justify-space-between">
-                <div class="d-flex ga-2 text-15 opacity-80 justify-sm-start justify-center">
-                    <img src="@/assets/images/logos/logoIcon.svg" height="24" class="mx-2" alt="" />
-                    Spend.Up — Projet personnel, sans garantie commerciale.
+    <footer class="landing-footer">
+        <div class="landing-footer__glow landing-footer__glow--left"></div>
+        <div class="landing-footer__glow landing-footer__glow--right"></div>
+
+        <v-container class="max-width-1218 landing-footer__content">
+            <div class="footer-cta">
+                <div>
+                    <span class="footer-cta__kicker">Prêt à y voir plus clair ?</span>
+                    <h2>Commencez gratuitement, évoluez à votre rythme.</h2>
                 </div>
-                <p class="text-15 opacity-80 d-flex align-center justify-sm-end justify-center pt-sm-0 pt-2">
-                    © {{ new Date().getFullYear() }} Tous droits réservés.
-                </p>
+                <v-btn color="primary" size="large" flat class="text-none px-6" to="/auth/register">
+                    Créer mon espace
+                    <ArrowRightIcon size="18" class="ms-2" />
+                </v-btn>
             </div>
-        </div>
-    </v-container>
+
+            <div class="footer-main">
+                <div class="footer-brand">
+                    <Logo home-to="/" />
+                    <p>La plateforme suisse qui réunit budget, objectifs et patrimoine dans un espace simple, sécurisé et collaboratif.</p>
+                    <div class="footer-trust">
+                        <span v-for="item in trustItems" :key="item.label">
+                            <component :is="item.icon" size="16" stroke-width="1.7" />
+                            {{ item.label }}
+                        </span>
+                    </div>
+                </div>
+
+                <nav class="footer-column" aria-label="Produit">
+                    <h3>Produit</h3>
+                    <RouterLink v-for="item in productLinks" :key="item.label" :to="item.to">{{ item.label }}</RouterLink>
+                </nav>
+
+                <nav class="footer-column" aria-label="Spendup">
+                    <h3>Spendup</h3>
+                    <template v-for="item in companyLinks" :key="item.label">
+                        <RouterLink v-if="item.to" :to="item.to">{{ item.label }}</RouterLink>
+                        <a v-else :href="item.href" download>{{ item.label }}</a>
+                    </template>
+                </nav>
+
+                <nav class="footer-column" aria-label="Informations légales">
+                    <h3>Légal</h3>
+                    <RouterLink v-for="item in legalLinks" :key="item.label" :to="item.to">{{ item.label }}</RouterLink>
+                    <div class="footer-security">
+                        <ShieldCheckIcon size="18" stroke-width="1.7" />
+                        Sécurité incluse dans toutes les offres
+                    </div>
+                </nav>
+            </div>
+
+            <div class="footer-bottom">
+                <p>© {{ new Date().getFullYear() }} Spendup. Tous droits réservés.</p>
+                <p>Conçu avec soin en Suisse.</p>
+            </div>
+        </v-container>
+    </footer>
 </template>
+
+<style scoped lang="scss">
+@use '@/scss/frontpages/layout/footer';
+</style>

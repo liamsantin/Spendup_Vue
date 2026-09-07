@@ -2,7 +2,6 @@
 import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
 import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
-import ContactBar from '@/components/frontpages/shared/ContactBar.vue';
 import TextBannerCard from '@/components/frontpages/shared/TextBannerCard.vue';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 </script>
@@ -308,7 +307,6 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
             </v-container>
         </div>
 
-        <ContactBar />
         <Footer />
     </div>
 </template>

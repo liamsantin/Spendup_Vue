@@ -4,7 +4,6 @@ import { ArrowRightIcon, CheckIcon, DatabaseExportIcon, LockIcon, ShieldCheckIco
 import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
 import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
-import ContactBar from '@/components/frontpages/shared/ContactBar.vue';
 
 type BillingPeriod = 'monthly' | 'yearly';
 
@@ -267,7 +266,6 @@ function yearlyTotal(plan: PricingPlan): string {
             </section>
         </main>
 
-        <ContactBar />
         <Footer />
     </div>
 </template>
