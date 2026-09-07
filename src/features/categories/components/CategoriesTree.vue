@@ -190,16 +190,26 @@ defineExpose({ openCreate });
                         @add-child="openCreate"
                         @toggle="toggleExpanded"
                     />
-                    <div v-if="expandedIds.has(root.publicId) && root.children?.length" class="categories-tree__children">
-                        <CategoryListItem
-                            v-for="child in root.children"
-                            :key="child.publicId"
-                            :category="child"
-                            nested
-                            :acting="store.acting"
-                            @edit="editTarget = $event"
-                            @delete="requestDelete"
-                        />
+                    <div
+                        v-if="root.children?.length"
+                        class="categories-tree__panel"
+                        :inert="!expandedIds.has(root.publicId)"
+                    >
+                        <div class="categories-tree__panel-inner">
+                            <div class="categories-tree__children">
+                                <CategoryListItem
+                                    v-for="(child, index) in root.children"
+                                    :key="child.publicId"
+                                    class="categories-tree__child"
+                                    :style="{ '--i': index }"
+                                    :category="child"
+                                    nested
+                                    :acting="store.acting"
+                                    @edit="editTarget = $event"
+                                    @delete="requestDelete"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -229,7 +239,9 @@ defineExpose({ openCreate });
 .categories-tree__group {
     min-width: 0;
     border-radius: 14px;
-    transition: background 0.2s ease;
+    transition:
+        background 0.35s var(--ease, ease),
+        padding-bottom 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .categories-tree__group + .categories-tree__group {
@@ -241,19 +253,88 @@ defineExpose({ openCreate });
     padding-bottom: 4px;
 }
 
+.categories-tree__panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.categories-tree__group.is-expanded .categories-tree__panel {
+    grid-template-rows: 1fr;
+}
+
+.categories-tree__panel-inner {
+    min-height: 0;
+    overflow: hidden;
+}
+
 .categories-tree__children {
     min-width: 0;
     margin: 0 8px 0 38px;
-    padding-left: 12px;
-    border-left: 1px solid var(--stroke);
+    padding: 0 0 2px 12px;
+    border-left: 1px solid transparent;
     display: flex;
     flex-direction: column;
     gap: 1px;
+    opacity: 0;
+    transform: translateY(-8px);
+    filter: blur(1.5px);
+    transition:
+        opacity 0.22s ease,
+        transform 0.28s cubic-bezier(0.4, 0, 1, 1),
+        filter 0.22s ease,
+        border-color 0.3s ease,
+        margin 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        padding 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.categories-tree__group.is-expanded .categories-tree__children {
+    border-left-color: var(--stroke);
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+    transition:
+        opacity 0.38s ease 0.06s,
+        transform 0.48s cubic-bezier(0.22, 1, 0.36, 1) 0.04s,
+        filter 0.35s ease 0.05s,
+        border-color 0.35s ease 0.05s,
+        margin 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+        padding 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.categories-tree__child {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+        opacity 0.28s ease,
+        transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.categories-tree__group.is-expanded .categories-tree__child {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: calc(0.06s + var(--i, 0) * 45ms);
 }
 
 @media (max-width: 600px) {
     .categories-tree__children {
         margin-left: 24px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .categories-tree__group,
+    .categories-tree__panel,
+    .categories-tree__children,
+    .categories-tree__child {
+        transition: none !important;
+        filter: none !important;
+        transform: none !important;
+    }
+
+    .categories-tree__children,
+    .categories-tree__child {
+        opacity: 1;
     }
 }
 </style>
