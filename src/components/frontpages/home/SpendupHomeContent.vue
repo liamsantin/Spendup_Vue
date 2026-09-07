@@ -16,7 +16,7 @@ import {
     UsersIcon,
     WalletIcon
 } from 'vue-tabler-icons';
-import heroVisual from '@/assets/images/front-pages/background/Scene.png';
+import heroVisual from '@/assets/images/front-pages/dashboard-preview.png';
 
 const INSTALLER_PATH = '/downloads/SpendUp-Setup-x64.msi';
 const windowsDownloadUrl = (import.meta.env.VITE_WINDOWS_APP_DOWNLOAD_URL as string | undefined)?.trim() || INSTALLER_PATH;
@@ -131,8 +131,8 @@ const faqs = [
                                     :src="heroVisual"
                                     alt="Aperçu du tableau de bord Spendup"
                                     class="hero-product__image"
-                                    width="640"
-                                    height="480"
+                                    width="1024"
+                                    height="505"
                                 />
                             </div>
                             <div class="hero-float hero-float--security">

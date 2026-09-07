@@ -327,6 +327,39 @@
     line-height: 1.7;
 }
 
+.journey-image {
+    position: relative;
+    overflow: hidden;
+    margin-top: 28px;
+    padding: 8px;
+    border: 1px solid var(--features-border);
+    border-radius: 18px;
+    background: rgb(var(--v-theme-surface));
+    box-shadow: 0 14px 40px rgba(24, 28, 75, 0.08);
+}
+
+.journey-image::after {
+    position: absolute;
+    inset: auto 12% -35% 12%;
+    height: 55%;
+    border-radius: 50%;
+    background: rgba(var(--v-theme-primary), 0.1);
+    content: '';
+    filter: blur(30px);
+    pointer-events: none;
+}
+
+.journey-image img {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 12px;
+    object-fit: contain;
+    background: white;
+}
+
 .journey-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;

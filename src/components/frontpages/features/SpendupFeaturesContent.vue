@@ -29,6 +29,8 @@ const journeys = [
         title: 'Comprenez chaque mouvement de votre argent',
         text: 'Tous vos comptes, moyens de paiement et transactions réunis dans une expérience claire.',
         accent: 'primary',
+        image: '/assets/images/front-pages/features/feature-imports.png',
+        imageAlt: 'Import et organisation de documents financiers',
         features: [
             { icon: BuildingBankIcon, title: 'Comptes consolidés', text: 'Banques, cash, wallets et cartes dans une vue unique.' },
             { icon: TagsIcon, title: 'Catégorisation intelligente', text: 'Catégories, tags et règles automatiques selon vos habitudes.' },
@@ -43,6 +45,8 @@ const journeys = [
         title: 'Donnez une direction à votre budget',
         text: 'Passez du simple suivi à une vraie capacité d’anticipation financière.',
         accent: 'secondary',
+        image: '/assets/images/front-pages/features/feature-budget.jpg',
+        imageAlt: 'Gestion du budget familial et de l’épargne',
         features: [
             { icon: ChartPieIcon, title: 'Budgets personnalisés', text: 'Limites mensuelles ou annuelles avec suivi par catégorie.' },
             { icon: TargetIcon, title: 'Objectifs d’épargne', text: 'Mesurez vos progrès et planifiez vos projets importants.' },
@@ -57,6 +61,8 @@ const journeys = [
         title: 'Pilotez votre patrimoine dans son ensemble',
         text: 'Une lecture consolidée de ce que vous possédez, devez et préparez pour demain.',
         accent: 'primary',
+        image: '/assets/images/front-pages/features/feature-properties.png',
+        imageAlt: 'Suivi des propriétés, véhicules et actifs patrimoniaux',
         features: [
             { icon: ChartLineIcon, title: 'Placements & crypto', text: 'Portefeuilles, positions, opérations et valorisations.' },
             { icon: HomeEcoIcon, title: 'Immobilier & actifs', text: 'Biens, lots, baux, véhicules, charges et rendement.' },
@@ -71,6 +77,8 @@ const journeys = [
         title: 'Gérez ensemble, sans tout mélanger',
         text: 'Collaborez autour des finances communes en gardant le contrôle de votre espace personnel.',
         accent: 'secondary',
+        image: '/assets/images/front-pages/features/feature-collaboration.jpg',
+        imageAlt: 'Collaboration financière entre proches',
         features: [
             { icon: UsersIcon, title: 'Espaces partagés', text: 'Famille, couple ou colocation, jusqu’à 5 membres.' },
             { icon: LockIcon, title: 'Rôles & permissions', text: 'Contrôlez précisément qui peut voir ou modifier.' },
@@ -180,6 +188,9 @@ const securityItems = [
                         </div>
                         <h2 class="textPrimary">{{ journey.title }}</h2>
                         <p class="text-medium-emphasis">{{ journey.text }}</p>
+                        <div class="journey-image">
+                            <img :src="journey.image" :alt="journey.imageAlt" loading="lazy" />
+                        </div>
                     </div>
 
                     <div class="journey-grid">

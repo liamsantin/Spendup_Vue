@@ -112,6 +112,10 @@
 .front-wraper {
     overflow: hidden;
 
+    .v-btn:not(.v-btn--icon) {
+        border-radius: 12px;
+    }
+
     .sticky-header {
         position: fixed !important;
         top: 0 !important;

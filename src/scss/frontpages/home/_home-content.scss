@@ -141,7 +141,6 @@
     display: block;
     width: 100%;
     height: auto;
-    min-height: 360px;
     padding: 14px;
     object-fit: contain;
 }
@@ -782,10 +781,6 @@
 
     .hero-product__window {
         transform: none;
-    }
-
-    .hero-product__image {
-        min-height: 230px;
     }
 
     .hero-float--overview {
