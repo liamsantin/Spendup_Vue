@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Sélecteur de couleur Spend.Up — presets + panneau HSV/hex (logique dans `useAppColorPicker`).
+ * Sélecteur de couleur Spend.Up — presets + panneau HSV/hex ancré sur l’icône.
  */
 import { ColorPickerIcon, XIcon } from 'vue-tabler-icons';
 import { useAppColorPicker } from '@/components/shared/color-picker/useAppColorPicker';
@@ -42,7 +42,6 @@ const {
     hueHex,
     previewColor,
     isLightColor,
-    openPicker,
     startDrag,
     onDragMove,
     endDrag,
@@ -85,24 +84,30 @@ const {
                 />
             </template>
             <template #append-inner>
-                <button
-                    type="button"
-                    class="app-color-picker__icon-btn"
-                    :class="{ 'app-color-picker__icon-btn--active': isOpen }"
+                <v-menu
+                    v-model="isOpen"
+                    :close-on-content-click="false"
                     :disabled="disabled"
-                    :aria-label="label"
-                    :aria-expanded="isOpen"
-                    @click.stop.prevent="openPicker"
+                    location="bottom end"
+                    offset="8"
+                    min-width="0"
+                    content-class="app-color-picker__menu"
                 >
-                    <ColorPickerIcon :size="20" />
-                </button>
-            </template>
-        </v-text-field>
+                    <template #activator="{ props: menuProps }">
+                        <button
+                            type="button"
+                            class="app-color-picker__icon-btn"
+                            :class="{ 'app-color-picker__icon-btn--active': isOpen }"
+                            :disabled="disabled"
+                            :aria-label="label"
+                            :aria-expanded="isOpen"
+                            v-bind="menuProps"
+                        >
+                            <ColorPickerIcon :size="20" />
+                        </button>
+                    </template>
 
-        <Teleport to="body">
-            <Transition name="picker">
-                <div v-if="isOpen" class="app-color-picker__overlay" role="dialog" aria-modal="true" @click.self="isOpen = false">
-                    <div class="app-color-picker__panel">
+                    <div class="app-color-picker__panel" role="dialog" :aria-label="label">
                         <header class="app-color-picker__header">
                             <span class="app-color-picker__title">{{ label }}</span>
                             <button type="button" class="app-color-picker__close" aria-label="Fermer" @click="isOpen = false">
@@ -190,8 +195,8 @@ const {
                             </button>
                         </footer>
                     </div>
-                </div>
-            </Transition>
-        </Teleport>
+                </v-menu>
+            </template>
+        </v-text-field>
     </div>
 </template>

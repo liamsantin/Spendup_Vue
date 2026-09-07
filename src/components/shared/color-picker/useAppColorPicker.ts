@@ -231,12 +231,10 @@ export function useAppColorPicker(options: {
     watch(isOpen, (open) => {
         if (open) document.addEventListener('keydown', onKeydown);
         else document.removeEventListener('keydown', onKeydown);
-        document.body.style.overflow = open ? 'hidden' : '';
     });
 
     onBeforeUnmount(() => {
         document.removeEventListener('keydown', onKeydown);
-        document.body.style.overflow = '';
     });
 
     return {
