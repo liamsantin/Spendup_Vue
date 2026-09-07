@@ -34,10 +34,12 @@ const props = withDefaults(
         paymentMethodItems: { title: string; value: string }[];
         fieldErrors?: TransactionFormFieldErrors;
         archivedHint?: string | null;
+        counterpartyHint?: string | null;
     }>(),
     {
         fieldErrors: () => ({}),
-        archivedHint: null
+        archivedHint: null,
+        counterpartyHint: null
     }
 );
 
@@ -45,6 +47,12 @@ const { t } = useI18n();
 
 const isTransfer = computed(() => props.form.type === 'transfert');
 const todayUtc = computed(() => todayUtcYmd());
+const hasCounterpartyOptions = computed(() => props.counterpartyItems.length > 0);
+const counterpartySelectItems = computed(() =>
+    hasCounterpartyOptions.value
+        ? props.counterpartyItems
+        : [{ title: t('transactionsPage.form.noCounterpartyOption'), value: '' }]
+);
 
 const operationDateModel = computed({
     get: () => props.form.operationDate || null,
@@ -114,12 +122,12 @@ function onAmountInput(value: string) {
                 <AppSelect
                     id="tx-form-counterparty"
                     v-model="form.counterpartyAccountPublicId"
-                    :items="counterpartyItems"
-                    :disabled="isEdit"
+                    :items="counterpartySelectItems"
+                    :disabled="isEdit || !hasCounterpartyOptions"
                     :label="t('transactionsPage.form.fields.counterpartyAccount')"
                     hide-details="auto"
-                    :error="!!fieldErrors.counterpartyAccountPublicId"
-                    :error-messages="fieldErrors.counterpartyAccountPublicId || undefined"
+                    :error="!!fieldErrors.counterpartyAccountPublicId || !!counterpartyHint"
+                    :error-messages="fieldErrors.counterpartyAccountPublicId || counterpartyHint || undefined"
                 />
             </v-col>
         </v-row>

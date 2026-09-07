@@ -597,6 +597,9 @@
             "valueDatePlaceholder": "Value date (optional)",
             "noPaymentMethod": "None",
             "archivedHint": "This account is archived. Restore it to edit its transactions.",
+            "noCounterpartyOption": "No target account",
+            "noCounterpartyHint": "No other editable account is available. Create a second account to make a transfer.",
+            "noCounterpartySameCurrencyHint": "No other editable {currency} account is available. A transfer requires two active accounts you can edit, in the same currency.",
             "fields": {
                 "type": "Type",
                 "account": "Account",

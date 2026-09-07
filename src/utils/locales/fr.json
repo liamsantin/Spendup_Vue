@@ -597,6 +597,9 @@
             "valueDatePlaceholder": "Date de valeur (optionnel)",
             "noPaymentMethod": "Aucun",
             "archivedHint": "Ce compte est archivé. Restaurez-le pour modifier ses transactions.",
+            "noCounterpartyOption": "Aucun compte cible",
+            "noCounterpartyHint": "Aucun autre compte éditable n’est disponible. Créez un second compte pour faire un transfert.",
+            "noCounterpartySameCurrencyHint": "Aucun autre compte en {currency} n’est éditable. Un transfert exige deux comptes actifs, avec droit d’édition, dans la même devise.",
             "fields": {
                 "type": "Type",
                 "account": "Compte",

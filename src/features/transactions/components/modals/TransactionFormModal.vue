@@ -87,6 +87,17 @@ const archivedHint = computed(() => {
     return null;
 });
 
+const counterpartyHint = computed(() => {
+    if (isEdit.value || form.type !== 'transfert') return null;
+    if (counterpartyItems.value.length) return null;
+    const source = sourceAccount.value;
+    const others = writableAccounts.value.filter((a) => a.publicId !== source?.publicId);
+    if (!others.length) {
+        return t('transactionsPage.form.noCounterpartyHint');
+    }
+    return t('transactionsPage.form.noCounterpartySameCurrencyHint', { currency: source?.currency ?? '' });
+});
+
 const localError = reactive({ message: null as string | null });
 const fieldErrors = reactive<TransactionFormFieldErrors>({});
 
@@ -107,7 +118,7 @@ const open = computed({
 });
 
 const canSave = computed(() => {
-    if (archivedHint.value) return false;
+    if (archivedHint.value || counterpartyHint.value) return false;
     if (!isEdit.value || !editTransaction.value) return true;
     return isTransactionFormDirty(editTransaction.value, form);
 });
@@ -263,6 +274,7 @@ async function onSave() {
             :payment-method-items="paymentMethodItems"
             :field-errors="fieldErrors"
             :archived-hint="archivedHint"
+            :counterparty-hint="counterpartyHint"
         />
 
         <template #footer="{ close }">
