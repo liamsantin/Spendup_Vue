@@ -6,6 +6,8 @@ import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
+import { useCategoriesStore } from '@/features/categories/stores/categories-store';
+import { categorySelectItems } from '@/features/categories/payload';
 import { canWriteTransactions } from '@/features/transactions/rights';
 import { sourceAccountPublicId, targetAccountPublicId, todayUtcYmd } from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
@@ -34,6 +36,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const accountsStore = useAccountsStore();
 const paymentMethodsStore = usePaymentMethodsStore();
+const categoriesStore = useCategoriesStore();
 const store = useTransactionsStore();
 
 const isEdit = ref(false);
@@ -80,6 +83,21 @@ const paymentMethodItems = computed(() => {
     return [...none, ...options];
 });
 
+const categoryItems = computed(() => {
+    const items = categorySelectItems(categoriesStore.items, { noneTitle: t('transactionsPage.form.noCategory') });
+    const selected = form.categoryPublicId;
+    if (selected && !items.some((item) => item.value === selected)) {
+        const known = categoriesStore.findByPublicId(selected);
+        items.push({ title: known?.name ?? selected, value: selected });
+    }
+    return items;
+});
+
+const isSharedAccount = computed(() => {
+    const account = sourceAccount.value;
+    return !!account && !account.isOwned;
+});
+
 const archivedHint = computed(() => {
     if (isEdit.value && sourceAccount.value && !sourceAccount.value.isActive) {
         return t('transactionsPage.form.archivedHint');
@@ -109,7 +127,8 @@ const form = reactive<TransactionFormFields>({
     amount: '',
     operationDate: todayUtcYmd(),
     valueDate: null,
-    paymentMethodPublicId: ''
+    paymentMethodPublicId: '',
+    categoryPublicId: ''
 });
 
 const open = computed({
@@ -132,6 +151,7 @@ function clearFieldErrors() {
     fieldErrors.operationDate = null;
     fieldErrors.valueDate = null;
     fieldErrors.paymentMethodPublicId = null;
+    fieldErrors.categoryPublicId = null;
 }
 
 function payloadErrorText(code: TransactionPayloadErrorCode): string {
@@ -165,6 +185,7 @@ function resetForm() {
         form.operationDate = transaction.operationDate;
         form.valueDate = transaction.valueDate;
         form.paymentMethodPublicId = transaction.paymentMethodPublicId ?? '';
+        form.categoryPublicId = transaction.categoryPublicId ?? '';
         return;
     }
     form.type = props.defaultType || 'depense';
@@ -175,12 +196,17 @@ function resetForm() {
     form.operationDate = todayUtcYmd();
     form.valueDate = null;
     form.paymentMethodPublicId = '';
+    form.categoryPublicId = '';
 }
 
 async function loadPaymentMethodsForAccount(accountPublicId: string | null) {
     const id = accountPublicId?.trim();
     if (!id) return;
     await paymentMethodsStore.loadList({ accountPublicId: id }).catch(() => undefined);
+}
+
+async function loadCategoriesForType(type: TransactionType) {
+    await categoriesStore.loadList({ type }).catch(() => undefined);
 }
 
 watch(
@@ -190,19 +216,21 @@ watch(
         isEdit.value = !!props.transaction;
         editTransaction.value = props.transaction ?? null;
         resetForm();
-        await loadPaymentMethodsForAccount(form.accountPublicId);
+        await Promise.all([loadPaymentMethodsForAccount(form.accountPublicId), loadCategoriesForType(form.type)]);
     }
 );
 
 watch(
     () => form.type,
-    (type) => {
+    async (type) => {
         if (isEdit.value) return;
         if (type !== 'transfert') {
             form.counterpartyAccountPublicId = '';
         } else if (form.counterpartyAccountPublicId === form.accountPublicId) {
             form.counterpartyAccountPublicId = '';
         }
+        form.categoryPublicId = '';
+        await loadCategoriesForType(type);
     }
 );
 
@@ -272,9 +300,11 @@ async function onSave() {
             :counterparty-items="counterpartyItems"
             :type-items="typeItems"
             :payment-method-items="paymentMethodItems"
+            :category-items="categoryItems"
             :field-errors="fieldErrors"
             :archived-hint="archivedHint"
             :counterparty-hint="counterpartyHint"
+            :category-hint="isSharedAccount ? t('transactionsPage.form.categoryPersonalHint') : null"
         />
 
         <template #footer="{ close }">

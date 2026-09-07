@@ -33,6 +33,13 @@ describe('idsFromPath', () => {
         });
     });
 
+    it('mappe la gestion', () => {
+        expect(idsFromPath('/app/gestion/categories')).toEqual({
+            openId: SHELL_NAV_IDS.gestion,
+            activeId: SHELL_NAV_IDS.categories
+        });
+    });
+
     it('mappe les pages paramètres', () => {
         expect(idsFromPath(SETTINGS_PATHS.account)).toEqual({
             openId: SHELL_NAV_IDS.settings,

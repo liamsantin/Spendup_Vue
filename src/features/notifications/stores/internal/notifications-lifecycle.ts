@@ -32,7 +32,8 @@ export function createNotificationsLifecycle(state: NotificationsState, deps: Li
         friendListeners,
         accountShareListeners,
         friendshipChangeListeners,
-        accountChangeListeners
+        accountChangeListeners,
+        categoryChangeListeners
     } = state;
 
     const { clearLiveFriendChips, fetchUnreadCount, wireHubHandlers, startHub, stopHub, resetHubFlags } = deps;
@@ -111,6 +112,7 @@ export function createNotificationsLifecycle(state: NotificationsState, deps: Li
         accountShareListeners.clear();
         friendshipChangeListeners.clear();
         accountChangeListeners.clear();
+        categoryChangeListeners.clear();
         clearLiveFriendChips();
         void stopHub();
     }

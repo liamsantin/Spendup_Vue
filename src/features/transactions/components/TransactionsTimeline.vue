@@ -6,6 +6,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import { formatOperationDate } from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
@@ -22,6 +23,7 @@ const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const accountsStore = useAccountsStore();
+const categoriesStore = useCategoriesStore();
 const store = useTransactionsStore();
 
 const createOpen = ref(false);
@@ -51,6 +53,7 @@ function queryString(name: string): string | null {
 const filterAccountId = computed(() => props.lockedAccountPublicId?.trim() || queryString('account'));
 const filterFrom = computed(() => (props.lockedAccountPublicId ? null : queryString('from')));
 const filterTo = computed(() => (props.lockedAccountPublicId ? null : queryString('to')));
+const filterCategoryId = computed(() => (props.lockedAccountPublicId ? null : queryString('category')));
 const filterType = computed<TransactionType | null>(() => {
     if (props.lockedAccountPublicId) return null;
     const raw = queryString('type');
@@ -97,26 +100,36 @@ async function loadTimeline(force = false) {
     localError.value = null;
     try {
         await accountsStore.loadAccounts(force);
-        await store.loadList({
-            accountPublicId: filterAccountId.value ?? undefined,
-            from: filterFrom.value ?? undefined,
-            to: filterTo.value ?? undefined,
-            force
-        });
+        await Promise.all([
+            store.loadList({
+                accountPublicId: filterAccountId.value ?? undefined,
+                categoryPublicId: filterCategoryId.value ?? undefined,
+                from: filterFrom.value ?? undefined,
+                to: filterTo.value ?? undefined,
+                force
+            }),
+            categoriesStore.loadList({ force }).catch(() => undefined)
+        ]);
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
         if (err.status === 404) {
             localError.value = t('transactionsPage.errors.notFound');
             if (!props.lockedAccountPublicId && filterAccountId.value) {
                 await store
-                    .loadList({ from: filterFrom.value ?? undefined, to: filterTo.value ?? undefined, force: true })
+                    .loadList({
+                        from: filterFrom.value ?? undefined,
+                        to: filterTo.value ?? undefined,
+                        categoryPublicId: filterCategoryId.value ?? undefined,
+                        force: true
+                    })
                     .catch(() => undefined);
                 await router.replace({
                     path: '/app/finances/transactions',
                     query: {
                         ...(filterType.value ? { type: filterType.value } : {}),
                         ...(filterFrom.value ? { from: filterFrom.value } : {}),
-                        ...(filterTo.value ? { to: filterTo.value } : {})
+                        ...(filterTo.value ? { to: filterTo.value } : {}),
+                        ...(filterCategoryId.value ? { category: filterCategoryId.value } : {})
                     }
                 });
             }
@@ -148,7 +161,7 @@ function openCreate() {
 defineExpose({ openCreate });
 
 watch(
-    () => [filterAccountId.value, filterFrom.value, filterTo.value] as const,
+    () => [filterAccountId.value, filterFrom.value, filterTo.value, filterCategoryId.value] as const,
     () => {
         void loadTimeline().catch(() => undefined);
     }

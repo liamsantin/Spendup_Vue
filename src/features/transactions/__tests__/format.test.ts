@@ -26,6 +26,7 @@ function tx(partial: Partial<Transaction> = {}): Transaction {
         operationDate: '2026-09-07',
         valueDate: null,
         paymentMethodPublicId: null,
+        categoryPublicId: null,
         createdByUserPublicId: 'u-1',
         createdByDisplayName: 'Liam',
         createdByPhotoUrl: null,

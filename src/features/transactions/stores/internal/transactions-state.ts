@@ -7,6 +7,7 @@ export const TRANSACTIONS_LIST_MAX_AGE_MS = 30_000;
 
 export type TransactionsListQuery = {
     accountPublicId: string | null;
+    categoryPublicId: string | null;
     from: string | null;
     to: string | null;
 };
@@ -14,6 +15,7 @@ export type TransactionsListQuery = {
 export function normalizeListQuery(query: ListTransactionsQuery = {}): TransactionsListQuery {
     return {
         accountPublicId: query.accountPublicId?.trim() || null,
+        categoryPublicId: query.categoryPublicId?.trim() || null,
         from: query.from?.trim() || null,
         to: query.to?.trim() || null
     };
@@ -23,7 +25,8 @@ export function listCacheKey(query: TransactionsListQuery): string {
     const account = query.accountPublicId || 'all';
     const from = query.from || '-';
     const to = query.to || '-';
-    return `list:${account}:${from}:${to}`;
+    const category = query.categoryPublicId || 'all';
+    return `list:${account}:${from}:${to}:${category}`;
 }
 
 export function parseListCacheKey(key: string): TransactionsListQuery {
@@ -31,7 +34,8 @@ export function parseListCacheKey(key: string): TransactionsListQuery {
     return {
         accountPublicId: !parts[1] || parts[1] === 'all' ? null : parts[1],
         from: !parts[2] || parts[2] === '-' ? null : parts[2],
-        to: !parts[3] || parts[3] === '-' ? null : parts[3]
+        to: !parts[3] || parts[3] === '-' ? null : parts[3],
+        categoryPublicId: !parts[4] || parts[4] === 'all' ? null : parts[4]
     };
 }
 
@@ -47,6 +51,7 @@ function queryMatchesTransaction(query: TransactionsListQuery, tx: Transaction):
     if (query.accountPublicId && !involved.includes(query.accountPublicId)) return false;
     if (query.from && tx.operationDate < query.from) return false;
     if (query.to && tx.operationDate > query.to) return false;
+    if (query.categoryPublicId && tx.categoryPublicId !== query.categoryPublicId) return false;
     return true;
 }
 
@@ -56,7 +61,7 @@ function queryMatchesTransaction(query: TransactionsListQuery, tx: Transaction):
 export function createTransactionsState() {
     const items = ref<Transaction[]>([]);
     const itemsByListKey = new Map<string, TransactionsCacheEntry>();
-    const activeListKey = ref(listCacheKey({ accountPublicId: null, from: null, to: null }));
+    const activeListKey = ref(listCacheKey({ accountPublicId: null, categoryPublicId: null, from: null, to: null }));
     const page = ref(1);
     const pageSize = ref(TRANSACTION_PAGE_SIZE_DEFAULT);
     const totalCount = ref(0);
@@ -164,7 +169,7 @@ export function createTransactionsState() {
             const removed = prev.items.length - nextItems.length;
             setList(key, nextItems, { totalCount: Math.max(0, prev.totalCount - removed) });
         }
-        cache.invalidate(listCacheKey({ accountPublicId, from: null, to: null }));
+        cache.invalidate(listCacheKey({ accountPublicId, categoryPublicId: null, from: null, to: null }));
     }
 
     function invalidateAllLists() {

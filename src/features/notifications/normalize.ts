@@ -2,6 +2,8 @@ import type {
     AccountChange,
     AccountChangedPayload,
     AppNotification,
+    CategoryChange,
+    CategoryChangedPayload,
     NotificationReceivedPayload,
     NotificationsListResult
 } from '@/features/notifications/types';
@@ -26,6 +28,8 @@ const ACCOUNT_CHANGES = new Set<AccountChange>([
     'transactionUpdated',
     'transactionDeleted'
 ]);
+
+const CATEGORY_CHANGES = new Set<CategoryChange>(['categoryCreated', 'categoryUpdated', 'categoryDeleted']);
 
 /** Normalise un publicId (trim + charset) ; `null` si invalide. */
 export function normalizePublicId(value: unknown): string | null {
@@ -82,6 +86,20 @@ export function parseAccountChangedPayload(raw: unknown): AccountChangedPayload 
     const accountPublicId = normalizePublicId(payload.accountPublicId);
     if (!accountPublicId) return null;
     return { change: change as AccountChange, accountPublicId };
+}
+
+/**
+ * Valide un payload SignalR `categoryChanged` (change connu + publicId).
+ * @returns Payload normalisé, ou `null` si malformé.
+ */
+export function parseCategoryChangedPayload(raw: unknown): CategoryChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!CATEGORY_CHANGES.has(change as CategoryChange)) return null;
+    const categoryPublicId = normalizePublicId(payload.categoryPublicId);
+    if (!categoryPublicId) return null;
+    return { change: change as CategoryChange, categoryPublicId };
 }
 
 /** Normalise un item inbox / SignalR (metadata string → objet). */

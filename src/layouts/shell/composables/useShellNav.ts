@@ -8,6 +8,7 @@ import {
     BuildingBankIcon,
     CreditCardIcon,
     LockIcon,
+    TagsIcon,
     UserCircleIcon
 } from 'vue-tabler-icons';
 import { useNotificationsStore } from '@/features/notifications';
@@ -26,6 +27,8 @@ export const SHELL_NAV_IDS = {
     accounts: 'accounts',
     transactions: 'transactions',
     paymentMethods: 'payment-methods',
+    gestion: 'gestion',
+    categories: 'categories',
     settings: 'settings',
     profile: 'profile',
     preferences: 'preferences',
@@ -51,6 +54,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     }
     if (path.startsWith('/app/finances/comptes') || path.startsWith('/app/finances')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.accounts };
+    }
+    if (path.startsWith('/app/gestion/categories') || path.startsWith('/app/gestion')) {
+        return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.categories };
     }
     if (path.startsWith(SETTINGS_PATHS.preferences)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.preferences };
@@ -96,6 +102,15 @@ export function useShellNav() {
             label: t('nav.items.paymentMethods'),
             icon: CreditCardIcon,
             to: '/app/finances/moyens-de-paiement'
+        }
+    ]);
+
+    const gestionLeaves = computed<NavLeaf[]>(() => [
+        {
+            id: SHELL_NAV_IDS.categories,
+            label: t('nav.items.categories'),
+            icon: TagsIcon,
+            to: '/app/gestion/categories'
         }
     ]);
 
@@ -157,6 +172,19 @@ export function useShellNav() {
                     id: 'finances-pages',
                     title: t('nav.headers.finances'),
                     items: financeLeaves.value
+                }
+            ]
+        },
+        {
+            id: SHELL_NAV_IDS.gestion,
+            label: t('nav.headers.gestion'),
+            icon: 'folder',
+            children: gestionLeaves.value,
+            detail: [
+                {
+                    id: 'gestion-pages',
+                    title: t('nav.headers.gestion'),
+                    items: gestionLeaves.value
                 }
             ]
         }

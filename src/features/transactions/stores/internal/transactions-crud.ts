@@ -136,6 +136,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                     try {
                         const result = await transactionsApi.list({
                             accountPublicId: normalized.accountPublicId ?? undefined,
+                            categoryPublicId: normalized.categoryPublicId ?? undefined,
                             from: normalized.from ?? undefined,
                             to: normalized.to ?? undefined,
                             page: 1,
@@ -198,6 +199,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             const nextPage = page.value + 1;
             const result = await transactionsApi.list({
                 accountPublicId: query.accountPublicId ?? undefined,
+                categoryPublicId: query.categoryPublicId ?? undefined,
                 from: query.from ?? undefined,
                 to: query.to ?? undefined,
                 page: nextPage,
@@ -332,13 +334,14 @@ export function createTransactionsCrud(state: TransactionsState) {
         if (touchesActive) {
             await loadList({
                 accountPublicId: current.accountPublicId ?? undefined,
+                categoryPublicId: current.categoryPublicId ?? undefined,
                 from: current.from ?? undefined,
                 to: current.to ?? undefined,
                 force: true
             }).catch(() => undefined);
             return;
         }
-        const key = listCacheKey({ accountPublicId, from: null, to: null });
+        const key = listCacheKey({ accountPublicId, categoryPublicId: null, from: null, to: null });
         try {
             const result = await transactionsApi.list({
                 accountPublicId,
@@ -361,6 +364,7 @@ export function createTransactionsCrud(state: TransactionsState) {
         const current = parseListCacheKey(activeListKey.value);
         await loadList({
             accountPublicId: current.accountPublicId ?? undefined,
+            categoryPublicId: current.categoryPublicId ?? undefined,
             from: current.from ?? undefined,
             to: current.to ?? undefined,
             force

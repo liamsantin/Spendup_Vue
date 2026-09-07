@@ -48,10 +48,11 @@ const normalizedItems = computed(() =>
         if (item !== null && typeof item === 'object') {
             return {
                 title: String(item[props.itemTitle] ?? ''),
-                value: (item[props.itemValue] ?? null) as T
+                value: (item[props.itemValue] ?? null) as T,
+                indent: typeof item.indent === 'number' ? item.indent : 0
             };
         }
-        return { title: String(item ?? ''), value: item };
+        return { title: String(item ?? ''), value: item, indent: 0 };
     })
 );
 
@@ -111,7 +112,7 @@ function select(value: T) {
                             :key="`${typeof item.value}:${String(item.value)}`"
                             type="button"
                             class="app-select-menu__option"
-                            :class="{ 'is-selected': item.value === modelValue }"
+                            :class="{ 'is-selected': item.value === modelValue, 'is-indent': item.indent > 0 }"
                             role="option"
                             :aria-selected="item.value === modelValue"
                             @click="select(item.value)"

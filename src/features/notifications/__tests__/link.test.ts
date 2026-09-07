@@ -164,7 +164,7 @@ describe('normalizeAppNotification', () => {
     });
 
     it('normalise / refuse les publicIds et payloads accountChanged', async () => {
-        const { normalizePublicId, parseAccountChangedPayload, getAccountPublicId } = await import('@/features/notifications/normalize');
+        const { normalizePublicId, parseAccountChangedPayload, parseCategoryChangedPayload, getAccountPublicId } = await import('@/features/notifications/normalize');
         expect(normalizePublicId('acc-1')).toBe('acc-1');
         expect(normalizePublicId('  share_2  ')).toBe('share_2');
         expect(normalizePublicId('../x')).toBeNull();
@@ -206,6 +206,11 @@ describe('normalizeAppNotification', () => {
         });
         expect(parseAccountChangedPayload({ change: 'nope', accountPublicId: 'acc-1' })).toBeNull();
         expect(parseAccountChangedPayload({ change: 'revoked', accountPublicId: '' })).toBeNull();
+        expect(parseCategoryChangedPayload({ change: 'categoryCreated', categoryPublicId: 'cat-1' })).toEqual({
+            change: 'categoryCreated',
+            categoryPublicId: 'cat-1'
+        });
+        expect(parseCategoryChangedPayload({ change: 'nope', categoryPublicId: 'cat-1' })).toBeNull();
     });
 });
 

@@ -1160,6 +1160,11 @@
     font-weight: 600;
 }
 
+.app-select-menu__option.is-indent {
+    padding-left: 28px;
+    font-weight: 400;
+}
+
 .app-select-menu__check {
     display: grid;
     place-items: center;

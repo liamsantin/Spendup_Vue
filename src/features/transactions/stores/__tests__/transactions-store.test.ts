@@ -87,6 +87,7 @@ const expense: Transaction = {
     operationDate: '2026-09-07',
     valueDate: null,
     paymentMethodPublicId: null,
+    categoryPublicId: null,
     createdByUserPublicId: 'u-1',
     createdByDisplayName: 'Liam',
     createdByPhotoUrl: null,
@@ -105,6 +106,7 @@ function form(partial: Partial<TransactionFormFields> = {}): TransactionFormFiel
         operationDate: '2026-09-07',
         valueDate: null,
         paymentMethodPublicId: '',
+        categoryPublicId: '',
         ...partial
     };
 }
@@ -127,6 +129,7 @@ describe('useTransactionsStore', () => {
         await store.loadList();
         expect(api.list).toHaveBeenCalledWith({
             accountPublicId: undefined,
+            categoryPublicId: undefined,
             from: undefined,
             to: undefined,
             page: 1,
@@ -138,6 +141,7 @@ describe('useTransactionsStore', () => {
         await store.loadList({ accountPublicId: 'acc-1', from: '2026-09-01', to: '2026-09-30', force: true });
         expect(api.list).toHaveBeenLastCalledWith({
             accountPublicId: 'acc-1',
+            categoryPublicId: undefined,
             from: '2026-09-01',
             to: '2026-09-30',
             page: 1,

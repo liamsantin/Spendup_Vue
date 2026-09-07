@@ -24,6 +24,8 @@ export const transactionsApi = {
         });
         const accountPublicId = query.accountPublicId?.trim();
         if (accountPublicId) params.set('accountPublicId', accountPublicId);
+        const categoryPublicId = query.categoryPublicId?.trim();
+        if (categoryPublicId) params.set('categoryPublicId', categoryPublicId);
         const from = query.from?.trim();
         if (from) params.set('from', from);
         const to = query.to?.trim();

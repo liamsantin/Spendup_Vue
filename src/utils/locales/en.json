@@ -34,6 +34,7 @@
             "general": "General",
             "friends": "Friends",
             "finances": "Finances",
+            "gestion": "Management",
             "settings": "Preferences"
         },
         "items": {
@@ -43,6 +44,7 @@
             "accounts": "Accounts",
             "transactions": "Transactions",
             "paymentMethods": "Payment methods",
+            "categories": "Categories",
             "profile": "Profile",
             "preferences": "Preferences",
             "notificationSettings": "Notifications",
@@ -299,13 +301,13 @@
             "currentBalance": "Current balance",
             "initialBalance": "Initial balance",
             "fieldHidden": "Hidden",
-                "tabs": {
-                    "details": "Details",
-                    "snapshots": "Snapshot",
-                    "transactions": "Transactions",
-                    "paymentMethods": "Payment methods",
-                    "shares": "Sharing"
-                },
+            "tabs": {
+                "details": "Details",
+                "snapshots": "Snapshot",
+                "transactions": "Transactions",
+                "paymentMethods": "Payment methods",
+                "shares": "Sharing"
+            },
             "snapshotsHiddenHint": "Balance snapshots are hidden because the balance is not visible to you.",
             "shareUnavailable": "You do not have access to manage sharing for this account."
         },
@@ -545,6 +547,67 @@
             }
         }
     },
+    "categoriesPage": {
+        "title": "Categories",
+        "subtitle": "Your personal tree for classifying transactions.",
+        "empty": {
+            "tree": "No categories yet. Create a first domain, for example Housing."
+        },
+        "actions": {
+            "create": "Add",
+            "edit": "Edit",
+            "delete": "Delete",
+            "addChild": "Add a subcategory",
+            "expand": "Expand",
+            "collapse": "Collapse"
+        },
+        "types": {
+            "depense": "Expense",
+            "revenu": "Income",
+            "transfert": "Transfer",
+            "mixte": "Mixed"
+        },
+        "deleteModal": {
+            "title": "Delete this category?",
+            "body": "It will disappear from the tree and selectors. The name can be reused.",
+            "childrenTitle": "Subcategories exist",
+            "childrenBody": "A category with subcategories cannot be deleted. Delete them first.",
+            "linkedTitle": "Category in use",
+            "linkedBody": "A category used by transactions cannot be deleted. Unlink them first ({count}).",
+            "seeTransactions": "View transactions"
+        },
+        "errors": {
+            "notFound": "Category not found."
+        },
+        "form": {
+            "createTitle": "New category",
+            "editTitle": "Edit category",
+            "subtitle": "Two levels only: a domain and its subcategories.",
+            "noParent": "None — root category",
+            "noIcon": "No icon",
+            "clearColor": "No color",
+            "parentLockedHint": "A category with subcategories must stay a root.",
+            "fields": {
+                "name": "Name",
+                "type": "Type",
+                "parent": "Parent",
+                "color": "Color",
+                "icone": "Icon"
+            },
+            "errors": {
+                "nameRequired": "Category name is required.",
+                "nameTooLong": "Category name exceeds 150 characters.",
+                "nameDuplicate": "A category already has this name and type at the same level.",
+                "typeInvalid": "Invalid category type (depense, revenu, transfert, mixte).",
+                "colorInvalid": "Color must be a hex code (#RGB or #RRGGBB).",
+                "iconeTooLong": "Icon key exceeds 50 characters.",
+                "parentNotRoot": "A subcategory cannot be a parent: the hierarchy is limited to two levels.",
+                "parentSelf": "A category cannot be its own parent.",
+                "parentHasChildren": "A category with subcategories cannot be placed under a parent.",
+                "parentTypeIncompatible": "A category cannot be placed under a parent of an incompatible type."
+            }
+        }
+    },
     "transactionsPage": {
         "title": "Transactions",
         "subtitle": "Expenses, income and transfers across your accounts.",
@@ -566,6 +629,8 @@
             "allAccounts": "All accounts",
             "type": "Type",
             "allTypes": "All types",
+            "category": "Category",
+            "allCategories": "All categories",
             "from": "From",
             "to": "To"
         },
@@ -578,7 +643,8 @@
             "transferLine": "{from} → {to}",
             "createdByMe": "Entered by you",
             "createdBy": "Entered by {name}",
-            "createdByUnknown": "Entered by a user"
+            "createdByUnknown": "Entered by a user",
+            "myCategory": "My category: {name}"
         },
         "detail": {
             "title": "Transactions",
@@ -599,6 +665,8 @@
             "operationDatePlaceholder": "Operation date",
             "valueDatePlaceholder": "Value date (optional)",
             "noPaymentMethod": "None",
+            "noCategory": "None",
+            "categoryPersonalHint": "This category is only visible to you, even on a shared account.",
             "archivedHint": "This account is archived. Restore it to edit its transactions.",
             "noCounterpartyOption": "No target account",
             "noCounterpartyHint": "No other editable account is available. Create a second account to make a transfer.",
@@ -612,7 +680,8 @@
                 "amount": "Amount",
                 "operationDate": "Operation date",
                 "valueDate": "Value date",
-                "paymentMethod": "Payment method"
+                "paymentMethod": "Payment method",
+                "category": "My category"
             },
             "errors": {
                 "typeInvalid": "Invalid transaction type (expense, income, transfer).",

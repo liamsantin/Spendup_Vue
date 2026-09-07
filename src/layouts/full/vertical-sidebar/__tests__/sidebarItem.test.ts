@@ -9,9 +9,10 @@ describe('themeIdFromPath', () => {
         expect(themeIdFromPath('/app/friends')).toBe('friends');
     });
 
-    it('mappe les finances et les paramètres', () => {
+    it('mappe les finances, la gestion et les paramètres', () => {
         expect(themeIdFromPath('/app/finances/comptes')).toBe('finances');
         expect(themeIdFromPath('/app/finances/moyens-de-paiement')).toBe('finances');
+        expect(themeIdFromPath('/app/gestion/categories')).toBe('gestion');
         expect(themeIdFromPath(SETTINGS_PATHS.account)).toBe('settings');
         expect(themeIdFromPath(SETTINGS_PATHS.preferences)).toBe('settings');
         expect(themeIdFromPath(SETTINGS_PATHS.notifications)).toBe('settings');

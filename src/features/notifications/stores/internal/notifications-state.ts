@@ -1,5 +1,10 @@
 import { computed, ref } from 'vue';
-import type { AppNotification, AccountChangedPayload, FriendshipChangedPayload } from '@/features/notifications/types';
+import type {
+    AppNotification,
+    AccountChangedPayload,
+    CategoryChangedPayload,
+    FriendshipChangedPayload
+} from '@/features/notifications/types';
 
 export const DEFAULT_PAGE_SIZE = 20;
 
@@ -29,6 +34,7 @@ export function createNotificationsState() {
     const accountShareListeners = new Set<(notification: AppNotification) => void>();
     const friendshipChangeListeners = new Set<(payload: FriendshipChangedPayload) => void>();
     const accountChangeListeners = new Set<(payload: AccountChangedPayload) => void>();
+    const categoryChangeListeners = new Set<(payload: CategoryChangedPayload) => void>();
     const liveFriendChips = ref<LiveFriendChip[]>([]);
 
     const hasUnread = computed(() => unreadCount.value > 0);
@@ -82,6 +88,7 @@ export function createNotificationsState() {
         accountShareListeners,
         friendshipChangeListeners,
         accountChangeListeners,
+        categoryChangeListeners,
         liveFriendChips,
         hasUnread,
         badgeContent,

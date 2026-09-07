@@ -39,6 +39,7 @@ function fields(partial: Partial<TransactionFormFields> = {}): TransactionFormFi
         operationDate: '2026-09-07',
         valueDate: null,
         paymentMethodPublicId: '',
+        categoryPublicId: '',
         ...partial
     };
 }
@@ -134,7 +135,8 @@ describe('transaction payload', () => {
                 amount: 25,
                 operationDate: '2026-09-07',
                 valueDate: null,
-                paymentMethodPublicId: null
+                paymentMethodPublicId: null,
+                categoryPublicId: null
             });
         }
     });
@@ -145,7 +147,8 @@ describe('transaction payload', () => {
             amount: 42.5,
             operationDate: '2026-09-07',
             valueDate: null as string | null,
-            paymentMethodPublicId: null as string | null
+            paymentMethodPublicId: null as string | null,
+            categoryPublicId: null as string | null
         };
         expect(isTransactionFormDirty(current, fields())).toBe(false);
         expect(isTransactionFormDirty(current, fields({ label: 'Courses bio' }))).toBe(true);

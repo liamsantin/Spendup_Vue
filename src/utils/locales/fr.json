@@ -34,6 +34,7 @@
             "general": "Général",
             "friends": "Amis",
             "finances": "Finances",
+            "gestion": "Gestion",
             "settings": "Préférences"
         },
         "items": {
@@ -43,6 +44,7 @@
             "accounts": "Comptes",
             "transactions": "Transactions",
             "paymentMethods": "Moyens de paiement",
+            "categories": "Catégories",
             "profile": "Profil",
             "preferences": "Préférences",
             "notificationSettings": "Notifications",
@@ -299,13 +301,13 @@
             "currentBalance": "Solde actuel",
             "initialBalance": "Solde initial",
             "fieldHidden": "Caché",
-                "tabs": {
-                    "details": "Détails",
-                    "snapshots": "Relevé",
-                    "transactions": "Transactions",
-                    "paymentMethods": "Moyens de paiement",
-                    "shares": "Partage"
-                },
+            "tabs": {
+                "details": "Détails",
+                "snapshots": "Relevé",
+                "transactions": "Transactions",
+                "paymentMethods": "Moyens de paiement",
+                "shares": "Partage"
+            },
             "snapshotsHiddenHint": "Les relevés sont masqués car le solde n’est pas visible pour vous.",
             "shareUnavailable": "Vous n’avez pas accès à la gestion du partage de ce compte."
         },
@@ -545,6 +547,67 @@
             }
         }
     },
+    "categoriesPage": {
+        "title": "Catégories",
+        "subtitle": "Votre arbre personnel pour classer les transactions.",
+        "empty": {
+            "tree": "Aucune catégorie pour l’instant. Créez un premier domaine, par exemple Logement."
+        },
+        "actions": {
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "addChild": "Ajouter une sous-catégorie",
+            "expand": "Déplier",
+            "collapse": "Replier"
+        },
+        "types": {
+            "depense": "Dépense",
+            "revenu": "Revenu",
+            "transfert": "Transfert",
+            "mixte": "Mixte"
+        },
+        "deleteModal": {
+            "title": "Supprimer cette catégorie ?",
+            "body": "Elle disparaîtra de l’arbre et des sélecteurs. Le nom pourra être réutilisé.",
+            "childrenTitle": "Des sous-catégories existent",
+            "childrenBody": "Impossible de supprimer une catégorie qui possède des sous-catégories. Supprimez-les d’abord.",
+            "linkedTitle": "Catégorie utilisée",
+            "linkedBody": "Impossible de supprimer une catégorie utilisée par des transactions. Déliez-les d’abord ({count}).",
+            "seeTransactions": "Voir les transactions"
+        },
+        "errors": {
+            "notFound": "Catégorie introuvable."
+        },
+        "form": {
+            "createTitle": "Nouvelle catégorie",
+            "editTitle": "Modifier la catégorie",
+            "subtitle": "Deux niveaux maximum : un domaine et ses sous-catégories.",
+            "noParent": "Aucun — catégorie racine",
+            "noIcon": "Aucune icône",
+            "clearColor": "Aucune couleur",
+            "parentLockedHint": "Une catégorie qui a des sous-catégories doit rester une racine.",
+            "fields": {
+                "name": "Nom",
+                "type": "Type",
+                "parent": "Parent",
+                "color": "Couleur",
+                "icone": "Icône"
+            },
+            "errors": {
+                "nameRequired": "Le nom de la catégorie est obligatoire.",
+                "nameTooLong": "Le nom de la catégorie dépasse 150 caractères.",
+                "nameDuplicate": "Une catégorie porte déjà ce nom et ce type au même niveau.",
+                "typeInvalid": "Type de catégorie invalide (depense, revenu, transfert, mixte).",
+                "colorInvalid": "La couleur doit être un code hexadécimal (#RGB ou #RRGGBB).",
+                "iconeTooLong": "La clé d’icône dépasse 50 caractères.",
+                "parentNotRoot": "Une sous-catégorie ne peut pas servir de parent : la hiérarchie est limitée à deux niveaux.",
+                "parentSelf": "Une catégorie ne peut pas être son propre parent.",
+                "parentHasChildren": "Une catégorie qui possède des sous-catégories ne peut pas être rangée sous un parent.",
+                "parentTypeIncompatible": "Une catégorie ne peut pas être rangée sous un parent de type incompatible."
+            }
+        }
+    },
     "transactionsPage": {
         "title": "Transactions",
         "subtitle": "Dépenses, revenus et transferts sur vos comptes.",
@@ -566,6 +629,8 @@
             "allAccounts": "Tous les comptes",
             "type": "Type",
             "allTypes": "Tous les types",
+            "category": "Catégorie",
+            "allCategories": "Toutes les catégories",
             "from": "Du",
             "to": "Au"
         },
@@ -578,7 +643,8 @@
             "transferLine": "{from} → {to}",
             "createdByMe": "Saisi par vous",
             "createdBy": "Saisi par {name}",
-            "createdByUnknown": "Saisi par un utilisateur"
+            "createdByUnknown": "Saisi par un utilisateur",
+            "myCategory": "Ma catégorie : {name}"
         },
         "detail": {
             "title": "Transactions",
@@ -599,6 +665,8 @@
             "operationDatePlaceholder": "Date d’opération",
             "valueDatePlaceholder": "Date de valeur (optionnel)",
             "noPaymentMethod": "Aucun",
+            "noCategory": "Aucune",
+            "categoryPersonalHint": "Cette catégorie n’est visible que par vous, même sur un compte partagé.",
             "archivedHint": "Ce compte est archivé. Restaurez-le pour modifier ses transactions.",
             "noCounterpartyOption": "Aucun compte cible",
             "noCounterpartyHint": "Aucun autre compte éditable n’est disponible. Créez un second compte pour faire un transfert.",
@@ -612,7 +680,8 @@
                 "amount": "Montant",
                 "operationDate": "Date d’opération",
                 "valueDate": "Date de valeur",
-                "paymentMethod": "Moyen de paiement"
+                "paymentMethod": "Moyen de paiement",
+                "category": "Ma catégorie"
             },
             "errors": {
                 "typeInvalid": "Type de transaction invalide (depense, revenu, transfert).",

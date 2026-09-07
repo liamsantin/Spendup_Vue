@@ -45,6 +45,12 @@ vi.mock('@/features/transactions/stores/transactions-store', () => ({
     })
 }));
 
+vi.mock('@/features/categories/stores/categories-store', () => ({
+    useCategoriesStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
 vi.mock('@/features/user-settings', () => ({
     useUserSettingsStore: () => ({
         ensureLoaded: vi.fn().mockResolvedValue(undefined),

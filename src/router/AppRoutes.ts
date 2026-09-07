@@ -49,6 +49,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/finances/payment-methods/AppPaymentMethodsPage.vue')
         },
         {
+            name: 'AppCategories',
+            path: 'gestion/categories',
+            component: () => import('@/views/app/gestion/categories/AppCategoriesPage.vue')
+        },
+        {
             path: 'parametres',
             redirect: SETTINGS_PATHS.account
         },

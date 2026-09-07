@@ -24,6 +24,7 @@ export type Transaction = {
     /** Date calendaire `yyyy-MM-dd`, ou `null`. */
     valueDate: string | null;
     paymentMethodPublicId: string | null;
+    categoryPublicId: string | null;
     createdByUserPublicId: string;
     createdByDisplayName: string;
     createdByPhotoUrl: string | null;
@@ -41,6 +42,7 @@ export type TransactionList = {
 
 export type ListTransactionsQuery = {
     accountPublicId?: string;
+    categoryPublicId?: string;
     from?: string;
     to?: string;
     page?: number;
@@ -56,6 +58,7 @@ export type CreateTransactionPayload = {
     operationDate: string;
     valueDate?: string | null;
     paymentMethodPublicId?: string | null;
+    categoryPublicId?: string | null;
 };
 
 export type UpdateTransactionPayload = {
@@ -64,6 +67,7 @@ export type UpdateTransactionPayload = {
     operationDate: string;
     valueDate: string | null;
     paymentMethodPublicId: string | null;
+    categoryPublicId: string | null;
 };
 
 export const TRANSACTION_TYPES: TransactionType[] = ['depense', 'revenu', 'transfert'];

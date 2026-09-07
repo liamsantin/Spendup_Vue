@@ -115,6 +115,14 @@ export type AccountChangedPayload = {
     accountPublicId: string;
 };
 
+/** Payload SignalR `categoryChanged` — sync de l’arbre perso (acteur inclus). */
+export type CategoryChange = 'categoryCreated' | 'categoryUpdated' | 'categoryDeleted';
+
+export type CategoryChangedPayload = {
+    change: CategoryChange;
+    categoryPublicId: string;
+};
+
 export type NotificationsListQuery = {
     page?: number;
     pageSize?: number;

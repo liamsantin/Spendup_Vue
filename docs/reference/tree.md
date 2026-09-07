@@ -11,6 +11,7 @@ src/
 │   └── guards/          # auth-guard (+ __tests__)
 ├── features/
 │   ├── accounts/        # stores/internal/ (référence split)
+│   ├── categories/      # arbre perso deux niveaux
 │   ├── auth/            # stores/internal/ session·actions·profile·logout
 │   ├── countries/
 │   ├── dashboard/
@@ -19,7 +20,7 @@ src/
 │   ├── notifications/   # stores/internal/
 │   └── user-settings/   # composables account/security
 ├── views/
-│   ├── app/             # dashboard, finances/comptes, notifications, friends, parametres/…
+│   ├── app/             # dashboard, finances/…, gestion/categories, notifications, friends, parametres/…
 │   ├── front-pages/
 │   ├── authentication/
 │   └── dev/             # showcase /components (dev only)

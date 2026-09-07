@@ -20,7 +20,7 @@ export function createTransactionsLifecycle(state: TransactionsState, deps: Life
         cancelPendingLoads();
         cache.reset();
         itemsByListKey.clear();
-        activateList(listCacheKey({ accountPublicId: null, from: null, to: null }));
+        activateList(listCacheKey({ accountPublicId: null, categoryPublicId: null, from: null, to: null }));
         items.value = [];
         loading.value = false;
         loadingMore.value = false;

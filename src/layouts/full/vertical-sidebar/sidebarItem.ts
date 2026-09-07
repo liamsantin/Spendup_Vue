@@ -6,6 +6,7 @@ import {
     CreditCardIcon,
     LayoutDashboardIcon,
     LockIcon,
+    TagsIcon,
     UserCircleIcon,
     UsersIcon
 } from 'vue-tabler-icons';
@@ -18,7 +19,7 @@ import FinancesRailIcon from './rail-icons/FinancesRailIcon.vue';
 export const THEME_RAIL_WIDTH = 80;
 export const CONTENT_SIDEBAR_WIDTH = 250;
 
-export type SidebarThemeId = 'general' | 'friends' | 'finances' | 'settings';
+export type SidebarThemeId = 'general' | 'friends' | 'finances' | 'gestion' | 'settings';
 
 export interface menu {
     header?: string;
@@ -102,6 +103,20 @@ const sidebarThemes: sidebarTheme[] = [
                 title: 'nav.items.paymentMethods',
                 icon: CreditCardIcon,
                 to: '/app/finances/moyens-de-paiement'
+            }
+        ]
+    },
+    {
+        id: 'gestion',
+        title: 'nav.headers.gestion',
+        icon: TagsIcon,
+        match: (path) => path.startsWith('/app/gestion'),
+        items: [
+            { header: 'nav.headers.gestion' },
+            {
+                title: 'nav.items.categories',
+                icon: TagsIcon,
+                to: '/app/gestion/categories'
             }
         ]
     },

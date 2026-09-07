@@ -5,6 +5,7 @@ import { ArrowDownLeftIcon, ArrowUpRightIcon, ArrowsExchangeIcon, PencilIcon, Tr
 import { useAuthStore } from '@/features/auth';
 import { UserPhotoAvatar } from '@/features/friends';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import {
     formatOperationDate,
     movementForAccount,
@@ -31,6 +32,7 @@ const emit = defineEmits<{
 const { t, locale } = useI18n();
 const auth = useAuthStore();
 const accountsStore = useAccountsStore();
+const categoriesStore = useCategoriesStore();
 
 const typeIcon = computed(() => {
     const map: Record<TransactionType, typeof ArrowDownLeftIcon> = {
@@ -95,6 +97,12 @@ const authorLabel = computed(() => {
     return name ? t('transactionsPage.list.createdBy', { name }) : t('transactionsPage.list.createdByUnknown');
 });
 
+const categoryLabel = computed(() => {
+    const id = props.transaction.categoryPublicId;
+    if (!id) return null;
+    return categoriesStore.findByPublicId(id)?.name ?? null;
+});
+
 function onDoubleClick(event: MouseEvent) {
     if (!props.canWrite || props.acting) return;
     if (event.target instanceof Element && event.target.closest('button')) return;
@@ -109,7 +117,10 @@ function onDoubleClick(event: MouseEvent) {
         :data-transaction-id="transaction.publicId"
         @dblclick="onDoubleClick"
     >
-        <span class="su-person__avatar su-person__avatar--tile transaction-list-item__icon" :class="`transaction-list-item__icon--${typeColor}`">
+        <span
+            class="su-person__avatar su-person__avatar--tile transaction-list-item__icon"
+            :class="`transaction-list-item__icon--${typeColor}`"
+        >
             <component :is="typeIcon" size="20" stroke-width="2.4" />
         </span>
         <div class="su-person__meta">
@@ -117,6 +128,7 @@ function onDoubleClick(event: MouseEvent) {
             <p class="su-person__sub">
                 {{ t(`transactionsPage.types.${transaction.type}`) }}
                 · {{ accountLine }}
+                <template v-if="categoryLabel"> · {{ t('transactionsPage.list.myCategory', { name: categoryLabel }) }}</template>
             </p>
             <p class="su-person__sub d-flex align-center ga-2 min-width-0">
                 <UserPhotoAvatar

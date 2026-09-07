@@ -36,6 +36,8 @@ Hub `{apiBase}/hubs/realtime` — détails `architecture/realtime.md`.
 | ---------------------- | -------------------------------------------- |
 | `notificationReceived` | upsert inbox / badge / chips                 |
 | `friendshipChanged`    | listeners only — **pas** de badge            |
+| `accountChanged`       | fan-out stores comptes / PM / transactions   |
+| `categoryChanged`      | fan-out store catégories (acteur inclus)     |
 | `inboxCleared`         | reset liste                                  |
 | `sessionEnded`         | `forceReLogin` (all devices ou device match) |
 

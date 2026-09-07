@@ -10,12 +10,14 @@ import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { TransactionsTimeline, TRANSACTION_TYPES, canWriteTransactions, useTransactionsStore } from '@/features/transactions';
 import type { TransactionType } from '@/features/transactions';
 import { useAccountsStore } from '@/features/accounts';
+import { categorySelectItems, useCategoriesStore } from '@/features/categories';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useTransactionsStore();
 const accountsStore = useAccountsStore();
+const categoriesStore = useCategoriesStore();
 const timelineRef = ref<{ openCreate: () => void } | null>(null);
 
 const canCreate = computed(() => accountsStore.accounts.some((a) => canWriteTransactions(a)));
@@ -29,6 +31,10 @@ const typeItems = computed(() => [
     { title: t('transactionsPage.filters.allTypes'), value: '' },
     ...TRANSACTION_TYPES.map((value) => ({ title: t(`transactionsPage.types.${value}`), value }))
 ]);
+
+const categoryItems = computed(() =>
+    categorySelectItems(categoriesStore.items, { noneTitle: t('transactionsPage.filters.allCategories') })
+);
 
 function queryString(name: string): string {
     const raw = route.query[name];
@@ -59,16 +65,23 @@ const filterTo = computed({
     set: (value: string | null) => patchQuery({ to: value || undefined })
 });
 
+const filterCategoryId = computed({
+    get: () => queryString('category'),
+    set: (value: string) => patchQuery({ category: value || undefined })
+});
+
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
     const account = 'account' in patch ? patch.account : queryString('account') || undefined;
     const type = 'type' in patch ? patch.type : queryString('type') || undefined;
     const from = 'from' in patch ? patch.from : queryString('from') || undefined;
     const to = 'to' in patch ? patch.to : queryString('to') || undefined;
+    const category = 'category' in patch ? patch.category : queryString('category') || undefined;
     if (account) next.account = account;
     if (type && TRANSACTION_TYPES.includes(type as TransactionType)) next.type = type;
     if (from) next.from = from;
     if (to) next.to = to;
+    if (category) next.category = category;
     void router.replace({ path: '/app/finances/transactions', query: next });
 }
 
@@ -88,6 +101,12 @@ function onCreate() {
                         v-model="filterAccountId"
                         :items="accountItems"
                         :label="t('transactionsPage.filters.account')"
+                        hide-details
+                    />
+                    <AppSelect
+                        v-model="filterCategoryId"
+                        :items="categoryItems"
+                        :label="t('transactionsPage.filters.category')"
                         hide-details
                     />
                     <AppDatePicker

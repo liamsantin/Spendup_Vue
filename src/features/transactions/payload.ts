@@ -38,6 +38,7 @@ export type TransactionFormFields = {
     operationDate: string;
     valueDate: string | null;
     paymentMethodPublicId: string;
+    categoryPublicId: string;
 };
 
 export type TransactionPayloadContext = {
@@ -66,6 +67,7 @@ type CommonFields =
           operationDate: string;
           valueDate: string | null;
           paymentMethodPublicId: string | null;
+          categoryPublicId: string | null;
       };
 
 function commonFields(fields: TransactionFormFields, now?: Date): CommonFields {
@@ -94,7 +96,8 @@ function commonFields(fields: TransactionFormFields, now?: Date): CommonFields {
         amount,
         operationDate,
         valueDate,
-        paymentMethodPublicId: emptyToNull(fields.paymentMethodPublicId)
+        paymentMethodPublicId: emptyToNull(fields.paymentMethodPublicId),
+        categoryPublicId: emptyToNull(fields.categoryPublicId)
     };
 }
 
@@ -154,6 +157,7 @@ export function buildCreateTransactionPayload(
     }
     if (common.valueDate) payload.valueDate = common.valueDate;
     if (common.paymentMethodPublicId) payload.paymentMethodPublicId = common.paymentMethodPublicId;
+    if (common.categoryPublicId) payload.categoryPublicId = common.categoryPublicId;
 
     return { ok: true, payload };
 }
@@ -183,7 +187,8 @@ export function buildUpdateTransactionPayload(
         amount: common.amount,
         operationDate: common.operationDate,
         valueDate: common.valueDate,
-        paymentMethodPublicId: common.paymentMethodPublicId
+        paymentMethodPublicId: common.paymentMethodPublicId,
+        categoryPublicId: common.categoryPublicId
     };
     return { ok: true, payload };
 }
@@ -198,6 +203,7 @@ export function isTransactionFormDirty(
     if (emptyToNull(fields.operationDate) !== emptyToNull(transaction.operationDate)) return true;
     if (emptyToNull(fields.valueDate) !== emptyToNull(transaction.valueDate)) return true;
     if (emptyToNull(fields.paymentMethodPublicId) !== emptyToNull(transaction.paymentMethodPublicId)) return true;
+    if (emptyToNull(fields.categoryPublicId) !== emptyToNull(transaction.categoryPublicId)) return true;
     return false;
 }
 
@@ -207,4 +213,5 @@ type TransactionFormDirtySource = {
     operationDate: string;
     valueDate: string | null;
     paymentMethodPublicId: string | null;
+    categoryPublicId: string | null;
 };

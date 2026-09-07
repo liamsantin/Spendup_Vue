@@ -22,6 +22,7 @@ export type TransactionFormFieldErrors = {
     operationDate?: string | null;
     valueDate?: string | null;
     paymentMethodPublicId?: string | null;
+    categoryPublicId?: string | null;
 };
 
 const props = withDefaults(
@@ -32,14 +33,17 @@ const props = withDefaults(
         counterpartyItems: { title: string; value: string }[];
         typeItems: { title: string; value: TransactionType }[];
         paymentMethodItems: { title: string; value: string }[];
+        categoryItems: { title: string; value: string; indent?: number }[];
         fieldErrors?: TransactionFormFieldErrors;
         archivedHint?: string | null;
         counterpartyHint?: string | null;
+        categoryHint?: string | null;
     }>(),
     {
         fieldErrors: () => ({}),
         archivedHint: null,
-        counterpartyHint: null
+        counterpartyHint: null,
+        categoryHint: null
     }
 );
 
@@ -49,9 +53,7 @@ const isTransfer = computed(() => props.form.type === 'transfert');
 const todayUtc = computed(() => todayUtcYmd());
 const hasCounterpartyOptions = computed(() => props.counterpartyItems.length > 0);
 const counterpartySelectItems = computed(() =>
-    hasCounterpartyOptions.value
-        ? props.counterpartyItems
-        : [{ title: t('transactionsPage.form.noCounterpartyOption'), value: '' }]
+    hasCounterpartyOptions.value ? props.counterpartyItems : [{ title: t('transactionsPage.form.noCounterpartyOption'), value: '' }]
 );
 
 const operationDateModel = computed({
@@ -213,6 +215,26 @@ function onAmountInput(value: string) {
                     hide-details="auto"
                     :error="!!fieldErrors.paymentMethodPublicId"
                     :error-messages="fieldErrors.paymentMethodPublicId || undefined"
+                />
+            </v-col>
+        </v-row>
+        <v-row class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <label class="v-label font-weight-medium" for="tx-form-category">
+                    {{ t('transactionsPage.form.fields.category') }}
+                </label>
+            </v-col>
+            <v-col cols="12" sm="9">
+                <AppSelect
+                    id="tx-form-category"
+                    v-model="form.categoryPublicId"
+                    :items="categoryItems"
+                    :label="t('transactionsPage.form.fields.category')"
+                    hide-details="auto"
+                    :error="!!fieldErrors.categoryPublicId"
+                    :error-messages="fieldErrors.categoryPublicId || undefined"
+                    :hint="categoryHint || undefined"
+                    :persistent-hint="!!categoryHint"
                 />
             </v-col>
         </v-row>
