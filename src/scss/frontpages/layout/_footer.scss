@@ -68,11 +68,19 @@
     padding: 66px 0 58px;
 }
 
+.footer-brand :deep(.spendup-logo) {
+    overflow: visible;
+    padding-block: 3px;
+}
+
 .footer-brand :deep(.spendup-logo__text) {
     color: white !important;
+    line-height: 1.15;
 }
 
 .footer-brand :deep(.spendup-logo__icon) {
+    box-sizing: border-box;
+    padding: 2px;
     border-radius: 8px;
 }
 

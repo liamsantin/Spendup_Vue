@@ -1,27 +1,34 @@
 .front-lp-header {
     z-index: 1006 !important;
     background: transparent !important;
+    background-color: transparent !important;
     box-shadow: none !important;
+    will-change: background-color, box-shadow;
     transition:
-        background 0.25s ease,
-        box-shadow 0.25s ease,
-        backdrop-filter 0.25s ease;
+        background-color 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.9s cubic-bezier(0.22, 1, 0.36, 1) !important;
 
     .v-toolbar {
         background: transparent !important;
+        background-color: transparent !important;
+        transition: background-color 0.9s cubic-bezier(0.22, 1, 0.36, 1) !important;
     }
 
     &.v-app-bar .v-toolbar__content {
         padding: 0;
         background: transparent !important;
+        background-color: transparent !important;
+        transition: background-color 0.9s cubic-bezier(0.22, 1, 0.36, 1) !important;
     }
 
     .v-toolbar__content {
         background: transparent !important;
+        background-color: transparent !important;
     }
 
     &.v-toolbar {
         background: transparent !important;
+        background-color: transparent !important;
         top: 0 !important;
     }
 
