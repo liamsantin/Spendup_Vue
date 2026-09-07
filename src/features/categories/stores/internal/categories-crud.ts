@@ -1,7 +1,7 @@
 import { AppError } from '@/utils/errors/app-error';
 import { transactionsApi } from '@/features/transactions/api';
 import { categoriesApi } from '@/features/categories/api';
-import { buildCreateCategoryPayload, buildUpdateCategoryPayload, type CategoryFormFields } from '@/features/categories/payload';
+import { buildCreateCategoryPayload, buildUpdateCategoryPayload, isDuplicateName, type CategoryFormFields } from '@/features/categories/payload';
 import { CATEGORY_TYPES, type Category, type ListCategoriesQuery } from '@/features/categories/types';
 import { KEY_TREE, listCacheKey, type CategoriesState } from '@/features/categories/stores/internal/categories-state';
 
@@ -219,6 +219,96 @@ export function createCategoriesCrud(state: CategoriesState) {
         return result?.totalCount ?? 0;
     }
 
+    /**
+     * Applique un plan prédéfini : crée les racines puis les enfants.
+     * Ignore les doublons (même nom + type au même niveau).
+     */
+    async function applyCategoryPlan(
+        nodes: ReadonlyArray<{
+            name: string;
+            type: Category['type'];
+            color?: string | null;
+            icone?: string | null;
+            children?: ReadonlyArray<{
+                name: string;
+                type?: Category['type'];
+                color?: string | null;
+                icone?: string | null;
+            }>;
+        }>
+    ): Promise<{ created: number; skipped: number }> {
+        beginActing();
+        clearError();
+        let created = 0;
+        let skipped = 0;
+        try {
+            for (const root of nodes) {
+                const rootType = root.type;
+                let parentPublicId: string | null = null;
+
+                if (isDuplicateName(root.name, rootType, null, treeRoots())) {
+                    const existing = treeRoots().find(
+                        (item) => item.type === rootType && item.name.trim().toLowerCase() === root.name.trim().toLowerCase()
+                    );
+                    if (!existing) throw new AppError(payloadErrorMessage('nameDuplicate'), 400, 'nameDuplicate');
+                    parentPublicId = existing.publicId;
+                    skipped += 1;
+                } else {
+                    const built = buildCreateCategoryPayload(
+                        {
+                            name: root.name,
+                            type: rootType,
+                            color: root.color ?? null,
+                            icone: root.icone ?? '',
+                            parentPublicId: ''
+                        },
+                        treeRoots()
+                    );
+                    if (!built.ok) {
+                        throw new AppError(payloadErrorMessage(built.code), 400, built.code);
+                    }
+                    const createdRoot = await categoriesApi.create(built.payload);
+                    upsertItem(createdRoot);
+                    parentPublicId = createdRoot.publicId;
+                    created += 1;
+                }
+
+                for (const child of root.children ?? []) {
+                    const childType = child.type ?? rootType;
+                    if (isDuplicateName(child.name, childType, parentPublicId, treeRoots())) {
+                        skipped += 1;
+                        continue;
+                    }
+                    const builtChild = buildCreateCategoryPayload(
+                        {
+                            name: child.name,
+                            type: childType,
+                            color: child.color ?? null,
+                            icone: child.icone ?? '',
+                            parentPublicId: parentPublicId ?? ''
+                        },
+                        treeRoots()
+                    );
+                    if (!builtChild.ok) {
+                        throw new AppError(payloadErrorMessage(builtChild.code), 400, builtChild.code);
+                    }
+                    const createdChild = await categoriesApi.create(builtChild.payload);
+                    upsertItem(createdChild);
+                    created += 1;
+                }
+            }
+            cache.touch(KEY_TREE);
+            invalidateFilteredLists();
+            return { created, skipped };
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
     return {
         loadList,
         cancelPendingLoads,
@@ -226,7 +316,8 @@ export function createCategoriesCrud(state: CategoriesState) {
         updateCategory,
         deleteCategory,
         refetchTree,
-        countLinkedTransactions
+        countLinkedTransactions,
+        applyCategoryPlan
     };
 }
 

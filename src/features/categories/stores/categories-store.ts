@@ -45,6 +45,7 @@ export const useCategoriesStore = defineStore('categories', () => {
         deleteCategory: crud.deleteCategory,
         refetchTree: crud.refetchTree,
         countLinkedTransactions: crud.countLinkedTransactions,
+        applyCategoryPlan: crud.applyCategoryPlan,
         onAuthenticatedSession: realtime.onAuthenticatedSession,
         bootstrap: lifecycle.bootstrap,
         reset: lifecycle.reset,

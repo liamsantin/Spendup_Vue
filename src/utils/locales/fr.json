@@ -555,11 +555,53 @@
         },
         "actions": {
             "create": "Ajouter",
+            "applyPlan": "Plan de catégories",
             "edit": "Modifier",
             "delete": "Supprimer",
             "addChild": "Ajouter une sous-catégorie",
             "expand": "Déplier",
             "collapse": "Replier"
+        },
+        "plan": {
+            "modal": {
+                "title": "Plan de catégories",
+                "subtitle": "Un arbre prêt à l’emploi pour démarrer rapidement.",
+                "intro": "Ce plan ajoute des domaines et sous-catégories courants (logement, alimentation, transport, revenus, épargne…). Les catégories déjà présentes avec le même nom et le même type sont ignorées.",
+                "apply": "Ajouter ce plan"
+            },
+            "nodes": {
+                "logement": "Logement",
+                "loyer": "Loyer",
+                "charges": "Charges",
+                "assuranceHabitation": "Assurance habitation",
+                "alimentation": "Alimentation",
+                "courses": "Courses",
+                "restaurants": "Restaurants",
+                "cafes": "Cafés",
+                "transport": "Transport",
+                "carburant": "Carburant",
+                "transportsCommun": "Transports en commun",
+                "entretienVehicule": "Entretien véhicule",
+                "sante": "Santé",
+                "pharmacie": "Pharmacie",
+                "soins": "Soins",
+                "loisirs": "Loisirs",
+                "sorties": "Sorties",
+                "streaming": "Streaming",
+                "sport": "Sport",
+                "shopping": "Shopping",
+                "vetements": "Vêtements",
+                "divers": "Divers",
+                "abonnements": "Abonnements",
+                "telecom": "Télécom",
+                "logiciels": "Logiciels",
+                "revenus": "Revenus",
+                "salaire": "Salaire",
+                "autresRevenus": "Autres revenus",
+                "epargne": "Épargne & transferts",
+                "miseDeCote": "Mise de côté",
+                "virementInterne": "Virement interne"
+            }
         },
         "types": {
             "depense": "Dépense",
