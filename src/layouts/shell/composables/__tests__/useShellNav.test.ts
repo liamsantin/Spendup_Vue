@@ -23,6 +23,10 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.finances,
             activeId: SHELL_NAV_IDS.accounts
         });
+        expect(idsFromPath('/app/finances/transactions')).toEqual({
+            openId: SHELL_NAV_IDS.finances,
+            activeId: SHELL_NAV_IDS.transactions
+        });
         expect(idsFromPath('/app/finances/moyens-de-paiement')).toEqual({
             openId: SHELL_NAV_IDS.finances,
             activeId: SHELL_NAV_IDS.paymentMethods

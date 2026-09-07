@@ -24,6 +24,30 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
     let unsubscribeNotifications: (() => void) | null = null;
     let unsubscribeFriendshipChanged: (() => void) | null = null;
     let unsubscribeAccountChanged: (() => void) | null = null;
+    let balanceRefreshScheduled = false;
+    const pendingBalanceAccountIds = new Set<string>();
+
+    function flushBalanceRefresh() {
+        balanceRefreshScheduled = false;
+        const ids = [...pendingBalanceAccountIds];
+        pendingBalanceAccountIds.clear();
+        if (!ids.length) return;
+        cache.invalidate(KEY_ACCOUNTS);
+        for (const id of ids) cache.invalidate(`detail:${id}`);
+        void loadAccounts(true).catch(() => undefined);
+        const selected = selectedAccount.value?.publicId;
+        if (selected && ids.includes(selected)) {
+            void loadAccountDetail(selected, true).catch(() => undefined);
+        }
+    }
+
+    /** Un transfert pousse deux `accountChanged` : coalescer le refetch soldes. */
+    function scheduleBalanceRefresh(accountPublicId: string) {
+        pendingBalanceAccountIds.add(accountPublicId);
+        if (balanceRefreshScheduled) return;
+        balanceRefreshScheduled = true;
+        queueMicrotask(flushBalanceRefresh);
+    }
 
     function readSharesSnapshot(accountPublicId: string): AccountShare[] {
         return sharesByAccountId.get(accountPublicId) ?? (selectedAccount.value?.publicId === accountPublicId ? [...shares.value] : []);
@@ -241,6 +265,11 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
             if (selectedAccount.value?.publicId === id) {
                 void loadBalanceSnapshots(id, true).catch(() => undefined);
             }
+            return;
+        }
+
+        if (change === 'transactionCreated' || change === 'transactionUpdated' || change === 'transactionDeleted') {
+            scheduleBalanceRefresh(id);
         }
     }
 
@@ -266,6 +295,8 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
         unsubscribeNotifications = null;
         unsubscribeFriendshipChanged = null;
         unsubscribeAccountChanged = null;
+        pendingBalanceAccountIds.clear();
+        balanceRefreshScheduled = false;
     }
 
     return {

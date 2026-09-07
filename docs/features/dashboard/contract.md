@@ -13,7 +13,7 @@
 
 ## Invariants
 
-- Modules (transactions, accounts, budgets, goals) : `disabled: true`, `to: '/app'`, UI « coming soon ».
+- Modules : `accounts` et `transactions` actifs ; `budgets` / `goals` : `disabled: true`, `to: '/app'`, UI « coming soon ».
 - Préférence `defaultDashboardView` vit dans **user-settings**, pas ici.
 - Présentation + i18n uniquement.
 

@@ -1,7 +1,15 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import { AdjustmentsHorizontalIcon, BellIcon, BuildingBankIcon, CreditCardIcon, LockIcon, UserCircleIcon } from 'vue-tabler-icons';
+import {
+    AdjustmentsHorizontalIcon,
+    ArrowsExchangeIcon,
+    BellIcon,
+    BuildingBankIcon,
+    CreditCardIcon,
+    LockIcon,
+    UserCircleIcon
+} from 'vue-tabler-icons';
 import { useNotificationsStore } from '@/features/notifications';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import DashboardRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/DashboardRailIcon.vue';
@@ -16,6 +24,7 @@ export const SHELL_NAV_IDS = {
     friends: 'friends',
     finances: 'finances',
     accounts: 'accounts',
+    transactions: 'transactions',
     paymentMethods: 'payment-methods',
     settings: 'settings',
     profile: 'profile',
@@ -33,6 +42,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     }
     if (path === '/app/friends' || path.startsWith('/app/friends/')) {
         return { openId: SHELL_NAV_IDS.friends, activeId: SHELL_NAV_IDS.friends };
+    }
+    if (path.startsWith('/app/finances/transactions')) {
+        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.transactions };
     }
     if (path.startsWith('/app/finances/moyens-de-paiement')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.paymentMethods };
@@ -67,6 +79,12 @@ export function useShellNav() {
     const unreadCount = computed(() => notifications.unreadCount);
 
     const financeLeaves = computed<NavLeaf[]>(() => [
+        {
+            id: SHELL_NAV_IDS.transactions,
+            label: t('nav.items.transactions'),
+            icon: ArrowsExchangeIcon,
+            to: '/app/finances/transactions'
+        },
         {
             id: SHELL_NAV_IDS.accounts,
             label: t('nav.items.accounts'),

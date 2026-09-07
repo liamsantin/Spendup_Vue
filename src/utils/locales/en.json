@@ -218,7 +218,7 @@
         "modules": {
             "transactions": {
                 "title": "Transactions",
-                "caption": "Income, expenses and categories"
+                "caption": "Expenses, income and transfers"
             },
             "accounts": {
                 "title": "Accounts",
@@ -299,12 +299,13 @@
             "currentBalance": "Current balance",
             "initialBalance": "Initial balance",
             "fieldHidden": "Hidden",
-            "tabs": {
-                "details": "Details",
-                "snapshots": "Snapshot",
-                "paymentMethods": "Payment methods",
-                "shares": "Sharing"
-            },
+                "tabs": {
+                    "details": "Details",
+                    "snapshots": "Snapshot",
+                    "transactions": "Transactions",
+                    "paymentMethods": "Payment methods",
+                    "shares": "Sharing"
+                },
             "snapshotsHiddenHint": "Balance snapshots are hidden because the balance is not visible to you.",
             "shareUnavailable": "You do not have access to manage sharing for this account."
         },
@@ -541,6 +542,90 @@
                 "expirationInvalid": "Invalid expiration date.",
                 "expirationPast": "An active method cannot already be expired.",
                 "isActiveRequired": "Active status is required."
+            }
+        }
+    },
+    "transactionsPage": {
+        "title": "Transactions",
+        "subtitle": "Expenses, income and transfers across your accounts.",
+        "loadMore": "Load more",
+        "unknownAccount": "Account",
+        "empty": {
+            "timeline": "No transactions yet.",
+            "account": "No transactions on this account."
+        },
+        "actions": {
+            "filter": "Filter",
+            "create": "Add",
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "filters": {
+            "account": "Account",
+            "allAccounts": "All accounts",
+            "from": "From",
+            "to": "To"
+        },
+        "types": {
+            "depense": "Expense",
+            "revenu": "Income",
+            "transfert": "Transfer"
+        },
+        "list": {
+            "transferLine": "{from} → {to}",
+            "createdByMe": "Entered by you",
+            "createdBy": "Entered by {name}",
+            "createdByUnknown": "Entered by a user"
+        },
+        "detail": {
+            "title": "Transactions",
+            "subtitle": "Movements on this account."
+        },
+        "deleteModal": {
+            "title": "Delete this transaction?",
+            "body": "Linked movements will be reversed and the account balance will be recalculated."
+        },
+        "errors": {
+            "notFound": "This transaction is no longer available."
+        },
+        "form": {
+            "createTitle": "New transaction",
+            "editTitle": "Edit transaction",
+            "subtitle": "Type and accounts cannot be changed after creation.",
+            "amountPlaceholder": "42.50",
+            "operationDatePlaceholder": "Operation date",
+            "valueDatePlaceholder": "Value date (optional)",
+            "noPaymentMethod": "None",
+            "archivedHint": "This account is archived. Restore it to edit its transactions.",
+            "fields": {
+                "type": "Type",
+                "account": "Account",
+                "sourceAccount": "Source account",
+                "counterpartyAccount": "Target account",
+                "label": "Label",
+                "amount": "Amount",
+                "operationDate": "Operation date",
+                "valueDate": "Value date",
+                "paymentMethod": "Payment method"
+            },
+            "errors": {
+                "typeInvalid": "Invalid transaction type (expense, income, transfer).",
+                "accountRequired": "Choose an account.",
+                "labelRequired": "Transaction label is required.",
+                "labelTooLong": "Transaction label exceeds 255 characters.",
+                "amountInvalid": "Transaction amount is invalid.",
+                "amountNotPositive": "Transaction amount must be strictly positive.",
+                "operationDateRequired": "Operation date is required.",
+                "operationDateInvalid": "Operation date is invalid.",
+                "operationDateFuture": "Operation date cannot be in the future.",
+                "valueDateInvalid": "Value date is invalid.",
+                "valueDateBeforeOperation": "Value date cannot precede the operation date.",
+                "counterpartyRequired": "A target account is required for a transfer.",
+                "counterpartyNotAllowed": "A target account is only accepted for a transfer.",
+                "counterpartySame": "The two accounts of a transfer must be different.",
+                "accountArchived": "Cannot modify an archived account. Restore it first.",
+                "currencyMismatch": "Both accounts of a transfer must share the same currency.",
+                "forbidden": "You are not allowed to change this transaction."
             }
         }
     },

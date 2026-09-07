@@ -18,6 +18,7 @@ import { useNotificationsStore } from '@/features/notifications/stores/notificat
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
+import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { useSidebarNavStore } from '@/layouts/full/vertical-sidebar/sidebar-nav-store';
 import { isIdleSessionError } from '@/features/auth/idle-session';
 import { clearCsrfToken, rememberCsrfToken } from '@/features/auth/csrf';
@@ -156,6 +157,7 @@ export function createAuthSession() {
         useFriendsStore().reset();
         useAccountsStore().reset();
         usePaymentMethodsStore().reset();
+        useTransactionsStore().reset();
         useSidebarNavStore().reset();
     }
 

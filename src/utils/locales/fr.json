@@ -218,7 +218,7 @@
         "modules": {
             "transactions": {
                 "title": "Transactions",
-                "caption": "Revenus, dépenses et catégories"
+                "caption": "Dépenses, revenus et transferts"
             },
             "accounts": {
                 "title": "Comptes",
@@ -299,12 +299,13 @@
             "currentBalance": "Solde actuel",
             "initialBalance": "Solde initial",
             "fieldHidden": "Caché",
-            "tabs": {
-                "details": "Détails",
-                "snapshots": "Relevé",
-                "paymentMethods": "Moyens de paiement",
-                "shares": "Partage"
-            },
+                "tabs": {
+                    "details": "Détails",
+                    "snapshots": "Relevé",
+                    "transactions": "Transactions",
+                    "paymentMethods": "Moyens de paiement",
+                    "shares": "Partage"
+                },
             "snapshotsHiddenHint": "Les relevés sont masqués car le solde n’est pas visible pour vous.",
             "shareUnavailable": "Vous n’avez pas accès à la gestion du partage de ce compte."
         },
@@ -541,6 +542,90 @@
                 "expirationInvalid": "Date d’expiration invalide.",
                 "expirationPast": "Un moyen actif ne peut pas être déjà expiré.",
                 "isActiveRequired": "Le statut actif est obligatoire."
+            }
+        }
+    },
+    "transactionsPage": {
+        "title": "Transactions",
+        "subtitle": "Dépenses, revenus et transferts sur vos comptes.",
+        "loadMore": "Charger plus",
+        "unknownAccount": "Compte",
+        "empty": {
+            "timeline": "Aucune transaction pour l’instant.",
+            "account": "Aucune transaction sur ce compte."
+        },
+        "actions": {
+            "filter": "Filtre",
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer"
+        },
+        "filters": {
+            "account": "Compte",
+            "allAccounts": "Tous les comptes",
+            "from": "Du",
+            "to": "Au"
+        },
+        "types": {
+            "depense": "Dépense",
+            "revenu": "Revenu",
+            "transfert": "Transfert"
+        },
+        "list": {
+            "transferLine": "{from} → {to}",
+            "createdByMe": "Saisi par vous",
+            "createdBy": "Saisi par {name}",
+            "createdByUnknown": "Saisi par un utilisateur"
+        },
+        "detail": {
+            "title": "Transactions",
+            "subtitle": "Mouvements de ce compte."
+        },
+        "deleteModal": {
+            "title": "Supprimer cette transaction ?",
+            "body": "Les mouvements liés seront annulés et le solde du compte sera recalculé."
+        },
+        "errors": {
+            "notFound": "Cette transaction n’est plus disponible."
+        },
+        "form": {
+            "createTitle": "Nouvelle transaction",
+            "editTitle": "Modifier la transaction",
+            "subtitle": "Le type et les comptes ne peuvent pas être changés après création.",
+            "amountPlaceholder": "42.50",
+            "operationDatePlaceholder": "Date d’opération",
+            "valueDatePlaceholder": "Date de valeur (optionnel)",
+            "noPaymentMethod": "Aucun",
+            "archivedHint": "Ce compte est archivé. Restaurez-le pour modifier ses transactions.",
+            "fields": {
+                "type": "Type",
+                "account": "Compte",
+                "sourceAccount": "Compte source",
+                "counterpartyAccount": "Compte cible",
+                "label": "Libellé",
+                "amount": "Montant",
+                "operationDate": "Date d’opération",
+                "valueDate": "Date de valeur",
+                "paymentMethod": "Moyen de paiement"
+            },
+            "errors": {
+                "typeInvalid": "Type de transaction invalide (depense, revenu, transfert).",
+                "accountRequired": "Choisissez un compte.",
+                "labelRequired": "Le libellé de la transaction est obligatoire.",
+                "labelTooLong": "Le libellé de la transaction dépasse 255 caractères.",
+                "amountInvalid": "Le montant de la transaction est invalide.",
+                "amountNotPositive": "Le montant de la transaction doit être strictement positif.",
+                "operationDateRequired": "La date d’opération est obligatoire.",
+                "operationDateInvalid": "La date d’opération est invalide.",
+                "operationDateFuture": "La date d’opération ne peut pas être dans le futur.",
+                "valueDateInvalid": "La date de valeur est invalide.",
+                "valueDateBeforeOperation": "La date de valeur ne peut pas précéder la date d’opération.",
+                "counterpartyRequired": "Le compte cible est obligatoire pour un transfert.",
+                "counterpartyNotAllowed": "Un compte cible n’est accepté que pour un transfert.",
+                "counterpartySame": "Les deux comptes d’un transfert doivent être différents.",
+                "accountArchived": "Impossible de modifier un compte archivé. Restaurez-le d’abord.",
+                "currencyMismatch": "Les deux comptes d’un transfert doivent partager la même devise.",
+                "forbidden": "Action non autorisée sur cette transaction."
             }
         }
     },

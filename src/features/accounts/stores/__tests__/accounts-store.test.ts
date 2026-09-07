@@ -271,6 +271,30 @@ describe('useAccountsStore', () => {
         });
     });
 
+    it('accountChanged transactionCreated refetch la liste (soldes) et déduplique un transfert', async () => {
+        api.list.mockResolvedValue({ items: [ownedAccount] });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let accountListener: ((p: { change: string; accountPublicId: string }) => void) | undefined;
+        subscribeToAccountChanged.mockImplementation((fn: (p: { change: string; accountPublicId: string }) => void) => {
+            accountListener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+        api.list.mockClear();
+        api.list.mockResolvedValue({ items: [{ ...ownedAccount, currentBalance: 57.5 }] });
+
+        accountListener?.({ change: 'transactionCreated', accountPublicId: 'acc-1' });
+        accountListener?.({ change: 'transactionCreated', accountPublicId: 'acc-2' });
+
+        await vi.waitFor(() => {
+            expect(api.list).toHaveBeenCalledTimes(1);
+        });
+        expect(store.accounts[0]?.currentBalance).toBe(57.5);
+    });
+
     it('accountChanged visibility refetch la liste et le détail ouvert', async () => {
         const shared = {
             ...ownedAccount,

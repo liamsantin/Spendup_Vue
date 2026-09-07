@@ -15,8 +15,8 @@ export function useDashboardModules() {
             titleKey: 'dashboard.modules.transactions.title',
             captionKey: 'dashboard.modules.transactions.caption',
             icon: ArrowsExchangeIcon,
-            to: '/app',
-            disabled: true
+            to: '/app/finances/transactions',
+            disabled: false
         },
         {
             titleKey: 'dashboard.modules.accounts.title',

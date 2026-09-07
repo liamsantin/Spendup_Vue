@@ -39,6 +39,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/finances/comptes/AppComptesPage.vue')
         },
         {
+            name: 'AppTransactions',
+            path: 'finances/transactions',
+            component: () => import('@/views/app/finances/transactions/AppTransactionsPage.vue')
+        },
+        {
             name: 'AppPaymentMethods',
             path: 'finances/moyens-de-paiement',
             component: () => import('@/views/app/finances/payment-methods/AppPaymentMethodsPage.vue')
