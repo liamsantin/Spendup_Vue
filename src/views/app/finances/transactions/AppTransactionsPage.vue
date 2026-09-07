@@ -88,6 +88,24 @@ function onCreate() {
 
 <template>
     <AppPageShell :title="t('transactionsPage.title')" :subtitle="t('transactionsPage.subtitle')">
+        <template #tabs>
+            <nav class="su-tabs" :aria-label="t('transactionsPage.filters.type')">
+                <button type="button" class="su-tab" :class="{ 'is-active': !filterType }" @click="filterType = ''">
+                    {{ t('transactionsPage.filters.allTypes') }}
+                </button>
+                <button
+                    v-for="type in TRANSACTION_TYPES"
+                    :key="type"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': filterType === type }"
+                    @click="filterType = type"
+                >
+                    {{ t(`transactionsPage.types.${type}`) }}
+                </button>
+            </nav>
+        </template>
+
         <template #actions>
             <AppDropdownFilter :label="t('transactionsPage.actions.filter')" :min-width="300">
                 <div class="pa-3 d-flex flex-column ga-3">
@@ -124,30 +142,6 @@ function onCreate() {
             </button>
         </template>
 
-        <nav class="su-tabs transactions-page__types mb-4" :aria-label="t('transactionsPage.filters.type')">
-            <button type="button" class="su-tab" :class="{ 'is-active': !filterType }" @click="filterType = ''">
-                {{ t('transactionsPage.filters.allTypes') }}
-            </button>
-            <button
-                v-for="type in TRANSACTION_TYPES"
-                :key="type"
-                type="button"
-                class="su-tab"
-                :class="{ 'is-active': filterType === type }"
-                @click="filterType = type"
-            >
-                {{ t(`transactionsPage.types.${type}`) }}
-            </button>
-        </nav>
-
         <TransactionsTimeline ref="timelineRef" />
     </AppPageShell>
 </template>
-
-<style scoped>
-.transactions-page__types {
-    margin-left: 0;
-    width: fit-content;
-    max-width: 100%;
-}
-</style>

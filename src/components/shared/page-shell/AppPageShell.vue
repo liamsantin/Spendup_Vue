@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Shell de page simple — hero verre (titre + actions sur une ligne, sous-titre dessous) + corps.
+ * Shell de page simple — hero verre (titre + onglets optionnels + actions, sous-titre dessous) + corps.
  * Même alignement vertical du bloc de droite que AppTabsShell.
  */
 import { useI18n } from 'vue-i18n';
@@ -38,7 +38,7 @@ const emit = defineEmits<{
 <template>
     <div class="su-page">
         <header class="su-hero">
-            <div class="su-hero__top">
+            <div class="su-hero__top" :class="{ 'su-hero__top--with-tabs': $slots.tabs }">
                 <div class="su-hero__heading">
                     <h1>{{ title }}</h1>
                 </div>
@@ -53,6 +53,7 @@ const emit = defineEmits<{
                         </button>
                     </template>
                 </div>
+                <slot name="tabs" />
             </div>
             <p v-if="subtitle">{{ subtitle }}</p>
         </header>
@@ -62,3 +63,14 @@ const emit = defineEmits<{
         </div>
     </div>
 </template>
+<style scoped>
+/* Tabs à droite des actions : le bloc actions absorbe l’espace, pas les onglets. */
+.su-hero__top--with-tabs > .su-hero__actions {
+    margin-left: auto;
+}
+
+.su-hero__top--with-tabs :deep(.su-tabs) {
+    margin-left: 0;
+}
+</style>
+
