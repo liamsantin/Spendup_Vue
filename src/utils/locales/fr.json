@@ -552,7 +552,8 @@
         "unknownAccount": "Compte",
         "empty": {
             "timeline": "Aucune transaction pour l’instant.",
-            "account": "Aucune transaction sur ce compte."
+            "account": "Aucune transaction sur ce compte.",
+            "byType": "Aucune transaction de type « {type} »."
         },
         "actions": {
             "filter": "Filtre",
@@ -563,6 +564,8 @@
         "filters": {
             "account": "Compte",
             "allAccounts": "Tous les comptes",
+            "type": "Type",
+            "allTypes": "Tous les types",
             "from": "Du",
             "to": "Au"
         },

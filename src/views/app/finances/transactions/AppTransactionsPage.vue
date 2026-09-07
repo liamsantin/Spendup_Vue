@@ -7,7 +7,8 @@ import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
-import { TransactionsTimeline, canWriteTransactions, useTransactionsStore } from '@/features/transactions';
+import { TransactionsTimeline, TRANSACTION_TYPES, canWriteTransactions, useTransactionsStore } from '@/features/transactions';
+import type { TransactionType } from '@/features/transactions';
 import { useAccountsStore } from '@/features/accounts';
 
 const { t } = useI18n();
@@ -24,14 +25,28 @@ const accountItems = computed(() => [
     ...accountsStore.accounts.map((a) => ({ title: a.name, value: a.publicId }))
 ]);
 
+const typeItems = computed(() => [
+    { title: t('transactionsPage.filters.allTypes'), value: '' },
+    ...TRANSACTION_TYPES.map((value) => ({ title: t(`transactionsPage.types.${value}`), value }))
+]);
+
 function queryString(name: string): string {
     const raw = route.query[name];
     return typeof raw === 'string' ? raw : '';
 }
 
+function parseType(raw: string): TransactionType | '' {
+    return TRANSACTION_TYPES.includes(raw as TransactionType) ? (raw as TransactionType) : '';
+}
+
 const filterAccountId = computed({
     get: () => queryString('account'),
     set: (value: string) => patchQuery({ account: value || undefined })
+});
+
+const filterType = computed({
+    get: () => parseType(queryString('type')),
+    set: (value: string) => patchQuery({ type: value || undefined })
 });
 
 const filterFrom = computed({
@@ -46,10 +61,12 @@ const filterTo = computed({
 
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
-    const account = patch.account !== undefined ? patch.account : queryString('account') || undefined;
-    const from = patch.from !== undefined ? patch.from : queryString('from') || undefined;
-    const to = patch.to !== undefined ? patch.to : queryString('to') || undefined;
+    const account = 'account' in patch ? patch.account : queryString('account') || undefined;
+    const type = 'type' in patch ? patch.type : queryString('type') || undefined;
+    const from = 'from' in patch ? patch.from : queryString('from') || undefined;
+    const to = 'to' in patch ? patch.to : queryString('to') || undefined;
     if (account) next.account = account;
+    if (type && TRANSACTION_TYPES.includes(type as TransactionType)) next.type = type;
     if (from) next.from = from;
     if (to) next.to = to;
     void router.replace({ path: '/app/finances/transactions', query: next });
@@ -66,6 +83,7 @@ function onCreate() {
         <template #actions>
             <AppDropdownFilter :label="t('transactionsPage.actions.filter')" :min-width="300">
                 <div class="pa-3 d-flex flex-column ga-3">
+                    <AppSelect v-model="filterType" :items="typeItems" :label="t('transactionsPage.filters.type')" hide-details />
                     <AppSelect
                         v-model="filterAccountId"
                         :items="accountItems"
@@ -92,6 +110,30 @@ function onCreate() {
             </button>
         </template>
 
+        <nav class="su-tabs transactions-page__types mb-4" :aria-label="t('transactionsPage.filters.type')">
+            <button type="button" class="su-tab" :class="{ 'is-active': !filterType }" @click="filterType = ''">
+                {{ t('transactionsPage.filters.allTypes') }}
+            </button>
+            <button
+                v-for="type in TRANSACTION_TYPES"
+                :key="type"
+                type="button"
+                class="su-tab"
+                :class="{ 'is-active': filterType === type }"
+                @click="filterType = type"
+            >
+                {{ t(`transactionsPage.types.${type}`) }}
+            </button>
+        </nav>
+
         <TransactionsTimeline ref="timelineRef" />
     </AppPageShell>
 </template>
+
+<style scoped>
+.transactions-page__types {
+    margin-left: 0;
+    width: fit-content;
+    max-width: 100%;
+}
+</style>

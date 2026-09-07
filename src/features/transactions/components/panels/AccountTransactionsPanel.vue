@@ -107,7 +107,7 @@ async function confirmDelete() {
         <div v-else-if="!items.length" class="py-8 text-center text-medium-emphasis">
             {{ t('transactionsPage.empty.account') }}
         </div>
-        <v-list v-else class="py-0">
+        <v-list v-else class="py-0 account-transactions-panel__list">
             <TransactionListItem
                 v-for="transaction in items"
                 :key="transaction.publicId"
@@ -140,3 +140,11 @@ async function confirmDelete() {
         />
     </div>
 </template>
+
+<style scoped>
+.account-transactions-panel__list {
+    overflow: visible !important;
+    background: transparent;
+    padding: 8px;
+}
+</style>

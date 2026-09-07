@@ -158,10 +158,33 @@ function onDoubleClick(event: MouseEvent) {
 <style scoped>
 .transaction-list-item {
     cursor: default;
+    position: relative;
+    z-index: 0;
+    animation: none;
+    transition:
+        transform 0.5s var(--spring),
+        box-shadow 0.45s var(--ease),
+        background 0.3s var(--ease);
 }
 
 .transaction-list-item--editable {
     cursor: pointer;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .transaction-list-item:hover {
+        z-index: 1;
+        transform: scale(1.012);
+        box-shadow:
+            0 1px 2px rgba(16, 16, 20, 0.04),
+            0 12px 28px -16px rgba(16, 16, 20, 0.18);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .transaction-list-item {
+        transition: none;
+    }
 }
 
 .transaction-list-item__icon--error {
