@@ -47,7 +47,10 @@ const searchInput = ref(queryString('q').slice(0, TIER_SEARCH_MAX));
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 const filterNature = computed({
-    get: () => (isTierNature(queryString('nature')) ? queryString('nature') : ''),
+    get: (): TierNature | '' => {
+        const nature = queryString('nature');
+        return isTierNature(nature) ? nature : '';
+    },
     set: (value: string) => patchQuery({ nature: value || undefined })
 });
 
@@ -124,7 +127,7 @@ watch(
 <template>
     <AppPageShell :title="t('tiersPage.title')" :subtitle="t('tiersPage.subtitle')">
         <template #tabs>
-            <AppFoldableTabs :aria-label="t('tiersPage.tabs.label')">
+            <AppFoldableTabs :ariaLabel="t('tiersPage.tabs.label')">
                 <template #summary>
                     <component v-if="filterNature" :is="TIER_NATURE_ICONS[filterNature]" :size="16" stroke-width="1.7" />
                     {{ filterNature ? t(`tiersPage.natures.${filterNature}`) : t('tiersPage.tabs.all') }}
