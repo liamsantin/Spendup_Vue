@@ -13,6 +13,7 @@ describe('rewriteLegacySettingsLink', () => {
         expect(rewriteLegacySettingsLink('/app/comptes?tab=Preferences')).toBe(SETTINGS_PATHS.preferences);
         expect(rewriteLegacySettingsLink('/app/comptes?tab=Notifications')).toBe(SETTINGS_PATHS.notifications);
         expect(rewriteLegacySettingsLink('/app/comptes?tab=Security')).toBe(SETTINGS_PATHS.security);
+        expect(rewriteLegacySettingsLink('/app/comptes?tab=Subscription')).toBe(SETTINGS_PATHS.subscription);
         expect(rewriteLegacySettingsLink('/app/applications')).toBe(SETTINGS_PATHS.account);
     });
 

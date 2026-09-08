@@ -4,6 +4,7 @@ import {
     BellIcon,
     BuildingBankIcon,
     CreditCardIcon,
+    CrownIcon,
     LayoutDashboardIcon,
     AddressBookIcon,
     LockIcon,
@@ -153,6 +154,11 @@ const sidebarThemes: sidebarTheme[] = [
                 title: 'nav.items.security',
                 icon: LockIcon,
                 to: SETTINGS_PATHS.security
+            },
+            {
+                title: 'nav.items.subscription',
+                icon: CrownIcon,
+                to: SETTINGS_PATHS.subscription
             }
         ]
     }

@@ -28,6 +28,7 @@
 | Accounts      | [`features/accounts/contract.md`](features/accounts/contract.md)           |
 | Categories    | [`features/categories/contract.md`](features/categories/contract.md)       |
 | Tiers         | [`features/tiers/contract.md`](features/tiers/contract.md)                 |
+| Subscription  | [`features/subscription/contract.md`](features/subscription/contract.md)   |
 | User settings | [`features/user-settings/contract.md`](features/user-settings/contract.md) |
 | Countries     | [`features/countries/contract.md`](features/countries/contract.md)         |
 | Dashboard     | [`features/dashboard/contract.md`](features/dashboard/contract.md)         |

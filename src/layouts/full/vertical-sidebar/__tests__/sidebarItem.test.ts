@@ -18,16 +18,18 @@ describe('themeIdFromPath', () => {
         expect(themeIdFromPath(SETTINGS_PATHS.preferences)).toBe('settings');
         expect(themeIdFromPath(SETTINGS_PATHS.notifications)).toBe('settings');
         expect(themeIdFromPath(SETTINGS_PATHS.security)).toBe('settings');
+        expect(themeIdFromPath(SETTINGS_PATHS.subscription)).toBe('settings');
         expect(themeIdFromPath('/app/comptes')).toBe('settings');
     });
 
-    it('liste les 4 pages paramètres dans le thème settings', () => {
+    it('liste les 5 pages paramètres dans le thème settings', () => {
         const settings = sidebarThemes.find((theme) => theme.id === 'settings');
         expect(settings?.items.map((item) => item.to).filter(Boolean)).toEqual([
             SETTINGS_PATHS.account,
             SETTINGS_PATHS.preferences,
             SETTINGS_PATHS.notifications,
-            SETTINGS_PATHS.security
+            SETTINGS_PATHS.security,
+            SETTINGS_PATHS.subscription
         ]);
     });
 

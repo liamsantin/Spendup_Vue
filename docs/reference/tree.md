@@ -18,6 +18,7 @@ src/
 │   ├── desktop/         # deep-links / helpers desktop
 │   ├── friends/         # stores/internal/ + composables QR
 │   ├── notifications/   # stores/internal/
+│   ├── subscription/    # abonnement, plans, sélecteur / upsell (API mockée)
 │   ├── tiers/           # annuaire perso de contreparties (stores/internal/)
 │   └── user-settings/   # composables account/security
 ├── views/

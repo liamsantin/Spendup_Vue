@@ -61,6 +61,10 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.settings,
             activeId: SHELL_NAV_IDS.security
         });
+        expect(idsFromPath(SETTINGS_PATHS.subscription)).toEqual({
+            openId: SHELL_NAV_IDS.settings,
+            activeId: SHELL_NAV_IDS.subscription
+        });
         expect(idsFromPath('/app/comptes')).toEqual({
             openId: SHELL_NAV_IDS.settings,
             activeId: SHELL_NAV_IDS.profile

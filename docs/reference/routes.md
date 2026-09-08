@@ -35,6 +35,7 @@
 | ---------------------------------- | ---------------------------------------------- |
 | `/app`                             | dashboard                                      |
 | `/app/comptes`                     | user-settings (Tabs Shell)                     |
+| `/app/parametres/abonnement`       | subscription (Page Shell, API mockée)          |
 | `/app/finances/comptes`            | accounts (Tabs Shell : Accounts / Invitations) |
 | `/app/finances/transactions`       | transactions                                   |
 | `/app/finances/moyens-de-paiement` | payment-methods                                |

@@ -5,14 +5,16 @@ export const SETTINGS_PATHS = {
     account: '/app/parametres/compte',
     preferences: '/app/parametres/preferences',
     notifications: '/app/parametres/notifications',
-    security: '/app/parametres/securite'
+    security: '/app/parametres/securite',
+    subscription: '/app/parametres/abonnement'
 } as const;
 
 const LEGACY_TAB_TO_PATH: Record<string, string> = {
     Account: SETTINGS_PATHS.account,
     Preferences: SETTINGS_PATHS.preferences,
     Notifications: SETTINGS_PATHS.notifications,
-    Security: SETTINGS_PATHS.security
+    Security: SETTINGS_PATHS.security,
+    Subscription: SETTINGS_PATHS.subscription
 };
 
 function pathWithoutQuery(path: string): string {

@@ -21,6 +21,7 @@ import { usePaymentMethodsStore } from '@/features/payment-methods/stores/paymen
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
+import { useSubscriptionStore } from '@/features/subscription/stores/subscription-store';
 import { useSidebarNavStore } from '@/layouts/full/vertical-sidebar/sidebar-nav-store';
 import { isIdleSessionError } from '@/features/auth/idle-session';
 import { clearCsrfToken, rememberCsrfToken } from '@/features/auth/csrf';
@@ -162,6 +163,7 @@ export function createAuthSession() {
         useTransactionsStore().reset();
         useCategoriesStore().reset();
         useTiersStore().reset();
+        useSubscriptionStore().reset();
         useSidebarNavStore().reset();
     }
 

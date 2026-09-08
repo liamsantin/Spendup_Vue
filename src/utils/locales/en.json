@@ -49,7 +49,8 @@
             "profile": "Profile",
             "preferences": "Preferences",
             "notificationSettings": "Notifications",
-            "security": "Security"
+            "security": "Security",
+            "subscription": "Subscription"
         },
         "subCaptions": {
             "soon": "Soon"
@@ -692,6 +693,64 @@
             }
         }
     },
+    "subscriptionPage": {
+        "empty": "Unable to load your subscription.",
+        "changed": "Your plan is now “{name}”.",
+        "actions": {
+            "changePlan": "Change plan"
+        },
+        "status": {
+            "active": "Active",
+            "canceled": "Canceled",
+            "expired": "Expired",
+            "pending": "Pending"
+        },
+        "overview": {
+            "title": "Current plan",
+            "subtitle": "Your Spend.Up subscription.",
+            "startedAt": "Since",
+            "expiresAt": "Expires on",
+            "canceledAt": "Canceled on"
+        },
+        "features": {
+            "title": "Included features",
+            "subtitle": "What your plan unlocks.",
+            "empty": "No feature listed for this plan."
+        },
+        "quotas": {
+            "title": "Quotas",
+            "subtitle": "Your usage against the plan limits.",
+            "empty": "No quota for this plan.",
+            "unlimited": "Unlimited",
+            "notIncluded": "Not included",
+            "notApplicable": "—",
+            "limitValue": "{count} {unit} | {count} {unit} | {count} {unit}s",
+            "usedOfLimit": "{used} / {limit} {unit} | {used} / {limit} {unit} | {used} / {limit} {unit}s",
+            "usedUnlimited": "{used} {unit} · unlimited | {used} {unit} · unlimited | {used} {unit}s · unlimited"
+        },
+        "selector": {
+            "title": "Choose a plan",
+            "subtitle": "Compare features and quotas. The change is immediate.",
+            "features": "Features",
+            "quotas": "Quotas",
+            "current": "Current plan",
+            "recommended": "Recommended",
+            "currentAction": "Your plan",
+            "choose": "Choose",
+            "empty": "No plan available yet.",
+            "confirmTitle": "Switch to the “{name}” plan?",
+            "confirmBody": "Your subscription will switch to the “{name}” plan immediately. You can change again later.",
+            "confirm": "Confirm",
+            "noPaymentNote": "No payment is required for now: pricing will come with the payment provider."
+        },
+        "upsell": {
+            "thisFeature": "This feature",
+            "title": "{feature} requires the {plan} plan.",
+            "titleGeneric": "{feature} is not included in your plan.",
+            "body": "Change plan to unlock it. The change is immediate.",
+            "cta": "See plans"
+        }
+    },
     "tiersPage": {
         "title": "Counterparties",
         "subtitle": "Your personal directory of counterparties: merchants, banks, employers, landlords, contacts.",
@@ -1019,7 +1078,8 @@
             "account": "Profile",
             "preferences": "Preferences",
             "notifications": "Notifications",
-            "security": "Security"
+            "security": "Security",
+            "subscription": "Subscription"
         },
         "pages": {
             "account": {
@@ -1033,6 +1093,9 @@
             },
             "security": {
                 "subtitle": "Two-factor authentication, devices and session."
+            },
+            "subscription": {
+                "subtitle": "Your plan, included features and quotas."
             }
         },
         "leaveDirtyConfirm": "You have unsaved changes. Leave this page?",

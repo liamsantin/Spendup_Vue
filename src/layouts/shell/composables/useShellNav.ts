@@ -8,6 +8,7 @@ import {
     BellIcon,
     BuildingBankIcon,
     CreditCardIcon,
+    CrownIcon,
     LockIcon,
     TagsIcon,
     UserCircleIcon
@@ -35,7 +36,8 @@ export const SHELL_NAV_IDS = {
     profile: 'profile',
     preferences: 'preferences',
     notificationSettings: 'notification-settings',
-    security: 'security'
+    security: 'security',
+    subscription: 'subscription'
 } as const;
 
 export function idsFromPath(path: string): { openId: string | null; activeId: string | null } {
@@ -71,6 +73,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     }
     if (path.startsWith(SETTINGS_PATHS.security)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.security };
+    }
+    if (path.startsWith(SETTINGS_PATHS.subscription)) {
+        return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.subscription };
     }
     if (path.startsWith(SETTINGS_PATHS.account) || path.startsWith('/app/parametres') || path.startsWith('/app/comptes')) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.profile };
@@ -149,6 +154,12 @@ export function useShellNav() {
             label: t('nav.items.security'),
             icon: LockIcon,
             to: SETTINGS_PATHS.security
+        },
+        {
+            id: SHELL_NAV_IDS.subscription,
+            label: t('nav.items.subscription'),
+            icon: CrownIcon,
+            to: SETTINGS_PATHS.subscription
         }
     ]);
 

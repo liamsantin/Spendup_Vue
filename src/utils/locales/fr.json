@@ -49,7 +49,8 @@
             "profile": "Profil",
             "preferences": "Préférences",
             "notificationSettings": "Notifications",
-            "security": "Sécurité"
+            "security": "Sécurité",
+            "subscription": "Abonnement"
         },
         "subCaptions": {
             "soon": "Bientôt"
@@ -692,6 +693,64 @@
             }
         }
     },
+    "subscriptionPage": {
+        "empty": "Impossible de charger votre abonnement.",
+        "changed": "Votre plan est maintenant « {name} ».",
+        "actions": {
+            "changePlan": "Changer de plan"
+        },
+        "status": {
+            "active": "Actif",
+            "canceled": "Résilié",
+            "expired": "Expiré",
+            "pending": "En attente"
+        },
+        "overview": {
+            "title": "Plan courant",
+            "subtitle": "Votre abonnement Spend.Up.",
+            "startedAt": "Depuis le",
+            "expiresAt": "Échéance",
+            "canceledAt": "Résilié le"
+        },
+        "features": {
+            "title": "Fonctionnalités incluses",
+            "subtitle": "Ce que votre plan vous ouvre.",
+            "empty": "Aucune fonctionnalité listée pour ce plan."
+        },
+        "quotas": {
+            "title": "Quotas",
+            "subtitle": "Votre consommation par rapport aux limites du plan.",
+            "empty": "Aucun quota pour ce plan.",
+            "unlimited": "Illimité",
+            "notIncluded": "Non inclus",
+            "notApplicable": "—",
+            "limitValue": "{count} {unit} | {count} {unit} | {count} {unit}s",
+            "usedOfLimit": "{used} / {limit} {unit} | {used} / {limit} {unit} | {used} / {limit} {unit}s",
+            "usedUnlimited": "{used} {unit} · illimité | {used} {unit} · illimité | {used} {unit}s · illimité"
+        },
+        "selector": {
+            "title": "Choisir un plan",
+            "subtitle": "Comparez les fonctionnalités et les quotas. Le changement est immédiat.",
+            "features": "Fonctionnalités",
+            "quotas": "Quotas",
+            "current": "Plan actuel",
+            "recommended": "Recommandé",
+            "currentAction": "Votre plan",
+            "choose": "Choisir",
+            "empty": "Aucun plan disponible pour l’instant.",
+            "confirmTitle": "Passer au plan « {name} » ?",
+            "confirmBody": "Votre abonnement basculera immédiatement sur le plan « {name} ». Vous pourrez changer à nouveau plus tard.",
+            "confirm": "Confirmer",
+            "noPaymentNote": "Aucun paiement n’est demandé pour l’instant : les tarifs arriveront avec le prestataire de paiement."
+        },
+        "upsell": {
+            "thisFeature": "Cette fonctionnalité",
+            "title": "{feature} nécessite le plan {plan}.",
+            "titleGeneric": "{feature} n’est pas incluse dans votre plan.",
+            "body": "Changez de plan pour la débloquer. Le changement est immédiat.",
+            "cta": "Voir les plans"
+        }
+    },
     "tiersPage": {
         "title": "Tiers",
         "subtitle": "Votre annuaire personnel de contreparties : commerçants, banques, employeurs, bailleurs, contacts.",
@@ -1019,7 +1078,8 @@
             "account": "Profil",
             "preferences": "Préférences",
             "notifications": "Notifications",
-            "security": "Sécurité"
+            "security": "Sécurité",
+            "subscription": "Abonnement"
         },
         "pages": {
             "account": {
@@ -1033,6 +1093,9 @@
             },
             "security": {
                 "subtitle": "Double authentification, appareils et session."
+            },
+            "subscription": {
+                "subtitle": "Votre plan, les fonctionnalités incluses et vos quotas."
             }
         },
         "leaveDirtyConfirm": "Vous avez des modifications non enregistrées. Quitter cette page ?",
