@@ -783,10 +783,10 @@
             "unknown": "An unspecified counterparty"
         },
         "createHints": {
-            "person": "Individual, contact, doctor…",
-            "company": "Merchant, bank, employer…",
-            "organization": "Association, foundation, club…",
-            "administration": "Municipality, tax office, fund…",
+            "person": "Individual, contact, doctor",
+            "company": "Merchant, bank, employer",
+            "organization": "Association, foundation, club",
+            "administration": "Municipality, tax office, fund",
             "unknown": "The type is not clear yet"
         },
         "natures": {

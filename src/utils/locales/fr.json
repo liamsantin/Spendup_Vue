@@ -783,10 +783,10 @@
             "unknown": "Un tiers non précisé"
         },
         "createHints": {
-            "person": "Particulier, contact, médecin…",
-            "company": "Commerçant, banque, employeur…",
-            "organization": "Association, fondation, club…",
-            "administration": "Commune, impôts, caisse…",
+            "person": "Particulier, contact, médecin",
+            "company": "Commerçant, banque, employeur",
+            "organization": "Association, fondation, club",
+            "administration": "Commune, impôts, caisse",
             "unknown": "Le type n’est pas encore clair"
         },
         "natures": {
