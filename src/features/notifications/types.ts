@@ -123,6 +123,14 @@ export type CategoryChangedPayload = {
     categoryPublicId: string;
 };
 
+/** Payload SignalR `tierChanged` — sync de l’annuaire de tiers perso (acteur inclus). */
+export type TierChange = 'tierCreated' | 'tierUpdated' | 'tierDeleted';
+
+export type TierChangedPayload = {
+    change: TierChange;
+    tierPublicId: string;
+};
+
 export type NotificationsListQuery = {
     page?: number;
     pageSize?: number;

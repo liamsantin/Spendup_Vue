@@ -7,10 +7,12 @@ import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
+import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import { formatOperationDate } from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { TRANSACTION_TYPES, type Transaction, type TransactionType } from '@/features/transactions/types';
+import { TIER_PAGE_SIZE_MAX } from '@/features/tiers/types';
 import TransactionListItem from '@/features/transactions/components/list/TransactionListItem.vue';
 import TransactionFormModal from '@/features/transactions/components/modals/TransactionFormModal.vue';
 
@@ -24,6 +26,7 @@ const route = useRoute();
 const router = useRouter();
 const accountsStore = useAccountsStore();
 const categoriesStore = useCategoriesStore();
+const tiersStore = useTiersStore();
 const store = useTransactionsStore();
 
 const createOpen = ref(false);
@@ -54,6 +57,7 @@ const filterAccountId = computed(() => props.lockedAccountPublicId?.trim() || qu
 const filterFrom = computed(() => (props.lockedAccountPublicId ? null : queryString('from')));
 const filterTo = computed(() => (props.lockedAccountPublicId ? null : queryString('to')));
 const filterCategoryId = computed(() => (props.lockedAccountPublicId ? null : queryString('category')));
+const filterTierId = computed(() => (props.lockedAccountPublicId ? null : queryString('tier')));
 const filterType = computed<TransactionType | null>(() => {
     if (props.lockedAccountPublicId) return null;
     const raw = queryString('type');
@@ -104,19 +108,24 @@ async function loadTimeline(force = false) {
             store.loadList({
                 accountPublicId: filterAccountId.value ?? undefined,
                 categoryPublicId: filterCategoryId.value ?? undefined,
+                tierPublicId: filterTierId.value ?? undefined,
                 from: filterFrom.value ?? undefined,
                 to: filterTo.value ?? undefined,
                 force
             }),
-            categoriesStore.loadList({ force }).catch(() => undefined)
+            categoriesStore.loadList({ force }).catch(() => undefined),
+            tiersStore.loadList({ pageSize: TIER_PAGE_SIZE_MAX, force }).catch(() => undefined)
         ]);
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
         if (err.status === 404) {
             localError.value = t('transactionsPage.errors.notFound');
-            if (!props.lockedAccountPublicId && filterAccountId.value) {
+            // 404 : compte inconnu, ou tier filtré qui n’appartient pas (plus) à l’utilisateur → on retire le filtre fautif.
+            if (!props.lockedAccountPublicId && (filterAccountId.value || filterTierId.value)) {
+                const dropTier = !!filterTierId.value;
                 await store
                     .loadList({
+                        accountPublicId: dropTier ? (filterAccountId.value ?? undefined) : undefined,
                         from: filterFrom.value ?? undefined,
                         to: filterTo.value ?? undefined,
                         categoryPublicId: filterCategoryId.value ?? undefined,
@@ -126,6 +135,7 @@ async function loadTimeline(force = false) {
                 await router.replace({
                     path: '/app/finances/transactions',
                     query: {
+                        ...(dropTier && filterAccountId.value ? { account: filterAccountId.value } : {}),
                         ...(filterType.value ? { type: filterType.value } : {}),
                         ...(filterFrom.value ? { from: filterFrom.value } : {}),
                         ...(filterTo.value ? { to: filterTo.value } : {}),
@@ -161,7 +171,7 @@ function openCreate() {
 defineExpose({ openCreate });
 
 watch(
-    () => [filterAccountId.value, filterFrom.value, filterTo.value, filterCategoryId.value] as const,
+    () => [filterAccountId.value, filterFrom.value, filterTo.value, filterCategoryId.value, filterTierId.value] as const,
     () => {
         void loadTimeline().catch(() => undefined);
     }

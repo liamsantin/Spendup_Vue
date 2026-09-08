@@ -54,6 +54,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/gestion/categories/AppCategoriesPage.vue')
         },
         {
+            name: 'AppTiers',
+            path: 'gestion/tiers',
+            component: () => import('@/views/app/gestion/tiers/AppTiersPage.vue')
+        },
+        {
             path: 'parametres',
             redirect: SETTINGS_PATHS.account
         },

@@ -51,6 +51,12 @@ vi.mock('@/features/categories/stores/categories-store', () => ({
     })
 }));
 
+vi.mock('@/features/tiers/stores/tiers-store', () => ({
+    useTiersStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
 vi.mock('@/features/user-settings', () => ({
     useUserSettingsStore: () => ({
         ensureLoaded: vi.fn().mockResolvedValue(undefined),

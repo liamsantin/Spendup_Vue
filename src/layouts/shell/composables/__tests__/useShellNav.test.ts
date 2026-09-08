@@ -38,6 +38,10 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.gestion,
             activeId: SHELL_NAV_IDS.categories
         });
+        expect(idsFromPath('/app/gestion/tiers')).toEqual({
+            openId: SHELL_NAV_IDS.gestion,
+            activeId: SHELL_NAV_IDS.tiers
+        });
     });
 
     it('mappe les pages paramètres', () => {

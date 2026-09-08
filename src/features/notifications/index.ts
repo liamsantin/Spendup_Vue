@@ -15,7 +15,8 @@ export {
     getAccountPublicId,
     normalizeAppNotification,
     parseAccountChangedPayload,
-    parseCategoryChangedPayload
+    parseCategoryChangedPayload,
+    parseTierChangedPayload
 } from '@/features/notifications/normalize';
 export {
     ensureNativeNotificationPermission,
@@ -39,6 +40,8 @@ export type {
     AccountChangedPayload,
     CategoryChange,
     CategoryChangedPayload,
+    TierChange,
+    TierChangedPayload,
     InboxClearedPayload,
     SessionEndedPayload,
     NotificationsListQuery

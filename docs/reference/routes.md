@@ -31,16 +31,17 @@
 
 ## Application (`FullLayout`, `requiresAuth`)
 
-| Route                   | Feature                                        |
-| ----------------------- | ---------------------------------------------- |
-| `/app`                  | dashboard                                      |
-| `/app/comptes`          | user-settings (Tabs Shell)                     |
+| Route                              | Feature                                        |
+| ---------------------------------- | ---------------------------------------------- |
+| `/app`                             | dashboard                                      |
+| `/app/comptes`                     | user-settings (Tabs Shell)                     |
 | `/app/finances/comptes`            | accounts (Tabs Shell : Accounts / Invitations) |
 | `/app/finances/transactions`       | transactions                                   |
 | `/app/finances/moyens-de-paiement` | payment-methods                                |
 | `/app/gestion/categories`          | categories                                     |
+| `/app/gestion/tiers`               | tiers (contreparties)                          |
 | `/app/notifications`               | notifications (Page Shell)                     |
-| `/app/friends`          | friends (Tabs Shell)                           |
-| `/app/applications`     | redirect → `/app/comptes`                      |
+| `/app/friends`                     | friends (Tabs Shell)                           |
+| `/app/applications`                | redirect → `/app/comptes`                      |
 
 Catch-all → `Error`.

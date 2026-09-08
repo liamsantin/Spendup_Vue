@@ -6,6 +6,7 @@ import { useAccountsStore } from '@/features/accounts';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
+import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { useNotificationsStore } from '@/features/notifications';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isDevAppEnv } from '@/utils/helpers/env-helpers';
@@ -57,6 +58,7 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
         usePaymentMethodsStore().onAuthenticatedSession();
         useTransactionsStore().onAuthenticatedSession();
         useCategoriesStore().onAuthenticatedSession();
+        useTiersStore().onAuthenticatedSession();
         return next();
     }
 

@@ -45,6 +45,7 @@
             "transactions": "Transactions",
             "paymentMethods": "Moyens de paiement",
             "categories": "Catégories",
+            "tiers": "Tiers",
             "profile": "Profil",
             "preferences": "Préférences",
             "notificationSettings": "Notifications",
@@ -691,6 +692,131 @@
             }
         }
     },
+    "tiersPage": {
+        "title": "Tiers",
+        "subtitle": "Votre annuaire personnel de contreparties : commerçants, banques, employeurs, bailleurs, contacts.",
+        "loadMore": "Charger plus",
+        "count": "{count} tiers | {count} tiers | {count} tiers",
+        "searchPlaceholder": "Rechercher par nom…",
+        "empty": {
+            "list": "Aucun tiers pour l’instant. Ajoutez votre première contrepartie, par exemple votre banque.",
+            "filtered": "Aucun tiers ne correspond à ces filtres."
+        },
+        "actions": {
+            "filter": "Filtre",
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "seeTransactions": "Voir les transactions",
+            "clearSearch": "Effacer la recherche"
+        },
+        "filters": {
+            "nature": "Nature",
+            "allNatures": "Toutes les natures",
+            "role": "Rôle",
+            "allRoles": "Tous les rôles"
+        },
+        "natures": {
+            "person": "Personne",
+            "company": "Entreprise",
+            "organization": "Organisation",
+            "administration": "Administration",
+            "unknown": "Non précisé"
+        },
+        "roles": {
+            "contactPersonnel": "Contact personnel",
+            "banque": "Banque",
+            "assurance": "Assurance",
+            "employeur": "Employeur",
+            "bailleur": "Bailleur",
+            "service": "Service",
+            "fournisseur": "Fournisseur",
+            "administration": "Administration",
+            "medecin": "Médecin",
+            "preteur": "Prêteur",
+            "emprunteur": "Emprunteur",
+            "other": "Autre"
+        },
+        "list": {
+            "noRoles": "Aucun rôle",
+            "person": "{firstName} {lastName}",
+            "birthDate": "né(e) le {date}"
+        },
+        "deleteModal": {
+            "title": "Supprimer ce tiers ?",
+            "body": "Il disparaîtra de l’annuaire et des sélecteurs. Le nom pourra être réutilisé.",
+            "blockedTitle": "Tiers utilisé"
+        },
+        "errors": {
+            "notFound": "Ce tiers n’est plus disponible."
+        },
+        "form": {
+            "createTitle": "Nouveau tiers",
+            "editTitle": "Modifier le tiers",
+            "subtitle": "La nature détermine le volet de détails. Les rôles sont libres et cumulables.",
+            "natureChangeHint": "Changer la nature efface les détails de l’ancien volet.",
+            "noRoles": "Aucun rôle sélectionné",
+            "rolesHint": "Une personne peut être à la fois bailleur et prêteur.",
+            "sections": {
+                "identity": "Identité",
+                "contact": "Contact",
+                "person": "Détails de la personne",
+                "company": "Détails de l’entreprise",
+                "organization": "Détails de l’organisation"
+            },
+            "fields": {
+                "name": "Nom",
+                "nature": "Nature",
+                "roles": "Rôles",
+                "email": "E-mail",
+                "phone": "Téléphone",
+                "website": "Site web",
+                "notes": "Notes",
+                "firstName": "Prénom",
+                "lastName": "Nom de famille",
+                "birthDate": "Date de naissance",
+                "legalName": "Raison sociale",
+                "vatNumber": "Numéro TVA",
+                "companyRegistrationNumber": "Numéro d’entreprise (IDE)",
+                "officialName": "Nom officiel",
+                "organizationType": "Type d’organisation"
+            },
+            "placeholders": {
+                "name": "Ex. Migros",
+                "email": "contact@exemple.ch",
+                "phone": "+41 58 570 00 00",
+                "website": "exemple.ch",
+                "notes": "Informations utiles, horaires, référence client…",
+                "birthDate": "Date de naissance",
+                "vatNumber": "CHE-123.456.789 TVA",
+                "companyRegistrationNumber": "CHE-123.456.789",
+                "organizationType": "Association, fondation, club…"
+            },
+            "errors": {
+                "nameRequired": "Le nom du tiers est obligatoire.",
+                "nameTooLong": "Le nom du tiers dépasse 200 caractères.",
+                "nameDuplicate": "Un tiers porte déjà ce nom.",
+                "natureInvalid": "Nature de tiers invalide.",
+                "emailInvalid": "L’adresse e-mail est invalide (format attendu : local@domaine.tld).",
+                "emailTooLong": "L’adresse e-mail dépasse 180 caractères.",
+                "phoneInvalid": "Le téléphone accepte chiffres, espaces, + - . ( ) et au moins 3 chiffres.",
+                "phoneTooLong": "Le numéro de téléphone dépasse 50 caractères.",
+                "websiteInvalid": "Le site web doit être une URL http(s) valide (ex. migros.ch).",
+                "notesTooLong": "Les notes dépassent 4000 caractères.",
+                "rolesInvalid": "Un rôle est inconnu.",
+                "rolesDuplicate": "Un rôle est présent en double.",
+                "personFirstNameTooLong": "Le prénom dépasse 100 caractères.",
+                "personLastNameTooLong": "Le nom de famille dépasse 100 caractères.",
+                "personBirthDateInvalid": "La date de naissance est invalide.",
+                "personBirthDateFuture": "La date de naissance ne peut pas être dans le futur.",
+                "companyLegalNameTooLong": "La raison sociale dépasse 200 caractères.",
+                "companyVatNumberTooLong": "Le numéro TVA dépasse 100 caractères.",
+                "companyRegistrationNumberTooLong": "Le numéro d’entreprise dépasse 100 caractères.",
+                "organizationOfficialNameTooLong": "Le nom officiel dépasse 200 caractères.",
+                "organizationTypeTooLong": "Le type d’organisation dépasse 100 caractères."
+            }
+        }
+    },
     "transactionsPage": {
         "title": "Transactions",
         "titleForAccount": "Transactions du compte : {name}",
@@ -715,6 +841,8 @@
             "allTypes": "Tous les types",
             "category": "Catégorie",
             "allCategories": "Toutes les catégories",
+            "tier": "Contrepartie",
+            "allTiers": "Toutes les contreparties",
             "from": "Du",
             "to": "Au"
         },
@@ -728,7 +856,8 @@
             "createdByMe": "Saisi par vous",
             "createdBy": "Saisi par {name}",
             "createdByUnknown": "Saisi par un utilisateur",
-            "myCategory": "Ma catégorie : {name}"
+            "myCategory": "Ma catégorie : {name}",
+            "myTier": "Ma contrepartie : {name}"
         },
         "deleteModal": {
             "title": "Supprimer cette transaction ?",
@@ -747,6 +876,13 @@
             "noPaymentMethod": "Aucun",
             "noCategory": "Aucune",
             "categoryPersonalHint": "Cette catégorie n’est visible que par vous, même sur un compte partagé.",
+            "noTier": "Aucune",
+            "tierSearchPlaceholder": "Rechercher une contrepartie…",
+            "tierNoResults": "Aucune contrepartie ne correspond.",
+            "tierCreate": "Créer « {name} »",
+            "tierCreateNew": "Nouvelle contrepartie",
+            "tierPersonalHint": "Cette contrepartie n’est visible que par vous, même sur un compte partagé.",
+            "tierDeletedHint": "La contrepartie sélectionnée a été supprimée. Le champ a été vidé.",
             "archivedHint": "Ce compte est archivé. Restaurez-le pour modifier ses transactions.",
             "noCounterpartyOption": "Aucun compte cible",
             "noCounterpartyHint": "Aucun autre compte éditable n’est disponible. Créez un second compte pour faire un transfert.",
@@ -761,7 +897,8 @@
                 "operationDate": "Date d’opération",
                 "valueDate": "Date de valeur",
                 "paymentMethod": "Moyen de paiement",
-                "category": "Ma catégorie"
+                "category": "Ma catégorie",
+                "tier": "Ma contrepartie"
             },
             "errors": {
                 "typeInvalid": "Type de transaction invalide (depense, revenu, transfert).",

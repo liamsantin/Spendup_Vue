@@ -40,6 +40,7 @@ function fields(partial: Partial<TransactionFormFields> = {}): TransactionFormFi
         valueDate: null,
         paymentMethodPublicId: '',
         categoryPublicId: '',
+        tierPublicId: '',
         ...partial
     };
 }
@@ -136,7 +137,8 @@ describe('transaction payload', () => {
                 operationDate: '2026-09-07',
                 valueDate: null,
                 paymentMethodPublicId: null,
-                categoryPublicId: null
+                categoryPublicId: null,
+                tierPublicId: null
             });
         }
     });

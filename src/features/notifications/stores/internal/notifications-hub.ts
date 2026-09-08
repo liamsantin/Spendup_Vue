@@ -12,7 +12,8 @@ import {
     normalizeNotificationReceivedPayload,
     normalizePublicId,
     parseAccountChangedPayload,
-    parseCategoryChangedPayload
+    parseCategoryChangedPayload,
+    parseTierChangedPayload
 } from '@/features/notifications/normalize';
 import type {
     AppNotification,
@@ -21,7 +22,8 @@ import type {
     FriendshipChangedPayload,
     InboxClearedPayload,
     NotificationReceivedPayload,
-    SessionEndedPayload
+    SessionEndedPayload,
+    TierChangedPayload
 } from '@/features/notifications/types';
 import type { NotificationsState } from '@/features/notifications/stores/internal/notifications-state';
 import type { NotificationsNative } from '@/features/notifications/stores/internal/notifications-native';
@@ -50,6 +52,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         friendshipChangeListeners,
         accountChangeListeners,
         categoryChangeListeners,
+        tierChangeListeners,
         applyUnreadCount,
         upsertItem
     } = state;
@@ -101,6 +104,13 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         const parsed = parseCategoryChangedPayload(payload);
         if (!parsed) return;
         categoryChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /** Live sans inbox : annuaire de tiers perso (acteur inclus). */
+    function onTierChanged(payload: TierChangedPayload) {
+        const parsed = parseTierChangedPayload(payload);
+        if (!parsed) return;
+        tierChangeListeners.forEach((listener) => listener(parsed));
     }
 
     /** SignalR multi-appareils après DELETE /api/notifications. */
@@ -201,6 +211,18 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         };
     }
 
+    /**
+     * Abonne un listener aux changements de tiers (hors inbox).
+     * @param listener Callback.
+     * @returns Fonction de désabonnement.
+     */
+    function subscribeToTierChanged(listener: (payload: TierChangedPayload) => void) {
+        tierChangeListeners.add(listener);
+        return () => {
+            tierChangeListeners.delete(listener);
+        };
+    }
+
     /** Branche les handlers SignalR sur le hub partagé. */
     function wireHubHandlers() {
         setNotificationsHubHandlers({
@@ -211,6 +233,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
             onFriendshipChanged,
             onAccountChanged,
             onCategoryChanged,
+            onTierChanged,
             onInboxCleared,
             onSessionEnded: (payload) => onSessionEnded(payload)
         });
@@ -243,7 +266,8 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         subscribeToAccountShareNotifications,
         subscribeToFriendshipChanged,
         subscribeToAccountChanged,
-        subscribeToCategoryChanged
+        subscribeToCategoryChanged,
+        subscribeToTierChanged
     };
 }
 

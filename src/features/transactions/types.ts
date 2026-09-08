@@ -25,6 +25,8 @@ export type Transaction = {
     valueDate: string | null;
     paymentMethodPublicId: string | null;
     categoryPublicId: string | null;
+    /** Contrepartie **personnelle** : `null` aussi quand le tier appartient à un co-détenteur. */
+    tierPublicId: string | null;
     createdByUserPublicId: string;
     createdByDisplayName: string;
     createdByPhotoUrl: string | null;
@@ -43,6 +45,7 @@ export type TransactionList = {
 export type ListTransactionsQuery = {
     accountPublicId?: string;
     categoryPublicId?: string;
+    tierPublicId?: string;
     from?: string;
     to?: string;
     page?: number;
@@ -59,6 +62,7 @@ export type CreateTransactionPayload = {
     valueDate?: string | null;
     paymentMethodPublicId?: string | null;
     categoryPublicId?: string | null;
+    tierPublicId?: string | null;
 };
 
 export type UpdateTransactionPayload = {
@@ -68,6 +72,8 @@ export type UpdateTransactionPayload = {
     valueDate: string | null;
     paymentMethodPublicId: string | null;
     categoryPublicId: string | null;
+    /** État complet : `null` détache le tier. */
+    tierPublicId: string | null;
 };
 
 export const TRANSACTION_TYPES: TransactionType[] = ['depense', 'revenu', 'transfert'];

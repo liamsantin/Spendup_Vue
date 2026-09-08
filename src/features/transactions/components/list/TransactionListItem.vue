@@ -6,6 +6,7 @@ import { useAuthStore } from '@/features/auth';
 import { UserPhotoAvatar } from '@/features/friends';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
+import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import {
     formatOperationDate,
     movementForAccount,
@@ -33,6 +34,7 @@ const { t, locale } = useI18n();
 const auth = useAuthStore();
 const accountsStore = useAccountsStore();
 const categoriesStore = useCategoriesStore();
+const tiersStore = useTiersStore();
 
 const typeIcon = computed(() => {
     const map: Record<TransactionType, typeof ArrowDownLeftIcon> = {
@@ -103,6 +105,13 @@ const categoryLabel = computed(() => {
     return categoriesStore.findByPublicId(id)?.name ?? null;
 });
 
+/** Contrepartie personnelle : `null` sur un compte partagé ≠ « sans contrepartie », juste « aucune à moi ». */
+const tierLabel = computed(() => {
+    const id = props.transaction.tierPublicId;
+    if (!id) return null;
+    return tiersStore.findByPublicId(id)?.name ?? null;
+});
+
 function onDoubleClick(event: MouseEvent) {
     if (!props.canWrite || props.acting) return;
     if (event.target instanceof Element && event.target.closest('button')) return;
@@ -129,6 +138,10 @@ function onDoubleClick(event: MouseEvent) {
                 {{ t(`transactionsPage.types.${transaction.type}`) }}
                 · {{ accountLine }}
                 <template v-if="categoryLabel"> · {{ t('transactionsPage.list.myCategory', { name: categoryLabel }) }}</template>
+                <template v-if="tierLabel">
+                    ·
+                    <span class="transaction-list-item__tier">{{ t('transactionsPage.list.myTier', { name: tierLabel }) }}</span>
+                </template>
             </p>
             <p class="su-person__sub d-flex align-center ga-2 min-width-0">
                 <UserPhotoAvatar
@@ -230,5 +243,15 @@ function onDoubleClick(event: MouseEvent) {
 
 .transaction-list-item__amount.is-credit {
     color: rgb(var(--v-theme-success));
+}
+
+.transaction-list-item__tier {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: rgba(var(--v-theme-primary), 0.09);
+    color: rgb(var(--v-theme-primary));
+    font-weight: 600;
 }
 </style>

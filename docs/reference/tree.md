@@ -18,9 +18,10 @@ src/
 │   ├── desktop/         # deep-links / helpers desktop
 │   ├── friends/         # stores/internal/ + composables QR
 │   ├── notifications/   # stores/internal/
+│   ├── tiers/           # annuaire perso de contreparties (stores/internal/)
 │   └── user-settings/   # composables account/security
 ├── views/
-│   ├── app/             # dashboard, finances/…, gestion/categories, notifications, friends, parametres/…
+│   ├── app/             # dashboard, finances/…, gestion/categories, gestion/tiers, notifications, friends, parametres/…
 │   ├── front-pages/
 │   ├── authentication/
 │   └── dev/             # showcase /components (dev only)

@@ -11,6 +11,7 @@ import { TransactionsTimeline, TRANSACTION_TYPES, canWriteTransactions, useTrans
 import type { TransactionType } from '@/features/transactions';
 import { useAccountsStore } from '@/features/accounts';
 import { categorySelectItems, useCategoriesStore } from '@/features/categories';
+import { tierSelectItems, useTiersStore } from '@/features/tiers';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -18,6 +19,7 @@ const router = useRouter();
 const store = useTransactionsStore();
 const accountsStore = useAccountsStore();
 const categoriesStore = useCategoriesStore();
+const tiersStore = useTiersStore();
 const timelineRef = ref<{ openCreate: () => void } | null>(null);
 
 const canCreate = computed(() => accountsStore.accounts.some((a) => canWriteTransactions(a)));
@@ -30,6 +32,15 @@ const accountItems = computed(() => [
 const categoryItems = computed(() =>
     categorySelectItems(categoriesStore.items, { noneTitle: t('transactionsPage.filters.allCategories') })
 );
+
+const tierItems = computed(() => {
+    const items = tierSelectItems(tiersStore.allKnownItems(), { noneTitle: t('transactionsPage.filters.allTiers') });
+    const selected = queryString('tier');
+    if (selected && !items.some((item) => item.value === selected)) {
+        items.push({ title: tiersStore.findByPublicId(selected)?.name ?? selected, value: selected });
+    }
+    return items;
+});
 
 function queryString(name: string): string {
     const raw = route.query[name];
@@ -45,14 +56,10 @@ const filterAccountId = computed({
     set: (value: string) => patchQuery({ account: value || undefined })
 });
 
-const filteredAccount = computed(
-    () => accountsStore.accounts.find((a) => a.publicId === filterAccountId.value) ?? null
-);
+const filteredAccount = computed(() => accountsStore.accounts.find((a) => a.publicId === filterAccountId.value) ?? null);
 
 const pageTitle = computed(() =>
-    filteredAccount.value
-        ? t('transactionsPage.titleForAccount', { name: filteredAccount.value.name })
-        : t('transactionsPage.title')
+    filteredAccount.value ? t('transactionsPage.titleForAccount', { name: filteredAccount.value.name }) : t('transactionsPage.title')
 );
 
 const filterType = computed({
@@ -75,6 +82,11 @@ const filterCategoryId = computed({
     set: (value: string) => patchQuery({ category: value || undefined })
 });
 
+const filterTierId = computed({
+    get: () => queryString('tier'),
+    set: (value: string) => patchQuery({ tier: value || undefined })
+});
+
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
     const account = 'account' in patch ? patch.account : queryString('account') || undefined;
@@ -82,11 +94,13 @@ function patchQuery(patch: Record<string, string | undefined>) {
     const from = 'from' in patch ? patch.from : queryString('from') || undefined;
     const to = 'to' in patch ? patch.to : queryString('to') || undefined;
     const category = 'category' in patch ? patch.category : queryString('category') || undefined;
+    const tier = 'tier' in patch ? patch.tier : queryString('tier') || undefined;
     if (account) next.account = account;
     if (type && TRANSACTION_TYPES.includes(type as TransactionType)) next.type = type;
     if (from) next.from = from;
     if (to) next.to = to;
     if (category) next.category = category;
+    if (tier) next.tier = tier;
     void router.replace({ path: '/app/finances/transactions', query: next });
 }
 
@@ -131,6 +145,7 @@ function onCreate() {
                         :label="t('transactionsPage.filters.category')"
                         hide-details
                     />
+                    <AppSelect v-model="filterTierId" :items="tierItems" :label="t('transactionsPage.filters.tier')" hide-details />
                     <v-divider class="my-1" />
                     <AppDatePicker
                         v-model="filterFrom"

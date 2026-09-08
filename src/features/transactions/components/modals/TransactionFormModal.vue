@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onUnmounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
@@ -8,6 +8,7 @@ import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { categorySelectItems } from '@/features/categories/payload';
+import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { canWriteTransactions } from '@/features/transactions/rights';
 import { sourceAccountPublicId, targetAccountPublicId, todayUtcYmd } from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
@@ -37,10 +38,23 @@ const { t } = useI18n();
 const accountsStore = useAccountsStore();
 const paymentMethodsStore = usePaymentMethodsStore();
 const categoriesStore = useCategoriesStore();
+const tiersStore = useTiersStore();
 const store = useTransactionsStore();
 
 const isEdit = ref(false);
 const editTransaction = ref<Transaction | null>(null);
+const tierDeletedHint = ref(false);
+
+/** `tierDeleted` (realtime ou local) : vider le sélecteur si ce tier était choisi. */
+const unsubscribeTierDeleted = tiersStore.subscribeToDeleted((publicId) => {
+    if (!props.modelValue || form.tierPublicId !== publicId) return;
+    form.tierPublicId = '';
+    tierDeletedHint.value = true;
+});
+
+onUnmounted(() => {
+    unsubscribeTierDeleted();
+});
 
 const writableAccounts = computed(() => accountsStore.accounts.filter((a) => canWriteTransactions(a)));
 
@@ -98,6 +112,11 @@ const isSharedAccount = computed(() => {
     return !!account && !account.isOwned;
 });
 
+const tierHint = computed(() => {
+    if (tierDeletedHint.value) return t('transactionsPage.form.tierDeletedHint');
+    return isSharedAccount.value ? t('transactionsPage.form.tierPersonalHint') : null;
+});
+
 const archivedHint = computed(() => {
     if (isEdit.value && sourceAccount.value && !sourceAccount.value.isActive) {
         return t('transactionsPage.form.archivedHint');
@@ -128,7 +147,8 @@ const form = reactive<TransactionFormFields>({
     operationDate: todayUtcYmd(),
     valueDate: null,
     paymentMethodPublicId: '',
-    categoryPublicId: ''
+    categoryPublicId: '',
+    tierPublicId: ''
 });
 
 const open = computed({
@@ -152,6 +172,7 @@ function clearFieldErrors() {
     fieldErrors.valueDate = null;
     fieldErrors.paymentMethodPublicId = null;
     fieldErrors.categoryPublicId = null;
+    fieldErrors.tierPublicId = null;
 }
 
 function payloadErrorText(code: TransactionPayloadErrorCode): string {
@@ -174,6 +195,7 @@ function formatAmountInput(value: number | null | undefined): string {
 
 function resetForm() {
     localError.message = null;
+    tierDeletedHint.value = false;
     clearFieldErrors();
     const transaction = editTransaction.value;
     if (transaction) {
@@ -186,6 +208,7 @@ function resetForm() {
         form.valueDate = transaction.valueDate;
         form.paymentMethodPublicId = transaction.paymentMethodPublicId ?? '';
         form.categoryPublicId = transaction.categoryPublicId ?? '';
+        form.tierPublicId = transaction.tierPublicId ?? '';
         return;
     }
     form.type = props.defaultType || 'depense';
@@ -197,6 +220,7 @@ function resetForm() {
     form.valueDate = null;
     form.paymentMethodPublicId = '';
     form.categoryPublicId = '';
+    form.tierPublicId = '';
 }
 
 async function loadPaymentMethodsForAccount(accountPublicId: string | null) {
@@ -305,6 +329,7 @@ async function onSave() {
             :archived-hint="archivedHint"
             :counterparty-hint="counterpartyHint"
             :category-hint="isSharedAccount ? t('transactionsPage.form.categoryPersonalHint') : null"
+            :tier-hint="tierHint"
         />
 
         <template #footer="{ close }">

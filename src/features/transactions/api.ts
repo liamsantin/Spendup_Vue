@@ -26,6 +26,8 @@ export const transactionsApi = {
         if (accountPublicId) params.set('accountPublicId', accountPublicId);
         const categoryPublicId = query.categoryPublicId?.trim();
         if (categoryPublicId) params.set('categoryPublicId', categoryPublicId);
+        const tierPublicId = query.tierPublicId?.trim();
+        if (tierPublicId) params.set('tierPublicId', tierPublicId);
         const from = query.from?.trim();
         if (from) params.set('from', from);
         const to = query.to?.trim();

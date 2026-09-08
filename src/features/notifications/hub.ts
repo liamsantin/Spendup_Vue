@@ -8,7 +8,8 @@ import type {
     InboxClearedPayload,
     NotificationConnectedPayload,
     NotificationReceivedPayload,
-    SessionEndedPayload
+    SessionEndedPayload,
+    TierChangedPayload
 } from '@/features/notifications/types';
 
 export type NotificationsHubHandlers = {
@@ -17,6 +18,7 @@ export type NotificationsHubHandlers = {
     onFriendshipChanged?: (payload: FriendshipChangedPayload) => void;
     onAccountChanged?: (payload: AccountChangedPayload) => void;
     onCategoryChanged?: (payload: CategoryChangedPayload) => void;
+    onTierChanged?: (payload: TierChangedPayload) => void;
     onInboxCleared?: (payload: InboxClearedPayload) => void;
     onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
 };
@@ -57,6 +59,7 @@ function attachHandlers(conn: HubConnection) {
     conn.off('friendshipChanged');
     conn.off('accountChanged');
     conn.off('categoryChanged');
+    conn.off('tierChanged');
     conn.off('inboxCleared');
     conn.off('sessionEnded');
 
@@ -78,6 +81,10 @@ function attachHandlers(conn: HubConnection) {
 
     conn.on('categoryChanged', (payload: CategoryChangedPayload) => {
         handlers.onCategoryChanged?.(payload);
+    });
+
+    conn.on('tierChanged', (payload: TierChangedPayload) => {
+        handlers.onTierChanged?.(payload);
     });
 
     conn.on('inboxCleared', (payload: InboxClearedPayload) => {

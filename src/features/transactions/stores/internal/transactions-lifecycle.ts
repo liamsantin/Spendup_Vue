@@ -1,4 +1,4 @@
-import { listCacheKey, type TransactionsState } from '@/features/transactions/stores/internal/transactions-state';
+import { EMPTY_LIST_QUERY, listCacheKey, type TransactionsState } from '@/features/transactions/stores/internal/transactions-state';
 import type { TransactionsCrud } from '@/features/transactions/stores/internal/transactions-crud';
 import type { TransactionsRealtime } from '@/features/transactions/stores/internal/transactions-realtime';
 import { TRANSACTION_PAGE_SIZE_DEFAULT, type ListTransactionsQuery } from '@/features/transactions/types';
@@ -20,7 +20,7 @@ export function createTransactionsLifecycle(state: TransactionsState, deps: Life
         cancelPendingLoads();
         cache.reset();
         itemsByListKey.clear();
-        activateList(listCacheKey({ accountPublicId: null, categoryPublicId: null, from: null, to: null }));
+        activateList(listCacheKey(EMPTY_LIST_QUERY));
         items.value = [];
         loading.value = false;
         loadingMore.value = false;

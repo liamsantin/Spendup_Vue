@@ -2,6 +2,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import {
+    AddressBookIcon,
     AdjustmentsHorizontalIcon,
     ArrowsExchangeIcon,
     BellIcon,
@@ -29,6 +30,7 @@ export const SHELL_NAV_IDS = {
     paymentMethods: 'payment-methods',
     gestion: 'gestion',
     categories: 'categories',
+    tiers: 'tiers',
     settings: 'settings',
     profile: 'profile',
     preferences: 'preferences',
@@ -54,6 +56,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     }
     if (path.startsWith('/app/finances/comptes') || path.startsWith('/app/finances')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.accounts };
+    }
+    if (path.startsWith('/app/gestion/tiers')) {
+        return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.tiers };
     }
     if (path.startsWith('/app/gestion/categories') || path.startsWith('/app/gestion')) {
         return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.categories };
@@ -111,6 +116,12 @@ export function useShellNav() {
             label: t('nav.items.categories'),
             icon: TagsIcon,
             to: '/app/gestion/categories'
+        },
+        {
+            id: SHELL_NAV_IDS.tiers,
+            label: t('nav.items.tiers'),
+            icon: AddressBookIcon,
+            to: '/app/gestion/tiers'
         }
     ]);
 

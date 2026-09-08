@@ -6,6 +6,7 @@ import { canWriteTransaction, canWriteTransactions, canWriteTransfer } from '@/f
 import { buildCreateTransactionPayload, buildUpdateTransactionPayload, type TransactionFormFields } from '@/features/transactions/payload';
 import { TRANSACTION_PAGE_SIZE_DEFAULT, type ListTransactionsQuery, type Transaction } from '@/features/transactions/types';
 import {
+    EMPTY_LIST_QUERY,
     listCacheKey,
     normalizeListQuery,
     parseListCacheKey,
@@ -137,6 +138,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                         const result = await transactionsApi.list({
                             accountPublicId: normalized.accountPublicId ?? undefined,
                             categoryPublicId: normalized.categoryPublicId ?? undefined,
+                            tierPublicId: normalized.tierPublicId ?? undefined,
                             from: normalized.from ?? undefined,
                             to: normalized.to ?? undefined,
                             page: 1,
@@ -200,6 +202,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             const result = await transactionsApi.list({
                 accountPublicId: query.accountPublicId ?? undefined,
                 categoryPublicId: query.categoryPublicId ?? undefined,
+                tierPublicId: query.tierPublicId ?? undefined,
                 from: query.from ?? undefined,
                 to: query.to ?? undefined,
                 page: nextPage,
@@ -335,13 +338,14 @@ export function createTransactionsCrud(state: TransactionsState) {
             await loadList({
                 accountPublicId: current.accountPublicId ?? undefined,
                 categoryPublicId: current.categoryPublicId ?? undefined,
+                tierPublicId: current.tierPublicId ?? undefined,
                 from: current.from ?? undefined,
                 to: current.to ?? undefined,
                 force: true
             }).catch(() => undefined);
             return;
         }
-        const key = listCacheKey({ accountPublicId, categoryPublicId: null, from: null, to: null });
+        const key = listCacheKey({ ...EMPTY_LIST_QUERY, accountPublicId });
         try {
             const result = await transactionsApi.list({
                 accountPublicId,
@@ -365,6 +369,7 @@ export function createTransactionsCrud(state: TransactionsState) {
         await loadList({
             accountPublicId: current.accountPublicId ?? undefined,
             categoryPublicId: current.categoryPublicId ?? undefined,
+            tierPublicId: current.tierPublicId ?? undefined,
             from: current.from ?? undefined,
             to: current.to ?? undefined,
             force

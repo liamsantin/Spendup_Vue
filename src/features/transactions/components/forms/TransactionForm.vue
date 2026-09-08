@@ -9,6 +9,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
+import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
 import { todayUtcYmd } from '@/features/transactions/format';
 import { TRANSACTION_LABEL_MAX, type TransactionType } from '@/features/transactions/types';
 import type { TransactionFormFields } from '@/features/transactions/payload';
@@ -23,6 +24,7 @@ export type TransactionFormFieldErrors = {
     valueDate?: string | null;
     paymentMethodPublicId?: string | null;
     categoryPublicId?: string | null;
+    tierPublicId?: string | null;
 };
 
 const props = withDefaults(
@@ -38,12 +40,14 @@ const props = withDefaults(
         archivedHint?: string | null;
         counterpartyHint?: string | null;
         categoryHint?: string | null;
+        tierHint?: string | null;
     }>(),
     {
         fieldErrors: () => ({}),
         archivedHint: null,
         counterpartyHint: null,
-        categoryHint: null
+        categoryHint: null,
+        tierHint: null
     }
 );
 
@@ -235,6 +239,25 @@ function onAmountInput(value: string) {
                     :error-messages="fieldErrors.categoryPublicId || undefined"
                     :hint="categoryHint || undefined"
                     :persistent-hint="!!categoryHint"
+                />
+            </v-col>
+        </v-row>
+        <v-row class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <label class="v-label font-weight-medium" for="tx-form-tier">
+                    {{ t('transactionsPage.form.fields.tier') }}
+                </label>
+            </v-col>
+            <v-col cols="12" sm="9">
+                <TierPicker
+                    id="tx-form-tier"
+                    v-model="form.tierPublicId"
+                    :label="t('transactionsPage.form.fields.tier')"
+                    hide-details="auto"
+                    :error="!!fieldErrors.tierPublicId"
+                    :error-messages="fieldErrors.tierPublicId || undefined"
+                    :hint="tierHint || undefined"
+                    :persistent-hint="!!tierHint"
                 />
             </v-col>
         </v-row>

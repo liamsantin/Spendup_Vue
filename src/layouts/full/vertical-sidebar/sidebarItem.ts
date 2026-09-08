@@ -5,6 +5,7 @@ import {
     BuildingBankIcon,
     CreditCardIcon,
     LayoutDashboardIcon,
+    AddressBookIcon,
     LockIcon,
     TagsIcon,
     UserCircleIcon,
@@ -117,6 +118,11 @@ const sidebarThemes: sidebarTheme[] = [
                 title: 'nav.items.categories',
                 icon: TagsIcon,
                 to: '/app/gestion/categories'
+            },
+            {
+                title: 'nav.items.tiers',
+                icon: AddressBookIcon,
+                to: '/app/gestion/tiers'
             }
         ]
     },

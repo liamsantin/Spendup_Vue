@@ -38,6 +38,7 @@ function transaction(partial: Partial<Transaction> = {}): Transaction {
         valueDate: null,
         paymentMethodPublicId: null,
         categoryPublicId: null,
+        tierPublicId: null,
         createdByUserPublicId: 'u-1',
         createdByDisplayName: 'Liam',
         createdByPhotoUrl: null,

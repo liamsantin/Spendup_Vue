@@ -8,14 +8,24 @@ export const TRANSACTIONS_LIST_MAX_AGE_MS = 30_000;
 export type TransactionsListQuery = {
     accountPublicId: string | null;
     categoryPublicId: string | null;
+    tierPublicId: string | null;
     from: string | null;
     to: string | null;
+};
+
+export const EMPTY_LIST_QUERY: TransactionsListQuery = {
+    accountPublicId: null,
+    categoryPublicId: null,
+    tierPublicId: null,
+    from: null,
+    to: null
 };
 
 export function normalizeListQuery(query: ListTransactionsQuery = {}): TransactionsListQuery {
     return {
         accountPublicId: query.accountPublicId?.trim() || null,
         categoryPublicId: query.categoryPublicId?.trim() || null,
+        tierPublicId: query.tierPublicId?.trim() || null,
         from: query.from?.trim() || null,
         to: query.to?.trim() || null
     };
@@ -26,7 +36,8 @@ export function listCacheKey(query: TransactionsListQuery): string {
     const from = query.from || '-';
     const to = query.to || '-';
     const category = query.categoryPublicId || 'all';
-    return `list:${account}:${from}:${to}:${category}`;
+    const tier = query.tierPublicId || 'all';
+    return `list:${account}:${from}:${to}:${category}:${tier}`;
 }
 
 export function parseListCacheKey(key: string): TransactionsListQuery {
@@ -35,7 +46,8 @@ export function parseListCacheKey(key: string): TransactionsListQuery {
         accountPublicId: !parts[1] || parts[1] === 'all' ? null : parts[1],
         from: !parts[2] || parts[2] === '-' ? null : parts[2],
         to: !parts[3] || parts[3] === '-' ? null : parts[3],
-        categoryPublicId: !parts[4] || parts[4] === 'all' ? null : parts[4]
+        categoryPublicId: !parts[4] || parts[4] === 'all' ? null : parts[4],
+        tierPublicId: !parts[5] || parts[5] === 'all' ? null : parts[5]
     };
 }
 
@@ -52,6 +64,7 @@ function queryMatchesTransaction(query: TransactionsListQuery, tx: Transaction):
     if (query.from && tx.operationDate < query.from) return false;
     if (query.to && tx.operationDate > query.to) return false;
     if (query.categoryPublicId && tx.categoryPublicId !== query.categoryPublicId) return false;
+    if (query.tierPublicId && tx.tierPublicId !== query.tierPublicId) return false;
     return true;
 }
 
@@ -61,7 +74,7 @@ function queryMatchesTransaction(query: TransactionsListQuery, tx: Transaction):
 export function createTransactionsState() {
     const items = ref<Transaction[]>([]);
     const itemsByListKey = new Map<string, TransactionsCacheEntry>();
-    const activeListKey = ref(listCacheKey({ accountPublicId: null, categoryPublicId: null, from: null, to: null }));
+    const activeListKey = ref(listCacheKey(EMPTY_LIST_QUERY));
     const page = ref(1);
     const pageSize = ref(TRANSACTION_PAGE_SIZE_DEFAULT);
     const totalCount = ref(0);
@@ -169,7 +182,7 @@ export function createTransactionsState() {
             const removed = prev.items.length - nextItems.length;
             setList(key, nextItems, { totalCount: Math.max(0, prev.totalCount - removed) });
         }
-        cache.invalidate(listCacheKey({ accountPublicId, categoryPublicId: null, from: null, to: null }));
+        cache.invalidate(listCacheKey({ ...EMPTY_LIST_QUERY, accountPublicId }));
     }
 
     function invalidateAllLists() {

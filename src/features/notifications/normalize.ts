@@ -5,7 +5,9 @@ import type {
     CategoryChange,
     CategoryChangedPayload,
     NotificationReceivedPayload,
-    NotificationsListResult
+    NotificationsListResult,
+    TierChange,
+    TierChangedPayload
 } from '@/features/notifications/types';
 
 /** Identifiants publics SignalR / metadata (UUID, slug) — refuse vide, espaces, chemins. */
@@ -30,6 +32,7 @@ const ACCOUNT_CHANGES = new Set<AccountChange>([
 ]);
 
 const CATEGORY_CHANGES = new Set<CategoryChange>(['categoryCreated', 'categoryUpdated', 'categoryDeleted']);
+const TIER_CHANGES = new Set<TierChange>(['tierCreated', 'tierUpdated', 'tierDeleted']);
 
 /** Normalise un publicId (trim + charset) ; `null` si invalide. */
 export function normalizePublicId(value: unknown): string | null {
@@ -100,6 +103,20 @@ export function parseCategoryChangedPayload(raw: unknown): CategoryChangedPayloa
     const categoryPublicId = normalizePublicId(payload.categoryPublicId);
     if (!categoryPublicId) return null;
     return { change: change as CategoryChange, categoryPublicId };
+}
+
+/**
+ * Valide un payload SignalR `tierChanged` (change connu + publicId).
+ * @returns Payload normalisé, ou `null` si malformé.
+ */
+export function parseTierChangedPayload(raw: unknown): TierChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!TIER_CHANGES.has(change as TierChange)) return null;
+    const tierPublicId = normalizePublicId(payload.tierPublicId);
+    if (!tierPublicId) return null;
+    return { change: change as TierChange, tierPublicId };
 }
 
 /** Normalise un item inbox / SignalR (metadata string → objet). */

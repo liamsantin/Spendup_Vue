@@ -3,7 +3,8 @@ import type {
     AppNotification,
     AccountChangedPayload,
     CategoryChangedPayload,
-    FriendshipChangedPayload
+    FriendshipChangedPayload,
+    TierChangedPayload
 } from '@/features/notifications/types';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -35,6 +36,7 @@ export function createNotificationsState() {
     const friendshipChangeListeners = new Set<(payload: FriendshipChangedPayload) => void>();
     const accountChangeListeners = new Set<(payload: AccountChangedPayload) => void>();
     const categoryChangeListeners = new Set<(payload: CategoryChangedPayload) => void>();
+    const tierChangeListeners = new Set<(payload: TierChangedPayload) => void>();
     const liveFriendChips = ref<LiveFriendChip[]>([]);
 
     const hasUnread = computed(() => unreadCount.value > 0);
@@ -89,6 +91,7 @@ export function createNotificationsState() {
         friendshipChangeListeners,
         accountChangeListeners,
         categoryChangeListeners,
+        tierChangeListeners,
         liveFriendChips,
         hasUnread,
         badgeContent,

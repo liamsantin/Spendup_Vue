@@ -45,6 +45,7 @@
             "transactions": "Transactions",
             "paymentMethods": "Payment methods",
             "categories": "Categories",
+            "tiers": "Counterparties",
             "profile": "Profile",
             "preferences": "Preferences",
             "notificationSettings": "Notifications",
@@ -691,6 +692,131 @@
             }
         }
     },
+    "tiersPage": {
+        "title": "Counterparties",
+        "subtitle": "Your personal directory of counterparties: merchants, banks, employers, landlords, contacts.",
+        "loadMore": "Load more",
+        "count": "{count} counterparty | {count} counterparty | {count} counterparties",
+        "searchPlaceholder": "Search by name…",
+        "empty": {
+            "list": "No counterparties yet. Add your first one, for example your bank.",
+            "filtered": "No counterparty matches these filters."
+        },
+        "actions": {
+            "filter": "Filter",
+            "create": "Add",
+            "edit": "Edit",
+            "delete": "Delete",
+            "seeTransactions": "See transactions",
+            "clearSearch": "Clear search"
+        },
+        "filters": {
+            "nature": "Nature",
+            "allNatures": "All natures",
+            "role": "Role",
+            "allRoles": "All roles"
+        },
+        "natures": {
+            "person": "Person",
+            "company": "Company",
+            "organization": "Organization",
+            "administration": "Administration",
+            "unknown": "Unspecified"
+        },
+        "roles": {
+            "contactPersonnel": "Personal contact",
+            "banque": "Bank",
+            "assurance": "Insurance",
+            "employeur": "Employer",
+            "bailleur": "Landlord",
+            "service": "Service",
+            "fournisseur": "Supplier",
+            "administration": "Administration",
+            "medecin": "Doctor",
+            "preteur": "Lender",
+            "emprunteur": "Borrower",
+            "other": "Other"
+        },
+        "list": {
+            "noRoles": "No role",
+            "person": "{firstName} {lastName}",
+            "birthDate": "born {date}"
+        },
+        "deleteModal": {
+            "title": "Delete this counterparty?",
+            "body": "It will disappear from the directory and the selectors. The name can be reused.",
+            "blockedTitle": "Counterparty in use"
+        },
+        "errors": {
+            "notFound": "This counterparty is no longer available."
+        },
+        "form": {
+            "createTitle": "New counterparty",
+            "editTitle": "Edit counterparty",
+            "subtitle": "The nature determines the details panel. Roles are free and can be combined.",
+            "natureChangeHint": "Changing the nature clears the previous panel details.",
+            "noRoles": "No role selected",
+            "rolesHint": "A person can be both landlord and lender.",
+            "sections": {
+                "identity": "Identity",
+                "contact": "Contact",
+                "person": "Person details",
+                "company": "Company details",
+                "organization": "Organization details"
+            },
+            "fields": {
+                "name": "Name",
+                "nature": "Nature",
+                "roles": "Roles",
+                "email": "Email",
+                "phone": "Phone",
+                "website": "Website",
+                "notes": "Notes",
+                "firstName": "First name",
+                "lastName": "Last name",
+                "birthDate": "Birth date",
+                "legalName": "Legal name",
+                "vatNumber": "VAT number",
+                "companyRegistrationNumber": "Company registration number",
+                "officialName": "Official name",
+                "organizationType": "Organization type"
+            },
+            "placeholders": {
+                "name": "E.g. Migros",
+                "email": "contact@example.ch",
+                "phone": "+41 58 570 00 00",
+                "website": "example.ch",
+                "notes": "Useful information, opening hours, customer reference…",
+                "birthDate": "Birth date",
+                "vatNumber": "CHE-123.456.789 VAT",
+                "companyRegistrationNumber": "CHE-123.456.789",
+                "organizationType": "Association, foundation, club…"
+            },
+            "errors": {
+                "nameRequired": "The counterparty name is required.",
+                "nameTooLong": "The counterparty name exceeds 200 characters.",
+                "nameDuplicate": "A counterparty already has this name.",
+                "natureInvalid": "Invalid counterparty nature.",
+                "emailInvalid": "The email address is invalid (expected format: local@domain.tld).",
+                "emailTooLong": "The email address exceeds 180 characters.",
+                "phoneInvalid": "Phone accepts digits, spaces, + - . ( ) and at least 3 digits.",
+                "phoneTooLong": "The phone number exceeds 50 characters.",
+                "websiteInvalid": "The website must be a valid http(s) URL (e.g. migros.ch).",
+                "notesTooLong": "Notes exceed 4000 characters.",
+                "rolesInvalid": "A role is unknown.",
+                "rolesDuplicate": "A role is duplicated.",
+                "personFirstNameTooLong": "First name exceeds 100 characters.",
+                "personLastNameTooLong": "Last name exceeds 100 characters.",
+                "personBirthDateInvalid": "The birth date is invalid.",
+                "personBirthDateFuture": "The birth date cannot be in the future.",
+                "companyLegalNameTooLong": "Legal name exceeds 200 characters.",
+                "companyVatNumberTooLong": "VAT number exceeds 100 characters.",
+                "companyRegistrationNumberTooLong": "Company registration number exceeds 100 characters.",
+                "organizationOfficialNameTooLong": "Official name exceeds 200 characters.",
+                "organizationTypeTooLong": "Organization type exceeds 100 characters."
+            }
+        }
+    },
     "transactionsPage": {
         "title": "Transactions",
         "titleForAccount": "Account transactions: {name}",
@@ -715,6 +841,8 @@
             "allTypes": "All types",
             "category": "Category",
             "allCategories": "All categories",
+            "tier": "Counterparty",
+            "allTiers": "All counterparties",
             "from": "From",
             "to": "To"
         },
@@ -728,7 +856,8 @@
             "createdByMe": "Entered by you",
             "createdBy": "Entered by {name}",
             "createdByUnknown": "Entered by a user",
-            "myCategory": "My category: {name}"
+            "myCategory": "My category: {name}",
+            "myTier": "My counterparty: {name}"
         },
         "deleteModal": {
             "title": "Delete this transaction?",
@@ -747,6 +876,13 @@
             "noPaymentMethod": "None",
             "noCategory": "None",
             "categoryPersonalHint": "This category is only visible to you, even on a shared account.",
+            "noTier": "None",
+            "tierSearchPlaceholder": "Search a counterparty…",
+            "tierNoResults": "No counterparty matches.",
+            "tierCreate": "Create “{name}”",
+            "tierCreateNew": "New counterparty",
+            "tierPersonalHint": "This counterparty is only visible to you, even on a shared account.",
+            "tierDeletedHint": "The selected counterparty was deleted. The field has been cleared.",
             "archivedHint": "This account is archived. Restore it to edit its transactions.",
             "noCounterpartyOption": "No target account",
             "noCounterpartyHint": "No other editable account is available. Create a second account to make a transfer.",
@@ -761,7 +897,8 @@
                 "operationDate": "Operation date",
                 "valueDate": "Value date",
                 "paymentMethod": "Payment method",
-                "category": "My category"
+                "category": "My category",
+                "tier": "My counterparty"
             },
             "errors": {
                 "typeInvalid": "Invalid transaction type (expense, income, transfer).",
