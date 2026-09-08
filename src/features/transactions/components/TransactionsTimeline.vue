@@ -11,7 +11,7 @@ import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import { formatOperationDate } from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
-import { TRANSACTION_TYPES, type Transaction, type TransactionType } from '@/features/transactions/types';
+import { TRANSACTION_SEARCH_MAX, TRANSACTION_TYPES, type Transaction, type TransactionType } from '@/features/transactions/types';
 import { TIER_PAGE_SIZE_MAX } from '@/features/tiers/types';
 import TransactionListItem from '@/features/transactions/components/list/TransactionListItem.vue';
 import TransactionFormModal from '@/features/transactions/components/modals/TransactionFormModal.vue';
@@ -58,6 +58,10 @@ const filterFrom = computed(() => (props.lockedAccountPublicId ? null : queryStr
 const filterTo = computed(() => (props.lockedAccountPublicId ? null : queryString('to')));
 const filterCategoryId = computed(() => (props.lockedAccountPublicId ? null : queryString('category')));
 const filterTierId = computed(() => (props.lockedAccountPublicId ? null : queryString('tier')));
+const filterSearch = computed(() => {
+    if (props.lockedAccountPublicId) return null;
+    return queryString('q')?.slice(0, TRANSACTION_SEARCH_MAX) ?? null;
+});
 const filterType = computed<TransactionType | null>(() => {
     if (props.lockedAccountPublicId) return null;
     const raw = queryString('type');
@@ -66,8 +70,24 @@ const filterType = computed<TransactionType | null>(() => {
 
 const visibleItems = computed(() => {
     const type = filterType.value;
-    if (!type) return store.items;
-    return store.items.filter((item) => item.type === type);
+    const needle = filterSearch.value?.trim().toLowerCase() ?? '';
+    return store.items.filter((item) => {
+        if (type && item.type !== type) return false;
+        if (!needle) return true;
+        if (item.label.toLowerCase().includes(needle)) return true;
+        const tierName = item.tierPublicId ? tiersStore.findByPublicId(item.tierPublicId)?.name : null;
+        if (tierName?.toLowerCase().includes(needle)) return true;
+        const categoryName = item.categoryPublicId ? categoriesStore.findByPublicId(item.categoryPublicId)?.name : null;
+        if (categoryName?.toLowerCase().includes(needle)) return true;
+        return false;
+    });
+});
+
+const emptyCopy = computed(() => {
+    if (filterSearch.value) return t('transactionsPage.empty.filtered');
+    if (filterType.value) return t('transactionsPage.empty.byType', { type: t(`transactionsPage.types.${filterType.value}`) });
+    if (filterAccountId.value) return t('transactionsPage.empty.account');
+    return t('transactionsPage.empty.timeline');
 });
 
 const canCreate = computed(() => {
@@ -139,7 +159,8 @@ async function loadTimeline(force = false) {
                         ...(filterType.value ? { type: filterType.value } : {}),
                         ...(filterFrom.value ? { from: filterFrom.value } : {}),
                         ...(filterTo.value ? { to: filterTo.value } : {}),
-                        ...(filterCategoryId.value ? { category: filterCategoryId.value } : {})
+                        ...(filterCategoryId.value ? { category: filterCategoryId.value } : {}),
+                        ...(filterSearch.value ? { q: filterSearch.value } : {})
                     }
                 });
             }
@@ -213,13 +234,7 @@ async function confirmDelete() {
             <span class="su-spin" />
         </div>
         <div v-else-if="!visibleItems.length" class="su-empty">
-            {{
-                filterType
-                    ? t('transactionsPage.empty.byType', { type: t(`transactionsPage.types.${filterType}`) })
-                    : filterAccountId
-                      ? t('transactionsPage.empty.account')
-                      : t('transactionsPage.empty.timeline')
-            }}
+            {{ emptyCopy }}
         </div>
         <div v-else class="su-stack">
             <section v-for="group in dateGroups" :key="group.date" class="su-surface transaction-timeline__group">

@@ -8,7 +8,7 @@
 
 | Couche   | Détail                                                                           |
 | -------- | -------------------------------------------------------------------------------- |
-| Route    | `/app/gestion/tiers` → `AppTiersPage` (Page Shell)                               |
+| Route    | `/app/gestion/tiers` → `AppTiersPage` (Page Shell + onglets nature)              |
 | Nav      | Sidebar **Gestion** → sous-menu **Tiers**                                        |
 | Store    | `useTiersStore` (split `stores/internal/` : state · crud · realtime · lifecycle) |
 | API      | `tiersApi` via **`fetchWrapper`**                                                |
@@ -80,8 +80,8 @@ Le formulaire n’affiche qu’un volet, selon la nature. À la création, le ty
 
 ## Parcours couverts
 
-1. Gestion → Tiers : liste paginée, recherche par nom (debounce), filtres nature / rôle (URL `?q&nature&role`), création, édition, suppression (400 affiché tel quel + lien « Voir les transactions »).
-2. Formulaire tier : nature qui commute le volet, rôles multi-sélection, contact.
+1. Gestion → Tiers : onglets Tous / natures (`?nature=`), liste paginée, recherche par nom (debounce), filtre rôle (`?q&role`), création (menu sur Tous, type de l’onglet sinon), édition, suppression (400 affiché tel quel + lien « Voir les transactions »).
+2. Formulaire tier : à la création le type est choisi (menu, onglet ou première étape) ; les rôles ne sont demandés qu’en édition.
 3. Formulaire transaction : sélecteur de contrepartie avec recherche et création rapide.
 4. Liste transactions : badge contrepartie, filtre par tier.
 

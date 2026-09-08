@@ -20,20 +20,30 @@ function onCreate() {
     if (!canCreate.value || store.acting) return;
     walletRef.value?.openCreate();
 }
+
+function resetFilters() {
+    showInactive.value = true;
+}
 </script>
 
 <template>
     <AppPageShell :title="t('paymentMethodsPage.title')" :subtitle="t('paymentMethodsPage.subtitle')">
-        <template #actions>
-            <AppDropdownFilter :label="t('paymentMethodsPage.actions.filter')">
-                <v-list-item>
-                    <AppSwitch v-model="showInactive" :label="t('paymentMethodsPage.filters.showInactive')" />
-                </v-list-item>
-            </AppDropdownFilter>
-            <button type="button" class="su-btn su-btn--ink" :disabled="!canCreate || store.acting" @click="onCreate">
-                <PlusIcon :size="16" stroke-width="1.6" />
-                {{ t('paymentMethodsPage.actions.create') }}
-            </button>
+        <template #toolbar>
+            <div class="su-toolbar__actions">
+                <AppDropdownFilter
+                    :label="t('paymentMethodsPage.actions.filter')"
+                    :reset-disabled="showInactive"
+                    @reset="resetFilters"
+                >
+                    <v-list-item>
+                        <AppSwitch v-model="showInactive" :label="t('paymentMethodsPage.filters.showInactive')" />
+                    </v-list-item>
+                </AppDropdownFilter>
+                <button type="button" class="su-btn su-btn--ink" :disabled="!canCreate || store.acting" @click="onCreate">
+                    <PlusIcon :size="16" stroke-width="1.6" />
+                    {{ t('paymentMethodsPage.actions.create') }}
+                </button>
+            </div>
         </template>
 
         <PaymentMethodsWallet ref="walletRef" :show-inactive="showInactive" />

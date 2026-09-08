@@ -20,7 +20,8 @@
         "open": "Ouvrir",
         "refresh": "Actualiser",
         "more": "Plus d’actions",
-        "skipToContent": "Aller au contenu"
+        "skipToContent": "Aller au contenu",
+        "reset": "Réinitialiser"
     },
     "shell": {
         "save": "Enregistrer",
@@ -759,7 +760,18 @@
         "searchPlaceholder": "Rechercher par nom…",
         "empty": {
             "list": "Aucun tiers pour l’instant. Ajoutez votre première contrepartie, par exemple votre banque.",
-            "filtered": "Aucun tiers ne correspond à ces filtres."
+            "filtered": "Aucun tiers ne correspond à ces filtres.",
+            "byNature": {
+                "person": "Aucune personne pour l’instant.",
+                "company": "Aucune entreprise pour l’instant.",
+                "organization": "Aucune organisation pour l’instant.",
+                "administration": "Aucune administration pour l’instant.",
+                "unknown": "Aucun tiers non précisé pour l’instant."
+            }
+        },
+        "tabs": {
+            "label": "Type de tiers",
+            "all": "Tous"
         },
         "actions": {
             "filter": "Filtre",
@@ -917,13 +929,16 @@
         "empty": {
             "timeline": "Aucune transaction pour l’instant.",
             "account": "Aucune transaction sur ce compte.",
-            "byType": "Aucune transaction de type « {type} »."
+            "byType": "Aucune transaction de type « {type} ».",
+            "filtered": "Aucune transaction ne correspond à cette recherche."
         },
+        "searchPlaceholder": "Rechercher par libellé…",
         "actions": {
             "filter": "Filtre",
             "create": "Ajouter",
             "edit": "Modifier",
-            "delete": "Supprimer"
+            "delete": "Supprimer",
+            "clearSearch": "Effacer la recherche"
         },
         "filters": {
             "account": "Compte",

@@ -1,26 +1,26 @@
 # Pattern — App Page Shell
 
 > Code : `src/components/shared/page-shell/AppPageShell.vue`  
-> Réf. : `views/app/notifications/AppNotificationsPage.vue`  
-> Multi-onglets : `app-tabs-shell.md` · Relu : 2026-08-13
+> Réf. : `views/app/gestion/tiers/AppTiersPage.vue`, `views/app/finances/transactions/AppTransactionsPage.vue`  
+> Multi-onglets de module : `app-tabs-shell.md` · Relu : 2026-09-08
 
-## Qu’est-ce que c’est ?
+## Grille des pages liste
 
-Même card pleine hauteur que App Tabs Shell, header = **titre** (icône + titre + sous-titre) au lieu de `v-tabs`.
+| Zone | Contenu | Slot |
+| ---- | ------- | ---- |
+| Hero | Titre à gauche, **onglets de vue** à droite, sous-titre dessous | `#tabs` |
+| Barre d’outils | Recherche à gauche (optionnelle), **Filtre** puis **Ajouter** à droite | `#toolbar` |
+| Corps | Liste / vide / chargement | défaut |
+| Hero actions | Inbox, Enregistrer / Annuler — **pas** Filtre/Ajouter | `#actions` |
 
-| Zone   | Rôle                    | Comportement                      |
-| ------ | ----------------------- | --------------------------------- |
-| Header | Titre + slot `#actions` | Fixe, fond `grey100`              |
-| Body   | Slot défaut             | Seul scroll                       |
-| Footer | Optionnel               | Masqué par défaut (`hideActions`) |
+Les onglets changent la famille d’objets (nature, type). Filtre affine la vue courante. Si une pièce manque, la zone reste (ex. Transactions : pas de recherche, Filtre + Ajouter à droite).
 
-## Props principales
+## Props
 
 `title`, `subtitle?`, `icon?`, `hideActions` (défaut `true`).
 
-Slot `#actions` : actions header (ex. « Tout lu »).
-
 ## Quand l’utiliser
 
-- Pages `/app` mono-contenu (inbox, listes…).
-- Paramètres multi-sections → préférer **App Tabs Shell** (même un seul onglet).
+- Pages `/app` liste métier (Tiers, Transactions, Catégories, Moyens de paiement).
+- Paramètres dirty → `#actions` Enregistrer / Annuler (`hideActions: false`).
+- Amis / Comptes (changement de module) → **App Tabs Shell**.

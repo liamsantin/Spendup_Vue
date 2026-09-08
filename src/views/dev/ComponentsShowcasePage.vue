@@ -208,7 +208,7 @@ const accordionOpen = ref(false);
                 </AppGlassCard>
 
                 <AppGlassCard title="Filtre" subtitle="AppDropdownFilter.">
-                    <AppDropdownFilter label="Filtres">
+                    <AppDropdownFilter label="Filtres" :reset-disabled="!filterHidden" @reset="filterHidden = false">
                         <AppSwitch v-model="filterHidden" label="Masquer les archivés" class="px-3 py-2" />
                     </AppDropdownFilter>
                 </AppGlassCard>

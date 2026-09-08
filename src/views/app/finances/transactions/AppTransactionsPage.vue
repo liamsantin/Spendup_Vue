@@ -1,17 +1,25 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon } from 'vue-tabler-icons';
+import { PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
-import { TransactionsTimeline, TRANSACTION_TYPES, canWriteTransactions, useTransactionsStore } from '@/features/transactions';
+import {
+    TransactionsTimeline,
+    TRANSACTION_SEARCH_MAX,
+    TRANSACTION_TYPES,
+    canWriteTransactions,
+    useTransactionsStore
+} from '@/features/transactions';
 import type { TransactionType } from '@/features/transactions';
 import { useAccountsStore } from '@/features/accounts';
 import { categorySelectItems, useCategoriesStore } from '@/features/categories';
 import { tierSelectItems, useTiersStore } from '@/features/tiers';
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 const { t } = useI18n();
 const route = useRoute();
@@ -21,6 +29,14 @@ const accountsStore = useAccountsStore();
 const categoriesStore = useCategoriesStore();
 const tiersStore = useTiersStore();
 const timelineRef = ref<{ openCreate: () => void } | null>(null);
+
+function queryString(name: string): string {
+    const raw = route.query[name];
+    return typeof raw === 'string' ? raw : '';
+}
+
+const searchInput = ref(queryString('q').slice(0, TRANSACTION_SEARCH_MAX));
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 const canCreate = computed(() => accountsStore.accounts.some((a) => canWriteTransactions(a)));
 
@@ -41,11 +57,6 @@ const tierItems = computed(() => {
     }
     return items;
 });
-
-function queryString(name: string): string {
-    const raw = route.query[name];
-    return typeof raw === 'string' ? raw : '';
-}
 
 function parseType(raw: string): TransactionType | '' {
     return TRANSACTION_TYPES.includes(raw as TransactionType) ? (raw as TransactionType) : '';
@@ -89,12 +100,14 @@ const filterTierId = computed({
 
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
+    const q = 'q' in patch ? patch.q : queryString('q') || undefined;
     const account = 'account' in patch ? patch.account : queryString('account') || undefined;
     const type = 'type' in patch ? patch.type : queryString('type') || undefined;
     const from = 'from' in patch ? patch.from : queryString('from') || undefined;
     const to = 'to' in patch ? patch.to : queryString('to') || undefined;
     const category = 'category' in patch ? patch.category : queryString('category') || undefined;
     const tier = 'tier' in patch ? patch.tier : queryString('tier') || undefined;
+    if (q) next.q = q.slice(0, TRANSACTION_SEARCH_MAX);
     if (account) next.account = account;
     if (type && TRANSACTION_TYPES.includes(type as TransactionType)) next.type = type;
     if (from) next.from = from;
@@ -104,10 +117,55 @@ function patchQuery(patch: Record<string, string | undefined>) {
     void router.replace({ path: '/app/finances/transactions', query: next });
 }
 
+function onSearchInput(value: string) {
+    searchInput.value = value.slice(0, TRANSACTION_SEARCH_MAX);
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        searchTimer = null;
+        patchQuery({ q: searchInput.value.trim() || undefined });
+    }, SEARCH_DEBOUNCE_MS);
+}
+
+function clearSearch() {
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = null;
+    searchInput.value = '';
+    patchQuery({ q: undefined });
+}
+
 function onCreate() {
     if (!canCreate.value || store.acting) return;
     timelineRef.value?.openCreate();
 }
+
+function resetFilters() {
+    patchQuery({
+        account: undefined,
+        category: undefined,
+        tier: undefined,
+        from: undefined,
+        to: undefined
+    });
+}
+
+const filtersActive = computed(
+    () => !!(filterAccountId.value || filterCategoryId.value || filterTierId.value || filterFrom.value || filterTo.value)
+);
+
+onUnmounted(() => {
+    if (searchTimer) clearTimeout(searchTimer);
+});
+
+watch(
+    () => queryString('q'),
+    (value) => {
+        if (searchTimer) return;
+        const next = value.slice(0, TRANSACTION_SEARCH_MAX);
+        if (next !== searchInput.value.trim() && next !== searchInput.value) {
+            searchInput.value = next;
+        }
+    }
+);
 </script>
 
 <template>
@@ -130,41 +188,70 @@ function onCreate() {
             </nav>
         </template>
 
-        <template #actions>
-            <AppDropdownFilter :label="t('transactionsPage.actions.filter')" :min-width="300">
-                <div class="pa-3 d-flex flex-column ga-3">
-                    <AppSelect
-                        v-model="filterAccountId"
-                        :items="accountItems"
-                        :label="t('transactionsPage.filters.account')"
-                        hide-details
-                    />
-                    <AppSelect
-                        v-model="filterCategoryId"
-                        :items="categoryItems"
-                        :label="t('transactionsPage.filters.category')"
-                        hide-details
-                    />
-                    <AppSelect v-model="filterTierId" :items="tierItems" :label="t('transactionsPage.filters.tier')" hide-details />
-                    <v-divider class="my-1" />
-                    <AppDatePicker
-                        v-model="filterFrom"
-                        :label="t('transactionsPage.filters.from')"
-                        :placeholder="t('transactionsPage.filters.from')"
-                        :max="filterTo || undefined"
-                    />
-                    <AppDatePicker
-                        v-model="filterTo"
-                        :label="t('transactionsPage.filters.to')"
-                        :placeholder="t('transactionsPage.filters.to')"
-                        :min="filterFrom || undefined"
-                    />
-                </div>
-            </AppDropdownFilter>
-            <button type="button" class="su-btn su-btn--ink" :disabled="!canCreate || store.acting" @click="onCreate">
-                <PlusIcon :size="16" stroke-width="1.6" />
-                {{ t('transactionsPage.actions.create') }}
-            </button>
+        <template #toolbar>
+            <label class="su-search su-search--discover">
+                <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
+                <input
+                    class="su-search__input"
+                    type="search"
+                    :value="searchInput"
+                    :maxlength="TRANSACTION_SEARCH_MAX"
+                    :placeholder="t('transactionsPage.searchPlaceholder')"
+                    :aria-label="t('transactionsPage.searchPlaceholder')"
+                    autocomplete="off"
+                    @input="onSearchInput(($event.target as HTMLInputElement).value)"
+                />
+                <button
+                    v-if="searchInput"
+                    type="button"
+                    class="su-search__orb"
+                    :aria-label="t('transactionsPage.actions.clearSearch')"
+                    @click="clearSearch"
+                >
+                    <XIcon :size="16" stroke-width="1.8" />
+                </button>
+            </label>
+            <div class="su-toolbar__actions">
+                <AppDropdownFilter
+                    :label="t('transactionsPage.actions.filter')"
+                    :min-width="300"
+                    :reset-disabled="!filtersActive"
+                    @reset="resetFilters"
+                >
+                    <div class="pa-3 d-flex flex-column ga-3">
+                        <AppSelect
+                            v-model="filterAccountId"
+                            :items="accountItems"
+                            :label="t('transactionsPage.filters.account')"
+                            hide-details
+                        />
+                        <AppSelect
+                            v-model="filterCategoryId"
+                            :items="categoryItems"
+                            :label="t('transactionsPage.filters.category')"
+                            hide-details
+                        />
+                        <AppSelect v-model="filterTierId" :items="tierItems" :label="t('transactionsPage.filters.tier')" hide-details />
+                        <v-divider class="my-1" />
+                        <AppDatePicker
+                            v-model="filterFrom"
+                            :label="t('transactionsPage.filters.from')"
+                            :placeholder="t('transactionsPage.filters.from')"
+                            :max="filterTo || undefined"
+                        />
+                        <AppDatePicker
+                            v-model="filterTo"
+                            :label="t('transactionsPage.filters.to')"
+                            :placeholder="t('transactionsPage.filters.to')"
+                            :min="filterFrom || undefined"
+                        />
+                    </div>
+                </AppDropdownFilter>
+                <button type="button" class="su-btn su-btn--ink" :disabled="!canCreate || store.acting" @click="onCreate">
+                    <PlusIcon :size="16" stroke-width="1.6" />
+                    {{ t('transactionsPage.actions.create') }}
+                </button>
+            </div>
         </template>
 
         <TransactionsTimeline ref="timelineRef" />

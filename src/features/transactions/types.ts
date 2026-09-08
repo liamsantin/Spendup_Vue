@@ -79,5 +79,6 @@ export type UpdateTransactionPayload = {
 export const TRANSACTION_TYPES: TransactionType[] = ['depense', 'revenu', 'transfert'];
 
 export const TRANSACTION_LABEL_MAX = 255;
+export const TRANSACTION_SEARCH_MAX = 100;
 export const TRANSACTION_PAGE_SIZE_DEFAULT = 50;
 export const TRANSACTION_PAGE_SIZE_MAX = 200;

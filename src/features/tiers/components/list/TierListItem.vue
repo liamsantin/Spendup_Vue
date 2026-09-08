@@ -128,7 +128,12 @@ function onDoubleClick(event: MouseEvent) {
     box-sizing: border-box;
     border-radius: 12px;
     color: inherit;
-    transition: background 0.2s ease;
+    position: relative;
+    z-index: 0;
+    transition:
+        transform 0.5s var(--spring),
+        box-shadow 0.45s var(--ease),
+        background 0.3s var(--ease);
 }
 
 .tier-row--editable {
@@ -137,6 +142,22 @@ function onDoubleClick(event: MouseEvent) {
 
 .tier-row:hover {
     background: var(--surface-hover-soft);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .tier-row:hover {
+        z-index: 1;
+        transform: scale(1.012);
+        box-shadow:
+            0 1px 2px rgba(16, 16, 20, 0.04),
+            0 12px 28px -16px rgba(16, 16, 20, 0.18);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tier-row {
+        transition: none;
+    }
 }
 
 .tier-row__icon {

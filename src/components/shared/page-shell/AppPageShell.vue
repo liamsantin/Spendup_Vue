@@ -1,7 +1,9 @@
 <script setup lang="ts">
 /**
- * Shell de page simple — hero verre (titre + onglets optionnels + actions, sous-titre dessous) + corps.
- * Même alignement vertical du bloc de droite que AppTabsShell.
+ * Shell de page liste — titre + onglets de vue, barre d’outils optionnelle, corps scrollable.
+ * `#tabs` : famille d’objets (à droite du titre).
+ * `#toolbar` : recherche / filtre / ajouter (ligne sous le sous-titre).
+ * `#actions` : actions du hero (inbox, enregistrer) — pas Filtre/Ajouter des listes.
  */
 import { useI18n } from 'vue-i18n';
 
@@ -56,6 +58,9 @@ const emit = defineEmits<{
                 <slot name="tabs" />
             </div>
             <p v-if="subtitle">{{ subtitle }}</p>
+            <div v-if="$slots.toolbar" class="su-toolbar">
+                <slot name="toolbar" />
+            </div>
         </header>
 
         <div class="su-body">
@@ -64,13 +69,11 @@ const emit = defineEmits<{
     </div>
 </template>
 <style scoped>
-/* Tabs à droite des actions : le bloc actions absorbe l’espace, pas les onglets. */
 .su-hero__top--with-tabs > .su-hero__actions {
     margin-left: auto;
 }
 
-.su-hero__top--with-tabs :deep(.su-tabs) {
+.su-hero__top--with-tabs:has(.su-hero__actions) :deep(.su-tabs) {
     margin-left: 0;
 }
 </style>
-

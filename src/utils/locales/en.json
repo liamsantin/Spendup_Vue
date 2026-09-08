@@ -20,7 +20,8 @@
         "open": "Open",
         "refresh": "Refresh",
         "more": "More actions",
-        "skipToContent": "Skip to content"
+        "skipToContent": "Skip to content",
+        "reset": "Reset"
     },
     "shell": {
         "save": "Save",
@@ -759,7 +760,18 @@
         "searchPlaceholder": "Search by name…",
         "empty": {
             "list": "No counterparties yet. Add your first one, for example your bank.",
-            "filtered": "No counterparty matches these filters."
+            "filtered": "No counterparty matches these filters.",
+            "byNature": {
+                "person": "No people yet.",
+                "company": "No companies yet.",
+                "organization": "No organizations yet.",
+                "administration": "No administrations yet.",
+                "unknown": "No unspecified counterparties yet."
+            }
+        },
+        "tabs": {
+            "label": "Counterparty type",
+            "all": "All"
         },
         "actions": {
             "filter": "Filter",
@@ -917,13 +929,16 @@
         "empty": {
             "timeline": "No transactions yet.",
             "account": "No transactions on this account.",
-            "byType": "No “{type}” transactions."
+            "byType": "No “{type}” transactions.",
+            "filtered": "No transaction matches this search."
         },
+        "searchPlaceholder": "Search by label…",
         "actions": {
             "filter": "Filter",
             "create": "Add",
             "edit": "Edit",
-            "delete": "Delete"
+            "delete": "Delete",
+            "clearSearch": "Clear search"
         },
         "filters": {
             "account": "Account",

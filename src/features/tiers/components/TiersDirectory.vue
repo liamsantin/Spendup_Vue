@@ -2,7 +2,6 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { SearchIcon, XIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
@@ -11,9 +10,6 @@ import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { TIER_SEARCH_MAX, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
 import TierListItem from '@/features/tiers/components/list/TierListItem.vue';
 import TierFormModal from '@/features/tiers/components/modals/TierFormModal.vue';
-import TierCreateMenu from '@/features/tiers/components/TierCreateMenu.vue';
-
-const SEARCH_DEBOUNCE_MS = 300;
 
 const { t } = useI18n();
 const route = useRoute();
@@ -26,8 +22,6 @@ const editTarget = ref<Tier | null>(null);
 const deleteTarget = ref<Tier | null>(null);
 const deleteBlockedMessage = ref<string | null>(null);
 const localError = ref<string | null>(null);
-const searchInput = ref('');
-let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 const editOpen = computed({
     get: () => !!editTarget.value,
@@ -60,34 +54,12 @@ const filterRole = computed<TierRole | null>(() => {
     const raw = queryString('role');
     return isTierRole(raw) ? raw : null;
 });
-const hasFilters = computed(() => !!(filterSearch.value || filterNature.value || filterRole.value));
-
-function patchQuery(patch: Record<string, string | undefined>) {
-    const next: Record<string, string> = {};
-    const q = 'q' in patch ? patch.q : (filterSearch.value ?? undefined);
-    const nature = 'nature' in patch ? patch.nature : (filterNature.value ?? undefined);
-    const role = 'role' in patch ? patch.role : (filterRole.value ?? undefined);
-    if (q) next.q = q;
-    if (nature) next.nature = nature;
-    if (role) next.role = role;
-    void router.replace({ path: route.path, query: next });
-}
-
-function onSearchInput(value: string) {
-    searchInput.value = value;
-    if (searchTimer) clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-        searchTimer = null;
-        patchQuery({ q: value.trim() || undefined });
-    }, SEARCH_DEBOUNCE_MS);
-}
-
-function clearSearch() {
-    if (searchTimer) clearTimeout(searchTimer);
-    searchTimer = null;
-    searchInput.value = '';
-    patchQuery({ q: undefined });
-}
+const hasExtraFilters = computed(() => !!(filterSearch.value || filterRole.value));
+const emptyCopy = computed(() => {
+    if (hasExtraFilters.value) return t('tiersPage.empty.filtered');
+    if (filterNature.value) return t(`tiersPage.empty.byNature.${filterNature.value}`);
+    return t('tiersPage.empty.list');
+});
 
 async function loadDirectory(force = false) {
     localError.value = null;
@@ -109,22 +81,17 @@ function onVisibilityChange() {
 }
 
 onMounted(() => {
-    searchInput.value = filterSearch.value ?? '';
     document.addEventListener('visibilitychange', onVisibilityChange);
     void loadDirectory().catch(() => undefined);
 });
 
 onUnmounted(() => {
     document.removeEventListener('visibilitychange', onVisibilityChange);
-    if (searchTimer) clearTimeout(searchTimer);
 });
 
 watch(
     () => [filterSearch.value, filterNature.value, filterRole.value] as const,
     () => {
-        if ((filterSearch.value ?? '') !== searchInput.value.trim() && !searchTimer) {
-            searchInput.value = filterSearch.value ?? '';
-        }
         void loadDirectory().catch(() => undefined);
     }
 );
@@ -167,7 +134,6 @@ async function confirmDelete() {
             return;
         }
         if (err.status === 400) {
-            // Message métier serveur (transactions vivantes liées) — affiché tel quel.
             deleteBlockedMessage.value = err.message;
             store.clearError();
             return;
@@ -192,45 +158,11 @@ async function confirmDelete() {
             {{ localError || store.error }}
         </AppAlert>
 
-        <div class="tiers-directory__toolbar">
-            <label class="su-search su-search--discover tiers-directory__search">
-                <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
-                <input
-                    class="su-search__input"
-                    type="search"
-                    :value="searchInput"
-                    :maxlength="TIER_SEARCH_MAX"
-                    :placeholder="t('tiersPage.searchPlaceholder')"
-                    :aria-label="t('tiersPage.searchPlaceholder')"
-                    autocomplete="off"
-                    @input="onSearchInput(($event.target as HTMLInputElement).value)"
-                />
-                <button
-                    v-if="searchInput"
-                    type="button"
-                    class="su-search__orb"
-                    :aria-label="t('tiersPage.actions.clearSearch')"
-                    @click="clearSearch"
-                >
-                    <XIcon :size="16" stroke-width="1.8" />
-                </button>
-            </label>
-            <span v-if="store.initialized && store.totalCount" class="tiers-directory__count">
-                {{ t('tiersPage.count', { count: store.totalCount }, store.totalCount) }}
-            </span>
-        </div>
-
         <div v-if="store.loading && !store.items.length" class="su-loading">
             <span class="su-spin" />
         </div>
         <div v-else-if="!store.items.length" class="su-empty">
-            <p class="mb-3">{{ hasFilters ? t('tiersPage.empty.filtered') : t('tiersPage.empty.list') }}</p>
-            <TierCreateMenu
-                v-if="!hasFilters"
-                :label="t('tiersPage.actions.create')"
-                :disabled="store.acting"
-                @select="openCreate"
-            />
+            <p>{{ emptyCopy }}</p>
         </div>
         <div v-else class="su-stack">
             <section class="su-surface tiers-directory__list">
@@ -267,31 +199,11 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
-.tiers-directory__toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-}
-
-.tiers-directory__search {
-    margin: 0;
-    animation: none;
-}
-
-.tiers-directory__count {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--ink-muted);
-    white-space: nowrap;
-}
-
 .tiers-directory__list {
     padding: 8px;
     display: flex;
     flex-direction: column;
     gap: 2px;
+    overflow: visible;
 }
 </style>

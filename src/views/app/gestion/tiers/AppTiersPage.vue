@@ -1,24 +1,31 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
+import { PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
-import { TIER_NATURES, TIER_ROLES, TiersDirectory, isTierNature, isTierRole, useTiersStore } from '@/features/tiers';
+import {
+    TIER_NATURES,
+    TIER_ROLES,
+    TIER_SEARCH_MAX,
+    TiersDirectory,
+    isTierNature,
+    isTierRole,
+    useTiersStore
+} from '@/features/tiers';
+import { TIER_NATURE_ICONS } from '@/features/tiers/natureUi';
 import type { TierNature } from '@/features/tiers/types';
 import TierCreateMenu from '@/features/tiers/components/TierCreateMenu.vue';
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useTiersStore();
 const directoryRef = ref<{ openCreate: (nature?: TierNature | null) => void } | null>(null);
-
-const natureItems = computed(() => [
-    { title: t('tiersPage.filters.allNatures'), value: '' },
-    ...TIER_NATURES.map((value) => ({ title: t(`tiersPage.natures.${value}`), value }))
-]);
 
 const roleItems = computed(() => [
     { title: t('tiersPage.filters.allRoles'), value: '' },
@@ -29,6 +36,9 @@ function queryString(name: string): string {
     const raw = route.query[name];
     return typeof raw === 'string' ? raw : '';
 }
+
+const searchInput = ref(queryString('q').slice(0, TIER_SEARCH_MAX));
+let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 const filterNature = computed({
     get: () => (isTierNature(queryString('nature')) ? queryString('nature') : ''),
@@ -42,31 +52,122 @@ const filterRole = computed({
 
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
-    const q = queryString('q') || undefined;
+    const q = 'q' in patch ? patch.q : queryString('q') || undefined;
     const nature = 'nature' in patch ? patch.nature : queryString('nature') || undefined;
     const role = 'role' in patch ? patch.role : queryString('role') || undefined;
-    if (q) next.q = q;
+    if (q) next.q = q.slice(0, TIER_SEARCH_MAX);
     if (nature && isTierNature(nature)) next.nature = nature;
     if (role && isTierRole(role)) next.role = role;
     void router.replace({ path: '/app/gestion/tiers', query: next });
 }
 
-function onCreate(nature: TierNature) {
-    if (store.acting) return;
-    directoryRef.value?.openCreate(nature);
+function onSearchInput(value: string) {
+    searchInput.value = value.slice(0, TIER_SEARCH_MAX);
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+        searchTimer = null;
+        patchQuery({ q: searchInput.value.trim() || undefined });
+    }, SEARCH_DEBOUNCE_MS);
 }
+
+function clearSearch() {
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = null;
+    searchInput.value = '';
+    patchQuery({ q: undefined });
+}
+
+function onCreate(nature?: TierNature) {
+    if (store.acting) return;
+    const resolved = nature ?? (isTierNature(filterNature.value) ? filterNature.value : null);
+    directoryRef.value?.openCreate(resolved);
+}
+
+onUnmounted(() => {
+    if (searchTimer) clearTimeout(searchTimer);
+});
+
+watch(
+    () => queryString('q'),
+    (value) => {
+        if (searchTimer) return;
+        const next = value.slice(0, TIER_SEARCH_MAX);
+        if (next !== searchInput.value.trim() && next !== searchInput.value) {
+            searchInput.value = next;
+        }
+    }
+);
 </script>
 
 <template>
     <AppPageShell :title="t('tiersPage.title')" :subtitle="t('tiersPage.subtitle')">
-        <template #actions>
-            <AppDropdownFilter :label="t('tiersPage.actions.filter')" :min-width="280">
-                <div class="pa-3 d-flex flex-column ga-3">
-                    <AppSelect v-model="filterNature" :items="natureItems" :label="t('tiersPage.filters.nature')" hide-details />
-                    <AppSelect v-model="filterRole" :items="roleItems" :label="t('tiersPage.filters.role')" hide-details />
-                </div>
-            </AppDropdownFilter>
-            <TierCreateMenu :label="t('tiersPage.actions.create')" :disabled="store.acting" @select="onCreate" />
+        <template #tabs>
+            <nav class="su-tabs" :aria-label="t('tiersPage.tabs.label')">
+                <button type="button" class="su-tab" :class="{ 'is-active': !filterNature }" @click="filterNature = ''">
+                    {{ t('tiersPage.tabs.all') }}
+                </button>
+                <button
+                    v-for="nature in TIER_NATURES"
+                    :key="nature"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': filterNature === nature }"
+                    @click="filterNature = nature"
+                >
+                    <component :is="TIER_NATURE_ICONS[nature]" :size="16" stroke-width="1.7" />
+                    {{ t(`tiersPage.natures.${nature}`) }}
+                </button>
+            </nav>
+        </template>
+
+        <template #toolbar>
+            <label class="su-search su-search--discover">
+                <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
+                <input
+                    class="su-search__input"
+                    type="search"
+                    :value="searchInput"
+                    :maxlength="TIER_SEARCH_MAX"
+                    :placeholder="t('tiersPage.searchPlaceholder')"
+                    :aria-label="t('tiersPage.searchPlaceholder')"
+                    autocomplete="off"
+                    @input="onSearchInput(($event.target as HTMLInputElement).value)"
+                />
+                <button
+                    v-if="searchInput"
+                    type="button"
+                    class="su-search__orb"
+                    :aria-label="t('tiersPage.actions.clearSearch')"
+                    @click="clearSearch"
+                >
+                    <XIcon :size="16" stroke-width="1.8" />
+                </button>
+            </label>
+            <span v-if="store.initialized && store.totalCount" class="su-toolbar__count">
+                {{ t('tiersPage.count', { count: store.totalCount }, store.totalCount) }}
+            </span>
+            <div class="su-toolbar__actions">
+                <AppDropdownFilter
+                    :label="t('tiersPage.actions.filter')"
+                    :min-width="280"
+                    :reset-disabled="!filterRole"
+                    @reset="filterRole = ''"
+                >
+                    <div class="pa-3 d-flex flex-column ga-3">
+                        <AppSelect v-model="filterRole" :items="roleItems" :label="t('tiersPage.filters.role')" hide-details />
+                    </div>
+                </AppDropdownFilter>
+                <TierCreateMenu
+                    v-if="!filterNature"
+                    :label="t('tiersPage.actions.create')"
+                    :disabled="store.acting"
+                    @select="onCreate"
+                />
+                <button v-else type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onCreate()">
+                    <PlusIcon :size="16" stroke-width="1.6" />
+                    {{ t('tiersPage.actions.create') }}
+                </button>
+            </div>
         </template>
 
         <TiersDirectory ref="directoryRef" />
