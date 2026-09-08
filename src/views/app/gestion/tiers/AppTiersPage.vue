@@ -3,6 +3,7 @@ import { computed, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon } from 'vue-tabler-icons';
+import AppFoldableTabs from '@/components/shared/tabs/AppFoldableTabs.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
@@ -120,7 +121,11 @@ watch(
 <template>
     <AppPageShell :title="t('tiersPage.title')" :subtitle="t('tiersPage.subtitle')">
         <template #tabs>
-            <nav class="su-tabs" :aria-label="t('tiersPage.tabs.label')">
+            <AppFoldableTabs :aria-label="t('tiersPage.tabs.label')">
+                <template #summary>
+                    <component v-if="filterNature" :is="TIER_NATURE_ICONS[filterNature]" :size="16" stroke-width="1.7" />
+                    {{ filterNature ? t(`tiersPage.natures.${filterNature}`) : t('tiersPage.tabs.all') }}
+                </template>
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterNature }" @click="filterNature = ''">
                     {{ t('tiersPage.tabs.all') }}
                 </button>
@@ -135,7 +140,7 @@ watch(
                     <component :is="TIER_NATURE_ICONS[nature]" :size="16" stroke-width="1.7" />
                     {{ t(`tiersPage.natures.${nature}`) }}
                 </button>
-            </nav>
+            </AppFoldableTabs>
         </template>
 
         <template #toolbar>
