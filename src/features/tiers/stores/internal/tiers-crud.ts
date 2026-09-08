@@ -1,6 +1,7 @@
 import { AppError } from '@/utils/errors/app-error';
 import { tiersApi } from '@/features/tiers/api';
 import { buildCreateTierPayload, buildUpdateTierPayload, type TierFormFields } from '@/features/tiers/payload';
+import { matchesTierSearch } from '@/features/tiers/format';
 import { TIER_PAGE_SIZE_DEFAULT, TIER_PAGE_SIZE_MAX, type ListTiersQuery, type Tier } from '@/features/tiers/types';
 import { listCacheKey, normalizeListQuery, parseListCacheKey, type TiersState } from '@/features/tiers/stores/internal/tiers-state';
 
@@ -205,15 +206,21 @@ export function createTiersCrud(state: TiersState) {
      * Recherche pour un sélecteur (pas d’impact sur la liste active) : `pageSize` max, résultats mémorisés dans l’index.
      */
     async function searchForPicker(search: string, options: { role?: ListTiersQuery['role'] } = {}): Promise<Tier[]> {
+        const term = search.trim();
         const result = await tiersApi.list({
-            search: search.trim() || undefined,
             role: options.role,
             page: 1,
             pageSize: TIER_PAGE_SIZE_MAX
         });
         const found = Array.isArray(result?.items) ? result.items : [];
         for (const tier of found) state.knownById.set(tier.publicId, tier);
-        return found;
+        if (!term) return found;
+        const byId = new Map<string, Tier>();
+        for (const tier of found) byId.set(tier.publicId, tier);
+        for (const tier of state.allKnownItems()) {
+            if (matchesTierSearch(tier, term)) byId.set(tier.publicId, tier);
+        }
+        return [...byId.values()].filter((tier) => matchesTierSearch(tier, term));
     }
 
     /** Charge un tier (détail) et l’indexe ; `null` si 404. */

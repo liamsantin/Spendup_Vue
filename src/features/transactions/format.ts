@@ -1,5 +1,6 @@
 import { formatAccountBalance } from '@/features/accounts/format';
 import type { Currency } from '@/features/accounts/types';
+import { matchesSearchTokens } from '@/utils/helpers/text-search';
 import type { MovementSens, Transaction, TransactionMovement } from '@/features/transactions/types';
 
 const YMD_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -93,9 +94,70 @@ export function signedAmountForSens(amount: number | null, sens: MovementSens | 
     return sens === 'debit' ? -Math.abs(amount) : Math.abs(amount);
 }
 
-export function sortTransactions(items: readonly Transaction[]): Transaction[] {
+export const TRANSACTION_SORTS = ['dateDesc', 'dateAsc', 'labelAsc', 'labelDesc', 'amountDesc', 'amountAsc'] as const;
+export type TransactionSort = (typeof TRANSACTION_SORTS)[number];
+export const TRANSACTION_SORT_DEFAULT: TransactionSort = 'dateDesc';
+
+export function isTransactionSort(value: string | null | undefined): value is TransactionSort {
+    return !!value && (TRANSACTION_SORTS as readonly string[]).includes(value);
+}
+
+export function parseTransactionSort(value: string | null | undefined): TransactionSort {
+    return isTransactionSort(value) ? value : TRANSACTION_SORT_DEFAULT;
+}
+
+function compareAmounts(a: number | null, b: number | null, direction: 1 | -1): number {
+    if (a == null && b == null) return 0;
+    if (a == null) return 1;
+    if (b == null) return -1;
+    return (a - b) * direction;
+}
+
+export function sortTransactions(items: readonly Transaction[], sort: TransactionSort = TRANSACTION_SORT_DEFAULT): Transaction[] {
     return [...items].sort((a, b) => {
+        const byId = a.publicId.localeCompare(b.publicId);
+        if (sort === 'labelAsc') return a.label.localeCompare(b.label, undefined, { sensitivity: 'base' }) || byId;
+        if (sort === 'labelDesc') return b.label.localeCompare(a.label, undefined, { sensitivity: 'base' }) || byId;
+        if (sort === 'amountDesc') return compareAmounts(a.amount, b.amount, -1) || b.operationDate.localeCompare(a.operationDate) || byId;
+        if (sort === 'amountAsc') return compareAmounts(a.amount, b.amount, 1) || a.operationDate.localeCompare(b.operationDate) || byId;
+        if (sort === 'dateAsc') {
+            if (a.operationDate !== b.operationDate) return a.operationDate.localeCompare(b.operationDate);
+            return (a.createdAt || '').localeCompare(b.createdAt || '') || byId;
+        }
         if (a.operationDate !== b.operationDate) return b.operationDate.localeCompare(a.operationDate);
-        return (b.createdAt || '').localeCompare(a.createdAt || '');
+        return (b.createdAt || '').localeCompare(a.createdAt || '') || byId;
     });
+}
+
+export type TransactionSearchHints = {
+    typeLabel?: string;
+    accountNames?: readonly string[];
+    categoryName?: string | null;
+    tierHaystack?: string | null;
+    paymentMethodLabel?: string | null;
+    amountText?: string | null;
+};
+
+export function matchesTransactionSearch(item: Transaction, needle: string, hints: TransactionSearchHints = {}): boolean {
+    const amount = item.amount;
+    const parts: Array<string | null | undefined> = [
+        item.label,
+        item.type,
+        hints.typeLabel,
+        item.currency,
+        item.operationDate,
+        item.valueDate,
+        item.createdByDisplayName,
+        amount == null ? null : String(amount),
+        amount == null ? null : String(amount).replace('.', ','),
+        hints.amountText,
+        ...(hints.accountNames ?? []),
+        hints.categoryName,
+        hints.tierHaystack,
+        hints.paymentMethodLabel
+    ];
+    return matchesSearchTokens(
+        parts.filter((part): part is string => !!part && String(part).trim().length > 0).join(' '),
+        needle
+    );
 }

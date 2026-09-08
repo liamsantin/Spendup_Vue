@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
-import { isTierNature, isTierRole, sortTiers } from '@/features/tiers/format';
+import { isTierNature, isTierRole, matchesTierSearch, sortTiers } from '@/features/tiers/format';
 import {
     TIER_PAGE_SIZE_DEFAULT,
     TIER_SEARCH_MAX,
@@ -52,7 +52,7 @@ export type TiersCacheEntry = {
 function queryMatchesTier(query: TiersListQuery, tier: Tier): boolean {
     if (query.nature && tier.nature !== query.nature) return false;
     if (query.role && !tier.roles.includes(query.role)) return false;
-    if (query.search && !tier.name.toLowerCase().includes(query.search)) return false;
+    if (query.search && !matchesTierSearch(tier, query.search)) return false;
     return true;
 }
 

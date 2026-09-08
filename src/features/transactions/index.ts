@@ -13,7 +13,10 @@ export {
     involvedAccountPublicIds,
     resolveTransactionAmountDisplay,
     signedAmountForSens,
-    sortTransactions
+    sortTransactions,
+    isTransactionSort,
+    parseTransactionSort,
+    matchesTransactionSearch
 } from '@/features/transactions/format';
 export {
     buildCreateTransactionPayload,
@@ -35,6 +38,8 @@ export type {
     UpdateTransactionPayload
 } from '@/features/transactions/types';
 export { TRANSACTION_TYPES, TRANSACTION_LABEL_MAX, TRANSACTION_SEARCH_MAX } from '@/features/transactions/types';
+export { TRANSACTION_SORTS, TRANSACTION_SORT_DEFAULT } from '@/features/transactions/format';
+export type { TransactionSort } from '@/features/transactions/format';
 export { default as TransactionsTimeline } from '@/features/transactions/components/TransactionsTimeline.vue';
 export { default as TransactionListItem } from '@/features/transactions/components/list/TransactionListItem.vue';
 export { default as TransactionFormModal } from '@/features/transactions/components/modals/TransactionFormModal.vue';

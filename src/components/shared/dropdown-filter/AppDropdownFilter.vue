@@ -19,12 +19,14 @@ const props = withDefaults(
         location?: Anchor;
         minWidth?: number | string;
         resetDisabled?: boolean;
+        closeOnContentClick?: boolean;
     }>(),
     {
         icon: undefined,
         location: 'bottom end',
         minWidth: 260,
-        resetDisabled: false
+        resetDisabled: false,
+        closeOnContentClick: false
     }
 );
 
@@ -44,7 +46,7 @@ function onReset() {
 </script>
 
 <template>
-    <v-menu v-model="open" :location="location" :close-on-content-click="false">
+    <v-menu v-model="open" :location="location" :close-on-content-click="closeOnContentClick">
         <template #activator="{ props: menuProps }">
             <button type="button" class="su-btn" v-bind="menuProps">
                 <component :is="resolvedIcon" :size="16" stroke-width="1.6" />

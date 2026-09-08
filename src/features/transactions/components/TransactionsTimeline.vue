@@ -9,10 +9,12 @@ import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
-import { formatOperationDate } from '@/features/transactions/format';
+import { formatOperationDate, involvedAccountPublicIds, matchesTransactionSearch, parseTransactionSort, resolveTransactionAmountDisplay, sortTransactions, TRANSACTION_SORT_DEFAULT } from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { TRANSACTION_SEARCH_MAX, TRANSACTION_TYPES, type Transaction, type TransactionType } from '@/features/transactions/types';
 import { TIER_PAGE_SIZE_MAX } from '@/features/tiers/types';
+import { tierSearchHaystack } from '@/features/tiers/format';
+import { usePaymentMethodsStore } from '@/features/payment-methods';
 import TransactionListItem from '@/features/transactions/components/list/TransactionListItem.vue';
 import TransactionFormModal from '@/features/transactions/components/modals/TransactionFormModal.vue';
 
@@ -27,6 +29,7 @@ const router = useRouter();
 const accountsStore = useAccountsStore();
 const categoriesStore = useCategoriesStore();
 const tiersStore = useTiersStore();
+const paymentMethodsStore = usePaymentMethodsStore();
 const store = useTransactionsStore();
 
 const createOpen = ref(false);
@@ -67,20 +70,30 @@ const filterType = computed<TransactionType | null>(() => {
     const raw = queryString('type');
     return raw && TRANSACTION_TYPES.includes(raw as TransactionType) ? (raw as TransactionType) : null;
 });
+const listSort = computed(() => parseTransactionSort(queryString('sort')));
+const groupByDate = computed(() => listSort.value === 'dateDesc' || listSort.value === 'dateAsc');
 
 const visibleItems = computed(() => {
     const type = filterType.value;
-    const needle = filterSearch.value?.trim().toLowerCase() ?? '';
-    return store.items.filter((item) => {
+    const needle = filterSearch.value?.trim() ?? '';
+    const filtered = store.items.filter((item) => {
         if (type && item.type !== type) return false;
         if (!needle) return true;
-        if (item.label.toLowerCase().includes(needle)) return true;
-        const tierName = item.tierPublicId ? tiersStore.findByPublicId(item.tierPublicId)?.name : null;
-        if (tierName?.toLowerCase().includes(needle)) return true;
-        const categoryName = item.categoryPublicId ? categoriesStore.findByPublicId(item.categoryPublicId)?.name : null;
-        if (categoryName?.toLowerCase().includes(needle)) return true;
-        return false;
+        const tier = item.tierPublicId ? tiersStore.findByPublicId(item.tierPublicId) : null;
+        return matchesTransactionSearch(item, needle, {
+            typeLabel: t(`transactionsPage.types.${item.type}`),
+            accountNames: involvedAccountPublicIds(item).map(
+                (id) => accountsStore.accounts.find((account) => account.publicId === id)?.name ?? ''
+            ),
+            categoryName: item.categoryPublicId ? (categoriesStore.findByPublicId(item.categoryPublicId)?.name ?? null) : null,
+            tierHaystack: tier ? tierSearchHaystack(tier) : null,
+            paymentMethodLabel: item.paymentMethodPublicId
+                ? (paymentMethodsStore.allKnownItems().find((method) => method.publicId === item.paymentMethodPublicId)?.label ?? null)
+                : null,
+            amountText: resolveTransactionAmountDisplay(item.amount, item.currency, locale.value).text
+        });
     });
+    return sortTransactions(filtered, listSort.value);
 });
 
 const emptyCopy = computed(() => {
@@ -89,6 +102,10 @@ const emptyCopy = computed(() => {
     if (filterAccountId.value) return t('transactionsPage.empty.account');
     return t('transactionsPage.empty.timeline');
 });
+
+const hasSearched = ref(!!filterSearch.value);
+const searchRevealKey = ref(0);
+const searchReveals = computed(() => hasSearched.value || !!filterSearch.value);
 
 const canCreate = computed(() => {
     if (filterAccountId.value) {
@@ -99,6 +116,9 @@ const canCreate = computed(() => {
 });
 
 const dateGroups = computed(() => {
+    if (!groupByDate.value) {
+        return [{ date: '_', label: '', items: visibleItems.value }];
+    }
     const order: string[] = [];
     const map = new Map<string, Transaction[]>();
     for (const item of visibleItems.value) {
@@ -114,6 +134,12 @@ const dateGroups = computed(() => {
         label: formatOperationDate(date, locale.value),
         items: map.get(date)!
     }));
+});
+
+const searchAppearIndex = computed(() => {
+    const map = new Map<string, number>();
+    visibleItems.value.forEach((item, index) => map.set(item.publicId, index));
+    return map;
 });
 
 function canWriteItem(transaction: Transaction): boolean {
@@ -134,7 +160,8 @@ async function loadTimeline(force = false) {
                 force
             }),
             categoriesStore.loadList({ force }).catch(() => undefined),
-            tiersStore.loadList({ pageSize: TIER_PAGE_SIZE_MAX, force }).catch(() => undefined)
+            tiersStore.loadList({ pageSize: TIER_PAGE_SIZE_MAX, force }).catch(() => undefined),
+            paymentMethodsStore.loadList({ force }).catch(() => undefined)
         ]);
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
@@ -160,7 +187,8 @@ async function loadTimeline(force = false) {
                         ...(filterFrom.value ? { from: filterFrom.value } : {}),
                         ...(filterTo.value ? { to: filterTo.value } : {}),
                         ...(filterCategoryId.value ? { category: filterCategoryId.value } : {}),
-                        ...(filterSearch.value ? { q: filterSearch.value } : {})
+                        ...(filterSearch.value ? { q: filterSearch.value } : {}),
+                        ...(listSort.value !== TRANSACTION_SORT_DEFAULT ? { sort: listSort.value } : {})
                     }
                 });
             }
@@ -198,6 +226,11 @@ watch(
     }
 );
 
+watch(filterSearch, (query, previous) => {
+    if (query) hasSearched.value = true;
+    if (query || previous) searchRevealKey.value += 1;
+});
+
 async function confirmDelete() {
     if (!deleteTarget.value) return;
     localError.value = null;
@@ -233,17 +266,26 @@ async function confirmDelete() {
         <div v-if="store.loading && !store.items.length" class="su-loading">
             <span class="su-spin" />
         </div>
-        <div v-else-if="!visibleItems.length" class="su-empty">
+        <div
+            v-else-if="!visibleItems.length"
+            :key="`empty-${searchRevealKey}`"
+            class="su-empty"
+            :class="{ 'is-search-reveal': searchReveals }"
+        >
             {{ emptyCopy }}
         </div>
         <div v-else class="su-stack">
             <section v-for="group in dateGroups" :key="group.date" class="su-surface transaction-timeline__group">
-                <header class="su-panel__head">
+                <header v-if="group.label" class="su-panel__head">
                     <div>
                         <h2>{{ group.label }}</h2>
                     </div>
                 </header>
-                <v-list class="py-0 transaction-timeline__list">
+                <v-list
+                    :key="searchRevealKey"
+                    class="py-0 transaction-timeline__list"
+                    :class="{ 'is-search-reveal': searchReveals }"
+                >
                     <TransactionListItem
                         v-for="transaction in group.items"
                         :key="transaction.publicId"
@@ -251,6 +293,7 @@ async function confirmDelete() {
                         :can-write="canWriteItem(transaction)"
                         :acting="store.acting"
                         :statement-account-public-id="filterAccountId"
+                        :style="{ '--i': searchAppearIndex.get(transaction.publicId) ?? 0 }"
                         @edit="editTarget = $event"
                         @delete="deleteTarget = $event"
                     />

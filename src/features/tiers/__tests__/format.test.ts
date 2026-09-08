@@ -6,6 +6,7 @@ import {
     isValidPhone,
     normalizeRoles,
     normalizeWebsite,
+    matchesTierSearch,
     sortTiers,
     tierSelectItems
 } from '@/features/tiers/format';
@@ -66,6 +67,29 @@ describe('tiers format', () => {
             tier({ publicId: 'c', name: 'Aldi' })
         ]);
         expect(sorted.map((item) => item.publicId)).toEqual(['c', 'a', 'b']);
+    });
+
+    it('recherche sur le libellé, le prénom et les volets', () => {
+        const papa = tier({
+            publicId: 'papa',
+            name: 'Papa',
+            nature: 'person',
+            person: { firstName: 'John', lastName: 'Doe', birthDate: null },
+            company: null
+        });
+        expect(matchesTierSearch(papa, 'john')).toBe(true);
+        expect(matchesTierSearch(papa, 'DOE')).toBe(true);
+        expect(matchesTierSearch(papa, 'papa')).toBe(true);
+        expect(matchesTierSearch(papa, 'john doe')).toBe(true);
+        expect(matchesTierSearch(papa, 'migros')).toBe(false);
+    });
+
+    it('trie par nom décroissant ou par date de création', () => {
+        const a = tier({ publicId: 'a', name: 'Aldi', createdAt: '2026-01-01T00:00:00Z' });
+        const b = tier({ publicId: 'b', name: 'Coop', createdAt: '2026-06-01T00:00:00Z' });
+        expect(sortTiers([a, b], 'nameDesc').map((item) => item.publicId)).toEqual(['b', 'a']);
+        expect(sortTiers([a, b], 'recent').map((item) => item.publicId)).toEqual(['b', 'a']);
+        expect(sortTiers([a, b], 'oldest').map((item) => item.publicId)).toEqual(['a', 'b']);
     });
 
     it('détecte un doublon de nom (casse ignorée) hors tier exclu', () => {

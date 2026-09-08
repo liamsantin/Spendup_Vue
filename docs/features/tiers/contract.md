@@ -55,6 +55,8 @@ Le formulaire n’affiche qu’un volet, selon la nature. À la création, le ty
 ## Store
 
 - Listes paginées par clé `list:{nature}:{role}:{search}` + index `knownById` (tous les tiers vus, y compris via `searchForPicker` et `fetchTier`).
+- Recherche UI (`?q=`) : filtre **client** sur tous les champs (nom, prénom, société, e-mail, etc.). Le GET `search` reste disponible pour l’API (nom).
+- Tri UI (`?sort=`) côté client sur les pages chargées (nom, récence) — le GET reste trié nom puis id.
 - `loadMore()` page suivante ; `searchForPicker(search)` alimente un sélecteur (`pageSize` 200) sans toucher la liste active.
 - Mutations locales mémorisées 2,5 s (`rememberLocalMutation`) pour ignorer l’écho SignalR de l’émetteur.
 - `subscribeToDeleted(listener)` : notifié sur suppression locale **ou** realtime — le formulaire transaction vide son sélecteur.

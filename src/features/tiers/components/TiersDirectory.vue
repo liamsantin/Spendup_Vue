@@ -5,9 +5,9 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { isTierNature, isTierRole } from '@/features/tiers/format';
+import { isTierNature, isTierRole, matchesTierSearch, parseTierSort, sortTiers } from '@/features/tiers/format';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
-import { TIER_SEARCH_MAX, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
+import { TIER_PAGE_SIZE_MAX, TIER_SEARCH_MAX, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
 import TierListItem from '@/features/tiers/components/list/TierListItem.vue';
 import TierFormModal from '@/features/tiers/components/modals/TierFormModal.vue';
 
@@ -54,6 +54,12 @@ const filterRole = computed<TierRole | null>(() => {
     const raw = queryString('role');
     return isTierRole(raw) ? raw : null;
 });
+const listSort = computed(() => parseTierSort(queryString('sort')));
+const visibleItems = computed(() => {
+    const needle = filterSearch.value;
+    const items = needle ? store.items.filter((tier) => matchesTierSearch(tier, needle)) : store.items;
+    return sortTiers(items, listSort.value);
+});
 const hasExtraFilters = computed(() => !!(filterSearch.value || filterRole.value));
 const emptyCopy = computed(() => {
     if (hasExtraFilters.value) return t('tiersPage.empty.filtered');
@@ -61,13 +67,17 @@ const emptyCopy = computed(() => {
     return t('tiersPage.empty.list');
 });
 
+const hasSearched = ref(!!filterSearch.value);
+const searchRevealKey = ref(0);
+const searchReveals = computed(() => hasSearched.value || !!filterSearch.value);
+
 async function loadDirectory(force = false) {
     localError.value = null;
     try {
         await store.loadList({
-            search: filterSearch.value ?? undefined,
             nature: filterNature.value ?? undefined,
             role: filterRole.value ?? undefined,
+            pageSize: filterSearch.value ? TIER_PAGE_SIZE_MAX : undefined,
             force
         });
     } catch (e: unknown) {
@@ -90,11 +100,21 @@ onUnmounted(() => {
 });
 
 watch(
-    () => [filterSearch.value, filterNature.value, filterRole.value] as const,
+    () => [filterNature.value, filterRole.value] as const,
     () => {
         void loadDirectory().catch(() => undefined);
     }
 );
+
+watch(filterSearch, async (search, previousSearch) => {
+    if (search && store.hasMore) {
+        await loadDirectory(true).catch(() => undefined);
+    }
+    if (search) hasSearched.value = true;
+    if (search !== previousSearch && (search || previousSearch)) {
+        searchRevealKey.value += 1;
+    }
+});
 
 function openCreate(nature: TierNature | null = null) {
     createNature.value = nature;
@@ -161,19 +181,31 @@ async function confirmDelete() {
         <div v-if="store.loading && !store.items.length" class="su-loading">
             <span class="su-spin" />
         </div>
-        <div v-else-if="!store.items.length" class="su-empty">
+        <div
+            v-else-if="!visibleItems.length"
+            :key="`empty-${searchRevealKey}`"
+            class="su-empty"
+            :class="{ 'is-search-reveal': searchReveals }"
+        >
             <p>{{ emptyCopy }}</p>
         </div>
         <div v-else class="su-stack">
-            <section class="su-surface tiers-directory__list">
-                <TierListItem
-                    v-for="tier in store.items"
-                    :key="tier.publicId"
-                    :tier="tier"
-                    :acting="store.acting"
-                    @edit="editTarget = $event"
-                    @delete="requestDelete"
-                />
+            <section class="su-surface tiers-directory__group">
+                <div
+                    :key="searchRevealKey"
+                    class="tiers-directory__list"
+                    :class="{ 'is-search-reveal': searchReveals }"
+                >
+                    <TierListItem
+                        v-for="(tier, index) in visibleItems"
+                        :key="tier.publicId"
+                        :tier="tier"
+                        :acting="store.acting"
+                        :style="{ '--i': index }"
+                        @edit="editTarget = $event"
+                        @delete="requestDelete"
+                    />
+                </div>
             </section>
         </div>
 
@@ -199,11 +231,16 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
+.tiers-directory__group {
+    overflow: visible;
+}
+
 .tiers-directory__list {
-    padding: 8px;
     display: flex;
     flex-direction: column;
     gap: 2px;
     overflow: visible;
+    /* Gouttière pour scale(1.012) : les 8px de la surface restent visibles au survol. */
+    padding: 8px;
 }
 </style>

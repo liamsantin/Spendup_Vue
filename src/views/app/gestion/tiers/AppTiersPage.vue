@@ -2,7 +2,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
+import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon } from 'vue-tabler-icons';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
@@ -10,9 +10,14 @@ import {
     TIER_NATURES,
     TIER_ROLES,
     TIER_SEARCH_MAX,
+    TIER_SORTS,
+    TIER_SORT_DEFAULT,
     TiersDirectory,
     isTierNature,
     isTierRole,
+    isTierSort,
+    matchesTierSearch,
+    parseTierSort,
     useTiersStore
 } from '@/features/tiers';
 import { TIER_NATURE_ICONS } from '@/features/tiers/natureUi';
@@ -50,14 +55,27 @@ const filterRole = computed({
     set: (value: string) => patchQuery({ role: value || undefined })
 });
 
+const listSort = computed({
+    get: () => parseTierSort(queryString('sort')),
+    set: (value: string) => patchQuery({ sort: value === TIER_SORT_DEFAULT ? undefined : value })
+});
+
+const visibleCount = computed(() => {
+    const needle = queryString('q').trim();
+    if (!needle) return store.totalCount;
+    return store.items.filter((tier) => matchesTierSearch(tier, needle)).length;
+});
+
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
     const q = 'q' in patch ? patch.q : queryString('q') || undefined;
     const nature = 'nature' in patch ? patch.nature : queryString('nature') || undefined;
     const role = 'role' in patch ? patch.role : queryString('role') || undefined;
+    const sort = 'sort' in patch ? patch.sort : queryString('sort') || undefined;
     if (q) next.q = q.slice(0, TIER_SEARCH_MAX);
     if (nature && isTierNature(nature)) next.nature = nature;
     if (role && isTierRole(role)) next.role = role;
+    if (sort && isTierSort(sort) && sort !== TIER_SORT_DEFAULT) next.sort = sort;
     void router.replace({ path: '/app/gestion/tiers', query: next });
 }
 
@@ -143,10 +161,30 @@ watch(
                     <XIcon :size="16" stroke-width="1.8" />
                 </button>
             </label>
-            <span v-if="store.initialized && store.totalCount" class="su-toolbar__count">
-                {{ t('tiersPage.count', { count: store.totalCount }, store.totalCount) }}
+            <span v-if="store.initialized && visibleCount" class="su-toolbar__count">
+                {{ t('tiersPage.count', { count: visibleCount }, visibleCount) }}
             </span>
             <div class="su-toolbar__actions">
+                <AppDropdownFilter
+                    :label="t('tiersPage.actions.sort')"
+                    :icon="ArrowsSortIcon"
+                    :min-width="240"
+                    close-on-content-click
+                    :reset-disabled="listSort === TIER_SORT_DEFAULT"
+                    @reset="listSort = TIER_SORT_DEFAULT"
+                >
+                    <v-list class="py-0">
+                        <v-list-item
+                            v-for="value in TIER_SORTS"
+                            :key="value"
+                            :active="listSort === value"
+                            color="primary"
+                            @click="listSort = value"
+                        >
+                            <v-list-item-title>{{ t(`tiersPage.sort.${value}`) }}</v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </AppDropdownFilter>
                 <AppDropdownFilter
                     :label="t('tiersPage.actions.filter')"
                     :min-width="280"

@@ -2,7 +2,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
+import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon } from 'vue-tabler-icons';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
@@ -10,8 +10,12 @@ import AppSelect from '@/components/shared/select/AppSelect.vue';
 import {
     TransactionsTimeline,
     TRANSACTION_SEARCH_MAX,
+    TRANSACTION_SORTS,
+    TRANSACTION_SORT_DEFAULT,
     TRANSACTION_TYPES,
     canWriteTransactions,
+    isTransactionSort,
+    parseTransactionSort,
     useTransactionsStore
 } from '@/features/transactions';
 import type { TransactionType } from '@/features/transactions';
@@ -98,6 +102,11 @@ const filterTierId = computed({
     set: (value: string) => patchQuery({ tier: value || undefined })
 });
 
+const listSort = computed({
+    get: () => parseTransactionSort(queryString('sort')),
+    set: (value: string) => patchQuery({ sort: value === TRANSACTION_SORT_DEFAULT ? undefined : value })
+});
+
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
     const q = 'q' in patch ? patch.q : queryString('q') || undefined;
@@ -107,6 +116,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
     const to = 'to' in patch ? patch.to : queryString('to') || undefined;
     const category = 'category' in patch ? patch.category : queryString('category') || undefined;
     const tier = 'tier' in patch ? patch.tier : queryString('tier') || undefined;
+    const sort = 'sort' in patch ? patch.sort : queryString('sort') || undefined;
     if (q) next.q = q.slice(0, TRANSACTION_SEARCH_MAX);
     if (account) next.account = account;
     if (type && TRANSACTION_TYPES.includes(type as TransactionType)) next.type = type;
@@ -114,6 +124,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
     if (to) next.to = to;
     if (category) next.category = category;
     if (tier) next.tier = tier;
+    if (sort && isTransactionSort(sort) && sort !== TRANSACTION_SORT_DEFAULT) next.sort = sort;
     void router.replace({ path: '/app/finances/transactions', query: next });
 }
 
@@ -212,6 +223,26 @@ watch(
                 </button>
             </label>
             <div class="su-toolbar__actions">
+                <AppDropdownFilter
+                    :label="t('transactionsPage.actions.sort')"
+                    :icon="ArrowsSortIcon"
+                    :min-width="260"
+                    close-on-content-click
+                    :reset-disabled="listSort === TRANSACTION_SORT_DEFAULT"
+                    @reset="listSort = TRANSACTION_SORT_DEFAULT"
+                >
+                    <v-list class="py-0">
+                        <v-list-item
+                            v-for="value in TRANSACTION_SORTS"
+                            :key="value"
+                            :active="listSort === value"
+                            color="primary"
+                            @click="listSort = value"
+                        >
+                            <v-list-item-title>{{ t(`transactionsPage.sort.${value}`) }}</v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </AppDropdownFilter>
                 <AppDropdownFilter
                     :label="t('transactionsPage.actions.filter')"
                     :min-width="300"

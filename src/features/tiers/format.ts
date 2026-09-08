@@ -1,3 +1,4 @@
+import { matchesSearchTokens } from '@/utils/helpers/text-search';
 import { TIER_NATURES, TIER_NATURES_WITH_PANEL, TIER_ROLES, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
 
 const YMD_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -111,12 +112,53 @@ export function hasDuplicateRoles(roles: readonly string[] | null | undefined): 
     return false;
 }
 
-export function sortTiers(items: readonly Tier[]): Tier[] {
+export const TIER_SORTS = ['nameAsc', 'nameDesc', 'recent', 'oldest'] as const;
+export type TierSort = (typeof TIER_SORTS)[number];
+export const TIER_SORT_DEFAULT: TierSort = 'nameAsc';
+
+export function isTierSort(value: string | null | undefined): value is TierSort {
+    return !!value && (TIER_SORTS as readonly string[]).includes(value);
+}
+
+export function parseTierSort(value: string | null | undefined): TierSort {
+    return isTierSort(value) ? value : TIER_SORT_DEFAULT;
+}
+
+export function sortTiers(items: readonly Tier[], sort: TierSort = TIER_SORT_DEFAULT): Tier[] {
     return [...items].sort((a, b) => {
+        const byId = a.publicId.localeCompare(b.publicId);
+        if (sort === 'recent') return (b.createdAt || '').localeCompare(a.createdAt || '') || byId;
+        if (sort === 'oldest') return (a.createdAt || '').localeCompare(b.createdAt || '') || byId;
         const byName = a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-        if (byName !== 0) return byName;
-        return a.publicId.localeCompare(b.publicId);
+        if (sort === 'nameDesc') return -byName || byId;
+        return byName || byId;
     });
+}
+
+/** Texte concaténé de tous les champs utiles à la recherche (libellé, identité, coordonnées, volets). */
+export function tierSearchHaystack(tier: Tier): string {
+    const parts: Array<string | null | undefined> = [
+        tier.name,
+        tier.nature,
+        tier.email,
+        tier.phone,
+        tier.website,
+        tier.notes,
+        ...tier.roles,
+        tier.person?.firstName,
+        tier.person?.lastName,
+        tier.person?.birthDate,
+        tier.company?.legalName,
+        tier.company?.vatNumber,
+        tier.company?.companyRegistrationNumber,
+        tier.organization?.officialName,
+        tier.organization?.organizationType
+    ];
+    return parts.filter((part): part is string => !!part && part.trim().length > 0).join(' ');
+}
+
+export function matchesTierSearch(tier: Tier, needle: string): boolean {
+    return matchesSearchTokens(tierSearchHaystack(tier), needle);
 }
 
 export function isDuplicateTierName(name: string, items: readonly Tier[], excludePublicId?: string | null): boolean {

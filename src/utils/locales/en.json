@@ -757,7 +757,7 @@
         "subtitle": "Your personal directory of counterparties: merchants, banks, employers, landlords, contacts.",
         "loadMore": "Load more",
         "count": "{count} counterparty | {count} counterparty | {count} counterparties",
-        "searchPlaceholder": "Search by name…",
+        "searchPlaceholder": "Search…",
         "empty": {
             "list": "No counterparties yet. Add your first one, for example your bank.",
             "filtered": "No counterparty matches these filters.",
@@ -774,6 +774,7 @@
             "all": "All"
         },
         "actions": {
+            "sort": "Sort",
             "filter": "Filter",
             "create": "Add",
             "edit": "Edit",
@@ -786,6 +787,12 @@
             "allNatures": "All natures",
             "role": "Role",
             "allRoles": "All roles"
+        },
+        "sort": {
+            "nameAsc": "Name (A → Z)",
+            "nameDesc": "Name (Z → A)",
+            "recent": "Newest first",
+            "oldest": "Oldest first"
         },
         "createAs": {
             "person": "A person",
@@ -932,8 +939,9 @@
             "byType": "No “{type}” transactions.",
             "filtered": "No transaction matches this search."
         },
-        "searchPlaceholder": "Search by label…",
+        "searchPlaceholder": "Search…",
         "actions": {
+            "sort": "Sort",
             "filter": "Filter",
             "create": "Add",
             "edit": "Edit",
@@ -951,6 +959,14 @@
             "allTiers": "All counterparties",
             "from": "From",
             "to": "To"
+        },
+        "sort": {
+            "dateDesc": "Date (newest first)",
+            "dateAsc": "Date (oldest first)",
+            "labelAsc": "Label (A → Z)",
+            "labelDesc": "Label (Z → A)",
+            "amountDesc": "Amount (high to low)",
+            "amountAsc": "Amount (low to high)"
         },
         "types": {
             "depense": "Expense",

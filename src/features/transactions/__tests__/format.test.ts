@@ -7,6 +7,7 @@ import {
     movementForAccount,
     resolveTransactionAmountDisplay,
     signedAmountForSens,
+    matchesTransactionSearch,
     sortTransactions,
     sourceAccountPublicId,
     targetAccountPublicId,
@@ -80,5 +81,24 @@ describe('transactions format', () => {
         const b = tx({ publicId: 'b', operationDate: '2026-09-02', createdAt: '2026-09-02T10:00:00Z' });
         const c = tx({ publicId: 'c', operationDate: '2026-09-02', createdAt: '2026-09-02T12:00:00Z' });
         expect(sortTransactions([a, b, c]).map((item) => item.publicId)).toEqual(['c', 'b', 'a']);
+    });
+
+    it('trie par libellé, montant (nulls à la fin) ou date croissante', () => {
+        const a = tx({ publicId: 'a', label: 'Zoo', amount: 10, operationDate: '2026-09-01' });
+        const b = tx({ publicId: 'b', label: 'Alpha', amount: 50, operationDate: '2026-09-03' });
+        const hidden = tx({ publicId: 'c', label: 'Masqué', amount: null, operationDate: '2026-09-02' });
+        expect(sortTransactions([a, b], 'labelAsc').map((item) => item.publicId)).toEqual(['b', 'a']);
+        expect(sortTransactions([a, b, hidden], 'amountDesc').map((item) => item.publicId)).toEqual(['b', 'a', 'c']);
+        expect(sortTransactions([b, a], 'dateAsc').map((item) => item.publicId)).toEqual(['a', 'b']);
+    });
+
+    it('recherche libellé, compte, contrepartie et montant', () => {
+        const item = tx({ label: 'Courses', amount: 12.5, createdByDisplayName: 'Liam' });
+        expect(matchesTransactionSearch(item, 'courses')).toBe(true);
+        expect(matchesTransactionSearch(item, 'liam')).toBe(true);
+        expect(matchesTransactionSearch(item, '12,5', { amountText: '12,50' })).toBe(true);
+        expect(matchesTransactionSearch(item, 'john', { tierHaystack: 'Papa John Doe' })).toBe(true);
+        expect(matchesTransactionSearch(item, 'banque cantonale', { accountNames: ['Banque Cantonale'] })).toBe(true);
+        expect(matchesTransactionSearch(item, 'xyz')).toBe(false);
     });
 });

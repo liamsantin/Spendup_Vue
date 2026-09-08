@@ -757,7 +757,7 @@
         "subtitle": "Votre annuaire personnel de contreparties : commerçants, banques, employeurs, bailleurs, contacts.",
         "loadMore": "Charger plus",
         "count": "{count} tiers | {count} tiers | {count} tiers",
-        "searchPlaceholder": "Rechercher par nom…",
+        "searchPlaceholder": "Rechercher…",
         "empty": {
             "list": "Aucun tiers pour l’instant. Ajoutez votre première contrepartie, par exemple votre banque.",
             "filtered": "Aucun tiers ne correspond à ces filtres.",
@@ -774,6 +774,7 @@
             "all": "Tous"
         },
         "actions": {
+            "sort": "Trier",
             "filter": "Filtre",
             "create": "Ajouter",
             "edit": "Modifier",
@@ -786,6 +787,12 @@
             "allNatures": "Toutes les natures",
             "role": "Rôle",
             "allRoles": "Tous les rôles"
+        },
+        "sort": {
+            "nameAsc": "Nom (A → Z)",
+            "nameDesc": "Nom (Z → A)",
+            "recent": "Plus récents",
+            "oldest": "Plus anciens"
         },
         "createAs": {
             "person": "Une personne",
@@ -932,8 +939,9 @@
             "byType": "Aucune transaction de type « {type} ».",
             "filtered": "Aucune transaction ne correspond à cette recherche."
         },
-        "searchPlaceholder": "Rechercher par libellé…",
+        "searchPlaceholder": "Rechercher…",
         "actions": {
+            "sort": "Trier",
             "filter": "Filtre",
             "create": "Ajouter",
             "edit": "Modifier",
@@ -951,6 +959,14 @@
             "allTiers": "Toutes les contreparties",
             "from": "Du",
             "to": "Au"
+        },
+        "sort": {
+            "dateDesc": "Date (récent → ancien)",
+            "dateAsc": "Date (ancien → récent)",
+            "labelAsc": "Libellé (A → Z)",
+            "labelDesc": "Libellé (Z → A)",
+            "amountDesc": "Montant (décroissant)",
+            "amountAsc": "Montant (croissant)"
         },
         "types": {
             "depense": "Dépense",

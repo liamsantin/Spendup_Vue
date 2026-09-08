@@ -907,6 +907,20 @@
     }
 }
 
+@keyframes su-search-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.985);
+    }
+}
+
+.is-search-reveal .transaction-list-item,
+.is-search-reveal .tier-row,
+.su-empty.is-search-reveal {
+    animation: su-search-in 0.5s var(--ease) backwards;
+    animation-delay: calc(min(var(--i, 0), 12) * 32ms);
+}
+
 @keyframes su-spin {
     to {
         transform: rotate(360deg);
@@ -961,7 +975,10 @@
 @media (prefers-reduced-motion: reduce) {
     .su-person,
     .su-hero,
-    .su-search {
+    .su-search,
+    .is-search-reveal .transaction-list-item,
+    .is-search-reveal .tier-row,
+    .su-empty.is-search-reveal {
         animation: none;
     }
 }
