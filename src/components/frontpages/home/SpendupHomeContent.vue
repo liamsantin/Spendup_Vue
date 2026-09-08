@@ -3,62 +3,75 @@ import {
     ArrowRightIcon,
     BrandWindowsIcon,
     BuildingBankIcon,
-    CalendarStatsIcon,
     ChartPieIcon,
+    HomeEcoIcon,
+    UsersIcon,
     CheckIcon,
     DeviceDesktopIcon,
     DownloadIcon,
-    HomeEcoIcon,
     LockIcon,
+    PlugConnectedIcon,
     ShieldCheckIcon,
     SparklesIcon,
     TargetIcon,
-    UsersIcon,
-    WalletIcon
+    UserPlusIcon
 } from 'vue-tabler-icons';
 import heroVisual from '@/assets/images/front-pages/dashboard-preview.png';
 
+const PLATFORM_IMG = '/assets/images/front-pages/features/home-platform-central.png';
+
 const INSTALLER_PATH = '/downloads/SpendUp-Setup-x64.msi';
 const windowsDownloadUrl = (import.meta.env.VITE_WINDOWS_APP_DOWNLOAD_URL as string | undefined)?.trim() || INSTALLER_PATH;
-
-const features = [
-    {
-        icon: WalletIcon,
-        title: 'Vos finances au quotidien',
-        text: 'Centralisez comptes, moyens de paiement et transactions dans une vue claire et toujours à jour.'
-    },
-    {
-        icon: ChartPieIcon,
-        title: 'Un budget qui vous ressemble',
-        text: 'Créez vos catégories, définissez vos budgets et comprenez où va réellement votre argent.'
-    },
-    {
-        icon: TargetIcon,
-        title: 'Des objectifs concrets',
-        text: 'Planifiez vos projets et suivez votre progression, de l’épargne de sécurité au prochain grand achat.'
-    },
-    {
-        icon: HomeEcoIcon,
-        title: 'Votre patrimoine à 360°',
-        text: 'Regroupez placements, immobilier, prêts et passifs pour connaître votre situation nette.'
-    },
-    {
-        icon: CalendarStatsIcon,
-        title: 'Anticipez sereinement',
-        text: 'Visualisez échéances, récurrences et prévisions pour prendre vos décisions avec plus de confiance.'
-    },
-    {
-        icon: UsersIcon,
-        title: 'À plusieurs, simplement',
-        text: 'Partagez comptes, budgets et objectifs tout en gardant vos espaces personnels séparés.'
-    }
-];
 
 const assurances = [
     'Authentification à deux facteurs (2FA)',
     'Gestion et révocation des appareils',
     'Export et suppression de vos données',
     'Contrôle précis des accès partagés'
+];
+
+const pillars = [
+    {
+        icon: BuildingBankIcon,
+        label: 'Comptes & transactions',
+        text: 'Banques, cash, cartes et wallets consolidés, avec catégorisation automatique.'
+    },
+    {
+        icon: ChartPieIcon,
+        label: 'Budgets & objectifs',
+        text: 'Des limites claires, des projets suivis pas à pas et des alertes avant le dépassement.'
+    },
+    {
+        icon: HomeEcoIcon,
+        label: 'Patrimoine & placements',
+        text: 'Immobilier, véhicules, investissements et crypto réunis dans un patrimoine net vivant.'
+    },
+    {
+        icon: UsersIcon,
+        label: 'Famille & partage',
+        text: 'Un espace commun, des rôles précis et des dépenses réparties sans mélanger vos comptes.'
+    }
+];
+
+const steps = [
+    {
+        icon: UserPlusIcon,
+        title: 'Créez votre espace',
+        text: 'Une adresse e-mail suffit. Aucune carte bancaire, aucun engagement : votre espace est prêt en moins d’une minute.',
+        meta: 'Moins d’une minute'
+    },
+    {
+        icon: PlugConnectedIcon,
+        title: 'Ajoutez vos comptes',
+        text: 'Banques, cash, cartes, wallets : renseignez vos comptes ou importez vos relevés. Spendup classe et relie tout.',
+        meta: 'Import PDF & saisie rapide'
+    },
+    {
+        icon: ChartPieIcon,
+        title: 'Pilotez, décidez',
+        text: 'Budgets, objectifs, patrimoine et alertes : une vision à 360° qui transforme vos chiffres en décisions.',
+        meta: 'Vision 360°'
+    }
 ];
 
 const faqs = [
@@ -87,22 +100,22 @@ const faqs = [
             <v-container class="max-width-1218">
                 <v-row align="center">
                     <v-col cols="12" lg="6" class="home-hero__copy">
-                        <v-chip color="primary" variant="tonal" rounded="pill" class="home-eyebrow">
+                        <v-chip color="primary" variant="tonal" rounded="pill" class="home-eyebrow su-hero-in">
                             <SparklesIcon size="15" class="me-2" />
                             La gestion financière, enfin plus simple
                         </v-chip>
 
-                        <h1 class="home-title textPrimary">
+                        <h1 class="home-title textPrimary su-hero-in" style="--su-in-delay: 80ms">
                             Toute votre vie financière,
                             <span>réunie au même endroit.</span>
                         </h1>
 
-                        <p class="home-subtitle text-medium-emphasis">
+                        <p class="home-subtitle text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
                             Spendup transforme vos données financières en une vision claire, utile et actionnable — du budget quotidien à
                             votre patrimoine.
                         </p>
 
-                        <div class="home-hero__actions">
+                        <div class="home-hero__actions su-hero-in" style="--su-in-delay: 240ms">
                             <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth/register">
                                 Commencer gratuitement
                                 <ArrowRightIcon size="19" class="ms-2" />
@@ -112,7 +125,7 @@ const faqs = [
                             </v-btn>
                         </div>
 
-                        <div class="home-hero__reassurance">
+                        <div class="home-hero__reassurance su-hero-in" style="--su-in-delay: 320ms">
                             <span><CheckIcon size="16" /> Sans carte bancaire</span>
                             <span><CheckIcon size="16" /> Sans engagement</span>
                             <span><CheckIcon size="16" /> Données en Suisse</span>
@@ -120,7 +133,7 @@ const faqs = [
                     </v-col>
 
                     <v-col cols="12" lg="6" class="mt-12 mt-lg-0">
-                        <div class="hero-product">
+                        <div class="hero-product su-hero-visual-in">
                             <div class="hero-product__glow"></div>
                             <div class="hero-product__window">
                                 <div class="hero-product__bar">
@@ -135,11 +148,11 @@ const faqs = [
                                     height="505"
                                 />
                             </div>
-                            <div class="hero-float hero-float--security">
+                            <div class="hero-float hero-float--security su-float-soft">
                                 <ShieldCheckIcon size="21" />
                                 <div><strong>100 % Suisse</strong><small>Vos données sont protégées</small></div>
                             </div>
-                            <div class="hero-float hero-float--overview">
+                            <div class="hero-float hero-float--overview su-float-soft" style="--su-float-delay: 1.4s">
                                 <ChartPieIcon size="21" />
                                 <div><strong>Vision à 360°</strong><small>Budget &amp; patrimoine</small></div>
                             </div>
@@ -151,7 +164,7 @@ const faqs = [
 
         <section class="trust-strip">
             <v-container class="max-width-1218">
-                <div class="trust-strip__grid">
+                <div v-reveal class="trust-strip__grid" data-reveal-stagger="70">
                     <div><strong>19</strong><span>domaines financiers réunis</span></div>
                     <div><strong>100 %</strong><span>des données en Suisse</span></div>
                     <div><strong>2FA</strong><span>incluse pour chaque compte</span></div>
@@ -160,38 +173,83 @@ const faqs = [
             </v-container>
         </section>
 
-        <section class="home-features">
+        <section id="comment-ca-marche" class="home-steps">
             <v-container class="max-width-1218">
-                <div class="section-heading">
-                    <span class="section-kicker">Une plateforme, toutes vos finances</span>
-                    <h2 class="textPrimary">Passez de la dispersion à une vision claire</h2>
+                <div v-reveal class="section-heading">
+                    <span class="section-kicker">Comment ça marche</span>
+                    <h2 class="textPrimary">Trois étapes pour y voir clair</h2>
                     <p class="text-medium-emphasis">
-                        Les bons outils pour gérer aujourd’hui, anticiper demain et construire votre patrimoine.
+                        Pas de paramétrage interminable. Spendup vous accompagne dès la première minute, puis grandit avec vous.
                     </p>
                 </div>
 
-                <div class="feature-grid">
-                    <article v-for="feature in features" :key="feature.title" class="feature-card">
-                        <div class="feature-card__icon">
-                            <component :is="feature.icon" size="25" stroke-width="1.65" />
+                <ol v-reveal class="steps-grid" data-reveal-stagger="120">
+                    <li v-for="(step, index) in steps" :key="step.title" class="step-card">
+                        <div class="step-card__head">
+                            <span class="step-card__index">0{{ index + 1 }}</span>
+                            <div class="step-card__icon">
+                                <component :is="step.icon" size="23" stroke-width="1.6" />
+                            </div>
                         </div>
-                        <h3 class="textPrimary">{{ feature.title }}</h3>
-                        <p class="text-medium-emphasis">{{ feature.text }}</p>
-                    </article>
-                </div>
+                        <h3 class="textPrimary">{{ step.title }}</h3>
+                        <p class="text-medium-emphasis">{{ step.text }}</p>
+                        <span class="step-card__meta">{{ step.meta }}</span>
+                    </li>
+                </ol>
+            </v-container>
+        </section>
 
-                <div class="home-features__action">
-                    <v-btn color="primary" variant="outlined" size="large" class="text-none px-6" to="/fonctionnalites">
-                        Explorer toutes les fonctionnalités
-                        <ArrowRightIcon size="18" class="ms-2" />
-                    </v-btn>
+        <section id="plateforme" class="home-platform">
+            <div class="home-platform__backdrop" aria-hidden="true"></div>
+            <v-container class="max-width-1218">
+                <div v-reveal class="platform-layout">
+                    <div class="platform-visual">
+                        <div class="platform-visual__glow" aria-hidden="true"></div>
+                        <img
+                            :src="PLATFORM_IMG"
+                            alt="Toutes les dimensions de vos finances convergent vers un tableau de bord unique"
+                            loading="lazy"
+                            width="1536"
+                            height="1024"
+                        />
+                    </div>
+
+                    <div class="platform-copy">
+                        <span class="section-kicker">Une seule plateforme</span>
+                        <h2 class="textPrimary">19 domaines financiers.<br />Une seule vision, la vôtre.</h2>
+                        <p class="platform-copy__lead text-medium-emphasis">
+                            Fini les fichiers dispersés et les applications qui ne se parlent pas. Du compte courant au patrimoine familial,
+                            chaque donnée est reliée aux autres pour vous donner une lecture claire, complète et toujours à jour de votre
+                            situation.
+                        </p>
+
+                        <ul class="platform-pillars">
+                            <li v-for="pillar in pillars" :key="pillar.label">
+                                <span class="platform-pillars__icon">
+                                    <component :is="pillar.icon" size="21" stroke-width="1.65" />
+                                </span>
+                                <div>
+                                    <strong>{{ pillar.label }}</strong>
+                                    <p>{{ pillar.text }}</p>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="platform-copy__actions">
+                            <v-btn color="primary" size="large" flat class="text-none px-6" to="/fonctionnalites">
+                                Découvrir toutes les fonctionnalités
+                                <ArrowRightIcon size="18" class="ms-2" />
+                            </v-btn>
+                            <span>Gratuit pour commencer · Sans carte bancaire</span>
+                        </div>
+                    </div>
                 </div>
             </v-container>
         </section>
 
-        <section class="home-security">
+        <section id="securite" class="home-security">
             <v-container class="max-width-1218">
-                <div class="security-panel">
+                <div v-reveal class="security-panel">
                     <div class="security-panel__visual">
                         <div class="security-orbit security-orbit--outer"></div>
                         <div class="security-orbit security-orbit--inner"></div>
@@ -230,7 +288,7 @@ const faqs = [
 
         <section class="home-anywhere">
             <v-container class="max-width-1218">
-                <div class="anywhere-panel">
+                <div v-reveal class="anywhere-panel">
                     <div class="anywhere-panel__copy">
                         <div class="feature-card__icon">
                             <DeviceDesktopIcon size="25" stroke-width="1.65" />
@@ -270,28 +328,13 @@ const faqs = [
             </v-container>
         </section>
 
-        <section class="home-beta">
-            <v-container class="max-width-1218">
-                <div class="beta-note">
-                    <SparklesIcon size="22" />
-                    <div>
-                        <strong>Spendup est actuellement en version bêta</strong>
-                        <p>
-                            Les données peuvent être réinitialisées sans préavis. Évitez d’y stocker des informations sensibles ou
-                            définitives pendant cette phase.
-                        </p>
-                    </div>
-                </div>
-            </v-container>
-        </section>
-
         <section class="home-faq">
             <v-container class="max-width-1218">
-                <div class="section-heading">
+                <div v-reveal class="section-heading">
                     <span class="section-kicker">Questions fréquentes</span>
                     <h2 class="textPrimary">Tout ce qu’il faut savoir avant de commencer</h2>
                 </div>
-                <v-expansion-panels class="faq-list" elevation="0">
+                <v-expansion-panels v-reveal class="faq-list" elevation="0">
                     <v-expansion-panel v-for="faq in faqs" :key="faq.question" class="faq-item" elevation="0">
                         <v-expansion-panel-title>{{ faq.question }}</v-expansion-panel-title>
                         <v-expansion-panel-text>{{ faq.answer }}</v-expansion-panel-text>
@@ -300,17 +343,30 @@ const faqs = [
             </v-container>
         </section>
 
-        <section class="home-final-cta">
-            <v-container class="max-width-1218 text-center">
-                <span class="section-kicker">Votre prochaine bonne décision financière</span>
-                <h2 class="textPrimary">Commencez simplement. Évoluez à votre rythme.</h2>
-                <p>Créez votre espace gratuitement, sans carte bancaire et sans engagement.</p>
-                <div class="home-final-cta__actions">
-                    <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth/register">
-                        Commencer gratuitement
-                        <ArrowRightIcon size="19" class="ms-2" />
-                    </v-btn>
-                    <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-8" to="/tarifs">Voir les tarifs</v-btn>
+        <section id="commencer" class="home-final-cta">
+            <div class="home-final-cta__ring home-final-cta__ring--one" aria-hidden="true"></div>
+            <div class="home-final-cta__ring home-final-cta__ring--two" aria-hidden="true"></div>
+            <v-container class="max-width-1218">
+                <div v-reveal class="final-cta">
+                    <span class="section-kicker">Votre prochaine bonne décision financière</span>
+                    <h2 class="textPrimary">Commencez simplement.<br /><span>Évoluez à votre rythme.</span></h2>
+                    <p class="text-medium-emphasis">Créez votre espace gratuitement, sans carte bancaire et sans engagement.</p>
+                    <div class="home-final-cta__actions">
+                        <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth/register">
+                            Commencer gratuitement
+                            <ArrowRightIcon size="19" class="ms-2" />
+                        </v-btn>
+                        <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-8" to="/tarifs">Voir les tarifs</v-btn>
+                    </div>
+                    <div class="final-cta__reassurance">
+                        <span><CheckIcon size="16" /> Sans carte bancaire</span>
+                        <span><CheckIcon size="16" /> Sans engagement</span>
+                        <span><CheckIcon size="16" /> Données en Suisse</span>
+                    </div>
+                    <p class="final-cta__beta">
+                        <SparklesIcon size="15" />
+                        Spendup est en version bêta : les données peuvent être réinitialisées sans préavis pendant cette phase.
+                    </p>
                 </div>
             </v-container>
         </section>

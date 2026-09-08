@@ -14,12 +14,14 @@ import { i18n } from '@/plugins/i18n';
 import { registerDesktopDeepLinks } from '@/features/desktop';
 import { setNativeNotificationNavigate } from '@/features/notifications';
 import { isTauri } from '@/utils/helpers/platform-helpers';
+import { revealDirective } from '@/directives/reveal';
 
 const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 app.use(PerfectScrollbarPlugin);
 app.use(i18n);
+app.directive('reveal', revealDirective);
 
 if (isTauri()) {
     const navigate = (path: string) => {

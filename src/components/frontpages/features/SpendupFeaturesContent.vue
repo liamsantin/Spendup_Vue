@@ -13,13 +13,37 @@ import {
     LayoutDashboardIcon,
     LockIcon,
     RepeatIcon,
-    ShieldCheckIcon,
     SparklesIcon,
     TagsIcon,
     TargetIcon,
     UsersIcon,
     WalletIcon
 } from 'vue-tabler-icons';
+import type { Component } from 'vue';
+import { spendupAdditionalDomains } from '@/data/front-pages/spendup-additional-domains';
+
+type FeatureTone = 'success' | 'alert' | 'info';
+
+interface FeatureCard {
+    icon: Component;
+    title: string;
+    text?: string;
+    items?: string[];
+}
+
+interface FeatureSection {
+    id: string;
+    number: string;
+    kicker: string;
+    icon: Component;
+    title: string;
+    text: string;
+    image: string;
+    imageAlt: string;
+    floats: { label: string; value: string; tone: FeatureTone }[];
+    cards: FeatureCard[];
+    footer?: string;
+}
 
 const journeys = [
     {
@@ -28,9 +52,13 @@ const journeys = [
         kicker: 'Au quotidien',
         title: 'Comprenez chaque mouvement de votre argent',
         text: 'Tous vos comptes, moyens de paiement et transactions réunis dans une expérience claire.',
-        accent: 'primary',
         image: '/assets/images/front-pages/features/feature-imports.png',
         imageAlt: 'Import et organisation de documents financiers',
+        floats: [
+            { label: 'Import PDF', value: 'Synchronisé', tone: 'success' },
+            { label: 'Anomalie', value: 'Détectée', tone: 'alert' },
+            { label: 'Comptes liés', value: '4 actifs', tone: 'info' }
+        ],
         features: [
             { icon: BuildingBankIcon, title: 'Comptes consolidés', text: 'Banques, cash, wallets et cartes dans une vue unique.' },
             { icon: TagsIcon, title: 'Catégorisation intelligente', text: 'Catégories, tags et règles automatiques selon vos habitudes.' },
@@ -44,9 +72,13 @@ const journeys = [
         kicker: 'Planifier',
         title: 'Donnez une direction à votre budget',
         text: 'Passez du simple suivi à une vraie capacité d’anticipation financière.',
-        accent: 'secondary',
         image: '/assets/images/front-pages/features/feature-budget.jpg',
         imageAlt: 'Gestion du budget familial et de l’épargne',
+        floats: [
+            { label: 'Budget courses', value: '82 %', tone: 'info' },
+            { label: 'Objectif vacances', value: 'Atteint', tone: 'success' },
+            { label: 'Reste à vivre', value: 'CHF 640', tone: 'info' }
+        ],
         features: [
             { icon: ChartPieIcon, title: 'Budgets personnalisés', text: 'Limites mensuelles ou annuelles avec suivi par catégorie.' },
             { icon: TargetIcon, title: 'Objectifs d’épargne', text: 'Mesurez vos progrès et planifiez vos projets importants.' },
@@ -60,9 +92,13 @@ const journeys = [
         kicker: 'Construire',
         title: 'Pilotez votre patrimoine dans son ensemble',
         text: 'Une lecture consolidée de ce que vous possédez, devez et préparez pour demain.',
-        accent: 'primary',
         image: '/assets/images/front-pages/features/feature-properties.png',
         imageAlt: 'Suivi des propriétés, véhicules et actifs patrimoniaux',
+        floats: [
+            { label: 'Patrimoine net', value: '+6.2 %', tone: 'success' },
+            { label: 'Immobilier', value: 'CHF 820k', tone: 'info' },
+            { label: 'Projection 2030', value: 'Active', tone: 'info' }
+        ],
         features: [
             { icon: ChartLineIcon, title: 'Placements & crypto', text: 'Portefeuilles, positions, opérations et valorisations.' },
             { icon: HomeEcoIcon, title: 'Immobilier & actifs', text: 'Biens, lots, baux, véhicules, charges et rendement.' },
@@ -76,9 +112,13 @@ const journeys = [
         kicker: 'Partager',
         title: 'Gérez ensemble, sans tout mélanger',
         text: 'Collaborez autour des finances communes en gardant le contrôle de votre espace personnel.',
-        accent: 'secondary',
         image: '/assets/images/front-pages/features/feature-collaboration.jpg',
         imageAlt: 'Collaboration financière entre proches',
+        floats: [
+            { label: 'Espace Famille', value: '5 membres', tone: 'info' },
+            { label: 'Dépense partagée', value: 'Répartie', tone: 'success' },
+            { label: 'Vos droits', value: 'Admin', tone: 'info' }
+        ],
         features: [
             { icon: UsersIcon, title: 'Espaces partagés', text: 'Famille, couple ou colocation, jusqu’à 5 membres.' },
             { icon: LockIcon, title: 'Rôles & permissions', text: 'Contrôlez précisément qui peut voir ou modifier.' },
@@ -88,13 +128,33 @@ const journeys = [
     }
 ];
 
-const capabilities = [
-    { icon: LayoutDashboardIcon, title: 'Tableau de bord', text: 'Soldes, flux et indicateurs clés en un coup d’œil.' },
-    { icon: RepeatIcon, title: 'Automatisations', text: 'Règles, récurrences et alertes pour gagner du temps.' },
-    { icon: FileInvoiceIcon, title: 'Contrats & salaires', text: 'Dates clés, bulletins et historique professionnel.' },
-    { icon: CalendarIcon, title: 'Échéances', text: 'Une vision temporelle de toutes vos obligations.' },
-    { icon: ChartLineIcon, title: 'Multi-devises', text: 'Comptes, opérations et actifs dans leur devise.' },
-    { icon: ShieldCheckIcon, title: 'Export & contrôle', text: 'Vos données restent accessibles et exportables.' }
+/** Parcours (01–04) puis domaines détaillés (05–14) : une seule structure de section pour toute la page. */
+const sections: FeatureSection[] = [
+    ...journeys.map((journey) => ({
+        id: `journey-${journey.number}`,
+        number: journey.number,
+        kicker: journey.kicker,
+        icon: journey.icon,
+        title: journey.title,
+        text: journey.text,
+        image: journey.image,
+        imageAlt: journey.imageAlt,
+        floats: journey.floats as FeatureSection['floats'],
+        cards: journey.features
+    })),
+    ...spendupAdditionalDomains.map((domain, index) => ({
+        id: `domaine-${domain.id}`,
+        number: String(journeys.length + index + 1).padStart(2, '0'),
+        kicker: domain.kicker,
+        icon: domain.icon,
+        title: domain.title,
+        text: domain.lead,
+        image: domain.image,
+        imageAlt: domain.imageAlt,
+        floats: domain.floats,
+        cards: (domain.cards ?? []).map((card) => ({ icon: card.icon, title: card.title, text: card.intro, items: card.items })),
+        footer: domain.footer
+    }))
 ];
 
 const securityItems = [
@@ -153,13 +213,17 @@ const securityItems = [
                         <span>{{ journey.number }}</span>
                         {{ journey.kicker }}
                     </a>
+                    <a href="#domaine-categorisation">
+                        <span>05+</span>
+                        Dans le détail
+                    </a>
                 </div>
             </v-container>
         </section>
 
         <section class="features-intro">
             <v-container class="max-width-1218">
-                <div class="features-heading">
+                <div v-reveal class="features-heading">
                     <span class="features-kicker">Un parcours financier complet</span>
                     <h2 class="textPrimary">Une plateforme qui évolue avec vos besoins</h2>
                     <p class="text-medium-emphasis">
@@ -170,68 +234,72 @@ const securityItems = [
         </section>
 
         <section
-            v-for="(journey, index) in journeys"
-            :id="`journey-${journey.number}`"
-            :key="journey.number"
-            class="journey-section"
-            :class="{ 'journey-section--alternate': index % 2 === 1 }"
+            v-for="(section, index) in sections"
+            :id="section.id"
+            :key="section.id"
+            class="feature-section"
+            :class="{ 'feature-section--alt': index % 2 === 1 }"
         >
-            <v-container class="max-width-1218">
-                <div class="journey-layout" :class="{ 'journey-layout--reversed': index % 2 === 1 }">
-                    <div class="journey-copy">
-                        <div class="journey-copy__meta">
-                            <span class="journey-number">{{ journey.number }}</span>
-                            <span class="features-kicker">{{ journey.kicker }}</span>
-                        </div>
-                        <div class="journey-icon" :class="`journey-icon--${journey.accent}`">
-                            <component :is="journey.icon" size="29" stroke-width="1.55" />
-                        </div>
-                        <h2 class="textPrimary">{{ journey.title }}</h2>
-                        <p class="text-medium-emphasis">{{ journey.text }}</p>
-                        <div class="journey-image">
-                            <img :src="journey.image" :alt="journey.imageAlt" loading="lazy" />
-                        </div>
-                    </div>
+            <span class="feature-watermark" aria-hidden="true">{{ section.number }}</span>
 
-                    <div class="journey-grid">
-                        <article v-for="feature in journey.features" :key="feature.title" class="journey-card">
-                            <div class="journey-card__icon">
-                                <component :is="feature.icon" size="22" stroke-width="1.6" />
+            <v-container class="max-width-1218">
+                <div v-reveal class="feature-layout" :class="{ 'feature-layout--reversed': index % 2 === 1 }">
+                    <div class="feature-main">
+                        <div class="feature-copy">
+                            <div class="feature-copy__meta">
+                                <span class="feature-number">{{ section.number }}</span>
+                                <span class="features-kicker">{{ section.kicker }}</span>
                             </div>
-                            <h3 class="textPrimary">{{ feature.title }}</h3>
-                            <p class="text-medium-emphasis">{{ feature.text }}</p>
-                            <span class="journey-card__check"><CheckIcon size="14" stroke-width="2.5" /></span>
-                        </article>
-                    </div>
-                </div>
-            </v-container>
-        </section>
-
-        <section class="capabilities-section">
-            <v-container class="max-width-1218">
-                <div class="features-heading">
-                    <span class="features-kicker">Et bien plus encore</span>
-                    <h2 class="textPrimary">Les détails qui changent tout</h2>
-                    <p class="text-medium-emphasis">
-                        Chaque fonctionnalité est pensée pour réduire la friction et améliorer vos décisions.
-                    </p>
-                </div>
-
-                <div class="capabilities-grid">
-                    <article v-for="capability in capabilities" :key="capability.title">
-                        <component :is="capability.icon" size="22" stroke-width="1.65" />
-                        <div>
-                            <h3 class="textPrimary">{{ capability.title }}</h3>
-                            <p class="text-medium-emphasis">{{ capability.text }}</p>
+                            <div class="feature-icon">
+                                <component :is="section.icon" size="29" stroke-width="1.55" />
+                            </div>
+                            <h2 class="textPrimary">{{ section.title }}</h2>
+                            <p class="text-medium-emphasis">{{ section.text }}</p>
                         </div>
-                    </article>
+
+                        <div class="feature-grid">
+                            <article v-for="card in section.cards" :key="card.title" class="feature-card">
+                                <div class="feature-card__top">
+                                    <div class="feature-card__icon">
+                                        <component :is="card.icon" size="22" stroke-width="1.6" />
+                                    </div>
+                                    <span class="feature-card__check"><CheckIcon size="14" stroke-width="2.5" /></span>
+                                </div>
+                                <h3 class="textPrimary">{{ card.title }}</h3>
+                                <p v-if="card.text" class="text-medium-emphasis">{{ card.text }}</p>
+                                <ul v-if="card.items?.length">
+                                    <li v-for="item in card.items" :key="item">{{ item }}</li>
+                                </ul>
+                            </article>
+                        </div>
+
+                        <p v-if="section.footer" class="feature-footnote">{{ section.footer }}</p>
+                    </div>
+
+                    <aside class="feature-showcase">
+                        <div class="feature-showcase__stage">
+                            <div class="feature-showcase__aura" aria-hidden="true"></div>
+                            <div class="feature-showcase__frame">
+                                <img :src="section.image" :alt="section.imageAlt" loading="lazy" />
+                            </div>
+                            <div
+                                v-for="(item, floatIndex) in section.floats"
+                                :key="item.label"
+                                class="feature-float"
+                                :class="[`feature-float--${floatIndex + 1}`, `feature-float--${item.tone}`]"
+                            >
+                                <span>{{ item.label }}</span>
+                                <strong>{{ item.value }}</strong>
+                            </div>
+                        </div>
+                    </aside>
                 </div>
             </v-container>
         </section>
 
         <section class="features-security">
             <v-container class="max-width-1218">
-                <div class="features-security__panel">
+                <div v-reveal class="features-security__panel">
                     <div class="features-security__copy">
                         <span class="features-kicker">La sécurité, sans compromis</span>
                         <h2>Protégé par défaut.<br />Contrôlé par vous.</h2>

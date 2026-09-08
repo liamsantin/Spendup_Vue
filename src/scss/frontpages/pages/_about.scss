@@ -290,9 +290,7 @@
     align-items: center;
     overflow: hidden;
     border-radius: 26px;
-    background:
-        radial-gradient(circle at 0% 100%, rgba(var(--v-theme-secondary), 0.15), transparent 38%),
-        #17182d;
+    background: radial-gradient(circle at 0% 100%, rgba(var(--v-theme-secondary), 0.15), transparent 38%), #17182d;
 }
 
 .about-swiss__visual {
@@ -427,8 +425,7 @@
 .about-final {
     padding: 100px 0 108px;
     background:
-        radial-gradient(circle at 50% 120%, rgba(var(--v-theme-primary), 0.14), transparent 45%),
-        rgba(var(--v-theme-primary), 0.035);
+        radial-gradient(circle at 50% 120%, rgba(var(--v-theme-primary), 0.14), transparent 45%), rgba(var(--v-theme-primary), 0.035);
 }
 
 .about-final h2 {

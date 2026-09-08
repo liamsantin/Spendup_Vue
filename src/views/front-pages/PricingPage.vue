@@ -135,15 +135,17 @@ function yearlyTotal(plan: PricingPlan): string {
         <main>
             <section class="pricing-hero">
                 <v-container class="max-width-1218 pricing-hero__content">
-                    <v-chip color="primary" variant="tonal" rounded="pill" class="pricing-eyebrow">
+                    <v-chip color="primary" variant="tonal" rounded="pill" class="pricing-eyebrow su-hero-in">
                         Des tarifs simples et transparents
                     </v-chip>
-                    <h1 class="pricing-title textPrimary">Le bon plan pour chaque étape de votre vie financière</h1>
-                    <p class="pricing-subtitle text-medium-emphasis">
+                    <h1 class="pricing-title textPrimary su-hero-in" style="--su-in-delay: 80ms">
+                        Le bon plan pour chaque étape de votre vie financière
+                    </h1>
+                    <p class="pricing-subtitle text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
                         Commencez gratuitement, puis évoluez à votre rythme. Toutes les offres sont sans engagement.
                     </p>
 
-                    <div class="billing-switch" role="group" aria-label="Période de facturation">
+                    <div class="billing-switch su-hero-in" style="--su-in-delay: 240ms" role="group" aria-label="Période de facturation">
                         <button
                             type="button"
                             class="billing-switch__option"
@@ -167,7 +169,7 @@ function yearlyTotal(plan: PricingPlan): string {
 
             <section class="pricing-plans">
                 <v-container class="max-width-1218">
-                    <v-row align="stretch" class="pricing-grid">
+                    <v-row v-reveal align="stretch" class="pricing-grid" data-reveal-stagger="90">
                         <v-col v-for="plan in plans" :key="plan.name" cols="12" sm="6" lg="3">
                             <article class="plan-card" :class="{ 'plan-card--popular': plan.popular }">
                                 <div v-if="plan.popular" class="plan-card__badge">Le plus populaire</div>
@@ -227,7 +229,7 @@ function yearlyTotal(plan: PricingPlan): string {
 
             <section class="pricing-assurances">
                 <v-container class="max-width-1218">
-                    <div class="assurance-panel">
+                    <div v-reveal class="assurance-panel">
                         <div class="assurance-panel__intro">
                             <span class="assurance-panel__kicker">Inclus pour tous</span>
                             <h2 class="textPrimary">Simple aujourd’hui.<br />Flexible demain.</h2>
@@ -243,7 +245,7 @@ function yearlyTotal(plan: PricingPlan): string {
                         </div>
                     </div>
 
-                    <div class="cancellation-note">
+                    <div v-reveal class="cancellation-note">
                         <ShieldCheckIcon size="24" stroke-width="1.7" />
                         <p>
                             <strong>Vous gardez le contrôle, même après résiliation.</strong>

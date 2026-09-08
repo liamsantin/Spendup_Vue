@@ -55,7 +55,7 @@ const commitments = [
         <main>
             <section class="about-hero">
                 <v-container class="max-width-1218">
-                    <div class="about-hero__copy">
+                    <div class="about-hero__copy su-hero-in">
                         <v-chip color="primary" variant="tonal" rounded="pill" class="about-eyebrow">
                             <SparklesIcon size="15" class="me-2" />
                             Une histoire personnelle, une ambition collective
@@ -76,7 +76,7 @@ const commitments = [
                         </div>
                     </div>
 
-                    <div class="founder-visual">
+                    <div class="founder-visual su-hero-visual-in">
                         <div class="founder-visual__glow"></div>
                         <div class="founder-card">
                             <img :src="liamPhoto" alt="Liam Santin, créateur de Spendup" />
@@ -100,7 +100,7 @@ const commitments = [
 
             <section class="about-story">
                 <v-container class="max-width-1218">
-                    <div class="about-heading">
+                    <div v-reveal class="about-heading">
                         <span class="about-kicker">Pourquoi Spendup existe</span>
                         <h2 class="textPrimary">Une meilleure décision commence par une meilleure vision</h2>
                         <p class="text-medium-emphasis">
@@ -109,7 +109,7 @@ const commitments = [
                         </p>
                     </div>
 
-                    <div class="story-grid">
+                    <div v-reveal class="story-grid" data-reveal-stagger="110">
                         <article>
                             <span>01</span>
                             <h3 class="textPrimary">Le constat</h3>
@@ -140,12 +140,12 @@ const commitments = [
 
             <section class="about-principles">
                 <v-container class="max-width-1218">
-                    <div class="about-heading">
+                    <div v-reveal class="about-heading">
                         <span class="about-kicker">Nos principes</span>
                         <h2 class="textPrimary">Des choix de produit guidés par l’essentiel</h2>
                     </div>
 
-                    <div class="principles-grid">
+                    <div v-reveal class="principles-grid" data-reveal-stagger="90">
                         <article v-for="principle in principles" :key="principle.title">
                             <div class="principle-icon">
                                 <component :is="principle.icon" size="25" stroke-width="1.65" />
@@ -159,7 +159,7 @@ const commitments = [
 
             <section class="about-swiss">
                 <v-container class="max-width-1218">
-                    <div class="about-swiss__panel">
+                    <div v-reveal class="about-swiss__panel">
                         <div class="about-swiss__visual">
                             <div class="swiss-orbit swiss-orbit--outer"></div>
                             <div class="swiss-orbit swiss-orbit--inner"></div>
@@ -189,7 +189,7 @@ const commitments = [
 
             <section class="about-transparency">
                 <v-container class="max-width-1218">
-                    <div class="transparency-layout">
+                    <div v-reveal class="transparency-layout">
                         <div>
                             <span class="about-kicker">Construit dans la transparence</span>
                             <h2 class="textPrimary">Un projet indépendant, encore en mouvement.</h2>

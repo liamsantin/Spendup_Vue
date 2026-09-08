@@ -33,39 +33,11 @@
     z-index: 1;
 }
 
-.footer-cta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 35px;
-    padding: 46px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.footer-cta__kicker {
-    display: block;
-    margin-bottom: 8px;
-    color: rgb(var(--v-theme-primary));
-    font-size: 0.71rem;
-    font-weight: 750;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-}
-
-.footer-cta h2 {
-    margin: 0;
-    color: white;
-    font-size: clamp(1.55rem, 3vw, 2.25rem);
-    font-weight: 720;
-    line-height: 1.2;
-    letter-spacing: -0.035em;
-}
-
 .footer-main {
     display: grid;
     grid-template-columns: minmax(280px, 1.6fr) repeat(3, 0.7fr);
     gap: 55px;
-    padding: 66px 0 58px;
+    padding: 72px 0 58px;
 }
 
 .footer-brand :deep(.spendup-logo) {
@@ -193,16 +165,6 @@
 }
 
 @media (max-width: 599px) {
-    .footer-cta {
-        align-items: flex-start;
-        flex-direction: column;
-        padding: 38px 0;
-    }
-
-    .footer-cta :deep(.v-btn) {
-        width: 100%;
-    }
-
     .footer-main {
         grid-template-columns: 1fr 1fr;
         gap: 42px 25px;

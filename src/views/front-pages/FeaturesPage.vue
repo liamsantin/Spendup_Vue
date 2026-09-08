@@ -10,7 +10,9 @@ import SpendupFeaturesContent from '@/components/frontpages/features/SpendupFeat
         <AnnounceBar />
         <Header />
 
-        <SpendupFeaturesContent />
+        <main>
+            <SpendupFeaturesContent />
+        </main>
 
         <Footer />
     </div>

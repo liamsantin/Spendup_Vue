@@ -3,7 +3,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import Navigations from './Navigation.vue';
-import { Menu2Icon } from 'vue-tabler-icons';
+import { ArrowRightIcon, Menu2Icon } from 'vue-tabler-icons';
 
 const HEADER_HEIGHT = 80;
 
@@ -67,11 +67,21 @@ watch(
 
                     <div class="header-actions ms-auto d-flex align-center ga-2">
                         <v-btn
-                            class="custom-hover-primary bg-primary d-md-flex d-none text-white h-43 px-5 transform-none flex-shrink-0"
-                            flat
+                            class="header-login d-md-flex d-none text-none h-43 px-4 flex-shrink-0"
+                            variant="text"
+                            color="textPrimary"
                             to="/auth/login"
                         >
-                            <span class="text-white">Connexion</span>
+                            Connexion
+                        </v-btn>
+                        <v-btn
+                            class="header-cta d-md-flex d-none text-none h-43 px-5 flex-shrink-0"
+                            color="primary"
+                            flat
+                            to="/auth/register"
+                        >
+                            Commencer gratuitement
+                            <ArrowRightIcon size="17" class="ms-2" />
                         </v-btn>
 
                         <!-- Menu déroulant : visible mobile & tablette (d-lg-none), masqué en PC -->

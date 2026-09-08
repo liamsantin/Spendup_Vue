@@ -26,7 +26,7 @@ const navigation = computed(() => {
     return items;
 });
 
-const isActive = (href: string) => route.path === href || (href !== '/' && route.path.startsWith(href));
+const isActive = (href: string) => (href === '/' ? route.path === '/' : route.path.startsWith(href));
 
 const linkClass = (href: string) => [
     'text-15 font-weight-medium text-decoration-none text-hover-primary d-flex align-center ga-2 px-3 py-lg-1 py-2',
@@ -61,10 +61,9 @@ const linkClass = (href: string) => [
 
         <v-divider class="my-2" />
 
-        <div class="front-nav-dropdown__login px-3 pb-2">
-            <v-btn class="custom-hover-primary bg-primary text-white h-43 px-5 transform-none" flat block to="/auth/login">
-                <span class="text-white">Connexion</span>
-            </v-btn>
+        <div class="front-nav-dropdown__login px-3 pb-2 d-flex flex-column ga-2">
+            <v-btn class="text-none h-43 px-5" color="primary" flat block to="/auth/register">Commencer gratuitement</v-btn>
+            <v-btn class="text-none h-43 px-5" color="primary" variant="outlined" block to="/auth/login">Connexion</v-btn>
         </div>
     </v-list>
 

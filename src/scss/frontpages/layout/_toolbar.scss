@@ -37,19 +37,34 @@
     }
 
     &--scrolled {
-        background: #ffffff !important;
-        background-color: #ffffff !important;
-        backdrop-filter: none;
+        background: rgba(255, 255, 255, 0.82) !important;
+        background-color: rgba(255, 255, 255, 0.82) !important;
+        backdrop-filter: saturate(180%) blur(14px);
+        -webkit-backdrop-filter: saturate(180%) blur(14px);
         box-shadow:
-            0 1px 0 rgba(15, 23, 42, 0.05),
-            0 6px 16px rgba(15, 23, 42, 0.04) !important;
+            0 1px 0 rgba(15, 23, 42, 0.06),
+            0 8px 24px rgba(15, 23, 42, 0.05) !important;
 
         .v-toolbar,
         .v-toolbar__content,
         &.v-app-bar .v-toolbar__content {
-            background: #ffffff !important;
-            background-color: #ffffff !important;
+            background: transparent !important;
+            background-color: transparent !important;
         }
+    }
+
+    .header-login {
+        color: rgba(var(--v-theme-textPrimary), 0.78) !important;
+        font-weight: 600;
+
+        &:hover {
+            color: rgb(var(--v-theme-primary)) !important;
+        }
+    }
+
+    .header-cta {
+        font-weight: 700;
+        letter-spacing: 0;
     }
 }
 //

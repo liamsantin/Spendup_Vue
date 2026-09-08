@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ArrowRightIcon, DatabaseExportIcon, LockIcon, MapPinIcon, ShieldCheckIcon } from 'vue-tabler-icons';
+import { DatabaseExportIcon, LockIcon, MapPinIcon, ShieldCheckIcon } from 'vue-tabler-icons';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 
@@ -35,17 +35,6 @@ const trustItems = [
         <div class="landing-footer__glow landing-footer__glow--right"></div>
 
         <v-container class="max-width-1218 landing-footer__content">
-            <div class="footer-cta">
-                <div>
-                    <span class="footer-cta__kicker">Prêt à y voir plus clair ?</span>
-                    <h2>Commencez gratuitement, évoluez à votre rythme.</h2>
-                </div>
-                <v-btn color="primary" size="large" flat class="text-none px-6" to="/auth/register">
-                    Créer mon espace
-                    <ArrowRightIcon size="18" class="ms-2" />
-                </v-btn>
-            </div>
-
             <div class="footer-main">
                 <div class="footer-brand">
                     <Logo home-to="/" />
