@@ -775,6 +775,20 @@
             "role": "Role",
             "allRoles": "All roles"
         },
+        "createAs": {
+            "person": "A person",
+            "company": "A company",
+            "organization": "An organization",
+            "administration": "An administration",
+            "unknown": "An unspecified counterparty"
+        },
+        "createHints": {
+            "person": "Individual, contact, doctor…",
+            "company": "Merchant, bank, employer…",
+            "organization": "Association, foundation, club…",
+            "administration": "Municipality, tax office, fund…",
+            "unknown": "The type is not clear yet"
+        },
         "natures": {
             "person": "Person",
             "company": "Company",
@@ -811,8 +825,19 @@
         },
         "form": {
             "createTitle": "New counterparty",
+            "createTitles": {
+                "person": "New person",
+                "company": "New company",
+                "organization": "New organization",
+                "administration": "New administration",
+                "unknown": "New counterparty"
+            },
             "editTitle": "Edit counterparty",
             "subtitle": "The nature determines the details panel. Roles are free and can be combined.",
+            "pickNatureTitle": "What type of counterparty?",
+            "pickNatureSubtitle": "Choose a person, a company, an organization… Roles can be set later.",
+            "createSubtitle": "The type is already chosen. You can add roles later from the record.",
+            "changeNature": "Change",
             "natureChangeHint": "Changing the nature clears the previous panel details.",
             "noRoles": "No role selected",
             "rolesHint": "A person can be both landlord and lender.",
@@ -842,6 +867,13 @@
             },
             "placeholders": {
                 "name": "E.g. Migros",
+                "nameByNature": {
+                    "person": "E.g. Marie Dupont",
+                    "company": "E.g. Migros",
+                    "organization": "E.g. Red Cross",
+                    "administration": "E.g. FTA",
+                    "unknown": "E.g. Migros"
+                },
                 "email": "contact@example.ch",
                 "phone": "+41 58 570 00 00",
                 "website": "example.ch",

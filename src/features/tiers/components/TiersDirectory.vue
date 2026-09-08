@@ -11,6 +11,7 @@ import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { TIER_SEARCH_MAX, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
 import TierListItem from '@/features/tiers/components/list/TierListItem.vue';
 import TierFormModal from '@/features/tiers/components/modals/TierFormModal.vue';
+import TierCreateMenu from '@/features/tiers/components/TierCreateMenu.vue';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -20,6 +21,7 @@ const router = useRouter();
 const store = useTiersStore();
 
 const createOpen = ref(false);
+const createNature = ref<TierNature | null>(null);
 const editTarget = ref<Tier | null>(null);
 const deleteTarget = ref<Tier | null>(null);
 const deleteBlockedMessage = ref<string | null>(null);
@@ -127,9 +129,14 @@ watch(
     }
 );
 
-function openCreate() {
+function openCreate(nature: TierNature | null = null) {
+    createNature.value = nature;
     createOpen.value = true;
 }
+
+watch(createOpen, (value) => {
+    if (!value) createNature.value = null;
+});
 
 defineExpose({ openCreate });
 
@@ -218,9 +225,12 @@ async function confirmDelete() {
         </div>
         <div v-else-if="!store.items.length" class="su-empty">
             <p class="mb-3">{{ hasFilters ? t('tiersPage.empty.filtered') : t('tiersPage.empty.list') }}</p>
-            <button v-if="!hasFilters" type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="openCreate">
-                {{ t('tiersPage.actions.create') }}
-            </button>
+            <TierCreateMenu
+                v-if="!hasFilters"
+                :label="t('tiersPage.actions.create')"
+                :disabled="store.acting"
+                @select="openCreate"
+            />
         </div>
         <div v-else class="su-stack">
             <section class="su-surface tiers-directory__list">
@@ -241,7 +251,7 @@ async function confirmDelete() {
             </button>
         </div>
 
-        <TierFormModal v-model="createOpen" :default-nature="filterNature" :default-roles="filterRole ? [filterRole] : null" />
+        <TierFormModal v-model="createOpen" :default-nature="createNature" />
         <TierFormModal v-model="editOpen" :tier="editTarget" />
 
         <AppConfirmationModal

@@ -14,8 +14,9 @@ import {
     type TierFormFields,
     type TierPayloadErrorCode
 } from '@/features/tiers/payload';
-import { TIER_NATURES, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
+import { TIER_NATURES, type Tier, type TierNature } from '@/features/tiers/types';
 import TierForm, { type TierFormFieldErrors } from '@/features/tiers/components/forms/TierForm.vue';
+import TierNatureChoice from '@/features/tiers/components/forms/TierNatureChoice.vue';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -23,7 +24,6 @@ const props = defineProps<{
     /** Pré-remplit le nom (création rapide depuis un sélecteur). */
     defaultName?: string | null;
     defaultNature?: TierNature | null;
-    defaultRoles?: TierRole[] | null;
 }>();
 
 const emit = defineEmits<{
@@ -36,6 +36,7 @@ const store = useTiersStore();
 
 const isEdit = ref(false);
 const editTier = ref<Tier | null>(null);
+const createStep = ref<'nature' | 'form'>('nature');
 
 const natureItems = computed(() => TIER_NATURES.map((value) => ({ title: t(`tiersPage.natures.${value}`), value })));
 
@@ -53,7 +54,22 @@ const natureHint = computed(() =>
     isEdit.value && editTier.value && form.nature !== editTier.value.nature ? t('tiersPage.form.natureChangeHint') : null
 );
 
+const pickingNature = computed(() => !isEdit.value && createStep.value === 'nature');
+
+const modalTitle = computed(() => {
+    if (isEdit.value) return t('tiersPage.form.editTitle');
+    if (pickingNature.value) return t('tiersPage.form.pickNatureTitle');
+    return t(`tiersPage.form.createTitles.${form.nature}`);
+});
+
+const modalSubtitle = computed(() => {
+    if (isEdit.value) return t('tiersPage.form.subtitle');
+    if (pickingNature.value) return t('tiersPage.form.pickNatureSubtitle');
+    return t('tiersPage.form.createSubtitle');
+});
+
 const canSave = computed(() => {
+    if (pickingNature.value) return false;
     if (!isEdit.value || !editTier.value) return true;
     return isTierFormDirty(editTier.value, form);
 });
@@ -86,18 +102,46 @@ function assignForm(next: TierFormFields) {
     form.organization = { ...next.organization };
 }
 
+function applyCreateDefaults(nature: TierNature, name: string) {
+    const next = emptyTierFormFields(nature);
+    next.name = name;
+    next.roles = [];
+    assignForm(next);
+}
+
+function pickNature(nature: TierNature) {
+    const kept = {
+        name: form.name.trim() || props.defaultName?.trim() || '',
+        email: form.email,
+        phone: form.phone,
+        website: form.website,
+        notes: form.notes
+    };
+    applyCreateDefaults(nature, kept.name);
+    form.email = kept.email;
+    form.phone = kept.phone;
+    form.website = kept.website;
+    form.notes = kept.notes;
+    createStep.value = 'form';
+}
+
 function resetForm() {
     localError.message = null;
     clearFieldErrors();
     const tier = editTier.value;
     if (tier) {
+        createStep.value = 'form';
         assignForm(tierToFormFields(tier));
         return;
     }
-    const next = emptyTierFormFields(props.defaultNature || 'company');
-    next.name = props.defaultName?.trim() || '';
-    next.roles = [...(props.defaultRoles ?? [])];
-    assignForm(next);
+    const defaultName = props.defaultName?.trim() || '';
+    if (props.defaultNature) {
+        createStep.value = 'form';
+        applyCreateDefaults(props.defaultNature, defaultName);
+        return;
+    }
+    createStep.value = 'nature';
+    applyCreateDefaults('company', defaultName);
 }
 
 watch(
@@ -111,7 +155,7 @@ watch(
 );
 
 async function onSave() {
-    if (isEdit.value && !canSave.value) return;
+    if (pickingNature.value || (isEdit.value && !canSave.value)) return;
     localError.message = null;
     clearFieldErrors();
     const context = { knownTiers: store.allKnownItems(), excludePublicId: editTier.value?.publicId ?? null };
@@ -141,10 +185,11 @@ async function onSave() {
 <template>
     <AppModalBase
         v-model="open"
-        :title="isEdit ? t('tiersPage.form.editTitle') : t('tiersPage.form.createTitle')"
-        :subtitle="t('tiersPage.form.subtitle')"
-        :max-width="680"
-        :height="760"
+        :title="modalTitle"
+        :subtitle="modalSubtitle"
+        :max-width="pickingNature ? 480 : 680"
+        :height="pickingNature ? 560 : 760"
+        :show-footer="!pickingNature"
         scrollable
         mobile-layout="fullscreen"
     >
@@ -152,7 +197,18 @@ async function onSave() {
             {{ localError.message }}
         </AppAlert>
 
-        <TierForm :form="form" :is-edit="isEdit" :nature-items="natureItems" :field-errors="fieldErrors" :nature-hint="natureHint" />
+        <TierNatureChoice v-if="pickingNature" @select="pickNature" />
+        <TierForm
+            v-else
+            :form="form"
+            :is-edit="isEdit"
+            :nature-items="natureItems"
+            :field-errors="fieldErrors"
+            :nature-hint="natureHint"
+            :lock-nature="!isEdit"
+            :show-roles="isEdit"
+            @change-nature="createStep = 'nature'"
+        />
 
         <template #footer="{ close }">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">

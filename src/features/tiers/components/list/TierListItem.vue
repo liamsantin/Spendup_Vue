@@ -1,19 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-    BuildingBankIcon,
-    BuildingCommunityIcon,
-    BuildingIcon,
-    HelpCircleIcon,
-    MailIcon,
-    PencilIcon,
-    PhoneIcon,
-    TrashIcon,
-    UserIcon,
-    WorldIcon
-} from 'vue-tabler-icons';
-import type { Tier, TierNature } from '@/features/tiers/types';
+import { MailIcon, PencilIcon, PhoneIcon, TrashIcon, WorldIcon } from 'vue-tabler-icons';
+import { TIER_NATURE_ICONS } from '@/features/tiers/natureUi';
+import type { Tier } from '@/features/tiers/types';
 
 const props = defineProps<{
     tier: Tier;
@@ -27,16 +17,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const natureIcon = computed(() => {
-    const map: Record<TierNature, typeof UserIcon> = {
-        person: UserIcon,
-        company: BuildingIcon,
-        organization: BuildingCommunityIcon,
-        administration: BuildingBankIcon,
-        unknown: HelpCircleIcon
-    };
-    return map[props.tier.nature] ?? HelpCircleIcon;
-});
+const natureIcon = computed(() => TIER_NATURE_ICONS[props.tier.nature]);
 
 const natureLabel = computed(() => t(`tiersPage.natures.${props.tier.nature}`));
 

@@ -775,6 +775,20 @@
             "role": "Rôle",
             "allRoles": "Tous les rôles"
         },
+        "createAs": {
+            "person": "Une personne",
+            "company": "Une entreprise",
+            "organization": "Une organisation",
+            "administration": "Une administration",
+            "unknown": "Un tiers non précisé"
+        },
+        "createHints": {
+            "person": "Particulier, contact, médecin…",
+            "company": "Commerçant, banque, employeur…",
+            "organization": "Association, fondation, club…",
+            "administration": "Commune, impôts, caisse…",
+            "unknown": "Le type n’est pas encore clair"
+        },
         "natures": {
             "person": "Personne",
             "company": "Entreprise",
@@ -811,8 +825,19 @@
         },
         "form": {
             "createTitle": "Nouveau tiers",
+            "createTitles": {
+                "person": "Nouvelle personne",
+                "company": "Nouvelle entreprise",
+                "organization": "Nouvelle organisation",
+                "administration": "Nouvelle administration",
+                "unknown": "Nouveau tiers"
+            },
             "editTitle": "Modifier le tiers",
             "subtitle": "La nature détermine le volet de détails. Les rôles sont libres et cumulables.",
+            "pickNatureTitle": "Quel type de tiers ?",
+            "pickNatureSubtitle": "Choisissez une personne, une entreprise, une organisation… Les rôles se règlent plus tard.",
+            "createSubtitle": "Le type est déjà choisi. Vous pourrez ajouter des rôles ensuite, depuis la fiche.",
+            "changeNature": "Changer",
             "natureChangeHint": "Changer la nature efface les détails de l’ancien volet.",
             "noRoles": "Aucun rôle sélectionné",
             "rolesHint": "Une personne peut être à la fois bailleur et prêteur.",
@@ -842,6 +867,13 @@
             },
             "placeholders": {
                 "name": "Ex. Migros",
+                "nameByNature": {
+                    "person": "Ex. Marie Dupont",
+                    "company": "Ex. Migros",
+                    "organization": "Ex. Croix-Rouge",
+                    "administration": "Ex. AFC",
+                    "unknown": "Ex. Migros"
+                },
                 "email": "contact@exemple.ch",
                 "phone": "+41 58 570 00 00",
                 "website": "exemple.ch",

@@ -50,7 +50,7 @@ Les rôles sont indépendants de la nature. En réponse, le volet de la nature e
 | volet              | seul le volet de `nature` est envoyé, les autres à `null`                         |
 | `person.birthDate` | `yyyy-MM-dd`, jamais dans le futur (UTC)                                          |
 
-Le formulaire n’affiche qu’un volet, commuté par le sélecteur de nature. Les codes `TierPayloadErrorCode` sont traduits dans `tiersPage.form.errors.*`.
+Le formulaire n’affiche qu’un volet, selon la nature. À la création, le type se choisit d’abord (menu Ajouter ou première étape) ; les rôles ne sont pas demandés et restent vides. En édition, nature et rôles restent modifiables. Les codes `TierPayloadErrorCode` sont traduits dans `tiersPage.form.errors.*`.
 
 ## Store
 

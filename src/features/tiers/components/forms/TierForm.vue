@@ -12,6 +12,7 @@ import { CheckIcon } from 'vue-tabler-icons';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { todayUtcYmd } from '@/features/tiers/format';
+import { TIER_NATURE_ICONS } from '@/features/tiers/natureUi';
 import {
     TIER_COMPANY_IDENTIFIER_MAX,
     TIER_COMPANY_LEGAL_NAME_MAX,
@@ -53,12 +54,22 @@ const props = withDefaults(
         natureItems: { title: string; value: TierNature }[];
         fieldErrors?: TierFormFieldErrors;
         natureHint?: string | null;
+        /** À la création, la nature est déjà choisie : pas de sélecteur. */
+        lockNature?: boolean;
+        /** Les rôles ne sont pas demandés à la création. */
+        showRoles?: boolean;
     }>(),
     {
         fieldErrors: () => ({}),
-        natureHint: null
+        natureHint: null,
+        lockNature: false,
+        showRoles: true
     }
 );
+
+const emit = defineEmits<{
+    'change-nature': [];
+}>();
 
 const { t } = useI18n();
 
@@ -112,13 +123,29 @@ function toggleRole(role: TierRole) {
                     hide-details="auto"
                     autocomplete="off"
                     :maxlength="TIER_NAME_MAX"
-                    :placeholder="t('tiersPage.form.placeholders.name')"
+                    :placeholder="t(`tiersPage.form.placeholders.nameByNature.${form.nature}`)"
                     :error="!!fieldErrors.name"
                     :error-messages="fieldErrors.name || undefined"
                 />
             </v-col>
         </v-row>
-        <v-row class="align-center" no-gutters>
+        <v-row v-if="lockNature" class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <span class="v-label font-weight-medium">{{ t('tiersPage.form.fields.nature') }}</span>
+            </v-col>
+            <v-col cols="12" sm="9">
+                <div class="tier-form__nature-lock">
+                    <span class="tier-form__nature-badge" :class="`tier-form__nature-badge--${form.nature}`">
+                        <component :is="TIER_NATURE_ICONS[form.nature]" :size="16" stroke-width="1.8" />
+                        {{ t(`tiersPage.natures.${form.nature}`) }}
+                    </span>
+                    <button type="button" class="su-btn su-btn--ghost tier-form__nature-change" @click="emit('change-nature')">
+                        {{ t('tiersPage.form.changeNature') }}
+                    </button>
+                </div>
+            </v-col>
+        </v-row>
+        <v-row v-else class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="tier-form-nature"> {{ t('tiersPage.form.fields.nature') }} * </label>
             </v-col>
@@ -136,7 +163,7 @@ function toggleRole(role: TierRole) {
                 />
             </v-col>
         </v-row>
-        <v-row class="align-start" no-gutters>
+        <v-row v-if="showRoles" class="align-start" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <span class="v-label font-weight-medium tier-form__roles-label">{{ t('tiersPage.form.fields.roles') }}</span>
             </v-col>
@@ -437,6 +464,51 @@ function toggleRole(role: TierRole) {
 
 .tier-form__section:first-child {
     margin-top: 0;
+}
+
+.tier-form__nature-lock {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.tier-form__nature-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 650;
+    background: rgba(var(--v-theme-primary), 0.1);
+    color: rgb(var(--v-theme-primary));
+}
+
+.tier-form__nature-badge--person {
+    background: rgba(var(--v-theme-success), 0.12);
+    color: rgb(var(--v-theme-success));
+}
+
+.tier-form__nature-badge--organization {
+    background: rgba(var(--v-theme-secondary), 0.16);
+    color: rgb(var(--v-theme-secondary));
+}
+
+.tier-form__nature-badge--administration {
+    background: rgba(var(--v-theme-warning), 0.14);
+    color: rgb(var(--v-theme-warning));
+}
+
+.tier-form__nature-badge--unknown {
+    background: var(--hair);
+    color: var(--ink-muted);
+}
+
+.tier-form__nature-change {
+    min-height: 34px;
+    padding: 0 12px;
 }
 
 .tier-form__roles-label {

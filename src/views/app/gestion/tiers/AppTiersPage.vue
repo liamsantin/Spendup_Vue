@@ -2,17 +2,18 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon } from 'vue-tabler-icons';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { TIER_NATURES, TIER_ROLES, TiersDirectory, isTierNature, isTierRole, useTiersStore } from '@/features/tiers';
+import type { TierNature } from '@/features/tiers/types';
+import TierCreateMenu from '@/features/tiers/components/TierCreateMenu.vue';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useTiersStore();
-const directoryRef = ref<{ openCreate: () => void } | null>(null);
+const directoryRef = ref<{ openCreate: (nature?: TierNature | null) => void } | null>(null);
 
 const natureItems = computed(() => [
     { title: t('tiersPage.filters.allNatures'), value: '' },
@@ -50,9 +51,9 @@ function patchQuery(patch: Record<string, string | undefined>) {
     void router.replace({ path: '/app/gestion/tiers', query: next });
 }
 
-function onCreate() {
+function onCreate(nature: TierNature) {
     if (store.acting) return;
-    directoryRef.value?.openCreate();
+    directoryRef.value?.openCreate(nature);
 }
 </script>
 
@@ -65,10 +66,7 @@ function onCreate() {
                     <AppSelect v-model="filterRole" :items="roleItems" :label="t('tiersPage.filters.role')" hide-details />
                 </div>
             </AppDropdownFilter>
-            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onCreate">
-                <PlusIcon :size="16" stroke-width="1.6" />
-                {{ t('tiersPage.actions.create') }}
-            </button>
+            <TierCreateMenu :label="t('tiersPage.actions.create')" :disabled="store.acting" @select="onCreate" />
         </template>
 
         <TiersDirectory ref="directoryRef" />
