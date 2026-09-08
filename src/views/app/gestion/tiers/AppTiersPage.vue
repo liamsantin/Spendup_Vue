@@ -67,6 +67,9 @@ const visibleCount = computed(() => {
     return store.items.filter((tier) => matchesTierSearch(tier, needle)).length;
 });
 
+const sortCount = computed(() => (listSort.value === TIER_SORT_DEFAULT ? 0 : 1));
+const filterCount = computed(() => (filterRole.value ? 1 : 0));
+
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
     const q = 'q' in patch ? patch.q : queryString('q') || undefined;
@@ -175,6 +178,7 @@ watch(
                     :icon="ArrowsSortIcon"
                     :min-width="240"
                     close-on-content-click
+                    :count="sortCount"
                     :reset-disabled="listSort === TIER_SORT_DEFAULT"
                     @reset="listSort = TIER_SORT_DEFAULT"
                 >
@@ -193,6 +197,7 @@ watch(
                 <AppDropdownFilter
                     :label="t('tiersPage.actions.filter')"
                     :min-width="280"
+                    :count="filterCount"
                     :reset-disabled="!filterRole"
                     @reset="filterRole = ''"
                 >

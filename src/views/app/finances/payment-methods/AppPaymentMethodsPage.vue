@@ -32,6 +32,7 @@ function resetFilters() {
             <div class="su-toolbar__actions">
                 <AppDropdownFilter
                     :label="t('paymentMethodsPage.actions.filter')"
+                    :count="showInactive ? 0 : 1"
                     :reset-disabled="showInactive"
                     @reset="resetFilters"
                 >

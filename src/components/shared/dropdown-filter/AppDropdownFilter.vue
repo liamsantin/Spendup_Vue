@@ -20,13 +20,16 @@ const props = withDefaults(
         minWidth?: number | string;
         resetDisabled?: boolean;
         closeOnContentClick?: boolean;
+        /** Nombre de critères actifs (pastille sur le bouton). */
+        count?: number;
     }>(),
     {
         icon: undefined,
         location: 'bottom end',
         minWidth: 260,
         resetDisabled: false,
-        closeOnContentClick: false
+        closeOnContentClick: false,
+        count: 0
     }
 );
 
@@ -51,6 +54,7 @@ function onReset() {
             <button type="button" class="su-btn" v-bind="menuProps">
                 <component :is="resolvedIcon" :size="16" stroke-width="1.6" />
                 {{ label }}
+                <span v-if="count > 0" class="su-btn__count">{{ count }}</span>
             </button>
         </template>
         <v-sheet rounded="md" elevation="0" class="su-menu app-dropdown-filter" :min-width="minWidth">

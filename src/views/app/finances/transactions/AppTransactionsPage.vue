@@ -163,6 +163,12 @@ const filtersActive = computed(
     () => !!(filterAccountId.value || filterCategoryId.value || filterTierId.value || filterFrom.value || filterTo.value)
 );
 
+const filterCount = computed(
+    () => [filterAccountId.value, filterCategoryId.value, filterTierId.value, filterFrom.value, filterTo.value].filter(Boolean).length
+);
+
+const sortCount = computed(() => (listSort.value === TRANSACTION_SORT_DEFAULT ? 0 : 1));
+
 onUnmounted(() => {
     if (searchTimer) clearTimeout(searchTimer);
 });
@@ -228,6 +234,7 @@ watch(
                     :icon="ArrowsSortIcon"
                     :min-width="260"
                     close-on-content-click
+                    :count="sortCount"
                     :reset-disabled="listSort === TRANSACTION_SORT_DEFAULT"
                     @reset="listSort = TRANSACTION_SORT_DEFAULT"
                 >
@@ -246,6 +253,7 @@ watch(
                 <AppDropdownFilter
                     :label="t('transactionsPage.actions.filter')"
                     :min-width="300"
+                    :count="filterCount"
                     :reset-disabled="!filtersActive"
                     @reset="resetFilters"
                 >
