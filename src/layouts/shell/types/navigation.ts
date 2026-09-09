@@ -42,6 +42,10 @@ export interface NavLeaf {
     to?: RouteLocationRaw;
     /** Rend la ligne comme <a href>. Ignoré si `to` est fourni. */
     href?: string;
+    /** Entrée annoncée mais non navigable (page pas encore créée). */
+    disabled?: boolean;
+    /** Mention à droite du libellé, ex. « Bientôt ». */
+    caption?: string;
 }
 
 /** Bloc de la colonne de détail, avec son intitulé et son action facultative. */

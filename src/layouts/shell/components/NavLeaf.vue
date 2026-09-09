@@ -13,6 +13,11 @@ const props = defineProps<{
 const emit = defineEmits<{ select: [leaf: NavLeaf] }>();
 
 const { tag, attrs } = useLinkTag(() => props.leaf);
+
+function onSelect() {
+    if (props.leaf.disabled) return;
+    emit('select', props.leaf);
+}
 </script>
 
 <template>
@@ -20,12 +25,15 @@ const { tag, attrs } = useLinkTag(() => props.leaf);
         :is="tag"
         v-bind="attrs"
         class="leaf"
-        :class="{ 'is-active': active, 'leaf--wide': wide }"
-        :aria-current="active ? 'page' : undefined"
-        @click="emit('select', leaf)"
+        :class="{ 'is-active': active, 'leaf--wide': wide, 'is-disabled': leaf.disabled }"
+        :aria-current="active && !leaf.disabled ? 'page' : undefined"
+        :aria-disabled="leaf.disabled ? 'true' : undefined"
+        :disabled="leaf.disabled || undefined"
+        @click="onSelect"
     >
         <ShellNavIcon :icon="leaf.icon" :size="20" />
         <span class="leaf__label">{{ leaf.label }}</span>
+        <span v-if="leaf.caption" class="leaf__caption">{{ leaf.caption }}</span>
     </component>
 </template>
 
@@ -71,6 +79,22 @@ const { tag, attrs } = useLinkTag(() => props.leaf);
     color: rgb(var(--v-theme-primary));
     background: rgba(var(--v-theme-primary), 0.12);
     box-shadow: none;
+}
+.leaf.is-disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+.leaf.is-disabled:hover {
+    color: var(--ink-mute);
+    background: transparent;
+}
+.leaf__caption {
+    flex: none;
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--ink-mute);
 }
 .leaf :deep(svg) {
     display: block;

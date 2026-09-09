@@ -7,11 +7,33 @@ import {
     ArrowsExchangeIcon,
     BellIcon,
     BuildingBankIcon,
+    BuildingIcon,
+    CalendarEventIcon,
+    CarIcon,
+    ChartCandleIcon,
+    ChartLineIcon,
+    ChartPieIcon,
     CreditCardIcon,
     CrownIcon,
+    DatabaseExportIcon,
+    EyeOffIcon,
+    FileImportIcon,
+    FileTextIcon,
+    FilesIcon,
+    FolderIcon,
+    HomeHeartIcon,
+    HomeIcon,
     LockIcon,
+    ReceiptTaxIcon,
+    RepeatIcon,
+    ReportMoneyIcon,
+    ScaleIcon,
     TagsIcon,
-    UserCircleIcon
+    TargetIcon,
+    TrendingUpIcon,
+    UserCircleIcon,
+    UsersIcon,
+    WalletIcon
 } from 'vue-tabler-icons';
 import { useNotificationsStore } from '@/features/notifications';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
@@ -19,65 +41,86 @@ import DashboardRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/Dashbo
 import FinancesRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/FinancesRailIcon.vue';
 import FriendsRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/FriendsRailIcon.vue';
 import SettingsRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/SettingsRailIcon.vue';
-import type { NavItem, NavLeaf } from '../types/navigation';
+import type { NavIcon, NavItem, NavLeaf } from '../types/navigation';
 
 export const SHELL_NAV_IDS = {
     dashboard: 'dashboard',
-    notifications: 'notifications',
-    friends: 'friends',
+    calendar: 'calendar',
     finances: 'finances',
     accounts: 'accounts',
-    transactions: 'transactions',
     paymentMethods: 'payment-methods',
+    transactions: 'transactions',
+    import: 'import',
+    recurrences: 'recurrences',
     gestion: 'gestion',
-    categories: 'categories',
+    files: 'files',
     tiers: 'tiers',
+    categories: 'categories',
+    contracts: 'contracts',
+    planning: 'planning',
+    budgets: 'budgets',
+    goals: 'goals',
+    wealth: 'wealth',
+    wealthOverview: 'wealth-overview',
+    assets: 'assets',
+    investments: 'investments',
+    realEstate: 'real-estate',
+    debts: 'debts',
+    analytics: 'analytics',
+    forecasts: 'forecasts',
+    tax: 'tax',
+    network: 'network',
+    friends: 'friends',
+    household: 'household',
     settings: 'settings',
     profile: 'profile',
     preferences: 'preferences',
     notificationSettings: 'notification-settings',
+    privacy: 'privacy',
     security: 'security',
-    subscription: 'subscription'
+    subscription: 'subscription',
+    account: 'account'
 } as const;
+
+function pathIs(path: string, prefix: string): boolean {
+    return path === prefix || path.startsWith(`${prefix}/`);
+}
 
 export function idsFromPath(path: string): { openId: string | null; activeId: string | null } {
     if (path === '/app' || path === '/app/') {
         return { openId: SHELL_NAV_IDS.dashboard, activeId: SHELL_NAV_IDS.dashboard };
     }
-    if (path === '/app/notifications' || path.startsWith('/app/notifications/')) {
-        return { openId: SHELL_NAV_IDS.notifications, activeId: SHELL_NAV_IDS.notifications };
-    }
-    if (path === '/app/friends' || path.startsWith('/app/friends/')) {
-        return { openId: SHELL_NAV_IDS.friends, activeId: SHELL_NAV_IDS.friends };
-    }
-    if (path.startsWith('/app/finances/transactions')) {
+    if (pathIs(path, '/app/finances/transactions')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.transactions };
     }
-    if (path.startsWith('/app/finances/moyens-de-paiement')) {
+    if (pathIs(path, '/app/finances/moyens-de-paiement')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.paymentMethods };
     }
-    if (path.startsWith('/app/finances/comptes') || path.startsWith('/app/finances')) {
+    if (pathIs(path, '/app/finances/comptes') || pathIs(path, '/app/finances')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.accounts };
     }
-    if (path.startsWith('/app/gestion/tiers')) {
+    if (pathIs(path, '/app/gestion/tiers')) {
         return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.tiers };
     }
-    if (path.startsWith('/app/gestion/categories') || path.startsWith('/app/gestion')) {
+    if (pathIs(path, '/app/gestion/categories') || pathIs(path, '/app/gestion')) {
         return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.categories };
     }
-    if (path.startsWith(SETTINGS_PATHS.preferences)) {
+    if (pathIs(path, '/app/friends')) {
+        return { openId: SHELL_NAV_IDS.network, activeId: SHELL_NAV_IDS.friends };
+    }
+    if (pathIs(path, SETTINGS_PATHS.preferences)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.preferences };
     }
-    if (path.startsWith(SETTINGS_PATHS.notifications)) {
+    if (pathIs(path, SETTINGS_PATHS.notifications)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.notificationSettings };
     }
-    if (path.startsWith(SETTINGS_PATHS.security)) {
+    if (pathIs(path, SETTINGS_PATHS.security)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.security };
     }
-    if (path.startsWith(SETTINGS_PATHS.subscription)) {
+    if (pathIs(path, SETTINGS_PATHS.subscription)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.subscription };
     }
-    if (path.startsWith(SETTINGS_PATHS.account) || path.startsWith('/app/parametres') || path.startsWith('/app/comptes')) {
+    if (pathIs(path, SETTINGS_PATHS.account) || pathIs(path, '/app/parametres') || pathIs(path, '/app/comptes')) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.profile };
     }
     return { openId: SHELL_NAV_IDS.dashboard, activeId: SHELL_NAV_IDS.dashboard };
@@ -93,139 +136,87 @@ export function useShellNav() {
     const activeId = ref<string | null>(null);
 
     const unreadCount = computed(() => notifications.unreadCount);
+    const soon = computed(() => t('nav.subCaptions.soon'));
+
+    function live(id: string, label: string, icon: NavIcon, to: string): NavLeaf {
+        return { id, label, icon, to };
+    }
+
+    function upcoming(id: string, label: string, icon: NavIcon): NavLeaf {
+        return { id, label, icon, disabled: true, caption: soon.value };
+    }
+
+    function section(id: string, label: string, icon: NavIcon, children: NavLeaf[]): NavItem {
+        return {
+            id,
+            label,
+            icon,
+            children,
+            detail: [{ id: `${id}-pages`, title: label, items: children }]
+        };
+    }
 
     const financeLeaves = computed<NavLeaf[]>(() => [
-        {
-            id: SHELL_NAV_IDS.transactions,
-            label: t('nav.items.transactions'),
-            icon: ArrowsExchangeIcon,
-            to: '/app/finances/transactions'
-        },
-        {
-            id: SHELL_NAV_IDS.accounts,
-            label: t('nav.items.accounts'),
-            icon: BuildingBankIcon,
-            to: '/app/finances/comptes'
-        },
-        {
-            id: SHELL_NAV_IDS.paymentMethods,
-            label: t('nav.items.paymentMethods'),
-            icon: CreditCardIcon,
-            to: '/app/finances/moyens-de-paiement'
-        }
+        live(SHELL_NAV_IDS.accounts, t('nav.items.accounts'), BuildingBankIcon, '/app/finances/comptes'),
+        live(SHELL_NAV_IDS.paymentMethods, t('nav.items.paymentMethods'), CreditCardIcon, '/app/finances/moyens-de-paiement'),
+        live(SHELL_NAV_IDS.transactions, t('nav.items.transactions'), ArrowsExchangeIcon, '/app/finances/transactions'),
+        upcoming(SHELL_NAV_IDS.import, t('nav.items.import'), FileImportIcon),
+        upcoming(SHELL_NAV_IDS.recurrences, t('nav.items.recurrences'), RepeatIcon)
     ]);
 
     const gestionLeaves = computed<NavLeaf[]>(() => [
-        {
-            id: SHELL_NAV_IDS.categories,
-            label: t('nav.items.categories'),
-            icon: TagsIcon,
-            to: '/app/gestion/categories'
-        },
-        {
-            id: SHELL_NAV_IDS.tiers,
-            label: t('nav.items.tiers'),
-            icon: AddressBookIcon,
-            to: '/app/gestion/tiers'
-        }
+        upcoming(SHELL_NAV_IDS.files, t('nav.items.files'), FilesIcon),
+        live(SHELL_NAV_IDS.tiers, t('nav.items.tiers'), AddressBookIcon, '/app/gestion/tiers'),
+        live(SHELL_NAV_IDS.categories, t('nav.items.categories'), TagsIcon, '/app/gestion/categories'),
+        upcoming(SHELL_NAV_IDS.contracts, t('nav.items.contracts'), FileTextIcon)
+    ]);
+
+    const planningLeaves = computed<NavLeaf[]>(() => [
+        upcoming(SHELL_NAV_IDS.budgets, t('nav.items.budgets'), WalletIcon),
+        upcoming(SHELL_NAV_IDS.goals, t('nav.items.goals'), TargetIcon)
+    ]);
+
+    const wealthLeaves = computed<NavLeaf[]>(() => [
+        upcoming(SHELL_NAV_IDS.wealthOverview, t('nav.items.wealthOverview'), ScaleIcon),
+        upcoming(SHELL_NAV_IDS.assets, t('nav.items.assets'), CarIcon),
+        upcoming(SHELL_NAV_IDS.investments, t('nav.items.investments'), ChartCandleIcon),
+        upcoming(SHELL_NAV_IDS.realEstate, t('nav.items.realEstate'), HomeIcon),
+        upcoming(SHELL_NAV_IDS.debts, t('nav.items.debts'), ReportMoneyIcon)
+    ]);
+
+    const analyticsLeaves = computed<NavLeaf[]>(() => [
+        upcoming(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), TrendingUpIcon),
+        upcoming(SHELL_NAV_IDS.tax, t('nav.items.tax'), ReceiptTaxIcon)
+    ]);
+
+    const networkLeaves = computed<NavLeaf[]>(() => [
+        live(SHELL_NAV_IDS.friends, t('nav.items.friends'), UsersIcon, '/app/friends'),
+        upcoming(SHELL_NAV_IDS.household, t('nav.items.household'), HomeHeartIcon)
     ]);
 
     const settingsLeaves = computed<NavLeaf[]>(() => [
-        {
-            id: SHELL_NAV_IDS.profile,
-            label: t('nav.items.profile'),
-            icon: UserCircleIcon,
-            to: SETTINGS_PATHS.account
-        },
-        {
-            id: SHELL_NAV_IDS.preferences,
-            label: t('nav.items.preferences'),
-            icon: AdjustmentsHorizontalIcon,
-            to: SETTINGS_PATHS.preferences
-        },
-        {
-            id: SHELL_NAV_IDS.notificationSettings,
-            label: t('nav.items.notificationSettings'),
-            icon: BellIcon,
-            to: SETTINGS_PATHS.notifications
-        },
-        {
-            id: SHELL_NAV_IDS.security,
-            label: t('nav.items.security'),
-            icon: LockIcon,
-            to: SETTINGS_PATHS.security
-        },
-        {
-            id: SHELL_NAV_IDS.subscription,
-            label: t('nav.items.subscription'),
-            icon: CrownIcon,
-            to: SETTINGS_PATHS.subscription
-        }
+        live(SHELL_NAV_IDS.profile, t('nav.items.profile'), UserCircleIcon, SETTINGS_PATHS.account),
+        live(SHELL_NAV_IDS.preferences, t('nav.items.preferences'), AdjustmentsHorizontalIcon, SETTINGS_PATHS.preferences),
+        live(SHELL_NAV_IDS.notificationSettings, t('nav.items.notificationSettings'), BellIcon, SETTINGS_PATHS.notifications),
+        live(SHELL_NAV_IDS.privacy, t('nav.items.privacy'), EyeOffIcon, SETTINGS_PATHS.preferences),
+        live(SHELL_NAV_IDS.security, t('nav.items.security'), LockIcon, SETTINGS_PATHS.security),
+        upcoming(SHELL_NAV_IDS.subscription, t('nav.items.subscription'), CrownIcon),
+        live(SHELL_NAV_IDS.account, t('nav.items.account'), DatabaseExportIcon, SETTINGS_PATHS.account)
     ]);
 
     const primaryNav = computed<NavItem[]>(() => [
-        {
-            id: SHELL_NAV_IDS.dashboard,
-            label: t('nav.items.dashboard'),
-            icon: DashboardRailIcon,
-            to: '/app'
-        },
-        {
-            id: SHELL_NAV_IDS.notifications,
-            label: t('nav.items.notifications'),
-            icon: BellIcon,
-            to: '/app/notifications',
-            badge: unreadCount.value > 0 ? unreadCount.value : undefined,
-            dot: unreadCount.value > 0
-        },
-        {
-            id: SHELL_NAV_IDS.friends,
-            label: t('nav.items.friends'),
-            icon: FriendsRailIcon,
-            to: '/app/friends'
-        },
-        {
-            id: SHELL_NAV_IDS.finances,
-            label: t('nav.headers.finances'),
-            icon: FinancesRailIcon,
-            children: financeLeaves.value,
-            detail: [
-                {
-                    id: 'finances-pages',
-                    title: t('nav.headers.finances'),
-                    items: financeLeaves.value
-                }
-            ]
-        },
-        {
-            id: SHELL_NAV_IDS.gestion,
-            label: t('nav.headers.gestion'),
-            icon: 'folder',
-            children: gestionLeaves.value,
-            detail: [
-                {
-                    id: 'gestion-pages',
-                    title: t('nav.headers.gestion'),
-                    items: gestionLeaves.value
-                }
-            ]
-        }
+        live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardRailIcon, '/app'),
+        upcoming(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarEventIcon),
+        section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesRailIcon, financeLeaves.value),
+        section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), FolderIcon, gestionLeaves.value),
+        section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), ChartPieIcon, planningLeaves.value),
+        section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), BuildingIcon, wealthLeaves.value),
+        section(SHELL_NAV_IDS.analytics, t('nav.headers.analytics'), ChartLineIcon, analyticsLeaves.value),
+        section(SHELL_NAV_IDS.network, t('nav.headers.network'), FriendsRailIcon, networkLeaves.value)
     ]);
 
     const secondaryNav = computed<NavItem[]>(() => [
-        {
-            id: SHELL_NAV_IDS.settings,
-            label: t('nav.headers.settings'),
-            icon: SettingsRailIcon,
-            children: settingsLeaves.value,
-            detail: [
-                {
-                    id: 'settings-pages',
-                    title: t('nav.headers.settings'),
-                    items: settingsLeaves.value
-                }
-            ]
-        }
+        section(SHELL_NAV_IDS.settings, t('nav.headers.settings'), SettingsRailIcon, settingsLeaves.value)
     ]);
 
     watch(

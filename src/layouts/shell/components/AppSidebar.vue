@@ -51,6 +51,10 @@ function toggle() {
 }
 
 function toggleItem(item: NavItem) {
+    if (item.disabled) {
+        if (!open.value) open.value = true;
+        return;
+    }
     // replié, un clic déploie la colonne sur l'onglet visé
     if (!open.value) {
         open.value = true;
@@ -70,6 +74,7 @@ function toggleItem(item: NavItem) {
 }
 
 function selectLeaf(leaf: NavLeafType) {
+    if (leaf.disabled) return;
     activeId.value = leaf.id;
     emit('select', leaf);
     // sur mobile le volet est un overlay : on le referme après le choix

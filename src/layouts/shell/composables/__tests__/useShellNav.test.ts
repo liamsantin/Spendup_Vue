@@ -9,11 +9,11 @@ describe('idsFromPath', () => {
             activeId: SHELL_NAV_IDS.dashboard
         });
         expect(idsFromPath('/app/notifications')).toEqual({
-            openId: SHELL_NAV_IDS.notifications,
-            activeId: SHELL_NAV_IDS.notifications
+            openId: SHELL_NAV_IDS.dashboard,
+            activeId: SHELL_NAV_IDS.dashboard
         });
         expect(idsFromPath('/app/friends')).toEqual({
-            openId: SHELL_NAV_IDS.friends,
+            openId: SHELL_NAV_IDS.network,
             activeId: SHELL_NAV_IDS.friends
         });
     });
@@ -30,6 +30,17 @@ describe('idsFromPath', () => {
         expect(idsFromPath('/app/finances/moyens-de-paiement')).toEqual({
             openId: SHELL_NAV_IDS.finances,
             activeId: SHELL_NAV_IDS.paymentMethods
+        });
+    });
+
+    it('mappe le réseau', () => {
+        expect(idsFromPath('/app/friends')).toEqual({
+            openId: SHELL_NAV_IDS.network,
+            activeId: SHELL_NAV_IDS.friends
+        });
+        expect(idsFromPath('/app/friends/requests')).toEqual({
+            openId: SHELL_NAV_IDS.network,
+            activeId: SHELL_NAV_IDS.friends
         });
     });
 
@@ -72,7 +83,7 @@ describe('idsFromPath', () => {
     });
 
     it('ne confond pas la boîte de réception et les notifs des paramètres', () => {
-        expect(idsFromPath('/app/notifications').openId).toBe(SHELL_NAV_IDS.notifications);
+        expect(idsFromPath('/app/notifications').openId).toBe(SHELL_NAV_IDS.dashboard);
         expect(idsFromPath(SETTINGS_PATHS.notifications).openId).toBe(SHELL_NAV_IDS.settings);
     });
 

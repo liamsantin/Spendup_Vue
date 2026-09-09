@@ -9,7 +9,7 @@ import type { NavLeaf } from '../types/navigation';
  */
 export function useLinkTag(leaf: () => NavLeaf, forceButton?: () => boolean) {
     const tag = computed<Component | string>(() => {
-        if (forceButton?.()) return 'button';
+        if (forceButton?.() || leaf().disabled) return 'button';
         if (leaf().to) return RouterLink;
         if (leaf().href) return 'a';
         return 'button';

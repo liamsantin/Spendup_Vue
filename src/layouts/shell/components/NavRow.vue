@@ -40,10 +40,11 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
             :is="tag"
             v-bind="attrs"
             class="item"
-            :class="{ 'is-open': open }"
+            :class="{ 'is-open': open, 'is-disabled': item.disabled }"
             :title="expanded ? undefined : item.label"
             :aria-expanded="hasChildren ? !!open : undefined"
             :aria-controls="hasChildren ? subId : undefined"
+            :aria-disabled="item.disabled ? 'true' : undefined"
             @click="emit('toggle', item)"
         >
             <span class="item__icon">
@@ -51,7 +52,8 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
                 <span v-if="item.dot" class="item__dot" />
             </span>
             <span class="item__label">{{ item.label }}</span>
-            <span v-if="item.badge" class="badge">{{ item.badge }}</span>
+            <span v-if="item.caption" class="item__caption">{{ item.caption }}</span>
+            <span v-else-if="item.badge" class="badge">{{ item.badge }}</span>
             <span v-else-if="hasChildren" class="item__chev">
                 <BaseIcon :name="open ? 'minus' : 'plus'" :size="18" />
             </span>
@@ -115,6 +117,14 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
     color: #fff;
     box-shadow: 0 14px 28px -16px rgba(var(--v-theme-primary), 0.7);
 }
+.item.is-disabled {
+    opacity: 0.55;
+}
+.item.is-disabled:hover {
+    color: var(--ink-soft);
+    background: transparent;
+    box-shadow: none;
+}
 /* replié, la ligne courante reste la pastille du rail */
 .sidebar:not(.is-expanded) .item.is-open {
     background: rgba(var(--v-theme-primary), 0.14);
@@ -155,6 +165,7 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
 /* libellé, badge et chevron n'apparaissent qu'une fois la place libérée */
 .item__label,
 .item__chev,
+.item__caption,
 .badge {
     opacity: 0;
     transition: opacity 0.42s var(--ease);
@@ -162,6 +173,10 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
 .is-expanded .item__label,
 .is-expanded .badge {
     opacity: 1;
+    transition-delay: calc(var(--i) * 38ms + 90ms);
+}
+.is-expanded .item__caption {
+    opacity: 0.72;
     transition-delay: calc(var(--i) * 38ms + 90ms);
 }
 .is-expanded .item__chev {
@@ -199,6 +214,14 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
     transition:
         opacity 0.42s var(--ease),
         transform 0.45s var(--spring);
+}
+.item__caption {
+    flex: none;
+    margin-right: 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: inherit;
 }
 .item.is-open .item__chev {
     transform: rotate(180deg);
