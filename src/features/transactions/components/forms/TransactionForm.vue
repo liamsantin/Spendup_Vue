@@ -5,10 +5,16 @@
 /* eslint-disable vue/no-mutating-props -- shared reactive form owned by parent */
 defineOptions({ name: 'TransactionForm' });
 
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import CategoryFormModal from '@/features/categories/components/modals/CategoryFormModal.vue';
+import type { Category } from '@/features/categories/types';
+import PaymentMethodFormModal from '@/features/payment-methods/components/modals/PaymentMethodFormModal.vue';
+import { canWritePaymentMethods } from '@/features/payment-methods/rights';
+import type { PaymentMethod } from '@/features/payment-methods/types';
 import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
 import { todayUtcYmd } from '@/features/transactions/format';
 import { TRANSACTION_LABEL_MAX, type TransactionType } from '@/features/transactions/types';
@@ -54,6 +60,7 @@ const props = withDefaults(
 );
 
 const { t } = useI18n();
+const accountsStore = useAccountsStore();
 
 const isTransfer = computed(() => props.form.type === 'transfert');
 const showOperation = computed(() => props.section === 'all' || props.section === 'operation');
@@ -63,6 +70,16 @@ const hasCounterpartyOptions = computed(() => props.counterpartyItems.length > 0
 const counterpartySelectItems = computed(() =>
     hasCounterpartyOptions.value ? props.counterpartyItems : [{ title: t('transactionsPage.form.noCounterpartyOption'), value: '' }]
 );
+
+const categoryCreateOpen = ref(false);
+const categoryCreateName = ref('');
+const paymentMethodCreateOpen = ref(false);
+const paymentMethodCreateLabel = ref('');
+
+const canCreatePaymentMethod = computed(() => {
+    const account = accountsStore.accounts.find((item) => item.publicId === props.form.accountPublicId);
+    return !!account && canWritePaymentMethods(account);
+});
 
 const operationDateModel = computed({
     get: () => props.form.operationDate || null,
@@ -80,6 +97,25 @@ const valueDateModel = computed({
 
 function onAmountInput(value: string) {
     props.form.amount = value.replace(/[^\d.,]/g, '');
+}
+
+function onCategoryCreated(category: Category) {
+    props.form.categoryPublicId = category.publicId;
+}
+
+function onPaymentMethodCreated(method: PaymentMethod) {
+    if (method.accountPublicId !== props.form.accountPublicId) return;
+    props.form.paymentMethodPublicId = method.publicId;
+}
+
+function openCategoryCreate(name: string) {
+    categoryCreateName.value = name;
+    categoryCreateOpen.value = true;
+}
+
+function openPaymentMethodCreate(name: string) {
+    paymentMethodCreateLabel.value = name;
+    paymentMethodCreateOpen.value = true;
 }
 </script>
 
@@ -223,6 +259,14 @@ function onAmountInput(value: string) {
                     hide-details="auto"
                     :error="!!fieldErrors.paymentMethodPublicId"
                     :error-messages="fieldErrors.paymentMethodPublicId || undefined"
+                    searchable
+                    :search-placeholder="t('transactionsPage.form.paymentMethodSearchPlaceholder')"
+                    :no-results-label="t('transactionsPage.form.paymentMethodNoResults')"
+                    :create-label="canCreatePaymentMethod ? t('transactionsPage.form.paymentMethodCreateNew') : undefined"
+                    :create-named-label="
+                        canCreatePaymentMethod ? t('transactionsPage.form.paymentMethodCreate', { name: '{name}' }) : undefined
+                    "
+                    @create="openPaymentMethodCreate"
                 />
             </v-col>
         </v-row>
@@ -243,6 +287,12 @@ function onAmountInput(value: string) {
                     :error-messages="fieldErrors.categoryPublicId || undefined"
                     :hint="categoryHint || undefined"
                     :persistent-hint="!!categoryHint"
+                    searchable
+                    :search-placeholder="t('transactionsPage.form.categorySearchPlaceholder')"
+                    :no-results-label="t('transactionsPage.form.categoryNoResults')"
+                    :create-label="t('transactionsPage.form.categoryCreateNew')"
+                    :create-named-label="t('transactionsPage.form.categoryCreate', { name: '{name}' })"
+                    @create="openCategoryCreate"
                 />
             </v-col>
         </v-row>
@@ -265,6 +315,22 @@ function onAmountInput(value: string) {
                 />
             </v-col>
         </v-row>
+
+        <CategoryFormModal
+            v-if="showClassification"
+            v-model="categoryCreateOpen"
+            :default-type="form.type"
+            :default-name="categoryCreateName"
+            @saved="onCategoryCreated"
+        />
+        <PaymentMethodFormModal
+            v-if="showClassification"
+            v-model="paymentMethodCreateOpen"
+            :default-account-public-id="form.accountPublicId"
+            :default-label="paymentMethodCreateLabel"
+            lock-account
+            @saved="onPaymentMethodCreated"
+        />
     </div>
 </template>
 

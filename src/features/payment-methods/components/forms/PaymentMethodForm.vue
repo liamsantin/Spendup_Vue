@@ -31,9 +31,11 @@ const props = withDefaults(
         accountItems: { title: string; value: string }[];
         typeItems: { title: string; value: PaymentMethodType }[];
         fieldErrors?: PaymentMethodFormFieldErrors;
+        accountDisabled?: boolean;
     }>(),
     {
-        fieldErrors: () => ({})
+        fieldErrors: () => ({}),
+        accountDisabled: false
     }
 );
 
@@ -76,7 +78,7 @@ function onLastFourInput(value: string) {
                     id="pm-form-account"
                     v-model="form.accountPublicId"
                     :items="accountItems"
-                    :disabled="isEdit"
+                    :disabled="isEdit || accountDisabled"
                     :label="t('paymentMethodsPage.form.fields.account')"
                     hide-details="auto"
                     :error="!!fieldErrors.accountPublicId"

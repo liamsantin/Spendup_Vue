@@ -21,6 +21,8 @@ const props = defineProps<{
     category?: Category | null;
     defaultParentPublicId?: string | null;
     defaultType?: CategoryType | null;
+    /** Pré-remplit le nom (création rapide depuis un sélecteur). */
+    defaultName?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -101,7 +103,7 @@ function resetForm() {
         form.parentPublicId = category.parentPublicId ?? '';
         return;
     }
-    form.name = '';
+    form.name = props.defaultName?.trim() || '';
     form.type = props.defaultType || 'depense';
     form.color = null;
     form.icone = '';

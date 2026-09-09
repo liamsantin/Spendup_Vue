@@ -20,8 +20,12 @@ import PaymentMethodForm, { type PaymentMethodFormFieldErrors } from '@/features
 const props = defineProps<{
     modelValue: boolean;
     method?: PaymentMethod | null;
-    /** Compte pré-sélectionné (fiche compte). */
+    /** Compte pré-sélectionné (fiche compte / transaction). */
     defaultAccountPublicId?: string | null;
+    /** Empêche de changer le compte (création depuis une transaction). */
+    lockAccount?: boolean;
+    /** Pré-remplit le libellé (création rapide depuis un sélecteur). */
+    defaultLabel?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -109,7 +113,7 @@ function resetForm() {
     }
     form.accountPublicId = props.defaultAccountPublicId?.trim() || writableAccounts.value[0]?.publicId || '';
     form.type = 'carte' as PaymentMethodType;
-    form.label = '';
+    form.label = props.defaultLabel?.trim() || '';
     form.reference = '';
     form.lastFourDigits = '';
     form.expirationDate = null;
@@ -176,6 +180,7 @@ async function onSave() {
             :account-items="accountItems"
             :type-items="typeItems"
             :field-errors="fieldErrors"
+            :account-disabled="!!lockAccount && !isEdit"
         />
 
         <template #footer="{ close }">

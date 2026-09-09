@@ -7,7 +7,7 @@ defineOptions({ name: 'TierPicker', inheritAttrs: false });
 
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CheckIcon, ChevronDownIcon, PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
+import { CheckIcon, ChevronDownIcon, PlusIcon, SearchIcon } from 'vue-tabler-icons';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import { sortTiers } from '@/features/tiers/format';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
@@ -110,10 +110,6 @@ function select(publicId: string) {
     open.value = false;
 }
 
-function clear() {
-    emit('update:modelValue', '');
-}
-
 function openCreate() {
     createName.value = trimmedQuery.value;
     open.value = false;
@@ -155,29 +151,18 @@ onUnmounted(() => {
             :disabled="disabled"
         >
             <template #activator="{ props: activatorProps }">
-                <div class="tier-picker__control-wrap">
-                    <button
-                        v-bind="{ ...$attrs, ...activatorProps }"
-                        type="button"
-                        class="tier-picker__control"
-                        :class="{ 'tier-picker__control--open': open, 'tier-picker__control--clearable': !!modelValue }"
-                        :disabled="disabled"
-                        :aria-label="label"
-                        :aria-invalid="hasError || undefined"
-                    >
-                        <span class="tier-picker__value" :class="{ 'tier-picker__value--empty': !modelValue }">{{ selectedTitle }}</span>
-                        <ChevronDownIcon class="tier-picker__chevron" :size="19" stroke-width="1.6" />
-                    </button>
-                    <button
-                        v-if="modelValue && !disabled"
-                        type="button"
-                        class="tier-picker__clear"
-                        :aria-label="t('transactionsPage.form.noTier')"
-                        @click.stop="clear"
-                    >
-                        <XIcon :size="14" stroke-width="2" />
-                    </button>
-                </div>
+                <button
+                    v-bind="{ ...$attrs, ...activatorProps }"
+                    type="button"
+                    class="tier-picker__control"
+                    :class="{ 'tier-picker__control--open': open }"
+                    :disabled="disabled"
+                    :aria-label="label"
+                    :aria-invalid="hasError || undefined"
+                >
+                    <span class="tier-picker__value" :class="{ 'tier-picker__value--empty': !modelValue }">{{ selectedTitle }}</span>
+                    <ChevronDownIcon class="tier-picker__chevron" :size="19" stroke-width="1.6" />
+                </button>
             </template>
 
             <v-sheet class="app-select-menu__surface tier-picker__menu">
@@ -262,10 +247,6 @@ onUnmounted(() => {
     min-width: 0;
 }
 
-.tier-picker__control-wrap {
-    position: relative;
-}
-
 .tier-picker__control {
     appearance: none;
     display: flex;
@@ -289,10 +270,6 @@ onUnmounted(() => {
         border-color 0.2s ease,
         box-shadow 0.2s ease,
         background 0.2s ease;
-}
-
-.tier-picker__control--clearable {
-    padding-right: 44px;
 }
 
 .tier-picker__control:hover:not(:disabled) {
@@ -337,28 +314,6 @@ onUnmounted(() => {
 
 .tier-picker__control--open .tier-picker__chevron {
     transform: rotate(180deg);
-}
-
-.tier-picker__clear {
-    appearance: none;
-    position: absolute;
-    top: 50%;
-    right: 38px;
-    transform: translateY(-50%);
-    display: grid;
-    place-items: center;
-    width: 24px;
-    height: 24px;
-    border: 0;
-    border-radius: 50%;
-    background: var(--hair);
-    color: var(--ink-muted);
-    cursor: pointer;
-}
-
-.tier-picker__clear:hover {
-    color: rgb(var(--v-theme-error));
-    background: rgba(var(--v-theme-error), 0.1);
 }
 
 .tier-picker__menu {

@@ -40,7 +40,7 @@ Taxonomie **personnelle** : pas de partage, pas de catalogue système. Un nouvel
 ## Transactions
 
 - `categoryPublicId` optionnel sur create/update (PUT `null` = détacher).
-- Sélecteur : `GET /api/categories?type={typeTransaction}` ; rechargé et vidé si le type change.
+- Sélecteur : `GET /api/categories?type={typeTransaction}` ; rechargé et vidé si le type change. Recherche locale + création rapide via `CategoryFormModal` (type et nom préremplis).
 - Filtre liste : `GET /api/transactions?categoryPublicId=`.
 - Compte partagé : la catégorie est **personnelle**. Un co-détenteur peut voir `null` ; le libellé UI est « ma catégorie ».
 
