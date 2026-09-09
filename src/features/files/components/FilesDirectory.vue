@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { matchesFileSearch, parseFileSort, sortFiles } from '@/features/files/format';
+import { isQuotaExceededMessage, matchesFileSearch, parseFileSort, sortFiles, wouldExceedQuota } from '@/features/files/format';
 import { downloadFileBlob } from '@/features/files/composables/useFileContentUrl';
 import { useFilesStore } from '@/features/files/stores/files-store';
 import { FILE_PAGE_SIZE_MAX, FILE_PDF_MIME, FILE_SEARCH_MAX, type FileDto } from '@/features/files/types';
@@ -85,6 +85,7 @@ function onVisibilityChange() {
 
 onMounted(() => {
     document.addEventListener('visibilitychange', onVisibilityChange);
+    void store.loadUsage();
     void loadDirectory()
         .then(async () => {
             if (previewId.value && !store.findByPublicId(previewId.value)) {
@@ -187,6 +188,11 @@ async function uploadFiles(list: FileList | File[]) {
             localError.value = t(`filesPage.errors.${check.code}`);
             return;
         }
+        const usage = store.usage;
+        if (usage && wouldExceedQuota(usage, file.size)) {
+            localError.value = t('filesPage.errors.quotaExceeded');
+            return;
+        }
         uploadingName.value = file.name;
         uploadProgress.value = 0;
         try {
@@ -194,7 +200,8 @@ async function uploadFiles(list: FileList | File[]) {
                 uploadProgress.value = percent;
             });
         } catch (e: unknown) {
-            localError.value = getErrorMessage(e);
+            const err = AppError.fromUnknown(e);
+            localError.value = isQuotaExceededMessage(err.message) ? t('filesPage.errors.quotaExceeded') : getErrorMessage(e);
             break;
         } finally {
             uploadingName.value = null;

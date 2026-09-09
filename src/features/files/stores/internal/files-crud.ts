@@ -1,5 +1,6 @@
 import { AppError } from '@/utils/errors/app-error';
 import { filesApi } from '@/features/files/api';
+import { isQuotaExceededMessage } from '@/features/files/format';
 import { buildUpdateFileRequest, type FileFormFields } from '@/features/files/payload';
 import { FILE_PAGE_SIZE_DEFAULT, type FileDto, type ListFilesQuery } from '@/features/files/types';
 import { FILES_LIST_CACHE_KEY, type FilesState } from '@/features/files/stores/internal/files-state';
@@ -36,7 +37,8 @@ export function createFilesCrud(state: FilesState) {
         activateList,
         upsertItem,
         removeItemLocal,
-        invalidateAllLists
+        invalidateAllLists,
+        usage
     } = state;
 
     let listRequestSeq = 0;
@@ -150,6 +152,14 @@ export function createFilesCrud(state: FilesState) {
         }
     }
 
+    async function loadUsage() {
+        try {
+            usage.value = await filesApi.usage();
+        } catch {
+            /* La barre reste sur la dernière valeur connue ; ne pas écraser error liste. */
+        }
+    }
+
     async function fetchFile(publicId: string): Promise<FileDto | null> {
         try {
             const file = await filesApi.get(publicId);
@@ -168,6 +178,7 @@ export function createFilesCrud(state: FilesState) {
     async function uploadFile(file: File, onProgress?: (percent: number) => void) {
         beginActing();
         clearError();
+        let refreshUsage = false;
         try {
             const created = await filesApi.upload(file, {
                 onUploadProgress: (event) => {
@@ -177,13 +188,20 @@ export function createFilesCrud(state: FilesState) {
             });
             upsertItem(created);
             touchHydratedListCaches();
+            refreshUsage = true;
             return created;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
             error.value = err.message;
+            if (err.status === 400 && isQuotaExceededMessage(err.message)) {
+                refreshUsage = true;
+            }
             throw err;
         } finally {
             endActing();
+            if (refreshUsage) {
+                await loadUsage();
+            }
         }
     }
 
@@ -222,10 +240,12 @@ export function createFilesCrud(state: FilesState) {
     async function deleteFile(publicId: string) {
         beginActing();
         clearError();
+        let refreshUsage = false;
         try {
             await filesApi.remove(publicId);
             removeItemLocal(publicId);
             touchHydratedListCaches();
+            refreshUsage = true;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
             if (err.status === 404) {
@@ -238,6 +258,9 @@ export function createFilesCrud(state: FilesState) {
             throw err;
         } finally {
             endActing();
+            if (refreshUsage) {
+                await loadUsage();
+            }
         }
     }
 
@@ -248,6 +271,7 @@ export function createFilesCrud(state: FilesState) {
     return {
         loadList,
         loadMore,
+        loadUsage,
         cancelPendingLoads,
         fetchFile,
         uploadFile,

@@ -36,6 +36,19 @@ export type UpdateFileRequest = {
     clearDocumentDate?: boolean;
 };
 
+/** Consommation de blobs PDF uniques — hors avatar, hors soft-delete. */
+export type FileUsage = {
+    usedBytes: number;
+    quotaBytes: number;
+    remainingBytes: number;
+    isUnlimited: boolean;
+    fileCount: number;
+    uniqueBlobCount: number;
+};
+
+/** Message 400 API quand un nouveau blob ferait dépasser le quota. */
+export const FILE_QUOTA_EXCEEDED_MESSAGE = 'Quota de stockage dépassé.';
+
 export const FILE_PAGE_SIZE_DEFAULT = 50;
 export const FILE_PAGE_SIZE_MAX = 200;
 export const FILE_SEARCH_MAX = 100;

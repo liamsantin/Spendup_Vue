@@ -6,6 +6,7 @@ import { ArrowLeftIcon, ArrowsSortIcon, DownloadIcon, PencilIcon, SearchIcon, Tr
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import FilePreview from '@/features/files/components/FilePreview.vue';
+import FileUsageMeter from '@/features/files/components/FileUsageMeter.vue';
 import {
     FILE_SEARCH_MAX,
     FILE_SORT_DEFAULT,
@@ -213,6 +214,7 @@ watch(
             <FilePreview v-if="previewId" ref="previewRef" :public-id="previewId" :name-original="previewFile?.nameOriginal" />
             <div v-show="!previewing">
                 <p class="files-page__hint">{{ t('filesPage.uploadHint') }}</p>
+                <FileUsageMeter v-if="store.usage" :usage="store.usage" />
                 <FilesDirectory ref="directoryRef" />
             </div>
         </AppPageShell>

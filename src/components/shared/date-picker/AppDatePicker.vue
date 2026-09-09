@@ -19,6 +19,7 @@ const props = withDefaults(
         disabled?: boolean;
         readonly?: boolean;
         clearable?: boolean;
+        id?: string;
         /** Date min (`YYYY-MM-DD`). */
         min?: string;
         /** Date max (`YYYY-MM-DD`). */
@@ -35,6 +36,7 @@ const props = withDefaults(
         disabled: false,
         readonly: false,
         clearable: true,
+        id: undefined,
         min: undefined,
         max: undefined,
         showAdjacentMonths: false
@@ -102,6 +104,7 @@ function clear() {
     <v-menu v-model="menuOpen" :close-on-content-click="false" location="bottom start" min-width="0" :disabled="disabled || readonly">
         <template #activator="{ props: activatorProps }">
             <v-text-field
+                :id="id"
                 :model-value="displayValue"
                 :label="label"
                 :placeholder="placeholder"

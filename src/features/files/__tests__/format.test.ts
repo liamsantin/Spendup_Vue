@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { fileSizeParts, matchesFileSearch, parseFileSort, sortFiles } from '@/features/files/format';
+import {
+    fileSizeParts,
+    formatStorageMo,
+    matchesFileSearch,
+    parseFileSort,
+    sortFiles,
+    usagePercent,
+    usageTone,
+    wouldExceedQuota
+} from '@/features/files/format';
 import { buildUpdateFileRequest, fileToFormFields } from '@/features/files/payload';
-import type { FileDto } from '@/features/files/types';
+import type { FileDto, FileUsage } from '@/features/files/types';
 
 function file(partial: Partial<FileDto> = {}): FileDto {
     return {
@@ -40,6 +49,41 @@ describe('files format', () => {
         expect(fileSizeParts(512)).toEqual({ unit: 'bytes', n: '512' });
         expect(fileSizeParts(2048)).toEqual({ unit: 'kb', n: '2' });
         expect(fileSizeParts(10_485_760)).toEqual({ unit: 'mb', n: '10' });
+    });
+});
+
+describe('quota usage', () => {
+    const usage = (partial: Partial<FileUsage> = {}): FileUsage => ({
+        usedBytes: 0,
+        quotaBytes: 104_857_600,
+        remainingBytes: 104_857_600,
+        isUnlimited: false,
+        fileCount: 0,
+        uniqueBlobCount: 0,
+        ...partial
+    });
+
+    it('formate les Mo du quota', () => {
+        expect(formatStorageMo(0)).toBe('0.0');
+        expect(formatStorageMo(245_760)).toBe('0.2');
+        expect(formatStorageMo(10_485_760)).toBe('10');
+        expect(formatStorageMo(104_857_600)).toBe('100');
+    });
+
+    it('calcule le pourcentage et la couleur', () => {
+        expect(usagePercent(usage({ isUnlimited: true, quotaBytes: 0, remainingBytes: 0 }))).toBe(0);
+        expect(usageTone(usage({ isUnlimited: true }))).toBe('ok');
+        expect(usageTone(usage({ usedBytes: 50, remainingBytes: 104_857_550 }))).toBe('ok');
+        expect(usageTone(usage({ usedBytes: 90_000_000, quotaBytes: 100_000_000, remainingBytes: 10_000_000 }))).toBe('warn');
+        expect(usageTone(usage({ usedBytes: 96_000_000, quotaBytes: 100_000_000, remainingBytes: 4_000_000 }))).toBe('danger');
+        expect(usageTone(usage({ usedBytes: 100_000_000, quotaBytes: 100_000_000, remainingBytes: 0 }))).toBe('danger');
+    });
+
+    it('estime un dépassement sans hash client', () => {
+        const full = usage({ usedBytes: 90_000_000, remainingBytes: 10_000_000, quotaBytes: 100_000_000 });
+        expect(wouldExceedQuota(full, 10_000_001)).toBe(true);
+        expect(wouldExceedQuota(full, 10_000_000)).toBe(false);
+        expect(wouldExceedQuota({ ...full, isUnlimited: true }, 10_000_001)).toBe(false);
     });
 });
 

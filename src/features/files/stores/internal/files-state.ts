@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
 import { sortFiles } from '@/features/files/format';
-import { FILE_PAGE_SIZE_DEFAULT, type FileDto } from '@/features/files/types';
+import { FILE_PAGE_SIZE_DEFAULT, type FileDto, type FileUsage } from '@/features/files/types';
 
 export const FILES_LIST_MAX_AGE_MS = 30_000;
 
@@ -29,6 +29,7 @@ export function createFilesState() {
     let actingDepth = 0;
     const initialized = ref(false);
     const error = ref<string | null>(null);
+    const usage = ref<FileUsage | null>(null);
 
     const cache = createResourceCache({ defaultMaxAgeMs: FILES_LIST_MAX_AGE_MS });
 
@@ -148,6 +149,7 @@ export function createFilesState() {
         acting,
         initialized,
         error,
+        usage,
         cache,
         hasItems,
         hasMore,

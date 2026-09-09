@@ -955,6 +955,14 @@
         "count": "{count} file | {count} file | {count} files",
         "searchPlaceholder": "Search a document…",
         "uploadHint": "PDF only, 10 MB max.",
+        "usage": {
+            "usedOfQuota": "{used} / {quota}",
+            "usedUnlimited": "{used}",
+            "mo": "{n} MB",
+            "meta": "{documents} · {unique}",
+            "documents": "{count} document | {count} document | {count} documents",
+            "unique": "{count} unique file | {count} unique file | {count} unique files"
+        },
         "drop": {
             "title": "Drop the PDF here",
             "body": "One file at a time, 10 MB max."
@@ -1003,6 +1011,7 @@
             "required": "A PDF file is required.",
             "tooLarge": "The file exceeds 10 MB.",
             "notPdf": "Only PDF files are accepted.",
+            "quotaExceeded": "Storage quota exceeded.",
             "nameRequired": "The file name is required.",
             "documentDateInvalid": "The document date is invalid."
         },

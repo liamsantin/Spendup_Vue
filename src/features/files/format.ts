@@ -1,5 +1,5 @@
 import { matchesSearchTokens } from '@/utils/helpers/text-search';
-import { FILE_SEARCH_MAX, type FileDto } from '@/features/files/types';
+import { FILE_QUOTA_EXCEEDED_MESSAGE, FILE_SEARCH_MAX, type FileDto, type FileUsage } from '@/features/files/types';
 
 const YMD_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -102,4 +102,36 @@ export function formatInstant(iso: string, locale: string): string {
     const date = new Date(iso);
     if (Number.isNaN(date.getTime())) return iso;
     return new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(date);
+}
+
+export type FileUsageTone = 'ok' | 'warn' | 'danger';
+
+/** Partie numérique pour `{n} Mo` : 1 décimale sous 10 Mo, sinon arrondi. */
+export function formatStorageMo(bytes: number): string {
+    const mo = bytes / (1024 * 1024);
+    if (!Number.isFinite(mo) || mo <= 0) return '0.0';
+    return mo < 10 ? mo.toFixed(1) : String(Math.round(mo));
+}
+
+export function usagePercent(usage: FileUsage): number {
+    if (usage.isUnlimited || usage.quotaBytes <= 0) return 0;
+    return Math.min(100, (usage.usedBytes / usage.quotaBytes) * 100);
+}
+
+export function usageTone(usage: FileUsage): FileUsageTone {
+    if (usage.isUnlimited) return 'ok';
+    if (usage.remainingBytes === 0 || usagePercent(usage) >= 95) return 'danger';
+    if (usagePercent(usage) >= 80) return 'warn';
+    return 'ok';
+}
+
+/** Estimé sans hash client : un doublon peut encore passer côté API. */
+export function wouldExceedQuota(usage: FileUsage, fileSize: number): boolean {
+    if (usage.isUnlimited) return false;
+    if (!Number.isFinite(fileSize) || fileSize <= 0) return false;
+    return fileSize > usage.remainingBytes;
+}
+
+export function isQuotaExceededMessage(message: string | null | undefined): boolean {
+    return message === FILE_QUOTA_EXCEEDED_MESSAGE;
 }

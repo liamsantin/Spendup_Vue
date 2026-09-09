@@ -5,6 +5,7 @@ import {
     FILE_UPLOAD_FIELD,
     type FileDto,
     type FileListDto,
+    type FileUsage,
     type ListFilesQuery,
     type UpdateFileRequest
 } from '@/features/files/types';
@@ -27,6 +28,11 @@ export const filesApi = {
 
     get(publicId: string) {
         return fetchWrapper.get(`/api/files/${encodeURIComponent(publicId)}`) as Promise<FileDto>;
+    },
+
+    /** Quota blobs PDF uniques — ne pas dériver de `GET /api/files`. */
+    usage() {
+        return fetchWrapper.get('/api/files/usage') as Promise<FileUsage>;
     },
 
     /** PDF brut — pas d’enveloppe. Toujours via fetch authentifié, jamais en `src` iframe. */

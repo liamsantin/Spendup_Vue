@@ -25,6 +25,7 @@ export function createFilesLifecycle(state: FilesState, deps: LifecycleDeps) {
         resetActing();
         initialized.value = false;
         error.value = null;
+        state.usage.value = null;
         state.page.value = 1;
         state.pageSize.value = FILE_PAGE_SIZE_DEFAULT;
         state.totalCount.value = 0;
