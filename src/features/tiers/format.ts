@@ -112,7 +112,7 @@ export function hasDuplicateRoles(roles: readonly string[] | null | undefined): 
     return false;
 }
 
-export const TIER_SORTS = ['nameAsc', 'nameDesc', 'recent', 'oldest'] as const;
+export const TIER_SORTS = ['nameAsc', 'nameDesc', 'natureAsc', 'recent', 'oldest'] as const;
 export type TierSort = (typeof TIER_SORTS)[number];
 export const TIER_SORT_DEFAULT: TierSort = 'nameAsc';
 
@@ -124,12 +124,21 @@ export function parseTierSort(value: string | null | undefined): TierSort {
     return isTierSort(value) ? value : TIER_SORT_DEFAULT;
 }
 
-export function sortTiers(items: readonly Tier[], sort: TierSort = TIER_SORT_DEFAULT): Tier[] {
+export function sortTiers(
+    items: readonly Tier[],
+    sort: TierSort = TIER_SORT_DEFAULT,
+    options?: { natureLabel?: (nature: TierNature) => string }
+): Tier[] {
     return [...items].sort((a, b) => {
         const byId = a.publicId.localeCompare(b.publicId);
         if (sort === 'recent') return (b.createdAt || '').localeCompare(a.createdAt || '') || byId;
         if (sort === 'oldest') return (a.createdAt || '').localeCompare(b.createdAt || '') || byId;
         const byName = a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+        if (sort === 'natureAsc') {
+            const labelOf = options?.natureLabel ?? ((nature: TierNature) => nature);
+            const byNature = labelOf(a.nature).localeCompare(labelOf(b.nature), undefined, { sensitivity: 'base' });
+            return byNature || byName || byId;
+        }
         if (sort === 'nameDesc') return -byName || byId;
         return byName || byId;
     });

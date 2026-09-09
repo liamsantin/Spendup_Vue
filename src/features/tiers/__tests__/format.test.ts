@@ -92,6 +92,28 @@ describe('tiers format', () => {
         expect(sortTiers([a, b], 'oldest').map((item) => item.publicId)).toEqual(['a', 'b']);
     });
 
+    it('trie par type A → Z (libellé) puis nom', () => {
+        const labels: Record<string, string> = {
+            person: 'Personne',
+            company: 'Entreprise',
+            organization: 'Organisation',
+            administration: 'Administration',
+            unknown: 'Non précisé'
+        };
+        const sorted = sortTiers(
+            [
+                tier({ publicId: 'p', name: 'Zoé', nature: 'person' }),
+                tier({ publicId: 'c2', name: 'Coop', nature: 'company' }),
+                tier({ publicId: 'c1', name: 'Aldi', nature: 'company' }),
+                tier({ publicId: 'u', name: 'X', nature: 'unknown' }),
+                tier({ publicId: 'a', name: 'Commune', nature: 'administration' })
+            ],
+            'natureAsc',
+            { natureLabel: (nature) => labels[nature] }
+        );
+        expect(sorted.map((item) => item.publicId)).toEqual(['a', 'c1', 'c2', 'u', 'p']);
+    });
+
     it('détecte un doublon de nom (casse ignorée) hors tier exclu', () => {
         const items = [tier({ publicId: 'tier-1', name: 'Migros' })];
         expect(isDuplicateTierName(' migros ', items)).toBe(true);

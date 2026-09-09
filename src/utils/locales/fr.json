@@ -884,6 +884,7 @@
         "sort": {
             "nameAsc": "Nom (A → Z)",
             "nameDesc": "Nom (Z → A)",
+            "natureAsc": "Type (A → Z)",
             "recent": "Plus récents",
             "oldest": "Plus anciens"
         },

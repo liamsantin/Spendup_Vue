@@ -58,7 +58,9 @@ const listSort = computed(() => parseTierSort(queryString('sort')));
 const visibleItems = computed(() => {
     const needle = filterSearch.value;
     const items = needle ? store.items.filter((tier) => matchesTierSearch(tier, needle)) : store.items;
-    return sortTiers(items, listSort.value);
+    return sortTiers(items, listSort.value, {
+        natureLabel: (nature) => t(`tiersPage.natures.${nature}`)
+    });
 });
 const hasExtraFilters = computed(() => !!(filterSearch.value || filterRole.value));
 const emptyCopy = computed(() => {
