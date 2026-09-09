@@ -948,6 +948,79 @@
             }
         }
     },
+    "filesPage": {
+        "title": "Fichiers",
+        "subtitle": "Vos documents PDF personnels. Stockés de façon privée, accessibles uniquement depuis Spend.Up.",
+        "loadMore": "Charger plus",
+        "count": "{count} fichier | {count} fichier | {count} fichiers",
+        "searchPlaceholder": "Rechercher un document…",
+        "uploadHint": "PDF uniquement, 10 Mo maximum.",
+        "drop": {
+            "title": "Déposer le PDF ici",
+            "body": "Un fichier à la fois, 10 Mo maximum."
+        },
+        "empty": {
+            "list": "Aucun document pour l’instant. Ajoutez un PDF pour le conserver ici.",
+            "filtered": "Aucun document ne correspond à cette recherche."
+        },
+        "actions": {
+            "upload": "Ajouter un PDF",
+            "sort": "Trier",
+            "preview": "Aperçu",
+            "download": "Télécharger",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "clearSearch": "Effacer la recherche"
+        },
+        "sort": {
+            "recent": "Plus récents",
+            "oldest": "Plus anciens",
+            "nameAsc": "Nom (A → Z)",
+            "nameDesc": "Nom (Z → A)",
+            "sizeDesc": "Plus volumineux"
+        },
+        "list": {
+            "addedOn": "ajouté le {date}"
+        },
+        "size": {
+            "bytes": "{n} o",
+            "kb": "{n} Ko",
+            "mb": "{n} Mo"
+        },
+        "preview": {
+            "title": "Aperçu",
+            "unavailable": "Impossible d’afficher ce PDF."
+        },
+        "upload": {
+            "progress": "Envoi de {name}… {percent} %"
+        },
+        "deleteModal": {
+            "title": "Supprimer ce fichier ?",
+            "body": "Le document disparaîtra de la liste. Cette action est définitive."
+        },
+        "errors": {
+            "notFound": "Ce fichier n’est plus disponible.",
+            "required": "Fichier PDF requis.",
+            "tooLarge": "Le fichier dépasse 10 Mo.",
+            "notPdf": "Seuls les fichiers PDF sont acceptés.",
+            "nameRequired": "Le nom du fichier est obligatoire.",
+            "documentDateInvalid": "La date du document est invalide."
+        },
+        "form": {
+            "editTitle": "Modifier le fichier",
+            "subtitle": "Ces informations n’apparaissent que dans Spend.Up.",
+            "fields": {
+                "nameOriginal": "Nom",
+                "description": "Description",
+                "documentDate": "Date du document"
+            },
+            "placeholders": {
+                "nameOriginal": "Nom du fichier",
+                "description": "Notes, contexte, référence…",
+                "documentDate": "Date du document"
+            }
+        }
+    },
     "transactionsPage": {
         "title": "Transactions",
         "titleForAccount": "Transactions du compte : {name}",

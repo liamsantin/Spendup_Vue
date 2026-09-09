@@ -99,6 +99,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, '/app/finances/comptes') || pathIs(path, '/app/finances')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.accounts };
     }
+    if (pathIs(path, '/app/gestion/files')) {
+        return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.files };
+    }
     if (pathIs(path, '/app/gestion/tiers')) {
         return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.tiers };
     }
@@ -165,7 +168,7 @@ export function useShellNav() {
     ]);
 
     const gestionLeaves = computed<NavLeaf[]>(() => [
-        upcoming(SHELL_NAV_IDS.files, t('nav.items.files'), FilesIcon),
+        live(SHELL_NAV_IDS.files, t('nav.items.files'), FilesIcon, '/app/gestion/files'),
         live(SHELL_NAV_IDS.tiers, t('nav.items.tiers'), AddressBookIcon, '/app/gestion/tiers'),
         live(SHELL_NAV_IDS.categories, t('nav.items.categories'), TagsIcon, '/app/gestion/categories'),
         upcoming(SHELL_NAV_IDS.contracts, t('nav.items.contracts'), FileTextIcon)

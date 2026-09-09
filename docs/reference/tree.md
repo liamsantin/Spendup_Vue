@@ -20,9 +20,10 @@ src/
 │   ├── notifications/   # stores/internal/
 │   ├── subscription/    # abonnement, plans, sélecteur / upsell (API mockée)
 │   ├── tiers/           # annuaire perso de contreparties (stores/internal/)
+│   ├── files/           # documents PDF perso (stores/internal/)
 │   └── user-settings/   # composables account/security
 ├── views/
-│   ├── app/             # dashboard, finances/…, gestion/categories, gestion/tiers, notifications, friends, parametres/…
+│   ├── app/             # dashboard, finances/…, gestion/files, gestion/categories, gestion/tiers, notifications, friends, parametres/…
 │   ├── front-pages/
 │   ├── authentication/
 │   └── dev/             # showcase /components (dev only)

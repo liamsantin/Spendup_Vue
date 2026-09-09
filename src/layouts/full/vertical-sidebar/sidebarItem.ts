@@ -7,6 +7,7 @@ import {
     CrownIcon,
     LayoutDashboardIcon,
     AddressBookIcon,
+    FilesIcon,
     LockIcon,
     TagsIcon,
     UserCircleIcon,
@@ -115,6 +116,11 @@ const sidebarThemes: sidebarTheme[] = [
         match: (path) => path.startsWith('/app/gestion'),
         items: [
             { header: 'nav.headers.gestion' },
+            {
+                title: 'nav.items.files',
+                icon: FilesIcon,
+                to: '/app/gestion/files'
+            },
             {
                 title: 'nav.items.categories',
                 icon: TagsIcon,

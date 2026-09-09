@@ -948,6 +948,79 @@
             }
         }
     },
+    "filesPage": {
+        "title": "Files",
+        "subtitle": "Your personal PDF documents. Stored privately and only accessible from Spend.Up.",
+        "loadMore": "Load more",
+        "count": "{count} file | {count} file | {count} files",
+        "searchPlaceholder": "Search a document…",
+        "uploadHint": "PDF only, 10 MB max.",
+        "drop": {
+            "title": "Drop the PDF here",
+            "body": "One file at a time, 10 MB max."
+        },
+        "empty": {
+            "list": "No documents yet. Add a PDF to keep it here.",
+            "filtered": "No document matches this search."
+        },
+        "actions": {
+            "upload": "Add a PDF",
+            "sort": "Sort",
+            "preview": "Preview",
+            "download": "Download",
+            "edit": "Edit",
+            "delete": "Delete",
+            "clearSearch": "Clear search"
+        },
+        "sort": {
+            "recent": "Most recent",
+            "oldest": "Oldest",
+            "nameAsc": "Name (A → Z)",
+            "nameDesc": "Name (Z → A)",
+            "sizeDesc": "Largest"
+        },
+        "list": {
+            "addedOn": "added {date}"
+        },
+        "size": {
+            "bytes": "{n} B",
+            "kb": "{n} KB",
+            "mb": "{n} MB"
+        },
+        "preview": {
+            "title": "Preview",
+            "unavailable": "This PDF cannot be displayed."
+        },
+        "upload": {
+            "progress": "Uploading {name}… {percent}%"
+        },
+        "deleteModal": {
+            "title": "Delete this file?",
+            "body": "The document will disappear from the list. This cannot be undone."
+        },
+        "errors": {
+            "notFound": "This file is no longer available.",
+            "required": "A PDF file is required.",
+            "tooLarge": "The file exceeds 10 MB.",
+            "notPdf": "Only PDF files are accepted.",
+            "nameRequired": "The file name is required.",
+            "documentDateInvalid": "The document date is invalid."
+        },
+        "form": {
+            "editTitle": "Edit file",
+            "subtitle": "This information only appears in Spend.Up.",
+            "fields": {
+                "nameOriginal": "Name",
+                "description": "Description",
+                "documentDate": "Document date"
+            },
+            "placeholders": {
+                "nameOriginal": "File name",
+                "description": "Notes, context, reference…",
+                "documentDate": "Document date"
+            }
+        }
+    },
     "transactionsPage": {
         "title": "Transactions",
         "titleForAccount": "Account transactions: {name}",

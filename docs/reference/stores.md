@@ -13,4 +13,5 @@
 | `friends`       | `features/friends/stores/friends-store.ts`             | Graphe social                           | mémoire                               |
 | `categories`    | `features/categories/stores/categories-store.ts`       | Arbre de catégories perso               | mémoire                               |
 | `tiers`         | `features/tiers/stores/tiers-store.ts`                 | Annuaire perso de contreparties         | mémoire                               |
+| `files`         | `features/files/stores/files-store.ts`                 | Documents PDF perso                     | mémoire                               |
 | `subscription`  | `features/subscription/stores/subscription-store.ts`   | Abonnement, plans, sélecteur de plan    | mémoire (API mockée)                  |

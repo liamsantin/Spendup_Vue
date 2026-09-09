@@ -53,6 +53,14 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.gestion,
             activeId: SHELL_NAV_IDS.tiers
         });
+        expect(idsFromPath('/app/gestion/files')).toEqual({
+            openId: SHELL_NAV_IDS.gestion,
+            activeId: SHELL_NAV_IDS.files
+        });
+        expect(idsFromPath('/app/gestion/files/abc')).toEqual({
+            openId: SHELL_NAV_IDS.gestion,
+            activeId: SHELL_NAV_IDS.files
+        });
     });
 
     it('mappe les pages paramètres', () => {

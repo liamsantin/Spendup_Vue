@@ -39,6 +39,8 @@
 | `/app/finances/comptes`            | accounts (Tabs Shell : Accounts / Invitations) |
 | `/app/finances/transactions`       | transactions                                   |
 | `/app/finances/moyens-de-paiement` | payment-methods                                |
+| `/app/gestion/files`               | files (PDF)                                    |
+| `/app/gestion/files/:publicId?`    | files (aperçu)                                 |
 | `/app/gestion/categories`          | categories                                     |
 | `/app/gestion/tiers`               | tiers (contreparties)                          |
 | `/app/notifications`               | notifications (Page Shell)                     |
