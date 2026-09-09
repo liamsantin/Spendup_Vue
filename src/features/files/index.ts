@@ -32,4 +32,4 @@ export {
 export { default as FilesDirectory } from '@/features/files/components/FilesDirectory.vue';
 export { default as FileListItem } from '@/features/files/components/list/FileListItem.vue';
 export { default as FileEditModal } from '@/features/files/components/modals/FileEditModal.vue';
-export { default as FilePreviewModal } from '@/features/files/components/modals/FilePreviewModal.vue';
+export { default as FilePreview } from '@/features/files/components/FilePreview.vue';

@@ -6,13 +6,13 @@
 
 ## Boundaries
 
-| Couche | Détail                                                                                |
-| ------ | ------------------------------------------------------------------------------------- |
-| Route  | `/app/gestion/files` (+ `/app/gestion/files/:publicId` aperçu) → `AppFilesPage`       |
-| Nav    | Sidebar **Gestion** → sous-menu **Fichiers**                                          |
-| Store  | `useFilesStore` (state · crud · lifecycle ; pas de realtime V1)                       |
-| API    | `filesApi` via **`fetchWrapper`** (JSON) + `postForm` / `getBlob`                     |
-| Cloud  | Bucket Infomaniak **privé** — le front ne parle jamais au stockage, seulement à l’API |
+| Couche | Détail                                                                                                                       |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Route  | `/app/gestion/files` + `/app/gestion/files/:publicId` (aperçu **pleine page** dans le shell, pas de modale) → `AppFilesPage` |
+| Nav    | Sidebar **Gestion** → sous-menu **Fichiers**                                                                                 |
+| Store  | `useFilesStore` (state · crud · lifecycle ; pas de realtime V1)                                                              |
+| API    | `filesApi` via **`fetchWrapper`** (JSON) + `postForm` / `getBlob`                                                            |
+| Cloud  | Bucket Infomaniak **privé** — le front ne parle jamais au stockage, seulement à l’API                                        |
 
 Owner only. Un autre user ou un `publicId` inconnu / soft-deleted → **404** (pas 403). Pas de corbeille / restore en V1.
 
@@ -22,14 +22,14 @@ Avatar : **contrat inchangé** (`PUT/POST/GET/DELETE /api/auth/me/avatar`, `GET 
 
 Auth identique au reste : `Authorization: Bearer` **ou** cookie `spendup_access`. JSON camelCase, enveloppe standard — **sauf** `GET …/content` (PDF brut) et `DELETE` (`204` vide).
 
-| Méthode | Endpoint                        | Notes                                                                                                      |
-| ------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| GET     | `/api/files?page=&pageSize=`    | `page` ≥ 1 (défaut 1), `pageSize` 1–200 (défaut **50**)                                                    |
-| GET     | `/api/files/{publicId}`         | Métadonnées                                                                                                |
-| GET     | `/api/files/{publicId}/content` | PDF brut, `Content-Type: application/pdf`. **Toujours** `fetch` → blob URL (jamais `iframe src` sans auth) |
-| POST    | `/api/files`                    | `multipart/form-data`, champ **`file`**. Ne pas forcer `Content-Type`                                      |
-| PATCH   | `/api/files/{publicId}`         | JSON partiel (`nameOriginal`, `description`, `documentDate`, `clearDocumentDate`)                          |
-| DELETE  | `/api/files/{publicId}`         | `204` sans body. Soft-delete                                                                               |
+| Méthode | Endpoint                        | Notes                                                                                                                                               |
+| ------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET     | `/api/files?page=&pageSize=`    | `page` ≥ 1 (défaut 1), `pageSize` 1–200 (défaut **50**)                                                                                             |
+| GET     | `/api/files/{publicId}`         | Métadonnées                                                                                                                                         |
+| GET     | `/api/files/{publicId}/content` | PDF brut, `Content-Type: application/pdf`. **Toujours** `fetch` → blob URL, affichée dans la page (visionneuse native du navigateur, pas de modale) |
+| POST    | `/api/files`                    | `multipart/form-data`, champ **`file`**. Ne pas forcer `Content-Type`                                                                               |
+| PATCH   | `/api/files/{publicId}`         | JSON partiel (`nameOriginal`, `description`, `documentDate`, `clearDocumentDate`)                                                                   |
+| DELETE  | `/api/files/{publicId}`         | `204` sans body. Soft-delete                                                                                                                        |
 
 Le même PDF uploadé deux fois = **deux lignes** (`publicId` différents, même `sha256Hash`). `publicId` = clé Vue / route. Ne pas utiliser `sha256Hash` comme id.
 

@@ -2,9 +2,10 @@
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowsSortIcon, SearchIcon, UploadIcon, XIcon } from 'vue-tabler-icons';
+import { ArrowLeftIcon, ArrowsSortIcon, DownloadIcon, PencilIcon, SearchIcon, TrashIcon, UploadIcon, XIcon } from 'vue-tabler-icons';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
+import FilePreview from '@/features/files/components/FilePreview.vue';
 import {
     FILE_SEARCH_MAX,
     FILE_SORT_DEFAULT,
@@ -15,6 +16,7 @@ import {
     parseFileSort,
     useFilesStore
 } from '@/features/files';
+import type { FileDto } from '@/features/files/types';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const FILES_PATH = '/app/gestion/files';
@@ -23,7 +25,12 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useFilesStore();
-const directoryRef = ref<{ openPicker: () => void } | null>(null);
+const directoryRef = ref<{
+    openPicker: () => void;
+    openEdit: (file: FileDto) => void;
+    requestDelete: (file: FileDto) => void;
+} | null>(null);
+const previewRef = ref<{ download: () => void } | null>(null);
 
 function queryString(name: string): string {
     const raw = route.query[name];
@@ -32,6 +39,18 @@ function queryString(name: string): string {
 
 const searchInput = ref(queryString('q').slice(0, FILE_SEARCH_MAX));
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+const previewId = computed(() => {
+    const raw = route.params.publicId;
+    return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
+});
+
+const previewing = computed(() => !!previewId.value);
+
+const previewFile = computed(() => {
+    if (!previewId.value) return null;
+    return store.findByPublicId(previewId.value);
+});
 
 const listSort = computed({
     get: () => parseFileSort(queryString('sort')),
@@ -45,6 +64,9 @@ const visibleCount = computed(() => {
 });
 
 const sortCount = computed(() => (listSort.value === FILE_SORT_DEFAULT ? 0 : 1));
+
+const pageTitle = computed(() => previewFile.value?.nameOriginal || t('filesPage.title'));
+const pageSubtitle = computed(() => (previewing.value ? undefined : t('filesPage.subtitle')));
 
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
@@ -77,6 +99,24 @@ function onUpload() {
     directoryRef.value?.openPicker();
 }
 
+function closePreview() {
+    void router.replace({ path: FILES_PATH, query: route.query });
+}
+
+function onPreviewDownload() {
+    previewRef.value?.download();
+}
+
+function onPreviewEdit() {
+    if (!previewFile.value) return;
+    directoryRef.value?.openEdit(previewFile.value);
+}
+
+function onPreviewDelete() {
+    if (!previewFile.value) return;
+    directoryRef.value?.requestDelete(previewFile.value);
+}
+
 onUnmounted(() => {
     if (searchTimer) clearTimeout(searchTimer);
 });
@@ -94,68 +134,112 @@ watch(
 </script>
 
 <template>
-    <AppPageShell :title="t('filesPage.title')" :subtitle="t('filesPage.subtitle')">
-        <template #toolbar>
-            <label class="su-search su-search--discover">
-                <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
-                <input
-                    class="su-search__input"
-                    type="search"
-                    :value="searchInput"
-                    :maxlength="FILE_SEARCH_MAX"
-                    :placeholder="t('filesPage.searchPlaceholder')"
-                    :aria-label="t('filesPage.searchPlaceholder')"
-                    autocomplete="off"
-                    @input="onSearchInput(($event.target as HTMLInputElement).value)"
-                />
-                <button
-                    v-if="searchInput"
-                    type="button"
-                    class="su-search__orb"
-                    :aria-label="t('filesPage.actions.clearSearch')"
-                    @click="clearSearch"
-                >
-                    <XIcon :size="16" stroke-width="1.8" />
+    <div class="files-page" :class="{ 'files-page--reader': previewing }">
+        <AppPageShell :title="pageTitle" :subtitle="pageSubtitle">
+            <template v-if="previewing" #actions>
+                <button type="button" class="su-btn su-btn--ghost" @click="closePreview">
+                    <ArrowLeftIcon :size="16" stroke-width="1.6" />
+                    {{ t('common.back') }}
                 </button>
-            </label>
-            <span v-if="store.initialized && visibleCount" class="su-toolbar__count">
-                {{ t('filesPage.count', { count: visibleCount }, visibleCount) }}
-            </span>
-            <div class="su-toolbar__actions">
-                <AppDropdownFilter
-                    :label="t('filesPage.actions.sort')"
-                    :icon="ArrowsSortIcon"
-                    :min-width="240"
-                    close-on-content-click
-                    :count="sortCount"
-                    :reset-disabled="listSort === FILE_SORT_DEFAULT"
-                    @reset="listSort = FILE_SORT_DEFAULT"
-                >
-                    <v-list class="py-0">
-                        <v-list-item
-                            v-for="value in FILE_SORTS"
-                            :key="value"
-                            :active="listSort === value"
-                            color="primary"
-                            @click="listSort = value"
-                        >
-                            <v-list-item-title>{{ t(`filesPage.sort.${value}`) }}</v-list-item-title>
-                        </v-list-item>
-                    </v-list>
-                </AppDropdownFilter>
-                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onUpload">
-                    <UploadIcon :size="16" stroke-width="1.6" />
-                    {{ t('filesPage.actions.upload') }}
+                <button type="button" class="su-btn" :disabled="!previewId" @click="onPreviewDownload">
+                    <DownloadIcon :size="16" stroke-width="1.6" />
+                    {{ t('filesPage.actions.download') }}
                 </button>
-            </div>
-        </template>
+                <button type="button" class="su-btn" :disabled="!previewFile || store.acting" @click="onPreviewEdit">
+                    <PencilIcon :size="16" stroke-width="1.6" />
+                    {{ t('filesPage.actions.edit') }}
+                </button>
+                <button type="button" class="su-btn su-btn--danger" :disabled="!previewFile || store.acting" @click="onPreviewDelete">
+                    <TrashIcon :size="16" stroke-width="1.6" />
+                    {{ t('filesPage.actions.delete') }}
+                </button>
+            </template>
 
-        <p class="files-page__hint">{{ t('filesPage.uploadHint') }}</p>
-        <FilesDirectory ref="directoryRef" />
-    </AppPageShell>
+            <template v-if="!previewing" #toolbar>
+                <label class="su-search su-search--discover">
+                    <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
+                    <input
+                        class="su-search__input"
+                        type="search"
+                        :value="searchInput"
+                        :maxlength="FILE_SEARCH_MAX"
+                        :placeholder="t('filesPage.searchPlaceholder')"
+                        :aria-label="t('filesPage.searchPlaceholder')"
+                        autocomplete="off"
+                        @input="onSearchInput(($event.target as HTMLInputElement).value)"
+                    />
+                    <button
+                        v-if="searchInput"
+                        type="button"
+                        class="su-search__orb"
+                        :aria-label="t('filesPage.actions.clearSearch')"
+                        @click="clearSearch"
+                    >
+                        <XIcon :size="16" stroke-width="1.8" />
+                    </button>
+                </label>
+                <span v-if="store.initialized && visibleCount" class="su-toolbar__count">
+                    {{ t('filesPage.count', { count: visibleCount }, visibleCount) }}
+                </span>
+                <div class="su-toolbar__actions">
+                    <AppDropdownFilter
+                        :label="t('filesPage.actions.sort')"
+                        :icon="ArrowsSortIcon"
+                        :min-width="240"
+                        close-on-content-click
+                        :count="sortCount"
+                        :reset-disabled="listSort === FILE_SORT_DEFAULT"
+                        @reset="listSort = FILE_SORT_DEFAULT"
+                    >
+                        <v-list class="py-0">
+                            <v-list-item
+                                v-for="value in FILE_SORTS"
+                                :key="value"
+                                :active="listSort === value"
+                                color="primary"
+                                @click="listSort = value"
+                            >
+                                <v-list-item-title>{{ t(`filesPage.sort.${value}`) }}</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </AppDropdownFilter>
+                    <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onUpload">
+                        <UploadIcon :size="16" stroke-width="1.6" />
+                        {{ t('filesPage.actions.upload') }}
+                    </button>
+                </div>
+            </template>
+
+            <FilePreview v-if="previewId" ref="previewRef" :public-id="previewId" :name-original="previewFile?.nameOriginal" />
+            <div v-show="!previewing">
+                <p class="files-page__hint">{{ t('filesPage.uploadHint') }}</p>
+                <FilesDirectory ref="directoryRef" />
+            </div>
+        </AppPageShell>
+    </div>
 </template>
 
 <style scoped>
+.files-page {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+}
+
+.files-page :deep(.su-page) {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.files-page--reader :deep(.su-body) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 8px 10px 10px;
+}
+
 .files-page__hint {
     margin: 0 0 12px;
     font-size: 0.8rem;

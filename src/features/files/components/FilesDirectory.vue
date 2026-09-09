@@ -12,7 +12,6 @@ import { FILE_PAGE_SIZE_MAX, FILE_PDF_MIME, FILE_SEARCH_MAX, type FileDto } from
 import { validatePdfFile } from '@/features/files/validate-upload';
 import FileListItem from '@/features/files/components/list/FileListItem.vue';
 import FileEditModal from '@/features/files/components/modals/FileEditModal.vue';
-import FilePreviewModal from '@/features/files/components/modals/FilePreviewModal.vue';
 
 const FILES_PATH = '/app/gestion/files';
 
@@ -59,19 +58,6 @@ const visibleItems = computed(() => {
     const needle = filterSearch.value;
     const items = needle ? store.items.filter((file) => matchesFileSearch(file, needle)) : store.items;
     return sortFiles(items, listSort.value);
-});
-
-const previewFile = computed(() => {
-    if (!previewId.value) return null;
-    return store.findByPublicId(previewId.value) ?? visibleItems.value.find((file) => file.publicId === previewId.value) ?? null;
-});
-
-const previewOpen = computed({
-    get: () => !!previewId.value,
-    set: (value: boolean) => {
-        if (value) return;
-        void router.replace({ path: FILES_PATH, query: route.query });
-    }
 });
 
 const emptyCopy = computed(() => (filterSearch.value ? t('filesPage.empty.filtered') : t('filesPage.empty.list')));
@@ -142,7 +128,11 @@ watch(previewId, async (id) => {
 
 defineExpose({
     openPicker: () => fileInputRef.value?.click(),
-    onFiles: (files: FileList | File[]) => void uploadFiles(files)
+    onFiles: (files: FileList | File[]) => void uploadFiles(files),
+    openEdit: (file: FileDto) => {
+        editTarget.value = file;
+    },
+    requestDelete
 });
 
 function openPreview(file: FileDto) {
@@ -316,7 +306,6 @@ function onDrop(event: DragEvent) {
             </button>
         </div>
 
-        <FilePreviewModal v-model="previewOpen" :public-id="previewId" :name-original="previewFile?.nameOriginal" />
         <FileEditModal v-model="editOpen" :file="editTarget" />
 
         <AppConfirmationModal
