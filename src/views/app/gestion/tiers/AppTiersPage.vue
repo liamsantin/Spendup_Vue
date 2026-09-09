@@ -128,12 +128,8 @@ watch(
     <AppPageShell :title="t('tiersPage.title')" :subtitle="t('tiersPage.subtitle')">
         <template #tabs>
             <AppFoldableTabs :ariaLabel="t('tiersPage.tabs.label')">
-                <template #summary>
-                    <component v-if="filterNature" :is="TIER_NATURE_ICONS[filterNature]" :size="16" stroke-width="1.7" />
-                    {{ filterNature ? t(`tiersPage.natures.${filterNature}`) : t('tiersPage.tabs.all') }}
-                </template>
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterNature }" @click="filterNature = ''">
-                    {{ t('tiersPage.tabs.all') }}
+                    <span class="su-tab__body">{{ t('tiersPage.tabs.all') }}</span>
                 </button>
                 <button
                     v-for="nature in TIER_NATURES"
@@ -143,8 +139,10 @@ watch(
                     :class="{ 'is-active': filterNature === nature }"
                     @click="filterNature = nature"
                 >
-                    <component :is="TIER_NATURE_ICONS[nature]" :size="16" stroke-width="1.7" />
-                    {{ t(`tiersPage.natures.${nature}`) }}
+                    <span class="su-tab__body">
+                        <component :is="TIER_NATURE_ICONS[nature]" :size="16" stroke-width="1.7" />
+                        {{ t(`tiersPage.natures.${nature}`) }}
+                    </span>
                 </button>
             </AppFoldableTabs>
         </template>
