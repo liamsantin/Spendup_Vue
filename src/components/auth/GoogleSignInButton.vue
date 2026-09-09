@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { BrandGoogleIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import {
     cancelGoogleDesktopOAuth,
@@ -125,7 +126,7 @@ async function renderGis() {
             size: 'large',
             width: buttonWidth(),
             text: 'continue_with',
-            shape: 'rectangular'
+            shape: 'pill'
         });
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
@@ -213,18 +214,11 @@ onUnmounted(() => {
             {{ useDesktopFlow ? t('auth.google.desktopNotConfigured') : t('auth.google.notConfigured') }}
         </div>
         <template v-else-if="useDesktopFlow">
-            <v-btn
-                block
-                size="large"
-                variant="outlined"
-                color="primary"
-                class="text-none"
-                :loading="desktopBusy"
-                :disabled="desktopBusy"
-                @click="onDesktopClick"
-            >
+            <button type="button" class="su-btn auth-submit" :disabled="desktopBusy" @click="onDesktopClick">
+                <span v-if="desktopBusy" class="su-spin" aria-hidden="true" />
+                <BrandGoogleIcon v-else :size="18" stroke-width="1.8" />
                 {{ displayLabel }}
-            </v-btn>
+            </button>
 
             <div
                 v-if="desktopBusy"

@@ -1,7 +1,16 @@
 import { defineStore } from 'pinia';
-import { APP_HOME_ROUTE, createAuthSession, createAuthLogout, createAuthProfile, createAuthActions } from '@/features/auth/stores/internal';
+import {
+    APP_HOME_ROUTE,
+    AUTH_ROUTE,
+    AUTH_LOGIN_HREF,
+    AUTH_REGISTER_HREF,
+    createAuthSession,
+    createAuthLogout,
+    createAuthProfile,
+    createAuthActions
+} from '@/features/auth/stores/internal';
 
-export { APP_HOME_ROUTE };
+export { APP_HOME_ROUTE, AUTH_ROUTE, AUTH_LOGIN_HREF, AUTH_REGISTER_HREF };
 
 /**
  * Façade Pinia du store auth : session, logout, profil et actions (login / 2FA / devices).

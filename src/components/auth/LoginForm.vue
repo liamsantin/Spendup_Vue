@@ -3,13 +3,9 @@ import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
 import { Form } from 'vee-validate';
-import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
+import AuthPasswordField from '@/components/auth/AuthPasswordField.vue';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-
-const emit = defineEmits<{
-    googleProcessing: [value: boolean];
-}>();
 
 const authStore = useAuthStore();
 const { t } = useI18n();
@@ -40,57 +36,49 @@ function validate(_values: Record<string, unknown>, { setErrors }: { setErrors: 
         setErrors({ apiError: getErrorMessage(error) });
     });
 }
-
-async function onGoogleCredential(idToken: string) {
-    notice.value = null;
-    // Succès : on garde l'état actif, la navigation démonte le formulaire.
-    emit('googleProcessing', true);
-    try {
-        await authStore.loginWithGoogle(idToken);
-    } catch (error: unknown) {
-        notice.value = error instanceof Error ? error.message : String(error);
-        emit('googleProcessing', false);
-    }
-}
 </script>
 
 <template>
     <div class="auth-form">
         <AppAlert v-if="notice" type="info" class="mb-4">{{ notice }}</AppAlert>
 
-        <GoogleSignInButton class="mb-4" :label="t('auth.google.signIn')" @credential="onGoogleCredential" />
-
-        <div class="d-flex align-center text-center mb-6">
-            <div class="text-h6 w-100 px-5 font-weight-regular auth-divider position-relative">
-                <span class="bg-surface px-5 py-3 position-relative">{{ t('auth.login.or') }}</span>
+        <Form v-slot="{ errors, isSubmitting }" @submit="validate">
+            <div class="auth-field">
+                <label class="auth-field__label">
+                    <span :class="{ 'text-primary': !!identifierTrimmed && !identifierTrimmed.includes('@') }">{{
+                        t('auth.login.username')
+                    }}</span>
+                    <span class="auth-label-sep"> / </span>
+                    <span :class="{ 'text-primary': identifierTrimmed.includes('@') }">{{ t('auth.login.email') }}</span>
+                </label>
+                <VTextField
+                    v-model="identifier"
+                    :rules="identifierRules"
+                    :placeholder="t('auth.login.identifierPlaceholder')"
+                    required
+                    hide-details="auto"
+                    class="auth-field__control"
+                    autocomplete="username"
+                />
             </div>
-        </div>
 
-        <Form @submit="validate" v-slot="{ errors, isSubmitting }" class="mt-5">
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">
-                <span :class="{ 'text-primary': !!identifierTrimmed && !identifierTrimmed.includes('@') }">{{
-                    t('auth.login.username')
-                }}</span>
-                <span class="auth-label-sep"> / </span>
-                <span :class="{ 'text-primary': identifierTrimmed.includes('@') }">{{ t('auth.login.email') }}</span>
-            </v-label>
-            <VTextField v-model="identifier" :rules="identifierRules" class="mb-8" required hide-details autocomplete="username" />
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.login.password') }}</v-label>
-            <VTextField
+            <AuthPasswordField
                 v-model="password"
+                :label="t('auth.login.password')"
                 :rules="passwordRules"
-                required
-                hide-details
-                type="password"
-                class="pwdInput"
                 autocomplete="current-password"
             />
-            <div class="d-flex flex-wrap align-center my-3 justify-end">
-                <RouterLink to="/auth/forgot-password" class="text-primary text-decoration-none text-body-1 opacity-1 font-weight-medium">
+
+            <div class="d-flex justify-end mb-3">
+                <RouterLink to="/auth/forgot-password" class="auth-shell__link">
                     {{ t('auth.login.forgotPassword') }}
                 </RouterLink>
             </div>
-            <v-btn size="large" color="primary" :loading="isSubmitting" block type="submit" flat>{{ t('auth.login.submit') }}</v-btn>
+
+            <button type="submit" class="su-btn su-btn--ink auth-submit" :disabled="isSubmitting">
+                <span v-if="isSubmitting" class="su-spin" aria-hidden="true" />
+                {{ t('auth.login.submit') }}
+            </button>
             <AppAlert v-if="errors.apiError" type="error" class="mt-3">{{ errors.apiError }}</AppAlert>
         </Form>
     </div>

@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import { clearPasswordResetTokenFromUrl, readPasswordResetToken } from '@/features/auth/password-reset-token';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AuthPasswordField from '@/components/auth/AuthPasswordField.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -56,25 +57,31 @@ async function submit() {
 </script>
 
 <template>
-    <div class="mt-5">
+    <div class="auth-form">
         <template v-if="showManualToken">
             <AppAlert type="info" class="mb-4">{{ t('auth.resetPassword.manualTokenHint') }}</AppAlert>
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.resetPassword.token') }}</v-label>
-            <VTextField v-model="token" :rules="tokenRules" class="mb-4" hide-details autocomplete="off" />
+            <div class="auth-field">
+                <label class="auth-field__label">{{ t('auth.resetPassword.token') }}</label>
+                <VTextField v-model="token" :rules="tokenRules" hide-details="auto" autocomplete="off" />
+            </div>
         </template>
 
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.resetPassword.newPassword') }}</v-label>
-        <VTextField v-model="newPassword" :rules="passwordRules" type="password" class="mb-4" hide-details autocomplete="new-password" />
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.resetPassword.confirmPassword') }}</v-label>
-        <VTextField
-            v-model="confirmPassword"
-            :rules="confirmPasswordRules"
-            type="password"
-            class="mb-4"
-            hide-details
+        <AuthPasswordField
+            v-model="newPassword"
+            :label="t('auth.resetPassword.newPassword')"
+            :rules="passwordRules"
             autocomplete="new-password"
         />
-        <v-btn color="primary" size="large" block flat :loading="loading" @click="submit">{{ t('auth.resetPassword.submit') }}</v-btn>
+        <AuthPasswordField
+            v-model="confirmPassword"
+            :label="t('auth.resetPassword.confirmPassword')"
+            :rules="confirmPasswordRules"
+            autocomplete="new-password"
+        />
+        <button type="button" class="su-btn su-btn--ink auth-submit" :disabled="loading" @click="submit">
+            <span v-if="loading" class="su-spin" aria-hidden="true" />
+            {{ t('auth.resetPassword.submit') }}
+        </button>
         <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
     </div>
 </template>

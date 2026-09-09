@@ -51,53 +51,48 @@ async function verify(submittedCode?: string) {
 
 function backToLogin() {
     authStore.twoFactorToken = null;
-    router.push('/auth/login');
+    router.push('/auth');
 }
 </script>
 
 <template>
-    <div class="mt-sm-13 mt-8">
+    <div class="auth-form">
         <template v-if="!useRecovery">
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.twoStep.otpLabel') }}</v-label>
+            <label class="auth-field__label">{{ t('auth.twoStep.otpLabel') }}</label>
             <OtpDigitsInput v-model="digitsCode" field-class="two-step-otp" @complete="verify" />
         </template>
         <template v-else>
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.twoStep.recoveryLabel') }}</v-label>
-            <VTextField v-model="recoveryCode" hide-details class="mb-2" autocomplete="one-time-code" />
+            <div class="auth-field">
+                <label class="auth-field__label">{{ t('auth.twoStep.recoveryLabel') }}</label>
+                <VTextField v-model="recoveryCode" hide-details="auto" autocomplete="one-time-code" />
+            </div>
         </template>
 
-        <v-btn color="primary" size="large" block flat class="mt-4" :loading="loading" @click="verify">
+        <button type="button" class="su-btn su-btn--ink auth-submit" :disabled="loading" @click="verify()">
+            <span v-if="loading" class="su-spin" aria-hidden="true" />
             {{ t('auth.twoStep.submit') }}
-        </v-btn>
+        </button>
         <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
 
-        <h6 class="text-h6 mt-5 font-weight-regular">
+        <p class="auth-field__hint mt-5">
             <template v-if="!useRecovery">
                 {{ t('auth.twoStep.useRecovery') }}
-                <a
-                    href="#"
-                    class="text-primary text-subtitle-1 text-decoration-none pl-1 font-weight-medium"
-                    @click.prevent="useRecovery = true"
-                >
+                <a href="#" class="auth-shell__link pl-1" @click.prevent="useRecovery = true">
                     {{ t('auth.twoStep.clickHere') }}
                 </a>
             </template>
             <template v-else>
                 {{ t('auth.twoStep.useOtp') }}
-                <a
-                    href="#"
-                    class="text-primary text-subtitle-1 text-decoration-none pl-1 font-weight-medium"
-                    @click.prevent="useRecovery = false"
-                >
+                <a href="#" class="auth-shell__link pl-1" @click.prevent="useRecovery = false">
                     {{ t('auth.twoStep.clickHere') }}
                 </a>
             </template>
-        </h6>
-        <h6 class="text-h6 mt-3 font-weight-regular">
+        </p>
+        <p class="auth-field__hint mt-3">
             {{ t('auth.twoStep.problem') }}
-            <a href="#" class="text-primary text-subtitle-1 text-decoration-none pl-1 font-weight-medium" @click.prevent="backToLogin">
+            <a href="#" class="auth-shell__link pl-1" @click.prevent="backToLogin">
                 {{ t('auth.twoStep.backToLogin') }}
             </a>
-        </h6>
+        </p>
     </div>
 </template>

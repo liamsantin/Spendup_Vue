@@ -29,6 +29,9 @@ import { clearCsrfToken, rememberCsrfToken } from '@/features/auth/csrf';
 import { isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 
 export const APP_HOME_ROUTE = '/app';
+export const AUTH_ROUTE = '/auth';
+export const AUTH_LOGIN_HREF = `${AUTH_ROUTE}?tab=login`;
+export const AUTH_REGISTER_HREF = `${AUTH_ROUTE}?tab=register`;
 
 /** Mot de passe post-inscription — mémoire seule (jamais sessionStorage). */
 let pendingPasswordMemory: string | null = null;

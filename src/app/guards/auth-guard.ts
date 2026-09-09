@@ -1,5 +1,6 @@
 import type { NavigationGuard } from 'vue-router';
-import { useAuthStore, APP_HOME_ROUTE } from '@/features/auth';
+import { useAuthStore } from '@/features/auth';
+import { APP_HOME_ROUTE, AUTH_ROUTE } from '@/features/auth/stores/internal/auth-session';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 import { useFriendsStore } from '@/features/friends';
 import { useAccountsStore } from '@/features/accounts';
@@ -26,7 +27,7 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
     if (requiresAuth) {
         if (!auth.isAuthenticated) {
             auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
-            return next('/auth/login');
+            return next(AUTH_ROUTE);
         }
         if (!auth.user) {
             try {
@@ -34,7 +35,7 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
                 if (!me || !auth.isAuthenticated) {
                     auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
                     await auth.forceReLogin();
-                    // `forceReLogin` a déjà navigué vers /auth/login — annuler la nav courante.
+                    // `forceReLogin` a déjà navigué vers /auth — annuler la nav courante.
                     return next(false);
                 }
             } catch {
@@ -62,12 +63,12 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
         return next();
     }
 
-    if (auth.isAuthenticated && (to.path === '/auth/login' || to.path === '/auth/register')) {
+    if (auth.isAuthenticated && (to.path === AUTH_ROUTE || to.path === `${AUTH_ROUTE}/login` || to.path === `${AUTH_ROUTE}/register`)) {
         return next(APP_HOME_ROUTE);
     }
 
     if (to.path === '/auth/two-step' && !auth.twoFactorToken) {
-        return next('/auth/login');
+        return next(AUTH_ROUTE);
     }
 
     next();

@@ -7,8 +7,8 @@ import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 const productLinks = computed(() => [
     { label: 'Fonctionnalités', to: '/fonctionnalites' },
     ...(isPricingPageEnabled() ? [{ label: 'Tarifs', to: '/tarifs' }] : []),
-    { label: 'Créer un compte', to: '/auth/register' },
-    { label: 'Se connecter', to: '/auth/login' }
+    { label: 'Créer un compte', to: '/auth?tab=register' },
+    { label: 'Se connecter', to: '/auth?tab=login' }
 ]);
 
 const companyLinks = [

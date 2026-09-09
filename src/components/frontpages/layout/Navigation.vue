@@ -62,8 +62,8 @@ const linkClass = (href: string) => [
         <v-divider class="my-2" />
 
         <div class="front-nav-dropdown__login px-3 pb-2 d-flex flex-column ga-2">
-            <v-btn class="text-none h-43 px-5" color="primary" flat block to="/auth/register">Commencer gratuitement</v-btn>
-            <v-btn class="text-none h-43 px-5" color="primary" variant="outlined" block to="/auth/login">Connexion</v-btn>
+            <v-btn class="text-none h-43 px-5" color="primary" flat block to="/auth?tab=register">Commencer gratuitement</v-btn>
+            <v-btn class="text-none h-43 px-5" color="primary" variant="outlined" block to="/auth?tab=login">Connexion</v-btn>
         </div>
     </v-list>
 
@@ -77,7 +77,7 @@ const linkClass = (href: string) => [
             <v-chip v-if="item.badge" rounded="md" class="font-weight-semibold h-23" color="primary" size="small" label> New </v-chip>
         </RouterLink>
 
-        <v-btn class="custom-hover-primary bg-primary d-flex w-100 text-white h-43 px-5 transform-none mt-2" flat to="/auth/login">
+        <v-btn class="custom-hover-primary bg-primary d-flex w-100 text-white h-43 px-5 transform-none mt-2" flat to="/auth?tab=login">
             <span class="text-white">Connexion</span>
         </v-btn>
     </div>

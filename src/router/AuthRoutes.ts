@@ -6,14 +6,17 @@ const AuthRoutes = {
     },
     children: [
         {
-            name: 'Side Login',
-            path: '/auth/login',
-            component: () => import('@/views/authentication/SideLogin.vue')
+            name: 'AuthGate',
+            path: '',
+            component: () => import('@/views/authentication/AuthGatePage.vue')
         },
         {
-            name: 'Side Register',
-            path: '/auth/register',
-            component: () => import('@/views/authentication/SideRegister.vue')
+            path: 'login',
+            redirect: '/auth'
+        },
+        {
+            path: 'register',
+            redirect: '/auth?tab=register'
         },
         {
             name: 'Side Forgot Password',

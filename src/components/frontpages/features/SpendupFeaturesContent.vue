@@ -182,7 +182,7 @@ const securityItems = [
                         exploitable.
                     </p>
                     <div class="features-hero__actions">
-                        <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth/register">
+                        <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth?tab=register">
                             Commencer gratuitement
                             <ArrowRightIcon size="19" class="ms-2" />
                         </v-btn>
@@ -326,7 +326,7 @@ const securityItems = [
                 <h2 class="textPrimary">Découvrez une autre façon de gérer vos finances.</h2>
                 <p>Commencez gratuitement, sans carte bancaire et sans engagement.</p>
                 <div class="features-final__actions">
-                    <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth/register">
+                    <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
                         Créer mon espace
                         <ArrowRightIcon size="19" class="ms-2" />
                     </v-btn>

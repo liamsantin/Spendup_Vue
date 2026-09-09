@@ -4,7 +4,7 @@ import { readAndClearLoginNotice, writeLoginNotice } from '@/features/auth/sessi
 import { i18n } from '@/plugins/i18n';
 import { isIdleSessionMessage } from '@/features/auth/idle-session';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
-import { APP_HOME_ROUTE, type AuthSessionState } from '@/features/auth/stores/internal/auth-session';
+import { APP_HOME_ROUTE, AUTH_ROUTE, type AuthSessionState } from '@/features/auth/stores/internal/auth-session';
 
 function t(key: string) {
     return i18n.global.t(key);
@@ -39,18 +39,18 @@ export function createAuthLogout(session: AuthSessionState) {
         await router.push('/');
     }
 
-    /** Notice affichée une fois sur /auth/login (sessionStorage, pas dans l’URL). */
+    /** Notice affichée une fois sur `/auth` (sessionStorage, pas dans l’URL). */
     function consumeLoginNotice(): string | null {
         return readAndClearLoginNotice();
     }
 
     /**
-     * Redirige vers la page de login avec une notice optionnelle.
-     * @param message Message à afficher une fois sur /auth/login.
+     * Redirige vers la page d’auth avec une notice optionnelle.
+     * @param message Message à afficher une fois sur `/auth`.
      */
     async function goToLogin(message?: string) {
         writeLoginNotice(message ?? null);
-        await router.push('/auth/login');
+        await router.push(AUTH_ROUTE);
     }
 
     /**

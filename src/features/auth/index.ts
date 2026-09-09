@@ -2,7 +2,7 @@ export { authApi, authHttp, ApiError, authRequest } from '@/features/auth/api';
 export { getDeviceInfo, getOrCreateDeviceId, getDeviceName } from '@/features/auth/device';
 export { resolveIsCurrentDevice } from '@/features/auth/device-current';
 export { normalizeAuthDevices, normalizeAuthDevice } from '@/features/auth/normalizeDevices';
-export { useAuthStore, APP_HOME_ROUTE } from '@/features/auth/stores/auth-store';
+export { useAuthStore, APP_HOME_ROUTE, AUTH_ROUTE, AUTH_LOGIN_HREF, AUTH_REGISTER_HREF } from '@/features/auth/stores/auth-store';
 export { sanitizeReturnUrl, isSafeAppPath } from '@/features/auth/safe-return-url';
 export { readPasswordResetToken, clearPasswordResetTokenFromUrl } from '@/features/auth/password-reset-token';
 export { useIdleLogout } from '@/features/auth/composables/useIdleLogout';

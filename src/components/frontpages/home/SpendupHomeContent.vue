@@ -116,7 +116,7 @@ const faqs = [
                         </p>
 
                         <div class="home-hero__actions su-hero-in" style="--su-in-delay: 240ms">
-                            <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth/register">
+                            <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth?tab=register">
                                 Commencer gratuitement
                                 <ArrowRightIcon size="19" class="ms-2" />
                             </v-btn>
@@ -352,7 +352,7 @@ const faqs = [
                     <h2 class="textPrimary">Commencez simplement.<br /><span>Évoluez à votre rythme.</span></h2>
                     <p class="text-medium-emphasis">Créez votre espace gratuitement, sans carte bancaire et sans engagement.</p>
                     <div class="home-final-cta__actions">
-                        <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth/register">
+                        <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
                             Commencer gratuitement
                             <ArrowRightIcon size="19" class="ms-2" />
                         </v-btn>

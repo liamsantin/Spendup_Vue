@@ -94,32 +94,29 @@ async function resend() {
 </script>
 
 <template>
-    <div class="mt-5">
+    <div class="auth-form">
         <template v-if="hasEmail">
-            <p class="text-subtitle-1 mb-4">{{ t('auth.confirmEmail.sentTo', { email }) }}</p>
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.confirmEmail.otpLabel') }}</v-label>
+            <p class="auth-field__hint mb-4">{{ t('auth.confirmEmail.sentTo', { email }) }}</p>
+            <label class="auth-field__label">{{ t('auth.confirmEmail.otpLabel') }}</label>
             <OtpDigitsInput v-model="code" field-class="confirm-email-otp" :disabled="canRetryLogin" @complete="confirm" />
-            <v-btn
-                v-if="!canRetryLogin"
-                class="mb-1 text-medium-emphasis"
-                variant="text"
-                size="small"
-                block
-                :loading="resending"
-                @click="resend"
-            >
+            <button v-if="!canRetryLogin" type="button" class="su-btn su-btn--ghost auth-submit" :disabled="resending" @click="resend">
+                <span v-if="resending" class="su-spin" aria-hidden="true" />
                 {{ t('auth.confirmEmail.resend') }}
-            </v-btn>
-            <v-btn v-if="!canRetryLogin" color="primary" size="large" block flat :loading="loading" @click="confirm">
+            </button>
+            <button v-if="!canRetryLogin" type="button" class="su-btn su-btn--ink auth-submit" :disabled="loading" @click="confirm()">
+                <span v-if="loading" class="su-spin" aria-hidden="true" />
                 {{ t('auth.confirmEmail.submit') }}
-            </v-btn>
-            <v-btn v-else color="primary" size="large" block flat :loading="loading" @click="retryLogin">
+            </button>
+            <button v-else type="button" class="su-btn su-btn--ink auth-submit" :disabled="loading" @click="retryLogin">
+                <span v-if="loading" class="su-spin" aria-hidden="true" />
                 {{ t('auth.confirmEmail.retryLogin') }}
-            </v-btn>
+            </button>
         </template>
         <template v-else>
             <AppAlert type="warning" class="mb-3">{{ t('auth.confirmEmail.missingEmail') }}</AppAlert>
-            <v-btn color="primary" size="large" block flat to="/auth/register">{{ t('auth.confirmEmail.backToRegister') }}</v-btn>
+            <RouterLink to="/auth?tab=register" class="su-btn su-btn--ink auth-submit">
+                {{ t('auth.confirmEmail.backToRegister') }}
+            </RouterLink>
         </template>
         <AppAlert v-if="success" type="success" class="mt-3">{{ success }}</AppAlert>
         <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>

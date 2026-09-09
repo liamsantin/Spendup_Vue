@@ -66,7 +66,7 @@ const commitments = [
                             applications et les compromis.
                         </p>
                         <div class="about-hero__actions">
-                            <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth/register">
+                            <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth?tab=register">
                                 Découvrir Spendup
                                 <ArrowRightIcon size="19" class="ms-2" />
                             </v-btn>
@@ -214,7 +214,7 @@ const commitments = [
                     <h2 class="textPrimary">Construisez une vision plus claire de vos finances.</h2>
                     <p>Essayez Spendup gratuitement, sans carte bancaire et sans engagement.</p>
                     <div class="about-final__actions">
-                        <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth/register">
+                        <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
                             Commencer gratuitement
                             <ArrowRightIcon size="19" class="ms-2" />
                         </v-btn>

@@ -70,7 +70,7 @@ watch(
                             class="header-login d-md-flex d-none text-none h-43 px-4 flex-shrink-0"
                             variant="text"
                             color="textPrimary"
-                            to="/auth/login"
+                            to="/auth?tab=login"
                         >
                             Connexion
                         </v-btn>
@@ -78,7 +78,7 @@ watch(
                             class="header-cta d-md-flex d-none text-none h-43 px-5 flex-shrink-0"
                             color="primary"
                             flat
-                            to="/auth/register"
+                            to="/auth?tab=register"
                         >
                             Commencer gratuitement
                             <ArrowRightIcon size="17" class="ms-2" />

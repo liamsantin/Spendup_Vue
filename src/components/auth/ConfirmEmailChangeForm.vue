@@ -6,6 +6,7 @@ import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
+import AuthPasswordField from '@/components/auth/AuthPasswordField.vue';
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -122,62 +123,44 @@ async function onResendGoogleCredential(idToken: string) {
 </script>
 
 <template>
-    <div class="mt-5">
-        <p class="text-subtitle-1 mb-4">{{ t('auth.confirmEmailChange.hint') }}</p>
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.confirmEmailChange.newEmail') }}</v-label>
-        <VTextField v-model="email" type="email" class="mb-4" hide-details autocomplete="email" />
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">{{ t('auth.confirmEmailChange.otpLabel') }}</v-label>
+    <div class="auth-form">
+        <p class="auth-field__hint mb-4">{{ t('auth.confirmEmailChange.hint') }}</p>
+        <div class="auth-field">
+            <label class="auth-field__label">{{ t('auth.confirmEmailChange.newEmail') }}</label>
+            <VTextField v-model="email" type="email" hide-details="auto" autocomplete="email" />
+        </div>
+        <label class="auth-field__label">{{ t('auth.confirmEmailChange.otpLabel') }}</label>
         <OtpDigitsInput v-model="code" field-class="confirm-email-change-otp" @complete="submit" />
 
-        <v-btn
-            v-if="!showResendAuth"
-            class="mb-1 text-medium-emphasis"
-            variant="text"
-            size="small"
-            block
-            :disabled="resending"
-            @click="openResend"
-        >
+        <button v-if="!showResendAuth" type="button" class="su-btn su-btn--ghost auth-submit" :disabled="resending" @click="openResend">
             {{ t('auth.confirmEmailChange.resend') }}
-        </v-btn>
+        </button>
         <div v-else class="mt-2 mb-3">
             <template v-if="showResendPassword">
-                <p class="text-subtitle-2 text-medium-emphasis mb-3">{{ t('auth.confirmEmailChange.resendPasswordHint') }}</p>
-                <v-label class="text-subtitle-1 font-weight-semibold pb-2 text-lightText">
-                    {{ t('auth.confirmEmailChange.currentPassword') }}
-                </v-label>
-                <VTextField
+                <p class="auth-field__hint mb-3">{{ t('auth.confirmEmailChange.resendPasswordHint') }}</p>
+                <AuthPasswordField
                     v-model="resendPassword"
-                    type="password"
-                    class="mb-3"
-                    hide-details
+                    :label="t('auth.confirmEmailChange.currentPassword')"
                     autocomplete="current-password"
-                    autofocus
-                    @keyup.enter="resend"
                 />
-                <v-btn color="primary" variant="tonal" block flat :loading="resending" @click="resend">
+                <button type="button" class="su-btn su-btn--ink auth-submit" :disabled="resending" @click="resend">
+                    <span v-if="resending" class="su-spin" aria-hidden="true" />
                     {{ t('auth.confirmEmailChange.sendNewCode') }}
-                </v-btn>
+                </button>
             </template>
             <template v-else-if="showResendGoogle">
-                <p class="text-subtitle-2 text-medium-emphasis mb-3">{{ t('auth.confirmEmailChange.resendGoogleHint') }}</p>
+                <p class="auth-field__hint mb-3">{{ t('auth.confirmEmailChange.resendGoogleHint') }}</p>
                 <GoogleSignInButton @credential="onResendGoogleCredential" />
             </template>
-            <v-btn
-                class="mt-1 text-medium-emphasis"
-                variant="text"
-                size="small"
-                block
-                :disabled="resending"
-                @click="showResendAuth = false"
-            >
+            <button type="button" class="su-btn su-btn--ghost auth-submit" :disabled="resending" @click="showResendAuth = false">
                 {{ t('auth.confirmEmailChange.cancel') }}
-            </v-btn>
+            </button>
         </div>
 
-        <v-btn color="primary" size="large" block flat class="mt-2" :loading="loading" @click="submit">
+        <button type="button" class="su-btn su-btn--ink auth-submit" :disabled="loading" @click="submit()">
+            <span v-if="loading" class="su-spin" aria-hidden="true" />
             {{ t('auth.confirmEmailChange.submit') }}
-        </v-btn>
+        </button>
         <AppAlert v-if="success" type="success" class="mt-3">{{ success }}</AppAlert>
         <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
     </div>

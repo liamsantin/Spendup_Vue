@@ -92,7 +92,7 @@ describe('authGuard', () => {
         const auth = useAuthStore();
         const next = vi.fn();
         await authGuard(route('/app/comptes'), route('/'), next);
-        expect(next).toHaveBeenCalledWith('/auth/login');
+        expect(next).toHaveBeenCalledWith('/auth');
         expect(auth.returnUrl).toBe('/app/comptes');
     });
 

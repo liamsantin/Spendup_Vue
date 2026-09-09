@@ -376,7 +376,7 @@ describe('useAuthStore', () => {
             await auth.changePassword('old-pass', 'NewPass12', undefined, stepUp);
 
             expect(authApiMock.changePassword).toHaveBeenCalledWith('access-1', 'old-pass', 'NewPass12', stepUp);
-            expect(routerPush).toHaveBeenCalledWith('/auth/login');
+            expect(routerPush).toHaveBeenCalledWith('/auth');
             expect(auth.accessToken).toBeNull();
         });
     });
