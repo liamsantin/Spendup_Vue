@@ -9,7 +9,15 @@ import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
-import { formatOperationDate, involvedAccountPublicIds, matchesTransactionSearch, parseTransactionSort, resolveTransactionAmountDisplay, sortTransactions, TRANSACTION_SORT_DEFAULT } from '@/features/transactions/format';
+import {
+    formatOperationDate,
+    involvedAccountPublicIds,
+    matchesTransactionSearch,
+    parseTransactionSort,
+    resolveTransactionAmountDisplay,
+    sortTransactions,
+    TRANSACTION_SORT_DEFAULT
+} from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { TRANSACTION_SEARCH_MAX, TRANSACTION_TYPES, type Transaction, type TransactionType } from '@/features/transactions/types';
 import { TIER_PAGE_SIZE_MAX } from '@/features/tiers/types';
@@ -281,11 +289,7 @@ async function confirmDelete() {
                         <h2>{{ group.label }}</h2>
                     </div>
                 </header>
-                <v-list
-                    :key="searchRevealKey"
-                    class="py-0 transaction-timeline__list"
-                    :class="{ 'is-search-reveal': searchReveals }"
-                >
+                <v-list :key="searchRevealKey" class="py-0 transaction-timeline__list" :class="{ 'is-search-reveal': searchReveals }">
                     <TransactionListItem
                         v-for="transaction in group.items"
                         :key="transaction.publicId"

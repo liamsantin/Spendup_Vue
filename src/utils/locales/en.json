@@ -228,10 +228,23 @@
     },
     "dashboard": {
         "pageTitle": "Dashboard",
-        "subtitle": "Overview of your workspace",
+        "subtitle": "Your finances, documents and network in one place.",
         "breadcrumbs": {
             "application": "Application",
             "dashboard": "Dashboard"
+        },
+        "hello": {
+            "morning": "Good morning, {name}",
+            "afternoon": "Good afternoon, {name}",
+            "evening": "Good evening, {name}",
+            "morningAnonymous": "Good morning",
+            "afternoonAnonymous": "Good afternoon",
+            "eveningAnonymous": "Good evening"
+        },
+        "hero": {
+            "lede": "A snapshot of what’s already live in Spend.Up.",
+            "balance": "Visible balance",
+            "accountsMeta": "{count} active account | {count} active account | {count} active accounts"
         },
         "banner": {
             "title": "Authenticated Spend.Up space",
@@ -239,7 +252,42 @@
         },
         "actions": {
             "open": "Open",
-            "comingSoon": "Coming soon"
+            "comingSoon": "Coming soon",
+            "seeAll": "See all",
+            "addTransaction": "Add a transaction"
+        },
+        "kpis": {
+            "accounts": "Accounts",
+            "accountsHint": "Banks and savings",
+            "sharedAccounts": "{count} shared | {count} shared | {count} shared",
+            "transactions": "Transactions",
+            "transactionsHint": "Recorded movements",
+            "files": "Files",
+            "filesHint": "PDF documents",
+            "friends": "Friends",
+            "friendsHint": "Your network",
+            "incomingFriends": "{count} request | {count} request | {count} requests",
+            "notifications": "Notifications",
+            "notificationsHint": "Unread",
+            "categories": "Categories",
+            "categoriesHint": "Classification",
+            "tiers": "Payees",
+            "tiersHint": "Counterparties",
+            "paymentMethods": "Payments",
+            "paymentMethodsHint": "Cards and methods"
+        },
+        "recent": {
+            "title": "Latest transactions",
+            "subtitle": "Your most recent movements.",
+            "empty": "No transactions yet."
+        },
+        "shortcuts": {
+            "title": "Quick access",
+            "subtitle": "Spaces already available."
+        },
+        "storage": {
+            "title": "Storage",
+            "subtitle": "Unique PDF blobs, excluding avatar."
         },
         "modules": {
             "transactions": {
@@ -249,6 +297,30 @@
             "accounts": {
                 "title": "Accounts",
                 "caption": "Banks, savings and payment methods"
+            },
+            "paymentMethods": {
+                "title": "Payment methods",
+                "caption": "Cards, cash and other methods"
+            },
+            "files": {
+                "title": "Files",
+                "caption": "Private PDF documents"
+            },
+            "categories": {
+                "title": "Categories",
+                "caption": "Your classification plan"
+            },
+            "tiers": {
+                "title": "Payees",
+                "caption": "People, brands and organizations"
+            },
+            "friends": {
+                "title": "Friends",
+                "caption": "Network and requests"
+            },
+            "notifications": {
+                "title": "Notifications",
+                "caption": "Alerts and messages"
             },
             "budgets": {
                 "title": "Budgets",
@@ -1012,6 +1084,7 @@
             "tooLarge": "The file exceeds 10 MB.",
             "notPdf": "Only PDF files are accepted.",
             "quotaExceeded": "Storage quota exceeded.",
+            "linkedToTransactions": "This file is still linked to a transaction. Detach it first.",
             "nameRequired": "The file name is required.",
             "documentDateInvalid": "The document date is invalid."
         },
@@ -1082,7 +1155,8 @@
             "createdBy": "Entered by {name}",
             "createdByUnknown": "Entered by a user",
             "myCategory": "My category: {name}",
-            "myTier": "My counterparty: {name}"
+            "myTier": "My counterparty: {name}",
+            "hasAttachments": "{count} receipt | {count} receipt | {count} receipts"
         },
         "deleteModal": {
             "title": "Delete this transaction?",
@@ -1123,7 +1197,18 @@
                 "valueDate": "Value date",
                 "paymentMethod": "Payment method",
                 "category": "My category",
-                "tier": "My counterparty"
+                "tier": "My counterparty",
+                "attachments": "PDF receipts"
+            },
+            "attachments": {
+                "hint": "PDF only, {max} max. Detaching does not delete the file from your library.",
+                "empty": "No receipts yet.",
+                "upload": "Upload a PDF",
+                "uploading": "Uploading…",
+                "pick": "Choose from Files",
+                "detach": "Detach",
+                "maxReached": "A transaction accepts at most {max} files.",
+                "alreadyLinked": "File already linked."
             },
             "errors": {
                 "typeInvalid": "Invalid transaction type (expense, income, transfer).",

@@ -1,6 +1,6 @@
 import { AppError } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
-import { involvedAccountPublicIds } from '@/features/transactions/format';
+import { involvedAccountPublicIds, normalizeTransaction, sanitizeFilePublicIds } from '@/features/transactions/format';
 import { transactionsApi } from '@/features/transactions/api';
 import { canWriteTransaction, canWriteTransactions, canWriteTransfer } from '@/features/transactions/rights';
 import { buildCreateTransactionPayload, buildUpdateTransactionPayload, type TransactionFormFields } from '@/features/transactions/payload';
@@ -232,7 +232,7 @@ export function createTransactionsCrud(state: TransactionsState) {
         }
     }
 
-    async function createTransaction(fields: TransactionFormFields) {
+    async function createTransaction(fields: TransactionFormFields, options?: { filePublicIds?: string[] }) {
         beginActing();
         clearError();
         try {
@@ -251,7 +251,9 @@ export function createTransactionsCrud(state: TransactionsState) {
             if (!built.ok) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
-            const created = await transactionsApi.create(built.payload);
+            const filePublicIds = sanitizeFilePublicIds(options?.filePublicIds);
+            const payload = filePublicIds.length ? { ...built.payload, filePublicIds } : built.payload;
+            const created = normalizeTransaction(await transactionsApi.create(payload));
             upsertItem(created);
             touchHydratedListCaches();
             await refreshAccountBalances(involvedAccountPublicIds(created));
@@ -281,7 +283,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             if (!built.ok) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
-            const updated = await transactionsApi.update(publicId, built.payload);
+            const updated = normalizeTransaction(await transactionsApi.update(publicId, built.payload));
             upsertItem(updated);
             touchHydratedListCaches();
             await refreshAccountBalances(involvedAccountPublicIds(updated));
@@ -291,6 +293,65 @@ export function createTransactionsCrud(state: TransactionsState) {
             if (err.status === 404) {
                 rememberNotFound();
                 removeItemLocal(publicId);
+            } else {
+                error.value = err.message;
+            }
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function attachTransactionFile(txPublicId: string, filePublicId: string) {
+        beginActing();
+        clearError();
+        try {
+            const accounts = accountsStore().accounts;
+            const known = state.allKnownItems().find((item) => item.publicId === txPublicId);
+            if (known && !canWriteTransaction(known, accounts)) {
+                throw new AppError(TRANSACTION_FORBIDDEN_MESSAGE, 403, TRANSACTION_FORBIDDEN_CODE);
+            }
+            const updated = normalizeTransaction(await transactionsApi.attachFile(txPublicId, filePublicId.trim()));
+            upsertItem(updated);
+            touchHydratedListCaches();
+            return updated;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            if (err.status === 404) {
+                rememberNotFound();
+                removeItemLocal(txPublicId);
+            } else {
+                error.value = err.message;
+            }
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function detachTransactionFile(txPublicId: string, filePublicId: string) {
+        beginActing();
+        clearError();
+        try {
+            const accounts = accountsStore().accounts;
+            const known = state.allKnownItems().find((item) => item.publicId === txPublicId);
+            if (known && !canWriteTransaction(known, accounts)) {
+                throw new AppError(TRANSACTION_FORBIDDEN_MESSAGE, 403, TRANSACTION_FORBIDDEN_CODE);
+            }
+            await transactionsApi.detachFile(txPublicId, filePublicId.trim());
+            const current = known ?? state.allKnownItems().find((item) => item.publicId === txPublicId);
+            if (current) {
+                upsertItem({
+                    ...current,
+                    files: (current.files ?? []).filter((file) => file.publicId !== filePublicId.trim())
+                });
+            }
+            touchHydratedListCaches();
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            if (err.status === 404) {
+                rememberNotFound();
+                removeItemLocal(txPublicId);
             } else {
                 error.value = err.message;
             }
@@ -382,6 +443,8 @@ export function createTransactionsCrud(state: TransactionsState) {
         cancelPendingLoads,
         createTransaction,
         updateTransaction,
+        attachTransactionFile,
+        detachTransactionFile,
         deleteTransaction,
         refetchAccount,
         refetchActive,

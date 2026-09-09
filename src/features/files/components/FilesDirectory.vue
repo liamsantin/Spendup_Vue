@@ -5,7 +5,14 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { isQuotaExceededMessage, matchesFileSearch, parseFileSort, sortFiles, wouldExceedQuota } from '@/features/files/format';
+import {
+    isFileLinkedToTransactionsMessage,
+    isQuotaExceededMessage,
+    matchesFileSearch,
+    parseFileSort,
+    sortFiles,
+    wouldExceedQuota
+} from '@/features/files/format';
 import { downloadFileBlob } from '@/features/files/composables/useFileContentUrl';
 import { useFilesStore } from '@/features/files/stores/files-store';
 import { FILE_PAGE_SIZE_MAX, FILE_PDF_MIME, FILE_SEARCH_MAX, type FileDto } from '@/features/files/types';
@@ -170,6 +177,10 @@ async function confirmDelete() {
             localError.value = t('filesPage.errors.notFound');
             deleteTarget.value = null;
             void loadDirectory(true).catch(() => undefined);
+            return;
+        }
+        if (isFileLinkedToTransactionsMessage(err.message)) {
+            localError.value = t('filesPage.errors.linkedToTransactions');
             return;
         }
         localError.value = getErrorMessage(e);

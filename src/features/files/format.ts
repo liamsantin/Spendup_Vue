@@ -1,5 +1,11 @@
 import { matchesSearchTokens } from '@/utils/helpers/text-search';
-import { FILE_QUOTA_EXCEEDED_MESSAGE, FILE_SEARCH_MAX, type FileDto, type FileUsage } from '@/features/files/types';
+import {
+    FILE_LINKED_TO_TRANSACTIONS_MESSAGE,
+    FILE_QUOTA_EXCEEDED_MESSAGE,
+    FILE_SEARCH_MAX,
+    type FileDto,
+    type FileUsage
+} from '@/features/files/types';
 
 const YMD_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -134,4 +140,8 @@ export function wouldExceedQuota(usage: FileUsage, fileSize: number): boolean {
 
 export function isQuotaExceededMessage(message: string | null | undefined): boolean {
     return message === FILE_QUOTA_EXCEEDED_MESSAGE;
+}
+
+export function isFileLinkedToTransactionsMessage(message: string | null | undefined): boolean {
+    return message === FILE_LINKED_TO_TRANSACTIONS_MESSAGE;
 }

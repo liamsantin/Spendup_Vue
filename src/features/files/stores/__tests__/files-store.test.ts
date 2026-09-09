@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
 import { AppError } from '@/utils/errors/app-error';
 import type { FileDto, FileUsage } from '@/features/files/types';
-import { FILE_QUOTA_EXCEEDED_MESSAGE } from '@/features/files/types';
+import { FILE_LINKED_TO_TRANSACTIONS_MESSAGE, FILE_QUOTA_EXCEEDED_MESSAGE } from '@/features/files/types';
 import { fileToFormFields } from '@/features/files/payload';
 
 const api = vi.hoisted(() => ({
@@ -152,6 +152,20 @@ describe('useFilesStore', () => {
         await expect(store.deleteFile('file-1')).rejects.toMatchObject({ status: 404 });
         expect(store.items).toHaveLength(0);
         expect(store.error).toBe('Ce fichier n’est plus disponible.');
+        expect(api.usage).not.toHaveBeenCalled();
+    });
+
+    it('ne retire pas un fichier encore lié à une transaction', async () => {
+        api.list.mockResolvedValue(page([facture]));
+        api.remove.mockRejectedValue(new AppError(FILE_LINKED_TO_TRANSACTIONS_MESSAGE, 400));
+        const store = useFilesStore();
+        await store.loadList();
+        await expect(store.deleteFile('file-1')).rejects.toMatchObject({
+            status: 400,
+            message: FILE_LINKED_TO_TRANSACTIONS_MESSAGE
+        });
+        expect(store.items).toHaveLength(1);
+        expect(store.findByPublicId('file-1')?.publicId).toBe('file-1');
         expect(api.usage).not.toHaveBeenCalled();
     });
 

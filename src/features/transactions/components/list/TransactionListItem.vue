@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ArrowDownLeftIcon, ArrowUpRightIcon, ArrowsExchangeIcon, PencilIcon, TrashIcon } from 'vue-tabler-icons';
+import { ArrowDownLeftIcon, ArrowUpRightIcon, ArrowsExchangeIcon, PaperclipIcon, PencilIcon, TrashIcon } from 'vue-tabler-icons';
 import { useAuthStore } from '@/features/auth';
 import { UserPhotoAvatar } from '@/features/friends';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
@@ -133,7 +133,17 @@ function onDoubleClick(event: MouseEvent) {
             <component :is="typeIcon" size="20" stroke-width="2.4" />
         </span>
         <div class="su-person__meta">
-            <p class="su-person__name">{{ transaction.label }}</p>
+            <p class="su-person__name">
+                {{ transaction.label }}
+                <span
+                    v-if="transaction.files?.length"
+                    class="transaction-list-item__clip"
+                    :title="t('transactionsPage.list.hasAttachments', { count: transaction.files.length }, transaction.files.length)"
+                >
+                    <PaperclipIcon :size="14" stroke-width="1.8" />
+                    {{ transaction.files.length }}
+                </span>
+            </p>
             <p class="su-person__sub">
                 {{ t(`transactionsPage.types.${transaction.type}`) }}
                 · {{ accountLine }}
@@ -253,5 +263,16 @@ function onDoubleClick(event: MouseEvent) {
     background: rgba(var(--v-theme-primary), 0.09);
     color: rgb(var(--v-theme-primary));
     font-weight: 600;
+}
+
+.transaction-list-item__clip {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 8px;
+    color: var(--ink-muted);
+    font-size: 0.75rem;
+    font-weight: 650;
+    vertical-align: middle;
 }
 </style>

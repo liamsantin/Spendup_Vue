@@ -8,6 +8,9 @@ import {
     resolveTransactionAmountDisplay,
     signedAmountForSens,
     matchesTransactionSearch,
+    normalizeTransaction,
+    normalizeTransactionFiles,
+    sanitizeFilePublicIds,
     sortTransactions,
     sourceAccountPublicId,
     targetAccountPublicId,
@@ -35,6 +38,7 @@ function tx(partial: Partial<Transaction> = {}): Transaction {
         createdAt: '2026-09-07T11:03:44.1234567Z',
         updatedAt: null,
         movements: [{ accountPublicId: 'acc-1', amount: 42.5, sens: 'debit' }],
+        files: [],
         ...partial
     };
 }
@@ -100,5 +104,20 @@ describe('transactions format', () => {
         expect(matchesTransactionSearch(item, 'john', { tierHaystack: 'Papa John Doe' })).toBe(true);
         expect(matchesTransactionSearch(item, 'banque cantonale', { accountNames: ['Banque Cantonale'] })).toBe(true);
         expect(matchesTransactionSearch(item, 'xyz')).toBe(false);
+        expect(
+            matchesTransactionSearch(
+                tx({ files: [{ publicId: 'f1', nameOriginal: 'facture-edf.pdf', sizeBytes: 12, mimeType: 'application/pdf' }] }),
+                'edf'
+            )
+        ).toBe(true);
+    });
+
+    it('normalise files[] et déduplique les publicId à attacher', () => {
+        expect(normalizeTransactionFiles(undefined)).toEqual([]);
+        expect(
+            normalizeTransactionFiles([{ publicId: '  f1  ', nameOriginal: 'a.pdf', sizeBytes: 10, mimeType: 'application/pdf' }])
+        ).toEqual([{ publicId: 'f1', nameOriginal: 'a.pdf', sizeBytes: 10, mimeType: 'application/pdf' }]);
+        expect(normalizeTransaction({ ...tx(), files: undefined as unknown as Transaction['files'] }).files).toEqual([]);
+        expect(sanitizeFilePublicIds([' f1 ', 'f1', '', 'f2', 'f3', 'f4', 'f5', 'f6'])).toEqual(['f1', 'f2', 'f3', 'f4', 'f5']);
     });
 });

@@ -1,7 +1,8 @@
 import { formatAccountBalance } from '@/features/accounts/format';
 import type { Currency } from '@/features/accounts/types';
 import { matchesSearchTokens } from '@/utils/helpers/text-search';
-import type { MovementSens, Transaction, TransactionMovement } from '@/features/transactions/types';
+import type { MovementSens, Transaction, TransactionFile, TransactionMovement } from '@/features/transactions/types';
+import { TRANSACTION_FILES_MAX } from '@/features/transactions/types';
 
 const YMD_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -154,10 +155,43 @@ export function matchesTransactionSearch(item: Transaction, needle: string, hint
         ...(hints.accountNames ?? []),
         hints.categoryName,
         hints.tierHaystack,
-        hints.paymentMethodLabel
+        hints.paymentMethodLabel,
+        ...(item.files ?? []).map((file) => file.nameOriginal)
     ];
-    return matchesSearchTokens(
-        parts.filter((part): part is string => !!part && String(part).trim().length > 0).join(' '),
-        needle
-    );
+    return matchesSearchTokens(parts.filter((part): part is string => !!part && String(part).trim().length > 0).join(' '), needle);
+}
+
+export function normalizeTransactionFiles(value: unknown): TransactionFile[] {
+    if (!Array.isArray(value)) return [];
+    const files: TransactionFile[] = [];
+    for (const raw of value) {
+        if (!raw || typeof raw !== 'object') continue;
+        const item = raw as Partial<TransactionFile>;
+        const publicId = typeof item.publicId === 'string' ? item.publicId.trim() : '';
+        if (!publicId) continue;
+        files.push({
+            publicId,
+            nameOriginal: typeof item.nameOriginal === 'string' && item.nameOriginal.trim() ? item.nameOriginal : publicId,
+            sizeBytes: typeof item.sizeBytes === 'number' && Number.isFinite(item.sizeBytes) ? item.sizeBytes : 0,
+            mimeType: typeof item.mimeType === 'string' && item.mimeType.trim() ? item.mimeType : 'application/pdf'
+        });
+    }
+    return files;
+}
+
+export function normalizeTransaction(transaction: Transaction): Transaction {
+    return { ...transaction, files: normalizeTransactionFiles(transaction.files) };
+}
+
+export function sanitizeFilePublicIds(ids: readonly string[] | null | undefined): string[] {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const raw of ids ?? []) {
+        const id = raw.trim();
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        out.push(id);
+        if (out.length >= TRANSACTION_FILES_MAX) break;
+    }
+    return out;
 }

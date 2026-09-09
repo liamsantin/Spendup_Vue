@@ -2,7 +2,7 @@
 
 > Code : `src/features/files/`  
 > Statut : active · Relu : 2026-09-09  
-> Voir aussi : `architecture/http.md`, `patterns/app-page-shell.md`
+> Voir aussi : `architecture/http.md`, `patterns/app-page-shell.md`, `features/transactions/contract.md`
 
 ## Boundaries
 
@@ -14,7 +14,13 @@
 | API    | `filesApi` via **`fetchWrapper`** (JSON) + `postForm` / `getBlob`                                                            |
 | Cloud  | Bucket Infomaniak **privé** — le front ne parle jamais au stockage, seulement à l’API                                        |
 
-Owner only. Un autre user ou un `publicId` inconnu / soft-deleted → **404** (pas 403). Pas de corbeille / restore en V1.
+Owner only **pour la bibliothèque** (`GET /api/files`). Un autre user ou un `publicId` inconnu / soft-deleted → **404** (pas 403). Pas de corbeille / restore en V1.
+
+**Contenu / métadonnées d’un PDF** (`GET /api/files/{id}` et `…/content`) :
+
+- Owner → toujours OK.
+- Co-détenteur **viewer+** d’une transaction à laquelle le PDF est lié → OK (même s’il n’apparaît pas dans `GET /api/files`).
+- Sinon → **404**.
 
 Avatar : **contrat inchangé** (`PUT/POST/GET/DELETE /api/auth/me/avatar`, `GET /api/users/{id}/avatar`). `profilePicture` catalogue `/avatar/…` = asset local ; hash 64 hex = blob `GET …/avatar` ; `null` = placeholder. L’avatar **n’entre pas** dans le quota fichiers.
 
@@ -30,7 +36,7 @@ Auth identique au reste : `Authorization: Bearer` **ou** cookie `spendup_access`
 | GET     | `/api/files/{publicId}/content` | PDF brut, `Content-Type: application/pdf`. **Toujours** `fetch` → blob URL, affichée dans la page (visionneuse native du navigateur, pas de modale) |
 | POST    | `/api/files`                    | `multipart/form-data`, champ **`file`**. Ne pas forcer `Content-Type`                                                                               |
 | PATCH   | `/api/files/{publicId}`         | JSON partiel (`nameOriginal`, `description`, `documentDate`, `clearDocumentDate`)                                                                   |
-| DELETE  | `/api/files/{publicId}`         | `204` sans body. Soft-delete                                                                                                                        |
+| DELETE  | `/api/files/{publicId}`         | `204` sans body. Soft-delete. **400** si encore lié à une transaction (« Déliez-le d'abord. »)                                                      |
 
 Le même PDF uploadé deux fois = **deux lignes** (`publicId` différents, même `sha256Hash`). Un second blob identique **ne consomme pas** plus de quota (`fileCount` peut dépasser `uniqueBlobCount`). `publicId` = clé Vue / route. Ne pas utiliser `sha256Hash` comme id.
 
@@ -53,7 +59,9 @@ Pas d’URL S3 dans le JSON.
 
 Côté UI, si `file.size > remainingBytes` (et quota non illimité), on n’envoie pas : estimé sans hash client — un doublon peut encore être accepté par l’API. Le serveur reste la source de vérité.
 
-Hors V1 : restore, PJ transactions / fiscalité, autres mime types.
+Justificatifs de transaction : upload ici, **lien** via `POST /api/transactions/{id}/files` (voir `features/transactions/contract.md`). Détacher une pièce ≠ supprimer le PDF. Delete Fichiers refusé tant que le fichier est lié.
+
+Hors V1 : restore, fiscalité, autres mime types.
 
 ## Store
 
@@ -61,5 +69,5 @@ Hors V1 : restore, PJ transactions / fiscalité, autres mime types.
 - `usage` chargé au montage de l’écran Fichiers via `GET /api/files/usage` — **jamais** en sommant `items[].sizeBytes`.
 - Recherche UI (`?q=`) et tri (`?sort=`) **côté client** sur les pages chargées.
 - Upload : `FormData` + progression optionnelle. Après succès **ou** 400 quota → refetch usage. PATCH métadonnées : pas de refetch usage.
-- DELETE 204 → retrait de la ligne + refetch usage. 404 → message neutre + retrait local (pas de refetch usage).
+- DELETE 204 → retrait de la ligne + refetch usage. 404 → message neutre + retrait local (pas de refetch usage). 400 fichier encore lié → message i18n, **la ligne reste**, pas de refetch usage.
 - `reset()` au logout (`clearSession`).

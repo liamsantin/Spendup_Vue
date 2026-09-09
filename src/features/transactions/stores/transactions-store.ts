@@ -47,6 +47,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
         loadMore: crud.loadMore,
         createTransaction: crud.createTransaction,
         updateTransaction: crud.updateTransaction,
+        attachTransactionFile: crud.attachTransactionFile,
+        detachTransactionFile: crud.detachTransactionFile,
         deleteTransaction: crud.deleteTransaction,
         refetchAccount: crud.refetchAccount,
         refetchActive: crud.refetchActive,

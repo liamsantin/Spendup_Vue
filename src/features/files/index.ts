@@ -16,6 +16,7 @@ export {
     usageTone,
     wouldExceedQuota,
     isQuotaExceededMessage,
+    isFileLinkedToTransactionsMessage,
     FILE_SORTS,
     FILE_SORT_DEFAULT
 } from '@/features/files/format';
@@ -33,7 +34,8 @@ export {
     FILE_UPLOAD_FIELD,
     FILE_PDF_MIME,
     FILE_PDF_EXTENSION,
-    FILE_QUOTA_EXCEEDED_MESSAGE
+    FILE_QUOTA_EXCEEDED_MESSAGE,
+    FILE_LINKED_TO_TRANSACTIONS_MESSAGE
 } from '@/features/files/types';
 export { default as FilesDirectory } from '@/features/files/components/FilesDirectory.vue';
 export { default as FileListItem } from '@/features/files/components/list/FileListItem.vue';

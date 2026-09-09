@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
     fileSizeParts,
     formatStorageMo,
+    isFileLinkedToTransactionsMessage,
+    isQuotaExceededMessage,
     matchesFileSearch,
     parseFileSort,
     sortFiles,
@@ -11,6 +13,7 @@ import {
 } from '@/features/files/format';
 import { buildUpdateFileRequest, fileToFormFields } from '@/features/files/payload';
 import type { FileDto, FileUsage } from '@/features/files/types';
+import { FILE_LINKED_TO_TRANSACTIONS_MESSAGE, FILE_QUOTA_EXCEEDED_MESSAGE } from '@/features/files/types';
 
 function file(partial: Partial<FileDto> = {}): FileDto {
     return {
@@ -84,6 +87,13 @@ describe('quota usage', () => {
         expect(wouldExceedQuota(full, 10_000_001)).toBe(true);
         expect(wouldExceedQuota(full, 10_000_000)).toBe(false);
         expect(wouldExceedQuota({ ...full, isUnlimited: true }, 10_000_001)).toBe(false);
+    });
+
+    it('reconnaît les messages 400 quota et fichier encore lié', () => {
+        expect(isQuotaExceededMessage(FILE_QUOTA_EXCEEDED_MESSAGE)).toBe(true);
+        expect(isQuotaExceededMessage('autre')).toBe(false);
+        expect(isFileLinkedToTransactionsMessage(FILE_LINKED_TO_TRANSACTIONS_MESSAGE)).toBe(true);
+        expect(isFileLinkedToTransactionsMessage(FILE_QUOTA_EXCEEDED_MESSAGE)).toBe(false);
     });
 });
 

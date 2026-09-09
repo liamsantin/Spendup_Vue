@@ -3,6 +3,13 @@ export type TransactionStatus = 'validee';
 export type TransactionSource = 'manuelle';
 export type MovementSens = 'debit' | 'credit';
 
+export type TransactionFile = {
+    publicId: string;
+    nameOriginal: string;
+    sizeBytes: number;
+    mimeType: string;
+};
+
 export type TransactionMovement = {
     accountPublicId: string;
     /** `null` si le viewer a le solde masqué sur un compte touché. */
@@ -33,6 +40,8 @@ export type Transaction = {
     createdAt: string;
     updatedAt: string | null;
     movements: TransactionMovement[];
+    /** Justificatifs PDF. Toujours un tableau (éventuellement vide). */
+    files: TransactionFile[];
 };
 
 export type TransactionList = {
@@ -63,6 +72,8 @@ export type CreateTransactionPayload = {
     paymentMethodPublicId?: string | null;
     categoryPublicId?: string | null;
     tierPublicId?: string | null;
+    /** PDF déjà uploadés via `/api/files`. Max 5, dédupliqués côté API. */
+    filePublicIds?: string[];
 };
 
 export type UpdateTransactionPayload = {
@@ -76,9 +87,17 @@ export type UpdateTransactionPayload = {
     tierPublicId: string | null;
 };
 
+export type AttachTransactionFilePayload = {
+    filePublicId: string;
+};
+
 export const TRANSACTION_TYPES: TransactionType[] = ['depense', 'revenu', 'transfert'];
 
 export const TRANSACTION_LABEL_MAX = 255;
 export const TRANSACTION_SEARCH_MAX = 100;
 export const TRANSACTION_PAGE_SIZE_DEFAULT = 50;
 export const TRANSACTION_PAGE_SIZE_MAX = 200;
+/** Justificatifs PDF par transaction. */
+export const TRANSACTION_FILES_MAX = 5;
+export const FILE_ALREADY_LINKED_MESSAGE = 'Fichier déjà lié.';
+export const TRANSACTION_MAX_FILES_MESSAGE = 'Une transaction accepte au plus 5 fichiers.';

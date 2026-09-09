@@ -228,10 +228,23 @@
     },
     "dashboard": {
         "pageTitle": "Tableau de bord",
-        "subtitle": "Vue d’ensemble de votre espace",
+        "subtitle": "Vos finances, documents et réseau au même endroit.",
         "breadcrumbs": {
             "application": "Application",
             "dashboard": "Tableau de bord"
+        },
+        "hello": {
+            "morning": "Bonjour, {name}",
+            "afternoon": "Bon après-midi, {name}",
+            "evening": "Bonsoir, {name}",
+            "morningAnonymous": "Bonjour",
+            "afternoonAnonymous": "Bon après-midi",
+            "eveningAnonymous": "Bonsoir"
+        },
+        "hero": {
+            "lede": "Un aperçu de ce qui est déjà en place dans Spend.Up.",
+            "balance": "Solde visible",
+            "accountsMeta": "{count} compte actif | {count} compte actif | {count} comptes actifs"
         },
         "banner": {
             "title": "Espace authentifié Spend.Up",
@@ -239,7 +252,42 @@
         },
         "actions": {
             "open": "Ouvrir",
-            "comingSoon": "Bientôt disponible"
+            "comingSoon": "Bientôt disponible",
+            "seeAll": "Tout voir",
+            "addTransaction": "Ajouter une transaction"
+        },
+        "kpis": {
+            "accounts": "Comptes",
+            "accountsHint": "Banques et épargne",
+            "sharedAccounts": "{count} partagé | {count} partagé | {count} partagés",
+            "transactions": "Transactions",
+            "transactionsHint": "Mouvements enregistrés",
+            "files": "Fichiers",
+            "filesHint": "Documents PDF",
+            "friends": "Amis",
+            "friendsHint": "Votre réseau",
+            "incomingFriends": "{count} demande | {count} demande | {count} demandes",
+            "notifications": "Notifications",
+            "notificationsHint": "Non lues",
+            "categories": "Catégories",
+            "categoriesHint": "Classement",
+            "tiers": "Tiers",
+            "tiersHint": "Contreparties",
+            "paymentMethods": "Paiements",
+            "paymentMethodsHint": "Cartes et moyens"
+        },
+        "recent": {
+            "title": "Dernières transactions",
+            "subtitle": "Les mouvements les plus récents.",
+            "empty": "Aucune transaction pour l’instant."
+        },
+        "shortcuts": {
+            "title": "Accès rapides",
+            "subtitle": "Les espaces déjà disponibles."
+        },
+        "storage": {
+            "title": "Stockage",
+            "subtitle": "Blobs PDF uniques, hors avatar."
         },
         "modules": {
             "transactions": {
@@ -249,6 +297,30 @@
             "accounts": {
                 "title": "Comptes",
                 "caption": "Banques, épargne et moyens de paiement"
+            },
+            "paymentMethods": {
+                "title": "Moyens de paiement",
+                "caption": "Cartes, espèces et autres moyens"
+            },
+            "files": {
+                "title": "Fichiers",
+                "caption": "Documents PDF privés"
+            },
+            "categories": {
+                "title": "Catégories",
+                "caption": "Votre plan de classement"
+            },
+            "tiers": {
+                "title": "Tiers",
+                "caption": "Personnes, enseignes et organismes"
+            },
+            "friends": {
+                "title": "Amis",
+                "caption": "Réseau et demandes"
+            },
+            "notifications": {
+                "title": "Notifications",
+                "caption": "Alertes et messages"
             },
             "budgets": {
                 "title": "Budgets",
@@ -1012,6 +1084,7 @@
             "tooLarge": "Le fichier dépasse 10 Mo.",
             "notPdf": "Seuls les fichiers PDF sont acceptés.",
             "quotaExceeded": "Quota de stockage dépassé.",
+            "linkedToTransactions": "Ce fichier est encore lié à une transaction. Déliez-le d’abord.",
             "nameRequired": "Le nom du fichier est obligatoire.",
             "documentDateInvalid": "La date du document est invalide."
         },
@@ -1082,7 +1155,8 @@
             "createdBy": "Saisi par {name}",
             "createdByUnknown": "Saisi par un utilisateur",
             "myCategory": "Ma catégorie : {name}",
-            "myTier": "Ma contrepartie : {name}"
+            "myTier": "Ma contrepartie : {name}",
+            "hasAttachments": "{count} justificatif | {count} justificatif | {count} justificatifs"
         },
         "deleteModal": {
             "title": "Supprimer cette transaction ?",
@@ -1123,7 +1197,18 @@
                 "valueDate": "Date de valeur",
                 "paymentMethod": "Moyen de paiement",
                 "category": "Ma catégorie",
-                "tier": "Ma contrepartie"
+                "tier": "Ma contrepartie",
+                "attachments": "Justificatifs PDF"
+            },
+            "attachments": {
+                "hint": "PDF uniquement, {max} maximum. Détacher ne supprime pas le fichier de votre bibliothèque.",
+                "empty": "Aucun justificatif.",
+                "upload": "Uploader un PDF",
+                "uploading": "Envoi…",
+                "pick": "Choisir dans Fichiers",
+                "detach": "Détacher",
+                "maxReached": "Une transaction accepte au plus {max} fichiers.",
+                "alreadyLinked": "Fichier déjà lié."
             },
             "errors": {
                 "typeInvalid": "Type de transaction invalide (depense, revenu, transfert).",

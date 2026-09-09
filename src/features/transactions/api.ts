@@ -49,5 +49,17 @@ export const transactionsApi = {
 
     remove(publicId: string) {
         return fetchWrapper.delete(`/api/transactions/${encodeURIComponent(publicId)}`) as Promise<void>;
+    },
+
+    attachFile(txPublicId: string, filePublicId: string) {
+        return fetchWrapper.post(`/api/transactions/${encodeURIComponent(txPublicId)}/files`, {
+            filePublicId
+        }) as Promise<Transaction>;
+    },
+
+    detachFile(txPublicId: string, filePublicId: string) {
+        return fetchWrapper.delete(
+            `/api/transactions/${encodeURIComponent(txPublicId)}/files/${encodeURIComponent(filePublicId)}`
+        ) as Promise<void>;
     }
 };

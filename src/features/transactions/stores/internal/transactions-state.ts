@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
-import { involvedAccountPublicIds, sortTransactions } from '@/features/transactions/format';
+import { involvedAccountPublicIds, normalizeTransaction, sortTransactions } from '@/features/transactions/format';
 import { TRANSACTION_PAGE_SIZE_DEFAULT, type ListTransactionsQuery, type Transaction } from '@/features/transactions/types';
 
 export const TRANSACTIONS_LIST_MAX_AGE_MS = 30_000;
@@ -112,7 +112,7 @@ export function createTransactionsState() {
     }
 
     function setList(key: string, nextItems: Transaction[], meta?: { page?: number; pageSize?: number; totalCount?: number }) {
-        const sorted = sortTransactions(nextItems);
+        const sorted = sortTransactions(nextItems.map(normalizeTransaction));
         const prev = itemsByListKey.get(key);
         const entry: TransactionsCacheEntry = {
             items: sorted,
@@ -146,20 +146,21 @@ export function createTransactionsState() {
     }
 
     function upsertItem(transaction: Transaction) {
+        const next = normalizeTransaction(transaction);
         for (const key of [...itemsByListKey.keys()]) {
             const prev = itemsByListKey.get(key);
             if (!prev) continue;
             const query = parseListCacheKey(key);
-            const existed = prev.items.some((item) => item.publicId === transaction.publicId);
-            if (!existed && !queryMatchesTransaction(query, transaction)) continue;
-            if (existed && !queryMatchesTransaction(query, transaction)) {
-                const nextItems = prev.items.filter((item) => item.publicId !== transaction.publicId);
+            const existed = prev.items.some((item) => item.publicId === next.publicId);
+            if (!existed && !queryMatchesTransaction(query, next)) continue;
+            if (existed && !queryMatchesTransaction(query, next)) {
+                const nextItems = prev.items.filter((item) => item.publicId !== next.publicId);
                 setList(key, nextItems, { totalCount: Math.max(0, prev.totalCount - 1) });
                 continue;
             }
-            const without = prev.items.filter((item) => item.publicId !== transaction.publicId);
+            const without = prev.items.filter((item) => item.publicId !== next.publicId);
             const nextTotal = existed ? (prev.totalCount ?? without.length) : (prev.totalCount ?? without.length) + 1;
-            setList(key, [...without, transaction], { totalCount: nextTotal });
+            setList(key, [...without, next], { totalCount: nextTotal });
         }
     }
 

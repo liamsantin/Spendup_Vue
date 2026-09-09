@@ -9,7 +9,7 @@ import { usePaymentMethodsStore } from '@/features/payment-methods/stores/paymen
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { categorySelectItems } from '@/features/categories/payload';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
-import { canWriteTransactions } from '@/features/transactions/rights';
+import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import { sourceAccountPublicId, targetAccountPublicId, todayUtcYmd } from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import {
@@ -19,8 +19,22 @@ import {
     type TransactionFormFields,
     type TransactionPayloadErrorCode
 } from '@/features/transactions/payload';
-import { TRANSACTION_TYPES, type Transaction, type TransactionType } from '@/features/transactions/types';
+import {
+    FILE_ALREADY_LINKED_MESSAGE,
+    TRANSACTION_FILES_MAX,
+    TRANSACTION_MAX_FILES_MESSAGE,
+    TRANSACTION_TYPES,
+    type Transaction,
+    type TransactionFile,
+    type TransactionType
+} from '@/features/transactions/types';
 import TransactionForm, { type TransactionFormFieldErrors } from '@/features/transactions/components/forms/TransactionForm.vue';
+import TransactionAttachments from '@/features/transactions/components/forms/TransactionAttachments.vue';
+import TransactionFilePreviewModal from '@/features/transactions/components/modals/TransactionFilePreviewModal.vue';
+import { useFilesStore } from '@/features/files/stores/files-store';
+import { isQuotaExceededMessage, wouldExceedQuota } from '@/features/files/format';
+import type { FileDto } from '@/features/files/types';
+import { validatePdfFile } from '@/features/files/validate-upload';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -40,6 +54,7 @@ const paymentMethodsStore = usePaymentMethodsStore();
 const categoriesStore = useCategoriesStore();
 const tiersStore = useTiersStore();
 const store = useTransactionsStore();
+const filesStore = useFilesStore();
 
 const isEdit = ref(false);
 const editTransaction = ref<Transaction | null>(null);
@@ -137,6 +152,10 @@ const counterpartyHint = computed(() => {
 
 const localError = reactive({ message: null as string | null });
 const fieldErrors = reactive<TransactionFormFieldErrors>({});
+const pendingFiles = ref<TransactionFile[]>([]);
+const uploadingFile = ref(false);
+const previewFile = ref<TransactionFile | null>(null);
+const previewOpen = ref(false);
 
 const form = reactive<TransactionFormFields>({
     type: 'depense',
@@ -161,6 +180,37 @@ const canSave = computed(() => {
     if (!isEdit.value || !editTransaction.value) return true;
     return isTransactionFormDirty(editTransaction.value, form);
 });
+
+const canEditFiles = computed(() => {
+    if (archivedHint.value) return false;
+    if (!isEdit.value) return writableAccounts.value.some((a) => a.publicId === form.accountPublicId);
+    if (!editTransaction.value) return false;
+    return canWriteTransaction(editTransaction.value, accountsStore.accounts);
+});
+
+const attachedFiles = computed((): TransactionFile[] => {
+    if (isEdit.value && editTransaction.value) {
+        const live = store.allKnownItems().find((item) => item.publicId === editTransaction.value?.publicId);
+        return live?.files ?? editTransaction.value.files ?? [];
+    }
+    return pendingFiles.value;
+});
+
+function toTxFile(file: Pick<FileDto, 'publicId' | 'nameOriginal' | 'sizeBytes' | 'mimeType'>): TransactionFile {
+    return {
+        publicId: file.publicId,
+        nameOriginal: file.nameOriginal,
+        sizeBytes: file.sizeBytes,
+        mimeType: file.mimeType
+    };
+}
+
+function attachmentError(message: string): string {
+    if (message === FILE_ALREADY_LINKED_MESSAGE) return t('transactionsPage.form.attachments.alreadyLinked');
+    if (message === TRANSACTION_MAX_FILES_MESSAGE) return t('transactionsPage.form.attachments.maxReached', { max: TRANSACTION_FILES_MAX });
+    if (isQuotaExceededMessage(message)) return t('filesPage.errors.quotaExceeded');
+    return message;
+}
 
 function clearFieldErrors() {
     fieldErrors.type = null;
@@ -196,6 +246,9 @@ function formatAmountInput(value: number | null | undefined): string {
 function resetForm() {
     localError.message = null;
     tierDeletedHint.value = false;
+    pendingFiles.value = [];
+    previewFile.value = null;
+    previewOpen.value = false;
     clearFieldErrors();
     const transaction = editTransaction.value;
     if (transaction) {
@@ -240,7 +293,12 @@ watch(
         isEdit.value = !!props.transaction;
         editTransaction.value = props.transaction ?? null;
         resetForm();
-        await Promise.all([loadPaymentMethodsForAccount(form.accountPublicId), loadCategoriesForType(form.type)]);
+        await Promise.all([
+            loadPaymentMethodsForAccount(form.accountPublicId),
+            loadCategoriesForType(form.type),
+            filesStore.loadList().catch(() => undefined),
+            filesStore.loadUsage()
+        ]);
     }
 );
 
@@ -289,7 +347,7 @@ async function onSave() {
         const saved =
             isEdit.value && editTransaction.value
                 ? await store.updateTransaction(editTransaction.value.publicId, form)
-                : await store.createTransaction(form);
+                : await store.createTransaction(form, { filePublicIds: pendingFiles.value.map((file) => file.publicId) });
         emit('saved', saved);
         open.value = false;
     } catch (e: unknown) {
@@ -300,6 +358,88 @@ async function onSave() {
         }
         localError.message = getErrorMessage(e);
     }
+}
+
+async function ensureCanAddFile(): Promise<boolean> {
+    if (attachedFiles.value.length >= TRANSACTION_FILES_MAX) {
+        localError.message = t('transactionsPage.form.attachments.maxReached', { max: TRANSACTION_FILES_MAX });
+        return false;
+    }
+    if (!canEditFiles.value) return false;
+    return true;
+}
+
+async function onUploadAttachment(file: File) {
+    localError.message = null;
+    if (!(await ensureCanAddFile())) return;
+    const check = await validatePdfFile(file);
+    if (!check.ok) {
+        localError.message = t(`filesPage.errors.${check.code}`);
+        return;
+    }
+    if (filesStore.usage && wouldExceedQuota(filesStore.usage, file.size)) {
+        localError.message = t('filesPage.errors.quotaExceeded');
+        return;
+    }
+    uploadingFile.value = true;
+    try {
+        const uploaded = await filesStore.uploadFile(file);
+        if (isEdit.value && editTransaction.value) {
+            const updated = await store.attachTransactionFile(editTransaction.value.publicId, uploaded.publicId);
+            editTransaction.value = updated;
+        } else {
+            if (pendingFiles.value.some((item) => item.publicId === uploaded.publicId)) return;
+            pendingFiles.value = [...pendingFiles.value, toTxFile(uploaded)];
+        }
+    } catch (e: unknown) {
+        localError.message = attachmentError(getErrorMessage(e));
+    } finally {
+        uploadingFile.value = false;
+    }
+}
+
+async function onPickAttachment(file: FileDto) {
+    localError.message = null;
+    if (!(await ensureCanAddFile())) return;
+    if (attachedFiles.value.some((item) => item.publicId === file.publicId)) {
+        localError.message = t('transactionsPage.form.attachments.alreadyLinked');
+        return;
+    }
+    try {
+        if (isEdit.value && editTransaction.value) {
+            const updated = await store.attachTransactionFile(editTransaction.value.publicId, file.publicId);
+            editTransaction.value = updated;
+        } else {
+            pendingFiles.value = [...pendingFiles.value, toTxFile(file)];
+        }
+    } catch (e: unknown) {
+        localError.message = attachmentError(getErrorMessage(e));
+    }
+}
+
+async function onDetachAttachment(file: TransactionFile) {
+    localError.message = null;
+    if (!canEditFiles.value) return;
+    if (!isEdit.value) {
+        pendingFiles.value = pendingFiles.value.filter((item) => item.publicId !== file.publicId);
+        return;
+    }
+    if (!editTransaction.value) return;
+    try {
+        await store.detachTransactionFile(editTransaction.value.publicId, file.publicId);
+        editTransaction.value = {
+            ...editTransaction.value,
+            files: attachedFiles.value.filter((item) => item.publicId !== file.publicId)
+        };
+    } catch (e: unknown) {
+        const err = AppError.fromUnknown(e);
+        localError.message = err.status === 404 ? t('transactionsPage.errors.notFound') : attachmentError(err.message);
+    }
+}
+
+function onOpenAttachment(file: TransactionFile) {
+    previewFile.value = file;
+    previewOpen.value = true;
 }
 </script>
 
@@ -331,6 +471,20 @@ async function onSave() {
             :category-hint="isSharedAccount ? t('transactionsPage.form.categoryPersonalHint') : null"
             :tier-hint="tierHint"
         />
+
+        <TransactionAttachments
+            :files="attachedFiles"
+            :library="filesStore.items"
+            :can-edit="canEditFiles"
+            :uploading="uploadingFile"
+            :acting="store.acting"
+            @upload="onUploadAttachment"
+            @pick="onPickAttachment"
+            @detach="onDetachAttachment"
+            @open="onOpenAttachment"
+        />
+
+        <TransactionFilePreviewModal v-model="previewOpen" :file="previewFile" />
 
         <template #footer="{ close }">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">

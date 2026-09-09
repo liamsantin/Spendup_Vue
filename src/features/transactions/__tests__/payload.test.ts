@@ -60,6 +60,8 @@ describe('transaction payload', () => {
                 amount: 42.5,
                 operationDate: '2026-09-07'
             });
+            expect(result.payload).not.toHaveProperty('filePublicIds');
+            expect(result.payload).not.toHaveProperty('files');
         }
     });
 
@@ -140,6 +142,8 @@ describe('transaction payload', () => {
                 categoryPublicId: null,
                 tierPublicId: null
             });
+            expect(result.payload).not.toHaveProperty('files');
+            expect(result.payload).not.toHaveProperty('filePublicIds');
         }
     });
 

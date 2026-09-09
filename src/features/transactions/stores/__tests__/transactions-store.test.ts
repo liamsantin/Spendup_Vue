@@ -10,7 +10,9 @@ const api = vi.hoisted(() => ({
     get: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
-    remove: vi.fn()
+    remove: vi.fn(),
+    attachFile: vi.fn(),
+    detachFile: vi.fn()
 }));
 
 const accountsApi = vi.hoisted(() => ({
@@ -28,7 +30,9 @@ vi.mock('@/features/transactions/api', () => ({
         get: (...args: unknown[]) => api.get(...args),
         create: (...args: unknown[]) => api.create(...args),
         update: (...args: unknown[]) => api.update(...args),
-        remove: (...args: unknown[]) => api.remove(...args)
+        remove: (...args: unknown[]) => api.remove(...args),
+        attachFile: (...args: unknown[]) => api.attachFile(...args),
+        detachFile: (...args: unknown[]) => api.detachFile(...args)
     }
 }));
 
@@ -94,7 +98,8 @@ const expense: Transaction = {
     createdByPhotoUrl: null,
     createdAt: '2026-09-07T11:03:44Z',
     updatedAt: null,
-    movements: [{ accountPublicId: 'acc-1', amount: 42.5, sens: 'debit' }]
+    movements: [{ accountPublicId: 'acc-1', amount: 42.5, sens: 'debit' }],
+    files: []
 };
 
 function form(partial: Partial<TransactionFormFields> = {}): TransactionFormFields {
@@ -164,25 +169,68 @@ describe('useTransactionsStore', () => {
         const created = await store.createTransaction(form());
         expect(created.publicId).toBe('tx-1');
         expect(store.items).toHaveLength(1);
+        expect(api.create.mock.calls[0]?.[0]).not.toHaveProperty('filePublicIds');
         expect(accountsApi.loadAccounts).toHaveBeenCalledWith(true);
 
         await store.updateTransaction('tx-1', form({ label: 'Courses bio', amount: '25' }));
         expect(store.items[0]?.label).toBe('Courses bio');
+        expect(api.update.mock.calls[0]?.[1]).not.toHaveProperty('files');
+        expect(api.update.mock.calls[0]?.[1]).not.toHaveProperty('filePublicIds');
 
         await store.deleteTransaction('tx-1');
         expect(store.items).toHaveLength(0);
         expect(api.remove).toHaveBeenCalledWith('tx-1');
     });
 
+    it('envoie filePublicIds à la création puis attache / détache sans rafraîchir le solde', async () => {
+        const receipt = {
+            publicId: 'file-1',
+            nameOriginal: 'edf.pdf',
+            sizeBytes: 1200,
+            mimeType: 'application/pdf'
+        };
+        const gas = { ...receipt, publicId: 'file-2', nameOriginal: 'gas.pdf' };
+        api.list.mockResolvedValue({ items: [], page: 1, pageSize: 50, totalCount: 0 });
+        api.create.mockResolvedValue({ ...expense, files: [receipt] });
+        api.attachFile.mockResolvedValue({ ...expense, files: [receipt, gas] });
+        api.detachFile.mockResolvedValue(undefined);
+
+        const store = useTransactionsStore();
+        await store.loadList({ accountPublicId: 'acc-1' });
+        accountsApi.loadAccounts.mockClear();
+
+        await store.createTransaction(form(), { filePublicIds: [' file-1 ', 'file-1'] });
+        expect(api.create).toHaveBeenCalledWith(expect.objectContaining({ filePublicIds: ['file-1'] }));
+        expect(store.items[0]?.files).toEqual([receipt]);
+        expect(accountsApi.loadAccounts).toHaveBeenCalledWith(true);
+
+        accountsApi.loadAccounts.mockClear();
+        await store.attachTransactionFile('tx-1', 'file-2');
+        expect(api.attachFile).toHaveBeenCalledWith('tx-1', 'file-2');
+        expect(store.items[0]?.files.map((file) => file.publicId)).toEqual(['file-1', 'file-2']);
+        expect(accountsApi.loadAccounts).not.toHaveBeenCalled();
+
+        await store.detachTransactionFile('tx-1', 'file-1');
+        expect(api.detachFile).toHaveBeenCalledWith('tx-1', 'file-1');
+        expect(store.items[0]?.files.map((file) => file.publicId)).toEqual(['file-2']);
+        expect(accountsApi.loadAccounts).not.toHaveBeenCalled();
+    });
+
     it('refuse l’écriture viewer / compte archivé', async () => {
         accountsList.length = 0;
         accountsList.push({ ...ownedAccount, myRole: 'viewer' });
+        api.list.mockResolvedValue({ items: [expense], page: 1, pageSize: 50, totalCount: 1 });
         const store = useTransactionsStore();
         await expect(store.createTransaction(form())).rejects.toMatchObject({ status: 403 });
+        await store.loadList();
+        await expect(store.attachTransactionFile('tx-1', 'file-1')).rejects.toMatchObject({ status: 403 });
+        expect(api.attachFile).not.toHaveBeenCalled();
 
         accountsList.length = 0;
         accountsList.push({ ...ownedAccount, isActive: false });
         await expect(store.createTransaction(form())).rejects.toMatchObject({ status: 403 });
+        await expect(store.detachTransactionFile('tx-1', 'file-1')).rejects.toMatchObject({ status: 403 });
+        expect(api.detachFile).not.toHaveBeenCalled();
     });
 
     it('normalise un 404 en message neutre', async () => {

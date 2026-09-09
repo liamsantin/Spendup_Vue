@@ -45,6 +45,7 @@ function transaction(partial: Partial<Transaction> = {}): Transaction {
         createdAt: '2026-09-07T11:00:00Z',
         updatedAt: null,
         movements: [{ accountPublicId: 'a1', amount: 10, sens: 'debit' }],
+        files: [],
         ...partial
     };
 }

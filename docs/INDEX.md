@@ -29,6 +29,7 @@
 | Categories    | [`features/categories/contract.md`](features/categories/contract.md)       |
 | Tiers         | [`features/tiers/contract.md`](features/tiers/contract.md)                 |
 | Files         | [`features/files/contract.md`](features/files/contract.md)                 |
+| Transactions  | [`features/transactions/contract.md`](features/transactions/contract.md)   |
 | Subscription  | [`features/subscription/contract.md`](features/subscription/contract.md)   |
 | User settings | [`features/user-settings/contract.md`](features/user-settings/contract.md) |
 | Countries     | [`features/countries/contract.md`](features/countries/contract.md)         |
