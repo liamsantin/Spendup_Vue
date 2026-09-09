@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, onUnmounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { FileDescriptionIcon, PaperclipIcon, TagsIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
-import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
+import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
@@ -156,6 +158,9 @@ const pendingFiles = ref<TransactionFile[]>([]);
 const uploadingFile = ref(false);
 const previewFile = ref<TransactionFile | null>(null);
 const previewOpen = ref(false);
+const activeTab = ref<'operation' | 'classification' | 'attachments'>('operation');
+
+const CLASSIFICATION_FIELDS = new Set(['paymentMethodPublicId', 'categoryPublicId', 'tierPublicId']);
 
 const form = reactive<TransactionFormFields>({
     type: 'depense',
@@ -196,6 +201,22 @@ const attachedFiles = computed((): TransactionFile[] => {
     return pendingFiles.value;
 });
 
+const formTabs = computed(() => [
+    { value: 'operation' as const, label: t('transactionsPage.form.tabs.operation'), icon: FileDescriptionIcon },
+    { value: 'classification' as const, label: t('transactionsPage.form.tabs.classification'), icon: TagsIcon },
+    {
+        value: 'attachments' as const,
+        label: t('transactionsPage.form.tabs.attachments'),
+        icon: PaperclipIcon,
+        chip: attachedFiles.value.length || undefined
+    }
+]);
+
+function tabForField(field?: string): 'operation' | 'classification' | 'attachments' {
+    if (field && CLASSIFICATION_FIELDS.has(field)) return 'classification';
+    return 'operation';
+}
+
 function toTxFile(file: Pick<FileDto, 'publicId' | 'nameOriginal' | 'sizeBytes' | 'mimeType'>): TransactionFile {
     return {
         publicId: file.publicId,
@@ -231,6 +252,7 @@ function payloadErrorText(code: TransactionPayloadErrorCode): string {
 
 function applyPayloadErrors(code: TransactionPayloadErrorCode, field?: string) {
     const message = payloadErrorText(code);
+    if (field) activeTab.value = tabForField(field);
     if (field && field in fieldErrors) {
         (fieldErrors as Record<string, string | null>)[field] = message;
         return;
@@ -292,6 +314,7 @@ watch(
         if (!value) return;
         isEdit.value = !!props.transaction;
         editTransaction.value = props.transaction ?? null;
+        activeTab.value = 'operation';
         resetForm();
         await Promise.all([
             loadPaymentMethodsForAccount(form.accountPublicId),
@@ -361,6 +384,7 @@ async function onSave() {
 }
 
 async function ensureCanAddFile(): Promise<boolean> {
+    activeTab.value = 'attachments';
     if (attachedFiles.value.length >= TRANSACTION_FILES_MAX) {
         localError.message = t('transactionsPage.form.attachments.maxReached', { max: TRANSACTION_FILES_MAX });
         return false;
@@ -444,47 +468,70 @@ function onOpenAttachment(file: TransactionFile) {
 </script>
 
 <template>
-    <AppModalBase
+    <AppModalTabs
         v-model="open"
+        v-model:tab="activeTab"
         :title="isEdit ? t('transactionsPage.form.editTitle') : t('transactionsPage.form.createTitle')"
         :subtitle="t('transactionsPage.form.subtitle')"
-        :max-width="640"
+        :tabs="formTabs"
         :height="720"
-        scrollable
-        mobile-layout="fullscreen"
+        :max-width="640"
     >
         <AppAlert v-if="localError.message" type="error" class="mb-4" closable @dismiss="localError.message = null">
             {{ localError.message }}
         </AppAlert>
 
-        <TransactionForm
-            :form="form"
-            :is-edit="isEdit"
-            :account-items="accountItems"
-            :counterparty-items="counterpartyItems"
-            :type-items="typeItems"
-            :payment-method-items="paymentMethodItems"
-            :category-items="categoryItems"
-            :field-errors="fieldErrors"
-            :archived-hint="archivedHint"
-            :counterparty-hint="counterpartyHint"
-            :category-hint="isSharedAccount ? t('transactionsPage.form.categoryPersonalHint') : null"
-            :tier-hint="tierHint"
-        />
+        <template #panel-operation>
+            <AppModalPanelScroll>
+                <TransactionForm
+                    section="operation"
+                    :form="form"
+                    :is-edit="isEdit"
+                    :account-items="accountItems"
+                    :counterparty-items="counterpartyItems"
+                    :type-items="typeItems"
+                    :payment-method-items="paymentMethodItems"
+                    :category-items="categoryItems"
+                    :field-errors="fieldErrors"
+                    :archived-hint="archivedHint"
+                    :counterparty-hint="counterpartyHint"
+                />
+            </AppModalPanelScroll>
+        </template>
 
-        <TransactionAttachments
-            :files="attachedFiles"
-            :library="filesStore.items"
-            :can-edit="canEditFiles"
-            :uploading="uploadingFile"
-            :acting="store.acting"
-            @upload="onUploadAttachment"
-            @pick="onPickAttachment"
-            @detach="onDetachAttachment"
-            @open="onOpenAttachment"
-        />
+        <template #panel-classification>
+            <AppModalPanelScroll>
+                <TransactionForm
+                    section="classification"
+                    :form="form"
+                    :is-edit="isEdit"
+                    :account-items="accountItems"
+                    :counterparty-items="counterpartyItems"
+                    :type-items="typeItems"
+                    :payment-method-items="paymentMethodItems"
+                    :category-items="categoryItems"
+                    :field-errors="fieldErrors"
+                    :category-hint="isSharedAccount ? t('transactionsPage.form.categoryPersonalHint') : null"
+                    :tier-hint="tierHint"
+                />
+            </AppModalPanelScroll>
+        </template>
 
-        <TransactionFilePreviewModal v-model="previewOpen" :file="previewFile" />
+        <template #panel-attachments>
+            <AppModalPanelScroll>
+                <TransactionAttachments
+                    :files="attachedFiles"
+                    :library="filesStore.items"
+                    :can-edit="canEditFiles"
+                    :uploading="uploadingFile"
+                    :acting="store.acting"
+                    @upload="onUploadAttachment"
+                    @pick="onPickAttachment"
+                    @detach="onDetachAttachment"
+                    @open="onOpenAttachment"
+                />
+            </AppModalPanelScroll>
+        </template>
 
         <template #footer="{ close }">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
@@ -494,5 +541,7 @@ function onOpenAttachment(file: TransactionFile) {
                 {{ t('common.save') }}
             </button>
         </template>
-    </AppModalBase>
+    </AppModalTabs>
+
+    <TransactionFilePreviewModal v-model="previewOpen" :file="previewFile" />
 </template>

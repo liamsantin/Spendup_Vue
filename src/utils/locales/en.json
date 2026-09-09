@@ -1169,6 +1169,11 @@
             "createTitle": "New transaction",
             "editTitle": "Edit transaction",
             "subtitle": "Type and accounts cannot be changed after creation.",
+            "tabs": {
+                "operation": "Operation",
+                "classification": "Classification",
+                "attachments": "Receipts"
+            },
             "amountPlaceholder": "42.50",
             "operationDatePlaceholder": "Operation date",
             "valueDatePlaceholder": "Value date (optional)",

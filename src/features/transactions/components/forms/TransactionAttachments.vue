@@ -59,10 +59,7 @@ function pick(file: FileDto) {
 
 <template>
     <section class="tx-files">
-        <div class="tx-files__head">
-            <p class="tx-files__title">{{ t('transactionsPage.form.fields.attachments') }}</p>
-            <p class="tx-files__hint">{{ t('transactionsPage.form.attachments.hint', { max: TRANSACTION_FILES_MAX }) }}</p>
-        </div>
+        <p class="tx-files__hint">{{ t('transactionsPage.form.attachments.hint', { max: TRANSACTION_FILES_MAX }) }}</p>
 
         <ul v-if="files.length" class="tx-files__list">
             <li v-for="file in files" :key="file.publicId" class="tx-files__chip">
@@ -112,23 +109,20 @@ function pick(file: FileDto) {
 
 <style scoped>
 .tx-files {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--hair);
-}
-
-.tx-files__title {
-    margin: 0;
-    font-weight: 650;
+    min-height: 0;
 }
 
 .tx-files__hint,
 .tx-files__empty,
 .tx-files__max,
 .tx-files__size {
-    margin: 4px 0 0;
+    margin: 0;
     color: var(--ink-muted);
     font-size: 0.78rem;
+}
+
+.tx-files__empty {
+    margin-top: 10px;
 }
 
 .tx-files__list {

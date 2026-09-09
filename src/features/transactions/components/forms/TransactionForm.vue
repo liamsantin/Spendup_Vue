@@ -41,19 +41,23 @@ const props = withDefaults(
         counterpartyHint?: string | null;
         categoryHint?: string | null;
         tierHint?: string | null;
+        section?: 'operation' | 'classification' | 'all';
     }>(),
     {
         fieldErrors: () => ({}),
         archivedHint: null,
         counterpartyHint: null,
         categoryHint: null,
-        tierHint: null
+        tierHint: null,
+        section: 'all'
     }
 );
 
 const { t } = useI18n();
 
 const isTransfer = computed(() => props.form.type === 'transfert');
+const showOperation = computed(() => props.section === 'all' || props.section === 'operation');
+const showClassification = computed(() => props.section === 'all' || props.section === 'classification');
 const todayUtc = computed(() => todayUtcYmd());
 const hasCounterpartyOptions = computed(() => props.counterpartyItems.length > 0);
 const counterpartySelectItems = computed(() =>
@@ -81,8 +85,8 @@ function onAmountInput(value: string) {
 
 <template>
     <div class="transaction-form">
-        <p v-if="archivedHint" class="text-caption text-warning mb-2">{{ archivedHint }}</p>
-        <v-row class="align-center" no-gutters>
+        <p v-if="showOperation && archivedHint" class="text-caption text-warning mb-2">{{ archivedHint }}</p>
+        <v-row v-if="showOperation" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="tx-form-type"> {{ t('transactionsPage.form.fields.type') }} * </label>
             </v-col>
@@ -99,7 +103,7 @@ function onAmountInput(value: string) {
                 />
             </v-col>
         </v-row>
-        <v-row class="align-center" no-gutters>
+        <v-row v-if="showOperation" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="tx-form-account">
                     {{ isTransfer ? t('transactionsPage.form.fields.sourceAccount') : t('transactionsPage.form.fields.account') }} *
@@ -118,7 +122,7 @@ function onAmountInput(value: string) {
                 />
             </v-col>
         </v-row>
-        <v-row v-if="isTransfer" class="align-center" no-gutters>
+        <v-row v-if="showOperation && isTransfer" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="tx-form-counterparty">
                     {{ t('transactionsPage.form.fields.counterpartyAccount') }} *
@@ -137,7 +141,7 @@ function onAmountInput(value: string) {
                 />
             </v-col>
         </v-row>
-        <v-row class="align-center" no-gutters>
+        <v-row v-if="showOperation" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="tx-form-label"> {{ t('transactionsPage.form.fields.label') }} * </label>
             </v-col>
@@ -154,7 +158,7 @@ function onAmountInput(value: string) {
                 />
             </v-col>
         </v-row>
-        <v-row class="align-center" no-gutters>
+        <v-row v-if="showOperation" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="tx-form-amount"> {{ t('transactionsPage.form.fields.amount') }} * </label>
             </v-col>
@@ -174,7 +178,7 @@ function onAmountInput(value: string) {
                 />
             </v-col>
         </v-row>
-        <v-row class="align-center" no-gutters>
+        <v-row v-if="showOperation" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium">{{ t('transactionsPage.form.fields.operationDate') }} *</label>
             </v-col>
@@ -189,7 +193,7 @@ function onAmountInput(value: string) {
                 <div v-if="fieldErrors.operationDate" class="text-caption text-error mt-1">{{ fieldErrors.operationDate }}</div>
             </v-col>
         </v-row>
-        <v-row class="align-center" no-gutters>
+        <v-row v-if="showOperation" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium">{{ t('transactionsPage.form.fields.valueDate') }}</label>
             </v-col>
@@ -204,7 +208,7 @@ function onAmountInput(value: string) {
                 <div v-if="fieldErrors.valueDate" class="text-caption text-error mt-1">{{ fieldErrors.valueDate }}</div>
             </v-col>
         </v-row>
-        <v-row class="align-center" no-gutters>
+        <v-row v-if="showClassification" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="tx-form-payment-method">
                     {{ t('transactionsPage.form.fields.paymentMethod') }}
@@ -222,7 +226,7 @@ function onAmountInput(value: string) {
                 />
             </v-col>
         </v-row>
-        <v-row class="align-center" no-gutters>
+        <v-row v-if="showClassification" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="tx-form-category">
                     {{ t('transactionsPage.form.fields.category') }}
@@ -242,7 +246,7 @@ function onAmountInput(value: string) {
                 />
             </v-col>
         </v-row>
-        <v-row class="align-center" no-gutters>
+        <v-row v-if="showClassification" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="tx-form-tier">
                     {{ t('transactionsPage.form.fields.tier') }}

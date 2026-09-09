@@ -79,6 +79,7 @@ Défauts modal : `maxWidth=640`, `height=720`.
 
 ## Références d’usage
 
-| Fichier                  | Pattern                    |
-| ------------------------ | -------------------------- |
-| `AccountDetailModal.vue` | Détails / Relevé / Partage |
+| Fichier                    | Pattern                                    |
+| -------------------------- | ------------------------------------------ |
+| `AccountDetailModal.vue`   | Détails / Relevé / Moyens / Partage        |
+| `TransactionFormModal.vue` | Opération / Classification / Justificatifs |

@@ -67,6 +67,7 @@ Delete Fichiers d’un PDF encore lié → 400 « Impossible de supprimer un fic
 
 ## UI
 
+- Modale `AppModalTabs` : **Opération** (type, comptes, libellé, montant, dates) · **Classification** (moyen de paiement, catégorie, contrepartie) · **Justificatifs** (PDF). Erreur de champ → focus de l’onglet concerné.
 - Liste : trombone + compteur si `files.length > 0`. Recherche client inclut `files[].nameOriginal`.
 - Modale create : upload / picker → `publicId` en local → `POST` avec `filePublicIds`.
 - Modale edit : attache / détache immédiat ; PUT du formulaire **sans** les pièces.

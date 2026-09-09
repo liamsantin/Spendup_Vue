@@ -1169,6 +1169,11 @@
             "createTitle": "Nouvelle transaction",
             "editTitle": "Modifier la transaction",
             "subtitle": "Le type et les comptes ne peuvent pas être changés après création.",
+            "tabs": {
+                "operation": "Opération",
+                "classification": "Classification",
+                "attachments": "Justificatifs"
+            },
             "amountPlaceholder": "42.50",
             "operationDatePlaceholder": "Date d’opération",
             "valueDatePlaceholder": "Date de valeur (optionnel)",
