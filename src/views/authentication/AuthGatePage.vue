@@ -80,7 +80,7 @@ async function onGoogleCredential(idToken: string) {
 
         <AppAlert v-if="googleError" type="error" class="mb-4">{{ googleError }}</AppAlert>
 
-        <GoogleSignInButton class="mb-5" :label="googleLabel" @credential="onGoogleCredential" />
+        <GoogleSignInButton class="mb-6" :label="googleLabel" @credential="onGoogleCredential" />
 
         <div class="auth-divider">
             <span>{{ t('auth.login.or') }}</span>

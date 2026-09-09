@@ -69,7 +69,7 @@ function validate(_values: Record<string, unknown>, { setErrors }: { setErrors: 
                 autocomplete="current-password"
             />
 
-            <div class="d-flex justify-end mb-3">
+            <div class="d-flex justify-end mb-4">
                 <RouterLink to="/auth/forgot-password" class="auth-shell__link">
                     {{ t('auth.login.forgotPassword') }}
                 </RouterLink>
