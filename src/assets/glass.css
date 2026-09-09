@@ -146,10 +146,11 @@
 }
 
 .su-tabs--foldable {
-    --tabs-fold-ease: var(--ease);
-    --tabs-fold-open: 0.62s;
-    --tabs-fold-close: 0.88s;
-    --tabs-fold-close-ease: cubic-bezier(0.33, 0.05, 0.2, 1);
+    --tabs-fold-ease: cubic-bezier(0.22, 1, 0.32, 1);
+    --tabs-fold-open: 0.72s;
+    --tabs-fold-close: 1.2s;
+    --tabs-fold-close-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --tabs-fold-fade-close: 0.48s;
     flex: none;
     max-width: min(100%, 52rem);
     align-items: center;
@@ -188,7 +189,7 @@
         grid-template-columns var(--tabs-fold-open) var(--tabs-fold-ease),
         padding var(--tabs-fold-open) var(--tabs-fold-ease),
         gap var(--tabs-fold-open) var(--tabs-fold-ease),
-        opacity var(--tabs-fold-open) var(--tabs-fold-ease);
+        opacity 0.45s var(--tabs-fold-ease) 0.12s;
 }
 
 .su-tabs--foldable .su-tabs__fold-inner > .su-tab:not(.is-active) > * {
@@ -211,8 +212,9 @@
     gap: 0;
     opacity: 0;
     pointer-events: none;
-    transition-duration: var(--tabs-fold-close);
+    transition-duration: var(--tabs-fold-close), var(--tabs-fold-close), var(--tabs-fold-close), var(--tabs-fold-fade-close);
     transition-timing-function: var(--tabs-fold-close-ease);
+    transition-delay: 0s;
 }
 
 .su-tabs__handle {
