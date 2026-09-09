@@ -117,6 +117,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, SETTINGS_PATHS.notifications)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.notificationSettings };
     }
+    if (pathIs(path, SETTINGS_PATHS.privacy)) {
+        return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.privacy };
+    }
     if (pathIs(path, SETTINGS_PATHS.security)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.security };
     }
@@ -201,7 +204,7 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.profile, t('nav.items.profile'), UserCircleIcon, SETTINGS_PATHS.account),
         live(SHELL_NAV_IDS.preferences, t('nav.items.preferences'), AdjustmentsHorizontalIcon, SETTINGS_PATHS.preferences),
         live(SHELL_NAV_IDS.notificationSettings, t('nav.items.notificationSettings'), BellIcon, SETTINGS_PATHS.notifications),
-        live(SHELL_NAV_IDS.privacy, t('nav.items.privacy'), EyeOffIcon, SETTINGS_PATHS.preferences),
+        live(SHELL_NAV_IDS.privacy, t('nav.items.privacy'), EyeOffIcon, SETTINGS_PATHS.privacy),
         live(SHELL_NAV_IDS.security, t('nav.items.security'), LockIcon, SETTINGS_PATHS.security),
         upcoming(SHELL_NAV_IDS.subscription, t('nav.items.subscription'), CrownIcon),
         live(SHELL_NAV_IDS.account, t('nav.items.account'), DatabaseExportIcon, SETTINGS_PATHS.account)

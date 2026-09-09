@@ -5,6 +5,7 @@ import {
     BellIcon,
     BuildingBankIcon,
     CreditCardIcon,
+    EyeOffIcon,
     LayoutDashboardIcon,
     LockIcon,
     UserCircleIcon,
@@ -74,6 +75,11 @@ const horizontalItems: menu[] = [
         title: 'nav.items.notificationSettings',
         icon: BellIcon,
         to: SETTINGS_PATHS.notifications
+    },
+    {
+        title: 'nav.items.privacy',
+        icon: EyeOffIcon,
+        to: SETTINGS_PATHS.privacy
     },
     {
         title: 'nav.items.security',

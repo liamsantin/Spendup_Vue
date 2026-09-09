@@ -7,7 +7,7 @@ export type SettingsTabExpose = {
     loading: boolean;
 };
 
-/** Save / cancel / discard partagés par Préférences, Notifications et Sécurité. */
+/** Save / cancel / discard partagés par les pages paramètres à formulaire. */
 export function useSettingsFormPage() {
     const store = useUserSettingsStore();
     const tabRef = ref<SettingsTabExpose | null>(null);

@@ -5,6 +5,7 @@ export const SETTINGS_PATHS = {
     account: '/app/parametres/compte',
     preferences: '/app/parametres/preferences',
     notifications: '/app/parametres/notifications',
+    privacy: '/app/parametres/confidentialite',
     security: '/app/parametres/securite',
     subscription: '/app/parametres/abonnement'
 } as const;

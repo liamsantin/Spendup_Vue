@@ -1,0 +1,482 @@
+/* Overlays (modales, menus) — hors .su-page, teleport body. */
+
+.v-overlay:has(.su-modal) .v-overlay__scrim {
+    background: var(--scrim) !important;
+    backdrop-filter: blur(10px) saturate(140%);
+}
+
+.su-modal.v-card {
+    background: var(--surface-overlay) !important;
+    border: 1px solid var(--stroke) !important;
+    box-shadow: var(--shadow-overlay) !important;
+    backdrop-filter: var(--blur);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    border-radius: 28px !important;
+    overflow: hidden;
+}
+
+.app-modal-base--mobile.su-modal.v-card {
+    border-radius: 0 !important;
+}
+
+.app-modal-base--sheet.su-modal.v-card {
+    border-radius: 28px 28px 0 0 !important;
+}
+
+.su-modal .text-h5,
+.su-modal h5 {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.03em;
+    line-height: 1.25;
+    color: var(--ink);
+}
+
+.su-modal .text-subtitle-1,
+.su-modal .text-medium-emphasis {
+    color: var(--ink-muted) !important;
+}
+
+.su-modal .v-divider {
+    display: none;
+}
+
+.app-modal-base__header,
+.app-confirmation-modal__header {
+    border-bottom: 1px solid var(--hair);
+}
+
+.app-modal-base:has(.app-modal-tabs__toolbar) .app-modal-base__header {
+    border-bottom: 0;
+}
+
+.app-modal-tabs__toolbar {
+    border-top: 0;
+    border-bottom: 0;
+}
+
+.app-modal-base__close.su-orb,
+.app-confirmation-modal__close.su-orb {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+}
+
+/* Evite le clipping du scale(1.06) contre le coin de la modale (overflow:hidden). */
+.app-modal-base__header,
+.app-confirmation-modal__header {
+    overflow: visible;
+}
+
+.app-modal-base__footer,
+.app-confirmation-modal__footer {
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px 16px;
+    background: rgba(var(--v-theme-primary), 0.05);
+    /* Room for .su-btn hover scale at the footer edge. */
+    overflow: visible;
+}
+
+.app-modal-base__footer {
+    justify-content: flex-end;
+}
+
+.app-confirmation-modal__footer {
+    justify-content: space-between;
+}
+
+.app-modal-base__footer .su-btn--ghost,
+.app-confirmation-modal__footer .su-btn--ghost {
+    margin-right: auto;
+}
+
+.app-modal-base .v-btn,
+.app-confirmation-modal .v-btn {
+    text-transform: none !important;
+    letter-spacing: -0.01em;
+    font-weight: 580;
+    border-radius: 17px !important;
+    box-shadow: none !important;
+}
+
+.app-modal-base .v-btn.bg-primary,
+.app-modal-base .v-btn--variant-flat.bg-primary,
+.app-confirmation-modal .v-btn.bg-primary,
+.app-confirmation-modal .v-btn--variant-flat.bg-primary {
+    background: rgb(var(--v-theme-primary)) !important;
+    color: #fff !important;
+    box-shadow: 0 14px 28px -16px rgba(var(--v-theme-primary), 0.7) !important;
+}
+
+.app-modal-base .v-btn.bg-error,
+.app-confirmation-modal .v-btn.bg-error,
+.app-modal-base .v-btn.text-error,
+.app-confirmation-modal .v-btn.text-error {
+    color: #b42318 !important;
+}
+
+.v-overlay__content > .v-date-picker {
+    background: var(--surface-overlay) !important;
+    border: 1px solid var(--stroke);
+    box-shadow: var(--shadow-overlay);
+    backdrop-filter: var(--blur);
+    border-radius: var(--radius-overlay) !important;
+    overflow: hidden;
+    font-family: var(--font-ui);
+}
+
+.v-date-picker .v-date-picker-month__day--selected .v-btn,
+.v-date-picker .v-date-picker-month__day--week .v-btn.v-btn--active {
+    background: rgb(var(--v-theme-primary)) !important;
+    color: #fff !important;
+}
+
+.su-menu.v-sheet,
+.v-overlay__content > .v-list {
+    background: var(--surface-overlay) !important;
+    border: 1px solid var(--stroke);
+    box-shadow: var(--shadow-overlay);
+    backdrop-filter: var(--blur);
+    border-radius: var(--radius-overlay) !important;
+    overflow: hidden;
+    color: var(--ink);
+    font-family: var(--font-ui);
+    /* Marge pour state-layer switch / scale des contrôles collés au bord du menu. */
+    padding: 8px 6px !important;
+}
+
+.su-menu .v-list {
+    background: transparent !important;
+}
+
+.su-menu .v-list-item {
+    overflow: visible;
+}
+
+.app-select-menu {
+    margin-top: 6px;
+    border-radius: 16px !important;
+    overflow: hidden;
+}
+
+.app-select-menu__surface {
+    overflow: hidden;
+    background: #fff !important;
+    border: 1px solid var(--thread);
+    border-radius: 16px !important;
+    box-shadow: var(--shadow-overlay);
+    color: var(--ink);
+}
+
+.app-select-menu__scroll {
+    position: relative;
+    max-height: min(310px, 55dvh);
+}
+
+.app-select-menu__options {
+    display: grid;
+    gap: 3px;
+    padding: 7px 13px 7px 7px;
+}
+
+.app-select-menu__option {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 43px;
+    padding: 0 10px 0 13px;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: var(--ink-mute);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: left;
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.app-select-menu__option:hover,
+.app-select-menu__option:focus-visible {
+    outline: none;
+    background: var(--surface-hover);
+    color: var(--ink);
+}
+
+.app-select-menu__option.is-selected {
+    background: rgba(var(--v-theme-primary), 0.09) !important;
+    color: var(--ink) !important;
+    font-weight: 600;
+}
+
+.app-select-menu__option.is-indent {
+    padding-left: 28px;
+    font-weight: 400;
+}
+
+.app-select-menu__check {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    flex: none;
+    border-radius: 50%;
+    background: rgb(var(--v-theme-primary));
+    color: #fff;
+}
+
+.app-select-menu .ps--active-y > .ps__rail-y {
+    right: 3px !important;
+    width: 7px !important;
+    background: transparent !important;
+    opacity: 1 !important;
+}
+
+.app-select-menu .ps__thumb-y {
+    right: 1px !important;
+    width: 5px !important;
+    border-radius: 999px !important;
+    background: rgba(var(--v-theme-primary), 0.38) !important;
+}
+
+@media (max-width: 959.98px) {
+    .app-select-menu {
+        position: fixed !important;
+        inset: auto 12px 12px !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        margin: 0;
+        border-radius: 22px !important;
+    }
+
+    .app-select-menu__surface {
+        width: 100%;
+        border-radius: 22px !important;
+    }
+
+    .app-select-menu__scroll {
+        max-height: min(310px, 70dvh);
+    }
+}
+
+.su-menu .text-h5,
+.su-menu .text-h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.app-modal-base .v-field,
+.su-modal .v-field,
+.su-page .v-field,
+.su-panel .v-field,
+.su-menu .v-field {
+    --v-field-input-padding-top: 10px;
+    --v-field-input-padding-bottom: 10px;
+    border-radius: var(--radius-field) !important;
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.v-field--variant-outlined .v-field__outline__start {
+    border-radius: var(--radius-field) 0 0 var(--radius-field) !important;
+}
+
+.v-field--variant-outlined .v-field__outline__end {
+    border-radius: 0 var(--radius-field) var(--radius-field) 0 !important;
+}
+
+.app-modal-base .v-field__outline,
+.su-modal .v-field__outline,
+.su-page .v-field__outline,
+.su-panel .v-field__outline,
+.su-menu .v-field__outline {
+    --v-field-border-opacity: 0.12;
+}
+
+.su-panel .v-field:hover .v-field__outline,
+.app-modal-base .v-field:hover .v-field__outline,
+.su-modal .v-field:hover .v-field__outline {
+    --v-field-border-opacity: 0.22;
+}
+
+.su-panel .v-field--focused .v-field__outline,
+.app-modal-base .v-field--focused .v-field__outline,
+.su-modal .v-field--focused .v-field__outline,
+.su-page .v-field--focused .v-field__outline,
+.su-menu .v-field--focused .v-field__outline {
+    --v-field-border-opacity: 1;
+    color: rgb(var(--v-theme-primary));
+}
+
+.su-panel .v-switch .v-selection-control {
+    min-height: 32px;
+    align-items: center;
+    overflow: visible;
+}
+
+.su-page .v-switch .v-selection-control,
+.su-modal .v-switch .v-selection-control,
+.su-showcase .v-switch .v-selection-control {
+    overflow: visible;
+}
+
+.su-panel .v-switch .v-label {
+    height: auto;
+    margin: 0 !important;
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.25;
+}
+
+.su-panel .v-switch .v-switch__track,
+.su-modal .v-switch .v-switch__track,
+.su-page .v-switch .v-switch__track,
+.su-showcase .v-switch .v-switch__track {
+    opacity: 1 !important;
+    background: var(--hair) !important;
+}
+
+.su-panel .v-switch .v-selection-control--dirty .v-switch__track,
+.su-modal .v-switch .v-selection-control--dirty .v-switch__track,
+.su-page .v-switch .v-selection-control--dirty .v-switch__track,
+.su-showcase .v-switch .v-selection-control--dirty .v-switch__track {
+    background: rgb(var(--v-theme-primary)) !important;
+}
+
+.su-panel .v-switch .v-switch__thumb,
+.su-modal .v-switch .v-switch__thumb,
+.su-page .v-switch .v-switch__thumb,
+.su-showcase .v-switch .v-switch__thumb {
+    background: #fff !important;
+    box-shadow: 0 2px 8px rgba(16, 16, 20, 0.2);
+}
+
+.su-panel .v-switch .v-selection-control--dirty .v-switch__thumb,
+.su-modal .v-switch .v-selection-control--dirty .v-switch__thumb,
+.su-page .v-switch .v-selection-control--dirty .v-switch__thumb,
+.su-showcase .v-switch .v-selection-control--dirty .v-switch__thumb {
+    background: #fff !important;
+}
+
+.su-page .v-radio.v-selection-control--dirty .v-icon,
+.su-modal .v-radio.v-selection-control--dirty .v-icon,
+.su-page .v-checkbox.v-selection-control--dirty .v-icon,
+.su-modal .v-checkbox.v-selection-control--dirty .v-icon,
+.su-showcase .v-radio.v-selection-control--dirty .v-icon {
+    color: rgb(var(--v-theme-primary)) !important;
+}
+
+.app-modal-base .v-label,
+.su-page .v-label,
+.su-panel .v-label {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 560;
+    color: var(--ink-mute);
+}
+
+.app-modal-base .v-alert,
+.su-page .v-alert,
+.su-panel .v-alert {
+    border-radius: var(--radius-leaf) !important;
+    box-shadow: none !important;
+}
+
+.su-panel .v-sheet.hover-btns {
+    background: var(--surface-raised) !important;
+    box-shadow: var(--shadow-pill-soft) !important;
+    border: 1px solid var(--stroke) !important;
+    border-radius: 16px !important;
+}
+
+/* Neutralise le rose Vuetify (lightprimary / primary) dans le chrome app. */
+.su-page .bg-lightprimary,
+.su-modal .bg-lightprimary,
+.su-menu .bg-lightprimary,
+.su-page .v-list-item.bg-lightprimary,
+.su-modal .v-list-item.bg-lightprimary,
+.su-menu .v-list-item.bg-lightprimary {
+    background: rgba(var(--v-theme-primary), 0.1) !important;
+    color: var(--ink) !important;
+}
+
+.su-page .v-avatar.bg-lightprimary,
+.su-modal .v-avatar.bg-lightprimary,
+.su-menu .v-avatar.bg-lightprimary {
+    background: rgba(var(--v-theme-primary), 0.16) !important;
+    color: rgb(var(--v-theme-primary)) !important;
+}
+
+.su-page .v-avatar.bg-primary,
+.su-modal .v-avatar.bg-primary {
+    background: rgb(var(--v-theme-primary)) !important;
+    color: #fff !important;
+}
+
+.su-page .v-chip.bg-primary,
+.su-modal .v-chip.bg-primary,
+.su-menu .v-chip.bg-primary {
+    background: rgb(var(--v-theme-primary)) !important;
+    color: #fff !important;
+}
+
+.su-page .v-chip.text-primary,
+.su-modal .v-chip.text-primary {
+    color: rgb(var(--v-theme-primary)) !important;
+}
+
+.su-page .v-list-item--active > .v-list-item__overlay,
+.su-modal .v-list-item--active > .v-list-item__overlay,
+.su-menu .v-list-item--active > .v-list-item__overlay {
+    opacity: 0.06;
+}
+
+.su-page .v-progress-circular,
+.su-modal .v-progress-circular {
+    color: rgb(var(--v-theme-primary)) !important;
+}
+
+.su-showcase {
+    min-height: 100dvh;
+    padding: 28px 20px 56px;
+    color: var(--ink);
+    font-family: var(--font-ui);
+    background:
+        radial-gradient(1200px 700px at 12% -10%, #ffffff 0%, rgba(255, 255, 255, 0) 60%),
+        linear-gradient(160deg, #f3f3f5 0%, #e9e9ee 48%, #dedee5 100%);
+}
+
+.su-showcase .su-page {
+    max-width: 960px;
+    margin: 0 auto;
+    height: auto;
+    min-height: calc(100dvh - 84px);
+}
+
+.su-showcase .su-body {
+    overflow: visible;
+}
+
+.su-showcase__grid {
+    display: grid;
+    gap: 20px;
+}
+
+.su-showcase__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}

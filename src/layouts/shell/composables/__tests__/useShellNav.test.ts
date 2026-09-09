@@ -76,6 +76,10 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.settings,
             activeId: SHELL_NAV_IDS.notificationSettings
         });
+        expect(idsFromPath(SETTINGS_PATHS.privacy)).toEqual({
+            openId: SHELL_NAV_IDS.settings,
+            activeId: SHELL_NAV_IDS.privacy
+        });
         expect(idsFromPath(SETTINGS_PATHS.security)).toEqual({
             openId: SHELL_NAV_IDS.settings,
             activeId: SHELL_NAV_IDS.security

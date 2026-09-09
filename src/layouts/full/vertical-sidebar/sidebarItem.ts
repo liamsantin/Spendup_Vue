@@ -5,6 +5,7 @@ import {
     BuildingBankIcon,
     CreditCardIcon,
     CrownIcon,
+    EyeOffIcon,
     LayoutDashboardIcon,
     AddressBookIcon,
     FilesIcon,
@@ -155,6 +156,11 @@ const sidebarThemes: sidebarTheme[] = [
                 title: 'nav.items.notificationSettings',
                 icon: BellIcon,
                 to: SETTINGS_PATHS.notifications
+            },
+            {
+                title: 'nav.items.privacy',
+                icon: EyeOffIcon,
+                to: SETTINGS_PATHS.privacy
             },
             {
                 title: 'nav.items.security',

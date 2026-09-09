@@ -83,6 +83,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/parametres/notifications/AppSettingsNotificationsPage.vue')
         },
         {
+            name: 'AppSettingsPrivacy',
+            path: 'parametres/confidentialite',
+            component: () => import('@/views/app/parametres/confidentialite/AppSettingsPrivacyPage.vue')
+        },
+        {
             name: 'AppSettingsSecurity',
             path: 'parametres/securite',
             component: () => import('@/views/app/parametres/securite/AppSettingsSecurityPage.vue')

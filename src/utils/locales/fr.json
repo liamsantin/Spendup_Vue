@@ -1343,6 +1343,7 @@
             "account": "Profil",
             "preferences": "Préférences",
             "notifications": "Notifications",
+            "privacy": "Confidentialité",
             "security": "Sécurité",
             "subscription": "Abonnement"
         },
@@ -1351,10 +1352,13 @@
                 "subtitle": "Photo, informations personnelles et identifiants."
             },
             "preferences": {
-                "subtitle": "Confidentialité, région, thème et tableau de bord."
+                "subtitle": "Région, thème et tableau de bord."
             },
             "notifications": {
                 "subtitle": "E-mail, alertes in-app et fréquence du résumé."
+            },
+            "privacy": {
+                "subtitle": "Visibilité du profil, demandes d’amis et recherche."
             },
             "security": {
                 "subtitle": "Double authentification, appareils et session."

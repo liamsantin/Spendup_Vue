@@ -31,20 +31,25 @@
 
 ## Application (`FullLayout`, `requiresAuth`)
 
-| Route                              | Feature                                        |
-| ---------------------------------- | ---------------------------------------------- |
-| `/app`                             | dashboard                                      |
-| `/app/comptes`                     | user-settings (Tabs Shell)                     |
-| `/app/parametres/abonnement`       | subscription (Page Shell, API mockée)          |
-| `/app/finances/comptes`            | accounts (Tabs Shell : Accounts / Invitations) |
-| `/app/finances/transactions`       | transactions                                   |
-| `/app/finances/moyens-de-paiement` | payment-methods                                |
-| `/app/gestion/files`               | files (PDF)                                    |
-| `/app/gestion/files/:publicId?`    | files (aperçu)                                 |
-| `/app/gestion/categories`          | categories                                     |
-| `/app/gestion/tiers`               | tiers (contreparties)                          |
-| `/app/notifications`               | notifications (Page Shell)                     |
-| `/app/friends`                     | friends (Tabs Shell)                           |
-| `/app/applications`                | redirect → `/app/comptes`                      |
+| Route                                 | Feature                                        |
+| ------------------------------------- | ---------------------------------------------- |
+| `/app`                                | dashboard                                      |
+| `/app/parametres/compte`              | user-settings (profil)                         |
+| `/app/parametres/preferences`         | user-settings (région, thème, dashboard)       |
+| `/app/parametres/notifications`       | user-settings (alertes)                        |
+| `/app/parametres/confidentialite`     | user-settings (visibilité, demandes d’amis)    |
+| `/app/parametres/securite`            | user-settings (2FA, appareils)                 |
+| `/app/parametres/abonnement`          | subscription (Page Shell, API mockée)          |
+| `/app/comptes`                        | redirect → pages paramètres (`?tab=`)          |
+| `/app/finances/comptes`               | accounts (Tabs Shell : Accounts / Invitations) |
+| `/app/finances/transactions`          | transactions                                   |
+| `/app/finances/moyens-de-paiement`    | payment-methods                                |
+| `/app/gestion/files`                  | files (PDF)                                    |
+| `/app/gestion/files/:publicId?`       | files (aperçu)                                 |
+| `/app/gestion/categories`             | categories                                     |
+| `/app/gestion/tiers`                  | tiers (contreparties)                          |
+| `/app/notifications`                  | notifications (Page Shell)                     |
+| `/app/friends`                        | friends (Tabs Shell)                           |
+| `/app/applications`                   | redirect → `/app/parametres/compte`            |
 
 Catch-all → `Error`.

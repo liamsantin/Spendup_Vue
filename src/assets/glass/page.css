@@ -1,0 +1,385 @@
+/* Page chrome : su-page, hero, tabs, toolbar, body. */
+
+.su-page {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    color: var(--ink);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+}
+
+.su-page--embedded {
+    height: auto;
+    flex: 0 0 auto;
+}
+
+.su-page--embedded .su-body {
+    overflow: visible;
+}
+
+.su-hero {
+    flex: none;
+    padding: 8px 10px 0;
+    animation: su-in 0.7s var(--ease) both;
+}
+
+.su-hero__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 16px;
+    /* Hauteur min = barre d’onglets (40 + 2×6) pour un ancrage vertical identique
+       même quand la page n’a pas de tabs (AppPageShell / actions seules). */
+    min-height: 52px;
+}
+
+.su-hero__heading {
+    flex: 1 1 12rem;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    min-height: 52px;
+}
+
+.su-hero h1 {
+    margin: 0;
+    min-width: 0;
+    font-size: 28px;
+    font-weight: 650;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+}
+
+.su-hero p {
+    margin: 0 0 12px;
+    max-width: 46ch;
+    color: var(--ink-muted);
+    font-size: 14.5px;
+    line-height: 1.5;
+}
+
+.su-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex: none;
+    /* Room for .su-btn / switch hover near the page edge. */
+    padding: 4px;
+    margin: -4px;
+}
+
+.su-tabs {
+    display: flex;
+    flex: 0 1 auto;
+    margin-left: auto;
+    min-width: 0;
+    max-width: 100%;
+    gap: 4px;
+    padding: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    border-radius: var(--radius-header);
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+    backdrop-filter: var(--blur);
+    box-shadow: var(--shadow-rest);
+}
+
+.su-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.su-tab {
+    appearance: none;
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: none;
+    height: 40px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 20px;
+    background: transparent;
+    color: var(--ink-mute);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 560;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        background 0.4s var(--ease),
+        color 0.3s var(--ease),
+        box-shadow 0.4s var(--ease),
+        transform 0.4s var(--spring);
+}
+
+.su-tab:hover {
+    color: var(--ink);
+    background: var(--surface-hover);
+}
+
+.su-tab.is-active {
+    color: #fff;
+    background: rgb(var(--v-theme-primary));
+    box-shadow: 0 10px 22px -16px rgba(var(--v-theme-primary), 0.45);
+}
+
+.su-tab:active {
+    transform: scale(0.97);
+}
+
+.su-tab svg {
+    flex: none;
+    opacity: 0.85;
+}
+
+.su-tabs--foldable {
+    --tabs-fold-ease: cubic-bezier(0.22, 1, 0.32, 1);
+    --tabs-fold-open: 0.72s;
+    --tabs-fold-close: 1.2s;
+    --tabs-fold-close-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --tabs-fold-fade-close: 0.48s;
+    flex: none;
+    max-width: min(100%, 52rem);
+    align-items: center;
+}
+
+.su-tabs__fold {
+    min-width: 0;
+}
+
+.su-tabs__fold-inner {
+    display: flex;
+    min-width: 0;
+    overflow: hidden;
+    gap: 4px;
+    transition: gap var(--tabs-fold-open) var(--tabs-fold-ease);
+}
+
+.su-tabs--foldable:not(.is-open) .su-tabs__fold-inner {
+    gap: 0;
+    transition-duration: var(--tabs-fold-close);
+    transition-timing-function: var(--tabs-fold-close-ease);
+}
+
+.su-tabs--foldable .su-tabs__fold-inner > .su-tab.is-active {
+    flex: none;
+}
+
+.su-tabs--foldable .su-tabs__fold-inner > .su-tab:not(.is-active) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: center;
+    justify-items: start;
+    min-width: 0;
+    overflow: hidden;
+    transition:
+        grid-template-columns var(--tabs-fold-open) var(--tabs-fold-ease),
+        padding var(--tabs-fold-open) var(--tabs-fold-ease),
+        gap var(--tabs-fold-open) var(--tabs-fold-ease),
+        opacity 0.45s var(--tabs-fold-ease) 0.12s;
+}
+
+.su-tabs--foldable .su-tabs__fold-inner > .su-tab:not(.is-active) > * {
+    min-width: 0;
+    overflow: hidden;
+}
+
+.su-tabs--foldable .su-tab__body {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.su-tabs--foldable:not(.is-open) .su-tabs__fold-inner > .su-tab:not(.is-active) {
+    grid-template-columns: 0fr;
+    padding-inline: 0;
+    gap: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition-duration: var(--tabs-fold-close), var(--tabs-fold-close), var(--tabs-fold-close), var(--tabs-fold-fade-close);
+    transition-timing-function: var(--tabs-fold-close-ease);
+    transition-delay: 0s;
+}
+
+.su-tabs__handle {
+    flex: none;
+    width: 40px;
+    min-width: 40px;
+    padding: 0;
+    justify-content: center;
+}
+
+.su-tabs__chevron {
+    flex: none;
+    transition: transform var(--tabs-fold-open) var(--tabs-fold-ease);
+}
+
+.su-tabs--foldable.is-open .su-tabs__chevron {
+    transform: rotate(180deg);
+}
+
+.su-tabs--foldable:not(.is-open) .su-tabs__chevron {
+    transition-duration: var(--tabs-fold-close);
+    transition-timing-function: var(--tabs-fold-close-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .su-tabs__fold-inner,
+    .su-tabs--foldable .su-tabs__fold-inner > .su-tab:not(.is-active),
+    .su-tabs__chevron {
+        transition: none;
+    }
+}
+
+.su-tab__chip {
+    display: grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: rgb(var(--v-theme-primary));
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.su-tab.is-active .su-tab__chip {
+    background: var(--surface-raised);
+    color: var(--ink);
+}
+
+
+.su-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 16px 10px 12px;
+    scrollbar-width: thin;
+}
+
+.su-surface {
+    padding: 8px;
+    border-radius: var(--radius-surface);
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+    backdrop-filter: var(--blur);
+    box-shadow: var(--shadow-rest);
+}
+
+.su-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.su-footer {
+    flex: none;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 8px 8px 4px;
+}
+
+.su-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    padding: 4px 0 8px;
+}
+
+.su-toolbar .su-search {
+    flex: 1 1 220px;
+    width: auto;
+    max-width: min(520px, 100%);
+    margin: 0;
+    animation: none;
+}
+
+.su-toolbar__count {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+    white-space: nowrap;
+}
+
+.su-toolbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    flex: none;
+}
+
+.su-tab:disabled {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+}
+
+.su-page--embedded .su-tabs {
+    margin-left: 0;
+}
+
+.su-page .v-card {
+    background: var(--surface) !important;
+    border: 1px solid var(--stroke) !important;
+    box-shadow: var(--shadow-rest) !important;
+    backdrop-filter: var(--blur);
+    border-radius: var(--radius-overlay) !important;
+}
+
+.su-page .v-card-item .text-h4,
+.su-page .v-card-item .text-h5,
+.su-page .v-card-item .text-h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+    color: var(--ink);
+}
+
+.su-page .v-list {
+    background: transparent !important;
+}
+
+.su-page .v-list-item {
+    border-radius: var(--radius-leaf) !important;
+    margin: 2px 0;
+}
+
+.su-page .v-list-item:hover {
+    background: var(--surface-hover-soft) !important;
+}
+
+.su-hero__actions .v-btn {
+    text-transform: none !important;
+    letter-spacing: -0.01em;
+    font-weight: 580;
+    border-radius: 17px !important;
+    box-shadow: none !important;
+}
+
+.su-page > .friend-live-chips {
+    position: static;
+    align-items: flex-start;
+    margin: 0 8px 4px;
+    max-width: 100%;
+}

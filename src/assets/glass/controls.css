@@ -1,0 +1,293 @@
+/* Contrôles : search, orb, btn, chip, empty, spin. */
+
+.su-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: min(420px, 100%);
+    margin: 16px 0 0 auto;
+    min-width: 0;
+    height: 50px;
+    padding: 0 8px 0 6px;
+    border-radius: 26px;
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+    backdrop-filter: var(--blur);
+    box-shadow: var(--shadow-rest);
+    animation: su-in 0.55s var(--ease) both;
+    transition:
+        width 0.45s var(--ease),
+        margin 0.45s var(--ease),
+        max-width 0.45s var(--ease);
+}
+
+.su-search--center {
+    width: min(520px, 100%);
+    margin: 0 auto;
+}
+
+.su-search--docked {
+    width: min(340px, 100%);
+    margin: 0 0 0 auto;
+}
+
+.su-search--discover {
+    width: min(520px, 100%);
+    margin: 0;
+}
+
+.su-search:focus-within {
+    border-color: rgba(var(--v-theme-primary), 0.45);
+    box-shadow:
+        0 0 0 4px rgba(var(--v-theme-primary), 0.12),
+        var(--shadow-rest);
+}
+
+.su-discover-search-slot {
+    flex: none;
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+    min-width: 0;
+    padding: 2px 8px 0;
+    box-sizing: border-box;
+}
+
+.su-hero--searching {
+    padding-bottom: 0;
+}
+
+.su-page--discover-idle .su-body {
+    flex: 0 0 auto;
+    padding-top: 0;
+}
+
+.su-search__orb,
+.su-orb {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink-mute);
+    cursor: pointer;
+    transition:
+        background 0.35s var(--ease),
+        color 0.3s,
+        transform 0.4s var(--spring);
+}
+
+.su-search__orb:hover,
+.su-orb:hover {
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.1);
+    transform: scale(1.06);
+}
+
+.su-search__orb:active,
+.su-orb:active {
+    transform: scale(0.94);
+}
+
+.su-orb:disabled {
+    opacity: 0.4;
+    cursor: default;
+    transform: none;
+}
+
+.su-orb--danger {
+    color: #b42318;
+}
+
+.su-search__icon {
+    flex: none;
+    margin-left: 2px;
+    color: var(--ink-muted);
+}
+
+.su-search__input {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+    border: 0;
+    outline: none;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 14.5px;
+    font-weight: 500;
+}
+
+@media (pointer: coarse), (max-width: 959.98px) {
+    .su-search__input {
+        font-size: 16px;
+    }
+}
+
+.su-search__input::-webkit-search-cancel-button {
+    display: none;
+}
+
+.su-search__input::placeholder {
+    color: var(--ink-muted);
+}
+
+.su-btn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 0;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 17px;
+    background: var(--surface-raised);
+    color: var(--ink);
+    box-shadow: var(--shadow-pill-soft);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 580;
+    cursor: pointer;
+    text-decoration: none;
+    transition:
+        transform 0.35s var(--spring),
+        box-shadow 0.3s var(--ease),
+        background 0.3s var(--ease),
+        color 0.3s;
+}
+
+.su-btn:hover:not(:disabled) {
+    transform: scale(1.04);
+}
+
+.su-btn:active:not(:disabled) {
+    transform: scale(0.96);
+}
+
+.su-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.su-btn__count {
+    display: grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--hair);
+    color: var(--ink-mute);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.su-btn--ink {
+    background: rgb(var(--v-theme-primary));
+    color: #fff;
+    /* Glow primary plus discret — moins « flash » sur les CTA. */
+    box-shadow: 0 10px 22px -16px rgba(var(--v-theme-primary), 0.42);
+}
+
+.su-btn--ink:hover:not(:disabled) {
+    box-shadow: 0 12px 26px -14px rgba(var(--v-theme-primary), 0.5);
+}
+
+.su-btn--ghost {
+    background: transparent;
+    box-shadow: none;
+    color: var(--ink-mute);
+}
+
+.su-btn--ghost:hover:not(:disabled) {
+    background: var(--surface-hover);
+    color: var(--ink);
+}
+
+.su-btn--danger {
+    color: #9f2d23;
+    background: rgba(180, 35, 24, 0.06);
+    box-shadow: none;
+}
+
+.su-btn--warn {
+    color: #8a5a00;
+    background: rgba(154, 103, 0, 0.08);
+    box-shadow: none;
+}
+
+/* Actions dans une ligne personne : CTA un cran plus soft. */
+.su-person__actions .su-btn--ink {
+    box-shadow: 0 6px 16px -12px rgba(var(--v-theme-primary), 0.35);
+}
+
+.su-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 14px;
+    background: var(--hair);
+    color: var(--ink-mute);
+    font-size: 12.5px;
+    font-weight: 560;
+}
+
+.su-empty,
+.su-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 180px;
+    padding: 32px 16px;
+    color: var(--ink-muted);
+    text-align: center;
+    font-size: 14.5px;
+    line-height: 1.5;
+}
+
+.su-empty__mark {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: var(--surface-raised);
+    color: var(--ink-mute);
+    box-shadow: var(--shadow-pill-soft);
+}
+
+.su-spin {
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--hair);
+    border-top-color: rgb(var(--v-theme-primary));
+    border-radius: 50%;
+    animation: su-spin 0.7s linear infinite;
+}
+
+.su-btn .su-spin,
+.su-orb .su-spin {
+    width: 14px;
+    height: 14px;
+}
+
+.su-more {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 4px;
+}
+
+.su-alert {
+    margin: 0 0 12px;
+}
