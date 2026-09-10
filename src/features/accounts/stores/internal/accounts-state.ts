@@ -350,7 +350,9 @@ export function createAccountsState() {
         const merged = {
             ...next,
             iban: next.iban ?? selected.iban,
-            accountNumber: next.accountNumber ?? selected.accountNumber
+            accountNumber: next.accountNumber ?? selected.accountNumber,
+            institutionTierPublicId: next.institutionTierPublicId ?? selected.institutionTierPublicId,
+            institutionName: next.institutionName ?? selected.institutionName
         };
         selectedAccount.value = merged;
         upsertAccount(merged);

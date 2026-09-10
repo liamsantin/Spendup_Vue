@@ -24,8 +24,8 @@ export function canEditAccount(account: Pick<Account, 'myRole' | 'isActive'>): b
 }
 
 /**
- * Champs structurants du compte (solde initial, IBAN, type, devise, primary).
- * Owner seulement — le store omet ces champs pour un editor avant le PUT.
+ * Champs structurants du compte (solde initial, IBAN, type, devise, primary, institution).
+ * Owner seulement — le store omet / neutralise ces champs pour un editor avant le PUT.
  */
 export function canEditAccountOwnerFields(account: Pick<Account, 'myRole'>): boolean {
     return account.myRole === 'owner';
@@ -33,6 +33,7 @@ export function canEditAccountOwnerFields(account: Pick<Account, 'myRole'>): boo
 
 /**
  * Payload PUT : un editor ne conserve que `name` / `accountNumber` / `color`.
+ * `institutionTierPublicId` est forcé à `null` (no-op serveur) — jamais l’id d’un tier de l’editor.
  * @param account Compte local (rôle).
  * @param payload Payload demandé (peut encore contenir des champs owner).
  * @returns Payload sûr à envoyer à l’API.
@@ -44,7 +45,8 @@ export function sanitizeUpdateAccountPayload(account: Pick<Account, 'myRole'>, p
     return {
         name: payload.name,
         accountNumber: payload.accountNumber,
-        color: payload.color
+        color: payload.color,
+        institutionTierPublicId: null
     };
 }
 

@@ -29,6 +29,7 @@ const api = vi.hoisted(() => ({
 const subscribeToAccountShareNotifications = vi.fn();
 const subscribeToFriendshipChanged = vi.fn();
 const subscribeToAccountChanged = vi.fn();
+const subscribeToTierChanged = vi.fn();
 
 vi.mock('../../api', () => ({
     accountsApi: {
@@ -59,7 +60,8 @@ vi.mock('@/features/notifications', () => ({
     useNotificationsStore: () => ({
         subscribeToAccountShareNotifications,
         subscribeToFriendshipChanged,
-        subscribeToAccountChanged
+        subscribeToAccountChanged,
+        subscribeToTierChanged
     })
 }));
 
@@ -75,6 +77,8 @@ const ownedAccount = {
     iban: null,
     accountNumber: null,
     color: null,
+    institutionTierPublicId: null,
+    institutionName: null,
     isPrimary: true,
     isActive: true,
     createdAt: '2026-01-01T00:00:00Z',
@@ -106,6 +110,7 @@ describe('useAccountsStore', () => {
         subscribeToAccountShareNotifications.mockReset().mockReturnValue(() => undefined);
         subscribeToFriendshipChanged.mockReset().mockReturnValue(() => undefined);
         subscribeToAccountChanged.mockReset().mockReturnValue(() => undefined);
+        subscribeToTierChanged.mockReset().mockReturnValue(() => undefined);
         vi.useRealTimers();
     });
 
@@ -340,6 +345,37 @@ describe('useAccountsStore', () => {
         });
         expect(store.accounts.find((a) => a.publicId === 'acc-shared')?.hiddenFields).toEqual([]);
         expect(store.selectedAccount?.currentBalance).toBe(120);
+    });
+
+    it('tierChanged tierUpdated refetch la liste pour rafraîchir institutionName', async () => {
+        const withBank = {
+            ...ownedAccount,
+            institutionTierPublicId: 'tier-ubs',
+            institutionName: 'UBS'
+        };
+        api.list.mockResolvedValue({ items: [withBank] });
+        api.listIncomingShares.mockResolvedValue({ items: [] });
+
+        let tierListener: ((p: { change: string; tierPublicId: string }) => void) | undefined;
+        subscribeToTierChanged.mockImplementation((fn: (p: { change: string; tierPublicId: string }) => void) => {
+            tierListener = fn;
+            return () => undefined;
+        });
+
+        const store = useAccountsStore();
+        await store.bootstrap('Accounts');
+
+        api.list.mockClear();
+        api.list.mockResolvedValue({
+            items: [{ ...withBank, institutionName: 'UBS SA' }]
+        });
+
+        tierListener?.({ change: 'tierUpdated', tierPublicId: 'tier-ubs' });
+
+        await vi.waitFor(() => {
+            expect(api.list).toHaveBeenCalled();
+        });
+        expect(store.accounts[0]?.institutionName).toBe('UBS SA');
     });
 
     it('accountChanged balanceSnapshotCreated refetch les relevés si le compte est ouvert', async () => {
@@ -867,7 +903,8 @@ describe('useAccountsStore', () => {
         expect(api.update).toHaveBeenCalledWith('acc-shared', {
             name: 'OK',
             accountNumber: '7',
-            color: '#10B981'
+            color: '#10B981',
+            institutionTierPublicId: null
         });
     });
 

@@ -27,6 +27,8 @@ function account(partial: Partial<Account>): Account {
         iban: null,
         accountNumber: null,
         color: null,
+        institutionTierPublicId: null,
+        institutionName: null,
         isPrimary: false,
         isActive: true,
         createdAt: '2026-01-01T00:00:00Z',
@@ -72,13 +74,15 @@ describe('accounts rights', () => {
             iban: 'CH99',
             accountNumber: '42',
             color: '#111',
-            isPrimary: true
+            isPrimary: true,
+            institutionTierPublicId: 'tier-editor'
         };
         expect(sanitizeUpdateAccountPayload(account({ myRole: 'owner' }), full)).toEqual(full);
         expect(sanitizeUpdateAccountPayload(account({ myRole: 'editor' }), full)).toEqual({
             name: 'X',
             accountNumber: '42',
-            color: '#111'
+            color: '#111',
+            institutionTierPublicId: null
         });
     });
 

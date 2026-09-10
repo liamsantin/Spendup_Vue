@@ -1,6 +1,6 @@
 import { useNotificationsStore } from '@/features/notifications';
-import { getAccountPublicId, getAccountSharePublicId, parseAccountChangedPayload } from '@/features/notifications/normalize';
-import type { AccountChangedPayload, AppNotification, FriendshipChangedPayload } from '@/features/notifications';
+import { getAccountPublicId, getAccountSharePublicId, parseAccountChangedPayload, parseTierChangedPayload } from '@/features/notifications/normalize';
+import type { AccountChangedPayload, AppNotification, FriendshipChangedPayload, TierChangedPayload } from '@/features/notifications';
 import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
 import type { AccountsShares } from '@/features/accounts/stores/internal/accounts-shares';
@@ -18,12 +18,13 @@ type RealtimeDeps = Pick<AccountsCrud, 'loadAccounts' | 'loadAccountDetail'> &
  * @returns Les helpers de bridge realtime.
  */
 export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps) {
-    const { accounts, selectedAccount, shares, sharesByAccountId, cache, removeAccountLocal, upsertAccount, setSharesForAccount } = state;
+    const { accounts, selectedAccount, shares, sharesByAccountId, cache, initialized, removeAccountLocal, upsertAccount, setSharesForAccount } = state;
     const { loadAccounts, loadAccountDetail, loadIncoming, loadShares, loadBalanceSnapshots, refreshAll } = deps;
 
     let unsubscribeNotifications: (() => void) | null = null;
     let unsubscribeFriendshipChanged: (() => void) | null = null;
     let unsubscribeAccountChanged: (() => void) | null = null;
+    let unsubscribeTierChanged: (() => void) | null = null;
     let balanceRefreshScheduled = false;
     const pendingBalanceAccountIds = new Set<string>();
 
@@ -273,13 +274,30 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
         }
     }
 
+    /**
+     * Un rename de tier n’émet pas `accountChanged`. Refetch les comptes pour rafraîchir `institutionName`.
+     */
+    function handleTierChanged(payload: TierChangedPayload) {
+        const parsed = parseTierChangedPayload(payload);
+        if (!parsed || parsed.change !== 'tierUpdated') return;
+        if (!initialized.value) return;
+        cache.invalidate(KEY_ACCOUNTS);
+        const selectedId = selectedAccount.value?.publicId;
+        if (selectedId) cache.invalidate(`detail:${selectedId}`);
+        void loadAccounts(true).catch(() => undefined);
+        if (selectedId) {
+            void loadAccountDetail(selectedId, true).catch(() => undefined);
+        }
+    }
+
     /** Branche les listeners notifications une seule fois. */
     function ensureRealtimeBridge() {
-        if (unsubscribeNotifications && unsubscribeFriendshipChanged && unsubscribeAccountChanged) return;
+        if (unsubscribeNotifications && unsubscribeFriendshipChanged && unsubscribeAccountChanged && unsubscribeTierChanged) return;
         const notifications = useNotificationsStore();
         unsubscribeNotifications ??= notifications.subscribeToAccountShareNotifications(handleRealtime);
         unsubscribeFriendshipChanged ??= notifications.subscribeToFriendshipChanged(handleFriendshipChanged);
         unsubscribeAccountChanged ??= notifications.subscribeToAccountChanged(handleAccountChanged);
+        unsubscribeTierChanged ??= notifications.subscribeToTierChanged(handleTierChanged);
     }
 
     /** À appeler dès qu’une session authentifiée est active. */
@@ -292,9 +310,11 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
         unsubscribeNotifications?.();
         unsubscribeFriendshipChanged?.();
         unsubscribeAccountChanged?.();
+        unsubscribeTierChanged?.();
         unsubscribeNotifications = null;
         unsubscribeFriendshipChanged = null;
         unsubscribeAccountChanged = null;
+        unsubscribeTierChanged = null;
         pendingBalanceAccountIds.clear();
         balanceRefreshScheduled = false;
     }

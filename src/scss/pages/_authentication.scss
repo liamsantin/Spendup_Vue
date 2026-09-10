@@ -204,7 +204,10 @@ body:has(.auth-shell) {
     flex-direction: column;
     min-width: 0;
     min-height: 0;
-    overflow: hidden;
+    /* visible : le scale hover des .su-btn ne doit pas être coupé par le padding de la carte. */
+    overflow: visible;
+    padding: 12px;
+    margin: -12px;
 }
 
 .auth-shell__foot {
@@ -215,6 +218,7 @@ body:has(.auth-shell) {
     display: flex;
     flex-direction: column;
     width: 100%;
+    overflow: visible;
 }
 
 .auth-field {

@@ -26,6 +26,9 @@ const props = withDefaults(
         hint?: string;
         persistentHint?: boolean;
         hideDetails?: boolean | 'auto';
+        noneLabel?: string;
+        fallbackLabel?: string;
+        searchPlaceholder?: string;
     }>(),
     {
         label: undefined,
@@ -34,7 +37,10 @@ const props = withDefaults(
         errorMessages: undefined,
         hint: undefined,
         persistentHint: false,
-        hideDetails: false
+        hideDetails: false,
+        noneLabel: undefined,
+        fallbackLabel: undefined,
+        searchPlaceholder: undefined
     }
 );
 
@@ -56,8 +62,8 @@ let searchSeq = 0;
 
 const selectedTier = computed(() => (props.modelValue ? store.findByPublicId(props.modelValue) : null));
 const selectedTitle = computed(() => {
-    if (!props.modelValue) return t('transactionsPage.form.noTier');
-    return selectedTier.value?.name ?? props.modelValue;
+    if (!props.modelValue) return props.noneLabel ?? t('transactionsPage.form.noTier');
+    return selectedTier.value?.name ?? props.fallbackLabel ?? props.modelValue;
 });
 
 const trimmedQuery = computed(() => query.value.trim());
@@ -130,6 +136,8 @@ watch(
     () => props.modelValue,
     (value) => {
         if (!value || store.findByPublicId(value)) return;
+        // Editor/viewer : ne pas GET `/api/tiers/{id}` (404). Le nom vient de `fallbackLabel`.
+        if (props.fallbackLabel) return;
         void store.fetchTier(value).catch(() => undefined);
     },
     { immediate: true }
@@ -173,8 +181,8 @@ onUnmounted(() => {
                         type="search"
                         :value="query"
                         :maxlength="TIER_SEARCH_MAX"
-                        :placeholder="t('transactionsPage.form.tierSearchPlaceholder')"
-                        :aria-label="t('transactionsPage.form.tierSearchPlaceholder')"
+                        :placeholder="searchPlaceholder || t('transactionsPage.form.tierSearchPlaceholder')"
+                        :aria-label="searchPlaceholder || t('transactionsPage.form.tierSearchPlaceholder')"
                         autocomplete="off"
                         @input="onQueryInput(($event.target as HTMLInputElement).value)"
                     />
@@ -189,7 +197,7 @@ onUnmounted(() => {
                             :aria-selected="!modelValue"
                             @click="select('')"
                         >
-                            <span>{{ t('transactionsPage.form.noTier') }}</span>
+                            <span>{{ noneLabel || t('transactionsPage.form.noTier') }}</span>
                             <span v-if="!modelValue" class="app-select-menu__check">
                                 <CheckIcon :size="13" stroke-width="2.2" />
                             </span>

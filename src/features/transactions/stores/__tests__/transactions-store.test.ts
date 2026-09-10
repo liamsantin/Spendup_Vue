@@ -63,6 +63,8 @@ const ownedAccount: Account = {
     iban: null,
     accountNumber: null,
     color: null,
+    institutionTierPublicId: null,
+    institutionName: null,
     isPrimary: true,
     isActive: true,
     createdAt: '2026-01-01T00:00:00Z',

@@ -15,7 +15,9 @@ import { AppError } from '@/utils/errors/app-error';
 function normalizeAccount(account: Account): Account {
     return {
         ...account,
-        hiddenFields: Array.isArray(account.hiddenFields) ? account.hiddenFields : []
+        hiddenFields: Array.isArray(account.hiddenFields) ? account.hiddenFields : [],
+        institutionTierPublicId: account.institutionTierPublicId ?? null,
+        institutionName: account.institutionName ?? null
     };
 }
 

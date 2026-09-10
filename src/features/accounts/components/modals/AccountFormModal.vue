@@ -66,7 +66,8 @@ const form = reactive({
     iban: '',
     accountNumber: '',
     color: ACCOUNT_COLOR_PRESETS[0] as string | null,
-    isPrimary: false
+    isPrimary: false,
+    institutionTierPublicId: ''
 });
 
 const typeItems = computed(() => ACCOUNT_TYPES.map((value) => ({ title: t(`comptesPage.types.${value}`), value })));
@@ -86,7 +87,8 @@ const canSave = computed(() => {
         initialBalance: form.initialBalance,
         iban: form.iban,
         accountNumber: form.accountNumber,
-        color: form.color
+        color: form.color,
+        institutionTierPublicId: form.institutionTierPublicId
     });
 });
 
@@ -110,6 +112,7 @@ function resetForm() {
         form.accountNumber = account.accountNumber ?? '';
         form.color = account.color;
         form.isPrimary = account.isPrimary;
+        form.institutionTierPublicId = account.institutionTierPublicId ?? '';
         return;
     }
     form.name = '';
@@ -121,6 +124,7 @@ function resetForm() {
     form.accountNumber = isFirstAccount ? '1' : '';
     form.color = ACCOUNT_COLOR_PRESETS[0];
     form.isPrimary = isFirstAccount;
+    form.institutionTierPublicId = '';
 }
 
 watch(
@@ -164,7 +168,8 @@ async function onSave() {
                     initialBalance: 0,
                     iban: form.iban,
                     accountNumber: form.accountNumber,
-                    color: form.color
+                    color: form.color,
+                    institutionTierPublicId: form.institutionTierPublicId
                 });
                 const updated = await store.updateAccount(account.publicId, payload);
                 emit('saved', updated);
@@ -182,7 +187,8 @@ async function onSave() {
                     initialBalance,
                     iban: form.iban,
                     accountNumber: form.accountNumber,
-                    color: form.color
+                    color: form.color,
+                    institutionTierPublicId: form.institutionTierPublicId
                 });
                 const updated = await store.updateAccount(account.publicId, payload);
                 emit('saved', updated);
@@ -203,7 +209,8 @@ async function onSave() {
                 iban: emptyToNull(form.iban),
                 accountNumber: emptyToNull(form.accountNumber),
                 color: normalizeAccountColor(form.color),
-                isPrimary: isFirstOwnedAccount.value ? true : form.isPrimary
+                isPrimary: isFirstOwnedAccount.value ? true : form.isPrimary,
+                institutionTierPublicId: emptyToNull(form.institutionTierPublicId)
             });
             emit('saved', created);
         }
@@ -235,6 +242,7 @@ async function onSave() {
             :primary-switch-locked="primarySwitchLocked"
             :primary-switch-hint="primarySwitchHint"
             :owner-fields-locked="ownerFieldsLocked"
+            :institution-locked-name="editAccount?.institutionName"
             :field-errors="fieldErrors"
             :type-items="typeItems"
             :currency-items="currencyItems"

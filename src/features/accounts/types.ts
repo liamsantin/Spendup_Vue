@@ -21,6 +21,10 @@ export type Account = {
     iban: string | null;
     accountNumber: string | null;
     color: string | null;
+    /** GUID du tier institution (owner). `null` = pas d’institution. */
+    institutionTierPublicId: string | null;
+    /** Nom actuel du tier (jointure). Afficher tel quel — ne pas GET `/api/tiers/{id}` en editor/viewer. */
+    institutionName: string | null;
     isPrimary: boolean;
     isActive: boolean;
     createdAt: string;
@@ -85,12 +89,13 @@ export type CreateAccountPayload = {
     accountNumber?: string | null;
     color?: string | null;
     isPrimary?: boolean;
+    institutionTierPublicId?: string | null;
 };
 
 /**
  * PUT compte.
- * - Owner : champs complets ; `iban: null` vide l’IBAN.
- * - Editor : uniquement `name`, `accountNumber`, `color` (les champs owner sont omis côté store).
+ * - Owner : champs complets ; `iban: null` / `institutionTierPublicId: null` vident le champ.
+ * - Editor : `name`, `accountNumber`, `color` ; `institutionTierPublicId: null` (no-op serveur, ne jamais envoyer un autre id).
  */
 export type UpdateAccountPayload = {
     name: string;
@@ -101,6 +106,7 @@ export type UpdateAccountPayload = {
     initialBalance?: number;
     iban?: string | null;
     isPrimary?: boolean;
+    institutionTierPublicId?: string | null;
 };
 
 export type InviteAccountSharePayload = {

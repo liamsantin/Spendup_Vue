@@ -414,6 +414,8 @@
             "clearColor": "Sans couleur",
             "currencyLockedHint": "La devise ne peut plus être modifiée après la création du compte.",
             "ownerFieldsLockedHint": "Avec le rôle éditeur, seuls le nom, la couleur et le n° de compte sont modifiables.",
+            "noInstitution": "Aucune institution",
+            "institutionSearchPlaceholder": "Rechercher un tiers…",
             "fields": {
                 "name": "Nom",
                 "type": "Type",
@@ -421,6 +423,7 @@
                 "initialBalance": "Solde initial",
                 "iban": "IBAN",
                 "accountNumber": "N° de compte",
+                "institution": "Institution",
                 "color": "Couleur",
                 "isPrimary": "Compte principal"
             },
@@ -873,6 +876,7 @@
             "edit": "Modifier",
             "delete": "Supprimer",
             "seeTransactions": "Voir les transactions",
+            "seeAccounts": "Voir les comptes",
             "clearSearch": "Effacer la recherche"
         },
         "filters": {

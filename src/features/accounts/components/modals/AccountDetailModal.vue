@@ -303,6 +303,10 @@ function seeAllTransactions() {
                             <span>{{ initialBalanceDisplay.text }}</span>
                         </div>
                     </v-col>
+                    <v-col v-if="account.institutionName" cols="12">
+                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.institution') }}</div>
+                        <div class="text-body-1">{{ account.institutionName }}</div>
+                    </v-col>
                     <v-col v-if="showIban" cols="12">
                         <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.iban') }}</div>
                         <div v-if="isAccountFieldHidden(account, 'iban')" class="text-body-1 d-flex align-center ga-2 text-medium-emphasis">

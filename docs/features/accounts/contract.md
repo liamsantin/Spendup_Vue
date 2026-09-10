@@ -12,7 +12,7 @@
 | Store     | `useAccountsStore`                                                                                        |
 | API       | `accountsApi` → **`fetchWrapper`**                                                                        |
 | Droits UI | `rights.ts` branché sur `myRole` / `isOwned` / `isPrimary` (archive/restore/delete/primary = owner owned) |
-| Realtime  | Notifs `accountShare*` (dont `accountShareRoleChanged`) + SignalR `accountChanged` + `friendshipChanged`  |
+| Realtime  | Notifs `accountShare*` (dont `accountShareRoleChanged`) + SignalR `accountChanged` + `friendshipChanged` + `tierChanged` (`tierUpdated` → refetch `institutionName`) |
 | Dashboard | Module Comptes actif → `/app/finances/comptes`                                                            |
 
 ## HTTP
@@ -36,7 +36,11 @@
 
 ## Champs masqués (viewer)
 
-- `Account.hiddenFields` : `iban` | `accountNumber` | `balance`.
+- `Account.hiddenFields` : `iban` | `accountNumber` | `balance`. Institution **hors** `hiddenFields` : un viewer voit toujours `institutionName`.
+- Institution : pointeur optionnel `institutionTierPublicId` vers un tier **du owner**. Afficher `institutionName` (ne pas `GET /api/tiers/{id}` en editor/viewer).
+- PUT owner : renvoyer l’id actuel pour le garder ; `null` détache. PUT editor : `institutionTierPublicId: null` (no-op) — jamais un autre GUID.
+- Rename de tier : pas d’`accountChanged` ; le store comptes refetch sur SignalR `tierChanged` / `tierUpdated`.
+- Delete tier : `400` tant qu’un compte vivant (y compris archivé) l’utilise comme institution.
 - `null` **et** listé → afficher « caché » (cadenas) ; `null` hors liste → vraiment vide.
 - Invite / update share : `hiddenFields` optionnel (défaut `["iban","accountNumber"]` pour viewer ; ignoré pour editor).
 - Changer seulement `hiddenFields` : SignalR `accountChanged` (`visibility`) pour le destinataire — pas d’inbox. Changement de rôle → `accountShareRoleChanged` uniquement.

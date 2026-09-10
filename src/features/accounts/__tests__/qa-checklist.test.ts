@@ -35,6 +35,7 @@ const api = vi.hoisted(() => ({
 const subscribeToAccountShareNotifications = vi.fn();
 const subscribeToFriendshipChanged = vi.fn();
 const subscribeToAccountChanged = vi.fn();
+const subscribeToTierChanged = vi.fn();
 
 vi.mock('../api', () => ({
     accountsApi: {
@@ -65,7 +66,8 @@ vi.mock('@/features/notifications', () => ({
     useNotificationsStore: () => ({
         subscribeToAccountShareNotifications,
         subscribeToFriendshipChanged,
-        subscribeToAccountChanged
+        subscribeToAccountChanged,
+        subscribeToTierChanged
     })
 }));
 
@@ -82,6 +84,8 @@ function account(partial: Partial<Account> = {}): Account {
         iban: null,
         accountNumber: null,
         color: null,
+        institutionTierPublicId: null,
+        institutionName: null,
         isPrimary: true,
         isActive: true,
         createdAt: '2026-01-01T00:00:00Z',
@@ -135,6 +139,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
         subscribeToAccountShareNotifications.mockReset().mockReturnValue(() => undefined);
         subscribeToFriendshipChanged.mockReset().mockReturnValue(() => undefined);
         subscribeToAccountChanged.mockReset().mockReturnValue(() => undefined);
+        subscribeToTierChanged.mockReset().mockReturnValue(() => undefined);
     });
 
     describe('§1 Liste & détail', () => {
@@ -298,13 +303,41 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(body).toEqual({
                 name: 'Renommé',
                 accountNumber: null,
-                color: '#4F46E5'
+                color: '#4F46E5',
+                institutionTierPublicId: null
             });
             expect(body).not.toHaveProperty('iban');
             expect(body).not.toHaveProperty('type');
             expect(body).not.toHaveProperty('initialBalance');
             expect(body).not.toHaveProperty('isPrimary');
             expect(body).not.toHaveProperty('currency');
+        });
+
+        it('PUT owner envoie institutionTierPublicId (null pour détacher)', async () => {
+            api.list.mockResolvedValue({
+                items: [account({ institutionTierPublicId: 'tier-ubs', institutionName: 'UBS' })]
+            });
+            api.update.mockResolvedValue(account({ institutionTierPublicId: null, institutionName: null }));
+
+            const store = useAccountsStore();
+            await store.loadAccounts();
+            await store.updateAccount('acc-1', {
+                name: 'Courant',
+                type: 'courant',
+                currency: 'CHF',
+                initialBalance: 100,
+                iban: null,
+                accountNumber: null,
+                color: null,
+                isPrimary: true,
+                institutionTierPublicId: null
+            });
+
+            expect(api.update).toHaveBeenCalledWith(
+                'acc-1',
+                expect.objectContaining({ institutionTierPublicId: null })
+            );
+            expect(store.accounts[0]?.institutionName).toBeNull();
         });
 
         it('impossible de retirer le primaire sans en promouvoir un autre → erreur métier', async () => {
@@ -451,7 +484,8 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(api.update).toHaveBeenCalledWith('acc-shared', {
                 name: 'Renommé',
                 accountNumber: null,
-                color: null
+                color: null,
+                institutionTierPublicId: null
             });
         });
 
@@ -1133,7 +1167,8 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
             expect(api.update.mock.calls.at(-1)?.[1]).toEqual({
                 name: 'Épargne Bob',
                 accountNumber: null,
-                color: '#10B981'
+                color: '#10B981',
+                institutionTierPublicId: null
             });
 
             // 4. B ajoute relevé ; visible après reload

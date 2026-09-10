@@ -10,6 +10,7 @@ import { useI18n } from 'vue-i18n';
 import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
+import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
 import { ACCOUNT_COLOR_PRESETS, type AccountType, type Currency } from '@/features/accounts/types';
 
 export type AccountFormFields = {
@@ -21,6 +22,7 @@ export type AccountFormFields = {
     accountNumber: string;
     color: string | null;
     isPrimary: boolean;
+    institutionTierPublicId: string;
 };
 
 export type AccountFormFieldErrors = {
@@ -37,8 +39,10 @@ withDefaults(
         showPrimarySwitch: boolean;
         primarySwitchLocked: boolean;
         primarySwitchHint?: string;
-        /** Verrouille type / devise / solde initial / IBAN (rôle editor). */
+        /** Verrouille type / devise / solde initial / IBAN / institution (rôle editor). */
         ownerFieldsLocked?: boolean;
+        /** Nom dénormalisé — affichage editor, sans GET `/api/tiers/{id}`. */
+        institutionLockedName?: string | null;
         fieldErrors?: AccountFormFieldErrors;
         typeItems: { title: string; value: AccountType }[];
         currencyItems: { title: string; value: Currency }[];
@@ -46,6 +50,7 @@ withDefaults(
     {
         primarySwitchHint: undefined,
         ownerFieldsLocked: false,
+        institutionLockedName: undefined,
         fieldErrors: () => ({})
     }
 );
@@ -179,6 +184,35 @@ const { t } = useI18n();
                     variant="outlined"
                     hide-details="auto"
                     autocomplete="off"
+                />
+            </v-col>
+        </v-row>
+        <v-row class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <label class="v-label font-weight-medium" for="account-form-institution">
+                    {{ t('comptesPage.form.fields.institution') }}
+                </label>
+            </v-col>
+            <v-col cols="12" sm="9">
+                <v-text-field
+                    v-if="ownerFieldsLocked"
+                    id="account-form-institution"
+                    :model-value="institutionLockedName || t('comptesPage.form.noInstitution')"
+                    color="primary"
+                    variant="outlined"
+                    hide-details="auto"
+                    disabled
+                    readonly
+                />
+                <TierPicker
+                    v-else
+                    id="account-form-institution"
+                    v-model="form.institutionTierPublicId"
+                    :label="t('comptesPage.form.fields.institution')"
+                    :none-label="t('comptesPage.form.noInstitution')"
+                    :fallback-label="institutionLockedName || undefined"
+                    :search-placeholder="t('comptesPage.form.institutionSearchPlaceholder')"
+                    hide-details="auto"
                 />
             </v-col>
         </v-row>

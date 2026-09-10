@@ -21,6 +21,7 @@ const createNature = ref<TierNature | null>(null);
 const editTarget = ref<Tier | null>(null);
 const deleteTarget = ref<Tier | null>(null);
 const deleteBlockedMessage = ref<string | null>(null);
+const deleteBlockedByInstitution = computed(() => /institution/i.test(deleteBlockedMessage.value ?? ''));
 const localError = ref<string | null>(null);
 
 const editOpen = computed({
@@ -138,8 +139,13 @@ async function confirmDelete() {
     if (!deleteTarget.value) return;
     if (deleteBlockedMessage.value) {
         const id = deleteTarget.value.publicId;
+        const goToAccounts = deleteBlockedByInstitution.value;
         deleteTarget.value = null;
         deleteBlockedMessage.value = null;
+        if (goToAccounts) {
+            await router.push({ path: '/app/finances/comptes' });
+            return;
+        }
         await router.push({ path: '/app/finances/transactions', query: { tier: id } });
         return;
     }
@@ -224,7 +230,11 @@ async function confirmDelete() {
             v-model="deleteOpen"
             :title="deleteBlockedMessage ? t('tiersPage.deleteModal.blockedTitle') : t('tiersPage.deleteModal.title')"
             :message="deleteBlockedMessage || t('tiersPage.deleteModal.body')"
-            :confirm-label="deleteBlockedMessage ? t('tiersPage.actions.seeTransactions') : t('tiersPage.actions.delete')"
+            :confirm-label="
+                deleteBlockedMessage
+                    ? t(deleteBlockedByInstitution ? 'tiersPage.actions.seeAccounts' : 'tiersPage.actions.seeTransactions')
+                    : t('tiersPage.actions.delete')
+            "
             :confirm-color="deleteBlockedMessage ? 'primary' : 'error'"
             :loading="store.acting"
             @confirm="confirmDelete"

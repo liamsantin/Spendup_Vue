@@ -13,6 +13,8 @@ function account(partial: Partial<Account> = {}): Account {
         iban: 'CH93INVALID',
         accountNumber: '42',
         color: '#4F46E5',
+        institutionTierPublicId: null,
+        institutionName: null,
         isPrimary: false,
         isActive: true,
         createdAt: '2026-01-01T00:00:00Z',
@@ -30,7 +32,8 @@ const fields = {
     initialBalance: 999,
     iban: 'CH93INVALID',
     accountNumber: '99',
-    color: '#10B981'
+    color: '#10B981',
+    institutionTierPublicId: ''
 };
 
 describe('account-form-payload (formulaire verrouillé / IBAN)', () => {
@@ -50,7 +53,8 @@ describe('account-form-payload (formulaire verrouillé / IBAN)', () => {
             iban: 'CH93INVALID',
             accountNumber: '99',
             color: '#10B981',
-            isPrimary: true
+            isPrimary: true,
+            institutionTierPublicId: null
         });
     });
 
@@ -58,7 +62,8 @@ describe('account-form-payload (formulaire verrouillé / IBAN)', () => {
         expect(buildUpdateAccountPayload(account({ myRole: 'editor', isOwned: false, isPrimary: false }), fields)).toEqual({
             name: 'Renommé',
             accountNumber: '99',
-            color: '#10B981'
+            color: '#10B981',
+            institutionTierPublicId: null
         });
     });
 });
@@ -73,12 +78,13 @@ describe('isAccountFormDirty', () => {
                 initialBalance: acc.initialBalance ?? 0,
                 iban: acc.iban ?? '',
                 accountNumber: acc.accountNumber ?? '',
-                color: acc.color
+                color: acc.color,
+                institutionTierPublicId: acc.institutionTierPublicId ?? ''
             })
         ).toBe(false);
     });
 
-    it('détecte un changement de nom et ignore type/iban pour un editor', () => {
+    it('détecte un changement de nom et ignore type/iban/institution pour un editor', () => {
         const acc = account({ myRole: 'editor', isOwned: false });
         expect(
             isAccountFormDirty(acc, {
@@ -87,7 +93,8 @@ describe('isAccountFormDirty', () => {
                 initialBalance: 0,
                 iban: 'CHANGED',
                 accountNumber: acc.accountNumber ?? '',
-                color: acc.color
+                color: acc.color,
+                institutionTierPublicId: 'other-tier'
             })
         ).toBe(false);
         expect(
@@ -97,7 +104,23 @@ describe('isAccountFormDirty', () => {
                 initialBalance: acc.initialBalance ?? 0,
                 iban: acc.iban ?? '',
                 accountNumber: acc.accountNumber ?? '',
-                color: acc.color
+                color: acc.color,
+                institutionTierPublicId: acc.institutionTierPublicId ?? ''
+            })
+        ).toBe(true);
+    });
+
+    it('détecte un changement d’institution pour un owner', () => {
+        const acc = account({ institutionTierPublicId: 'tier-ubs', institutionName: 'UBS' });
+        expect(
+            isAccountFormDirty(acc, {
+                name: acc.name,
+                type: acc.type,
+                initialBalance: acc.initialBalance ?? 0,
+                iban: acc.iban ?? '',
+                accountNumber: acc.accountNumber ?? '',
+                color: acc.color,
+                institutionTierPublicId: ''
             })
         ).toBe(true);
     });

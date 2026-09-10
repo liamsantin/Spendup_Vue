@@ -13,6 +13,8 @@ function account(partial: Partial<Account> = {}): Account {
         iban: null,
         accountNumber: null,
         color: null,
+        institutionTierPublicId: null,
+        institutionName: null,
         isPrimary: false,
         isActive: true,
         createdAt: '2026-01-01T00:00:00Z',

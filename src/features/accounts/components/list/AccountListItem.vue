@@ -79,7 +79,10 @@ const accountNumberLine = computed(() =>
                     </span>
                 </div>
             </div>
-            <p class="su-person__sub">{{ typeLabel }} · {{ account.currency }}{{ accountNumberLine }}</p>
+            <p class="su-person__sub">
+                {{ typeLabel }} · {{ account.currency
+                }}<template v-if="account.institutionName"> · {{ account.institutionName }}</template>{{ accountNumberLine }}
+            </p>
             <div v-if="account.isPrimary || !account.isActive || !account.isOwned" class="account-list-item__chips">
                 <span v-if="account.isPrimary" class="su-chip">{{ t('comptesPage.badges.primary') }}</span>
                 <span v-if="!account.isActive" class="su-chip su-btn--warn">{{ t('comptesPage.badges.archived') }}</span>

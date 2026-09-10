@@ -10,6 +10,8 @@ export type AccountFormUpdateFields = {
     iban: string;
     accountNumber: string;
     color: string | null;
+    /** `''` = aucune institution. Ignoré pour un editor (PUT envoie `null`). */
+    institutionTierPublicId: string;
 };
 
 /**
@@ -22,7 +24,7 @@ export function shouldValidateAccountIban(account: Pick<Account, 'myRole'> | nul
 }
 
 /**
- * Construit le payload PUT : editor → name / accountNumber / color uniquement.
+ * Construit le payload PUT : editor → name / accountNumber / color + institution nulle.
  */
 export function buildUpdateAccountPayload(
     account: Pick<Account, 'myRole' | 'currency' | 'isPrimary'>,
@@ -32,7 +34,8 @@ export function buildUpdateAccountPayload(
         return {
             name: fields.name,
             accountNumber: emptyToNull(fields.accountNumber),
-            color: normalizeAccountColor(fields.color)
+            color: normalizeAccountColor(fields.color),
+            institutionTierPublicId: null
         };
     }
     return {
@@ -43,7 +46,8 @@ export function buildUpdateAccountPayload(
         iban: emptyToNull(fields.iban),
         accountNumber: emptyToNull(fields.accountNumber),
         color: normalizeAccountColor(fields.color),
-        isPrimary: account.isPrimary
+        isPrimary: account.isPrimary,
+        institutionTierPublicId: emptyToNull(fields.institutionTierPublicId)
     };
 }
 
@@ -52,7 +56,10 @@ export function buildUpdateAccountPayload(
  * (champs éditables selon le rôle).
  */
 export function isAccountFormDirty(
-    account: Pick<Account, 'name' | 'type' | 'initialBalance' | 'iban' | 'accountNumber' | 'color' | 'myRole'>,
+    account: Pick<
+        Account,
+        'name' | 'type' | 'initialBalance' | 'iban' | 'accountNumber' | 'color' | 'myRole' | 'institutionTierPublicId'
+    >,
     fields: AccountFormUpdateFields
 ): boolean {
     if (fields.name.trim() !== account.name.trim()) return true;
@@ -64,5 +71,6 @@ export function isAccountFormDirty(
     if (fields.type !== account.type) return true;
     if (Number(fields.initialBalance) !== Number(account.initialBalance ?? 0)) return true;
     if (normalizeIban(fields.iban) !== normalizeIban(account.iban)) return true;
+    if (emptyToNull(fields.institutionTierPublicId) !== emptyToNull(account.institutionTierPublicId)) return true;
     return false;
 }

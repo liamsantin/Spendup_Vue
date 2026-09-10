@@ -34,7 +34,7 @@ Les rôles sont indépendants de la nature. En réponse, le volet de la nature e
 | GET     | `/api/tiers/{publicId}` | `404` si inconnu, supprimé ou d’un autre utilisateur (jamais `403`)                                                             |
 | POST    | `/api/tiers`            | `200` avec le `TierResponse` complet (`website` normalisé `https://…`)                                                          |
 | PUT     | `/api/tiers/{publicId}` | **État complet** : `null` vide un champ, `roles` remplace tout, changer `nature` recrée le volet                                |
-| DELETE  | `/api/tiers/{publicId}` | `204`. Soft-delete. `400` + message affichable si une transaction vivante référence le tier                                     |
+| DELETE  | `/api/tiers/{publicId}` | `204`. Soft-delete. `400` + message affichable si une transaction vivante **ou** un compte vivant (y compris archivé) référence le tier comme institution |
 
 ## Validation client (`payload.ts`)
 
@@ -82,7 +82,7 @@ Le formulaire n’affiche qu’un volet, selon la nature. À la création, le ty
 
 ## Parcours couverts
 
-1. Gestion → Tiers : onglets Tous / natures (`?nature=`), liste paginée, recherche par nom (debounce), filtre rôle (`?q&role`), création (menu sur Tous, type de l’onglet sinon), édition, suppression (400 affiché tel quel + lien « Voir les transactions »).
+1. Gestion → Tiers : onglets Tous / natures (`?nature=`), liste paginée, recherche par nom (debounce), filtre rôle (`?q&role`), création (menu sur Tous, type de l’onglet sinon), édition, suppression (400 affiché tel quel + lien « Voir les transactions » ou « Voir les comptes » si le message mentionne une institution).
 2. Formulaire tier : à la création le type est choisi (menu, onglet ou première étape) ; les rôles ne sont demandés qu’en édition.
 3. Formulaire transaction : sélecteur de contrepartie avec recherche et création rapide.
 4. Liste transactions : badge contrepartie, filtre par tier.

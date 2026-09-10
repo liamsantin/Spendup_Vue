@@ -414,6 +414,8 @@
             "clearColor": "No color",
             "currencyLockedHint": "Currency cannot be changed after the account is created.",
             "ownerFieldsLockedHint": "With the editor role, only name, color, and account number can be changed.",
+            "noInstitution": "No institution",
+            "institutionSearchPlaceholder": "Search a counterparty…",
             "fields": {
                 "name": "Name",
                 "type": "Type",
@@ -421,6 +423,7 @@
                 "initialBalance": "Initial balance",
                 "iban": "IBAN",
                 "accountNumber": "Account number",
+                "institution": "Institution",
                 "color": "Color",
                 "isPrimary": "Primary account"
             },
@@ -873,6 +876,7 @@
             "edit": "Edit",
             "delete": "Delete",
             "seeTransactions": "See transactions",
+            "seeAccounts": "See accounts",
             "clearSearch": "Clear search"
         },
         "filters": {
