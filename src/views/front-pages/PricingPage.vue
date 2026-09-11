@@ -8,9 +8,13 @@ import Footer from '@/components/frontpages/layout/Footer.vue';
 type BillingPeriod = 'monthly' | 'yearly';
 
 interface PricingPlan {
+    code: 'free' | 'student' | 'solo' | 'family';
     name: string;
     description: string;
-    price: number;
+    /** Prix TTC mensuel (CHF). 0 = gratuit. */
+    priceMonthly: number;
+    /** Prix TTC annuel (CHF), équivalent 9 mois (3 mois offerts). */
+    priceYearly: number;
     lead?: string;
     features: string[];
     cta: string;
@@ -21,80 +25,133 @@ const billingPeriod = ref<BillingPeriod>('yearly');
 
 const plans: PricingPlan[] = [
     {
-        name: 'Solo Essentiel',
-        description: 'Pour découvrir Spendup et gérer ses finances quotidiennes.',
-        price: 0,
+        code: 'free',
+        name: 'Gratuit',
+        description: 'Pour découvrir Spendup et gérer ses finances au quotidien.',
+        priceMonthly: 0,
+        priceYearly: 0,
         features: [
-            'Jusqu’à 2 comptes',
-            'Jusqu’à 3 moyens de paiement',
-            'Transactions manuelles',
-            'Catégories et tiers personnels',
-            'Consultation des soldes et historiques',
-            'Partage ponctuel avec un ami',
-            'Authentification sécurisée, 2FA et gestion des appareils',
-            'Notifications essentielles',
+            'Jusqu’à 3 comptes',
+            'Transactions, catégories et tiers',
+            'Justificatifs PDF (30 Mo)',
+            'Partage d’un compte entre amis',
+            'Budgets et récurrents limités (1 budget, 3 récurrences)',
+            'Authentification sécurisée, 2FA et appareils',
             'Export et suppression des données'
         ],
         cta: 'Commencer gratuitement'
     },
     {
-        name: 'Solo Gestion',
-        description: 'Pour automatiser et organiser son budget.',
-        price: 5.9,
-        lead: 'Tout Solo Essentiel, plus :',
+        code: 'student',
+        name: 'Étudiant',
+        description: 'Même produit que Solo, au tarif réduit. Justificatif étudiant annuel requis.',
+        priceMonthly: 3.9,
+        priceYearly: 35.1,
+        lead: 'Tout Solo, à tarif réduit.',
         features: [
-            'Comptes, transactions et catégories illimités',
-            'Tags et règles de catégorisation',
-            'Imports de relevés bancaires',
-            'Dépenses et revenus récurrents',
-            'Budgets par catégorie',
-            'Objectifs d’épargne',
-            'Calendrier et échéances financières',
-            'Gestion des contrats et documents',
-            'Partage de comptes avancé',
-            'Exports enrichis et gestion multidevise'
+            'Jusqu’à 20 comptes',
+            '300 Mo de justificatifs PDF',
+            'Budgets et récurrents',
+            'Imports de relevés',
+            'Multi-devises et taux',
+            'Partage de comptes entre amis',
+            'Justificatif annuel (carte, certificat ou e-mail institutionnel)'
         ],
-        cta: 'Choisir Solo Gestion',
+        cta: 'Choisir Étudiant'
+    },
+    {
+        code: 'solo',
+        name: 'Solo',
+        description: 'Pour une personne, un usage quotidien.',
+        priceMonthly: 6.9,
+        priceYearly: 62.1,
+        lead: 'Tout Gratuit, plus :',
+        features: [
+            'Jusqu’à 20 comptes',
+            '300 Mo de justificatifs PDF',
+            'Budgets et récurrents',
+            'Imports de relevés',
+            'Multi-devises et taux',
+            'Partage de comptes entre amis',
+            'Rejoindre un foyer Famille, sans le créer'
+        ],
+        cta: 'Choisir Solo',
         popular: true
     },
     {
-        name: 'Solo Patrimoine',
-        description: 'Pour piloter l’ensemble de son patrimoine.',
-        price: 11.9,
-        lead: 'Tout Solo Gestion, plus :',
+        code: 'family',
+        name: 'Famille (5)',
+        description: 'Un payeur et un foyer jusqu’à 5 personnes (propriétaire inclus).',
+        priceMonthly: 15.9,
+        priceYearly: 143.1,
+        lead: 'Tout Solo, plus :',
         features: [
-            'Suivi des actifs et placements',
-            'Portefeuilles, positions et opérations d’investissement',
-            'Biens immobiliers, lots, baux et charges',
-            'Prêts, dettes et passifs',
-            'Suivi fiscal et préparation des déclarations',
-            'Prévisions de trésorerie',
-            'Scénarios financiers',
-            'Indicateurs de santé financière',
-            'Rapports patrimoniaux consolidés',
-            'Automatisations et alertes avancées'
+            'Créer un foyer et y inviter',
+            'Jusqu’à 5 membres (1 propriétaire + 4)',
+            'Les membres héritent du plan du payeur',
+            'Jusqu’à 50 comptes',
+            '10 Go de justificatifs PDF',
+            'Espaces personnels conservés séparément',
+            'Un compte de foyer n’est pas partageable entre amis'
         ],
-        cta: 'Choisir Solo Patrimoine'
+        cta: 'Choisir Famille'
+    }
+];
+
+type PlanCode = PricingPlan['code'];
+type CompareValue = boolean | 'limited';
+
+const comparisonRows: { label: string; values: Record<PlanCode, CompareValue> }[] = [
+    {
+        label: 'Comptes, transactions, catégories, tiers',
+        values: { free: true, student: true, solo: true, family: true }
     },
     {
-        name: 'Famille',
-        description: 'Pour gérer les finances du foyer ensemble.',
-        price: 17.9,
-        lead: 'Tout Solo Patrimoine, plus :',
-        features: [
-            'Jusqu’à 5 membres',
-            'Espace financier familial partagé',
-            'Comptes et transactions du foyer',
-            'Catégories, budgets et objectifs communs',
-            'Dépenses partagées et remboursements',
-            'Patrimoine et immobilier consolidés',
-            'Dettes et engagements communs',
-            'Documents et calendrier familial',
-            'Rôles et permissions par membre',
-            'Visibilité configurable par compte et par champ',
-            'Espaces personnels conservés séparément'
-        ],
-        cta: 'Créer un espace famille'
+        label: 'Justificatifs PDF',
+        values: { free: true, student: true, solo: true, family: true }
+    },
+    {
+        label: 'Partage de compte entre amis',
+        values: { free: true, student: true, solo: true, family: true }
+    },
+    {
+        label: 'Budgets et récurrents',
+        values: { free: 'limited', student: true, solo: true, family: true }
+    },
+    {
+        label: 'Imports de relevés',
+        values: { free: false, student: true, solo: true, family: true }
+    },
+    {
+        label: 'Multi-devises et taux',
+        values: { free: false, student: true, solo: true, family: true }
+    },
+    {
+        label: 'Créer un foyer et y inviter',
+        values: { free: false, student: false, solo: false, family: true }
+    },
+    {
+        label: 'Rejoindre un foyer (hériter du plan)',
+        values: { free: true, student: true, solo: true, family: true }
+    }
+];
+
+const quotaRows: { label: string; values: Record<PlanCode, string> }[] = [
+    {
+        label: 'Membres de foyer (propriétaire inclus)',
+        values: { free: '0', student: '0', solo: '0', family: '5' }
+    },
+    {
+        label: 'Stockage PDF (hors avatar)',
+        values: { free: '30 Mo', student: '300 Mo', solo: '300 Mo', family: '10 Go' }
+    },
+    {
+        label: 'Comptes',
+        values: { free: '3', student: '20', solo: '20', family: '50' }
+    },
+    {
+        label: 'Fichiers uploadés / heure',
+        values: { free: '30', student: '60', solo: '60', family: '120' }
     }
 ];
 
@@ -116,14 +173,18 @@ const assurances = [
     }
 ];
 
+function formatChf(value: number): string {
+    return value.toFixed(2).replace('.', ',');
+}
+
 function displayedPrice(plan: PricingPlan): string {
-    if (plan.price === 0) return '0';
-    const monthlyPrice = billingPeriod.value === 'yearly' ? (plan.price * 10) / 12 : plan.price;
-    return monthlyPrice.toFixed(2);
+    if (plan.priceMonthly === 0) return '0';
+    const monthlyPrice = billingPeriod.value === 'yearly' ? plan.priceYearly / 12 : plan.priceMonthly;
+    return formatChf(monthlyPrice);
 }
 
 function yearlyTotal(plan: PricingPlan): string {
-    return (plan.price * 10).toFixed(2);
+    return formatChf(plan.priceYearly);
 }
 </script>
 
@@ -136,13 +197,14 @@ function yearlyTotal(plan: PricingPlan): string {
             <section class="pricing-hero">
                 <v-container class="max-width-1218 pricing-hero__content">
                     <v-chip color="primary" variant="tonal" rounded="pill" class="pricing-eyebrow su-hero-in">
-                        Des tarifs simples et transparents
+                        Quatre offres, zéro surprise
                     </v-chip>
                     <h1 class="pricing-title textPrimary su-hero-in" style="--su-in-delay: 80ms">
-                        Le bon plan pour chaque étape de votre vie financière
+                        Un plan pour vous. Un foyer, si vous le voulez.
                     </h1>
                     <p class="pricing-subtitle text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
-                        Commencez gratuitement, puis évoluez à votre rythme. Toutes les offres sont sans engagement.
+                        Commencez gratuitement, sans carte. Étudiant au tarif réduit (justificatif annuel). Solo pour le quotidien.
+                        Famille pour un payeur et jusqu’à quatre membres. Toutes les offres sont sans engagement.
                     </p>
 
                     <div class="billing-switch su-hero-in" style="--su-in-delay: 240ms" role="group" aria-label="Période de facturation">
@@ -161,7 +223,7 @@ function yearlyTotal(plan: PricingPlan): string {
                             @click="billingPeriod = 'yearly'"
                         >
                             Annuel
-                            <span class="billing-switch__saving">2 mois offerts</span>
+                            <span class="billing-switch__saving">3 mois offerts</span>
                         </button>
                     </div>
                 </v-container>
@@ -170,7 +232,7 @@ function yearlyTotal(plan: PricingPlan): string {
             <section class="pricing-plans">
                 <v-container class="max-width-1218">
                     <v-row v-reveal align="stretch" class="pricing-grid" data-reveal-stagger="90">
-                        <v-col v-for="plan in plans" :key="plan.name" cols="12" sm="6" lg="3">
+                        <v-col v-for="plan in plans" :key="plan.code" cols="12" sm="6" lg="3">
                             <article class="plan-card" :class="{ 'plan-card--popular': plan.popular }">
                                 <div v-if="plan.popular" class="plan-card__badge">Le plus populaire</div>
 
@@ -180,20 +242,20 @@ function yearlyTotal(plan: PricingPlan): string {
                                 </div>
 
                                 <div class="plan-card__price">
-                                    <template v-if="plan.price === 0">
+                                    <template v-if="plan.priceMonthly === 0">
                                         <span class="plan-card__amount textPrimary">Gratuit</span>
                                         <span class="plan-card__price-note">pour toujours</span>
                                     </template>
                                     <template v-else>
                                         <div>
-                                            <span class="plan-card__currency">CHF</span>
+                                            <span class="plan-card__currency">Fr.</span>
                                             <span class="plan-card__amount textPrimary">{{ displayedPrice(plan) }}</span>
                                             <span class="plan-card__period">/mois</span>
                                         </div>
                                         <span class="plan-card__price-note">
                                             {{
                                                 billingPeriod === 'yearly'
-                                                    ? `Facturé CHF ${yearlyTotal(plan)} par an`
+                                                    ? `Facturé ${yearlyTotal(plan)} Fr. par an`
                                                     : 'Facturé mensuellement'
                                             }}
                                         </span>
@@ -203,7 +265,6 @@ function yearlyTotal(plan: PricingPlan): string {
                                 <v-btn
                                     :color="plan.popular ? 'primary' : undefined"
                                     :variant="plan.popular ? 'flat' : 'outlined'"
-                                    size="large"
                                     block
                                     class="plan-card__cta text-none"
                                     to="/auth?tab=register"
@@ -224,6 +285,75 @@ function yearlyTotal(plan: PricingPlan): string {
                             </article>
                         </v-col>
                     </v-row>
+                </v-container>
+            </section>
+
+            <section class="pricing-compare" aria-labelledby="pricing-compare-title">
+                <v-container class="max-width-1218">
+                    <div class="pricing-compare__intro">
+                        <span class="pricing-compare__kicker">Comparer</span>
+                        <h2 id="pricing-compare-title" class="textPrimary">Fonctionnalités et quotas, offre par offre</h2>
+                    </div>
+                    <div class="pricing-compare__scroll">
+                        <table class="compare-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="compare-table__feature-col">Offre</th>
+                                    <th
+                                        v-for="plan in plans"
+                                        :key="plan.code"
+                                        scope="col"
+                                        :class="{ 'compare-table__plan--popular': plan.popular }"
+                                    >
+                                        {{ plan.name }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="compare-table__group">
+                                    <th scope="colgroup" :colspan="plans.length + 1">Fonctionnalités</th>
+                                </tr>
+                                <tr v-for="row in comparisonRows" :key="row.label">
+                                    <th scope="row">{{ row.label }}</th>
+                                    <td
+                                        v-for="plan in plans"
+                                        :key="`${row.label}-${plan.code}`"
+                                        :class="{ 'compare-table__plan--popular': plan.popular }"
+                                    >
+                                        <span v-if="row.values[plan.code] === true" class="compare-table__yes" title="Inclus">
+                                            <CheckIcon size="18" stroke-width="2.6" aria-hidden="true" />
+                                            <span class="sr-only">Inclus</span>
+                                        </span>
+                                        <span v-else-if="row.values[plan.code] === 'limited'" class="compare-table__limited">
+                                            Limité
+                                        </span>
+                                        <span v-else class="compare-table__no" title="Non inclus">
+                                            -<span class="sr-only"> Non inclus</span>
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr class="compare-table__group">
+                                    <th scope="colgroup" :colspan="plans.length + 1">Quotas</th>
+                                </tr>
+                                <tr v-for="row in quotaRows" :key="row.label">
+                                    <th scope="row">{{ row.label }}</th>
+                                    <td
+                                        v-for="plan in plans"
+                                        :key="`${row.label}-${plan.code}`"
+                                        :class="{ 'compare-table__plan--popular': plan.popular }"
+                                    >
+                                        <span class="compare-table__quota">{{ row.values[plan.code] }}</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="pricing-footnote text-medium-emphasis">
+                        L’abonnement est porté par la personne, jamais par le foyer. Le partage d’un compte entre amis est inclus dès le
+                        Gratuit. Seul Famille permet de créer un foyer : les membres n’ont pas besoin d’un plan payant, ils héritent de
+                        celui du propriétaire. L’offre Étudiant a les mêmes droits et quotas que Solo, à un tarif réduit : un justificatif
+                        annuel est requis ; à l’expiration, le compte passe au tarif Solo.
+                    </p>
                 </v-container>
             </section>
 
@@ -249,8 +379,8 @@ function yearlyTotal(plan: PricingPlan): string {
                         <ShieldCheckIcon size="24" stroke-width="1.7" />
                         <p>
                             <strong>Vous gardez le contrôle, même après résiliation.</strong>
-                            Vos données restent consultables et exportables. Les fonctionnalités Premium passent simplement en lecture
-                            seule.
+                            Vos données restent consultables et exportables. Les fonctionnalités des offres payantes passent simplement en
+                            lecture seule.
                         </p>
                     </div>
                 </v-container>
@@ -274,4 +404,9 @@ function yearlyTotal(plan: PricingPlan): string {
 
 <style scoped lang="scss">
 @use '@/scss/frontpages/pages/pricing';
+
+.plan-card__cta :deep(.v-btn__content) {
+    flex-wrap: nowrap;
+    white-space: nowrap;
+}
 </style>

@@ -77,7 +77,7 @@ const steps = [
 const faqs = [
     {
         question: 'Puis-je commencer gratuitement ?',
-        answer: 'Oui. Solo Essentiel est gratuit et ne nécessite aucune carte bancaire pour commencer.'
+        answer: 'Oui. L’offre Gratuit ne nécessite aucune carte bancaire pour commencer.'
     },
     {
         question: 'Mes données sont-elles sécurisées ?',
@@ -85,7 +85,7 @@ const faqs = [
     },
     {
         question: 'Puis-je utiliser Spendup en famille ?',
-        answer: 'Oui. L’offre Famille permet de réunir jusqu’à 5 membres avec des rôles, permissions et visibilités configurables.'
+        answer: 'Oui. L’offre Famille (5) permet à un payeur de créer un foyer jusqu’à 5 personnes (propriétaire inclus). Les membres héritent du plan du propriétaire et n’ont pas besoin d’un abonnement payant.'
     },
     {
         question: 'Que deviennent mes données après résiliation ?',
