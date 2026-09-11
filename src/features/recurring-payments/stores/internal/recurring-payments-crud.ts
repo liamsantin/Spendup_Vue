@@ -108,6 +108,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         setDues,
         upsertDue,
         duesByTemplate,
+        getDetail,
         getDues
     } = state;
 
@@ -403,6 +404,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         try {
             const built = buildCreateExpensePayload(fields, payloadContext());
             if (!built.ok) throw new AppError(payloadErrorMessage(built.code), 400, built.code);
+            assertCanWriteAccount(built.payload.accountPublicId);
             const created = await recurringExpensesApi.create(built.payload);
             upsertExpense(created);
             cache.touch(listCacheKey('expense'));
@@ -423,6 +425,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         try {
             const built = buildCreateIncomePayload(fields, payloadContext());
             if (!built.ok) throw new AppError(payloadErrorMessage(built.code), 400, built.code);
+            assertCanWriteAccount(built.payload.accountPublicId);
             const created = await recurringIncomesApi.create(built.payload);
             upsertIncome(created);
             cache.touch(listCacheKey('income'));
@@ -441,8 +444,10 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         beginActing();
         clearError();
         try {
+            assertCanWriteTemplate('expense', publicId);
             const built = buildUpdateExpensePayload(fields, payloadContext());
             if (!built.ok) throw new AppError(payloadErrorMessage(built.code), 400, built.code);
+            assertCanWriteAccount(built.payload.accountPublicId);
             const updated = await recurringExpensesApi.update(publicId, built.payload);
             upsertExpense(updated);
             cache.touch(listCacheKey('expense'));
@@ -466,8 +471,10 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         beginActing();
         clearError();
         try {
+            assertCanWriteTemplate('income', publicId);
             const built = buildUpdateIncomePayload(fields, payloadContext());
             if (!built.ok) throw new AppError(payloadErrorMessage(built.code), 400, built.code);
+            assertCanWriteAccount(built.payload.accountPublicId);
             const updated = await recurringIncomesApi.update(publicId, built.payload);
             upsertIncome(updated);
             cache.touch(listCacheKey('income'));
@@ -491,6 +498,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         beginActing();
         clearError();
         try {
+            assertCanWriteTemplate('expense', publicId);
             await recurringExpensesApi.remove(publicId);
             removeExpenseLocal(publicId);
         } catch (e: unknown) {
@@ -511,6 +519,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         beginActing();
         clearError();
         try {
+            assertCanWriteTemplate('income', publicId);
             await recurringIncomesApi.remove(publicId);
             removeIncomeLocal(publicId);
         } catch (e: unknown) {
@@ -559,6 +568,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         beginActing();
         clearError();
         try {
+            assertCanWriteTemplate(kind, templatePublicId);
             let body: ConfirmDueBody = {};
             if (fields) {
                 const built = buildConfirmDuePayload(fields);
@@ -586,6 +596,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         beginActing();
         clearError();
         try {
+            assertCanWriteTemplate(kind, templatePublicId);
             const due =
                 kind === 'expense'
                     ? await recurringExpensesApi.skipDue(templatePublicId, duePublicId)
@@ -607,6 +618,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         beginActing();
         clearError();
         try {
+            assertCanWriteTemplate('expense', publicId);
             const updated = await recurringExpensesApi.attachFile(publicId, filePublicId);
             upsertExpense(updated);
             return updated;
@@ -623,6 +635,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         beginActing();
         clearError();
         try {
+            assertCanWriteTemplate('expense', publicId);
             await recurringExpensesApi.detachFile(publicId, filePublicId);
             await getExpense(publicId, true);
         } catch (e: unknown) {
@@ -694,6 +707,16 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         if (!account || !canWriteRecurringOnAccount(account)) {
             throw new AppError(RECURRING_FORBIDDEN_MESSAGE, 403, RECURRING_FORBIDDEN_CODE);
         }
+    }
+
+    function assertCanWriteTemplate(kind: RecurringKind, publicId: string) {
+        const detail =
+            getDetail(kind, publicId) ??
+            (kind === 'expense'
+                ? expenses.value.find((item) => item.publicId === publicId)
+                : incomes.value.find((item) => item.publicId === publicId)) ??
+            null;
+        if (detail) assertCanWriteAccount(detail.accountPublicId);
     }
 
     return {

@@ -18,7 +18,7 @@ import {
     todayLocalYmd,
     type UpcomingDueSort
 } from '@/features/recurring-payments/format';
-import { amountInFilterRange, parseAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
+import { amountInFilterRange, parseAmountFilter, isAmountRangeFilterActive } from '@/components/shared/dropdown-filter/amount-range';
 import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import type { RecurringDue, RecurringKind } from '@/features/recurring-payments/types';
@@ -94,6 +94,13 @@ async function loadUpcoming() {
             store.loadExpenses({ from, to, pageSize: 200, force: true }),
             store.loadIncomes({ from, to, pageSize: 200, force: true })
         ]);
+        if (isAmountRangeFilterActive(props.minAmount, props.maxAmount)) {
+            let guard = 0;
+            while (guard++ < 30 && (store.hasMoreExpenses || store.hasMoreIncomes)) {
+                if (store.hasMoreExpenses) await store.loadMoreExpenses();
+                if (store.hasMoreIncomes) await store.loadMoreIncomes();
+            }
+        }
 
         const next: UpcomingRow[] = [];
         const expenses = store.expenses.filter((item) => item.nextDueDate && item.nextDueDate >= from && item.nextDueDate <= to);

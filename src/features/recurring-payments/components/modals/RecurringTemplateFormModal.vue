@@ -243,7 +243,7 @@ function applyCreateDefaults(kind: RecurringKind) {
 
 function pickKind(kind: RecurringKind) {
     applyCreateDefaults(kind);
-    createStep.value = 'form';
+    createStep.value = 'type';
     activeTab.value = 'template';
 }
 
@@ -276,12 +276,14 @@ async function resetForm() {
         return;
     }
     if (props.kind) {
-        createStep.value = 'form';
         applyCreateDefaults(props.kind);
         if (props.defaultType) {
             if (props.kind === 'expense') form.expenseType = props.defaultType as RecurringExpenseType;
             else form.incomeType = props.defaultType as RecurringIncomeType;
+            createStep.value = 'form';
+            return;
         }
+        createStep.value = 'type';
         return;
     }
     if (props.typeChoiceFirst) {
@@ -366,7 +368,7 @@ async function onSave() {
         scrollable
         mobile-layout="fullscreen"
     >
-        <RecurringTypeChoice v-if="pickingType" :kind="typeChoiceFirst ?? 'income'" @select="pickType" />
+        <RecurringTypeChoice v-if="pickingType" :kind="typeChoiceFirst ?? resolvedKind" @select="pickType" />
         <RecurringKindChoice v-else @select="pickKind" />
     </AppModalBase>
     <AppModalTabs

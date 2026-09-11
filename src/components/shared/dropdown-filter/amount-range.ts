@@ -11,6 +11,19 @@ export function serializeAmountFilter(value: string): string | undefined {
     return amount == null ? undefined : String(amount);
 }
 
+export function isAmountRangeFilterActive(min: string | null | undefined, max: string | null | undefined): boolean {
+    return parseAmountFilter(min) != null || parseAmountFilter(max) != null;
+}
+
+export function pageSizeForClientAmountFilter(
+    min: string | null | undefined,
+    max: string | null | undefined,
+    defaultSize: number,
+    maxSize: number
+): number {
+    return isAmountRangeFilterActive(min, max) ? maxSize : defaultSize;
+}
+
 export function amountInFilterRange(amount: number | null | undefined, min: number | null, max: number | null): boolean {
     if (min == null && max == null) return true;
     if (amount == null) return false;

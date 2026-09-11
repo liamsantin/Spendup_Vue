@@ -140,6 +140,19 @@ describe('useRecurringPaymentsStore', () => {
         expect(store.expenses.some((item) => item.publicId === 're-1')).toBe(true);
     });
 
+    it('refuse la suppression si le rôle du compte est viewer', async () => {
+        expensesApi.create.mockResolvedValue(rent);
+        const store = useRecurringPaymentsStore();
+        const fields = emptyRecurringForm('expense', 'acc-1');
+        fields.name = 'Loyer';
+        fields.plannedAmount = '1500';
+        fields.startDate = '2026-08-01';
+        await store.createExpense(fields);
+        accountsList[0] = { ...ownedAccount, myRole: 'viewer' };
+        await expect(store.deleteExpense('re-1')).rejects.toMatchObject({ status: 403 });
+        expect(expensesApi.remove).not.toHaveBeenCalled();
+    });
+
     it('rouvre les dues liées après suppression de la transaction', async () => {
         const paidDue = {
             publicId: 'due-1',

@@ -123,6 +123,18 @@ export function sortDues(items: readonly RecurringDue[]): RecurringDue[] {
     });
 }
 
+/** Dues liées à une TX (récent d’abord) vs échéances encore ouvertes. */
+export function groupDuesForDetail(items: readonly RecurringDue[]): { existing: RecurringDue[]; upcoming: RecurringDue[] } {
+    const existing = items
+        .filter((due) => !!due.transactionPublicId)
+        .sort((a, b) => {
+            if (a.scheduledAt !== b.scheduledAt) return b.scheduledAt.localeCompare(a.scheduledAt);
+            return b.publicId.localeCompare(a.publicId);
+        });
+    const upcoming = sortDues(items.filter((due) => !due.transactionPublicId));
+    return { existing, upcoming };
+}
+
 export const UPCOMING_DUE_SORTS = ['dateAsc', 'dateDesc', 'nameAsc', 'amountDesc', 'amountAsc'] as const;
 export type UpcomingDueSort = (typeof UPCOMING_DUE_SORTS)[number];
 export const UPCOMING_DUE_SORT_DEFAULT: UpcomingDueSort = 'dateAsc';

@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { amountInFilterRange, parseAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
+import { amountInFilterRange, parseAmountFilter, pageSizeForClientAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
@@ -20,7 +20,7 @@ import {
     TRANSACTION_SORT_DEFAULT
 } from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
-import { TRANSACTION_SEARCH_MAX, TRANSACTION_TYPES, type Transaction, type TransactionType } from '@/features/transactions/types';
+import { TRANSACTION_PAGE_SIZE_DEFAULT, TRANSACTION_PAGE_SIZE_MAX, TRANSACTION_SEARCH_MAX, TRANSACTION_TYPES, type Transaction, type TransactionType } from '@/features/transactions/types';
 import { TIER_PAGE_SIZE_MAX } from '@/features/tiers/types';
 import { tierSearchHaystack } from '@/features/tiers/format';
 import { usePaymentMethodsStore } from '@/features/payment-methods';
@@ -175,12 +175,24 @@ async function loadTimeline(force = false) {
                 recurringIncomePublicId: filterRecurringIncomeId.value ?? undefined,
                 from: filterFrom.value ?? undefined,
                 to: filterTo.value ?? undefined,
+                pageSize: pageSizeForClientAmountFilter(
+                    queryString('minAmount'),
+                    queryString('maxAmount'),
+                    TRANSACTION_PAGE_SIZE_DEFAULT,
+                    TRANSACTION_PAGE_SIZE_MAX
+                ),
                 force
             }),
             categoriesStore.loadList({ force }).catch(() => undefined),
             tiersStore.loadList({ pageSize: TIER_PAGE_SIZE_MAX, force }).catch(() => undefined),
             paymentMethodsStore.loadList({ force }).catch(() => undefined)
         ]);
+        if (filterMinAmount.value != null || filterMaxAmount.value != null) {
+            let guard = 0;
+            while (store.hasMore && guard++ < 30) {
+                await store.loadMore();
+            }
+        }
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
         if (err.status === 404) {
@@ -251,7 +263,9 @@ watch(
             filterCategoryId.value,
             filterTierId.value,
             filterRecurringExpenseId.value,
-            filterRecurringIncomeId.value
+            filterRecurringIncomeId.value,
+            filterMinAmount.value,
+            filterMaxAmount.value
         ] as const,
     () => {
         void loadTimeline().catch(() => undefined);

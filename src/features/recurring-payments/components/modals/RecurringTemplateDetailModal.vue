@@ -20,8 +20,8 @@ import {
     formatPlannedAmount,
     isDueOpen,
     isDueSettled,
-    isExpenseTemplate,
-    sortDues
+    groupDuesForDetail,
+    isExpenseTemplate
 } from '@/features/recurring-payments/format';
 import { canConfirmRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
@@ -88,19 +88,13 @@ const dues = computed(() => {
     if (visibleDues.value.length) return visibleDues.value;
     return template.value?.upcomingDues ?? [];
 });
-const existingDues = computed(() =>
-    [...dues.value.filter((due) => !!due.transactionPublicId)].sort((a, b) => {
-        if (a.scheduledAt !== b.scheduledAt) return b.scheduledAt.localeCompare(a.scheduledAt);
-        return b.publicId.localeCompare(a.publicId);
-    })
-);
-const upcomingDues = computed(() => sortDues(dues.value.filter((due) => !due.transactionPublicId)));
-const dueGroups = computed(() =>
-    [
-        { key: 'existing' as const, title: t('recurrencesPage.detail.duesExisting'), items: existingDues.value },
-        { key: 'upcoming' as const, title: t('recurrencesPage.detail.duesUpcoming'), items: upcomingDues.value }
-    ].filter((group) => group.items.length)
-);
+const dueGroups = computed(() => {
+    const grouped = groupDuesForDetail(dues.value);
+    return [
+        { key: 'existing' as const, title: t('recurrencesPage.detail.duesExisting'), items: grouped.existing },
+        { key: 'upcoming' as const, title: t('recurrencesPage.detail.duesUpcoming'), items: grouped.upcoming }
+    ].filter((group) => group.items.length);
+});
 const expense = computed(() => (template.value && isExpenseTemplate(template.value) ? template.value : null));
 
 const account = computed(() =>
@@ -388,7 +382,7 @@ function seeRelatedTransactions() {
                 <EyeIcon :size="16" stroke-width="1.6" />
                 {{ t('recurrencesPage.detail.seeTransactions') }}
             </button>
-            <button type="button" class="su-btn" @click="emit('edit')">{{ t('recurrencesPage.actions.edit') }}</button>
+            <button v-if="canConfirm" type="button" class="su-btn" @click="emit('edit')">{{ t('recurrencesPage.actions.edit') }}</button>
             <button type="button" class="su-btn su-btn--ink" @click="close">{{ t('common.close') }}</button>
         </template>
     </AppModalTabs>

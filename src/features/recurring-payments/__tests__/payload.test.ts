@@ -95,6 +95,11 @@ describe('recurring payload', () => {
         if (result.ok) expect(result.payload.paymentDay).toBeNull();
     });
 
+    it('préremplit loyer / salaire seulement comme valeurs de formulaire, pas comme choix utilisateur', () => {
+        expect(emptyRecurringForm('expense').expenseType).toBe('loyer');
+        expect(emptyRecurringForm('income').incomeType).toBe('salaire');
+    });
+
     it('refuse un confirm dans le futur', () => {
         const result = buildConfirmDuePayload(
             { paymentDate: '2099-01-01', amount: '10', paymentMethodPublicId: '', notes: '' },

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { amountInFilterRange, parseAmountFilter, serializeAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
+import { amountInFilterRange, parseAmountFilter, serializeAmountFilter, isAmountRangeFilterActive, pageSizeForClientAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
 
 describe('amount-range', () => {
     it('parse les montants positifs', () => {
@@ -20,5 +20,12 @@ describe('amount-range', () => {
         expect(amountInFilterRange(120, null, 100)).toBe(false);
         expect(amountInFilterRange(null, 10, null)).toBe(false);
         expect(amountInFilterRange(8, null, null)).toBe(true);
+    });
+
+    it('élargit la page liste quand un filtre montant est actif', () => {
+        expect(isAmountRangeFilterActive('10', null)).toBe(true);
+        expect(isAmountRangeFilterActive(null, '')).toBe(false);
+        expect(pageSizeForClientAmountFilter(null, null, 50, 200)).toBe(50);
+        expect(pageSizeForClientAmountFilter('10', null, 50, 200)).toBe(200);
     });
 });

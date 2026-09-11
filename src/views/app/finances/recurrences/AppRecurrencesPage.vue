@@ -88,17 +88,19 @@ const dueSettlementItems = computed(() => [
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
     const account = 'account' in patch ? patch.account : queryString('account') || undefined;
-    const kind = 'kind' in patch ? patch.kind : queryString('kind') || undefined;
-    const due = 'due' in patch ? patch.due : queryString('due') || undefined;
-    const sort = 'sort' in patch ? patch.sort : queryString('sort') || undefined;
     const minAmount = 'minAmount' in patch ? patch.minAmount : queryString('minAmount') || undefined;
     const maxAmount = 'maxAmount' in patch ? patch.maxAmount : queryString('maxAmount') || undefined;
     if (account) next.account = account;
-    if (kind === 'expense' || kind === 'income') next.kind = kind;
-    if (due === 'planned' || due === 'settled') next.due = due;
-    if (sort && sort !== UPCOMING_DUE_SORT_DEFAULT && parseUpcomingDueSort(sort) === sort) next.sort = sort;
     if (minAmount) next.minAmount = minAmount;
     if (maxAmount) next.maxAmount = maxAmount;
+    if (tab.value === 'upcoming') {
+        const kind = 'kind' in patch ? patch.kind : queryString('kind') || undefined;
+        const due = 'due' in patch ? patch.due : queryString('due') || undefined;
+        const sort = 'sort' in patch ? patch.sort : queryString('sort') || undefined;
+        if (kind === 'expense' || kind === 'income') next.kind = kind;
+        if (due === 'planned' || due === 'settled') next.due = due;
+        if (sort && sort !== UPCOMING_DUE_SORT_DEFAULT && parseUpcomingDueSort(sort) === sort) next.sort = sort;
+    }
     void router.replace({ path: route.path, query: next });
 }
 
@@ -145,6 +147,12 @@ watch(
     { immediate: true }
 );
 
+watch(tab, (current, previous) => {
+    if (!previous || current === previous || current === 'upcoming') return;
+    if (!queryString('kind') && !queryString('due') && !queryString('sort')) return;
+    patchQuery({});
+});
+
 function onCreate(kind?: RecurringKind) {
     if (!canCreate.value || store.acting) return;
     directoryRef.value?.openCreate(kind ?? null);
@@ -161,7 +169,7 @@ function resetFilters() {
         return;
     }
     showInactive.value = true;
-    patchQuery({ minAmount: undefined, maxAmount: undefined });
+    patchQuery({ account: undefined, minAmount: undefined, maxAmount: undefined });
 }
 
 const upcomingFiltersActive = computed(
@@ -177,7 +185,7 @@ const filterCount = computed(() => {
             filterMaxAmount.value
         ].filter(Boolean).length;
     }
-    return [showInactive.value ? '' : 'inactive', filterMinAmount.value, filterMaxAmount.value].filter(Boolean).length;
+    return [filterAccountId.value, showInactive.value ? '' : 'inactive', filterMinAmount.value, filterMaxAmount.value].filter(Boolean).length;
 });
 const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ? 0 : 1));
 </script>
@@ -235,6 +243,12 @@ const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ?
                     @reset="resetFilters"
                 >
                     <div class="pa-3 d-flex flex-column ga-3">
+                        <AppSelect
+                            v-model="filterAccountId"
+                            :items="accountItems"
+                            :label="t('recurrencesPage.filters.account')"
+                            hide-details
+                        />
                         <AppSwitch v-model="showInactive" :label="t('recurrencesPage.filters.showInactive')" />
                         <AppAmountRangeFields v-model:min="filterMinAmount" v-model:max="filterMaxAmount" />
                     </div>
@@ -266,6 +280,7 @@ const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ?
             :kind="directoryKind"
             :type-choice-first="tab === 'incomes' ? 'income' : tab === 'expenses' ? 'expense' : null"
             :show-inactive="showInactive"
+            :account-public-id="filterAccountId || null"
             :min-amount="filterMinAmount"
             :max-amount="filterMaxAmount"
         />

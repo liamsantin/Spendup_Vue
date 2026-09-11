@@ -15,6 +15,7 @@ export {
     isExpenseTemplate,
     sortTemplates,
     sortDues,
+    groupDuesForDetail,
     UPCOMING_DUE_SORTS,
     UPCOMING_DUE_SORT_DEFAULT,
     parseUpcomingDueSort,

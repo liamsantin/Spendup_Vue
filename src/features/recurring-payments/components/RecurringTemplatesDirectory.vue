@@ -12,7 +12,7 @@ import RecurringTemplateFormModal from '@/features/recurring-payments/components
 import { recurrencesPathForTab } from '@/features/recurring-payments/paths';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { isExpenseTemplate, sortTemplates } from '@/features/recurring-payments/format';
-import { amountInFilterRange, parseAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
+import { pageSizeForClientAmountFilter, parseAmountFilter, amountInFilterRange, isAmountRangeFilterActive } from '@/components/shared/dropdown-filter/amount-range';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import type {
     RecurringExpense,
@@ -21,16 +21,18 @@ import type {
     RecurringIncomeType,
     RecurringKind
 } from '@/features/recurring-payments/types';
+import { RECURRING_PAGE_SIZE_DEFAULT, RECURRING_PAGE_SIZE_MAX } from '@/features/recurring-payments/types';
 
 const props = withDefaults(
     defineProps<{
         kind?: RecurringKind | null;
         showInactive?: boolean;
         typeChoiceFirst?: RecurringKind | null;
+        accountPublicId?: string | null;
         minAmount?: string | null;
         maxAmount?: string | null;
     }>(),
-    { kind: null, showInactive: true, typeChoiceFirst: null, minAmount: null, maxAmount: null }
+    { kind: null, showInactive: true, typeChoiceFirst: null, accountPublicId: null, minAmount: null, maxAmount: null }
 );
 
 const { t } = useI18n();
@@ -72,7 +74,7 @@ function accountFromQuery(): string | null {
     return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
 }
 
-const filterAccountId = computed(() => accountFromQuery());
+const filterAccountId = computed(() => props.accountPublicId?.trim() || accountFromQuery());
 const canCreate = computed(() => accountsStore.accounts.some((item) => canWriteRecurringOnAccount(item)));
 const listingKind = computed(() => props.kind ?? null);
 
@@ -124,16 +126,19 @@ async function loadList(force = false) {
     localError.value = null;
     try {
         await accountsStore.loadAccounts(force);
-        const query = { accountPublicId: filterAccountId.value ?? undefined, force };
+        const query = {
+            accountPublicId: filterAccountId.value ?? undefined,
+            force,
+            pageSize: pageSizeForClientAmountFilter(props.minAmount, props.maxAmount, RECURRING_PAGE_SIZE_DEFAULT, RECURRING_PAGE_SIZE_MAX)
+        };
         if (listingKind.value === 'expense') {
             await store.loadExpenses(query);
-            return;
-        }
-        if (listingKind.value === 'income') {
+        } else if (listingKind.value === 'income') {
             await store.loadIncomes(query);
-            return;
+        } else {
+            await Promise.all([store.loadExpenses(query), store.loadIncomes(query)]);
         }
-        await Promise.all([store.loadExpenses(query), store.loadIncomes(query)]);
+        await drainPagesForAmountFilter();
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
         if (err.status === 404) {
@@ -142,6 +147,19 @@ async function loadList(force = false) {
             return;
         }
         localError.value = getErrorMessage(e);
+    }
+}
+
+async function drainPagesForAmountFilter() {
+    if (!isAmountRangeFilterActive(props.minAmount, props.maxAmount)) return;
+    let guard = 0;
+    while (guard++ < 30) {
+        const moreExpenses =
+            (listingKind.value === 'expense' || listingKind.value == null) && store.hasMoreExpenses;
+        const moreIncomes = (listingKind.value === 'income' || listingKind.value == null) && store.hasMoreIncomes;
+        if (!moreExpenses && !moreIncomes) return;
+        if (moreExpenses) await store.loadMoreExpenses();
+        if (moreIncomes) await store.loadMoreIncomes();
     }
 }
 
@@ -160,7 +178,7 @@ onUnmounted(() => {
 });
 
 watch(
-    () => [route.query.account, listingKind.value] as const,
+    () => [route.query.account, props.accountPublicId, listingKind.value, props.minAmount, props.maxAmount] as const,
     () => {
         void loadList().catch(() => undefined);
     }
