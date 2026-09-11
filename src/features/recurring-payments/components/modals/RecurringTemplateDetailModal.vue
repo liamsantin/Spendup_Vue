@@ -29,6 +29,7 @@ import type { RecurringDue, RecurringFile, RecurringKind } from '@/features/recu
 import TransactionAttachments from '@/features/transactions/components/forms/TransactionAttachments.vue';
 import TransactionFilePreviewModal from '@/features/transactions/components/modals/TransactionFilePreviewModal.vue';
 import { transactionsApi } from '@/features/transactions/api';
+import { formatSignedAmountDelta, recurrenceAmountVariance } from '@/features/transactions/format';
 import type { Transaction } from '@/features/transactions/types';
 import TransactionFormModal from '@/features/transactions/components/modals/TransactionFormModal.vue';
 
@@ -169,6 +170,18 @@ function dueAmount(due: RecurringDue) {
     return formatPlannedAmount(amount, currency, locale.value);
 }
 
+function dueVariance(due: RecurringDue) {
+    if (due.actualAmount == null) return null;
+    return recurrenceAmountVariance(due.actualAmount, due.plannedAmount, props.kind);
+}
+
+function dueDeltaLabel(due: RecurringDue) {
+    const variance = dueVariance(due);
+    const currency = template.value?.currency ?? 'CHF';
+    if (!variance) return '';
+    return formatSignedAmountDelta(variance.delta, currency, locale.value);
+}
+
 async function onSkip() {
     if (!skipDue.value || !props.publicId) return;
     localError.value = null;
@@ -185,7 +198,11 @@ async function openTransaction(due: RecurringDue) {
     if (!due.transactionPublicId) return;
     localError.value = null;
     try {
-        txTarget.value = await transactionsApi.get(due.transactionPublicId);
+        const fetched = await transactionsApi.get(due.transactionPublicId);
+        txTarget.value = {
+            ...fetched,
+            duePlannedAmount: fetched.duePlannedAmount ?? due.plannedAmount
+        };
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
         if (err.status === 404) {
@@ -320,8 +337,17 @@ function seeRelatedTransactions() {
                                         <p class="recurring-due-row__sub">{{ statusLabel(due) }}</p>
                                     </div>
                                     <div class="recurring-due-row__actions" @click.stop>
-                                        <span class="recurring-due-row__amount" :class="kind === 'expense' ? 'is-debit' : 'is-credit'">
-                                            {{ dueAmount(due) }}
+                                        <span class="recurring-due-row__figures">
+                                            <span class="recurring-due-row__amount" :class="kind === 'expense' ? 'is-debit' : 'is-credit'">
+                                                {{ dueAmount(due) }}
+                                            </span>
+                                            <span
+                                                v-if="dueVariance(due)"
+                                                class="recurring-due-row__delta"
+                                                :class="`is-${dueVariance(due)?.tone}`"
+                                            >
+                                                {{ dueDeltaLabel(due) }}
+                                            </span>
                                         </span>
                                         <button
                                             v-if="group.key === 'existing' && isDueSettled(due, kind) && due.transactionPublicId"
@@ -535,6 +561,29 @@ function seeRelatedTransactions() {
 }
 
 .recurring-due-row__amount.is-credit {
+    color: rgb(var(--v-theme-success));
+}
+
+.recurring-due-row__figures {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    margin-right: 6px;
+}
+
+.recurring-due-row__delta {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.recurring-due-row__delta.is-unfavorable {
+    color: rgb(var(--v-theme-error));
+}
+
+.recurring-due-row__delta.is-favorable {
     color: rgb(var(--v-theme-success));
 }
 

@@ -9,12 +9,15 @@ import { useCategoriesStore } from '@/features/categories/stores/categories-stor
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import {
     formatOperationDate,
+    formatSignedAmountDelta,
     movementForAccount,
+    recurrenceAmountVariance,
     resolveTransactionAmountDisplay,
     signedAmountForSens,
     sourceAccountPublicId,
     targetAccountPublicId
 } from '@/features/transactions/format';
+import { plannedAmountForRecurrenceTransaction } from '@/features/transactions/recurrence-planned';
 import type { Transaction, TransactionType } from '@/features/transactions/types';
 
 const props = defineProps<{
@@ -72,6 +75,27 @@ const amountTone = computed(() => {
     if (props.transaction.type === 'depense') return 'is-debit';
     if (props.transaction.type === 'revenu') return 'is-credit';
     return '';
+});
+
+const amountVariance = computed(() => {
+    if (amountDisplay.value.hidden) return null;
+    return recurrenceAmountVariance(
+        props.transaction.amount,
+        plannedAmountForRecurrenceTransaction(props.transaction),
+        props.transaction.type
+    );
+});
+
+const plannedAmountLabel = computed(() => {
+    const variance = amountVariance.value;
+    if (!variance) return '';
+    return resolveTransactionAmountDisplay(variance.planned, props.transaction.currency, locale.value).text;
+});
+
+const deltaAmountLabel = computed(() => {
+    const variance = amountVariance.value;
+    if (!variance) return '';
+    return formatSignedAmountDelta(variance.delta, props.transaction.currency, locale.value);
 });
 
 function accountName(publicId: string | null): string {
@@ -166,7 +190,17 @@ function onDoubleClick(event: MouseEvent) {
             </p>
         </div>
         <div class="su-person__actions">
-            <span class="transaction-list-item__amount" :class="amountTone">{{ amountDisplay.text }}</span>
+            <div class="transaction-list-item__amounts">
+                <span class="transaction-list-item__amount" :class="amountTone">{{ amountDisplay.text }}</span>
+                <span
+                    v-if="amountVariance"
+                    class="transaction-list-item__delta"
+                    :class="`is-${amountVariance.tone}`"
+                    :title="t('transactionsPage.list.recurrenceDelta', { delta: deltaAmountLabel, planned: plannedAmountLabel })"
+                >
+                    {{ deltaAmountLabel }}
+                </span>
+            </div>
             <template v-if="canWrite">
                 <button
                     type="button"
@@ -242,6 +276,13 @@ function onDoubleClick(event: MouseEvent) {
     background: rgba(var(--v-theme-primary), 0.12);
 }
 
+.transaction-list-item__amounts {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
 .transaction-list-item__amount {
     font-weight: 700;
     letter-spacing: -0.02em;
@@ -253,6 +294,21 @@ function onDoubleClick(event: MouseEvent) {
 }
 
 .transaction-list-item__amount.is-credit {
+    color: rgb(var(--v-theme-success));
+}
+
+.transaction-list-item__delta {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.transaction-list-item__delta.is-unfavorable {
+    color: rgb(var(--v-theme-error));
+}
+
+.transaction-list-item__delta.is-favorable {
     color: rgb(var(--v-theme-success));
 }
 

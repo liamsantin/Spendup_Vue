@@ -9,6 +9,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
+import { parseAccountAmount } from '@/features/accounts/format';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import CategoryFormModal from '@/features/categories/components/modals/CategoryFormModal.vue';
 import type { Category } from '@/features/categories/types';
@@ -16,7 +17,7 @@ import PaymentMethodFormModal from '@/features/payment-methods/components/modals
 import { canWritePaymentMethods } from '@/features/payment-methods/rights';
 import type { PaymentMethod } from '@/features/payment-methods/types';
 import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
-import { todayUtcYmd } from '@/features/transactions/format';
+import { formatSignedAmountDelta, recurrenceAmountVariance, resolveTransactionAmountDisplay, todayUtcYmd } from '@/features/transactions/format';
 import { TRANSACTION_LABEL_MAX, type TransactionType } from '@/features/transactions/types';
 import type { TransactionFormFields } from '@/features/transactions/payload';
 
@@ -47,6 +48,7 @@ const props = withDefaults(
         counterpartyHint?: string | null;
         categoryHint?: string | null;
         tierHint?: string | null;
+        recurrencePlannedAmount?: number | null;
         section?: 'operation' | 'classification' | 'all';
     }>(),
     {
@@ -55,11 +57,12 @@ const props = withDefaults(
         counterpartyHint: null,
         categoryHint: null,
         tierHint: null,
+        recurrencePlannedAmount: null,
         section: 'all'
     }
 );
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const accountsStore = useAccountsStore();
 
 const isTransfer = computed(() => props.form.type === 'transfert');
@@ -79,6 +82,22 @@ const paymentMethodCreateLabel = ref('');
 const canCreatePaymentMethod = computed(() => {
     const account = accountsStore.accounts.find((item) => item.publicId === props.form.accountPublicId);
     return !!account && canWritePaymentMethods(account);
+});
+
+const recurrenceAmountHint = computed(() => {
+    if (props.recurrencePlannedAmount == null) return null;
+    const actual = parseAccountAmount(props.form.amount);
+    const variance = recurrenceAmountVariance(actual, props.recurrencePlannedAmount, props.form.type);
+    if (!variance) return null;
+    const account = accountsStore.accounts.find((item) => item.publicId === props.form.accountPublicId);
+    const currency = account?.currency ?? 'CHF';
+    return {
+        tone: variance.tone,
+        text: t('transactionsPage.form.recurrenceAmountVariance', {
+            delta: formatSignedAmountDelta(variance.delta, currency, locale.value),
+            planned: resolveTransactionAmountDisplay(variance.planned, currency, locale.value).text
+        })
+    };
 });
 
 const operationDateModel = computed({
@@ -212,6 +231,9 @@ function openPaymentMethodCreate(name: string) {
                     :error-messages="fieldErrors.amount || undefined"
                     @update:model-value="onAmountInput"
                 />
+                <p v-if="recurrenceAmountHint" class="text-caption mt-1" :class="`text-${recurrenceAmountHint.tone === 'unfavorable' ? 'error' : 'success'}`">
+                    {{ recurrenceAmountHint.text }}
+                </p>
             </v-col>
         </v-row>
         <v-row v-if="showOperation" class="align-center" no-gutters>

@@ -13,6 +13,7 @@ import { categorySelectItems } from '@/features/categories/payload';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import { sourceAccountPublicId, targetAccountPublicId, todayUtcYmd } from '@/features/transactions/format';
+import { plannedAmountForRecurrenceTransaction } from '@/features/transactions/recurrence-planned';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import {
     buildCreateTransactionPayload,
@@ -60,6 +61,9 @@ const filesStore = useFilesStore();
 
 const isEdit = ref(false);
 const editTransaction = ref<Transaction | null>(null);
+const recurrencePlannedAmount = computed(() =>
+    editTransaction.value ? plannedAmountForRecurrenceTransaction(editTransaction.value) : null
+);
 const tierDeletedHint = ref(false);
 
 /** `tierDeleted` (realtime ou local) : vider le sélecteur si ce tier était choisi. */
@@ -495,6 +499,7 @@ function onOpenAttachment(file: TransactionFile) {
                     :field-errors="fieldErrors"
                     :archived-hint="archivedHint"
                     :counterparty-hint="counterpartyHint"
+                    :recurrence-planned-amount="recurrencePlannedAmount"
                 />
             </AppModalPanelScroll>
         </template>

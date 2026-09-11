@@ -13,6 +13,8 @@ export {
     involvedAccountPublicIds,
     resolveTransactionAmountDisplay,
     signedAmountForSens,
+    recurrenceAmountVariance,
+    formatSignedAmountDelta,
     sortTransactions,
     isTransactionSort,
     parseTransactionSort,

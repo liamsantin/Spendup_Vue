@@ -124,8 +124,9 @@ export function createTransactionsState() {
     }
 
     function setList(key: string, nextItems: Transaction[], meta?: { page?: number; pageSize?: number; totalCount?: number }) {
-        const sorted = sortTransactions(nextItems.map(normalizeTransaction));
         const prev = itemsByListKey.get(key);
+        const previousById = new Map((prev?.items ?? []).map((item) => [item.publicId, item]));
+        const sorted = sortTransactions(nextItems.map((item) => normalizeTransaction(item, previousById.get(item.publicId))));
         const entry: TransactionsCacheEntry = {
             items: sorted,
             page: meta?.page ?? prev?.page ?? 1,
@@ -157,8 +158,16 @@ export function createTransactionsState() {
         totalCount.value = 0;
     }
 
+    function cachedTransaction(publicId: string): Transaction | undefined {
+        for (const entry of itemsByListKey.values()) {
+            const hit = entry.items.find((item) => item.publicId === publicId);
+            if (hit) return hit;
+        }
+        return undefined;
+    }
+
     function upsertItem(transaction: Transaction) {
-        const next = normalizeTransaction(transaction);
+        const next = normalizeTransaction(transaction, cachedTransaction(transaction.publicId));
         for (const key of [...itemsByListKey.keys()]) {
             const prev = itemsByListKey.get(key);
             if (!prev) continue;

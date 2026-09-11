@@ -26,6 +26,8 @@ export type Transaction = {
     recurringExpensePublicId: string | null;
     recurringIncomePublicId: string | null;
     duePublicId: string | null;
+    /** Montant prévu de l’échéance, si `source === "recurrence"` (API ou cache local). */
+    duePlannedAmount: number | null;
     label: string;
     /** `null` si le viewer a le solde masqué. */
     amount: number | null;

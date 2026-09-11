@@ -1,7 +1,7 @@
 import { formatAccountBalance } from '@/features/accounts/format';
 import type { Currency } from '@/features/accounts/types';
 import { matchesSearchTokens } from '@/utils/helpers/text-search';
-import type { MovementSens, Transaction, TransactionFile, TransactionMovement } from '@/features/transactions/types';
+import type { MovementSens, Transaction, TransactionFile, TransactionMovement, TransactionType } from '@/features/transactions/types';
 import { TRANSACTION_FILES_MAX } from '@/features/transactions/types';
 
 const YMD_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -179,13 +179,52 @@ export function normalizeTransactionFiles(value: unknown): TransactionFile[] {
     return files;
 }
 
-export function normalizeTransaction(transaction: Transaction): Transaction {
+const AMOUNT_EPS = 0.005;
+
+export type RecurrenceAmountTone = 'favorable' | 'unfavorable';
+
+export type RecurrenceAmountVariance = {
+    planned: number;
+    actual: number;
+    delta: number;
+    tone: RecurrenceAmountTone;
+};
+
+/** Écart montant réel vs prévu d’une récurrence (magnitudes positives). */
+export function recurrenceAmountVariance(
+    actual: number | null | undefined,
+    planned: number | null | undefined,
+    kind: TransactionType | 'expense' | 'income'
+): RecurrenceAmountVariance | null {
+    if (actual == null || planned == null || !Number.isFinite(actual) || !Number.isFinite(planned)) return null;
+    const delta = actual - planned;
+    if (Math.abs(delta) < AMOUNT_EPS) return null;
+    const isExpense = kind === 'depense' || kind === 'expense';
+    const tone: RecurrenceAmountTone = delta > 0 === isExpense ? 'unfavorable' : 'favorable';
+    return { planned, actual, delta, tone };
+}
+
+export function formatSignedAmountDelta(delta: number, currency: string, locale?: string): string {
+    const formatted = formatAccountBalance(Math.abs(delta), currency as Currency, locale);
+    return delta > 0 ? `+${formatted}` : `−${formatted}`;
+}
+
+function readDuePlannedAmount(transaction: Transaction): number | null {
+    const extra = transaction as Transaction & { plannedAmount?: number | null };
+    const raw = extra.duePlannedAmount ?? (transaction.source === 'recurrence' ? extra.plannedAmount : null);
+    if (typeof raw !== 'number' || !Number.isFinite(raw) || raw < 0) return null;
+    return raw;
+}
+
+export function normalizeTransaction(transaction: Transaction, previous?: Transaction | null): Transaction {
+    const source = transaction.source === 'recurrence' ? 'recurrence' : 'manuelle';
     return {
         ...transaction,
-        source: transaction.source === 'recurrence' ? 'recurrence' : 'manuelle',
+        source,
         recurringExpensePublicId: transaction.recurringExpensePublicId ?? null,
         recurringIncomePublicId: transaction.recurringIncomePublicId ?? null,
         duePublicId: transaction.duePublicId ?? null,
+        duePlannedAmount: source === 'recurrence' ? (readDuePlannedAmount(transaction) ?? previous?.duePlannedAmount ?? null) : null,
         files: normalizeTransactionFiles(transaction.files)
     };
 }

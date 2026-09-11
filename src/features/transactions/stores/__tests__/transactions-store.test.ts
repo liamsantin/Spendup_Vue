@@ -96,6 +96,7 @@ const expense: Transaction = {
     recurringExpensePublicId: null,
     recurringIncomePublicId: null,
     duePublicId: null,
+    duePlannedAmount: null,
     label: 'Courses',
     amount: 42.5,
     currency: 'CHF',

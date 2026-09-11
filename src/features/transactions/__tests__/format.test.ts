@@ -5,6 +5,8 @@ import {
     isOperationDateInFutureUtc,
     isValidYmd,
     movementForAccount,
+    recurrenceAmountVariance,
+    formatSignedAmountDelta,
     resolveTransactionAmountDisplay,
     signedAmountForSens,
     matchesTransactionSearch,
@@ -27,6 +29,7 @@ function tx(partial: Partial<Transaction> = {}): Transaction {
         recurringExpensePublicId: null,
         recurringIncomePublicId: null,
         duePublicId: null,
+        duePlannedAmount: null,
         label: 'Courses',
         amount: 42.5,
         currency: 'CHF',
@@ -81,6 +84,22 @@ describe('transactions format', () => {
         expect(signedAmountForSens(12.5, 'debit')).toBe(-12.5);
         expect(signedAmountForSens(12.5, 'credit')).toBe(12.5);
         expect(signedAmountForSens(null, 'debit')).toBeNull();
+    });
+
+    it('signale un écart de montant par rapport à la récurrence', () => {
+        expect(recurrenceAmountVariance(1600, 1400, 'depense')?.tone).toBe('unfavorable');
+        expect(recurrenceAmountVariance(1200, 1400, 'depense')?.tone).toBe('favorable');
+        expect(recurrenceAmountVariance(5200, 5000, 'revenu')?.tone).toBe('favorable');
+        expect(recurrenceAmountVariance(4800, 5000, 'revenu')?.tone).toBe('unfavorable');
+        expect(recurrenceAmountVariance(1400, 1400, 'depense')).toBeNull();
+        expect(formatSignedAmountDelta(200, 'CHF', 'en-CH')).toMatch(/^\+/);
+        expect(formatSignedAmountDelta(-200, 'CHF', 'en-CH')).toMatch(/^−/);
+    });
+
+    it('conserve duePlannedAmount si l’API ne le renvoie plus', () => {
+        const previous = tx({ source: 'recurrence', duePlannedAmount: 1400, amount: 1400 });
+        const updated = normalizeTransaction(tx({ source: 'recurrence', duePlannedAmount: null, amount: 1600 }), previous);
+        expect(updated.duePlannedAmount).toBe(1400);
     });
 
     it('trie par date d’opération desc puis saisie récente', () => {

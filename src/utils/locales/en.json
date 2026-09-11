@@ -1394,7 +1394,8 @@
             "myCategory": "My category: {name}",
             "myTier": "My counterparty: {name}",
             "hasAttachments": "{count} receipt | {count} receipt | {count} receipts",
-            "sourceRecurrence": "Recurring"
+            "sourceRecurrence": "Recurring",
+            "recurrenceDelta": "{delta} vs planned ({planned})"
         },
         "deleteModal": {
             "title": "Delete this transaction?",
@@ -1413,6 +1414,7 @@
                 "attachments": "Receipts"
             },
             "amountPlaceholder": "42.50",
+            "recurrenceAmountVariance": "{delta} versus planned ({planned})",
             "operationDatePlaceholder": "Operation date",
             "valueDatePlaceholder": "Value date (optional)",
             "noPaymentMethod": "None",

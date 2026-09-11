@@ -36,6 +36,7 @@ function transaction(partial: Partial<Transaction> = {}): Transaction {
         recurringExpensePublicId: null,
         recurringIncomePublicId: null,
         duePublicId: null,
+        duePlannedAmount: null,
         label: 'Courses',
         amount: 10,
         currency: 'CHF',

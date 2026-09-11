@@ -1394,7 +1394,8 @@
             "myCategory": "Ma catégorie : {name}",
             "myTier": "Ma contrepartie : {name}",
             "hasAttachments": "{count} justificatif | {count} justificatif | {count} justificatifs",
-            "sourceRecurrence": "Récurrence"
+            "sourceRecurrence": "Récurrence",
+            "recurrenceDelta": "{delta} par rapport au prévu ({planned})"
         },
         "deleteModal": {
             "title": "Supprimer cette transaction ?",
@@ -1413,6 +1414,7 @@
                 "attachments": "Justificatifs"
             },
             "amountPlaceholder": "42.50",
+            "recurrenceAmountVariance": "{delta} par rapport au prévu ({planned})",
             "operationDatePlaceholder": "Date d’opération",
             "valueDatePlaceholder": "Date de valeur (optionnel)",
             "noPaymentMethod": "Aucun",
