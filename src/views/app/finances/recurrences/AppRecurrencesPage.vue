@@ -2,12 +2,11 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowsSortIcon, CalendarEventIcon, PlusIcon, Receipt2Icon, TrendingUpIcon } from 'vue-tabler-icons';
+import { ArrowsSortIcon, PlusIcon } from 'vue-tabler-icons';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
-import AppFoldableTabs from '@/components/shared/tabs/AppFoldableTabs.vue';
 import RecurringCreateMenu from '@/features/recurring-payments/components/RecurringCreateMenu.vue';
 import RecurringTemplatesDirectory from '@/features/recurring-payments/components/RecurringTemplatesDirectory.vue';
 import RecurringUpcomingPanel from '@/features/recurring-payments/components/RecurringUpcomingPanel.vue';
@@ -16,13 +15,13 @@ import {
     UPCOMING_DUE_SORTS,
     parseUpcomingDueSort
 } from '@/features/recurring-payments/format';
+import { recurrencesPathForTab, recurrencesTabFromPath, type RecurrenceTab } from '@/features/recurring-payments/paths';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import type { RecurringKind } from '@/features/recurring-payments/types';
 import { useAccountsStore } from '@/features/accounts';
 
 const TABS = ['all', 'expenses', 'incomes', 'upcoming'] as const;
-type RecurrenceTab = (typeof TABS)[number];
 type DueSettlement = 'all' | 'planned' | 'settled';
 
 const { t } = useI18n();
@@ -38,12 +37,6 @@ function queryString(name: string): string {
     return typeof raw === 'string' ? raw : '';
 }
 
-function tabFromQuery(): RecurrenceTab {
-    const raw = queryString('tab');
-    if ((TABS as readonly string[]).includes(raw)) return raw as RecurrenceTab;
-    return 'all';
-}
-
 function parseSettlement(raw: string): DueSettlement {
     return raw === 'planned' || raw === 'settled' ? raw : 'all';
 }
@@ -52,12 +45,19 @@ function parseKind(raw: string): RecurringKind | '' {
     return raw === 'expense' || raw === 'income' ? raw : '';
 }
 
-const tab = ref<RecurrenceTab>(tabFromQuery());
+const tab = computed(() => recurrencesTabFromPath(route.path));
 
 const directoryKind = computed<RecurringKind | null>(() => {
     if (tab.value === 'expenses') return 'expense';
     if (tab.value === 'incomes') return 'income';
     return null;
+});
+
+const pageTitle = computed(() => {
+    if (tab.value === 'expenses') return t('nav.items.recurrencesExpenses');
+    if (tab.value === 'incomes') return t('nav.items.recurrencesIncomes');
+    if (tab.value === 'upcoming') return t('nav.items.recurrencesUpcoming');
+    return t('recurrencesPage.title');
 });
 
 const canCreate = computed(() => accountsStore.accounts.some((item) => canWriteRecurringOnAccount(item)));
@@ -81,17 +81,15 @@ const dueSettlementItems = computed(() => [
 
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
-    const tabValue = 'tab' in patch ? patch.tab : queryString('tab') || undefined;
     const account = 'account' in patch ? patch.account : queryString('account') || undefined;
     const kind = 'kind' in patch ? patch.kind : queryString('kind') || undefined;
     const due = 'due' in patch ? patch.due : queryString('due') || undefined;
     const sort = 'sort' in patch ? patch.sort : queryString('sort') || undefined;
-    if (tabValue && (TABS as readonly string[]).includes(tabValue)) next.tab = tabValue;
     if (account) next.account = account;
     if (kind === 'expense' || kind === 'income') next.kind = kind;
     if (due === 'planned' || due === 'settled') next.due = due;
     if (sort && sort !== UPCOMING_DUE_SORT_DEFAULT && parseUpcomingDueSort(sort) === sort) next.sort = sort;
-    void router.replace({ query: next });
+    void router.replace({ path: route.path, query: next });
 }
 
 const filterAccountId = computed({
@@ -114,21 +112,18 @@ const listSort = computed({
     set: (value: string) => patchQuery({ sort: parseUpcomingDueSort(value) === UPCOMING_DUE_SORT_DEFAULT ? undefined : value })
 });
 
-watch(tab, (value) => {
-    if (queryString('tab') === value) return;
-    patchQuery({ tab: value });
-});
-
 watch(
-    () => queryString('tab'),
+    () => [route.path, queryString('tab')] as const,
     () => {
-        tab.value = tabFromQuery();
-    }
+        const raw = queryString('tab');
+        if (!(TABS as readonly string[]).includes(raw)) return;
+        const target = recurrencesPathForTab(raw as RecurrenceTab);
+        const nextQuery = { ...route.query };
+        delete nextQuery.tab;
+        void router.replace({ path: target, query: nextQuery });
+    },
+    { immediate: true }
 );
-
-function setTab(value: RecurrenceTab) {
-    tab.value = value;
-}
 
 function onCreate(kind?: RecurringKind) {
     if (!canCreate.value || store.acting) return;
@@ -160,33 +155,7 @@ const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ?
 </script>
 
 <template>
-    <AppPageShell :title="t('recurrencesPage.title')" :subtitle="t('recurrencesPage.subtitle')">
-        <template #tabs>
-            <AppFoldableTabs :aria-label="t('recurrencesPage.tabs.label')">
-                <button type="button" class="su-tab" :class="{ 'is-active': tab === 'all' }" @click="setTab('all')">
-                    <span class="su-tab__body">{{ t('recurrencesPage.tabs.all') }}</span>
-                </button>
-                <button type="button" class="su-tab" :class="{ 'is-active': tab === 'expenses' }" @click="setTab('expenses')">
-                    <span class="su-tab__body">
-                        <Receipt2Icon :size="16" stroke-width="1.7" />
-                        {{ t('recurrencesPage.tabs.expenses') }}
-                    </span>
-                </button>
-                <button type="button" class="su-tab" :class="{ 'is-active': tab === 'incomes' }" @click="setTab('incomes')">
-                    <span class="su-tab__body">
-                        <TrendingUpIcon :size="16" stroke-width="1.7" />
-                        {{ t('recurrencesPage.tabs.incomes') }}
-                    </span>
-                </button>
-                <button type="button" class="su-tab" :class="{ 'is-active': tab === 'upcoming' }" @click="setTab('upcoming')">
-                    <span class="su-tab__body">
-                        <CalendarEventIcon :size="16" stroke-width="1.7" />
-                        {{ t('recurrencesPage.tabs.upcoming') }}
-                    </span>
-                </button>
-            </AppFoldableTabs>
-        </template>
-
+    <AppPageShell :title="pageTitle" :subtitle="t('recurrencesPage.subtitle')">
         <template #toolbar>
             <div class="su-toolbar__actions">
                 <template v-if="tab === 'upcoming'">

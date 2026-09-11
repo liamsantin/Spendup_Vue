@@ -24,6 +24,7 @@ import {
     HomeHeartIcon,
     HomeIcon,
     LockIcon,
+    Receipt2Icon,
     ReceiptTaxIcon,
     RepeatIcon,
     ReportMoneyIcon,
@@ -36,6 +37,7 @@ import {
     WalletIcon
 } from 'vue-tabler-icons';
 import { useNotificationsStore } from '@/features/notifications';
+import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import DashboardRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/DashboardRailIcon.vue';
 import FinancesRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/FinancesRailIcon.vue';
@@ -52,6 +54,10 @@ export const SHELL_NAV_IDS = {
     transactions: 'transactions',
     import: 'import',
     recurrences: 'recurrences',
+    recurrencesOverview: 'recurrences-overview',
+    recurrencesExpenses: 'recurrences-expenses',
+    recurrencesIncomes: 'recurrences-incomes',
+    recurrencesUpcoming: 'recurrences-upcoming',
     gestion: 'gestion',
     files: 'files',
     tiers: 'tiers',
@@ -90,14 +96,23 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (path === '/app' || path === '/app/') {
         return { openId: SHELL_NAV_IDS.dashboard, activeId: SHELL_NAV_IDS.dashboard };
     }
+    if (pathIs(path, RECURRENCES_PATHS.charges)) {
+        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesExpenses };
+    }
+    if (pathIs(path, RECURRENCES_PATHS.revenus)) {
+        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesIncomes };
+    }
+    if (pathIs(path, RECURRENCES_PATHS.echeances)) {
+        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesUpcoming };
+    }
+    if (pathIs(path, RECURRENCES_PATHS.overview)) {
+        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesOverview };
+    }
     if (pathIs(path, '/app/finances/transactions')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.transactions };
     }
     if (pathIs(path, '/app/finances/moyens-de-paiement')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.paymentMethods };
-    }
-    if (pathIs(path, '/app/finances/recurrences')) {
-        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.recurrences };
     }
     if (pathIs(path, '/app/finances/comptes') || pathIs(path, '/app/finances')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.accounts };
@@ -169,8 +184,14 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.accounts, t('nav.items.accounts'), BuildingBankIcon, '/app/finances/comptes'),
         live(SHELL_NAV_IDS.paymentMethods, t('nav.items.paymentMethods'), CreditCardIcon, '/app/finances/moyens-de-paiement'),
         live(SHELL_NAV_IDS.transactions, t('nav.items.transactions'), ArrowsExchangeIcon, '/app/finances/transactions'),
-        live(SHELL_NAV_IDS.recurrences, t('nav.items.recurrences'), RepeatIcon, '/app/finances/recurrences'),
         upcoming(SHELL_NAV_IDS.import, t('nav.items.import'), FileImportIcon)
+    ]);
+
+    const recurrencesLeaves = computed<NavLeaf[]>(() => [
+        live(SHELL_NAV_IDS.recurrencesOverview, t('nav.items.recurrencesOverview'), RepeatIcon, RECURRENCES_PATHS.overview),
+        live(SHELL_NAV_IDS.recurrencesExpenses, t('nav.items.recurrencesExpenses'), Receipt2Icon, RECURRENCES_PATHS.charges),
+        live(SHELL_NAV_IDS.recurrencesIncomes, t('nav.items.recurrencesIncomes'), TrendingUpIcon, RECURRENCES_PATHS.revenus),
+        live(SHELL_NAV_IDS.recurrencesUpcoming, t('nav.items.recurrencesUpcoming'), CalendarEventIcon, RECURRENCES_PATHS.echeances)
     ]);
 
     const gestionLeaves = computed<NavLeaf[]>(() => [
@@ -217,6 +238,7 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardRailIcon, '/app'),
         upcoming(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarEventIcon),
         section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesRailIcon, financeLeaves.value),
+        section(SHELL_NAV_IDS.recurrences, t('nav.headers.recurrences'), RepeatIcon, recurrencesLeaves.value),
         section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), FolderIcon, gestionLeaves.value),
         section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), ChartPieIcon, planningLeaves.value),
         section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), BuildingIcon, wealthLeaves.value),

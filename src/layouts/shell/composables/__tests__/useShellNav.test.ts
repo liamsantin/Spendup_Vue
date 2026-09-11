@@ -31,9 +31,24 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.finances,
             activeId: SHELL_NAV_IDS.paymentMethods
         });
+    });
+
+    it('mappe les récurrences comme section principale', () => {
         expect(idsFromPath('/app/finances/recurrences')).toEqual({
-            openId: SHELL_NAV_IDS.finances,
-            activeId: SHELL_NAV_IDS.recurrences
+            openId: SHELL_NAV_IDS.recurrences,
+            activeId: SHELL_NAV_IDS.recurrencesOverview
+        });
+        expect(idsFromPath('/app/finances/recurrences/charges')).toEqual({
+            openId: SHELL_NAV_IDS.recurrences,
+            activeId: SHELL_NAV_IDS.recurrencesExpenses
+        });
+        expect(idsFromPath('/app/finances/recurrences/revenus')).toEqual({
+            openId: SHELL_NAV_IDS.recurrences,
+            activeId: SHELL_NAV_IDS.recurrencesIncomes
+        });
+        expect(idsFromPath('/app/finances/recurrences/echeances')).toEqual({
+            openId: SHELL_NAV_IDS.recurrences,
+            activeId: SHELL_NAV_IDS.recurrencesUpcoming
         });
     });
 

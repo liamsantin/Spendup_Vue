@@ -52,6 +52,8 @@ export {
     RECURRING_FILES_MAX,
     RECURRING_PAGE_SIZE_MAX
 } from '@/features/recurring-payments/types';
+export { RECURRENCES_BASE, RECURRENCES_PATHS, recurrencesPathForTab, recurrencesTabFromPath } from '@/features/recurring-payments/paths';
+export type { RecurrenceTab } from '@/features/recurring-payments/paths';
 export { default as RecurringTemplatesDirectory } from '@/features/recurring-payments/components/RecurringTemplatesDirectory.vue';
 export { default as RecurringUpcomingPanel } from '@/features/recurring-payments/components/RecurringUpcomingPanel.vue';
 export { default as RecurringTemplateFormModal } from '@/features/recurring-payments/components/modals/RecurringTemplateFormModal.vue';

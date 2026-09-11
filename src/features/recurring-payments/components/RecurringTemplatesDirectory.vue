@@ -9,6 +9,7 @@ import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import RecurringTemplateListItem from '@/features/recurring-payments/components/list/RecurringTemplateListItem.vue';
 import RecurringTemplateDetailModal from '@/features/recurring-payments/components/modals/RecurringTemplateDetailModal.vue';
 import RecurringTemplateFormModal from '@/features/recurring-payments/components/modals/RecurringTemplateFormModal.vue';
+import { recurrencesPathForTab } from '@/features/recurring-payments/paths';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { isExpenseTemplate, sortTemplates } from '@/features/recurring-payments/format';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
@@ -121,7 +122,7 @@ async function loadList(force = false) {
         const err = AppError.fromUnknown(e);
         if (err.status === 404) {
             localError.value = t('recurrencesPage.errors.notFound');
-            if (filterAccountId.value) await router.replace({ path: '/app/finances/recurrences' });
+            if (filterAccountId.value) await router.replace({ path: recurrencesPathForTab('all') });
             return;
         }
         localError.value = getErrorMessage(e);

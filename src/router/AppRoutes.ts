@@ -49,6 +49,21 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/finances/payment-methods/AppPaymentMethodsPage.vue')
         },
         {
+            name: 'AppRecurrencesCharges',
+            path: 'finances/recurrences/charges',
+            component: () => import('@/views/app/finances/recurrences/AppRecurrencesPage.vue')
+        },
+        {
+            name: 'AppRecurrencesIncomes',
+            path: 'finances/recurrences/revenus',
+            component: () => import('@/views/app/finances/recurrences/AppRecurrencesPage.vue')
+        },
+        {
+            name: 'AppRecurrencesUpcoming',
+            path: 'finances/recurrences/echeances',
+            component: () => import('@/views/app/finances/recurrences/AppRecurrencesPage.vue')
+        },
+        {
             name: 'AppRecurrences',
             path: 'finances/recurrences',
             component: () => import('@/views/app/finances/recurrences/AppRecurrencesPage.vue')
