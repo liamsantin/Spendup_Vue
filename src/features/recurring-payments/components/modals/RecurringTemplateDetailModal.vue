@@ -444,6 +444,7 @@ function seeRelatedTransactions() {
 
 .recurring-detail-dues__group {
     overflow: visible;
+    box-shadow: none;
 }
 
 .recurring-detail-dues__group :deep(.su-panel__head) {
