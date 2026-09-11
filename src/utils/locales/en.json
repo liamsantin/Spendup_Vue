@@ -706,6 +706,11 @@
             "duesTitle": "Dues",
             "duesEmpty": "No dues materialized yet.",
             "filesTitle": "PDF attachments",
+            "filesIncomeEmpty": "PDF attachments are only available on recurring expenses.",
+            "tabs": {
+                "dues": "Dues",
+                "attachments": "Attachments"
+            },
             "seeTransactions": "View linked transactions"
         },
         "deleteModal": {

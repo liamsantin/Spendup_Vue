@@ -105,6 +105,17 @@ export function createTransactionsCrud(state: TransactionsState) {
         error.value = TRANSACTION_NOT_FOUND_MESSAGE;
     }
 
+    async function notifyRecurringDuesAfterTransactionRemoved(publicId: string, known?: Transaction) {
+        const { useRecurringPaymentsStore } = await import('@/features/recurring-payments/stores/recurring-payments-store');
+        await useRecurringPaymentsStore()
+            .syncDuesAfterTransactionRemoved({
+                transactionPublicId: publicId,
+                recurringExpensePublicId: known?.recurringExpensePublicId,
+                recurringIncomePublicId: known?.recurringIncomePublicId
+            })
+            .catch(() => undefined);
+    }
+
     function touchHydratedListCaches() {
         for (const key of itemsByListKey.keys()) {
             cache.touch(key);
@@ -381,11 +392,13 @@ export function createTransactionsCrud(state: TransactionsState) {
             removeItemLocal(publicId);
             touchHydratedListCaches();
             await refreshAccountBalances(accountIds);
+            await notifyRecurringDuesAfterTransactionRemoved(publicId, known);
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
             if (err.status === 404) {
                 rememberNotFound();
                 removeItemLocal(publicId);
+                await notifyRecurringDuesAfterTransactionRemoved(publicId, known);
             } else {
                 error.value = err.message;
             }

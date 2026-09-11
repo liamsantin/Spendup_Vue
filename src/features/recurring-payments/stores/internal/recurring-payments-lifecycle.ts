@@ -30,6 +30,8 @@ export function createRecurringPaymentsLifecycle(state: RecurringPaymentsState, 
         state.incomesByKey.clear();
         state.details.clear();
         state.duesByTemplate.clear();
+        state.detailsEpoch.value += 1;
+        state.duesEpoch.value += 1;
         state.activateExpenseList(listCacheKey('expense'));
         state.activateIncomeList(listCacheKey('income'));
         state.expenses.value = [];

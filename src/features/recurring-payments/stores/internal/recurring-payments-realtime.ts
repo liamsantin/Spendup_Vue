@@ -42,8 +42,12 @@ export function createRecurringPaymentsRealtime(state: RecurringPaymentsState, d
         ) {
             return;
         }
-        for (const key of state.details.keys()) {
-            const [kind, publicId] = key.split(':');
+        const keys = new Set([...state.details.keys(), ...state.duesByTemplate.keys()]);
+        for (const key of keys) {
+            const colon = key.indexOf(':');
+            if (colon < 0) continue;
+            const kind = key.slice(0, colon);
+            const publicId = key.slice(colon + 1);
             if ((kind === 'expense' || kind === 'income') && publicId) {
                 if (kind === 'expense') void getExpense(publicId, true).catch(() => undefined);
                 else void getIncome(publicId, true).catch(() => undefined);

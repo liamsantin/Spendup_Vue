@@ -706,6 +706,11 @@
             "duesTitle": "Échéances",
             "duesEmpty": "Aucune échéance matérialisée.",
             "filesTitle": "Justificatifs PDF",
+            "filesIncomeEmpty": "Les justificatifs PDF ne sont disponibles que pour les charges.",
+            "tabs": {
+                "dues": "Échéances",
+                "attachments": "Justificatifs"
+            },
             "seeTransactions": "Voir les transactions liées"
         },
         "deleteModal": {

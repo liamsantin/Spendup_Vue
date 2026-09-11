@@ -55,12 +55,23 @@ export function isExpenseTemplate(item: RecurringExpense | RecurringIncome): ite
     return 'expenseType' in item;
 }
 
-export function displayDueStatus(due: Pick<RecurringDue, 'status' | 'scheduledAt'>, kind: RecurringKind, now = new Date()): string {
+export function displayDueStatus(
+    due: Pick<RecurringDue, 'status' | 'scheduledAt' | 'transactionPublicId'>,
+    kind: RecurringKind,
+    now = new Date()
+): string {
     const status = due.status?.trim() || '';
     const closed =
         kind === 'expense'
             ? status === 'payee' || status === 'canceled'
             : status === 'encaisse' || status === 'annule' || status === 'partiel';
+    if (closed && due.transactionPublicId) return status;
+    if (closed && !due.transactionPublicId && (status === 'payee' || status === 'encaisse' || status === 'partiel')) {
+        if (isValidYmd(due.scheduledAt) && due.scheduledAt.trim() < todayLocalYmd(now)) {
+            return kind === 'expense' ? 'enRetard' : 'retard';
+        }
+        return kind === 'expense' ? 'prevue' : 'prevu';
+    }
     if (closed) return status;
     if (isValidYmd(due.scheduledAt) && due.scheduledAt.trim() < todayLocalYmd(now)) {
         return kind === 'expense' ? 'enRetard' : 'retard';
@@ -82,8 +93,18 @@ export function isDueOpen(
 }
 
 export function isDueSettled(due: Pick<RecurringDue, 'status' | 'transactionPublicId'>, kind: RecurringKind): boolean {
-    if (due.transactionPublicId) return true;
-    return kind === 'expense' ? due.status === 'payee' : due.status === 'encaisse';
+    if (!due.transactionPublicId) return false;
+    return kind === 'expense' ? due.status === 'payee' : due.status === 'encaisse' || due.status === 'partiel';
+}
+
+/** Delete TX née d’une due : l’échéance redevient prévue (contrat V1). */
+export function dueAfterLinkedTransactionRemoved(due: RecurringDue, kind: RecurringKind): RecurringDue {
+    return {
+        ...due,
+        transactionPublicId: null,
+        actualAmount: null,
+        status: kind === 'expense' ? 'prevue' : 'prevu'
+    };
 }
 
 export function sortTemplates<T extends { nextDueDate: string | null; name: string }>(items: readonly T[]): T[] {

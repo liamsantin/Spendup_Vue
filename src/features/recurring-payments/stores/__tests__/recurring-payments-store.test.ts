@@ -140,6 +140,44 @@ describe('useRecurringPaymentsStore', () => {
         expect(store.expenses.some((item) => item.publicId === 're-1')).toBe(true);
     });
 
+    it('rouvre les dues liées après suppression de la transaction', async () => {
+        const paidDue = {
+            publicId: 'due-1',
+            scheduledAt: '2026-09-11',
+            plannedAmount: 1500,
+            actualAmount: 1500,
+            status: 'payee',
+            transactionPublicId: 'tx-1',
+            notes: null
+        };
+        const reopenedDue = { ...paidDue, actualAmount: null, status: 'prevue', transactionPublicId: null };
+        expensesApi.listDues.mockResolvedValueOnce({ items: [paidDue], page: 1, pageSize: 50, totalCount: 1 });
+        expensesApi.listDues.mockResolvedValueOnce({ items: [reopenedDue], page: 1, pageSize: 50, totalCount: 1 });
+        expensesApi.get.mockResolvedValue(rent);
+        const store = useRecurringPaymentsStore();
+        await store.loadDues('expense', 're-1');
+        expect(store.getDues('expense', 're-1')[0]?.transactionPublicId).toBe('tx-1');
+        await store.syncDuesAfterTransactionRemoved({ transactionPublicId: 'tx-1', recurringExpensePublicId: 're-1' });
+        expect(store.getDues('expense', 're-1')[0]?.transactionPublicId).toBeNull();
+        expect(store.getDues('expense', 're-1')[0]?.status).toBe('prevue');
+    });
+
+    it('hydrate les dues depuis le GET détail', async () => {
+        const due = {
+            publicId: 'due-1',
+            scheduledAt: '2026-09-11',
+            plannedAmount: 1500,
+            actualAmount: null,
+            status: 'prevue',
+            transactionPublicId: null,
+            notes: null
+        };
+        expensesApi.get.mockResolvedValue({ ...rent, upcomingDues: [due] });
+        const store = useRecurringPaymentsStore();
+        await store.getExpense('re-1', true);
+        expect(store.getDues('expense', 're-1')).toEqual([due]);
+    });
+
     it('onAuthenticatedSession branche le realtime sans charger', () => {
         const store = useRecurringPaymentsStore();
         store.onAuthenticatedSession();

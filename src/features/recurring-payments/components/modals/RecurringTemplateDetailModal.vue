@@ -2,10 +2,11 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { EyeIcon } from 'vue-tabler-icons';
+import { CalendarEventIcon, EyeIcon, PaperclipIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
-import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
+import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useFilesStore } from '@/features/files/stores/files-store';
@@ -53,14 +54,39 @@ const skipDue = ref<RecurringDue | null>(null);
 const previewFile = ref<RecurringFile | null>(null);
 const uploading = ref(false);
 const txTarget = ref<Transaction | null>(null);
+const activeTab = ref<'dues' | 'attachments'>('dues');
+
+const attachedFiles = computed(() => expense.value?.files ?? []);
+
+const detailTabs = computed(() => [
+    { value: 'dues' as const, label: t('recurrencesPage.detail.tabs.dues'), icon: CalendarEventIcon },
+    {
+        value: 'attachments' as const,
+        label: t('recurrencesPage.detail.tabs.attachments'),
+        icon: PaperclipIcon,
+        chip: attachedFiles.value.length || undefined
+    }
+]);
 
 const open = computed({
     get: () => props.modelValue && !!props.publicId,
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
-const template = computed(() => (props.publicId ? store.getDetail(props.kind, props.publicId) : null));
-const dues = computed(() => (props.publicId ? store.getDues(props.kind, props.publicId) : []));
+const visibleDues = ref<RecurringDue[]>([]);
+
+const template = computed(() => {
+    void store.detailsEpoch;
+    return props.publicId ? store.getDetail(props.kind, props.publicId) : null;
+});
+const dues = computed(() => {
+    void store.duesEpoch;
+    if (!props.publicId) return visibleDues.value;
+    const loaded = store.getDues(props.kind, props.publicId);
+    if (loaded.length) return loaded;
+    if (visibleDues.value.length) return visibleDues.value;
+    return template.value?.upcomingDues ?? [];
+});
 const expense = computed(() => (template.value && isExpenseTemplate(template.value) ? template.value : null));
 
 const account = computed(() =>
@@ -98,9 +124,11 @@ async function loadDetail() {
     if (!props.publicId) return;
     localError.value = null;
     try {
-        if (props.kind === 'expense') await store.getExpense(props.publicId, true);
-        else await store.getIncome(props.publicId, true);
-        await store.loadDues(props.kind, props.publicId, { force: true });
+        const detail =
+            props.kind === 'expense' ? await store.getExpense(props.publicId, true) : await store.getIncome(props.publicId, true);
+        visibleDues.value = detail.upcomingDues ?? store.getDues(props.kind, props.publicId);
+        const items = await store.loadDues(props.kind, props.publicId, { force: true });
+        visibleDues.value = items.length ? items : (store.getDues(props.kind, props.publicId) ?? []);
         if (props.kind === 'expense') {
             await filesStore.loadList().catch(() => undefined);
             await filesStore.loadUsage().catch(() => undefined);
@@ -115,9 +143,12 @@ async function loadDetail() {
 watch(
     () => [props.modelValue, props.publicId, props.kind] as const,
     ([value]) => {
+        visibleDues.value = [];
         if (!value) return;
+        activeTab.value = 'dues';
         void loadDetail();
-    }
+    },
+    { immediate: true }
 );
 
 function statusLabel(due: RecurringDue) {
@@ -213,14 +244,14 @@ function seeRelatedTransactions() {
 </script>
 
 <template>
-    <AppModalBase
+    <AppModalTabs
         v-model="open"
+        v-model:tab="activeTab"
         :title="template?.name || t('recurrencesPage.detail.title')"
         :subtitle="t('recurrencesPage.detail.subtitle')"
+        :tabs="detailTabs"
         :max-width="760"
         :height="780"
-        scrollable
-        mobile-layout="fullscreen"
     >
         <AppAlert
             v-if="localError || store.error"
@@ -236,53 +267,59 @@ function seeRelatedTransactions() {
         </AppAlert>
 
         <div v-if="store.loadingDetail && !template" class="su-loading"><span class="su-spin" /></div>
-        <template v-else-if="template">
-            <p class="text-medium-emphasis mb-4">
-                {{ formatPlannedAmount(template.plannedAmount, template.currency, locale) }}
-                ·
-                {{
-                    kind === 'expense'
-                        ? t(`recurrencesPage.expenseFrequencies.${template.frequency}`)
-                        : t(`recurrencesPage.incomeFrequencies.${template.frequency}`)
-                }}
-                · {{ account?.name || t('recurrencesPage.unknownAccount') }}
-            </p>
-            <p v-if="!template.isActive" class="text-caption text-warning mb-4">{{ t('recurrencesPage.form.pauseHint') }}</p>
 
-            <h3 class="text-h6 mb-2">{{ t('recurrencesPage.detail.duesTitle') }}</h3>
-            <div v-if="store.loadingDues && !dues.length" class="su-loading"><span class="su-spin" /></div>
-            <p v-else-if="!dues.length" class="text-medium-emphasis">{{ t('recurrencesPage.detail.duesEmpty') }}</p>
-            <v-list v-else class="py-0 mb-4">
-                <div v-for="due in dues" :key="due.publicId" class="su-person">
-                    <div class="su-person__meta">
-                        <p class="su-person__name">{{ formatCalendarDate(due.scheduledAt, locale) }}</p>
-                        <p class="su-person__sub">{{ statusLabel(due) }} · {{ dueAmount(due) }}</p>
-                    </div>
-                    <div class="su-person__actions">
-                        <template v-if="isDueOpen(due, kind) && canConfirm">
-                            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="confirmDue = due">
-                                {{ t('recurrencesPage.actions.confirmDue') }}
-                            </button>
-                            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="skipDue = due">
-                                {{ t('recurrencesPage.actions.skipDue') }}
-                            </button>
-                        </template>
-                        <button
-                            v-else-if="isDueSettled(due, kind) && due.transactionPublicId"
-                            type="button"
-                            class="su-btn"
-                            @click="openTransaction(due)"
-                        >
-                            {{ t('recurrencesPage.actions.openTransaction') }}
-                        </button>
-                    </div>
-                </div>
-            </v-list>
+        <template #panel-dues>
+            <AppModalPanelScroll>
+                <template v-if="template">
+                    <p class="text-medium-emphasis mb-4">
+                        {{ formatPlannedAmount(template.plannedAmount, template.currency, locale) }}
+                        ·
+                        {{
+                            kind === 'expense'
+                                ? t(`recurrencesPage.expenseFrequencies.${template.frequency}`)
+                                : t(`recurrencesPage.incomeFrequencies.${template.frequency}`)
+                        }}
+                        · {{ account?.name || t('recurrencesPage.unknownAccount') }}
+                    </p>
+                    <p v-if="!template.isActive" class="text-caption text-warning mb-4">{{ t('recurrencesPage.form.pauseHint') }}</p>
 
-            <section v-if="expense" class="mt-6">
-                <h3 class="text-h6 mb-2">{{ t('recurrencesPage.detail.filesTitle') }}</h3>
+                    <div v-if="store.loadingDues && !dues.length" class="su-loading"><span class="su-spin" /></div>
+                    <p v-else-if="!dues.length" class="text-medium-emphasis">{{ t('recurrencesPage.detail.duesEmpty') }}</p>
+                    <div v-else class="recurring-detail-dues">
+                        <div v-for="due in dues" :key="due.publicId" class="su-person">
+                            <div class="su-person__meta">
+                                <p class="su-person__name">{{ formatCalendarDate(due.scheduledAt, locale) }}</p>
+                                <p class="su-person__sub">{{ statusLabel(due) }} · {{ dueAmount(due) }}</p>
+                            </div>
+                            <div class="su-person__actions">
+                                <template v-if="isDueOpen(due, kind) && canConfirm">
+                                    <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="confirmDue = due">
+                                        {{ t('recurrencesPage.actions.confirmDue') }}
+                                    </button>
+                                    <button type="button" class="su-btn su-btn--danger" :disabled="store.acting" @click="skipDue = due">
+                                        {{ t('recurrencesPage.actions.skipDue') }}
+                                    </button>
+                                </template>
+                                <button
+                                    v-else-if="isDueSettled(due, kind) && due.transactionPublicId"
+                                    type="button"
+                                    class="su-btn"
+                                    @click="openTransaction(due)"
+                                >
+                                    {{ t('recurrencesPage.actions.openTransaction') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </AppModalPanelScroll>
+        </template>
+
+        <template #panel-attachments>
+            <AppModalPanelScroll>
                 <TransactionAttachments
-                    :files="expense.files"
+                    v-if="expense"
+                    :files="attachedFiles"
                     :library="filesStore.items"
                     :can-edit="canConfirm"
                     :uploading="uploading"
@@ -292,7 +329,8 @@ function seeRelatedTransactions() {
                     @detach="onDetach"
                     @open="previewFile = $event"
                 />
-            </section>
+                <p v-else class="text-medium-emphasis">{{ t('recurrencesPage.detail.filesIncomeEmpty') }}</p>
+            </AppModalPanelScroll>
         </template>
 
         <template #footer="{ close }">
@@ -303,7 +341,7 @@ function seeRelatedTransactions() {
             <button type="button" class="su-btn" @click="emit('edit')">{{ t('recurrencesPage.actions.edit') }}</button>
             <button type="button" class="su-btn su-btn--ink" @click="close">{{ t('common.close') }}</button>
         </template>
-    </AppModalBase>
+    </AppModalTabs>
 
     <RecurringDueConfirmModal
         v-model="confirmOpen"
@@ -320,6 +358,7 @@ function seeRelatedTransactions() {
         :title="t('recurrencesPage.skipModal.title')"
         :message="t('recurrencesPage.skipModal.body')"
         :confirm-label="t('recurrencesPage.actions.skipDue')"
+        confirm-color="error"
         :loading="store.acting"
         @confirm="onSkip"
     />
@@ -327,3 +366,11 @@ function seeRelatedTransactions() {
     <TransactionFilePreviewModal v-model="previewOpen" :file="previewFile" />
     <TransactionFormModal v-model="txOpen" :transaction="txTarget" @saved="loadDetail" />
 </template>
+
+<style scoped>
+.recurring-detail-dues {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+</style>

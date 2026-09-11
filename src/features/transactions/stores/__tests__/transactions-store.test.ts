@@ -51,6 +51,12 @@ vi.mock('@/features/notifications', () => ({
     })
 }));
 
+vi.mock('@/features/recurring-payments/stores/recurring-payments-store', () => ({
+    useRecurringPaymentsStore: () => ({
+        syncDuesAfterTransactionRemoved: vi.fn().mockResolvedValue(undefined)
+    })
+}));
+
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 
 const ownedAccount: Account = {

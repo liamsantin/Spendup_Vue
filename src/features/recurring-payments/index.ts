@@ -11,6 +11,7 @@ export {
     displayDueStatus,
     isDueOpen,
     isDueSettled,
+    dueAfterLinkedTransactionRemoved,
     isExpenseTemplate,
     sortTemplates,
     sortDues

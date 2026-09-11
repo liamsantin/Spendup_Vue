@@ -11,6 +11,7 @@ import {
     type ConfirmDueFormFields,
     type RecurringTemplateFormFields
 } from '@/features/recurring-payments/payload';
+import { dueAfterLinkedTransactionRemoved } from '@/features/recurring-payments/format';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import {
     RECURRING_PAGE_SIZE_DEFAULT,
@@ -105,7 +106,9 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         removeExpenseLocal,
         removeIncomeLocal,
         setDues,
-        upsertDue
+        upsertDue,
+        duesByTemplate,
+        getDues
     } = state;
 
     let expenseListSeq = 0;
@@ -350,6 +353,9 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
             if (cached && !force && 'files' in cached) return cached as RecurringExpense;
             const detail = await recurringExpensesApi.get(publicId);
             upsertExpense(detail);
+            if (detail.upcomingDues?.length && !getDues('expense', publicId).length) {
+                setDues('expense', publicId, detail.upcomingDues);
+            }
             return detail;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
@@ -373,6 +379,9 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
             if (cached && !force && 'incomeType' in cached && cached.upcomingDues?.length) return cached as RecurringIncome;
             const detail = await recurringIncomesApi.get(publicId);
             upsertIncome(detail);
+            if (detail.upcomingDues?.length && !getDues('income', publicId).length) {
+                setDues('income', publicId, detail.upcomingDues);
+            }
             return detail;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
@@ -625,6 +634,46 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         }
     }
 
+    async function syncDuesAfterTransactionRemoved(input: {
+        transactionPublicId: string;
+        recurringExpensePublicId?: string | null;
+        recurringIncomePublicId?: string | null;
+    }) {
+        const txId = input.transactionPublicId.trim();
+        if (!txId) return;
+
+        const targets = new Map<string, RecurringKind>();
+        const expenseId = input.recurringExpensePublicId?.trim();
+        const incomeId = input.recurringIncomePublicId?.trim();
+        if (expenseId) targets.set(expenseId, 'expense');
+        if (incomeId) targets.set(incomeId, 'income');
+
+        for (const [key, entry] of duesByTemplate.entries()) {
+            const colon = key.indexOf(':');
+            if (colon < 0) continue;
+            const kind = key.slice(0, colon) as RecurringKind;
+            const templatePublicId = key.slice(colon + 1);
+            if (kind !== 'expense' && kind !== 'income') continue;
+            for (const due of entry.items) {
+                if (due.transactionPublicId !== txId) continue;
+                upsertDue(kind, templatePublicId, dueAfterLinkedTransactionRemoved(due, kind));
+                targets.set(templatePublicId, kind);
+            }
+        }
+
+        await Promise.all(
+            [...targets.entries()].map(async ([publicId, kind]) => {
+                if (kind === 'expense') await getExpense(publicId, true).catch(() => undefined);
+                else await getIncome(publicId, true).catch(() => undefined);
+                await loadDues(kind, publicId, { force: true }).catch(() => undefined);
+                const stillLinked = getDues(kind, publicId).filter((due) => due.transactionPublicId === txId);
+                for (const due of stillLinked) {
+                    upsertDue(kind, publicId, dueAfterLinkedTransactionRemoved(due, kind));
+                }
+            })
+        );
+    }
+
     async function refetchKind(kind: RecurringKind) {
         state.invalidateKind(kind);
         if (kind === 'expense' && initializedExpenses.value) {
@@ -666,6 +715,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         skipDue,
         attachExpenseFile,
         detachExpenseFile,
+        syncDuesAfterTransactionRemoved,
         refetchKind,
         assertCanWriteAccount
     };

@@ -42,6 +42,8 @@ export function createRecurringPaymentsState() {
 
     const details = new Map<string, RecurringExpense | RecurringIncome>();
     const duesByTemplate = new Map<string, RecurringCacheEntry<RecurringDue>>();
+    const detailsEpoch = ref(0);
+    const duesEpoch = ref(0);
 
     const loadingExpenses = ref(false);
     const loadingIncomes = ref(false);
@@ -149,6 +151,7 @@ export function createRecurringPaymentsState() {
 
     function upsertExpense(item: RecurringExpense) {
         details.set(`expense:${item.publicId}`, item);
+        detailsEpoch.value += 1;
         const keys = new Set<string>([listCacheKey('expense'), listCacheKey('expense', item.accountPublicId), ...expensesByKey.keys()]);
         for (const key of keys) {
             const entry = expensesByKey.get(key);
@@ -168,6 +171,7 @@ export function createRecurringPaymentsState() {
 
     function upsertIncome(item: RecurringIncome) {
         details.set(`income:${item.publicId}`, item);
+        detailsEpoch.value += 1;
         const keys = new Set<string>([listCacheKey('income'), listCacheKey('income', item.accountPublicId), ...incomesByKey.keys()]);
         for (const key of keys) {
             const entry = incomesByKey.get(key);
@@ -188,6 +192,8 @@ export function createRecurringPaymentsState() {
     function removeExpenseLocal(publicId: string) {
         details.delete(`expense:${publicId}`);
         duesByTemplate.delete(`expense:${publicId}`);
+        detailsEpoch.value += 1;
+        duesEpoch.value += 1;
         for (const [key, entry] of expensesByKey.entries()) {
             const nextItems = entry.items.filter((row) => row.publicId !== publicId);
             if (nextItems.length === entry.items.length) continue;
@@ -198,6 +204,8 @@ export function createRecurringPaymentsState() {
     function removeIncomeLocal(publicId: string) {
         details.delete(`income:${publicId}`);
         duesByTemplate.delete(`income:${publicId}`);
+        detailsEpoch.value += 1;
+        duesEpoch.value += 1;
         for (const [key, entry] of incomesByKey.entries()) {
             const nextItems = entry.items.filter((row) => row.publicId !== publicId);
             if (nextItems.length === entry.items.length) continue;
@@ -219,6 +227,7 @@ export function createRecurringPaymentsState() {
             pageSize: meta?.pageSize ?? prev?.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT,
             totalCount: meta?.totalCount ?? prev?.totalCount ?? items.length
         });
+        duesEpoch.value += 1;
     }
 
     function upsertDue(kind: RecurringKind, templatePublicId: string, due: RecurringDue) {
@@ -236,10 +245,12 @@ export function createRecurringPaymentsState() {
     }
 
     function getDetail(kind: RecurringKind, publicId: string): RecurringExpense | RecurringIncome | null {
+        void detailsEpoch.value;
         return details.get(`${kind}:${publicId}`) ?? null;
     }
 
     function getDues(kind: RecurringKind, publicId: string): RecurringDue[] {
+        void duesEpoch.value;
         return duesByTemplate.get(`${kind}:${publicId}`)?.items ?? [];
     }
 
@@ -266,6 +277,8 @@ export function createRecurringPaymentsState() {
         incomeTotalCount,
         details,
         duesByTemplate,
+        detailsEpoch,
+        duesEpoch,
         loadingExpenses,
         loadingIncomes,
         loadingMoreExpenses,
