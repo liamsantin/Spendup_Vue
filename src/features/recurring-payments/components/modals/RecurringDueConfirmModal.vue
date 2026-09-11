@@ -123,63 +123,50 @@ async function onConfirm() {
             {{ localError.message }}
         </AppAlert>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="4" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('recurrencesPage.confirm.fields.paymentDate') }}</label>
-            </v-col>
-            <v-col cols="12" sm="8">
-                <AppDatePicker
-                    v-model="paymentDateModel"
-                    :max="todayLocalYmd()"
-                    :error="!!fieldErrors.paymentDate"
-                    :error-messages="fieldErrors.paymentDate || undefined"
-                />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="4" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="rec-confirm-amount">{{ t('recurrencesPage.confirm.fields.amount') }}</label>
-            </v-col>
-            <v-col cols="12" sm="8">
-                <v-text-field
-                    id="rec-confirm-amount"
-                    :model-value="form.amount"
-                    color="primary"
-                    variant="outlined"
-                    hide-details="auto"
-                    inputmode="decimal"
-                    :error="!!fieldErrors.amount"
-                    :error-messages="fieldErrors.amount || undefined"
-                    @update:model-value="onAmountInput"
-                />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="4" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('recurrencesPage.form.fields.paymentMethod') }}</label>
-            </v-col>
-            <v-col cols="12" sm="8">
-                <AppSelect v-model="form.paymentMethodPublicId" :items="paymentMethodItems" hide-details="auto" />
-            </v-col>
-        </v-row>
-        <v-row class="align-start" no-gutters>
-            <v-col cols="12" sm="4" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="rec-confirm-notes">{{ t('recurrencesPage.form.fields.notes') }}</label>
-            </v-col>
-            <v-col cols="12" sm="8">
-                <v-textarea
-                    id="rec-confirm-notes"
-                    v-model="form.notes"
-                    color="primary"
-                    variant="outlined"
-                    hide-details="auto"
-                    rows="3"
-                    :maxlength="RECURRING_NOTES_MAX"
-                    :error="!!fieldErrors.notes"
-                    :error-messages="fieldErrors.notes || undefined"
-                />
-            </v-col>
-        </v-row>
+        <div class="mb-2">
+            <AppDatePicker
+                v-model="paymentDateModel"
+                :label="t('recurrencesPage.confirm.fields.paymentDate')"
+                :max="todayLocalYmd()"
+                color="primary"
+                hide-details
+                :clearable="false"
+            />
+            <div v-if="fieldErrors.paymentDate" class="text-caption text-error mt-1">{{ fieldErrors.paymentDate }}</div>
+        </div>
+        <v-text-field
+            :model-value="form.amount"
+            :label="t('recurrencesPage.confirm.fields.amount')"
+            color="primary"
+            variant="outlined"
+            density="comfortable"
+            class="mb-2"
+            hide-details="auto"
+            inputmode="decimal"
+            :error="!!fieldErrors.amount"
+            :error-messages="fieldErrors.amount || undefined"
+            @update:model-value="onAmountInput"
+        />
+        <div class="mb-2">
+            <AppSelect
+                v-model="form.paymentMethodPublicId"
+                :label="t('recurrencesPage.form.fields.paymentMethod')"
+                :items="paymentMethodItems"
+                hide-details="auto"
+            />
+        </div>
+        <v-textarea
+            v-model="form.notes"
+            :label="t('recurrencesPage.form.fields.notes')"
+            color="primary"
+            variant="outlined"
+            density="comfortable"
+            hide-details="auto"
+            rows="3"
+            :maxlength="RECURRING_NOTES_MAX"
+            :error="!!fieldErrors.notes"
+            :error-messages="fieldErrors.notes || undefined"
+        />
 
         <template #footer="{ close }">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">{{ t('common.cancel') }}</button>
