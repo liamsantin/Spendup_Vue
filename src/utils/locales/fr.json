@@ -731,8 +731,8 @@
             "subtitle": "Échéances générées. Confirmez pour créer une transaction.",
             "duesTitle": "Échéances",
             "duesEmpty": "Aucune échéance matérialisée.",
-            "duesExisting": "Transaction existante",
-            "duesUpcoming": "À venir",
+            "duesExisting": "Transactions existantes",
+            "duesUpcoming": "Transactions à venir",
             "filesTitle": "Justificatifs PDF",
             "filesIncomeEmpty": "Les justificatifs PDF ne sont disponibles que pour les charges.",
             "tabs": {

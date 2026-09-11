@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { CalendarEventIcon, CheckIcon, EyeIcon, PaperclipIcon } from 'vue-tabler-icons';
+import AppAccordion from '@/components/shared/accordion/AppAccordion.vue';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
@@ -76,6 +77,7 @@ const open = computed({
 });
 
 const visibleDues = ref<RecurringDue[]>([]);
+const groupOpen = reactive({ existing: true, upcoming: true });
 
 const template = computed(() => {
     void store.detailsEpoch;
@@ -153,6 +155,8 @@ watch(
     () => [props.modelValue, props.publicId, props.kind] as const,
     ([value]) => {
         visibleDues.value = [];
+        groupOpen.existing = true;
+        groupOpen.upcoming = true;
         if (!value) return;
         activeTab.value = 'dues';
         void loadDetail();
@@ -311,12 +315,15 @@ function seeRelatedTransactions() {
                     <div v-if="store.loadingDues && !dues.length" class="su-loading"><span class="su-spin" /></div>
                     <p v-else-if="!dues.length" class="text-medium-emphasis">{{ t('recurrencesPage.detail.duesEmpty') }}</p>
                     <div v-else class="su-stack recurring-detail-dues">
-                        <section v-for="group in dueGroups" :key="group.key" class="su-surface recurring-detail-dues__group">
-                            <header class="su-panel__head">
-                                <div>
-                                    <h2>{{ group.title }}</h2>
-                                </div>
-                            </header>
+                        <AppAccordion
+                            v-for="group in dueGroups"
+                            :key="group.key"
+                            v-model="groupOpen[group.key]"
+                            :title="group.title"
+                        >
+                            <template #extra>
+                                <span class="recurring-detail-dues__count">{{ group.items.length }}</span>
+                            </template>
                             <div class="recurring-detail-dues__list">
                                 <div
                                     v-for="due in group.items"
@@ -379,7 +386,7 @@ function seeRelatedTransactions() {
                                     </div>
                                 </div>
                             </div>
-                        </section>
+                        </AppAccordion>
                     </div>
                 </template>
             </AppModalPanelScroll>
@@ -442,13 +449,14 @@ function seeRelatedTransactions() {
     gap: 12px;
 }
 
-.recurring-detail-dues__group {
-    overflow: visible;
-    box-shadow: none;
+.recurring-detail-dues :deep(.app-accordion.is-open) {
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
 }
 
-.recurring-detail-dues__group :deep(.su-panel__head) {
-    padding: 6px 8px 2px;
+.recurring-detail-dues__count {
+    color: var(--ink-muted);
+    font-size: 12.5px;
+    font-weight: 650;
 }
 
 .recurring-detail-dues__list {
@@ -456,7 +464,7 @@ function seeRelatedTransactions() {
     flex-direction: column;
     gap: 2px;
     overflow: visible;
-    padding: 4px;
+    margin: 0 -6px;
 }
 
 .recurring-due-row {

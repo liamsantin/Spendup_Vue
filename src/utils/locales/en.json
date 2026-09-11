@@ -731,8 +731,8 @@
             "subtitle": "Generated dues. Confirm to create a transaction.",
             "duesTitle": "Dues",
             "duesEmpty": "No dues materialized yet.",
-            "duesExisting": "Existing transaction",
-            "duesUpcoming": "Upcoming",
+            "duesExisting": "Existing transactions",
+            "duesUpcoming": "Upcoming transactions",
             "filesTitle": "PDF attachments",
             "filesIncomeEmpty": "PDF attachments are only available on recurring expenses.",
             "tabs": {
