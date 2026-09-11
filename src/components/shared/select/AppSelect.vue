@@ -86,9 +86,15 @@ function isEmptyValue(value: T) {
     return value === '' || value == null;
 }
 
+function isPlaceholderValue(value: T) {
+    return isEmptyValue(value) || value === 'all';
+}
+
 const selectedTitle = computed(
     () => normalizedItems.value.find((item) => item.value === props.modelValue)?.title ?? String(props.modelValue ?? '')
 );
+
+const showsPlaceholder = computed(() => isPlaceholderValue(props.modelValue) && !isFiltering.value);
 
 const isFiltering = computed(() => {
     const needle = trimmedQuery.value;
@@ -297,7 +303,7 @@ watch(open, (value) => {
             <template #activator="{ props: activatorProps }">
                 <div
                     class="app-select__control"
-                    :class="{ 'app-select__control--open': open }"
+                    :class="{ 'app-select__control--open': open, 'app-select__control--placeholder': showsPlaceholder }"
                     v-bind="activatorProps"
                     tabindex="-1"
                     @click="onFocus"
@@ -311,6 +317,7 @@ watch(open, (value) => {
                             v-bind="attrs"
                             ref="inputRef"
                             class="app-select__input"
+                            :class="{ 'app-select__input--placeholder': showsPlaceholder }"
                             type="text"
                             :value="query"
                             :disabled="disabled"
@@ -340,7 +347,8 @@ watch(open, (value) => {
                             type="button"
                             class="app-select-menu__option"
                             :class="{
-                                'is-selected': item.value === modelValue,
+                                'is-selected': item.value === modelValue && !isPlaceholderValue(item.value),
+                                'is-placeholder': isPlaceholderValue(item.value),
                                 'is-active': index === highlightedIndex,
                                 'is-indent': item.indent > 0
                             }"
@@ -439,12 +447,22 @@ watch(open, (value) => {
     height: 24px;
 }
 
+.app-select__control--placeholder {
+    color: var(--ink-muted);
+    font-weight: 400;
+}
+
 .app-select__ghost,
 .app-select__input {
     font: inherit;
     font-size: 0.875rem;
     font-weight: 600;
     line-height: 24px;
+}
+
+.app-select__control--placeholder .app-select__ghost,
+.app-select__control--placeholder .app-select__input {
+    font-weight: 400;
 }
 
 .app-select__ghost {
@@ -478,6 +496,11 @@ watch(open, (value) => {
     background: transparent;
     color: var(--ink);
     text-overflow: ellipsis;
+}
+
+.app-select__input--placeholder {
+    color: var(--ink-muted);
+    font-weight: 400;
 }
 
 .app-select__input:disabled {
