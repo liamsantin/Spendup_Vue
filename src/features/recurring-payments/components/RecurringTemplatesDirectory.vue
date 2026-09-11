@@ -10,15 +10,16 @@ import RecurringTemplateListItem from '@/features/recurring-payments/components/
 import RecurringTemplateDetailModal from '@/features/recurring-payments/components/modals/RecurringTemplateDetailModal.vue';
 import RecurringTemplateFormModal from '@/features/recurring-payments/components/modals/RecurringTemplateFormModal.vue';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
+import { isExpenseTemplate, sortTemplates } from '@/features/recurring-payments/format';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import type { RecurringExpense, RecurringIncome, RecurringKind } from '@/features/recurring-payments/types';
 
 const props = withDefaults(
     defineProps<{
-        kind: RecurringKind;
+        kind?: RecurringKind | null;
         showInactive?: boolean;
     }>(),
-    { showInactive: true }
+    { kind: null, showInactive: true }
 );
 
 const { t } = useI18n();
@@ -28,9 +29,11 @@ const accountsStore = useAccountsStore();
 const store = useRecurringPaymentsStore();
 
 const createOpen = ref(false);
+const createKind = ref<RecurringKind | null>(null);
 const editTarget = ref<RecurringExpense | RecurringIncome | null>(null);
 const deleteTarget = ref<RecurringExpense | RecurringIncome | null>(null);
 const detailId = ref<string | null>(null);
+const detailKind = ref<RecurringKind | null>(null);
 const localError = ref<string | null>(null);
 
 const editOpen = computed({
@@ -59,27 +62,61 @@ function accountFromQuery(): string | null {
 
 const filterAccountId = computed(() => accountFromQuery());
 const canCreate = computed(() => accountsStore.accounts.some((item) => canWriteRecurringOnAccount(item)));
+const listingKind = computed(() => props.kind ?? null);
 
-const items = computed(() => {
-    const list = props.kind === 'expense' ? store.expenses : store.incomes;
+function templateKind(item: RecurringExpense | RecurringIncome): RecurringKind {
+    return isExpenseTemplate(item) ? 'expense' : 'income';
+}
+
+function visibleOf(list: readonly (RecurringExpense | RecurringIncome)[]) {
     const filtered = props.showInactive ? list : list.filter((item) => item.isActive);
     const accountId = filterAccountId.value;
-    return accountId ? filtered.filter((item) => item.accountPublicId === accountId) : filtered;
+    return accountId ? filtered.filter((item) => item.accountPublicId === accountId) : [...filtered];
+}
+
+const items = computed(() => {
+    if (listingKind.value === 'expense') return visibleOf(store.expenses);
+    if (listingKind.value === 'income') return visibleOf(store.incomes);
+    return sortTemplates([...visibleOf(store.expenses), ...visibleOf(store.incomes)]);
 });
 
-const loading = computed(() => (props.kind === 'expense' ? store.loadingExpenses : store.loadingIncomes));
-const hasMore = computed(() => (props.kind === 'expense' ? store.hasMoreExpenses : store.hasMoreIncomes));
-const loadingMore = computed(() => (props.kind === 'expense' ? store.loadingMoreExpenses : store.loadingMoreIncomes));
+const loading = computed(() => {
+    if (listingKind.value === 'expense') return store.loadingExpenses;
+    if (listingKind.value === 'income') return store.loadingIncomes;
+    return store.loadingExpenses || store.loadingIncomes;
+});
+const hasMore = computed(() => {
+    if (listingKind.value === 'expense') return store.hasMoreExpenses;
+    if (listingKind.value === 'income') return store.hasMoreIncomes;
+    return store.hasMoreExpenses || store.hasMoreIncomes;
+});
+const loadingMore = computed(() => {
+    if (listingKind.value === 'expense') return store.loadingMoreExpenses;
+    if (listingKind.value === 'income') return store.loadingMoreIncomes;
+    return store.loadingMoreExpenses || store.loadingMoreIncomes;
+});
+const emptyCopy = computed(() => {
+    if (listingKind.value === 'expense') return t('recurrencesPage.empty.expenses');
+    if (listingKind.value === 'income') return t('recurrencesPage.empty.incomes');
+    return t('recurrencesPage.empty.all');
+});
+const editKind = computed(() => (editTarget.value ? templateKind(editTarget.value) : listingKind.value));
+const deleteKind = computed(() => (deleteTarget.value ? templateKind(deleteTarget.value) : listingKind.value));
 
 async function loadList(force = false) {
     localError.value = null;
     try {
         await accountsStore.loadAccounts(force);
-        if (props.kind === 'expense') {
-            await store.loadExpenses({ accountPublicId: filterAccountId.value ?? undefined, force });
-        } else {
-            await store.loadIncomes({ accountPublicId: filterAccountId.value ?? undefined, force });
+        const query = { accountPublicId: filterAccountId.value ?? undefined, force };
+        if (listingKind.value === 'expense') {
+            await store.loadExpenses(query);
+            return;
         }
+        if (listingKind.value === 'income') {
+            await store.loadIncomes(query);
+            return;
+        }
+        await Promise.all([store.loadExpenses(query), store.loadIncomes(query)]);
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
         if (err.status === 404) {
@@ -106,16 +143,21 @@ onUnmounted(() => {
 });
 
 watch(
-    () => [route.query.account, props.kind] as const,
+    () => [route.query.account, listingKind.value] as const,
     () => {
         void loadList().catch(() => undefined);
     }
 );
 
-function openCreate() {
+function openCreate(kind: RecurringKind | null = listingKind.value) {
     if (!canCreate.value) return;
+    createKind.value = kind;
     createOpen.value = true;
 }
+
+watch(createOpen, (value) => {
+    if (!value) createKind.value = null;
+});
 
 defineExpose({ openCreate });
 
@@ -128,7 +170,7 @@ async function confirmDelete() {
     if (!deleteTarget.value) return;
     localError.value = null;
     try {
-        if (props.kind === 'expense') await store.deleteExpense(deleteTarget.value.publicId);
+        if (templateKind(deleteTarget.value) === 'expense') await store.deleteExpense(deleteTarget.value.publicId);
         else await store.deleteIncome(deleteTarget.value.publicId);
         deleteTarget.value = null;
     } catch (e: unknown) {
@@ -137,7 +179,26 @@ async function confirmDelete() {
 }
 
 function onSaved(template: RecurringExpense | RecurringIncome) {
+    detailKind.value = templateKind(template);
     detailId.value = template.publicId;
+}
+
+function openDetail(item: RecurringExpense | RecurringIncome) {
+    detailKind.value = templateKind(item);
+    detailId.value = item.publicId;
+}
+
+function loadMore() {
+    if (listingKind.value === 'expense') {
+        void store.loadMoreExpenses();
+        return;
+    }
+    if (listingKind.value === 'income') {
+        void store.loadMoreIncomes();
+        return;
+    }
+    if (store.hasMoreExpenses) void store.loadMoreExpenses();
+    if (store.hasMoreIncomes) void store.loadMoreIncomes();
 }
 </script>
 
@@ -158,49 +219,57 @@ function onSaved(template: RecurringExpense | RecurringIncome) {
 
         <div v-if="loading && !items.length" class="su-loading"><span class="su-spin" /></div>
         <div v-else-if="!items.length" class="su-empty">
-            {{ kind === 'expense' ? t('recurrencesPage.empty.expenses') : t('recurrencesPage.empty.incomes') }}
+            <p>{{ emptyCopy }}</p>
         </div>
-        <v-list v-else class="py-0">
-            <RecurringTemplateListItem
-                v-for="item in items"
-                :key="item.publicId"
-                :template="item"
-                :kind="kind"
-                :can-write="canWrite(item.accountPublicId)"
-                :acting="store.acting"
-                @open="detailId = $event.publicId"
-                @edit="editTarget = $event"
-                @delete="deleteTarget = $event"
-            />
-        </v-list>
+        <div v-else class="su-stack">
+            <section class="su-surface recurring-directory__group">
+                <div class="recurring-directory__list">
+                    <RecurringTemplateListItem
+                        v-for="(item, index) in items"
+                        :key="`${templateKind(item)}-${item.publicId}`"
+                        :template="item"
+                        :kind="templateKind(item)"
+                        :show-kind="!listingKind"
+                        :can-write="canWrite(item.accountPublicId)"
+                        :acting="store.acting"
+                        :style="{ '--i': index }"
+                        @open="openDetail"
+                        @edit="editTarget = $event"
+                        @delete="deleteTarget = $event"
+                    />
+                </div>
+            </section>
+        </div>
 
         <div v-if="hasMore" class="su-more">
-            <button
-                type="button"
-                class="su-btn su-btn--ghost"
-                :disabled="loadingMore"
-                @click="kind === 'expense' ? store.loadMoreExpenses() : store.loadMoreIncomes()"
-            >
+            <button type="button" class="su-btn su-btn--ghost" :disabled="loadingMore" @click="loadMore">
                 {{ t('recurrencesPage.loadMore') }}
             </button>
         </div>
 
-        <RecurringTemplateFormModal v-model="createOpen" :kind="kind" :default-account-public-id="filterAccountId" @saved="onSaved" />
-        <RecurringTemplateFormModal v-model="editOpen" :kind="kind" :template="editTarget" />
+        <RecurringTemplateFormModal
+            v-model="createOpen"
+            :kind="createKind"
+            :default-account-public-id="filterAccountId"
+            @saved="onSaved"
+        />
+        <RecurringTemplateFormModal v-model="editOpen" :kind="editKind" :template="editTarget" />
         <RecurringTemplateDetailModal
             v-model="detailOpen"
-            :kind="kind"
+            :kind="detailKind ?? 'expense'"
             :public-id="detailId"
             @edit="
                 editTarget = (
-                    kind === 'expense' ? store.getDetail('expense', detailId || '') : store.getDetail('income', detailId || '')
+                    detailKind === 'income' ? store.getDetail('income', detailId || '') : store.getDetail('expense', detailId || '')
                 ) as RecurringExpense | RecurringIncome | null
             "
         />
 
         <AppConfirmationModal
             v-model="deleteOpen"
-            :title="kind === 'expense' ? t('recurrencesPage.deleteModal.expenseTitle') : t('recurrencesPage.deleteModal.incomeTitle')"
+            :title="
+                deleteKind === 'income' ? t('recurrencesPage.deleteModal.incomeTitle') : t('recurrencesPage.deleteModal.expenseTitle')
+            "
             :message="t('recurrencesPage.deleteModal.body')"
             :confirm-label="t('recurrencesPage.actions.delete')"
             confirm-color="error"
@@ -209,3 +278,17 @@ function onSaved(template: RecurringExpense | RecurringIncome) {
         />
     </div>
 </template>
+
+<style scoped>
+.recurring-directory__group {
+    overflow: visible;
+}
+
+.recurring-directory__list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: visible;
+    padding: 8px;
+}
+</style>

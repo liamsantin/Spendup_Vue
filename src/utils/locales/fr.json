@@ -657,9 +657,19 @@
         "loadMore": "Charger plus",
         "unknownAccount": "Compte",
         "tabs": {
+            "label": "Type de récurrence",
+            "all": "Tous",
             "expenses": "Charges",
             "incomes": "Revenus",
             "upcoming": "Échéances"
+        },
+        "createAs": {
+            "expense": "Une dépense",
+            "income": "Un revenu"
+        },
+        "createHints": {
+            "expense": "Loyer, abonnement, assurance…",
+            "income": "Salaire, freelance, loyer encaissé…"
         },
         "kinds": {
             "expense": "Charge",
@@ -672,6 +682,7 @@
             "showInactive": "Afficher les pauses"
         },
         "empty": {
+            "all": "Aucune récurrence pour l’instant.",
             "expenses": "Aucune charge récurrente pour l’instant.",
             "incomes": "Aucun revenu récurrent pour l’instant.",
             "upcoming": "Aucune échéance dans les trois prochains mois."
@@ -695,7 +706,7 @@
             "duesTitle": "Échéances",
             "duesEmpty": "Aucune échéance matérialisée.",
             "filesTitle": "Justificatifs PDF",
-            "seeTransactions": "Transactions liées"
+            "seeTransactions": "Voir les transactions liées"
         },
         "deleteModal": {
             "expenseTitle": "Supprimer cette charge ?",
@@ -778,6 +789,8 @@
             "editExpenseTitle": "Modifier la charge",
             "editIncomeTitle": "Modifier le revenu",
             "subtitle": "Les échéances sont générées par le serveur. Confirmez-les ensuite.",
+            "pickKindTitle": "Quel type de récurrence ?",
+            "pickKindSubtitle": "Une dépense (charge) ou un revenu. Vous pourrez tout régler ensuite.",
             "tabs": {
                 "template": "Récurrence",
                 "classification": "Classification"

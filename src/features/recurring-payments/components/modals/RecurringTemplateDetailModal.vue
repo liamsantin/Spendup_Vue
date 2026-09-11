@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
+import { EyeIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
@@ -296,6 +297,7 @@ function seeRelatedTransactions() {
 
         <template #footer="{ close }">
             <button type="button" class="su-btn su-btn--ghost" @click="seeRelatedTransactions">
+                <EyeIcon :size="16" stroke-width="1.6" />
                 {{ t('recurrencesPage.detail.seeTransactions') }}
             </button>
             <button type="button" class="su-btn" @click="emit('edit')">{{ t('recurrencesPage.actions.edit') }}</button>

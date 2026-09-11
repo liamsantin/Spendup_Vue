@@ -3,8 +3,10 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FileDescriptionIcon, TagsIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
+import RecurringKindChoice from '@/features/recurring-payments/components/forms/RecurringKindChoice.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
@@ -25,7 +27,7 @@ import {
     type RecurringTemplateFormFields
 } from '@/features/recurring-payments/payload';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
-import { isDueSettled, todayLocalYmd } from '@/features/recurring-payments/format';
+import { isDueSettled, isExpenseTemplate, todayLocalYmd } from '@/features/recurring-payments/format';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import {
     RECURRING_EXPENSE_FREQUENCIES,
@@ -41,7 +43,7 @@ import {
 
 const props = defineProps<{
     modelValue: boolean;
-    kind: RecurringKind;
+    kind?: RecurringKind | null;
     template?: RecurringExpense | RecurringIncome | null;
     defaultAccountPublicId?: string | null;
 }>();
@@ -61,6 +63,9 @@ const isEdit = ref(false);
 const editExpense = ref<RecurringExpense | null>(null);
 const editIncome = ref<RecurringIncome | null>(null);
 const accountLocked = ref(false);
+const resolvedKind = ref<RecurringKind>('expense');
+const createStep = ref<'kind' | 'form'>('form');
+const pickingKind = computed(() => !isEdit.value && createStep.value === 'kind');
 
 const writableAccounts = computed(() => accountsStore.accounts.filter((item) => canWriteRecurringOnAccount(item)));
 const accountItems = computed(() => {
@@ -97,7 +102,7 @@ const paymentMethodItems = computed(() => {
 });
 
 const categoryItems = computed(() => {
-    const allowed = props.kind === 'expense' ? new Set(['depense', 'mixte']) : new Set(['revenu', 'mixte']);
+    const allowed = resolvedKind.value === 'expense' ? new Set(['depense', 'mixte']) : new Set(['revenu', 'mixte']);
     const roots = categoriesStore.items.filter((item) => allowed.has(item.type));
     const filtered = roots.map((root) => ({
         ...root,
@@ -108,7 +113,7 @@ const categoryItems = computed(() => {
 
 const localError = reactive({ message: null as string | null });
 const fieldErrors = reactive<RecurringTemplateFormFieldErrors>({});
-const form = reactive<RecurringTemplateFormFields>(emptyRecurringForm(props.kind));
+const form = reactive<RecurringTemplateFormFields>(emptyRecurringForm(props.kind ?? 'expense'));
 const activeTab = ref<'template' | 'classification'>('template');
 
 const CLASSIFICATION_FIELDS = new Set(['paymentMethodPublicId', 'categoryPublicId', 'tierPublicId', 'notes']);
@@ -119,11 +124,18 @@ const formTabs = computed(() => [
 ]);
 
 const modalTitle = computed(() => {
+    if (pickingKind.value) return t('recurrencesPage.form.pickKindTitle');
     if (isEdit.value) {
-        return props.kind === 'expense' ? t('recurrencesPage.form.editExpenseTitle') : t('recurrencesPage.form.editIncomeTitle');
+        return resolvedKind.value === 'expense' ? t('recurrencesPage.form.editExpenseTitle') : t('recurrencesPage.form.editIncomeTitle');
     }
-    return props.kind === 'expense' ? t('recurrencesPage.form.createExpenseTitle') : t('recurrencesPage.form.createIncomeTitle');
+    return resolvedKind.value === 'expense'
+        ? t('recurrencesPage.form.createExpenseTitle')
+        : t('recurrencesPage.form.createIncomeTitle');
 });
+
+const modalSubtitle = computed(() =>
+    pickingKind.value ? t('recurrencesPage.form.pickKindSubtitle') : t('recurrencesPage.form.subtitle')
+);
 
 const open = computed({
     get: () => props.modelValue,
@@ -131,9 +143,10 @@ const open = computed({
 });
 
 const canSave = computed(() => {
+    if (pickingKind.value) return false;
     if (!isEdit.value) return true;
-    if (props.kind === 'expense' && editExpense.value) return isExpenseFormDirty(editExpense.value, form);
-    if (props.kind === 'income' && editIncome.value) return isIncomeFormDirty(editIncome.value, form);
+    if (resolvedKind.value === 'expense' && editExpense.value) return isExpenseFormDirty(editExpense.value, form);
+    if (resolvedKind.value === 'income' && editIncome.value) return isIncomeFormDirty(editIncome.value, form);
     return true;
 });
 
@@ -208,25 +221,45 @@ async function detectAccountLock(kind: RecurringKind, publicId: string) {
     }
 }
 
+function applyCreateDefaults(kind: RecurringKind) {
+    resolvedKind.value = kind;
+    Object.assign(form, emptyRecurringForm(kind, props.defaultAccountPublicId?.trim() || writableAccounts.value[0]?.publicId || ''));
+    form.startDate = todayLocalYmd();
+}
+
+function pickKind(kind: RecurringKind) {
+    applyCreateDefaults(kind);
+    createStep.value = 'form';
+    activeTab.value = 'template';
+}
+
 async function resetForm() {
     localError.message = null;
     clearFieldErrors();
     accountLocked.value = false;
-    form.kind = props.kind;
     const expense = editExpense.value;
     const income = editIncome.value;
     if (expense) {
+        resolvedKind.value = 'expense';
+        createStep.value = 'form';
         fillFromExpense(expense);
         await detectAccountLock('expense', expense.publicId);
         return;
     }
     if (income) {
+        resolvedKind.value = 'income';
+        createStep.value = 'form';
         fillFromIncome(income);
         await detectAccountLock('income', income.publicId);
         return;
     }
-    Object.assign(form, emptyRecurringForm(props.kind, props.defaultAccountPublicId?.trim() || writableAccounts.value[0]?.publicId || ''));
-    form.startDate = todayLocalYmd();
+    if (props.kind) {
+        createStep.value = 'form';
+        applyCreateDefaults(props.kind);
+        return;
+    }
+    createStep.value = 'kind';
+    applyCreateDefaults('expense');
 }
 
 watch(
@@ -235,8 +268,9 @@ watch(
         if (!value) return;
         activeTab.value = 'template';
         isEdit.value = !!props.template;
-        editExpense.value = props.kind === 'expense' ? ((props.template as RecurringExpense | null) ?? null) : null;
-        editIncome.value = props.kind === 'income' ? ((props.template as RecurringIncome | null) ?? null) : null;
+        const template = props.template ?? null;
+        editExpense.value = template && isExpenseTemplate(template) ? template : null;
+        editIncome.value = template && !isExpenseTemplate(template) ? template : null;
         void categoriesStore.bootstrap();
         void paymentMethodsStore.loadList({
             accountPublicId: props.template?.accountPublicId ?? props.defaultAccountPublicId ?? undefined
@@ -255,12 +289,12 @@ watch(
 );
 
 async function onSave() {
-    if (isEdit.value && !canSave.value) return;
+    if (pickingKind.value || (isEdit.value && !canSave.value)) return;
     localError.message = null;
     clearFieldErrors();
     const ctx = { accounts: accountsStore.accounts, requireWrite: true as const };
     const built =
-        props.kind === 'expense'
+        resolvedKind.value === 'expense'
             ? isEdit.value
                 ? buildUpdateExpensePayload(form, ctx)
                 : buildCreateExpensePayload(form, ctx)
@@ -273,7 +307,7 @@ async function onSave() {
     }
     try {
         const saved =
-            props.kind === 'expense'
+            resolvedKind.value === 'expense'
                 ? isEdit.value && editExpense.value
                     ? await store.updateExpense(editExpense.value.publicId, form)
                     : await store.createExpense(form)
@@ -290,11 +324,25 @@ async function onSave() {
 </script>
 
 <template>
+    <AppModalBase
+        v-if="pickingKind"
+        v-model="open"
+        :title="modalTitle"
+        :subtitle="modalSubtitle"
+        :max-width="480"
+        :height="420"
+        :show-footer="false"
+        scrollable
+        mobile-layout="fullscreen"
+    >
+        <RecurringKindChoice @select="pickKind" />
+    </AppModalBase>
     <AppModalTabs
+        v-else
         v-model="open"
         v-model:tab="activeTab"
         :title="modalTitle"
-        :subtitle="t('recurrencesPage.form.subtitle')"
+        :subtitle="modalSubtitle"
         :tabs="formTabs"
         :height="720"
         :max-width="640"
