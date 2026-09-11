@@ -365,6 +365,12 @@
     font-size: 0.7rem;
 }
 
+.plan-card__price-note--yearly {
+    color: rgb(var(--v-theme-primary));
+    font-size: 0.78rem;
+    font-weight: 680;
+}
+
 .plan-card__cta {
     flex: none;
     width: 100%;

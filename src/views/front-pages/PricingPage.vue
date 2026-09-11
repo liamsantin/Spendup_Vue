@@ -252,7 +252,10 @@ function yearlyTotal(plan: PricingPlan): string {
                                             <span class="plan-card__amount textPrimary">{{ displayedPrice(plan) }}</span>
                                             <span class="plan-card__period">/mois</span>
                                         </div>
-                                        <span class="plan-card__price-note">
+                                        <span
+                                            class="plan-card__price-note"
+                                            :class="{ 'plan-card__price-note--yearly': billingPeriod === 'yearly' }"
+                                        >
                                             {{
                                                 billingPeriod === 'yearly'
                                                     ? `Facturé ${yearlyTotal(plan)} Fr. par an`
