@@ -679,15 +679,34 @@
             "paused": "Paused"
         },
         "filters": {
-            "showInactive": "Show paused"
+            "showInactive": "Show paused",
+            "account": "Account",
+            "allAccounts": "All accounts",
+            "kind": "Type",
+            "allKinds": "Expenses and income",
+            "dueState": "Status",
+            "allDueStates": "All statuses",
+            "planned": "Planned",
+            "settled": "Already collected"
+        },
+        "sort": {
+            "dateAsc": "Date (soonest first)",
+            "dateDesc": "Date (latest first)",
+            "nameAsc": "Name (A → Z)",
+            "amountDesc": "Amount (high to low)",
+            "amountAsc": "Amount (low to high)"
         },
         "empty": {
             "all": "No recurring items yet.",
             "expenses": "No recurring expenses yet.",
             "incomes": "No recurring income yet.",
-            "upcoming": "No dues in the next three months."
+            "upcoming": "No dues in the next three months.",
+            "upcomingPlanned": "No planned dues in the next three months.",
+            "upcomingSettled": "No collected dues in the next three months.",
+            "upcomingFiltered": "No dues match these filters."
         },
         "actions": {
+            "sort": "Sort",
             "filter": "Filter",
             "create": "Add",
             "edit": "Edit",

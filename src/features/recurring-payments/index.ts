@@ -14,8 +14,14 @@ export {
     dueAfterLinkedTransactionRemoved,
     isExpenseTemplate,
     sortTemplates,
-    sortDues
+    sortDues,
+    UPCOMING_DUE_SORTS,
+    UPCOMING_DUE_SORT_DEFAULT,
+    parseUpcomingDueSort,
+    isUpcomingDueSort,
+    sortUpcomingDueRows
 } from '@/features/recurring-payments/format';
+export type { UpcomingDueSort } from '@/features/recurring-payments/format';
 export {
     emptyRecurringForm,
     buildCreateExpensePayload,

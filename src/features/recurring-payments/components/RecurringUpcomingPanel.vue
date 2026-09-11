@@ -11,7 +11,12 @@ import {
     displayDueStatus,
     formatCalendarDate,
     formatPlannedAmount,
-    todayLocalYmd
+    isDueOpen,
+    isDueSettled,
+    parseUpcomingDueSort,
+    sortUpcomingDueRows,
+    todayLocalYmd,
+    type UpcomingDueSort
 } from '@/features/recurring-payments/format';
 import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
@@ -25,6 +30,16 @@ type UpcomingRow = {
     currency: string;
     due: RecurringDue;
 };
+
+const props = withDefaults(
+    defineProps<{
+        settlement?: 'all' | 'planned' | 'settled';
+        kind?: RecurringKind | null;
+        accountPublicId?: string | null;
+        sort?: UpcomingDueSort;
+    }>(),
+    { settlement: 'all', kind: null, accountPublicId: null, sort: 'dateAsc' }
+);
 
 const { t, locale } = useI18n();
 const accountsStore = useAccountsStore();
@@ -40,6 +55,26 @@ const detailOpen = computed({
     set: (value: boolean) => {
         if (!value) detailId.value = null;
     }
+});
+
+const visibleRows = computed(() => {
+    const accountId = props.accountPublicId?.trim() || null;
+    const kind = props.kind;
+    const filtered = rows.value.filter((row) => {
+        if (kind && row.kind !== kind) return false;
+        if (accountId && row.accountPublicId !== accountId) return false;
+        if (props.settlement === 'planned') return isDueOpen(row.due, row.kind);
+        if (props.settlement === 'settled') return isDueSettled(row.due, row.kind);
+        return true;
+    });
+    return sortUpcomingDueRows(filtered, parseUpcomingDueSort(props.sort));
+});
+
+const emptyCopy = computed(() => {
+    if (props.settlement === 'planned') return t('recurrencesPage.empty.upcomingPlanned');
+    if (props.settlement === 'settled') return t('recurrencesPage.empty.upcomingSettled');
+    if (props.kind || props.accountPublicId) return t('recurrencesPage.empty.upcomingFiltered');
+    return t('recurrencesPage.empty.upcoming');
 });
 
 async function loadUpcoming() {
@@ -123,14 +158,14 @@ function openRow(row: UpcomingRow) {
     <div>
         <AppAlert v-if="localError" type="error" class="su-alert" closable @dismiss="localError = null">{{ localError }}</AppAlert>
         <div v-if="loading && !rows.length" class="su-loading"><span class="su-spin" /></div>
-        <div v-else-if="!rows.length" class="su-empty">
-            <p>{{ t('recurrencesPage.empty.upcoming') }}</p>
+        <div v-else-if="!visibleRows.length" class="su-empty">
+            <p>{{ emptyCopy }}</p>
         </div>
         <div v-else class="su-stack">
             <section class="su-surface recurring-upcoming__group">
                 <div class="recurring-upcoming__list">
                     <button
-                        v-for="row in rows"
+                        v-for="row in visibleRows"
                         :key="`${row.kind}-${row.due.publicId}`"
                         type="button"
                         class="recurring-upcoming-row"

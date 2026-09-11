@@ -679,15 +679,34 @@
             "paused": "En pause"
         },
         "filters": {
-            "showInactive": "Afficher les pauses"
+            "showInactive": "Afficher les pauses",
+            "account": "Compte",
+            "allAccounts": "Tous les comptes",
+            "kind": "Type",
+            "allKinds": "Charges et revenus",
+            "dueState": "Statut",
+            "allDueStates": "Tous les statuts",
+            "planned": "Prévu",
+            "settled": "Déjà encaissé"
+        },
+        "sort": {
+            "dateAsc": "Date (proche → lointain)",
+            "dateDesc": "Date (lointain → proche)",
+            "nameAsc": "Nom (A → Z)",
+            "amountDesc": "Montant (décroissant)",
+            "amountAsc": "Montant (croissant)"
         },
         "empty": {
             "all": "Aucune récurrence pour l’instant.",
             "expenses": "Aucune charge récurrente pour l’instant.",
             "incomes": "Aucun revenu récurrent pour l’instant.",
-            "upcoming": "Aucune échéance dans les trois prochains mois."
+            "upcoming": "Aucune échéance dans les trois prochains mois.",
+            "upcomingPlanned": "Aucune échéance prévue dans les trois prochains mois.",
+            "upcomingSettled": "Aucune échéance déjà encaissée dans les trois prochains mois.",
+            "upcomingFiltered": "Aucune échéance ne correspond à ces filtres."
         },
         "actions": {
+            "sort": "Trier",
             "filter": "Filtre",
             "create": "Ajouter",
             "edit": "Modifier",

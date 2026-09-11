@@ -214,6 +214,11 @@
     color: var(--ink);
 }
 
+.app-select-menu__option.is-active {
+    background: var(--surface-hover);
+    color: var(--ink);
+}
+
 .app-select-menu__option.is-selected {
     background: rgba(var(--v-theme-primary), 0.09) !important;
     color: var(--ink) !important;

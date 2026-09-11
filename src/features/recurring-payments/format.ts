@@ -123,6 +123,37 @@ export function sortDues(items: readonly RecurringDue[]): RecurringDue[] {
     });
 }
 
+export const UPCOMING_DUE_SORTS = ['dateAsc', 'dateDesc', 'nameAsc', 'amountDesc', 'amountAsc'] as const;
+export type UpcomingDueSort = (typeof UPCOMING_DUE_SORTS)[number];
+export const UPCOMING_DUE_SORT_DEFAULT: UpcomingDueSort = 'dateAsc';
+
+export function isUpcomingDueSort(value: string): value is UpcomingDueSort {
+    return (UPCOMING_DUE_SORTS as readonly string[]).includes(value);
+}
+
+export function parseUpcomingDueSort(value: string | null | undefined): UpcomingDueSort {
+    return value && isUpcomingDueSort(value) ? value : UPCOMING_DUE_SORT_DEFAULT;
+}
+
+export type UpcomingDueRowSortable = {
+    templateName: string;
+    due: Pick<RecurringDue, 'scheduledAt' | 'plannedAmount' | 'publicId'>;
+};
+
+export function sortUpcomingDueRows<T extends UpcomingDueRowSortable>(items: readonly T[], sort: UpcomingDueSort): T[] {
+    return [...items].sort((a, b) => {
+        if (sort === 'dateDesc') {
+            return b.due.scheduledAt.localeCompare(a.due.scheduledAt) || a.templateName.localeCompare(b.templateName, undefined, { sensitivity: 'base' });
+        }
+        if (sort === 'nameAsc') {
+            return a.templateName.localeCompare(b.templateName, undefined, { sensitivity: 'base' }) || a.due.scheduledAt.localeCompare(b.due.scheduledAt);
+        }
+        if (sort === 'amountDesc') return b.due.plannedAmount - a.due.plannedAmount || a.due.scheduledAt.localeCompare(b.due.scheduledAt);
+        if (sort === 'amountAsc') return a.due.plannedAmount - b.due.plannedAmount || a.due.scheduledAt.localeCompare(b.due.scheduledAt);
+        return a.due.scheduledAt.localeCompare(b.due.scheduledAt) || a.templateName.localeCompare(b.templateName, undefined, { sensitivity: 'base' });
+    });
+}
+
 export function addMonthsYmd(ymd: string, months: number): string {
     if (!isValidYmd(ymd)) return ymd;
     const [y, m, d] = ymd.split('-').map(Number);

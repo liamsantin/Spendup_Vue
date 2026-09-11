@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { displayDueStatus, isDueOpen, todayLocalYmd } from '@/features/recurring-payments/format';
+import { displayDueStatus, isDueOpen, sortUpcomingDueRows, todayLocalYmd } from '@/features/recurring-payments/format';
 
 describe('recurring format', () => {
     it('marque en retard une due prévue dont la date est passée', () => {
@@ -29,5 +29,16 @@ describe('recurring format', () => {
     it('détecte une due confirmable', () => {
         expect(isDueOpen({ status: 'prevue', scheduledAt: todayLocalYmd(), transactionPublicId: null }, 'expense')).toBe(true);
         expect(isDueOpen({ status: 'payee', scheduledAt: todayLocalYmd(), transactionPublicId: 'tx-1' }, 'expense')).toBe(false);
+    });
+
+    it('trie les échéances à venir par date, nom ou montant', () => {
+        const rows = [
+            { templateName: 'Loyer', due: { scheduledAt: '2026-10-01', plannedAmount: 1500, publicId: 'a' } },
+            { templateName: 'Salaire', due: { scheduledAt: '2026-09-25', plannedAmount: 5000, publicId: 'b' } }
+        ];
+        expect(sortUpcomingDueRows(rows, 'dateAsc').map((row) => row.templateName)).toEqual(['Salaire', 'Loyer']);
+        expect(sortUpcomingDueRows(rows, 'dateDesc').map((row) => row.templateName)).toEqual(['Loyer', 'Salaire']);
+        expect(sortUpcomingDueRows(rows, 'amountDesc')[0]?.templateName).toBe('Salaire');
+        expect(sortUpcomingDueRows(rows, 'nameAsc')[0]?.templateName).toBe('Loyer');
     });
 });
