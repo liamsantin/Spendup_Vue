@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeftIcon, ArrowsSortIcon, DownloadIcon, PencilIcon, SearchIcon, TrashIcon, UploadIcon, XIcon } from 'vue-tabler-icons';
@@ -132,6 +132,19 @@ watch(
             searchInput.value = next;
         }
     }
+);
+
+watch(
+    () => queryString('upload'),
+    async (upload) => {
+        if (upload !== '1' || store.acting) return;
+        await nextTick();
+        directoryRef.value?.openPicker();
+        const next = { ...route.query };
+        delete next.upload;
+        void router.replace({ path: FILES_PATH, query: next });
+    },
+    { immediate: true }
 );
 </script>
 

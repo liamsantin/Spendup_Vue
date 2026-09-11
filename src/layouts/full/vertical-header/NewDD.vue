@@ -4,7 +4,7 @@ defineOptions({ name: 'NewDD' });
 import { nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { PlusIcon, UserPlusIcon } from 'vue-tabler-icons';
+import { ArrowsExchangeIcon, FilesIcon, PlusIcon, UserPlusIcon } from 'vue-tabler-icons';
 import { FriendQrModal, useFriendsStore } from '@/features/friends';
 import { useHeaderMenuOverlay } from './useHeaderMenuOverlay';
 
@@ -18,6 +18,11 @@ const qrOpen = ref(false);
 
 function closeMenu() {
     menuOpen.value = false;
+}
+
+function goTo(path: string, query?: Record<string, string>) {
+    closeMenu();
+    void router.push({ path, query });
 }
 
 async function openAddFriend() {
@@ -52,6 +57,18 @@ async function onQrScanned(publicId: string) {
                         <UserPlusIcon stroke-width="1.5" size="20" class="mr-3" />
                     </template>
                     <v-list-item-title class="text-subtitle-1 font-weight-medium"> + {{ t('header.friends.label') }} </v-list-item-title>
+                </v-list-item>
+                <v-list-item class="px-4" :aria-label="t('nav.items.files')" @click="goTo('/app/gestion/files', { upload: '1' })">
+                    <template #prepend>
+                        <FilesIcon stroke-width="1.5" size="20" class="mr-3" />
+                    </template>
+                    <v-list-item-title class="text-subtitle-1 font-weight-medium"> + {{ t('nav.items.files') }} </v-list-item-title>
+                </v-list-item>
+                <v-list-item class="px-4" :aria-label="t('nav.items.transactions')" @click="goTo('/app/finances/transactions')">
+                    <template #prepend>
+                        <ArrowsExchangeIcon stroke-width="1.5" size="20" class="mr-3" />
+                    </template>
+                    <v-list-item-title class="text-subtitle-1 font-weight-medium"> + {{ t('nav.items.transactions') }} </v-list-item-title>
                 </v-list-item>
             </v-list>
         </v-sheet>
