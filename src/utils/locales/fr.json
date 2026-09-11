@@ -1309,12 +1309,15 @@
     "transactionsPage": {
         "title": "Transactions",
         "titleForAccount": "Transactions du compte : {name}",
+        "titleForRecurrence": "Transactions de récurrence : {name}",
         "subtitle": "Dépenses, revenus et transferts sur vos comptes.",
         "loadMore": "Charger plus",
         "unknownAccount": "Compte",
+        "unknownRecurrence": "Récurrence",
         "empty": {
             "timeline": "Aucune transaction pour l’instant.",
             "account": "Aucune transaction sur ce compte.",
+            "recurrence": "Aucune transaction pour cette récurrence.",
             "byType": "Aucune transaction de type « {type} ».",
             "filtered": "Aucune transaction ne correspond à cette recherche."
         },
@@ -1336,6 +1339,8 @@
             "allCategories": "Toutes les catégories",
             "tier": "Contrepartie",
             "allTiers": "Toutes les contreparties",
+            "recurrence": "Récurrence",
+            "allRecurrences": "Toutes les récurrences",
             "from": "Du",
             "to": "Au"
         },

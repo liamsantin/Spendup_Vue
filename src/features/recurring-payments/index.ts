@@ -43,7 +43,8 @@ export {
     RECURRING_INCOME_TYPES,
     RECURRING_EXPENSE_FREQUENCIES,
     RECURRING_INCOME_FREQUENCIES,
-    RECURRING_FILES_MAX
+    RECURRING_FILES_MAX,
+    RECURRING_PAGE_SIZE_MAX
 } from '@/features/recurring-payments/types';
 export { default as RecurringTemplatesDirectory } from '@/features/recurring-payments/components/RecurringTemplatesDirectory.vue';
 export { default as RecurringUpcomingPanel } from '@/features/recurring-payments/components/RecurringUpcomingPanel.vue';

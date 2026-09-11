@@ -1309,12 +1309,15 @@
     "transactionsPage": {
         "title": "Transactions",
         "titleForAccount": "Account transactions: {name}",
+        "titleForRecurrence": "Recurring transactions: {name}",
         "subtitle": "Expenses, income and transfers across your accounts.",
         "loadMore": "Load more",
         "unknownAccount": "Account",
+        "unknownRecurrence": "Recurrence",
         "empty": {
             "timeline": "No transactions yet.",
             "account": "No transactions on this account.",
+            "recurrence": "No transactions for this recurrence.",
             "byType": "No “{type}” transactions.",
             "filtered": "No transaction matches this search."
         },
@@ -1336,6 +1339,8 @@
             "allCategories": "All categories",
             "tier": "Counterparty",
             "allTiers": "All counterparties",
+            "recurrence": "Recurrence",
+            "allRecurrences": "All recurrences",
             "from": "From",
             "to": "To"
         },

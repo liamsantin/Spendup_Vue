@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon } from 'vue-tabler-icons';
@@ -21,6 +21,7 @@ import {
 import type { TransactionType } from '@/features/transactions';
 import { useAccountsStore } from '@/features/accounts';
 import { categorySelectItems, useCategoriesStore } from '@/features/categories';
+import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { tierSelectItems, useTiersStore } from '@/features/tiers';
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -32,6 +33,7 @@ const store = useTransactionsStore();
 const accountsStore = useAccountsStore();
 const categoriesStore = useCategoriesStore();
 const tiersStore = useTiersStore();
+const recurringStore = useRecurringPaymentsStore();
 const timelineRef = ref<{ openCreate: () => void } | null>(null);
 
 function queryString(name: string): string {
@@ -73,9 +75,100 @@ const filterAccountId = computed({
 
 const filteredAccount = computed(() => accountsStore.accounts.find((a) => a.publicId === filterAccountId.value) ?? null);
 
-const pageTitle = computed(() =>
-    filteredAccount.value ? t('transactionsPage.titleForAccount', { name: filteredAccount.value.name }) : t('transactionsPage.title')
-);
+function recurrenceKey(kind: 'expense' | 'income', publicId: string) {
+    return `${kind}:${publicId}`;
+}
+
+function parseRecurrenceKey(value: string): { kind: 'expense' | 'income'; publicId: string } | null {
+    if (value.startsWith('expense:')) {
+        const publicId = value.slice('expense:'.length).trim();
+        return publicId ? { kind: 'expense', publicId } : null;
+    }
+    if (value.startsWith('income:')) {
+        const publicId = value.slice('income:'.length).trim();
+        return publicId ? { kind: 'income', publicId } : null;
+    }
+    return null;
+}
+
+const filterRecurrenceKey = computed({
+    get: () => {
+        const expenseId = queryString('recurringExpensePublicId');
+        if (expenseId) return recurrenceKey('expense', expenseId);
+        const incomeId = queryString('recurringIncomePublicId');
+        if (incomeId) return recurrenceKey('income', incomeId);
+        return '';
+    },
+    set: (value: string) => {
+        const parsed = parseRecurrenceKey(value);
+        if (!parsed) {
+            patchQuery({ recurringExpensePublicId: undefined, recurringIncomePublicId: undefined });
+            return;
+        }
+        if (parsed.kind === 'expense') {
+            patchQuery({ recurringExpensePublicId: parsed.publicId, recurringIncomePublicId: undefined });
+            return;
+        }
+        patchQuery({ recurringExpensePublicId: undefined, recurringIncomePublicId: parsed.publicId });
+    }
+});
+
+function recurrenceName(kind: 'expense' | 'income', publicId: string): string | null {
+    if (kind === 'expense') {
+        return (
+            recurringStore.expenses.find((item) => item.publicId === publicId)?.name ??
+            recurringStore.getDetail('expense', publicId)?.name ??
+            null
+        );
+    }
+    return (
+        recurringStore.incomes.find((item) => item.publicId === publicId)?.name ?? recurringStore.getDetail('income', publicId)?.name ?? null
+    );
+}
+
+const filteredRecurrence = computed(() => {
+    const parsed = parseRecurrenceKey(filterRecurrenceKey.value);
+    if (!parsed) return null;
+    return {
+        kind: parsed.kind,
+        publicId: parsed.publicId,
+        name: recurrenceName(parsed.kind, parsed.publicId) ?? t('transactionsPage.unknownRecurrence')
+    };
+});
+
+const recurrenceItems = computed(() => {
+    const items: { title: string; value: string }[] = [{ title: t('transactionsPage.filters.allRecurrences'), value: '' }];
+    for (const item of recurringStore.expenses) {
+        items.push({
+            title: `${t('recurrencesPage.kinds.expense')} · ${item.name}`,
+            value: recurrenceKey('expense', item.publicId)
+        });
+    }
+    for (const item of recurringStore.incomes) {
+        items.push({
+            title: `${t('recurrencesPage.kinds.income')} · ${item.name}`,
+            value: recurrenceKey('income', item.publicId)
+        });
+    }
+    const selected = filterRecurrenceKey.value;
+    if (selected && !items.some((item) => item.value === selected) && filteredRecurrence.value) {
+        items.push({
+            title: `${t(`recurrencesPage.kinds.${filteredRecurrence.value.kind}`)} · ${filteredRecurrence.value.name}`,
+            value: selected
+        });
+    }
+    return items;
+});
+
+const pageTitle = computed(() => {
+    if (filteredRecurrence.value) {
+        return t('transactionsPage.titleForRecurrence', { name: filteredRecurrence.value.name });
+    }
+    if (filteredAccount.value) {
+        return t('transactionsPage.titleForAccount', { name: filteredAccount.value.name });
+    }
+    return t('transactionsPage.title');
+});
 
 const filterType = computed({
     get: () => parseType(queryString('type')),
@@ -160,24 +253,60 @@ function resetFilters() {
         account: undefined,
         category: undefined,
         tier: undefined,
+        recurringExpensePublicId: undefined,
+        recurringIncomePublicId: undefined,
         from: undefined,
         to: undefined
     });
 }
 
 const filtersActive = computed(
-    () => !!(filterAccountId.value || filterCategoryId.value || filterTierId.value || filterFrom.value || filterTo.value)
+    () =>
+        !!(
+            filterAccountId.value ||
+            filterCategoryId.value ||
+            filterTierId.value ||
+            filterRecurrenceKey.value ||
+            filterFrom.value ||
+            filterTo.value
+        )
 );
 
 const filterCount = computed(
-    () => [filterAccountId.value, filterCategoryId.value, filterTierId.value, filterFrom.value, filterTo.value].filter(Boolean).length
+    () =>
+        [
+            filterAccountId.value,
+            filterCategoryId.value,
+            filterTierId.value,
+            filterRecurrenceKey.value,
+            filterFrom.value,
+            filterTo.value
+        ].filter(Boolean).length
 );
 
 const sortCount = computed(() => (listSort.value === TRANSACTION_SORT_DEFAULT ? 0 : 1));
 
+onMounted(() => {
+    void recurringStore.loadExpenses({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined);
+    void recurringStore.loadIncomes({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined);
+});
+
 onUnmounted(() => {
     if (searchTimer) clearTimeout(searchTimer);
 });
+
+watch(
+    () => [queryString('recurringExpensePublicId'), queryString('recurringIncomePublicId')] as const,
+    ([expenseId, incomeId]) => {
+        if (expenseId && !recurrenceName('expense', expenseId)) {
+            void recurringStore.getExpense(expenseId).catch(() => undefined);
+        }
+        if (incomeId && !recurrenceName('income', incomeId)) {
+            void recurringStore.getIncome(incomeId).catch(() => undefined);
+        }
+    },
+    { immediate: true }
+);
 
 watch(
     () => queryString('q'),
@@ -277,6 +406,14 @@ watch(
                             hide-details
                         />
                         <AppSelect v-model="filterTierId" :items="tierItems" :label="t('transactionsPage.filters.tier')" hide-details />
+                        <AppSelect
+                            v-model="filterRecurrenceKey"
+                            :items="recurrenceItems"
+                            :label="t('transactionsPage.filters.recurrence')"
+                            searchable
+                            :search-placeholder="t('transactionsPage.filters.recurrence')"
+                            hide-details
+                        />
                         <v-divider class="my-1" />
                         <AppDatePicker
                             v-model="filterFrom"

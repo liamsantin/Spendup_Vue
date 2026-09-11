@@ -109,6 +109,7 @@ const visibleItems = computed(() => {
 const emptyCopy = computed(() => {
     if (filterSearch.value) return t('transactionsPage.empty.filtered');
     if (filterType.value) return t('transactionsPage.empty.byType', { type: t(`transactionsPage.types.${filterType.value}`) });
+    if (filterRecurringExpenseId.value || filterRecurringIncomeId.value) return t('transactionsPage.empty.recurrence');
     if (filterAccountId.value) return t('transactionsPage.empty.account');
     return t('transactionsPage.empty.timeline');
 });
@@ -180,11 +181,12 @@ async function loadTimeline(force = false) {
         if (err.status === 404) {
             localError.value = t('transactionsPage.errors.notFound');
             // 404 : compte inconnu, ou tier filtré qui n’appartient pas (plus) à l’utilisateur → on retire le filtre fautif.
-            if (!props.lockedAccountPublicId && (filterAccountId.value || filterTierId.value)) {
+            if (!props.lockedAccountPublicId && (filterAccountId.value || filterTierId.value || filterRecurringExpenseId.value || filterRecurringIncomeId.value)) {
                 const dropTier = !!filterTierId.value;
+                const dropRecurring = !!(filterRecurringExpenseId.value || filterRecurringIncomeId.value);
                 await store
                     .loadList({
-                        accountPublicId: dropTier ? (filterAccountId.value ?? undefined) : undefined,
+                        accountPublicId: dropTier || dropRecurring ? (filterAccountId.value ?? undefined) : undefined,
                         from: filterFrom.value ?? undefined,
                         to: filterTo.value ?? undefined,
                         categoryPublicId: filterCategoryId.value ?? undefined,
@@ -194,7 +196,11 @@ async function loadTimeline(force = false) {
                 await router.replace({
                     path: '/app/finances/transactions',
                     query: {
-                        ...(dropTier && filterAccountId.value ? { account: filterAccountId.value } : {}),
+                        ...(dropTier || dropRecurring
+                            ? filterAccountId.value
+                                ? { account: filterAccountId.value }
+                                : {}
+                            : {}),
                         ...(filterType.value ? { type: filterType.value } : {}),
                         ...(filterFrom.value ? { from: filterFrom.value } : {}),
                         ...(filterTo.value ? { to: filterTo.value } : {}),
