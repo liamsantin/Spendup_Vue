@@ -27,7 +27,7 @@ const plans: PricingPlan[] = [
     {
         code: 'free',
         name: 'Gratuit',
-        description: 'Pour découvrir Spendup et gérer ses finances au quotidien.',
+        description: 'Pour découvrir Spend.Up et gérer ses finances au quotidien.',
         priceMonthly: 0,
         priceYearly: 0,
         features: [
@@ -392,7 +392,7 @@ function yearlyTotal(plan: PricingPlan): string {
             <section class="pricing-final-cta">
                 <v-container class="max-width-1218 text-center">
                     <h2 class="textPrimary">Commencez à construire votre avenir financier</h2>
-                    <p>Créez votre espace Spendup gratuitement. Aucune carte bancaire requise.</p>
+                    <p>Créez votre espace Spend.Up gratuitement. Aucune carte bancaire requise.</p>
                     <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
                         Commencer gratuitement
                         <ArrowRightIcon size="19" class="ms-2" />
