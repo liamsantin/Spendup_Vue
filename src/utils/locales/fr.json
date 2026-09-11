@@ -729,6 +729,8 @@
             "subtitle": "Échéances générées. Confirmez pour créer une transaction.",
             "duesTitle": "Échéances",
             "duesEmpty": "Aucune échéance matérialisée.",
+            "duesExisting": "Transaction existante",
+            "duesUpcoming": "À venir",
             "filesTitle": "Justificatifs PDF",
             "filesIncomeEmpty": "Les justificatifs PDF ne sont disponibles que pour les charges.",
             "tabs": {
@@ -820,6 +822,7 @@
             "subtitle": "Les échéances sont générées par le serveur. Confirmez-les ensuite.",
             "pickKindTitle": "Quel type de récurrence ?",
             "pickKindSubtitle": "Une dépense (charge) ou un revenu. Vous pourrez tout régler ensuite.",
+            "pickTypeSubtitle": "Salaire, abonnement… Choisissez un type, le reste se règle ensuite.",
             "tabs": {
                 "template": "Récurrence",
                 "classification": "Classification"

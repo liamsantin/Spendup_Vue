@@ -20,7 +20,8 @@ import {
     formatPlannedAmount,
     isDueOpen,
     isDueSettled,
-    isExpenseTemplate
+    isExpenseTemplate,
+    sortDues
 } from '@/features/recurring-payments/format';
 import { canConfirmRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
@@ -87,6 +88,13 @@ const dues = computed(() => {
     if (visibleDues.value.length) return visibleDues.value;
     return template.value?.upcomingDues ?? [];
 });
+const existingDues = computed(() =>
+    [...dues.value.filter((due) => !!due.transactionPublicId)].sort((a, b) => {
+        if (a.scheduledAt !== b.scheduledAt) return b.scheduledAt.localeCompare(a.scheduledAt);
+        return b.publicId.localeCompare(a.publicId);
+    })
+);
+const upcomingDues = computed(() => sortDues(dues.value.filter((due) => !due.transactionPublicId)));
 const expense = computed(() => (template.value && isExpenseTemplate(template.value) ? template.value : null));
 
 const account = computed(() =>
@@ -285,31 +293,63 @@ function seeRelatedTransactions() {
 
                     <div v-if="store.loadingDues && !dues.length" class="su-loading"><span class="su-spin" /></div>
                     <p v-else-if="!dues.length" class="text-medium-emphasis">{{ t('recurrencesPage.detail.duesEmpty') }}</p>
-                    <div v-else class="recurring-detail-dues">
-                        <div v-for="due in dues" :key="due.publicId" class="su-person">
-                            <div class="su-person__meta">
-                                <p class="su-person__name">{{ formatCalendarDate(due.scheduledAt, locale) }}</p>
-                                <p class="su-person__sub">{{ statusLabel(due) }} · {{ dueAmount(due) }}</p>
+                    <div v-else class="su-stack recurring-detail-dues">
+                        <section v-if="existingDues.length" class="su-surface">
+                            <header class="su-panel__head">
+                                <h2>{{ t('recurrencesPage.detail.duesExisting') }}</h2>
+                            </header>
+                            <div class="recurring-detail-dues__list">
+                                <div v-for="due in existingDues" :key="due.publicId" class="su-person">
+                                    <div class="su-person__meta">
+                                        <p class="su-person__name">{{ formatCalendarDate(due.scheduledAt, locale) }}</p>
+                                        <p class="su-person__sub">{{ statusLabel(due) }} · {{ dueAmount(due) }}</p>
+                                    </div>
+                                    <div class="su-person__actions">
+                                        <button
+                                            v-if="isDueSettled(due, kind) && due.transactionPublicId"
+                                            type="button"
+                                            class="su-btn"
+                                            @click="openTransaction(due)"
+                                        >
+                                            {{ t('recurrencesPage.actions.openTransaction') }}
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="su-person__actions">
-                                <template v-if="isDueOpen(due, kind) && canConfirm">
-                                    <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="confirmDue = due">
-                                        {{ t('recurrencesPage.actions.confirmDue') }}
-                                    </button>
-                                    <button type="button" class="su-btn su-btn--danger" :disabled="store.acting" @click="skipDue = due">
-                                        {{ t('recurrencesPage.actions.skipDue') }}
-                                    </button>
-                                </template>
-                                <button
-                                    v-else-if="isDueSettled(due, kind) && due.transactionPublicId"
-                                    type="button"
-                                    class="su-btn"
-                                    @click="openTransaction(due)"
-                                >
-                                    {{ t('recurrencesPage.actions.openTransaction') }}
-                                </button>
+                        </section>
+                        <section v-if="upcomingDues.length" class="su-surface">
+                            <header class="su-panel__head">
+                                <h2>{{ t('recurrencesPage.detail.duesUpcoming') }}</h2>
+                            </header>
+                            <div class="recurring-detail-dues__list">
+                                <div v-for="due in upcomingDues" :key="due.publicId" class="su-person">
+                                    <div class="su-person__meta">
+                                        <p class="su-person__name">{{ formatCalendarDate(due.scheduledAt, locale) }}</p>
+                                        <p class="su-person__sub">{{ statusLabel(due) }} · {{ dueAmount(due) }}</p>
+                                    </div>
+                                    <div class="su-person__actions">
+                                        <template v-if="isDueOpen(due, kind) && canConfirm">
+                                            <button
+                                                type="button"
+                                                class="su-btn su-btn--ink"
+                                                :disabled="store.acting"
+                                                @click="confirmDue = due"
+                                            >
+                                                {{ t('recurrencesPage.actions.confirmDue') }}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="su-btn su-btn--danger"
+                                                :disabled="store.acting"
+                                                @click="skipDue = due"
+                                            >
+                                                {{ t('recurrencesPage.actions.skipDue') }}
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </section>
                     </div>
                 </template>
             </AppModalPanelScroll>
@@ -369,8 +409,13 @@ function seeRelatedTransactions() {
 
 <style scoped>
 .recurring-detail-dues {
+    gap: 12px;
+}
+
+.recurring-detail-dues__list {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    padding: 0 8px 8px;
 }
 </style>

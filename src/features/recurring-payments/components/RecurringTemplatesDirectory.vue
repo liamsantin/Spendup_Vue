@@ -13,14 +13,21 @@ import { recurrencesPathForTab } from '@/features/recurring-payments/paths';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { isExpenseTemplate, sortTemplates } from '@/features/recurring-payments/format';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
-import type { RecurringExpense, RecurringIncome, RecurringKind } from '@/features/recurring-payments/types';
+import type {
+    RecurringExpense,
+    RecurringExpenseType,
+    RecurringIncome,
+    RecurringIncomeType,
+    RecurringKind
+} from '@/features/recurring-payments/types';
 
 const props = withDefaults(
     defineProps<{
         kind?: RecurringKind | null;
         showInactive?: boolean;
+        typeChoiceFirst?: RecurringKind | null;
     }>(),
-    { kind: null, showInactive: true }
+    { kind: null, showInactive: true, typeChoiceFirst: null }
 );
 
 const { t } = useI18n();
@@ -31,6 +38,7 @@ const store = useRecurringPaymentsStore();
 
 const createOpen = ref(false);
 const createKind = ref<RecurringKind | null>(null);
+const createType = ref<RecurringExpenseType | RecurringIncomeType | null>(null);
 const editTarget = ref<RecurringExpense | RecurringIncome | null>(null);
 const deleteTarget = ref<RecurringExpense | RecurringIncome | null>(null);
 const detailId = ref<string | null>(null);
@@ -150,14 +158,18 @@ watch(
     }
 );
 
-function openCreate(kind: RecurringKind | null = listingKind.value) {
+function openCreate(kind: RecurringKind | null = listingKind.value, type: RecurringExpenseType | RecurringIncomeType | null = null) {
     if (!canCreate.value) return;
     createKind.value = kind;
+    createType.value = type;
     createOpen.value = true;
 }
 
 watch(createOpen, (value) => {
-    if (!value) createKind.value = null;
+    if (!value) {
+        createKind.value = null;
+        createType.value = null;
+    }
 });
 
 defineExpose({ openCreate });
@@ -251,6 +263,8 @@ function loadMore() {
         <RecurringTemplateFormModal
             v-model="createOpen"
             :kind="createKind"
+            :type-choice-first="typeChoiceFirst"
+            :default-type="createType"
             :default-account-public-id="filterAccountId"
             @saved="onSaved"
         />

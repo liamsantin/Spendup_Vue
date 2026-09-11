@@ -86,6 +86,7 @@ function onReset() {
     width: 100%;
     justify-content: center;
     text-align: center;
+    border-radius: 999px;
     background: transparent;
     box-shadow: none;
     color: #9f2d23;

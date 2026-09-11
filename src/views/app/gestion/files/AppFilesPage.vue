@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeftIcon, ArrowsSortIcon, DownloadIcon, PencilIcon, SearchIcon, TrashIcon, UploadIcon, XIcon } from 'vue-tabler-icons';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
+import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import FilePreview from '@/features/files/components/FilePreview.vue';
 import FileUsageMeter from '@/features/files/components/FileUsageMeter.vue';
@@ -192,17 +193,11 @@ watch(
                         :reset-disabled="listSort === FILE_SORT_DEFAULT"
                         @reset="listSort = FILE_SORT_DEFAULT"
                     >
-                        <v-list class="py-0">
-                            <v-list-item
-                                v-for="value in FILE_SORTS"
-                                :key="value"
-                                :active="listSort === value"
-                                color="primary"
-                                @click="listSort = value"
-                            >
-                                <v-list-item-title>{{ t(`filesPage.sort.${value}`) }}</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
+                        <AppSortChoices
+                            v-model="listSort"
+                            :items="FILE_SORTS"
+                            :label-for="(value) => t(`filesPage.sort.${value}`)"
+                        />
                     </AppDropdownFilter>
                     <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onUpload">
                         <UploadIcon :size="16" stroke-width="1.6" />

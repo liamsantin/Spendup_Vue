@@ -7,6 +7,9 @@ import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import RecurringKindChoice from '@/features/recurring-payments/components/forms/RecurringKindChoice.vue';
+import RecurringTypeChoice, {
+    type RecurringTypePick
+} from '@/features/recurring-payments/components/forms/RecurringTypeChoice.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
@@ -37,13 +40,18 @@ import {
     RECURRING_INCOME_SETTLED_DUE_STATUS,
     RECURRING_INCOME_TYPES,
     type RecurringExpense,
+    type RecurringExpenseType,
     type RecurringIncome,
+    type RecurringIncomeType,
     type RecurringKind
 } from '@/features/recurring-payments/types';
 
 const props = defineProps<{
     modelValue: boolean;
     kind?: RecurringKind | null;
+    /** Si défini, la création ouvre le choix de type (ce groupe en premier). */
+    typeChoiceFirst?: RecurringKind | null;
+    defaultType?: RecurringExpenseType | RecurringIncomeType | null;
     template?: RecurringExpense | RecurringIncome | null;
     defaultAccountPublicId?: string | null;
 }>();
@@ -64,8 +72,10 @@ const editExpense = ref<RecurringExpense | null>(null);
 const editIncome = ref<RecurringIncome | null>(null);
 const accountLocked = ref(false);
 const resolvedKind = ref<RecurringKind>('expense');
-const createStep = ref<'kind' | 'form'>('form');
+const createStep = ref<'kind' | 'type' | 'form'>('form');
 const pickingKind = computed(() => !isEdit.value && createStep.value === 'kind');
+const pickingType = computed(() => !isEdit.value && createStep.value === 'type');
+const pickingStart = computed(() => pickingKind.value || pickingType.value);
 
 const writableAccounts = computed(() => accountsStore.accounts.filter((item) => canWriteRecurringOnAccount(item)));
 const accountItems = computed(() => {
@@ -124,7 +134,7 @@ const formTabs = computed(() => [
 ]);
 
 const modalTitle = computed(() => {
-    if (pickingKind.value) return t('recurrencesPage.form.pickKindTitle');
+    if (pickingStart.value) return t('recurrencesPage.form.pickKindTitle');
     if (isEdit.value) {
         return resolvedKind.value === 'expense' ? t('recurrencesPage.form.editExpenseTitle') : t('recurrencesPage.form.editIncomeTitle');
     }
@@ -134,7 +144,11 @@ const modalTitle = computed(() => {
 });
 
 const modalSubtitle = computed(() =>
-    pickingKind.value ? t('recurrencesPage.form.pickKindSubtitle') : t('recurrencesPage.form.subtitle')
+    pickingType.value
+        ? t('recurrencesPage.form.pickTypeSubtitle')
+        : pickingKind.value
+          ? t('recurrencesPage.form.pickKindSubtitle')
+          : t('recurrencesPage.form.subtitle')
 );
 
 const open = computed({
@@ -143,7 +157,7 @@ const open = computed({
 });
 
 const canSave = computed(() => {
-    if (pickingKind.value) return false;
+    if (pickingStart.value) return false;
     if (!isEdit.value) return true;
     if (resolvedKind.value === 'expense' && editExpense.value) return isExpenseFormDirty(editExpense.value, form);
     if (resolvedKind.value === 'income' && editIncome.value) return isIncomeFormDirty(editIncome.value, form);
@@ -233,6 +247,14 @@ function pickKind(kind: RecurringKind) {
     activeTab.value = 'template';
 }
 
+function pickType(pick: RecurringTypePick) {
+    applyCreateDefaults(pick.kind);
+    if (pick.kind === 'expense') form.expenseType = pick.type;
+    else form.incomeType = pick.type;
+    createStep.value = 'form';
+    activeTab.value = 'template';
+}
+
 async function resetForm() {
     localError.message = null;
     clearFieldErrors();
@@ -256,6 +278,15 @@ async function resetForm() {
     if (props.kind) {
         createStep.value = 'form';
         applyCreateDefaults(props.kind);
+        if (props.defaultType) {
+            if (props.kind === 'expense') form.expenseType = props.defaultType as RecurringExpenseType;
+            else form.incomeType = props.defaultType as RecurringIncomeType;
+        }
+        return;
+    }
+    if (props.typeChoiceFirst) {
+        createStep.value = 'type';
+        applyCreateDefaults(props.typeChoiceFirst);
         return;
     }
     createStep.value = 'kind';
@@ -289,7 +320,7 @@ watch(
 );
 
 async function onSave() {
-    if (pickingKind.value || (isEdit.value && !canSave.value)) return;
+    if (pickingStart.value || (isEdit.value && !canSave.value)) return;
     localError.message = null;
     clearFieldErrors();
     const ctx = { accounts: accountsStore.accounts, requireWrite: true as const };
@@ -325,17 +356,18 @@ async function onSave() {
 
 <template>
     <AppModalBase
-        v-if="pickingKind"
+        v-if="pickingStart"
         v-model="open"
         :title="modalTitle"
         :subtitle="modalSubtitle"
         :max-width="480"
-        :height="420"
+        :height="pickingType ? 640 : 420"
         :show-footer="false"
         scrollable
         mobile-layout="fullscreen"
     >
-        <RecurringKindChoice @select="pickKind" />
+        <RecurringTypeChoice v-if="pickingType" :kind="typeChoiceFirst ?? 'income'" @select="pickType" />
+        <RecurringKindChoice v-else @select="pickKind" />
     </AppModalBase>
     <AppModalTabs
         v-else

@@ -2,8 +2,9 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowsSortIcon, PlusIcon } from 'vue-tabler-icons';
+import { ArrowsSortIcon } from 'vue-tabler-icons';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
+import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
@@ -19,6 +20,7 @@ import { recurrencesPathForTab, recurrencesTabFromPath, type RecurrenceTab } fro
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import type { RecurringKind } from '@/features/recurring-payments/types';
+import type { RecurringTypePick } from '@/features/recurring-payments/components/forms/RecurringTypeChoice.vue';
 import { useAccountsStore } from '@/features/accounts';
 
 const TABS = ['all', 'expenses', 'incomes', 'upcoming'] as const;
@@ -29,7 +31,9 @@ const route = useRoute();
 const router = useRouter();
 const store = useRecurringPaymentsStore();
 const accountsStore = useAccountsStore();
-const directoryRef = ref<{ openCreate: (kind?: RecurringKind | null) => void } | null>(null);
+const directoryRef = ref<{
+    openCreate: (kind?: RecurringKind | null, type?: RecurringTypePick['type'] | null) => void;
+} | null>(null);
 const showInactive = ref(true);
 
 function queryString(name: string): string {
@@ -127,13 +131,12 @@ watch(
 
 function onCreate(kind?: RecurringKind) {
     if (!canCreate.value || store.acting) return;
-    if (kind) {
-        directoryRef.value?.openCreate(kind);
-        return;
-    }
-    if (tab.value === 'incomes') directoryRef.value?.openCreate('income');
-    else if (tab.value === 'expenses') directoryRef.value?.openCreate('expense');
-    else directoryRef.value?.openCreate(null);
+    directoryRef.value?.openCreate(kind ?? null);
+}
+
+function onPick(pick: RecurringTypePick) {
+    if (!canCreate.value || store.acting) return;
+    directoryRef.value?.openCreate(pick.kind, pick.type);
 }
 
 function resetFilters() {
@@ -168,17 +171,11 @@ const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ?
                         :reset-disabled="listSort === UPCOMING_DUE_SORT_DEFAULT"
                         @reset="listSort = UPCOMING_DUE_SORT_DEFAULT"
                     >
-                        <v-list class="py-0">
-                            <v-list-item
-                                v-for="value in UPCOMING_DUE_SORTS"
-                                :key="value"
-                                :active="listSort === value"
-                                color="primary"
-                                @click="listSort = value"
-                            >
-                                <v-list-item-title>{{ t(`recurrencesPage.sort.${value}`) }}</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
+                        <AppSortChoices
+                            v-model="listSort"
+                            :items="UPCOMING_DUE_SORTS"
+                            :label-for="(value) => t(`recurrencesPage.sort.${value}`)"
+                        />
                     </AppDropdownFilter>
                     <AppDropdownFilter
                         :label="t('recurrencesPage.actions.filter')"
@@ -216,21 +213,13 @@ const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ?
                     </v-list-item>
                 </AppDropdownFilter>
                 <RecurringCreateMenu
-                    v-if="tab === 'all'"
+                    v-if="tab !== 'upcoming'"
                     :label="t('recurrencesPage.actions.create')"
                     :disabled="!canCreate || store.acting"
+                    :kind="directoryKind"
                     @select="onCreate"
+                    @pick="onPick"
                 />
-                <button
-                    v-else-if="tab !== 'upcoming'"
-                    type="button"
-                    class="su-btn su-btn--ink"
-                    :disabled="!canCreate || store.acting"
-                    @click="onCreate()"
-                >
-                    <PlusIcon :size="16" stroke-width="1.6" />
-                    {{ t('recurrencesPage.actions.create') }}
-                </button>
             </div>
         </template>
 
@@ -241,6 +230,13 @@ const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ?
             :account-public-id="filterAccountId || null"
             :sort="listSort"
         />
-        <RecurringTemplatesDirectory v-else :key="tab" ref="directoryRef" :kind="directoryKind" :show-inactive="showInactive" />
+        <RecurringTemplatesDirectory
+            v-else
+            :key="tab"
+            ref="directoryRef"
+            :kind="directoryKind"
+            :type-choice-first="tab === 'incomes' ? 'income' : tab === 'expenses' ? 'expense' : null"
+            :show-inactive="showInactive"
+        />
     </AppPageShell>
 </template>

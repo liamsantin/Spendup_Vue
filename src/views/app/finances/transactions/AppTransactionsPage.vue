@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon } from 'vue-tabler-icons';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
+import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import {
@@ -373,17 +374,11 @@ watch(
                     :reset-disabled="listSort === TRANSACTION_SORT_DEFAULT"
                     @reset="listSort = TRANSACTION_SORT_DEFAULT"
                 >
-                    <v-list class="py-0">
-                        <v-list-item
-                            v-for="value in TRANSACTION_SORTS"
-                            :key="value"
-                            :active="listSort === value"
-                            color="primary"
-                            @click="listSort = value"
-                        >
-                            <v-list-item-title>{{ t(`transactionsPage.sort.${value}`) }}</v-list-item-title>
-                        </v-list-item>
-                    </v-list>
+                    <AppSortChoices
+                        v-model="listSort"
+                        :items="TRANSACTION_SORTS"
+                        :label-for="(value) => t(`transactionsPage.sort.${value}`)"
+                    />
                 </AppDropdownFilter>
                 <AppDropdownFilter
                     :label="t('transactionsPage.actions.filter')"
