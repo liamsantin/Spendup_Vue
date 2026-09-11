@@ -5,9 +5,11 @@ import { useRoute, useRouter } from 'vue-router';
 import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon } from 'vue-tabler-icons';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
+import AppAmountRangeFields from '@/components/shared/dropdown-filter/AppAmountRangeFields.vue';
 import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
+import { serializeAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
 import {
     TransactionsTimeline,
     TRANSACTION_SEARCH_MAX,
@@ -201,6 +203,16 @@ const listSort = computed({
     set: (value: string) => patchQuery({ sort: value === TRANSACTION_SORT_DEFAULT ? undefined : value })
 });
 
+const filterMinAmount = computed({
+    get: () => queryString('minAmount'),
+    set: (value: string) => patchQuery({ minAmount: serializeAmountFilter(value) })
+});
+
+const filterMaxAmount = computed({
+    get: () => queryString('maxAmount'),
+    set: (value: string) => patchQuery({ maxAmount: serializeAmountFilter(value) })
+});
+
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
     const q = 'q' in patch ? patch.q : queryString('q') || undefined;
@@ -215,6 +227,8 @@ function patchQuery(patch: Record<string, string | undefined>) {
     const recurringIncomePublicId =
         'recurringIncomePublicId' in patch ? patch.recurringIncomePublicId : queryString('recurringIncomePublicId') || undefined;
     const sort = 'sort' in patch ? patch.sort : queryString('sort') || undefined;
+    const minAmount = 'minAmount' in patch ? patch.minAmount : queryString('minAmount') || undefined;
+    const maxAmount = 'maxAmount' in patch ? patch.maxAmount : queryString('maxAmount') || undefined;
     if (q) next.q = q.slice(0, TRANSACTION_SEARCH_MAX);
     if (account) next.account = account;
     if (type && TRANSACTION_TYPES.includes(type as TransactionType)) next.type = type;
@@ -225,6 +239,8 @@ function patchQuery(patch: Record<string, string | undefined>) {
     if (recurringExpensePublicId) next.recurringExpensePublicId = recurringExpensePublicId;
     if (recurringIncomePublicId) next.recurringIncomePublicId = recurringIncomePublicId;
     if (sort && isTransactionSort(sort) && sort !== TRANSACTION_SORT_DEFAULT) next.sort = sort;
+    if (minAmount) next.minAmount = minAmount;
+    if (maxAmount) next.maxAmount = maxAmount;
     void router.replace({ path: '/app/finances/transactions', query: next });
 }
 
@@ -257,7 +273,9 @@ function resetFilters() {
         recurringExpensePublicId: undefined,
         recurringIncomePublicId: undefined,
         from: undefined,
-        to: undefined
+        to: undefined,
+        minAmount: undefined,
+        maxAmount: undefined
     });
 }
 
@@ -269,7 +287,9 @@ const filtersActive = computed(
             filterTierId.value ||
             filterRecurrenceKey.value ||
             filterFrom.value ||
-            filterTo.value
+            filterTo.value ||
+            filterMinAmount.value ||
+            filterMaxAmount.value
         )
 );
 
@@ -281,7 +301,9 @@ const filterCount = computed(
             filterTierId.value,
             filterRecurrenceKey.value,
             filterFrom.value,
-            filterTo.value
+            filterTo.value,
+            filterMinAmount.value,
+            filterMaxAmount.value
         ].filter(Boolean).length
 );
 
@@ -422,6 +444,7 @@ watch(
                             :placeholder="t('transactionsPage.filters.to')"
                             :min="filterFrom || undefined"
                         />
+                        <AppAmountRangeFields v-model:min="filterMinAmount" v-model:max="filterMaxAmount" />
                     </div>
                 </AppDropdownFilter>
                 <button type="button" class="su-btn su-btn--ink" :disabled="!canCreate || store.acting" @click="onCreate">

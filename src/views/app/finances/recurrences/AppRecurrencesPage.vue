@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowsSortIcon } from 'vue-tabler-icons';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
+import AppAmountRangeFields from '@/components/shared/dropdown-filter/AppAmountRangeFields.vue';
 import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
@@ -17,6 +18,7 @@ import {
     parseUpcomingDueSort
 } from '@/features/recurring-payments/format';
 import { recurrencesPathForTab, recurrencesTabFromPath, type RecurrenceTab } from '@/features/recurring-payments/paths';
+import { serializeAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import type { RecurringKind } from '@/features/recurring-payments/types';
@@ -89,10 +91,14 @@ function patchQuery(patch: Record<string, string | undefined>) {
     const kind = 'kind' in patch ? patch.kind : queryString('kind') || undefined;
     const due = 'due' in patch ? patch.due : queryString('due') || undefined;
     const sort = 'sort' in patch ? patch.sort : queryString('sort') || undefined;
+    const minAmount = 'minAmount' in patch ? patch.minAmount : queryString('minAmount') || undefined;
+    const maxAmount = 'maxAmount' in patch ? patch.maxAmount : queryString('maxAmount') || undefined;
     if (account) next.account = account;
     if (kind === 'expense' || kind === 'income') next.kind = kind;
     if (due === 'planned' || due === 'settled') next.due = due;
     if (sort && sort !== UPCOMING_DUE_SORT_DEFAULT && parseUpcomingDueSort(sort) === sort) next.sort = sort;
+    if (minAmount) next.minAmount = minAmount;
+    if (maxAmount) next.maxAmount = maxAmount;
     void router.replace({ path: route.path, query: next });
 }
 
@@ -114,6 +120,16 @@ const dueSettlement = computed({
 const listSort = computed({
     get: () => parseUpcomingDueSort(queryString('sort')),
     set: (value: string) => patchQuery({ sort: parseUpcomingDueSort(value) === UPCOMING_DUE_SORT_DEFAULT ? undefined : value })
+});
+
+const filterMinAmount = computed({
+    get: () => queryString('minAmount'),
+    set: (value: string) => patchQuery({ minAmount: serializeAmountFilter(value) })
+});
+
+const filterMaxAmount = computed({
+    get: () => queryString('maxAmount'),
+    set: (value: string) => patchQuery({ maxAmount: serializeAmountFilter(value) })
 });
 
 watch(
@@ -141,18 +157,27 @@ function onPick(pick: RecurringTypePick) {
 
 function resetFilters() {
     if (tab.value === 'upcoming') {
-        patchQuery({ account: undefined, kind: undefined, due: undefined });
+        patchQuery({ account: undefined, kind: undefined, due: undefined, minAmount: undefined, maxAmount: undefined });
         return;
     }
     showInactive.value = true;
+    patchQuery({ minAmount: undefined, maxAmount: undefined });
 }
 
-const upcomingFiltersActive = computed(() => !!(filterAccountId.value || filterKind.value || dueSettlement.value !== 'all'));
+const upcomingFiltersActive = computed(
+    () => !!(filterAccountId.value || filterKind.value || dueSettlement.value !== 'all' || filterMinAmount.value || filterMaxAmount.value)
+);
 const filterCount = computed(() => {
     if (tab.value === 'upcoming') {
-        return [filterAccountId.value, filterKind.value, dueSettlement.value !== 'all' ? 'due' : ''].filter(Boolean).length;
+        return [
+            filterAccountId.value,
+            filterKind.value,
+            dueSettlement.value !== 'all' ? 'due' : '',
+            filterMinAmount.value,
+            filterMaxAmount.value
+        ].filter(Boolean).length;
     }
-    return showInactive.value ? 0 : 1;
+    return [showInactive.value ? '' : 'inactive', filterMinAmount.value, filterMaxAmount.value].filter(Boolean).length;
 });
 const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ? 0 : 1));
 </script>
@@ -198,6 +223,7 @@ const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ?
                                 :label="t('recurrencesPage.filters.dueState')"
                                 hide-details
                             />
+                            <AppAmountRangeFields v-model:min="filterMinAmount" v-model:max="filterMaxAmount" />
                         </div>
                     </AppDropdownFilter>
                 </template>
@@ -205,12 +231,13 @@ const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ?
                     v-else
                     :label="t('recurrencesPage.actions.filter')"
                     :count="filterCount"
-                    :reset-disabled="showInactive"
+                    :reset-disabled="!filterCount"
                     @reset="resetFilters"
                 >
-                    <v-list-item>
+                    <div class="pa-3 d-flex flex-column ga-3">
                         <AppSwitch v-model="showInactive" :label="t('recurrencesPage.filters.showInactive')" />
-                    </v-list-item>
+                        <AppAmountRangeFields v-model:min="filterMinAmount" v-model:max="filterMaxAmount" />
+                    </div>
                 </AppDropdownFilter>
                 <RecurringCreateMenu
                     v-if="tab !== 'upcoming'"
@@ -228,6 +255,8 @@ const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ?
             :settlement="dueSettlement"
             :kind="filterKind || null"
             :account-public-id="filterAccountId || null"
+            :min-amount="filterMinAmount"
+            :max-amount="filterMaxAmount"
             :sort="listSort"
         />
         <RecurringTemplatesDirectory
@@ -237,6 +266,8 @@ const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ?
             :kind="directoryKind"
             :type-choice-first="tab === 'incomes' ? 'income' : tab === 'expenses' ? 'expense' : null"
             :show-inactive="showInactive"
+            :min-amount="filterMinAmount"
+            :max-amount="filterMaxAmount"
         />
     </AppPageShell>
 </template>

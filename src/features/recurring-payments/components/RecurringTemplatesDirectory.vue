@@ -12,6 +12,7 @@ import RecurringTemplateFormModal from '@/features/recurring-payments/components
 import { recurrencesPathForTab } from '@/features/recurring-payments/paths';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { isExpenseTemplate, sortTemplates } from '@/features/recurring-payments/format';
+import { amountInFilterRange, parseAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import type {
     RecurringExpense,
@@ -26,8 +27,10 @@ const props = withDefaults(
         kind?: RecurringKind | null;
         showInactive?: boolean;
         typeChoiceFirst?: RecurringKind | null;
+        minAmount?: string | null;
+        maxAmount?: string | null;
     }>(),
-    { kind: null, showInactive: true, typeChoiceFirst: null }
+    { kind: null, showInactive: true, typeChoiceFirst: null, minAmount: null, maxAmount: null }
 );
 
 const { t } = useI18n();
@@ -80,7 +83,12 @@ function templateKind(item: RecurringExpense | RecurringIncome): RecurringKind {
 function visibleOf(list: readonly (RecurringExpense | RecurringIncome)[]) {
     const filtered = props.showInactive ? list : list.filter((item) => item.isActive);
     const accountId = filterAccountId.value;
-    return accountId ? filtered.filter((item) => item.accountPublicId === accountId) : [...filtered];
+    const minAmount = parseAmountFilter(props.minAmount);
+    const maxAmount = parseAmountFilter(props.maxAmount);
+    return filtered.filter((item) => {
+        if (accountId && item.accountPublicId !== accountId) return false;
+        return amountInFilterRange(item.plannedAmount, minAmount, maxAmount);
+    });
 }
 
 const items = computed(() => {

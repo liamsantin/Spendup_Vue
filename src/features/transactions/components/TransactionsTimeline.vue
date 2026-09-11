@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
+import { amountInFilterRange, parseAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
@@ -81,6 +82,8 @@ const filterType = computed<TransactionType | null>(() => {
     return raw && TRANSACTION_TYPES.includes(raw as TransactionType) ? (raw as TransactionType) : null;
 });
 const listSort = computed(() => parseTransactionSort(queryString('sort')));
+const filterMinAmount = computed(() => (props.lockedAccountPublicId ? null : parseAmountFilter(queryString('minAmount'))));
+const filterMaxAmount = computed(() => (props.lockedAccountPublicId ? null : parseAmountFilter(queryString('maxAmount'))));
 const groupByDate = computed(() => listSort.value === 'dateDesc' || listSort.value === 'dateAsc');
 
 const visibleItems = computed(() => {
@@ -88,6 +91,7 @@ const visibleItems = computed(() => {
     const needle = filterSearch.value?.trim() ?? '';
     const filtered = store.items.filter((item) => {
         if (type && item.type !== type) return false;
+        if (!amountInFilterRange(item.amount, filterMinAmount.value, filterMaxAmount.value)) return false;
         if (!needle) return true;
         const tier = item.tierPublicId ? tiersStore.findByPublicId(item.tierPublicId) : null;
         return matchesTransactionSearch(item, needle, {
@@ -108,6 +112,7 @@ const visibleItems = computed(() => {
 
 const emptyCopy = computed(() => {
     if (filterSearch.value) return t('transactionsPage.empty.filtered');
+    if (filterMinAmount.value != null || filterMaxAmount.value != null) return t('transactionsPage.empty.filtered');
     if (filterType.value) return t('transactionsPage.empty.byType', { type: t(`transactionsPage.types.${filterType.value}`) });
     if (filterRecurringExpenseId.value || filterRecurringIncomeId.value) return t('transactionsPage.empty.recurrence');
     if (filterAccountId.value) return t('transactionsPage.empty.account');

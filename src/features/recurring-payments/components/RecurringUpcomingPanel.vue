@@ -18,6 +18,7 @@ import {
     todayLocalYmd,
     type UpcomingDueSort
 } from '@/features/recurring-payments/format';
+import { amountInFilterRange, parseAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
 import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import type { RecurringDue, RecurringKind } from '@/features/recurring-payments/types';
@@ -36,9 +37,11 @@ const props = withDefaults(
         settlement?: 'all' | 'planned' | 'settled';
         kind?: RecurringKind | null;
         accountPublicId?: string | null;
+        minAmount?: string | null;
+        maxAmount?: string | null;
         sort?: UpcomingDueSort;
     }>(),
-    { settlement: 'all', kind: null, accountPublicId: null, sort: 'dateAsc' }
+    { settlement: 'all', kind: null, accountPublicId: null, minAmount: null, maxAmount: null, sort: 'dateAsc' }
 );
 
 const { t, locale } = useI18n();
@@ -60,9 +63,12 @@ const detailOpen = computed({
 const visibleRows = computed(() => {
     const accountId = props.accountPublicId?.trim() || null;
     const kind = props.kind;
+    const minAmount = parseAmountFilter(props.minAmount);
+    const maxAmount = parseAmountFilter(props.maxAmount);
     const filtered = rows.value.filter((row) => {
         if (kind && row.kind !== kind) return false;
         if (accountId && row.accountPublicId !== accountId) return false;
+        if (!amountInFilterRange(row.due.actualAmount ?? row.due.plannedAmount, minAmount, maxAmount)) return false;
         if (props.settlement === 'planned') return isDueOpen(row.due, row.kind);
         if (props.settlement === 'settled') return isDueSettled(row.due, row.kind);
         return true;
@@ -73,7 +79,7 @@ const visibleRows = computed(() => {
 const emptyCopy = computed(() => {
     if (props.settlement === 'planned') return t('recurrencesPage.empty.upcomingPlanned');
     if (props.settlement === 'settled') return t('recurrencesPage.empty.upcomingSettled');
-    if (props.kind || props.accountPublicId) return t('recurrencesPage.empty.upcomingFiltered');
+    if (props.kind || props.accountPublicId || props.minAmount || props.maxAmount) return t('recurrencesPage.empty.upcomingFiltered');
     return t('recurrencesPage.empty.upcoming');
 });
 

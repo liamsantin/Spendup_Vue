@@ -21,7 +21,9 @@
         "refresh": "Refresh",
         "more": "More actions",
         "skipToContent": "Skip to content",
-        "reset": "Reset"
+        "reset": "Reset",
+        "minAmount": "Min. amount",
+        "maxAmount": "Max. amount"
     },
     "shell": {
         "save": "Save",

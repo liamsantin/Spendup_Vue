@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { CalendarEventIcon, EyeIcon, PaperclipIcon } from 'vue-tabler-icons';
+import { CalendarEventIcon, CheckIcon, EyeIcon, PaperclipIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
@@ -95,6 +95,12 @@ const existingDues = computed(() =>
     })
 );
 const upcomingDues = computed(() => sortDues(dues.value.filter((due) => !due.transactionPublicId)));
+const dueGroups = computed(() =>
+    [
+        { key: 'existing' as const, title: t('recurrencesPage.detail.duesExisting'), items: existingDues.value },
+        { key: 'upcoming' as const, title: t('recurrencesPage.detail.duesUpcoming'), items: upcomingDues.value }
+    ].filter((group) => group.items.length)
+);
 const expense = computed(() => (template.value && isExpenseTemplate(template.value) ? template.value : null));
 
 const account = computed(() =>
@@ -294,41 +300,45 @@ function seeRelatedTransactions() {
                     <div v-if="store.loadingDues && !dues.length" class="su-loading"><span class="su-spin" /></div>
                     <p v-else-if="!dues.length" class="text-medium-emphasis">{{ t('recurrencesPage.detail.duesEmpty') }}</p>
                     <div v-else class="su-stack recurring-detail-dues">
-                        <section v-if="existingDues.length" class="su-surface">
+                        <section v-for="group in dueGroups" :key="group.key" class="su-surface recurring-detail-dues__group">
                             <header class="su-panel__head">
-                                <h2>{{ t('recurrencesPage.detail.duesExisting') }}</h2>
+                                <div>
+                                    <h2>{{ group.title }}</h2>
+                                </div>
                             </header>
                             <div class="recurring-detail-dues__list">
-                                <div v-for="due in existingDues" :key="due.publicId" class="su-person">
-                                    <div class="su-person__meta">
-                                        <p class="su-person__name">{{ formatCalendarDate(due.scheduledAt, locale) }}</p>
-                                        <p class="su-person__sub">{{ statusLabel(due) }} · {{ dueAmount(due) }}</p>
+                                <div
+                                    v-for="due in group.items"
+                                    :key="due.publicId"
+                                    class="recurring-due-row"
+                                    :class="{ 'is-link': group.key === 'existing' && due.transactionPublicId }"
+                                    @click="group.key === 'existing' ? openTransaction(due) : undefined"
+                                >
+                                    <span class="recurring-due-row__icon" :class="`is-${group.key}`">
+                                        <component
+                                            :is="group.key === 'existing' ? CheckIcon : CalendarEventIcon"
+                                            size="18"
+                                            stroke-width="1.8"
+                                        />
+                                    </span>
+                                    <div class="recurring-due-row__meta">
+                                        <p class="recurring-due-row__date">{{ formatCalendarDate(due.scheduledAt, locale) }}</p>
+                                        <p class="recurring-due-row__sub">{{ statusLabel(due) }}</p>
                                     </div>
-                                    <div class="su-person__actions">
+                                    <div class="recurring-due-row__actions" @click.stop>
+                                        <span class="recurring-due-row__amount" :class="kind === 'expense' ? 'is-debit' : 'is-credit'">
+                                            {{ dueAmount(due) }}
+                                        </span>
                                         <button
-                                            v-if="isDueSettled(due, kind) && due.transactionPublicId"
+                                            v-if="group.key === 'existing' && isDueSettled(due, kind) && due.transactionPublicId"
                                             type="button"
-                                            class="su-btn"
+                                            class="su-orb"
+                                            :aria-label="t('recurrencesPage.actions.openTransaction')"
                                             @click="openTransaction(due)"
                                         >
-                                            {{ t('recurrencesPage.actions.openTransaction') }}
+                                            <EyeIcon :size="16" stroke-width="1.6" />
                                         </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                        <section v-if="upcomingDues.length" class="su-surface">
-                            <header class="su-panel__head">
-                                <h2>{{ t('recurrencesPage.detail.duesUpcoming') }}</h2>
-                            </header>
-                            <div class="recurring-detail-dues__list">
-                                <div v-for="due in upcomingDues" :key="due.publicId" class="su-person">
-                                    <div class="su-person__meta">
-                                        <p class="su-person__name">{{ formatCalendarDate(due.scheduledAt, locale) }}</p>
-                                        <p class="su-person__sub">{{ statusLabel(due) }} · {{ dueAmount(due) }}</p>
-                                    </div>
-                                    <div class="su-person__actions">
-                                        <template v-if="isDueOpen(due, kind) && canConfirm">
+                                        <template v-else-if="group.key === 'upcoming' && isDueOpen(due, kind) && canConfirm">
                                             <button
                                                 type="button"
                                                 class="su-btn su-btn--ink"
@@ -412,10 +422,138 @@ function seeRelatedTransactions() {
     gap: 12px;
 }
 
+.recurring-detail-dues__group {
+    overflow: visible;
+}
+
+.recurring-detail-dues__group :deep(.su-panel__head) {
+    padding: 6px 8px 2px;
+}
+
 .recurring-detail-dues__list {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 0 8px 8px;
+    overflow: visible;
+    padding: 4px;
+}
+
+.recurring-due-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+    padding: 10px;
+    box-sizing: border-box;
+    border-radius: 12px;
+    color: inherit;
+    position: relative;
+    z-index: 0;
+    transition:
+        transform 0.5s var(--spring),
+        box-shadow 0.45s var(--ease),
+        background 0.3s var(--ease);
+}
+
+.recurring-due-row.is-link {
+    cursor: pointer;
+}
+
+.recurring-due-row:hover {
+    background: var(--surface-hover-soft);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .recurring-due-row:hover {
+        z-index: 1;
+        transform: scale(1.012);
+        box-shadow:
+            0 1px 2px rgba(16, 16, 20, 0.04),
+            0 12px 28px -16px rgba(16, 16, 20, 0.18);
+    }
+}
+
+.recurring-due-row__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 38px;
+    height: 38px;
+    margin-top: 1px;
+    border-radius: 12px;
+    background: var(--hair);
+    color: var(--ink-muted);
+}
+
+.recurring-due-row__icon.is-existing {
+    background: rgba(var(--v-theme-success), 0.12);
+    color: rgb(var(--v-theme-success));
+}
+
+.recurring-due-row__icon.is-upcoming {
+    background: rgba(var(--v-theme-primary), 0.1);
+    color: rgb(var(--v-theme-primary));
+}
+
+.recurring-due-row__meta {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.recurring-due-row__date {
+    margin: 0;
+    min-width: 0;
+    font-size: 14.5px;
+    font-weight: 620;
+    letter-spacing: -0.01em;
+}
+
+.recurring-due-row__sub {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+}
+
+.recurring-due-row__actions {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    padding: 2px;
+    margin: -2px;
+}
+
+.recurring-due-row__amount {
+    margin-right: 6px;
+    font-size: 0.92rem;
+    font-weight: 680;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+}
+
+.recurring-due-row__amount.is-debit {
+    color: rgb(var(--v-theme-error));
+}
+
+.recurring-due-row__amount.is-credit {
+    color: rgb(var(--v-theme-success));
+}
+
+@media (max-width: 600px) {
+    .recurring-due-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .recurring-due-row__actions {
+        width: 100%;
+        justify-content: flex-start;
+        padding-left: 50px;
+    }
 }
 </style>
