@@ -32,14 +32,16 @@ Réponses list/read : passer par `normalize*` (metadata JSON string → objet).
 
 Hub `{apiBase}/hubs/realtime` — détails `architecture/realtime.md`.
 
-| Event                  | Effet                                        |
-| ---------------------- | -------------------------------------------- |
-| `notificationReceived` | upsert inbox / badge / chips                 |
-| `friendshipChanged`    | listeners only — **pas** de badge            |
-| `accountChanged`       | fan-out stores comptes / PM / transactions   |
-| `categoryChanged`      | fan-out store catégories (acteur inclus)     |
-| `inboxCleared`         | reset liste                                  |
-| `sessionEnded`         | `forceReLogin` (all devices ou device match) |
+| Event                     | Effet                                        |
+| ------------------------- | -------------------------------------------- |
+| `notificationReceived`    | upsert inbox / badge / chips                 |
+| `friendshipChanged`       | listeners only — **pas** de badge            |
+| `accountChanged`          | fan-out stores comptes / PM / transactions   |
+| `categoryChanged`         | fan-out store catégories (acteur inclus)     |
+| `recurringExpenseChanged` | fan-out store récurrences (acteur inclus)    |
+| `recurringIncomeChanged`  | fan-out store récurrences (acteur inclus)    |
+| `inboxCleared`            | reset liste                                  |
+| `sessionEnded`            | `forceReLogin` (all devices ou device match) |
 
 ## Invariants
 

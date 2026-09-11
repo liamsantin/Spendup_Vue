@@ -31,7 +31,9 @@ Auth : Bearer JWT **ou** cookie `spendup_access`. JSON camelCase, enveloppe `{ s
 | POST    | `/api/transactions/{txPublicId}/files`                | editor+ | Body `{ filePublicId }`. `200` + TX à jour                                   |
 | DELETE  | `/api/transactions/{txPublicId}/files/{filePublicId}` | editor+ | Détache, `204`. Le PDF reste dans Fichiers                                   |
 
-Filtres liste : `accountPublicId`, `categoryPublicId`, `tierPublicId`, `from`, `to`, `page`, `pageSize` (défaut 50, max 200).
+Filtres liste : `accountPublicId`, `categoryPublicId`, `tierPublicId`, `recurringExpensePublicId`, `recurringIncomePublicId`, `from`, `to`, `page`, `pageSize` (défaut 50, max 200).
+
+`source` : `manuelle` (saisie) ou `recurrence` (due confirmée). Ne **pas** envoyer `source` au POST TX. Sur une TX récurrente : `recurringExpensePublicId` / `recurringIncomePublicId` / `duePublicId`.
 
 `PUT` : ne **pas** renvoyer `files` / `filePublicIds`. Pas de multipart sur `POST /api/transactions`.
 

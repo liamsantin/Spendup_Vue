@@ -131,6 +131,22 @@ export type TierChangedPayload = {
     tierPublicId: string;
 };
 
+/** Payload SignalR `recurringExpenseChanged` — templates perso (acteur inclus, pas d’inbox). */
+export type RecurringExpenseChange = 'recurringExpenseCreated' | 'recurringExpenseUpdated' | 'recurringExpenseDeleted';
+
+export type RecurringExpenseChangedPayload = {
+    change: RecurringExpenseChange;
+    recurringExpensePublicId: string;
+};
+
+/** Payload SignalR `recurringIncomeChanged` — templates perso (acteur inclus, pas d’inbox). */
+export type RecurringIncomeChange = 'recurringIncomeCreated' | 'recurringIncomeUpdated' | 'recurringIncomeDeleted';
+
+export type RecurringIncomeChangedPayload = {
+    change: RecurringIncomeChange;
+    recurringIncomePublicId: string;
+};
+
 export type NotificationsListQuery = {
     page?: number;
     pageSize?: number;

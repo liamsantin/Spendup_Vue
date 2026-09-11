@@ -1,6 +1,6 @@
 export type TransactionType = 'depense' | 'revenu' | 'transfert';
 export type TransactionStatus = 'validee';
-export type TransactionSource = 'manuelle';
+export type TransactionSource = 'manuelle' | 'recurrence';
 export type MovementSens = 'debit' | 'credit';
 
 export type TransactionFile = {
@@ -22,6 +22,10 @@ export type Transaction = {
     type: TransactionType;
     status: TransactionStatus;
     source: TransactionSource;
+    /** Présent si `source === "recurrence"`. */
+    recurringExpensePublicId: string | null;
+    recurringIncomePublicId: string | null;
+    duePublicId: string | null;
     label: string;
     /** `null` si le viewer a le solde masqué. */
     amount: number | null;
@@ -55,6 +59,8 @@ export type ListTransactionsQuery = {
     accountPublicId?: string;
     categoryPublicId?: string;
     tierPublicId?: string;
+    recurringExpensePublicId?: string;
+    recurringIncomePublicId?: string;
     from?: string;
     to?: string;
     page?: number;

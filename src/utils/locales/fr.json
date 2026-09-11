@@ -302,6 +302,10 @@
                 "title": "Moyens de paiement",
                 "caption": "Cartes, espèces et autres moyens"
             },
+            "recurrences": {
+                "title": "Récurrences",
+                "caption": "Charges et revenus prévus"
+            },
             "files": {
                 "title": "Fichiers",
                 "caption": "Documents PDF privés"
@@ -496,7 +500,8 @@
             },
             "delete": {
                 "title": "Supprimer ce compte ?",
-                "body": "Cette action est définitive si le compte n’a aucun mouvement."
+                "body": "Cette action est définitive si le compte n’a aucun mouvement.",
+                "linkedRecurrences": "Déliez d’abord ces récurrences : {names}."
             },
             "deleteBlocked": {
                 "title": "Suppression impossible",
@@ -643,6 +648,181 @@
                 "expirationInvalid": "Date d’expiration invalide.",
                 "expirationPast": "Un moyen actif ne peut pas être déjà expiré.",
                 "isActiveRequired": "Le statut actif est obligatoire."
+            }
+        }
+    },
+    "recurrencesPage": {
+        "title": "Récurrences",
+        "subtitle": "Charges et revenus prévus. Une échéance ne devient une transaction qu’après confirmation.",
+        "loadMore": "Charger plus",
+        "unknownAccount": "Compte",
+        "tabs": {
+            "expenses": "Charges",
+            "incomes": "Revenus",
+            "upcoming": "Échéances"
+        },
+        "kinds": {
+            "expense": "Charge",
+            "income": "Revenu"
+        },
+        "badges": {
+            "paused": "En pause"
+        },
+        "filters": {
+            "showInactive": "Afficher les pauses"
+        },
+        "empty": {
+            "expenses": "Aucune charge récurrente pour l’instant.",
+            "incomes": "Aucun revenu récurrent pour l’instant.",
+            "upcoming": "Aucune échéance dans les trois prochains mois."
+        },
+        "actions": {
+            "filter": "Filtre",
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "confirmDue": "Confirmer",
+            "skipDue": "Ignorer",
+            "openTransaction": "Voir la transaction"
+        },
+        "list": {
+            "nextDue": "Prochaine échéance le {date}",
+            "noNextDue": "Pas d’échéance à venir"
+        },
+        "detail": {
+            "title": "Récurrence",
+            "subtitle": "Échéances générées. Confirmez pour créer une transaction.",
+            "duesTitle": "Échéances",
+            "duesEmpty": "Aucune échéance matérialisée.",
+            "filesTitle": "Justificatifs PDF",
+            "seeTransactions": "Transactions liées"
+        },
+        "deleteModal": {
+            "expenseTitle": "Supprimer cette charge ?",
+            "incomeTitle": "Supprimer ce revenu ?",
+            "body": "Les échéances non payées disparaîtront. Les transactions déjà créées restent."
+        },
+        "skipModal": {
+            "title": "Ignorer cette échéance ?",
+            "body": "Elle sera annulée. Aucune transaction ne sera créée."
+        },
+        "errors": {
+            "notFound": "Charge, revenu ou échéance introuvable.",
+            "transactionGone": "La transaction n’existe plus. L’échéance a peut-être été rouverte."
+        },
+        "expenseTypes": {
+            "leasing": "Leasing",
+            "assurance": "Assurance",
+            "credit": "Crédit",
+            "abonnement": "Abonnement",
+            "loyer": "Loyer",
+            "impot": "Impôt",
+            "service": "Service",
+            "entretien": "Entretien",
+            "other": "Autre"
+        },
+        "incomeTypes": {
+            "salaire": "Salaire",
+            "prime": "Prime",
+            "treiziemeSalaire": "13e salaire",
+            "freelance": "Freelance",
+            "loyerEncaisse": "Loyer encaissé",
+            "dividende": "Dividende",
+            "interet": "Intérêt",
+            "rente": "Rente",
+            "pension": "Pension",
+            "allocation": "Allocation",
+            "remboursement": "Remboursement",
+            "other": "Autre"
+        },
+        "expenseFrequencies": {
+            "quotidien": "Quotidien",
+            "hebdomadaire": "Hebdomadaire",
+            "mensuel": "Mensuel",
+            "trimestriel": "Trimestriel",
+            "semestriel": "Semestriel",
+            "annuel": "Annuel"
+        },
+        "incomeFrequencies": {
+            "hebdomadaire": "Hebdomadaire",
+            "mensuelle": "Mensuelle",
+            "trimestrielle": "Trimestrielle",
+            "semestrielle": "Semestrielle",
+            "annuelle": "Annuelle"
+        },
+        "dueStatuses": {
+            "prevue": "Prévue",
+            "generee": "Générée",
+            "payee": "Payée",
+            "enRetard": "En retard",
+            "canceled": "Annulée",
+            "prevu": "Prévu",
+            "pending": "En attente",
+            "encaisse": "Encaissé",
+            "partiel": "Partiel",
+            "annule": "Annulé",
+            "retard": "Retard"
+        },
+        "confirm": {
+            "expenseTitle": "Confirmer le paiement",
+            "incomeTitle": "Confirmer l’encaissement",
+            "subtitle": "Cela crée une transaction et met à jour le solde.",
+            "fields": {
+                "paymentDate": "Date",
+                "amount": "Montant"
+            }
+        },
+        "form": {
+            "createExpenseTitle": "Nouvelle charge récurrente",
+            "createIncomeTitle": "Nouveau revenu récurrent",
+            "editExpenseTitle": "Modifier la charge",
+            "editIncomeTitle": "Modifier le revenu",
+            "subtitle": "Les échéances sont générées par le serveur. Confirmez-les ensuite.",
+            "tabs": {
+                "template": "Récurrence",
+                "classification": "Classification"
+            },
+            "pauseHint": "Les échéances déjà prévues restent à traiter.",
+            "paymentDayPlaceholder": "1–28",
+            "noPaymentMethod": "Aucun",
+            "noCategory": "Aucune",
+            "createPaymentMethod": "Nouveau moyen de paiement",
+            "createCategory": "Nouvelle catégorie",
+            "fields": {
+                "isActive": "Actif",
+                "account": "Compte",
+                "name": "Nom",
+                "expenseType": "Type de charge",
+                "incomeType": "Type de revenu",
+                "frequency": "Fréquence",
+                "paymentDay": "Jour de paiement",
+                "plannedAmount": "Montant prévu",
+                "startDate": "Début",
+                "endDate": "Fin",
+                "paymentMethod": "Moyen de paiement",
+                "category": "Catégorie",
+                "tier": "Tiers",
+                "notes": "Notes"
+            },
+            "errors": {
+                "nameRequired": "Le nom est obligatoire.",
+                "nameTooLong": "Le nom est trop long.",
+                "typeInvalid": "Type invalide.",
+                "frequencyInvalid": "Fréquence invalide.",
+                "amountInvalid": "Montant invalide.",
+                "amountNotPositive": "Le montant doit être supérieur à 0.",
+                "startDateRequired": "La date de début est obligatoire.",
+                "startDateInvalid": "Date de début invalide.",
+                "endDateInvalid": "Date de fin invalide.",
+                "endDateBeforeStart": "La date de fin doit être après le début.",
+                "accountRequired": "Choisissez un compte.",
+                "accountArchived": "Ce compte est archivé.",
+                "forbidden": "Action non autorisée.",
+                "paymentDayInvalid": "Le jour de paiement doit être entre 1 et 28.",
+                "notesTooLong": "Notes trop longues.",
+                "isActiveRequired": "Le statut actif est obligatoire.",
+                "paymentDateInvalid": "Date invalide.",
+                "paymentDateFuture": "La date ne peut pas être dans le futur."
             }
         }
     },
@@ -1161,7 +1341,8 @@
             "createdByUnknown": "Saisi par un utilisateur",
             "myCategory": "Ma catégorie : {name}",
             "myTier": "Ma contrepartie : {name}",
-            "hasAttachments": "{count} justificatif | {count} justificatif | {count} justificatifs"
+            "hasAttachments": "{count} justificatif | {count} justificatif | {count} justificatifs",
+            "sourceRecurrence": "Récurrence"
         },
         "deleteModal": {
             "title": "Supprimer cette transaction ?",

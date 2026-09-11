@@ -13,6 +13,8 @@ import {
     normalizePublicId,
     parseAccountChangedPayload,
     parseCategoryChangedPayload,
+    parseRecurringExpenseChangedPayload,
+    parseRecurringIncomeChangedPayload,
     parseTierChangedPayload
 } from '@/features/notifications/normalize';
 import type {
@@ -22,6 +24,8 @@ import type {
     FriendshipChangedPayload,
     InboxClearedPayload,
     NotificationReceivedPayload,
+    RecurringExpenseChangedPayload,
+    RecurringIncomeChangedPayload,
     SessionEndedPayload,
     TierChangedPayload
 } from '@/features/notifications/types';
@@ -53,6 +57,8 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         accountChangeListeners,
         categoryChangeListeners,
         tierChangeListeners,
+        recurringExpenseChangeListeners,
+        recurringIncomeChangeListeners,
         applyUnreadCount,
         upsertItem
     } = state;
@@ -111,6 +117,18 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         const parsed = parseTierChangedPayload(payload);
         if (!parsed) return;
         tierChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    function onRecurringExpenseChanged(payload: RecurringExpenseChangedPayload) {
+        const parsed = parseRecurringExpenseChangedPayload(payload);
+        if (!parsed) return;
+        recurringExpenseChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    function onRecurringIncomeChanged(payload: RecurringIncomeChangedPayload) {
+        const parsed = parseRecurringIncomeChangedPayload(payload);
+        if (!parsed) return;
+        recurringIncomeChangeListeners.forEach((listener) => listener(parsed));
     }
 
     /** SignalR multi-appareils après DELETE /api/notifications. */
@@ -223,6 +241,20 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         };
     }
 
+    function subscribeToRecurringExpenseChanged(listener: (payload: RecurringExpenseChangedPayload) => void) {
+        recurringExpenseChangeListeners.add(listener);
+        return () => {
+            recurringExpenseChangeListeners.delete(listener);
+        };
+    }
+
+    function subscribeToRecurringIncomeChanged(listener: (payload: RecurringIncomeChangedPayload) => void) {
+        recurringIncomeChangeListeners.add(listener);
+        return () => {
+            recurringIncomeChangeListeners.delete(listener);
+        };
+    }
+
     /** Branche les handlers SignalR sur le hub partagé. */
     function wireHubHandlers() {
         setNotificationsHubHandlers({
@@ -234,6 +266,8 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
             onAccountChanged,
             onCategoryChanged,
             onTierChanged,
+            onRecurringExpenseChanged,
+            onRecurringIncomeChanged,
             onInboxCleared,
             onSessionEnded: (payload) => onSessionEnded(payload)
         });
@@ -267,7 +301,9 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         subscribeToFriendshipChanged,
         subscribeToAccountChanged,
         subscribeToCategoryChanged,
-        subscribeToTierChanged
+        subscribeToTierChanged,
+        subscribeToRecurringExpenseChanged,
+        subscribeToRecurringIncomeChanged
     };
 }
 

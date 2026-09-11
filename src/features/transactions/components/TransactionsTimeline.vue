@@ -69,6 +69,8 @@ const filterFrom = computed(() => (props.lockedAccountPublicId ? null : queryStr
 const filterTo = computed(() => (props.lockedAccountPublicId ? null : queryString('to')));
 const filterCategoryId = computed(() => (props.lockedAccountPublicId ? null : queryString('category')));
 const filterTierId = computed(() => (props.lockedAccountPublicId ? null : queryString('tier')));
+const filterRecurringExpenseId = computed(() => (props.lockedAccountPublicId ? null : queryString('recurringExpensePublicId')));
+const filterRecurringIncomeId = computed(() => (props.lockedAccountPublicId ? null : queryString('recurringIncomePublicId')));
 const filterSearch = computed(() => {
     if (props.lockedAccountPublicId) return null;
     return queryString('q')?.slice(0, TRANSACTION_SEARCH_MAX) ?? null;
@@ -163,6 +165,8 @@ async function loadTimeline(force = false) {
                 accountPublicId: filterAccountId.value ?? undefined,
                 categoryPublicId: filterCategoryId.value ?? undefined,
                 tierPublicId: filterTierId.value ?? undefined,
+                recurringExpensePublicId: filterRecurringExpenseId.value ?? undefined,
+                recurringIncomePublicId: filterRecurringIncomeId.value ?? undefined,
                 from: filterFrom.value ?? undefined,
                 to: filterTo.value ?? undefined,
                 force
@@ -228,7 +232,16 @@ function openCreate() {
 defineExpose({ openCreate });
 
 watch(
-    () => [filterAccountId.value, filterFrom.value, filterTo.value, filterCategoryId.value, filterTierId.value] as const,
+    () =>
+        [
+            filterAccountId.value,
+            filterFrom.value,
+            filterTo.value,
+            filterCategoryId.value,
+            filterTierId.value,
+            filterRecurringExpenseId.value,
+            filterRecurringIncomeId.value
+        ] as const,
     () => {
         void loadTimeline().catch(() => undefined);
     }

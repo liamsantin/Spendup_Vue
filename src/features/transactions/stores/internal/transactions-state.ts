@@ -9,6 +9,8 @@ export type TransactionsListQuery = {
     accountPublicId: string | null;
     categoryPublicId: string | null;
     tierPublicId: string | null;
+    recurringExpensePublicId: string | null;
+    recurringIncomePublicId: string | null;
     from: string | null;
     to: string | null;
 };
@@ -17,6 +19,8 @@ export const EMPTY_LIST_QUERY: TransactionsListQuery = {
     accountPublicId: null,
     categoryPublicId: null,
     tierPublicId: null,
+    recurringExpensePublicId: null,
+    recurringIncomePublicId: null,
     from: null,
     to: null
 };
@@ -26,6 +30,8 @@ export function normalizeListQuery(query: ListTransactionsQuery = {}): Transacti
         accountPublicId: query.accountPublicId?.trim() || null,
         categoryPublicId: query.categoryPublicId?.trim() || null,
         tierPublicId: query.tierPublicId?.trim() || null,
+        recurringExpensePublicId: query.recurringExpensePublicId?.trim() || null,
+        recurringIncomePublicId: query.recurringIncomePublicId?.trim() || null,
         from: query.from?.trim() || null,
         to: query.to?.trim() || null
     };
@@ -37,7 +43,9 @@ export function listCacheKey(query: TransactionsListQuery): string {
     const to = query.to || '-';
     const category = query.categoryPublicId || 'all';
     const tier = query.tierPublicId || 'all';
-    return `list:${account}:${from}:${to}:${category}:${tier}`;
+    const recExp = query.recurringExpensePublicId || 'all';
+    const recInc = query.recurringIncomePublicId || 'all';
+    return `list:${account}:${from}:${to}:${category}:${tier}:${recExp}:${recInc}`;
 }
 
 export function parseListCacheKey(key: string): TransactionsListQuery {
@@ -47,7 +55,9 @@ export function parseListCacheKey(key: string): TransactionsListQuery {
         from: !parts[2] || parts[2] === '-' ? null : parts[2],
         to: !parts[3] || parts[3] === '-' ? null : parts[3],
         categoryPublicId: !parts[4] || parts[4] === 'all' ? null : parts[4],
-        tierPublicId: !parts[5] || parts[5] === 'all' ? null : parts[5]
+        tierPublicId: !parts[5] || parts[5] === 'all' ? null : parts[5],
+        recurringExpensePublicId: !parts[6] || parts[6] === 'all' ? null : parts[6],
+        recurringIncomePublicId: !parts[7] || parts[7] === 'all' ? null : parts[7]
     };
 }
 
@@ -65,6 +75,8 @@ function queryMatchesTransaction(query: TransactionsListQuery, tx: Transaction):
     if (query.to && tx.operationDate > query.to) return false;
     if (query.categoryPublicId && tx.categoryPublicId !== query.categoryPublicId) return false;
     if (query.tierPublicId && tx.tierPublicId !== query.tierPublicId) return false;
+    if (query.recurringExpensePublicId && tx.recurringExpensePublicId !== query.recurringExpensePublicId) return false;
+    if (query.recurringIncomePublicId && tx.recurringIncomePublicId !== query.recurringIncomePublicId) return false;
     return true;
 }
 

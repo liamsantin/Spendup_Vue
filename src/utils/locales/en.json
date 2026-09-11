@@ -302,6 +302,10 @@
                 "title": "Payment methods",
                 "caption": "Cards, cash and other methods"
             },
+            "recurrences": {
+                "title": "Recurring",
+                "caption": "Planned expenses and income"
+            },
             "files": {
                 "title": "Files",
                 "caption": "Private PDF documents"
@@ -496,7 +500,8 @@
             },
             "delete": {
                 "title": "Delete this account?",
-                "body": "This is permanent if the account has no movements."
+                "body": "This is permanent if the account has no movements.",
+                "linkedRecurrences": "Unlink these recurrences first: {names}."
             },
             "deleteBlocked": {
                 "title": "Cannot delete",
@@ -643,6 +648,181 @@
                 "expirationInvalid": "Invalid expiration date.",
                 "expirationPast": "An active method cannot already be expired.",
                 "isActiveRequired": "Active status is required."
+            }
+        }
+    },
+    "recurrencesPage": {
+        "title": "Recurring",
+        "subtitle": "Planned expenses and income. A due becomes a transaction only after you confirm it.",
+        "loadMore": "Load more",
+        "unknownAccount": "Account",
+        "tabs": {
+            "expenses": "Expenses",
+            "incomes": "Income",
+            "upcoming": "Upcoming"
+        },
+        "kinds": {
+            "expense": "Expense",
+            "income": "Income"
+        },
+        "badges": {
+            "paused": "Paused"
+        },
+        "filters": {
+            "showInactive": "Show paused"
+        },
+        "empty": {
+            "expenses": "No recurring expenses yet.",
+            "incomes": "No recurring income yet.",
+            "upcoming": "No dues in the next three months."
+        },
+        "actions": {
+            "filter": "Filter",
+            "create": "Add",
+            "edit": "Edit",
+            "delete": "Delete",
+            "confirmDue": "Confirm",
+            "skipDue": "Skip",
+            "openTransaction": "Open transaction"
+        },
+        "list": {
+            "nextDue": "Next due {date}",
+            "noNextDue": "No upcoming due"
+        },
+        "detail": {
+            "title": "Recurring",
+            "subtitle": "Generated dues. Confirm to create a transaction.",
+            "duesTitle": "Dues",
+            "duesEmpty": "No dues materialized yet.",
+            "filesTitle": "PDF attachments",
+            "seeTransactions": "Linked transactions"
+        },
+        "deleteModal": {
+            "expenseTitle": "Delete this recurring expense?",
+            "incomeTitle": "Delete this recurring income?",
+            "body": "Unpaid dues will disappear. Transactions already created stay."
+        },
+        "skipModal": {
+            "title": "Skip this due?",
+            "body": "It will be cancelled. No transaction will be created."
+        },
+        "errors": {
+            "notFound": "Expense, income or due not found.",
+            "transactionGone": "The transaction no longer exists. The due may have been reopened."
+        },
+        "expenseTypes": {
+            "leasing": "Leasing",
+            "assurance": "Insurance",
+            "credit": "Loan",
+            "abonnement": "Subscription",
+            "loyer": "Rent",
+            "impot": "Tax",
+            "service": "Service",
+            "entretien": "Maintenance",
+            "other": "Other"
+        },
+        "incomeTypes": {
+            "salaire": "Salary",
+            "prime": "Bonus",
+            "treiziemeSalaire": "13th salary",
+            "freelance": "Freelance",
+            "loyerEncaisse": "Rent received",
+            "dividende": "Dividend",
+            "interet": "Interest",
+            "rente": "Annuity",
+            "pension": "Pension",
+            "allocation": "Benefit",
+            "remboursement": "Refund",
+            "other": "Other"
+        },
+        "expenseFrequencies": {
+            "quotidien": "Daily",
+            "hebdomadaire": "Weekly",
+            "mensuel": "Monthly",
+            "trimestriel": "Quarterly",
+            "semestriel": "Biannual",
+            "annuel": "Yearly"
+        },
+        "incomeFrequencies": {
+            "hebdomadaire": "Weekly",
+            "mensuelle": "Monthly",
+            "trimestrielle": "Quarterly",
+            "semestrielle": "Biannual",
+            "annuelle": "Yearly"
+        },
+        "dueStatuses": {
+            "prevue": "Scheduled",
+            "generee": "Generated",
+            "payee": "Paid",
+            "enRetard": "Overdue",
+            "canceled": "Cancelled",
+            "prevu": "Scheduled",
+            "pending": "Pending",
+            "encaisse": "Received",
+            "partiel": "Partial",
+            "annule": "Cancelled",
+            "retard": "Overdue"
+        },
+        "confirm": {
+            "expenseTitle": "Confirm payment",
+            "incomeTitle": "Confirm receipt",
+            "subtitle": "This creates a transaction and updates the balance.",
+            "fields": {
+                "paymentDate": "Date",
+                "amount": "Amount"
+            }
+        },
+        "form": {
+            "createExpenseTitle": "New recurring expense",
+            "createIncomeTitle": "New recurring income",
+            "editExpenseTitle": "Edit recurring expense",
+            "editIncomeTitle": "Edit recurring income",
+            "subtitle": "Dues are generated by the server. Confirm them afterwards.",
+            "tabs": {
+                "template": "Recurrence",
+                "classification": "Classification"
+            },
+            "pauseHint": "Dues already scheduled can still be processed.",
+            "paymentDayPlaceholder": "1–28",
+            "noPaymentMethod": "None",
+            "noCategory": "None",
+            "createPaymentMethod": "New payment method",
+            "createCategory": "New category",
+            "fields": {
+                "isActive": "Active",
+                "account": "Account",
+                "name": "Name",
+                "expenseType": "Expense type",
+                "incomeType": "Income type",
+                "frequency": "Frequency",
+                "paymentDay": "Payment day",
+                "plannedAmount": "Planned amount",
+                "startDate": "Start",
+                "endDate": "End",
+                "paymentMethod": "Payment method",
+                "category": "Category",
+                "tier": "Payee",
+                "notes": "Notes"
+            },
+            "errors": {
+                "nameRequired": "Name is required.",
+                "nameTooLong": "Name is too long.",
+                "typeInvalid": "Invalid type.",
+                "frequencyInvalid": "Invalid frequency.",
+                "amountInvalid": "Invalid amount.",
+                "amountNotPositive": "Amount must be greater than 0.",
+                "startDateRequired": "Start date is required.",
+                "startDateInvalid": "Invalid start date.",
+                "endDateInvalid": "Invalid end date.",
+                "endDateBeforeStart": "End date must be after start.",
+                "accountRequired": "Choose an account.",
+                "accountArchived": "This account is archived.",
+                "forbidden": "Action not allowed.",
+                "paymentDayInvalid": "Payment day must be between 1 and 28.",
+                "notesTooLong": "Notes are too long.",
+                "isActiveRequired": "Active status is required.",
+                "paymentDateInvalid": "Invalid date.",
+                "paymentDateFuture": "Date cannot be in the future."
             }
         }
     },
@@ -1161,7 +1341,8 @@
             "createdByUnknown": "Entered by a user",
             "myCategory": "My category: {name}",
             "myTier": "My counterparty: {name}",
-            "hasAttachments": "{count} receipt | {count} receipt | {count} receipts"
+            "hasAttachments": "{count} receipt | {count} receipt | {count} receipts",
+            "sourceRecurrence": "Recurring"
         },
         "deleteModal": {
             "title": "Delete this transaction?",

@@ -14,16 +14,18 @@
 
 ## Événements consommés (front)
 
-| Event                  | Effet typique                                                |
-| ---------------------- | ------------------------------------------------------------ |
-| `connected`            | handshake                                                    |
-| `notificationReceived` | upsert inbox / badge / chips                                 |
-| `friendshipChanged`    | fan-out → `friends` store (pas de badge)                     |
-| `accountChanged`       | fan-out → `accounts` / payment-methods / transactions stores |
-| `categoryChanged`      | fan-out → `categories` store (acteur inclus, pas d’inbox)    |
-| `tierChanged`          | fan-out → `tiers` store (acteur inclus, pas d’inbox)         |
-| `inboxCleared`         | reset liste                                                  |
-| `sessionEnded`         | `forceReLogin` (tous devices ou device ciblé)                |
+| Event                     | Effet typique                                                     |
+| ------------------------- | ----------------------------------------------------------------- |
+| `connected`               | handshake                                                         |
+| `notificationReceived`    | upsert inbox / badge / chips                                      |
+| `friendshipChanged`       | fan-out → `friends` store (pas de badge)                          |
+| `accountChanged`          | fan-out → `accounts` / payment-methods / transactions stores      |
+| `categoryChanged`         | fan-out → `categories` store (acteur inclus, pas d’inbox)         |
+| `tierChanged`             | fan-out → `tiers` store (acteur inclus, pas d’inbox)              |
+| `recurringExpenseChanged` | fan-out → `recurring-payments` store (acteur inclus, pas d’inbox) |
+| `recurringIncomeChanged`  | fan-out → `recurring-payments` store (acteur inclus, pas d’inbox) |
+| `inboxCleared`            | reset liste                                                       |
+| `sessionEnded`            | `forceReLogin` (tous devices ou device ciblé)                     |
 
 ## Règles
 

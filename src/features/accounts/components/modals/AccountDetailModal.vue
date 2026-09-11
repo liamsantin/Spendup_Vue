@@ -2,14 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import {
-    DotsVerticalIcon,
-    CreditCardIcon,
-    FileDescriptionIcon,
-    LockIcon,
-    Receipt2Icon,
-    UsersIcon
-} from 'vue-tabler-icons';
+import { DotsVerticalIcon, CreditCardIcon, FileDescriptionIcon, LockIcon, Receipt2Icon, UsersIcon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
@@ -33,6 +26,7 @@ import AccountBalanceSnapshotsPanel from '@/features/accounts/components/panels/
 import AccountSharesPanel from '@/features/accounts/components/panels/AccountSharesPanel.vue';
 import AccountFormModal from '@/features/accounts/components/modals/AccountFormModal.vue';
 import { AccountPaymentMethodsPanel } from '@/features/payment-methods';
+import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -55,11 +49,18 @@ const deleteOpen = ref(false);
 const leaveOpen = ref(false);
 const suggestArchiveOpen = ref(false);
 const localError = ref<string | null>(null);
+const linkedRecurrenceNames = ref<string[]>([]);
 const activeTab = ref<'details' | 'snapshots' | 'paymentMethods' | 'shares'>('details');
 
 const open = computed({
     get: () => props.modelValue,
     set: (value: boolean) => emit('update:modelValue', value)
+});
+
+const deleteMessage = computed(() => {
+    const names = linkedRecurrenceNames.value;
+    if (!names.length) return t('comptesPage.modals.delete.body');
+    return `${t('comptesPage.modals.delete.body')} ${t('comptesPage.modals.delete.linkedRecurrences', { names: names.join(', ') })}`;
 });
 
 const account = computed(() => store.selectedAccount);
@@ -182,6 +183,26 @@ watch(
         }
     }
 );
+
+watch(deleteOpen, async (value) => {
+    if (!value || !account.value) {
+        linkedRecurrenceNames.value = [];
+        return;
+    }
+    const accountPublicId = account.value.publicId;
+    try {
+        const [expenses, incomes] = await Promise.all([
+            recurringExpensesApi.list({ accountPublicId, pageSize: 50 }),
+            recurringIncomesApi.list({ accountPublicId, pageSize: 50 })
+        ]);
+        linkedRecurrenceNames.value = [
+            ...(expenses.items ?? []).map((item) => item.name),
+            ...(incomes.items ?? []).map((item) => item.name)
+        ];
+    } catch {
+        linkedRecurrenceNames.value = [];
+    }
+});
 
 async function onSetPrimary() {
     if (!account.value) return;
@@ -513,7 +534,7 @@ function seeAllTransactions() {
     <AppConfirmationModal
         v-model="deleteOpen"
         :title="t('comptesPage.modals.delete.title')"
-        :message="t('comptesPage.modals.delete.body')"
+        :message="deleteMessage"
         :confirm-label="t('comptesPage.actions.delete')"
         confirm-color="error"
         :loading="store.acting"

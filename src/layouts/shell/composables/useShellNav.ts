@@ -96,6 +96,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, '/app/finances/moyens-de-paiement')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.paymentMethods };
     }
+    if (pathIs(path, '/app/finances/recurrences')) {
+        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.recurrences };
+    }
     if (pathIs(path, '/app/finances/comptes') || pathIs(path, '/app/finances')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.accounts };
     }
@@ -166,8 +169,8 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.accounts, t('nav.items.accounts'), BuildingBankIcon, '/app/finances/comptes'),
         live(SHELL_NAV_IDS.paymentMethods, t('nav.items.paymentMethods'), CreditCardIcon, '/app/finances/moyens-de-paiement'),
         live(SHELL_NAV_IDS.transactions, t('nav.items.transactions'), ArrowsExchangeIcon, '/app/finances/transactions'),
-        upcoming(SHELL_NAV_IDS.import, t('nav.items.import'), FileImportIcon),
-        upcoming(SHELL_NAV_IDS.recurrences, t('nav.items.recurrences'), RepeatIcon)
+        live(SHELL_NAV_IDS.recurrences, t('nav.items.recurrences'), RepeatIcon, '/app/finances/recurrences'),
+        upcoming(SHELL_NAV_IDS.import, t('nav.items.import'), FileImportIcon)
     ]);
 
     const gestionLeaves = computed<NavLeaf[]>(() => [

@@ -31,6 +31,10 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.finances,
             activeId: SHELL_NAV_IDS.paymentMethods
         });
+        expect(idsFromPath('/app/finances/recurrences')).toEqual({
+            openId: SHELL_NAV_IDS.finances,
+            activeId: SHELL_NAV_IDS.recurrences
+        });
     });
 
     it('mappe le réseau', () => {

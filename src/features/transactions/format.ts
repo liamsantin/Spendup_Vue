@@ -180,7 +180,14 @@ export function normalizeTransactionFiles(value: unknown): TransactionFile[] {
 }
 
 export function normalizeTransaction(transaction: Transaction): Transaction {
-    return { ...transaction, files: normalizeTransactionFiles(transaction.files) };
+    return {
+        ...transaction,
+        source: transaction.source === 'recurrence' ? 'recurrence' : 'manuelle',
+        recurringExpensePublicId: transaction.recurringExpensePublicId ?? null,
+        recurringIncomePublicId: transaction.recurringIncomePublicId ?? null,
+        duePublicId: transaction.duePublicId ?? null,
+        files: normalizeTransactionFiles(transaction.files)
+    };
 }
 
 export function sanitizeFilePublicIds(ids: readonly string[] | null | undefined): string[] {

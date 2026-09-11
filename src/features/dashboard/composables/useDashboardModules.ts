@@ -9,6 +9,7 @@ import {
     FilesIcon,
     TagsIcon,
     TargetIcon,
+    RepeatIcon,
     UsersIcon
 } from 'vue-tabler-icons';
 
@@ -45,6 +46,14 @@ export function useDashboardModules() {
             captionKey: 'dashboard.modules.paymentMethods.caption',
             icon: CreditCardIcon,
             to: '/app/finances/moyens-de-paiement',
+            disabled: false
+        },
+        {
+            id: 'recurrences',
+            titleKey: 'dashboard.modules.recurrences.title',
+            captionKey: 'dashboard.modules.recurrences.caption',
+            icon: RepeatIcon,
+            to: '/app/finances/recurrences',
             disabled: false
         },
         {

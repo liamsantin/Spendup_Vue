@@ -16,7 +16,9 @@ export {
     normalizeAppNotification,
     parseAccountChangedPayload,
     parseCategoryChangedPayload,
-    parseTierChangedPayload
+    parseTierChangedPayload,
+    parseRecurringExpenseChangedPayload,
+    parseRecurringIncomeChangedPayload
 } from '@/features/notifications/normalize';
 export {
     ensureNativeNotificationPermission,
@@ -42,6 +44,10 @@ export type {
     CategoryChangedPayload,
     TierChange,
     TierChangedPayload,
+    RecurringExpenseChange,
+    RecurringExpenseChangedPayload,
+    RecurringIncomeChange,
+    RecurringIncomeChangedPayload,
     InboxClearedPayload,
     SessionEndedPayload,
     NotificationsListQuery

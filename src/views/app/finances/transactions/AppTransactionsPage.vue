@@ -116,6 +116,10 @@ function patchQuery(patch: Record<string, string | undefined>) {
     const to = 'to' in patch ? patch.to : queryString('to') || undefined;
     const category = 'category' in patch ? patch.category : queryString('category') || undefined;
     const tier = 'tier' in patch ? patch.tier : queryString('tier') || undefined;
+    const recurringExpensePublicId =
+        'recurringExpensePublicId' in patch ? patch.recurringExpensePublicId : queryString('recurringExpensePublicId') || undefined;
+    const recurringIncomePublicId =
+        'recurringIncomePublicId' in patch ? patch.recurringIncomePublicId : queryString('recurringIncomePublicId') || undefined;
     const sort = 'sort' in patch ? patch.sort : queryString('sort') || undefined;
     if (q) next.q = q.slice(0, TRANSACTION_SEARCH_MAX);
     if (account) next.account = account;
@@ -124,6 +128,8 @@ function patchQuery(patch: Record<string, string | undefined>) {
     if (to) next.to = to;
     if (category) next.category = category;
     if (tier) next.tier = tier;
+    if (recurringExpensePublicId) next.recurringExpensePublicId = recurringExpensePublicId;
+    if (recurringIncomePublicId) next.recurringIncomePublicId = recurringIncomePublicId;
     if (sort && isTransactionSort(sort) && sort !== TRANSACTION_SORT_DEFAULT) next.sort = sort;
     void router.replace({ path: '/app/finances/transactions', query: next });
 }

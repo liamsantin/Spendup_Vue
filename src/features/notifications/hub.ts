@@ -8,6 +8,8 @@ import type {
     InboxClearedPayload,
     NotificationConnectedPayload,
     NotificationReceivedPayload,
+    RecurringExpenseChangedPayload,
+    RecurringIncomeChangedPayload,
     SessionEndedPayload,
     TierChangedPayload
 } from '@/features/notifications/types';
@@ -19,6 +21,8 @@ export type NotificationsHubHandlers = {
     onAccountChanged?: (payload: AccountChangedPayload) => void;
     onCategoryChanged?: (payload: CategoryChangedPayload) => void;
     onTierChanged?: (payload: TierChangedPayload) => void;
+    onRecurringExpenseChanged?: (payload: RecurringExpenseChangedPayload) => void;
+    onRecurringIncomeChanged?: (payload: RecurringIncomeChangedPayload) => void;
     onInboxCleared?: (payload: InboxClearedPayload) => void;
     onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
 };
@@ -60,6 +64,8 @@ function attachHandlers(conn: HubConnection) {
     conn.off('accountChanged');
     conn.off('categoryChanged');
     conn.off('tierChanged');
+    conn.off('recurringExpenseChanged');
+    conn.off('recurringIncomeChanged');
     conn.off('inboxCleared');
     conn.off('sessionEnded');
 
@@ -85,6 +91,14 @@ function attachHandlers(conn: HubConnection) {
 
     conn.on('tierChanged', (payload: TierChangedPayload) => {
         handlers.onTierChanged?.(payload);
+    });
+
+    conn.on('recurringExpenseChanged', (payload: RecurringExpenseChangedPayload) => {
+        handlers.onRecurringExpenseChanged?.(payload);
+    });
+
+    conn.on('recurringIncomeChanged', (payload: RecurringIncomeChangedPayload) => {
+        handlers.onRecurringIncomeChanged?.(payload);
     });
 
     conn.on('inboxCleared', (payload: InboxClearedPayload) => {

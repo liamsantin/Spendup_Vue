@@ -6,6 +6,10 @@ import type {
     CategoryChangedPayload,
     NotificationReceivedPayload,
     NotificationsListResult,
+    RecurringExpenseChange,
+    RecurringExpenseChangedPayload,
+    RecurringIncomeChange,
+    RecurringIncomeChangedPayload,
     TierChange,
     TierChangedPayload
 } from '@/features/notifications/types';
@@ -33,6 +37,16 @@ const ACCOUNT_CHANGES = new Set<AccountChange>([
 
 const CATEGORY_CHANGES = new Set<CategoryChange>(['categoryCreated', 'categoryUpdated', 'categoryDeleted']);
 const TIER_CHANGES = new Set<TierChange>(['tierCreated', 'tierUpdated', 'tierDeleted']);
+const RECURRING_EXPENSE_CHANGES = new Set<RecurringExpenseChange>([
+    'recurringExpenseCreated',
+    'recurringExpenseUpdated',
+    'recurringExpenseDeleted'
+]);
+const RECURRING_INCOME_CHANGES = new Set<RecurringIncomeChange>([
+    'recurringIncomeCreated',
+    'recurringIncomeUpdated',
+    'recurringIncomeDeleted'
+]);
 
 /** Normalise un publicId (trim + charset) ; `null` si invalide. */
 export function normalizePublicId(value: unknown): string | null {
@@ -117,6 +131,26 @@ export function parseTierChangedPayload(raw: unknown): TierChangedPayload | null
     const tierPublicId = normalizePublicId(payload.tierPublicId);
     if (!tierPublicId) return null;
     return { change: change as TierChange, tierPublicId };
+}
+
+export function parseRecurringExpenseChangedPayload(raw: unknown): RecurringExpenseChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!RECURRING_EXPENSE_CHANGES.has(change as RecurringExpenseChange)) return null;
+    const recurringExpensePublicId = normalizePublicId(payload.recurringExpensePublicId);
+    if (!recurringExpensePublicId) return null;
+    return { change: change as RecurringExpenseChange, recurringExpensePublicId };
+}
+
+export function parseRecurringIncomeChangedPayload(raw: unknown): RecurringIncomeChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!RECURRING_INCOME_CHANGES.has(change as RecurringIncomeChange)) return null;
+    const recurringIncomePublicId = normalizePublicId(payload.recurringIncomePublicId);
+    if (!recurringIncomePublicId) return null;
+    return { change: change as RecurringIncomeChange, recurringIncomePublicId };
 }
 
 /** Normalise un item inbox / SignalR (metadata string → objet). */

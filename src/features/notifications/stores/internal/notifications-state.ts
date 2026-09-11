@@ -4,6 +4,8 @@ import type {
     AccountChangedPayload,
     CategoryChangedPayload,
     FriendshipChangedPayload,
+    RecurringExpenseChangedPayload,
+    RecurringIncomeChangedPayload,
     TierChangedPayload
 } from '@/features/notifications/types';
 
@@ -37,6 +39,8 @@ export function createNotificationsState() {
     const accountChangeListeners = new Set<(payload: AccountChangedPayload) => void>();
     const categoryChangeListeners = new Set<(payload: CategoryChangedPayload) => void>();
     const tierChangeListeners = new Set<(payload: TierChangedPayload) => void>();
+    const recurringExpenseChangeListeners = new Set<(payload: RecurringExpenseChangedPayload) => void>();
+    const recurringIncomeChangeListeners = new Set<(payload: RecurringIncomeChangedPayload) => void>();
     const liveFriendChips = ref<LiveFriendChip[]>([]);
 
     const hasUnread = computed(() => unreadCount.value > 0);
@@ -92,6 +96,8 @@ export function createNotificationsState() {
         accountChangeListeners,
         categoryChangeListeners,
         tierChangeListeners,
+        recurringExpenseChangeListeners,
+        recurringIncomeChangeListeners,
         liveFriendChips,
         hasUnread,
         badgeContent,

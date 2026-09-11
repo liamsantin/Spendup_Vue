@@ -28,6 +28,10 @@ export const transactionsApi = {
         if (categoryPublicId) params.set('categoryPublicId', categoryPublicId);
         const tierPublicId = query.tierPublicId?.trim();
         if (tierPublicId) params.set('tierPublicId', tierPublicId);
+        const recurringExpensePublicId = query.recurringExpensePublicId?.trim();
+        if (recurringExpensePublicId) params.set('recurringExpensePublicId', recurringExpensePublicId);
+        const recurringIncomePublicId = query.recurringIncomePublicId?.trim();
+        if (recurringIncomePublicId) params.set('recurringIncomePublicId', recurringIncomePublicId);
         const from = query.from?.trim();
         if (from) params.set('from', from);
         const to = query.to?.trim();
