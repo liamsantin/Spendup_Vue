@@ -227,12 +227,7 @@ onUnmounted(() => {
                     </div>
                 </PerfectScrollbar>
                 <div v-if="showCreate" class="app-select-menu__footer">
-                    <button
-                        v-if="canCreateNamed"
-                        type="button"
-                        class="app-select-menu__option app-select-menu__create"
-                        @click="openCreate"
-                    >
+                    <button v-if="canCreateNamed" type="button" class="app-select-menu__option app-select-menu__create" @click="openCreate">
                         <PlusIcon :size="14" stroke-width="2" />
                         <span class="text-truncate">{{ t('transactionsPage.form.tierCreate', { name: trimmedQuery }) }}</span>
                     </button>

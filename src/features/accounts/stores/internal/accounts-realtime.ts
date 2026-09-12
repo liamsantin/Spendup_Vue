@@ -1,5 +1,10 @@
 import { useNotificationsStore } from '@/features/notifications';
-import { getAccountPublicId, getAccountSharePublicId, parseAccountChangedPayload, parseTierChangedPayload } from '@/features/notifications/normalize';
+import {
+    getAccountPublicId,
+    getAccountSharePublicId,
+    parseAccountChangedPayload,
+    parseTierChangedPayload
+} from '@/features/notifications/normalize';
 import type { AccountChangedPayload, AppNotification, FriendshipChangedPayload, TierChangedPayload } from '@/features/notifications';
 import { KEY_ACCOUNTS, KEY_INCOMING, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import type { AccountsCrud } from '@/features/accounts/stores/internal/accounts-crud';
@@ -18,7 +23,17 @@ type RealtimeDeps = Pick<AccountsCrud, 'loadAccounts' | 'loadAccountDetail'> &
  * @returns Les helpers de bridge realtime.
  */
 export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps) {
-    const { accounts, selectedAccount, shares, sharesByAccountId, cache, initialized, removeAccountLocal, upsertAccount, setSharesForAccount } = state;
+    const {
+        accounts,
+        selectedAccount,
+        shares,
+        sharesByAccountId,
+        cache,
+        initialized,
+        removeAccountLocal,
+        upsertAccount,
+        setSharesForAccount
+    } = state;
     const { loadAccounts, loadAccountDetail, loadIncoming, loadShares, loadBalanceSnapshots, refreshAll } = deps;
 
     let unsubscribeNotifications: (() => void) | null = null;

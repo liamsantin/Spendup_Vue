@@ -48,8 +48,7 @@ export type FileUsage = {
 
 /** Message 400 API quand un nouveau blob ferait dépasser le quota. */
 export const FILE_QUOTA_EXCEEDED_MESSAGE = 'Quota de stockage dépassé.';
-export const FILE_LINKED_TO_TRANSACTIONS_MESSAGE =
-    "Impossible de supprimer un fichier lié à des transactions. Déliez-le d'abord.";
+export const FILE_LINKED_TO_TRANSACTIONS_MESSAGE = "Impossible de supprimer un fichier lié à des transactions. Déliez-le d'abord.";
 
 export const FILE_PAGE_SIZE_DEFAULT = 50;
 export const FILE_PAGE_SIZE_MAX = 200;

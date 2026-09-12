@@ -72,12 +72,12 @@ JSON en **camelCase** (ASP.NET Core par défaut).
 
 ## 3. Tokens — règles critiques
 
-| Token            | Où le stocker (Spend.Up Vue)                                        | Durée défaut | Usage                                                         |
-| ---------------- | ------------------------------------------------------------------- | ------------ | ------------------------------------------------------------- |
-| `accessToken`    | Pinia + `sessionStorage` (`spendup_access_token`)                   | **15 min**   | Header `Authorization: Bearer {accessToken}`                  |
-| `expiresAt`      | Pinia + `sessionStorage` (`spendup_access_expires_at`) — ISO string | = access     | Refresh **proactif** (~30 s avant expiration)                 |
+| Token            | Où le stocker (Spend.Up Vue)                                               | Durée défaut | Usage                                                         |
+| ---------------- | -------------------------------------------------------------------------- | ------------ | ------------------------------------------------------------- |
+| `accessToken`    | Pinia + `sessionStorage` (`spendup_access_token`)                          | **15 min**   | Header `Authorization: Bearer {accessToken}`                  |
+| `expiresAt`      | Pinia + `sessionStorage` (`spendup_access_expires_at`) — ISO string        | = access     | Refresh **proactif** (~30 s avant expiration)                 |
 | `refreshToken`   | Pinia + `sessionStorage` (`spendup_refresh_token`) — jamais `localStorage` | **30 jours** | `POST /api/auth/refresh` body `{ refreshToken }`              |
-| `twoFactorToken` | mémoire courte uniquement                                           | **5 min**    | Uniquement `POST /api/auth/2fa/verify` — **jamais** sur `/me` |
+| `twoFactorToken` | mémoire courte uniquement                                                  | **5 min**    | Uniquement `POST /api/auth/2fa/verify` — **jamais** sur `/me` |
 
 **Pending register (front) :**
 

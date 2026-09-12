@@ -23,10 +23,10 @@ Ne pas utiliser `v-checkbox` brut : toujours `AppCheckbox`.
 
 ## Props
 
-| Prop            | Défaut    | Notes                                 |
-| --------------- | --------- | ------------------------------------- |
-| `v-model`       | `false`   | `boolean` ou `null`                   |
-| `label`         | —         | Libellé à droite de la case           |
-| `disabled`      | `false`   |                                       |
-| `indeterminate` | `false`   | État mixte                            |
-| `class`         | —         | Espacement (`mb-2`…)                  |
+| Prop            | Défaut  | Notes                       |
+| --------------- | ------- | --------------------------- |
+| `v-model`       | `false` | `boolean` ou `null`         |
+| `label`         | —       | Libellé à droite de la case |
+| `disabled`      | `false` |                             |
+| `indeterminate` | `false` | État mixte                  |
+| `class`         | —       | Espacement (`mb-2`…)        |

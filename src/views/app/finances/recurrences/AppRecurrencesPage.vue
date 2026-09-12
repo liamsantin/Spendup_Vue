@@ -12,11 +12,7 @@ import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import RecurringCreateMenu from '@/features/recurring-payments/components/RecurringCreateMenu.vue';
 import RecurringTemplatesDirectory from '@/features/recurring-payments/components/RecurringTemplatesDirectory.vue';
 import RecurringUpcomingPanel from '@/features/recurring-payments/components/RecurringUpcomingPanel.vue';
-import {
-    UPCOMING_DUE_SORT_DEFAULT,
-    UPCOMING_DUE_SORTS,
-    parseUpcomingDueSort
-} from '@/features/recurring-payments/format';
+import { UPCOMING_DUE_SORT_DEFAULT, UPCOMING_DUE_SORTS, parseUpcomingDueSort } from '@/features/recurring-payments/format';
 import { recurrencesPathForTab, recurrencesTabFromPath, type RecurrenceTab } from '@/features/recurring-payments/paths';
 import { serializeAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
@@ -185,7 +181,8 @@ const filterCount = computed(() => {
             filterMaxAmount.value
         ].filter(Boolean).length;
     }
-    return [filterAccountId.value, showInactive.value ? '' : 'inactive', filterMinAmount.value, filterMaxAmount.value].filter(Boolean).length;
+    return [filterAccountId.value, showInactive.value ? '' : 'inactive', filterMinAmount.value, filterMaxAmount.value].filter(Boolean)
+        .length;
 });
 const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ? 0 : 1));
 </script>

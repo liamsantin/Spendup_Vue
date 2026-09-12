@@ -199,11 +199,7 @@ async function confirmDelete() {
         </div>
         <div v-else class="su-stack">
             <section class="su-surface tiers-directory__group">
-                <div
-                    :key="searchRevealKey"
-                    class="tiers-directory__list"
-                    :class="{ 'is-search-reveal': searchReveals }"
-                >
+                <div :key="searchRevealKey" class="tiers-directory__list" :class="{ 'is-search-reveal': searchReveals }">
                     <TierListItem
                         v-for="(tier, index) in visibleItems"
                         :key="tier.publicId"

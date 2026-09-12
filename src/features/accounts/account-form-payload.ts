@@ -56,10 +56,7 @@ export function buildUpdateAccountPayload(
  * (champs éditables selon le rôle).
  */
 export function isAccountFormDirty(
-    account: Pick<
-        Account,
-        'name' | 'type' | 'initialBalance' | 'iban' | 'accountNumber' | 'color' | 'myRole' | 'institutionTierPublicId'
-    >,
+    account: Pick<Account, 'name' | 'type' | 'initialBalance' | 'iban' | 'accountNumber' | 'color' | 'myRole' | 'institutionTierPublicId'>,
     fields: AccountFormUpdateFields
 ): boolean {
     if (fields.name.trim() !== account.name.trim()) return true;

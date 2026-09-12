@@ -28,11 +28,7 @@ const { t } = useI18n();
         @click="emit('select')"
     >
         <span class="recurring-kind-option__icon">
-            <component
-                :is="kind === 'expense' ? Receipt2Icon : TrendingUpIcon"
-                :size="variant === 'menu' ? 18 : 20"
-                stroke-width="1.75"
-            />
+            <component :is="kind === 'expense' ? Receipt2Icon : TrendingUpIcon" :size="variant === 'menu' ? 18 : 20" stroke-width="1.75" />
         </span>
         <span class="recurring-kind-option__copy">
             <span class="recurring-kind-option__title">{{ t(`recurrencesPage.createAs.${kind}`) }}</span>

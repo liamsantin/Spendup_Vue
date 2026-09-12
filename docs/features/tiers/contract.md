@@ -28,12 +28,12 @@ Les rôles sont indépendants de la nature. En réponse, le volet de la nature e
 
 ## HTTP
 
-| Méthode | Endpoint                | Notes                                                                                                                           |
-| ------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| GET     | `/api/tiers`            | Paginé (`page`, `pageSize` ≤ 200), tri nom puis id. Filtres `nature`, `role`, `search` (contient, casse ignorée, tronqué à 100) |
-| GET     | `/api/tiers/{publicId}` | `404` si inconnu, supprimé ou d’un autre utilisateur (jamais `403`)                                                             |
-| POST    | `/api/tiers`            | `200` avec le `TierResponse` complet (`website` normalisé `https://…`)                                                          |
-| PUT     | `/api/tiers/{publicId}` | **État complet** : `null` vide un champ, `roles` remplace tout, changer `nature` recrée le volet                                |
+| Méthode | Endpoint                | Notes                                                                                                                                                     |
+| ------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET     | `/api/tiers`            | Paginé (`page`, `pageSize` ≤ 200), tri nom puis id. Filtres `nature`, `role`, `search` (contient, casse ignorée, tronqué à 100)                           |
+| GET     | `/api/tiers/{publicId}` | `404` si inconnu, supprimé ou d’un autre utilisateur (jamais `403`)                                                                                       |
+| POST    | `/api/tiers`            | `200` avec le `TierResponse` complet (`website` normalisé `https://…`)                                                                                    |
+| PUT     | `/api/tiers/{publicId}` | **État complet** : `null` vide un champ, `roles` remplace tout, changer `nature` recrée le volet                                                          |
 | DELETE  | `/api/tiers/{publicId}` | `204`. Soft-delete. `400` + message affichable si une transaction vivante **ou** un compte vivant (y compris archivé) référence le tier comme institution |
 
 ## Validation client (`payload.ts`)

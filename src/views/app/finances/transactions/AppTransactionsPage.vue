@@ -125,7 +125,9 @@ function recurrenceName(kind: 'expense' | 'income', publicId: string): string | 
         );
     }
     return (
-        recurringStore.incomes.find((item) => item.publicId === publicId)?.name ?? recurringStore.getDetail('income', publicId)?.name ?? null
+        recurringStore.incomes.find((item) => item.publicId === publicId)?.name ??
+        recurringStore.getDetail('income', publicId)?.name ??
+        null
     );
 }
 

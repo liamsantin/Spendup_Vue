@@ -20,9 +20,7 @@ const props = withDefaults(
     { kind: 'income', variant: 'panel' }
 );
 
-export type RecurringTypePick =
-    | { kind: 'expense'; type: RecurringExpenseType }
-    | { kind: 'income'; type: RecurringIncomeType };
+export type RecurringTypePick = { kind: 'expense'; type: RecurringExpenseType } | { kind: 'income'; type: RecurringIncomeType };
 
 const emit = defineEmits<{
     select: [pick: RecurringTypePick];
@@ -46,10 +44,7 @@ function pick(type: RecurringExpenseType | RecurringIncomeType) {
             :key="`${kind}-${type}`"
             type="button"
             class="recurring-type-option"
-            :class="[
-                isIncome ? 'recurring-type-option--income' : 'recurring-type-option--expense',
-                `recurring-type-option--${variant}`
-            ]"
+            :class="[isIncome ? 'recurring-type-option--income' : 'recurring-type-option--expense', `recurring-type-option--${variant}`]"
             role="listitem"
             @click="pick(type)"
         >

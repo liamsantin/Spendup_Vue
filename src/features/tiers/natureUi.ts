@@ -1,10 +1,4 @@
-import {
-    BuildingBankIcon,
-    BuildingCommunityIcon,
-    BuildingIcon,
-    HelpCircleIcon,
-    UserIcon
-} from 'vue-tabler-icons';
+import { BuildingBankIcon, BuildingCommunityIcon, BuildingIcon, HelpCircleIcon, UserIcon } from 'vue-tabler-icons';
 import { TIER_NATURES, type TierNature } from '@/features/tiers/types';
 
 export const TIER_NATURE_ICONS = {

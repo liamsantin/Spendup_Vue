@@ -184,11 +184,7 @@ watch(
                     :reset-disabled="listSort === TIER_SORT_DEFAULT"
                     @reset="listSort = TIER_SORT_DEFAULT"
                 >
-                    <AppSortChoices
-                        v-model="listSort"
-                        :items="TIER_SORTS"
-                        :label-for="(value) => t(`tiersPage.sort.${value}`)"
-                    />
+                    <AppSortChoices v-model="listSort" :items="TIER_SORTS" :label-for="(value) => t(`tiersPage.sort.${value}`)" />
                 </AppDropdownFilter>
                 <AppDropdownFilter
                     :label="t('tiersPage.actions.filter')"
@@ -201,12 +197,7 @@ watch(
                         <AppSelect v-model="filterRole" :items="roleItems" :label="t('tiersPage.filters.role')" hide-details />
                     </div>
                 </AppDropdownFilter>
-                <TierCreateMenu
-                    v-if="!filterNature"
-                    :label="t('tiersPage.actions.create')"
-                    :disabled="store.acting"
-                    @select="onCreate"
-                />
+                <TierCreateMenu v-if="!filterNature" :label="t('tiersPage.actions.create')" :disabled="store.acting" @select="onCreate" />
                 <button v-else type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onCreate()">
                     <PlusIcon :size="16" stroke-width="1.6" />
                     {{ t('tiersPage.actions.create') }}

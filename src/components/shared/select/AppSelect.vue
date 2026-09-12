@@ -596,5 +596,4 @@ watch(open, (value) => {
     font-size: 0.8rem;
     color: var(--ink-muted);
 }
-
 </style>

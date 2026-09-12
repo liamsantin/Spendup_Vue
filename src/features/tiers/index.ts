@@ -41,7 +41,14 @@ export type {
     CreateTierPayload,
     UpdateTierPayload
 } from '@/features/tiers/types';
-export { TIER_NATURES, TIER_ROLES, TIER_NATURES_WITH_PANEL, TIER_NAME_MAX, TIER_SEARCH_MAX, TIER_PAGE_SIZE_MAX } from '@/features/tiers/types';
+export {
+    TIER_NATURES,
+    TIER_ROLES,
+    TIER_NATURES_WITH_PANEL,
+    TIER_NAME_MAX,
+    TIER_SEARCH_MAX,
+    TIER_PAGE_SIZE_MAX
+} from '@/features/tiers/types';
 export { TIER_SORTS, TIER_SORT_DEFAULT } from '@/features/tiers/format';
 export type { TierSort } from '@/features/tiers/format';
 export { default as TiersDirectory } from '@/features/tiers/components/TiersDirectory.vue';

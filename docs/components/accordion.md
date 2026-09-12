@@ -21,18 +21,18 @@ Panneau verre (bordure soft primary, fond blanc léger), chevron circulaire anim
 
 ## Props
 
-| Prop       | Défaut  | Notes                                      |
-| ---------- | ------- | ------------------------------------------ |
-| `v-model`  | `false` | Ouvert / fermé                             |
-| `title`    | `''`    | Titre (ou slot `title`)                    |
-| `subtitle` | —       | Sous-titre (ou slot `subtitle`)            |
-| `disabled` | `false` | Bloque le toggle                           |
+| Prop       | Défaut  | Notes                           |
+| ---------- | ------- | ------------------------------- |
+| `v-model`  | `false` | Ouvert / fermé                  |
+| `title`    | `''`    | Titre (ou slot `title`)         |
+| `subtitle` | —       | Sous-titre (ou slot `subtitle`) |
+| `disabled` | `false` | Bloque le toggle                |
 
 ## Slots
 
-| Slot       | Rôle                                      |
-| ---------- | ----------------------------------------- |
-| `default`  | Contenu du panneau                        |
-| `title`    | Remplace le titre                         |
-| `subtitle` | Remplace le sous-titre                    |
-| `extra`    | Zone à droite du titre (chip, badge…)     |
+| Slot       | Rôle                                  |
+| ---------- | ------------------------------------- |
+| `default`  | Contenu du panneau                    |
+| `title`    | Remplace le titre                     |
+| `subtitle` | Remplace le sous-titre                |
+| `extra`    | Zone à droite du titre (chip, badge…) |

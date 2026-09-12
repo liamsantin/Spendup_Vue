@@ -6,12 +6,12 @@
 
 ## Boundaries
 
-| Couche                 | Détail                                                                                        |
-| ---------------------- | --------------------------------------------------------------------------------------------- |
-| Routes                 | `/app/parametres/{compte,preferences,notifications,confidentialite,securite,abonnement}`      |
-| Store                  | `useUserSettingsStore` — settings + draft/baseline + dirty                                    |
-| Settings API           | `userSettingsApi` → **`fetchWrapper`** — `GET\|PUT\|PATCH /api/settings`                      |
-| Compte / 2FA / devices | via **`useAuthStore` / `authApi`** — pas `userSettingsApi`                                    |
+| Couche                 | Détail                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| Routes                 | `/app/parametres/{compte,preferences,notifications,confidentialite,securite,abonnement}` |
+| Store                  | `useUserSettingsStore` — settings + draft/baseline + dirty                               |
+| Settings API           | `userSettingsApi` → **`fetchWrapper`** — `GET\|PUT\|PATCH /api/settings`                 |
+| Compte / 2FA / devices | via **`useAuthStore` / `authApi`** — pas `userSettingsApi`                               |
 
 Nav sidebar **Confidentialité** → `SETTINGS_PATHS.privacy` (`/app/parametres/confidentialite`). La carte visibilité / demandes d’amis / recherche n’est plus sur Préférences.
 

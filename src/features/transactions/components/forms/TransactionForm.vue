@@ -17,7 +17,12 @@ import PaymentMethodFormModal from '@/features/payment-methods/components/modals
 import { canWritePaymentMethods } from '@/features/payment-methods/rights';
 import type { PaymentMethod } from '@/features/payment-methods/types';
 import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
-import { formatSignedAmountDelta, recurrenceAmountVariance, resolveTransactionAmountDisplay, todayUtcYmd } from '@/features/transactions/format';
+import {
+    formatSignedAmountDelta,
+    recurrenceAmountVariance,
+    resolveTransactionAmountDisplay,
+    todayUtcYmd
+} from '@/features/transactions/format';
 import { TRANSACTION_LABEL_MAX, type TransactionType } from '@/features/transactions/types';
 import type { TransactionFormFields } from '@/features/transactions/payload';
 
@@ -231,7 +236,11 @@ function openPaymentMethodCreate(name: string) {
                     :error-messages="fieldErrors.amount || undefined"
                     @update:model-value="onAmountInput"
                 />
-                <p v-if="recurrenceAmountHint" class="text-caption mt-1" :class="`text-${recurrenceAmountHint.tone === 'unfavorable' ? 'error' : 'success'}`">
+                <p
+                    v-if="recurrenceAmountHint"
+                    class="text-caption mt-1"
+                    :class="`text-${recurrenceAmountHint.tone === 'unfavorable' ? 'error' : 'success'}`"
+                >
                     {{ recurrenceAmountHint.text }}
                 </p>
             </v-col>

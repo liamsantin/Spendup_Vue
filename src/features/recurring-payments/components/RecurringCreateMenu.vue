@@ -3,9 +3,7 @@ defineOptions({ name: 'RecurringCreateMenu' });
 
 import { ChevronDownIcon, PlusIcon } from 'vue-tabler-icons';
 import RecurringKindOption from '@/features/recurring-payments/components/forms/RecurringKindOption.vue';
-import RecurringTypeChoice, {
-    type RecurringTypePick
-} from '@/features/recurring-payments/components/forms/RecurringTypeChoice.vue';
+import RecurringTypeChoice, { type RecurringTypePick } from '@/features/recurring-payments/components/forms/RecurringTypeChoice.vue';
 import type { RecurringKind } from '@/features/recurring-payments/types';
 
 withDefaults(

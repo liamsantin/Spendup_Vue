@@ -365,12 +365,7 @@ function seeRelatedTransactions() {
                     <div v-if="store.loadingDues && !dues.length" class="su-loading"><span class="su-spin" /></div>
                     <p v-else-if="!dues.length" class="text-medium-emphasis">{{ t('recurrencesPage.detail.duesEmpty') }}</p>
                     <div v-else class="su-stack recurring-detail-dues">
-                        <AppAccordion
-                            v-for="group in dueGroups"
-                            :key="group.key"
-                            v-model="groupOpen[group.key]"
-                            :title="group.title"
-                        >
+                        <AppAccordion v-for="group in dueGroups" :key="group.key" v-model="groupOpen[group.key]" :title="group.title">
                             <template #extra>
                                 <span class="recurring-detail-dues__count">{{ group.items.length }}</span>
                             </template>
@@ -468,7 +463,9 @@ function seeRelatedTransactions() {
                         <article v-for="group in linkedTxFileGroups" :key="group.transaction.publicId" class="recurring-tx-files__group">
                             <button type="button" class="recurring-tx-files__tx" @click="openLinkedTransaction(group.transaction)">
                                 <span class="recurring-tx-files__label">{{ group.transaction.label }}</span>
-                                <span class="recurring-tx-files__date">{{ formatOperationDate(group.transaction.operationDate, locale) }}</span>
+                                <span class="recurring-tx-files__date">{{
+                                    formatOperationDate(group.transaction.operationDate, locale)
+                                }}</span>
                             </button>
                             <ul class="recurring-tx-files__list">
                                 <li v-for="file in group.files" :key="file.publicId" class="recurring-tx-files__chip">

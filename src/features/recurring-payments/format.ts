@@ -155,14 +155,23 @@ export type UpcomingDueRowSortable = {
 export function sortUpcomingDueRows<T extends UpcomingDueRowSortable>(items: readonly T[], sort: UpcomingDueSort): T[] {
     return [...items].sort((a, b) => {
         if (sort === 'dateDesc') {
-            return b.due.scheduledAt.localeCompare(a.due.scheduledAt) || a.templateName.localeCompare(b.templateName, undefined, { sensitivity: 'base' });
+            return (
+                b.due.scheduledAt.localeCompare(a.due.scheduledAt) ||
+                a.templateName.localeCompare(b.templateName, undefined, { sensitivity: 'base' })
+            );
         }
         if (sort === 'nameAsc') {
-            return a.templateName.localeCompare(b.templateName, undefined, { sensitivity: 'base' }) || a.due.scheduledAt.localeCompare(b.due.scheduledAt);
+            return (
+                a.templateName.localeCompare(b.templateName, undefined, { sensitivity: 'base' }) ||
+                a.due.scheduledAt.localeCompare(b.due.scheduledAt)
+            );
         }
         if (sort === 'amountDesc') return b.due.plannedAmount - a.due.plannedAmount || a.due.scheduledAt.localeCompare(b.due.scheduledAt);
         if (sort === 'amountAsc') return a.due.plannedAmount - b.due.plannedAmount || a.due.scheduledAt.localeCompare(b.due.scheduledAt);
-        return a.due.scheduledAt.localeCompare(b.due.scheduledAt) || a.templateName.localeCompare(b.templateName, undefined, { sensitivity: 'base' });
+        return (
+            a.due.scheduledAt.localeCompare(b.due.scheduledAt) ||
+            a.templateName.localeCompare(b.templateName, undefined, { sensitivity: 'base' })
+        );
     });
 }
 

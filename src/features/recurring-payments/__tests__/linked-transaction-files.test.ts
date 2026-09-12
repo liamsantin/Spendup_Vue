@@ -4,7 +4,7 @@ import {
     listAllLinkedTransactions,
     uniqueAttachmentCount
 } from '@/features/recurring-payments/linked-transaction-files';
-import type { Transaction, TransactionList } from '@/features/transactions/types';
+import type { ListTransactionsQuery, Transaction, TransactionList } from '@/features/transactions/types';
 
 function tx(partial: Partial<Transaction> = {}): Transaction {
     return {
@@ -54,12 +54,7 @@ describe('linked transaction files', () => {
     });
 
     it('compte les justificatifs uniques (récurrence + transactions)', () => {
-        expect(
-            uniqueAttachmentCount(
-                [{ publicId: 'f1' }, { publicId: 'f2' }],
-                [{ publicId: 'f2' }, { publicId: 'f3' }]
-            )
-        ).toBe(3);
+        expect(uniqueAttachmentCount([{ publicId: 'f1' }, { publicId: 'f2' }], [{ publicId: 'f2' }, { publicId: 'f3' }])).toBe(3);
     });
 
     it('drain les pages liées sans hydrater si files est déjà un tableau', async () => {
@@ -98,12 +93,14 @@ describe('linked transaction files', () => {
     });
 
     it('hydrate via get si files est absent de la liste', async () => {
-        const list = vi.fn(async (): Promise<TransactionList> => ({
-            items: [{ ...tx({ publicId: 'a' }), files: undefined as unknown as Transaction['files'] }],
-            page: 1,
-            pageSize: 200,
-            totalCount: 1
-        }));
+        const list = vi.fn(
+            async (query: ListTransactionsQuery): Promise<TransactionList> => ({
+                items: [{ ...tx({ publicId: 'a' }), files: undefined as unknown as Transaction['files'] }],
+                page: query.page ?? 1,
+                pageSize: 200,
+                totalCount: 1
+            })
+        );
         const get = vi.fn(async () =>
             tx({
                 publicId: 'a',

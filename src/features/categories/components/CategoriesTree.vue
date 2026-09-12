@@ -190,11 +190,7 @@ defineExpose({ openCreate });
                         @add-child="openCreate"
                         @toggle="toggleExpanded"
                     />
-                    <div
-                        v-if="root.children?.length"
-                        class="categories-tree__panel"
-                        :inert="!expandedIds.has(root.publicId)"
-                    >
+                    <div v-if="root.children?.length" class="categories-tree__panel" :inert="!expandedIds.has(root.publicId)">
                         <div class="categories-tree__panel-inner">
                             <div class="categories-tree__children">
                                 <CategoryListItem

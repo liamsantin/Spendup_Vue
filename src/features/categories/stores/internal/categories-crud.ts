@@ -1,7 +1,12 @@
 import { AppError } from '@/utils/errors/app-error';
 import { transactionsApi } from '@/features/transactions/api';
 import { categoriesApi } from '@/features/categories/api';
-import { buildCreateCategoryPayload, buildUpdateCategoryPayload, isDuplicateName, type CategoryFormFields } from '@/features/categories/payload';
+import {
+    buildCreateCategoryPayload,
+    buildUpdateCategoryPayload,
+    isDuplicateName,
+    type CategoryFormFields
+} from '@/features/categories/payload';
 import { CATEGORY_TYPES, type Category, type ListCategoriesQuery } from '@/features/categories/types';
 import { KEY_TREE, listCacheKey, type CategoriesState } from '@/features/categories/stores/internal/categories-state';
 

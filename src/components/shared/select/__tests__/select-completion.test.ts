@@ -40,18 +40,14 @@ describe('selectCreateMode', () => {
     });
 
     it('propose « Nouveau » à l’ouverture même si le champ reprend la valeur sélectionnée', () => {
-        expect(
-            selectCreateMode({ enabled: true, query: 'Alimentation', selectedTitle: 'Alimentation', hasExactMatch: true })
-        ).toBe('blank');
+        expect(selectCreateMode({ enabled: true, query: 'Alimentation', selectedTitle: 'Alimentation', hasExactMatch: true })).toBe(
+            'blank'
+        );
         expect(selectCreateMode({ enabled: true, query: '', selectedTitle: '', hasExactMatch: false })).toBe('blank');
     });
 
     it('propose « Créer nom » seulement pour une recherche sans égal exact', () => {
-        expect(
-            selectCreateMode({ enabled: true, query: 'Courses', selectedTitle: 'Alimentation', hasExactMatch: false })
-        ).toBe('named');
-        expect(
-            selectCreateMode({ enabled: true, query: 'Alimentation', selectedTitle: 'Aucun', hasExactMatch: true })
-        ).toBe('blank');
+        expect(selectCreateMode({ enabled: true, query: 'Courses', selectedTitle: 'Alimentation', hasExactMatch: false })).toBe('named');
+        expect(selectCreateMode({ enabled: true, query: 'Alimentation', selectedTitle: 'Aucun', hasExactMatch: true })).toBe('blank');
     });
 });

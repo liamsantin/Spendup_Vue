@@ -206,11 +206,7 @@ watch(
                         :reset-disabled="listSort === FILE_SORT_DEFAULT"
                         @reset="listSort = FILE_SORT_DEFAULT"
                     >
-                        <AppSortChoices
-                            v-model="listSort"
-                            :items="FILE_SORTS"
-                            :label-for="(value) => t(`filesPage.sort.${value}`)"
-                        />
+                        <AppSortChoices v-model="listSort" :items="FILE_SORTS" :label-for="(value) => t(`filesPage.sort.${value}`)" />
                     </AppDropdownFilter>
                     <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onUpload">
                         <UploadIcon :size="16" stroke-width="1.6" />

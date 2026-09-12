@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { amountInFilterRange, parseAmountFilter, serializeAmountFilter, isAmountRangeFilterActive, pageSizeForClientAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
+import {
+    amountInFilterRange,
+    parseAmountFilter,
+    serializeAmountFilter,
+    isAmountRangeFilterActive,
+    pageSizeForClientAmountFilter
+} from '@/components/shared/dropdown-filter/amount-range';
 
 describe('amount-range', () => {
     it('parse les montants positifs', () => {

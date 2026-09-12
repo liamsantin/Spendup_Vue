@@ -7,9 +7,7 @@ import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import RecurringKindChoice from '@/features/recurring-payments/components/forms/RecurringKindChoice.vue';
-import RecurringTypeChoice, {
-    type RecurringTypePick
-} from '@/features/recurring-payments/components/forms/RecurringTypeChoice.vue';
+import RecurringTypeChoice, { type RecurringTypePick } from '@/features/recurring-payments/components/forms/RecurringTypeChoice.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
@@ -138,9 +136,7 @@ const modalTitle = computed(() => {
     if (isEdit.value) {
         return resolvedKind.value === 'expense' ? t('recurrencesPage.form.editExpenseTitle') : t('recurrencesPage.form.editIncomeTitle');
     }
-    return resolvedKind.value === 'expense'
-        ? t('recurrencesPage.form.createExpenseTitle')
-        : t('recurrencesPage.form.createIncomeTitle');
+    return resolvedKind.value === 'expense' ? t('recurrencesPage.form.createExpenseTitle') : t('recurrencesPage.form.createIncomeTitle');
 });
 
 const modalSubtitle = computed(() =>

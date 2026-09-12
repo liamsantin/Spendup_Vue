@@ -6,12 +6,12 @@
 
 ## Grille des pages liste
 
-| Zone | Contenu | Slot |
-| ---- | ------- | ---- |
-| Hero | Titre à gauche, **onglets de vue** à droite, sous-titre dessous | `#tabs` |
+| Zone           | Contenu                                                                               | Slot       |
+| -------------- | ------------------------------------------------------------------------------------- | ---------- |
+| Hero           | Titre à gauche, **onglets de vue** à droite, sous-titre dessous                       | `#tabs`    |
 | Barre d’outils | Recherche à gauche (optionnelle), **Trier** puis **Filtre** puis **Ajouter** à droite | `#toolbar` |
-| Corps | Liste / vide / chargement | défaut |
-| Hero actions | Inbox, Enregistrer / Annuler — **pas** Filtre/Ajouter | `#actions` |
+| Corps          | Liste / vide / chargement                                                             | défaut     |
+| Hero actions   | Inbox, Enregistrer / Annuler — **pas** Filtre/Ajouter                                 | `#actions` |
 
 Les onglets changent la famille d’objets (nature, type). Trier réordonne les éléments déjà chargés. Filtre affine la vue courante. Si une pièce manque, la zone reste (ex. Moyens de paiement : pas de recherche, Filtre + Ajouter à droite).
 

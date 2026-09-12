@@ -83,9 +83,7 @@ const shopItems = computed<ShopItem[]>(() =>
 );
 
 const selectedCount = computed(() => selectedKeys.value.length);
-const allSelected = computed(
-    () => shopItems.value.length > 0 && selectedKeys.value.length === shopItems.value.length
-);
+const allSelected = computed(() => shopItems.value.length > 0 && selectedKeys.value.length === shopItems.value.length);
 
 const applyLabel = computed(() => {
     const count = selectedCount.value;
@@ -93,9 +91,7 @@ const applyLabel = computed(() => {
     return t('categoriesPage.plan.modal.apply', { count }, count);
 });
 
-const selectedLabel = computed(() =>
-    t('categoriesPage.plan.modal.selected', { count: selectedCount.value }, selectedCount.value)
-);
+const selectedLabel = computed(() => t('categoriesPage.plan.modal.selected', { count: selectedCount.value }, selectedCount.value));
 
 const busy = computed(() => applying.value || store.acting);
 
@@ -167,7 +163,16 @@ async function onApply() {
         :height="720"
         mobile-layout="sheet"
     >
-        <AppAlert v-if="localError || store.error" type="error" class="mb-4" closable @dismiss="localError = null; store.clearError()">
+        <AppAlert
+            v-if="localError || store.error"
+            type="error"
+            class="mb-4"
+            closable
+            @dismiss="
+                localError = null;
+                store.clearError();
+            "
+        >
             {{ localError || store.error }}
         </AppAlert>
 
@@ -239,7 +244,7 @@ async function onApply() {
                             <span
                                 class="category-plan-shop__icon category-plan-shop__icon--sm"
                                 :class="{ 'category-plan-shop__icon--empty': !(child.color || item.color) }"
-                                :style="(child.color || item.color) ? { backgroundColor: child.color || item.color } : undefined"
+                                :style="child.color || item.color ? { backgroundColor: child.color || item.color } : undefined"
                                 aria-hidden="true"
                             >
                                 <component :is="resolveCategoryIcon(child.icone || item.icone)" size="14" stroke-width="1.8" />
@@ -258,12 +263,7 @@ async function onApply() {
             <button type="button" class="su-btn su-btn--ghost" :disabled="applying" @click="close">
                 {{ t('common.cancel') }}
             </button>
-            <button
-                type="button"
-                class="su-btn su-btn--ink"
-                :disabled="busy || selectedCount === 0"
-                @click="onApply"
-            >
+            <button type="button" class="su-btn su-btn--ink" :disabled="busy || selectedCount === 0" @click="onApply">
                 <span v-if="applying" class="su-spin" />
                 {{ applyLabel }}
             </button>

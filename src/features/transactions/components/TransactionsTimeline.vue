@@ -20,7 +20,14 @@ import {
     TRANSACTION_SORT_DEFAULT
 } from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
-import { TRANSACTION_PAGE_SIZE_DEFAULT, TRANSACTION_PAGE_SIZE_MAX, TRANSACTION_SEARCH_MAX, TRANSACTION_TYPES, type Transaction, type TransactionType } from '@/features/transactions/types';
+import {
+    TRANSACTION_PAGE_SIZE_DEFAULT,
+    TRANSACTION_PAGE_SIZE_MAX,
+    TRANSACTION_SEARCH_MAX,
+    TRANSACTION_TYPES,
+    type Transaction,
+    type TransactionType
+} from '@/features/transactions/types';
 import { TIER_PAGE_SIZE_MAX } from '@/features/tiers/types';
 import { tierSearchHaystack } from '@/features/tiers/format';
 import { usePaymentMethodsStore } from '@/features/payment-methods';
@@ -198,7 +205,10 @@ async function loadTimeline(force = false) {
         if (err.status === 404) {
             localError.value = t('transactionsPage.errors.notFound');
             // 404 : compte inconnu, ou tier filtré qui n’appartient pas (plus) à l’utilisateur → on retire le filtre fautif.
-            if (!props.lockedAccountPublicId && (filterAccountId.value || filterTierId.value || filterRecurringExpenseId.value || filterRecurringIncomeId.value)) {
+            if (
+                !props.lockedAccountPublicId &&
+                (filterAccountId.value || filterTierId.value || filterRecurringExpenseId.value || filterRecurringIncomeId.value)
+            ) {
                 const dropTier = !!filterTierId.value;
                 const dropRecurring = !!(filterRecurringExpenseId.value || filterRecurringIncomeId.value);
                 await store
@@ -213,11 +223,7 @@ async function loadTimeline(force = false) {
                 await router.replace({
                     path: '/app/finances/transactions',
                     query: {
-                        ...(dropTier || dropRecurring
-                            ? filterAccountId.value
-                                ? { account: filterAccountId.value }
-                                : {}
-                            : {}),
+                        ...(dropTier || dropRecurring ? (filterAccountId.value ? { account: filterAccountId.value } : {}) : {}),
                         ...(filterType.value ? { type: filterType.value } : {}),
                         ...(filterFrom.value ? { from: filterFrom.value } : {}),
                         ...(filterTo.value ? { to: filterTo.value } : {}),

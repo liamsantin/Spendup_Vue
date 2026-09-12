@@ -333,10 +333,7 @@ describe('QA checklist — Comptes (frontend unitaire)', () => {
                 institutionTierPublicId: null
             });
 
-            expect(api.update).toHaveBeenCalledWith(
-                'acc-1',
-                expect.objectContaining({ institutionTierPublicId: null })
-            );
+            expect(api.update).toHaveBeenCalledWith('acc-1', expect.objectContaining({ institutionTierPublicId: null }));
             expect(store.accounts[0]?.institutionName).toBeNull();
         });
 

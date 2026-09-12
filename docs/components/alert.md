@@ -25,12 +25,12 @@ Ne pas utiliser `v-alert` brut : toujours `AppAlert`.
 
 ## Props
 
-| Prop        | Défaut | Notes                                              |
-| ----------- | ------ | -------------------------------------------------- |
-| `type`      | —      | `success`, `info`, `warning`, `error`              |
-| `closable`  | `false`| Croix de fermeture                                 |
-| `dismissMs` | —      | Auto-fermeture + barre de progression              |
-| `class`     | —      | Espacement (`mb-4`, `mt-3`, `su-alert`…)           |
+| Prop        | Défaut  | Notes                                    |
+| ----------- | ------- | ---------------------------------------- |
+| `type`      | —       | `success`, `info`, `warning`, `error`    |
+| `closable`  | `false` | Croix de fermeture                       |
+| `dismissMs` | —       | Auto-fermeture + barre de progression    |
+| `class`     | —       | Espacement (`mb-4`, `mt-3`, `su-alert`…) |
 
 `v-model` optionnel pour contrôler la visibilité avec `closable` / `dismissMs`.
 

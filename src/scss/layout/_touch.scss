@@ -9,7 +9,9 @@ body,
 }
 
 @media (pointer: coarse), (max-width: 959.98px) {
-    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='hidden']):not([type='file']):not([type='button']):not([type='submit']):not([type='reset']),
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='hidden']):not([type='file']):not(
+            [type='button']
+        ):not([type='submit']):not([type='reset']),
     textarea,
     select,
     .v-field__input,

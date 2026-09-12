@@ -57,12 +57,7 @@ function onActivate(event: MouseEvent) {
 </script>
 
 <template>
-    <div
-        class="recurring-row"
-        :class="{ 'is-paused': !template.isActive }"
-        :data-recurring-id="template.publicId"
-        @click="onActivate"
-    >
+    <div class="recurring-row" :class="{ 'is-paused': !template.isActive }" :data-recurring-id="template.publicId" @click="onActivate">
         <span class="recurring-row__icon" :class="`recurring-row__icon--${kind}`">
             <component :is="kind === 'expense' ? Receipt2Icon : TrendingUpIcon" size="18" stroke-width="1.8" />
         </span>

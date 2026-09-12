@@ -12,7 +12,12 @@ import RecurringTemplateFormModal from '@/features/recurring-payments/components
 import { recurrencesPathForTab } from '@/features/recurring-payments/paths';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { isExpenseTemplate, sortTemplates } from '@/features/recurring-payments/format';
-import { pageSizeForClientAmountFilter, parseAmountFilter, amountInFilterRange, isAmountRangeFilterActive } from '@/components/shared/dropdown-filter/amount-range';
+import {
+    pageSizeForClientAmountFilter,
+    parseAmountFilter,
+    amountInFilterRange,
+    isAmountRangeFilterActive
+} from '@/components/shared/dropdown-filter/amount-range';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import type {
     RecurringExpense,
@@ -154,8 +159,7 @@ async function drainPagesForAmountFilter() {
     if (!isAmountRangeFilterActive(props.minAmount, props.maxAmount)) return;
     let guard = 0;
     while (guard++ < 30) {
-        const moreExpenses =
-            (listingKind.value === 'expense' || listingKind.value == null) && store.hasMoreExpenses;
+        const moreExpenses = (listingKind.value === 'expense' || listingKind.value == null) && store.hasMoreExpenses;
         const moreIncomes = (listingKind.value === 'income' || listingKind.value == null) && store.hasMoreIncomes;
         if (!moreExpenses && !moreIncomes) return;
         if (moreExpenses) await store.loadMoreExpenses();
@@ -308,9 +312,7 @@ function loadMore() {
 
         <AppConfirmationModal
             v-model="deleteOpen"
-            :title="
-                deleteKind === 'income' ? t('recurrencesPage.deleteModal.incomeTitle') : t('recurrencesPage.deleteModal.expenseTitle')
-            "
+            :title="deleteKind === 'income' ? t('recurrencesPage.deleteModal.incomeTitle') : t('recurrencesPage.deleteModal.expenseTitle')"
             :message="t('recurrencesPage.deleteModal.body')"
             :confirm-label="t('recurrencesPage.actions.delete')"
             confirm-color="error"

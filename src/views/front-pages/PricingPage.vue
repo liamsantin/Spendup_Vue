@@ -203,8 +203,8 @@ function yearlyTotal(plan: PricingPlan): string {
                         Un plan pour vous. Un foyer, si vous le voulez.
                     </h1>
                     <p class="pricing-subtitle text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
-                        Commencez gratuitement, sans carte. Étudiant au tarif réduit (justificatif annuel). Solo pour le quotidien.
-                        Famille pour un payeur et jusqu’à quatre membres. Toutes les offres sont sans engagement.
+                        Commencez gratuitement, sans carte. Étudiant au tarif réduit (justificatif annuel). Solo pour le quotidien. Famille
+                        pour un payeur et jusqu’à quatre membres. Toutes les offres sont sans engagement.
                     </p>
 
                     <div class="billing-switch su-hero-in" style="--su-in-delay: 240ms" role="group" aria-label="Période de facturation">
@@ -327,9 +327,7 @@ function yearlyTotal(plan: PricingPlan): string {
                                             <CheckIcon size="18" stroke-width="2.6" aria-hidden="true" />
                                             <span class="sr-only">Inclus</span>
                                         </span>
-                                        <span v-else-if="row.values[plan.code] === 'limited'" class="compare-table__limited">
-                                            Limité
-                                        </span>
+                                        <span v-else-if="row.values[plan.code] === 'limited'" class="compare-table__limited"> Limité </span>
                                         <span v-else class="compare-table__no" title="Non inclus">
                                             -<span class="sr-only"> Non inclus</span>
                                         </span>

@@ -6,14 +6,14 @@
 
 ## Boundaries
 
-| Couche    | Détail                                                                                                    |
-| --------- | --------------------------------------------------------------------------------------------------------- |
-| Route     | `/app/finances/comptes` → `AppComptesPage` (Tabs : Accounts / Invitations)                                |
-| Store     | `useAccountsStore`                                                                                        |
-| API       | `accountsApi` → **`fetchWrapper`**                                                                        |
-| Droits UI | `rights.ts` branché sur `myRole` / `isOwned` / `isPrimary` (archive/restore/delete/primary = owner owned) |
+| Couche    | Détail                                                                                                                                                               |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Route     | `/app/finances/comptes` → `AppComptesPage` (Tabs : Accounts / Invitations)                                                                                           |
+| Store     | `useAccountsStore`                                                                                                                                                   |
+| API       | `accountsApi` → **`fetchWrapper`**                                                                                                                                   |
+| Droits UI | `rights.ts` branché sur `myRole` / `isOwned` / `isPrimary` (archive/restore/delete/primary = owner owned)                                                            |
 | Realtime  | Notifs `accountShare*` (dont `accountShareRoleChanged`) + SignalR `accountChanged` + `friendshipChanged` + `tierChanged` (`tierUpdated` → refetch `institutionName`) |
-| Dashboard | Module Comptes actif → `/app/finances/comptes`                                                            |
+| Dashboard | Module Comptes actif → `/app/finances/comptes`                                                                                                                       |
 
 ## HTTP
 
