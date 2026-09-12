@@ -31,6 +31,8 @@ const props = withDefaults(
         searchPlaceholder?: string;
         noResultsLabel?: string;
         searchMax?: number;
+        /** Affiche le `label` sur la bordure, comme un champ outlined Vuetify. */
+        floatLabel?: boolean;
     }>(),
     {
         itemTitle: 'title',
@@ -48,7 +50,8 @@ const props = withDefaults(
         searchable: false,
         searchPlaceholder: undefined,
         noResultsLabel: undefined,
-        searchMax: 100
+        searchMax: 100,
+        floatLabel: false
     }
 );
 
@@ -137,6 +140,7 @@ const showDetails = computed(() => {
 
 const placeholder = computed(() => {
     if (typeof attrs.placeholder === 'string' && attrs.placeholder) return attrs.placeholder;
+    if (props.floatLabel) return props.searchPlaceholder || undefined;
     return props.searchPlaceholder || props.label || undefined;
 });
 
@@ -289,7 +293,16 @@ watch(open, (value) => {
 </script>
 
 <template>
-    <div class="app-select" :class="{ 'app-select--disabled': disabled, 'app-select--error': hasError }">
+    <div
+        class="app-select"
+        :class="{
+            'app-select--disabled': disabled,
+            'app-select--error': hasError,
+            'app-select--float': floatLabel && !!label,
+            'app-select--open': open
+        }"
+    >
+        <span v-if="floatLabel && label" class="app-select__legend">{{ label }}</span>
         <v-menu
             v-model="open"
             :close-on-content-click="false"
@@ -388,8 +401,34 @@ watch(open, (value) => {
 
 <style scoped>
 .app-select {
+    position: relative;
     width: 100%;
     min-width: 0;
+}
+
+.app-select__legend {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 12px;
+    transform: translateY(-50%);
+    max-width: calc(100% - 28px);
+    padding: 0 4px;
+    overflow: hidden;
+    background: var(--surface-raised);
+    color: var(--ink-mute);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 560;
+    line-height: 1;
+    letter-spacing: 0.009em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    pointer-events: none;
+}
+
+.app-select--error .app-select__legend {
+    color: rgb(var(--v-theme-error));
 }
 
 .app-select__control {

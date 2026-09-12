@@ -390,7 +390,8 @@
 
 .app-modal-base .v-label,
 .su-page .v-label,
-.su-panel .v-label {
+.su-panel .v-label,
+.app-modal-base .app-select__legend {
     font-family: var(--font-ui);
     font-size: 13px;
     font-weight: 560;

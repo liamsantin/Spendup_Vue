@@ -150,7 +150,8 @@ async function onConfirm() {
         <div class="mb-2">
             <AppSelect
                 v-model="form.paymentMethodPublicId"
-                :label="t('recurrencesPage.form.fields.paymentMethod')"
+                float-label
+                :label="t('recurrencesPage.confirm.fields.paymentMethod')"
                 :items="paymentMethodItems"
                 hide-details="auto"
             />

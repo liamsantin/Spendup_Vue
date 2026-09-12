@@ -813,8 +813,10 @@
             "subtitle": "This creates a transaction and updates the balance.",
             "fields": {
                 "paymentDate": "Date",
-                "amount": "Amount"
-            }
+                "amount": "Amount",
+                "paymentMethod": "Payment method"
+            },
+            "noPaymentMethod": "No payment method"
         },
         "form": {
             "createExpenseTitle": "New recurring expense",

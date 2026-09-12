@@ -813,8 +813,10 @@
             "subtitle": "Cela crée une transaction et met à jour le solde.",
             "fields": {
                 "paymentDate": "Date",
-                "amount": "Montant"
-            }
+                "amount": "Montant",
+                "paymentMethod": "Moyen de paiement"
+            },
+            "noPaymentMethod": "Aucun moyen de paiement"
         },
         "form": {
             "createExpenseTitle": "Nouvelle charge récurrente",
