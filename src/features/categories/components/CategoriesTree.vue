@@ -5,6 +5,8 @@ import { useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
+import { budgetsApi } from '@/features/budgets/api';
+import { BUDGETS_PATHS } from '@/features/budgets/paths';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import type { Category, CategoryType } from '@/features/categories/types';
 import CategoryListItem from '@/features/categories/components/list/CategoryListItem.vue';
@@ -20,6 +22,7 @@ const editTarget = ref<Category | null>(null);
 const deleteTarget = ref<Category | null>(null);
 const localError = ref<string | null>(null);
 const linkedCount = ref(0);
+const linkedBudgetCount = ref(0);
 const expandedIds = ref<Set<string>>(new Set());
 
 const editOpen = computed({
@@ -35,6 +38,7 @@ const deleteOpen = computed({
         if (!value) {
             deleteTarget.value = null;
             linkedCount.value = 0;
+            linkedBudgetCount.value = 0;
         }
     }
 });
@@ -44,10 +48,14 @@ const createParentId = computed(() => createParent.value?.publicId ?? null);
 
 const deleteBlockedByChildren = computed(() => (deleteTarget.value?.children?.length ?? 0) > 0);
 const deleteBlockedByTransactions = computed(() => !deleteBlockedByChildren.value && linkedCount.value > 0);
+const deleteBlockedByBudgets = computed(
+    () => !deleteBlockedByChildren.value && !deleteBlockedByTransactions.value && linkedBudgetCount.value > 0
+);
 
 const deleteTitle = computed(() => {
     if (deleteBlockedByChildren.value) return t('categoriesPage.deleteModal.childrenTitle');
     if (deleteBlockedByTransactions.value) return t('categoriesPage.deleteModal.linkedTitle');
+    if (deleteBlockedByBudgets.value) return t('categoriesPage.deleteModal.budgetsTitle');
     return t('categoriesPage.deleteModal.title');
 });
 
@@ -56,12 +64,16 @@ const deleteMessage = computed(() => {
     if (deleteBlockedByTransactions.value) {
         return t('categoriesPage.deleteModal.linkedBody', { count: linkedCount.value });
     }
+    if (deleteBlockedByBudgets.value) {
+        return t('categoriesPage.deleteModal.budgetsBody', { count: linkedBudgetCount.value });
+    }
     return t('categoriesPage.deleteModal.body');
 });
 
 const deleteConfirmLabel = computed(() => {
     if (deleteBlockedByChildren.value) return t('common.close');
     if (deleteBlockedByTransactions.value) return t('categoriesPage.deleteModal.seeTransactions');
+    if (deleteBlockedByBudgets.value) return t('categoriesPage.deleteModal.seeBudgets');
     return t('categoriesPage.actions.delete');
 });
 
@@ -112,11 +124,19 @@ function toggleExpanded(category: Category) {
 async function requestDelete(category: Category) {
     deleteTarget.value = category;
     linkedCount.value = 0;
+    linkedBudgetCount.value = 0;
     if (category.children?.length) return;
     try {
         linkedCount.value = await store.countLinkedTransactions(category.publicId);
     } catch {
         linkedCount.value = 0;
+    }
+    if (linkedCount.value) return;
+    try {
+        const result = await budgetsApi.list({ categoryPublicId: category.publicId });
+        linkedBudgetCount.value = result?.totalCount ?? result?.items?.length ?? 0;
+    } catch {
+        linkedBudgetCount.value = 0;
     }
 }
 
@@ -132,17 +152,30 @@ async function confirmDelete() {
         await router.push({ path: '/app/finances/transactions', query: { category: id } });
         return;
     }
+    if (deleteBlockedByBudgets.value) {
+        const id = deleteTarget.value.publicId;
+        deleteTarget.value = null;
+        await router.push({ path: BUDGETS_PATHS.list, query: { category: id } });
+        return;
+    }
     localError.value = null;
     try {
         await store.deleteCategory(deleteTarget.value.publicId);
         deleteTarget.value = null;
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
-        localError.value = err.status === 404 ? t('categoriesPage.errors.notFound') : getErrorMessage(e);
         if (err.status === 404) {
+            localError.value = t('categoriesPage.errors.notFound');
             deleteTarget.value = null;
             void loadTree(true).catch(() => undefined);
+            return;
         }
+        if (err.status === 400 && /budget/i.test(err.message)) {
+            linkedBudgetCount.value = Math.max(1, linkedBudgetCount.value);
+            store.clearError();
+            return;
+        }
+        localError.value = getErrorMessage(e);
     }
 }
 
@@ -219,7 +252,7 @@ defineExpose({ openCreate });
             :title="deleteTitle"
             :message="deleteMessage"
             :confirm-label="deleteConfirmLabel"
-            :confirm-color="deleteBlockedByChildren || deleteBlockedByTransactions ? 'primary' : 'error'"
+            :confirm-color="deleteBlockedByChildren || deleteBlockedByTransactions || deleteBlockedByBudgets ? 'primary' : 'error'"
             :loading="store.acting"
             @confirm="confirmDelete"
         />

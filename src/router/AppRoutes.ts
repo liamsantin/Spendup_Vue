@@ -84,6 +84,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/gestion/tiers/AppTiersPage.vue')
         },
         {
+            name: 'AppBudgets',
+            path: 'planning/budgets/:publicId?',
+            component: () => import('@/views/app/planning/budgets/AppBudgetsPage.vue')
+        },
+        {
             path: 'parametres',
             redirect: SETTINGS_PATHS.account
         },

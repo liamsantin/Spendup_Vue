@@ -1,5 +1,6 @@
 import { isSafeAppPath } from '@/features/auth/safe-return-url';
-import { getAccountSharePublicId, getFriendshipPublicId } from '@/features/notifications/normalize';
+import { BUDGETS_PATHS, budgetDetailPath } from '@/features/budgets/paths';
+import { getAccountSharePublicId, getBudgetPublicId, getFriendshipPublicId, normalizePublicId } from '@/features/notifications/normalize';
 import type { AppNotification, NotificationType } from '@/features/notifications/types';
 import { rewriteLegacySettingsLink } from '@/features/user-settings/settings-paths';
 
@@ -28,6 +29,9 @@ export function resolveNotificationLink(
     const accountsDeepLink = resolveAccountsDeepLink(notification);
     if (accountsDeepLink) return accountsDeepLink;
 
+    const budgetsDeepLink = resolveBudgetsDeepLink(notification);
+    if (budgetsDeepLink) return budgetsDeepLink;
+
     if (!link) return null;
     const trimmed = link.trim();
     if (!trimmed.startsWith('/')) return null;
@@ -47,6 +51,9 @@ export function resolveNotificationLink(
     }
     if (trimmed === '/accounts' || trimmed.startsWith('/accounts/')) {
         return '/app/finances/comptes';
+    }
+    if (trimmed === '/budgets' || trimmed.startsWith('/budgets/')) {
+        return mapBudgetsApiLink(trimmed);
     }
     return null;
 }
@@ -88,6 +95,11 @@ export function isFriendNotificationType(type: string): boolean {
     return type === 'friendRequest' || type === 'friendAccepted';
 }
 
+/** Types alerte budget produits en inbox. */
+export function isBudgetAlertNotificationType(type: string): boolean {
+    return type === 'budgetAlert';
+}
+
 /** Types partage de comptes produits en inbox. */
 export function isAccountShareNotificationType(type: string): boolean {
     return (
@@ -125,4 +137,24 @@ function resolveAccountsDeepLink(notification?: Pick<AppNotification, 'type' | '
     const share = getAccountSharePublicId(notification.metadata);
     if (share && tab === 'Invitations') params.set('share', share);
     return `/app/finances/comptes?${params.toString()}`;
+}
+
+function mapBudgetsApiLink(link: string): string {
+    const rest = link.slice('/budgets'.length);
+    if (rest.startsWith('/')) {
+        const id = normalizePublicId(decodeURIComponent(rest.slice(1).split(/[?#]/)[0] ?? ''));
+        if (id) return budgetDetailPath(id);
+    }
+    return BUDGETS_PATHS.list;
+}
+
+function resolveBudgetsDeepLink(notification?: Pick<AppNotification, 'type' | 'metadata'> | null): string | null {
+    if (!notification || !isBudgetAlertNotificationType(String(notification.type))) return null;
+    const id = getBudgetPublicId(notification.metadata);
+    if (id) return budgetDetailPath(id);
+    if (typeof notification.metadata?.link === 'string') {
+        const mapped = mapBudgetsApiLink(notification.metadata.link);
+        if (mapped) return mapped;
+    }
+    return BUDGETS_PATHS.list;
 }

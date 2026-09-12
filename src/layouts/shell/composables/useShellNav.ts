@@ -37,6 +37,7 @@ import {
     WalletIcon
 } from 'vue-tabler-icons';
 import { useNotificationsStore } from '@/features/notifications';
+import { BUDGETS_PATHS } from '@/features/budgets/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import DashboardRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/DashboardRailIcon.vue';
@@ -126,6 +127,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, '/app/gestion/categories') || pathIs(path, '/app/gestion')) {
         return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.categories };
     }
+    if (pathIs(path, BUDGETS_PATHS.list) || pathIs(path, '/app/planning')) {
+        return { openId: SHELL_NAV_IDS.planning, activeId: SHELL_NAV_IDS.budgets };
+    }
     if (pathIs(path, '/app/friends')) {
         return { openId: SHELL_NAV_IDS.network, activeId: SHELL_NAV_IDS.friends };
     }
@@ -202,7 +206,7 @@ export function useShellNav() {
     ]);
 
     const planningLeaves = computed<NavLeaf[]>(() => [
-        upcoming(SHELL_NAV_IDS.budgets, t('nav.items.budgets'), WalletIcon),
+        live(SHELL_NAV_IDS.budgets, t('nav.items.budgets'), WalletIcon, BUDGETS_PATHS.list),
         upcoming(SHELL_NAV_IDS.goals, t('nav.items.goals'), TargetIcon)
     ]);
 

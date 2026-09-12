@@ -5,7 +5,8 @@ export {
     isSafeAppNotificationPath,
     isSecurityNotificationType,
     isFriendNotificationType,
-    isAccountShareNotificationType
+    isAccountShareNotificationType,
+    isBudgetAlertNotificationType
 } from '@/features/notifications/link';
 export { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '@/features/notifications/friendChip';
 export {
@@ -18,7 +19,9 @@ export {
     parseCategoryChangedPayload,
     parseTierChangedPayload,
     parseRecurringExpenseChangedPayload,
-    parseRecurringIncomeChangedPayload
+    parseRecurringIncomeChangedPayload,
+    parseBudgetChangedPayload,
+    getBudgetPublicId
 } from '@/features/notifications/normalize';
 export {
     ensureNativeNotificationPermission,
@@ -48,6 +51,8 @@ export type {
     RecurringExpenseChangedPayload,
     RecurringIncomeChange,
     RecurringIncomeChangedPayload,
+    BudgetChange,
+    BudgetChangedPayload,
     InboxClearedPayload,
     SessionEndedPayload,
     NotificationsListQuery

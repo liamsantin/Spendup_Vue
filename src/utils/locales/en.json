@@ -261,7 +261,8 @@
             "open": "Open",
             "comingSoon": "Coming soon",
             "seeAll": "See all",
-            "addTransaction": "Add a transaction"
+            "addTransaction": "Add a transaction",
+            "addBudget": "Add a budget"
         },
         "kpis": {
             "accounts": "Accounts",
@@ -281,7 +282,10 @@
             "tiers": "Payees",
             "tiersHint": "Counterparties",
             "paymentMethods": "Payments",
-            "paymentMethodsHint": "Cards and methods"
+            "paymentMethodsHint": "Cards and methods",
+            "budgets": "Budgets",
+            "budgetsHint": "Active envelopes",
+            "budgetsOver": "{count} overspent | {count} overspent | {count} overspent"
         },
         "recent": {
             "title": "Latest transactions",
@@ -295,6 +299,13 @@
         "storage": {
             "title": "Storage",
             "subtitle": "Unique PDF blobs, excluding avatar."
+        },
+        "budgets": {
+            "title": "Budgets",
+            "subtitle": "Current period.",
+            "empty": "No active budget yet.",
+            "used": "{percent} used",
+            "overspent": "Over the limit"
         },
         "modules": {
             "transactions": {
@@ -877,6 +888,107 @@
             }
         }
     },
+    "budgetsPage": {
+        "title": "Budgets",
+        "subtitle": "Recurring envelopes, current-period tracking and alerts.",
+        "searchPlaceholder": "Search a budget",
+        "count": "{count} budget | {count} budget | {count} budgets",
+        "tabs": {
+            "label": "Budget status",
+            "all": "All",
+            "active": "Active",
+            "paused": "Paused"
+        },
+        "periodes": {
+            "hebdomadaire": "Weekly",
+            "mensuel": "Monthly",
+            "trimestriel": "Quarterly",
+            "annuel": "Yearly"
+        },
+        "scope": {
+            "global": "All expenses",
+            "unknownCategory": "Category"
+        },
+        "badges": {
+            "paused": "Paused",
+            "upcoming": "Not started yet",
+            "ended": "Ended",
+            "overspent": "Overspent"
+        },
+        "list": {
+            "spentOf": "{spent} / {limit}",
+            "remaining": "{amount} left",
+            "overBy": "Over by {amount}",
+            "window": "{start} → {end}"
+        },
+        "empty": {
+            "list": "No budget yet. Create a first envelope.",
+            "active": "No active budget.",
+            "paused": "No paused budget.",
+            "filtered": "No budget matches these filters."
+        },
+        "actions": {
+            "create": "Add",
+            "edit": "Edit",
+            "delete": "Delete",
+            "pause": "Pause",
+            "resume": "Resume",
+            "filter": "Filter",
+            "clearSearch": "Clear search"
+        },
+        "filters": {
+            "periode": "Period",
+            "category": "Category",
+            "allPeriodes": "All periods",
+            "allCategories": "All categories"
+        },
+        "detail": {
+            "seeTransactions": "View linked transactions"
+        },
+        "deleteModal": {
+            "title": "Delete this budget?",
+            "body": "The envelope will disappear. You can recreate the same category / period / start date afterwards."
+        },
+        "errors": {
+            "notFound": "Budget not found."
+        },
+        "form": {
+            "createTitle": "New budget",
+            "editTitle": "Edit budget",
+            "subtitle": "A recurring envelope. Spent is computed on every read.",
+            "allExpenses": "All expenses",
+            "createCategory": "Create a category",
+            "createCategoryNamed": "Create “{name}”",
+            "pauseHint": "No more alerts. Progress is still computed if the period is current.",
+            "currencyLockedHint": "A budget’s currency cannot be changed.",
+            "currencyDefaultHint": "Empty = settings currency ({currency}).",
+            "fields": {
+                "name": "Name",
+                "limitAmount": "Limit amount",
+                "periode": "Period",
+                "startDate": "Start",
+                "endDate": "End",
+                "category": "Category",
+                "currency": "Currency",
+                "isActive": "Active"
+            },
+            "errors": {
+                "nameRequired": "Budget name is required.",
+                "nameTooLong": "Budget name exceeds 150 characters.",
+                "amountInvalid": "Budget limit is invalid.",
+                "amountNotPositive": "Budget limit must be strictly positive.",
+                "periodeInvalid": "Invalid period (weekly, monthly, quarterly, yearly).",
+                "startDateRequired": "Start date is required.",
+                "startDateInvalid": "Start date is invalid.",
+                "endDateInvalid": "End date is invalid.",
+                "endDateBeforeStart": "End date cannot precede start date.",
+                "currencyInvalid": "Unsupported currency (CHF, EUR, USD, GBP).",
+                "currencyLocked": "A budget’s currency cannot be changed.",
+                "scopeDuplicate": "A budget already exists for this category, period and start date.",
+                "categoryTypeInvalid": "A budget can only be linked to an expense or mixed category."
+            }
+        }
+    },
     "categoriesPage": {
         "title": "Categories",
         "subtitle": "Your personal tree for classifying transactions.",
@@ -981,7 +1093,10 @@
             "childrenBody": "A category with subcategories cannot be deleted. Delete them first.",
             "linkedTitle": "Category in use",
             "linkedBody": "A category used by transactions cannot be deleted. Unlink them first ({count}).",
-            "seeTransactions": "View transactions"
+            "seeTransactions": "View transactions",
+            "budgetsTitle": "Category used by budgets",
+            "budgetsBody": "A category used by budgets cannot be deleted. Unlink them first ({count}).",
+            "seeBudgets": "View budgets"
         },
         "deleteAllModal": {
             "title": "Delete all categories?",
@@ -1343,14 +1458,17 @@
         "title": "Transactions",
         "titleForAccount": "Account transactions: {name}",
         "titleForRecurrence": "Recurring transactions: {name}",
+        "titleForBudget": "Budget transactions: {name}",
         "subtitle": "Expenses, income and transfers across your accounts.",
         "loadMore": "Load more",
         "unknownAccount": "Account",
         "unknownRecurrence": "Recurrence",
+        "unknownBudget": "Budget",
         "empty": {
             "timeline": "No transactions yet.",
             "account": "No transactions on this account.",
             "recurrence": "No transactions for this recurrence.",
+            "budget": "No transactions for this budget.",
             "byType": "No “{type}” transactions.",
             "filtered": "No transaction matches this search."
         },
@@ -1374,6 +1492,8 @@
             "allTiers": "All counterparties",
             "recurrence": "Recurrence",
             "allRecurrences": "All recurrences",
+            "budget": "Budget",
+            "allBudgets": "All budgets",
             "from": "From",
             "to": "To"
         },

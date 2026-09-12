@@ -95,18 +95,18 @@ export function useDashboardModules() {
             icon: BellIcon,
             to: '/app/notifications',
             disabled: false
-        }
-    ];
-
-    const soon: DashboardModule[] = [
+        },
         {
             id: 'budgets',
             titleKey: 'dashboard.modules.budgets.title',
             captionKey: 'dashboard.modules.budgets.caption',
             icon: ChartPieIcon,
-            to: '/app',
-            disabled: true
-        },
+            to: '/app/planning/budgets',
+            disabled: false
+        }
+    ];
+
+    const soon: DashboardModule[] = [
         {
             id: 'goals',
             titleKey: 'dashboard.modules.goals.title',

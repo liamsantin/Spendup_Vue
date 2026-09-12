@@ -23,6 +23,7 @@ import {
 } from '@/features/transactions';
 import type { TransactionType } from '@/features/transactions';
 import { useAccountsStore } from '@/features/accounts';
+import { budgetLinkedTransactionsQuery, useBudgetsStore } from '@/features/budgets';
 import { categorySelectItems, useCategoriesStore } from '@/features/categories';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { tierSelectItems, useTiersStore } from '@/features/tiers';
@@ -34,6 +35,7 @@ const route = useRoute();
 const router = useRouter();
 const store = useTransactionsStore();
 const accountsStore = useAccountsStore();
+const budgetsStore = useBudgetsStore();
 const categoriesStore = useCategoriesStore();
 const tiersStore = useTiersStore();
 const recurringStore = useRecurringPaymentsStore();
@@ -165,7 +167,56 @@ const recurrenceItems = computed(() => {
     return items;
 });
 
+const filterBudgetId = computed({
+    get: () => queryString('budget'),
+    set: (value: string) => {
+        if (!value) {
+            patchQuery({ budget: undefined });
+            return;
+        }
+        const budget = budgetsStore.findByPublicId(value);
+        if (!budget) {
+            patchQuery({ budget: value });
+            return;
+        }
+        const next = budgetLinkedTransactionsQuery(budget);
+        patchQuery({
+            budget: next.budget,
+            type: next.type,
+            from: next.from,
+            to: next.to,
+            category: next.category
+        });
+    }
+});
+
+const filteredBudget = computed(() => {
+    const id = filterBudgetId.value;
+    if (!id) return null;
+    return {
+        publicId: id,
+        name: budgetsStore.findByPublicId(id)?.name ?? t('transactionsPage.unknownBudget')
+    };
+});
+
+const budgetItems = computed(() => {
+    const items: { title: string; value: string }[] = [{ title: t('transactionsPage.filters.allBudgets'), value: '' }];
+    const seen = new Set<string>();
+    for (const item of budgetsStore.allKnownItems()) {
+        seen.add(item.publicId);
+        items.push({ title: item.name, value: item.publicId });
+    }
+    const selected = filterBudgetId.value;
+    if (selected && !seen.has(selected) && filteredBudget.value) {
+        items.push({ title: filteredBudget.value.name, value: selected });
+    }
+    return items;
+});
+
 const pageTitle = computed(() => {
+    if (filteredBudget.value) {
+        return t('transactionsPage.titleForBudget', { name: filteredBudget.value.name });
+    }
     if (filteredRecurrence.value) {
         return t('transactionsPage.titleForRecurrence', { name: filteredRecurrence.value.name });
     }
@@ -228,6 +279,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
         'recurringExpensePublicId' in patch ? patch.recurringExpensePublicId : queryString('recurringExpensePublicId') || undefined;
     const recurringIncomePublicId =
         'recurringIncomePublicId' in patch ? patch.recurringIncomePublicId : queryString('recurringIncomePublicId') || undefined;
+    const budget = 'budget' in patch ? patch.budget : queryString('budget') || undefined;
     const sort = 'sort' in patch ? patch.sort : queryString('sort') || undefined;
     const minAmount = 'minAmount' in patch ? patch.minAmount : queryString('minAmount') || undefined;
     const maxAmount = 'maxAmount' in patch ? patch.maxAmount : queryString('maxAmount') || undefined;
@@ -240,6 +292,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
     if (tier) next.tier = tier;
     if (recurringExpensePublicId) next.recurringExpensePublicId = recurringExpensePublicId;
     if (recurringIncomePublicId) next.recurringIncomePublicId = recurringIncomePublicId;
+    if (budget) next.budget = budget;
     if (sort && isTransactionSort(sort) && sort !== TRANSACTION_SORT_DEFAULT) next.sort = sort;
     if (minAmount) next.minAmount = minAmount;
     if (maxAmount) next.maxAmount = maxAmount;
@@ -274,6 +327,7 @@ function resetFilters() {
         tier: undefined,
         recurringExpensePublicId: undefined,
         recurringIncomePublicId: undefined,
+        budget: undefined,
         from: undefined,
         to: undefined,
         minAmount: undefined,
@@ -288,6 +342,7 @@ const filtersActive = computed(
             filterCategoryId.value ||
             filterTierId.value ||
             filterRecurrenceKey.value ||
+            filterBudgetId.value ||
             filterFrom.value ||
             filterTo.value ||
             filterMinAmount.value ||
@@ -302,6 +357,7 @@ const filterCount = computed(
             filterCategoryId.value,
             filterTierId.value,
             filterRecurrenceKey.value,
+            filterBudgetId.value,
             filterFrom.value,
             filterTo.value,
             filterMinAmount.value,
@@ -314,6 +370,7 @@ const sortCount = computed(() => (listSort.value === TRANSACTION_SORT_DEFAULT ? 
 onMounted(() => {
     void recurringStore.loadExpenses({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined);
     void recurringStore.loadIncomes({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined);
+    void budgetsStore.loadList().catch(() => undefined);
 });
 
 onUnmounted(() => {
@@ -328,6 +385,16 @@ watch(
         }
         if (incomeId && !recurrenceName('income', incomeId)) {
             void recurringStore.getIncome(incomeId).catch(() => undefined);
+        }
+    },
+    { immediate: true }
+);
+
+watch(
+    () => queryString('budget'),
+    (id) => {
+        if (id && !budgetsStore.findByPublicId(id)) {
+            void budgetsStore.fetchBudget(id).catch(() => undefined);
         }
     },
     { immediate: true }
@@ -431,6 +498,14 @@ watch(
                             :label="t('transactionsPage.filters.recurrence')"
                             searchable
                             :search-placeholder="t('transactionsPage.filters.recurrence')"
+                            hide-details
+                        />
+                        <AppSelect
+                            v-model="filterBudgetId"
+                            :items="budgetItems"
+                            :label="t('transactionsPage.filters.budget')"
+                            searchable
+                            :search-placeholder="t('transactionsPage.filters.budget')"
                             hide-details
                         />
                         <v-divider class="my-1" />

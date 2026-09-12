@@ -261,7 +261,8 @@
             "open": "Ouvrir",
             "comingSoon": "Bientôt disponible",
             "seeAll": "Tout voir",
-            "addTransaction": "Ajouter une transaction"
+            "addTransaction": "Ajouter une transaction",
+            "addBudget": "Ajouter un budget"
         },
         "kpis": {
             "accounts": "Comptes",
@@ -281,7 +282,10 @@
             "tiers": "Tiers",
             "tiersHint": "Contreparties",
             "paymentMethods": "Paiements",
-            "paymentMethodsHint": "Cartes et moyens"
+            "paymentMethodsHint": "Cartes et moyens",
+            "budgets": "Budgets",
+            "budgetsHint": "Enveloppes actives",
+            "budgetsOver": "{count} dépassé | {count} dépassé | {count} dépassés"
         },
         "recent": {
             "title": "Dernières transactions",
@@ -295,6 +299,13 @@
         "storage": {
             "title": "Stockage",
             "subtitle": "Blobs PDF uniques, hors avatar."
+        },
+        "budgets": {
+            "title": "Budgets",
+            "subtitle": "Période en cours.",
+            "empty": "Aucun budget actif pour l’instant.",
+            "used": "{percent} utilisé",
+            "overspent": "Limite dépassée"
         },
         "modules": {
             "transactions": {
@@ -877,6 +888,107 @@
             }
         }
     },
+    "budgetsPage": {
+        "title": "Budgets",
+        "subtitle": "Enveloppes récurrentes, suivi de la période en cours et alertes.",
+        "searchPlaceholder": "Rechercher un budget",
+        "count": "{count} budget | {count} budget | {count} budgets",
+        "tabs": {
+            "label": "Statut des budgets",
+            "all": "Tous",
+            "active": "Actifs",
+            "paused": "En pause"
+        },
+        "periodes": {
+            "hebdomadaire": "Hebdomadaire",
+            "mensuel": "Mensuel",
+            "trimestriel": "Trimestriel",
+            "annuel": "Annuel"
+        },
+        "scope": {
+            "global": "Toutes les dépenses",
+            "unknownCategory": "Catégorie"
+        },
+        "badges": {
+            "paused": "En pause",
+            "upcoming": "Pas encore commencé",
+            "ended": "Terminé",
+            "overspent": "Dépassé"
+        },
+        "list": {
+            "spentOf": "{spent} / {limit}",
+            "remaining": "Reste {amount}",
+            "overBy": "Dépassé de {amount}",
+            "window": "{start} → {end}"
+        },
+        "empty": {
+            "list": "Aucun budget pour l’instant. Créez une première enveloppe.",
+            "active": "Aucun budget actif.",
+            "paused": "Aucun budget en pause.",
+            "filtered": "Aucun budget ne correspond à ces filtres."
+        },
+        "actions": {
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "pause": "Mettre en pause",
+            "resume": "Réactiver",
+            "filter": "Filtrer",
+            "clearSearch": "Effacer la recherche"
+        },
+        "filters": {
+            "periode": "Période",
+            "category": "Catégorie",
+            "allPeriodes": "Toutes les périodes",
+            "allCategories": "Toutes les catégories"
+        },
+        "detail": {
+            "seeTransactions": "Voir les transactions liées"
+        },
+        "deleteModal": {
+            "title": "Supprimer ce budget ?",
+            "body": "L’enveloppe disparaîtra. Vous pourrez recréer le même couple catégorie / période / date de début ensuite."
+        },
+        "errors": {
+            "notFound": "Budget introuvable."
+        },
+        "form": {
+            "createTitle": "Nouveau budget",
+            "editTitle": "Modifier le budget",
+            "subtitle": "Une enveloppe récurrente. Le consommé est calculé à chaque lecture.",
+            "allExpenses": "Toutes les dépenses",
+            "createCategory": "Créer une catégorie",
+            "createCategoryNamed": "Créer « {name} »",
+            "pauseHint": "Plus d’alertes. Le progrès reste calculé si la période est en cours.",
+            "currencyLockedHint": "La devise d’un budget ne peut pas être modifiée.",
+            "currencyDefaultHint": "Vide = devise des paramètres ({currency}).",
+            "fields": {
+                "name": "Nom",
+                "limitAmount": "Montant limite",
+                "periode": "Période",
+                "startDate": "Début",
+                "endDate": "Fin",
+                "category": "Catégorie",
+                "currency": "Devise",
+                "isActive": "Actif"
+            },
+            "errors": {
+                "nameRequired": "Le nom du budget est obligatoire.",
+                "nameTooLong": "Le nom du budget dépasse 150 caractères.",
+                "amountInvalid": "La limite du budget est invalide.",
+                "amountNotPositive": "La limite du budget doit être strictement positive.",
+                "periodeInvalid": "Période invalide (hebdomadaire, mensuel, trimestriel, annuel).",
+                "startDateRequired": "La date de début est obligatoire.",
+                "startDateInvalid": "La date de début est invalide.",
+                "endDateInvalid": "La date de fin est invalide.",
+                "endDateBeforeStart": "La date de fin ne peut pas précéder la date de début.",
+                "currencyInvalid": "Devise non supportée (CHF, EUR, USD, GBP).",
+                "currencyLocked": "La devise d'un budget ne peut pas être modifiée.",
+                "scopeDuplicate": "Un budget existe déjà pour cette catégorie, cette période et cette date de début.",
+                "categoryTypeInvalid": "Un budget ne peut être rattaché qu'à une catégorie de dépense ou mixte."
+            }
+        }
+    },
     "categoriesPage": {
         "title": "Catégories",
         "subtitle": "Votre arbre personnel pour classer les transactions.",
@@ -981,7 +1093,10 @@
             "childrenBody": "Impossible de supprimer une catégorie qui possède des sous-catégories. Supprimez-les d’abord.",
             "linkedTitle": "Catégorie utilisée",
             "linkedBody": "Impossible de supprimer une catégorie utilisée par des transactions. Déliez-les d’abord ({count}).",
-            "seeTransactions": "Voir les transactions"
+            "seeTransactions": "Voir les transactions",
+            "budgetsTitle": "Catégorie utilisée par des budgets",
+            "budgetsBody": "Impossible de supprimer une catégorie utilisée par des budgets. Déliez-les d’abord ({count}).",
+            "seeBudgets": "Voir les budgets"
         },
         "deleteAllModal": {
             "title": "Supprimer toutes les catégories ?",
@@ -1343,14 +1458,17 @@
         "title": "Transactions",
         "titleForAccount": "Transactions du compte : {name}",
         "titleForRecurrence": "Transactions de récurrence : {name}",
+        "titleForBudget": "Transactions du budget : {name}",
         "subtitle": "Dépenses, revenus et transferts sur vos comptes.",
         "loadMore": "Charger plus",
         "unknownAccount": "Compte",
         "unknownRecurrence": "Récurrence",
+        "unknownBudget": "Budget",
         "empty": {
             "timeline": "Aucune transaction pour l’instant.",
             "account": "Aucune transaction sur ce compte.",
             "recurrence": "Aucune transaction pour cette récurrence.",
+            "budget": "Aucune transaction pour ce budget.",
             "byType": "Aucune transaction de type « {type} ».",
             "filtered": "Aucune transaction ne correspond à cette recherche."
         },
@@ -1374,6 +1492,8 @@
             "allTiers": "Toutes les contreparties",
             "recurrence": "Récurrence",
             "allRecurrences": "Toutes les récurrences",
+            "budget": "Budget",
+            "allBudgets": "Tous les budgets",
             "from": "Du",
             "to": "Au"
         },

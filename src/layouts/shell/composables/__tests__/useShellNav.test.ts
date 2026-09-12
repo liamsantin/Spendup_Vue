@@ -82,6 +82,17 @@ describe('idsFromPath', () => {
         });
     });
 
+    it('mappe les budgets', () => {
+        expect(idsFromPath('/app/planning/budgets')).toEqual({
+            openId: SHELL_NAV_IDS.planning,
+            activeId: SHELL_NAV_IDS.budgets
+        });
+        expect(idsFromPath('/app/planning/budgets/guid-1')).toEqual({
+            openId: SHELL_NAV_IDS.planning,
+            activeId: SHELL_NAV_IDS.budgets
+        });
+    });
+
     it('mappe les pages paramètres', () => {
         expect(idsFromPath(SETTINGS_PATHS.account)).toEqual({
             openId: SHELL_NAV_IDS.settings,

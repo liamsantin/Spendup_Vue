@@ -8,6 +8,7 @@ import { usePaymentMethodsStore } from '@/features/payment-methods/stores/paymen
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
+import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import { useNotificationsStore } from '@/features/notifications';
 import { useUserSettingsStore } from '@/features/user-settings';
@@ -62,6 +63,7 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
         useCategoriesStore().onAuthenticatedSession();
         useTiersStore().onAuthenticatedSession();
         useRecurringPaymentsStore().onAuthenticatedSession();
+        useBudgetsStore().onAuthenticatedSession();
         return next();
     }
 

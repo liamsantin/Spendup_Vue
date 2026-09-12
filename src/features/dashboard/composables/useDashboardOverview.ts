@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
 import { formatAccountBalance } from '@/features/accounts/format';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import {
     DASHBOARD_MASKED_AMOUNT,
@@ -29,6 +30,7 @@ export function useDashboardOverview() {
     const friends = useFriendsStore();
     const notifications = useNotificationsStore();
     const categories = useCategoriesStore();
+    const budgets = useBudgetsStore();
     const tiers = useTiersStore();
     const paymentMethods = usePaymentMethodsStore();
 
@@ -86,6 +88,7 @@ export function useDashboardOverview() {
             friends.bootstrap('Friends'),
             friends.loadIncoming(),
             categories.bootstrap(),
+            budgets.bootstrap({ isActive: true }),
             tiers.bootstrap(),
             paymentMethods.bootstrap(),
             notifications.fetchUnreadCount()
@@ -112,6 +115,11 @@ export function useDashboardOverview() {
         incomingFriends: computed(() => friends.incomingCount),
         unreadCount: computed(() => notifications.unreadCount),
         categoryCount: computed(() => categories.totalCount),
+        budgetCount: computed(() => budgets.totalCount),
+        overspentBudgetCount: computed(
+            () => budgets.items.filter((item) => item.isActive && item.isCurrent && item.remainingAmount < 0).length
+        ),
+        defaultDashboardView: computed(() => settings.current.defaultDashboardView),
         tierCount: computed(() => tiers.totalCount),
         paymentMethodCount: computed(() => paymentMethods.totalCount)
     };

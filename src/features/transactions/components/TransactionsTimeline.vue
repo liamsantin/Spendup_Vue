@@ -122,6 +122,7 @@ const emptyCopy = computed(() => {
     if (filterMinAmount.value != null || filterMaxAmount.value != null) return t('transactionsPage.empty.filtered');
     if (filterType.value) return t('transactionsPage.empty.byType', { type: t(`transactionsPage.types.${filterType.value}`) });
     if (filterRecurringExpenseId.value || filterRecurringIncomeId.value) return t('transactionsPage.empty.recurrence');
+    if (queryString('budget')) return t('transactionsPage.empty.budget');
     if (filterAccountId.value) return t('transactionsPage.empty.account');
     return t('transactionsPage.empty.timeline');
 });
@@ -228,6 +229,7 @@ async function loadTimeline(force = false) {
                         ...(filterFrom.value ? { from: filterFrom.value } : {}),
                         ...(filterTo.value ? { to: filterTo.value } : {}),
                         ...(filterCategoryId.value ? { category: filterCategoryId.value } : {}),
+                        ...(queryString('budget') ? { budget: queryString('budget') } : {}),
                         ...(filterSearch.value ? { q: filterSearch.value } : {}),
                         ...(listSort.value !== TRANSACTION_SORT_DEFAULT ? { sort: listSort.value } : {})
                     }

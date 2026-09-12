@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '@/features/notifications/friendChip';
 import {
     isAccountShareNotificationType,
+    isBudgetAlertNotificationType,
     isFriendNotificationType,
     isSafeAppNotificationPath,
     isSecurityNotificationType,
@@ -82,6 +83,25 @@ describe('resolveNotificationLink', () => {
         ).toBe('/app/finances/comptes?tab=Accounts');
 
         expect(resolveNotificationLink('/accounts')).toBe('/app/finances/comptes');
+    });
+
+    it('deep-link budgets via type + metadata ou /budgets/{id}', () => {
+        expect(
+            resolveNotificationLink('/budgets/guid-1', {
+                type: 'budgetAlert',
+                metadata: { budgetPublicId: 'guid-1' }
+            })
+        ).toBe('/app/planning/budgets/guid-1');
+
+        expect(
+            resolveNotificationLink(null, {
+                type: 'budgetAlert',
+                metadata: { budgetPublicId: 'guid-2', level: 80, periodStart: '2026-07-01' }
+            })
+        ).toBe('/app/planning/budgets/guid-2');
+
+        expect(resolveNotificationLink('/budgets')).toBe('/app/planning/budgets');
+        expect(resolveNotificationLink('/budgets/guid-3')).toBe('/app/planning/budgets/guid-3');
     });
 });
 
@@ -164,8 +184,13 @@ describe('normalizeAppNotification', () => {
     });
 
     it('normalise / refuse les publicIds et payloads accountChanged', async () => {
-        const { normalizePublicId, parseAccountChangedPayload, parseCategoryChangedPayload, getAccountPublicId } =
-            await import('@/features/notifications/normalize');
+        const {
+            normalizePublicId,
+            parseAccountChangedPayload,
+            parseCategoryChangedPayload,
+            parseBudgetChangedPayload,
+            getAccountPublicId
+        } = await import('@/features/notifications/normalize');
         expect(normalizePublicId('acc-1')).toBe('acc-1');
         expect(normalizePublicId('  share_2  ')).toBe('share_2');
         expect(normalizePublicId('../x')).toBeNull();
@@ -212,6 +237,19 @@ describe('normalizeAppNotification', () => {
             categoryPublicId: 'cat-1'
         });
         expect(parseCategoryChangedPayload({ change: 'nope', categoryPublicId: 'cat-1' })).toBeNull();
+        expect(parseBudgetChangedPayload({ change: 'budgetCreated', budgetPublicId: 'b-1' })).toEqual({
+            change: 'budgetCreated',
+            budgetPublicId: 'b-1'
+        });
+        expect(parseBudgetChangedPayload({ change: 'budgetUpdated', budgetPublicId: 'b-1' })).toEqual({
+            change: 'budgetUpdated',
+            budgetPublicId: 'b-1'
+        });
+        expect(parseBudgetChangedPayload({ change: 'budgetDeleted', budgetPublicId: 'b-1' })).toEqual({
+            change: 'budgetDeleted',
+            budgetPublicId: 'b-1'
+        });
+        expect(parseBudgetChangedPayload({ change: 'nope', budgetPublicId: 'b-1' })).toBeNull();
     });
 });
 
@@ -232,5 +270,7 @@ describe('notification type helpers', () => {
         expect(isAccountShareNotificationType('accountShareLeft')).toBe(true);
         expect(isAccountShareNotificationType('accountShareRoleChanged')).toBe(true);
         expect(isAccountShareNotificationType('friendRequest')).toBe(false);
+        expect(isBudgetAlertNotificationType('budgetAlert')).toBe(true);
+        expect(isBudgetAlertNotificationType('accountShareInvite')).toBe(false);
     });
 });

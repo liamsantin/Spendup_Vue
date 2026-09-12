@@ -18,6 +18,7 @@ export type NotificationType =
     | 'accountShareRevoked'
     | 'accountShareLeft'
     | 'accountShareRoleChanged'
+    | 'budgetAlert'
     | 'other'
     | (string & {});
 
@@ -145,6 +146,14 @@ export type RecurringIncomeChange = 'recurringIncomeCreated' | 'recurringIncomeU
 export type RecurringIncomeChangedPayload = {
     change: RecurringIncomeChange;
     recurringIncomePublicId: string;
+};
+
+/** Payload SignalR `budgetChanged` — sync CRUD perso (acteur inclus, pas d’inbox). */
+export type BudgetChange = 'budgetCreated' | 'budgetUpdated' | 'budgetDeleted';
+
+export type BudgetChangedPayload = {
+    change: BudgetChange;
+    budgetPublicId: string;
 };
 
 export type NotificationsListQuery = {

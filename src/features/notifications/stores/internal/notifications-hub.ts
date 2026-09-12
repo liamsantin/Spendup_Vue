@@ -15,7 +15,8 @@ import {
     parseCategoryChangedPayload,
     parseRecurringExpenseChangedPayload,
     parseRecurringIncomeChangedPayload,
-    parseTierChangedPayload
+    parseTierChangedPayload,
+    parseBudgetChangedPayload
 } from '@/features/notifications/normalize';
 import type {
     AppNotification,
@@ -27,7 +28,8 @@ import type {
     RecurringExpenseChangedPayload,
     RecurringIncomeChangedPayload,
     SessionEndedPayload,
-    TierChangedPayload
+    TierChangedPayload,
+    BudgetChangedPayload
 } from '@/features/notifications/types';
 import type { NotificationsState } from '@/features/notifications/stores/internal/notifications-state';
 import type { NotificationsNative } from '@/features/notifications/stores/internal/notifications-native';
@@ -59,6 +61,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         tierChangeListeners,
         recurringExpenseChangeListeners,
         recurringIncomeChangeListeners,
+        budgetChangeListeners,
         applyUnreadCount,
         upsertItem
     } = state;
@@ -129,6 +132,12 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         const parsed = parseRecurringIncomeChangedPayload(payload);
         if (!parsed) return;
         recurringIncomeChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    function onBudgetChanged(payload: BudgetChangedPayload) {
+        const parsed = parseBudgetChangedPayload(payload);
+        if (!parsed) return;
+        budgetChangeListeners.forEach((listener) => listener(parsed));
     }
 
     /** SignalR multi-appareils après DELETE /api/notifications. */
@@ -255,6 +264,13 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         };
     }
 
+    function subscribeToBudgetChanged(listener: (payload: BudgetChangedPayload) => void) {
+        budgetChangeListeners.add(listener);
+        return () => {
+            budgetChangeListeners.delete(listener);
+        };
+    }
+
     /** Branche les handlers SignalR sur le hub partagé. */
     function wireHubHandlers() {
         setNotificationsHubHandlers({
@@ -268,6 +284,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
             onTierChanged,
             onRecurringExpenseChanged,
             onRecurringIncomeChanged,
+            onBudgetChanged,
             onInboxCleared,
             onSessionEnded: (payload) => onSessionEnded(payload)
         });
@@ -303,7 +320,8 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         subscribeToCategoryChanged,
         subscribeToTierChanged,
         subscribeToRecurringExpenseChanged,
-        subscribeToRecurringIncomeChanged
+        subscribeToRecurringIncomeChanged,
+        subscribeToBudgetChanged
     };
 }
 

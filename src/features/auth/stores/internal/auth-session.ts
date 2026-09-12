@@ -21,6 +21,7 @@ import { usePaymentMethodsStore } from '@/features/payment-methods/stores/paymen
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
+import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import { useFilesStore } from '@/features/files/stores/files-store';
 import { useSubscriptionStore } from '@/features/subscription/stores/subscription-store';
@@ -169,6 +170,7 @@ export function createAuthSession() {
         useCategoriesStore().reset();
         useTiersStore().reset();
         useRecurringPaymentsStore().reset();
+        useBudgetsStore().reset();
         useFilesStore().reset();
         useSubscriptionStore().reset();
         useSidebarNavStore().reset();

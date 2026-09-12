@@ -11,7 +11,9 @@ import type {
     RecurringIncomeChange,
     RecurringIncomeChangedPayload,
     TierChange,
-    TierChangedPayload
+    TierChangedPayload,
+    BudgetChange,
+    BudgetChangedPayload
 } from '@/features/notifications/types';
 
 /** Identifiants publics SignalR / metadata (UUID, slug) — refuse vide, espaces, chemins. */
@@ -47,6 +49,7 @@ const RECURRING_INCOME_CHANGES = new Set<RecurringIncomeChange>([
     'recurringIncomeUpdated',
     'recurringIncomeDeleted'
 ]);
+const BUDGET_CHANGES = new Set<BudgetChange>(['budgetCreated', 'budgetUpdated', 'budgetDeleted']);
 
 /** Normalise un publicId (trim + charset) ; `null` si invalide. */
 export function normalizePublicId(value: unknown): string | null {
@@ -89,6 +92,10 @@ export function getAccountSharePublicId(metadata: Record<string, unknown> | null
 
 export function getAccountPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
     return normalizePublicId(metadata?.accountPublicId);
+}
+
+export function getBudgetPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
+    return normalizePublicId(metadata?.budgetPublicId);
 }
 
 /**
@@ -151,6 +158,16 @@ export function parseRecurringIncomeChangedPayload(raw: unknown): RecurringIncom
     const recurringIncomePublicId = normalizePublicId(payload.recurringIncomePublicId);
     if (!recurringIncomePublicId) return null;
     return { change: change as RecurringIncomeChange, recurringIncomePublicId };
+}
+
+export function parseBudgetChangedPayload(raw: unknown): BudgetChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!BUDGET_CHANGES.has(change as BudgetChange)) return null;
+    const budgetPublicId = normalizePublicId(payload.budgetPublicId);
+    if (!budgetPublicId) return null;
+    return { change: change as BudgetChange, budgetPublicId };
 }
 
 /** Normalise un item inbox / SignalR (metadata string → objet). */

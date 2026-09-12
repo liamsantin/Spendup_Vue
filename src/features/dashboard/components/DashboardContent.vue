@@ -9,6 +9,7 @@ import {
     ArrowsExchangeIcon,
     BellIcon,
     BuildingBankIcon,
+    ChartPieIcon,
     CreditCardIcon,
     FilesIcon,
     TagsIcon,
@@ -16,6 +17,8 @@ import {
     WalletIcon
 } from 'vue-tabler-icons';
 import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
+import { DashboardBudgetsCard } from '@/features/budgets';
+import { BUDGETS_PATHS } from '@/features/budgets/paths';
 import { FileUsageMeter } from '@/features/files';
 import { useDashboardModules } from '@/features/dashboard/composables/useDashboardModules';
 import { useDashboardOverview } from '@/features/dashboard/composables/useDashboardOverview';
@@ -41,6 +44,9 @@ const {
     incomingFriends,
     unreadCount,
     categoryCount,
+    budgetCount,
+    overspentBudgetCount,
+    defaultDashboardView,
     tierCount,
     paymentMethodCount
 } = useDashboardOverview();
@@ -94,6 +100,17 @@ const kpis = computed(() => [
         value: String(categoryCount.value),
         label: t('dashboard.kpis.categories'),
         hint: t('dashboard.kpis.categoriesHint')
+    },
+    {
+        to: BUDGETS_PATHS.list,
+        icon: ChartPieIcon,
+        value: String(budgetCount.value),
+        label: t('dashboard.kpis.budgets'),
+        hint:
+            overspentBudgetCount.value > 0
+                ? t('dashboard.kpis.budgetsOver', { count: overspentBudgetCount.value }, overspentBudgetCount.value)
+                : t('dashboard.kpis.budgetsHint'),
+        alert: overspentBudgetCount.value > 0
     },
     {
         to: '/app/gestion/tiers',
@@ -172,7 +189,8 @@ function txAmount(tx: Transaction) {
         </div>
 
         <div class="dash-main">
-            <AppGlassCard :title="t('dashboard.recent.title')" :subtitle="t('dashboard.recent.subtitle')">
+            <DashboardBudgetsCard v-if="defaultDashboardView === 'budget'" :hide-amounts="hideAmounts" />
+            <AppGlassCard v-else :title="t('dashboard.recent.title')" :subtitle="t('dashboard.recent.subtitle')">
                 <template #icon>
                     <ArrowsExchangeIcon :size="20" stroke-width="1.5" />
                 </template>
@@ -205,6 +223,43 @@ function txAmount(tx: Transaction) {
             </AppGlassCard>
 
             <div class="dash-side">
+                <DashboardBudgetsCard v-if="defaultDashboardView !== 'budget'" :hide-amounts="hideAmounts" />
+                <AppGlassCard
+                    v-if="defaultDashboardView === 'budget'"
+                    :title="t('dashboard.recent.title')"
+                    :subtitle="t('dashboard.recent.subtitle')"
+                >
+                    <template #icon>
+                        <ArrowsExchangeIcon :size="20" stroke-width="1.5" />
+                    </template>
+                    <template #actions>
+                        <RouterLink to="/app/finances/transactions" class="su-btn su-btn--ghost">
+                            {{ t('dashboard.actions.seeAll') }}
+                        </RouterLink>
+                    </template>
+
+                    <div v-if="!recentTransactions.length" class="su-empty">
+                        <p>{{ t('dashboard.recent.empty') }}</p>
+                        <RouterLink to="/app/finances/transactions" class="su-btn su-btn--ink">
+                            {{ t('dashboard.actions.addTransaction') }}
+                        </RouterLink>
+                    </div>
+                    <div v-else class="dash-tx-list">
+                        <RouterLink v-for="tx in recentTransactions" :key="tx.publicId" class="dash-tx" to="/app/finances/transactions">
+                            <span class="dash-tx__icon" :class="txTone(tx.type)">
+                                <component :is="txIcon(tx.type)" :size="18" stroke-width="2" />
+                            </span>
+                            <span class="dash-tx__meta">
+                                <span class="dash-tx__label">{{ tx.label }}</span>
+                                <span class="dash-tx__sub">
+                                    {{ t(`transactionsPage.types.${tx.type}`) }} · {{ formatOperationDate(tx.operationDate, locale) }}
+                                </span>
+                            </span>
+                            <span class="dash-tx__amount" :class="txTone(tx.type)">{{ txAmount(tx) }}</span>
+                        </RouterLink>
+                    </div>
+                </AppGlassCard>
+
                 <AppGlassCard :title="t('dashboard.shortcuts.title')" :subtitle="t('dashboard.shortcuts.subtitle')">
                     <nav class="dash-shortcuts">
                         <RouterLink v-for="mod in live" :key="mod.id" :to="mod.to" class="dash-shortcut">

@@ -1,6 +1,11 @@
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isLiveChipType } from '@/features/notifications/friendChip';
-import { isAccountShareNotificationType, isFriendNotificationType, isSecurityNotificationType } from '@/features/notifications/link';
+import {
+    isAccountShareNotificationType,
+    isBudgetAlertNotificationType,
+    isFriendNotificationType,
+    isSecurityNotificationType
+} from '@/features/notifications/link';
 import { showNativeNotification } from '@/features/notifications/native-notify';
 import type { AppNotification } from '@/features/notifications/types';
 import type { NotificationsState } from '@/features/notifications/stores/internal/notifications-state';
@@ -26,6 +31,7 @@ export function createNotificationsNative(state: NotificationsState) {
         if (isSecurityNotificationType(type) && !settings.pushSecurityAlerts) return false;
         if (isFriendNotificationType(type) && !settings.pushFriendRequest) return false;
         if (isAccountShareNotificationType(type) && !settings.pushFinancialAlerts) return false;
+        if (isBudgetAlertNotificationType(type) && !settings.pushFinancialAlerts) return false;
         // Types finance futurs — coupe le chip / OS notify si désactivé.
         if (type.toLowerCase().includes('financial') && !settings.pushFinancialAlerts) return false;
         return true;
