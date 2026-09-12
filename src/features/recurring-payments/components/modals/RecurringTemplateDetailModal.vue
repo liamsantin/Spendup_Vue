@@ -11,7 +11,7 @@ import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useFilesStore } from '@/features/files/stores/files-store';
-import { isQuotaExceededMessage, wouldExceedQuota } from '@/features/files/format';
+import { fileSizeParts, isQuotaExceededMessage, wouldExceedQuota } from '@/features/files/format';
 import { validatePdfFile } from '@/features/files/validate-upload';
 import type { FileDto } from '@/features/files/types';
 import RecurringDueConfirmModal from '@/features/recurring-payments/components/modals/RecurringDueConfirmModal.vue';
@@ -24,14 +24,19 @@ import {
     groupDuesForDetail,
     isExpenseTemplate
 } from '@/features/recurring-payments/format';
+import {
+    groupTransactionsWithFiles,
+    listAllLinkedTransactions,
+    uniqueAttachmentCount
+} from '@/features/recurring-payments/linked-transaction-files';
 import { canConfirmRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import type { RecurringDue, RecurringFile, RecurringKind } from '@/features/recurring-payments/types';
 import TransactionAttachments from '@/features/transactions/components/forms/TransactionAttachments.vue';
 import TransactionFilePreviewModal from '@/features/transactions/components/modals/TransactionFilePreviewModal.vue';
 import { transactionsApi } from '@/features/transactions/api';
-import { formatSignedAmountDelta, recurrenceAmountVariance } from '@/features/transactions/format';
-import type { Transaction } from '@/features/transactions/types';
+import { formatOperationDate, formatSignedAmountDelta, recurrenceAmountVariance } from '@/features/transactions/format';
+import type { Transaction, TransactionFile } from '@/features/transactions/types';
 import TransactionFormModal from '@/features/transactions/components/modals/TransactionFormModal.vue';
 
 const props = defineProps<{
@@ -58,8 +63,17 @@ const previewFile = ref<RecurringFile | null>(null);
 const uploading = ref(false);
 const txTarget = ref<Transaction | null>(null);
 const activeTab = ref<'dues' | 'attachments'>('dues');
+const linkedTransactions = ref<Transaction[]>([]);
+const loadingLinkedTx = ref(false);
 
 const attachedFiles = computed(() => expense.value?.files ?? []);
+const linkedTxFileGroups = computed(() => groupTransactionsWithFiles(linkedTransactions.value));
+const attachmentCount = computed(() =>
+    uniqueAttachmentCount(
+        attachedFiles.value,
+        linkedTxFileGroups.value.flatMap((group) => group.files)
+    )
+);
 
 const detailTabs = computed(() => [
     { value: 'dues' as const, label: t('recurrencesPage.detail.tabs.dues'), icon: CalendarEventIcon },
@@ -67,7 +81,7 @@ const detailTabs = computed(() => [
         value: 'attachments' as const,
         label: t('recurrencesPage.detail.tabs.attachments'),
         icon: PaperclipIcon,
-        chip: attachedFiles.value.length || undefined
+        chip: attachmentCount.value || undefined
     }
 ]);
 
@@ -140,6 +154,7 @@ async function loadDetail() {
         visibleDues.value = detail.upcomingDues ?? store.getDues(props.kind, props.publicId);
         const items = await store.loadDues(props.kind, props.publicId, { force: true });
         visibleDues.value = items.length ? items : (store.getDues(props.kind, props.publicId) ?? []);
+        await loadLinkedTransactions();
         if (props.kind === 'expense') {
             await filesStore.loadList().catch(() => undefined);
             await filesStore.loadUsage().catch(() => undefined);
@@ -155,6 +170,7 @@ watch(
     () => [props.modelValue, props.publicId, props.kind] as const,
     ([value]) => {
         visibleDues.value = [];
+        linkedTransactions.value = [];
         groupOpen.existing = true;
         groupOpen.upcoming = true;
         if (!value) return;
@@ -163,6 +179,40 @@ watch(
     },
     { immediate: true }
 );
+
+async function loadLinkedTransactions() {
+    if (!props.publicId) {
+        linkedTransactions.value = [];
+        return;
+    }
+    loadingLinkedTx.value = true;
+    try {
+        linkedTransactions.value = await listAllLinkedTransactions({
+            kind: props.kind,
+            publicId: props.publicId,
+            list: (query) => transactionsApi.list(query),
+            get: (publicId) => transactionsApi.get(publicId)
+        });
+    } catch (e: unknown) {
+        linkedTransactions.value = [];
+        localError.value = getErrorMessage(e);
+    } finally {
+        loadingLinkedTx.value = false;
+    }
+}
+
+function fileSizeLabel(bytes: number) {
+    const parts = fileSizeParts(bytes);
+    return t(`filesPage.size.${parts.unit}`, { n: parts.n });
+}
+
+function openLinkedTransaction(transaction: Transaction) {
+    txTarget.value = transaction;
+}
+
+function openLinkedFile(file: TransactionFile) {
+    previewFile.value = file;
+}
 
 function statusLabel(due: RecurringDue) {
     return t(`recurrencesPage.dueStatuses.${displayDueStatus(due, props.kind)}`);
@@ -394,19 +444,44 @@ function seeRelatedTransactions() {
 
         <template #panel-attachments>
             <AppModalPanelScroll>
-                <TransactionAttachments
-                    v-if="expense"
-                    :files="attachedFiles"
-                    :library="filesStore.items"
-                    :can-edit="canConfirm"
-                    :uploading="uploading"
-                    :acting="store.acting"
-                    @upload="onUpload"
-                    @pick="onPick"
-                    @detach="onDetach"
-                    @open="previewFile = $event"
-                />
-                <p v-else class="text-medium-emphasis">{{ t('recurrencesPage.detail.filesIncomeEmpty') }}</p>
+                <section v-if="expense" class="recurring-files-block">
+                    <h3 class="recurring-files-block__title">{{ t('recurrencesPage.detail.filesOnTemplate') }}</h3>
+                    <TransactionAttachments
+                        :files="attachedFiles"
+                        :library="filesStore.items"
+                        :can-edit="canConfirm"
+                        :uploading="uploading"
+                        :acting="store.acting"
+                        @upload="onUpload"
+                        @pick="onPick"
+                        @detach="onDetach"
+                        @open="previewFile = $event"
+                    />
+                </section>
+                <section class="recurring-files-block">
+                    <h3 class="recurring-files-block__title">{{ t('recurrencesPage.detail.filesOnTransactions') }}</h3>
+                    <div v-if="loadingLinkedTx" class="su-loading"><span class="su-spin" /></div>
+                    <p v-else-if="!linkedTxFileGroups.length" class="text-medium-emphasis">
+                        {{ t('recurrencesPage.detail.filesOnTransactionsEmpty') }}
+                    </p>
+                    <div v-else class="recurring-tx-files">
+                        <article v-for="group in linkedTxFileGroups" :key="group.transaction.publicId" class="recurring-tx-files__group">
+                            <button type="button" class="recurring-tx-files__tx" @click="openLinkedTransaction(group.transaction)">
+                                <span class="recurring-tx-files__label">{{ group.transaction.label }}</span>
+                                <span class="recurring-tx-files__date">{{ formatOperationDate(group.transaction.operationDate, locale) }}</span>
+                            </button>
+                            <ul class="recurring-tx-files__list">
+                                <li v-for="file in group.files" :key="file.publicId" class="recurring-tx-files__chip">
+                                    <button type="button" class="recurring-tx-files__open" @click="openLinkedFile(file)">
+                                        <PaperclipIcon :size="16" stroke-width="1.6" />
+                                        <span class="recurring-tx-files__name">{{ file.nameOriginal }}</span>
+                                        <span class="recurring-tx-files__size">{{ fileSizeLabel(file.sizeBytes) }}</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </article>
+                    </div>
+                </section>
             </AppModalPanelScroll>
         </template>
 
@@ -445,6 +520,104 @@ function seeRelatedTransactions() {
 </template>
 
 <style scoped>
+.recurring-files-block + .recurring-files-block {
+    margin-top: 28px;
+}
+
+.recurring-files-block__title {
+    margin: 0 0 8px;
+    color: var(--ink-mute);
+    font-size: 13px;
+    font-weight: 560;
+    letter-spacing: 0.01em;
+}
+
+.recurring-tx-files {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.recurring-tx-files__group {
+    min-width: 0;
+}
+
+.recurring-tx-files__tx {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    margin: 0 0 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.recurring-tx-files__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14.5px;
+    font-weight: 620;
+}
+
+.recurring-tx-files__date,
+.recurring-tx-files__size {
+    flex: none;
+    color: var(--ink-muted);
+    font-size: 0.78rem;
+}
+
+.recurring-tx-files__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.recurring-tx-files__chip {
+    display: flex;
+    min-width: 0;
+}
+
+.recurring-tx-files__open {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid var(--stroke);
+    border-radius: 12px;
+    background: var(--surface-raised);
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.recurring-tx-files__open:hover {
+    border-color: color-mix(in srgb, rgb(var(--v-theme-primary)) 35%, var(--stroke));
+}
+
+.recurring-tx-files__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+.recurring-tx-files__size {
+    margin: 0 0 0 auto;
+}
+
 .recurring-detail-dues {
     gap: 12px;
 }

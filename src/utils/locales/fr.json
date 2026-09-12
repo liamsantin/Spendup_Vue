@@ -734,7 +734,9 @@
             "duesExisting": "Transactions existantes",
             "duesUpcoming": "Transactions à venir",
             "filesTitle": "Justificatifs PDF",
-            "filesIncomeEmpty": "Les justificatifs PDF ne sont disponibles que pour les charges.",
+            "filesOnTemplate": "Sur la récurrence",
+            "filesOnTransactions": "Sur les transactions",
+            "filesOnTransactionsEmpty": "Aucun PDF lié aux transactions de cette récurrence.",
             "tabs": {
                 "dues": "Échéances",
                 "attachments": "Justificatifs"

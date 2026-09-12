@@ -734,7 +734,9 @@
             "duesExisting": "Existing transactions",
             "duesUpcoming": "Upcoming transactions",
             "filesTitle": "PDF attachments",
-            "filesIncomeEmpty": "PDF attachments are only available on recurring expenses.",
+            "filesOnTemplate": "On the recurrence",
+            "filesOnTransactions": "On transactions",
+            "filesOnTransactionsEmpty": "No PDFs linked to this recurrence’s transactions.",
             "tabs": {
                 "dues": "Dues",
                 "attachments": "Attachments"
