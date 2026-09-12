@@ -933,6 +933,7 @@
             "delete": "Supprimer",
             "pause": "Mettre en pause",
             "resume": "Réactiver",
+            "addTransactions": "Ajouter des transactions",
             "filter": "Filtrer",
             "clearSearch": "Effacer la recherche"
         },
@@ -944,6 +945,18 @@
         },
         "detail": {
             "seeTransactions": "Voir les transactions liées"
+        },
+        "linkTransactions": {
+            "title": "Ajouter des transactions",
+            "subtitle": "Dépenses de la période qui n’entrent pas encore dans cette enveloppe. Elles seront classées dans « {category} ».",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune dépense à lier pour cette période.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "uncategorized": "Sans catégorie",
+            "confirm": "Ajouter {count} transaction | Ajouter {count} transaction | Ajouter {count} transactions"
         },
         "deleteModal": {
             "title": "Supprimer ce budget ?",

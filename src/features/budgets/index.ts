@@ -41,4 +41,5 @@ export { BUDGETS_PATHS, BUDGETS_BASE, budgetDetailPath, budgetPublicIdFromPath, 
 export { default as BudgetsDirectory } from '@/features/budgets/components/BudgetsDirectory.vue';
 export { default as BudgetListItem } from '@/features/budgets/components/list/BudgetListItem.vue';
 export { default as BudgetFormModal } from '@/features/budgets/components/modals/BudgetFormModal.vue';
+export { default as BudgetLinkTransactionsModal } from '@/features/budgets/components/modals/BudgetLinkTransactionsModal.vue';
 export { default as DashboardBudgetsCard } from '@/features/budgets/components/dashboard/DashboardBudgetsCard.vue';

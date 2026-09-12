@@ -2,7 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { EyeIcon } from 'vue-tabler-icons';
+import { EyeIcon, PlusIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
@@ -24,6 +24,7 @@ import { categorySelectItems } from '@/features/categories/payload';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useUserSettingsStore } from '@/features/user-settings';
 import BudgetForm, { type BudgetFormFieldErrors } from '@/features/budgets/components/forms/BudgetForm.vue';
+import BudgetLinkTransactionsModal from '@/features/budgets/components/modals/BudgetLinkTransactionsModal.vue';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -43,6 +44,7 @@ const settings = useUserSettingsStore();
 
 const isEdit = ref(false);
 const editBudget = ref<Budget | null>(null);
+const linkOpen = ref(false);
 
 const localError = reactive({ message: null as string | null });
 const fieldErrors = reactive<BudgetFormFieldErrors>({});
@@ -75,6 +77,8 @@ const currencyHint = computed(() => {
     if (isEdit.value) return t('budgetsPage.form.currencyLockedHint');
     return t('budgetsPage.form.currencyDefaultHint', { currency: settings.current.defaultCurrency });
 });
+
+const canLinkTransactions = computed(() => isEdit.value && !!editBudget.value?.categoryPublicId);
 
 const canSave = computed(() => {
     if (!isEdit.value || !editBudget.value) return true;
@@ -212,6 +216,16 @@ async function seeRelatedTransactions() {
                 {{ t('budgetsPage.detail.seeTransactions') }}
             </button>
             <button
+                v-if="canLinkTransactions"
+                type="button"
+                class="su-btn"
+                :disabled="store.acting"
+                @click="linkOpen = true"
+            >
+                <PlusIcon :size="16" stroke-width="1.6" />
+                {{ t('budgetsPage.actions.addTransactions') }}
+            </button>
+            <button
                 type="button"
                 :class="isEdit ? 'su-btn' : 'su-btn su-btn--ghost'"
                 :disabled="store.acting"
@@ -224,4 +238,6 @@ async function seeRelatedTransactions() {
             </button>
         </template>
     </AppModalBase>
+
+    <BudgetLinkTransactionsModal v-model="linkOpen" :budget="editBudget" />
 </template>
