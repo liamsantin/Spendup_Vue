@@ -3,7 +3,7 @@ import { computed, nextTick, ref, useAttrs, watch } from 'vue';
 import { CheckIcon, ChevronDownIcon, PlusIcon } from 'vue-tabler-icons';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import { matchesSearchTokens } from '@/utils/helpers/text-search';
-import { findExactSelectItem, findSelectCompletion } from '@/components/shared/select/select-completion';
+import { findExactSelectItem, findSelectCompletion, selectCreateMode } from '@/components/shared/select/select-completion';
 
 defineOptions({ name: 'AppSelect', inheritAttrs: false });
 
@@ -117,8 +117,15 @@ const completion = computed(() => findSelectCompletion(normalizedItems.value, qu
 
 const hasExactMatch = computed(() => !!findExactSelectItem(normalizedItems.value, trimmedQuery.value));
 
-const showCreateNamed = computed(() => !!props.createLabel && !props.disabled && !!trimmedQuery.value && !hasExactMatch.value);
-const showCreateBlank = computed(() => !!props.createLabel && !props.disabled && !trimmedQuery.value);
+const createMode = computed(() =>
+    selectCreateMode({
+        enabled: !!props.createLabel && !props.disabled,
+        query: trimmedQuery.value,
+        selectedTitle: selectedTitle.value,
+        hasExactMatch: hasExactMatch.value
+    })
+);
+const showCreateNamed = computed(() => createMode.value === 'named');
 const createButtonLabel = computed(() => {
     if (showCreateNamed.value && props.createNamedLabel) {
         return props.createNamedLabel.replaceAll('{name}', trimmedQuery.value);
@@ -195,7 +202,7 @@ function commitQuery() {
 }
 
 function onCreate() {
-    const name = trimmedQuery.value;
+    const name = createMode.value === 'named' ? trimmedQuery.value : '';
     open.value = false;
     emit('create', name);
 }
@@ -378,18 +385,19 @@ watch(open, (value) => {
                         <div v-if="isFiltering && trimmedQuery && !hasFilteredChoices && !showCreateNamed" class="app-select__empty">
                             {{ noResultsLabel }}
                         </div>
-                        <button
-                            v-if="showCreateNamed || showCreateBlank"
-                            type="button"
-                            class="app-select-menu__option app-select__create"
-                            @mousedown.prevent
-                            @click="onCreate"
-                        >
-                            <PlusIcon :size="14" stroke-width="2" />
-                            <span class="text-truncate">{{ createButtonLabel }}</span>
-                        </button>
                     </div>
                 </PerfectScrollbar>
+                <div v-if="createMode" class="app-select-menu__footer">
+                    <button
+                        type="button"
+                        class="app-select-menu__option app-select-menu__create app-select__create"
+                        @mousedown.prevent
+                        @click="onCreate"
+                    >
+                        <PlusIcon :size="14" stroke-width="2" />
+                        <span class="text-truncate">{{ createButtonLabel }}</span>
+                    </button>
+                </div>
             </v-sheet>
         </v-menu>
 
@@ -579,7 +587,8 @@ watch(open, (value) => {
 }
 
 .app-select__menu {
-    min-width: 280px;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .app-select__empty {

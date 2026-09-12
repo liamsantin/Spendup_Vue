@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import PaymentMethodFormModal from '@/features/payment-methods/components/modals/PaymentMethodFormModal.vue';
+import { canWritePaymentMethods } from '@/features/payment-methods/rights';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
+import type { PaymentMethod } from '@/features/payment-methods/types';
 import { buildConfirmDuePayload, type ConfirmDueFormFields, type RecurringPayloadErrorCode } from '@/features/recurring-payments/payload';
 import { todayLocalYmd } from '@/features/recurring-payments/format';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
@@ -28,7 +32,10 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const store = useRecurringPaymentsStore();
+const accountsStore = useAccountsStore();
 const paymentMethodsStore = usePaymentMethodsStore();
+const paymentMethodCreateOpen = ref(false);
+const paymentMethodCreateLabel = ref('');
 
 const localError = reactive({ message: null as string | null });
 const fieldErrors = reactive<{ paymentDate?: string | null; amount?: string | null; notes?: string | null }>({});
@@ -51,12 +58,27 @@ const paymentMethodItems = computed(() => [
         .map((item) => ({ title: item.label, value: item.publicId }))
 ]);
 
+const canCreatePaymentMethod = computed(() => {
+    const account = accountsStore.accounts.find((item) => item.publicId === props.accountPublicId);
+    return !!account && canWritePaymentMethods(account);
+});
+
 const paymentDateModel = computed({
     get: () => form.paymentDate || null,
     set: (value: string | null) => {
         form.paymentDate = value ?? '';
     }
 });
+
+function onPaymentMethodCreated(method: PaymentMethod) {
+    if (method.accountPublicId !== props.accountPublicId) return;
+    form.paymentMethodPublicId = method.publicId;
+}
+
+function openPaymentMethodCreate(name: string) {
+    paymentMethodCreateLabel.value = name;
+    paymentMethodCreateOpen.value = true;
+}
 
 function onAmountInput(value: string) {
     form.amount = value.replace(/[^\d.,]/g, '');
@@ -151,9 +173,17 @@ async function onConfirm() {
             <AppSelect
                 v-model="form.paymentMethodPublicId"
                 float-label
+                searchable
                 :label="t('recurrencesPage.confirm.fields.paymentMethod')"
                 :items="paymentMethodItems"
                 hide-details="auto"
+                :search-placeholder="t('transactionsPage.form.paymentMethodSearchPlaceholder')"
+                :no-results-label="t('transactionsPage.form.paymentMethodNoResults')"
+                :create-label="canCreatePaymentMethod ? t('recurrencesPage.form.createPaymentMethod') : undefined"
+                :create-named-label="
+                    canCreatePaymentMethod ? t('transactionsPage.form.paymentMethodCreate', { name: '{name}' }) : undefined
+                "
+                @create="openPaymentMethodCreate"
             />
         </div>
         <v-textarea
@@ -176,4 +206,12 @@ async function onConfirm() {
             </button>
         </template>
     </AppModalBase>
+
+    <PaymentMethodFormModal
+        v-model="paymentMethodCreateOpen"
+        :default-account-public-id="accountPublicId"
+        :default-label="paymentMethodCreateLabel"
+        lock-account
+        @saved="onPaymentMethodCreated"
+    />
 </template>

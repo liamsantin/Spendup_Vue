@@ -329,6 +329,9 @@ function openPaymentMethodCreate(name: string) {
                     :label="t('recurrencesPage.form.fields.paymentMethod')"
                     hide-details="auto"
                     :create-label="canCreatePaymentMethod ? t('recurrencesPage.form.createPaymentMethod') : undefined"
+                    :create-named-label="
+                        canCreatePaymentMethod ? t('transactionsPage.form.paymentMethodCreate', { name: '{name}' }) : undefined
+                    "
                     @create="openPaymentMethodCreate"
                 />
             </v-col>
@@ -345,6 +348,7 @@ function openPaymentMethodCreate(name: string) {
                     :label="t('recurrencesPage.form.fields.category')"
                     hide-details="auto"
                     :create-label="t('recurrencesPage.form.createCategory')"
+                    :create-named-label="t('transactionsPage.form.categoryCreate', { name: '{name}' })"
                     @create="openCategoryCreate"
                 />
             </v-col>

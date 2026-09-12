@@ -67,11 +67,12 @@ const selectedTitle = computed(() => {
 });
 
 const trimmedQuery = computed(() => query.value.trim());
-const canCreate = computed(() => {
+const canCreateNamed = computed(() => {
     const needle = trimmedQuery.value.toLowerCase();
     if (!needle || needle.length > TIER_NAME_MAX) return false;
     return !results.value.some((tier) => tier.name.trim().toLowerCase() === needle);
 });
+const showCreate = computed(() => !props.disabled);
 
 const messages = computed(() => {
     if (Array.isArray(props.errorMessages)) return props.errorMessages.filter(Boolean);
@@ -117,7 +118,7 @@ function select(publicId: string) {
 }
 
 function openCreate() {
-    createName.value = trimmedQuery.value;
+    createName.value = canCreateNamed.value ? trimmedQuery.value : '';
     open.value = false;
     createOpen.value = true;
 }
@@ -223,21 +224,23 @@ onUnmounted(() => {
                         <div v-if="!searching && trimmedQuery && !results.length" class="tier-picker__empty">
                             {{ t('transactionsPage.form.tierNoResults') }}
                         </div>
-                        <button v-if="canCreate" type="button" class="app-select-menu__option tier-picker__create" @click="openCreate">
-                            <PlusIcon :size="14" stroke-width="2" />
-                            <span class="text-truncate">{{ t('transactionsPage.form.tierCreate', { name: trimmedQuery }) }}</span>
-                        </button>
-                        <button
-                            v-else-if="!trimmedQuery"
-                            type="button"
-                            class="app-select-menu__option tier-picker__create"
-                            @click="openCreate"
-                        >
-                            <PlusIcon :size="14" stroke-width="2" />
-                            <span>{{ t('transactionsPage.form.tierCreateNew') }}</span>
-                        </button>
                     </div>
                 </PerfectScrollbar>
+                <div v-if="showCreate" class="app-select-menu__footer">
+                    <button
+                        v-if="canCreateNamed"
+                        type="button"
+                        class="app-select-menu__option app-select-menu__create"
+                        @click="openCreate"
+                    >
+                        <PlusIcon :size="14" stroke-width="2" />
+                        <span class="text-truncate">{{ t('transactionsPage.form.tierCreate', { name: trimmedQuery }) }}</span>
+                    </button>
+                    <button v-else type="button" class="app-select-menu__option app-select-menu__create" @click="openCreate">
+                        <PlusIcon :size="14" stroke-width="2" />
+                        <span class="text-truncate">{{ t('transactionsPage.form.tierCreateNew') }}</span>
+                    </button>
+                </div>
             </v-sheet>
         </v-menu>
 
@@ -325,7 +328,8 @@ onUnmounted(() => {
 }
 
 .tier-picker__menu {
-    min-width: 280px;
+    min-width: 0;
+    max-width: 100%;
 }
 
 .tier-picker__search {
@@ -383,14 +387,6 @@ onUnmounted(() => {
     padding: 10px 14px;
     font-size: 0.8rem;
     color: var(--ink-muted);
-}
-
-.tier-picker__create {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: rgb(var(--v-theme-primary));
-    font-weight: 600;
 }
 
 .tier-picker__details {

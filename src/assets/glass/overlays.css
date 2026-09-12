@@ -161,9 +161,14 @@
     margin-top: 6px;
     border-radius: 16px !important;
     overflow: hidden;
+    max-width: calc(100vw - 24px);
 }
 
 .app-select-menu__surface {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    max-width: 100%;
     overflow: hidden;
     background: #fff !important;
     border: 1px solid var(--thread);
@@ -172,14 +177,40 @@
     color: var(--ink);
 }
 
+.app-select-menu__footer {
+    flex: none;
+    min-width: 0;
+    padding: 0 7px 7px;
+}
+
+.app-select-menu__create {
+    box-sizing: border-box;
+    max-width: 100%;
+    color: rgb(var(--v-theme-primary)) !important;
+    font-weight: 600 !important;
+}
+
 .app-select-menu__scroll {
     position: relative;
+    min-width: 0;
+    max-width: 100%;
     max-height: min(310px, 55dvh);
+    overflow-x: hidden !important;
+}
+
+.app-select-menu .ps {
+    overflow-x: hidden !important;
+}
+
+.app-select-menu .ps__rail-x {
+    display: none !important;
 }
 
 .app-select-menu__options {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 3px;
+    min-width: 0;
     padding: 7px 13px 7px 7px;
 }
 
@@ -189,7 +220,10 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    box-sizing: border-box;
     width: 100%;
+    min-width: 0;
+    max-width: 100%;
     min-height: 43px;
     padding: 0 10px 0 13px;
     border: 0;
@@ -205,6 +239,13 @@
     transition:
         background 0.2s ease,
         color 0.2s ease;
+}
+
+.app-select-menu__option > span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .app-select-menu__option:hover,

@@ -53,6 +53,26 @@ export function findSelectCompletion<T>(items: readonly SelectCompletionItem<T>[
     return null;
 }
 
+export type SelectCreateMode = 'blank' | 'named' | null;
+
+/**
+ * Le champ reprend le libellé sélectionné à l’ouverture : ce n’est pas une recherche.
+ * Dans ce cas on affiche quand même « Nouveau… », pas un bouton masqué.
+ */
+export function selectCreateMode(input: {
+    enabled: boolean;
+    query: string;
+    selectedTitle: string;
+    hasExactMatch: boolean;
+}): SelectCreateMode {
+    if (!input.enabled) return null;
+    const needle = input.query.trim();
+    const selected = input.selectedTitle.trim();
+    const isFiltering = !!needle && needle.toLowerCase() !== selected.toLowerCase();
+    if (isFiltering && !input.hasExactMatch) return 'named';
+    return 'blank';
+}
+
 export function findExactSelectItem<T>(items: readonly SelectCompletionItem<T>[], query: string): SelectCompletionItem<T> | null {
     const needle = query.trim().toLowerCase();
     if (!needle) return null;
