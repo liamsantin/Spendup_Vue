@@ -43,6 +43,7 @@ function fields(partial: Partial<TransactionFormFields> = {}): TransactionFormFi
         paymentMethodPublicId: '',
         categoryPublicId: '',
         tierPublicId: '',
+        recurrencePublicId: '',
         ...partial
     };
 }
@@ -142,21 +143,49 @@ describe('transaction payload', () => {
                 valueDate: null,
                 paymentMethodPublicId: null,
                 categoryPublicId: null,
-                tierPublicId: null
+                tierPublicId: null,
+                recurringExpensePublicId: null,
+                recurringIncomePublicId: null
             });
             expect(result.payload).not.toHaveProperty('files');
             expect(result.payload).not.toHaveProperty('filePublicIds');
         }
     });
 
+    it('POST / PUT envoient le template de récurrence selon le type', () => {
+        const created = buildCreateTransactionPayload(fields({ recurrencePublicId: 're-1' }), { accounts, now });
+        expect(created.ok).toBe(true);
+        if (created.ok) {
+            expect(created.payload.recurringExpensePublicId).toBe('re-1');
+            expect(created.payload).not.toHaveProperty('recurringIncomePublicId');
+        }
+
+        const income = buildCreateTransactionPayload(fields({ type: 'revenu', recurrencePublicId: 'ri-1' }), { accounts, now });
+        expect(income.ok).toBe(true);
+        if (income.ok) {
+            expect(income.payload.recurringIncomePublicId).toBe('ri-1');
+            expect(income.payload).not.toHaveProperty('recurringExpensePublicId');
+        }
+
+        const updated = buildUpdateTransactionPayload(fields({ recurrencePublicId: 're-2' }), { accounts, now });
+        expect(updated.ok).toBe(true);
+        if (updated.ok) {
+            expect(updated.payload.recurringExpensePublicId).toBe('re-2');
+            expect(updated.payload.recurringIncomePublicId).toBeNull();
+        }
+    });
+
     it('détecte le dirty d’édition', () => {
         const current = {
+            type: 'depense' as const,
             label: 'Courses',
             amount: 42.5,
             operationDate: '2026-09-07',
             valueDate: null as string | null,
             paymentMethodPublicId: null as string | null,
-            categoryPublicId: null as string | null
+            categoryPublicId: null as string | null,
+            recurringExpensePublicId: null as string | null,
+            recurringIncomePublicId: null as string | null
         };
         expect(isTransactionFormDirty(current, fields())).toBe(false);
         expect(isTransactionFormDirty(current, fields({ label: 'Courses bio' }))).toBe(true);

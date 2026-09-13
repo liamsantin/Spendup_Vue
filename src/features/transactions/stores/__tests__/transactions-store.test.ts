@@ -126,6 +126,7 @@ function form(partial: Partial<TransactionFormFields> = {}): TransactionFormFiel
         paymentMethodPublicId: '',
         categoryPublicId: '',
         tierPublicId: '',
+        recurrencePublicId: '',
         ...partial
     };
 }

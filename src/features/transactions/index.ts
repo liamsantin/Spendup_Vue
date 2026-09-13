@@ -27,7 +27,8 @@ export {
     buildCreateTransactionPayload,
     buildUpdateTransactionPayload,
     isTransactionFormDirty,
-    normalizeLabel
+    normalizeLabel,
+    recurrencePublicIdFromTransaction
 } from '@/features/transactions/payload';
 export type { TransactionFormFields, TransactionPayloadErrorCode, TransactionPayloadContext } from '@/features/transactions/payload';
 export type {

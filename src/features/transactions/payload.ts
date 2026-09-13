@@ -6,6 +6,7 @@ import {
     TRANSACTION_LABEL_MAX,
     TRANSACTION_TYPES,
     type CreateTransactionPayload,
+    type Transaction,
     type TransactionType,
     type UpdateTransactionPayload
 } from '@/features/transactions/types';
@@ -40,6 +41,8 @@ export type TransactionFormFields = {
     paymentMethodPublicId: string;
     categoryPublicId: string;
     tierPublicId: string;
+    /** Template de récurrence lié (charge si `depense`, revenu si `revenu`). */
+    recurrencePublicId: string;
 };
 
 export type TransactionPayloadContext = {
@@ -59,6 +62,15 @@ export function normalizeLabel(raw: string | null | undefined): string {
     return (raw ?? '').trim();
 }
 
+/** publicId du template lié selon le type de TX (vide si transfert / absent). */
+export function recurrencePublicIdFromTransaction(
+    transaction: Pick<Transaction, 'type' | 'recurringExpensePublicId' | 'recurringIncomePublicId'>
+): string {
+    if (transaction.type === 'depense') return transaction.recurringExpensePublicId?.trim() || '';
+    if (transaction.type === 'revenu') return transaction.recurringIncomePublicId?.trim() || '';
+    return '';
+}
+
 type CommonFields =
     | BuildTransactionPayloadFail
     | {
@@ -70,6 +82,7 @@ type CommonFields =
           paymentMethodPublicId: string | null;
           categoryPublicId: string | null;
           tierPublicId: string | null;
+          recurrencePublicId: string | null;
       };
 
 function commonFields(fields: TransactionFormFields, now?: Date): CommonFields {
@@ -92,6 +105,8 @@ function commonFields(fields: TransactionFormFields, now?: Date): CommonFields {
         if (valueDate < operationDate) return fail('valueDateBeforeOperation', 'valueDate');
     }
 
+    const recurrencePublicId = fields.type === 'transfert' ? null : emptyToNull(fields.recurrencePublicId);
+
     return {
         ok: true,
         label,
@@ -100,7 +115,8 @@ function commonFields(fields: TransactionFormFields, now?: Date): CommonFields {
         valueDate,
         paymentMethodPublicId: emptyToNull(fields.paymentMethodPublicId),
         categoryPublicId: emptyToNull(fields.categoryPublicId),
-        tierPublicId: emptyToNull(fields.tierPublicId)
+        tierPublicId: emptyToNull(fields.tierPublicId),
+        recurrencePublicId
     };
 }
 
@@ -109,6 +125,19 @@ function resolveAccount(
     publicId: string
 ): Pick<Account, 'publicId' | 'currency' | 'isActive' | 'myRole'> | undefined {
     return accounts.find((a) => a.publicId === publicId);
+}
+
+function recurrencePayloadFields(
+    type: TransactionType,
+    recurrencePublicId: string | null
+): Pick<UpdateTransactionPayload, 'recurringExpensePublicId' | 'recurringIncomePublicId'> {
+    if (type === 'depense') {
+        return { recurringExpensePublicId: recurrencePublicId, recurringIncomePublicId: null };
+    }
+    if (type === 'revenu') {
+        return { recurringExpensePublicId: null, recurringIncomePublicId: recurrencePublicId };
+    }
+    return { recurringExpensePublicId: null, recurringIncomePublicId: null };
 }
 
 export function buildCreateTransactionPayload(
@@ -162,6 +191,9 @@ export function buildCreateTransactionPayload(
     if (common.paymentMethodPublicId) payload.paymentMethodPublicId = common.paymentMethodPublicId;
     if (common.categoryPublicId) payload.categoryPublicId = common.categoryPublicId;
     if (common.tierPublicId) payload.tierPublicId = common.tierPublicId;
+    const recurrence = recurrencePayloadFields(fields.type, common.recurrencePublicId);
+    if (recurrence.recurringExpensePublicId) payload.recurringExpensePublicId = recurrence.recurringExpensePublicId;
+    if (recurrence.recurringIncomePublicId) payload.recurringIncomePublicId = recurrence.recurringIncomePublicId;
 
     return { ok: true, payload };
 }
@@ -186,6 +218,7 @@ export function buildUpdateTransactionPayload(
         }
     }
 
+    const recurrence = recurrencePayloadFields(fields.type, common.recurrencePublicId);
     const payload: UpdateTransactionPayload = {
         label: common.label,
         amount: common.amount,
@@ -193,7 +226,9 @@ export function buildUpdateTransactionPayload(
         valueDate: common.valueDate,
         paymentMethodPublicId: common.paymentMethodPublicId,
         categoryPublicId: common.categoryPublicId,
-        tierPublicId: common.tierPublicId
+        tierPublicId: common.tierPublicId,
+        recurringExpensePublicId: recurrence.recurringExpensePublicId,
+        recurringIncomePublicId: recurrence.recurringIncomePublicId
     };
     return { ok: true, payload };
 }
@@ -210,10 +245,12 @@ export function isTransactionFormDirty(
     if (emptyToNull(fields.paymentMethodPublicId) !== emptyToNull(transaction.paymentMethodPublicId)) return true;
     if (emptyToNull(fields.categoryPublicId) !== emptyToNull(transaction.categoryPublicId)) return true;
     if (emptyToNull(fields.tierPublicId) !== emptyToNull(transaction.tierPublicId ?? null)) return true;
+    if (emptyToNull(fields.recurrencePublicId) !== emptyToNull(recurrencePublicIdFromTransaction(transaction))) return true;
     return false;
 }
 
 type TransactionFormDirtySource = {
+    type: TransactionType;
     label: string;
     amount: number | null;
     operationDate: string;
@@ -221,4 +258,6 @@ type TransactionFormDirtySource = {
     paymentMethodPublicId: string | null;
     categoryPublicId: string | null;
     tierPublicId?: string | null;
+    recurringExpensePublicId?: string | null;
+    recurringIncomePublicId?: string | null;
 };

@@ -37,6 +37,7 @@ export type TransactionFormFieldErrors = {
     paymentMethodPublicId?: string | null;
     categoryPublicId?: string | null;
     tierPublicId?: string | null;
+    recurrencePublicId?: string | null;
 };
 
 const props = withDefaults(
@@ -48,6 +49,7 @@ const props = withDefaults(
         typeItems: { title: string; value: TransactionType }[];
         paymentMethodItems: { title: string; value: string }[];
         categoryItems: { title: string; value: string; indent?: number }[];
+        recurrenceItems?: { title: string; value: string }[];
         fieldErrors?: TransactionFormFieldErrors;
         archivedHint?: string | null;
         counterpartyHint?: string | null;
@@ -57,6 +59,7 @@ const props = withDefaults(
         section?: 'operation' | 'classification' | 'all';
     }>(),
     {
+        recurrenceItems: () => [],
         fieldErrors: () => ({}),
         archivedHint: null,
         counterpartyHint: null,
@@ -73,6 +76,7 @@ const accountsStore = useAccountsStore();
 const isTransfer = computed(() => props.form.type === 'transfert');
 const showOperation = computed(() => props.section === 'all' || props.section === 'operation');
 const showClassification = computed(() => props.section === 'all' || props.section === 'classification');
+const showRecurrence = computed(() => showClassification.value && !isTransfer.value);
 const todayUtc = computed(() => todayUtcYmd());
 const hasCounterpartyOptions = computed(() => props.counterpartyItems.length > 0);
 const counterpartySelectItems = computed(() =>
@@ -273,6 +277,27 @@ function openPaymentMethodCreate(name: string) {
                     :placeholder="t('transactionsPage.form.valueDatePlaceholder')"
                 />
                 <div v-if="fieldErrors.valueDate" class="text-caption text-error mt-1">{{ fieldErrors.valueDate }}</div>
+            </v-col>
+        </v-row>
+        <v-row v-if="showRecurrence" class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <label class="v-label font-weight-medium" for="tx-form-recurrence">
+                    {{ t('transactionsPage.form.fields.recurrence') }}
+                </label>
+            </v-col>
+            <v-col cols="12" sm="9">
+                <AppSelect
+                    id="tx-form-recurrence"
+                    v-model="form.recurrencePublicId"
+                    :items="recurrenceItems"
+                    :label="t('transactionsPage.form.fields.recurrence')"
+                    hide-details="auto"
+                    :error="!!fieldErrors.recurrencePublicId"
+                    :error-messages="fieldErrors.recurrencePublicId || undefined"
+                    searchable
+                    :search-placeholder="t('transactionsPage.form.recurrenceSearchPlaceholder')"
+                    :no-results-label="t('transactionsPage.form.recurrenceNoResults')"
+                />
             </v-col>
         </v-row>
         <v-row v-if="showClassification" class="align-center" no-gutters>

@@ -80,6 +80,10 @@ export type CreateTransactionPayload = {
     paymentMethodPublicId?: string | null;
     categoryPublicId?: string | null;
     tierPublicId?: string | null;
+    /** Lien optionnel vers un template de charge (type `depense`). */
+    recurringExpensePublicId?: string | null;
+    /** Lien optionnel vers un template de revenu (type `revenu`). */
+    recurringIncomePublicId?: string | null;
     /** PDF déjà uploadés via `/api/files`. Max 5, dédupliqués côté API. */
     filePublicIds?: string[];
 };
@@ -93,6 +97,10 @@ export type UpdateTransactionPayload = {
     categoryPublicId: string | null;
     /** État complet : `null` détache le tier. */
     tierPublicId: string | null;
+    /** État complet : `null` détache le template de charge. */
+    recurringExpensePublicId: string | null;
+    /** État complet : `null` détache le template de revenu. */
+    recurringIncomePublicId: string | null;
 };
 
 export type AttachTransactionFilePayload = {

@@ -10,6 +10,7 @@ import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { categorySelectItems } from '@/features/categories/payload';
+import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import { sourceAccountPublicId, targetAccountPublicId, todayUtcYmd } from '@/features/transactions/format';
@@ -19,6 +20,7 @@ import {
     buildCreateTransactionPayload,
     buildUpdateTransactionPayload,
     isTransactionFormDirty,
+    recurrencePublicIdFromTransaction,
     type TransactionFormFields,
     type TransactionPayloadErrorCode
 } from '@/features/transactions/payload';
@@ -56,6 +58,7 @@ const accountsStore = useAccountsStore();
 const paymentMethodsStore = usePaymentMethodsStore();
 const categoriesStore = useCategoriesStore();
 const tiersStore = useTiersStore();
+const recurringStore = useRecurringPaymentsStore();
 const store = useTransactionsStore();
 const filesStore = useFilesStore();
 
@@ -128,6 +131,30 @@ const categoryItems = computed(() => {
     return items;
 });
 
+const recurrenceItems = computed(() => {
+    const none = [{ title: t('transactionsPage.form.noRecurrence'), value: '' }];
+    if (form.type === 'transfert') return none;
+    const accountId = form.accountPublicId;
+    const templates =
+        form.type === 'revenu'
+            ? recurringStore.incomes.filter((item) => !accountId || item.accountPublicId === accountId)
+            : recurringStore.expenses.filter((item) => !accountId || item.accountPublicId === accountId);
+    const selected = form.recurrencePublicId;
+    const options = templates
+        .filter((item) => item.isActive || item.publicId === selected)
+        .map((item) => ({ title: item.name, value: item.publicId }));
+    if (selected && !options.some((item) => item.value === selected)) {
+        const known =
+            form.type === 'revenu'
+                ? recurringStore.incomes.find((item) => item.publicId === selected) ??
+                  recurringStore.getDetail('income', selected)
+                : recurringStore.expenses.find((item) => item.publicId === selected) ??
+                  recurringStore.getDetail('expense', selected);
+        options.push({ title: known?.name ?? selected, value: selected });
+    }
+    return [...none, ...options];
+});
+
 const isSharedAccount = computed(() => {
     const account = sourceAccount.value;
     return !!account && !account.isOwned;
@@ -164,7 +191,7 @@ const previewFile = ref<TransactionFile | null>(null);
 const previewOpen = ref(false);
 const activeTab = ref<'operation' | 'classification' | 'attachments'>('operation');
 
-const CLASSIFICATION_FIELDS = new Set(['paymentMethodPublicId', 'categoryPublicId', 'tierPublicId']);
+const CLASSIFICATION_FIELDS = new Set(['paymentMethodPublicId', 'categoryPublicId', 'tierPublicId', 'recurrencePublicId']);
 
 const form = reactive<TransactionFormFields>({
     type: 'depense',
@@ -176,7 +203,8 @@ const form = reactive<TransactionFormFields>({
     valueDate: null,
     paymentMethodPublicId: '',
     categoryPublicId: '',
-    tierPublicId: ''
+    tierPublicId: '',
+    recurrencePublicId: ''
 });
 
 const open = computed({
@@ -248,6 +276,7 @@ function clearFieldErrors() {
     fieldErrors.paymentMethodPublicId = null;
     fieldErrors.categoryPublicId = null;
     fieldErrors.tierPublicId = null;
+    fieldErrors.recurrencePublicId = null;
 }
 
 function payloadErrorText(code: TransactionPayloadErrorCode): string {
@@ -288,6 +317,7 @@ function resetForm() {
         form.paymentMethodPublicId = transaction.paymentMethodPublicId ?? '';
         form.categoryPublicId = transaction.categoryPublicId ?? '';
         form.tierPublicId = transaction.tierPublicId ?? '';
+        form.recurrencePublicId = recurrencePublicIdFromTransaction(transaction);
         return;
     }
     form.type = props.defaultType || 'depense';
@@ -300,6 +330,7 @@ function resetForm() {
     form.paymentMethodPublicId = '';
     form.categoryPublicId = '';
     form.tierPublicId = '';
+    form.recurrencePublicId = '';
 }
 
 async function loadPaymentMethodsForAccount(accountPublicId: string | null) {
@@ -310,6 +341,24 @@ async function loadPaymentMethodsForAccount(accountPublicId: string | null) {
 
 async function loadCategoriesForType(type: TransactionType) {
     await categoriesStore.loadList({ type }).catch(() => undefined);
+}
+
+async function loadRecurrences() {
+    await Promise.all([
+        recurringStore.loadExpenses({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined),
+        recurringStore.loadIncomes({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined)
+    ]);
+}
+
+function syncRecurrenceSelection() {
+    if (form.type === 'transfert') {
+        form.recurrencePublicId = '';
+        return;
+    }
+    if (!form.recurrencePublicId) return;
+    if (!recurrenceItems.value.some((item) => item.value === form.recurrencePublicId)) {
+        form.recurrencePublicId = '';
+    }
 }
 
 watch(
@@ -323,6 +372,7 @@ watch(
         await Promise.all([
             loadPaymentMethodsForAccount(form.accountPublicId),
             loadCategoriesForType(form.type),
+            loadRecurrences(),
             filesStore.loadList().catch(() => undefined),
             filesStore.loadUsage()
         ]);
@@ -339,6 +389,7 @@ watch(
             form.counterpartyAccountPublicId = '';
         }
         form.categoryPublicId = '';
+        form.recurrencePublicId = '';
         await loadCategoriesForType(type);
     }
 );
@@ -357,6 +408,7 @@ watch(
         await loadPaymentMethodsForAccount(accountId);
         const stillValid = paymentMethodItems.value.some((item) => item.value === form.paymentMethodPublicId);
         if (!stillValid) form.paymentMethodPublicId = '';
+        syncRecurrenceSelection();
     }
 );
 
@@ -496,6 +548,7 @@ function onOpenAttachment(file: TransactionFile) {
                     :type-items="typeItems"
                     :payment-method-items="paymentMethodItems"
                     :category-items="categoryItems"
+                    :recurrence-items="recurrenceItems"
                     :field-errors="fieldErrors"
                     :archived-hint="archivedHint"
                     :counterparty-hint="counterpartyHint"
@@ -515,6 +568,7 @@ function onOpenAttachment(file: TransactionFile) {
                     :type-items="typeItems"
                     :payment-method-items="paymentMethodItems"
                     :category-items="categoryItems"
+                    :recurrence-items="recurrenceItems"
                     :field-errors="fieldErrors"
                     :category-hint="isSharedAccount ? t('transactionsPage.form.categoryPersonalHint') : null"
                     :tier-hint="tierHint"

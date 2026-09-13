@@ -71,6 +71,12 @@ export function transactionFormFieldsWithCategory(
         valueDate: transaction.valueDate,
         paymentMethodPublicId: transaction.paymentMethodPublicId ?? '',
         categoryPublicId,
-        tierPublicId: transaction.tierPublicId ?? ''
+        tierPublicId: transaction.tierPublicId ?? '',
+        recurrencePublicId:
+            transaction.type === 'depense'
+                ? (transaction.recurringExpensePublicId ?? '')
+                : transaction.type === 'revenu'
+                  ? (transaction.recurringIncomePublicId ?? '')
+                  : ''
     };
 }
