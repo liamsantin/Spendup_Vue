@@ -6,6 +6,7 @@
  * `#actions` : actions du hero (inbox, enregistrer) — pas Filtre/Ajouter des listes.
  */
 import { useI18n } from 'vue-i18n';
+import AppPageBodyScroll from '@/components/shared/page-shell/AppPageBodyScroll.vue';
 
 const { t } = useI18n();
 
@@ -20,6 +21,11 @@ withDefaults(
         saveDisabled?: boolean;
         cancelDisabled?: boolean;
         saveLoading?: boolean;
+        /**
+         * Corps en perfect-scrollbar (desktop) / scroll natif (mobile).
+         * Désactiver pour un contenu plein écran (ex. lecteur de fichier).
+         */
+        bodyScroll?: boolean;
     }>(),
     {
         subtitle: undefined,
@@ -27,7 +33,8 @@ withDefaults(
         hideActions: true,
         saveDisabled: true,
         cancelDisabled: true,
-        saveLoading: false
+        saveLoading: false,
+        bodyScroll: true
     }
 );
 
@@ -63,7 +70,10 @@ const emit = defineEmits<{
             </div>
         </header>
 
-        <div class="su-body">
+        <AppPageBodyScroll v-if="bodyScroll">
+            <slot />
+        </AppPageBodyScroll>
+        <div v-else class="su-body">
             <slot />
         </div>
     </div>

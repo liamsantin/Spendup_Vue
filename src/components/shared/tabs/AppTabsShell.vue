@@ -6,6 +6,7 @@ defineOptions({ name: 'AppTabsShell' });
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import AppPageBodyScroll from '@/components/shared/page-shell/AppPageBodyScroll.vue';
 import { FriendLiveChips } from '@/features/notifications';
 
 export type ShellTab = {
@@ -39,6 +40,11 @@ const props = withDefaults(
         pilled?: boolean;
         /** Classes additionnelles sur le hero (ex. état recherche Discover). */
         heroClass?: string | Record<string, boolean> | Array<string | Record<string, boolean>>;
+        /**
+         * Corps en perfect-scrollbar (desktop) / scroll natif (mobile).
+         * Ignoré si `embedded` (overflow visible).
+         */
+        bodyScroll?: boolean;
     }>(),
     {
         title: undefined,
@@ -50,7 +56,8 @@ const props = withDefaults(
         alignTabs: 'start',
         embedded: false,
         pilled: true,
-        heroClass: undefined
+        heroClass: undefined,
+        bodyScroll: true
     }
 );
 
@@ -61,6 +68,8 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+
+const useBodyScroll = computed(() => props.bodyScroll && !props.embedded);
 
 const currentTab = computed({
     get: () => props.modelValue,
@@ -111,7 +120,10 @@ function selectTab(value: string) {
 
         <FriendLiveChips v-if="!props.embedded" />
 
-        <div class="su-body">
+        <AppPageBodyScroll v-if="useBodyScroll">
+            <slot />
+        </AppPageBodyScroll>
+        <div v-else class="su-body">
             <slot />
         </div>
     </div>

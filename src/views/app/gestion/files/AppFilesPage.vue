@@ -150,7 +150,7 @@ watch(
 
 <template>
     <div class="files-page" :class="{ 'files-page--reader': previewing }">
-        <AppPageShell :title="pageTitle" :subtitle="pageSubtitle">
+        <AppPageShell :title="pageTitle" :subtitle="pageSubtitle" :body-scroll="!previewing">
             <template v-if="previewing" #actions>
                 <button type="button" class="su-btn su-btn--ghost" @click="closePreview">
                     <ArrowLeftIcon :size="16" stroke-width="1.6" />

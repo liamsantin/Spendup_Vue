@@ -273,6 +273,22 @@
     scrollbar-width: thin;
 }
 
+/* Corps page liste : PS desktop / natif mobile (AppPageBodyScroll). */
+.su-body--ps {
+    overflow: hidden;
+    height: 100% !important;
+    max-height: 100%;
+    box-sizing: border-box;
+}
+
+.su-body--native-page {
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    box-sizing: border-box;
+}
+
 .su-surface {
     padding: 8px;
     border-radius: var(--radius-surface);
