@@ -5,7 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { amountInFilterRange, parseAmountFilter, pageSizeForClientAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
+import { amountInFilterRange, parseAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
@@ -77,6 +77,7 @@ const filterFrom = computed(() => (props.lockedAccountPublicId ? null : queryStr
 const filterTo = computed(() => (props.lockedAccountPublicId ? null : queryString('to')));
 const filterCategoryId = computed(() => (props.lockedAccountPublicId ? null : queryString('category')));
 const filterTierId = computed(() => (props.lockedAccountPublicId ? null : queryString('tier')));
+const filterPaymentMethodId = computed(() => (props.lockedAccountPublicId ? null : queryString('paymentMethod')));
 const filterRecurringExpenseId = computed(() => (props.lockedAccountPublicId ? null : queryString('recurringExpensePublicId')));
 const filterRecurringIncomeId = computed(() => (props.lockedAccountPublicId ? null : queryString('recurringIncomePublicId')));
 const filterSearch = computed(() => {
@@ -91,13 +92,18 @@ const filterType = computed<TransactionType | null>(() => {
 const listSort = computed(() => parseTransactionSort(queryString('sort')));
 const filterMinAmount = computed(() => (props.lockedAccountPublicId ? null : parseAmountFilter(queryString('minAmount'))));
 const filterMaxAmount = computed(() => (props.lockedAccountPublicId ? null : parseAmountFilter(queryString('maxAmount'))));
+const needsClientFullScan = computed(
+    () => filterMinAmount.value != null || filterMaxAmount.value != null || !!filterPaymentMethodId.value
+);
 const groupByDate = computed(() => listSort.value === 'dateDesc' || listSort.value === 'dateAsc');
 
 const visibleItems = computed(() => {
     const type = filterType.value;
+    const paymentMethodId = filterPaymentMethodId.value;
     const needle = filterSearch.value?.trim() ?? '';
     const filtered = store.items.filter((item) => {
         if (type && item.type !== type) return false;
+        if (paymentMethodId && item.paymentMethodPublicId !== paymentMethodId) return false;
         if (!amountInFilterRange(item.amount, filterMinAmount.value, filterMaxAmount.value)) return false;
         if (!needle) return true;
         const tier = item.tierPublicId ? tiersStore.findByPublicId(item.tierPublicId) : null;
@@ -119,7 +125,9 @@ const visibleItems = computed(() => {
 
 const emptyCopy = computed(() => {
     if (filterSearch.value) return t('transactionsPage.empty.filtered');
-    if (filterMinAmount.value != null || filterMaxAmount.value != null) return t('transactionsPage.empty.filtered');
+    if (filterMinAmount.value != null || filterMaxAmount.value != null || filterPaymentMethodId.value) {
+        return t('transactionsPage.empty.filtered');
+    }
     if (filterType.value) return t('transactionsPage.empty.byType', { type: t(`transactionsPage.types.${filterType.value}`) });
     if (filterRecurringExpenseId.value || filterRecurringIncomeId.value) return t('transactionsPage.empty.recurrence');
     if (queryString('budget')) return t('transactionsPage.empty.budget');
@@ -183,19 +191,14 @@ async function loadTimeline(force = false) {
                 recurringIncomePublicId: filterRecurringIncomeId.value ?? undefined,
                 from: filterFrom.value ?? undefined,
                 to: filterTo.value ?? undefined,
-                pageSize: pageSizeForClientAmountFilter(
-                    queryString('minAmount'),
-                    queryString('maxAmount'),
-                    TRANSACTION_PAGE_SIZE_DEFAULT,
-                    TRANSACTION_PAGE_SIZE_MAX
-                ),
+                pageSize: needsClientFullScan.value ? TRANSACTION_PAGE_SIZE_MAX : TRANSACTION_PAGE_SIZE_DEFAULT,
                 force
             }),
             categoriesStore.loadList({ force }).catch(() => undefined),
             tiersStore.loadList({ pageSize: TIER_PAGE_SIZE_MAX, force }).catch(() => undefined),
             paymentMethodsStore.loadList({ force }).catch(() => undefined)
         ]);
-        if (filterMinAmount.value != null || filterMaxAmount.value != null) {
+        if (needsClientFullScan.value) {
             let guard = 0;
             while (store.hasMore && guard++ < 30) {
                 await store.loadMore();
@@ -229,6 +232,7 @@ async function loadTimeline(force = false) {
                         ...(filterFrom.value ? { from: filterFrom.value } : {}),
                         ...(filterTo.value ? { to: filterTo.value } : {}),
                         ...(filterCategoryId.value ? { category: filterCategoryId.value } : {}),
+                        ...(filterPaymentMethodId.value ? { paymentMethod: filterPaymentMethodId.value } : {}),
                         ...(queryString('budget') ? { budget: queryString('budget') } : {}),
                         ...(filterSearch.value ? { q: filterSearch.value } : {}),
                         ...(listSort.value !== TRANSACTION_SORT_DEFAULT ? { sort: listSort.value } : {})
@@ -270,6 +274,7 @@ watch(
             filterTo.value,
             filterCategoryId.value,
             filterTierId.value,
+            filterPaymentMethodId.value,
             filterRecurringExpenseId.value,
             filterRecurringIncomeId.value,
             filterMinAmount.value,

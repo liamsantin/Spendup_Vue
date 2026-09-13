@@ -1503,6 +1503,8 @@
             "allCategories": "All categories",
             "tier": "Counterparty",
             "allTiers": "All counterparties",
+            "paymentMethod": "Payment method",
+            "allPaymentMethods": "All payment methods",
             "recurrence": "Recurrence",
             "allRecurrences": "All recurrences",
             "budget": "Budget",

@@ -26,7 +26,7 @@ export type {
     CreatePaymentMethodPayload,
     UpdatePaymentMethodPayload
 } from '@/features/payment-methods/types';
-export { PAYMENT_METHOD_TYPES, PAYMENT_METHOD_LABEL_MAX, PAYMENT_METHOD_REFERENCE_MAX } from '@/features/payment-methods/types';
+export { PAYMENT_METHOD_TYPES, PAYMENT_METHOD_LABEL_MAX, PAYMENT_METHOD_REFERENCE_MAX, PAYMENT_METHOD_PAGE_SIZE_MAX } from '@/features/payment-methods/types';
 export { default as PaymentMethodsWallet } from '@/features/payment-methods/components/PaymentMethodsWallet.vue';
 export { default as PaymentMethodListItem } from '@/features/payment-methods/components/list/PaymentMethodListItem.vue';
 export { default as PaymentMethodFormModal } from '@/features/payment-methods/components/modals/PaymentMethodFormModal.vue';

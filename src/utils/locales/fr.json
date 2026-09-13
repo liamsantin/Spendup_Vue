@@ -1503,6 +1503,8 @@
             "allCategories": "Toutes les catégories",
             "tier": "Contrepartie",
             "allTiers": "Toutes les contreparties",
+            "paymentMethod": "Moyen de paiement",
+            "allPaymentMethods": "Tous les moyens de paiement",
             "recurrence": "Récurrence",
             "allRecurrences": "Toutes les récurrences",
             "budget": "Budget",

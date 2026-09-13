@@ -25,6 +25,7 @@ import type { TransactionType } from '@/features/transactions';
 import { useAccountsStore } from '@/features/accounts';
 import { budgetLinkedTransactionsQuery, useBudgetsStore } from '@/features/budgets';
 import { categorySelectItems, useCategoriesStore } from '@/features/categories';
+import { PAYMENT_METHOD_PAGE_SIZE_MAX, usePaymentMethodsStore } from '@/features/payment-methods';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { tierSelectItems, useTiersStore } from '@/features/tiers';
 
@@ -38,6 +39,7 @@ const accountsStore = useAccountsStore();
 const budgetsStore = useBudgetsStore();
 const categoriesStore = useCategoriesStore();
 const tiersStore = useTiersStore();
+const paymentMethodsStore = usePaymentMethodsStore();
 const recurringStore = useRecurringPaymentsStore();
 const timelineRef = ref<{ openCreate: () => void } | null>(null);
 
@@ -251,6 +253,35 @@ const filterTierId = computed({
     set: (value: string) => patchQuery({ tier: value || undefined })
 });
 
+const filterPaymentMethodId = computed({
+    get: () => queryString('paymentMethod'),
+    set: (value: string) => patchQuery({ paymentMethod: value || undefined })
+});
+
+const paymentMethodItems = computed(() => {
+    const items: { title: string; value: string }[] = [{ title: t('transactionsPage.filters.allPaymentMethods'), value: '' }];
+    const accountId = filterAccountId.value;
+    let methods = paymentMethodsStore.allKnownItems();
+    if (accountId) {
+        methods = methods.filter((method) => method.accountPublicId === accountId);
+    }
+    const seen = new Set<string>();
+    for (const method of methods) {
+        seen.add(method.publicId);
+        const accountName = accountsStore.accounts.find((account) => account.publicId === method.accountPublicId)?.name;
+        items.push({
+            title: accountId || !accountName ? method.label : `${method.label} · ${accountName}`,
+            value: method.publicId
+        });
+    }
+    const selected = filterPaymentMethodId.value;
+    if (selected && !seen.has(selected)) {
+        const found = paymentMethodsStore.allKnownItems().find((method) => method.publicId === selected);
+        items.push({ title: found?.label ?? selected, value: selected });
+    }
+    return items;
+});
+
 const listSort = computed({
     get: () => parseTransactionSort(queryString('sort')),
     set: (value: string) => patchQuery({ sort: value === TRANSACTION_SORT_DEFAULT ? undefined : value })
@@ -275,6 +306,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
     const to = 'to' in patch ? patch.to : queryString('to') || undefined;
     const category = 'category' in patch ? patch.category : queryString('category') || undefined;
     const tier = 'tier' in patch ? patch.tier : queryString('tier') || undefined;
+    const paymentMethod = 'paymentMethod' in patch ? patch.paymentMethod : queryString('paymentMethod') || undefined;
     const recurringExpensePublicId =
         'recurringExpensePublicId' in patch ? patch.recurringExpensePublicId : queryString('recurringExpensePublicId') || undefined;
     const recurringIncomePublicId =
@@ -290,6 +322,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
     if (to) next.to = to;
     if (category) next.category = category;
     if (tier) next.tier = tier;
+    if (paymentMethod) next.paymentMethod = paymentMethod;
     if (recurringExpensePublicId) next.recurringExpensePublicId = recurringExpensePublicId;
     if (recurringIncomePublicId) next.recurringIncomePublicId = recurringIncomePublicId;
     if (budget) next.budget = budget;
@@ -325,6 +358,7 @@ function resetFilters() {
         account: undefined,
         category: undefined,
         tier: undefined,
+        paymentMethod: undefined,
         recurringExpensePublicId: undefined,
         recurringIncomePublicId: undefined,
         budget: undefined,
@@ -341,6 +375,7 @@ const filtersActive = computed(
             filterAccountId.value ||
             filterCategoryId.value ||
             filterTierId.value ||
+            filterPaymentMethodId.value ||
             filterRecurrenceKey.value ||
             filterBudgetId.value ||
             filterFrom.value ||
@@ -356,6 +391,7 @@ const filterCount = computed(
             filterAccountId.value,
             filterCategoryId.value,
             filterTierId.value,
+            filterPaymentMethodId.value,
             filterRecurrenceKey.value,
             filterBudgetId.value,
             filterFrom.value,
@@ -371,6 +407,7 @@ onMounted(() => {
     void recurringStore.loadExpenses({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined);
     void recurringStore.loadIncomes({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined);
     void budgetsStore.loadList().catch(() => undefined);
+    void paymentMethodsStore.loadList({ pageSize: PAYMENT_METHOD_PAGE_SIZE_MAX }).catch(() => undefined);
 });
 
 onUnmounted(() => {
@@ -473,12 +510,12 @@ watch(
                 </AppDropdownFilter>
                 <AppDropdownFilter
                     :label="t('transactionsPage.actions.filter')"
-                    :min-width="300"
+                    :min-width="520"
                     :count="filterCount"
                     :reset-disabled="!filtersActive"
                     @reset="resetFilters"
                 >
-                    <div class="pa-3 d-flex flex-column ga-3">
+                    <div class="pa-3 transactions-filters">
                         <AppSelect
                             v-model="filterAccountId"
                             :items="accountItems"
@@ -492,6 +529,14 @@ watch(
                             hide-details
                         />
                         <AppSelect v-model="filterTierId" :items="tierItems" :label="t('transactionsPage.filters.tier')" hide-details />
+                        <AppSelect
+                            v-model="filterPaymentMethodId"
+                            :items="paymentMethodItems"
+                            :label="t('transactionsPage.filters.paymentMethod')"
+                            searchable
+                            :search-placeholder="t('transactionsPage.filters.paymentMethod')"
+                            hide-details
+                        />
                         <AppSelect
                             v-model="filterRecurrenceKey"
                             :items="recurrenceItems"
@@ -508,7 +553,7 @@ watch(
                             :search-placeholder="t('transactionsPage.filters.budget')"
                             hide-details
                         />
-                        <v-divider class="my-1" />
+                        <v-divider class="transactions-filters__full my-1" />
                         <AppDatePicker
                             v-model="filterFrom"
                             :label="t('transactionsPage.filters.from')"
@@ -521,7 +566,11 @@ watch(
                             :placeholder="t('transactionsPage.filters.to')"
                             :min="filterFrom || undefined"
                         />
-                        <AppAmountRangeFields v-model:min="filterMinAmount" v-model:max="filterMaxAmount" />
+                        <AppAmountRangeFields
+                            v-model:min="filterMinAmount"
+                            v-model:max="filterMaxAmount"
+                            class="transactions-filters__full"
+                        />
                     </div>
                 </AppDropdownFilter>
                 <button type="button" class="su-btn su-btn--ink" :disabled="!canCreate || store.acting" @click="onCreate">
@@ -534,3 +583,22 @@ watch(
         <TransactionsTimeline ref="timelineRef" />
     </AppPageShell>
 </template>
+
+<style scoped>
+.transactions-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.transactions-filters__full {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 599.98px) {
+    .transactions-filters {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
