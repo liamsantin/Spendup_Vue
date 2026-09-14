@@ -156,12 +156,13 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
 /*
  * Bold Duotone Solar : la grande surface = --solar-secondary-color,
  * les détails (moins de surface) = color / currentColor.
- * Au hover parent : primary sur la petite surface uniquement.
+ * Au hover parent : primary sur la petite surface,
+ * teinte du fond actif des enfants sur la grande.
  */
 .item.has-children:not(.is-open):hover .item__icon {
     color: rgb(var(--v-theme-primary));
-    --solar-secondary-color: var(--ink-soft);
-    --solar-secondary-opacity: 0.22;
+    --solar-secondary-color: rgba(var(--v-theme-primary), 0.12);
+    --solar-secondary-opacity: 1;
 }
 .item__dot {
     position: absolute;
