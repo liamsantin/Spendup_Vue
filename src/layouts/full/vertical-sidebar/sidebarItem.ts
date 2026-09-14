@@ -8,7 +8,6 @@ import {
     EyeOffIcon,
     LayoutDashboardIcon,
     AddressBookIcon,
-    FilesIcon,
     LockIcon,
     TagsIcon,
     UserCircleIcon,
@@ -16,7 +15,9 @@ import {
 } from 'vue-tabler-icons';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import DashboardRailIcon from './rail-icons/DashboardRailIcon.vue';
+import FilesRailIcon from './rail-icons/FilesRailIcon.vue';
 import FriendsRailIcon from './rail-icons/FriendsRailIcon.vue';
+import GestionRailIcon from './rail-icons/GestionRailIcon.vue';
 import SettingsRailIcon from './rail-icons/SettingsRailIcon.vue';
 import FinancesRailIcon from './rail-icons/FinancesRailIcon.vue';
 
@@ -113,13 +114,13 @@ const sidebarThemes: sidebarTheme[] = [
     {
         id: 'gestion',
         title: 'nav.headers.gestion',
-        icon: TagsIcon,
+        icon: GestionRailIcon,
         match: (path) => path.startsWith('/app/gestion'),
         items: [
             { header: 'nav.headers.gestion' },
             {
                 title: 'nav.items.files',
-                icon: FilesIcon,
+                icon: FilesRailIcon,
                 to: '/app/gestion/files'
             },
             {

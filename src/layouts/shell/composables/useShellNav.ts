@@ -19,14 +19,11 @@ import {
     EyeOffIcon,
     FileImportIcon,
     FileTextIcon,
-    FilesIcon,
-    FolderIcon,
     HomeHeartIcon,
     HomeIcon,
     LockIcon,
     Receipt2Icon,
     ReceiptTaxIcon,
-    RepeatIcon,
     ReportMoneyIcon,
     ScaleIcon,
     TagsIcon,
@@ -41,8 +38,11 @@ import { BUDGETS_PATHS } from '@/features/budgets/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import DashboardRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/DashboardRailIcon.vue';
+import FilesRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/FilesRailIcon.vue';
 import FinancesRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/FinancesRailIcon.vue';
 import FriendsRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/FriendsRailIcon.vue';
+import GestionRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/GestionRailIcon.vue';
+import RecurrencesRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/RecurrencesRailIcon.vue';
 import SettingsRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/SettingsRailIcon.vue';
 import type { NavIcon, NavItem, NavLeaf } from '../types/navigation';
 
@@ -192,14 +192,14 @@ export function useShellNav() {
     ]);
 
     const recurrencesLeaves = computed<NavLeaf[]>(() => [
-        live(SHELL_NAV_IDS.recurrencesOverview, t('nav.items.recurrencesOverview'), RepeatIcon, RECURRENCES_PATHS.overview),
+        live(SHELL_NAV_IDS.recurrencesOverview, t('nav.items.recurrencesOverview'), RecurrencesRailIcon, RECURRENCES_PATHS.overview),
         live(SHELL_NAV_IDS.recurrencesExpenses, t('nav.items.recurrencesExpenses'), Receipt2Icon, RECURRENCES_PATHS.charges),
         live(SHELL_NAV_IDS.recurrencesIncomes, t('nav.items.recurrencesIncomes'), TrendingUpIcon, RECURRENCES_PATHS.revenus),
         live(SHELL_NAV_IDS.recurrencesUpcoming, t('nav.items.recurrencesUpcoming'), CalendarEventIcon, RECURRENCES_PATHS.echeances)
     ]);
 
     const gestionLeaves = computed<NavLeaf[]>(() => [
-        live(SHELL_NAV_IDS.files, t('nav.items.files'), FilesIcon, '/app/gestion/files'),
+        live(SHELL_NAV_IDS.files, t('nav.items.files'), FilesRailIcon, '/app/gestion/files'),
         live(SHELL_NAV_IDS.tiers, t('nav.items.tiers'), AddressBookIcon, '/app/gestion/tiers'),
         live(SHELL_NAV_IDS.categories, t('nav.items.categories'), TagsIcon, '/app/gestion/categories'),
         upcoming(SHELL_NAV_IDS.contracts, t('nav.items.contracts'), FileTextIcon)
@@ -242,8 +242,8 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardRailIcon, '/app'),
         upcoming(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarEventIcon),
         section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesRailIcon, financeLeaves.value),
-        section(SHELL_NAV_IDS.recurrences, t('nav.headers.recurrences'), RepeatIcon, recurrencesLeaves.value),
-        section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), FolderIcon, gestionLeaves.value),
+        section(SHELL_NAV_IDS.recurrences, t('nav.headers.recurrences'), RecurrencesRailIcon, recurrencesLeaves.value),
+        section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionRailIcon, gestionLeaves.value),
         section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), ChartPieIcon, planningLeaves.value),
         section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), BuildingIcon, wealthLeaves.value),
         section(SHELL_NAV_IDS.analytics, t('nav.headers.analytics'), ChartLineIcon, analyticsLeaves.value),
