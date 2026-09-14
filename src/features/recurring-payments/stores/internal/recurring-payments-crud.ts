@@ -592,6 +592,32 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         }
     }
 
+    async function linkDue(kind: RecurringKind, templatePublicId: string, duePublicId: string, transactionPublicId: string) {
+        beginActing();
+        clearError();
+        try {
+            assertCanWriteTemplate(kind, templatePublicId);
+            const txId = transactionPublicId.trim();
+            if (!txId) throw new AppError(RECURRING_NOT_FOUND_MESSAGE, 400);
+            const body = { transactionPublicId: txId };
+            const due =
+                kind === 'expense'
+                    ? await recurringExpensesApi.linkDue(templatePublicId, duePublicId, body)
+                    : await recurringIncomesApi.linkDue(templatePublicId, duePublicId, body);
+            upsertDue(kind, templatePublicId, due);
+            const template = kind === 'expense' ? await getExpense(templatePublicId, true) : await getIncome(templatePublicId, true);
+            await loadDues(kind, templatePublicId, { force: true }).catch(() => undefined);
+            await refreshLinkedFinance(template.accountPublicId);
+            return due;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
     async function skipDue(kind: RecurringKind, templatePublicId: string, duePublicId: string) {
         beginActing();
         clearError();
@@ -735,6 +761,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         deleteIncome,
         loadDues,
         confirmDue,
+        linkDue,
         skipDue,
         attachExpenseFile,
         detachExpenseFile,

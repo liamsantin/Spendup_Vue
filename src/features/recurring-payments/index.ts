@@ -10,6 +10,7 @@ export {
     formatPlannedAmount,
     displayDueStatus,
     isDueOpen,
+    isDueLinkable,
     isDueSettled,
     dueAfterLinkedTransactionRemoved,
     isExpenseTemplate,
@@ -43,6 +44,7 @@ export type {
     RecurringExpenseFrequency,
     RecurringIncomeFrequency,
     ConfirmDueBody,
+    LinkDueBody,
     ListRecurringTemplatesQuery
 } from '@/features/recurring-payments/types';
 export {
@@ -55,7 +57,9 @@ export {
 } from '@/features/recurring-payments/types';
 export { RECURRENCES_BASE, RECURRENCES_PATHS, recurrencesPathForTab, recurrencesTabFromPath } from '@/features/recurring-payments/paths';
 export type { RecurrenceTab } from '@/features/recurring-payments/paths';
+export { isTransactionLinkableToRecurrence, isTransactionLinkedToRecurrence } from '@/features/recurring-payments/link-transactions';
 export { default as RecurringTemplatesDirectory } from '@/features/recurring-payments/components/RecurringTemplatesDirectory.vue';
 export { default as RecurringUpcomingPanel } from '@/features/recurring-payments/components/RecurringUpcomingPanel.vue';
 export { default as RecurringTemplateFormModal } from '@/features/recurring-payments/components/modals/RecurringTemplateFormModal.vue';
 export { default as RecurringTemplateDetailModal } from '@/features/recurring-payments/components/modals/RecurringTemplateDetailModal.vue';
+export { default as RecurringLinkTransactionsModal } from '@/features/recurring-payments/components/modals/RecurringLinkTransactionsModal.vue';

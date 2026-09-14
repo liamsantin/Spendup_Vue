@@ -12,6 +12,7 @@ const expensesApi = vi.hoisted(() => ({
     remove: vi.fn(),
     listDues: vi.fn(),
     confirmDue: vi.fn(),
+    linkDue: vi.fn(),
     skipDue: vi.fn(),
     attachFile: vi.fn(),
     detachFile: vi.fn()
@@ -25,6 +26,7 @@ const incomesApi = vi.hoisted(() => ({
     remove: vi.fn(),
     listDues: vi.fn(),
     confirmDue: vi.fn(),
+    linkDue: vi.fn(),
     skipDue: vi.fn()
 }));
 

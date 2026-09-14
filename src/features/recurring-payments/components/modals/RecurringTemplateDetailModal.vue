@@ -2,7 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { CalendarEventIcon, CheckIcon, EyeIcon, PaperclipIcon } from 'vue-tabler-icons';
+import { CalendarEventIcon, CheckIcon, EyeIcon, PaperclipIcon, PlusIcon } from 'vue-tabler-icons';
 import AppAccordion from '@/components/shared/accordion/AppAccordion.vue';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
@@ -15,11 +15,13 @@ import { fileSizeParts, isQuotaExceededMessage, wouldExceedQuota } from '@/featu
 import { validatePdfFile } from '@/features/files/validate-upload';
 import type { FileDto } from '@/features/files/types';
 import RecurringDueConfirmModal from '@/features/recurring-payments/components/modals/RecurringDueConfirmModal.vue';
+import RecurringLinkTransactionsModal from '@/features/recurring-payments/components/modals/RecurringLinkTransactionsModal.vue';
 import {
     displayDueStatus,
     formatCalendarDate,
     formatPlannedAmount,
     isDueOpen,
+    isDueLinkable,
     isDueSettled,
     groupDuesForDetail,
     isExpenseTemplate
@@ -65,6 +67,7 @@ const txTarget = ref<Transaction | null>(null);
 const activeTab = ref<'dues' | 'attachments'>('dues');
 const linkedTransactions = ref<Transaction[]>([]);
 const loadingLinkedTx = ref(false);
+const linkOpen = ref(false);
 
 const attachedFiles = computed(() => expense.value?.files ?? []);
 const linkedTxFileGroups = computed(() => groupTransactionsWithFiles(linkedTransactions.value));
@@ -118,6 +121,8 @@ const account = computed(() =>
     template.value ? (accountsStore.accounts.find((item) => item.publicId === template.value!.accountPublicId) ?? null) : null
 );
 const canConfirm = computed(() => canConfirmRecurringOnAccount(account.value));
+const linkableDues = computed(() => dues.value.filter((due) => isDueLinkable(due, props.kind)));
+const canLinkTransactions = computed(() => canConfirm.value && linkableDues.value.length > 0);
 
 const confirmOpen = computed({
     get: () => !!confirmDue.value,
@@ -487,10 +492,28 @@ function seeRelatedTransactions() {
                 <EyeIcon :size="16" stroke-width="1.6" />
                 {{ t('recurrencesPage.detail.seeTransactions') }}
             </button>
+            <button
+                v-if="canLinkTransactions"
+                type="button"
+                class="su-btn"
+                :disabled="store.acting"
+                @click="linkOpen = true"
+            >
+                <PlusIcon :size="16" stroke-width="1.6" />
+                {{ t('recurrencesPage.actions.addTransactions') }}
+            </button>
             <button v-if="canConfirm" type="button" class="su-btn" @click="emit('edit')">{{ t('recurrencesPage.actions.edit') }}</button>
             <button type="button" class="su-btn su-btn--ink" @click="close">{{ t('common.close') }}</button>
         </template>
     </AppModalTabs>
+
+    <RecurringLinkTransactionsModal
+        v-model="linkOpen"
+        :kind="kind"
+        :template="template"
+        :dues="dues"
+        @linked="loadDetail"
+    />
 
     <RecurringDueConfirmModal
         v-model="confirmOpen"

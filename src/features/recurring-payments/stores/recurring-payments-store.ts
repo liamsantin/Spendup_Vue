@@ -73,6 +73,7 @@ export const useRecurringPaymentsStore = defineStore('recurringPayments', () => 
         deleteIncome: crud.deleteIncome,
         loadDues: crud.loadDues,
         confirmDue: crud.confirmDue,
+        linkDue: crud.linkDue,
         skipDue: crud.skipDue,
         attachExpenseFile: crud.attachExpenseFile,
         detachExpenseFile: crud.detachExpenseFile,

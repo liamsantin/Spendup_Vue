@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { displayDueStatus, groupDuesForDetail, isDueOpen, sortUpcomingDueRows, todayLocalYmd } from '@/features/recurring-payments/format';
+import { displayDueStatus, groupDuesForDetail, isDueLinkable, isDueOpen, sortUpcomingDueRows, todayLocalYmd } from '@/features/recurring-payments/format';
 
 describe('recurring format', () => {
     it('marque en retard une due prévue dont la date est passée', () => {
@@ -25,6 +25,14 @@ describe('recurring format', () => {
     it('détecte une due confirmable', () => {
         expect(isDueOpen({ status: 'prevue', scheduledAt: todayLocalYmd(), transactionPublicId: null }, 'expense')).toBe(true);
         expect(isDueOpen({ status: 'payee', scheduledAt: todayLocalYmd(), transactionPublicId: 'tx-1' }, 'expense')).toBe(false);
+    });
+
+    it('n’autorise le lien TX que pour les dues déjà échues', () => {
+        const now = new Date('2026-09-13T12:00:00');
+        expect(isDueLinkable({ status: 'prevue', scheduledAt: '2026-09-13', transactionPublicId: null }, 'expense', now)).toBe(true);
+        expect(isDueLinkable({ status: 'prevue', scheduledAt: '2026-09-01', transactionPublicId: null }, 'expense', now)).toBe(true);
+        expect(isDueLinkable({ status: 'prevue', scheduledAt: '2026-10-01', transactionPublicId: null }, 'expense', now)).toBe(false);
+        expect(isDueLinkable({ status: 'payee', scheduledAt: '2026-09-01', transactionPublicId: 'tx-1' }, 'expense', now)).toBe(false);
     });
 
     it('trie les échéances à venir par date, nom ou montant', () => {

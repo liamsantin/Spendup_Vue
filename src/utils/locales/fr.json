@@ -731,7 +731,8 @@
             "delete": "Supprimer",
             "confirmDue": "Confirmer",
             "skipDue": "Ignorer",
-            "openTransaction": "Voir la transaction"
+            "openTransaction": "Voir la transaction",
+            "addTransactions": "Ajouter des transactions"
         },
         "list": {
             "nextDue": "Prochaine échéance le {date}",
@@ -753,6 +754,17 @@
                 "attachments": "Justificatifs"
             },
             "seeTransactions": "Voir les transactions liées"
+        },
+        "linkTransactions": {
+            "title": "Lier une transaction",
+            "subtitle": "Choisissez une transaction manuelle, puis une échéance ouverte.",
+            "pickTransaction": "Transaction",
+            "pickDue": "Échéance",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune transaction manuelle à lier sur ce compte.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "emptyDues": "Aucune échéance ouverte.",
+            "confirm": "Lier"
         },
         "deleteModal": {
             "expenseTitle": "Supprimer cette charge ?",

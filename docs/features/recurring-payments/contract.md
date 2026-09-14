@@ -23,13 +23,17 @@ Auth Bearer ou cookie `spendup_access`. Enveloppe `{ success, message, result }`
 
 ### Charges `/api/recurring-expenses`
 
-GET liste (`isActive`, `accountPublicId`, `from`/`to` sur **`nextDueDate`**) · GET détail (`upcomingDues` + `files`) · POST · PUT **état complet** · DELETE 204 · GET `/{id}/dues` · POST confirm / skip · POST/DELETE files.
+GET liste (`isActive`, `accountPublicId`, `from`/`to` sur **`nextDueDate`**) · GET détail (`upcomingDues` + `files`) · POST · PUT **état complet** · DELETE 204 · GET `/{id}/dues` · POST confirm / skip / **link** · POST/DELETE files.
 
 ### Revenus `/api/recurring-incomes`
 
-Même CRUD + dues/confirm/skip. **Pas** de `/files`. Skip → `annule`. Confirm → TX `type: "revenu"`, due `encaisse`.
+Même CRUD + dues/confirm/skip/**link**. **Pas** de `/files`. Skip → `annule`. Confirm → TX `type: "revenu"`, due `encaisse`. Link → rattache une TX manuelle existante (pas de nouvelle TX).
 
 **Piège liste** : `GET` liste ne remplit **pas** `upcomingDues`. Calendrier : fetch les deux listes puis `/{id}/dues?from=&to=` si besoin de toutes les occurrences.
+
+### Link due (V1+)
+
+`POST …/dues/{duePublicId}/link` body `{ transactionPublicId }`. Due **ouverte**, TX **manuelle** du bon type sur le **même compte**, pas déjà liée. Effet : due `payee`/`encaisse`, TX `source: "recurrence"`, `actualAmount` / date = TX.
 
 ## Enums (camelCase C#)
 

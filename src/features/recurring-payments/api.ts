@@ -5,6 +5,7 @@ import {
     type ConfirmDueBody,
     type CreateRecurringExpensePayload,
     type CreateRecurringIncomePayload,
+    type LinkDueBody,
     type ListRecurringDuesQuery,
     type ListRecurringTemplatesQuery,
     type RecurringDue,
@@ -87,6 +88,13 @@ export const recurringExpensesApi = {
         ) as Promise<RecurringDue>;
     },
 
+    linkDue(publicId: string, duePublicId: string, body: LinkDueBody) {
+        return fetchWrapper.post(
+            `/api/recurring-expenses/${encodeURIComponent(publicId)}/dues/${encodeURIComponent(duePublicId)}/link`,
+            body
+        ) as Promise<RecurringDue>;
+    },
+
     skipDue(publicId: string, duePublicId: string) {
         return fetchWrapper.post(
             `/api/recurring-expenses/${encodeURIComponent(publicId)}/dues/${encodeURIComponent(duePublicId)}/skip`,
@@ -137,6 +145,13 @@ export const recurringIncomesApi = {
     confirmDue(publicId: string, duePublicId: string, body: ConfirmDueBody = {}) {
         return fetchWrapper.post(
             `/api/recurring-incomes/${encodeURIComponent(publicId)}/dues/${encodeURIComponent(duePublicId)}/confirm`,
+            body
+        ) as Promise<RecurringDue>;
+    },
+
+    linkDue(publicId: string, duePublicId: string, body: LinkDueBody) {
+        return fetchWrapper.post(
+            `/api/recurring-incomes/${encodeURIComponent(publicId)}/dues/${encodeURIComponent(duePublicId)}/link`,
             body
         ) as Promise<RecurringDue>;
     },

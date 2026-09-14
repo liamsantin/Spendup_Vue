@@ -1,7 +1,10 @@
 <script setup lang="ts">
 /**
- * Corps de page scrollable — perfect-scrollbar (desktop) / natif (mobile),
- * avec gutter à droite pour que le rail ne passe pas sur les cards.
+ * Corps de page scrollable — perfect-scrollbar (desktop) / natif (mobile).
+ *
+ * Pas de ResizeObserver → ps.update() : ça boucle (rail / sélection texte) et
+ * peut figer l’onglet. On rafraîchit au mount, au breakpoint, et via
+ * MutationObserver (ajout/retrait de contenu) coalescé en rAF.
  */
 defineOptions({ name: 'AppPageBodyScroll' });
 
@@ -18,42 +21,59 @@ const scrollbarOptions = {
     wheelPropagation: false
 };
 
-let resizeObserver: ResizeObserver | null = null;
+let mutationObserver: MutationObserver | null = null;
+let rafId = 0;
+let updating = false;
 
-async function refreshScrollbar() {
-    if (smAndDown.value) return;
-    await nextTick();
-    scrollbarRef.value?.ps?.update();
+function refreshScrollbar() {
+    if (smAndDown.value || updating) return;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        updating = true;
+        try {
+            scrollbarRef.value?.ps?.update();
+        } finally {
+            requestAnimationFrame(() => {
+                updating = false;
+            });
+        }
+    });
 }
 
-onMounted(() => {
+function bindContentObserver() {
+    mutationObserver?.disconnect();
+    mutationObserver = null;
     const el = contentRef.value;
-    if (el && typeof ResizeObserver !== 'undefined') {
-        resizeObserver = new ResizeObserver(() => {
-            void refreshScrollbar();
-        });
-        resizeObserver.observe(el);
-    }
-    void refreshScrollbar();
+    if (!el || smAndDown.value || typeof MutationObserver === 'undefined') return;
+    mutationObserver = new MutationObserver(() => {
+        refreshScrollbar();
+    });
+    mutationObserver.observe(el, { childList: true, subtree: true });
+}
+
+onMounted(async () => {
+    await nextTick();
+    bindContentObserver();
+    refreshScrollbar();
 });
 
 onBeforeUnmount(() => {
-    resizeObserver?.disconnect();
-    resizeObserver = null;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = 0;
+    mutationObserver?.disconnect();
+    mutationObserver = null;
 });
 
 watch(smAndDown, async (mobile) => {
-    if (mobile) return;
-    await nextTick();
-    const el = contentRef.value;
-    if (el && typeof ResizeObserver !== 'undefined') {
-        resizeObserver?.disconnect();
-        resizeObserver = new ResizeObserver(() => {
-            void refreshScrollbar();
-        });
-        resizeObserver.observe(el);
+    if (mobile) {
+        mutationObserver?.disconnect();
+        mutationObserver = null;
+        return;
     }
-    void refreshScrollbar();
+    await nextTick();
+    bindContentObserver();
+    refreshScrollbar();
 });
 
 defineExpose({ refreshScrollbar });

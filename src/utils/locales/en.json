@@ -731,7 +731,8 @@
             "delete": "Delete",
             "confirmDue": "Confirm",
             "skipDue": "Skip",
-            "openTransaction": "Open transaction"
+            "openTransaction": "Open transaction",
+            "addTransactions": "Add transactions"
         },
         "list": {
             "nextDue": "Next due {date}",
@@ -753,6 +754,17 @@
                 "attachments": "Attachments"
             },
             "seeTransactions": "View linked transactions"
+        },
+        "linkTransactions": {
+            "title": "Link a transaction",
+            "subtitle": "Pick a manual transaction, then an open due.",
+            "pickTransaction": "Transaction",
+            "pickDue": "Due",
+            "searchPlaceholder": "Search a transaction",
+            "empty": "No manual transaction to link on this account.",
+            "emptyFiltered": "No transaction matches this search.",
+            "emptyDues": "No open due.",
+            "confirm": "Link"
         },
         "deleteModal": {
             "expenseTitle": "Delete this recurring expense?",

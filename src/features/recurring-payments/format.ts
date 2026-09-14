@@ -92,6 +92,20 @@ export function isDueOpen(
     return (RECURRING_INCOME_OPEN_DUE_STATUSES as readonly string[]).includes(status);
 }
 
+/**
+ * Due éligible au `POST …/link` : ouverte et déjà échue (aujourd’hui ou avant).
+ * Les échéances futures restent à confirmer / lier plus tard.
+ */
+export function isDueLinkable(
+    due: Pick<RecurringDue, 'status' | 'scheduledAt' | 'transactionPublicId'>,
+    kind: RecurringKind,
+    now = new Date()
+): boolean {
+    if (!isDueOpen(due, kind, now)) return false;
+    if (!isValidYmd(due.scheduledAt)) return false;
+    return due.scheduledAt.trim() <= todayLocalYmd(now);
+}
+
 export function isDueSettled(due: Pick<RecurringDue, 'status' | 'transactionPublicId'>, kind: RecurringKind): boolean {
     if (!due.transactionPublicId) return false;
     return kind === 'expense' ? due.status === 'payee' : due.status === 'encaisse' || due.status === 'partiel';

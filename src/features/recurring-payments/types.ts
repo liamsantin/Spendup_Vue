@@ -169,6 +169,11 @@ export type ConfirmDueBody = {
     notes?: string | null;
 };
 
+/** Lie une TX manuelle existante à une échéance ouverte (1 TX ↔ 1 due). */
+export type LinkDueBody = {
+    transactionPublicId: string;
+};
+
 export type AttachRecurringFilePayload = {
     filePublicId: string;
 };
