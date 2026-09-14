@@ -40,7 +40,7 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
             :is="tag"
             v-bind="attrs"
             class="item"
-            :class="{ 'is-open': open, 'is-disabled': item.disabled }"
+            :class="{ 'is-open': open, 'is-disabled': item.disabled, 'has-children': hasChildren }"
             :title="expanded ? undefined : item.label"
             :aria-expanded="hasChildren ? !!open : undefined"
             :aria-controls="hasChildren ? subId : undefined"
@@ -142,7 +142,9 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
     /* les icônes rail gardent leur accent aligné sur la couleur du texte */
     --rail-icon-tone-stroke: currentColor;
     /* le survol ne joue que sur transform : l'icône grossit sans quitter son centre */
-    transition: transform 0.35s var(--spring);
+    transition:
+        transform 0.35s var(--spring),
+        color 0.25s var(--ease);
 }
 .item__icon :deep(svg) {
     display: block;
@@ -150,6 +152,16 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
 }
 .item:hover .item__icon {
     transform: scale(1.08);
+}
+/*
+ * Bold Duotone Solar : la grande surface = --solar-secondary-color,
+ * les détails (moins de surface) = color / currentColor.
+ * Au hover parent : primary sur la petite surface uniquement.
+ */
+.item.has-children:not(.is-open):hover .item__icon {
+    color: rgb(var(--v-theme-primary));
+    --solar-secondary-color: var(--ink-soft);
+    --solar-secondary-opacity: 0.22;
 }
 .item__dot {
     position: absolute;
