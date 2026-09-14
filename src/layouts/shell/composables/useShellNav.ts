@@ -36,6 +36,7 @@ import {
     RecurrencesExpensesNavIcon,
     RecurrencesIncomesNavIcon,
     RecurrencesNavIcon,
+    RecurrencesOverviewNavIcon,
     RecurrencesUpcomingNavIcon,
     SecurityNavIcon,
     SettingsNavIcon,
@@ -194,7 +195,7 @@ export function useShellNav() {
     ]);
 
     const recurrencesLeaves = computed<NavLeaf[]>(() => [
-        live(SHELL_NAV_IDS.recurrencesOverview, t('nav.items.recurrencesOverview'), RecurrencesNavIcon, RECURRENCES_PATHS.overview),
+        live(SHELL_NAV_IDS.recurrencesOverview, t('nav.items.recurrencesOverview'), RecurrencesOverviewNavIcon, RECURRENCES_PATHS.overview),
         live(SHELL_NAV_IDS.recurrencesExpenses, t('nav.items.recurrencesExpenses'), RecurrencesExpensesNavIcon, RECURRENCES_PATHS.charges),
         live(SHELL_NAV_IDS.recurrencesIncomes, t('nav.items.recurrencesIncomes'), RecurrencesIncomesNavIcon, RECURRENCES_PATHS.revenus),
         live(SHELL_NAV_IDS.recurrencesUpcoming, t('nav.items.recurrencesUpcoming'), RecurrencesUpcomingNavIcon, RECURRENCES_PATHS.echeances)
