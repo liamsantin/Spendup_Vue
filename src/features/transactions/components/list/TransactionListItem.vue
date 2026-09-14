@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ArrowDownLeftIcon, ArrowUpRightIcon, ArrowsExchangeIcon, PaperclipIcon, PencilIcon, TrashIcon } from 'vue-tabler-icons';
+import { PaperclipIcon, PencilIcon, TrashIcon } from 'vue-tabler-icons';
+import { CircleBottomDownIcon } from '@solar-icons/vue/line-duotone/circle-bottom-down';
+import { CircleBottomUpIcon } from '@solar-icons/vue/line-duotone/circle-bottom-up';
+import { RoundTransferHorizontalIcon } from '@solar-icons/vue/line-duotone/round-transfer-horizontal';
 import { useAuthStore } from '@/features/auth';
 import { UserPhotoAvatar } from '@/features/friends';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
@@ -40,10 +43,10 @@ const categoriesStore = useCategoriesStore();
 const tiersStore = useTiersStore();
 
 const typeIcon = computed(() => {
-    const map: Record<TransactionType, typeof ArrowDownLeftIcon> = {
-        depense: ArrowDownLeftIcon,
-        revenu: ArrowUpRightIcon,
-        transfert: ArrowsExchangeIcon
+    const map: Record<TransactionType, typeof CircleBottomDownIcon> = {
+        depense: CircleBottomDownIcon,
+        revenu: CircleBottomUpIcon,
+        transfert: RoundTransferHorizontalIcon
     };
     return map[props.transaction.type];
 });
@@ -154,7 +157,7 @@ function onDoubleClick(event: MouseEvent) {
             class="su-person__avatar su-person__avatar--tile transaction-list-item__icon"
             :class="`transaction-list-item__icon--${typeColor}`"
         >
-            <component :is="typeIcon" size="20" stroke-width="2.4" />
+            <component :is="typeIcon" :size="20" />
         </span>
         <div class="su-person__meta">
             <p class="su-person__name">
