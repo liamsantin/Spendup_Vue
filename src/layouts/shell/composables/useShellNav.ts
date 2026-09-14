@@ -1,49 +1,51 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
-import {
-    AddressBookIcon,
-    AdjustmentsHorizontalIcon,
-    ArrowsExchangeIcon,
-    BellIcon,
-    BuildingBankIcon,
-    BuildingIcon,
-    CalendarEventIcon,
-    CarIcon,
-    ChartCandleIcon,
-    ChartLineIcon,
-    ChartPieIcon,
-    CreditCardIcon,
-    CrownIcon,
-    DatabaseExportIcon,
-    EyeOffIcon,
-    FileImportIcon,
-    FileTextIcon,
-    HomeHeartIcon,
-    HomeIcon,
-    LockIcon,
-    Receipt2Icon,
-    ReceiptTaxIcon,
-    ReportMoneyIcon,
-    ScaleIcon,
-    TagsIcon,
-    TargetIcon,
-    TrendingUpIcon,
-    UserCircleIcon,
-    UsersIcon,
-    WalletIcon
-} from 'vue-tabler-icons';
 import { useNotificationsStore } from '@/features/notifications';
 import { BUDGETS_PATHS } from '@/features/budgets/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
-import DashboardRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/DashboardRailIcon.vue';
-import FilesRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/FilesRailIcon.vue';
-import FinancesRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/FinancesRailIcon.vue';
-import FriendsRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/FriendsRailIcon.vue';
-import GestionRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/GestionRailIcon.vue';
-import RecurrencesRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/RecurrencesRailIcon.vue';
-import SettingsRailIcon from '@/layouts/full/vertical-sidebar/rail-icons/SettingsRailIcon.vue';
+import {
+    AccountNavIcon,
+    AccountsNavIcon,
+    AnalyticsNavIcon,
+    AssetsNavIcon,
+    BudgetsNavIcon,
+    CalendarNavIcon,
+    CategoriesNavIcon,
+    ContractsNavIcon,
+    DashboardNavIcon,
+    DebtsNavIcon,
+    FilesNavIcon,
+    FinancesNavIcon,
+    ForecastsNavIcon,
+    FriendsNavIcon,
+    GestionNavIcon,
+    GoalsNavIcon,
+    HouseholdNavIcon,
+    ImportNavIcon,
+    InvestmentsNavIcon,
+    NetworkNavIcon,
+    NotificationsNavIcon,
+    PaymentMethodsNavIcon,
+    PlanningNavIcon,
+    PreferencesNavIcon,
+    PrivacyNavIcon,
+    ProfileNavIcon,
+    RealEstateNavIcon,
+    RecurrencesExpensesNavIcon,
+    RecurrencesIncomesNavIcon,
+    RecurrencesNavIcon,
+    RecurrencesUpcomingNavIcon,
+    SecurityNavIcon,
+    SettingsNavIcon,
+    SubscriptionNavIcon,
+    TaxNavIcon,
+    TiersNavIcon,
+    TransactionsNavIcon,
+    WealthNavIcon,
+    WealthOverviewNavIcon
+} from '../solarNavIcons';
 import type { NavIcon, NavItem, NavLeaf } from '../types/navigation';
 
 export const SHELL_NAV_IDS = {
@@ -185,73 +187,73 @@ export function useShellNav() {
     }
 
     const financeLeaves = computed<NavLeaf[]>(() => [
-        live(SHELL_NAV_IDS.accounts, t('nav.items.accounts'), BuildingBankIcon, '/app/finances/comptes'),
-        live(SHELL_NAV_IDS.paymentMethods, t('nav.items.paymentMethods'), CreditCardIcon, '/app/finances/moyens-de-paiement'),
-        live(SHELL_NAV_IDS.transactions, t('nav.items.transactions'), ArrowsExchangeIcon, '/app/finances/transactions'),
-        upcoming(SHELL_NAV_IDS.import, t('nav.items.import'), FileImportIcon)
+        live(SHELL_NAV_IDS.accounts, t('nav.items.accounts'), AccountsNavIcon, '/app/finances/comptes'),
+        live(SHELL_NAV_IDS.paymentMethods, t('nav.items.paymentMethods'), PaymentMethodsNavIcon, '/app/finances/moyens-de-paiement'),
+        live(SHELL_NAV_IDS.transactions, t('nav.items.transactions'), TransactionsNavIcon, '/app/finances/transactions'),
+        upcoming(SHELL_NAV_IDS.import, t('nav.items.import'), ImportNavIcon)
     ]);
 
     const recurrencesLeaves = computed<NavLeaf[]>(() => [
-        live(SHELL_NAV_IDS.recurrencesOverview, t('nav.items.recurrencesOverview'), RecurrencesRailIcon, RECURRENCES_PATHS.overview),
-        live(SHELL_NAV_IDS.recurrencesExpenses, t('nav.items.recurrencesExpenses'), Receipt2Icon, RECURRENCES_PATHS.charges),
-        live(SHELL_NAV_IDS.recurrencesIncomes, t('nav.items.recurrencesIncomes'), TrendingUpIcon, RECURRENCES_PATHS.revenus),
-        live(SHELL_NAV_IDS.recurrencesUpcoming, t('nav.items.recurrencesUpcoming'), CalendarEventIcon, RECURRENCES_PATHS.echeances)
+        live(SHELL_NAV_IDS.recurrencesOverview, t('nav.items.recurrencesOverview'), RecurrencesNavIcon, RECURRENCES_PATHS.overview),
+        live(SHELL_NAV_IDS.recurrencesExpenses, t('nav.items.recurrencesExpenses'), RecurrencesExpensesNavIcon, RECURRENCES_PATHS.charges),
+        live(SHELL_NAV_IDS.recurrencesIncomes, t('nav.items.recurrencesIncomes'), RecurrencesIncomesNavIcon, RECURRENCES_PATHS.revenus),
+        live(SHELL_NAV_IDS.recurrencesUpcoming, t('nav.items.recurrencesUpcoming'), RecurrencesUpcomingNavIcon, RECURRENCES_PATHS.echeances)
     ]);
 
     const gestionLeaves = computed<NavLeaf[]>(() => [
-        live(SHELL_NAV_IDS.files, t('nav.items.files'), FilesRailIcon, '/app/gestion/files'),
-        live(SHELL_NAV_IDS.tiers, t('nav.items.tiers'), AddressBookIcon, '/app/gestion/tiers'),
-        live(SHELL_NAV_IDS.categories, t('nav.items.categories'), TagsIcon, '/app/gestion/categories'),
-        upcoming(SHELL_NAV_IDS.contracts, t('nav.items.contracts'), FileTextIcon)
+        live(SHELL_NAV_IDS.files, t('nav.items.files'), FilesNavIcon, '/app/gestion/files'),
+        live(SHELL_NAV_IDS.tiers, t('nav.items.tiers'), TiersNavIcon, '/app/gestion/tiers'),
+        live(SHELL_NAV_IDS.categories, t('nav.items.categories'), CategoriesNavIcon, '/app/gestion/categories'),
+        upcoming(SHELL_NAV_IDS.contracts, t('nav.items.contracts'), ContractsNavIcon)
     ]);
 
     const planningLeaves = computed<NavLeaf[]>(() => [
-        live(SHELL_NAV_IDS.budgets, t('nav.items.budgets'), WalletIcon, BUDGETS_PATHS.list),
-        upcoming(SHELL_NAV_IDS.goals, t('nav.items.goals'), TargetIcon)
+        live(SHELL_NAV_IDS.budgets, t('nav.items.budgets'), BudgetsNavIcon, BUDGETS_PATHS.list),
+        upcoming(SHELL_NAV_IDS.goals, t('nav.items.goals'), GoalsNavIcon)
     ]);
 
     const wealthLeaves = computed<NavLeaf[]>(() => [
-        upcoming(SHELL_NAV_IDS.wealthOverview, t('nav.items.wealthOverview'), ScaleIcon),
-        upcoming(SHELL_NAV_IDS.assets, t('nav.items.assets'), CarIcon),
-        upcoming(SHELL_NAV_IDS.investments, t('nav.items.investments'), ChartCandleIcon),
-        upcoming(SHELL_NAV_IDS.realEstate, t('nav.items.realEstate'), HomeIcon),
-        upcoming(SHELL_NAV_IDS.debts, t('nav.items.debts'), ReportMoneyIcon)
+        upcoming(SHELL_NAV_IDS.wealthOverview, t('nav.items.wealthOverview'), WealthOverviewNavIcon),
+        upcoming(SHELL_NAV_IDS.assets, t('nav.items.assets'), AssetsNavIcon),
+        upcoming(SHELL_NAV_IDS.investments, t('nav.items.investments'), InvestmentsNavIcon),
+        upcoming(SHELL_NAV_IDS.realEstate, t('nav.items.realEstate'), RealEstateNavIcon),
+        upcoming(SHELL_NAV_IDS.debts, t('nav.items.debts'), DebtsNavIcon)
     ]);
 
     const analyticsLeaves = computed<NavLeaf[]>(() => [
-        upcoming(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), TrendingUpIcon),
-        upcoming(SHELL_NAV_IDS.tax, t('nav.items.tax'), ReceiptTaxIcon)
+        upcoming(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), ForecastsNavIcon),
+        upcoming(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon)
     ]);
 
     const networkLeaves = computed<NavLeaf[]>(() => [
-        live(SHELL_NAV_IDS.friends, t('nav.items.friends'), UsersIcon, '/app/friends'),
-        upcoming(SHELL_NAV_IDS.household, t('nav.items.household'), HomeHeartIcon)
+        live(SHELL_NAV_IDS.friends, t('nav.items.friends'), FriendsNavIcon, '/app/friends'),
+        upcoming(SHELL_NAV_IDS.household, t('nav.items.household'), HouseholdNavIcon)
     ]);
 
     const settingsLeaves = computed<NavLeaf[]>(() => [
-        live(SHELL_NAV_IDS.profile, t('nav.items.profile'), UserCircleIcon, SETTINGS_PATHS.account),
-        live(SHELL_NAV_IDS.preferences, t('nav.items.preferences'), AdjustmentsHorizontalIcon, SETTINGS_PATHS.preferences),
-        live(SHELL_NAV_IDS.notificationSettings, t('nav.items.notificationSettings'), BellIcon, SETTINGS_PATHS.notifications),
-        live(SHELL_NAV_IDS.privacy, t('nav.items.privacy'), EyeOffIcon, SETTINGS_PATHS.privacy),
-        live(SHELL_NAV_IDS.security, t('nav.items.security'), LockIcon, SETTINGS_PATHS.security),
-        upcoming(SHELL_NAV_IDS.subscription, t('nav.items.subscription'), CrownIcon),
-        live(SHELL_NAV_IDS.account, t('nav.items.account'), DatabaseExportIcon, SETTINGS_PATHS.account)
+        live(SHELL_NAV_IDS.profile, t('nav.items.profile'), ProfileNavIcon, SETTINGS_PATHS.account),
+        live(SHELL_NAV_IDS.preferences, t('nav.items.preferences'), PreferencesNavIcon, SETTINGS_PATHS.preferences),
+        live(SHELL_NAV_IDS.notificationSettings, t('nav.items.notificationSettings'), NotificationsNavIcon, SETTINGS_PATHS.notifications),
+        live(SHELL_NAV_IDS.privacy, t('nav.items.privacy'), PrivacyNavIcon, SETTINGS_PATHS.privacy),
+        live(SHELL_NAV_IDS.security, t('nav.items.security'), SecurityNavIcon, SETTINGS_PATHS.security),
+        upcoming(SHELL_NAV_IDS.subscription, t('nav.items.subscription'), SubscriptionNavIcon),
+        live(SHELL_NAV_IDS.account, t('nav.items.account'), AccountNavIcon, SETTINGS_PATHS.account)
     ]);
 
     const primaryNav = computed<NavItem[]>(() => [
-        live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardRailIcon, '/app'),
-        upcoming(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarEventIcon),
-        section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesRailIcon, financeLeaves.value),
-        section(SHELL_NAV_IDS.recurrences, t('nav.headers.recurrences'), RecurrencesRailIcon, recurrencesLeaves.value),
-        section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionRailIcon, gestionLeaves.value),
-        section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), ChartPieIcon, planningLeaves.value),
-        section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), BuildingIcon, wealthLeaves.value),
-        section(SHELL_NAV_IDS.analytics, t('nav.headers.analytics'), ChartLineIcon, analyticsLeaves.value),
-        section(SHELL_NAV_IDS.network, t('nav.headers.network'), FriendsRailIcon, networkLeaves.value)
+        live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardNavIcon, '/app'),
+        upcoming(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarNavIcon),
+        section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesNavIcon, financeLeaves.value),
+        section(SHELL_NAV_IDS.recurrences, t('nav.headers.recurrences'), RecurrencesNavIcon, recurrencesLeaves.value),
+        section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionNavIcon, gestionLeaves.value),
+        section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), PlanningNavIcon, planningLeaves.value),
+        section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), WealthNavIcon, wealthLeaves.value),
+        section(SHELL_NAV_IDS.analytics, t('nav.headers.analytics'), AnalyticsNavIcon, analyticsLeaves.value),
+        section(SHELL_NAV_IDS.network, t('nav.headers.network'), NetworkNavIcon, networkLeaves.value)
     ]);
 
     const secondaryNav = computed<NavItem[]>(() => [
-        section(SHELL_NAV_IDS.settings, t('nav.headers.settings'), SettingsRailIcon, settingsLeaves.value)
+        section(SHELL_NAV_IDS.settings, t('nav.headers.settings'), SettingsNavIcon, settingsLeaves.value)
     ]);
 
     watch(

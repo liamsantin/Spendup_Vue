@@ -11,6 +11,7 @@ import 'vue3-perfect-scrollbar/style.css';
 import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 
 import { i18n } from '@/plugins/i18n';
+import { SolarIconsPlugin, solarIconsDefaults } from '@/plugins/solar-icons';
 import { registerDesktopDeepLinks } from '@/features/desktop';
 import { setNativeNotificationNavigate } from '@/features/notifications';
 import { isTauri } from '@/utils/helpers/platform-helpers';
@@ -21,6 +22,7 @@ app.use(createPinia());
 app.use(router);
 app.use(PerfectScrollbarPlugin);
 app.use(i18n);
+app.use(SolarIconsPlugin, solarIconsDefaults);
 app.directive('reveal', revealDirective);
 
 if (isTauri()) {

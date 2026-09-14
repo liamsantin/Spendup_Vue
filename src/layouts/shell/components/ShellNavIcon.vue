@@ -17,5 +17,5 @@ const iconComponent = computed(() => (typeof props.icon === 'string' ? null : pr
 
 <template>
     <BaseIcon v-if="iconName" :name="iconName" :size="size" />
-    <component v-else :is="iconComponent" :size="size" stroke-width="1.5" />
+    <component v-else :is="iconComponent" :size="size" />
 </template>

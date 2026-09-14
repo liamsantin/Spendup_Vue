@@ -1,146 +1,27 @@
 <script setup lang="ts">
 defineOptions({ name: 'FilesRailIcon' });
 
-import { ref } from 'vue';
-import RailIcon from './RailIcon.vue';
+import TwotoneIconShell from './TwotoneIconShell.vue';
 
-withDefaults(defineProps<{ size?: number }>(), { size: 26 });
-
-const playing = ref(false);
-
-function play() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    playing.value = false;
-    requestAnimationFrame(() => {
-        playing.value = true;
-    });
-}
-
-function stop() {
-    playing.value = false;
-}
+withDefaults(defineProps<{ size?: number }>(), { size: 24 });
 </script>
 
 <template>
-    <span class="files-rail-icon-hit" @mouseenter="play" @mouseleave="stop">
-        <RailIcon :size="size">
-            <svg
-                class="files-rail-icon"
-                :class="{ 'is-playing': playing }"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <!-- Feuille arrière (géométrie type Tabler Files) -->
+    <TwotoneIconShell :size="size">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path
+                class="icon-fill"
+                d="M8 4.5h5.2L17.5 8.8V18a1.5 1.5 0 0 1-1.5 1.5H8A1.5 1.5 0 0 1 6.5 18V6A1.5 1.5 0 0 1 8 4.5Z"
+            />
+
+            <g class="icon-stroke">
+                <path class="icon-detail icon-detail--back" d="M15.5 17.5v1.25A1.75 1.75 0 0 1 13.75 20.5H7.5" />
                 <path
-                    class="files-back"
-                    d="M16 17v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2"
-                    stroke="currentColor"
-                    stroke-width="1.5"
+                    d="M8 3.75h5.35L17.75 8.15V18A1.75 1.75 0 0 1 16 19.75H8A1.75 1.75 0 0 1 6.25 18V5.5A1.75 1.75 0 0 1 8 3.75Z"
                 />
-
-                <g class="files-front">
-                    <!-- Coin plié -->
-                    <path d="M15 3v4a1 1 0 0 0 1 1h4" stroke="currentColor" stroke-width="1.5" />
-                    <!-- Page avant -->
-                    <path
-                        d="M18 17h-7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4l5 5v7a2 2 0 0 1-2 2z"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                    />
-                    <!-- Lignes de contenu -->
-                    <path
-                        class="files-line files-line--accent files-line--a"
-                        d="M11.25 10.5h4.75"
-                        stroke-width="1.5"
-                    />
-                    <path class="files-line files-line--b" d="M11.25 13h5.25" stroke="currentColor" stroke-width="1.5" />
-                    <path
-                        class="files-line files-line--accent files-line--c"
-                        d="M11.25 15.5h3.75"
-                        stroke-width="1.5"
-                    />
-                </g>
-            </svg>
-        </RailIcon>
-    </span>
+                <path d="M13.35 3.75V7.4c0 .69.56 1.25 1.25 1.25h3.15" />
+                <path class="icon-detail icon-detail--lines" d="M9.25 11.25h5.5M9.25 13.75h5.5M9.25 16.25h3.75" />
+            </g>
+        </svg>
+    </TwotoneIconShell>
 </template>
-
-<style scoped lang="scss">
-.files-rail-icon-hit {
-    display: inline-flex;
-    line-height: 0;
-}
-
-.files-rail-icon {
-    display: block;
-    overflow: visible;
-}
-
-.files-line--accent {
-    stroke: rgb(var(--v-theme-primary));
-}
-
-.files-line {
-    transform-box: fill-box;
-    transform-origin: left center;
-}
-
-.files-rail-icon.is-playing {
-    .files-front {
-        animation: files-front-pop 0.65s cubic-bezier(0.34, 1.25, 0.64, 1) 1;
-    }
-
-    .files-back {
-        animation: files-back-pop 0.65s cubic-bezier(0.34, 1.25, 0.64, 1) 1;
-    }
-
-    .files-line--a {
-        animation: files-line-in 0.36s cubic-bezier(0.22, 1, 0.36, 1) 0.04s 1 both;
-    }
-
-    .files-line--b {
-        animation: files-line-in 0.36s cubic-bezier(0.22, 1, 0.36, 1) 0.11s 1 both;
-    }
-
-    .files-line--c {
-        animation: files-line-in 0.36s cubic-bezier(0.22, 1, 0.36, 1) 0.18s 1 both;
-    }
-}
-
-@keyframes files-front-pop {
-    0%,
-    100% {
-        transform: translate(0, 0);
-    }
-    45% {
-        transform: translate(0.7px, -0.85px);
-    }
-}
-
-@keyframes files-back-pop {
-    0%,
-    100% {
-        transform: translate(0, 0);
-    }
-    45% {
-        transform: translate(-0.65px, 0.8px);
-    }
-}
-
-@keyframes files-line-in {
-    from {
-        transform: scaleX(0.25);
-        opacity: 0;
-    }
-    to {
-        transform: scaleX(1);
-        opacity: 1;
-    }
-}
-</style>

@@ -1,25 +1,24 @@
 import type { Component } from 'vue';
-import {
-    AdjustmentsHorizontalIcon,
-    BellIcon,
-    BuildingBankIcon,
-    CreditCardIcon,
-    CrownIcon,
-    EyeOffIcon,
-    LayoutDashboardIcon,
-    AddressBookIcon,
-    LockIcon,
-    TagsIcon,
-    UserCircleIcon,
-    UsersIcon
-} from 'vue-tabler-icons';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
-import DashboardRailIcon from './rail-icons/DashboardRailIcon.vue';
-import FilesRailIcon from './rail-icons/FilesRailIcon.vue';
-import FriendsRailIcon from './rail-icons/FriendsRailIcon.vue';
-import GestionRailIcon from './rail-icons/GestionRailIcon.vue';
-import SettingsRailIcon from './rail-icons/SettingsRailIcon.vue';
-import FinancesRailIcon from './rail-icons/FinancesRailIcon.vue';
+import {
+    AccountsNavIcon,
+    CategoriesNavIcon,
+    DashboardNavIcon,
+    FilesNavIcon,
+    FinancesNavIcon,
+    FriendsNavIcon,
+    GestionNavIcon,
+    NetworkNavIcon,
+    NotificationsNavIcon,
+    PaymentMethodsNavIcon,
+    PreferencesNavIcon,
+    PrivacyNavIcon,
+    ProfileNavIcon,
+    SecurityNavIcon,
+    SettingsNavIcon,
+    SubscriptionNavIcon,
+    TiersNavIcon
+} from '@/layouts/shell/solarNavIcons';
 
 export const THEME_RAIL_WIDTH = 80;
 export const CONTENT_SIDEBAR_WIDTH = 250;
@@ -58,19 +57,19 @@ const sidebarThemes: sidebarTheme[] = [
     {
         id: 'general',
         title: 'nav.headers.general',
-        icon: DashboardRailIcon,
+        icon: DashboardNavIcon,
         match: (path) => path === '/app' || path === '/app/notifications' || path.startsWith('/app/notifications/'),
         items: [
             { header: 'nav.headers.general' },
             {
                 title: 'nav.items.dashboard',
-                icon: LayoutDashboardIcon,
+                icon: DashboardNavIcon,
                 to: '/app',
                 exact: true
             },
             {
                 title: 'nav.items.notifications',
-                icon: BellIcon,
+                icon: NotificationsNavIcon,
                 to: '/app/notifications',
                 chipColor: 'surface',
                 chipBgColor: 'primary'
@@ -80,14 +79,14 @@ const sidebarThemes: sidebarTheme[] = [
     {
         id: 'friends',
         title: 'nav.headers.friends',
-        icon: FriendsRailIcon,
+        icon: NetworkNavIcon,
         dividerBefore: true,
         match: (path) => path.startsWith('/app/friends'),
         items: [
             { header: 'nav.headers.friends' },
             {
                 title: 'nav.items.friends',
-                icon: UsersIcon,
+                icon: FriendsNavIcon,
                 to: '/app/friends'
             }
         ]
@@ -95,18 +94,18 @@ const sidebarThemes: sidebarTheme[] = [
     {
         id: 'finances',
         title: 'nav.headers.finances',
-        icon: FinancesRailIcon,
+        icon: FinancesNavIcon,
         match: (path) => path.startsWith('/app/finances'),
         items: [
             { header: 'nav.headers.finances' },
             {
                 title: 'nav.items.accounts',
-                icon: BuildingBankIcon,
+                icon: AccountsNavIcon,
                 to: '/app/finances/comptes'
             },
             {
                 title: 'nav.items.paymentMethods',
-                icon: CreditCardIcon,
+                icon: PaymentMethodsNavIcon,
                 to: '/app/finances/moyens-de-paiement'
             }
         ]
@@ -114,23 +113,23 @@ const sidebarThemes: sidebarTheme[] = [
     {
         id: 'gestion',
         title: 'nav.headers.gestion',
-        icon: GestionRailIcon,
+        icon: GestionNavIcon,
         match: (path) => path.startsWith('/app/gestion'),
         items: [
             { header: 'nav.headers.gestion' },
             {
                 title: 'nav.items.files',
-                icon: FilesRailIcon,
+                icon: FilesNavIcon,
                 to: '/app/gestion/files'
             },
             {
                 title: 'nav.items.categories',
-                icon: TagsIcon,
+                icon: CategoriesNavIcon,
                 to: '/app/gestion/categories'
             },
             {
                 title: 'nav.items.tiers',
-                icon: AddressBookIcon,
+                icon: TiersNavIcon,
                 to: '/app/gestion/tiers'
             }
         ]
@@ -138,39 +137,39 @@ const sidebarThemes: sidebarTheme[] = [
     {
         id: 'settings',
         title: 'nav.headers.settings',
-        icon: SettingsRailIcon,
+        icon: SettingsNavIcon,
         dividerBefore: true,
         match: (path) => path.startsWith('/app/parametres') || path.startsWith('/app/comptes'),
         items: [
             { header: 'nav.headers.settings' },
             {
                 title: 'nav.items.profile',
-                icon: UserCircleIcon,
+                icon: ProfileNavIcon,
                 to: SETTINGS_PATHS.account
             },
             {
                 title: 'nav.items.preferences',
-                icon: AdjustmentsHorizontalIcon,
+                icon: PreferencesNavIcon,
                 to: SETTINGS_PATHS.preferences
             },
             {
                 title: 'nav.items.notificationSettings',
-                icon: BellIcon,
+                icon: NotificationsNavIcon,
                 to: SETTINGS_PATHS.notifications
             },
             {
                 title: 'nav.items.privacy',
-                icon: EyeOffIcon,
+                icon: PrivacyNavIcon,
                 to: SETTINGS_PATHS.privacy
             },
             {
                 title: 'nav.items.security',
-                icon: LockIcon,
+                icon: SecurityNavIcon,
                 to: SETTINGS_PATHS.security
             },
             {
                 title: 'nav.items.subscription',
-                icon: CrownIcon,
+                icon: SubscriptionNavIcon,
                 to: SETTINGS_PATHS.subscription
             }
         ]

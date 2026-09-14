@@ -3,8 +3,7 @@ defineOptions({ name: 'ThemeRail' });
 
 import { useI18n } from 'vue-i18n';
 import { useDisplay } from 'vuetify';
-import LogoutRailIcon from './rail-icons/LogoutRailIcon.vue';
-import MenuRailIcon from './rail-icons/MenuRailIcon.vue';
+import { LogoutNavIcon, MenuNavIcon } from '@/layouts/shell/solarNavIcons';
 import { useAuthStore } from '@/features/auth';
 import { useSidebarNav } from './useSidebarNav';
 
@@ -26,7 +25,7 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
                 :aria-label="t('nav.toggleMenu')"
                 @click="toggleContentSidebar"
             >
-                <MenuRailIcon :size="26" />
+                <MenuNavIcon :size="26" />
             </v-btn>
         </div>
         <div class="theme-rail__themes" :class="{ 'theme-rail__themes--mobile': !lgAndUp }">
@@ -43,7 +42,7 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
                     :aria-pressed="theme.id === activeThemeId"
                     @click="selectTheme(theme.id)"
                 >
-                    <component :is="theme.icon" size="26" stroke-width="1.5" />
+                    <component :is="theme.icon" :size="26" />
                     <v-tooltip activator="parent" location="end">{{ t(theme.title) }}</v-tooltip>
                 </v-btn>
             </template>
@@ -58,7 +57,7 @@ const { themes, activeThemeId, selectTheme, toggleContentSidebar } = useSidebarN
             :aria-label="t('common.logout')"
             @click="authStore.logout()"
         >
-            <LogoutRailIcon :size="26" />
+            <LogoutNavIcon :size="26" />
             <v-tooltip activator="parent" location="end">{{ t('common.logout') }}</v-tooltip>
         </v-btn>
     </div>

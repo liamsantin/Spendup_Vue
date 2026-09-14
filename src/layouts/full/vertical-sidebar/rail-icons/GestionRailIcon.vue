@@ -1,131 +1,28 @@
 <script setup lang="ts">
 defineOptions({ name: 'GestionRailIcon' });
 
-import { ref } from 'vue';
-import RailIcon from './RailIcon.vue';
+import TwotoneIconShell from './TwotoneIconShell.vue';
 
-withDefaults(defineProps<{ size?: number }>(), { size: 26 });
-
-const playing = ref(false);
-
-function play() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    playing.value = false;
-    requestAnimationFrame(() => {
-        playing.value = true;
-    });
-}
-
-function stop() {
-    playing.value = false;
-}
+withDefaults(defineProps<{ size?: number }>(), { size: 24 });
 </script>
 
 <template>
-    <span class="gestion-rail-icon-hit" @mouseenter="play" @mouseleave="stop">
-        <RailIcon :size="size">
-            <svg
-                class="gestion-rail-icon"
-                :class="{ 'is-playing': playing }"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-            >
-                <!-- Tone 1 : dossier -->
+    <TwotoneIconShell :size="size">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path
+                class="icon-fill"
+                d="M4.5 8.75A1.5 1.5 0 0 1 6 7.25h3.2L10.85 8.75H18a1.5 1.5 0 0 1 1.5 1.5v8.25a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5V8.75Z"
+            />
+
+            <g class="icon-stroke">
                 <path
-                    class="gestion-folder"
-                    d="M4 8.25A2 2 0 0 1 6 6.25h3.4L11.15 8.25H18a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-10.5Z"
-                    stroke="currentColor"
-                    stroke-width="1.5"
+                    d="M4 8.35A1.85 1.85 0 0 1 5.85 6.5h3.35L11 8.35h7.15A1.85 1.85 0 0 1 20 10.2v8.05A1.85 1.85 0 0 1 18.15 20.1H5.85A1.85 1.85 0 0 1 4 18.25V8.35Z"
                 />
-
-                <!-- Tone 2 : fiche (couleur thème via rail-icon-tone) -->
-                <g class="gestion-sheet">
-                    <path
-                        class="rail-icon-tone"
-                        d="M8.5 18.75V12.4c0-.77.63-1.4 1.4-1.4h4.2c.77 0 1.4.63 1.4 1.4v6.35"
-                        stroke-width="1.5"
-                    />
-                    <path class="rail-icon-tone gestion-line gestion-line--a" d="M10.15 13.85h3.7" stroke-width="1.5" />
-                    <path class="rail-icon-tone gestion-line gestion-line--b" d="M10.15 16.15h2.6" stroke-width="1.5" />
+                <g class="icon-detail icon-detail--sheet">
+                    <path d="M8.75 18.6V12.15c0-.7.57-1.25 1.25-1.25h4c.7 0 1.25.55 1.25 1.25V18.6" />
+                    <path d="M10.35 13.6h3.3M10.35 15.85h2.35" />
                 </g>
-            </svg>
-        </RailIcon>
-    </span>
+            </g>
+        </svg>
+    </TwotoneIconShell>
 </template>
-
-<style scoped lang="scss">
-.gestion-rail-icon-hit {
-    display: inline-flex;
-    line-height: 0;
-}
-
-.gestion-rail-icon {
-    display: block;
-    overflow: visible;
-}
-
-.gestion-folder,
-.gestion-sheet {
-    transform-origin: 12px 14px;
-}
-
-.gestion-line {
-    transform-box: fill-box;
-    transform-origin: left center;
-}
-
-.gestion-rail-icon.is-playing {
-    .gestion-folder {
-        animation: gestion-folder-pop 0.65s cubic-bezier(0.34, 1.25, 0.64, 1) 1;
-    }
-
-    .gestion-sheet {
-        animation: gestion-sheet-pop 0.65s cubic-bezier(0.34, 1.25, 0.64, 1) 1;
-    }
-
-    .gestion-line--a {
-        animation: gestion-line-in 0.36s cubic-bezier(0.22, 1, 0.36, 1) 0.06s 1 both;
-    }
-
-    .gestion-line--b {
-        animation: gestion-line-in 0.36s cubic-bezier(0.22, 1, 0.36, 1) 0.14s 1 both;
-    }
-}
-
-@keyframes gestion-folder-pop {
-    0%,
-    100% {
-        transform: translate(0, 0);
-    }
-    45% {
-        transform: translate(0, 0.4px);
-    }
-}
-
-@keyframes gestion-sheet-pop {
-    0%,
-    100% {
-        transform: translate(0, 0);
-    }
-    45% {
-        transform: translate(0, -1.2px);
-    }
-}
-
-@keyframes gestion-line-in {
-    from {
-        transform: scaleX(0.2);
-        opacity: 0;
-    }
-    to {
-        transform: scaleX(1);
-        opacity: 1;
-    }
-}
-</style>
