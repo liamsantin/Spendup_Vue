@@ -7,9 +7,9 @@
 
 /* ── Sections parent (bold-duotone) ───────────────────────── */
 export { WalletIcon as FinancesNavIcon } from '@solar-icons/vue/bold-duotone/wallet';
-export { RestartIcon as RecurrencesNavIcon } from '@solar-icons/vue/bold-duotone/restart';
+export { RestartCircleIcon as RecurrencesNavIcon } from '@solar-icons/vue/bold-duotone/restart-circle';
 export { FolderWithFilesIcon as GestionNavIcon } from '@solar-icons/vue/bold-duotone/folder-with-files';
-export { PieChartIcon as PlanningNavIcon } from '@solar-icons/vue/bold-duotone/pie-chart';
+export { PieChart2Icon as PlanningNavIcon } from '@solar-icons/vue/bold-duotone/pie-chart-2';
 export { BuildingsIcon as WealthNavIcon } from '@solar-icons/vue/bold-duotone/buildings';
 export { GraphNewUpIcon as AnalyticsNavIcon } from '@solar-icons/vue/bold-duotone/graph-new-up';
 export { UsersGroupRoundedIcon as NetworkNavIcon } from '@solar-icons/vue/bold-duotone/users-group-rounded';
@@ -17,7 +17,7 @@ export { SettingsIcon as SettingsNavIcon } from '@solar-icons/vue/bold-duotone/s
 
 /* ── Entrées top-level & feuilles (line-duotone) ───────────── */
 export { Widget5Icon as DashboardNavIcon } from '@solar-icons/vue/line-duotone/widget-5';
-export { CalendarIcon as CalendarNavIcon } from '@solar-icons/vue/line-duotone/calendar';
+export { CalendarIcon as CalendarNavIcon } from '@solar-icons/vue/bold-duotone/calendar';
 export { Buildings2Icon as AccountsNavIcon } from '@solar-icons/vue/line-duotone/buildings-2';
 export { CardIcon as PaymentMethodsNavIcon } from '@solar-icons/vue/line-duotone/card';
 export { RoundTransferHorizontalIcon as TransactionsNavIcon } from '@solar-icons/vue/line-duotone/round-transfer-horizontal';
