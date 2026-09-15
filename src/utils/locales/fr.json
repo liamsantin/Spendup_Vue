@@ -1514,6 +1514,7 @@
             "account": "Aucune transaction sur ce compte.",
             "recurrence": "Aucune transaction pour cette récurrence.",
             "budget": "Aucune transaction pour ce budget.",
+            "budgetOut": "Aucune dépense à ajouter à cette enveloppe pour cette période.",
             "byType": "Aucune transaction de type « {type} ».",
             "filtered": "Aucune transaction ne correspond à cette recherche."
         },
@@ -1543,6 +1544,21 @@
             "allBudgets": "Tous les budgets",
             "from": "Du",
             "to": "Au"
+        },
+        "envelope": {
+            "title": "Enveloppe du budget",
+            "window": "{start} → {end}",
+            "dismiss": "Quitter le budget",
+            "scopeLabel": "Transactions de l’enveloppe",
+            "scopeIn": "Dans le budget",
+            "scopeOut": "Hors budget",
+            "add": "Ajouter à l’enveloppe",
+            "remove": "Retirer du budget",
+            "addedToast": "{name} : ajoutée au budget",
+            "unlinkModal": {
+                "title": "Retirer du budget ?",
+                "body": "Elle redeviendra sans catégorie et ne comptera plus dans ce budget."
+            }
         },
         "sort": {
             "dateDesc": "Date (récent → ancien)",

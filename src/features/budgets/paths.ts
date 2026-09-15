@@ -34,3 +34,9 @@ export function budgetLinkedTransactionsQuery(budget: {
     if (budget.categoryPublicId) query.category = budget.categoryPublicId;
     return query;
 }
+
+export type BudgetTransactionScope = 'in' | 'out';
+
+export function parseBudgetTransactionScope(raw: unknown): BudgetTransactionScope {
+    return raw === 'out' ? 'out' : 'in';
+}

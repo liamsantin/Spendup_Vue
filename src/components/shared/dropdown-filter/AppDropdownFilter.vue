@@ -97,4 +97,27 @@ function onReset() {
     background: rgba(180, 35, 24, 0.06);
     color: #9f2d23;
 }
+
+.app-dropdown-filter :deep(.app-select--active:not(.app-select--error) .app-select__control) {
+    border-color: rgb(var(--v-theme-primary));
+}
+
+.app-dropdown-filter :deep(.app-select--active:not(.app-select--error) .app-select__control:hover:not(:has(.app-select__input:disabled))),
+.app-dropdown-filter :deep(.app-select--active:not(.app-select--error) .app-select__control:focus-within),
+.app-dropdown-filter :deep(.app-select--active:not(.app-select--error) .app-select__control--open) {
+    border-color: rgb(var(--v-theme-primary));
+    box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.18);
+}
+
+.app-dropdown-filter :deep(.app-select--active:not(.app-select--error) .app-select__legend) {
+    color: rgb(var(--v-theme-primary));
+}
+
+.app-dropdown-filter :deep(.v-field--dirty .v-field__outline) {
+    color: rgb(var(--v-theme-primary));
+}
+
+.app-dropdown-filter :deep(.v-field--dirty.v-field--focused .v-field__outline) {
+    color: rgb(var(--v-theme-primary));
+}
 </style>

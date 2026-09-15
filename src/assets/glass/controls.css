@@ -212,6 +212,12 @@
     color: var(--ink);
 }
 
+.su-btn--tonal {
+    background: rgb(var(--v-theme-lightprimary));
+    color: rgb(var(--v-theme-primary));
+    box-shadow: none;
+}
+
 .su-btn--danger {
     color: #9f2d23;
     background: rgba(180, 35, 24, 0.06);

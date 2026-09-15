@@ -23,7 +23,8 @@ import {
 } from '@/features/transactions';
 import type { TransactionType } from '@/features/transactions';
 import { useAccountsStore } from '@/features/accounts';
-import { budgetLinkedTransactionsQuery, useBudgetsStore } from '@/features/budgets';
+import { budgetLinkedTransactionsQuery, parseBudgetTransactionScope, useBudgetsStore } from '@/features/budgets';
+import BudgetEnvelopeBanner from '@/features/budgets/components/BudgetEnvelopeBanner.vue';
 import { categorySelectItems, useCategoriesStore } from '@/features/categories';
 import { PAYMENT_METHOD_PAGE_SIZE_MAX, usePaymentMethodsStore } from '@/features/payment-methods';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
@@ -173,7 +174,7 @@ const filterBudgetId = computed({
     get: () => queryString('budget'),
     set: (value: string) => {
         if (!value) {
-            patchQuery({ budget: undefined });
+            patchQuery({ budget: undefined, budgetScope: undefined });
             return;
         }
         const budget = budgetsStore.findByPublicId(value);
@@ -187,7 +188,8 @@ const filterBudgetId = computed({
             type: next.type,
             from: next.from,
             to: next.to,
-            category: next.category
+            category: next.category,
+            budgetScope: undefined
         });
     }
 });
@@ -199,6 +201,19 @@ const filteredBudget = computed(() => {
         publicId: id,
         name: budgetsStore.findByPublicId(id)?.name ?? t('transactionsPage.unknownBudget')
     };
+});
+
+const envelopeBudget = computed(() => {
+    const id = filterBudgetId.value;
+    return id ? (budgetsStore.findByPublicId(id) ?? null) : null;
+});
+
+const envelopeScope = computed({
+    get: () => {
+        if (!envelopeBudget.value?.categoryPublicId) return 'in' as const;
+        return parseBudgetTransactionScope(queryString('budgetScope'));
+    },
+    set: (value: 'in' | 'out') => patchQuery({ budgetScope: value === 'out' ? 'out' : undefined })
 });
 
 const budgetItems = computed(() => {
@@ -312,6 +327,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
     const recurringIncomePublicId =
         'recurringIncomePublicId' in patch ? patch.recurringIncomePublicId : queryString('recurringIncomePublicId') || undefined;
     const budget = 'budget' in patch ? patch.budget : queryString('budget') || undefined;
+    const budgetScope = 'budgetScope' in patch ? patch.budgetScope : queryString('budgetScope') || undefined;
     const sort = 'sort' in patch ? patch.sort : queryString('sort') || undefined;
     const minAmount = 'minAmount' in patch ? patch.minAmount : queryString('minAmount') || undefined;
     const maxAmount = 'maxAmount' in patch ? patch.maxAmount : queryString('maxAmount') || undefined;
@@ -326,6 +342,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
     if (recurringExpensePublicId) next.recurringExpensePublicId = recurringExpensePublicId;
     if (recurringIncomePublicId) next.recurringIncomePublicId = recurringIncomePublicId;
     if (budget) next.budget = budget;
+    if (budget && budgetScope === 'out') next.budgetScope = 'out';
     if (sort && isTransactionSort(sort) && sort !== TRANSACTION_SORT_DEFAULT) next.sort = sort;
     if (minAmount) next.minAmount = minAmount;
     if (maxAmount) next.maxAmount = maxAmount;
@@ -348,6 +365,17 @@ function clearSearch() {
     patchQuery({ q: undefined });
 }
 
+function clearBudgetEnvelope() {
+    patchQuery({
+        budget: undefined,
+        budgetScope: undefined,
+        type: undefined,
+        from: undefined,
+        to: undefined,
+        category: undefined
+    });
+}
+
 function onCreate() {
     if (!canCreate.value || store.acting) return;
     timelineRef.value?.openCreate();
@@ -362,6 +390,7 @@ function resetFilters() {
         recurringExpensePublicId: undefined,
         recurringIncomePublicId: undefined,
         budget: undefined,
+        budgetScope: undefined,
         from: undefined,
         to: undefined,
         minAmount: undefined,
@@ -451,7 +480,7 @@ watch(
 
 <template>
     <AppPageShell :title="pageTitle" :subtitle="t('transactionsPage.subtitle')">
-        <template #tabs>
+        <template v-if="!filterBudgetId" #tabs>
             <nav class="su-tabs" :aria-label="t('transactionsPage.filters.type')">
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterType }" @click="filterType = ''">
                     {{ t('transactionsPage.filters.allTypes') }}
@@ -580,6 +609,13 @@ watch(
             </div>
         </template>
 
+        <BudgetEnvelopeBanner
+            v-if="envelopeBudget"
+            :budget="envelopeBudget"
+            :scope="envelopeScope"
+            @update:scope="envelopeScope = $event"
+            @dismiss="clearBudgetEnvelope"
+        />
         <TransactionsTimeline ref="timelineRef" />
     </AppPageShell>
 </template>

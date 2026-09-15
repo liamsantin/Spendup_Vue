@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { BUDGETS_PATHS, budgetDetailPath, budgetLinkedTransactionsQuery, budgetPublicIdFromPath } from '@/features/budgets/paths';
+import {
+    BUDGETS_PATHS,
+    budgetDetailPath,
+    budgetLinkedTransactionsQuery,
+    budgetPublicIdFromPath,
+    parseBudgetTransactionScope
+} from '@/features/budgets/paths';
 
 describe('budgets paths', () => {
     it('construit le détail et relit le publicId', () => {
@@ -38,5 +44,11 @@ describe('budgets paths', () => {
             from: '2026-01-01',
             to: '2026-12-31'
         });
+    });
+
+    it('lit le scope enveloppe', () => {
+        expect(parseBudgetTransactionScope('out')).toBe('out');
+        expect(parseBudgetTransactionScope('in')).toBe('in');
+        expect(parseBudgetTransactionScope(undefined)).toBe('in');
     });
 });

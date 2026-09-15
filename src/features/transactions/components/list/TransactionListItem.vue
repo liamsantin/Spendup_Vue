@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PaperclipIcon, PencilIcon, TrashIcon } from 'vue-tabler-icons';
+import { MinusIcon, PaperclipIcon, PencilIcon, PlusIcon, TrashIcon } from 'vue-tabler-icons';
 import { CircleBottomDownIcon } from '@solar-icons/vue/line-duotone/circle-bottom-down';
 import { CircleBottomUpIcon } from '@solar-icons/vue/line-duotone/circle-bottom-up';
 import { RoundTransferHorizontalIcon } from '@solar-icons/vue/line-duotone/round-transfer-horizontal';
@@ -29,11 +29,13 @@ const props = defineProps<{
     acting?: boolean;
     /** Relevés : afficher le sens du mouvement de ce compte (pas `movements[0]`). */
     statementAccountPublicId?: string | null;
+    envelopeAction?: 'add' | 'remove' | null;
 }>();
 
 const emit = defineEmits<{
     edit: [transaction: Transaction];
     delete: [transaction: Transaction];
+    envelope: [transaction: Transaction];
 }>();
 
 const { t, locale } = useI18n();
@@ -205,6 +207,21 @@ function onDoubleClick(event: MouseEvent) {
                 </span>
             </div>
             <template v-if="canWrite">
+                <button
+                    v-if="envelopeAction"
+                    type="button"
+                    class="su-orb"
+                    :disabled="acting"
+                    :aria-label="
+                        envelopeAction === 'add'
+                            ? t('transactionsPage.envelope.add')
+                            : t('transactionsPage.envelope.remove')
+                    "
+                    @click.stop="emit('envelope', transaction)"
+                >
+                    <PlusIcon v-if="envelopeAction === 'add'" :size="16" stroke-width="1.6" />
+                    <MinusIcon v-else :size="16" stroke-width="1.6" />
+                </button>
                 <button
                     type="button"
                     class="su-orb"

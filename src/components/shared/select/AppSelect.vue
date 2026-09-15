@@ -306,7 +306,8 @@ watch(open, (value) => {
             'app-select--disabled': disabled,
             'app-select--error': hasError,
             'app-select--float': floatLabel && !!label,
-            'app-select--open': open
+            'app-select--open': open,
+            'app-select--active': !isPlaceholderValue(modelValue)
         }"
     >
         <span v-if="floatLabel && label" class="app-select__legend">{{ label }}</span>

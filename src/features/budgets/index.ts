@@ -37,7 +37,8 @@ export type {
     UpdateBudgetPayload
 } from '@/features/budgets/types';
 export { BUDGET_PERIODES, BUDGET_CURRENCIES, BUDGET_NAME_MAX } from '@/features/budgets/types';
-export { BUDGETS_PATHS, BUDGETS_BASE, budgetDetailPath, budgetPublicIdFromPath, budgetLinkedTransactionsQuery } from '@/features/budgets/paths';
+export { BUDGETS_PATHS, BUDGETS_BASE, budgetDetailPath, budgetPublicIdFromPath, budgetLinkedTransactionsQuery, parseBudgetTransactionScope } from '@/features/budgets/paths';
+export type { BudgetTransactionScope } from '@/features/budgets/paths';
 export { default as BudgetsDirectory } from '@/features/budgets/components/BudgetsDirectory.vue';
 export { default as BudgetListItem } from '@/features/budgets/components/list/BudgetListItem.vue';
 export { default as BudgetFormModal } from '@/features/budgets/components/modals/BudgetFormModal.vue';
