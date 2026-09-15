@@ -134,16 +134,21 @@ function onActivate(event: MouseEvent) {
     gap: 12px;
     width: 100%;
     min-width: 0;
-    padding: 10px 10px;
+    padding: 12px 12px;
     box-sizing: border-box;
-    border-radius: 12px;
+    border-radius: var(--radius-surface);
     color: inherit;
     position: relative;
     z-index: 0;
+    background: var(--surface);
+    border: 1px solid var(--stroke);
+    backdrop-filter: var(--blur);
+    box-shadow: var(--shadow-rest);
     transition:
         transform 0.5s var(--spring),
         box-shadow 0.45s var(--ease),
-        background 0.3s var(--ease);
+        background 0.3s var(--ease),
+        border-color 0.3s var(--ease);
 }
 
 .budget-row--editable {
@@ -157,10 +162,16 @@ function onActivate(event: MouseEvent) {
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
     .budget-row:hover {
         z-index: 1;
-        transform: scale(1.012);
-        box-shadow:
-            0 1px 2px rgba(16, 16, 20, 0.04),
-            0 12px 28px -16px rgba(16, 16, 20, 0.18);
+        transform: scale(1.008);
+        box-shadow: var(--shadow-hover, var(--shadow-rest));
+    }
+}
+
+@media (max-width: 767px) {
+    .budget-row {
+        gap: 10px;
+        padding: 12px 10px;
+        border-radius: 16px;
     }
 }
 

@@ -948,6 +948,7 @@
             "addTransactions": "Add transactions",
             "removeTransactions": "Remove transactions",
             "filter": "Filter",
+            "search": "Search",
             "clearSearch": "Clear search"
         },
         "filters": {

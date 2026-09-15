@@ -193,10 +193,10 @@ if (!categoriesStore.initialized) {
                         class="su-btn budgets-search-btn budgets-search--mobile"
                         :class="{ 'is-active': searchOpen || !!searchInput }"
                         v-bind="menuProps"
-                        :aria-label="t('budgetsPage.searchPlaceholder')"
                         :aria-expanded="searchOpen"
                     >
                         <SearchIcon :size="16" stroke-width="1.6" />
+                        {{ t('budgetsPage.actions.search') }}
                     </button>
                 </template>
                 <v-sheet elevation="0" class="su-search su-search-pop">
@@ -231,7 +231,7 @@ if (!categoriesStore.initialized) {
                     :reset-disabled="!filterPeriode && !filterCategory"
                     @reset="resetFilters"
                 >
-                    <div class="pa-3 d-flex flex-column ga-3">
+                    <div class="pa-3 d-flex flex-column ga-3 budgets-filter-fields">
                         <AppSelect v-model="filterPeriode" :items="periodeItems" :label="t('budgetsPage.filters.periode')" hide-details />
                         <AppSelect
                             v-model="filterCategory"
@@ -254,13 +254,6 @@ if (!categoriesStore.initialized) {
 </template>
 
 <style scoped>
-.budgets-search-btn {
-    width: 34px;
-    min-width: 34px;
-    padding: 0;
-    border-radius: 50%;
-}
-
 .budgets-search-btn.is-active {
     color: rgb(var(--v-theme-primary));
     background: rgba(var(--v-theme-primary), 0.14);
@@ -277,6 +270,21 @@ if (!categoriesStore.initialized) {
 @media (min-width: 768px) {
     .budgets-search--mobile {
         display: none;
+    }
+}
+</style>
+
+<!-- Menu filtre téléporté hors du scoped : styles mobiles dédiés. -->
+<style>
+@media (max-width: 767px) {
+    .budgets-filter-fields .app-select__legend {
+        font-size: 11px;
+    }
+
+    .budgets-filter-fields .app-select__control,
+    .budgets-filter-fields .app-select__ghost,
+    .budgets-filter-fields .app-select__input {
+        font-size: 0.75rem;
     }
 }
 </style>

@@ -221,21 +221,19 @@ async function toggleActive(budget: Budget) {
         >
             <p>{{ emptyCopy }}</p>
         </div>
-        <div v-else class="su-stack">
-            <section class="su-surface budgets-directory__group">
-                <div :key="searchRevealKey" class="budgets-directory__list" :class="{ 'is-search-reveal': searchReveals }">
-                    <BudgetListItem
-                        v-for="(budget, index) in visibleItems"
-                        :key="budget.publicId"
-                        :budget="budget"
-                        :acting="store.acting"
-                        :style="{ '--i': index }"
-                        @edit="openDetail"
-                        @delete="requestDelete"
-                        @toggle-active="toggleActive"
-                    />
-                </div>
-            </section>
+        <div v-else class="budgets-directory">
+            <div :key="searchRevealKey" class="budgets-directory__list" :class="{ 'is-search-reveal': searchReveals }">
+                <BudgetListItem
+                    v-for="(budget, index) in visibleItems"
+                    :key="budget.publicId"
+                    :budget="budget"
+                    :acting="store.acting"
+                    :style="{ '--i': index }"
+                    @edit="openDetail"
+                    @delete="requestDelete"
+                    @toggle-active="toggleActive"
+                />
+            </div>
         </div>
 
         <BudgetFormModal v-model="createOpen" />
@@ -254,15 +252,29 @@ async function toggleActive(budget: Budget) {
 </template>
 
 <style scoped>
-.budgets-directory__group {
-    overflow: visible;
+.budgets-directory {
+    width: 100%;
+    min-width: 0;
 }
 
 .budgets-directory__list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 10px;
+    width: 100%;
     overflow: visible;
-    padding: 8px;
+    padding: 0;
+}
+
+@media (max-width: 767px) {
+    .budgets-directory {
+        /* Récupère le padding latéral du su-body pour maximiser la largeur. */
+        margin-inline: -8px;
+        width: calc(100% + 16px);
+    }
+
+    .budgets-directory__list {
+        gap: 8px;
+    }
 }
 </style>
