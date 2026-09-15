@@ -233,6 +233,13 @@ function envelopeActionFor(transaction: Transaction): 'add' | 'remove' | null {
     return envelopeScope.value === 'out' ? 'add' : 'remove';
 }
 
+const showUnlinkInForm = computed(() => {
+    const tx = editTarget.value;
+    if (!tx || !envelopeBudget.value?.categoryPublicId) return false;
+    if (envelopeScope.value !== 'in') return false;
+    return canWriteItem(tx);
+});
+
 async function applyEnvelopeCategory(transaction: Transaction, categoryPublicId: string): Promise<boolean> {
     const budget = envelopeBudget.value;
     if (!budget) return false;
@@ -295,7 +302,14 @@ async function undoAddToBudget() {
 async function confirmUnlink() {
     if (!unlinkTarget.value) return;
     const ok = await applyEnvelopeCategory(unlinkTarget.value, '');
-    if (ok) unlinkTarget.value = null;
+    if (ok) {
+        unlinkTarget.value = null;
+        editTarget.value = null;
+    }
+}
+
+function onUnlinkFromForm() {
+    if (editTarget.value) unlinkTarget.value = editTarget.value;
 }
 
 async function loadTimeline(force = false) {
@@ -488,7 +502,12 @@ async function confirmDelete() {
         </div>
 
         <TransactionFormModal v-model="createOpen" :default-account-public-id="filterAccountId" :default-type="filterType" />
-        <TransactionFormModal v-model="editOpen" :transaction="editTarget" />
+        <TransactionFormModal
+            v-model="editOpen"
+            :transaction="editTarget"
+            :show-unlink-from-budget="showUnlinkInForm"
+            @unlink="onUnlinkFromForm"
+        />
 
         <AppConfirmationModal
             v-model="deleteOpen"

@@ -1554,6 +1554,7 @@
             "scopeOut": "Hors budget",
             "add": "Ajouter à l’enveloppe",
             "remove": "Retirer du budget",
+            "unlinkLink": "Délier la transaction",
             "addedToast": "{name} : ajoutée au budget",
             "unlinkModal": {
                 "title": "Retirer du budget ?",

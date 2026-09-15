@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { FileDescriptionIcon, PaperclipIcon, TagsIcon } from 'vue-tabler-icons';
+import { FileDescriptionIcon, PaperclipIcon, TagsIcon, UnlinkIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
@@ -46,11 +46,14 @@ const props = defineProps<{
     transaction?: Transaction | null;
     defaultAccountPublicId?: string | null;
     defaultType?: TransactionType | null;
+    /** Liste budget : afficher « Délier la transaction ». */
+    showUnlinkFromBudget?: boolean;
 }>();
 
 const emit = defineEmits<{
     'update:modelValue': [value: boolean];
     saved: [transaction: Transaction];
+    unlink: [];
 }>();
 
 const { t } = useI18n();
@@ -554,6 +557,16 @@ function onOpenAttachment(file: TransactionFile) {
                     :counterparty-hint="counterpartyHint"
                     :recurrence-planned-amount="recurrencePlannedAmount"
                 />
+                <button
+                    v-if="showUnlinkFromBudget"
+                    type="button"
+                    class="tx-form-modal__unlink"
+                    :disabled="store.acting"
+                    @click="emit('unlink')"
+                >
+                    <UnlinkIcon :size="16" stroke-width="1.6" />
+                    {{ t('transactionsPage.envelope.unlinkLink') }}
+                </button>
             </AppModalPanelScroll>
         </template>
 
@@ -573,6 +586,16 @@ function onOpenAttachment(file: TransactionFile) {
                     :category-hint="isSharedAccount ? t('transactionsPage.form.categoryPersonalHint') : null"
                     :tier-hint="tierHint"
                 />
+                <button
+                    v-if="showUnlinkFromBudget"
+                    type="button"
+                    class="tx-form-modal__unlink"
+                    :disabled="store.acting"
+                    @click="emit('unlink')"
+                >
+                    <UnlinkIcon :size="16" stroke-width="1.6" />
+                    {{ t('transactionsPage.envelope.unlinkLink') }}
+                </button>
             </AppModalPanelScroll>
         </template>
 
@@ -604,3 +627,33 @@ function onOpenAttachment(file: TransactionFile) {
 
     <TransactionFilePreviewModal v-model="previewOpen" :file="previewFile" />
 </template>
+
+<style scoped>
+.tx-form-modal__unlink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    margin: 20px 0 4px;
+    padding: 8px;
+    border: 0;
+    background: transparent;
+    color: rgba(159, 45, 35, 0.72);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 520;
+    letter-spacing: -0.01em;
+    text-align: center;
+    cursor: pointer;
+}
+
+.tx-form-modal__unlink:hover:not(:disabled) {
+    color: #9f2d23;
+}
+
+.tx-form-modal__unlink:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+</style>

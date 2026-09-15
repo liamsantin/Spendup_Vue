@@ -1554,6 +1554,7 @@
             "scopeOut": "Outside budget",
             "add": "Add to envelope",
             "remove": "Remove from budget",
+            "unlinkLink": "Unlink transaction",
             "addedToast": "{name}: added to the budget",
             "unlinkModal": {
                 "title": "Remove from budget?",
