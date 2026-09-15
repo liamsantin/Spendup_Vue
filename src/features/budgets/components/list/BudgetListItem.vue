@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { DotsVerticalIcon, WalletIcon } from 'vue-tabler-icons';
+import { DotsVerticalIcon, PencilIcon, PlayerPauseIcon, PlayerPlayIcon, WalletIcon } from 'vue-tabler-icons';
 import {
     budgetBarWidth,
     budgetProgressTone,
@@ -112,13 +112,16 @@ function onActivate(event: MouseEvent) {
                     </button>
                 </template>
                 <v-sheet class="su-menu budget-actions-menu">
-                    <button type="button" class="su-btn su-btn--ink" :disabled="acting" @click="emit('toggleActive', budget)">
+                    <button type="button" class="su-btn su-btn--tonal" :disabled="acting" @click="emit('toggleActive', budget)">
+                        <PlayerPauseIcon v-if="budget.isActive" :size="16" stroke-width="1.6" />
+                        <PlayerPlayIcon v-else :size="16" stroke-width="1.6" />
                         {{ budget.isActive ? t('budgetsPage.actions.pause') : t('budgetsPage.actions.resume') }}
                     </button>
                     <button type="button" class="su-btn su-btn--ink" :disabled="acting" @click="emit('edit', budget)">
+                        <PencilIcon :size="16" stroke-width="1.6" />
                         {{ t('budgetsPage.actions.edit') }}
                     </button>
-                    <button type="button" class="su-btn su-btn--danger" :disabled="acting" @click="emit('delete', budget)">
+                    <button type="button" class="budget-actions-menu__delete" :disabled="acting" @click="emit('delete', budget)">
                         {{ t('budgetsPage.actions.delete') }}
                     </button>
                 </v-sheet>
@@ -331,11 +334,40 @@ function onActivate(event: MouseEvent) {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: min(180px, calc(100vw - 24px));
-    padding: 12px;
+    width: min(176px, calc(100vw - 32px));
+    /* Écrase le padding global .su-menu (8px 6px !important). */
+    padding: 12px !important;
 }
 
 .budget-actions-menu .su-btn {
     width: 100%;
+}
+
+.budget-actions-menu__delete {
+    appearance: none;
+    display: block;
+    width: 100%;
+    margin: 2px 0 0;
+    padding: 6px 4px;
+    border: 0;
+    background: transparent;
+    color: #e11d48;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.18s var(--ease, ease);
+}
+
+.budget-actions-menu__delete:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.budget-actions-menu__delete:hover:not(:disabled) {
+    color: #be123c;
+    transform: scale(1.06);
 }
 </style>
