@@ -129,7 +129,7 @@ const emit = defineEmits<{
     min-height: 0;
     width: 100%;
     overflow: hidden;
-    padding: 4px 4px 8px;
+    padding: 0 4px 8px;
 }
 
 .shell__content > :deep(.page-content) > * {

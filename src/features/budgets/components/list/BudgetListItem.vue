@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PencilIcon, PlayerPauseIcon, PlayerPlayIcon, TrashIcon, WalletIcon } from 'vue-tabler-icons';
+import { DotsVerticalIcon, WalletIcon } from 'vue-tabler-icons';
 import {
     budgetBarWidth,
     budgetProgressTone,
@@ -99,34 +99,30 @@ function onActivate(event: MouseEvent) {
             </p>
         </div>
         <div class="budget-row__actions" @click.stop>
-            <button
-                type="button"
-                class="su-orb"
-                :disabled="acting"
-                :aria-label="budget.isActive ? t('budgetsPage.actions.pause') : t('budgetsPage.actions.resume')"
-                @click="emit('toggleActive', budget)"
-            >
-                <PlayerPauseIcon v-if="budget.isActive" :size="16" stroke-width="1.6" />
-                <PlayerPlayIcon v-else :size="16" stroke-width="1.6" />
-            </button>
-            <button
-                type="button"
-                class="su-orb"
-                :disabled="acting"
-                :aria-label="t('budgetsPage.actions.edit')"
-                @click="emit('edit', budget)"
-            >
-                <PencilIcon :size="16" stroke-width="1.6" />
-            </button>
-            <button
-                type="button"
-                class="su-orb su-orb--danger"
-                :disabled="acting"
-                :aria-label="t('budgetsPage.actions.delete')"
-                @click="emit('delete', budget)"
-            >
-                <TrashIcon :size="16" stroke-width="1.6" />
-            </button>
+            <v-menu location="bottom end" :offset="8">
+                <template #activator="{ props: menuProps }">
+                    <button
+                        v-bind="menuProps"
+                        type="button"
+                        class="su-orb"
+                        :disabled="acting"
+                        :aria-label="t('common.more')"
+                    >
+                        <DotsVerticalIcon size="18" stroke-width="1.75" />
+                    </button>
+                </template>
+                <v-sheet class="su-menu budget-actions-menu">
+                    <button type="button" class="su-btn su-btn--ink" :disabled="acting" @click="emit('toggleActive', budget)">
+                        {{ budget.isActive ? t('budgetsPage.actions.pause') : t('budgetsPage.actions.resume') }}
+                    </button>
+                    <button type="button" class="su-btn su-btn--ink" :disabled="acting" @click="emit('edit', budget)">
+                        {{ t('budgetsPage.actions.edit') }}
+                    </button>
+                    <button type="button" class="su-btn su-btn--danger" :disabled="acting" @click="emit('delete', budget)">
+                        {{ t('budgetsPage.actions.delete') }}
+                    </button>
+                </v-sheet>
+            </v-menu>
         </div>
     </div>
 </template>
@@ -314,23 +310,21 @@ function onActivate(event: MouseEvent) {
 .budget-row__actions {
     display: flex;
     flex: none;
-    align-items: center;
+    align-items: flex-start;
     justify-content: flex-end;
-    gap: 4px;
     padding: 2px;
     margin: -2px;
 }
 
-@media (max-width: 600px) {
-    .budget-row {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
+.budget-actions-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(180px, calc(100vw - 24px));
+    padding: 12px;
+}
 
-    .budget-row__actions {
-        width: 100%;
-        justify-content: flex-start;
-        padding-left: 46px;
-    }
+.budget-actions-menu .su-btn {
+    width: 100%;
 }
 </style>

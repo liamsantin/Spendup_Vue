@@ -148,13 +148,22 @@
     overflow: visible;
     border-radius: 26px !important;
     animation: none;
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.95) inset,
+        0 8px 20px rgba(16, 16, 20, 0.16),
+        0 18px 40px -12px rgba(16, 16, 20, 0.28);
+}
+
+.su-search.su-search-pop .su-search__input {
+    font-size: 15px;
 }
 
 .su-search.su-search-pop:focus-within {
     border-color: rgba(var(--v-theme-primary), 0.5);
     box-shadow:
         0 0 0 4px rgba(var(--v-theme-primary), 0.14),
-        var(--shadow-overlay);
+        0 8px 20px rgba(16, 16, 20, 0.16),
+        0 18px 40px -12px rgba(16, 16, 20, 0.28);
 }
 
 .su-btn {
