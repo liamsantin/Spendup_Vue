@@ -275,13 +275,13 @@ function openRow(row: UpcomingRow) {
 }
 
 .recurring-upcoming-row__icon.is-expense {
-    background: rgba(var(--v-theme-error), 0.1);
-    color: rgb(var(--v-theme-error));
+    background: rgba(var(--amount-debit), 0.1);
+    color: rgb(var(--amount-debit));
 }
 
 .recurring-upcoming-row__icon.is-income {
-    background: rgba(var(--v-theme-success), 0.12);
-    color: rgb(var(--v-theme-success));
+    background: rgba(var(--amount-credit), 0.12);
+    color: rgb(var(--amount-credit));
 }
 
 .recurring-upcoming-row__meta {
@@ -323,13 +323,13 @@ function openRow(row: UpcomingRow) {
 }
 
 .recurring-upcoming-row__badge.is-expense {
-    background: rgba(var(--v-theme-error), 0.1);
-    color: rgb(var(--v-theme-error));
+    background: rgba(var(--amount-debit), 0.1);
+    color: rgb(var(--amount-debit));
 }
 
 .recurring-upcoming-row__badge.is-income {
-    background: rgba(var(--v-theme-success), 0.12);
-    color: rgb(var(--v-theme-success));
+    background: rgba(var(--amount-credit), 0.12);
+    color: rgb(var(--amount-credit));
 }
 
 .recurring-upcoming-row__sub {
@@ -351,10 +351,10 @@ function openRow(row: UpcomingRow) {
 }
 
 .recurring-upcoming-row__amount.is-debit {
-    color: rgb(var(--v-theme-error));
+    color: rgb(var(--amount-debit));
 }
 
 .recurring-upcoming-row__amount.is-credit {
-    color: rgb(var(--v-theme-success));
+    color: rgb(var(--amount-credit));
 }
 </style>

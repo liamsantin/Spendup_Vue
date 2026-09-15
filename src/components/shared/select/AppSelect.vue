@@ -31,7 +31,7 @@ const props = withDefaults(
         searchPlaceholder?: string;
         noResultsLabel?: string;
         searchMax?: number;
-        /** Affiche le `label` sur la bordure, comme un champ outlined Vuetify. */
+        /** Affiche toujours le `label` sur la bordure (même sans valeur). */
         floatLabel?: boolean;
     }>(),
     {
@@ -145,9 +145,13 @@ const showDetails = computed(() => {
     return props.persistentHint && !!props.hint;
 });
 
+const showsFloatLabel = computed(
+    () => !!props.label && (props.floatLabel || !isPlaceholderValue(props.modelValue))
+);
+
 const placeholder = computed(() => {
     if (typeof attrs.placeholder === 'string' && attrs.placeholder) return attrs.placeholder;
-    if (props.floatLabel) return props.searchPlaceholder || undefined;
+    if (showsFloatLabel.value) return props.searchPlaceholder || undefined;
     return props.searchPlaceholder || props.label || undefined;
 });
 
@@ -260,10 +264,41 @@ function onKeydown(event: KeyboardEvent) {
     }
 }
 
+let pointerDownOnControl = false;
+let openOnPointerDown = false;
+
+function focusInput() {
+    void nextTick(() => {
+        inputRef.value?.focus();
+        inputRef.value?.select();
+    });
+}
+
 function onFocus() {
-    if (props.disabled) return;
+    if (props.disabled || pointerDownOnControl) return;
     open.value = true;
     void nextTick(() => inputRef.value?.select());
+}
+
+function onControlPointerDown() {
+    if (props.disabled) return;
+    pointerDownOnControl = true;
+    openOnPointerDown = open.value;
+}
+
+function onControlClick() {
+    if (props.disabled) return;
+    pointerDownOnControl = false;
+    if (openOnPointerDown) {
+        open.value = false;
+        return;
+    }
+    open.value = true;
+    focusInput();
+}
+
+function onControlPointerUp() {
+    pointerDownOnControl = false;
 }
 
 watch(
@@ -305,12 +340,12 @@ watch(open, (value) => {
         :class="{
             'app-select--disabled': disabled,
             'app-select--error': hasError,
-            'app-select--float': floatLabel && !!label,
+            'app-select--float': showsFloatLabel,
             'app-select--open': open,
             'app-select--active': !isPlaceholderValue(modelValue)
         }"
     >
-        <span v-if="floatLabel && label" class="app-select__legend">{{ label }}</span>
+        <span v-if="showsFloatLabel" class="app-select__legend">{{ label }}</span>
         <v-menu
             v-model="open"
             :close-on-content-click="false"
@@ -327,7 +362,10 @@ watch(open, (value) => {
                     :class="{ 'app-select__control--open': open, 'app-select__control--placeholder': showsPlaceholder }"
                     v-bind="activatorProps"
                     tabindex="-1"
-                    @click="onFocus"
+                    @pointerdown="onControlPointerDown"
+                    @click="onControlClick"
+                    @pointerup="onControlPointerUp"
+                    @pointercancel="onControlPointerUp"
                 >
                     <div class="app-select__field">
                         <span v-if="completion && query" class="app-select__ghost" aria-hidden="true">

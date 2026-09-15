@@ -156,13 +156,13 @@ function onActivate(event: MouseEvent) {
 }
 
 .recurring-row__icon--expense {
-    background: rgba(var(--v-theme-error), 0.1);
-    color: rgb(var(--v-theme-error));
+    background: rgba(var(--amount-debit), 0.1);
+    color: rgb(var(--amount-debit));
 }
 
 .recurring-row__icon--income {
-    background: rgba(var(--v-theme-success), 0.12);
-    color: rgb(var(--v-theme-success));
+    background: rgba(var(--amount-credit), 0.12);
+    color: rgb(var(--amount-credit));
 }
 
 .recurring-row__meta {
@@ -206,13 +206,13 @@ function onActivate(event: MouseEvent) {
 }
 
 .recurring-row__badge.is-expense {
-    background: rgba(var(--v-theme-error), 0.1);
-    color: rgb(var(--v-theme-error));
+    background: rgba(var(--amount-debit), 0.1);
+    color: rgb(var(--amount-debit));
 }
 
 .recurring-row__badge.is-income {
-    background: rgba(var(--v-theme-success), 0.12);
-    color: rgb(var(--v-theme-success));
+    background: rgba(var(--amount-credit), 0.12);
+    color: rgb(var(--amount-credit));
 }
 
 .recurring-row__sub {
@@ -243,11 +243,11 @@ function onActivate(event: MouseEvent) {
 }
 
 .recurring-row__amount.is-debit {
-    color: rgb(var(--v-theme-error));
+    color: rgb(var(--amount-debit));
 }
 
 .recurring-row__amount.is-credit {
-    color: rgb(var(--v-theme-success));
+    color: rgb(var(--amount-credit));
 }
 
 @media (max-width: 600px) {

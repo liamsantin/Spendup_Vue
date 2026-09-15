@@ -759,11 +759,11 @@ function seeRelatedTransactions() {
 }
 
 .recurring-due-row__amount.is-debit {
-    color: rgb(var(--v-theme-error));
+    color: rgb(var(--amount-debit));
 }
 
 .recurring-due-row__amount.is-credit {
-    color: rgb(var(--v-theme-success));
+    color: rgb(var(--amount-credit));
 }
 
 .recurring-due-row__figures {
@@ -782,11 +782,11 @@ function seeRelatedTransactions() {
 }
 
 .recurring-due-row__delta.is-unfavorable {
-    color: rgb(var(--v-theme-error));
+    color: rgb(var(--amount-debit));
 }
 
 .recurring-due-row__delta.is-favorable {
-    color: rgb(var(--v-theme-success));
+    color: rgb(var(--amount-credit));
 }
 
 @media (max-width: 600px) {

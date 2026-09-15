@@ -19,6 +19,9 @@
     --thread: rgba(16, 16, 20, 0.16);
     --thread-node: rgba(16, 16, 20, 0.3);
     --accent: #ff5fa2;
+    /* Montants débit / crédit : moins saturés que error (#FA896B) et success (#13DEB9). */
+    --amount-debit: 195, 107, 102;
+    --amount-credit: 69, 143, 124;
 
     /* ── surfaces en verre ──────────────────────────────── */
     --surface: rgba(255, 255, 255, 0.62);

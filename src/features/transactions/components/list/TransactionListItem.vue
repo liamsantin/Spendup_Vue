@@ -282,13 +282,13 @@ function onDoubleClick(event: MouseEvent) {
 }
 
 .transaction-list-item__icon--error {
-    color: rgb(var(--v-theme-error));
-    background: rgba(var(--v-theme-error), 0.12);
+    color: rgb(var(--amount-debit));
+    background: rgba(var(--amount-debit), 0.12);
 }
 
 .transaction-list-item__icon--success {
-    color: rgb(var(--v-theme-success));
-    background: rgba(var(--v-theme-success), 0.12);
+    color: rgb(var(--amount-credit));
+    background: rgba(var(--amount-credit), 0.12);
 }
 
 .transaction-list-item__icon--primary {
@@ -310,11 +310,11 @@ function onDoubleClick(event: MouseEvent) {
 }
 
 .transaction-list-item__amount.is-debit {
-    color: rgb(var(--v-theme-error));
+    color: rgb(var(--amount-debit));
 }
 
 .transaction-list-item__amount.is-credit {
-    color: rgb(var(--v-theme-success));
+    color: rgb(var(--amount-credit));
 }
 
 .transaction-list-item__delta {
@@ -325,11 +325,11 @@ function onDoubleClick(event: MouseEvent) {
 }
 
 .transaction-list-item__delta.is-unfavorable {
-    color: rgb(var(--v-theme-error));
+    color: rgb(var(--amount-debit));
 }
 
 .transaction-list-item__delta.is-favorable {
-    color: rgb(var(--v-theme-success));
+    color: rgb(var(--amount-credit));
 }
 
 .transaction-list-item__tier {
