@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
@@ -26,6 +26,8 @@ function queryString(name: string): string {
 }
 
 const searchInput = ref(queryString('q').slice(0, BUDGET_NAME_MAX));
+const searchOpen = ref(false);
+const searchFieldRef = ref<HTMLInputElement | null>(null);
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 const filterStatus = computed({
@@ -126,15 +128,20 @@ watch(
     }
 );
 
+watch(searchOpen, (open) => {
+    if (!open) return;
+    void nextTick(() => searchFieldRef.value?.focus());
+});
+
 if (!categoriesStore.initialized) {
     void categoriesStore.loadList().catch(() => undefined);
 }
 </script>
 
 <template>
-    <AppPageShell :title="t('budgetsPage.title')" :subtitle="t('budgetsPage.subtitle')">
+    <AppPageShell :title="t('budgetsPage.title')">
         <template #tabs>
-            <nav class="su-tabs" :aria-label="t('budgetsPage.tabs.label')">
+            <nav class="su-tabs su-tabs--links" :aria-label="t('budgetsPage.tabs.label')">
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterStatus }" @click="filterStatus = ''">
                     {{ t('budgetsPage.tabs.all') }}
                 </button>
@@ -148,7 +155,7 @@ if (!categoriesStore.initialized) {
         </template>
 
         <template #toolbar>
-            <label class="su-search su-search--discover">
+            <label class="su-search su-search--discover budgets-search--desktop">
                 <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
                 <input
                     class="su-search__input"
@@ -170,9 +177,52 @@ if (!categoriesStore.initialized) {
                     <XIcon :size="16" stroke-width="1.8" />
                 </button>
             </label>
-            <span v-if="store.initialized && visibleCount" class="su-toolbar__count">
+            <span v-if="store.initialized && visibleCount" class="su-toolbar__count budgets-toolbar__count">
                 {{ t('budgetsPage.count', { count: visibleCount }, visibleCount) }}
             </span>
+            <v-menu
+                v-model="searchOpen"
+                location="bottom start"
+                :close-on-content-click="false"
+                :offset="8"
+                class="budgets-search--mobile"
+            >
+                <template #activator="{ props: menuProps }">
+                    <button
+                        type="button"
+                        class="su-btn budgets-search-btn budgets-search--mobile"
+                        :class="{ 'is-active': searchOpen || !!searchInput }"
+                        v-bind="menuProps"
+                        :aria-label="t('budgetsPage.searchPlaceholder')"
+                        :aria-expanded="searchOpen"
+                    >
+                        <SearchIcon :size="16" stroke-width="1.6" />
+                    </button>
+                </template>
+                <v-sheet elevation="0" class="su-search su-search-pop">
+                    <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
+                    <input
+                        ref="searchFieldRef"
+                        class="su-search__input"
+                        type="search"
+                        :value="searchInput"
+                        :maxlength="BUDGET_NAME_MAX"
+                        :placeholder="t('budgetsPage.searchPlaceholder')"
+                        :aria-label="t('budgetsPage.searchPlaceholder')"
+                        autocomplete="off"
+                        @input="onSearchInput(($event.target as HTMLInputElement).value)"
+                    />
+                    <button
+                        v-if="searchInput"
+                        type="button"
+                        class="su-search__orb"
+                        :aria-label="t('budgetsPage.actions.clearSearch')"
+                        @click="clearSearch"
+                    >
+                        <XIcon :size="16" stroke-width="1.8" />
+                    </button>
+                </v-sheet>
+            </v-menu>
             <div class="su-toolbar__actions">
                 <AppDropdownFilter
                     :label="t('budgetsPage.actions.filter')"
@@ -202,3 +252,31 @@ if (!categoriesStore.initialized) {
         <BudgetsDirectory ref="directoryRef" />
     </AppPageShell>
 </template>
+
+<style scoped>
+.budgets-search-btn {
+    width: 34px;
+    min-width: 34px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.budgets-search-btn.is-active {
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.14);
+    box-shadow: none;
+}
+
+@media (max-width: 767px) {
+    .budgets-search--desktop,
+    .budgets-toolbar__count {
+        display: none !important;
+    }
+}
+
+@media (min-width: 768px) {
+    .budgets-search--mobile {
+        display: none;
+    }
+}
+</style>

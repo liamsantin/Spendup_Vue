@@ -138,6 +138,25 @@
     color: var(--ink-muted);
 }
 
+.su-search.su-search-pop {
+    width: min(360px, calc(100vw - 24px));
+    min-width: min(280px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+    height: 50px;
+    margin: 0;
+    padding: 0 8px 0 10px !important;
+    overflow: visible;
+    border-radius: 26px !important;
+    animation: none;
+}
+
+.su-search.su-search-pop:focus-within {
+    border-color: rgba(var(--v-theme-primary), 0.5);
+    box-shadow:
+        0 0 0 4px rgba(var(--v-theme-primary), 0.14),
+        var(--shadow-overlay);
+}
+
 .su-btn {
     appearance: none;
     display: inline-flex;

@@ -337,6 +337,12 @@
     white-space: nowrap;
 }
 
+@media (max-width: 767px) {
+    .su-toolbar__count {
+        display: none !important;
+    }
+}
+
 .su-toolbar__actions {
     display: flex;
     align-items: center;
