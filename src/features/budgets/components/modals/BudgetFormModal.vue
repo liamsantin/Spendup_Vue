@@ -2,7 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { EyeIcon, PlusIcon } from 'vue-tabler-icons';
+import { EyeIcon, MinusIcon, PlusIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
@@ -45,6 +45,7 @@ const settings = useUserSettingsStore();
 const isEdit = ref(false);
 const editBudget = ref<Budget | null>(null);
 const linkOpen = ref(false);
+const linkMode = ref<'link' | 'unlink'>('link');
 
 const localError = reactive({ message: null as string | null });
 const fieldErrors = reactive<BudgetFormFieldErrors>({});
@@ -79,6 +80,24 @@ const currencyHint = computed(() => {
 });
 
 const canLinkTransactions = computed(() => isEdit.value && !!editBudget.value?.categoryPublicId);
+
+const linkedCategoryName = computed(() => {
+    const id = editBudget.value?.categoryPublicId;
+    if (!id) return '';
+    return categoriesStore.findByPublicId(id)?.name ?? t('budgetsPage.scope.unknownCategory');
+});
+
+const linkedTransactionsHint = computed(() => {
+    if (canLinkTransactions.value) {
+        return t('budgetsPage.form.linkedTransactions.hint', { category: linkedCategoryName.value });
+    }
+    return t('budgetsPage.form.linkedTransactions.hintAll');
+});
+
+function openLinkPicker(mode: 'link' | 'unlink') {
+    linkMode.value = mode;
+    linkOpen.value = true;
+}
 
 const canSave = computed(() => {
     if (!isEdit.value || !editBudget.value) return true;
@@ -204,33 +223,31 @@ async function seeRelatedTransactions() {
             :currency-hint="currencyHint"
         />
 
+        <section v-if="isEdit" class="budget-form-modal__tx" aria-labelledby="budget-linked-tx-title">
+            <h3 id="budget-linked-tx-title" class="budget-form-modal__tx-title">
+                {{ t('budgetsPage.form.linkedTransactions.title') }}
+            </h3>
+            <p class="budget-form-modal__tx-hint">{{ linkedTransactionsHint }}</p>
+            <div class="budget-form-modal__tx-actions">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="seeRelatedTransactions">
+                    <EyeIcon :size="16" stroke-width="1.6" />
+                    {{ t('budgetsPage.form.linkedTransactions.view') }}
+                </button>
+                <template v-if="canLinkTransactions">
+                    <button type="button" class="su-btn" :disabled="store.acting" @click="openLinkPicker('link')">
+                        <PlusIcon :size="16" stroke-width="1.6" />
+                        {{ t('budgetsPage.form.linkedTransactions.add') }}
+                    </button>
+                    <button type="button" class="su-btn" :disabled="store.acting" @click="openLinkPicker('unlink')">
+                        <MinusIcon :size="16" stroke-width="1.6" />
+                        {{ t('budgetsPage.form.linkedTransactions.remove') }}
+                    </button>
+                </template>
+            </div>
+        </section>
+
         <template #footer="{ close }">
-            <button
-                v-if="isEdit"
-                type="button"
-                class="su-btn su-btn--ghost"
-                :disabled="store.acting"
-                @click="seeRelatedTransactions"
-            >
-                <EyeIcon :size="16" stroke-width="1.6" />
-                {{ t('budgetsPage.detail.seeTransactions') }}
-            </button>
-            <button
-                v-if="canLinkTransactions"
-                type="button"
-                class="su-btn"
-                :disabled="store.acting"
-                @click="linkOpen = true"
-            >
-                <PlusIcon :size="16" stroke-width="1.6" />
-                {{ t('budgetsPage.actions.addTransactions') }}
-            </button>
-            <button
-                type="button"
-                :class="isEdit ? 'su-btn' : 'su-btn su-btn--ghost'"
-                :disabled="store.acting"
-                @click="close"
-            >
+            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
             <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
@@ -239,5 +256,39 @@ async function seeRelatedTransactions() {
         </template>
     </AppModalBase>
 
-    <BudgetLinkTransactionsModal v-model="linkOpen" :budget="editBudget" />
+    <BudgetLinkTransactionsModal v-model="linkOpen" :mode="linkMode" :budget="editBudget" />
 </template>
+
+<style scoped>
+.budget-form-modal__tx {
+    margin-top: 8px;
+    padding: 14px 16px;
+    border-radius: var(--radius-surface);
+    border: 1px solid var(--stroke);
+    background: var(--surface-raised);
+}
+
+.budget-form-modal__tx-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 620;
+    letter-spacing: -0.02em;
+}
+
+.budget-form-modal__tx-hint {
+    margin: 4px 0 12px;
+    color: var(--ink-muted);
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.budget-form-modal__tx-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.budget-form-modal__tx-actions .su-btn {
+    white-space: nowrap;
+}
+</style>

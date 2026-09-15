@@ -54,6 +54,19 @@ export function isTransactionLinkableToBudget(
     return isTransactionInBudgetWindow(transaction, budget);
 }
 
+/** Dépense déjà dans l’enveloppe, que l’on peut retirer en vidant sa catégorie. */
+export function isTransactionUnlinkableFromBudget(
+    transaction: Transaction,
+    budget: Pick<Budget, 'periodStart' | 'periodEnd' | 'currency' | 'categoryPublicId'>,
+    linkedCategoryIds: Set<string> | null,
+    accounts: readonly Pick<Account, 'publicId' | 'myRole' | 'isActive'>[]
+): boolean {
+    if (!budget.categoryPublicId) return false;
+    if (transaction.amount == null) return false;
+    if (!canWriteTransaction(transaction, accounts)) return false;
+    return isTransactionCountedInBudget(transaction, budget, linkedCategoryIds);
+}
+
 export function transactionFormFieldsWithCategory(
     transaction: Transaction,
     categoryPublicId: string

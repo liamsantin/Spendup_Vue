@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
     budgetLinkedCategoryIds,
     isTransactionCountedInBudget,
-    isTransactionLinkableToBudget
+    isTransactionLinkableToBudget,
+    isTransactionUnlinkableFromBudget
 } from '@/features/budgets/link-transactions';
 import type { Budget } from '@/features/budgets/types';
 import type { Category } from '@/features/categories/types';
@@ -102,5 +103,16 @@ describe('budgets link-transactions', () => {
         expect(isTransactionLinkableToBudget(tx({ categoryPublicId: 'cat-food' }), budget(), ids, owner)).toBe(false);
         expect(isTransactionLinkableToBudget(tx({ amount: null }), budget(), ids, owner)).toBe(false);
         expect(isTransactionLinkableToBudget(tx(), budget({ categoryPublicId: null }), null, owner)).toBe(false);
+    });
+
+    it('propose les dépenses déjà dans l’enveloppe pour les retirer', () => {
+        const ids = new Set(['cat-food', 'cat-market']);
+        expect(isTransactionUnlinkableFromBudget(tx({ categoryPublicId: 'cat-food' }), budget(), ids, owner)).toBe(true);
+        expect(isTransactionUnlinkableFromBudget(tx({ categoryPublicId: 'cat-market' }), budget(), ids, owner)).toBe(true);
+        expect(isTransactionUnlinkableFromBudget(tx(), budget(), ids, owner)).toBe(false);
+        expect(isTransactionUnlinkableFromBudget(tx({ categoryPublicId: 'cat-food' }), budget({ categoryPublicId: null }), null, owner)).toBe(
+            false
+        );
+        expect(isTransactionUnlinkableFromBudget(tx({ categoryPublicId: 'cat-food', amount: null }), budget(), ids, owner)).toBe(false);
     });
 });

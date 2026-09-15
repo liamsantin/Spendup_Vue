@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * Picker de dépenses de la fenêtre courante, pas encore comptées dans l’enveloppe.
- * Confirmer assigne la catégorie du budget (le consommé est recalculé à la lecture).
+ * Picker de dépenses de la fenêtre courante.
+ * `link` : pas encore dans l’enveloppe — confirmer assigne la catégorie du budget.
+ * `unlink` : déjà dans l’enveloppe — confirmer vide la catégorie.
  */
 defineOptions({ name: 'BudgetLinkTransactionsModal' });
 
@@ -16,6 +17,7 @@ import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import {
     budgetLinkedCategoryIds,
     isTransactionLinkableToBudget,
+    isTransactionUnlinkableFromBudget,
     transactionFormFieldsWithCategory
 } from '@/features/budgets/link-transactions';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
@@ -29,10 +31,14 @@ import {
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { TRANSACTION_PAGE_SIZE_MAX, TRANSACTION_SEARCH_MAX, type Transaction } from '@/features/transactions/types';
 
-const props = defineProps<{
-    modelValue: boolean;
-    budget: Budget | null;
-}>();
+const props = withDefaults(
+    defineProps<{
+        modelValue: boolean;
+        budget: Budget | null;
+        mode?: 'link' | 'unlink';
+    }>(),
+    { mode: 'link' }
+);
 
 const emit = defineEmits<{
     'update:modelValue': [value: boolean];
@@ -59,13 +65,15 @@ const linkedCategoryIds = computed(() =>
     props.budget ? budgetLinkedCategoryIds(props.budget, categoriesStore.items) : new Set<string>()
 );
 
+const isUnlink = computed(() => props.mode === 'unlink');
+const i18nPrefix = computed(() => (isUnlink.value ? 'budgetsPage.unlinkTransactions' : 'budgetsPage.linkTransactions'));
+
 const candidates = computed(() => {
     const budget = props.budget;
     if (!budget) return [];
     const ids = linkedCategoryIds.value;
-    return transactionsStore.items.filter((item) =>
-        isTransactionLinkableToBudget(item, budget, ids, accountsStore.accounts)
-    );
+    const predicate = isUnlink.value ? isTransactionUnlinkableFromBudget : isTransactionLinkableToBudget;
+    return transactionsStore.items.filter((item) => predicate(item, budget, ids, accountsStore.accounts));
 });
 
 const visibleItems = computed(() => {
@@ -94,9 +102,7 @@ const categoryName = computed(() => {
     return categoriesStore.findByPublicId(id)?.name ?? t('budgetsPage.scope.unknownCategory');
 });
 
-const confirmLabel = computed(() =>
-    t('budgetsPage.linkTransactions.confirm', { count: selectedCount.value }, selectedCount.value)
-);
+const confirmLabel = computed(() => t(`${i18nPrefix.value}.confirm`, { count: selectedCount.value }, selectedCount.value));
 
 function categoryLabel(transaction: Transaction): string {
     if (!transaction.categoryPublicId) return t('budgetsPage.linkTransactions.uncategorized');
@@ -173,8 +179,9 @@ async function onConfirm() {
     localError.value = null;
     const chosen = candidates.value.filter((item) => selectedIds.value.includes(item.publicId));
     try {
+        const nextCategory = isUnlink.value ? '' : categoryPublicId;
         for (const item of chosen) {
-            const fields = transactionFormFieldsWithCategory(item, categoryPublicId);
+            const fields = transactionFormFieldsWithCategory(item, nextCategory);
             if (!fields) continue;
             await transactionsStore.updateTransaction(item.publicId, fields);
         }
@@ -194,8 +201,8 @@ async function onConfirm() {
 <template>
     <AppModalBase
         v-model="open"
-        :title="t('budgetsPage.linkTransactions.title')"
-        :subtitle="t('budgetsPage.linkTransactions.subtitle', { category: categoryName })"
+        :title="t(`${i18nPrefix}.title`)"
+        :subtitle="t(`${i18nPrefix}.subtitle`, { category: categoryName })"
         :max-width="640"
         :height="720"
         scrollable
@@ -213,29 +220,29 @@ async function onConfirm() {
                 class="su-search__input"
                 type="search"
                 :maxlength="TRANSACTION_SEARCH_MAX"
-                :placeholder="t('budgetsPage.linkTransactions.searchPlaceholder')"
-                :aria-label="t('budgetsPage.linkTransactions.searchPlaceholder')"
+                :placeholder="t(`${i18nPrefix}.searchPlaceholder`)"
+                :aria-label="t(`${i18nPrefix}.searchPlaceholder`)"
                 autocomplete="off"
             />
         </label>
 
         <div class="budget-link-tx__toolbar">
             <span class="text-caption text-medium-emphasis">
-                {{ t('budgetsPage.linkTransactions.selected', { count: selectedCount }, selectedCount) }}
+                {{ t(`${i18nPrefix}.selected`, { count: selectedCount }, selectedCount) }}
             </span>
             <div class="d-flex ga-2">
                 <button type="button" class="su-btn su-btn--ghost" :disabled="linking || allVisibleSelected" @click="selectAllVisible">
-                    {{ t('budgetsPage.linkTransactions.selectAll') }}
+                    {{ t(`${i18nPrefix}.selectAll`) }}
                 </button>
                 <button type="button" class="su-btn su-btn--ghost" :disabled="linking || !selectedCount" @click="selectNone">
-                    {{ t('budgetsPage.linkTransactions.selectNone') }}
+                    {{ t(`${i18nPrefix}.selectNone`) }}
                 </button>
             </div>
         </div>
 
         <div v-if="transactionsStore.loading && !candidates.length" class="su-loading"><span class="su-spin" /></div>
         <p v-else-if="!visibleItems.length" class="text-medium-emphasis">
-            {{ search.trim() ? t('budgetsPage.linkTransactions.emptyFiltered') : t('budgetsPage.linkTransactions.empty') }}
+            {{ search.trim() ? t(`${i18nPrefix}.emptyFiltered`) : t(`${i18nPrefix}.empty`) }}
         </p>
         <div v-else class="budget-link-tx__list" role="list">
             <button

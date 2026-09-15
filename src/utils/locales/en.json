@@ -946,6 +946,7 @@
             "pause": "Pause",
             "resume": "Resume",
             "addTransactions": "Add transactions",
+            "removeTransactions": "Remove transactions",
             "filter": "Filter",
             "clearSearch": "Clear search"
         },
@@ -970,6 +971,17 @@
             "uncategorized": "Uncategorized",
             "confirm": "Add {count} transaction | Add {count} transaction | Add {count} transactions"
         },
+        "unlinkTransactions": {
+            "title": "Remove transactions",
+            "subtitle": "Expenses already in this envelope (“{category}” or a subcategory). They will become uncategorized.",
+            "searchPlaceholder": "Search a transaction",
+            "empty": "No linked expenses to remove for this period.",
+            "emptyFiltered": "No transaction matches this search.",
+            "selected": "{count} selected | {count} selected | {count} selected",
+            "selectAll": "Select all",
+            "selectNone": "Clear selection",
+            "confirm": "Remove {count} transaction | Remove {count} transaction | Remove {count} transactions"
+        },
         "deleteModal": {
             "title": "Delete this budget?",
             "body": "The envelope will disappear. You can recreate the same category / period / start date afterwards."
@@ -981,6 +993,14 @@
             "createTitle": "New budget",
             "editTitle": "Edit budget",
             "subtitle": "A recurring envelope. Spent is computed on every read.",
+            "linkedTransactions": {
+                "title": "Envelope transactions",
+                "hint": "Expenses in this period classified under “{category}” count here.",
+                "hintAll": "All expenses in this period count in this envelope.",
+                "view": "View",
+                "add": "Add",
+                "remove": "Remove"
+            },
             "allExpenses": "All expenses",
             "createCategory": "Create a category",
             "createCategoryNamed": "Create “{name}”",

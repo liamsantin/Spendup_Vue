@@ -946,6 +946,7 @@
             "pause": "Mettre en pause",
             "resume": "Réactiver",
             "addTransactions": "Ajouter des transactions",
+            "removeTransactions": "Retirer des transactions",
             "filter": "Filtrer",
             "clearSearch": "Effacer la recherche"
         },
@@ -970,6 +971,17 @@
             "uncategorized": "Sans catégorie",
             "confirm": "Ajouter {count} transaction | Ajouter {count} transaction | Ajouter {count} transactions"
         },
+        "unlinkTransactions": {
+            "title": "Retirer des transactions",
+            "subtitle": "Dépenses déjà dans cette enveloppe (« {category} » ou une sous-catégorie). Elles redeviendront sans catégorie.",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune dépense liée à retirer pour cette période.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "confirm": "Retirer {count} transaction | Retirer {count} transaction | Retirer {count} transactions"
+        },
         "deleteModal": {
             "title": "Supprimer ce budget ?",
             "body": "L’enveloppe disparaîtra. Vous pourrez recréer le même couple catégorie / période / date de début ensuite."
@@ -981,6 +993,14 @@
             "createTitle": "Nouveau budget",
             "editTitle": "Modifier le budget",
             "subtitle": "Une enveloppe récurrente. Le consommé est calculé à chaque lecture.",
+            "linkedTransactions": {
+                "title": "Transactions de l’enveloppe",
+                "hint": "Les dépenses de la période classées dans « {category} » comptent ici.",
+                "hintAll": "Toutes les dépenses de la période comptent dans cette enveloppe.",
+                "view": "Voir",
+                "add": "Ajouter",
+                "remove": "Retirer"
+            },
             "allExpenses": "Toutes les dépenses",
             "createCategory": "Créer une catégorie",
             "createCategoryNamed": "Créer « {name} »",
