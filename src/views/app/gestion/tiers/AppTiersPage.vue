@@ -81,6 +81,10 @@ const natureTabLabel = computed(() =>
     filterNature.value ? t(`tiersPage.natures.${filterNature.value}`) : t('tiersPage.tabs.all')
 );
 
+const natureTabIcon = computed(() =>
+    filterNature.value ? TIER_NATURE_ICONS[filterNature.value] : LayoutGridIcon
+);
+
 function selectNature(value: TierNature | '') {
     filterNature.value = value;
     natureMenuOpen.value = false;
@@ -165,22 +169,24 @@ watch(searchOpen, (open) => {
             </AppFoldableTabs>
             <v-menu v-model="natureMenuOpen" location="bottom end" :offset="12" scrim class="tiers-tabs--mobile">
                 <template #activator="{ props: menuProps }">
-                    <nav class="su-tabs su-tabs--links tiers-tabs--mobile" :aria-label="t('tiersPage.tabs.label')">
+                    <nav class="su-tabs tiers-tabs--mobile tiers-nature-tabs" :aria-label="t('tiersPage.tabs.label')">
                         <button
                             type="button"
-                            class="su-tab is-active"
+                            class="tiers-nature-trigger"
                             v-bind="menuProps"
                             :aria-expanded="natureMenuOpen"
                             :aria-haspopup="true"
                         >
-                            <span class="su-tab__body">
-                                <component
-                                    v-if="filterNature"
-                                    :is="TIER_NATURE_ICONS[filterNature]"
-                                    :size="16"
-                                    stroke-width="1.7"
-                                />
-                                {{ natureTabLabel }}
+                            <span
+                                class="su-tab is-active tiers-nature-trigger__pill"
+                                :class="filterNature ? `is-${filterNature}` : 'is-all'"
+                            >
+                                <span class="su-tab__body">
+                                    <component :is="natureTabIcon" :size="16" stroke-width="1.7" />
+                                    {{ natureTabLabel }}
+                                </span>
+                            </span>
+                            <span class="su-tab su-tabs__handle tiers-nature-trigger__handle">
                                 <ChevronDownIcon
                                     class="tiers-nature-menu__chevron"
                                     :class="{ 'is-open': natureMenuOpen }"
@@ -354,9 +360,64 @@ watch(searchOpen, (open) => {
     transform: rotate(180deg);
 }
 
+.tiers-nature-trigger {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.tiers-nature-trigger__pill {
+    --nature-tint: rgb(var(--v-theme-primary));
+    pointer-events: none;
+    color: var(--nature-tint) !important;
+    background: color-mix(in srgb, var(--nature-tint) 14%, transparent) !important;
+    box-shadow: none !important;
+}
+
+.tiers-nature-trigger__pill.is-person {
+    --nature-tint: rgb(var(--v-theme-success));
+}
+
+.tiers-nature-trigger__pill.is-organization {
+    --nature-tint: rgb(var(--v-theme-secondary));
+}
+
+.tiers-nature-trigger__pill.is-administration {
+    --nature-tint: rgb(var(--v-theme-warning));
+}
+
+.tiers-nature-trigger__pill.is-unknown {
+    --nature-tint: var(--ink-muted);
+}
+
+.tiers-nature-trigger__pill .su-tab__body {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tiers-nature-trigger__handle {
+    pointer-events: none;
+}
+
 @media (max-width: 767px) {
     .tiers-page :deep(.su-hero > p) {
         display: none;
+    }
+
+    .tiers-page :deep(.tiers-nature-tabs.su-tabs) {
+        flex: 0 0 auto;
+        margin-left: auto;
+        width: auto;
+        max-width: none;
     }
 
     .tiers-search--desktop,
