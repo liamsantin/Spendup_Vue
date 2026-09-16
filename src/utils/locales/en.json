@@ -1269,6 +1269,7 @@
             "delete": "Delete",
             "seeTransactions": "See transactions",
             "seeAccounts": "See accounts",
+            "search": "Search",
             "clearSearch": "Clear search"
         },
         "filters": {

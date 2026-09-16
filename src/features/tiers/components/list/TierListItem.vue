@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { MailIcon, PencilIcon, PhoneIcon, TrashIcon, WorldIcon } from 'vue-tabler-icons';
+import { MailIcon, PencilIcon, PhoneIcon, TrashIcon, WorldIcon, DotsVerticalIcon } from 'vue-tabler-icons';
 import { TIER_NATURE_ICONS } from '@/features/tiers/natureUi';
 import type { Tier } from '@/features/tiers/types';
 
@@ -53,10 +53,23 @@ function onDoubleClick(event: MouseEvent) {
     if (event.target instanceof Element && event.target.closest('button, a')) return;
     emit('edit', props.tier);
 }
+
+function onActivate(event: MouseEvent) {
+    if (props.acting) return;
+    if (event.target instanceof Element && event.target.closest('button, a')) return;
+    if (!window.matchMedia('(max-width: 767px)').matches) return;
+    emit('edit', props.tier);
+}
 </script>
 
 <template>
-    <div class="tier-row" :class="{ 'tier-row--editable': !acting }" :data-tier-id="tier.publicId" @dblclick="onDoubleClick">
+    <div
+        class="tier-row"
+        :class="{ 'tier-row--editable': !acting }"
+        :data-tier-id="tier.publicId"
+        @click="onActivate"
+        @dblclick="onDoubleClick"
+    >
         <span class="tier-row__icon" :class="`tier-row__icon--${tier.nature}`">
             <component :is="natureIcon" size="18" stroke-width="1.8" />
         </span>
@@ -94,25 +107,49 @@ function onDoubleClick(event: MouseEvent) {
             </p>
         </div>
 
-        <div class="tier-row__actions">
-            <button
-                type="button"
-                class="su-orb"
-                :disabled="acting"
-                :aria-label="t('tiersPage.actions.edit')"
-                @click.stop="emit('edit', tier)"
-            >
-                <PencilIcon :size="16" stroke-width="1.6" />
-            </button>
-            <button
-                type="button"
-                class="su-orb su-orb--danger"
-                :disabled="acting"
-                :aria-label="t('tiersPage.actions.delete')"
-                @click.stop="emit('delete', tier)"
-            >
-                <TrashIcon :size="16" stroke-width="1.6" />
-            </button>
+        <div class="tier-row__actions" @click.stop>
+            <div class="tier-row__orbs">
+                <button
+                    type="button"
+                    class="su-orb"
+                    :disabled="acting"
+                    :aria-label="t('tiersPage.actions.edit')"
+                    @click="emit('edit', tier)"
+                >
+                    <PencilIcon :size="16" stroke-width="1.6" />
+                </button>
+                <button
+                    type="button"
+                    class="su-orb su-orb--danger"
+                    :disabled="acting"
+                    :aria-label="t('tiersPage.actions.delete')"
+                    @click="emit('delete', tier)"
+                >
+                    <TrashIcon :size="16" stroke-width="1.6" />
+                </button>
+            </div>
+            <v-menu location="bottom end" :offset="8">
+                <template #activator="{ props: menuProps }">
+                    <button
+                        v-bind="menuProps"
+                        type="button"
+                        class="su-orb tier-row__more"
+                        :disabled="acting"
+                        :aria-label="t('common.more')"
+                    >
+                        <DotsVerticalIcon size="18" stroke-width="1.75" />
+                    </button>
+                </template>
+                <v-sheet class="su-menu tier-actions-menu">
+                    <button type="button" class="su-btn su-btn--ink" :disabled="acting" @click="emit('edit', tier)">
+                        <PencilIcon :size="16" stroke-width="1.6" />
+                        {{ t('tiersPage.actions.edit') }}
+                    </button>
+                    <button type="button" class="tier-actions-menu__delete" :disabled="acting" @click="emit('delete', tier)">
+                        {{ t('tiersPage.actions.delete') }}
+                    </button>
+                </v-sheet>
+            </v-menu>
         </div>
     </div>
 </template>
@@ -311,23 +348,80 @@ function onDoubleClick(event: MouseEvent) {
 .tier-row__actions {
     display: flex;
     flex: none;
-    align-items: center;
+    align-items: flex-start;
     justify-content: flex-end;
     gap: 4px;
     padding: 2px;
     margin: -2px;
 }
 
-@media (max-width: 600px) {
+.tier-row__orbs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tier-row__more {
+    display: none;
+}
+
+.tier-actions-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(176px, calc(100vw - 32px));
+    padding: 12px !important;
+}
+
+.tier-actions-menu .su-btn {
+    width: 100%;
+}
+
+.tier-actions-menu__delete {
+    appearance: none;
+    display: block;
+    width: 100%;
+    margin: 2px 0 0;
+    padding: 6px 4px;
+    border: 0;
+    background: transparent;
+    color: #e11d48;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.18s var(--ease, ease);
+}
+
+.tier-actions-menu__delete:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.tier-actions-menu__delete:hover:not(:disabled) {
+    color: #be123c;
+    transform: scale(1.06);
+}
+
+@media (max-width: 767px) {
     .tier-row {
-        flex-wrap: wrap;
-        gap: 8px;
+        gap: 10px;
+        padding: 12px 10px;
+        border-radius: 16px;
+        background: var(--surface);
+        border: 1px solid var(--stroke);
+        backdrop-filter: var(--blur);
+        box-shadow: var(--shadow-rest);
     }
 
-    .tier-row__actions {
-        width: 100%;
-        justify-content: flex-start;
-        padding-left: 46px;
+    .tier-row__orbs {
+        display: none;
+    }
+
+    .tier-row__more {
+        display: grid;
     }
 }
 </style>

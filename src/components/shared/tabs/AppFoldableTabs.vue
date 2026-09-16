@@ -30,6 +30,13 @@ function close() {
     open.value = false;
 }
 
+function onTabAreaClick(event: MouseEvent) {
+    if (!open.value) return;
+    const target = event.target;
+    if (!(target instanceof Element) || !target.closest('.su-tab')) return;
+    close();
+}
+
 function onDocumentPointer(event: PointerEvent) {
     if (!open.value || !root.value) return;
     const target = event.target;
@@ -55,7 +62,7 @@ onUnmounted(() => {
 <template>
     <nav ref="root" class="su-tabs su-tabs--foldable" :class="{ 'is-open': open }" :aria-label="ariaLabel">
         <div class="su-tabs__fold">
-            <div class="su-tabs__fold-inner">
+            <div class="su-tabs__fold-inner" @click="onTabAreaClick">
                 <slot />
             </div>
         </div>

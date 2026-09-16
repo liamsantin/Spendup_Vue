@@ -1269,6 +1269,7 @@
             "delete": "Supprimer",
             "seeTransactions": "Voir les transactions",
             "seeAccounts": "Voir les comptes",
+            "search": "Rechercher",
             "clearSearch": "Effacer la recherche"
         },
         "filters": {

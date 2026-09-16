@@ -197,7 +197,7 @@ async function confirmDelete() {
         >
             <p>{{ emptyCopy }}</p>
         </div>
-        <div v-else class="su-stack">
+        <div v-else class="su-stack tiers-directory">
             <section class="su-surface tiers-directory__group">
                 <div :key="searchRevealKey" class="tiers-directory__list" :class="{ 'is-search-reveal': searchReveals }">
                     <TierListItem
@@ -250,5 +250,28 @@ async function confirmDelete() {
     overflow: visible;
     /* Gouttière pour scale(1.012) : les 8px de la surface restent visibles au survol. */
     padding: 8px;
+}
+
+@media (max-width: 767px) {
+    .tiers-directory {
+        /* Récupère le padding latéral du su-body pour maximiser la largeur. */
+        margin-inline: -8px;
+        width: calc(100% + 16px);
+        gap: 8px;
+    }
+
+    .tiers-directory__group {
+        padding: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        backdrop-filter: none;
+        border-radius: 0;
+    }
+
+    .tiers-directory__list {
+        gap: 8px;
+        padding: 0;
+    }
 }
 </style>

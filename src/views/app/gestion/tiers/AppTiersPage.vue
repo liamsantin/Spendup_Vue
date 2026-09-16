@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon } from 'vue-tabler-icons';
+import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon, ChevronDownIcon } from 'vue-tabler-icons';
 import AppFoldableTabs from '@/components/shared/tabs/AppFoldableTabs.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
@@ -45,6 +45,9 @@ function queryString(name: string): string {
 }
 
 const searchInput = ref(queryString('q').slice(0, TIER_SEARCH_MAX));
+const searchOpen = ref(false);
+const natureMenuOpen = ref(false);
+const searchFieldRef = ref<HTMLInputElement | null>(null);
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 const filterNature = computed({
@@ -73,6 +76,15 @@ const visibleCount = computed(() => {
 
 const sortCount = computed(() => (listSort.value === TIER_SORT_DEFAULT ? 0 : 1));
 const filterCount = computed(() => (filterRole.value ? 1 : 0));
+
+const natureTabLabel = computed(() =>
+    filterNature.value ? t(`tiersPage.natures.${filterNature.value}`) : t('tiersPage.tabs.all')
+);
+
+function selectNature(value: TierNature | '') {
+    filterNature.value = value;
+    natureMenuOpen.value = false;
+}
 
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
@@ -123,12 +135,17 @@ watch(
         }
     }
 );
+
+watch(searchOpen, (open) => {
+    if (!open) return;
+    void nextTick(() => searchFieldRef.value?.focus());
+});
 </script>
 
 <template>
-    <AppPageShell :title="t('tiersPage.title')" :subtitle="t('tiersPage.subtitle')">
+    <AppPageShell class="tiers-page" :title="t('tiersPage.title')" :subtitle="t('tiersPage.subtitle')">
         <template #tabs>
-            <AppFoldableTabs :ariaLabel="t('tiersPage.tabs.label')">
+            <AppFoldableTabs class="su-tabs--links tiers-tabs--desktop" :ariaLabel="t('tiersPage.tabs.label')">
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterNature }" @click="filterNature = ''">
                     <span class="su-tab__body">{{ t('tiersPage.tabs.all') }}</span>
                 </button>
@@ -146,10 +163,60 @@ watch(
                     </span>
                 </button>
             </AppFoldableTabs>
+            <v-menu v-model="natureMenuOpen" location="bottom end" :offset="8" class="tiers-tabs--mobile">
+                <template #activator="{ props: menuProps }">
+                    <nav class="su-tabs su-tabs--links tiers-tabs--mobile" :aria-label="t('tiersPage.tabs.label')">
+                        <button
+                            type="button"
+                            class="su-tab is-active"
+                            v-bind="menuProps"
+                            :aria-expanded="natureMenuOpen"
+                            :aria-haspopup="true"
+                        >
+                            <span class="su-tab__body">
+                                <component
+                                    v-if="filterNature"
+                                    :is="TIER_NATURE_ICONS[filterNature]"
+                                    :size="16"
+                                    stroke-width="1.7"
+                                />
+                                {{ natureTabLabel }}
+                                <ChevronDownIcon
+                                    class="tiers-nature-menu__chevron"
+                                    :class="{ 'is-open': natureMenuOpen }"
+                                    :size="16"
+                                    stroke-width="1.8"
+                                />
+                            </span>
+                        </button>
+                    </nav>
+                </template>
+                <v-sheet elevation="0" class="su-menu tiers-nature-menu">
+                    <button
+                        type="button"
+                        class="su-btn tiers-nature-menu__item"
+                        :class="{ 'su-btn--ink': !filterNature }"
+                        @click="selectNature('')"
+                    >
+                        {{ t('tiersPage.tabs.all') }}
+                    </button>
+                    <button
+                        v-for="nature in TIER_NATURES"
+                        :key="nature"
+                        type="button"
+                        class="su-btn tiers-nature-menu__item"
+                        :class="{ 'su-btn--ink': filterNature === nature }"
+                        @click="selectNature(nature)"
+                    >
+                        <component :is="TIER_NATURE_ICONS[nature]" :size="16" stroke-width="1.7" />
+                        {{ t(`tiersPage.natures.${nature}`) }}
+                    </button>
+                </v-sheet>
+            </v-menu>
         </template>
 
         <template #toolbar>
-            <label class="su-search su-search--discover">
+            <label class="su-search su-search--discover tiers-search--desktop">
                 <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
                 <input
                     class="su-search__input"
@@ -171,9 +238,52 @@ watch(
                     <XIcon :size="16" stroke-width="1.8" />
                 </button>
             </label>
-            <span v-if="store.initialized && visibleCount" class="su-toolbar__count">
+            <span v-if="store.initialized && visibleCount" class="su-toolbar__count tiers-toolbar__count">
                 {{ t('tiersPage.count', { count: visibleCount }, visibleCount) }}
             </span>
+            <v-menu
+                v-model="searchOpen"
+                location="bottom start"
+                :close-on-content-click="false"
+                :offset="8"
+                class="tiers-search--mobile"
+            >
+                <template #activator="{ props: menuProps }">
+                    <button
+                        type="button"
+                        class="su-btn tiers-search-btn tiers-search--mobile"
+                        :class="{ 'is-active': searchOpen || !!searchInput }"
+                        v-bind="menuProps"
+                        :aria-label="t('tiersPage.actions.search')"
+                        :aria-expanded="searchOpen"
+                    >
+                        <SearchIcon :size="16" stroke-width="1.6" />
+                    </button>
+                </template>
+                <v-sheet elevation="0" class="su-search su-search-pop">
+                    <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
+                    <input
+                        ref="searchFieldRef"
+                        class="su-search__input"
+                        type="search"
+                        :value="searchInput"
+                        :maxlength="TIER_SEARCH_MAX"
+                        :placeholder="t('tiersPage.searchPlaceholder')"
+                        :aria-label="t('tiersPage.searchPlaceholder')"
+                        autocomplete="off"
+                        @input="onSearchInput(($event.target as HTMLInputElement).value)"
+                    />
+                    <button
+                        v-if="searchInput"
+                        type="button"
+                        class="su-search__orb"
+                        :aria-label="t('tiersPage.actions.clearSearch')"
+                        @click="clearSearch"
+                    >
+                        <XIcon :size="16" stroke-width="1.8" />
+                    </button>
+                </v-sheet>
+            </v-menu>
             <div class="su-toolbar__actions">
                 <AppDropdownFilter
                     :label="t('tiersPage.actions.sort')"
@@ -193,7 +303,7 @@ watch(
                     :reset-disabled="!filterRole"
                     @reset="filterRole = ''"
                 >
-                    <div class="pa-3 d-flex flex-column ga-3">
+                    <div class="pa-3 d-flex flex-column ga-3 tiers-filter-fields">
                         <AppSelect v-model="filterRole" :items="roleItems" :label="t('tiersPage.filters.role')" hide-details />
                     </div>
                 </AppDropdownFilter>
@@ -208,3 +318,78 @@ watch(
         <TiersDirectory ref="directoryRef" />
     </AppPageShell>
 </template>
+
+<style scoped>
+.tiers-search-btn {
+    width: 34px;
+    padding: 0;
+    flex: none;
+}
+
+.tiers-search-btn.is-active {
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.14);
+    box-shadow: none;
+}
+
+.tiers-nature-menu__chevron {
+    flex: none;
+    transition: transform 0.28s var(--ease, ease);
+}
+
+.tiers-nature-menu__chevron.is-open {
+    transform: rotate(180deg);
+}
+
+@media (max-width: 767px) {
+    .tiers-page :deep(.su-hero > p) {
+        display: none;
+    }
+
+    .tiers-search--desktop,
+    .tiers-toolbar__count,
+    .tiers-tabs--desktop {
+        display: none !important;
+    }
+
+    .tiers-search-btn {
+        margin-right: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    .tiers-search--mobile,
+    .tiers-tabs--mobile {
+        display: none;
+    }
+}
+</style>
+
+<!-- Menu filtre téléporté hors du scoped : styles mobiles dédiés. -->
+<style>
+@media (max-width: 767px) {
+    .tiers-filter-fields .app-select__legend {
+        font-size: 11px;
+    }
+
+    .tiers-filter-fields .app-select__control,
+    .tiers-filter-fields .app-select__ghost,
+    .tiers-filter-fields .app-select__input {
+        font-size: 0.75rem;
+    }
+
+    .tiers-nature-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: min(240px, calc(100vw - 24px));
+        padding: 10px 8px !important;
+    }
+
+    .tiers-nature-menu__item {
+        width: 100%;
+        justify-content: flex-start;
+        border-radius: 999px;
+    }
+}
+</style>
