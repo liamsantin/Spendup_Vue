@@ -169,7 +169,7 @@ watch(searchOpen, (open) => {
             </AppFoldableTabs>
             <v-menu v-model="natureMenuOpen" location="bottom end" :offset="12" scrim class="tiers-tabs--mobile">
                 <template #activator="{ props: menuProps }">
-                    <nav class="su-tabs tiers-tabs--mobile tiers-nature-tabs" :aria-label="t('tiersPage.tabs.label')">
+                    <nav class="tiers-tabs--mobile tiers-nature-tabs" :aria-label="t('tiersPage.tabs.label')">
                         <button
                             type="button"
                             class="tiers-nature-trigger"
@@ -186,14 +186,12 @@ watch(searchOpen, (open) => {
                                     {{ natureTabLabel }}
                                 </span>
                             </span>
-                            <span class="su-tab su-tabs__handle tiers-nature-trigger__handle">
-                                <ChevronDownIcon
-                                    class="tiers-nature-menu__chevron"
-                                    :class="{ 'is-open': natureMenuOpen }"
-                                    :size="16"
-                                    stroke-width="1.8"
-                                />
-                            </span>
+                            <ChevronDownIcon
+                                class="tiers-nature-menu__chevron"
+                                :class="{ 'is-open': natureMenuOpen }"
+                                :size="16"
+                                stroke-width="1.8"
+                            />
                         </button>
                     </nav>
                 </template>
@@ -353,6 +351,7 @@ watch(searchOpen, (open) => {
 
 .tiers-nature-menu__chevron {
     flex: none;
+    color: var(--ink-mute);
     transition: transform 0.28s var(--ease, ease);
 }
 
@@ -360,11 +359,16 @@ watch(searchOpen, (open) => {
     transform: rotate(180deg);
 }
 
+.tiers-nature-tabs {
+    display: flex;
+    margin-left: auto;
+}
+
 .tiers-nature-trigger {
     appearance: none;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     margin: 0;
     padding: 0;
     border: 0;
@@ -377,6 +381,7 @@ watch(searchOpen, (open) => {
 .tiers-nature-trigger__pill {
     --nature-tint: rgb(var(--v-theme-primary));
     pointer-events: none;
+    height: 32px;
     color: var(--nature-tint) !important;
     background: color-mix(in srgb, var(--nature-tint) 14%, transparent) !important;
     box-shadow: none !important;
@@ -404,20 +409,9 @@ watch(searchOpen, (open) => {
     gap: 6px;
 }
 
-.tiers-nature-trigger__handle {
-    pointer-events: none;
-}
-
 @media (max-width: 767px) {
     .tiers-page :deep(.su-hero > p) {
         display: none;
-    }
-
-    .tiers-page :deep(.tiers-nature-tabs.su-tabs) {
-        flex: 0 0 auto;
-        margin-left: auto;
-        width: auto;
-        max-width: none;
     }
 
     .tiers-search--desktop,
