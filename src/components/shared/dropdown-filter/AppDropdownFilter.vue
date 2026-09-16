@@ -49,7 +49,7 @@ function onReset() {
 </script>
 
 <template>
-    <v-menu v-model="open" :location="location" :close-on-content-click="closeOnContentClick">
+    <v-menu v-model="open" :location="location" :close-on-content-click="closeOnContentClick" scrim>
         <template #activator="{ props: menuProps }">
             <button type="button" class="su-btn" v-bind="menuProps">
                 <component :is="resolvedIcon" :size="16" stroke-width="1.6" />

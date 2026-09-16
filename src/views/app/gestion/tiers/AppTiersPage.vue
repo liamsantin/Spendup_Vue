@@ -2,7 +2,7 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon, ChevronDownIcon } from 'vue-tabler-icons';
+import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon, ChevronDownIcon, CheckIcon, LayoutGridIcon } from 'vue-tabler-icons';
 import AppFoldableTabs from '@/components/shared/tabs/AppFoldableTabs.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
@@ -163,7 +163,7 @@ watch(searchOpen, (open) => {
                     </span>
                 </button>
             </AppFoldableTabs>
-            <v-menu v-model="natureMenuOpen" location="bottom end" :offset="8" class="tiers-tabs--mobile">
+            <v-menu v-model="natureMenuOpen" location="bottom end" :offset="12" scrim class="tiers-tabs--mobile">
                 <template #activator="{ props: menuProps }">
                     <nav class="su-tabs su-tabs--links tiers-tabs--mobile" :aria-label="t('tiersPage.tabs.label')">
                         <button
@@ -192,24 +192,37 @@ watch(searchOpen, (open) => {
                     </nav>
                 </template>
                 <v-sheet elevation="0" class="su-menu tiers-nature-menu">
+                    <p class="tiers-nature-menu__label">{{ t('tiersPage.tabs.label') }}</p>
                     <button
                         type="button"
-                        class="su-btn tiers-nature-menu__item"
-                        :class="{ 'su-btn--ink': !filterNature }"
+                        class="tiers-nature-menu__item is-all"
+                        :class="{ 'is-active': !filterNature }"
                         @click="selectNature('')"
                     >
-                        {{ t('tiersPage.tabs.all') }}
+                        <span class="tiers-nature-menu__icon">
+                            <LayoutGridIcon :size="18" stroke-width="1.75" />
+                        </span>
+                        <span class="tiers-nature-menu__name">{{ t('tiersPage.tabs.all') }}</span>
+                        <CheckIcon v-if="!filterNature" class="tiers-nature-menu__check" :size="16" stroke-width="2" />
                     </button>
                     <button
                         v-for="nature in TIER_NATURES"
                         :key="nature"
                         type="button"
-                        class="su-btn tiers-nature-menu__item"
-                        :class="{ 'su-btn--ink': filterNature === nature }"
+                        class="tiers-nature-menu__item"
+                        :class="[`is-${nature}`, { 'is-active': filterNature === nature }]"
                         @click="selectNature(nature)"
                     >
-                        <component :is="TIER_NATURE_ICONS[nature]" :size="16" stroke-width="1.7" />
-                        {{ t(`tiersPage.natures.${nature}`) }}
+                        <span class="tiers-nature-menu__icon">
+                            <component :is="TIER_NATURE_ICONS[nature]" :size="18" stroke-width="1.75" />
+                        </span>
+                        <span class="tiers-nature-menu__name">{{ t(`tiersPage.natures.${nature}`) }}</span>
+                        <CheckIcon
+                            v-if="filterNature === nature"
+                            class="tiers-nature-menu__check"
+                            :size="16"
+                            stroke-width="2"
+                        />
                     </button>
                 </v-sheet>
             </v-menu>
@@ -377,19 +390,92 @@ watch(searchOpen, (open) => {
     .tiers-filter-fields .app-select__input {
         font-size: 0.75rem;
     }
+}
 
-    .tiers-nature-menu {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        width: min(240px, calc(100vw - 24px));
-        padding: 10px 8px !important;
-    }
+.tiers-nature-menu.su-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: min(280px, calc(100vw - 24px));
+    padding: 10px 8px 8px !important;
+}
 
-    .tiers-nature-menu__item {
-        width: 100%;
-        justify-content: flex-start;
-        border-radius: 999px;
-    }
+.tiers-nature-menu__label {
+    margin: 2px 10px 8px;
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+}
+
+.tiers-nature-menu__item {
+    --nature-tint: rgb(var(--v-theme-primary));
+    appearance: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 16px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s var(--ease, ease);
+}
+
+.tiers-nature-menu__item.is-person {
+    --nature-tint: rgb(var(--v-theme-success));
+}
+
+.tiers-nature-menu__item.is-organization {
+    --nature-tint: rgb(var(--v-theme-secondary));
+}
+
+.tiers-nature-menu__item.is-administration {
+    --nature-tint: rgb(var(--v-theme-warning));
+}
+
+.tiers-nature-menu__item.is-unknown {
+    --nature-tint: var(--ink-muted);
+}
+
+.tiers-nature-menu__item:hover,
+.tiers-nature-menu__item:focus-visible {
+    background: color-mix(in srgb, var(--nature-tint) 10%, transparent);
+    outline: none;
+}
+
+.tiers-nature-menu__item.is-active {
+    background: color-mix(in srgb, var(--nature-tint) 14%, transparent);
+}
+
+.tiers-nature-menu__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--nature-tint) 16%, var(--surface-raised));
+    color: var(--nature-tint);
+}
+
+.tiers-nature-menu__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.9rem;
+    font-weight: 620;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.tiers-nature-menu__check {
+    flex: none;
+    color: var(--nature-tint);
 }
 </style>

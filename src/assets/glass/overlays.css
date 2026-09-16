@@ -1,6 +1,7 @@
 /* Overlays (modales, menus) — hors .su-page, teleport body. */
 
-.v-overlay:has(.su-modal) .v-overlay__scrim {
+.v-overlay:has(.su-modal) .v-overlay__scrim,
+.v-overlay:has(.su-menu) .v-overlay__scrim {
     background: var(--scrim) !important;
     backdrop-filter: blur(10px) saturate(140%);
 }
