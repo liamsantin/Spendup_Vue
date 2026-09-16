@@ -30,6 +30,9 @@ describe('csp', () => {
         // Pas de source « https: » / « wss: » nue (wildcard schéma).
         expect(CSP_PROD_ENFORCE).not.toMatch(/connect-src[^;]*?(?:^|[\s;])https:(?=[\s;]|$)/);
         expect(CSP_PROD_ENFORCE).not.toMatch(/connect-src[^;]*?(?:^|[\s;])wss:(?=[\s;]|$)/);
+        // Preview PDF : iframe blob: (même origine), jamais l’origine API.
+        expect(CSP_PROD_ENFORCE).toMatch(/frame-src[^;]*\bblob:/);
+        expect(CSP_PROD_ENFORCE).toMatch(/frame-src[^;]*https:\/\/accounts\.google\.com/);
     });
 
     it('buildCspProdEnforce injecte l’origine API + wss', () => {
@@ -71,6 +74,8 @@ describe('tauri.conf.json CSP', () => {
         expect(csp['img-src']).toContain('asset:');
         expect(csp['img-src']).toContain('http://asset.localhost');
         expect(csp['object-src']).toBe("'none'");
+        expect(csp['frame-src']).toContain('blob:');
+        expect(csp['frame-src']).toContain('https://accounts.google.com');
     });
 
     it('devCsp autorise HMR tout en gardant IPC', () => {
@@ -81,5 +86,6 @@ describe('tauri.conf.json CSP', () => {
         expect(devCsp['connect-src']).toContain('ws:');
         expect(devCsp['connect-src']).toContain('ipc:');
         expect(devCsp['connect-src']).toContain('http://ipc.localhost');
+        expect(devCsp['frame-src']).toContain('blob:');
     });
 });

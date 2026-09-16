@@ -14,7 +14,12 @@ const { t } = useI18n();
 const { objectUrl, loading, error, load, reset } = useFileContentUrl();
 
 const title = computed(() => props.nameOriginal || t('filesPage.preview.title'));
-const frameSrc = computed(() => (objectUrl.value ? `${objectUrl.value}#view=FitH` : undefined));
+/** Jamais l’URL API : le JWT ne part pas dans une navigation iframe. */
+const frameSrc = computed(() => {
+    const url = objectUrl.value;
+    if (!url?.startsWith('blob:')) return undefined;
+    return `${url}#view=FitH`;
+});
 
 watch(
     () => props.publicId,

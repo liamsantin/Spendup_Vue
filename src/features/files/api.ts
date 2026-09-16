@@ -1,4 +1,5 @@
 import { fetchWrapper, type FetchFormOptions } from '@/utils/helpers/fetch-helpers';
+import { asPdfBlob } from '@/features/files/content';
 import {
     FILE_PAGE_SIZE_DEFAULT,
     FILE_PAGE_SIZE_MAX,
@@ -37,7 +38,7 @@ export const filesApi = {
 
     /** PDF brut — pas d’enveloppe. Toujours via fetch authentifié, jamais en `src` iframe. */
     getContent(publicId: string) {
-        return fetchWrapper.getBlob(`/api/files/${encodeURIComponent(publicId)}/content`);
+        return fetchWrapper.getBlob(`/api/files/${encodeURIComponent(publicId)}/content`).then(asPdfBlob);
     },
 
     upload(file: File, options: FetchFormOptions = {}) {

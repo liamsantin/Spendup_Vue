@@ -12,7 +12,7 @@ const SHARED = [
     "img-src 'self' data: blob: https:",
     "font-src 'self' https://fonts.gstatic.com data:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    'frame-src https://accounts.google.com',
+    "frame-src 'self' blob: https://accounts.google.com",
     "base-uri 'self'",
     "form-action 'self'",
     "object-src 'none'",
