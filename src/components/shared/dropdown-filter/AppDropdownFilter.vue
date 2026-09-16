@@ -22,6 +22,8 @@ const props = withDefaults(
         closeOnContentClick?: boolean;
         /** Nombre de critères actifs (pastille sur le bouton). */
         count?: number;
+        /** Sur téléphone : panneau bas pleine largeur (listes de filtres longues). */
+        mobileSheet?: boolean;
     }>(),
     {
         icon: undefined,
@@ -29,7 +31,8 @@ const props = withDefaults(
         minWidth: 260,
         resetDisabled: false,
         closeOnContentClick: false,
-        count: 0
+        count: 0,
+        mobileSheet: false
     }
 );
 
@@ -57,7 +60,17 @@ function onReset() {
                 <span v-if="count > 0" class="su-btn__count">{{ count }}</span>
             </button>
         </template>
-        <v-sheet rounded="md" elevation="0" class="su-menu app-dropdown-filter" :min-width="minWidth">
+        <v-sheet
+            rounded="md"
+            elevation="0"
+            class="su-menu app-dropdown-filter"
+            :class="{ 'app-dropdown-filter--sheet': mobileSheet }"
+            :min-width="minWidth"
+        >
+            <div v-if="mobileSheet" class="app-dropdown-filter__sheet-head">
+                <span class="app-dropdown-filter__handle" aria-hidden="true" />
+                <p class="app-dropdown-filter__title">{{ label }}</p>
+            </div>
             <div class="app-dropdown-filter__body">
                 <slot />
             </div>
@@ -119,5 +132,77 @@ function onReset() {
 
 .app-dropdown-filter :deep(.v-field--dirty.v-field--focused .v-field__outline) {
     color: rgb(var(--v-theme-primary));
+}
+</style>
+
+<style>
+@media (max-width: 767px) {
+    .v-overlay:has(.app-dropdown-filter--sheet) .v-overlay__content {
+        width: 100% !important;
+        max-width: 100vw !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        top: auto !important;
+        transform: none !important;
+        margin: 0 !important;
+    }
+
+    .app-dropdown-filter--sheet.su-menu {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        max-height: min(85dvh, 720px);
+        display: flex;
+        flex-direction: column;
+        border-radius: 28px 28px 0 0 !important;
+        padding: 6px 8px max(14px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .app-dropdown-filter__sheet-head {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        flex: none;
+        padding: 4px 8px 6px;
+    }
+
+    .app-dropdown-filter__handle {
+        width: 36px;
+        height: 4px;
+        border-radius: 999px;
+        background: var(--thread);
+    }
+
+    .app-dropdown-filter__title {
+        margin: 0;
+        width: 100%;
+        font-size: 1rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+        color: var(--ink);
+    }
+
+    .app-dropdown-filter--sheet .app-dropdown-filter__body {
+        min-height: 0;
+        flex: 1 1 auto;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+
+    .app-dropdown-filter--sheet .app-dropdown-filter__footer {
+        flex: none;
+        padding: 10px 6px 4px;
+    }
+}
+
+@media (min-width: 768px) {
+    .app-dropdown-filter__sheet-head {
+        display: none;
+    }
 }
 </style>

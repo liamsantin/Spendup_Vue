@@ -1527,6 +1527,7 @@
             "create": "Add",
             "edit": "Edit",
             "delete": "Delete",
+            "search": "Search",
             "clearSearch": "Clear search"
         },
         "filters": {

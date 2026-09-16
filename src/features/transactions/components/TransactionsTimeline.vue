@@ -470,7 +470,7 @@ async function confirmDelete() {
         >
             {{ emptyCopy }}
         </div>
-        <div v-else class="su-stack">
+        <div v-else class="su-stack transactions-timeline">
             <section v-for="group in dateGroups" :key="group.date" class="su-surface transaction-timeline__group">
                 <header v-if="group.label" class="su-panel__head">
                     <div>
@@ -617,6 +617,34 @@ async function confirmDelete() {
     .budget-add-toast {
         top: calc(var(--header-h-mobile, 58px) + 10px);
         right: 10px;
+    }
+}
+
+@media (max-width: 767px) {
+    .transactions-timeline {
+        margin-inline: -8px;
+        width: calc(100% + 16px);
+        gap: 16px;
+    }
+
+    .transaction-timeline__group {
+        padding: 0;
+        background: transparent;
+        border: 0;
+        box-shadow: none;
+        backdrop-filter: none;
+        border-radius: 0;
+    }
+
+    .transaction-timeline__group :deep(.su-panel__head) {
+        padding: 4px 10px 8px;
+    }
+
+    .transaction-timeline__list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 0;
     }
 }
 </style>

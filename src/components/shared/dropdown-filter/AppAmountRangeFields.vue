@@ -37,7 +37,13 @@ const { t } = useI18n();
 <style scoped>
 .app-amount-range {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 12px;
+}
+
+@media (max-width: 767px) {
+    .app-amount-range {
+        grid-template-columns: 1fr;
+    }
 }
 </style>

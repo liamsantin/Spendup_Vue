@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon } from 'vue-tabler-icons';
+import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon, ChevronDownIcon, CheckIcon, LayoutGridIcon } from 'vue-tabler-icons';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppAmountRangeFields from '@/components/shared/dropdown-filter/AppAmountRangeFields.vue';
@@ -29,6 +29,7 @@ import { categorySelectItems, useCategoriesStore } from '@/features/categories';
 import { PAYMENT_METHOD_PAGE_SIZE_MAX, usePaymentMethodsStore } from '@/features/payment-methods';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { tierSelectItems, useTiersStore } from '@/features/tiers';
+import { TRANSACTION_TYPE_ICONS } from '@/features/transactions/typeUi';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -50,6 +51,9 @@ function queryString(name: string): string {
 }
 
 const searchInput = ref(queryString('q').slice(0, TRANSACTION_SEARCH_MAX));
+const searchOpen = ref(false);
+const typeMenuOpen = ref(false);
+const searchFieldRef = ref<HTMLInputElement | null>(null);
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 const canCreate = computed(() => accountsStore.accounts.some((a) => canWriteTransactions(a)));
@@ -432,6 +436,17 @@ const filterCount = computed(
 
 const sortCount = computed(() => (listSort.value === TRANSACTION_SORT_DEFAULT ? 0 : 1));
 
+const typeTabLabel = computed(() =>
+    filterType.value ? t(`transactionsPage.types.${filterType.value}`) : t('transactionsPage.filters.allTypes')
+);
+
+const typeTabIcon = computed(() => (filterType.value ? TRANSACTION_TYPE_ICONS[filterType.value] : LayoutGridIcon));
+
+function selectType(value: TransactionType | '') {
+    filterType.value = value;
+    typeMenuOpen.value = false;
+}
+
 onMounted(() => {
     void recurringStore.loadExpenses({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined);
     void recurringStore.loadIncomes({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined);
@@ -476,12 +491,17 @@ watch(
         }
     }
 );
+
+watch(searchOpen, (open) => {
+    if (!open) return;
+    void nextTick(() => searchFieldRef.value?.focus());
+});
 </script>
 
 <template>
-    <AppPageShell :title="pageTitle" :subtitle="t('transactionsPage.subtitle')">
+    <AppPageShell class="transactions-page" :title="pageTitle" :subtitle="t('transactionsPage.subtitle')">
         <template v-if="!filterBudgetId" #tabs>
-            <nav class="su-tabs" :aria-label="t('transactionsPage.filters.type')">
+            <nav class="su-tabs su-tabs--links transactions-tabs--desktop" :aria-label="t('transactionsPage.filters.type')">
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterType }" @click="filterType = ''">
                     {{ t('transactionsPage.filters.allTypes') }}
                 </button>
@@ -496,10 +516,73 @@ watch(
                     {{ t(`transactionsPage.types.${type}`) }}
                 </button>
             </nav>
+            <v-menu v-model="typeMenuOpen" location="bottom end" :offset="12" scrim class="transactions-tabs--mobile">
+                <template #activator="{ props: menuProps }">
+                    <nav class="transactions-tabs--mobile transactions-type-tabs" :aria-label="t('transactionsPage.filters.type')">
+                        <button
+                            type="button"
+                            class="transactions-type-trigger"
+                            v-bind="menuProps"
+                            :aria-expanded="typeMenuOpen"
+                            :aria-haspopup="true"
+                        >
+                            <span
+                                class="su-tab is-active transactions-type-trigger__pill"
+                                :class="filterType ? `is-${filterType}` : 'is-all'"
+                            >
+                                <span class="su-tab__body">
+                                    <component :is="typeTabIcon" :size="16" />
+                                    {{ typeTabLabel }}
+                                </span>
+                            </span>
+                            <ChevronDownIcon
+                                class="transactions-type-menu__chevron"
+                                :class="{ 'is-open': typeMenuOpen }"
+                                :size="16"
+                                stroke-width="1.8"
+                            />
+                        </button>
+                    </nav>
+                </template>
+                <v-sheet elevation="0" class="su-menu transactions-type-menu">
+                    <p class="transactions-type-menu__label">{{ t('transactionsPage.filters.type') }}</p>
+                    <button
+                        type="button"
+                        class="transactions-type-menu__item is-all"
+                        :class="{ 'is-active': !filterType }"
+                        @click="selectType('')"
+                    >
+                        <span class="transactions-type-menu__icon">
+                            <LayoutGridIcon :size="18" stroke-width="1.75" />
+                        </span>
+                        <span class="transactions-type-menu__name">{{ t('transactionsPage.filters.allTypes') }}</span>
+                        <CheckIcon v-if="!filterType" class="transactions-type-menu__check" :size="16" stroke-width="2" />
+                    </button>
+                    <button
+                        v-for="type in TRANSACTION_TYPES"
+                        :key="type"
+                        type="button"
+                        class="transactions-type-menu__item"
+                        :class="[`is-${type}`, { 'is-active': filterType === type }]"
+                        @click="selectType(type)"
+                    >
+                        <span class="transactions-type-menu__icon">
+                            <component :is="TRANSACTION_TYPE_ICONS[type]" :size="18" />
+                        </span>
+                        <span class="transactions-type-menu__name">{{ t(`transactionsPage.types.${type}`) }}</span>
+                        <CheckIcon
+                            v-if="filterType === type"
+                            class="transactions-type-menu__check"
+                            :size="16"
+                            stroke-width="2"
+                        />
+                    </button>
+                </v-sheet>
+            </v-menu>
         </template>
 
         <template #toolbar>
-            <label class="su-search su-search--discover">
+            <label class="su-search su-search--discover transactions-search--desktop">
                 <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
                 <input
                     class="su-search__input"
@@ -521,6 +604,50 @@ watch(
                     <XIcon :size="16" stroke-width="1.8" />
                 </button>
             </label>
+            <v-menu
+                v-model="searchOpen"
+                location="bottom start"
+                :close-on-content-click="false"
+                :offset="8"
+                scrim
+                class="transactions-search--mobile"
+            >
+                <template #activator="{ props: menuProps }">
+                    <button
+                        type="button"
+                        class="su-btn transactions-search-btn transactions-search--mobile"
+                        :class="{ 'is-active': searchOpen || !!searchInput }"
+                        v-bind="menuProps"
+                        :aria-label="t('transactionsPage.actions.search')"
+                        :aria-expanded="searchOpen"
+                    >
+                        <SearchIcon :size="16" stroke-width="1.6" />
+                    </button>
+                </template>
+                <v-sheet elevation="0" class="su-search su-search-pop">
+                    <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
+                    <input
+                        ref="searchFieldRef"
+                        class="su-search__input"
+                        type="search"
+                        :value="searchInput"
+                        :maxlength="TRANSACTION_SEARCH_MAX"
+                        :placeholder="t('transactionsPage.searchPlaceholder')"
+                        :aria-label="t('transactionsPage.searchPlaceholder')"
+                        autocomplete="off"
+                        @input="onSearchInput(($event.target as HTMLInputElement).value)"
+                    />
+                    <button
+                        v-if="searchInput"
+                        type="button"
+                        class="su-search__orb"
+                        :aria-label="t('transactionsPage.actions.clearSearch')"
+                        @click="clearSearch"
+                    >
+                        <XIcon :size="16" stroke-width="1.8" />
+                    </button>
+                </v-sheet>
+            </v-menu>
             <div class="su-toolbar__actions">
                 <AppDropdownFilter
                     :label="t('transactionsPage.actions.sort')"
@@ -540,6 +667,7 @@ watch(
                 <AppDropdownFilter
                     :label="t('transactionsPage.actions.filter')"
                     :min-width="520"
+                    mobile-sheet
                     :count="filterCount"
                     :reset-disabled="!filtersActive"
                     @reset="resetFilters"
@@ -632,9 +760,194 @@ watch(
     grid-column: 1 / -1;
 }
 
+.transactions-search-btn {
+    width: 34px;
+    padding: 0;
+    flex: none;
+}
+
+.transactions-search-btn.is-active {
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.14);
+    box-shadow: none;
+}
+
+.transactions-type-menu__chevron {
+    flex: none;
+    color: var(--ink-mute);
+    transition: transform 0.28s var(--ease, ease);
+}
+
+.transactions-type-menu__chevron.is-open {
+    transform: rotate(180deg);
+}
+
+.transactions-type-tabs {
+    display: flex;
+    margin-left: auto;
+}
+
+.transactions-type-trigger {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.transactions-type-trigger__pill {
+    --type-tint: rgb(var(--v-theme-primary));
+    pointer-events: none;
+    height: 32px;
+    color: var(--type-tint) !important;
+    background: color-mix(in srgb, var(--type-tint) 14%, transparent) !important;
+    box-shadow: none !important;
+}
+
+.transactions-type-trigger__pill.is-depense {
+    --type-tint: rgb(var(--amount-debit));
+}
+
+.transactions-type-trigger__pill.is-revenu {
+    --type-tint: rgb(var(--amount-credit));
+}
+
+.transactions-type-trigger__pill .su-tab__body {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+@media (max-width: 767px) {
+    .transactions-page :deep(.su-hero > p) {
+        display: none;
+    }
+
+    .transactions-filters {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 4px 4px 8px;
+    }
+
+    .transactions-search--desktop,
+    .transactions-tabs--desktop {
+        display: none !important;
+    }
+
+    .transactions-search-btn {
+        margin-right: auto;
+    }
+}
+
+@media (min-width: 768px) {
+    .transactions-search--mobile,
+    .transactions-tabs--mobile {
+        display: none;
+    }
+}
+
 @media (max-width: 599.98px) {
     .transactions-filters {
         grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<style>
+.transactions-type-menu.su-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: min(280px, calc(100vw - 24px));
+    padding: 10px 8px 8px !important;
+}
+
+.transactions-type-menu__label {
+    margin: 2px 10px 8px;
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+}
+
+.transactions-type-menu__item {
+    --type-tint: rgb(var(--v-theme-primary));
+    appearance: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 16px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s var(--ease, ease);
+}
+
+.transactions-type-menu__item.is-depense {
+    --type-tint: rgb(var(--amount-debit));
+}
+
+.transactions-type-menu__item.is-revenu {
+    --type-tint: rgb(var(--amount-credit));
+}
+
+.transactions-type-menu__item:hover,
+.transactions-type-menu__item:focus-visible {
+    background: color-mix(in srgb, var(--type-tint) 10%, transparent);
+    outline: none;
+}
+
+.transactions-type-menu__item.is-active {
+    background: color-mix(in srgb, var(--type-tint) 14%, transparent);
+}
+
+.transactions-type-menu__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--type-tint) 16%, var(--surface-raised));
+    color: var(--type-tint);
+}
+
+.transactions-type-menu__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.9rem;
+    font-weight: 620;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+}
+
+.transactions-type-menu__check {
+    flex: none;
+    color: var(--type-tint);
+}
+
+@media (max-width: 767px) {
+    .transactions-filters .app-select__legend {
+        font-size: 11px;
+    }
+
+    .transactions-filters .app-select__control,
+    .transactions-filters .app-select__ghost,
+    .transactions-filters .app-select__input {
+        font-size: 0.75rem;
     }
 }
 </style>
