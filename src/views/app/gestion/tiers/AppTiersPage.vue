@@ -263,6 +263,7 @@ watch(searchOpen, (open) => {
                 location="bottom start"
                 :close-on-content-click="false"
                 :offset="8"
+                scrim
                 class="tiers-search--mobile"
             >
                 <template #activator="{ props: menuProps }">
