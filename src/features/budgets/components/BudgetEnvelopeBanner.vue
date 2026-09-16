@@ -42,7 +42,12 @@ const windowLabel = computed(() =>
             <p class="budget-envelope__name">{{ budget.name }}</p>
             <p class="budget-envelope__meta">{{ windowLabel }}</p>
         </div>
-        <button type="button" class="su-orb budget-envelope__close" :aria-label="t('transactionsPage.envelope.dismiss')" @click="emit('dismiss')">
+        <button
+            type="button"
+            class="su-orb budget-envelope__close"
+            :aria-label="t('transactionsPage.envelope.dismiss')"
+            @click="emit('dismiss')"
+        >
             <XIcon :size="18" stroke-width="1.8" />
         </button>
         <div v-if="canSplit" class="budget-envelope__scopes" role="tablist" :aria-label="t('transactionsPage.envelope.scopeLabel')">

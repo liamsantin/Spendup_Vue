@@ -63,6 +63,12 @@ vi.mock('@/features/recurring-payments/stores/recurring-payments-store', () => (
     })
 }));
 
+vi.mock('@/features/budgets/stores/budgets-store', () => ({
+    useBudgetsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
 vi.mock('@/features/user-settings', () => ({
     useUserSettingsStore: () => ({
         ensureLoaded: vi.fn().mockResolvedValue(undefined),

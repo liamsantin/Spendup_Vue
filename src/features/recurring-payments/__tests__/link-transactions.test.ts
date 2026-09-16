@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Account } from '@/features/accounts/types';
-import {
-    isTransactionLinkableToRecurrence,
-    isTransactionLinkedToRecurrence
-} from '@/features/recurring-payments/link-transactions';
+import { isTransactionLinkableToRecurrence, isTransactionLinkedToRecurrence } from '@/features/recurring-payments/link-transactions';
 import type { Transaction } from '@/features/transactions/types';
 
 function account(partial: Partial<Account> = {}): Account {
@@ -85,9 +82,9 @@ describe('recurring link transactions', () => {
                 accounts
             )
         ).toBe(false);
-        expect(isTransactionLinkableToRecurrence(tx({ source: 'recurrence', recurringExpensePublicId: 're-1' }), 'expense', 'acc-1', accounts)).toBe(
-            false
-        );
+        expect(
+            isTransactionLinkableToRecurrence(tx({ source: 'recurrence', recurringExpensePublicId: 're-1' }), 'expense', 'acc-1', accounts)
+        ).toBe(false);
         expect(isTransactionLinkableToRecurrence(tx({ amount: null }), 'expense', 'acc-1', accounts)).toBe(false);
     });
 });

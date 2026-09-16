@@ -77,13 +77,9 @@ const visibleCount = computed(() => {
 const sortCount = computed(() => (listSort.value === TIER_SORT_DEFAULT ? 0 : 1));
 const filterCount = computed(() => (filterRole.value ? 1 : 0));
 
-const natureTabLabel = computed(() =>
-    filterNature.value ? t(`tiersPage.natures.${filterNature.value}`) : t('tiersPage.tabs.all')
-);
+const natureTabLabel = computed(() => (filterNature.value ? t(`tiersPage.natures.${filterNature.value}`) : t('tiersPage.tabs.all')));
 
-const natureTabIcon = computed(() =>
-    filterNature.value ? TIER_NATURE_ICONS[filterNature.value] : LayoutGridIcon
-);
+const natureTabIcon = computed(() => (filterNature.value ? TIER_NATURE_ICONS[filterNature.value] : LayoutGridIcon));
 
 function selectNature(value: TierNature | '') {
     filterNature.value = value;
@@ -221,12 +217,7 @@ watch(searchOpen, (open) => {
                             <component :is="TIER_NATURE_ICONS[nature]" :size="18" stroke-width="1.75" />
                         </span>
                         <span class="tiers-nature-menu__name">{{ t(`tiersPage.natures.${nature}`) }}</span>
-                        <CheckIcon
-                            v-if="filterNature === nature"
-                            class="tiers-nature-menu__check"
-                            :size="16"
-                            stroke-width="2"
-                        />
+                        <CheckIcon v-if="filterNature === nature" class="tiers-nature-menu__check" :size="16" stroke-width="2" />
                     </button>
                 </v-sheet>
             </v-menu>

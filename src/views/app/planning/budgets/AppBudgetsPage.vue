@@ -180,13 +180,7 @@ if (!categoriesStore.initialized) {
             <span v-if="store.initialized && visibleCount" class="su-toolbar__count budgets-toolbar__count">
                 {{ t('budgetsPage.count', { count: visibleCount }, visibleCount) }}
             </span>
-            <v-menu
-                v-model="searchOpen"
-                location="bottom start"
-                :close-on-content-click="false"
-                :offset="8"
-                class="budgets-search--mobile"
-            >
+            <v-menu v-model="searchOpen" location="bottom start" :close-on-content-click="false" :offset="8" class="budgets-search--mobile">
                 <template #activator="{ props: menuProps }">
                     <button
                         type="button"

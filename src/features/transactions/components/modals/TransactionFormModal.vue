@@ -149,10 +149,8 @@ const recurrenceItems = computed(() => {
     if (selected && !options.some((item) => item.value === selected)) {
         const known =
             form.type === 'revenu'
-                ? recurringStore.incomes.find((item) => item.publicId === selected) ??
-                  recurringStore.getDetail('income', selected)
-                : recurringStore.expenses.find((item) => item.publicId === selected) ??
-                  recurringStore.getDetail('expense', selected);
+                ? (recurringStore.incomes.find((item) => item.publicId === selected) ?? recurringStore.getDetail('income', selected))
+                : (recurringStore.expenses.find((item) => item.publicId === selected) ?? recurringStore.getDetail('expense', selected));
         options.push({ title: known?.name ?? selected, value: selected });
     }
     return [...none, ...options];

@@ -23,11 +23,7 @@ import {
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import type { Budget } from '@/features/budgets/types';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
-import {
-    formatOperationDate,
-    matchesTransactionSearch,
-    resolveTransactionAmountDisplay
-} from '@/features/transactions/format';
+import { formatOperationDate, matchesTransactionSearch, resolveTransactionAmountDisplay } from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { TRANSACTION_PAGE_SIZE_MAX, TRANSACTION_SEARCH_MAX, type Transaction } from '@/features/transactions/types';
 
@@ -61,9 +57,7 @@ const search = ref('');
 const selectedIds = ref<string[]>([]);
 const linking = ref(false);
 
-const linkedCategoryIds = computed(() =>
-    props.budget ? budgetLinkedCategoryIds(props.budget, categoriesStore.items) : new Set<string>()
-);
+const linkedCategoryIds = computed(() => (props.budget ? budgetLinkedCategoryIds(props.budget, categoriesStore.items) : new Set<string>()));
 
 const isUnlink = computed(() => props.mode === 'unlink');
 const i18nPrefix = computed(() => (isUnlink.value ? 'budgetsPage.unlinkTransactions' : 'budgetsPage.linkTransactions'));
@@ -140,10 +134,7 @@ async function loadCandidates() {
     if (!budget) return;
     localError.value = null;
     try {
-        await Promise.all([
-            accountsStore.loadAccounts(),
-            categoriesStore.loadList().catch(() => undefined)
-        ]);
+        await Promise.all([accountsStore.loadAccounts(), categoriesStore.loadList().catch(() => undefined)]);
         await transactionsStore.loadList({
             from: budget.periodStart,
             to: budget.periodEnd,

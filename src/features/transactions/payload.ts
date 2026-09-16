@@ -258,6 +258,6 @@ type TransactionFormDirtySource = {
     paymentMethodPublicId: string | null;
     categoryPublicId: string | null;
     tierPublicId?: string | null;
-    recurringExpensePublicId?: string | null;
-    recurringIncomePublicId?: string | null;
+    recurringExpensePublicId: string | null;
+    recurringIncomePublicId: string | null;
 };

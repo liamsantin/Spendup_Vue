@@ -15,11 +15,7 @@ import { displayDueStatus, formatCalendarDate, formatPlannedAmount, isDueLinkabl
 import { isTransactionLinkableToRecurrence } from '@/features/recurring-payments/link-transactions';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import type { RecurringDue, RecurringExpense, RecurringIncome, RecurringKind } from '@/features/recurring-payments/types';
-import {
-    formatOperationDate,
-    matchesTransactionSearch,
-    resolveTransactionAmountDisplay
-} from '@/features/transactions/format';
+import { formatOperationDate, matchesTransactionSearch, resolveTransactionAmountDisplay } from '@/features/transactions/format';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { TRANSACTION_PAGE_SIZE_MAX, TRANSACTION_SEARCH_MAX, type Transaction } from '@/features/transactions/types';
 

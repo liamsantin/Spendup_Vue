@@ -101,13 +101,7 @@ function onActivate(event: MouseEvent) {
         <div class="budget-row__actions" @click.stop>
             <v-menu location="bottom end" :offset="8">
                 <template #activator="{ props: menuProps }">
-                    <button
-                        v-bind="menuProps"
-                        type="button"
-                        class="su-orb"
-                        :disabled="acting"
-                        :aria-label="t('common.more')"
-                    >
+                    <button v-bind="menuProps" type="button" class="su-orb" :disabled="acting" :aria-label="t('common.more')">
                         <DotsVerticalIcon size="18" stroke-width="1.75" />
                     </button>
                 </template>

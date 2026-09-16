@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { displayDueStatus, groupDuesForDetail, isDueLinkable, isDueOpen, sortUpcomingDueRows, todayLocalYmd } from '@/features/recurring-payments/format';
+import {
+    displayDueStatus,
+    groupDuesForDetail,
+    isDueLinkable,
+    isDueOpen,
+    sortUpcomingDueRows,
+    todayLocalYmd
+} from '@/features/recurring-payments/format';
 
 describe('recurring format', () => {
     it('marque en retard une due prévue dont la date est passée', () => {

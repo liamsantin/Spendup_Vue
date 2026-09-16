@@ -570,12 +570,7 @@ watch(searchOpen, (open) => {
                             <component :is="TRANSACTION_TYPE_ICONS[type]" :size="18" />
                         </span>
                         <span class="transactions-type-menu__name">{{ t(`transactionsPage.types.${type}`) }}</span>
-                        <CheckIcon
-                            v-if="filterType === type"
-                            class="transactions-type-menu__check"
-                            :size="16"
-                            stroke-width="2"
-                        />
+                        <CheckIcon v-if="filterType === type" class="transactions-type-menu__check" :size="16" stroke-width="2" />
                     </button>
                 </v-sheet>
             </v-menu>

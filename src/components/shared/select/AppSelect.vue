@@ -145,9 +145,7 @@ const showDetails = computed(() => {
     return props.persistentHint && !!props.hint;
 });
 
-const showsFloatLabel = computed(
-    () => !!props.label && (props.floatLabel || !isPlaceholderValue(props.modelValue))
-);
+const showsFloatLabel = computed(() => !!props.label && (props.floatLabel || !isPlaceholderValue(props.modelValue)));
 
 const placeholder = computed(() => {
     if (typeof attrs.placeholder === 'string' && attrs.placeholder) return attrs.placeholder;

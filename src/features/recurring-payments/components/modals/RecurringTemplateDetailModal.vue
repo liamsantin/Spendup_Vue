@@ -492,13 +492,7 @@ function seeRelatedTransactions() {
                 <EyeIcon :size="16" stroke-width="1.6" />
                 {{ t('recurrencesPage.detail.seeTransactions') }}
             </button>
-            <button
-                v-if="canLinkTransactions"
-                type="button"
-                class="su-btn"
-                :disabled="store.acting"
-                @click="linkOpen = true"
-            >
+            <button v-if="canLinkTransactions" type="button" class="su-btn" :disabled="store.acting" @click="linkOpen = true">
                 <PlusIcon :size="16" stroke-width="1.6" />
                 {{ t('recurrencesPage.actions.addTransactions') }}
             </button>
@@ -507,13 +501,7 @@ function seeRelatedTransactions() {
         </template>
     </AppModalTabs>
 
-    <RecurringLinkTransactionsModal
-        v-model="linkOpen"
-        :kind="kind"
-        :template="template"
-        :dues="dues"
-        @linked="loadDetail"
-    />
+    <RecurringLinkTransactionsModal v-model="linkOpen" :kind="kind" :template="template" :dues="dues" @linked="loadDetail" />
 
     <RecurringDueConfirmModal
         v-model="confirmOpen"

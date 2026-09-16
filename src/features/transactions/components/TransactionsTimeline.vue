@@ -126,11 +126,7 @@ const envelopeLinkedCategoryIds = computed(() =>
     envelopeBudget.value ? budgetLinkedCategoryIds(envelopeBudget.value, categoriesStore.items) : null
 );
 const needsClientFullScan = computed(
-    () =>
-        filterMinAmount.value != null ||
-        filterMaxAmount.value != null ||
-        !!filterPaymentMethodId.value ||
-        !!filterBudgetId.value
+    () => filterMinAmount.value != null || filterMaxAmount.value != null || !!filterPaymentMethodId.value || !!filterBudgetId.value
 );
 const groupByDate = computed(() => listSort.value === 'dateDesc' || listSort.value === 'dateAsc');
 

@@ -110,9 +110,9 @@ describe('budgets link-transactions', () => {
         expect(isTransactionUnlinkableFromBudget(tx({ categoryPublicId: 'cat-food' }), budget(), ids, owner)).toBe(true);
         expect(isTransactionUnlinkableFromBudget(tx({ categoryPublicId: 'cat-market' }), budget(), ids, owner)).toBe(true);
         expect(isTransactionUnlinkableFromBudget(tx(), budget(), ids, owner)).toBe(false);
-        expect(isTransactionUnlinkableFromBudget(tx({ categoryPublicId: 'cat-food' }), budget({ categoryPublicId: null }), null, owner)).toBe(
-            false
-        );
+        expect(
+            isTransactionUnlinkableFromBudget(tx({ categoryPublicId: 'cat-food' }), budget({ categoryPublicId: null }), null, owner)
+        ).toBe(false);
         expect(isTransactionUnlinkableFromBudget(tx({ categoryPublicId: 'cat-food', amount: null }), budget(), ids, owner)).toBe(false);
     });
 });

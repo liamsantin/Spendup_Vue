@@ -208,11 +208,7 @@ function onActivate(event: MouseEvent) {
                         type="button"
                         class="su-orb"
                         :disabled="acting"
-                        :aria-label="
-                            envelopeAction === 'add'
-                                ? t('transactionsPage.envelope.add')
-                                : t('transactionsPage.envelope.remove')
-                        "
+                        :aria-label="envelopeAction === 'add' ? t('transactionsPage.envelope.add') : t('transactionsPage.envelope.remove')"
                         @click.stop="emit('envelope', transaction)"
                     >
                         <PlusIcon v-if="envelopeAction === 'add'" :size="16" stroke-width="1.6" />
@@ -260,17 +256,18 @@ function onActivate(event: MouseEvent) {
                         >
                             <PlusIcon v-if="envelopeAction === 'add'" :size="16" stroke-width="1.6" />
                             <MinusIcon v-else :size="16" stroke-width="1.6" />
-                            {{
-                                envelopeAction === 'add'
-                                    ? t('transactionsPage.envelope.add')
-                                    : t('transactionsPage.envelope.remove')
-                            }}
+                            {{ envelopeAction === 'add' ? t('transactionsPage.envelope.add') : t('transactionsPage.envelope.remove') }}
                         </button>
                         <button type="button" class="su-btn su-btn--ink" :disabled="acting" @click="emit('edit', transaction)">
                             <PencilIcon :size="16" stroke-width="1.6" />
                             {{ t('transactionsPage.actions.edit') }}
                         </button>
-                        <button type="button" class="transaction-actions-menu__delete" :disabled="acting" @click="emit('delete', transaction)">
+                        <button
+                            type="button"
+                            class="transaction-actions-menu__delete"
+                            :disabled="acting"
+                            @click="emit('delete', transaction)"
+                        >
                             {{ t('transactionsPage.actions.delete') }}
                         </button>
                     </v-sheet>

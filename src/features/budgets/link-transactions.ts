@@ -8,10 +8,7 @@ import type { Transaction } from '@/features/transactions/types';
 import type { Account } from '@/features/accounts/types';
 
 /** Catégorie du budget + enfants. `null` = enveloppe globale (toutes les dépenses). */
-export function budgetLinkedCategoryIds(
-    budget: Pick<Budget, 'categoryPublicId'>,
-    categories: readonly Category[]
-): Set<string> | null {
+export function budgetLinkedCategoryIds(budget: Pick<Budget, 'categoryPublicId'>, categories: readonly Category[]): Set<string> | null {
     const id = budget.categoryPublicId?.trim();
     if (!id) return null;
     const ids = new Set<string>([id]);
@@ -67,10 +64,7 @@ export function isTransactionUnlinkableFromBudget(
     return isTransactionCountedInBudget(transaction, budget, linkedCategoryIds);
 }
 
-export function transactionFormFieldsWithCategory(
-    transaction: Transaction,
-    categoryPublicId: string
-): TransactionFormFields | null {
+export function transactionFormFieldsWithCategory(transaction: Transaction, categoryPublicId: string): TransactionFormFields | null {
     if (transaction.amount == null) return null;
     const accountPublicId = sourceAccountPublicId(transaction);
     if (!accountPublicId) return null;
