@@ -11,7 +11,15 @@ import RecurringTemplateDetailModal from '@/features/recurring-payments/componen
 import RecurringTemplateFormModal from '@/features/recurring-payments/components/modals/RecurringTemplateFormModal.vue';
 import { recurrencesPathForTab } from '@/features/recurring-payments/paths';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
-import { isExpenseTemplate, sortTemplates } from '@/features/recurring-payments/format';
+import RecurringTemplateTable from '@/features/recurring-payments/components/list/RecurringTemplateTable.vue';
+import {
+    TEMPLATE_SORT_DEFAULT,
+    isExpenseTemplate,
+    matchesRecurringSearch,
+    sortTemplatesBy,
+    type TemplateSort
+} from '@/features/recurring-payments/format';
+import { downloadCsv } from '@/utils/helpers/csv';
 import {
     pageSizeForClientAmountFilter,
     parseAmountFilter,
@@ -36,9 +44,24 @@ const props = withDefaults(
         accountPublicId?: string | null;
         minAmount?: string | null;
         maxAmount?: string | null;
+        search?: string | null;
+        sort?: TemplateSort;
     }>(),
-    { kind: null, showInactive: true, typeChoiceFirst: null, accountPublicId: null, minAmount: null, maxAmount: null }
+    {
+        kind: null,
+        showInactive: true,
+        typeChoiceFirst: null,
+        accountPublicId: null,
+        minAmount: null,
+        maxAmount: null,
+        search: null,
+        sort: TEMPLATE_SORT_DEFAULT
+    }
 );
+
+const emit = defineEmits<{
+    sort: [value: TemplateSort];
+}>();
 
 const { t } = useI18n();
 const route = useRoute();
@@ -98,11 +121,24 @@ function visibleOf(list: readonly (RecurringExpense | RecurringIncome)[]) {
     });
 }
 
+function accountName(accountPublicId: string): string {
+    return accountsStore.accounts.find((item) => item.publicId === accountPublicId)?.name ?? t('recurrencesPage.unknownAccount');
+}
+
 const items = computed(() => {
-    if (listingKind.value === 'expense') return visibleOf(store.expenses);
-    if (listingKind.value === 'income') return visibleOf(store.incomes);
-    return sortTemplates([...visibleOf(store.expenses), ...visibleOf(store.incomes)]);
+    const scoped =
+        listingKind.value === 'expense'
+            ? visibleOf(store.expenses)
+            : listingKind.value === 'income'
+              ? visibleOf(store.incomes)
+              : [...visibleOf(store.expenses), ...visibleOf(store.incomes)];
+    const needle = props.search?.trim();
+    const found = needle ? scoped.filter((item) => matchesRecurringSearch(needle, item.name, accountName(item.accountPublicId))) : scoped;
+    return sortTemplatesBy(found, props.sort);
 });
+const hasFilters = computed(
+    () => !!(props.search?.trim() || filterAccountId.value || props.minAmount || props.maxAmount || !props.showInactive)
+);
 
 const loading = computed(() => {
     if (listingKind.value === 'expense') return store.loadingExpenses;
@@ -120,6 +156,7 @@ const loadingMore = computed(() => {
     return store.loadingMoreExpenses || store.loadingMoreIncomes;
 });
 const emptyCopy = computed(() => {
+    if (hasFilters.value) return t('recurrencesPage.empty.filtered');
     if (listingKind.value === 'expense') return t('recurrencesPage.empty.expenses');
     if (listingKind.value === 'income') return t('recurrencesPage.empty.incomes');
     return t('recurrencesPage.empty.all');
@@ -202,7 +239,34 @@ watch(createOpen, (value) => {
     }
 });
 
-defineExpose({ openCreate });
+function frequencyLabel(item: RecurringExpense | RecurringIncome): string {
+    return isExpenseTemplate(item)
+        ? t(`recurrencesPage.expenseFrequencies.${item.frequency}`)
+        : t(`recurrencesPage.incomeFrequencies.${item.frequency}`);
+}
+
+function exportCsv() {
+    const header = (['name', 'kind', 'type', 'frequency', 'account', 'nextDue', 'amount', 'status'] as const).map((key) =>
+        t(`recurrencesPage.columns.${key}`)
+    );
+    const rows = items.value.map((item) => [
+        item.name,
+        t(`recurrencesPage.kinds.${templateKind(item)}`),
+        isExpenseTemplate(item)
+            ? t(`recurrencesPage.expenseTypes.${item.expenseType}`)
+            : t(`recurrencesPage.incomeTypes.${item.incomeType}`),
+        frequencyLabel(item),
+        accountName(item.accountPublicId),
+        item.nextDueDate ?? '',
+        item.plannedAmount,
+        item.isActive ? t('recurrencesPage.badges.active') : t('recurrencesPage.badges.paused')
+    ]);
+    downloadCsv('recurrences', header, rows);
+}
+
+const visibleCount = computed(() => items.value.length);
+
+defineExpose({ openCreate, exportCsv, visibleCount });
 
 function canWrite(accountPublicId: string) {
     const account = accountsStore.accounts.find((item) => item.publicId === accountPublicId);
@@ -246,7 +310,7 @@ function loadMore() {
 </script>
 
 <template>
-    <div>
+    <div class="recurring-panel">
         <AppAlert
             v-if="localError || store.error"
             type="error"
@@ -260,12 +324,12 @@ function loadMore() {
             {{ localError || store.error }}
         </AppAlert>
 
-        <div v-if="loading && !items.length" class="su-loading"><span class="su-spin" /></div>
-        <div v-else-if="!items.length" class="su-empty">
-            <p>{{ emptyCopy }}</p>
-        </div>
-        <div v-else class="su-stack">
-            <section class="su-surface recurring-directory__group">
+        <div class="recurring-panel__scroll">
+            <div v-if="loading && !items.length" class="su-loading"><span class="su-spin" /></div>
+            <div v-else-if="!items.length" class="su-empty">
+                <p>{{ emptyCopy }}</p>
+            </div>
+            <div v-else class="recurring-directory">
                 <div class="recurring-directory__list">
                     <RecurringTemplateListItem
                         v-for="(item, index) in items"
@@ -281,13 +345,25 @@ function loadMore() {
                         @delete="deleteTarget = $event"
                     />
                 </div>
-            </section>
-        </div>
+                <RecurringTemplateTable
+                    class="recurring-directory__table"
+                    :items="items"
+                    :sort="sort"
+                    :show-kind="!listingKind"
+                    :acting="store.acting"
+                    :can-write="canWrite"
+                    @open="openDetail"
+                    @edit="editTarget = $event"
+                    @delete="deleteTarget = $event"
+                    @sort="emit('sort', $event)"
+                />
+            </div>
 
-        <div v-if="hasMore" class="su-more">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="loadingMore" @click="loadMore">
-                {{ t('recurrencesPage.loadMore') }}
-            </button>
+            <div v-if="hasMore" class="su-more">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="loadingMore" @click="loadMore">
+                    {{ t('recurrencesPage.loadMore') }}
+                </button>
+            </div>
         </div>
 
         <RecurringTemplateFormModal
@@ -323,8 +399,27 @@ function loadMore() {
 </template>
 
 <style scoped>
-.recurring-directory__group {
-    overflow: visible;
+.recurring-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.recurring-panel__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.recurring-directory {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 16px 10px;
 }
 
 .recurring-directory__list {
@@ -332,6 +427,35 @@ function loadMore() {
     flex-direction: column;
     gap: 2px;
     overflow: visible;
-    padding: 8px;
+}
+
+.recurring-directory__table {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .recurring-directory__list {
+        display: none;
+    }
+
+    .recurring-directory__table {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 0;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 767px) {
+    .recurring-panel__scroll {
+        display: block;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .recurring-directory {
+        display: block;
+        padding: 0 4px 4px;
+    }
 }
 </style>

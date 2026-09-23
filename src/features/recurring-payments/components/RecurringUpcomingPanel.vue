@@ -13,6 +13,7 @@ import {
     formatPlannedAmount,
     isDueOpen,
     isDueSettled,
+    matchesRecurringSearch,
     parseUpcomingDueSort,
     sortUpcomingDueRows,
     todayLocalYmd,
@@ -21,16 +22,9 @@ import {
 import { amountInFilterRange, parseAmountFilter, isAmountRangeFilterActive } from '@/components/shared/dropdown-filter/amount-range';
 import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
-import type { RecurringDue, RecurringKind } from '@/features/recurring-payments/types';
-
-type UpcomingRow = {
-    kind: RecurringKind;
-    templatePublicId: string;
-    templateName: string;
-    accountPublicId: string;
-    currency: string;
-    due: RecurringDue;
-};
+import RecurringUpcomingTable from '@/features/recurring-payments/components/list/RecurringUpcomingTable.vue';
+import { downloadCsv } from '@/utils/helpers/csv';
+import type { RecurringKind, RecurringUpcomingRow as UpcomingRow } from '@/features/recurring-payments/types';
 
 const props = withDefaults(
     defineProps<{
@@ -40,9 +34,14 @@ const props = withDefaults(
         minAmount?: string | null;
         maxAmount?: string | null;
         sort?: UpcomingDueSort;
+        search?: string | null;
     }>(),
-    { settlement: 'all', kind: null, accountPublicId: null, minAmount: null, maxAmount: null, sort: 'dateAsc' }
+    { settlement: 'all', kind: null, accountPublicId: null, minAmount: null, maxAmount: null, sort: 'dateAsc', search: null }
 );
+
+const emit = defineEmits<{
+    sort: [value: UpcomingDueSort];
+}>();
 
 const { t, locale } = useI18n();
 const accountsStore = useAccountsStore();
@@ -65,9 +64,11 @@ const visibleRows = computed(() => {
     const kind = props.kind;
     const minAmount = parseAmountFilter(props.minAmount);
     const maxAmount = parseAmountFilter(props.maxAmount);
+    const needle = props.search?.trim();
     const filtered = rows.value.filter((row) => {
         if (kind && row.kind !== kind) return false;
         if (accountId && row.accountPublicId !== accountId) return false;
+        if (needle && !matchesRecurringSearch(needle, row.templateName, accountName(row.accountPublicId))) return false;
         if (!amountInFilterRange(row.due.actualAmount ?? row.due.plannedAmount, minAmount, maxAmount)) return false;
         if (props.settlement === 'planned') return isDueOpen(row.due, row.kind);
         if (props.settlement === 'settled') return isDueSettled(row.due, row.kind);
@@ -79,7 +80,9 @@ const visibleRows = computed(() => {
 const emptyCopy = computed(() => {
     if (props.settlement === 'planned') return t('recurrencesPage.empty.upcomingPlanned');
     if (props.settlement === 'settled') return t('recurrencesPage.empty.upcomingSettled');
-    if (props.kind || props.accountPublicId || props.minAmount || props.maxAmount) return t('recurrencesPage.empty.upcomingFiltered');
+    if (props.kind || props.accountPublicId || props.minAmount || props.maxAmount || props.search?.trim()) {
+        return t('recurrencesPage.empty.upcomingFiltered');
+    }
     return t('recurrencesPage.empty.upcoming');
 });
 
@@ -165,17 +168,34 @@ function openRow(row: UpcomingRow) {
     detailKind.value = row.kind;
     detailId.value = row.templatePublicId;
 }
+
+function exportCsv() {
+    const header = (['name', 'date', 'kind', 'account', 'amount', 'status'] as const).map((key) => t(`recurrencesPage.columns.${key}`));
+    const lines = visibleRows.value.map((row) => [
+        row.templateName,
+        row.due.scheduledAt,
+        t(`recurrencesPage.kinds.${row.kind}`),
+        accountName(row.accountPublicId),
+        row.due.plannedAmount,
+        t(`recurrencesPage.dueStatuses.${displayDueStatus(row.due, row.kind)}`)
+    ]);
+    downloadCsv('echeances', header, lines);
+}
+
+const visibleCount = computed(() => visibleRows.value.length);
+
+defineExpose({ exportCsv, visibleCount });
 </script>
 
 <template>
-    <div>
+    <div class="recurring-panel">
         <AppAlert v-if="localError" type="error" class="su-alert" closable @dismiss="localError = null">{{ localError }}</AppAlert>
-        <div v-if="loading && !rows.length" class="su-loading"><span class="su-spin" /></div>
-        <div v-else-if="!visibleRows.length" class="su-empty">
-            <p>{{ emptyCopy }}</p>
-        </div>
-        <div v-else class="su-stack">
-            <section class="su-surface recurring-upcoming__group">
+        <div class="recurring-panel__scroll">
+            <div v-if="loading && !rows.length" class="su-loading"><span class="su-spin" /></div>
+            <div v-else-if="!visibleRows.length" class="su-empty">
+                <p>{{ emptyCopy }}</p>
+            </div>
+            <div v-else class="recurring-upcoming">
                 <div class="recurring-upcoming__list">
                     <button
                         v-for="row in visibleRows"
@@ -206,7 +226,15 @@ function openRow(row: UpcomingRow) {
                         </span>
                     </button>
                 </div>
-            </section>
+                <RecurringUpcomingTable
+                    class="recurring-upcoming__table"
+                    :rows="visibleRows"
+                    :sort="parseUpcomingDueSort(sort)"
+                    :account-name="accountName"
+                    @open="openRow"
+                    @sort="emit('sort', $event)"
+                />
+            </div>
         </div>
 
         <RecurringTemplateDetailModal v-model="detailOpen" :kind="detailKind" :public-id="detailId" />
@@ -214,8 +242,27 @@ function openRow(row: UpcomingRow) {
 </template>
 
 <style scoped>
-.recurring-upcoming__group {
-    overflow: visible;
+.recurring-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.recurring-panel__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.recurring-upcoming {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 16px 10px;
 }
 
 .recurring-upcoming__list {
@@ -223,7 +270,36 @@ function openRow(row: UpcomingRow) {
     flex-direction: column;
     gap: 2px;
     overflow: visible;
-    padding: 8px;
+}
+
+.recurring-upcoming__table {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .recurring-upcoming__list {
+        display: none;
+    }
+
+    .recurring-upcoming__table {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 0;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 767px) {
+    .recurring-panel__scroll {
+        display: block;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .recurring-upcoming {
+        display: block;
+        padding: 0 4px 4px;
+    }
 }
 
 .recurring-upcoming-row {

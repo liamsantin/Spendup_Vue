@@ -1,24 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MinusIcon, PaperclipIcon, PencilIcon, PlusIcon, TrashIcon, DotsVerticalIcon } from 'vue-tabler-icons';
-import { TRANSACTION_TYPE_ICONS, transactionTypeColor } from '@/features/transactions/typeUi';
-import { useAuthStore } from '@/features/auth';
+import { useRowTap } from '@/components/shared/board/useRowTap';
 import { UserPhotoAvatar } from '@/features/friends';
-import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
-import { useCategoriesStore } from '@/features/categories/stores/categories-store';
-import { useTiersStore } from '@/features/tiers/stores/tiers-store';
-import {
-    formatOperationDate,
-    formatSignedAmountDelta,
-    movementForAccount,
-    recurrenceAmountVariance,
-    resolveTransactionAmountDisplay,
-    signedAmountForSens,
-    sourceAccountPublicId,
-    targetAccountPublicId
-} from '@/features/transactions/format';
-import { plannedAmountForRecurrenceTransaction } from '@/features/transactions/recurrence-planned';
+import { useTransactionRowDisplay } from '@/features/transactions/composables/useTransactionRowDisplay';
+import { formatOperationDate } from '@/features/transactions/format';
 import type { Transaction } from '@/features/transactions/types';
 
 const props = defineProps<{
@@ -37,96 +24,25 @@ const emit = defineEmits<{
 }>();
 
 const { t, locale } = useI18n();
-const auth = useAuthStore();
-const accountsStore = useAccountsStore();
-const categoriesStore = useCategoriesStore();
-const tiersStore = useTiersStore();
 
-const typeIcon = computed(() => TRANSACTION_TYPE_ICONS[props.transaction.type]);
+const {
+    typeIcon,
+    typeColor,
+    amountDisplay,
+    amountTone,
+    amountVariance,
+    plannedAmountLabel,
+    deltaAmountLabel,
+    accountLine,
+    authorLabel,
+    categoryLabel,
+    tierLabel
+} = useTransactionRowDisplay(toRef(props, 'transaction'), toRef(props, 'statementAccountPublicId'));
 
-const typeColor = computed(() => transactionTypeColor(props.transaction.type));
-
-const statementMovement = computed(() =>
-    props.statementAccountPublicId ? movementForAccount(props.transaction, props.statementAccountPublicId) : undefined
+const tap = useRowTap(
+    () => emit('edit', props.transaction),
+    () => props.canWrite && !props.acting
 );
-
-const amountDisplay = computed(() => {
-    const currency = props.transaction.currency;
-    if (props.statementAccountPublicId && statementMovement.value) {
-        const signed = signedAmountForSens(statementMovement.value.amount, statementMovement.value.sens);
-        return resolveTransactionAmountDisplay(signed, currency, locale.value);
-    }
-    return resolveTransactionAmountDisplay(props.transaction.amount, currency, locale.value);
-});
-
-const amountTone = computed(() => {
-    if (amountDisplay.value.hidden) return '';
-    if (props.statementAccountPublicId && statementMovement.value) {
-        return statementMovement.value.sens === 'debit' ? 'is-debit' : 'is-credit';
-    }
-    if (props.transaction.type === 'depense') return 'is-debit';
-    if (props.transaction.type === 'revenu') return 'is-credit';
-    return '';
-});
-
-const amountVariance = computed(() => {
-    if (amountDisplay.value.hidden) return null;
-    return recurrenceAmountVariance(
-        props.transaction.amount,
-        plannedAmountForRecurrenceTransaction(props.transaction),
-        props.transaction.type
-    );
-});
-
-const plannedAmountLabel = computed(() => {
-    const variance = amountVariance.value;
-    if (!variance) return '';
-    return resolveTransactionAmountDisplay(variance.planned, props.transaction.currency, locale.value).text;
-});
-
-const deltaAmountLabel = computed(() => {
-    const variance = amountVariance.value;
-    if (!variance) return '';
-    return formatSignedAmountDelta(variance.delta, props.transaction.currency, locale.value);
-});
-
-function accountName(publicId: string | null): string {
-    if (!publicId) return t('transactionsPage.unknownAccount');
-    return accountsStore.accounts.find((a) => a.publicId === publicId)?.name ?? t('transactionsPage.unknownAccount');
-}
-
-const accountLine = computed(() => {
-    if (props.transaction.type === 'transfert') {
-        return t('transactionsPage.list.transferLine', {
-            from: accountName(sourceAccountPublicId(props.transaction)),
-            to: accountName(targetAccountPublicId(props.transaction))
-        });
-    }
-    const id = sourceAccountPublicId(props.transaction);
-    return accountName(id);
-});
-
-const authorLabel = computed(() => {
-    const mine = auth.user?.userPublicId;
-    if (mine && props.transaction.createdByUserPublicId === mine) {
-        return t('transactionsPage.list.createdByMe');
-    }
-    const name = props.transaction.createdByDisplayName?.trim();
-    return name ? t('transactionsPage.list.createdBy', { name }) : t('transactionsPage.list.createdByUnknown');
-});
-
-const categoryLabel = computed(() => {
-    const id = props.transaction.categoryPublicId;
-    if (!id) return null;
-    return categoriesStore.findByPublicId(id)?.name ?? null;
-});
-
-/** Contrepartie personnelle : `null` sur un compte partagé ≠ « sans contrepartie », juste « aucune à moi ». */
-const tierLabel = computed(() => {
-    const id = props.transaction.tierPublicId;
-    if (!id) return null;
-    return tiersStore.findByPublicId(id)?.name ?? null;
-});
 
 function onDoubleClick(event: MouseEvent) {
     if (!props.canWrite || props.acting) return;
@@ -149,6 +65,9 @@ function onActivate(event: MouseEvent) {
         :data-transaction-id="transaction.publicId"
         @click="onActivate"
         @dblclick="onDoubleClick"
+        @touchstart.passive="tap.onTouchstart"
+        @touchend="tap.onTouchend"
+        @touchcancel="tap.onTouchcancel"
     >
         <span
             class="su-person__avatar su-person__avatar--tile transaction-list-item__icon"

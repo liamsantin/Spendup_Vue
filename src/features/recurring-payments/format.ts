@@ -149,7 +149,48 @@ export function groupDuesForDetail(items: readonly RecurringDue[]): { existing: 
     return { existing, upcoming };
 }
 
-export const UPCOMING_DUE_SORTS = ['dateAsc', 'dateDesc', 'nameAsc', 'amountDesc', 'amountAsc'] as const;
+export const RECURRING_SEARCH_MAX = 100;
+
+function foldSearch(value: string): string {
+    return value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
+
+/** Vrai si l’un des textes contient la recherche (casse et accents ignorés). */
+export function matchesRecurringSearch(needle: string | null | undefined, ...haystack: (string | null | undefined)[]): boolean {
+    const folded = foldSearch(needle ?? '');
+    if (!folded) return true;
+    return haystack.some((value) => !!value && foldSearch(value).includes(folded));
+}
+
+export const TEMPLATE_SORTS = ['nextDueAsc', 'nextDueDesc', 'nameAsc', 'nameDesc', 'amountDesc', 'amountAsc'] as const;
+export type TemplateSort = (typeof TEMPLATE_SORTS)[number];
+export const TEMPLATE_SORT_DEFAULT: TemplateSort = 'nextDueAsc';
+
+export function parseTemplateSort(value: string | null | undefined): TemplateSort {
+    return value && (TEMPLATE_SORTS as readonly string[]).includes(value) ? (value as TemplateSort) : TEMPLATE_SORT_DEFAULT;
+}
+
+export function sortTemplatesBy<T extends { nextDueDate: string | null; name: string; plannedAmount: number }>(
+    items: readonly T[],
+    sort: TemplateSort
+): T[] {
+    const byName = (a: T, b: T) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+    const byDue = (a: T, b: T) => (a.nextDueDate ?? '9999-12-31').localeCompare(b.nextDueDate ?? '9999-12-31');
+    return [...items].sort((a, b) => {
+        if (sort === 'nextDueDesc') return byDue(b, a) || byName(a, b);
+        if (sort === 'nameAsc') return byName(a, b) || byDue(a, b);
+        if (sort === 'nameDesc') return byName(b, a) || byDue(a, b);
+        if (sort === 'amountDesc') return b.plannedAmount - a.plannedAmount || byName(a, b);
+        if (sort === 'amountAsc') return a.plannedAmount - b.plannedAmount || byName(a, b);
+        return byDue(a, b) || byName(a, b);
+    });
+}
+
+export const UPCOMING_DUE_SORTS = ['dateAsc', 'dateDesc', 'nameAsc', 'nameDesc', 'amountDesc', 'amountAsc'] as const;
 export type UpcomingDueSort = (typeof UPCOMING_DUE_SORTS)[number];
 export const UPCOMING_DUE_SORT_DEFAULT: UpcomingDueSort = 'dateAsc';
 
@@ -177,6 +218,12 @@ export function sortUpcomingDueRows<T extends UpcomingDueRowSortable>(items: rea
         if (sort === 'nameAsc') {
             return (
                 a.templateName.localeCompare(b.templateName, undefined, { sensitivity: 'base' }) ||
+                a.due.scheduledAt.localeCompare(b.due.scheduledAt)
+            );
+        }
+        if (sort === 'nameDesc') {
+            return (
+                b.templateName.localeCompare(a.templateName, undefined, { sensitivity: 'base' }) ||
                 a.due.scheduledAt.localeCompare(b.due.scheduledAt)
             );
         }

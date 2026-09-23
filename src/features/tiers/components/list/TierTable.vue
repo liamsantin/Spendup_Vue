@@ -49,10 +49,12 @@ const columns = computed(() =>
 
 const sortKey = computed(() => {
     const current = props.sort ?? 'nameAsc';
-    return (Object.keys(COLUMN_SORT) as Array<keyof typeof COLUMN_SORT>).find((key) => {
-        const pair = COLUMN_SORT[key];
-        return pair.asc === current || pair.desc === current;
-    }) ?? null;
+    return (
+        (Object.keys(COLUMN_SORT) as Array<keyof typeof COLUMN_SORT>).find((key) => {
+            const pair = COLUMN_SORT[key];
+            return pair.asc === current || pair.desc === current;
+        }) ?? null
+    );
 });
 
 const sortDirection = computed<'asc' | 'desc' | null>(() => {

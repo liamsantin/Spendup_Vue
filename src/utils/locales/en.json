@@ -599,20 +599,27 @@
         "unknownAccount": "Account",
         "groupTitle": "Account: {name}",
         "badges": {
-            "inactive": "Inactive"
+            "inactive": "Inactive",
+            "active": "Active"
         },
         "filters": {
-            "showInactive": "Show inactive"
+            "showInactive": "Show inactive",
+            "type": "Type",
+            "allTypes": "All types"
         },
         "empty": {
             "wallet": "No payment methods yet.",
-            "account": "No payment methods on this account."
+            "account": "No payment methods on this account.",
+            "filtered": "No payment method matches these filters."
         },
         "actions": {
             "filter": "Filter",
             "create": "Add",
             "edit": "Edit",
-            "delete": "Delete"
+            "delete": "Delete",
+            "export": "Export",
+            "search": "Search",
+            "clearSearch": "Clear search"
         },
         "list": {
             "expires": "Exp. {date}"
@@ -667,6 +674,21 @@
                 "expirationPast": "An active method cannot already be expired.",
                 "isActiveRequired": "Active status is required."
             }
+        },
+        "searchPlaceholder": "Search…",
+        "count": "{count} payment method | {count} payment methods",
+        "sort": {
+            "asc": "Ascending",
+            "desc": "Descending"
+        },
+        "columns": {
+            "label": "Label",
+            "type": "Type",
+            "account": "Account",
+            "number": "Number",
+            "expiration": "Expiry",
+            "status": "Status",
+            "reference": "Reference"
         }
     },
     "recurrencesPage": {
@@ -694,7 +716,8 @@
             "income": "Income"
         },
         "badges": {
-            "paused": "Paused"
+            "paused": "Paused",
+            "active": "Active"
         },
         "filters": {
             "showInactive": "Show paused",
@@ -705,14 +728,19 @@
             "dueState": "Status",
             "allDueStates": "All statuses",
             "planned": "Planned",
-            "settled": "Already collected"
+            "settled": "Already collected",
+            "amount": "Amount",
+            "activeOnly": "Active"
         },
         "sort": {
             "dateAsc": "Date (soonest first)",
             "dateDesc": "Date (latest first)",
             "nameAsc": "Name (A → Z)",
             "amountDesc": "Amount (high to low)",
-            "amountAsc": "Amount (low to high)"
+            "amountAsc": "Amount (low to high)",
+            "nameDesc": "Name (Z → A)",
+            "asc": "Ascending",
+            "desc": "Descending"
         },
         "empty": {
             "all": "No recurring items yet.",
@@ -721,7 +749,8 @@
             "upcoming": "No dues in the next three months.",
             "upcomingPlanned": "No planned dues in the next three months.",
             "upcomingSettled": "No collected dues in the next three months.",
-            "upcomingFiltered": "No dues match these filters."
+            "upcomingFiltered": "No dues match these filters.",
+            "filtered": "No recurring items match these filters."
         },
         "actions": {
             "sort": "Sort",
@@ -732,7 +761,10 @@
             "confirmDue": "Confirm",
             "skipDue": "Skip",
             "openTransaction": "Open transaction",
-            "addTransactions": "Add transactions"
+            "addTransactions": "Add transactions",
+            "export": "Export",
+            "search": "Search",
+            "clearSearch": "Clear search"
         },
         "list": {
             "nextDue": "Next due {date}",
@@ -898,6 +930,20 @@
                 "paymentDateInvalid": "Invalid date.",
                 "paymentDateFuture": "Date cannot be in the future."
             }
+        },
+        "searchPlaceholder": "Search…",
+        "count": "{count} recurrence | {count} recurrences",
+        "dueCount": "{count} due | {count} dues",
+        "columns": {
+            "name": "Name",
+            "kind": "Kind",
+            "type": "Type",
+            "frequency": "Frequency",
+            "account": "Account",
+            "nextDue": "Next due",
+            "date": "Date",
+            "amount": "Amount",
+            "status": "Status"
         }
     },
     "budgetsPage": {
@@ -1539,7 +1585,8 @@
             "edit": "Edit",
             "delete": "Delete",
             "search": "Search",
-            "clearSearch": "Clear search"
+            "clearSearch": "Clear search",
+            "export": "Export"
         },
         "filters": {
             "account": "Account",
@@ -1557,7 +1604,9 @@
             "budget": "Budget",
             "allBudgets": "All budgets",
             "from": "From",
-            "to": "To"
+            "to": "To",
+            "period": "Period",
+            "amount": "Amount"
         },
         "envelope": {
             "title": "Budget envelope",
@@ -1688,6 +1737,21 @@
                 "currencyMismatch": "Both accounts of a transfer must share the same currency.",
                 "forbidden": "You are not allowed to change this transaction."
             }
+        },
+        "count": "{count} transaction | {count} transactions",
+        "sortDir": {
+            "asc": "Ascending",
+            "desc": "Descending"
+        },
+        "columns": {
+            "label": "Label",
+            "date": "Date",
+            "account": "Account",
+            "category": "Category",
+            "tier": "Counterparty",
+            "amount": "Amount",
+            "type": "Type",
+            "currency": "Currency"
         }
     },
     "friendsPage": {

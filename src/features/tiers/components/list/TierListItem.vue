@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MailIcon, PencilIcon, PhoneIcon, TrashIcon, WorldIcon, DotsVerticalIcon } from 'vue-tabler-icons';
+import { useRowTap } from '@/components/shared/board/useRowTap';
 import { TIER_NATURE_ICONS } from '@/features/tiers/natureUi';
 import type { Tier } from '@/features/tiers/types';
 
@@ -60,6 +61,11 @@ function onActivate(event: MouseEvent) {
     if (!window.matchMedia('(max-width: 767px)').matches) return;
     emit('edit', props.tier);
 }
+
+const tap = useRowTap(
+    () => emit('edit', props.tier),
+    () => !props.acting
+);
 </script>
 
 <template>
@@ -69,6 +75,9 @@ function onActivate(event: MouseEvent) {
         :data-tier-id="tier.publicId"
         @click="onActivate"
         @dblclick="onDoubleClick"
+        @touchstart.passive="tap.onTouchstart"
+        @touchend="tap.onTouchend"
+        @touchcancel="tap.onTouchcancel"
     >
         <span class="tier-row__icon" :class="`tier-row__icon--${tier.nature}`">
             <component :is="natureIcon" size="18" stroke-width="1.8" />

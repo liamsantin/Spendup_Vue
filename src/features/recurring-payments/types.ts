@@ -43,6 +43,16 @@ export type RecurringDue = {
     notes: string | null;
 };
 
+/** Ligne de la vue Échéances : une échéance et le modèle qui la porte. */
+export type RecurringUpcomingRow = {
+    kind: RecurringKind;
+    templatePublicId: string;
+    templateName: string;
+    accountPublicId: string;
+    currency: string;
+    due: RecurringDue;
+};
+
 export type RecurringDueList = {
     items: RecurringDue[];
     page: number;

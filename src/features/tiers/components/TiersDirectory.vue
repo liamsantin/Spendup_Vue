@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
+import { downloadCsv } from '@/utils/helpers/csv';
 import { isTierNature, isTierRole, matchesTierSearch, parseTierSort, sortTiers, type TierSort } from '@/features/tiers/format';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { TIER_PAGE_SIZE_MAX, TIER_SEARCH_MAX, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
@@ -134,11 +135,6 @@ watch(createOpen, (value) => {
     if (!value) createNature.value = null;
 });
 
-function csvCell(value: string | null | undefined): string {
-    const text = value ?? '';
-    return /[";\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
-}
-
 function exportCsv() {
     const header = (['name', 'nature', 'roles', 'email', 'phone', 'website'] as const).map((key) => t(`tiersPage.columns.${key}`));
     const rows = visibleItems.value.map((tier) => [
@@ -149,13 +145,7 @@ function exportCsv() {
         tier.phone,
         tier.website
     ]);
-    const content = [header, ...rows].map((row) => row.map(csvCell).join(';')).join('\r\n');
-    const url = URL.createObjectURL(new Blob(['\uFEFF', content], { type: 'text/csv;charset=utf-8' }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `tiers-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadCsv('tiers', header, rows);
 }
 
 defineExpose({ openCreate, exportCsv });
@@ -217,46 +207,46 @@ async function confirmDelete() {
         </AppAlert>
 
         <div class="tiers-panel__scroll">
-        <div v-if="store.loading && !store.items.length" class="su-loading">
-            <span class="su-spin" />
-        </div>
-        <div
-            v-else-if="!visibleItems.length"
-            :key="`empty-${searchRevealKey}`"
-            class="su-empty"
-            :class="{ 'is-search-reveal': searchReveals }"
-        >
-            <p>{{ emptyCopy }}</p>
-        </div>
-        <div v-else class="tiers-directory">
-            <div :key="searchRevealKey" class="tiers-directory__list" :class="{ 'is-search-reveal': searchReveals }">
-                <TierListItem
-                    v-for="(tier, index) in visibleItems"
-                    :key="tier.publicId"
-                    :tier="tier"
+            <div v-if="store.loading && !store.items.length" class="su-loading">
+                <span class="su-spin" />
+            </div>
+            <div
+                v-else-if="!visibleItems.length"
+                :key="`empty-${searchRevealKey}`"
+                class="su-empty"
+                :class="{ 'is-search-reveal': searchReveals }"
+            >
+                <p>{{ emptyCopy }}</p>
+            </div>
+            <div v-else class="tiers-directory">
+                <div :key="searchRevealKey" class="tiers-directory__list" :class="{ 'is-search-reveal': searchReveals }">
+                    <TierListItem
+                        v-for="(tier, index) in visibleItems"
+                        :key="tier.publicId"
+                        :tier="tier"
+                        :acting="store.acting"
+                        :style="{ '--i': index }"
+                        @edit="editTarget = $event"
+                        @delete="requestDelete"
+                    />
+                </div>
+                <TierTable
+                    class="tiers-directory__table"
+                    :class="{ 'is-search-reveal': searchReveals }"
+                    :items="visibleItems"
                     :acting="store.acting"
-                    :style="{ '--i': index }"
+                    :sort="listSort"
                     @edit="editTarget = $event"
                     @delete="requestDelete"
+                    @sort="emit('sort', $event)"
                 />
             </div>
-            <TierTable
-                class="tiers-directory__table"
-                :class="{ 'is-search-reveal': searchReveals }"
-                :items="visibleItems"
-                :acting="store.acting"
-                :sort="listSort"
-                @edit="editTarget = $event"
-                @delete="requestDelete"
-                @sort="emit('sort', $event)"
-            />
-        </div>
 
-        <div v-if="store.hasMore" class="su-more">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
-                {{ t('tiersPage.loadMore') }}
-            </button>
-        </div>
+            <div v-if="store.hasMore" class="su-more">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
+                    {{ t('tiersPage.loadMore') }}
+                </button>
+            </div>
         </div>
 
         <TierFormModal v-model="createOpen" :default-nature="createNature" />
@@ -339,7 +329,7 @@ async function confirmDelete() {
 
     .tiers-directory {
         display: block;
-        padding: 0;
+        padding: 0 4px 4px;
     }
 }
 </style>

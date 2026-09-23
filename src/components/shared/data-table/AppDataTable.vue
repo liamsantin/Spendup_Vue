@@ -25,6 +25,8 @@ const props = defineProps<{
     sortDirection?: 'asc' | 'desc' | null;
     sortAscLabel?: string;
     sortDescLabel?: string;
+    /** Largeur de la colonne d’actions (`#head-end`), 92px par défaut. */
+    endWidth?: string;
 }>();
 
 const emit = defineEmits<{
@@ -45,7 +47,7 @@ const { smAndDown } = useDisplay();
 </script>
 
 <template>
-    <div class="app-data-table">
+    <div class="app-data-table" :style="endWidth ? { '--app-data-table-end': endWidth } : undefined">
         <table class="app-data-table__head">
             <colgroup>
                 <col v-for="column in columns" :key="column.key" :style="{ width: column.width }" />
@@ -77,12 +79,7 @@ const { smAndDown } = useDisplay();
                                     <ChevronDownIcon :size="10" stroke-width="2.4" />
                                 </button>
                             </span>
-                            <button
-                                v-if="column.sortable"
-                                type="button"
-                                class="app-data-table__label"
-                                @click="toggleSort(column)"
-                            >
+                            <button v-if="column.sortable" type="button" class="app-data-table__label" @click="toggleSort(column)">
                                 {{ column.label }}
                             </button>
                             <span v-else class="app-data-table__label">{{ column.label }}</span>
@@ -195,7 +192,7 @@ button.app-data-table__label:hover {
 
 .app-data-table__end,
 .app-data-table__end-col {
-    width: 92px;
+    width: var(--app-data-table-end, 92px);
 }
 
 .app-data-table :deep(td:not(:last-child)) {
@@ -238,5 +235,134 @@ button.app-data-table__label:hover {
 
 .app-data-table__arrow:hover {
     color: var(--ink-soft);
+}
+
+/* Lignes : classes partagées par les `<tr>` passés en slot. `--tint` colore avatar et pastille. */
+.app-data-table :deep(.app-data-table__row) {
+    --row: transparent;
+    --tint: rgb(var(--v-theme-primary));
+}
+
+.app-data-table :deep(.app-data-table__row > td) {
+    height: 58px;
+    padding: 10px 16px;
+    background: var(--row);
+    vertical-align: middle;
+    font-size: 0.86rem;
+    color: var(--ink);
+    white-space: nowrap;
+    transition: background 0.22s var(--ease, ease);
+}
+
+.app-data-table :deep(.app-data-table__row > td:first-child) {
+    border-radius: 16px 0 0 16px;
+    padding-left: 18px;
+}
+
+.app-data-table :deep(.app-data-table__row > td:last-child) {
+    border-radius: 0 16px 16px 0;
+    padding-right: 12px;
+}
+
+.app-data-table :deep(.app-data-table__row > td.app-data-table__actions-cell) {
+    padding-left: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .app-data-table :deep(.app-data-table__row:hover) {
+        --row: rgba(16, 16, 20, 0.055);
+        cursor: pointer;
+    }
+}
+
+.app-data-table :deep(.app-data-table__row.is-muted > td:not(.app-data-table__actions-cell)) {
+    opacity: 0.6;
+}
+
+.app-data-table :deep(.app-data-table__name) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.app-data-table :deep(.app-data-table__avatar) {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--tint) 12%, transparent);
+    color: var(--tint);
+}
+
+.app-data-table :deep(.app-data-table__identity) {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    gap: 1px;
+}
+
+.app-data-table :deep(.app-data-table__title) {
+    font-size: 0.88rem;
+    font-weight: 560;
+    letter-spacing: -0.01em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.app-data-table :deep(.app-data-table__muted) {
+    color: #8a8172;
+    font-size: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.app-data-table :deep(.app-data-table__strong) {
+    font-weight: 650;
+    letter-spacing: -0.01em;
+}
+
+.app-data-table :deep(.app-data-table__pill) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    height: 28px;
+    padding: 0 12px 0 10px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    background: color-mix(in srgb, var(--tint) 12%, transparent);
+    color: var(--tint);
+}
+
+.app-data-table :deep(.app-data-table__pill::before) {
+    content: '';
+    flex: none;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.app-data-table :deep(.app-data-table__pill-label) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.app-data-table :deep(.app-data-table__actions) {
+    display: flex;
+    justify-content: flex-end;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.18s var(--ease, ease);
+}
+
+.app-data-table :deep(.app-data-table__row:hover .app-data-table__actions),
+.app-data-table :deep(.app-data-table__row:focus-within .app-data-table__actions) {
+    opacity: 1;
 }
 </style>

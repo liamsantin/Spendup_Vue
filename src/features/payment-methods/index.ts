@@ -8,8 +8,15 @@ export {
     isExpirationStrictlyBeforeTodayUtc,
     formatLastFourDigits,
     formatExpirationDate,
-    sortPaymentMethods
+    sortPaymentMethods,
+    sortPaymentMethodsBy,
+    matchesPaymentMethodSearch,
+    parsePaymentMethodSort,
+    PAYMENT_METHOD_SEARCH_MAX,
+    PAYMENT_METHOD_SORTS,
+    PAYMENT_METHOD_SORT_DEFAULT
 } from '@/features/payment-methods/format';
+export type { PaymentMethodSort } from '@/features/payment-methods/format';
 export {
     buildCreatePaymentMethodPayload,
     buildUpdatePaymentMethodPayload,

@@ -25,8 +25,13 @@ import {
     parseTransactionSort,
     resolveTransactionAmountDisplay,
     sortTransactions,
-    TRANSACTION_SORT_DEFAULT
+    sourceAccountPublicId,
+    targetAccountPublicId,
+    TRANSACTION_SORT_DEFAULT,
+    type TransactionSort
 } from '@/features/transactions/format';
+import { downloadCsv } from '@/utils/helpers/csv';
+import TransactionTable from '@/features/transactions/components/list/TransactionTable.vue';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import {
     TRANSACTION_PAGE_SIZE_DEFAULT,
@@ -45,6 +50,10 @@ import TransactionFormModal from '@/features/transactions/components/modals/Tran
 const props = defineProps<{
     /** Si défini, force le filtre compte (fiche compte) et ignore la query. */
     lockedAccountPublicId?: string | null;
+}>();
+
+const emit = defineEmits<{
+    sort: [value: TransactionSort];
 }>();
 
 const { t, locale } = useI18n();
@@ -395,7 +404,40 @@ function openCreate() {
     createOpen.value = true;
 }
 
-defineExpose({ openCreate });
+function accountNameOf(publicId: string | null): string {
+    if (!publicId) return '';
+    return accountsStore.accounts.find((account) => account.publicId === publicId)?.name ?? t('transactionsPage.unknownAccount');
+}
+
+function exportCsv() {
+    const header = (['date', 'label', 'type', 'account', 'category', 'tier', 'amount', 'currency'] as const).map((key) =>
+        t(`transactionsPage.columns.${key}`)
+    );
+    const rows = visibleItems.value.map((item) => {
+        const account =
+            item.type === 'transfert'
+                ? t('transactionsPage.list.transferLine', {
+                      from: accountNameOf(sourceAccountPublicId(item)),
+                      to: accountNameOf(targetAccountPublicId(item))
+                  })
+                : accountNameOf(sourceAccountPublicId(item));
+        return [
+            item.operationDate,
+            item.label,
+            t(`transactionsPage.types.${item.type}`),
+            account,
+            item.categoryPublicId ? (categoriesStore.findByPublicId(item.categoryPublicId)?.name ?? '') : '',
+            item.tierPublicId ? (tiersStore.findByPublicId(item.tierPublicId)?.name ?? '') : '',
+            item.amount,
+            item.currency
+        ];
+    });
+    downloadCsv('transactions', header, rows);
+}
+
+const visibleCount = computed(() => visibleItems.value.length);
+
+defineExpose({ openCreate, exportCsv, visibleCount });
 
 watch(
     () =>
@@ -441,7 +483,7 @@ async function confirmDelete() {
 </script>
 
 <template>
-    <div>
+    <div class="timeline-panel">
         <AppAlert
             v-if="localError || store.error"
             type="error"
@@ -455,46 +497,60 @@ async function confirmDelete() {
             {{ localError || store.error }}
         </AppAlert>
 
-        <div v-if="store.loading && !store.items.length" class="su-loading">
-            <span class="su-spin" />
-        </div>
-        <div
-            v-else-if="!visibleItems.length"
-            :key="`empty-${searchRevealKey}`"
-            class="su-empty"
-            :class="{ 'is-search-reveal': searchReveals }"
-        >
-            {{ emptyCopy }}
-        </div>
-        <div v-else class="su-stack transactions-timeline">
-            <section v-for="group in dateGroups" :key="group.date" class="su-surface transaction-timeline__group">
-                <header v-if="group.label" class="su-panel__head">
-                    <div>
-                        <h2>{{ group.label }}</h2>
-                    </div>
-                </header>
-                <v-list :key="searchRevealKey" class="py-0 transaction-timeline__list" :class="{ 'is-search-reveal': searchReveals }">
-                    <TransactionListItem
-                        v-for="transaction in group.items"
-                        :key="transaction.publicId"
-                        :transaction="transaction"
-                        :can-write="canWriteItem(transaction)"
-                        :acting="store.acting"
-                        :statement-account-public-id="filterAccountId"
-                        :envelope-action="envelopeActionFor(transaction)"
-                        :style="{ '--i': searchAppearIndex.get(transaction.publicId) ?? 0 }"
-                        @edit="editTarget = $event"
-                        @delete="deleteTarget = $event"
-                        @envelope="onEnvelopeAction"
-                    />
-                </v-list>
-            </section>
-        </div>
+        <div class="timeline-panel__scroll">
+            <div v-if="store.loading && !store.items.length" class="su-loading">
+                <span class="su-spin" />
+            </div>
+            <div
+                v-else-if="!visibleItems.length"
+                :key="`empty-${searchRevealKey}`"
+                class="su-empty"
+                :class="{ 'is-search-reveal': searchReveals }"
+            >
+                <p>{{ emptyCopy }}</p>
+            </div>
+            <div v-else class="timeline-directory">
+                <div class="timeline-directory__list">
+                    <section v-for="group in dateGroups" :key="group.date" class="transaction-timeline__group">
+                        <h2 v-if="group.label" class="transaction-timeline__date">{{ group.label }}</h2>
+                        <div :key="searchRevealKey" class="transaction-timeline__list" :class="{ 'is-search-reveal': searchReveals }">
+                            <TransactionListItem
+                                v-for="transaction in group.items"
+                                :key="transaction.publicId"
+                                :transaction="transaction"
+                                :can-write="canWriteItem(transaction)"
+                                :acting="store.acting"
+                                :statement-account-public-id="filterAccountId"
+                                :envelope-action="envelopeActionFor(transaction)"
+                                :style="{ '--i': searchAppearIndex.get(transaction.publicId) ?? 0 }"
+                                @edit="editTarget = $event"
+                                @delete="deleteTarget = $event"
+                                @envelope="onEnvelopeAction"
+                            />
+                        </div>
+                    </section>
+                </div>
+                <TransactionTable
+                    class="timeline-directory__table"
+                    :class="{ 'is-search-reveal': searchReveals }"
+                    :items="visibleItems"
+                    :sort="listSort"
+                    :acting="store.acting"
+                    :statement-account-public-id="filterAccountId"
+                    :can-write="canWriteItem"
+                    :envelope-action-for="envelopeActionFor"
+                    @edit="editTarget = $event"
+                    @delete="deleteTarget = $event"
+                    @envelope="onEnvelopeAction"
+                    @sort="emit('sort', $event)"
+                />
+            </div>
 
-        <div v-if="store.hasMore" class="su-more">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
-                {{ t('transactionsPage.loadMore') }}
-            </button>
+            <div v-if="store.hasMore" class="su-more">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
+                    {{ t('transactionsPage.loadMore') }}
+                </button>
+            </div>
         </div>
 
         <TransactionFormModal v-model="createOpen" :default-account-public-id="filterAccountId" :default-type="filterType" />
@@ -536,20 +592,59 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
-.transaction-timeline__group {
-    padding: 8px;
-    overflow: visible;
+.timeline-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
-.transaction-timeline__group :deep(.su-panel__head) {
-    padding: 8px 8px 4px;
+.timeline-panel__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.timeline-directory {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 16px 10px;
+}
+
+.timeline-directory__table {
+    display: none;
+}
+
+.transaction-timeline__date {
+    margin: 0;
+    padding: 12px 6px 6px;
+    font-size: 0.78rem;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+    color: var(--ink-muted);
 }
 
 .transaction-timeline__list {
-    overflow: visible !important;
-    background: transparent;
-    /* Gutter for scale(1.012) so the 8px of the surface stays visible after hover. */
-    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+@media (min-width: 768px) {
+    .timeline-directory__list {
+        display: none;
+    }
+
+    .timeline-directory__table {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 0;
+        flex-direction: column;
+    }
 }
 
 .budget-add-toast {
@@ -617,30 +712,15 @@ async function confirmDelete() {
 }
 
 @media (max-width: 767px) {
-    .transactions-timeline {
-        margin-inline: -8px;
-        width: calc(100% + 16px);
-        gap: 16px;
+    .timeline-panel__scroll {
+        display: block;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
-    .transaction-timeline__group {
-        padding: 0;
-        background: transparent;
-        border: 0;
-        box-shadow: none;
-        backdrop-filter: none;
-        border-radius: 0;
-    }
-
-    .transaction-timeline__group :deep(.su-panel__head) {
-        padding: 4px 10px 8px;
-    }
-
-    .transaction-timeline__list {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 0;
+    .timeline-directory {
+        display: block;
+        padding: 0 4px 4px;
     }
 }
 </style>

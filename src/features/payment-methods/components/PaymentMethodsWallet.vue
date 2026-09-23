@@ -8,16 +8,32 @@ import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { canWritePaymentMethods } from '@/features/payment-methods/rights';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
-import type { PaymentMethod } from '@/features/payment-methods/types';
+import {
+    PAYMENT_METHOD_SORT_DEFAULT,
+    matchesPaymentMethodSearch,
+    sortPaymentMethodsBy,
+    type PaymentMethodLabels,
+    type PaymentMethodSort
+} from '@/features/payment-methods/format';
+import type { PaymentMethod, PaymentMethodType } from '@/features/payment-methods/types';
+import { downloadCsv } from '@/utils/helpers/csv';
 import PaymentMethodListItem from '@/features/payment-methods/components/list/PaymentMethodListItem.vue';
+import PaymentMethodTable from '@/features/payment-methods/components/list/PaymentMethodTable.vue';
 import PaymentMethodFormModal from '@/features/payment-methods/components/modals/PaymentMethodFormModal.vue';
 
 const props = withDefaults(
     defineProps<{
         showInactive?: boolean;
+        type?: PaymentMethodType | null;
+        search?: string | null;
+        sort?: PaymentMethodSort;
     }>(),
-    { showInactive: true }
+    { showInactive: true, type: null, search: null, sort: PAYMENT_METHOD_SORT_DEFAULT }
 );
+
+const emit = defineEmits<{
+    sort: [value: PaymentMethodSort];
+}>();
 
 const { t } = useI18n();
 const route = useRoute();
@@ -53,32 +69,56 @@ const filterAccountId = computed(() => accountFromQuery());
 
 const canCreate = computed(() => accountsStore.accounts.some((a) => canWritePaymentMethods(a)));
 
+function accountName(accountPublicId: string): string {
+    return accountsStore.accounts.find((a) => a.publicId === accountPublicId)?.name ?? t('paymentMethodsPage.unknownAccount');
+}
+
+function canWrite(accountPublicId: string): boolean {
+    const account = accountsStore.accounts.find((a) => a.publicId === accountPublicId);
+    return account ? canWritePaymentMethods(account) : false;
+}
+
+const labels: PaymentMethodLabels = {
+    accountName,
+    typeLabel: (type) => t(`paymentMethodsPage.types.${type}`)
+};
+
 const visibleItems = computed(() => {
-    const list = props.showInactive ? store.items : store.items.filter((item) => item.isActive);
     const accountId = filterAccountId.value;
-    return accountId ? list.filter((item) => item.accountPublicId === accountId) : list;
+    const needle = props.search?.trim() ?? '';
+    const list = store.items.filter((item) => {
+        if (!props.showInactive && !item.isActive) return false;
+        if (accountId && item.accountPublicId !== accountId) return false;
+        if (props.type && item.type !== props.type) return false;
+        return !needle || matchesPaymentMethodSearch(item, needle, labels);
+    });
+    return sortPaymentMethodsBy(list, props.sort, labels);
 });
 
-const groups = computed(() => {
-    const order: string[] = [];
-    const map = new Map<string, PaymentMethod[]>();
-    for (const item of visibleItems.value) {
-        if (!map.has(item.accountPublicId)) {
-            map.set(item.accountPublicId, []);
-            order.push(item.accountPublicId);
-        }
-        map.get(item.accountPublicId)!.push(item);
-    }
-    return order.map((id) => ({
-        accountPublicId: id,
-        accountName: accountsStore.accounts.find((a) => a.publicId === id)?.name ?? t('paymentMethodsPage.unknownAccount'),
-        canWrite: (() => {
-            const account = accountsStore.accounts.find((a) => a.publicId === id);
-            return account ? canWritePaymentMethods(account) : false;
-        })(),
-        items: map.get(id)!
-    }));
+const hasFilters = computed(() => !!(props.search?.trim() || props.type || !props.showInactive));
+const emptyCopy = computed(() => {
+    if (hasFilters.value) return t('paymentMethodsPage.empty.filtered');
+    if (filterAccountId.value) return t('paymentMethodsPage.empty.account');
+    return t('paymentMethodsPage.empty.wallet');
 });
+
+function exportCsv() {
+    const header = (['label', 'type', 'account', 'reference', 'number', 'expiration', 'status'] as const).map((key) =>
+        t(`paymentMethodsPage.columns.${key}`)
+    );
+    const rows = visibleItems.value.map((item) => [
+        item.label,
+        labels.typeLabel(item.type),
+        accountName(item.accountPublicId),
+        item.reference,
+        item.lastFourDigits,
+        item.expirationDate,
+        item.isActive ? t('paymentMethodsPage.badges.active') : t('paymentMethodsPage.badges.inactive')
+    ]);
+    downloadCsv('moyens-de-paiement', header, rows);
+}
+
+const visibleCount = computed(() => visibleItems.value.length);
 
 async function loadWallet(force = false) {
     localError.value = null;
@@ -118,7 +158,7 @@ function openCreate() {
     createOpen.value = true;
 }
 
-defineExpose({ openCreate });
+defineExpose({ openCreate, exportCsv, visibleCount });
 
 watch(
     () => route.query.account,
@@ -145,7 +185,7 @@ async function confirmDelete() {
 </script>
 
 <template>
-    <div>
+    <div class="wallet-panel">
         <AppAlert
             v-if="localError || store.error"
             type="error"
@@ -159,37 +199,44 @@ async function confirmDelete() {
             {{ localError || store.error }}
         </AppAlert>
 
-        <div v-if="store.loading && !store.items.length" class="su-loading">
-            <span class="su-spin" />
-        </div>
-        <div v-else-if="!visibleItems.length" class="su-empty">
-            {{ t('paymentMethodsPage.empty.wallet') }}
-        </div>
-        <div v-else class="su-stack">
-            <section v-for="group in groups" :key="group.accountPublicId" class="su-surface">
-                <header class="su-panel__head">
-                    <div>
-                        <h2>{{ t('paymentMethodsPage.groupTitle', { name: group.accountName }) }}</h2>
-                    </div>
-                </header>
-                <v-list class="py-0">
+        <div class="wallet-panel__scroll">
+            <div v-if="store.loading && !store.items.length" class="su-loading">
+                <span class="su-spin" />
+            </div>
+            <div v-else-if="!visibleItems.length" class="su-empty">
+                <p>{{ emptyCopy }}</p>
+            </div>
+            <div v-else class="wallet-directory">
+                <div class="wallet-directory__list">
                     <PaymentMethodListItem
-                        v-for="method in group.items"
+                        v-for="method in visibleItems"
                         :key="method.publicId"
                         :method="method"
-                        :can-write="group.canWrite"
+                        :account-name="filterAccountId ? null : accountName(method.accountPublicId)"
+                        :can-write="canWrite(method.accountPublicId)"
                         :acting="store.acting"
                         @edit="editTarget = $event"
                         @delete="deleteTarget = $event"
                     />
-                </v-list>
-            </section>
-        </div>
+                </div>
+                <PaymentMethodTable
+                    class="wallet-directory__table"
+                    :items="visibleItems"
+                    :sort="sort"
+                    :acting="store.acting"
+                    :account-name="accountName"
+                    :can-write="canWrite"
+                    @edit="editTarget = $event"
+                    @delete="deleteTarget = $event"
+                    @sort="emit('sort', $event)"
+                />
+            </div>
 
-        <div v-if="store.hasMore" class="su-more">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
-                {{ t('paymentMethodsPage.loadMore') }}
-            </button>
+            <div v-if="store.hasMore" class="su-more">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
+                    {{ t('paymentMethodsPage.loadMore') }}
+                </button>
+            </div>
         </div>
 
         <PaymentMethodFormModal v-model="createOpen" :default-account-public-id="filterAccountId" />
@@ -206,3 +253,63 @@ async function confirmDelete() {
         />
     </div>
 </template>
+
+<style scoped>
+.wallet-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.wallet-panel__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.wallet-directory {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 16px 10px;
+}
+
+.wallet-directory__list {
+    display: flex;
+    flex-direction: column;
+}
+
+.wallet-directory__table {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .wallet-directory__list {
+        display: none;
+    }
+
+    .wallet-directory__table {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 0;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 767px) {
+    .wallet-panel__scroll {
+        display: block;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .wallet-directory {
+        display: block;
+        padding: 0 4px 4px;
+    }
+}
+</style>
