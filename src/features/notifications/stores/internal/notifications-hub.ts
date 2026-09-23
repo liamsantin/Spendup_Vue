@@ -13,6 +13,7 @@ import {
     normalizePublicId,
     parseAccountChangedPayload,
     parseCategoryChangedPayload,
+    parseTagChangedPayload,
     parseRecurringExpenseChangedPayload,
     parseRecurringIncomeChangedPayload,
     parseTierChangedPayload,
@@ -23,6 +24,7 @@ import type {
     AppNotification,
     AccountChangedPayload,
     CategoryChangedPayload,
+    TagChangedPayload,
     FriendshipChangedPayload,
     InboxClearedPayload,
     NotificationReceivedPayload,
@@ -60,6 +62,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         friendshipChangeListeners,
         accountChangeListeners,
         categoryChangeListeners,
+        tagChangeListeners,
         tierChangeListeners,
         recurringExpenseChangeListeners,
         recurringIncomeChangeListeners,
@@ -116,6 +119,13 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         const parsed = parseCategoryChangedPayload(payload);
         if (!parsed) return;
         categoryChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /** Live sans inbox : vocabulaire de tags perso (acteur inclus). */
+    function onTagChanged(payload: TagChangedPayload) {
+        const parsed = parseTagChangedPayload(payload);
+        if (!parsed) return;
+        tagChangeListeners.forEach((listener) => listener(parsed));
     }
 
     /** Live sans inbox : annuaire de tiers perso (acteur inclus). */
@@ -248,6 +258,18 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
     }
 
     /**
+     * Abonne un listener aux changements de tags (hors inbox).
+     * @param listener Callback.
+     * @returns Fonction de désabonnement.
+     */
+    function subscribeToTagChanged(listener: (payload: TagChangedPayload) => void) {
+        tagChangeListeners.add(listener);
+        return () => {
+            tagChangeListeners.delete(listener);
+        };
+    }
+
+    /**
      * Abonne un listener aux changements de tiers (hors inbox).
      * @param listener Callback.
      * @returns Fonction de désabonnement.
@@ -297,6 +319,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
             onFriendshipChanged,
             onAccountChanged,
             onCategoryChanged,
+            onTagChanged,
             onTierChanged,
             onRecurringExpenseChanged,
             onRecurringIncomeChanged,
@@ -335,6 +358,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         subscribeToFriendshipChanged,
         subscribeToAccountChanged,
         subscribeToCategoryChanged,
+        subscribeToTagChanged,
         subscribeToTierChanged,
         subscribeToRecurringExpenseChanged,
         subscribeToRecurringIncomeChanged,

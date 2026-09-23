@@ -15,6 +15,7 @@ describe('themeIdFromPath', () => {
         expect(themeIdFromPath('/app/gestion/categories')).toBe('gestion');
         expect(themeIdFromPath('/app/gestion/tiers')).toBe('gestion');
         expect(themeIdFromPath('/app/gestion/files')).toBe('gestion');
+        expect(themeIdFromPath('/app/gestion/tags')).toBe('gestion');
         expect(themeIdFromPath(SETTINGS_PATHS.account)).toBe('settings');
         expect(themeIdFromPath(SETTINGS_PATHS.preferences)).toBe('settings');
         expect(themeIdFromPath(SETTINGS_PATHS.notifications)).toBe('settings');

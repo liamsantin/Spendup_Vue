@@ -1,5 +1,6 @@
 import { formatAccountBalance } from '@/features/accounts/format';
 import type { Currency } from '@/features/accounts/types';
+import { sanitizeTagPublicIds } from '@/features/tags/format';
 import {
     RECURRING_EXPENSE_OPEN_DUE_STATUSES,
     RECURRING_INCOME_OPEN_DUE_STATUSES,
@@ -53,6 +54,13 @@ export function formatPlannedAmount(amount: number, currency: string, locale?: s
 
 export function isExpenseTemplate(item: RecurringExpense | RecurringIncome): item is RecurringExpense {
     return 'expenseType' in item;
+}
+
+export function normalizeRecurringExpense(item: RecurringExpense): RecurringExpense {
+    return {
+        ...item,
+        tagPublicIds: sanitizeTagPublicIds(item.tagPublicIds)
+    };
 }
 
 export function displayDueStatus(

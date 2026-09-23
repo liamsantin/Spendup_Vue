@@ -27,6 +27,7 @@ import { useAccountsStore } from '@/features/accounts';
 import { budgetLinkedTransactionsQuery, parseBudgetTransactionScope, useBudgetsStore } from '@/features/budgets';
 import BudgetEnvelopeBanner from '@/features/budgets/components/BudgetEnvelopeBanner.vue';
 import { categorySelectItems, useCategoriesStore } from '@/features/categories';
+import { useTagsStore } from '@/features/tags/stores/tags-store';
 import { PAYMENT_METHOD_PAGE_SIZE_MAX, usePaymentMethodsStore } from '@/features/payment-methods';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { tierSelectItems, useTiersStore } from '@/features/tiers';
@@ -38,6 +39,7 @@ const store = useTransactionsStore();
 const accountsStore = useAccountsStore();
 const budgetsStore = useBudgetsStore();
 const categoriesStore = useCategoriesStore();
+const tagsStore = useTagsStore();
 const tiersStore = useTiersStore();
 const paymentMethodsStore = usePaymentMethodsStore();
 const recurringStore = useRecurringPaymentsStore();
@@ -61,6 +63,18 @@ const accountItems = computed(() => [
 const categoryItems = computed(() =>
     categorySelectItems(categoriesStore.items, { noneTitle: t('transactionsPage.filters.allCategories') })
 );
+
+const tagItems = computed(() => {
+    const items = [
+        { title: t('transactionsPage.filters.allTags'), value: '' },
+        ...tagsStore.items.map((tag) => ({ title: tag.name, value: tag.publicId }))
+    ];
+    const selected = queryString('tag');
+    if (selected && !items.some((item) => item.value === selected)) {
+        items.push({ title: tagsStore.findByPublicId(selected)?.name ?? selected, value: selected });
+    }
+    return items;
+});
 
 const tierItems = computed(() => {
     const items = tierSelectItems(tiersStore.allKnownItems(), { noneTitle: t('transactionsPage.filters.allTiers') });
@@ -262,6 +276,11 @@ const filterCategoryId = computed({
     set: (value: string) => patchQuery({ category: value || undefined })
 });
 
+const filterTagId = computed({
+    get: () => queryString('tag'),
+    set: (value: string) => patchQuery({ tag: value || undefined })
+});
+
 const filterTierId = computed({
     get: () => queryString('tier'),
     set: (value: string) => patchQuery({ tier: value || undefined })
@@ -319,6 +338,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
     const from = 'from' in patch ? patch.from : queryString('from') || undefined;
     const to = 'to' in patch ? patch.to : queryString('to') || undefined;
     const category = 'category' in patch ? patch.category : queryString('category') || undefined;
+    const tag = 'tag' in patch ? patch.tag : queryString('tag') || undefined;
     const tier = 'tier' in patch ? patch.tier : queryString('tier') || undefined;
     const paymentMethod = 'paymentMethod' in patch ? patch.paymentMethod : queryString('paymentMethod') || undefined;
     const recurringExpensePublicId =
@@ -336,6 +356,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
     if (from) next.from = from;
     if (to) next.to = to;
     if (category) next.category = category;
+    if (tag) next.tag = tag;
     if (tier) next.tier = tier;
     if (paymentMethod) next.paymentMethod = paymentMethod;
     if (recurringExpensePublicId) next.recurringExpensePublicId = recurringExpensePublicId;
@@ -374,6 +395,7 @@ function resetFilters() {
     patchQuery({
         account: undefined,
         category: undefined,
+        tag: undefined,
         tier: undefined,
         paymentMethod: undefined,
         recurringExpensePublicId: undefined,
@@ -396,6 +418,7 @@ const filterCount = computed(
         [
             filterAccountId.value,
             filterCategoryId.value,
+            filterTagId.value,
             filterTierId.value,
             filterPaymentMethodId.value,
             filterRecurrenceKey.value,
@@ -425,6 +448,7 @@ onMounted(() => {
     void recurringStore.loadIncomes({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined);
     void budgetsStore.loadList().catch(() => undefined);
     void paymentMethodsStore.loadList({ pageSize: PAYMENT_METHOD_PAGE_SIZE_MAX }).catch(() => undefined);
+    void tagsStore.loadList().catch(() => undefined);
 });
 
 watch(
@@ -537,6 +561,7 @@ watch(
                             :label="t('transactionsPage.filters.category')"
                             hide-details
                         />
+                        <AppSelect v-model="filterTagId" :items="tagItems" :label="t('transactionsPage.filters.tag')" hide-details />
                         <AppSelect v-model="filterTierId" :items="tierItems" :label="t('transactionsPage.filters.tier')" hide-details />
                         <AppSelect
                             v-model="filterPaymentMethodId"

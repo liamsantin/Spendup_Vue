@@ -62,6 +62,7 @@
             "recurrencesUpcoming": "Échéances",
             "files": "Fichiers",
             "categories": "Catégories",
+            "tags": "Tags",
             "tiers": "Tiers",
             "contracts": "Contrats",
             "budgets": "Budgets",
@@ -905,7 +906,9 @@
             "noCategory": "Aucune",
             "createPaymentMethod": "Nouveau moyen de paiement",
             "createCategory": "Nouvelle catégorie",
+            "createTag": "Nouveau tag",
             "fields": {
+                "isActive": "Actif",
                 "isActive": "Actif",
                 "account": "Compte",
                 "name": "Nom",
@@ -918,6 +921,7 @@
                 "endDate": "Fin",
                 "paymentMethod": "Moyen de paiement",
                 "category": "Catégorie",
+                "tags": "Tags",
                 "tier": "Tiers",
                 "notes": "Notes"
             },
@@ -1221,6 +1225,61 @@
                 "currencyInvalid": "Devise non supportée (CHF, EUR, USD, GBP).",
                 "currencyLocked": "La devise d’un objectif d’épargne ne peut pas être modifiée.",
                 "accountInvalid": "Le compte lié doit être un compte actif dont vous êtes propriétaire."
+            }
+        }
+    },
+    "tagsPage": {
+        "title": "Tags",
+        "subtitle": "Libellés libres, sans hiérarchie. Une écriture peut en porter plusieurs.",
+        "searchPlaceholder": "Rechercher un tag",
+        "count": "{count} tag | {count} tag | {count} tags",
+        "empty": {
+            "list": "Aucun tag pour l’instant. Créez un premier libellé, par exemple Urgent.",
+            "filtered": "Aucun tag ne correspond à cette recherche."
+        },
+        "actions": {
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche"
+        },
+        "list": {
+            "unused": "Non utilisé",
+            "transactions": "{count} transaction | {count} transaction | {count} transactions",
+            "recurringExpenses": "{count} charge | {count} charge | {count} charges"
+        },
+        "deleteModal": {
+            "title": "Supprimer ce tag ?",
+            "body": "Le vocabulaire perdra ce libellé. Les écritures restent.",
+            "bodyUsed": "Il sera retiré de {transactions} et {recurrences}. Les écritures restent."
+        },
+        "errors": {
+            "notFound": "Tag introuvable."
+        },
+        "picker": {
+            "add": "Ajouter un tag",
+            "search": "Rechercher un tag…",
+            "empty": "Aucun tag ne correspond.",
+            "createNew": "Nouveau tag",
+            "create": "Créer « {name} »",
+            "remove": "Retirer {name}",
+            "limit": "Maximum {max} tags par écriture."
+        },
+        "form": {
+            "createTitle": "Nouveau tag",
+            "editTitle": "Modifier le tag",
+            "subtitle": "Le nom est unique (casse ignorée). La couleur est optionnelle.",
+            "clearColor": "Sans couleur",
+            "fields": {
+                "name": "Nom",
+                "color": "Couleur"
+            },
+            "errors": {
+                "nameRequired": "Le nom du tag est obligatoire.",
+                "nameTooLong": "Le nom du tag dépasse 100 caractères.",
+                "nameDuplicate": "Un tag porte déjà ce nom.",
+                "colorInvalid": "La couleur doit être un code hexadécimal (#RGB ou #RRGGBB)."
             }
         }
     },
@@ -1753,6 +1812,8 @@
             "allTypes": "Tous les types",
             "category": "Catégorie",
             "allCategories": "Toutes les catégories",
+            "tag": "Tag",
+            "allTags": "Tous les tags",
             "tier": "Contrepartie",
             "allTiers": "Toutes les contreparties",
             "paymentMethod": "Moyen de paiement",
@@ -1836,6 +1897,7 @@
             "savingsGoalAccountHint": "Choisissez d’abord un compte pour lier un objectif.",
             "savingsGoalEmptyHint": "Aucun objectif compatible. Liez un compte à l’objectif, puis une écriture qui le touche.",
             "categoryPersonalHint": "Cette catégorie n’est visible que par vous, même sur un compte partagé.",
+            "tagsPersonalHint": "Ces tags ne sont visibles que par vous, même sur un compte partagé.",
             "noTier": "Aucune",
             "tierSearchPlaceholder": "Rechercher une contrepartie…",
             "tierNoResults": "Aucune contrepartie ne correspond.",
@@ -1869,6 +1931,7 @@
                 "recurrence": "Récurrence",
                 "paymentMethod": "Moyen de paiement",
                 "category": "Ma catégorie",
+                "tags": "Mes tags",
                 "tier": "Ma contrepartie",
                 "savingsGoal": "Objectif d’épargne",
                 "attachments": "Justificatifs PDF"

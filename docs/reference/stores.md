@@ -13,6 +13,7 @@
 | `friends`       | `features/friends/stores/friends-store.ts`             | Graphe social                           | mémoire                               |
 | `categories`    | `features/categories/stores/categories-store.ts`       | Arbre de catégories perso               | mémoire                               |
 | `tiers`         | `features/tiers/stores/tiers-store.ts`                 | Annuaire perso de contreparties         | mémoire                               |
+| `tags`          | `features/tags/stores/tags-store.ts`                   | Libellés perso (plats)                  | mémoire                               |
 | `files`         | `features/files/stores/files-store.ts`                 | Documents PDF perso                     | mémoire                               |
 | `transactions`  | `features/transactions/stores/transactions-store.ts`   | Journal + justificatifs PDF             | mémoire                               |
 | `savings-goals` | `features/savings-goals/stores/savings-goals-store.ts` | Objectifs d’épargne perso               | mémoire                               |

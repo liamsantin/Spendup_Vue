@@ -56,6 +56,7 @@ Confirmable : prévu / généré-pending / retard. Retard recalculé à la lectu
 - PUT : envoyer **tout** l’état (y compris `isActive`). Omettre `isActive` n’est pas un no-op côté API.
 - PDF charges : `POST /api/files` puis attach. Max **5**. Detach avant delete fichier. Revenus : pas de PJ V1.
 - Catégorie : `depense`/`mixte` charge ; `revenu`/`mixte` revenu.
+- Tags : `tagPublicIds` sur **charges** seulement (max 10, PUT état complet). Confirm d’échéance copie les tags du template sur la TX. Link d’une TX manuelle : tags inchangés. Revenus : pas de tags. Voir `features/tags/contract.md`.
 
 ## Realtime
 

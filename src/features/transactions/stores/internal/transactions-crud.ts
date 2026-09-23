@@ -4,6 +4,7 @@ import { involvedAccountPublicIds, normalizeTransaction, sanitizeFilePublicIds }
 import { transactionsApi } from '@/features/transactions/api';
 import { canWriteTransaction, canWriteTransactions, canWriteTransfer } from '@/features/transactions/rights';
 import { buildCreateTransactionPayload, buildUpdateTransactionPayload, type TransactionFormFields } from '@/features/transactions/payload';
+import { refreshTagCountersIfLoaded } from '@/features/tags/stores/tags-store';
 import { TRANSACTION_PAGE_SIZE_DEFAULT, type ListTransactionsQuery, type Transaction } from '@/features/transactions/types';
 import {
     EMPTY_LIST_QUERY,
@@ -157,6 +158,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                         const result = await transactionsApi.list({
                             accountPublicId: normalized.accountPublicId ?? undefined,
                             categoryPublicId: normalized.categoryPublicId ?? undefined,
+                            tagPublicId: normalized.tagPublicId ?? undefined,
                             tierPublicId: normalized.tierPublicId ?? undefined,
                             recurringExpensePublicId: normalized.recurringExpensePublicId ?? undefined,
                             recurringIncomePublicId: normalized.recurringIncomePublicId ?? undefined,
@@ -223,6 +225,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             const result = await transactionsApi.list({
                 accountPublicId: query.accountPublicId ?? undefined,
                 categoryPublicId: query.categoryPublicId ?? undefined,
+                tagPublicId: query.tagPublicId ?? undefined,
                 tierPublicId: query.tierPublicId ?? undefined,
                 recurringExpensePublicId: query.recurringExpensePublicId ?? undefined,
                 recurringIncomePublicId: query.recurringIncomePublicId ?? undefined,
@@ -279,6 +282,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             const created = normalizeTransaction(await transactionsApi.create(payload));
             upsertItem(created);
             touchHydratedListCaches();
+            refreshTagCountersIfLoaded();
             await refreshAccountBalances(involvedAccountPublicIds(created));
             return created;
         } catch (e: unknown) {
@@ -309,6 +313,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             const updated = normalizeTransaction(await transactionsApi.update(publicId, built.payload));
             upsertItem(updated);
             touchHydratedListCaches();
+            refreshTagCountersIfLoaded();
             await refreshAccountBalances(involvedAccountPublicIds(updated));
             return updated;
         } catch (e: unknown) {
@@ -424,6 +429,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             await loadList({
                 accountPublicId: current.accountPublicId ?? undefined,
                 categoryPublicId: current.categoryPublicId ?? undefined,
+                tagPublicId: current.tagPublicId ?? undefined,
                 tierPublicId: current.tierPublicId ?? undefined,
                 from: current.from ?? undefined,
                 to: current.to ?? undefined,
@@ -455,6 +461,7 @@ export function createTransactionsCrud(state: TransactionsState) {
         await loadList({
             accountPublicId: current.accountPublicId ?? undefined,
             categoryPublicId: current.categoryPublicId ?? undefined,
+            tagPublicId: current.tagPublicId ?? undefined,
             tierPublicId: current.tierPublicId ?? undefined,
             from: current.from ?? undefined,
             to: current.to ?? undefined,

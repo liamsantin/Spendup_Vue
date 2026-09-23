@@ -62,6 +62,7 @@
             "recurrencesUpcoming": "Dues",
             "files": "Files",
             "categories": "Categories",
+            "tags": "Tags",
             "tiers": "Counterparties",
             "contracts": "Contracts",
             "budgets": "Budgets",
@@ -905,6 +906,7 @@
             "noCategory": "None",
             "createPaymentMethod": "New payment method",
             "createCategory": "New category",
+            "createTag": "New tag",
             "fields": {
                 "isActive": "Active",
                 "account": "Account",
@@ -918,6 +920,7 @@
                 "endDate": "End",
                 "paymentMethod": "Payment method",
                 "category": "Category",
+                "tags": "Tags",
                 "tier": "Payee",
                 "notes": "Notes"
             },
@@ -1221,6 +1224,61 @@
                 "currencyInvalid": "Unsupported currency (CHF, EUR, USD, GBP).",
                 "currencyLocked": "A savings goal’s currency cannot be changed.",
                 "accountInvalid": "The linked account must be an active account you own."
+            }
+        }
+    },
+    "tagsPage": {
+        "title": "Tags",
+        "subtitle": "Free, non-hierarchical labels. An entry can carry several.",
+        "searchPlaceholder": "Search a tag",
+        "count": "{count} tag | {count} tag | {count} tags",
+        "empty": {
+            "list": "No tag yet. Create a first label, for example Urgent.",
+            "filtered": "No tag matches this search."
+        },
+        "actions": {
+            "create": "Add",
+            "edit": "Edit",
+            "delete": "Delete",
+            "search": "Search",
+            "clearSearch": "Clear search"
+        },
+        "list": {
+            "unused": "Unused",
+            "transactions": "{count} transaction | {count} transaction | {count} transactions",
+            "recurringExpenses": "{count} recurring expense | {count} recurring expense | {count} recurring expenses"
+        },
+        "deleteModal": {
+            "title": "Delete this tag?",
+            "body": "The vocabulary will lose this label. Entries stay.",
+            "bodyUsed": "It will be removed from {transactions} and {recurrences}. Entries stay."
+        },
+        "errors": {
+            "notFound": "Tag not found."
+        },
+        "picker": {
+            "add": "Add a tag",
+            "search": "Search a tag…",
+            "empty": "No tag matches.",
+            "createNew": "New tag",
+            "create": "Create “{name}”",
+            "remove": "Remove {name}",
+            "limit": "Maximum {max} tags per entry."
+        },
+        "form": {
+            "createTitle": "New tag",
+            "editTitle": "Edit tag",
+            "subtitle": "The name is unique (case ignored). Color is optional.",
+            "clearColor": "No color",
+            "fields": {
+                "name": "Name",
+                "color": "Color"
+            },
+            "errors": {
+                "nameRequired": "Tag name is required.",
+                "nameTooLong": "Tag name exceeds 100 characters.",
+                "nameDuplicate": "A tag already has this name.",
+                "colorInvalid": "Color must be a hex code (#RGB or #RRGGBB)."
             }
         }
     },
@@ -1753,6 +1811,8 @@
             "allTypes": "All types",
             "category": "Category",
             "allCategories": "All categories",
+            "tag": "Tag",
+            "allTags": "All tags",
             "tier": "Counterparty",
             "allTiers": "All counterparties",
             "paymentMethod": "Payment method",
@@ -1836,6 +1896,7 @@
             "savingsGoalAccountHint": "Pick an account first to link a goal.",
             "savingsGoalEmptyHint": "No compatible goal. Link an account to the goal, then an entry that touches it.",
             "categoryPersonalHint": "This category is only visible to you, even on a shared account.",
+            "tagsPersonalHint": "These tags are only visible to you, even on a shared account.",
             "noTier": "None",
             "tierSearchPlaceholder": "Search a counterparty…",
             "tierNoResults": "No counterparty matches.",
@@ -1869,6 +1930,7 @@
                 "recurrence": "Recurrence",
                 "paymentMethod": "Payment method",
                 "category": "My category",
+                "tags": "My tags",
                 "tier": "My counterparty",
                 "savingsGoal": "Savings goal",
                 "attachments": "PDF receipts"

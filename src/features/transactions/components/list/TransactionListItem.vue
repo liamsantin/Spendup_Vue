@@ -7,6 +7,7 @@ import { UserPhotoAvatar } from '@/features/friends';
 import { useTransactionRowDisplay } from '@/features/transactions/composables/useTransactionRowDisplay';
 import { formatOperationDate } from '@/features/transactions/format';
 import type { Transaction } from '@/features/transactions/types';
+import TagChips from '@/features/tags/components/list/TagChips.vue';
 
 const props = defineProps<{
     transaction: Transaction;
@@ -92,6 +93,7 @@ function onActivate(event: MouseEvent) {
                 <template v-if="transaction.source === 'recurrence'"> · {{ t('transactionsPage.list.sourceRecurrence') }}</template>
                 · {{ accountLine }}
                 <template v-if="categoryLabel"> · {{ t('transactionsPage.list.myCategory', { name: categoryLabel }) }}</template>
+                <TagChips :tag-public-ids="transaction.tagPublicIds" compact class="transaction-list-item__tags" />
                 <template v-if="tierLabel">
                     ·
                     <span class="transaction-list-item__tier">{{ t('transactionsPage.list.myTier', { name: tierLabel }) }}</span>
@@ -281,6 +283,11 @@ function onActivate(event: MouseEvent) {
 
 .transaction-list-item__delta.is-favorable {
     color: rgb(var(--amount-credit));
+}
+
+.transaction-list-item__tags {
+    margin-left: 4px;
+    vertical-align: middle;
 }
 
 .transaction-list-item__tier {

@@ -53,6 +53,7 @@ function transaction(partial: Partial<Transaction> = {}): Transaction {
         movements: [{ accountPublicId: 'a1', amount: 10, sens: 'debit' }],
         files: [],
         savingsGoalPublicId: null,
+        tagPublicIds: [],
         ...partial
     };
 }

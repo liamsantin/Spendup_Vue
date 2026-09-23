@@ -20,6 +20,7 @@ import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
+import { useTagsStore } from '@/features/tags/stores/tags-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
@@ -169,6 +170,7 @@ export function createAuthSession() {
         usePaymentMethodsStore().reset();
         useTransactionsStore().reset();
         useCategoriesStore().reset();
+        useTagsStore().reset();
         useTiersStore().reset();
         useRecurringPaymentsStore().reset();
         useBudgetsStore().reset();

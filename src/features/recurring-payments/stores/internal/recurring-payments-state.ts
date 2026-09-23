@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
-import { sortDues, sortTemplates } from '@/features/recurring-payments/format';
+import { sortDues, sortTemplates, normalizeRecurringExpense } from '@/features/recurring-payments/format';
+import { withoutTagPublicId } from '@/features/tags/format';
 import {
     RECURRING_PAGE_SIZE_DEFAULT,
     type RecurringDue,
@@ -86,7 +87,7 @@ export function createRecurringPaymentsState() {
     function setExpenseList(key: string, nextItems: RecurringExpense[], meta?: { page?: number; pageSize?: number; totalCount?: number }) {
         const prev = expensesByKey.get(key);
         const entry: RecurringCacheEntry<RecurringExpense> = {
-            items: sortTemplates(nextItems),
+            items: sortTemplates(nextItems.map(normalizeRecurringExpense)),
             page: meta?.page ?? prev?.page ?? 1,
             pageSize: meta?.pageSize ?? prev?.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT,
             totalCount: meta?.totalCount ?? prev?.totalCount ?? nextItems.length
@@ -150,16 +151,17 @@ export function createRecurringPaymentsState() {
     }
 
     function upsertExpense(item: RecurringExpense) {
-        details.set(`expense:${item.publicId}`, item);
+        const next = normalizeRecurringExpense(item);
+        details.set(`expense:${next.publicId}`, next);
         detailsEpoch.value += 1;
-        const keys = new Set<string>([listCacheKey('expense'), listCacheKey('expense', item.accountPublicId), ...expensesByKey.keys()]);
+        const keys = new Set<string>([listCacheKey('expense'), listCacheKey('expense', next.accountPublicId), ...expensesByKey.keys()]);
         for (const key of keys) {
             const entry = expensesByKey.get(key);
-            const without = (entry?.items ?? []).filter((row) => row.publicId !== item.publicId);
+            const without = (entry?.items ?? []).filter((row) => row.publicId !== next.publicId);
             const existed = without.length !== (entry?.items.length ?? 0);
-            const matchesAccount = key === listCacheKey('expense') || key === listCacheKey('expense', item.accountPublicId);
+            const matchesAccount = key === listCacheKey('expense') || key === listCacheKey('expense', next.accountPublicId);
             if (!existed && !matchesAccount) continue;
-            const nextItems = matchesAccount || existed ? [...without, item] : without;
+            const nextItems = matchesAccount || existed ? [...without, next] : without;
             const nextTotal = existed
                 ? (entry?.totalCount ?? nextItems.length)
                 : matchesAccount
@@ -211,6 +213,31 @@ export function createRecurringPaymentsState() {
             if (nextItems.length === entry.items.length) continue;
             setIncomeList(key, nextItems, { totalCount: Math.max(0, entry.totalCount - 1) });
         }
+    }
+
+    function stripTag(publicId: string) {
+        const id = publicId.trim();
+        if (!id) return;
+        for (const key of [...expensesByKey.keys()]) {
+            const prev = expensesByKey.get(key);
+            if (!prev) continue;
+            let changed = false;
+            const nextItems = prev.items.map((item) => {
+                if (!(item.tagPublicIds ?? []).includes(id)) return item;
+                changed = true;
+                return { ...item, tagPublicIds: withoutTagPublicId(item.tagPublicIds, id) };
+            });
+            if (changed) setExpenseList(key, nextItems);
+        }
+        let detailsChanged = false;
+        for (const [key, item] of details.entries()) {
+            if (!key.startsWith('expense:')) continue;
+            const expense = item as RecurringExpense;
+            if (!(expense.tagPublicIds ?? []).includes(id)) continue;
+            details.set(key, { ...expense, tagPublicIds: withoutTagPublicId(expense.tagPublicIds, id) });
+            detailsChanged = true;
+        }
+        if (detailsChanged) detailsEpoch.value += 1;
     }
 
     function setDues(
@@ -306,6 +333,7 @@ export function createRecurringPaymentsState() {
         upsertIncome,
         removeExpenseLocal,
         removeIncomeLocal,
+        stripTag,
         setDues,
         upsertDue,
         getDetail,

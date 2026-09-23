@@ -107,4 +107,21 @@ describe('recurring payload', () => {
         );
         expect(result).toMatchObject({ ok: false, code: 'paymentDateFuture' });
     });
+
+    it('envoie tagPublicIds sur une charge, jamais sur un revenu', () => {
+        const expense = buildCreateExpensePayload(expenseFields({ tagPublicIds: ['t-1', 't-1', 't-2'] }), ctx);
+        expect(expense.ok).toBe(true);
+        if (expense.ok) expect(expense.payload.tagPublicIds).toEqual(['t-1', 't-2']);
+
+        const empty = buildCreateExpensePayload(expenseFields(), ctx);
+        expect(empty.ok).toBe(true);
+        if (empty.ok) expect(empty.payload.tagPublicIds).toEqual([]);
+
+        const income = buildCreateIncomePayload(
+            { ...emptyRecurringForm('income', 'acc-1'), name: 'Salaire', plannedAmount: '5000', startDate: '2026-08-01' },
+            ctx
+        );
+        expect(income.ok).toBe(true);
+        if (income.ok) expect(income.payload).not.toHaveProperty('tagPublicIds');
+    });
 });

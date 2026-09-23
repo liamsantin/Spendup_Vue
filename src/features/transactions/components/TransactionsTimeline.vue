@@ -16,6 +16,7 @@ import {
     transactionFormFieldsWithCategory
 } from '@/features/budgets/link-transactions';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
+import { useTagsStore } from '@/features/tags/stores/tags-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import {
@@ -62,6 +63,7 @@ const router = useRouter();
 const accountsStore = useAccountsStore();
 const budgetsStore = useBudgetsStore();
 const categoriesStore = useCategoriesStore();
+const tagsStore = useTagsStore();
 const tiersStore = useTiersStore();
 const paymentMethodsStore = usePaymentMethodsStore();
 const store = useTransactionsStore();
@@ -105,6 +107,7 @@ const filterAccountId = computed(() => props.lockedAccountPublicId?.trim() || qu
 const filterFrom = computed(() => (props.lockedAccountPublicId ? null : queryString('from')));
 const filterTo = computed(() => (props.lockedAccountPublicId ? null : queryString('to')));
 const filterCategoryId = computed(() => (props.lockedAccountPublicId ? null : queryString('category')));
+const filterTagId = computed(() => (props.lockedAccountPublicId ? null : queryString('tag')));
 const filterTierId = computed(() => (props.lockedAccountPublicId ? null : queryString('tier')));
 const filterPaymentMethodId = computed(() => (props.lockedAccountPublicId ? null : queryString('paymentMethod')));
 const filterRecurringExpenseId = computed(() => (props.lockedAccountPublicId ? null : queryString('recurringExpensePublicId')));
@@ -164,6 +167,7 @@ const visibleItems = computed(() => {
                 (id) => accountsStore.accounts.find((account) => account.publicId === id)?.name ?? ''
             ),
             categoryName: item.categoryPublicId ? (categoriesStore.findByPublicId(item.categoryPublicId)?.name ?? null) : null,
+            tagNames: (item.tagPublicIds ?? []).map((id) => tagsStore.findByPublicId(id)?.name).filter((name): name is string => !!name),
             tierHaystack: tier ? tierSearchHaystack(tier) : null,
             paymentMethodLabel: item.paymentMethodPublicId
                 ? (paymentMethodsStore.allKnownItems().find((method) => method.publicId === item.paymentMethodPublicId)?.label ?? null)
@@ -325,6 +329,7 @@ async function loadTimeline(force = false) {
             store.loadList({
                 accountPublicId: filterAccountId.value ?? undefined,
                 categoryPublicId: filterBudgetId.value ? undefined : (filterCategoryId.value ?? undefined),
+                tagPublicId: filterTagId.value ?? undefined,
                 tierPublicId: filterTierId.value ?? undefined,
                 recurringExpensePublicId: filterRecurringExpenseId.value ?? undefined,
                 recurringIncomePublicId: filterRecurringIncomeId.value ?? undefined,
@@ -334,6 +339,7 @@ async function loadTimeline(force = false) {
                 force
             }),
             categoriesStore.loadList({ force }).catch(() => undefined),
+            tagsStore.loadList({ force }).catch(() => undefined),
             tiersStore.loadList({ pageSize: TIER_PAGE_SIZE_MAX, force }).catch(() => undefined),
             paymentMethodsStore.loadList({ force }).catch(() => undefined)
         ]);
@@ -347,16 +353,21 @@ async function loadTimeline(force = false) {
         const err = AppError.fromUnknown(e);
         if (err.status === 404) {
             localError.value = t('transactionsPage.errors.notFound');
-            // 404 : compte inconnu, ou tier filtré qui n’appartient pas (plus) à l’utilisateur → on retire le filtre fautif.
+            // 404 : compte inconnu, tag/tier/récurrence filtrés qui n’appartiennent pas (plus) à l’utilisateur → on retire le filtre fautif.
             if (
                 !props.lockedAccountPublicId &&
-                (filterAccountId.value || filterTierId.value || filterRecurringExpenseId.value || filterRecurringIncomeId.value)
+                (filterAccountId.value ||
+                    filterTagId.value ||
+                    filterTierId.value ||
+                    filterRecurringExpenseId.value ||
+                    filterRecurringIncomeId.value)
             ) {
                 const dropTier = !!filterTierId.value;
+                const dropTag = !!filterTagId.value;
                 const dropRecurring = !!(filterRecurringExpenseId.value || filterRecurringIncomeId.value);
                 await store
                     .loadList({
-                        accountPublicId: dropTier || dropRecurring ? (filterAccountId.value ?? undefined) : undefined,
+                        accountPublicId: dropTier || dropTag || dropRecurring ? (filterAccountId.value ?? undefined) : undefined,
                         from: filterFrom.value ?? undefined,
                         to: filterTo.value ?? undefined,
                         categoryPublicId: filterCategoryId.value ?? undefined,
@@ -366,7 +377,7 @@ async function loadTimeline(force = false) {
                 await router.replace({
                     path: '/app/finances/transactions',
                     query: {
-                        ...(dropTier || dropRecurring ? (filterAccountId.value ? { account: filterAccountId.value } : {}) : {}),
+                        ...(dropTier || dropTag || dropRecurring ? (filterAccountId.value ? { account: filterAccountId.value } : {}) : {}),
                         ...(filterType.value ? { type: filterType.value } : {}),
                         ...(filterFrom.value ? { from: filterFrom.value } : {}),
                         ...(filterTo.value ? { to: filterTo.value } : {}),
@@ -446,6 +457,7 @@ watch(
             filterFrom.value,
             filterTo.value,
             filterCategoryId.value,
+            filterTagId.value,
             filterTierId.value,
             filterPaymentMethodId.value,
             filterRecurringExpenseId.value,

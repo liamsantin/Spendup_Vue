@@ -60,6 +60,7 @@ function tx(partial: Partial<Transaction> = {}): Transaction {
         ],
         files: [],
         savingsGoalPublicId: null,
+        tagPublicIds: [],
         ...partial
     };
 }

@@ -208,6 +208,7 @@ describe('normalizeAppNotification', () => {
             normalizePublicId,
             parseAccountChangedPayload,
             parseCategoryChangedPayload,
+            parseTagChangedPayload,
             parseBudgetChangedPayload,
             parseSavingsGoalChangedPayload,
             getAccountPublicId
@@ -258,6 +259,19 @@ describe('normalizeAppNotification', () => {
             categoryPublicId: 'cat-1'
         });
         expect(parseCategoryChangedPayload({ change: 'nope', categoryPublicId: 'cat-1' })).toBeNull();
+        expect(parseTagChangedPayload({ change: 'tagCreated', tagPublicId: 't-1' })).toEqual({
+            change: 'tagCreated',
+            tagPublicId: 't-1'
+        });
+        expect(parseTagChangedPayload({ change: 'tagUpdated', tagPublicId: 't-1' })).toEqual({
+            change: 'tagUpdated',
+            tagPublicId: 't-1'
+        });
+        expect(parseTagChangedPayload({ change: 'tagDeleted', tagPublicId: 't-1' })).toEqual({
+            change: 'tagDeleted',
+            tagPublicId: 't-1'
+        });
+        expect(parseTagChangedPayload({ change: 'nope', tagPublicId: 't-1' })).toBeNull();
         expect(parseBudgetChangedPayload({ change: 'budgetCreated', budgetPublicId: 'b-1' })).toEqual({
             change: 'budgetCreated',
             budgetPublicId: 'b-1'

@@ -26,6 +26,7 @@ import {
     type RecurringIncomeFrequency,
     type RecurringIncomeType
 } from '@/features/recurring-payments/types';
+import TagPicker from '@/features/tags/components/forms/TagPicker.vue';
 import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
 
 export type RecurringTemplateFormFieldErrors = {
@@ -351,6 +352,14 @@ function openPaymentMethodCreate(name: string) {
                     :create-named-label="t('transactionsPage.form.categoryCreate', { name: '{name}' })"
                     @create="openCategoryCreate"
                 />
+            </v-col>
+        </v-row>
+        <v-row v-if="showClassification && isExpense" class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <label class="v-label font-weight-medium">{{ t('recurrencesPage.form.fields.tags') }}</label>
+            </v-col>
+            <v-col cols="12" sm="9">
+                <TagPicker v-model="form.tagPublicIds" />
             </v-col>
         </v-row>
         <v-row v-if="showClassification" class="align-center" no-gutters>

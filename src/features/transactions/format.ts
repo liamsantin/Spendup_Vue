@@ -1,5 +1,6 @@
 import { formatAccountBalance } from '@/features/accounts/format';
 import type { Currency } from '@/features/accounts/types';
+import { sanitizeTagPublicIds } from '@/features/tags/format';
 import { matchesSearchTokens } from '@/utils/helpers/text-search';
 import type { MovementSens, Transaction, TransactionFile, TransactionMovement, TransactionType } from '@/features/transactions/types';
 import { TRANSACTION_FILES_MAX } from '@/features/transactions/types';
@@ -134,6 +135,7 @@ export type TransactionSearchHints = {
     typeLabel?: string;
     accountNames?: readonly string[];
     categoryName?: string | null;
+    tagNames?: readonly string[];
     tierHaystack?: string | null;
     paymentMethodLabel?: string | null;
     amountText?: string | null;
@@ -154,6 +156,7 @@ export function matchesTransactionSearch(item: Transaction, needle: string, hint
         hints.amountText,
         ...(hints.accountNames ?? []),
         hints.categoryName,
+        ...(hints.tagNames ?? []),
         hints.tierHaystack,
         hints.paymentMethodLabel,
         ...(item.files ?? []).map((file) => file.nameOriginal)
@@ -226,7 +229,8 @@ export function normalizeTransaction(transaction: Transaction, previous?: Transa
         duePublicId: transaction.duePublicId ?? null,
         duePlannedAmount: source === 'recurrence' ? (readDuePlannedAmount(transaction) ?? previous?.duePlannedAmount ?? null) : null,
         files: normalizeTransactionFiles(transaction.files),
-        savingsGoalPublicId: transaction.savingsGoalPublicId ?? null
+        savingsGoalPublicId: transaction.savingsGoalPublicId ?? null,
+        tagPublicIds: sanitizeTagPublicIds(transaction.tagPublicIds)
     };
 }
 

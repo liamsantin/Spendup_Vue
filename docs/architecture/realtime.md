@@ -21,6 +21,7 @@
 | `friendshipChanged`       | fan-out → `friends` store (pas de badge)                          |
 | `accountChanged`          | fan-out → `accounts` / payment-methods / transactions / **savings-goals** (transaction*) |
 | `categoryChanged`         | fan-out → `categories` store (acteur inclus, pas d’inbox)         |
+| `tagChanged`              | fan-out → `tags` store (acteur inclus, pas d’inbox)               |
 | `tierChanged`             | fan-out → `tiers` store (acteur inclus, pas d’inbox)              |
 | `recurringExpenseChanged` | fan-out → `recurring-payments` store (acteur inclus, pas d’inbox) |
 | `recurringIncomeChanged`  | fan-out → `recurring-payments` store (acteur inclus, pas d’inbox) |

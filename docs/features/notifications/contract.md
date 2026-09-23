@@ -38,6 +38,7 @@ Hub `{apiBase}/hubs/realtime` — détails `architecture/realtime.md`.
 | `friendshipChanged`       | listeners only — **pas** de badge            |
 | `accountChanged`          | fan-out stores comptes / PM / transactions   |
 | `categoryChanged`         | fan-out store catégories (acteur inclus)     |
+| `tagChanged`              | fan-out store tags (acteur inclus)           |
 | `recurringExpenseChanged` | fan-out store récurrences (acteur inclus)    |
 | `recurringIncomeChanged`  | fan-out store récurrences (acteur inclus)    |
 | `budgetChanged`           | fan-out store budgets (acteur inclus)        |

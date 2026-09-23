@@ -17,7 +17,8 @@ import {
     SecurityNavIcon,
     SettingsNavIcon,
     SubscriptionNavIcon,
-    TiersNavIcon
+    TiersNavIcon,
+    TagsNavIcon
 } from '@/layouts/shell/solarNavIcons';
 // Les icônes de thème (parents) sont déjà en bold-duotone via solarNavIcons.
 
@@ -132,6 +133,11 @@ const sidebarThemes: sidebarTheme[] = [
                 title: 'nav.items.tiers',
                 icon: TiersNavIcon,
                 to: '/app/gestion/tiers'
+            },
+            {
+                title: 'nav.items.tags',
+                icon: TagsNavIcon,
+                to: '/app/gestion/tags'
             }
         ]
     },

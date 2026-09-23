@@ -125,6 +125,14 @@ export type CategoryChangedPayload = {
     categoryPublicId: string;
 };
 
+/** Payload SignalR `tagChanged` — sync du vocabulaire perso (acteur inclus, pas d’inbox). */
+export type TagChange = 'tagCreated' | 'tagUpdated' | 'tagDeleted';
+
+export type TagChangedPayload = {
+    change: TagChange;
+    tagPublicId: string;
+};
+
 /** Payload SignalR `tierChanged` — sync de l’annuaire de tiers perso (acteur inclus). */
 export type TierChange = 'tierCreated' | 'tierUpdated' | 'tierDeleted';
 

@@ -28,6 +28,7 @@
 | Accounts      | [`features/accounts/contract.md`](features/accounts/contract.md)           |
 | Categories    | [`features/categories/contract.md`](features/categories/contract.md)       |
 | Tiers         | [`features/tiers/contract.md`](features/tiers/contract.md)                 |
+| Tags          | [`features/tags/contract.md`](features/tags/contract.md)                   |
 | Files         | [`features/files/contract.md`](features/files/contract.md)                 |
 | Transactions  | [`features/transactions/contract.md`](features/transactions/contract.md)   |
 | Subscription  | [`features/subscription/contract.md`](features/subscription/contract.md)   |

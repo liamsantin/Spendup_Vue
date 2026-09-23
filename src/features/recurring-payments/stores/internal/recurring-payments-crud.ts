@@ -11,6 +11,7 @@ import {
     type ConfirmDueFormFields,
     type RecurringTemplateFormFields
 } from '@/features/recurring-payments/payload';
+import { refreshTagCountersIfLoaded } from '@/features/tags/stores/tags-store';
 import { dueAfterLinkedTransactionRemoved } from '@/features/recurring-payments/format';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import {
@@ -409,6 +410,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
             upsertExpense(created);
             cache.touch(listCacheKey('expense'));
             cache.touch(listCacheKey('expense', created.accountPublicId));
+            refreshTagCountersIfLoaded();
             return created;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
@@ -452,6 +454,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
             upsertExpense(updated);
             cache.touch(listCacheKey('expense'));
             cache.touch(listCacheKey('expense', updated.accountPublicId));
+            refreshTagCountersIfLoaded();
             return updated;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
@@ -582,6 +585,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
             upsertDue(kind, templatePublicId, due);
             const template = kind === 'expense' ? await getExpense(templatePublicId, true) : await getIncome(templatePublicId, true);
             await refreshLinkedFinance(template.accountPublicId);
+            if (kind === 'expense') refreshTagCountersIfLoaded();
             return due;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);

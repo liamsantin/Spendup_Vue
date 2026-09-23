@@ -54,6 +54,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         subscribeToFriendshipChanged: hub.subscribeToFriendshipChanged,
         subscribeToAccountChanged: hub.subscribeToAccountChanged,
         subscribeToCategoryChanged: hub.subscribeToCategoryChanged,
+        subscribeToTagChanged: hub.subscribeToTagChanged,
         subscribeToTierChanged: hub.subscribeToTierChanged,
         subscribeToRecurringExpenseChanged: hub.subscribeToRecurringExpenseChanged,
         subscribeToRecurringIncomeChanged: hub.subscribeToRecurringIncomeChanged,

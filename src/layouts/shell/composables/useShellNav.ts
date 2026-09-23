@@ -14,6 +14,7 @@ import {
     BudgetsNavIcon,
     CalendarNavIcon,
     CategoriesNavIcon,
+    TagsNavIcon,
     ContractsNavIcon,
     DashboardNavIcon,
     DebtsNavIcon,
@@ -67,6 +68,7 @@ export const SHELL_NAV_IDS = {
     files: 'files',
     tiers: 'tiers',
     categories: 'categories',
+    tags: 'tags',
     contracts: 'contracts',
     planning: 'planning',
     budgets: 'budgets',
@@ -127,6 +129,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     }
     if (pathIs(path, '/app/gestion/tiers')) {
         return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.tiers };
+    }
+    if (pathIs(path, '/app/gestion/tags')) {
+        return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.tags };
     }
     if (pathIs(path, '/app/gestion/categories') || pathIs(path, '/app/gestion')) {
         return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.categories };
@@ -209,6 +214,7 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.files, t('nav.items.files'), FilesNavIcon, '/app/gestion/files'),
         live(SHELL_NAV_IDS.tiers, t('nav.items.tiers'), TiersNavIcon, '/app/gestion/tiers'),
         live(SHELL_NAV_IDS.categories, t('nav.items.categories'), CategoriesNavIcon, '/app/gestion/categories'),
+        live(SHELL_NAV_IDS.tags, t('nav.items.tags'), TagsNavIcon, '/app/gestion/tags'),
         upcoming(SHELL_NAV_IDS.contracts, t('nav.items.contracts'), ContractsNavIcon)
     ]);
 

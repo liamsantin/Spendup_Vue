@@ -102,6 +102,7 @@ const rent: RecurringExpense = {
     paymentMethodPublicId: null,
     categoryPublicId: null,
     tierPublicId: null,
+    tagPublicIds: [],
     notes: null,
     createdAt: '2026-08-01T00:00:00Z',
     updatedAt: null,

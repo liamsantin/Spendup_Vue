@@ -5,6 +5,8 @@ import type {
     CategoryChange,
     CategoryChangedPayload,
     NotificationReceivedPayload,
+    TagChange,
+    TagChangedPayload,
     NotificationsListResult,
     RecurringExpenseChange,
     RecurringExpenseChangedPayload,
@@ -40,6 +42,7 @@ const ACCOUNT_CHANGES = new Set<AccountChange>([
 ]);
 
 const CATEGORY_CHANGES = new Set<CategoryChange>(['categoryCreated', 'categoryUpdated', 'categoryDeleted']);
+const TAG_CHANGES = new Set<TagChange>(['tagCreated', 'tagUpdated', 'tagDeleted']);
 const TIER_CHANGES = new Set<TierChange>(['tierCreated', 'tierUpdated', 'tierDeleted']);
 const RECURRING_EXPENSE_CHANGES = new Set<RecurringExpenseChange>([
     'recurringExpenseCreated',
@@ -131,6 +134,20 @@ export function parseCategoryChangedPayload(raw: unknown): CategoryChangedPayloa
     const categoryPublicId = normalizePublicId(payload.categoryPublicId);
     if (!categoryPublicId) return null;
     return { change: change as CategoryChange, categoryPublicId };
+}
+
+/**
+ * Valide un payload SignalR `tagChanged` (change connu + publicId).
+ * @returns Payload normalisé, ou `null` si malformé.
+ */
+export function parseTagChangedPayload(raw: unknown): TagChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!TAG_CHANGES.has(change as TagChange)) return null;
+    const tagPublicId = normalizePublicId(payload.tagPublicId);
+    if (!tagPublicId) return null;
+    return { change: change as TagChange, tagPublicId };
 }
 
 /**

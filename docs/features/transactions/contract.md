@@ -26,12 +26,12 @@ Auth : Bearer JWT **ou** cookie `spendup_access`. JSON camelCase, enveloppe `{ s
 | GET     | `/api/transactions`                                   | viewer+ | Liste paginée. `files[]` hydraté (éventuellement `[]`)                       |
 | GET     | `/api/transactions/{txPublicId}`                      | viewer+ | Détail. `files[]` toujours présent                                           |
 | POST    | `/api/transactions`                                   | editor+ | Création. `filePublicIds?: string[]` optionnel (PDF **déjà** uploadés)       |
-| `PUT`     | `/api/transactions/{txPublicId}`                      | editor+ | Libellé / montant / dates / PM / catégorie / tier / récurrence / **objectif d’épargne**. **Ne touche pas** `files` |
+| `PUT`     | `/api/transactions/{txPublicId}`                      | editor+ | Libellé / montant / dates / PM / catégorie / **tags** / tier / récurrence / **objectif d’épargne**. **Ne touche pas** `files` |
 | DELETE  | `/api/transactions/{txPublicId}`                      | editor+ | `204`. Les liens PJ disparaissent, les PDF **restent**                       |
 | POST    | `/api/transactions/{txPublicId}/files`                | editor+ | Body `{ filePublicId }`. `200` + TX à jour                                   |
 | DELETE  | `/api/transactions/{txPublicId}/files/{filePublicId}` | editor+ | Détache, `204`. Le PDF reste dans Fichiers                                   |
 
-Filtres liste : `accountPublicId`, `categoryPublicId`, `tierPublicId`, `recurringExpensePublicId`, `recurringIncomePublicId`, `from`, `to`, `page`, `pageSize` (défaut 50, max 200).
+Filtres liste : `accountPublicId`, `categoryPublicId`, `tagPublicId`, `tierPublicId`, `recurringExpensePublicId`, `recurringIncomePublicId`, `from`, `to`, `page`, `pageSize` (défaut 50, max 200).
 
 `source` : `manuelle` (saisie) ou `recurrence` (due confirmée). Ne **pas** envoyer `source` au POST TX. Sur une TX récurrente : `recurringExpensePublicId` / `recurringIncomePublicId` / `duePublicId`.
 
@@ -63,6 +63,7 @@ Delete Fichiers d’un PDF encore lié → 400 « Impossible de supprimer un fic
 - Types : `depense` \| `revenu` \| `transfert`. Type et comptes **immuables** après création.
 - Transfert : deux comptes actifs, editor+, **même devise**.
 - `categoryPublicId` / `tierPublicId` personnels (PUT `null` = détacher). Sur un compte partagé, un co-détenteur peut voir `null`.
+- `tagPublicIds: string[]` (jamais `null`) : tes tags seulement, max 10. PUT état complet : omettre ou `[]` détache **tes** tags (ceux d’un co-détenteur restent). Filtre `?tagPublicId=` (un seul, du caller). Voir `features/tags/contract.md`.
 - `savingsGoalPublicId` optionnel (POST / PUT). PUT état complet : omettre = `null` = détacher l’objectif. Renvoyé seulement au propriétaire de l’objectif. 400 si l’objectif n’a pas de compte, devise différente, ou aucun mouvement sur ce compte.
 - Montant masqué (`null`) → placeholder `—`, jamais `0`.
 - 404 → message neutre + retrait local. Viewer qui tente une écriture côté store → 403 UI (l’API attache répond 404).
@@ -70,7 +71,7 @@ Delete Fichiers d’un PDF encore lié → 400 « Impossible de supprimer un fic
 
 ## UI
 
-- Modale `AppModalTabs` : **Opération** (type, comptes, libellé, montant, dates) · **Classification** (moyen de paiement, catégorie, contrepartie) · **Justificatifs** (PDF). Erreur de champ → focus de l’onglet concerné. Catégorie / moyen de paiement / contrepartie : recherche + création rapide depuis le sélecteur.
+- Modale `AppModalTabs` : **Opération** (type, comptes, libellé, montant, dates) · **Classification** (moyen de paiement, catégorie, **tags**, contrepartie) · **Justificatifs** (PDF). Erreur de champ → focus de l’onglet concerné. Catégorie / moyen de paiement / contrepartie / tags : recherche + création rapide depuis le sélecteur.
 - Liste : trombone + compteur si `files.length > 0`. Recherche client inclut `files[].nameOriginal`.
 - Modale create : upload / picker → `publicId` en local → `POST` avec `filePublicIds`.
 - Modale edit : attache / détache immédiat ; PUT du formulaire **sans** les pièces.

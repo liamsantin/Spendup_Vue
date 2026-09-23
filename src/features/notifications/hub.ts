@@ -4,6 +4,7 @@ import { getApiBaseUrl, isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 import type {
     AccountChangedPayload,
     CategoryChangedPayload,
+    TagChangedPayload,
     FriendshipChangedPayload,
     InboxClearedPayload,
     NotificationConnectedPayload,
@@ -22,6 +23,7 @@ export type NotificationsHubHandlers = {
     onFriendshipChanged?: (payload: FriendshipChangedPayload) => void;
     onAccountChanged?: (payload: AccountChangedPayload) => void;
     onCategoryChanged?: (payload: CategoryChangedPayload) => void;
+    onTagChanged?: (payload: TagChangedPayload) => void;
     onTierChanged?: (payload: TierChangedPayload) => void;
     onRecurringExpenseChanged?: (payload: RecurringExpenseChangedPayload) => void;
     onRecurringIncomeChanged?: (payload: RecurringIncomeChangedPayload) => void;
@@ -67,6 +69,7 @@ function attachHandlers(conn: HubConnection) {
     conn.off('friendshipChanged');
     conn.off('accountChanged');
     conn.off('categoryChanged');
+    conn.off('tagChanged');
     conn.off('tierChanged');
     conn.off('recurringExpenseChanged');
     conn.off('recurringIncomeChanged');
@@ -93,6 +96,10 @@ function attachHandlers(conn: HubConnection) {
 
     conn.on('categoryChanged', (payload: CategoryChangedPayload) => {
         handlers.onCategoryChanged?.(payload);
+    });
+
+    conn.on('tagChanged', (payload: TagChangedPayload) => {
+        handlers.onTagChanged?.(payload);
     });
 
     conn.on('tierChanged', (payload: TierChangedPayload) => {

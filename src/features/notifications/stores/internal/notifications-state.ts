@@ -3,6 +3,7 @@ import type {
     AppNotification,
     AccountChangedPayload,
     CategoryChangedPayload,
+    TagChangedPayload,
     FriendshipChangedPayload,
     RecurringExpenseChangedPayload,
     RecurringIncomeChangedPayload,
@@ -40,6 +41,7 @@ export function createNotificationsState() {
     const friendshipChangeListeners = new Set<(payload: FriendshipChangedPayload) => void>();
     const accountChangeListeners = new Set<(payload: AccountChangedPayload) => void>();
     const categoryChangeListeners = new Set<(payload: CategoryChangedPayload) => void>();
+    const tagChangeListeners = new Set<(payload: TagChangedPayload) => void>();
     const tierChangeListeners = new Set<(payload: TierChangedPayload) => void>();
     const recurringExpenseChangeListeners = new Set<(payload: RecurringExpenseChangedPayload) => void>();
     const recurringIncomeChangeListeners = new Set<(payload: RecurringIncomeChangedPayload) => void>();
@@ -99,6 +101,7 @@ export function createNotificationsState() {
         friendshipChangeListeners,
         accountChangeListeners,
         categoryChangeListeners,
+        tagChangeListeners,
         tierChangeListeners,
         recurringExpenseChangeListeners,
         recurringIncomeChangeListeners,

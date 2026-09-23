@@ -48,6 +48,7 @@
 | `/app/gestion/files/:publicId?`    | files (aperçu)                                 |
 | `/app/gestion/categories`          | categories                                     |
 | `/app/gestion/tiers`               | tiers (contreparties)                          |
+| `/app/gestion/tags`                | tags                                           |
 | `/app/notifications`               | notifications (Page Shell)                     |
 | `/app/friends`                     | friends (Tabs Shell)                           |
 | `/app/planning/budgets/:publicId?` | budgets                                        |

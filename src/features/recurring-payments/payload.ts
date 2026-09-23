@@ -1,5 +1,6 @@
 import { parseAccountAmount } from '@/features/accounts/format';
 import type { Account } from '@/features/accounts/types';
+import { sanitizeTagPublicIds, sameTagPublicIds } from '@/features/tags/format';
 import { emptyToNull, isDateInFutureLocal, isValidYmd } from '@/features/recurring-payments/format';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import {
@@ -59,6 +60,7 @@ export type RecurringTemplateFormFields = {
     paymentMethodPublicId: string;
     categoryPublicId: string;
     tierPublicId: string;
+    tagPublicIds: string[];
     notes: string;
     paymentDay: string;
 };
@@ -100,6 +102,7 @@ export function emptyRecurringForm(kind: RecurringKind, accountPublicId = ''): R
         paymentMethodPublicId: '',
         categoryPublicId: '',
         tierPublicId: '',
+        tagPublicIds: [],
         notes: '',
         paymentDay: ''
     };
@@ -192,7 +195,8 @@ export function buildCreateExpensePayload(
         payload: {
             ...common.payload,
             expenseType: fields.expenseType,
-            frequency: fields.expenseFrequency
+            frequency: fields.expenseFrequency,
+            tagPublicIds: sanitizeTagPublicIds(fields.tagPublicIds)
         }
     };
 }
@@ -273,6 +277,7 @@ export function isExpenseFormDirty(
         paymentMethodPublicId: string | null;
         categoryPublicId: string | null;
         tierPublicId: string | null;
+        tagPublicIds?: string[] | null;
         notes: string | null;
     },
     fields: RecurringTemplateFormFields
@@ -290,6 +295,7 @@ export function isExpenseFormDirty(
         emptyToNull(fields.paymentMethodPublicId) !== current.paymentMethodPublicId ||
         emptyToNull(fields.categoryPublicId) !== current.categoryPublicId ||
         emptyToNull(fields.tierPublicId) !== current.tierPublicId ||
+        !sameTagPublicIds(fields.tagPublicIds, current.tagPublicIds) ||
         emptyToNull(fields.notes) !== current.notes
     );
 }

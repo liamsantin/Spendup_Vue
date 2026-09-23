@@ -12,6 +12,8 @@ import { useCategoriesStore } from '@/features/categories/stores/categories-stor
 import { categorySelectItems } from '@/features/categories/payload';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
+import { sanitizeTagPublicIds } from '@/features/tags/format';
+import { useTagsStore } from '@/features/tags/stores/tags-store';
 import { isSavingsGoalCompatibleWithTransactionForm } from '@/features/savings-goals/link-transactions';
 import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
@@ -63,6 +65,7 @@ const accountsStore = useAccountsStore();
 const paymentMethodsStore = usePaymentMethodsStore();
 const categoriesStore = useCategoriesStore();
 const tiersStore = useTiersStore();
+const tagsStore = useTagsStore();
 const recurringStore = useRecurringPaymentsStore();
 const store = useTransactionsStore();
 const filesStore = useFilesStore();
@@ -234,7 +237,8 @@ const form = reactive<TransactionFormFields>({
     categoryPublicId: '',
     tierPublicId: '',
     recurrencePublicId: '',
-    savingsGoalPublicId: ''
+    savingsGoalPublicId: '',
+    tagPublicIds: []
 });
 
 const open = computed({
@@ -350,6 +354,7 @@ function resetForm() {
         form.tierPublicId = transaction.tierPublicId ?? '';
         form.recurrencePublicId = recurrencePublicIdFromTransaction(transaction);
         form.savingsGoalPublicId = transaction.savingsGoalPublicId ?? '';
+        form.tagPublicIds = sanitizeTagPublicIds(transaction.tagPublicIds);
         return;
     }
     form.type = props.defaultType || 'depense';
@@ -364,6 +369,7 @@ function resetForm() {
     form.tierPublicId = '';
     form.recurrencePublicId = '';
     form.savingsGoalPublicId = '';
+    form.tagPublicIds = [];
 }
 
 async function loadPaymentMethodsForAccount(accountPublicId: string | null) {
@@ -417,7 +423,8 @@ watch(
             loadRecurrences(),
             filesStore.loadList().catch(() => undefined),
             filesStore.loadUsage(),
-            savingsGoalsStore.loadList().catch(() => undefined)
+            savingsGoalsStore.loadList().catch(() => undefined),
+            tagsStore.loadList().catch(() => undefined)
         ]);
     }
 );
@@ -644,6 +651,7 @@ function onOpenAttachment(file: TransactionFile) {
                     :savings-goal-items="savingsGoalItems"
                     :field-errors="fieldErrors"
                     :category-hint="isSharedAccount ? t('transactionsPage.form.categoryPersonalHint') : null"
+                    :tags-hint="isSharedAccount ? t('transactionsPage.form.tagsPersonalHint') : null"
                     :tier-hint="tierHint"
                     :savings-goal-hint="savingsGoalHint"
                 />

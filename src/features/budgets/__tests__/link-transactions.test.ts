@@ -73,6 +73,7 @@ function tx(partial: Partial<Transaction> = {}): Transaction {
         movements: [{ accountPublicId: 'acc-1', amount: 42.5, sens: 'debit' }],
         files: [],
         savingsGoalPublicId: null,
+        tagPublicIds: [],
         ...partial
     };
 }

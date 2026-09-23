@@ -1,5 +1,6 @@
 import { useNotificationsStore } from '@/features/notifications';
 import type { AccountChangedPayload, RecurringExpenseChangedPayload, RecurringIncomeChangedPayload } from '@/features/notifications';
+import { useTagsStore } from '@/features/tags/stores/tags-store';
 import type { RecurringPaymentsCrud } from '@/features/recurring-payments/stores/internal/recurring-payments-crud';
 import type { RecurringPaymentsState } from '@/features/recurring-payments/stores/internal/recurring-payments-state';
 
@@ -11,6 +12,7 @@ export function createRecurringPaymentsRealtime(state: RecurringPaymentsState, d
     let unsubscribeExpense: (() => void) | null = null;
     let unsubscribeIncome: (() => void) | null = null;
     let unsubscribeAccount: (() => void) | null = null;
+    let unsubscribeTagDeleted: (() => void) | null = null;
 
     function handleExpenseChanged(payload: RecurringExpenseChangedPayload) {
         if (!payload?.change || !payload.recurringExpensePublicId) return;
@@ -59,11 +61,14 @@ export function createRecurringPaymentsRealtime(state: RecurringPaymentsState, d
     }
 
     function ensureRealtimeBridge() {
-        if (unsubscribeExpense && unsubscribeIncome && unsubscribeAccount) return;
+        if (unsubscribeExpense && unsubscribeIncome && unsubscribeAccount && unsubscribeTagDeleted) return;
         const notifications = useNotificationsStore();
         unsubscribeExpense ??= notifications.subscribeToRecurringExpenseChanged(handleExpenseChanged);
         unsubscribeIncome ??= notifications.subscribeToRecurringIncomeChanged(handleIncomeChanged);
         unsubscribeAccount ??= notifications.subscribeToAccountChanged(handleAccountChanged);
+        unsubscribeTagDeleted ??= useTagsStore().subscribeToDeleted((publicId) => {
+            state.stripTag(publicId);
+        });
     }
 
     function onAuthenticatedSession() {
@@ -74,9 +79,11 @@ export function createRecurringPaymentsRealtime(state: RecurringPaymentsState, d
         unsubscribeExpense?.();
         unsubscribeIncome?.();
         unsubscribeAccount?.();
+        unsubscribeTagDeleted?.();
         unsubscribeExpense = null;
         unsubscribeIncome = null;
         unsubscribeAccount = null;
+        unsubscribeTagDeleted = null;
     }
 
     return {

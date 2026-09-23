@@ -5,6 +5,7 @@ import { PencilIcon, Receipt2Icon, TrashIcon, TrendingUpIcon } from 'vue-tabler-
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { formatCalendarDate, formatPlannedAmount, isExpenseTemplate } from '@/features/recurring-payments/format';
 import type { RecurringExpense, RecurringIncome, RecurringKind } from '@/features/recurring-payments/types';
+import TagChips from '@/features/tags/components/list/TagChips.vue';
 
 const props = withDefaults(
     defineProps<{
@@ -64,6 +65,7 @@ function onActivate(event: MouseEvent) {
                 </span>
                 <span class="app-data-table__identity">
                     <span class="app-data-table__title">{{ template.name }}</span>
+                    <TagChips v-if="isExpenseTemplate(template)" :tag-public-ids="template.tagPublicIds" compact />
                     <span class="app-data-table__muted">{{ typeLabel }}</span>
                 </span>
             </div>

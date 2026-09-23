@@ -1,5 +1,6 @@
 import { parseAccountAmount } from '@/features/accounts/format';
 import type { Account } from '@/features/accounts/types';
+import { sanitizeTagPublicIds, sameTagPublicIds } from '@/features/tags/format';
 import {
     emptyToNull,
     isOperationDateInFutureUtc,
@@ -55,6 +56,7 @@ export type TransactionFormFields = {
     recurrencePublicId: string;
     /** Objectif d’épargne lié. Vide = détaché. */
     savingsGoalPublicId: string;
+    tagPublicIds: string[];
 };
 
 export type SavingsGoalLinkHint = {
@@ -243,6 +245,8 @@ export function buildCreateTransactionPayload(
     if (goalError) return goalError;
     const savingsGoalPublicId = emptyToNull(fields.savingsGoalPublicId);
     if (savingsGoalPublicId) payload.savingsGoalPublicId = savingsGoalPublicId;
+    const tagPublicIds = sanitizeTagPublicIds(fields.tagPublicIds);
+    if (tagPublicIds.length) payload.tagPublicIds = tagPublicIds;
 
     return { ok: true, payload };
 }
@@ -281,7 +285,8 @@ export function buildUpdateTransactionPayload(
         tierPublicId: common.tierPublicId,
         recurringExpensePublicId: recurrence.recurringExpensePublicId,
         recurringIncomePublicId: recurrence.recurringIncomePublicId,
-        savingsGoalPublicId: emptyToNull(fields.savingsGoalPublicId)
+        savingsGoalPublicId: emptyToNull(fields.savingsGoalPublicId),
+        tagPublicIds: sanitizeTagPublicIds(fields.tagPublicIds)
     };
     return { ok: true, payload };
 }
@@ -300,6 +305,7 @@ export function isTransactionFormDirty(
     if (emptyToNull(fields.tierPublicId) !== emptyToNull(transaction.tierPublicId ?? null)) return true;
     if (emptyToNull(fields.recurrencePublicId) !== emptyToNull(recurrencePublicIdFromTransaction(transaction))) return true;
     if (emptyToNull(fields.savingsGoalPublicId) !== emptyToNull(transaction.savingsGoalPublicId ?? null)) return true;
+    if (!sameTagPublicIds(fields.tagPublicIds, transaction.tagPublicIds)) return true;
     return false;
 }
 
@@ -319,7 +325,8 @@ export function transactionToFormFields(transaction: Transaction): TransactionFo
         categoryPublicId: transaction.categoryPublicId ?? '',
         tierPublicId: transaction.tierPublicId ?? '',
         recurrencePublicId: recurrencePublicIdFromTransaction(transaction),
-        savingsGoalPublicId: transaction.savingsGoalPublicId ?? ''
+        savingsGoalPublicId: transaction.savingsGoalPublicId ?? '',
+        tagPublicIds: sanitizeTagPublicIds(transaction.tagPublicIds)
     };
 }
 
@@ -335,4 +342,5 @@ type TransactionFormDirtySource = {
     recurringExpensePublicId: string | null;
     recurringIncomePublicId: string | null;
     savingsGoalPublicId?: string | null;
+    tagPublicIds?: string[] | null;
 };

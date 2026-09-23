@@ -53,6 +53,11 @@ export type Transaction = {
      * (ami sur un compte partagé).
      */
     savingsGoalPublicId: string | null;
+    /**
+     * Tags **de l’utilisateur courant**, triés par nom. Jamais `null` (tableau vide).
+     * Sur un compte partagé : uniquement tes libellés, pas ceux du co-détenteur.
+     */
+    tagPublicIds: string[];
 };
 
 export type TransactionList = {
@@ -65,6 +70,7 @@ export type TransactionList = {
 export type ListTransactionsQuery = {
     accountPublicId?: string;
     categoryPublicId?: string;
+    tagPublicId?: string;
     tierPublicId?: string;
     recurringExpensePublicId?: string;
     recurringIncomePublicId?: string;
@@ -93,6 +99,8 @@ export type CreateTransactionPayload = {
     filePublicIds?: string[];
     /** Objectif d’épargne optionnel. Refusé si l’objectif n’a pas de compte / devise / mouvement. */
     savingsGoalPublicId?: string | null;
+    /** Max 10, doublons ignorés. Omis ou `[]` = aucun tag. */
+    tagPublicIds?: string[];
 };
 
 export type UpdateTransactionPayload = {
@@ -110,6 +118,8 @@ export type UpdateTransactionPayload = {
     recurringIncomePublicId: string | null;
     /** État complet : omettre ou `null` détache l’objectif. */
     savingsGoalPublicId: string | null;
+    /** État complet : omettre ou `[]` détache **tes** tags (ceux d’un co-détenteur restent). */
+    tagPublicIds: string[];
 };
 
 export type AttachTransactionFilePayload = {

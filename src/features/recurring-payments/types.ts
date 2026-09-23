@@ -82,6 +82,11 @@ export type RecurringExpense = {
     paymentMethodPublicId: string | null;
     categoryPublicId: string | null;
     tierPublicId: string | null;
+    /**
+     * Tags **de l’utilisateur courant**, triés par nom. Jamais `null` (tableau vide).
+     * Copiés sur la TX à la confirmation d’échéance.
+     */
+    tagPublicIds: string[];
     notes: string | null;
     createdAt: string;
     updatedAt: string | null;
@@ -150,6 +155,8 @@ export type CreateRecurringExpensePayload = {
     categoryPublicId: string | null;
     tierPublicId: string | null;
     notes: string | null;
+    /** Max 10. PUT : toujours envoyé (`[]` détache). */
+    tagPublicIds: string[];
 };
 
 export type UpdateRecurringExpensePayload = CreateRecurringExpensePayload;

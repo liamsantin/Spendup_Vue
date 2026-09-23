@@ -26,6 +26,8 @@ export const transactionsApi = {
         if (accountPublicId) params.set('accountPublicId', accountPublicId);
         const categoryPublicId = query.categoryPublicId?.trim();
         if (categoryPublicId) params.set('categoryPublicId', categoryPublicId);
+        const tagPublicId = query.tagPublicId?.trim();
+        if (tagPublicId) params.set('tagPublicId', tagPublicId);
         const tierPublicId = query.tierPublicId?.trim();
         if (tierPublicId) params.set('tierPublicId', tierPublicId);
         const recurringExpensePublicId = query.recurringExpensePublicId?.trim();

@@ -17,6 +17,7 @@ import PaymentMethodFormModal from '@/features/payment-methods/components/modals
 import { canWritePaymentMethods } from '@/features/payment-methods/rights';
 import type { PaymentMethod } from '@/features/payment-methods/types';
 import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
+import TagPicker from '@/features/tags/components/forms/TagPicker.vue';
 import {
     formatSignedAmountDelta,
     recurrenceAmountVariance,
@@ -58,6 +59,7 @@ const props = withDefaults(
         categoryHint?: string | null;
         tierHint?: string | null;
         savingsGoalHint?: string | null;
+        tagsHint?: string | null;
         recurrencePlannedAmount?: number | null;
         section?: 'operation' | 'classification' | 'all';
     }>(),
@@ -70,6 +72,7 @@ const props = withDefaults(
         categoryHint: null,
         tierHint: null,
         savingsGoalHint: null,
+        tagsHint: null,
         recurrencePlannedAmount: null,
         section: 'all'
     }
@@ -355,6 +358,14 @@ function openPaymentMethodCreate(name: string) {
                     :create-named-label="t('transactionsPage.form.categoryCreate', { name: '{name}' })"
                     @create="openCategoryCreate"
                 />
+            </v-col>
+        </v-row>
+        <v-row v-if="showClassification" class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <label class="v-label font-weight-medium">{{ t('transactionsPage.form.fields.tags') }}</label>
+            </v-col>
+            <v-col cols="12" sm="9">
+                <TagPicker v-model="form.tagPublicIds" :hint="tagsHint" />
             </v-col>
         </v-row>
         <v-row v-if="showClassification" class="align-center" no-gutters>

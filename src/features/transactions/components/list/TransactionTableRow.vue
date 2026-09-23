@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { MinusIcon, PaperclipIcon, PencilIcon, PlusIcon, RepeatIcon, TrashIcon } from 'vue-tabler-icons';
 import { useTransactionRowDisplay } from '@/features/transactions/composables/useTransactionRowDisplay';
 import { formatOperationDate } from '@/features/transactions/format';
+import TagChips from '@/features/tags/components/list/TagChips.vue';
 import type { Transaction } from '@/features/transactions/types';
 
 const props = defineProps<{
@@ -73,6 +74,7 @@ function onDoubleClick(event: MouseEvent) {
         <td>
             <span v-if="categoryLabel">{{ categoryLabel }}</span>
             <span v-else class="app-data-table__muted">—</span>
+            <TagChips :tag-public-ids="transaction.tagPublicIds" compact class="transaction-table__tags" />
         </td>
         <td>
             <span v-if="tierLabel">{{ tierLabel }}</span>
@@ -167,5 +169,10 @@ function onDoubleClick(event: MouseEvent) {
 
 .transaction-table__delta.is-unfavorable {
     color: rgb(var(--amount-debit));
+}
+
+.transaction-table__tags {
+    display: flex;
+    margin-top: 4px;
 }
 </style>

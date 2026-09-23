@@ -29,6 +29,7 @@ export { CalendarMarkIcon as RecurrencesUpcomingNavIcon } from '@solar-icons/vue
 export { DocumentsIcon as FilesNavIcon } from '@solar-icons/vue/line-duotone/documents';
 export { UserIdIcon as TiersNavIcon } from '@solar-icons/vue/line-duotone/user-id';
 export { TagIcon as CategoriesNavIcon } from '@solar-icons/vue/line-duotone/tag';
+export { HashtagCircleIcon as TagsNavIcon } from '@solar-icons/vue/line-duotone/hashtag-circle';
 export { DocumentTextIcon as ContractsNavIcon } from '@solar-icons/vue/line-duotone/document-text';
 export { WalletIcon as BudgetsNavIcon } from '@solar-icons/vue/line-duotone/wallet';
 export { TargetIcon as GoalsNavIcon } from '@solar-icons/vue/line-duotone/target';

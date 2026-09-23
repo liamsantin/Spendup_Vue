@@ -80,6 +80,10 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.gestion,
             activeId: SHELL_NAV_IDS.files
         });
+        expect(idsFromPath('/app/gestion/tags')).toEqual({
+            openId: SHELL_NAV_IDS.gestion,
+            activeId: SHELL_NAV_IDS.tags
+        });
     });
 
     it('mappe les budgets', () => {

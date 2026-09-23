@@ -1,6 +1,7 @@
 import { useNotificationsStore } from '@/features/notifications';
 import { parseAccountChangedPayload } from '@/features/notifications/normalize';
 import type { AccountChangedPayload } from '@/features/notifications';
+import { useTagsStore } from '@/features/tags/stores/tags-store';
 import type { TransactionsCrud } from '@/features/transactions/stores/internal/transactions-crud';
 import type { TransactionsState } from '@/features/transactions/stores/internal/transactions-state';
 
@@ -12,10 +13,11 @@ const TRANSACTION_CHANGES = new Set(['transactionCreated', 'transactionUpdated',
  * Abonnement SignalR `accountChanged` pour invalider les transactions (et les soldes).
  */
 export function createTransactionsRealtime(state: TransactionsState, deps: RealtimeDeps) {
-    const { removeByAccount, initialized, invalidateAllLists } = state;
+    const { removeByAccount, stripTag, initialized, invalidateAllLists } = state;
     const { refetchActive, refreshAccountBalances } = deps;
 
     let unsubscribeAccountChanged: (() => void) | null = null;
+    let unsubscribeTagDeleted: (() => void) | null = null;
     let refreshScheduled = false;
     const pendingAccountIds = new Set<string>();
 
@@ -58,9 +60,15 @@ export function createTransactionsRealtime(state: TransactionsState, deps: Realt
     }
 
     function ensureRealtimeBridge() {
-        if (unsubscribeAccountChanged) return;
-        const notifications = useNotificationsStore();
-        unsubscribeAccountChanged = notifications.subscribeToAccountChanged(handleAccountChanged);
+        if (!unsubscribeAccountChanged) {
+            const notifications = useNotificationsStore();
+            unsubscribeAccountChanged = notifications.subscribeToAccountChanged(handleAccountChanged);
+        }
+        if (!unsubscribeTagDeleted) {
+            unsubscribeTagDeleted = useTagsStore().subscribeToDeleted((publicId) => {
+                stripTag(publicId);
+            });
+        }
     }
 
     function onAuthenticatedSession() {
@@ -70,6 +78,8 @@ export function createTransactionsRealtime(state: TransactionsState, deps: Realt
     function teardownRealtimeBridge() {
         unsubscribeAccountChanged?.();
         unsubscribeAccountChanged = null;
+        unsubscribeTagDeleted?.();
+        unsubscribeTagDeleted = null;
         pendingAccountIds.clear();
         refreshScheduled = false;
     }

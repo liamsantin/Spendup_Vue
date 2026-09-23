@@ -12,6 +12,7 @@ src/
 ├── features/
 │   ├── accounts/        # stores/internal/ (référence split)
 │   ├── categories/      # arbre perso deux niveaux
+│   ├── tags/            # libellés perso plats (stores/internal/)
 │   ├── auth/            # stores/internal/ session·actions·profile·logout
 │   ├── countries/
 │   ├── dashboard/

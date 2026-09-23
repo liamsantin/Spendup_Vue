@@ -29,6 +29,8 @@ import {
 } from '@/features/recurring-payments/payload';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import { isDueSettled, isExpenseTemplate, todayLocalYmd } from '@/features/recurring-payments/format';
+import { sanitizeTagPublicIds } from '@/features/tags/format';
+import { useTagsStore } from '@/features/tags/stores/tags-store';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import {
     RECURRING_EXPENSE_FREQUENCIES,
@@ -63,6 +65,7 @@ const { t } = useI18n();
 const accountsStore = useAccountsStore();
 const categoriesStore = useCategoriesStore();
 const paymentMethodsStore = usePaymentMethodsStore();
+const tagsStore = useTagsStore();
 const store = useRecurringPaymentsStore();
 
 const isEdit = ref(false);
@@ -200,6 +203,7 @@ function fillFromExpense(item: RecurringExpense) {
     form.paymentMethodPublicId = item.paymentMethodPublicId ?? '';
     form.categoryPublicId = item.categoryPublicId ?? '';
     form.tierPublicId = item.tierPublicId ?? '';
+    form.tagPublicIds = sanitizeTagPublicIds(item.tagPublicIds);
     form.notes = item.notes ?? '';
 }
 
@@ -301,6 +305,7 @@ watch(
         editExpense.value = template && isExpenseTemplate(template) ? template : null;
         editIncome.value = template && !isExpenseTemplate(template) ? template : null;
         void categoriesStore.bootstrap();
+        void tagsStore.loadList().catch(() => undefined);
         void paymentMethodsStore.loadList({
             accountPublicId: props.template?.accountPublicId ?? props.defaultAccountPublicId ?? undefined
         });

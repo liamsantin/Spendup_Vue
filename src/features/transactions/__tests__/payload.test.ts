@@ -45,6 +45,7 @@ function fields(partial: Partial<TransactionFormFields> = {}): TransactionFormFi
         tierPublicId: '',
         recurrencePublicId: '',
         savingsGoalPublicId: '',
+        tagPublicIds: [],
         ...partial
     };
 }
@@ -147,7 +148,8 @@ describe('transaction payload', () => {
                 tierPublicId: null,
                 recurringExpensePublicId: null,
                 recurringIncomePublicId: null,
-                savingsGoalPublicId: null
+                savingsGoalPublicId: null,
+                tagPublicIds: []
             });
             expect(result.payload).not.toHaveProperty('files');
             expect(result.payload).not.toHaveProperty('filePublicIds');
@@ -228,5 +230,23 @@ describe('transaction payload', () => {
                 savingsGoals: [{ publicId: 'g-1', accountPublicId: 'acc-2', currency: 'CHF' }]
             })
         ).toMatchObject({ ok: false, code: 'savingsGoalAccountMismatch' });
+    });
+
+    it('POST omet tagPublicIds si vide, PUT l’envoie toujours ([] détache tes tags)', () => {
+        const created = buildCreateTransactionPayload(fields(), { accounts, now });
+        expect(created.ok).toBe(true);
+        if (created.ok) expect(created.payload).not.toHaveProperty('tagPublicIds');
+
+        const withTags = buildCreateTransactionPayload(fields({ tagPublicIds: ['t-1', 't-1', 't-2'] }), { accounts, now });
+        expect(withTags.ok).toBe(true);
+        if (withTags.ok) expect(withTags.payload.tagPublicIds).toEqual(['t-1', 't-2']);
+
+        const updated = buildUpdateTransactionPayload(fields(), { accounts, now });
+        expect(updated.ok).toBe(true);
+        if (updated.ok) expect(updated.payload.tagPublicIds).toEqual([]);
+
+        const updatedKeep = buildUpdateTransactionPayload(fields({ tagPublicIds: ['t-1'] }), { accounts, now });
+        expect(updatedKeep.ok).toBe(true);
+        if (updatedKeep.ok) expect(updatedKeep.payload.tagPublicIds).toEqual(['t-1']);
     });
 });

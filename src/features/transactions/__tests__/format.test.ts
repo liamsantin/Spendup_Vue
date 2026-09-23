@@ -46,6 +46,7 @@ function tx(partial: Partial<Transaction> = {}): Transaction {
         movements: [{ accountPublicId: 'acc-1', amount: 42.5, sens: 'debit' }],
         files: [],
         savingsGoalPublicId: null,
+        tagPublicIds: [],
         ...partial
     };
 }
@@ -142,5 +143,11 @@ describe('transactions format', () => {
         ).toEqual([{ publicId: 'f1', nameOriginal: 'a.pdf', sizeBytes: 10, mimeType: 'application/pdf' }]);
         expect(normalizeTransaction({ ...tx(), files: undefined as unknown as Transaction['files'] }).files).toEqual([]);
         expect(sanitizeFilePublicIds([' f1 ', 'f1', '', 'f2', 'f3', 'f4', 'f5', 'f6'])).toEqual(['f1', 'f2', 'f3', 'f4', 'f5']);
+    });
+
+    it('normalise tagPublicIds en tableau (jamais null)', () => {
+        expect(normalizeTransaction({ ...tx(), tagPublicIds: undefined as unknown as string[] }).tagPublicIds).toEqual([]);
+        expect(normalizeTransaction(tx({ tagPublicIds: [' t-1 ', 't-1', 't-2'] })).tagPublicIds).toEqual(['t-1', 't-2']);
+        expect(matchesTransactionSearch(tx(), 'urgent', { tagNames: ['Urgent'] })).toBe(true);
     });
 });

@@ -6,6 +6,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { useTagsStore } from '@/features/tags/stores/tags-store';
 import RecurringTemplateListItem from '@/features/recurring-payments/components/list/RecurringTemplateListItem.vue';
 import RecurringTemplateDetailModal from '@/features/recurring-payments/components/modals/RecurringTemplateDetailModal.vue';
 import RecurringTemplateFormModal from '@/features/recurring-payments/components/modals/RecurringTemplateFormModal.vue';
@@ -67,6 +68,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const accountsStore = useAccountsStore();
+const tagsStore = useTagsStore();
 const store = useRecurringPaymentsStore();
 
 const createOpen = ref(false);
@@ -168,6 +170,9 @@ async function loadList(force = false) {
     localError.value = null;
     try {
         await accountsStore.loadAccounts(force);
+        if (listingKind.value !== 'income') {
+            void tagsStore.loadList({ force }).catch(() => undefined);
+        }
         const query = {
             accountPublicId: filterAccountId.value ?? undefined,
             force,

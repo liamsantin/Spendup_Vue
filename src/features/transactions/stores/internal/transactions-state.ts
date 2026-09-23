@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
 import { involvedAccountPublicIds, normalizeTransaction, sortTransactions } from '@/features/transactions/format';
+import { withoutTagPublicId } from '@/features/tags/format';
 import { TRANSACTION_PAGE_SIZE_DEFAULT, type ListTransactionsQuery, type Transaction } from '@/features/transactions/types';
 
 export const TRANSACTIONS_LIST_MAX_AGE_MS = 30_000;
@@ -8,6 +9,7 @@ export const TRANSACTIONS_LIST_MAX_AGE_MS = 30_000;
 export type TransactionsListQuery = {
     accountPublicId: string | null;
     categoryPublicId: string | null;
+    tagPublicId: string | null;
     tierPublicId: string | null;
     recurringExpensePublicId: string | null;
     recurringIncomePublicId: string | null;
@@ -18,6 +20,7 @@ export type TransactionsListQuery = {
 export const EMPTY_LIST_QUERY: TransactionsListQuery = {
     accountPublicId: null,
     categoryPublicId: null,
+    tagPublicId: null,
     tierPublicId: null,
     recurringExpensePublicId: null,
     recurringIncomePublicId: null,
@@ -29,6 +32,7 @@ export function normalizeListQuery(query: ListTransactionsQuery = {}): Transacti
     return {
         accountPublicId: query.accountPublicId?.trim() || null,
         categoryPublicId: query.categoryPublicId?.trim() || null,
+        tagPublicId: query.tagPublicId?.trim() || null,
         tierPublicId: query.tierPublicId?.trim() || null,
         recurringExpensePublicId: query.recurringExpensePublicId?.trim() || null,
         recurringIncomePublicId: query.recurringIncomePublicId?.trim() || null,
@@ -42,10 +46,11 @@ export function listCacheKey(query: TransactionsListQuery): string {
     const from = query.from || '-';
     const to = query.to || '-';
     const category = query.categoryPublicId || 'all';
+    const tag = query.tagPublicId || 'all';
     const tier = query.tierPublicId || 'all';
     const recExp = query.recurringExpensePublicId || 'all';
     const recInc = query.recurringIncomePublicId || 'all';
-    return `list:${account}:${from}:${to}:${category}:${tier}:${recExp}:${recInc}`;
+    return `list:${account}:${from}:${to}:${category}:${tag}:${tier}:${recExp}:${recInc}`;
 }
 
 export function parseListCacheKey(key: string): TransactionsListQuery {
@@ -55,9 +60,10 @@ export function parseListCacheKey(key: string): TransactionsListQuery {
         from: !parts[2] || parts[2] === '-' ? null : parts[2],
         to: !parts[3] || parts[3] === '-' ? null : parts[3],
         categoryPublicId: !parts[4] || parts[4] === 'all' ? null : parts[4],
-        tierPublicId: !parts[5] || parts[5] === 'all' ? null : parts[5],
-        recurringExpensePublicId: !parts[6] || parts[6] === 'all' ? null : parts[6],
-        recurringIncomePublicId: !parts[7] || parts[7] === 'all' ? null : parts[7]
+        tagPublicId: !parts[5] || parts[5] === 'all' ? null : parts[5],
+        tierPublicId: !parts[6] || parts[6] === 'all' ? null : parts[6],
+        recurringExpensePublicId: !parts[7] || parts[7] === 'all' ? null : parts[7],
+        recurringIncomePublicId: !parts[8] || parts[8] === 'all' ? null : parts[8]
     };
 }
 
@@ -74,6 +80,7 @@ function queryMatchesTransaction(query: TransactionsListQuery, tx: Transaction):
     if (query.from && tx.operationDate < query.from) return false;
     if (query.to && tx.operationDate > query.to) return false;
     if (query.categoryPublicId && tx.categoryPublicId !== query.categoryPublicId) return false;
+    if (query.tagPublicId && !(tx.tagPublicIds ?? []).includes(query.tagPublicId)) return false;
     if (query.tierPublicId && tx.tierPublicId !== query.tierPublicId) return false;
     if (query.recurringExpensePublicId && tx.recurringExpensePublicId !== query.recurringExpensePublicId) return false;
     if (query.recurringIncomePublicId && tx.recurringIncomePublicId !== query.recurringIncomePublicId) return false;
@@ -195,6 +202,25 @@ export function createTransactionsState() {
         }
     }
 
+    function stripTag(publicId: string) {
+        const id = publicId.trim();
+        if (!id) return;
+        for (const key of [...itemsByListKey.keys()]) {
+            const prev = itemsByListKey.get(key);
+            if (!prev) continue;
+            const query = parseListCacheKey(key);
+            const nextItems = prev.items
+                .map((item) => {
+                    if (!(item.tagPublicIds ?? []).includes(id)) return item;
+                    return { ...item, tagPublicIds: withoutTagPublicId(item.tagPublicIds, id) };
+                })
+                .filter((item) => queryMatchesTransaction(query, item));
+            if (nextItems.length === prev.items.length && nextItems.every((item, index) => item === prev.items[index])) continue;
+            const removed = prev.items.length - nextItems.length;
+            setList(key, nextItems, { totalCount: Math.max(0, prev.totalCount - removed) });
+        }
+    }
+
     function removeByAccount(accountPublicId: string) {
         for (const key of [...itemsByListKey.keys()]) {
             const prev = itemsByListKey.get(key);
@@ -246,6 +272,7 @@ export function createTransactionsState() {
         activateList,
         upsertItem,
         removeItemLocal,
+        stripTag,
         removeByAccount,
         invalidateAllLists,
         allKnownItems

@@ -5,6 +5,7 @@ import { PencilIcon, PlayerPauseIcon, Receipt2Icon, TrashIcon, TrendingUpIcon } 
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { formatCalendarDate, formatPlannedAmount, isExpenseTemplate } from '@/features/recurring-payments/format';
 import type { RecurringExpense, RecurringIncome, RecurringKind } from '@/features/recurring-payments/types';
+import TagChips from '@/features/tags/components/list/TagChips.vue';
 
 const props = withDefaults(
     defineProps<{
@@ -67,6 +68,7 @@ function onActivate(event: MouseEvent) {
                 <span v-if="showKind" class="recurring-row__badge" :class="`is-${kind}`">{{ t(`recurrencesPage.kinds.${kind}`) }}</span>
             </div>
             <p class="recurring-row__sub">{{ typeLabel }} · {{ frequencyLabel }} · {{ accountName }}</p>
+            <TagChips v-if="isExpenseTemplate(template)" :tag-public-ids="template.tagPublicIds" compact class="recurring-row__tags" />
             <p class="recurring-row__sub">{{ nextDueLabel }}</p>
         </div>
         <div class="recurring-row__actions" @click.stop>
@@ -222,6 +224,10 @@ function onActivate(event: MouseEvent) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.recurring-row__tags {
+    margin-top: 4px;
 }
 
 .recurring-row__actions {

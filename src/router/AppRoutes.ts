@@ -79,6 +79,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/gestion/categories/AppCategoriesPage.vue')
         },
         {
+            name: 'AppTags',
+            path: 'gestion/tags',
+            component: () => import('@/views/app/gestion/tags/AppTagsPage.vue')
+        },
+        {
             name: 'AppTiers',
             path: 'gestion/tiers',
             component: () => import('@/views/app/gestion/tiers/AppTiersPage.vue')

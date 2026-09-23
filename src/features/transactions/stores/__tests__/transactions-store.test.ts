@@ -112,7 +112,8 @@ const expense: Transaction = {
     updatedAt: null,
     movements: [{ accountPublicId: 'acc-1', amount: 42.5, sens: 'debit' }],
     files: [],
-    savingsGoalPublicId: null
+    savingsGoalPublicId: null,
+    tagPublicIds: []
 };
 
 function form(partial: Partial<TransactionFormFields> = {}): TransactionFormFields {
@@ -129,6 +130,7 @@ function form(partial: Partial<TransactionFormFields> = {}): TransactionFormFiel
         tierPublicId: '',
         recurrencePublicId: '',
         savingsGoalPublicId: '',
+        tagPublicIds: [],
         ...partial
     };
 }
@@ -152,7 +154,10 @@ describe('useTransactionsStore', () => {
         expect(api.list).toHaveBeenCalledWith({
             accountPublicId: undefined,
             categoryPublicId: undefined,
+            tagPublicId: undefined,
             tierPublicId: undefined,
+            recurringExpensePublicId: undefined,
+            recurringIncomePublicId: undefined,
             from: undefined,
             to: undefined,
             page: 1,
@@ -165,7 +170,10 @@ describe('useTransactionsStore', () => {
         expect(api.list).toHaveBeenLastCalledWith({
             accountPublicId: 'acc-1',
             categoryPublicId: undefined,
+            tagPublicId: undefined,
             tierPublicId: undefined,
+            recurringExpensePublicId: undefined,
+            recurringIncomePublicId: undefined,
             from: '2026-09-01',
             to: '2026-09-30',
             page: 1,
