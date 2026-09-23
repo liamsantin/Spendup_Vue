@@ -8,7 +8,7 @@
 
 | Couche   | Détail                                                                                          |
 | -------- | ----------------------------------------------------------------------------------------------- |
-| Route    | `/app/planning/objectifs` → `AppSavingsGoalsPage` (Page Shell, `/:publicId?` ouvre le détail)   |
+| Route    | `/app/planning/objectifs` → `AppSavingsGoalsPage` (Page Shell, `/:publicId?` ouvre le détail à onglets : Détails · Transactions liées) |
 | Nav      | Sidebar **Planning** → **Objectifs**                                                            |
 | Store    | `useSavingsGoalsStore` (state · crud · realtime · lifecycle)                                    |
 | API      | `savingsGoalsApi` via **`fetchWrapper`**                                                        |

@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { LinkIcon, UnlinkIcon } from 'vue-tabler-icons';
+import { ArrowsExchangeIcon, FileDescriptionIcon, LinkIcon, UnlinkIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
+import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { canLinkSavingsGoalAccount, formatCalendarDate, formatSavingsGoalAmount } from '@/features/savings-goals/format';
@@ -37,10 +39,13 @@ const store = useSavingsGoalsStore();
 const accountsStore = useAccountsStore();
 const settings = useUserSettingsStore();
 
-const isEdit = ref(false);
+const isEditSession = ref(false);
 const editGoal = ref<SavingsGoal | null>(null);
+const activeTab = ref<'details' | 'transactions'>('details');
 const linkMode = ref<'link' | 'unlink'>('link');
 const linkOpen = ref(false);
+
+const isEdit = computed(() => isEditSession.value || !!props.savingsGoal);
 
 const localError = reactive({ message: null as string | null });
 const fieldErrors = reactive<SavingsGoalFormFieldErrors>({});
@@ -114,6 +119,25 @@ const canSave = computed(() => {
     return isSavingsGoalFormDirty(editGoal.value, form);
 });
 
+const modalTitle = computed(() => {
+    if (!isEdit.value) return t('savingsGoalsPage.form.createTitle');
+    return liveGoal.value?.name || t('savingsGoalsPage.form.editTitle');
+});
+
+const detailTabs = computed(() => [
+    {
+        value: 'details' as const,
+        label: t('savingsGoalsPage.detail.tabs.details'),
+        icon: FileDescriptionIcon
+    },
+    {
+        value: 'transactions' as const,
+        label: t('savingsGoalsPage.detail.tabs.transactions'),
+        icon: ArrowsExchangeIcon,
+        chip: contributions.value.length || undefined
+    }
+]);
+
 function clearFieldErrors() {
     fieldErrors.name = null;
     fieldErrors.targetAmount = null;
@@ -156,8 +180,9 @@ watch(
     () => props.modelValue,
     (value) => {
         if (!value) return;
-        isEdit.value = !!props.savingsGoal;
+        isEditSession.value = !!props.savingsGoal;
         editGoal.value = props.savingsGoal ?? null;
+        activeTab.value = 'details';
         resetForm();
         if (!accountsStore.initialized) {
             void accountsStore.loadAccounts().catch(() => undefined);
@@ -176,6 +201,7 @@ async function onSave() {
     const built = isEdit.value ? buildUpdateSavingsGoalPayload(form, ctx) : buildCreateSavingsGoalPayload(form, ctx);
     if (!built.ok) {
         applyPayloadErrors(built.code, built.field);
+        if (isEdit.value) activeTab.value = 'details';
         return;
     }
     try {
@@ -210,9 +236,100 @@ function contributionAmount(amount: number, currency: string): string {
 </script>
 
 <template>
-    <AppModalBase
+    <AppModalTabs
+        v-if="isEdit"
         v-model="open"
-        :title="isEdit ? t('savingsGoalsPage.form.editTitle') : t('savingsGoalsPage.form.createTitle')"
+        v-model:tab="activeTab"
+        :title="modalTitle"
+        :subtitle="t('savingsGoalsPage.form.subtitle')"
+        :tabs="detailTabs"
+        :height="720"
+        :max-width="640"
+    >
+        <AppAlert v-if="localError.message" type="error" class="mb-4" closable @dismiss="localError.message = null">
+            {{ localError.message }}
+        </AppAlert>
+
+        <template #panel-details>
+            <AppModalPanelScroll>
+                <SavingsGoalForm
+                    :form="form"
+                    :is-edit="isEdit"
+                    :account-items="accountItems"
+                    :field-errors="fieldErrors"
+                    :currency-hint="currencyHint"
+                    :account-hint="t('savingsGoalsPage.form.accountHint')"
+                    :account-change-hint="accountChangeHint"
+                    :progress-hint="progressHint"
+                />
+            </AppModalPanelScroll>
+        </template>
+
+        <template #panel-transactions>
+            <AppModalPanelScroll>
+                <div v-if="liveGoal" class="goal-contributions">
+                    <div class="goal-contributions__head">
+                        <p class="goal-contributions__hint">
+                            {{
+                                canLinkTransactions
+                                    ? t('savingsGoalsPage.form.linkedTransactions.hint')
+                                    : t('savingsGoalsPage.form.linkedTransactions.noAccount')
+                            }}
+                        </p>
+                        <p v-if="projectedText" class="goal-contributions__hint">{{ projectedText }}</p>
+                    </div>
+                    <div class="goal-contributions__actions">
+                        <button
+                            type="button"
+                            class="su-btn su-btn--tonal"
+                            :disabled="!canLinkTransactions || store.acting"
+                            @click="openLink('link')"
+                        >
+                            <LinkIcon :size="16" stroke-width="1.6" />
+                            {{ t('savingsGoalsPage.form.linkedTransactions.add') }}
+                        </button>
+                        <button
+                            type="button"
+                            class="su-btn su-btn--ghost"
+                            :disabled="!canLinkTransactions || store.acting || !contributions.length"
+                            @click="openLink('unlink')"
+                        >
+                            <UnlinkIcon :size="16" stroke-width="1.6" />
+                            {{ t('savingsGoalsPage.form.linkedTransactions.remove') }}
+                        </button>
+                    </div>
+                    <p v-if="!contributions.length" class="text-caption text-medium-emphasis mb-0">
+                        {{ t('savingsGoalsPage.form.linkedTransactions.empty') }}
+                    </p>
+                    <ul v-else class="goal-contributions__list">
+                        <li v-for="item in contributions" :key="item.transactionPublicId" class="goal-contributions__row">
+                            <span class="goal-contributions__meta">
+                                <span class="goal-contributions__name">{{ item.label }}</span>
+                                <span class="goal-contributions__sub">{{ formatCalendarDate(item.operationDate, locale) }}</span>
+                            </span>
+                            <span class="goal-contributions__amount" :class="{ 'is-out': item.amount < 0 }">
+                                {{ contributionAmount(item.amount, liveGoal.currency) }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </AppModalPanelScroll>
+        </template>
+
+        <template #footer="{ close }">
+            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
+                {{ t('common.cancel') }}
+            </button>
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
+                {{ t('common.save') }}
+            </button>
+        </template>
+    </AppModalTabs>
+
+    <AppModalBase
+        v-else
+        v-model="open"
+        :title="modalTitle"
         :subtitle="t('savingsGoalsPage.form.subtitle')"
         :max-width="640"
         :height="760"
@@ -234,54 +351,6 @@ function contributionAmount(amount: number, currency: string): string {
             :progress-hint="progressHint"
         />
 
-        <div v-if="isEdit && liveGoal" class="goal-contributions">
-            <div class="goal-contributions__head">
-                <p class="goal-contributions__title">{{ t('savingsGoalsPage.form.linkedTransactions.title') }}</p>
-                <p class="goal-contributions__hint">
-                    {{
-                        canLinkTransactions
-                            ? t('savingsGoalsPage.form.linkedTransactions.hint')
-                            : t('savingsGoalsPage.form.linkedTransactions.noAccount')
-                    }}
-                </p>
-                <p v-if="projectedText" class="goal-contributions__hint">{{ projectedText }}</p>
-            </div>
-            <div class="goal-contributions__actions">
-                <button
-                    type="button"
-                    class="su-btn su-btn--tonal"
-                    :disabled="!canLinkTransactions || store.acting"
-                    @click="openLink('link')"
-                >
-                    <LinkIcon :size="16" stroke-width="1.6" />
-                    {{ t('savingsGoalsPage.form.linkedTransactions.add') }}
-                </button>
-                <button
-                    type="button"
-                    class="su-btn su-btn--ghost"
-                    :disabled="!canLinkTransactions || store.acting || !contributions.length"
-                    @click="openLink('unlink')"
-                >
-                    <UnlinkIcon :size="16" stroke-width="1.6" />
-                    {{ t('savingsGoalsPage.form.linkedTransactions.remove') }}
-                </button>
-            </div>
-            <p v-if="!contributions.length" class="text-caption text-medium-emphasis mb-0">
-                {{ t('savingsGoalsPage.form.linkedTransactions.empty') }}
-            </p>
-            <ul v-else class="goal-contributions__list">
-                <li v-for="item in contributions" :key="item.transactionPublicId" class="goal-contributions__row">
-                    <span class="goal-contributions__meta">
-                        <span class="goal-contributions__name">{{ item.label }}</span>
-                        <span class="goal-contributions__sub">{{ formatCalendarDate(item.operationDate, locale) }}</span>
-                    </span>
-                    <span class="goal-contributions__amount" :class="{ 'is-out': item.amount < 0 }">
-                        {{ contributionAmount(item.amount, liveGoal.currency) }}
-                    </span>
-                </li>
-            </ul>
-        </div>
-
         <template #footer="{ close }">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
@@ -297,14 +366,9 @@ function contributionAmount(amount: number, currency: string): string {
 
 <style scoped>
 .goal-contributions {
-    margin-top: 8px;
-    padding-top: 16px;
-    border-top: 1px solid var(--stroke);
-}
-
-.goal-contributions__title {
-    margin: 0 0 4px;
-    font-weight: 650;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
 }
 
 .goal-contributions__hint {

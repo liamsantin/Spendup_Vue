@@ -1145,6 +1145,12 @@
         "errors": {
             "notFound": "Objectif introuvable."
         },
+        "detail": {
+            "tabs": {
+                "details": "Détails",
+                "transactions": "Transactions liées"
+            }
+        },
         "linkTransactions": {
             "title": "Lier des transactions",
             "subtitle": "Écritures validées ou rapprochées qui touchent le compte de l’objectif, dans la même devise. Un crédit l’augmente, un débit le diminue.",
