@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { DownloadIcon, EyeIcon, PdfIcon, PencilIcon, TrashIcon } from 'vue-tabler-icons';
+import { useRowTap } from '@/components/shared/board/useRowTap';
 import { fileSizeParts, formatDocumentDate, formatInstant } from '@/features/files/format';
 import type { FileDto } from '@/features/files/types';
 
@@ -41,10 +42,23 @@ function onActivate(event: MouseEvent) {
     if (event.target instanceof Element && event.target.closest('button, a')) return;
     emit('preview', props.file);
 }
+
+const tap = useRowTap(
+    () => emit('preview', props.file),
+    () => !props.acting
+);
 </script>
 
 <template>
-    <div class="file-row" :class="{ 'file-row--editable': !acting }" :data-file-id="file.publicId" @click="onActivate">
+    <div
+        class="file-row"
+        :class="{ 'file-row--editable': !acting }"
+        :data-file-id="file.publicId"
+        @click="onActivate"
+        @touchstart.passive="tap.onTouchstart"
+        @touchend="tap.onTouchend"
+        @touchcancel="tap.onTouchcancel"
+    >
         <span class="file-row__icon">
             <PdfIcon size="18" stroke-width="1.8" />
         </span>

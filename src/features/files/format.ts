@@ -9,7 +9,7 @@ import {
 
 const YMD_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-export const FILE_SORTS = ['recent', 'oldest', 'nameAsc', 'nameDesc', 'sizeDesc'] as const;
+export const FILE_SORTS = ['recent', 'oldest', 'nameAsc', 'nameDesc', 'sizeAsc', 'sizeDesc', 'documentDateAsc', 'documentDateDesc'] as const;
 export type FileSort = (typeof FILE_SORTS)[number];
 export const FILE_SORT_DEFAULT: FileSort = 'recent';
 
@@ -51,6 +51,12 @@ function createdStamp(file: FileDto): number {
     return Number.isFinite(time) ? time : 0;
 }
 
+function documentStamp(file: FileDto): number | null {
+    if (!file.documentDate || !isValidYmd(file.documentDate)) return null;
+    const time = Date.parse(`${file.documentDate}T00:00:00Z`);
+    return Number.isFinite(time) ? time : null;
+}
+
 export function sortFiles(files: FileDto[], sort: FileSort = FILE_SORT_DEFAULT): FileDto[] {
     const copy = [...files];
     copy.sort((a, b) => {
@@ -66,9 +72,21 @@ export function sortFiles(files: FileDto[], sort: FileSort = FILE_SORT_DEFAULT):
                 if (byDate !== 0) return byDate;
                 break;
             }
+            case 'sizeAsc':
             case 'sizeDesc': {
-                const bySize = b.sizeBytes - a.sizeBytes;
-                if (bySize !== 0) return bySize;
+                const bySize = a.sizeBytes - b.sizeBytes;
+                if (bySize !== 0) return sort === 'sizeAsc' ? bySize : -bySize;
+                break;
+            }
+            case 'documentDateAsc':
+            case 'documentDateDesc': {
+                const aStamp = documentStamp(a);
+                const bStamp = documentStamp(b);
+                if (aStamp == null && bStamp == null) break;
+                if (aStamp == null) return 1;
+                if (bStamp == null) return -1;
+                const byDate = aStamp - bStamp;
+                if (byDate !== 0) return sort === 'documentDateAsc' ? byDate : -byDate;
                 break;
             }
             case 'recent':

@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeftIcon, ArrowsSortIcon, DownloadIcon, PencilIcon, SearchIcon, TrashIcon, UploadIcon, XIcon } from 'vue-tabler-icons';
+import { ArrowLeftIcon, ArrowsSortIcon, DownloadIcon, FileExportIcon, PencilIcon, TrashIcon, UploadIcon } from 'vue-tabler-icons';
+import AppBoard from '@/components/shared/board/AppBoard.vue';
+import AppBoardSearch from '@/components/shared/board/AppBoardSearch.vue';
+import { useBoardSearch } from '@/components/shared/board/useBoardSearch';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import FilePreview from '@/features/files/components/FilePreview.vue';
-import FileUsageMeter from '@/features/files/components/FileUsageMeter.vue';
 import {
     FILE_SEARCH_MAX,
     FILE_SORT_DEFAULT,
     FILE_SORTS,
     FilesDirectory,
     isFileSort,
-    matchesFileSearch,
     parseFileSort,
     useFilesStore
 } from '@/features/files';
 import type { FileDto } from '@/features/files/types';
 
-const SEARCH_DEBOUNCE_MS = 300;
 const FILES_PATH = '/app/gestion/files';
 
 const { t } = useI18n();
@@ -31,6 +31,8 @@ const directoryRef = ref<{
     openPicker: () => void;
     openEdit: (file: FileDto) => void;
     requestDelete: (file: FileDto) => void;
+    exportCsv: () => void;
+    visibleCount: number;
 } | null>(null);
 const previewRef = ref<{ download: () => void } | null>(null);
 
@@ -38,9 +40,6 @@ function queryString(name: string): string {
     const raw = route.query[name];
     return typeof raw === 'string' ? raw : '';
 }
-
-const searchInput = ref(queryString('q').slice(0, FILE_SEARCH_MAX));
-let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 const previewId = computed(() => {
     const raw = route.params.publicId;
@@ -59,16 +58,11 @@ const listSort = computed({
     set: (value: string) => patchQuery({ sort: value === FILE_SORT_DEFAULT ? undefined : value })
 });
 
-const visibleCount = computed(() => {
-    const needle = queryString('q').trim();
-    if (!needle) return store.totalCount;
-    return store.items.filter((file) => matchesFileSearch(file, needle)).length;
-});
+const visibleCount = computed(() => directoryRef.value?.visibleCount ?? 0);
 
 const sortCount = computed(() => (listSort.value === FILE_SORT_DEFAULT ? 0 : 1));
 
 const pageTitle = computed(() => previewFile.value?.nameOriginal || t('filesPage.title'));
-const pageSubtitle = computed(() => (previewing.value ? undefined : t('filesPage.subtitle')));
 
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
@@ -80,21 +74,11 @@ function patchQuery(patch: Record<string, string | undefined>) {
     void router.replace({ path: publicId ? `${FILES_PATH}/${publicId}` : FILES_PATH, query: next });
 }
 
-function onSearchInput(value: string) {
-    searchInput.value = value.slice(0, FILE_SEARCH_MAX);
-    if (searchTimer) clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-        searchTimer = null;
-        patchQuery({ q: searchInput.value.trim() || undefined });
-    }, SEARCH_DEBOUNCE_MS);
-}
-
-function clearSearch() {
-    if (searchTimer) clearTimeout(searchTimer);
-    searchTimer = null;
-    searchInput.value = '';
-    patchQuery({ q: undefined });
-}
+const search = useBoardSearch({
+    read: () => queryString('q'),
+    commit: (value) => patchQuery({ q: value }),
+    max: FILE_SEARCH_MAX
+});
 
 function onUpload() {
     if (store.acting) return;
@@ -119,21 +103,6 @@ function onPreviewDelete() {
     directoryRef.value?.requestDelete(previewFile.value);
 }
 
-onUnmounted(() => {
-    if (searchTimer) clearTimeout(searchTimer);
-});
-
-watch(
-    () => queryString('q'),
-    (value) => {
-        if (searchTimer) return;
-        const next = value.slice(0, FILE_SEARCH_MAX);
-        if (next !== searchInput.value.trim() && next !== searchInput.value) {
-            searchInput.value = next;
-        }
-    }
-);
-
 watch(
     () => queryString('upload'),
     async (upload) => {
@@ -150,7 +119,7 @@ watch(
 
 <template>
     <div class="files-page" :class="{ 'files-page--reader': previewing }">
-        <AppPageShell :title="pageTitle" :subtitle="pageSubtitle" :body-scroll="!previewing">
+        <AppPageShell :title="pageTitle" :body-scroll="false">
             <template v-if="previewing" #actions>
                 <button type="button" class="su-btn su-btn--ghost" @click="closePreview">
                     <ArrowLeftIcon :size="16" stroke-width="1.6" />
@@ -170,33 +139,9 @@ watch(
                 </button>
             </template>
 
-            <template v-if="!previewing" #toolbar>
-                <label class="su-search su-search--discover">
-                    <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
-                    <input
-                        class="su-search__input"
-                        type="search"
-                        :value="searchInput"
-                        :maxlength="FILE_SEARCH_MAX"
-                        :placeholder="t('filesPage.searchPlaceholder')"
-                        :aria-label="t('filesPage.searchPlaceholder')"
-                        autocomplete="off"
-                        @input="onSearchInput(($event.target as HTMLInputElement).value)"
-                    />
-                    <button
-                        v-if="searchInput"
-                        type="button"
-                        class="su-search__orb"
-                        :aria-label="t('filesPage.actions.clearSearch')"
-                        @click="clearSearch"
-                    >
-                        <XIcon :size="16" stroke-width="1.8" />
-                    </button>
-                </label>
-                <span v-if="store.initialized && visibleCount" class="su-toolbar__count">
-                    {{ t('filesPage.count', { count: visibleCount }, visibleCount) }}
-                </span>
-                <div class="su-toolbar__actions">
+            <FilePreview v-if="previewId" ref="previewRef" :public-id="previewId" :name-original="previewFile?.nameOriginal" />
+            <AppBoard v-show="!previewing">
+                <template #filters>
                     <AppDropdownFilter
                         :label="t('filesPage.actions.sort')"
                         :icon="ArrowsSortIcon"
@@ -208,19 +153,51 @@ watch(
                     >
                         <AppSortChoices v-model="listSort" :items="FILE_SORTS" :label-for="(value) => t(`filesPage.sort.${value}`)" />
                     </AppDropdownFilter>
-                    <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onUpload">
-                        <UploadIcon :size="16" stroke-width="1.6" />
-                        {{ t('filesPage.actions.upload') }}
+                </template>
+                <template #bar>
+                    <AppBoardSearch
+                        :model-value="search.input.value"
+                        :maxlength="FILE_SEARCH_MAX"
+                        :placeholder="t('filesPage.searchPlaceholder')"
+                        :search-label="t('filesPage.actions.search')"
+                        :clear-label="t('filesPage.actions.clearSearch')"
+                        @update:model-value="search.onInput"
+                        @clear="search.clear"
+                    />
+                    <span v-if="visibleCount" class="su-toolbar__count app-board__count">
+                        {{ t('filesPage.count', { count: visibleCount }, visibleCount) }}
+                    </span>
+                </template>
+                <template #actions>
+                    <button
+                        type="button"
+                        class="su-btn su-btn--ink"
+                        :disabled="!visibleCount"
+                        :aria-label="t('filesPage.actions.export')"
+                        @click="directoryRef?.exportCsv()"
+                    >
+                        <FileExportIcon :size="16" stroke-width="1.6" />
+                        <span class="app-board__label">{{ t('filesPage.actions.export') }}</span>
                     </button>
-                </div>
-            </template>
+                    <button
+                        type="button"
+                        class="su-btn su-btn--ink app-board__primary"
+                        :disabled="store.acting"
+                        :aria-label="t('filesPage.actions.upload')"
+                        @click="onUpload"
+                    >
+                        <UploadIcon :size="16" stroke-width="1.6" />
+                        <span class="app-board__label">{{ t('filesPage.actions.create') }}</span>
+                    </button>
+                </template>
 
-            <FilePreview v-if="previewId" ref="previewRef" :public-id="previewId" :name-original="previewFile?.nameOriginal" />
-            <div v-show="!previewing">
-                <p class="files-page__hint">{{ t('filesPage.uploadHint') }}</p>
-                <FileUsageMeter v-if="store.usage" :usage="store.usage" />
-                <FilesDirectory ref="directoryRef" />
-            </div>
+                <FilesDirectory
+                    ref="directoryRef"
+                    :search="queryString('q') || null"
+                    :sort="listSort"
+                    @sort="listSort = $event"
+                />
+            </AppBoard>
         </AppPageShell>
     </div>
 </template>
@@ -244,11 +221,5 @@ watch(
     flex-direction: column;
     overflow: hidden;
     padding: 8px 10px 10px;
-}
-
-.files-page__hint {
-    margin: 0 0 12px;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
 }
 </style>

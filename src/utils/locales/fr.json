@@ -1500,6 +1500,9 @@
         },
         "actions": {
             "upload": "Ajouter un PDF",
+            "create": "Ajouter",
+            "export": "Exporter",
+            "search": "Rechercher",
             "sort": "Trier",
             "preview": "Aperçu",
             "download": "Télécharger",
@@ -1507,12 +1510,24 @@
             "delete": "Supprimer",
             "clearSearch": "Effacer la recherche"
         },
+        "columns": {
+            "name": "Nom",
+            "documentDate": "Date du document",
+            "size": "Taille",
+            "added": "Ajouté le",
+            "description": "Description"
+        },
         "sort": {
             "recent": "Plus récents",
             "oldest": "Plus anciens",
             "nameAsc": "Nom (A → Z)",
             "nameDesc": "Nom (Z → A)",
-            "sizeDesc": "Plus volumineux"
+            "sizeAsc": "Plus légers",
+            "sizeDesc": "Plus volumineux",
+            "documentDateAsc": "Date du document (ancienne → récente)",
+            "documentDateDesc": "Date du document (récente → ancienne)",
+            "asc": "Croissant",
+            "desc": "Décroissant"
         },
         "list": {
             "addedOn": "ajouté le {date}"

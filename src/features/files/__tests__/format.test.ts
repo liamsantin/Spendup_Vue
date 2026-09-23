@@ -41,6 +41,14 @@ describe('files format', () => {
         expect(parseFileSort('nope')).toBe('recent');
     });
 
+    it('trie par taille et place les documents sans date à la fin', () => {
+        const small = file({ publicId: 's', sizeBytes: 100, documentDate: null });
+        const large = file({ publicId: 'l', sizeBytes: 9000, documentDate: '2026-03-01' });
+        const mid = file({ publicId: 'm', sizeBytes: 500, documentDate: '2026-01-01' });
+        expect(sortFiles([small, large, mid], 'sizeAsc').map((item) => item.publicId)).toEqual(['s', 'm', 'l']);
+        expect(sortFiles([small, large, mid], 'documentDateDesc').map((item) => item.publicId)).toEqual(['l', 'm', 's']);
+    });
+
     it('filtre sur le nom et la description, pas sur le hash', () => {
         const item = file({ sha256Hash: 'deadbeef'.repeat(8) });
         expect(matchesFileSearch(item, 'facture')).toBe(true);

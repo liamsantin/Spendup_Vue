@@ -6,21 +6,39 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import {
+    FILE_SORT_DEFAULT,
+    fileSizeParts,
     isFileLinkedToTransactionsMessage,
     isQuotaExceededMessage,
     matchesFileSearch,
     parseFileSort,
     sortFiles,
-    wouldExceedQuota
+    wouldExceedQuota,
+    type FileSort
 } from '@/features/files/format';
 import { downloadFileBlob } from '@/features/files/composables/useFileContentUrl';
 import { useFilesStore } from '@/features/files/stores/files-store';
 import { FILE_PAGE_SIZE_MAX, FILE_PDF_MIME, FILE_SEARCH_MAX, type FileDto } from '@/features/files/types';
 import { validatePdfFile } from '@/features/files/validate-upload';
 import FileListItem from '@/features/files/components/list/FileListItem.vue';
+import FileTable from '@/features/files/components/list/FileTable.vue';
 import FileEditModal from '@/features/files/components/modals/FileEditModal.vue';
+import FileUsageMeter from '@/features/files/components/FileUsageMeter.vue';
+import { downloadCsv } from '@/utils/helpers/csv';
 
 const FILES_PATH = '/app/gestion/files';
+
+const props = withDefaults(
+    defineProps<{
+        search?: string | null;
+        sort?: FileSort;
+    }>(),
+    { search: null, sort: FILE_SORT_DEFAULT }
+);
+
+const emit = defineEmits<{
+    sort: [value: FileSort];
+}>();
 
 const { t } = useI18n();
 const route = useRoute();
@@ -49,13 +67,8 @@ const deleteOpen = computed({
     }
 });
 
-function queryString(name: string): string | null {
-    const raw = route.query[name];
-    return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
-}
-
-const filterSearch = computed(() => queryString('q')?.slice(0, FILE_SEARCH_MAX) ?? null);
-const listSort = computed(() => parseFileSort(queryString('sort')));
+const filterSearch = computed(() => props.search?.trim().slice(0, FILE_SEARCH_MAX) || null);
+const listSort = computed(() => parseFileSort(props.sort));
 const previewId = computed(() => {
     const raw = route.params.publicId;
     return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
@@ -134,13 +147,32 @@ watch(previewId, async (id) => {
     }
 });
 
+function exportCsv() {
+    const header = (['name', 'documentDate', 'size', 'added', 'description'] as const).map((key) => t(`filesPage.columns.${key}`));
+    const rows = visibleItems.value.map((file) => {
+        const parts = fileSizeParts(file.sizeBytes);
+        return [
+            file.nameOriginal,
+            file.documentDate ?? '',
+            t(`filesPage.size.${parts.unit}`, { n: parts.n }),
+            file.createdAt,
+            file.description ?? ''
+        ];
+    });
+    downloadCsv('fichiers', header, rows);
+}
+
+const visibleCount = computed(() => visibleItems.value.length);
+
 defineExpose({
     openPicker: () => fileInputRef.value?.click(),
     onFiles: (files: FileList | File[]) => void uploadFiles(files),
     openEdit: (file: FileDto) => {
         editTarget.value = file;
     },
-    requestDelete
+    requestDelete,
+    exportCsv,
+    visibleCount
 });
 
 function openPreview(file: FileDto) {
@@ -261,11 +293,11 @@ function onDrop(event: DragEvent) {
 </script>
 
 <template>
-    <div class="files-directory" @dragenter="onDragEnter" @dragover="onDragOver" @dragleave="onDragLeave" @drop="onDrop">
-        <input ref="fileInputRef" class="files-directory__input" type="file" :accept="`${FILE_PDF_MIME},.pdf`" @change="onFileSelected" />
+    <div class="files-panel" @dragenter="onDragEnter" @dragover="onDragOver" @dragleave="onDragLeave" @drop="onDrop">
+        <input ref="fileInputRef" class="files-panel__input" type="file" :accept="`${FILE_PDF_MIME},.pdf`" @change="onFileSelected" />
 
-        <div v-if="dragging" class="files-directory__drop">
-            <p class="files-directory__drop-title">{{ t('filesPage.drop.title') }}</p>
+        <div v-if="dragging" class="files-panel__drop">
+            <p class="files-panel__drop-title">{{ t('filesPage.drop.title') }}</p>
             <p>{{ t('filesPage.drop.body') }}</p>
         </div>
 
@@ -282,26 +314,28 @@ function onDrop(event: DragEvent) {
             {{ localError || store.error }}
         </AppAlert>
 
-        <div v-if="uploading" class="files-directory__progress" role="status">
+        <div v-if="uploading" class="files-panel__progress" role="status">
             <p>{{ t('filesPage.upload.progress', { name: uploadingName, percent: uploadProgress }) }}</p>
-            <div class="files-directory__bar">
-                <span class="files-directory__bar-fill" :style="{ width: `${uploadProgress}%` }" />
+            <div class="files-panel__bar">
+                <span class="files-panel__bar-fill" :style="{ width: `${uploadProgress}%` }" />
             </div>
         </div>
 
-        <div v-if="store.loading && !store.items.length" class="su-loading">
-            <span class="su-spin" />
-        </div>
-        <div
-            v-else-if="!visibleItems.length"
-            :key="`empty-${searchRevealKey}`"
-            class="su-empty"
-            :class="{ 'is-search-reveal': searchReveals }"
-        >
-            <p>{{ emptyCopy }}</p>
-        </div>
-        <div v-else class="su-stack">
-            <section class="su-surface files-directory__group">
+        <FileUsageMeter v-if="store.usage" class="files-panel__usage" :usage="store.usage" />
+
+        <div class="files-panel__scroll">
+            <div v-if="store.loading && !store.items.length" class="su-loading">
+                <span class="su-spin" />
+            </div>
+            <div
+                v-else-if="!visibleItems.length"
+                :key="`empty-${searchRevealKey}`"
+                class="su-empty"
+                :class="{ 'is-search-reveal': searchReveals }"
+            >
+                <p>{{ emptyCopy }}</p>
+            </div>
+            <div v-else class="files-directory">
                 <div :key="searchRevealKey" class="files-directory__list" :class="{ 'is-search-reveal': searchReveals }">
                     <FileListItem
                         v-for="(file, index) in visibleItems"
@@ -315,13 +349,24 @@ function onDrop(event: DragEvent) {
                         @delete="requestDelete"
                     />
                 </div>
-            </section>
-        </div>
+                <FileTable
+                    class="files-directory__table"
+                    :items="visibleItems"
+                    :sort="listSort"
+                    :acting="store.acting || uploading"
+                    @preview="openPreview"
+                    @download="onDownload"
+                    @edit="editTarget = $event"
+                    @delete="requestDelete"
+                    @sort="emit('sort', $event)"
+                />
+            </div>
 
-        <div v-if="store.hasMore" class="su-more">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
-                {{ t('filesPage.loadMore') }}
-            </button>
+            <div v-if="store.hasMore" class="su-more">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
+                    {{ t('filesPage.loadMore') }}
+                </button>
+            </div>
         </div>
 
         <FileEditModal v-model="editOpen" :file="editTarget" />
@@ -339,15 +384,19 @@ function onDrop(event: DragEvent) {
 </template>
 
 <style scoped>
-.files-directory {
+.files-panel {
     position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
 }
 
-.files-directory__input {
+.files-panel__input {
     display: none;
 }
 
-.files-directory__drop {
+.files-panel__drop {
     position: absolute;
     inset: 0;
     z-index: 4;
@@ -363,32 +412,33 @@ function onDrop(event: DragEvent) {
     pointer-events: none;
 }
 
-.files-directory__drop-title {
+.files-panel__drop-title {
     margin: 0;
     font-weight: 650;
     color: inherit;
 }
 
-.files-directory__progress {
-    margin-bottom: 12px;
+.files-panel__progress {
+    flex: none;
+    margin: 12px 16px 0;
     padding: 12px 14px;
     border-radius: 12px;
     background: var(--surface-raised);
 }
 
-.files-directory__progress p {
+.files-panel__progress p {
     margin: 0 0 8px;
     font-size: 0.85rem;
 }
 
-.files-directory__bar {
+.files-panel__bar {
     height: 6px;
     border-radius: 999px;
     background: var(--hair);
     overflow: hidden;
 }
 
-.files-directory__bar-fill {
+.files-panel__bar-fill {
     display: block;
     height: 100%;
     border-radius: inherit;
@@ -396,8 +446,25 @@ function onDrop(event: DragEvent) {
     transition: width 0.2s var(--ease);
 }
 
-.files-directory__group {
-    overflow: visible;
+.files-panel :deep(.file-usage) {
+    flex: none;
+    margin: 12px 18px 0;
+}
+
+.files-panel__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.files-directory {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 16px 10px;
 }
 
 .files-directory__list {
@@ -405,6 +472,41 @@ function onDrop(event: DragEvent) {
     flex-direction: column;
     gap: 2px;
     overflow: visible;
-    padding: 8px;
+}
+
+.files-directory__table {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .files-directory__list {
+        display: none;
+    }
+
+    .files-directory__table {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 0;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 767px) {
+    .files-panel__scroll {
+        display: block;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .files-directory {
+        display: block;
+        padding: 0 4px 4px;
+    }
+
+    .files-panel :deep(.file-usage),
+    .files-panel__progress {
+        margin-left: 8px;
+        margin-right: 8px;
+    }
 }
 </style>
