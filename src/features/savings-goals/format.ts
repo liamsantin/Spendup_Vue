@@ -102,3 +102,17 @@ export function isLinkedSavingsGoalAccountError(error: { status?: number; messag
     const message = (error.message ?? '').toLowerCase();
     return message.includes("objectif d'épargne") || message.includes('savings goal') || message.includes('objectif d’épargne');
 }
+
+/** Complète les champs calculés / tableaux absents d’une liste. */
+export function normalizeSavingsGoal(goal: SavingsGoal): SavingsGoal {
+    return {
+        ...goal,
+        openingAmount: Number(goal.openingAmount) || 0,
+        contributedAmount: Number(goal.contributedAmount) || 0,
+        currentAmount: Number(goal.currentAmount) || 0,
+        remainingAmount: Number(goal.remainingAmount) || 0,
+        percentReached: Number(goal.percentReached) || 0,
+        projectedDate: goal.projectedDate ?? null,
+        contributions: Array.isArray(goal.contributions) ? goal.contributions : []
+    };
+}

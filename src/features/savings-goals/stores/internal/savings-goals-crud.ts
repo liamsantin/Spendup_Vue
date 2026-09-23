@@ -1,9 +1,8 @@
 import { AppError } from '@/utils/errors/app-error';
 import { savingsGoalsApi } from '@/features/savings-goals/api';
-import { normalizeListQuery } from '@/features/savings-goals/format';
+import { normalizeListQuery, normalizeSavingsGoal } from '@/features/savings-goals/format';
 import {
     buildCreateSavingsGoalPayload,
-    buildDepositUpdatePayload,
     buildUnlinkAccountPayload,
     buildUpdateSavingsGoalPayload,
     type SavingsGoalFormFields,
@@ -23,9 +22,9 @@ function payloadErrorMessage(code: string): string {
         case 'targetAmountInvalid':
         case 'targetAmountNotPositive':
             return 'Le montant cible doit être strictement positif.';
-        case 'currentAmountInvalid':
-        case 'currentAmountNegative':
-            return 'Le montant mis de côté ne peut pas être négatif.';
+        case 'openingAmountInvalid':
+        case 'openingAmountNegative':
+            return 'Le montant d’ouverture ne peut pas être négatif.';
         case 'targetDateInvalid':
             return "La date d'échéance est invalide.";
         case 'currencyInvalid':
@@ -90,7 +89,7 @@ export function createSavingsGoalsCrud(state: SavingsGoalsState) {
                             accountPublicId: normalized.accountPublicId ?? undefined
                         });
                         if (requestId !== listRequestSeq) return;
-                        const nextItems = Array.isArray(result?.items) ? result.items : [];
+                        const nextItems = (Array.isArray(result?.items) ? result.items : []).map(normalizeSavingsGoal);
                         setList(key, nextItems, { totalCount: result?.totalCount ?? nextItems.length });
                         applied = true;
                     } catch (e: unknown) {
@@ -145,8 +144,8 @@ export function createSavingsGoalsCrud(state: SavingsGoalsState) {
             if (known) return known;
         }
         try {
-            const goal = await savingsGoalsApi.get(id);
-            upsertItem(goal);
+            const goal = normalizeSavingsGoal(await savingsGoalsApi.get(id));
+            upsertItem(goal, { replaceContributions: true });
             return goal;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
@@ -169,8 +168,8 @@ export function createSavingsGoalsCrud(state: SavingsGoalsState) {
             if (!built.ok) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
-            const created = await savingsGoalsApi.create(built.payload);
-            upsertItem(created);
+            const created = normalizeSavingsGoal(await savingsGoalsApi.create(built.payload));
+            upsertItem(created, { replaceContributions: true });
             touchHydratedListCaches();
             rememberLocalMutation(created.publicId);
             return created;
@@ -195,40 +194,8 @@ export function createSavingsGoalsCrud(state: SavingsGoalsState) {
             if (!built.ok) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
-            const updated = await savingsGoalsApi.update(publicId, built.payload);
-            upsertItem(updated);
-            touchHydratedListCaches();
-            rememberLocalMutation(updated.publicId);
-            return updated;
-        } catch (e: unknown) {
-            const err = AppError.fromUnknown(e);
-            if (err.status === 404) {
-                rememberNotFound();
-                removeItemLocal(publicId);
-                invalidateAllLists();
-            } else {
-                error.value = err.message;
-            }
-            throw err;
-        } finally {
-            endActing();
-        }
-    }
-
-    async function depositSavingsGoal(publicId: string, currentAmount: number) {
-        beginActing();
-        clearError();
-        try {
-            const current = findByPublicId(publicId);
-            if (!current) {
-                throw new AppError(SAVINGS_GOAL_NOT_FOUND_MESSAGE, 404, SAVINGS_GOAL_NOT_FOUND_CODE);
-            }
-            const built = buildDepositUpdatePayload(current, currentAmount);
-            if (!built.ok) {
-                throw new AppError(payloadErrorMessage(built.code), 400, built.code);
-            }
-            const updated = await savingsGoalsApi.update(publicId, built.payload);
-            upsertItem(updated);
+            const updated = normalizeSavingsGoal(await savingsGoalsApi.update(publicId, built.payload));
+            upsertItem(updated, { replaceContributions: true });
             touchHydratedListCaches();
             rememberLocalMutation(updated.publicId);
             return updated;
@@ -251,9 +218,9 @@ export function createSavingsGoalsCrud(state: SavingsGoalsState) {
         beginActing();
         clearError();
         try {
-            const current = findByPublicId(publicId) ?? (await savingsGoalsApi.get(publicId));
-            const updated = await savingsGoalsApi.update(publicId, buildUnlinkAccountPayload(current));
-            upsertItem(updated);
+            const current = findByPublicId(publicId) ?? normalizeSavingsGoal(await savingsGoalsApi.get(publicId));
+            const updated = normalizeSavingsGoal(await savingsGoalsApi.update(publicId, buildUnlinkAccountPayload(current)));
+            upsertItem(updated, { replaceContributions: true });
             touchHydratedListCaches();
             rememberLocalMutation(updated.publicId);
             return updated;
@@ -277,7 +244,7 @@ export function createSavingsGoalsCrud(state: SavingsGoalsState) {
         if (!id) return [];
         try {
             const result = await savingsGoalsApi.list({ accountPublicId: id });
-            const nextItems = Array.isArray(result?.items) ? result.items : [];
+            const nextItems = (Array.isArray(result?.items) ? result.items : []).map(normalizeSavingsGoal);
             for (const item of nextItems) upsertItem(item);
             return nextItems.filter((item) => item.accountPublicId === id);
         } catch (e: unknown) {
@@ -317,7 +284,6 @@ export function createSavingsGoalsCrud(state: SavingsGoalsState) {
         fetchSavingsGoal,
         createSavingsGoal,
         updateSavingsGoal,
-        depositSavingsGoal,
         unlinkSavingsGoalAccount,
         listLinkedToAccount,
         deleteSavingsGoal

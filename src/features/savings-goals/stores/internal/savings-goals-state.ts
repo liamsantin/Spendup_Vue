@@ -65,18 +65,24 @@ export function createSavingsGoalsState() {
         error.value = null;
     }
 
-    function rememberKnown(goal: SavingsGoal) {
-        knownById.set(goal.publicId, goal);
+    function rememberKnown(goal: SavingsGoal, options?: { replaceContributions?: boolean }): SavingsGoal {
+        const existing = knownById.get(goal.publicId);
+        const incoming = Array.isArray(goal.contributions) ? goal.contributions : [];
+        const contributions = options?.replaceContributions || incoming.length > 0 || !existing ? incoming : (existing.contributions ?? []);
+        const merged: SavingsGoal = { ...goal, contributions };
+        knownById.set(goal.publicId, merged);
+        return merged;
     }
 
     function setList(key: string, nextItems: SavingsGoal[], meta?: { totalCount?: number }) {
         const prev = itemsByListKey.get(key);
+        const mergedItems = nextItems.map((item) => rememberKnown(item));
         const entry: SavingsGoalsCacheEntry = {
-            items: nextItems,
-            totalCount: meta?.totalCount ?? prev?.totalCount ?? nextItems.length
+            items: mergedItems,
+            totalCount: meta?.totalCount ?? prev?.totalCount ?? mergedItems.length
         };
         itemsByListKey.set(key, entry);
-        for (const item of nextItems) rememberKnown(item);
+        for (const item of mergedItems) knownById.set(item.publicId, item);
         if (activeListKey.value === key) {
             items.value = entry.items;
             totalCount.value = entry.totalCount;
@@ -95,21 +101,22 @@ export function createSavingsGoalsState() {
         totalCount.value = 0;
     }
 
-    function upsertItem(goal: SavingsGoal) {
-        rememberKnown(goal);
+    function upsertItem(goal: SavingsGoal, options?: { replaceContributions?: boolean }) {
+        const merged = rememberKnown(goal, options);
         for (const [key, entry] of [...itemsByListKey.entries()]) {
             const parts = key.split(':');
             const query: ListSavingsGoalsQuery = {
                 status: parts[1] && parts[1] !== 'all' ? (parts[1] as SavingsGoalStatus) : undefined,
                 accountPublicId: parts.slice(2).join(':') === 'all' ? undefined : parts.slice(2).join(':') || undefined
             };
-            const matches = queryMatchesSavingsGoal(query, goal);
-            const idx = entry.items.findIndex((item) => item.publicId === goal.publicId);
+            const matches = queryMatchesSavingsGoal(query, merged);
+            const idx = entry.items.findIndex((item) => item.publicId === merged.publicId);
             if (matches) {
-                const next = idx >= 0 ? entry.items.map((item) => (item.publicId === goal.publicId ? goal : item)) : [goal, ...entry.items];
+                const next =
+                    idx >= 0 ? entry.items.map((item) => (item.publicId === merged.publicId ? merged : item)) : [merged, ...entry.items];
                 setList(key, next, { totalCount: idx >= 0 ? entry.totalCount : entry.totalCount + 1 });
             } else if (idx >= 0) {
-                const next = entry.items.filter((item) => item.publicId !== goal.publicId);
+                const next = entry.items.filter((item) => item.publicId !== merged.publicId);
                 setList(key, next, { totalCount: Math.max(0, entry.totalCount - 1) });
             }
         }

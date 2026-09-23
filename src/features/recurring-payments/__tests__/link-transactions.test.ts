@@ -52,6 +52,7 @@ function tx(partial: Partial<Transaction> = {}): Transaction {
         updatedAt: null,
         movements: [{ accountPublicId: 'acc-1', amount: -42, sens: 'debit' }],
         files: [],
+        savingsGoalPublicId: null,
         ...partial
     };
 }

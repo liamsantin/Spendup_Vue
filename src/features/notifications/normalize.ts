@@ -101,6 +101,10 @@ export function getBudgetPublicId(metadata: Record<string, unknown> | null | und
     return normalizePublicId(metadata?.budgetPublicId);
 }
 
+export function getSavingsGoalPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
+    return normalizePublicId(metadata?.savingsGoalPublicId);
+}
+
 /**
  * Valide un payload SignalR `accountChanged` (change connu + publicId).
  * @returns Payload normalisé, ou `null` si malformé.

@@ -44,6 +44,7 @@ function fields(partial: Partial<TransactionFormFields> = {}): TransactionFormFi
         categoryPublicId: '',
         tierPublicId: '',
         recurrencePublicId: '',
+        savingsGoalPublicId: '',
         ...partial
     };
 }
@@ -145,7 +146,8 @@ describe('transaction payload', () => {
                 categoryPublicId: null,
                 tierPublicId: null,
                 recurringExpensePublicId: null,
-                recurringIncomePublicId: null
+                recurringIncomePublicId: null,
+                savingsGoalPublicId: null
             });
             expect(result.payload).not.toHaveProperty('files');
             expect(result.payload).not.toHaveProperty('filePublicIds');
@@ -190,5 +192,41 @@ describe('transaction payload', () => {
         expect(isTransactionFormDirty(current, fields())).toBe(false);
         expect(isTransactionFormDirty(current, fields({ label: 'Courses bio' }))).toBe(true);
         expect(isTransactionFormDirty(current, fields({ amount: '25' }))).toBe(true);
+    });
+
+    it('POST omet savingsGoalPublicId si vide, PUT l’envoie toujours (null détache)', () => {
+        const created = buildCreateTransactionPayload(fields(), { accounts, now });
+        expect(created.ok).toBe(true);
+        if (created.ok) expect(created.payload).not.toHaveProperty('savingsGoalPublicId');
+
+        const linked = buildCreateTransactionPayload(fields({ savingsGoalPublicId: 'g-1', type: 'depense' }), {
+            accounts,
+            now,
+            savingsGoals: [{ publicId: 'g-1', accountPublicId: 'acc-1', currency: 'CHF' }]
+        });
+        expect(linked.ok).toBe(true);
+        if (linked.ok) expect(linked.payload.savingsGoalPublicId).toBe('g-1');
+
+        const updated = buildUpdateTransactionPayload(fields(), { accounts, now });
+        expect(updated.ok).toBe(true);
+        if (updated.ok) expect(updated.payload.savingsGoalPublicId).toBeNull();
+    });
+
+    it('refuse un lien vers un objectif sans compte ou hors mouvement', () => {
+        expect(
+            buildCreateTransactionPayload(fields({ savingsGoalPublicId: 'g-1' }), {
+                accounts,
+                now,
+                savingsGoals: [{ publicId: 'g-1', accountPublicId: null, currency: 'CHF' }]
+            })
+        ).toMatchObject({ ok: false, code: 'savingsGoalNoAccount' });
+
+        expect(
+            buildCreateTransactionPayload(fields({ savingsGoalPublicId: 'g-1' }), {
+                accounts,
+                now,
+                savingsGoals: [{ publicId: 'g-1', accountPublicId: 'acc-2', currency: 'CHF' }]
+            })
+        ).toMatchObject({ ok: false, code: 'savingsGoalAccountMismatch' });
     });
 });

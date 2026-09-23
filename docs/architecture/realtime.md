@@ -19,7 +19,7 @@
 | `connected`               | handshake                                                         |
 | `notificationReceived`    | upsert inbox / badge / chips                                      |
 | `friendshipChanged`       | fan-out → `friends` store (pas de badge)                          |
-| `accountChanged`          | fan-out → `accounts` / payment-methods / transactions stores      |
+| `accountChanged`          | fan-out → `accounts` / payment-methods / transactions / **savings-goals** (transaction*) |
 | `categoryChanged`         | fan-out → `categories` store (acteur inclus, pas d’inbox)         |
 | `tierChanged`             | fan-out → `tiers` store (acteur inclus, pas d’inbox)              |
 | `recurringExpenseChanged` | fan-out → `recurring-payments` store (acteur inclus, pas d’inbox) |

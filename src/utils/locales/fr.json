@@ -312,8 +312,8 @@
             "overspent": "Limite dépassée"
         },
         "savingsGoals": {
-            "title": "Objectifs d’épargne",
-            "subtitle": "Projets en cours.",
+            "title": "Savings goals",
+            "subtitle": "Opening plus linked transactions.",
             "empty": "Aucun objectif actif pour l’instant.",
             "reached": "{percent} atteint",
             "overdue": "Échéance dépassée"
@@ -1094,7 +1094,7 @@
     },
     "savingsGoalsPage": {
         "title": "Objectifs d’épargne",
-        "subtitle": "Montant mis de côté saisi par vous — sans lien avec les transactions.",
+        "subtitle": "Le montant suivi = ouverture + transactions explicitement liées.",
         "searchPlaceholder": "Rechercher un objectif",
         "count": "{count} objectif | {count} objectif | {count} objectifs",
         "tabs": {
@@ -1116,7 +1116,8 @@
             "dueOn": "Échéance {date}",
             "noDate": "Sans échéance",
             "noAccount": "Aucun compte lié",
-            "unknownAccount": "Compte"
+            "unknownAccount": "Compte",
+            "projectedOn": "Estimé {date}"
         },
         "empty": {
             "list": "Aucun objectif pour l’instant. Créez un premier projet d’épargne.",
@@ -1129,7 +1130,6 @@
             "create": "Ajouter",
             "edit": "Modifier",
             "delete": "Supprimer",
-            "deposit": "Versement",
             "filter": "Filtrer",
             "search": "Rechercher",
             "clearSearch": "Effacer la recherche"
@@ -1140,17 +1140,32 @@
         },
         "deleteModal": {
             "title": "Supprimer cet objectif ?",
-            "body": "L’objectif disparaîtra. Le montant mis de côté n’est pas un mouvement de compte."
+            "body": "L’objectif disparaîtra. Les transactions liées seront détachées, pas supprimées."
         },
         "errors": {
             "notFound": "Objectif introuvable."
         },
-        "deposit": {
-            "title": "Ajouter un versement",
-            "subtitle": "Le montant mis de côté est saisi par vous. Il ne suit pas le solde du compte.",
-            "amount": "Montant à ajouter",
-            "currentOf": "Mis de côté : {current} / {target}",
-            "nextCurrent": "Nouveau total : {amount}"
+        "linkTransactions": {
+            "title": "Lier des transactions",
+            "subtitle": "Écritures validées ou rapprochées qui touchent le compte de l’objectif, dans la même devise. Un crédit l’augmente, un débit le diminue.",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune transaction à lier sur ce compte.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "confirm": "Lier {count} transaction | Lier {count} transaction | Lier {count} transactions"
+        },
+        "unlinkTransactions": {
+            "title": "Détacher des transactions",
+            "subtitle": "Écritures déjà rattachées à cet objectif. Elles resteront sur le compte.",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune transaction liée à détacher.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "confirm": "Détacher {count} transaction | Détacher {count} transaction | Détacher {count} transactions"
         },
         "linkedAccount": {
             "title": "Objectifs d’épargne liés",
@@ -1161,17 +1176,29 @@
         "form": {
             "createTitle": "Nouvel objectif",
             "editTitle": "Modifier l’objectif",
-            "subtitle": "Le montant déjà mis de côté est saisi manuellement.",
+            "subtitle": "L’ouverture est l’argent déjà de côté avant Spendup. Le reste vient des transactions liées.",
             "noAccount": "Aucun compte",
-            "accountHint": "Compte actif dont vous êtes propriétaire. Un compte partagé ou archivé est refusé.",
-            "abandonHint": "Un objectif abandonné le reste, même si le montant couvre la cible.",
-            "currentAmountHint": "Saisi par vous. Il ne suit ni les transactions ni le solde.",
+            "accountHint": "Compte actif dont vous êtes propriétaire. Sans compte, aucune transaction ne peut être liée.",
+            "abandonHint": "Un objectif abandonné le reste, même si le montant couvre la cible. Pas de notification.",
+            "openingAmountHint": "Argent déjà de côté avant Spendup. Il s’ajoute aux contributions, il ne les remplace pas.",
+            "progressHint": "Contributions : {contributed} · Suivi : {current}",
+            "projectedOn": "Atteinte estimée le {date}",
+            "detachAccountHint": "Détacher le compte retire toutes les transactions liées à cet objectif.",
+            "changeAccountHint": "Changer de compte détache les transactions qui ne touchent pas le nouveau compte.",
             "currencyLockedHint": "La devise d’un objectif ne peut pas être modifiée.",
             "currencyDefaultHint": "Vide = devise des paramètres ({currency}).",
+            "linkedTransactions": {
+                "title": "Transactions liées",
+                "hint": "Seules les écritures explicitement rattachées comptent. Le solde du compte n’est pas pris en compte.",
+                "noAccount": "Liez un compte pour rattacher des transactions (souvent un transfert vers le compte d’épargne).",
+                "empty": "Aucune contribution pour l’instant.",
+                "add": "Lier",
+                "remove": "Détacher"
+            },
             "fields": {
                 "name": "Nom",
                 "targetAmount": "Montant cible",
-                "currentAmount": "Déjà mis de côté",
+                "openingAmount": "Ouverture",
                 "targetDate": "Échéance",
                 "account": "Compte lié",
                 "currency": "Devise",
@@ -1182,8 +1209,8 @@
                 "nameTooLong": "Le nom de l’objectif dépasse 150 caractères.",
                 "targetAmountInvalid": "Le montant cible est invalide.",
                 "targetAmountNotPositive": "Le montant cible doit être strictement positif.",
-                "currentAmountInvalid": "Le montant mis de côté est invalide.",
-                "currentAmountNegative": "Le montant mis de côté ne peut pas être négatif.",
+                "openingAmountInvalid": "Le montant d’ouverture est invalide.",
+                "openingAmountNegative": "Le montant d’ouverture ne peut pas être négatif.",
                 "targetDateInvalid": "La date d’échéance est invalide.",
                 "currencyInvalid": "Devise non supportée (CHF, EUR, USD, GBP).",
                 "currencyLocked": "La devise d’un objectif d’épargne ne peut pas être modifiée.",
@@ -1796,6 +1823,12 @@
             "noPaymentMethod": "Aucun",
             "noCategory": "Aucune",
             "noRecurrence": "Aucune",
+            "noSavingsGoal": "Aucun",
+            "savingsGoalSearchPlaceholder": "Rechercher un objectif…",
+            "savingsGoalNoResults": "Aucun objectif ne correspond.",
+            "savingsGoalHint": "La transaction doit toucher le compte de l’objectif, dans la même devise. Cas typique : un transfert vers le compte d’épargne.",
+            "savingsGoalAccountHint": "Choisissez d’abord un compte pour lier un objectif.",
+            "savingsGoalEmptyHint": "Aucun objectif compatible. Liez un compte à l’objectif, puis une écriture qui le touche.",
             "categoryPersonalHint": "Cette catégorie n’est visible que par vous, même sur un compte partagé.",
             "noTier": "Aucune",
             "tierSearchPlaceholder": "Rechercher une contrepartie…",
@@ -1831,6 +1864,7 @@
                 "paymentMethod": "Moyen de paiement",
                 "category": "Ma catégorie",
                 "tier": "Ma contrepartie",
+                "savingsGoal": "Objectif d’épargne",
                 "attachments": "Justificatifs PDF"
             },
             "attachments": {
@@ -1860,7 +1894,11 @@
                 "counterpartySame": "Les deux comptes d’un transfert doivent être différents.",
                 "accountArchived": "Impossible de modifier un compte archivé. Restaurez-le d’abord.",
                 "currencyMismatch": "Les deux comptes d’un transfert doivent partager la même devise.",
-                "forbidden": "Action non autorisée sur cette transaction."
+                "forbidden": "Action non autorisée sur cette transaction.",
+                "savingsGoalInvalid": "Objectif d’épargne introuvable.",
+                "savingsGoalNoAccount": "Liez un compte à l’objectif avant d’y rattacher une transaction.",
+                "savingsGoalCurrencyMismatch": "La devise de la transaction doit être celle de l’objectif.",
+                "savingsGoalAccountMismatch": "La transaction doit toucher le compte rattaché à l’objectif."
             }
         },
         "count": "{count} transaction | {count} transactions",

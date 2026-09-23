@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { LinkIcon, UnlinkIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
-import { canLinkSavingsGoalAccount } from '@/features/savings-goals/format';
+import { canLinkSavingsGoalAccount, formatCalendarDate, formatSavingsGoalAmount } from '@/features/savings-goals/format';
 import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
 import {
     buildCreateSavingsGoalPayload,
@@ -19,6 +20,7 @@ import {
 import type { SavingsGoal } from '@/features/savings-goals/types';
 import { useUserSettingsStore } from '@/features/user-settings';
 import SavingsGoalForm, { type SavingsGoalFormFieldErrors } from '@/features/savings-goals/components/forms/SavingsGoalForm.vue';
+import SavingsGoalLinkTransactionsModal from '@/features/savings-goals/components/modals/SavingsGoalLinkTransactionsModal.vue';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -30,13 +32,15 @@ const emit = defineEmits<{
     saved: [goal: SavingsGoal];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const store = useSavingsGoalsStore();
 const accountsStore = useAccountsStore();
 const settings = useUserSettingsStore();
 
 const isEdit = ref(false);
 const editGoal = ref<SavingsGoal | null>(null);
+const linkMode = ref<'link' | 'unlink'>('link');
+const linkOpen = ref(false);
 
 const localError = reactive({ message: null as string | null });
 const fieldErrors = reactive<SavingsGoalFormFieldErrors>({});
@@ -47,11 +51,17 @@ const open = computed({
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
+const liveGoal = computed(() => {
+    const id = editGoal.value?.publicId;
+    if (!id) return editGoal.value;
+    return store.findByPublicId(id) ?? editGoal.value;
+});
+
 const linkableAccounts = computed(() => accountsStore.accounts.filter((item) => canLinkSavingsGoalAccount(item)));
 
 const allowedAccountIds = computed(() => {
     const ids = new Set(linkableAccounts.value.map((item) => item.publicId));
-    const currentId = editGoal.value?.accountPublicId;
+    const currentId = liveGoal.value?.accountPublicId;
     if (currentId) ids.add(currentId);
     return ids;
 });
@@ -72,6 +82,33 @@ const currencyHint = computed(() => {
     return t('savingsGoalsPage.form.currencyDefaultHint', { currency: settings.current.defaultCurrency });
 });
 
+const accountChangeHint = computed(() => {
+    if (!isEdit.value || !liveGoal.value) return null;
+    const previous = liveGoal.value.accountPublicId;
+    const next = form.accountPublicId.trim() || null;
+    if (!previous && !next) return null;
+    if (previous && !next) return t('savingsGoalsPage.form.detachAccountHint');
+    if (previous && next && previous !== next) return t('savingsGoalsPage.form.changeAccountHint');
+    return null;
+});
+
+const progressHint = computed(() => {
+    const goal = liveGoal.value;
+    if (!isEdit.value || !goal) return null;
+    return t('savingsGoalsPage.form.progressHint', {
+        contributed: formatSavingsGoalAmount(goal.contributedAmount, goal.currency, locale.value),
+        current: formatSavingsGoalAmount(goal.currentAmount, goal.currency, locale.value)
+    });
+});
+
+const projectedText = computed(() => {
+    const goal = liveGoal.value;
+    if (!goal?.projectedDate) return null;
+    return t('savingsGoalsPage.form.projectedOn', { date: formatCalendarDate(goal.projectedDate, locale.value) });
+});
+
+const contributions = computed(() => liveGoal.value?.contributions ?? []);
+const canLinkTransactions = computed(() => !!liveGoal.value?.accountPublicId);
 const canSave = computed(() => {
     if (!isEdit.value || !editGoal.value) return true;
     return isSavingsGoalFormDirty(editGoal.value, form);
@@ -80,7 +117,7 @@ const canSave = computed(() => {
 function clearFieldErrors() {
     fieldErrors.name = null;
     fieldErrors.targetAmount = null;
-    fieldErrors.currentAmount = null;
+    fieldErrors.openingAmount = null;
     fieldErrors.targetDate = null;
     fieldErrors.accountPublicId = null;
     fieldErrors.currency = null;
@@ -160,6 +197,16 @@ async function onSave() {
         localError.message = getErrorMessage(e);
     }
 }
+
+function openLink(mode: 'link' | 'unlink') {
+    if (!canLinkTransactions.value) return;
+    linkMode.value = mode;
+    linkOpen.value = true;
+}
+
+function contributionAmount(amount: number, currency: string): string {
+    return formatSavingsGoalAmount(amount, currency, locale.value);
+}
 </script>
 
 <template>
@@ -183,7 +230,57 @@ async function onSave() {
             :field-errors="fieldErrors"
             :currency-hint="currencyHint"
             :account-hint="t('savingsGoalsPage.form.accountHint')"
+            :account-change-hint="accountChangeHint"
+            :progress-hint="progressHint"
         />
+
+        <div v-if="isEdit && liveGoal" class="goal-contributions">
+            <div class="goal-contributions__head">
+                <p class="goal-contributions__title">{{ t('savingsGoalsPage.form.linkedTransactions.title') }}</p>
+                <p class="goal-contributions__hint">
+                    {{
+                        canLinkTransactions
+                            ? t('savingsGoalsPage.form.linkedTransactions.hint')
+                            : t('savingsGoalsPage.form.linkedTransactions.noAccount')
+                    }}
+                </p>
+                <p v-if="projectedText" class="goal-contributions__hint">{{ projectedText }}</p>
+            </div>
+            <div class="goal-contributions__actions">
+                <button
+                    type="button"
+                    class="su-btn su-btn--tonal"
+                    :disabled="!canLinkTransactions || store.acting"
+                    @click="openLink('link')"
+                >
+                    <LinkIcon :size="16" stroke-width="1.6" />
+                    {{ t('savingsGoalsPage.form.linkedTransactions.add') }}
+                </button>
+                <button
+                    type="button"
+                    class="su-btn su-btn--ghost"
+                    :disabled="!canLinkTransactions || store.acting || !contributions.length"
+                    @click="openLink('unlink')"
+                >
+                    <UnlinkIcon :size="16" stroke-width="1.6" />
+                    {{ t('savingsGoalsPage.form.linkedTransactions.remove') }}
+                </button>
+            </div>
+            <p v-if="!contributions.length" class="text-caption text-medium-emphasis mb-0">
+                {{ t('savingsGoalsPage.form.linkedTransactions.empty') }}
+            </p>
+            <ul v-else class="goal-contributions__list">
+                <li v-for="item in contributions" :key="item.transactionPublicId" class="goal-contributions__row">
+                    <span class="goal-contributions__meta">
+                        <span class="goal-contributions__name">{{ item.label }}</span>
+                        <span class="goal-contributions__sub">{{ formatCalendarDate(item.operationDate, locale) }}</span>
+                    </span>
+                    <span class="goal-contributions__amount" :class="{ 'is-out': item.amount < 0 }">
+                        {{ contributionAmount(item.amount, liveGoal.currency) }}
+                    </span>
+                </li>
+            </ul>
+        </div>
 
         <template #footer="{ close }">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
@@ -194,4 +291,80 @@ async function onSave() {
             </button>
         </template>
     </AppModalBase>
+
+    <SavingsGoalLinkTransactionsModal v-model="linkOpen" :savings-goal="liveGoal" :mode="linkMode" />
 </template>
+
+<style scoped>
+.goal-contributions {
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--stroke);
+}
+
+.goal-contributions__title {
+    margin: 0 0 4px;
+    font-weight: 650;
+}
+
+.goal-contributions__hint {
+    margin: 0 0 8px;
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+}
+
+.goal-contributions__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.goal-contributions__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.goal-contributions__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: var(--surface-raised, var(--hair));
+}
+
+.goal-contributions__meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 2px;
+}
+
+.goal-contributions__name {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.goal-contributions__sub,
+.goal-contributions__amount {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+}
+
+.goal-contributions__amount {
+    flex: none;
+    font-variant-numeric: tabular-nums;
+}
+
+.goal-contributions__amount.is-out {
+    color: rgb(var(--v-theme-error));
+}
+</style>

@@ -5,6 +5,7 @@ import {
     isBudgetAlertNotificationType,
     isFriendNotificationType,
     isSafeAppNotificationPath,
+    isSavingsGoalReachedNotificationType,
     isSecurityNotificationType,
     resolveNotificationLink
 } from '@/features/notifications/link';
@@ -102,6 +103,25 @@ describe('resolveNotificationLink', () => {
 
         expect(resolveNotificationLink('/budgets')).toBe('/app/planning/budgets');
         expect(resolveNotificationLink('/budgets/guid-3')).toBe('/app/planning/budgets/guid-3');
+    });
+
+    it('deep-link objectifs via type + metadata ou /savings-goals/{id}', () => {
+        expect(
+            resolveNotificationLink('/savings-goals/guid-1', {
+                type: 'savingsGoalReached',
+                metadata: { savingsGoalPublicId: 'guid-1' }
+            })
+        ).toBe('/app/planning/objectifs/guid-1');
+
+        expect(
+            resolveNotificationLink(null, {
+                type: 'savingsGoalReached',
+                metadata: { savingsGoalPublicId: 'guid-2' }
+            })
+        ).toBe('/app/planning/objectifs/guid-2');
+
+        expect(resolveNotificationLink('/savings-goals')).toBe('/app/planning/objectifs');
+        expect(resolveNotificationLink('/savings-goals/guid-3')).toBe('/app/planning/objectifs/guid-3');
     });
 });
 
@@ -286,5 +306,7 @@ describe('notification type helpers', () => {
         expect(isAccountShareNotificationType('friendRequest')).toBe(false);
         expect(isBudgetAlertNotificationType('budgetAlert')).toBe(true);
         expect(isBudgetAlertNotificationType('accountShareInvite')).toBe(false);
+        expect(isSavingsGoalReachedNotificationType('savingsGoalReached')).toBe(true);
+        expect(isSavingsGoalReachedNotificationType('budgetAlert')).toBe(false);
     });
 });

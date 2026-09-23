@@ -16,7 +16,7 @@ import type { SavingsGoalFormFields } from '@/features/savings-goals/payload';
 export type SavingsGoalFormFieldErrors = {
     name?: string | null;
     targetAmount?: string | null;
-    currentAmount?: string | null;
+    openingAmount?: string | null;
     targetDate?: string | null;
     accountPublicId?: string | null;
     currency?: string | null;
@@ -30,11 +30,15 @@ const props = withDefaults(
         fieldErrors?: SavingsGoalFormFieldErrors;
         currencyHint?: string | null;
         accountHint?: string | null;
+        accountChangeHint?: string | null;
+        progressHint?: string | null;
     }>(),
     {
         fieldErrors: () => ({}),
         currencyHint: null,
-        accountHint: null
+        accountHint: null,
+        accountChangeHint: null,
+        progressHint: null
     }
 );
 
@@ -108,24 +112,25 @@ const targetDateModel = computed({
 
         <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="savings-goal-form-current">
-                    {{ t('savingsGoalsPage.form.fields.currentAmount') }}
+                <label class="v-label font-weight-medium" for="savings-goal-form-opening">
+                    {{ t('savingsGoalsPage.form.fields.openingAmount') }}
                 </label>
             </v-col>
             <v-col cols="12" sm="9">
                 <v-text-field
-                    id="savings-goal-form-current"
-                    v-model="form.currentAmount"
+                    id="savings-goal-form-opening"
+                    v-model="form.openingAmount"
                     type="number"
                     step="0.01"
                     min="0"
                     color="primary"
                     variant="outlined"
                     hide-details="auto"
-                    :error="!!fieldErrors.currentAmount"
-                    :error-messages="fieldErrors.currentAmount || undefined"
+                    :error="!!fieldErrors.openingAmount"
+                    :error-messages="fieldErrors.openingAmount || undefined"
                 />
-                <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ t('savingsGoalsPage.form.currentAmountHint') }}</p>
+                <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ t('savingsGoalsPage.form.openingAmountHint') }}</p>
+                <p v-if="progressHint" class="text-caption text-medium-emphasis mb-0 mt-1">{{ progressHint }}</p>
             </v-col>
         </v-row>
 
@@ -155,6 +160,7 @@ const targetDateModel = computed({
                     :error-messages="fieldErrors.accountPublicId || undefined"
                 />
                 <p v-if="accountHint" class="text-caption text-medium-emphasis mb-0 mt-1">{{ accountHint }}</p>
+                <p v-if="accountChangeHint" class="text-caption text-medium-emphasis mb-0 mt-1">{{ accountChangeHint }}</p>
             </v-col>
         </v-row>
 

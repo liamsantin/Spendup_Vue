@@ -5,6 +5,7 @@ import {
     isSavingsGoalCurrency,
     isSavingsGoalStatus,
     isValidYmd,
+    normalizeSavingsGoal,
     savingsGoalBarWidth,
     savingsGoalProgressTone
 } from '@/features/savings-goals/format';
@@ -15,14 +16,18 @@ function goal(partial: Partial<SavingsGoal> = {}): SavingsGoal {
         publicId: 'g-1',
         name: 'Vacances',
         targetAmount: 2000,
+        openingAmount: 150,
+        contributedAmount: 0,
         currentAmount: 150,
         remainingAmount: 1850,
         percentReached: 7.5,
         currency: 'CHF',
         targetDate: '2026-12-01',
+        projectedDate: null,
         status: 'active',
         isOverdue: false,
         accountPublicId: null,
+        contributions: [],
         createdAt: '2026-09-23T18:00:00Z',
         updatedAt: null,
         ...partial
@@ -69,5 +74,13 @@ describe('savings-goals format', () => {
         ).toBe(true);
         expect(isLinkedSavingsGoalAccountError({ status: 400, message: 'Montant invalide' })).toBe(false);
         expect(isLinkedSavingsGoalAccountError({ status: 404, message: "objectif d'épargne" })).toBe(false);
+    });
+
+    it('normalise les contributions absentes et les montants calculés', () => {
+        const raw = goal({ contributions: undefined as unknown as [] });
+        const normalized = normalizeSavingsGoal(raw);
+        expect(normalized.contributions).toEqual([]);
+        expect(normalized.projectedDate).toBeNull();
+        expect(normalized.openingAmount).toBe(150);
     });
 });

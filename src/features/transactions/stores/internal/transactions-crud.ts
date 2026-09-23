@@ -54,6 +54,14 @@ function payloadErrorMessage(code: string): string {
             return 'Les deux comptes d’un transfert doivent partager la même devise.';
         case 'forbidden':
             return TRANSACTION_FORBIDDEN_MESSAGE;
+        case 'savingsGoalInvalid':
+            return 'Objectif d’épargne introuvable.';
+        case 'savingsGoalNoAccount':
+            return 'Liez un compte à l’objectif avant d’y rattacher une transaction.';
+        case 'savingsGoalCurrencyMismatch':
+            return 'La devise de la transaction doit être celle de l’objectif.';
+        case 'savingsGoalAccountMismatch':
+            return 'La transaction doit toucher le compte rattaché à l’objectif.';
         default:
             return 'Données invalides.';
     }

@@ -38,6 +38,7 @@ export type TransactionFormFieldErrors = {
     categoryPublicId?: string | null;
     tierPublicId?: string | null;
     recurrencePublicId?: string | null;
+    savingsGoalPublicId?: string | null;
 };
 
 const props = withDefaults(
@@ -50,21 +51,25 @@ const props = withDefaults(
         paymentMethodItems: { title: string; value: string }[];
         categoryItems: { title: string; value: string; indent?: number }[];
         recurrenceItems?: { title: string; value: string }[];
+        savingsGoalItems?: { title: string; value: string }[];
         fieldErrors?: TransactionFormFieldErrors;
         archivedHint?: string | null;
         counterpartyHint?: string | null;
         categoryHint?: string | null;
         tierHint?: string | null;
+        savingsGoalHint?: string | null;
         recurrencePlannedAmount?: number | null;
         section?: 'operation' | 'classification' | 'all';
     }>(),
     {
         recurrenceItems: () => [],
+        savingsGoalItems: () => [],
         fieldErrors: () => ({}),
         archivedHint: null,
         counterpartyHint: null,
         categoryHint: null,
         tierHint: null,
+        savingsGoalHint: null,
         recurrencePlannedAmount: null,
         section: 'all'
     }
@@ -368,6 +373,29 @@ function openPaymentMethodCreate(name: string) {
                     :error-messages="fieldErrors.tierPublicId || undefined"
                     :hint="tierHint || undefined"
                     :persistent-hint="!!tierHint"
+                />
+            </v-col>
+        </v-row>
+        <v-row v-if="showClassification" class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
+                <label class="v-label font-weight-medium" for="tx-form-savings-goal">
+                    {{ t('transactionsPage.form.fields.savingsGoal') }}
+                </label>
+            </v-col>
+            <v-col cols="12" sm="9">
+                <AppSelect
+                    id="tx-form-savings-goal"
+                    v-model="form.savingsGoalPublicId"
+                    :items="savingsGoalItems"
+                    :label="t('transactionsPage.form.fields.savingsGoal')"
+                    hide-details="auto"
+                    :error="!!fieldErrors.savingsGoalPublicId"
+                    :error-messages="fieldErrors.savingsGoalPublicId || undefined"
+                    :hint="savingsGoalHint || undefined"
+                    :persistent-hint="!!savingsGoalHint"
+                    searchable
+                    :search-placeholder="t('transactionsPage.form.savingsGoalSearchPlaceholder')"
+                    :no-results-label="t('transactionsPage.form.savingsGoalNoResults')"
                 />
             </v-col>
         </v-row>

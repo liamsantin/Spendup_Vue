@@ -1,6 +1,12 @@
 import { parseAccountAmount } from '@/features/accounts/format';
 import type { Account } from '@/features/accounts/types';
-import { emptyToNull, isOperationDateInFutureUtc, isValidYmd } from '@/features/transactions/format';
+import {
+    emptyToNull,
+    isOperationDateInFutureUtc,
+    isValidYmd,
+    sourceAccountPublicId,
+    targetAccountPublicId
+} from '@/features/transactions/format';
 import { canWriteTransactions, canWriteTransfer } from '@/features/transactions/rights';
 import {
     TRANSACTION_LABEL_MAX,
@@ -28,7 +34,11 @@ export type TransactionPayloadErrorCode =
     | 'counterpartySame'
     | 'accountArchived'
     | 'currencyMismatch'
-    | 'forbidden';
+    | 'forbidden'
+    | 'savingsGoalInvalid'
+    | 'savingsGoalNoAccount'
+    | 'savingsGoalCurrencyMismatch'
+    | 'savingsGoalAccountMismatch';
 
 export type TransactionFormFields = {
     type: TransactionType;
@@ -43,11 +53,21 @@ export type TransactionFormFields = {
     tierPublicId: string;
     /** Template de récurrence lié (charge si `depense`, revenu si `revenu`). */
     recurrencePublicId: string;
+    /** Objectif d’épargne lié. Vide = détaché. */
+    savingsGoalPublicId: string;
+};
+
+export type SavingsGoalLinkHint = {
+    publicId: string;
+    accountPublicId: string | null;
+    currency: string;
 };
 
 export type TransactionPayloadContext = {
     accounts: readonly Pick<Account, 'publicId' | 'currency' | 'isActive' | 'myRole'>[];
     now?: Date;
+    /** Objectifs connus — validation client du lien. Absents = le serveur tranche. */
+    savingsGoals?: readonly SavingsGoalLinkHint[];
 };
 
 export type BuildTransactionPayloadOk<T> = { ok: true; payload: T };
@@ -140,6 +160,31 @@ function recurrencePayloadFields(
     return { recurringExpensePublicId: null, recurringIncomePublicId: null };
 }
 
+function involvedFormAccountIds(fields: TransactionFormFields): string[] {
+    const ids = [fields.accountPublicId.trim()].filter(Boolean);
+    const counterparty = emptyToNull(fields.counterpartyAccountPublicId);
+    if (fields.type === 'transfert' && counterparty && !ids.includes(counterparty)) ids.push(counterparty);
+    return ids;
+}
+
+function savingsGoalLinkError(fields: TransactionFormFields, context: TransactionPayloadContext): BuildTransactionPayloadFail | null {
+    const id = emptyToNull(fields.savingsGoalPublicId);
+    if (!id) return null;
+    const goals = context.savingsGoals;
+    if (!goals) return null;
+    const goal = goals.find((item) => item.publicId === id);
+    if (!goal) return fail('savingsGoalInvalid', 'savingsGoalPublicId');
+    if (!goal.accountPublicId) return fail('savingsGoalNoAccount', 'savingsGoalPublicId');
+    if (!involvedFormAccountIds(fields).includes(goal.accountPublicId)) {
+        return fail('savingsGoalAccountMismatch', 'savingsGoalPublicId');
+    }
+    const source = resolveAccount(context.accounts, fields.accountPublicId.trim());
+    if (source && source.currency !== goal.currency) {
+        return fail('savingsGoalCurrencyMismatch', 'savingsGoalPublicId');
+    }
+    return null;
+}
+
 export function buildCreateTransactionPayload(
     fields: TransactionFormFields,
     context: TransactionPayloadContext = { accounts: [] }
@@ -194,6 +239,10 @@ export function buildCreateTransactionPayload(
     const recurrence = recurrencePayloadFields(fields.type, common.recurrencePublicId);
     if (recurrence.recurringExpensePublicId) payload.recurringExpensePublicId = recurrence.recurringExpensePublicId;
     if (recurrence.recurringIncomePublicId) payload.recurringIncomePublicId = recurrence.recurringIncomePublicId;
+    const goalError = savingsGoalLinkError(fields, context);
+    if (goalError) return goalError;
+    const savingsGoalPublicId = emptyToNull(fields.savingsGoalPublicId);
+    if (savingsGoalPublicId) payload.savingsGoalPublicId = savingsGoalPublicId;
 
     return { ok: true, payload };
 }
@@ -218,6 +267,9 @@ export function buildUpdateTransactionPayload(
         }
     }
 
+    const goalError = savingsGoalLinkError(fields, context);
+    if (goalError) return goalError;
+
     const recurrence = recurrencePayloadFields(fields.type, common.recurrencePublicId);
     const payload: UpdateTransactionPayload = {
         label: common.label,
@@ -228,7 +280,8 @@ export function buildUpdateTransactionPayload(
         categoryPublicId: common.categoryPublicId,
         tierPublicId: common.tierPublicId,
         recurringExpensePublicId: recurrence.recurringExpensePublicId,
-        recurringIncomePublicId: recurrence.recurringIncomePublicId
+        recurringIncomePublicId: recurrence.recurringIncomePublicId,
+        savingsGoalPublicId: emptyToNull(fields.savingsGoalPublicId)
     };
     return { ok: true, payload };
 }
@@ -246,7 +299,28 @@ export function isTransactionFormDirty(
     if (emptyToNull(fields.categoryPublicId) !== emptyToNull(transaction.categoryPublicId)) return true;
     if (emptyToNull(fields.tierPublicId) !== emptyToNull(transaction.tierPublicId ?? null)) return true;
     if (emptyToNull(fields.recurrencePublicId) !== emptyToNull(recurrencePublicIdFromTransaction(transaction))) return true;
+    if (emptyToNull(fields.savingsGoalPublicId) !== emptyToNull(transaction.savingsGoalPublicId ?? null)) return true;
     return false;
+}
+
+export function transactionToFormFields(transaction: Transaction): TransactionFormFields | null {
+    if (transaction.amount == null) return null;
+    const accountPublicId = sourceAccountPublicId(transaction);
+    if (!accountPublicId) return null;
+    return {
+        type: transaction.type,
+        accountPublicId,
+        counterpartyAccountPublicId: targetAccountPublicId(transaction) ?? '',
+        label: transaction.label,
+        amount: transaction.amount.toFixed(2),
+        operationDate: transaction.operationDate,
+        valueDate: transaction.valueDate,
+        paymentMethodPublicId: transaction.paymentMethodPublicId ?? '',
+        categoryPublicId: transaction.categoryPublicId ?? '',
+        tierPublicId: transaction.tierPublicId ?? '',
+        recurrencePublicId: recurrencePublicIdFromTransaction(transaction),
+        savingsGoalPublicId: transaction.savingsGoalPublicId ?? ''
+    };
 }
 
 type TransactionFormDirtySource = {
@@ -260,4 +334,5 @@ type TransactionFormDirtySource = {
     tierPublicId?: string | null;
     recurringExpensePublicId: string | null;
     recurringIncomePublicId: string | null;
+    savingsGoalPublicId?: string | null;
 };

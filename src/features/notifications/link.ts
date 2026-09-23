@@ -1,7 +1,14 @@
 import { isSafeAppPath } from '@/features/auth/safe-return-url';
 import { BUDGETS_PATHS, budgetDetailPath } from '@/features/budgets/paths';
-import { getAccountSharePublicId, getBudgetPublicId, getFriendshipPublicId, normalizePublicId } from '@/features/notifications/normalize';
+import {
+    getAccountSharePublicId,
+    getBudgetPublicId,
+    getFriendshipPublicId,
+    getSavingsGoalPublicId,
+    normalizePublicId
+} from '@/features/notifications/normalize';
 import type { AppNotification, NotificationType } from '@/features/notifications/types';
+import { SAVINGS_GOALS_PATHS, savingsGoalDetailPath } from '@/features/savings-goals/paths';
 import { rewriteLegacySettingsLink } from '@/features/user-settings/settings-paths';
 
 /**
@@ -32,6 +39,9 @@ export function resolveNotificationLink(
     const budgetsDeepLink = resolveBudgetsDeepLink(notification);
     if (budgetsDeepLink) return budgetsDeepLink;
 
+    const savingsGoalsDeepLink = resolveSavingsGoalsDeepLink(notification);
+    if (savingsGoalsDeepLink) return savingsGoalsDeepLink;
+
     if (!link) return null;
     const trimmed = link.trim();
     if (!trimmed.startsWith('/')) return null;
@@ -54,6 +64,9 @@ export function resolveNotificationLink(
     }
     if (trimmed === '/budgets' || trimmed.startsWith('/budgets/')) {
         return mapBudgetsApiLink(trimmed);
+    }
+    if (trimmed === '/savings-goals' || trimmed.startsWith('/savings-goals/')) {
+        return mapSavingsGoalsApiLink(trimmed);
     }
     return null;
 }
@@ -98,6 +111,11 @@ export function isFriendNotificationType(type: string): boolean {
 /** Types alerte budget produits en inbox. */
 export function isBudgetAlertNotificationType(type: string): boolean {
     return type === 'budgetAlert';
+}
+
+/** Types alerte objectif d’épargne produits en inbox. */
+export function isSavingsGoalReachedNotificationType(type: string): boolean {
+    return type === 'savingsGoalReached';
 }
 
 /** Types partage de comptes produits en inbox. */
@@ -157,4 +175,24 @@ function resolveBudgetsDeepLink(notification?: Pick<AppNotification, 'type' | 'm
         if (mapped) return mapped;
     }
     return BUDGETS_PATHS.list;
+}
+
+function mapSavingsGoalsApiLink(link: string): string {
+    const rest = link.slice('/savings-goals'.length);
+    if (rest.startsWith('/')) {
+        const id = normalizePublicId(decodeURIComponent(rest.slice(1).split(/[?#]/)[0] ?? ''));
+        if (id) return savingsGoalDetailPath(id);
+    }
+    return SAVINGS_GOALS_PATHS.list;
+}
+
+function resolveSavingsGoalsDeepLink(notification?: Pick<AppNotification, 'type' | 'metadata'> | null): string | null {
+    if (!notification || !isSavingsGoalReachedNotificationType(String(notification.type))) return null;
+    const id = getSavingsGoalPublicId(notification.metadata);
+    if (id) return savingsGoalDetailPath(id);
+    if (typeof notification.metadata?.link === 'string') {
+        const mapped = mapSavingsGoalsApiLink(notification.metadata.link);
+        if (mapped) return mapped;
+    }
+    return SAVINGS_GOALS_PATHS.list;
 }

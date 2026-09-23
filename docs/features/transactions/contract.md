@@ -26,7 +26,7 @@ Auth : Bearer JWT **ou** cookie `spendup_access`. JSON camelCase, enveloppe `{ s
 | GET     | `/api/transactions`                                   | viewer+ | Liste paginée. `files[]` hydraté (éventuellement `[]`)                       |
 | GET     | `/api/transactions/{txPublicId}`                      | viewer+ | Détail. `files[]` toujours présent                                           |
 | POST    | `/api/transactions`                                   | editor+ | Création. `filePublicIds?: string[]` optionnel (PDF **déjà** uploadés)       |
-| PUT     | `/api/transactions/{txPublicId}`                      | editor+ | Libellé / montant / dates / PM / catégorie / tier. **Ne touche pas** `files` |
+| `PUT`     | `/api/transactions/{txPublicId}`                      | editor+ | Libellé / montant / dates / PM / catégorie / tier / récurrence / **objectif d’épargne**. **Ne touche pas** `files` |
 | DELETE  | `/api/transactions/{txPublicId}`                      | editor+ | `204`. Les liens PJ disparaissent, les PDF **restent**                       |
 | POST    | `/api/transactions/{txPublicId}/files`                | editor+ | Body `{ filePublicId }`. `200` + TX à jour                                   |
 | DELETE  | `/api/transactions/{txPublicId}/files/{filePublicId}` | editor+ | Détache, `204`. Le PDF reste dans Fichiers                                   |
@@ -63,6 +63,7 @@ Delete Fichiers d’un PDF encore lié → 400 « Impossible de supprimer un fic
 - Types : `depense` \| `revenu` \| `transfert`. Type et comptes **immuables** après création.
 - Transfert : deux comptes actifs, editor+, **même devise**.
 - `categoryPublicId` / `tierPublicId` personnels (PUT `null` = détacher). Sur un compte partagé, un co-détenteur peut voir `null`.
+- `savingsGoalPublicId` optionnel (POST / PUT). PUT état complet : omettre = `null` = détacher l’objectif. Renvoyé seulement au propriétaire de l’objectif. 400 si l’objectif n’a pas de compte, devise différente, ou aucun mouvement sur ce compte.
 - Montant masqué (`null`) → placeholder `—`, jamais `0`.
 - 404 → message neutre + retrait local. Viewer qui tente une écriture côté store → 403 UI (l’API attache répond 404).
 - `onAuthenticatedSession()` : branche realtime **sans** charger la liste.

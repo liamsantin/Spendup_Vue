@@ -11,7 +11,6 @@ import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-go
 import { SAVINGS_GOAL_NAME_MAX, type SavingsGoal, type SavingsGoalStatus } from '@/features/savings-goals/types';
 import SavingsGoalListItem from '@/features/savings-goals/components/list/SavingsGoalListItem.vue';
 import SavingsGoalFormModal from '@/features/savings-goals/components/modals/SavingsGoalFormModal.vue';
-import SavingsGoalDepositModal from '@/features/savings-goals/components/modals/SavingsGoalDepositModal.vue';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 
 const { t } = useI18n();
@@ -23,7 +22,6 @@ const accountsStore = useAccountsStore();
 const createOpen = ref(false);
 const editTarget = ref<SavingsGoal | null>(null);
 const deleteTarget = ref<SavingsGoal | null>(null);
-const depositTarget = ref<SavingsGoal | null>(null);
 const localError = ref<string | null>(null);
 
 const editOpen = computed({
@@ -40,13 +38,6 @@ const deleteOpen = computed({
     get: () => !!deleteTarget.value,
     set: (value: boolean) => {
         if (!value) deleteTarget.value = null;
-    }
-});
-
-const depositOpen = computed({
-    get: () => !!depositTarget.value,
-    set: (value: boolean) => {
-        if (!value) depositTarget.value = null;
     }
 });
 
@@ -106,7 +97,12 @@ function clearDetailPath() {
 }
 
 async function openDetail(goal: SavingsGoal, pushPath = true) {
-    editTarget.value = goal;
+    try {
+        const fresh = await store.fetchSavingsGoal(goal.publicId, true);
+        editTarget.value = fresh ?? goal;
+    } catch {
+        editTarget.value = goal;
+    }
     if (!pushPath) return;
     if (savingsGoalPublicIdFromPath(route.path) === goal.publicId) return;
     await router.replace({ path: savingsGoalDetailPath(goal.publicId), query: route.query });
@@ -117,7 +113,7 @@ async function syncDetailFromRoute() {
     if (!id) return;
     if (editTarget.value?.publicId === id) return;
     try {
-        const goal = store.findByPublicId(id) ?? (await store.fetchSavingsGoal(id));
+        const goal = await store.fetchSavingsGoal(id, true);
         if (goal) editTarget.value = goal;
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
@@ -169,10 +165,6 @@ defineExpose({ openCreate });
 
 function requestDelete(goal: SavingsGoal) {
     deleteTarget.value = goal;
-}
-
-function requestDeposit(goal: SavingsGoal) {
-    depositTarget.value = goal;
 }
 
 async function confirmDelete() {
@@ -230,14 +222,12 @@ async function confirmDelete() {
                     :style="{ '--i': index }"
                     @edit="openDetail"
                     @delete="requestDelete"
-                    @deposit="requestDeposit"
                 />
             </div>
         </div>
 
         <SavingsGoalFormModal v-model="createOpen" />
         <SavingsGoalFormModal v-model="editOpen" :savings-goal="editTarget" />
-        <SavingsGoalDepositModal v-model="depositOpen" :savings-goal="depositTarget" />
 
         <AppConfirmationModal
             v-model="deleteOpen"

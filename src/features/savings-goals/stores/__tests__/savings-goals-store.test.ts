@@ -13,6 +13,7 @@ const api = vi.hoisted(() => ({
 }));
 
 const subscribeToSavingsGoalChanged = vi.fn();
+const subscribeToAccountChanged = vi.fn();
 
 vi.mock('@/features/savings-goals/api', () => ({
     savingsGoalsApi: {
@@ -26,7 +27,8 @@ vi.mock('@/features/savings-goals/api', () => ({
 
 vi.mock('@/features/notifications', () => ({
     useNotificationsStore: () => ({
-        subscribeToSavingsGoalChanged
+        subscribeToSavingsGoalChanged,
+        subscribeToAccountChanged
     })
 }));
 
@@ -36,14 +38,18 @@ const vacances: SavingsGoal = {
     publicId: 'g-1',
     name: 'Vacances',
     targetAmount: 2000,
+    openingAmount: 150,
+    contributedAmount: 0,
     currentAmount: 150,
     remainingAmount: 1850,
     percentReached: 7.5,
     currency: 'CHF',
     targetDate: '2026-12-01',
+    projectedDate: null,
     status: 'active',
     isOverdue: false,
     accountPublicId: null,
+    contributions: [],
     createdAt: '2026-09-23T18:00:00Z',
     updatedAt: null
 };
@@ -53,7 +59,7 @@ function form(partial: Partial<SavingsGoalFormFields> = {}): SavingsGoalFormFiel
         ...emptySavingsGoalFormFields({ currency: 'CHF' }),
         name: 'Vacances',
         targetAmount: '2000',
-        currentAmount: '150',
+        openingAmount: '150',
         targetDate: '2026-12-01',
         ...partial
     };
@@ -68,6 +74,7 @@ describe('useSavingsGoalsStore', () => {
         createTestPinia();
         Object.values(api).forEach((mock) => mock.mockReset());
         subscribeToSavingsGoalChanged.mockReset().mockReturnValue(() => undefined);
+        subscribeToAccountChanged.mockReset().mockReturnValue(() => undefined);
     });
 
     it('charge la liste et applique les filtres', async () => {
@@ -83,10 +90,10 @@ describe('useSavingsGoalsStore', () => {
         expect(store.activeQuery).toEqual({ status: 'active', accountPublicId: 'acc-1' });
     });
 
-    it('crée, met à jour, verse et supprime', async () => {
+    it('crée, met à jour et supprime', async () => {
         api.list.mockResolvedValue(page([]));
         api.create.mockResolvedValue(vacances);
-        api.update.mockResolvedValue({ ...vacances, currentAmount: 200, remainingAmount: 1800, percentReached: 10 });
+        api.update.mockResolvedValue({ ...vacances, openingAmount: 200, currentAmount: 200, remainingAmount: 1800, percentReached: 10 });
         api.remove.mockResolvedValue(undefined);
 
         const store = useSavingsGoalsStore();
@@ -95,12 +102,9 @@ describe('useSavingsGoalsStore', () => {
         expect(created.publicId).toBe('g-1');
         expect(store.items).toHaveLength(1);
 
-        await store.updateSavingsGoal('g-1', form({ currentAmount: '200' }), { lockedCurrency: 'CHF' });
-        expect(store.items[0]?.currentAmount).toBe(200);
-
-        api.update.mockResolvedValue({ ...vacances, currentAmount: 350, remainingAmount: 1650, percentReached: 17.5 });
-        await store.depositSavingsGoal('g-1', 350);
-        expect(api.update).toHaveBeenLastCalledWith('g-1', expect.objectContaining({ currentAmount: 350, status: null, currency: 'CHF' }));
+        await store.updateSavingsGoal('g-1', form({ openingAmount: '200' }), { lockedCurrency: 'CHF' });
+        expect(store.items[0]?.openingAmount).toBe(200);
+        expect(api.update).toHaveBeenLastCalledWith('g-1', expect.objectContaining({ openingAmount: 200, status: null, currency: 'CHF' }));
 
         const deleted: string[] = [];
         store.subscribeToDeleted((id) => deleted.push(id));
@@ -155,12 +159,15 @@ describe('useSavingsGoalsStore', () => {
         const store = useSavingsGoalsStore();
         store.onAuthenticatedSession();
         expect(subscribeToSavingsGoalChanged).toHaveBeenCalledTimes(1);
+        expect(subscribeToAccountChanged).toHaveBeenCalledTimes(1);
         expect(api.list).not.toHaveBeenCalled();
     });
 
     it('reset vide tout et coupe le realtime', async () => {
-        const unsubscribe = vi.fn();
-        subscribeToSavingsGoalChanged.mockReturnValue(unsubscribe);
+        const unsubscribeGoal = vi.fn();
+        const unsubscribeAccount = vi.fn();
+        subscribeToSavingsGoalChanged.mockReturnValue(unsubscribeGoal);
+        subscribeToAccountChanged.mockReturnValue(unsubscribeAccount);
         api.list.mockResolvedValue(page([vacances]));
         const store = useSavingsGoalsStore();
         await store.bootstrap();
@@ -168,7 +175,8 @@ describe('useSavingsGoalsStore', () => {
         expect(store.items).toHaveLength(0);
         expect(store.initialized).toBe(false);
         expect(store.findByPublicId('g-1')).toBeNull();
-        expect(unsubscribe).toHaveBeenCalled();
+        expect(unsubscribeGoal).toHaveBeenCalled();
+        expect(unsubscribeAccount).toHaveBeenCalled();
     });
 
     it('liste les objectifs liés à un compte sans changer la query active', async () => {

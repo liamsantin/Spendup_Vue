@@ -6,7 +6,8 @@ export {
     isSecurityNotificationType,
     isFriendNotificationType,
     isAccountShareNotificationType,
-    isBudgetAlertNotificationType
+    isBudgetAlertNotificationType,
+    isSavingsGoalReachedNotificationType
 } from '@/features/notifications/link';
 export { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '@/features/notifications/friendChip';
 export {
@@ -22,7 +23,8 @@ export {
     parseRecurringIncomeChangedPayload,
     parseBudgetChangedPayload,
     parseSavingsGoalChangedPayload,
-    getBudgetPublicId
+    getBudgetPublicId,
+    getSavingsGoalPublicId
 } from '@/features/notifications/normalize';
 export {
     ensureNativeNotificationPermission,

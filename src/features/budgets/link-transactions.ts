@@ -1,8 +1,7 @@
 import type { Budget } from '@/features/budgets/types';
 import { findCategoryInTree } from '@/features/categories/format';
 import type { Category } from '@/features/categories/types';
-import { sourceAccountPublicId, targetAccountPublicId } from '@/features/transactions/format';
-import type { TransactionFormFields } from '@/features/transactions/payload';
+import { transactionToFormFields, type TransactionFormFields } from '@/features/transactions/payload';
 import { canWriteTransaction } from '@/features/transactions/rights';
 import type { Transaction } from '@/features/transactions/types';
 import type { Account } from '@/features/accounts/types';
@@ -65,25 +64,8 @@ export function isTransactionUnlinkableFromBudget(
 }
 
 export function transactionFormFieldsWithCategory(transaction: Transaction, categoryPublicId: string): TransactionFormFields | null {
-    if (transaction.amount == null) return null;
-    const accountPublicId = sourceAccountPublicId(transaction);
-    if (!accountPublicId) return null;
-    return {
-        type: transaction.type,
-        accountPublicId,
-        counterpartyAccountPublicId: targetAccountPublicId(transaction) ?? '',
-        label: transaction.label,
-        amount: transaction.amount.toFixed(2),
-        operationDate: transaction.operationDate,
-        valueDate: transaction.valueDate,
-        paymentMethodPublicId: transaction.paymentMethodPublicId ?? '',
-        categoryPublicId,
-        tierPublicId: transaction.tierPublicId ?? '',
-        recurrencePublicId:
-            transaction.type === 'depense'
-                ? (transaction.recurringExpensePublicId ?? '')
-                : transaction.type === 'revenu'
-                  ? (transaction.recurringIncomePublicId ?? '')
-                  : ''
-    };
+    const fields = transactionToFormFields(transaction);
+    if (!fields) return null;
+    fields.categoryPublicId = categoryPublicId;
+    return fields;
 }

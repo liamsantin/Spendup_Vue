@@ -14,8 +14,8 @@ export type SavingsGoalPayloadErrorCode =
     | 'nameTooLong'
     | 'targetAmountInvalid'
     | 'targetAmountNotPositive'
-    | 'currentAmountInvalid'
-    | 'currentAmountNegative'
+    | 'openingAmountInvalid'
+    | 'openingAmountNegative'
     | 'targetDateInvalid'
     | 'currencyInvalid'
     | 'currencyLocked'
@@ -24,7 +24,7 @@ export type SavingsGoalPayloadErrorCode =
 export type SavingsGoalFormFields = {
     name: string;
     targetAmount: string;
-    currentAmount: string;
+    openingAmount: string;
     targetDate: string | null;
     accountPublicId: string;
     currency: SavingsGoalCurrency | '';
@@ -47,12 +47,12 @@ function fail(code: SavingsGoalPayloadErrorCode, field?: string): BuildSavingsGo
 }
 
 export function emptySavingsGoalFormFields(
-    defaults: { currency?: SavingsGoalCurrency | ''; currentAmount?: string } = {}
+    defaults: { currency?: SavingsGoalCurrency | ''; openingAmount?: string } = {}
 ): SavingsGoalFormFields {
     return {
         name: '',
         targetAmount: '',
-        currentAmount: defaults.currentAmount ?? '0',
+        openingAmount: defaults.openingAmount ?? '0',
         targetDate: null,
         accountPublicId: '',
         currency: defaults.currency ?? '',
@@ -64,7 +64,7 @@ export function savingsGoalToFormFields(goal: SavingsGoal): SavingsGoalFormField
     return {
         name: goal.name,
         targetAmount: String(goal.targetAmount),
-        currentAmount: String(goal.currentAmount),
+        openingAmount: String(goal.openingAmount),
         targetDate: goal.targetDate,
         accountPublicId: goal.accountPublicId ?? '',
         currency: goal.currency,
@@ -78,7 +78,7 @@ type CommonFields =
           ok: true;
           name: string;
           targetAmount: number;
-          currentAmount: number;
+          openingAmount: number;
           targetDate: string | null;
           accountPublicId: string | null;
       };
@@ -92,14 +92,14 @@ function commonFields(fields: SavingsGoalFormFields, context: SavingsGoalPayload
     if (targetAmount == null) return fail('targetAmountInvalid', 'targetAmount');
     if (targetAmount <= 0) return fail('targetAmountNotPositive', 'targetAmount');
 
-    const currentRaw = fields.currentAmount.trim();
-    let currentAmount = 0;
-    if (currentRaw) {
-        const parsed = parseAccountAmount(currentRaw);
-        if (parsed == null) return fail('currentAmountInvalid', 'currentAmount');
-        currentAmount = parsed;
+    const openingRaw = fields.openingAmount.trim();
+    let openingAmount = 0;
+    if (openingRaw) {
+        const parsed = parseAccountAmount(openingRaw);
+        if (parsed == null) return fail('openingAmountInvalid', 'openingAmount');
+        openingAmount = parsed;
     }
-    if (currentAmount < 0) return fail('currentAmountNegative', 'currentAmount');
+    if (openingAmount < 0) return fail('openingAmountNegative', 'openingAmount');
 
     const targetDate = emptyToNull(fields.targetDate);
     if (targetDate && !isValidYmd(targetDate)) return fail('targetDateInvalid', 'targetDate');
@@ -113,7 +113,7 @@ function commonFields(fields: SavingsGoalFormFields, context: SavingsGoalPayload
         ok: true,
         name,
         targetAmount,
-        currentAmount,
+        openingAmount,
         targetDate,
         accountPublicId
     };
@@ -138,7 +138,7 @@ export function buildCreateSavingsGoalPayload(
         payload: {
             name: common.name,
             targetAmount: common.targetAmount,
-            currentAmount: common.currentAmount,
+            openingAmount: common.openingAmount,
             targetDate: common.targetDate,
             accountPublicId: common.accountPublicId,
             currency
@@ -167,7 +167,7 @@ export function buildUpdateSavingsGoalPayload(
         payload: {
             name: common.name,
             targetAmount: common.targetAmount,
-            currentAmount: common.currentAmount,
+            openingAmount: common.openingAmount,
             targetDate: common.targetDate,
             accountPublicId: common.accountPublicId,
             currency: locked,
@@ -176,34 +176,12 @@ export function buildUpdateSavingsGoalPayload(
     };
 }
 
-/** PUT complet pour un versement : seul `currentAmount` change, `status` laissé à `null`. */
-export function buildDepositUpdatePayload(
-    goal: SavingsGoal,
-    currentAmount: number
-): BuildSavingsGoalPayloadResult<UpdateSavingsGoalPayload> {
-    if (currentAmount < 0 || !Number.isFinite(currentAmount)) {
-        return fail('currentAmountNegative', 'currentAmount');
-    }
-    return {
-        ok: true,
-        payload: {
-            name: goal.name,
-            targetAmount: goal.targetAmount,
-            currentAmount: Number(currentAmount.toFixed(2)),
-            targetDate: goal.targetDate,
-            accountPublicId: goal.accountPublicId,
-            currency: goal.currency,
-            status: null
-        }
-    };
-}
-
-/** Détache le compte (`accountPublicId: null`) sans toucher au reste. */
+/** Détache le compte (`accountPublicId: null`) — le serveur retire les transactions liées. */
 export function buildUnlinkAccountPayload(goal: SavingsGoal): UpdateSavingsGoalPayload {
     return {
         name: goal.name,
         targetAmount: goal.targetAmount,
-        currentAmount: goal.currentAmount,
+        openingAmount: goal.openingAmount,
         targetDate: goal.targetDate,
         accountPublicId: null,
         currency: goal.currency,
@@ -215,9 +193,9 @@ export function isSavingsGoalFormDirty(goal: SavingsGoal, fields: SavingsGoalFor
     if (fields.name.trim() !== goal.name.trim()) return true;
     const target = parseAccountAmount(fields.targetAmount);
     if (target !== goal.targetAmount) return true;
-    const currentRaw = fields.currentAmount.trim();
-    const current = currentRaw ? parseAccountAmount(currentRaw) : 0;
-    if (current !== goal.currentAmount) return true;
+    const openingRaw = fields.openingAmount.trim();
+    const opening = openingRaw ? parseAccountAmount(openingRaw) : 0;
+    if (opening !== goal.openingAmount) return true;
     if (emptyToNull(fields.targetDate) !== emptyToNull(goal.targetDate)) return true;
     if (emptyToNull(fields.accountPublicId) !== emptyToNull(goal.accountPublicId)) return true;
     if (fields.abandon !== (goal.status === 'abandonne')) return true;

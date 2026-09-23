@@ -49,15 +49,17 @@ Hub `{apiBase}/hubs/realtime` — détails `architecture/realtime.md`.
 
 - Types inbox produit (amis) : `friendRequest`, `friendAccepted` ; anciens types friend encore deep-linkables.
 - Types inbox produit (comptes) : `accountShareInvite`, `accountShareAccepted`, `accountShareRefused`, `accountShareRevoked`, `accountShareLeft`, `accountShareRoleChanged`.
+- Types inbox produit (budgets) : `budgetAlert`.
+- Types inbox produit (objectifs) : `savingsGoalReached` (`pushFinancialAlerts`, `link` `/savings-goals/{id}`).
 - Chips live : `friendRequest`, `friendAccepted`, `accountShareInvite`.
 - Inbox transactionnelle : la ligne est écrite même si `pushNotifications` est off — seul le push SignalR est filtré. Incoming shares / inbox REST restent la source de vérité pour les invitations en attente.
 - Prefs push (`pushNotifications` + sous-flags) :
     - **Web** : gate les **chips live** uniquement — **pas** inbox, badge, ni refresh friends / comptes.
     - **Tauri** (`isTauri`) : gate aussi les **notifications OS** natives (`plugin-notification`) sur `notificationReceived`.
-    - Sous-flags : `pushFriendRequest` (amis), `pushFinancialAlerts` (partage de comptes), `pushSecurityAlerts` (sécu).
+    - Sous-flags : `pushFriendRequest` (amis), `pushFinancialAlerts` (partage de comptes, alertes budget, objectif atteint), `pushSecurityAlerts` (sécu).
 - Hub toujours up pour `sessionEnded`.
 - Upsert par `id` ; prepend sur insert realtime.
-- Deep-links : `/security*` → `/app/comptes` ; friend → `/app/friends?tab=&friendship=` ; comptes → `/app/finances/comptes?tab=&share=`.
+- Deep-links : `/security*` → `/app/comptes` ; friend → `/app/friends?tab=&friendship=` ; comptes → `/app/finances/comptes?tab=&share=` ; budgets → `/app/planning/budgets/{id}` ; objectifs → `/app/planning/objectifs/{id}`.
 - Clic notif OS (Tauri) → navigation via `resolveNotificationLink`.
 
 ## Bootstrap

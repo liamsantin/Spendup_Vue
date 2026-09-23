@@ -1,19 +1,23 @@
 import { useNotificationsStore } from '@/features/notifications';
-import { parseSavingsGoalChangedPayload } from '@/features/notifications/normalize';
-import type { SavingsGoalChangedPayload } from '@/features/notifications';
+import { parseAccountChangedPayload, parseSavingsGoalChangedPayload } from '@/features/notifications/normalize';
+import type { AccountChangedPayload, SavingsGoalChangedPayload } from '@/features/notifications';
 import type { SavingsGoalsCrud } from '@/features/savings-goals/stores/internal/savings-goals-crud';
 import type { SavingsGoalsState } from '@/features/savings-goals/stores/internal/savings-goals-state';
 
 type RealtimeDeps = Pick<SavingsGoalsCrud, 'refetchActive' | 'fetchSavingsGoal'>;
 
+const LINKED_TX_CHANGES = new Set(['transactionCreated', 'transactionUpdated', 'transactionDeleted']);
+
 /**
  * `savingsGoalChanged` — CRUD perso, acteur inclus, pas d’inbox.
+ * `accountChanged` transaction* — contributedAmount / status / projectedDate.
  */
 export function createSavingsGoalsRealtime(state: SavingsGoalsState, deps: RealtimeDeps) {
     const { consumeLocalMutation, initialized, invalidateAllLists, removeItemLocal, notifyDeleted, knownById } = state;
     const { refetchActive, fetchSavingsGoal } = deps;
 
     let unsubscribeSavingsGoalChanged: (() => void) | null = null;
+    let unsubscribeAccountChanged: (() => void) | null = null;
     let refreshScheduled = false;
 
     function scheduleRefetch() {
@@ -48,10 +52,23 @@ export function createSavingsGoalsRealtime(state: SavingsGoalsState, deps: Realt
         scheduleRefetch();
     }
 
+    function handleAccountChanged(payload: AccountChangedPayload) {
+        const parsed = parseAccountChangedPayload(payload);
+        if (!parsed || !LINKED_TX_CHANGES.has(parsed.change)) return;
+        invalidateAllLists();
+        for (const goal of knownById.values()) {
+            if (goal.accountPublicId === parsed.accountPublicId) {
+                void fetchSavingsGoal(goal.publicId, true).catch(() => undefined);
+            }
+        }
+        scheduleRefetch();
+    }
+
     function ensureRealtimeBridge() {
-        if (unsubscribeSavingsGoalChanged) return;
+        if (unsubscribeSavingsGoalChanged && unsubscribeAccountChanged) return;
         const notifications = useNotificationsStore();
-        unsubscribeSavingsGoalChanged = notifications.subscribeToSavingsGoalChanged(handleSavingsGoalChanged);
+        unsubscribeSavingsGoalChanged ??= notifications.subscribeToSavingsGoalChanged(handleSavingsGoalChanged);
+        unsubscribeAccountChanged ??= notifications.subscribeToAccountChanged(handleAccountChanged);
     }
 
     function onAuthenticatedSession() {
@@ -60,7 +77,9 @@ export function createSavingsGoalsRealtime(state: SavingsGoalsState, deps: Realt
 
     function teardownRealtimeBridge() {
         unsubscribeSavingsGoalChanged?.();
+        unsubscribeAccountChanged?.();
         unsubscribeSavingsGoalChanged = null;
+        unsubscribeAccountChanged = null;
         refreshScheduled = false;
     }
 

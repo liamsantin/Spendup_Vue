@@ -47,7 +47,6 @@ export const useSavingsGoalsStore = defineStore('savings-goals', () => {
         fetchSavingsGoal: crud.fetchSavingsGoal,
         createSavingsGoal: crud.createSavingsGoal,
         updateSavingsGoal: crud.updateSavingsGoal,
-        depositSavingsGoal: crud.depositSavingsGoal,
         unlinkSavingsGoalAccount: crud.unlinkSavingsGoalAccount,
         listLinkedToAccount: crud.listLinkedToAccount,
         deleteSavingsGoal: crud.deleteSavingsGoal,

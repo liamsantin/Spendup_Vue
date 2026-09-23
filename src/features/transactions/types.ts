@@ -1,5 +1,5 @@
 export type TransactionType = 'depense' | 'revenu' | 'transfert';
-export type TransactionStatus = 'validee';
+export type TransactionStatus = 'validee' | 'rapprochee';
 export type TransactionSource = 'manuelle' | 'recurrence';
 export type MovementSens = 'debit' | 'credit';
 
@@ -48,6 +48,11 @@ export type Transaction = {
     movements: TransactionMovement[];
     /** Justificatifs PDF. Toujours un tableau (éventuellement vide). */
     files: TransactionFile[];
+    /**
+     * Objectif d’épargne lié. `null` si détaché, ou si le viewer n’est pas le propriétaire
+     * (ami sur un compte partagé).
+     */
+    savingsGoalPublicId: string | null;
 };
 
 export type TransactionList = {
@@ -86,6 +91,8 @@ export type CreateTransactionPayload = {
     recurringIncomePublicId?: string | null;
     /** PDF déjà uploadés via `/api/files`. Max 5, dédupliqués côté API. */
     filePublicIds?: string[];
+    /** Objectif d’épargne optionnel. Refusé si l’objectif n’a pas de compte / devise / mouvement. */
+    savingsGoalPublicId?: string | null;
 };
 
 export type UpdateTransactionPayload = {
@@ -101,6 +108,8 @@ export type UpdateTransactionPayload = {
     recurringExpensePublicId: string | null;
     /** État complet : `null` détache le template de revenu. */
     recurringIncomePublicId: string | null;
+    /** État complet : omettre ou `null` détache l’objectif. */
+    savingsGoalPublicId: string | null;
 };
 
 export type AttachTransactionFilePayload = {

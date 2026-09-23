@@ -19,6 +19,7 @@ export type NotificationType =
     | 'accountShareLeft'
     | 'accountShareRoleChanged'
     | 'budgetAlert'
+    | 'savingsGoalReached'
     | 'other'
     | (string & {});
 

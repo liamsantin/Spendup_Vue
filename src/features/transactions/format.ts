@@ -225,7 +225,8 @@ export function normalizeTransaction(transaction: Transaction, previous?: Transa
         recurringIncomePublicId: transaction.recurringIncomePublicId ?? null,
         duePublicId: transaction.duePublicId ?? null,
         duePlannedAmount: source === 'recurrence' ? (readDuePlannedAmount(transaction) ?? previous?.duePlannedAmount ?? null) : null,
-        files: normalizeTransactionFiles(transaction.files)
+        files: normalizeTransactionFiles(transaction.files),
+        savingsGoalPublicId: transaction.savingsGoalPublicId ?? null
     };
 }
 

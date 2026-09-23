@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { DotsVerticalIcon, PencilIcon, TargetIcon, WalletIcon } from 'vue-tabler-icons';
+import { DotsVerticalIcon, PencilIcon, TargetIcon } from 'vue-tabler-icons';
 import {
     formatCalendarDate,
     formatPercentReached,
@@ -20,7 +20,6 @@ const props = defineProps<{
 const emit = defineEmits<{
     edit: [goal: SavingsGoal];
     delete: [goal: SavingsGoal];
-    deposit: [goal: SavingsGoal];
 }>();
 
 const { t, locale } = useI18n();
@@ -43,8 +42,16 @@ const currentText = computed(() =>
     })
 );
 const dateText = computed(() => {
-    if (!props.savingsGoal.targetDate) return t('savingsGoalsPage.list.noDate');
-    return t('savingsGoalsPage.list.dueOn', { date: formatCalendarDate(props.savingsGoal.targetDate, locale.value) });
+    const parts: string[] = [];
+    if (!props.savingsGoal.targetDate) {
+        parts.push(t('savingsGoalsPage.list.noDate'));
+    } else {
+        parts.push(t('savingsGoalsPage.list.dueOn', { date: formatCalendarDate(props.savingsGoal.targetDate, locale.value) }));
+    }
+    if (props.savingsGoal.projectedDate) {
+        parts.push(t('savingsGoalsPage.list.projectedOn', { date: formatCalendarDate(props.savingsGoal.projectedDate, locale.value) }));
+    }
+    return parts.join(' · ');
 });
 const percentText = computed(() => formatPercentReached(props.savingsGoal.percentReached, locale.value));
 const barWidth = computed(() => savingsGoalBarWidth(props.savingsGoal));
@@ -110,16 +117,6 @@ function onActivate(event: MouseEvent) {
                     </button>
                 </template>
                 <v-sheet class="su-menu goal-actions-menu">
-                    <button
-                        v-if="savingsGoal.status !== 'abandonne'"
-                        type="button"
-                        class="su-btn su-btn--tonal"
-                        :disabled="acting"
-                        @click="emit('deposit', savingsGoal)"
-                    >
-                        <WalletIcon :size="16" stroke-width="1.6" />
-                        {{ t('savingsGoalsPage.actions.deposit') }}
-                    </button>
                     <button type="button" class="su-btn su-btn--ink" :disabled="acting" @click="emit('edit', savingsGoal)">
                         <PencilIcon :size="16" stroke-width="1.6" />
                         {{ t('savingsGoalsPage.actions.edit') }}

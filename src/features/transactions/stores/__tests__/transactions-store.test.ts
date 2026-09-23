@@ -111,7 +111,8 @@ const expense: Transaction = {
     createdAt: '2026-09-07T11:03:44Z',
     updatedAt: null,
     movements: [{ accountPublicId: 'acc-1', amount: 42.5, sens: 'debit' }],
-    files: []
+    files: [],
+    savingsGoalPublicId: null
 };
 
 function form(partial: Partial<TransactionFormFields> = {}): TransactionFormFields {
@@ -127,6 +128,7 @@ function form(partial: Partial<TransactionFormFields> = {}): TransactionFormFiel
         categoryPublicId: '',
         tierPublicId: '',
         recurrencePublicId: '',
+        savingsGoalPublicId: '',
         ...partial
     };
 }

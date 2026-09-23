@@ -14,7 +14,8 @@ export {
     matchesSavingsGoalSearch,
     queryMatchesSavingsGoal,
     normalizeListQuery,
-    isLinkedSavingsGoalAccountError
+    isLinkedSavingsGoalAccountError,
+    normalizeSavingsGoal
 } from '@/features/savings-goals/format';
 export type { SavingsGoalProgressTone } from '@/features/savings-goals/format';
 export {
@@ -22,7 +23,6 @@ export {
     savingsGoalToFormFields,
     buildCreateSavingsGoalPayload,
     buildUpdateSavingsGoalPayload,
-    buildDepositUpdatePayload,
     buildUnlinkAccountPayload,
     isSavingsGoalFormDirty
 } from '@/features/savings-goals/payload';
@@ -30,6 +30,7 @@ export type { SavingsGoalFormFields, SavingsGoalPayloadErrorCode, SavingsGoalPay
 export type {
     SavingsGoalStatus,
     SavingsGoalCurrency,
+    SavingsGoalContribution,
     SavingsGoal,
     SavingsGoalList,
     ListSavingsGoalsQuery,
@@ -46,6 +47,6 @@ export {
 export { default as SavingsGoalsDirectory } from '@/features/savings-goals/components/SavingsGoalsDirectory.vue';
 export { default as SavingsGoalListItem } from '@/features/savings-goals/components/list/SavingsGoalListItem.vue';
 export { default as SavingsGoalFormModal } from '@/features/savings-goals/components/modals/SavingsGoalFormModal.vue';
-export { default as SavingsGoalDepositModal } from '@/features/savings-goals/components/modals/SavingsGoalDepositModal.vue';
+export { default as SavingsGoalLinkTransactionsModal } from '@/features/savings-goals/components/modals/SavingsGoalLinkTransactionsModal.vue';
 export { default as AccountLinkedSavingsGoalsModal } from '@/features/savings-goals/components/modals/AccountLinkedSavingsGoalsModal.vue';
 export { default as DashboardSavingsGoalsCard } from '@/features/savings-goals/components/dashboard/DashboardSavingsGoalsCard.vue';

@@ -12,6 +12,8 @@ import { useCategoriesStore } from '@/features/categories/stores/categories-stor
 import { categorySelectItems } from '@/features/categories/payload';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
+import { isSavingsGoalCompatibleWithTransactionForm } from '@/features/savings-goals/link-transactions';
+import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import { sourceAccountPublicId, targetAccountPublicId, todayUtcYmd } from '@/features/transactions/format';
 import { plannedAmountForRecurrenceTransaction } from '@/features/transactions/recurrence-planned';
@@ -64,6 +66,7 @@ const tiersStore = useTiersStore();
 const recurringStore = useRecurringPaymentsStore();
 const store = useTransactionsStore();
 const filesStore = useFilesStore();
+const savingsGoalsStore = useSavingsGoalsStore();
 
 const isEdit = ref(false);
 const editTransaction = ref<Transaction | null>(null);
@@ -156,6 +159,25 @@ const recurrenceItems = computed(() => {
     return [...none, ...options];
 });
 
+const savingsGoalItems = computed(() => {
+    const none = [{ title: t('transactionsPage.form.noSavingsGoal'), value: '' }];
+    const compatible = savingsGoalsStore
+        .allKnownItems()
+        .filter((goal) => isSavingsGoalCompatibleWithTransactionForm(goal, form, accountsStore.accounts));
+    const selected = form.savingsGoalPublicId.trim();
+    if (selected && !compatible.some((goal) => goal.publicId === selected)) {
+        const extra = savingsGoalsStore.findByPublicId(selected);
+        if (extra) compatible.unshift(extra);
+    }
+    return [...none, ...compatible.map((goal) => ({ title: goal.name, value: goal.publicId }))];
+});
+
+const savingsGoalHint = computed(() => {
+    if (!form.accountPublicId) return t('transactionsPage.form.savingsGoalAccountHint');
+    if (savingsGoalItems.value.length <= 1) return t('transactionsPage.form.savingsGoalEmptyHint');
+    return t('transactionsPage.form.savingsGoalHint');
+});
+
 const isSharedAccount = computed(() => {
     const account = sourceAccount.value;
     return !!account && !account.isOwned;
@@ -192,7 +214,13 @@ const previewFile = ref<TransactionFile | null>(null);
 const previewOpen = ref(false);
 const activeTab = ref<'operation' | 'classification' | 'attachments'>('operation');
 
-const CLASSIFICATION_FIELDS = new Set(['paymentMethodPublicId', 'categoryPublicId', 'tierPublicId', 'recurrencePublicId']);
+const CLASSIFICATION_FIELDS = new Set([
+    'paymentMethodPublicId',
+    'categoryPublicId',
+    'tierPublicId',
+    'recurrencePublicId',
+    'savingsGoalPublicId'
+]);
 
 const form = reactive<TransactionFormFields>({
     type: 'depense',
@@ -205,7 +233,8 @@ const form = reactive<TransactionFormFields>({
     paymentMethodPublicId: '',
     categoryPublicId: '',
     tierPublicId: '',
-    recurrencePublicId: ''
+    recurrencePublicId: '',
+    savingsGoalPublicId: ''
 });
 
 const open = computed({
@@ -278,6 +307,7 @@ function clearFieldErrors() {
     fieldErrors.categoryPublicId = null;
     fieldErrors.tierPublicId = null;
     fieldErrors.recurrencePublicId = null;
+    fieldErrors.savingsGoalPublicId = null;
 }
 
 function payloadErrorText(code: TransactionPayloadErrorCode): string {
@@ -319,6 +349,7 @@ function resetForm() {
         form.categoryPublicId = transaction.categoryPublicId ?? '';
         form.tierPublicId = transaction.tierPublicId ?? '';
         form.recurrencePublicId = recurrencePublicIdFromTransaction(transaction);
+        form.savingsGoalPublicId = transaction.savingsGoalPublicId ?? '';
         return;
     }
     form.type = props.defaultType || 'depense';
@@ -332,6 +363,7 @@ function resetForm() {
     form.categoryPublicId = '';
     form.tierPublicId = '';
     form.recurrencePublicId = '';
+    form.savingsGoalPublicId = '';
 }
 
 async function loadPaymentMethodsForAccount(accountPublicId: string | null) {
@@ -362,6 +394,15 @@ function syncRecurrenceSelection() {
     }
 }
 
+function syncSavingsGoalSelection() {
+    if (!form.savingsGoalPublicId) return;
+    const goal = savingsGoalsStore.findByPublicId(form.savingsGoalPublicId);
+    if (!goal) return;
+    if (!isSavingsGoalCompatibleWithTransactionForm(goal, form, accountsStore.accounts)) {
+        form.savingsGoalPublicId = '';
+    }
+}
+
 watch(
     () => props.modelValue,
     async (value) => {
@@ -375,7 +416,8 @@ watch(
             loadCategoriesForType(form.type),
             loadRecurrences(),
             filesStore.loadList().catch(() => undefined),
-            filesStore.loadUsage()
+            filesStore.loadUsage(),
+            savingsGoalsStore.loadList().catch(() => undefined)
         ]);
     }
 );
@@ -391,6 +433,7 @@ watch(
         }
         form.categoryPublicId = '';
         form.recurrencePublicId = '';
+        form.savingsGoalPublicId = '';
         await loadCategoriesForType(type);
     }
 );
@@ -410,6 +453,14 @@ watch(
         const stillValid = paymentMethodItems.value.some((item) => item.value === form.paymentMethodPublicId);
         if (!stillValid) form.paymentMethodPublicId = '';
         syncRecurrenceSelection();
+        syncSavingsGoalSelection();
+    }
+);
+
+watch(
+    () => form.counterpartyAccountPublicId,
+    () => {
+        syncSavingsGoalSelection();
     }
 );
 
@@ -417,17 +468,25 @@ async function onSave() {
     if (isEdit.value && !canSave.value) return;
     localError.message = null;
     clearFieldErrors();
-    const context = { accounts: accountsStore.accounts };
+    const context = {
+        accounts: accountsStore.accounts,
+        savingsGoals: savingsGoalsStore.allKnownItems()
+    };
     const built = isEdit.value ? buildUpdateTransactionPayload(form, context) : buildCreateTransactionPayload(form, context);
     if (!built.ok) {
         applyPayloadErrors(built.code, built.field);
         return;
     }
+    const previousGoalId = editTransaction.value?.savingsGoalPublicId ?? null;
     try {
         const saved =
             isEdit.value && editTransaction.value
                 ? await store.updateTransaction(editTransaction.value.publicId, form)
                 : await store.createTransaction(form, { filePublicIds: pendingFiles.value.map((file) => file.publicId) });
+        const goalIds = new Set([previousGoalId, saved.savingsGoalPublicId].filter((id): id is string => !!id?.trim()));
+        for (const id of goalIds) {
+            void savingsGoalsStore.fetchSavingsGoal(id, true).catch(() => undefined);
+        }
         emit('saved', saved);
         open.value = false;
     } catch (e: unknown) {
@@ -550,10 +609,12 @@ function onOpenAttachment(file: TransactionFile) {
                     :payment-method-items="paymentMethodItems"
                     :category-items="categoryItems"
                     :recurrence-items="recurrenceItems"
+                    :savings-goal-items="savingsGoalItems"
                     :field-errors="fieldErrors"
                     :archived-hint="archivedHint"
                     :counterparty-hint="counterpartyHint"
                     :recurrence-planned-amount="recurrencePlannedAmount"
+                    :savings-goal-hint="savingsGoalHint"
                 />
                 <button
                     v-if="showUnlinkFromBudget"
@@ -580,9 +641,11 @@ function onOpenAttachment(file: TransactionFile) {
                     :payment-method-items="paymentMethodItems"
                     :category-items="categoryItems"
                     :recurrence-items="recurrenceItems"
+                    :savings-goal-items="savingsGoalItems"
                     :field-errors="fieldErrors"
                     :category-hint="isSharedAccount ? t('transactionsPage.form.categoryPersonalHint') : null"
                     :tier-hint="tierHint"
+                    :savings-goal-hint="savingsGoalHint"
                 />
                 <button
                     v-if="showUnlinkFromBudget"

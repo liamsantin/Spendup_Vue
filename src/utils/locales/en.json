@@ -313,7 +313,7 @@
         },
         "savingsGoals": {
             "title": "Savings goals",
-            "subtitle": "Projects in progress.",
+            "subtitle": "Opening plus linked transactions.",
             "empty": "No active goal yet.",
             "reached": "{percent} reached",
             "overdue": "Past due date"
@@ -1094,7 +1094,7 @@
     },
     "savingsGoalsPage": {
         "title": "Savings goals",
-        "subtitle": "Amount already set aside is entered by you — not tied to transactions.",
+        "subtitle": "Tracked amount = opening plus explicitly linked transactions.",
         "searchPlaceholder": "Search a goal",
         "count": "{count} goal | {count} goal | {count} goals",
         "tabs": {
@@ -1116,7 +1116,8 @@
             "dueOn": "Due {date}",
             "noDate": "No due date",
             "noAccount": "No linked account",
-            "unknownAccount": "Account"
+            "unknownAccount": "Account",
+            "projectedOn": "Estimated {date}"
         },
         "empty": {
             "list": "No goal yet. Create a first savings project.",
@@ -1129,7 +1130,6 @@
             "create": "Add",
             "edit": "Edit",
             "delete": "Delete",
-            "deposit": "Deposit",
             "filter": "Filter",
             "search": "Search",
             "clearSearch": "Clear search"
@@ -1140,17 +1140,32 @@
         },
         "deleteModal": {
             "title": "Delete this goal?",
-            "body": "The goal will disappear. The amount set aside is not an account movement."
+            "body": "The goal will disappear. Linked transactions are detached, not deleted."
         },
         "errors": {
             "notFound": "Goal not found."
         },
-        "deposit": {
-            "title": "Add a deposit",
-            "subtitle": "The amount set aside is entered by you. It does not follow the account balance.",
-            "amount": "Amount to add",
-            "currentOf": "Set aside: {current} / {target}",
-            "nextCurrent": "New total: {amount}"
+        "linkTransactions": {
+            "title": "Link transactions",
+            "subtitle": "Validated or reconciled entries that touch the goal’s account, in the same currency. A credit increases it, a debit decreases it.",
+            "searchPlaceholder": "Search a transaction",
+            "empty": "No transaction to link on this account.",
+            "emptyFiltered": "No transaction matches this search.",
+            "selected": "{count} selected | {count} selected | {count} selected",
+            "selectAll": "Select all",
+            "selectNone": "Select none",
+            "confirm": "Link {count} transaction | Link {count} transaction | Link {count} transactions"
+        },
+        "unlinkTransactions": {
+            "title": "Unlink transactions",
+            "subtitle": "Entries already attached to this goal. They stay on the account.",
+            "searchPlaceholder": "Search a transaction",
+            "empty": "No linked transaction to detach.",
+            "emptyFiltered": "No transaction matches this search.",
+            "selected": "{count} selected | {count} selected | {count} selected",
+            "selectAll": "Select all",
+            "selectNone": "Select none",
+            "confirm": "Unlink {count} transaction | Unlink {count} transaction | Unlink {count} transactions"
         },
         "linkedAccount": {
             "title": "Linked savings goals",
@@ -1161,17 +1176,29 @@
         "form": {
             "createTitle": "New goal",
             "editTitle": "Edit goal",
-            "subtitle": "The amount already set aside is entered manually.",
+            "subtitle": "Opening is money already set aside before Spendup. The rest comes from linked transactions.",
             "noAccount": "No account",
-            "accountHint": "Active account you own. A shared or archived account is refused.",
-            "abandonHint": "An abandoned goal stays abandoned, even if the amount covers the target.",
-            "currentAmountHint": "Entered by you. It follows neither transactions nor the account balance.",
+            "accountHint": "Active account you own. Without an account, no transaction can be linked.",
+            "abandonHint": "An abandoned goal stays abandoned, even if the amount covers the target. No notification.",
+            "openingAmountHint": "Money already set aside before Spendup. It adds to contributions; it does not replace them.",
+            "progressHint": "Contributions: {contributed} · Tracked: {current}",
+            "projectedOn": "Estimated reach date {date}",
+            "detachAccountHint": "Detaching the account unlinks every transaction attached to this goal.",
+            "changeAccountHint": "Changing account unlinks transactions that do not touch the new account.",
             "currencyLockedHint": "A goal’s currency cannot be changed.",
             "currencyDefaultHint": "Empty = settings currency ({currency}).",
+            "linkedTransactions": {
+                "title": "Linked transactions",
+                "hint": "Only explicitly attached entries count. The account balance is ignored.",
+                "noAccount": "Link an account to attach transactions (typically a transfer into the savings account).",
+                "empty": "No contribution yet.",
+                "add": "Link",
+                "remove": "Unlink"
+            },
             "fields": {
                 "name": "Name",
                 "targetAmount": "Target amount",
-                "currentAmount": "Already set aside",
+                "openingAmount": "Opening",
                 "targetDate": "Due date",
                 "account": "Linked account",
                 "currency": "Currency",
@@ -1182,8 +1209,8 @@
                 "nameTooLong": "Goal name exceeds 150 characters.",
                 "targetAmountInvalid": "Target amount is invalid.",
                 "targetAmountNotPositive": "Target amount must be strictly positive.",
-                "currentAmountInvalid": "Amount set aside is invalid.",
-                "currentAmountNegative": "Amount set aside cannot be negative.",
+                "openingAmountInvalid": "Opening amount is invalid.",
+                "openingAmountNegative": "Opening amount cannot be negative.",
                 "targetDateInvalid": "Due date is invalid.",
                 "currencyInvalid": "Unsupported currency (CHF, EUR, USD, GBP).",
                 "currencyLocked": "A savings goal’s currency cannot be changed.",
@@ -1796,6 +1823,12 @@
             "noPaymentMethod": "None",
             "noCategory": "None",
             "noRecurrence": "None",
+            "noSavingsGoal": "None",
+            "savingsGoalSearchPlaceholder": "Search a goal…",
+            "savingsGoalNoResults": "No goal matches.",
+            "savingsGoalHint": "The transaction must touch the goal’s account, in the same currency. Typical case: a transfer into the savings account.",
+            "savingsGoalAccountHint": "Pick an account first to link a goal.",
+            "savingsGoalEmptyHint": "No compatible goal. Link an account to the goal, then an entry that touches it.",
             "categoryPersonalHint": "This category is only visible to you, even on a shared account.",
             "noTier": "None",
             "tierSearchPlaceholder": "Search a counterparty…",
@@ -1831,6 +1864,7 @@
                 "paymentMethod": "Payment method",
                 "category": "My category",
                 "tier": "My counterparty",
+                "savingsGoal": "Savings goal",
                 "attachments": "PDF receipts"
             },
             "attachments": {
@@ -1860,7 +1894,11 @@
                 "counterpartySame": "The two accounts of a transfer must be different.",
                 "accountArchived": "Cannot modify an archived account. Restore it first.",
                 "currencyMismatch": "Both accounts of a transfer must share the same currency.",
-                "forbidden": "You are not allowed to change this transaction."
+                "forbidden": "You are not allowed to change this transaction.",
+                "savingsGoalInvalid": "Savings goal not found.",
+                "savingsGoalNoAccount": "Link an account to the goal before attaching a transaction.",
+                "savingsGoalCurrencyMismatch": "The transaction currency must match the goal.",
+                "savingsGoalAccountMismatch": "The transaction must touch the account linked to the goal."
             }
         },
         "count": "{count} transaction | {count} transactions",
