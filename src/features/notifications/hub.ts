@@ -12,7 +12,8 @@ import type {
     RecurringIncomeChangedPayload,
     SessionEndedPayload,
     TierChangedPayload,
-    BudgetChangedPayload
+    BudgetChangedPayload,
+    SavingsGoalChangedPayload
 } from '@/features/notifications/types';
 
 export type NotificationsHubHandlers = {
@@ -25,6 +26,7 @@ export type NotificationsHubHandlers = {
     onRecurringExpenseChanged?: (payload: RecurringExpenseChangedPayload) => void;
     onRecurringIncomeChanged?: (payload: RecurringIncomeChangedPayload) => void;
     onBudgetChanged?: (payload: BudgetChangedPayload) => void;
+    onSavingsGoalChanged?: (payload: SavingsGoalChangedPayload) => void;
     onInboxCleared?: (payload: InboxClearedPayload) => void;
     onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
 };
@@ -69,6 +71,7 @@ function attachHandlers(conn: HubConnection) {
     conn.off('recurringExpenseChanged');
     conn.off('recurringIncomeChanged');
     conn.off('budgetChanged');
+    conn.off('savingsGoalChanged');
     conn.off('inboxCleared');
     conn.off('sessionEnded');
 
@@ -106,6 +109,10 @@ function attachHandlers(conn: HubConnection) {
 
     conn.on('budgetChanged', (payload: BudgetChangedPayload) => {
         handlers.onBudgetChanged?.(payload);
+    });
+
+    conn.on('savingsGoalChanged', (payload: SavingsGoalChangedPayload) => {
+        handlers.onSavingsGoalChanged?.(payload);
     });
 
     conn.on('inboxCleared', (payload: InboxClearedPayload) => {

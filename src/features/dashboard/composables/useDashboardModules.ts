@@ -103,19 +103,18 @@ export function useDashboardModules() {
             icon: ChartPieIcon,
             to: '/app/planning/budgets',
             disabled: false
-        }
-    ];
-
-    const soon: DashboardModule[] = [
+        },
         {
             id: 'goals',
             titleKey: 'dashboard.modules.goals.title',
             captionKey: 'dashboard.modules.goals.caption',
             icon: TargetIcon,
-            to: '/app',
-            disabled: true
+            to: '/app/planning/objectifs',
+            disabled: false
         }
     ];
+
+    const soon: DashboardModule[] = [];
 
     return { live, soon, modules: live };
 }

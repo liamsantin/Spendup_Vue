@@ -69,6 +69,12 @@ vi.mock('@/features/budgets/stores/budgets-store', () => ({
     })
 }));
 
+vi.mock('@/features/savings-goals/stores/savings-goals-store', () => ({
+    useSavingsGoalsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
 vi.mock('@/features/user-settings', () => ({
     useUserSettingsStore: () => ({
         ensureLoaded: vi.fn().mockResolvedValue(undefined),

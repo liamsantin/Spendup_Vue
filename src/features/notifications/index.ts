@@ -21,6 +21,7 @@ export {
     parseRecurringExpenseChangedPayload,
     parseRecurringIncomeChangedPayload,
     parseBudgetChangedPayload,
+    parseSavingsGoalChangedPayload,
     getBudgetPublicId
 } from '@/features/notifications/normalize';
 export {
@@ -53,6 +54,8 @@ export type {
     RecurringIncomeChangedPayload,
     BudgetChange,
     BudgetChangedPayload,
+    SavingsGoalChange,
+    SavingsGoalChangedPayload,
     InboxClearedPayload,
     SessionEndedPayload,
     NotificationsListQuery

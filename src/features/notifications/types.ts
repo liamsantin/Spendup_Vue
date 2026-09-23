@@ -156,6 +156,14 @@ export type BudgetChangedPayload = {
     budgetPublicId: string;
 };
 
+/** Payload SignalR `savingsGoalChanged` — sync CRUD perso (acteur inclus, pas d’inbox). */
+export type SavingsGoalChange = 'savingsGoalCreated' | 'savingsGoalUpdated' | 'savingsGoalDeleted';
+
+export type SavingsGoalChangedPayload = {
+    change: SavingsGoalChange;
+    savingsGoalPublicId: string;
+};
+
 export type NotificationsListQuery = {
     page?: number;
     pageSize?: number;

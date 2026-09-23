@@ -34,6 +34,7 @@
 | User settings | [`features/user-settings/contract.md`](features/user-settings/contract.md) |
 | Countries     | [`features/countries/contract.md`](features/countries/contract.md)         |
 | Dashboard     | [`features/dashboard/contract.md`](features/dashboard/contract.md)         |
+| Savings goals | [`features/savings-goals/contract.md`](features/savings-goals/contract.md) |
 
 ## Règles d’évolution
 

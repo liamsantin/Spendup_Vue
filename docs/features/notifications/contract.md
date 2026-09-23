@@ -40,6 +40,8 @@ Hub `{apiBase}/hubs/realtime` — détails `architecture/realtime.md`.
 | `categoryChanged`         | fan-out store catégories (acteur inclus)     |
 | `recurringExpenseChanged` | fan-out store récurrences (acteur inclus)    |
 | `recurringIncomeChanged`  | fan-out store récurrences (acteur inclus)    |
+| `budgetChanged`           | fan-out store budgets (acteur inclus)        |
+| `savingsGoalChanged`      | fan-out store objectifs d’épargne (acteur inclus) |
 | `inboxCleared`            | reset liste                                  |
 | `sessionEnded`            | `forceReLogin` (all devices ou device match) |
 

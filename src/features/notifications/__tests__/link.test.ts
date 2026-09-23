@@ -189,6 +189,7 @@ describe('normalizeAppNotification', () => {
             parseAccountChangedPayload,
             parseCategoryChangedPayload,
             parseBudgetChangedPayload,
+            parseSavingsGoalChangedPayload,
             getAccountPublicId
         } = await import('@/features/notifications/normalize');
         expect(normalizePublicId('acc-1')).toBe('acc-1');
@@ -250,6 +251,19 @@ describe('normalizeAppNotification', () => {
             budgetPublicId: 'b-1'
         });
         expect(parseBudgetChangedPayload({ change: 'nope', budgetPublicId: 'b-1' })).toBeNull();
+        expect(parseSavingsGoalChangedPayload({ change: 'savingsGoalCreated', savingsGoalPublicId: 'g-1' })).toEqual({
+            change: 'savingsGoalCreated',
+            savingsGoalPublicId: 'g-1'
+        });
+        expect(parseSavingsGoalChangedPayload({ change: 'savingsGoalUpdated', savingsGoalPublicId: 'g-1' })).toEqual({
+            change: 'savingsGoalUpdated',
+            savingsGoalPublicId: 'g-1'
+        });
+        expect(parseSavingsGoalChangedPayload({ change: 'savingsGoalDeleted', savingsGoalPublicId: 'g-1' })).toEqual({
+            change: 'savingsGoalDeleted',
+            savingsGoalPublicId: 'g-1'
+        });
+        expect(parseSavingsGoalChangedPayload({ change: 'nope', savingsGoalPublicId: 'g-1' })).toBeNull();
     });
 });
 

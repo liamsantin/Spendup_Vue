@@ -50,6 +50,8 @@
 | `/app/gestion/tiers`               | tiers (contreparties)                          |
 | `/app/notifications`               | notifications (Page Shell)                     |
 | `/app/friends`                     | friends (Tabs Shell)                           |
+| `/app/planning/budgets/:publicId?` | budgets                                        |
+| `/app/planning/objectifs/:publicId?` | savings-goals                                |
 | `/app/applications`                | redirect → `/app/parametres/compte`            |
 
 Catch-all → `Error`.

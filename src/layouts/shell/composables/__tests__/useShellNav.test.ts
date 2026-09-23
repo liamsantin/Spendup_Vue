@@ -93,6 +93,17 @@ describe('idsFromPath', () => {
         });
     });
 
+    it('mappe les objectifs d’épargne', () => {
+        expect(idsFromPath('/app/planning/objectifs')).toEqual({
+            openId: SHELL_NAV_IDS.planning,
+            activeId: SHELL_NAV_IDS.goals
+        });
+        expect(idsFromPath('/app/planning/objectifs/guid-1')).toEqual({
+            openId: SHELL_NAV_IDS.planning,
+            activeId: SHELL_NAV_IDS.goals
+        });
+    });
+
     it('mappe les pages paramètres', () => {
         expect(idsFromPath(SETTINGS_PATHS.account)).toEqual({
             openId: SHELL_NAV_IDS.settings,

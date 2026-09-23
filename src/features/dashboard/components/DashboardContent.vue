@@ -13,12 +13,15 @@ import {
     CreditCardIcon,
     FilesIcon,
     TagsIcon,
+    TargetIcon,
     UsersIcon,
     WalletIcon
 } from 'vue-tabler-icons';
 import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import { DashboardBudgetsCard } from '@/features/budgets';
 import { BUDGETS_PATHS } from '@/features/budgets/paths';
+import { DashboardSavingsGoalsCard } from '@/features/savings-goals';
+import { SAVINGS_GOALS_PATHS } from '@/features/savings-goals/paths';
 import { FileUsageMeter } from '@/features/files';
 import { useDashboardModules } from '@/features/dashboard/composables/useDashboardModules';
 import { useDashboardOverview } from '@/features/dashboard/composables/useDashboardOverview';
@@ -46,6 +49,8 @@ const {
     categoryCount,
     budgetCount,
     overspentBudgetCount,
+    savingsGoalCount,
+    overdueSavingsGoalCount,
     defaultDashboardView,
     tierCount,
     paymentMethodCount
@@ -111,6 +116,17 @@ const kpis = computed(() => [
                 ? t('dashboard.kpis.budgetsOver', { count: overspentBudgetCount.value }, overspentBudgetCount.value)
                 : t('dashboard.kpis.budgetsHint'),
         alert: overspentBudgetCount.value > 0
+    },
+    {
+        to: SAVINGS_GOALS_PATHS.list,
+        icon: TargetIcon,
+        value: String(savingsGoalCount.value),
+        label: t('dashboard.kpis.savingsGoals'),
+        hint:
+            overdueSavingsGoalCount.value > 0
+                ? t('dashboard.kpis.savingsGoalsOverdue', { count: overdueSavingsGoalCount.value }, overdueSavingsGoalCount.value)
+                : t('dashboard.kpis.savingsGoalsHint'),
+        alert: overdueSavingsGoalCount.value > 0
     },
     {
         to: '/app/gestion/tiers',
@@ -224,6 +240,7 @@ function txAmount(tx: Transaction) {
 
             <div class="dash-side">
                 <DashboardBudgetsCard v-if="defaultDashboardView !== 'budget'" :hide-amounts="hideAmounts" />
+                <DashboardSavingsGoalsCard :hide-amounts="hideAmounts" />
                 <AppGlassCard
                     v-if="defaultDashboardView === 'budget'"
                     :title="t('dashboard.recent.title')"

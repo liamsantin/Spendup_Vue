@@ -16,7 +16,8 @@ import {
     parseRecurringExpenseChangedPayload,
     parseRecurringIncomeChangedPayload,
     parseTierChangedPayload,
-    parseBudgetChangedPayload
+    parseBudgetChangedPayload,
+    parseSavingsGoalChangedPayload
 } from '@/features/notifications/normalize';
 import type {
     AppNotification,
@@ -29,7 +30,8 @@ import type {
     RecurringIncomeChangedPayload,
     SessionEndedPayload,
     TierChangedPayload,
-    BudgetChangedPayload
+    BudgetChangedPayload,
+    SavingsGoalChangedPayload
 } from '@/features/notifications/types';
 import type { NotificationsState } from '@/features/notifications/stores/internal/notifications-state';
 import type { NotificationsNative } from '@/features/notifications/stores/internal/notifications-native';
@@ -62,6 +64,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         recurringExpenseChangeListeners,
         recurringIncomeChangeListeners,
         budgetChangeListeners,
+        savingsGoalChangeListeners,
         applyUnreadCount,
         upsertItem
     } = state;
@@ -138,6 +141,12 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         const parsed = parseBudgetChangedPayload(payload);
         if (!parsed) return;
         budgetChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    function onSavingsGoalChanged(payload: SavingsGoalChangedPayload) {
+        const parsed = parseSavingsGoalChangedPayload(payload);
+        if (!parsed) return;
+        savingsGoalChangeListeners.forEach((listener) => listener(parsed));
     }
 
     /** SignalR multi-appareils après DELETE /api/notifications. */
@@ -271,6 +280,13 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         };
     }
 
+    function subscribeToSavingsGoalChanged(listener: (payload: SavingsGoalChangedPayload) => void) {
+        savingsGoalChangeListeners.add(listener);
+        return () => {
+            savingsGoalChangeListeners.delete(listener);
+        };
+    }
+
     /** Branche les handlers SignalR sur le hub partagé. */
     function wireHubHandlers() {
         setNotificationsHubHandlers({
@@ -285,6 +301,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
             onRecurringExpenseChanged,
             onRecurringIncomeChanged,
             onBudgetChanged,
+            onSavingsGoalChanged,
             onInboxCleared,
             onSessionEnded: (payload) => onSessionEnded(payload)
         });
@@ -321,7 +338,8 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         subscribeToTierChanged,
         subscribeToRecurringExpenseChanged,
         subscribeToRecurringIncomeChanged,
-        subscribeToBudgetChanged
+        subscribeToBudgetChanged,
+        subscribeToSavingsGoalChanged
     };
 }
 

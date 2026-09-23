@@ -22,6 +22,7 @@ import { useTransactionsStore } from '@/features/transactions/stores/transaction
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
+import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import { useFilesStore } from '@/features/files/stores/files-store';
 import { useSubscriptionStore } from '@/features/subscription/stores/subscription-store';
@@ -171,6 +172,7 @@ export function createAuthSession() {
         useTiersStore().reset();
         useRecurringPaymentsStore().reset();
         useBudgetsStore().reset();
+        useSavingsGoalsStore().reset();
         useFilesStore().reset();
         useSubscriptionStore().reset();
         useSidebarNavStore().reset();

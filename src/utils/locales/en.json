@@ -262,7 +262,8 @@
             "comingSoon": "Coming soon",
             "seeAll": "See all",
             "addTransaction": "Add a transaction",
-            "addBudget": "Add a budget"
+            "addBudget": "Add a budget",
+            "addSavingsGoal": "Add a goal"
         },
         "kpis": {
             "accounts": "Accounts",
@@ -285,7 +286,10 @@
             "paymentMethodsHint": "Cards and methods",
             "budgets": "Budgets",
             "budgetsHint": "Active envelopes",
-            "budgetsOver": "{count} overspent | {count} overspent | {count} overspent"
+            "budgetsOver": "{count} overspent | {count} overspent | {count} overspent",
+            "savingsGoals": "Goals",
+            "savingsGoalsHint": "Savings in progress",
+            "savingsGoalsOverdue": "{count} overdue | {count} overdue | {count} overdue"
         },
         "recent": {
             "title": "Latest transactions",
@@ -306,6 +310,13 @@
             "empty": "No active budget yet.",
             "used": "{percent} used",
             "overspent": "Over the limit"
+        },
+        "savingsGoals": {
+            "title": "Savings goals",
+            "subtitle": "Projects in progress.",
+            "empty": "No active goal yet.",
+            "reached": "{percent} reached",
+            "overdue": "Past due date"
         },
         "modules": {
             "transactions": {
@@ -1078,6 +1089,105 @@
                 "currencyLocked": "A budget’s currency cannot be changed.",
                 "scopeDuplicate": "A budget already exists for this category, period and start date.",
                 "categoryTypeInvalid": "A budget can only be linked to an expense or mixed category."
+            }
+        }
+    },
+    "savingsGoalsPage": {
+        "title": "Savings goals",
+        "subtitle": "Amount already set aside is entered by you — not tied to transactions.",
+        "searchPlaceholder": "Search a goal",
+        "count": "{count} goal | {count} goal | {count} goals",
+        "tabs": {
+            "label": "Goal status",
+            "all": "All",
+            "active": "Active",
+            "atteint": "Reached",
+            "abandonne": "Abandoned"
+        },
+        "badges": {
+            "atteint": "Reached",
+            "abandonne": "Abandoned",
+            "overdue": "Overdue"
+        },
+        "list": {
+            "savedOf": "{current} / {target}",
+            "remaining": "{amount} left",
+            "exceededBy": "Over by {amount}",
+            "dueOn": "Due {date}",
+            "noDate": "No due date",
+            "noAccount": "No linked account",
+            "unknownAccount": "Account"
+        },
+        "empty": {
+            "list": "No goal yet. Create a first savings project.",
+            "active": "No active goal.",
+            "atteint": "No reached goal.",
+            "abandonne": "No abandoned goal.",
+            "filtered": "No goal matches these filters."
+        },
+        "actions": {
+            "create": "Add",
+            "edit": "Edit",
+            "delete": "Delete",
+            "deposit": "Deposit",
+            "filter": "Filter",
+            "search": "Search",
+            "clearSearch": "Clear search"
+        },
+        "filters": {
+            "account": "Account",
+            "allAccounts": "All accounts"
+        },
+        "deleteModal": {
+            "title": "Delete this goal?",
+            "body": "The goal will disappear. The amount set aside is not an account movement."
+        },
+        "errors": {
+            "notFound": "Goal not found."
+        },
+        "deposit": {
+            "title": "Add a deposit",
+            "subtitle": "The amount set aside is entered by you. It does not follow the account balance.",
+            "amount": "Amount to add",
+            "currentOf": "Set aside: {current} / {target}",
+            "nextCurrent": "New total: {amount}"
+        },
+        "linkedAccount": {
+            "title": "Linked savings goals",
+            "subtitle": "You cannot delete or archive an account linked to a goal. Unlink it first.",
+            "empty": "No goal is linked to this account anymore.",
+            "unlink": "Unlink"
+        },
+        "form": {
+            "createTitle": "New goal",
+            "editTitle": "Edit goal",
+            "subtitle": "The amount already set aside is entered manually.",
+            "noAccount": "No account",
+            "accountHint": "Active account you own. A shared or archived account is refused.",
+            "abandonHint": "An abandoned goal stays abandoned, even if the amount covers the target.",
+            "currentAmountHint": "Entered by you. It follows neither transactions nor the account balance.",
+            "currencyLockedHint": "A goal’s currency cannot be changed.",
+            "currencyDefaultHint": "Empty = settings currency ({currency}).",
+            "fields": {
+                "name": "Name",
+                "targetAmount": "Target amount",
+                "currentAmount": "Already set aside",
+                "targetDate": "Due date",
+                "account": "Linked account",
+                "currency": "Currency",
+                "abandon": "Abandon"
+            },
+            "errors": {
+                "nameRequired": "Goal name is required.",
+                "nameTooLong": "Goal name exceeds 150 characters.",
+                "targetAmountInvalid": "Target amount is invalid.",
+                "targetAmountNotPositive": "Target amount must be strictly positive.",
+                "currentAmountInvalid": "Amount set aside is invalid.",
+                "currentAmountNegative": "Amount set aside cannot be negative.",
+                "targetDateInvalid": "Due date is invalid.",
+                "currencyInvalid": "Unsupported currency (CHF, EUR, USD, GBP).",
+                "currencyLocked": "A savings goal’s currency cannot be changed.",
+                "accountInvalid": "The linked account must be an active account you own."
             }
         }
     },

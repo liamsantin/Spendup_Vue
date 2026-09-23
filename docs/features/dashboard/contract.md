@@ -13,7 +13,7 @@
 
 ## Données
 
-Lecture seule : comptes, transactions, fichiers (`usage`), amis, notifications, catégories, tiers, moyens de paiement.
+Lecture seule : comptes, transactions, fichiers (`usage`), amis, notifications, catégories, tiers, moyens de paiement, budgets, objectifs d’épargne.
 
 - Soldes : somme des comptes **possédés actifs**, hors `hiddenFields.balance`, groupée par devise. Respecte `showBalanceOnDashboard` et `hideSensitiveAmounts`.
 - Transactions récentes : 6 premières de la liste store (pageSize par défaut — ne pas charger une page de 6, ça polluerait le cache).
@@ -21,7 +21,7 @@ Lecture seule : comptes, transactions, fichiers (`usage`), amis, notifications, 
 
 ## Invariants
 
-- Raccourcis de la colonne droite = modules **live**. `budgets` / `goals` restent dans `soon` (`disabled: true`).
+- Raccourcis de la colonne droite = modules **live** (dont `budgets` et `goals`).
 - `defaultDashboardView` reste dans **user-settings** (vue overview unique pour l’instant).
 - Pas d’écriture métier depuis le dashboard.
 

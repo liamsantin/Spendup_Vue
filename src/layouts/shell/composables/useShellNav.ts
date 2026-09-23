@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { useNotificationsStore } from '@/features/notifications';
 import { BUDGETS_PATHS } from '@/features/budgets/paths';
+import { SAVINGS_GOALS_PATHS } from '@/features/savings-goals/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import {
@@ -130,6 +131,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, '/app/gestion/categories') || pathIs(path, '/app/gestion')) {
         return { openId: SHELL_NAV_IDS.gestion, activeId: SHELL_NAV_IDS.categories };
     }
+    if (pathIs(path, SAVINGS_GOALS_PATHS.list)) {
+        return { openId: SHELL_NAV_IDS.planning, activeId: SHELL_NAV_IDS.goals };
+    }
     if (pathIs(path, BUDGETS_PATHS.list) || pathIs(path, '/app/planning')) {
         return { openId: SHELL_NAV_IDS.planning, activeId: SHELL_NAV_IDS.budgets };
     }
@@ -210,7 +214,7 @@ export function useShellNav() {
 
     const planningLeaves = computed<NavLeaf[]>(() => [
         live(SHELL_NAV_IDS.budgets, t('nav.items.budgets'), BudgetsNavIcon, BUDGETS_PATHS.list),
-        upcoming(SHELL_NAV_IDS.goals, t('nav.items.goals'), GoalsNavIcon)
+        live(SHELL_NAV_IDS.goals, t('nav.items.goals'), GoalsNavIcon, SAVINGS_GOALS_PATHS.list)
     ]);
 
     const wealthLeaves = computed<NavLeaf[]>(() => [

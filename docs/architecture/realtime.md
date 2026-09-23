@@ -24,6 +24,8 @@
 | `tierChanged`             | fan-out → `tiers` store (acteur inclus, pas d’inbox)              |
 | `recurringExpenseChanged` | fan-out → `recurring-payments` store (acteur inclus, pas d’inbox) |
 | `recurringIncomeChanged`  | fan-out → `recurring-payments` store (acteur inclus, pas d’inbox) |
+| `budgetChanged`           | fan-out → `budgets` store (acteur inclus, pas d’inbox)            |
+| `savingsGoalChanged`      | fan-out → `savings-goals` store (acteur inclus, pas d’inbox)      |
 | `inboxCleared`            | reset liste                                                       |
 | `sessionEnded`            | `forceReLogin` (tous devices ou device ciblé)                     |
 

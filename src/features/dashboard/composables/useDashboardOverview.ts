@@ -4,6 +4,7 @@ import { useAuthStore } from '@/features/auth';
 import { formatAccountBalance } from '@/features/accounts/format';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
+import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import {
     DASHBOARD_MASKED_AMOUNT,
@@ -31,6 +32,7 @@ export function useDashboardOverview() {
     const notifications = useNotificationsStore();
     const categories = useCategoriesStore();
     const budgets = useBudgetsStore();
+    const savingsGoals = useSavingsGoalsStore();
     const tiers = useTiersStore();
     const paymentMethods = usePaymentMethodsStore();
 
@@ -89,6 +91,7 @@ export function useDashboardOverview() {
             friends.loadIncoming(),
             categories.bootstrap(),
             budgets.bootstrap({ isActive: true }),
+            savingsGoals.bootstrap({ status: 'active' }),
             tiers.bootstrap(),
             paymentMethods.bootstrap(),
             notifications.fetchUnreadCount()
@@ -119,6 +122,8 @@ export function useDashboardOverview() {
         overspentBudgetCount: computed(
             () => budgets.items.filter((item) => item.isActive && item.isCurrent && item.remainingAmount < 0).length
         ),
+        savingsGoalCount: computed(() => savingsGoals.totalCount),
+        overdueSavingsGoalCount: computed(() => savingsGoals.items.filter((item) => item.status === 'active' && item.isOverdue).length),
         defaultDashboardView: computed(() => settings.current.defaultDashboardView),
         tierCount: computed(() => tiers.totalCount),
         paymentMethodCount: computed(() => paymentMethods.totalCount)

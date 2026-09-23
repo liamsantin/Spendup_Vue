@@ -27,6 +27,7 @@ import AccountSharesPanel from '@/features/accounts/components/panels/AccountSha
 import AccountFormModal from '@/features/accounts/components/modals/AccountFormModal.vue';
 import { AccountPaymentMethodsPanel } from '@/features/payment-methods';
 import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
+import { AccountLinkedSavingsGoalsModal, isLinkedSavingsGoalAccountError, useSavingsGoalsStore } from '@/features/savings-goals';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -41,6 +42,7 @@ const { t, locale } = useI18n();
 const { smAndDown } = useDisplay();
 const router = useRouter();
 const store = useAccountsStore();
+const savingsGoalsStore = useSavingsGoalsStore();
 
 const editOpen = ref(false);
 const archiveOpen = ref(false);
@@ -48,6 +50,8 @@ const restoreOpen = ref(false);
 const deleteOpen = ref(false);
 const leaveOpen = ref(false);
 const suggestArchiveOpen = ref(false);
+const linkedGoalsOpen = ref(false);
+const pendingAccountAction = ref<'archive' | 'delete' | null>(null);
 const localError = ref<string | null>(null);
 const linkedRecurrenceNames = ref<string[]>([]);
 const activeTab = ref<'details' | 'snapshots' | 'paymentMethods' | 'shares'>('details');
@@ -204,6 +208,45 @@ watch(deleteOpen, async (value) => {
     }
 });
 
+async function hasLinkedSavingsGoals(): Promise<boolean> {
+    const id = account.value?.publicId;
+    if (!id) return false;
+    try {
+        const linked = await savingsGoalsStore.listLinkedToAccount(id);
+        return linked.length > 0;
+    } catch {
+        return false;
+    }
+}
+
+async function requestArchive() {
+    if (!account.value) return;
+    if (await hasLinkedSavingsGoals()) {
+        pendingAccountAction.value = 'archive';
+        linkedGoalsOpen.value = true;
+        return;
+    }
+    archiveOpen.value = true;
+}
+
+async function requestDelete() {
+    if (!account.value) return;
+    if (await hasLinkedSavingsGoals()) {
+        pendingAccountAction.value = 'delete';
+        linkedGoalsOpen.value = true;
+        return;
+    }
+    deleteOpen.value = true;
+}
+
+function onLinkedGoalsCleared() {
+    const action = pendingAccountAction.value;
+    linkedGoalsOpen.value = false;
+    pendingAccountAction.value = null;
+    if (action === 'archive') archiveOpen.value = true;
+    if (action === 'delete') deleteOpen.value = true;
+}
+
 async function onSetPrimary() {
     if (!account.value) return;
     localError.value = null;
@@ -222,7 +265,13 @@ async function confirmArchive() {
         archiveOpen.value = false;
         suggestArchiveOpen.value = false;
     } catch (e: unknown) {
-        localError.value = getErrorMessage(e);
+        const err = AppError.fromUnknown(e);
+        localError.value = err.message;
+        archiveOpen.value = false;
+        if (isLinkedSavingsGoalAccountError(err)) {
+            pendingAccountAction.value = 'archive';
+            linkedGoalsOpen.value = true;
+        }
     }
 }
 
@@ -248,7 +297,10 @@ async function confirmDelete() {
         const err = AppError.fromUnknown(e);
         localError.value = err.message;
         deleteOpen.value = false;
-        if (err.status === 400 && canArchiveAccount(account.value)) {
+        if (isLinkedSavingsGoalAccountError(err)) {
+            pendingAccountAction.value = 'delete';
+            linkedGoalsOpen.value = true;
+        } else if (err.status === 400 && canArchiveAccount(account.value)) {
             suggestArchiveOpen.value = true;
         }
     }
@@ -394,7 +446,7 @@ function seeAllTransactions() {
                             type="button"
                             class="su-btn"
                             :disabled="store.acting"
-                            @click="archiveOpen = true"
+                            @click="requestArchive"
                         >
                             {{ t('comptesPage.actions.archive') }}
                         </button>
@@ -422,7 +474,7 @@ function seeAllTransactions() {
                             type="button"
                             class="su-btn su-btn--danger"
                             :disabled="store.acting"
-                            @click="deleteOpen = true"
+                            @click="requestDelete"
                         >
                             {{ t('comptesPage.actions.delete') }}
                         </button>
@@ -453,7 +505,7 @@ function seeAllTransactions() {
                             <v-list-item
                                 v-else-if="canArchiveAccount(account)"
                                 :title="t('comptesPage.actions.archive')"
-                                @click="archiveOpen = true"
+                                @click="requestArchive"
                             />
                             <v-list-item
                                 v-if="canRestoreAccount(account)"
@@ -470,7 +522,7 @@ function seeAllTransactions() {
                                 v-else-if="canDeleteAccount(account)"
                                 class="text-error"
                                 :title="t('comptesPage.actions.delete')"
-                                @click="deleteOpen = true"
+                                @click="requestDelete"
                             />
                             <v-list-item
                                 v-if="canLeaveAccountShare(account)"
@@ -558,5 +610,11 @@ function seeAllTransactions() {
         :confirm-label="t('comptesPage.actions.archive')"
         :loading="store.acting"
         @confirm="confirmArchive"
+    />
+
+    <AccountLinkedSavingsGoalsModal
+        v-model="linkedGoalsOpen"
+        :account-public-id="account?.publicId ?? null"
+        @cleared="onLinkedGoalsCleared"
     />
 </template>

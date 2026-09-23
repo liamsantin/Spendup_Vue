@@ -13,7 +13,9 @@ import type {
     TierChange,
     TierChangedPayload,
     BudgetChange,
-    BudgetChangedPayload
+    BudgetChangedPayload,
+    SavingsGoalChange,
+    SavingsGoalChangedPayload
 } from '@/features/notifications/types';
 
 /** Identifiants publics SignalR / metadata (UUID, slug) — refuse vide, espaces, chemins. */
@@ -50,6 +52,7 @@ const RECURRING_INCOME_CHANGES = new Set<RecurringIncomeChange>([
     'recurringIncomeDeleted'
 ]);
 const BUDGET_CHANGES = new Set<BudgetChange>(['budgetCreated', 'budgetUpdated', 'budgetDeleted']);
+const SAVINGS_GOAL_CHANGES = new Set<SavingsGoalChange>(['savingsGoalCreated', 'savingsGoalUpdated', 'savingsGoalDeleted']);
 
 /** Normalise un publicId (trim + charset) ; `null` si invalide. */
 export function normalizePublicId(value: unknown): string | null {
@@ -168,6 +171,16 @@ export function parseBudgetChangedPayload(raw: unknown): BudgetChangedPayload | 
     const budgetPublicId = normalizePublicId(payload.budgetPublicId);
     if (!budgetPublicId) return null;
     return { change: change as BudgetChange, budgetPublicId };
+}
+
+export function parseSavingsGoalChangedPayload(raw: unknown): SavingsGoalChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!SAVINGS_GOAL_CHANGES.has(change as SavingsGoalChange)) return null;
+    const savingsGoalPublicId = normalizePublicId(payload.savingsGoalPublicId);
+    if (!savingsGoalPublicId) return null;
+    return { change: change as SavingsGoalChange, savingsGoalPublicId };
 }
 
 /** Normalise un item inbox / SignalR (metadata string → objet). */

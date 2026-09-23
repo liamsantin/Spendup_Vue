@@ -52,6 +52,7 @@
 - Archive / restore : owner owned uniquement (editor partagé : non).
 - Devise **immuable** après création (UI disabled + PUT renvoie la devise d’origine).
 - Delete bloqué avec mouvements → message API + proposition d’archiver.
+- Archive / delete bloqué si un objectif d’épargne vivant est lié → 400 + modale pour détacher (`accountPublicId: null`) ou supprimer l’objectif.
 - Partage : invite via `listAllFriends()` (pagination complète), exclus déjà présents dans `shares`.
 - `onAuthenticatedSession()` (guard) : branche realtime **sans** charger les listes ; `bootstrap(tab)` page charge **l’onglet actif** (TTL + idle prefetch incoming pour le chip).
 - Deep-link query : `?tab=Accounts|Invitations`, `?account=`, `?share=` → force l’onglet adapté, désactive temporairement le virtual-scroll, scroll + focus clavier, highlight ~2.8s puis clear. L’URL `tab` est synchronisée au switch.
