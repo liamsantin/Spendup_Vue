@@ -2,6 +2,7 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
+import { useDisplay } from 'vuetify';
 import { PlusIcon, SearchIcon, XIcon, ChevronDownIcon, CheckIcon, LayoutGridIcon, FileExportIcon } from 'vue-tabler-icons';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
@@ -29,6 +30,8 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useTiersStore();
+const { width: viewportWidth } = useDisplay();
+const compactNotch = computed(() => viewportWidth.value < 768);
 const directoryRef = ref<{ openCreate: (nature?: TierNature | null) => void; exportCsv: () => void } | null>(null);
 
 const roleItems = computed(() => [
@@ -295,10 +298,23 @@ watch(searchOpen, (open) => {
                     <FileExportIcon :size="16" stroke-width="1.6" />
                     <span class="tiers-board__notch-label">{{ t('tiersPage.actions.export') }}</span>
                 </button>
-                <TierCreateMenu v-if="!filterNature" :label="t('tiersPage.actions.create')" :disabled="store.acting" @select="onCreate" />
-                <button v-else type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onCreate()">
+                <TierCreateMenu
+                    v-if="!filterNature"
+                    :compact="compactNotch"
+                    :label="t('tiersPage.actions.create')"
+                    :disabled="store.acting"
+                    @select="onCreate"
+                />
+                <button
+                    v-else
+                    type="button"
+                    class="su-btn su-btn--ink"
+                    :disabled="store.acting"
+                    :aria-label="t('tiersPage.actions.create')"
+                    @click="onCreate()"
+                >
                     <PlusIcon :size="16" stroke-width="1.6" />
-                    {{ t('tiersPage.actions.create') }}
+                    <span class="tiers-board__notch-label">{{ t('tiersPage.actions.create') }}</span>
                 </button>
             </div>
             </div>
@@ -394,18 +410,10 @@ watch(searchOpen, (open) => {
 }
 
 .tiers-page :deep(.tiers-panel) {
-    background: var(--board-shell);
+    overflow: hidden;
+    background: var(--board-card);
     border-radius: 0 28px 28px 28px;
     box-shadow: 0 18px 44px -30px rgba(16, 16, 20, 0.38);
-}
-
-@media (min-width: 768px) {
-    .tiers-page :deep(.tiers-directory) {
-        margin: 0;
-        background: var(--board-card);
-        border-radius: 0 28px 28px 28px;
-        box-shadow: 0 1px 2px rgba(16, 16, 20, 0.04);
-    }
 }
 
 .tiers-board__filters {
@@ -455,22 +463,45 @@ watch(searchOpen, (open) => {
 }
 
 @media (max-width: 767px) {
+    .tiers-page :deep(.su-body) {
+        padding: 0;
+    }
+
     .tiers-board__bar {
+        flex-wrap: nowrap;
+        gap: 6px;
         border-radius: 22px 22px 0 0;
-        padding: 10px 8px;
+        padding: 6px 4px 6px 6px;
+    }
+
+    .tiers-board__filters {
+        flex-wrap: nowrap;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    .tiers-board__filters :deep(.su-btn),
+    .tiers-board .tiers-nature-trigger {
+        padding: 0 10px;
     }
 
     .tiers-board__notch {
-        padding-left: 18px;
+        gap: 6px;
+        padding: 2px 0 8px 12px;
     }
 
     .tiers-board__notch-label {
         display: none;
     }
 
-    .tiers-board__notch :deep(.su-btn--ink):has(.tiers-board__notch-label) {
-        width: 40px;
+    .tiers-board__notch :deep(.su-btn--ink) {
+        width: 38px;
+        height: 38px;
         padding: 0;
+    }
+
+    .tiers-page :deep(.tiers-directory) {
+        padding: 0 4px 4px;
     }
 
     .tiers-page :deep(.tiers-panel) {
@@ -482,6 +513,13 @@ watch(searchOpen, (open) => {
     width: 34px;
     padding: 0;
     flex: none;
+}
+
+.tiers-board__bar .tiers-search-btn {
+    height: 34px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(16, 16, 20, 0.06), 0 0 0 1px rgba(16, 16, 20, 0.05);
 }
 
 .tiers-search-btn.is-active {
@@ -550,8 +588,13 @@ watch(searchOpen, (open) => {
     gap: 6px;
 }
 
+@media (max-width: 1199px) {
+    .tiers-search--desktop {
+        display: none !important;
+    }
+}
+
 @media (max-width: 767px) {
-    .tiers-search--desktop,
     .tiers-toolbar__count,
     .tiers-tabs--desktop {
         display: none !important;
@@ -562,7 +605,7 @@ watch(searchOpen, (open) => {
     }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1200px) {
     .tiers-search--mobile {
         display: none;
     }

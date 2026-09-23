@@ -136,6 +136,7 @@ const { smAndDown } = useDisplay();
 }
 
 .app-data-table table.app-data-table__head {
+    width: calc(100% - 14px);
     border-spacing: 0;
 }
 
@@ -143,6 +144,7 @@ const { smAndDown } = useDisplay();
     flex: 1 1 auto;
     min-height: 0;
     height: 100%;
+    padding-right: 14px;
     overflow: hidden;
 }
 
@@ -193,7 +195,7 @@ button.app-data-table__label:hover {
 
 .app-data-table__end,
 .app-data-table__end-col {
-    width: 76px;
+    width: 92px;
 }
 
 .app-data-table :deep(td:not(:last-child)) {

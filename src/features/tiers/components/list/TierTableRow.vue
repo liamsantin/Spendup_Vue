@@ -86,7 +86,9 @@ function onDoubleClick(event: MouseEvent) {
             <span v-else class="tier-table__empty">—</span>
         </td>
         <td>
-            <span class="tier-table__badge" :class="`is-${tier.nature}`">{{ natureLabel }}</span>
+            <span class="tier-table__badge" :class="`is-${tier.nature}`" :title="natureLabel">
+                <span class="tier-table__badge-label">{{ natureLabel }}</span>
+            </span>
         </td>
         <td class="tier-table__actions-cell" @click.stop>
             <div class="tier-table__actions">
@@ -214,6 +216,13 @@ function onDoubleClick(event: MouseEvent) {
     background: rgba(var(--v-theme-primary), 0.1);
     color: rgb(var(--v-theme-primary));
     white-space: nowrap;
+    max-width: 100%;
+}
+
+.tier-table__badge-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .tier-table__badge::before {
@@ -257,6 +266,10 @@ function onDoubleClick(event: MouseEvent) {
 
 .tier-table__link:hover {
     text-decoration: underline;
+}
+
+.tier-table__row td.tier-table__actions-cell {
+    padding-left: 4px;
 }
 
 .tier-table__actions {

@@ -21,7 +21,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-    <v-menu location="bottom end" :offset="8">
+    <v-menu location="bottom end" :offset="8" scrim>
         <template #activator="{ props: menuProps }">
             <button type="button" class="su-btn su-btn--ink" :class="{ 'tier-create-menu__compact': compact }" v-bind="menuProps" :disabled="disabled" :aria-label="label">
                 <PlusIcon :size="16" stroke-width="1.6" />

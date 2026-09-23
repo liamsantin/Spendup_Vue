@@ -30,12 +30,12 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const COLUMN_WIDTH = {
-    name: '25%',
-    roles: '17%',
-    email: '20%',
-    phone: '13%',
+    name: '23%',
+    roles: '16%',
+    email: '19%',
+    phone: '12%',
     website: '13%',
-    nature: '12%'
+    nature: '17%'
 } as const;
 
 const columns = computed(() =>

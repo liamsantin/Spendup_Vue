@@ -416,14 +416,23 @@ function onActivate(event: MouseEvent) {
 
 @media (max-width: 767px) {
     .tier-row {
-        gap: 10px;
-        padding: 14px 8px 15px;
-        border-radius: 16px;
+        gap: 8px;
+        padding: 8px 2px 9px;
+        border-radius: 12px;
+    }
+
+    .tier-row__icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .tier-row__meta {
+        gap: 2px;
     }
 
     .tier-row::after {
-        left: 56px;
-        right: 10px;
+        left: 42px;
+        right: 2px;
     }
 
     .tier-row__orbs {
