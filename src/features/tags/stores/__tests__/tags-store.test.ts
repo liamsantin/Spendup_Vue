@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { effect } from 'vue';
 import { createTestPinia } from '@/test/pinia';
 import { AppError } from '@/utils/errors/app-error';
 import type { Tag } from '@/features/tags/types';
@@ -56,10 +57,17 @@ describe('useTagsStore', () => {
     it('charge la liste non paginée', async () => {
         api.list.mockResolvedValue({ items: [urgent], totalCount: 1 });
         const store = useTagsStore();
+        const seen: Array<string | undefined> = [];
+        const stop = effect(() => {
+            seen.push(store.findByPublicId('t-1')?.name);
+        });
         await store.loadList();
+        stop();
         expect(api.list).toHaveBeenCalled();
         expect(store.items).toHaveLength(1);
         expect(store.totalCount).toBe(1);
+        expect(store.findByPublicId('t-1')?.name).toBe('Urgent');
+        expect(seen).toContain('Urgent');
     });
 
     it('crée, met à jour et supprime', async () => {

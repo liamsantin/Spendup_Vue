@@ -1252,7 +1252,8 @@
         "deleteModal": {
             "title": "Supprimer ce tag ?",
             "body": "Le vocabulaire perdra ce libellé. Les écritures restent.",
-            "bodyUsed": "Il sera retiré de {transactions} et {recurrences}. Les écritures restent."
+            "bodyUsed": "Il sera retiré de {usage}. Les écritures restent.",
+            "join": " et "
         },
         "errors": {
             "notFound": "Tag introuvable."

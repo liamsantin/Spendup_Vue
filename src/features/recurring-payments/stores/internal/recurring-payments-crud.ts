@@ -504,11 +504,13 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
             assertCanWriteTemplate('expense', publicId);
             await recurringExpensesApi.remove(publicId);
             removeExpenseLocal(publicId);
+            refreshTagCountersIfLoaded();
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
             if (err.status === 404) {
                 rememberNotFound();
                 removeExpenseLocal(publicId);
+                refreshTagCountersIfLoaded();
             } else {
                 error.value = err.message;
             }

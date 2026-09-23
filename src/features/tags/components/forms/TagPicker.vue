@@ -52,7 +52,7 @@ const selectedTags = computed(() =>
         const tag = store.findByPublicId(id);
         return {
             publicId: id,
-            name: tag?.name ?? id,
+            name: tag?.name ?? '…',
             color: tag?.color ?? null
         };
     })

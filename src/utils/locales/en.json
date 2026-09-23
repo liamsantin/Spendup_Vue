@@ -1251,7 +1251,8 @@
         "deleteModal": {
             "title": "Delete this tag?",
             "body": "The vocabulary will lose this label. Entries stay.",
-            "bodyUsed": "It will be removed from {transactions} and {recurrences}. Entries stay."
+            "bodyUsed": "It will be removed from {usage}. Entries stay.",
+            "join": " and "
         },
         "errors": {
             "notFound": "Tag not found."

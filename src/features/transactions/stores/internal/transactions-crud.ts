@@ -404,6 +404,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             await transactionsApi.remove(publicId);
             removeItemLocal(publicId);
             touchHydratedListCaches();
+            refreshTagCountersIfLoaded();
             await refreshAccountBalances(accountIds);
             await notifyRecurringDuesAfterTransactionRemoved(publicId, known);
         } catch (e: unknown) {
@@ -411,6 +412,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             if (err.status === 404) {
                 rememberNotFound();
                 removeItemLocal(publicId);
+                refreshTagCountersIfLoaded();
                 await notifyRecurringDuesAfterTransactionRemoved(publicId, known);
             } else {
                 error.value = err.message;

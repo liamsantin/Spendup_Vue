@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { PlusIcon, CalendarIcon, ChevronDownIcon, CheckIcon, CoinIcon, FileExportIcon, LayoutGridIcon } from 'vue-tabler-icons';
@@ -70,8 +70,9 @@ const tagItems = computed(() => {
         ...tagsStore.items.map((tag) => ({ title: tag.name, value: tag.publicId }))
     ];
     const selected = queryString('tag');
-    if (selected && !items.some((item) => item.value === selected)) {
-        items.push({ title: tagsStore.findByPublicId(selected)?.name ?? selected, value: selected });
+    const selectedName = selected ? tagsStore.findByPublicId(selected)?.name : null;
+    if (selected && selectedName && !items.some((item) => item.value === selected)) {
+        items.push({ title: selectedName, value: selected });
     }
     return items;
 });
@@ -443,12 +444,21 @@ function selectType(value: TransactionType | '') {
     typeMenuOpen.value = false;
 }
 
+const unsubscribeTagDeleted = tagsStore.subscribeToDeleted((publicId) => {
+    if (queryString('tag') !== publicId) return;
+    patchQuery({ tag: undefined });
+});
+
 onMounted(() => {
     void recurringStore.loadExpenses({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined);
     void recurringStore.loadIncomes({ pageSize: RECURRING_PAGE_SIZE_MAX }).catch(() => undefined);
     void budgetsStore.loadList().catch(() => undefined);
     void paymentMethodsStore.loadList({ pageSize: PAYMENT_METHOD_PAGE_SIZE_MAX }).catch(() => undefined);
     void tagsStore.loadList().catch(() => undefined);
+});
+
+onUnmounted(() => {
+    unsubscribeTagDeleted();
 });
 
 watch(

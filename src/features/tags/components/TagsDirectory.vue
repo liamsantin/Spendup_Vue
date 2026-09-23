@@ -45,12 +45,16 @@ const visibleItems = computed(() => {
 const deleteMessage = computed(() => {
     const tag = deleteTarget.value;
     if (!tag) return t('tagsPage.deleteModal.body');
-    const tx = tag.transactionCount;
-    const rec = tag.recurringExpenseCount;
-    if (!tx && !rec) return t('tagsPage.deleteModal.body');
+    const parts: string[] = [];
+    if (tag.transactionCount) {
+        parts.push(t('tagsPage.list.transactions', { count: tag.transactionCount }, tag.transactionCount));
+    }
+    if (tag.recurringExpenseCount) {
+        parts.push(t('tagsPage.list.recurringExpenses', { count: tag.recurringExpenseCount }, tag.recurringExpenseCount));
+    }
+    if (!parts.length) return t('tagsPage.deleteModal.body');
     return t('tagsPage.deleteModal.bodyUsed', {
-        transactions: t('tagsPage.list.transactions', { count: tx }, tx),
-        recurrences: t('tagsPage.list.recurringExpenses', { count: rec }, rec)
+        usage: parts.join(t('tagsPage.deleteModal.join'))
     });
 });
 

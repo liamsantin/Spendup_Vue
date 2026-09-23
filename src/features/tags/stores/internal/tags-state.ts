@@ -152,6 +152,10 @@ export function createTagsState() {
     function findByPublicId(publicId: string): Tag | null {
         const id = publicId.trim();
         if (!id) return null;
+        // `items` est la dépendance réactive : `knownById` est une Map non suivie.
+        // Sans cette lecture, pastilles et recherche restent sur l’ancien nom / l’id brut.
+        const listed = items.value.find((tag) => tag.publicId === id);
+        if (listed) return listed;
         return knownById.get(id) ?? null;
     }
 

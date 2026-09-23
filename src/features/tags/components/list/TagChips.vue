@@ -17,14 +17,10 @@ const props = withDefaults(
 const store = useTagsStore();
 
 const chips = computed(() => {
-    return sanitizeTagPublicIds(props.tagPublicIds).map((id) => {
+    return sanitizeTagPublicIds(props.tagPublicIds).flatMap((id) => {
         const tag = store.findByPublicId(id);
-        return {
-            publicId: id,
-            name: tag?.name ?? id,
-            color: tag?.color ?? null,
-            unknown: !tag
-        };
+        if (!tag) return [];
+        return [{ publicId: tag.publicId, name: tag.name, color: tag.color }];
     });
 });
 
@@ -39,7 +35,6 @@ onMounted(() => {
             v-for="chip in chips"
             :key="chip.publicId"
             class="tag-chips__chip"
-            :class="{ 'is-unknown': chip.unknown }"
             :style="chip.color ? { '--tag-color': chip.color } : undefined"
         >
             {{ chip.name }}
@@ -78,11 +73,5 @@ onMounted(() => {
     max-width: 110px;
     padding: 0 6px;
     font-size: 0.65rem;
-}
-
-.tag-chips__chip.is-unknown {
-    --tag-color: var(--ink-muted);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-weight: 500;
 }
 </style>

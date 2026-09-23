@@ -85,8 +85,15 @@ const unsubscribeTierDeleted = tiersStore.subscribeToDeleted((publicId) => {
     tierDeletedHint.value = true;
 });
 
+/** Même hors onglet Classification : `v-window` ne monte pas le TagPicker tant qu’il est inactif. */
+const unsubscribeTagDeleted = tagsStore.subscribeToDeleted((publicId) => {
+    if (!form.tagPublicIds.includes(publicId)) return;
+    form.tagPublicIds = form.tagPublicIds.filter((id) => id !== publicId);
+});
+
 onUnmounted(() => {
     unsubscribeTierDeleted();
+    unsubscribeTagDeleted();
 });
 
 const writableAccounts = computed(() => accountsStore.accounts.filter((a) => canWriteTransactions(a)));

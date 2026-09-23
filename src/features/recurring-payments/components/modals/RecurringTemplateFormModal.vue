@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onUnmounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FileDescriptionIcon, TagsIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
@@ -125,6 +125,16 @@ const categoryItems = computed(() => {
 const localError = reactive({ message: null as string | null });
 const fieldErrors = reactive<RecurringTemplateFormFieldErrors>({});
 const form = reactive<RecurringTemplateFormFields>(emptyRecurringForm(props.kind ?? 'expense'));
+
+/** Même hors onglet Classification : le TagPicker n’est pas monté tant que l’onglet est inactif. */
+const unsubscribeTagDeleted = tagsStore.subscribeToDeleted((publicId) => {
+    if (!form.tagPublicIds.includes(publicId)) return;
+    form.tagPublicIds = form.tagPublicIds.filter((id) => id !== publicId);
+});
+
+onUnmounted(() => {
+    unsubscribeTagDeleted();
+});
 const activeTab = ref<'template' | 'classification'>('template');
 
 const CLASSIFICATION_FIELDS = new Set(['paymentMethodPublicId', 'categoryPublicId', 'tierPublicId', 'notes']);
