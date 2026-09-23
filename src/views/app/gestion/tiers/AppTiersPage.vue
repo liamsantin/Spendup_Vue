@@ -329,6 +329,33 @@ watch(searchOpen, (open) => {
 </template>
 
 <style scoped>
+.tiers-page :deep(.su-toolbar) {
+    position: relative;
+    padding-bottom: 14px;
+    margin-bottom: 0;
+}
+
+.tiers-page :deep(.su-toolbar)::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        color-mix(in srgb, var(--ink) 34%, transparent) 6%,
+        color-mix(in srgb, var(--ink) 34%, transparent) 94%,
+        transparent
+    );
+    pointer-events: none;
+}
+
+.tiers-page :deep(.su-body) {
+    padding-top: 6px;
+}
+
 .tiers-search-btn {
     width: 34px;
     padding: 0;

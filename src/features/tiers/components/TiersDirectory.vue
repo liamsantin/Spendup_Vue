@@ -197,20 +197,18 @@ async function confirmDelete() {
         >
             <p>{{ emptyCopy }}</p>
         </div>
-        <div v-else class="su-stack tiers-directory">
-            <section class="su-surface tiers-directory__group">
-                <div :key="searchRevealKey" class="tiers-directory__list" :class="{ 'is-search-reveal': searchReveals }">
-                    <TierListItem
-                        v-for="(tier, index) in visibleItems"
-                        :key="tier.publicId"
-                        :tier="tier"
-                        :acting="store.acting"
-                        :style="{ '--i': index }"
-                        @edit="editTarget = $event"
-                        @delete="requestDelete"
-                    />
-                </div>
-            </section>
+        <div v-else class="tiers-directory">
+            <div :key="searchRevealKey" class="tiers-directory__list" :class="{ 'is-search-reveal': searchReveals }">
+                <TierListItem
+                    v-for="(tier, index) in visibleItems"
+                    :key="tier.publicId"
+                    :tier="tier"
+                    :acting="store.acting"
+                    :style="{ '--i': index }"
+                    @edit="editTarget = $event"
+                    @delete="requestDelete"
+                />
+            </div>
         </div>
 
         <div v-if="store.hasMore" class="su-more">
@@ -239,17 +237,10 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
-.tiers-directory__group {
-    overflow: visible;
-}
-
 .tiers-directory__list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
     overflow: visible;
-    /* Gouttière pour scale(1.012) : les 8px de la surface restent visibles au survol. */
-    padding: 8px;
 }
 
 @media (max-width: 767px) {
@@ -257,21 +248,6 @@ async function confirmDelete() {
         /* Récupère le padding latéral du su-body pour maximiser la largeur. */
         margin-inline: -8px;
         width: calc(100% + 16px);
-        gap: 8px;
-    }
-
-    .tiers-directory__group {
-        padding: 0;
-        background: transparent;
-        border: 0;
-        box-shadow: none;
-        backdrop-filter: none;
-        border-radius: 0;
-    }
-
-    .tiers-directory__list {
-        gap: 8px;
-        padding: 0;
     }
 }
 </style>

@@ -161,34 +161,36 @@ function onActivate(event: MouseEvent) {
     gap: 12px;
     width: 100%;
     min-width: 0;
-    padding: 10px 10px;
+    padding: 14px 4px 15px;
     box-sizing: border-box;
-    border-radius: 12px;
     color: inherit;
     position: relative;
-    z-index: 0;
-    transition:
-        transform 0.5s var(--spring),
-        box-shadow 0.45s var(--ease),
-        background 0.3s var(--ease);
+    transition: background 0.3s var(--ease);
+}
+
+.tier-row::after {
+    content: '';
+    position: absolute;
+    left: 54px;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: color-mix(in srgb, var(--ink-muted) 16%, transparent);
+    pointer-events: none;
 }
 
 .tier-row--editable {
     cursor: pointer;
 }
 
-.tier-row:hover {
-    background: var(--surface-hover-soft);
+@media (hover: hover) and (pointer: fine) {
+    .tier-row:hover {
+        background: var(--surface-hover-soft);
+    }
 }
 
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .tier-row:hover {
-        z-index: 1;
-        transform: scale(1.012);
-        box-shadow:
-            0 1px 2px rgba(16, 16, 20, 0.04),
-            0 12px 28px -16px rgba(16, 16, 20, 0.18);
-    }
+.tier-row:last-child::after {
+    content: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -408,12 +410,12 @@ function onActivate(event: MouseEvent) {
 @media (max-width: 767px) {
     .tier-row {
         gap: 10px;
-        padding: 12px 10px;
-        border-radius: 16px;
-        background: var(--surface);
-        border: 1px solid var(--stroke);
-        backdrop-filter: var(--blur);
-        box-shadow: var(--shadow-rest);
+        padding: 14px 12px 15px;
+    }
+
+    .tier-row::after {
+        left: 60px;
+        right: 12px;
     }
 
     .tier-row__orbs {
