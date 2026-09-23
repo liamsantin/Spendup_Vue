@@ -161,21 +161,22 @@ function onActivate(event: MouseEvent) {
     gap: 12px;
     width: 100%;
     min-width: 0;
-    padding: 14px 4px 15px;
+    padding: 13px 10px 14px;
     box-sizing: border-box;
     color: inherit;
     position: relative;
+    border-radius: 18px;
     transition: background 0.3s var(--ease);
 }
 
 .tier-row::after {
     content: '';
     position: absolute;
-    left: 54px;
-    right: 0;
+    left: 62px;
+    right: 12px;
     bottom: 0;
     height: 1px;
-    background: color-mix(in srgb, var(--ink-muted) 16%, transparent);
+    background: color-mix(in srgb, var(--ink) 14%, transparent);
     pointer-events: none;
 }
 
@@ -185,7 +186,11 @@ function onActivate(event: MouseEvent) {
 
 @media (hover: hover) and (pointer: fine) {
     .tier-row:hover {
-        background: var(--surface-hover-soft);
+        background: rgba(16, 16, 20, 0.035);
+    }
+
+    .tier-row:hover::after {
+        opacity: 0;
     }
 }
 
@@ -206,9 +211,10 @@ function onActivate(event: MouseEvent) {
     width: 38px;
     height: 38px;
     margin-top: 1px;
-    border-radius: 12px;
+    border-radius: 14px;
     background: rgba(var(--v-theme-primary), 0.1);
     color: rgb(var(--v-theme-primary));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
 }
 
 .tier-row__icon--person {
@@ -249,9 +255,10 @@ function onActivate(event: MouseEvent) {
 .tier-row__name {
     margin: 0;
     min-width: 0;
-    font-size: 14.5px;
-    font-weight: 620;
-    letter-spacing: -0.01em;
+    font-family: var(--font-heading);
+    font-size: 15.5px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -410,12 +417,13 @@ function onActivate(event: MouseEvent) {
 @media (max-width: 767px) {
     .tier-row {
         gap: 10px;
-        padding: 14px 12px 15px;
+        padding: 14px 8px 15px;
+        border-radius: 16px;
     }
 
     .tier-row::after {
-        left: 60px;
-        right: 12px;
+        left: 56px;
+        right: 10px;
     }
 
     .tier-row__orbs {

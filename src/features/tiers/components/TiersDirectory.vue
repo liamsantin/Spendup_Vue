@@ -5,16 +5,21 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { isTierNature, isTierRole, matchesTierSearch, parseTierSort, sortTiers } from '@/features/tiers/format';
+import { isTierNature, isTierRole, matchesTierSearch, parseTierSort, sortTiers, type TierSort } from '@/features/tiers/format';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { TIER_PAGE_SIZE_MAX, TIER_SEARCH_MAX, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
 import TierListItem from '@/features/tiers/components/list/TierListItem.vue';
+import TierTable from '@/features/tiers/components/list/TierTable.vue';
 import TierFormModal from '@/features/tiers/components/modals/TierFormModal.vue';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useTiersStore();
+
+const emit = defineEmits<{
+    sort: [value: TierSort];
+}>();
 
 const createOpen = ref(false);
 const createNature = ref<TierNature | null>(null);
@@ -60,7 +65,8 @@ const visibleItems = computed(() => {
     const needle = filterSearch.value;
     const items = needle ? store.items.filter((tier) => matchesTierSearch(tier, needle)) : store.items;
     return sortTiers(items, listSort.value, {
-        natureLabel: (nature) => t(`tiersPage.natures.${nature}`)
+        natureLabel: (nature) => t(`tiersPage.natures.${nature}`),
+        roleLabel: (role) => t(`tiersPage.roles.${role}`)
     });
 });
 const hasExtraFilters = computed(() => !!(filterSearch.value || filterRole.value));
@@ -128,7 +134,31 @@ watch(createOpen, (value) => {
     if (!value) createNature.value = null;
 });
 
-defineExpose({ openCreate });
+function csvCell(value: string | null | undefined): string {
+    const text = value ?? '';
+    return /[";\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function exportCsv() {
+    const header = (['name', 'nature', 'roles', 'email', 'phone', 'website'] as const).map((key) => t(`tiersPage.columns.${key}`));
+    const rows = visibleItems.value.map((tier) => [
+        tier.name,
+        t(`tiersPage.natures.${tier.nature}`),
+        tier.roles.map((role) => t(`tiersPage.roles.${role}`)).join(', '),
+        tier.email,
+        tier.phone,
+        tier.website
+    ]);
+    const content = [header, ...rows].map((row) => row.map(csvCell).join(';')).join('\r\n');
+    const url = URL.createObjectURL(new Blob(['\uFEFF', content], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tiers-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+defineExpose({ openCreate, exportCsv });
 
 function requestDelete(tier: Tier) {
     deleteBlockedMessage.value = null;
@@ -172,7 +202,7 @@ async function confirmDelete() {
 </script>
 
 <template>
-    <div>
+    <div class="tiers-panel">
         <AppAlert
             v-if="localError || store.error"
             type="error"
@@ -186,6 +216,7 @@ async function confirmDelete() {
             {{ localError || store.error }}
         </AppAlert>
 
+        <div class="tiers-panel__scroll">
         <div v-if="store.loading && !store.items.length" class="su-loading">
             <span class="su-spin" />
         </div>
@@ -209,12 +240,23 @@ async function confirmDelete() {
                     @delete="requestDelete"
                 />
             </div>
+            <TierTable
+                class="tiers-directory__table"
+                :class="{ 'is-search-reveal': searchReveals }"
+                :items="visibleItems"
+                :acting="store.acting"
+                :sort="listSort"
+                @edit="editTarget = $event"
+                @delete="requestDelete"
+                @sort="emit('sort', $event)"
+            />
         </div>
 
         <div v-if="store.hasMore" class="su-more">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
                 {{ t('tiersPage.loadMore') }}
             </button>
+        </div>
         </div>
 
         <TierFormModal v-model="createOpen" :default-nature="createNature" />
@@ -237,17 +279,67 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
+.tiers-panel {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.tiers-panel__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.tiers-directory {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 4px 4px;
+    background: transparent;
+}
+
 .tiers-directory__list {
     display: flex;
     flex-direction: column;
     overflow: visible;
 }
 
-@media (max-width: 767px) {
+.tiers-directory__table {
+    display: none;
+}
+
+@media (min-width: 768px) {
     .tiers-directory {
-        /* Récupère le padding latéral du su-body pour maximiser la largeur. */
-        margin-inline: -8px;
-        width: calc(100% + 16px);
+        padding: 4px 16px 10px;
+    }
+
+    .tiers-directory__list {
+        display: none;
+    }
+
+    .tiers-directory__table {
+        display: flex;
+        flex: 1 1 auto;
+        min-height: 0;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 767px) {
+    .tiers-panel__scroll {
+        display: block;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tiers-directory {
+        display: block;
+        padding: 0;
     }
 }
 </style>

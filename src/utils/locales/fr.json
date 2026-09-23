@@ -1265,6 +1265,7 @@
             "sort": "Trier",
             "filter": "Filtre",
             "create": "Ajouter",
+            "export": "Exporter",
             "edit": "Modifier",
             "delete": "Supprimer",
             "seeTransactions": "Voir les transactions",
@@ -1283,7 +1284,9 @@
             "nameDesc": "Nom (Z → A)",
             "natureAsc": "Type (A → Z)",
             "recent": "Plus récents",
-            "oldest": "Plus anciens"
+            "oldest": "Plus anciens",
+            "asc": "Croissant",
+            "desc": "Décroissant"
         },
         "createAs": {
             "person": "Une personne",
@@ -1324,6 +1327,14 @@
             "noRoles": "Aucun rôle",
             "person": "{firstName} {lastName}",
             "birthDate": "né(e) le {date}"
+        },
+        "columns": {
+            "name": "Nom",
+            "nature": "Nature",
+            "roles": "Rôles",
+            "email": "E-mail",
+            "phone": "Téléphone",
+            "website": "Site"
         },
         "deleteModal": {
             "title": "Supprimer ce tiers ?",

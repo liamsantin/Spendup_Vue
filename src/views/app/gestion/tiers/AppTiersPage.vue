@@ -2,17 +2,14 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon, SearchIcon, XIcon, ArrowsSortIcon, ChevronDownIcon, CheckIcon, LayoutGridIcon } from 'vue-tabler-icons';
-import AppFoldableTabs from '@/components/shared/tabs/AppFoldableTabs.vue';
+import { PlusIcon, SearchIcon, XIcon, ChevronDownIcon, CheckIcon, LayoutGridIcon, FileExportIcon } from 'vue-tabler-icons';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
-import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import {
     TIER_NATURES,
     TIER_ROLES,
     TIER_SEARCH_MAX,
-    TIER_SORTS,
     TIER_SORT_DEFAULT,
     TiersDirectory,
     isTierNature,
@@ -32,7 +29,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useTiersStore();
-const directoryRef = ref<{ openCreate: (nature?: TierNature | null) => void } | null>(null);
+const directoryRef = ref<{ openCreate: (nature?: TierNature | null) => void; exportCsv: () => void } | null>(null);
 
 const roleItems = computed(() => [
     { title: t('tiersPage.filters.allRoles'), value: '' },
@@ -74,7 +71,6 @@ const visibleCount = computed(() => {
     return store.items.filter((tier) => matchesTierSearch(tier, needle)).length;
 });
 
-const sortCount = computed(() => (listSort.value === TIER_SORT_DEFAULT ? 0 : 1));
 const filterCount = computed(() => (filterRole.value ? 1 : 0));
 
 const natureTabLabel = computed(() => (filterNature.value ? t(`tiersPage.natures.${filterNature.value}`) : t('tiersPage.tabs.all')));
@@ -143,29 +139,14 @@ watch(searchOpen, (open) => {
 </script>
 
 <template>
-    <AppPageShell class="tiers-page" :title="t('tiersPage.title')" :subtitle="t('tiersPage.subtitle')">
-        <template #tabs>
-            <AppFoldableTabs class="su-tabs--links tiers-tabs--desktop" :ariaLabel="t('tiersPage.tabs.label')">
-                <button type="button" class="su-tab" :class="{ 'is-active': !filterNature }" @click="filterNature = ''">
-                    <span class="su-tab__body">{{ t('tiersPage.tabs.all') }}</span>
-                </button>
-                <button
-                    v-for="nature in TIER_NATURES"
-                    :key="nature"
-                    type="button"
-                    class="su-tab"
-                    :class="{ 'is-active': filterNature === nature }"
-                    @click="filterNature = nature"
-                >
-                    <span class="su-tab__body">
-                        <component :is="TIER_NATURE_ICONS[nature]" :size="16" stroke-width="1.7" />
-                        {{ t(`tiersPage.natures.${nature}`) }}
-                    </span>
-                </button>
-            </AppFoldableTabs>
-            <v-menu v-model="natureMenuOpen" location="bottom end" :offset="12" scrim class="tiers-tabs--mobile">
+    <AppPageShell class="tiers-page" :title="t('tiersPage.title')" :body-scroll="false">
+        <section class="tiers-board">
+            <div class="tiers-board__top">
+            <div class="tiers-board__bar">
+            <div class="tiers-board__filters">
+            <v-menu v-model="natureMenuOpen" location="bottom start" :offset="8" scrim>
                 <template #activator="{ props: menuProps }">
-                    <nav class="tiers-tabs--mobile tiers-nature-tabs" :aria-label="t('tiersPage.tabs.label')">
+                    <nav class="tiers-nature-tabs" :aria-label="t('tiersPage.tabs.label')">
                         <button
                             type="button"
                             class="tiers-nature-trigger"
@@ -221,9 +202,18 @@ watch(searchOpen, (open) => {
                     </button>
                 </v-sheet>
             </v-menu>
-        </template>
-
-        <template #toolbar>
+            <AppDropdownFilter
+                :label="t('tiersPage.filters.role')"
+                :min-width="280"
+                :count="filterCount"
+                :reset-disabled="!filterRole"
+                @reset="filterRole = ''"
+            >
+                <div class="pa-3 d-flex flex-column ga-3 tiers-filter-fields">
+                    <AppSelect v-model="filterRole" :items="roleItems" :label="t('tiersPage.filters.role')" hide-details />
+                </div>
+            </AppDropdownFilter>
+            </div>
             <label class="su-search su-search--discover tiers-search--desktop">
                 <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
                 <input
@@ -293,67 +283,199 @@ watch(searchOpen, (open) => {
                     </button>
                 </v-sheet>
             </v-menu>
-            <div class="su-toolbar__actions">
-                <AppDropdownFilter
-                    :label="t('tiersPage.actions.sort')"
-                    :icon="ArrowsSortIcon"
-                    :min-width="240"
-                    close-on-content-click
-                    :count="sortCount"
-                    :reset-disabled="listSort === TIER_SORT_DEFAULT"
-                    @reset="listSort = TIER_SORT_DEFAULT"
+            </div>
+            <div class="tiers-board__notch">
+                <button
+                    type="button"
+                    class="su-btn su-btn--ink"
+                    :disabled="!store.items.length"
+                    :aria-label="t('tiersPage.actions.export')"
+                    @click="directoryRef?.exportCsv()"
                 >
-                    <AppSortChoices v-model="listSort" :items="TIER_SORTS" :label-for="(value) => t(`tiersPage.sort.${value}`)" />
-                </AppDropdownFilter>
-                <AppDropdownFilter
-                    :label="t('tiersPage.actions.filter')"
-                    :min-width="280"
-                    :count="filterCount"
-                    :reset-disabled="!filterRole"
-                    @reset="filterRole = ''"
-                >
-                    <div class="pa-3 d-flex flex-column ga-3 tiers-filter-fields">
-                        <AppSelect v-model="filterRole" :items="roleItems" :label="t('tiersPage.filters.role')" hide-details />
-                    </div>
-                </AppDropdownFilter>
+                    <FileExportIcon :size="16" stroke-width="1.6" />
+                    <span class="tiers-board__notch-label">{{ t('tiersPage.actions.export') }}</span>
+                </button>
                 <TierCreateMenu v-if="!filterNature" :label="t('tiersPage.actions.create')" :disabled="store.acting" @select="onCreate" />
                 <button v-else type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onCreate()">
                     <PlusIcon :size="16" stroke-width="1.6" />
                     {{ t('tiersPage.actions.create') }}
                 </button>
             </div>
-        </template>
+            </div>
 
-        <TiersDirectory ref="directoryRef" />
+            <TiersDirectory ref="directoryRef" @sort="listSort = $event" />
+        </section>
     </AppPageShell>
 </template>
 
 <style scoped>
-.tiers-page :deep(.su-toolbar) {
-    position: relative;
-    padding-bottom: 14px;
-    margin-bottom: 0;
-}
-
-.tiers-page :deep(.su-toolbar)::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 1px;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        color-mix(in srgb, var(--ink) 34%, transparent) 6%,
-        color-mix(in srgb, var(--ink) 34%, transparent) 94%,
-        transparent
-    );
-    pointer-events: none;
+.tiers-page :deep(.su-hero) {
+    padding: 2px 6px 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    backdrop-filter: none;
 }
 
 .tiers-page :deep(.su-body) {
-    padding-top: 6px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    padding-top: 8px;
+}
+
+.tiers-board {
+    --board-shell: rgba(255, 255, 255, 0.55);
+    --board-card: #fffdf9;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.tiers-board__top {
+    flex: none;
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
+}
+
+.tiers-board__bar {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 14px 14px 12px 18px;
+    background: var(--board-shell);
+    border-radius: 28px 28px 0 0;
+}
+
+.tiers-board__bar::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    right: -24px;
+    bottom: 0;
+    width: 24px;
+    height: 24px;
+    background: radial-gradient(circle at 100% 0, transparent 23px, var(--board-shell) 24px);
+    pointer-events: none;
+}
+
+.tiers-board__notch {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 2px 16px 22px;
+}
+
+.tiers-board__notch :deep(.su-btn--ink) {
+    height: 40px;
+    padding: 0 16px;
+    gap: 8px;
+    border-radius: 20px;
+    background: #fff;
+    font-size: 0.82rem;
+    font-weight: 550;
+    color: var(--ink);
+    box-shadow:
+        0 10px 24px -16px rgba(16, 16, 20, 0.45),
+        0 0 0 1px rgba(255, 255, 255, 0.9);
+}
+
+.tiers-page :deep(.tiers-panel) {
+    background: var(--board-shell);
+    border-radius: 0 28px 28px 28px;
+    box-shadow: 0 18px 44px -30px rgba(16, 16, 20, 0.38);
+}
+
+@media (min-width: 768px) {
+    .tiers-page :deep(.tiers-directory) {
+        margin: 0;
+        background: var(--board-card);
+        border-radius: 0 28px 28px 28px;
+        box-shadow: 0 1px 2px rgba(16, 16, 20, 0.04);
+    }
+}
+
+.tiers-board__filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tiers-board__filters :deep(.su-btn),
+.tiers-board .tiers-nature-trigger {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 17px;
+    background: #fff;
+    font-size: 0.8rem;
+    box-shadow: 0 1px 2px rgba(16, 16, 20, 0.06), 0 0 0 1px rgba(16, 16, 20, 0.05);
+}
+
+.tiers-board .tiers-nature-tabs {
+    margin-left: 0;
+}
+
+.tiers-board .tiers-nature-trigger__pill {
+    height: auto !important;
+    padding: 0 !important;
+    color: var(--ink) !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.tiers-board__bar :deep(.su-search--discover) {
+    flex: 1 1 220px;
+    width: auto;
+    max-width: none;
+    height: 34px;
+    margin: 0;
+    border-radius: 17px;
+    background: #fff;
+    border: 1px solid rgba(16, 16, 20, 0.05);
+    box-shadow: 0 1px 2px rgba(16, 16, 20, 0.05);
+    backdrop-filter: none;
+}
+
+.tiers-board__notch :deep(.su-btn--ink):hover:not(:disabled) {
+    background: #fff;
+}
+
+@media (max-width: 767px) {
+    .tiers-board__bar {
+        border-radius: 22px 22px 0 0;
+        padding: 10px 8px;
+    }
+
+    .tiers-board__notch {
+        padding-left: 18px;
+    }
+
+    .tiers-board__notch-label {
+        display: none;
+    }
+
+    .tiers-board__notch :deep(.su-btn--ink):has(.tiers-board__notch-label) {
+        width: 40px;
+        padding: 0;
+    }
+
+    .tiers-page :deep(.tiers-panel) {
+        border-radius: 0 22px 22px 22px;
+    }
 }
 
 .tiers-search-btn {
@@ -429,10 +551,6 @@ watch(searchOpen, (open) => {
 }
 
 @media (max-width: 767px) {
-    .tiers-page :deep(.su-hero > p) {
-        display: none;
-    }
-
     .tiers-search--desktop,
     .tiers-toolbar__count,
     .tiers-tabs--desktop {
@@ -445,8 +563,7 @@ watch(searchOpen, (open) => {
 }
 
 @media (min-width: 768px) {
-    .tiers-search--mobile,
-    .tiers-tabs--mobile {
+    .tiers-search--mobile {
         display: none;
     }
 }

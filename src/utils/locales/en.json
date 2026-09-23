@@ -1265,6 +1265,7 @@
             "sort": "Sort",
             "filter": "Filter",
             "create": "Add",
+            "export": "Export",
             "edit": "Edit",
             "delete": "Delete",
             "seeTransactions": "See transactions",
@@ -1283,7 +1284,9 @@
             "nameDesc": "Name (Z → A)",
             "natureAsc": "Type (A → Z)",
             "recent": "Newest first",
-            "oldest": "Oldest first"
+            "oldest": "Oldest first",
+            "asc": "Ascending",
+            "desc": "Descending"
         },
         "createAs": {
             "person": "A person",
@@ -1324,6 +1327,14 @@
             "noRoles": "No role",
             "person": "{firstName} {lastName}",
             "birthDate": "born {date}"
+        },
+        "columns": {
+            "name": "Name",
+            "nature": "Nature",
+            "roles": "Roles",
+            "email": "Email",
+            "phone": "Phone",
+            "website": "Website"
         },
         "deleteModal": {
             "title": "Delete this counterparty?",

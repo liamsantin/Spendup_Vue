@@ -90,6 +90,12 @@ describe('tiers format', () => {
         expect(sortTiers([a, b], 'nameDesc').map((item) => item.publicId)).toEqual(['b', 'a']);
         expect(sortTiers([a, b], 'recent').map((item) => item.publicId)).toEqual(['b', 'a']);
         expect(sortTiers([a, b], 'oldest').map((item) => item.publicId)).toEqual(['a', 'b']);
+        const withMail = [
+            tier({ publicId: 'a', name: 'Aldi', email: 'z@aldi.ch' }),
+            tier({ publicId: 'b', name: 'Coop', email: 'a@coop.ch' })
+        ];
+        expect(sortTiers(withMail, 'emailAsc').map((item) => item.publicId)).toEqual(['b', 'a']);
+        expect(sortTiers(withMail, 'emailDesc').map((item) => item.publicId)).toEqual(['a', 'b']);
     });
 
     it('trie par type A → Z (libellé) puis nom', () => {

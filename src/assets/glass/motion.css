@@ -41,6 +41,7 @@
 
 .is-search-reveal .transaction-list-item,
 .is-search-reveal .tier-row,
+.is-search-reveal .tier-table__row,
 .su-empty.is-search-reveal {
     animation: su-search-in 0.5s var(--ease) backwards;
     animation-delay: calc(min(var(--i, 0), 12) * 32ms);
