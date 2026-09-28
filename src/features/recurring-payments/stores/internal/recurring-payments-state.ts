@@ -14,9 +14,57 @@ export const RECURRING_LIST_MAX_AGE_MS = 30_000;
 
 export type RecurringListKind = RecurringKind;
 
-export function listCacheKey(kind: RecurringListKind, accountPublicId?: string | null): string {
+/** Filtres serveur qui restreignent le jeu de résultats (hors compte et pagination). */
+export type RecurringListFilters = {
+    isActive?: boolean;
+    from?: string;
+    to?: string;
+};
+
+export function normalizeListFilters(filters?: RecurringListFilters | null): RecurringListFilters {
+    const out: RecurringListFilters = {};
+    if (typeof filters?.isActive === 'boolean') out.isActive = filters.isActive;
+    const from = filters?.from?.trim();
+    if (from) out.from = from;
+    const to = filters?.to?.trim();
+    if (to) out.to = to;
+    return out;
+}
+
+/**
+ * Clé de cache d'une liste : `${kind}:${compte|all}` pour une liste non filtrée (cible des upserts),
+ * suivie de `|isActive=…|from=…|to=…` quand un filtre serveur restreint le résultat.
+ */
+export function listCacheKey(kind: RecurringListKind, accountPublicId?: string | null, filters?: RecurringListFilters | null): string {
     const id = accountPublicId?.trim();
-    return id ? `${kind}:${id}` : `${kind}:all`;
+    const base = id ? `${kind}:${id}` : `${kind}:all`;
+    const normalized = normalizeListFilters(filters);
+    const parts: string[] = [];
+    if (normalized.isActive !== undefined) parts.push(`isActive=${normalized.isActive}`);
+    if (normalized.from) parts.push(`from=${normalized.from}`);
+    if (normalized.to) parts.push(`to=${normalized.to}`);
+    return parts.length ? `${base}|${parts.join('|')}` : base;
+}
+
+export function parseListCacheKey(key: string): { accountPublicId: string | null; filters: RecurringListFilters } {
+    const [base = '', ...parts] = key.split('|');
+    const colon = base.indexOf(':');
+    const account = colon >= 0 ? base.slice(colon + 1) : '';
+    const filters: RecurringListFilters = {};
+    for (const part of parts) {
+        const eq = part.indexOf('=');
+        if (eq < 0) continue;
+        const name = part.slice(0, eq);
+        const value = part.slice(eq + 1);
+        if (name === 'isActive') filters.isActive = value === 'true';
+        else if (name === 'from') filters.from = value;
+        else if (name === 'to') filters.to = value;
+    }
+    return { accountPublicId: account && account !== 'all' ? account : null, filters };
+}
+
+function isFilteredListKey(key: string): boolean {
+    return key.includes('|');
 }
 
 export type RecurringCacheEntry<T> = {
@@ -150,6 +198,32 @@ export function createRecurringPaymentsState() {
         incomeTotalCount.value = 0;
     }
 
+    /**
+     * Liste filtrée (dates, actif) : on ne sait pas côté client si le modèle correspond encore aux filtres.
+     * On ne l'y ajoute jamais ; s'il y figurait, on le met à jour sur place (ou on le retire s'il a changé de
+     * compte) ; dans tous les cas la liste est invalidée pour que le prochain chargement refasse le GET.
+     */
+    function upsertIntoFilteredList<T extends { publicId: string; accountPublicId: string }>(
+        key: string,
+        entry: RecurringCacheEntry<T>,
+        without: T[],
+        existed: boolean,
+        next: T,
+        setList: (key: string, items: T[], meta?: { totalCount?: number }) => void
+    ) {
+        cache.invalidate(key);
+        if (!existed) return;
+        const { accountPublicId } = parseListCacheKey(key);
+        if (accountPublicId && accountPublicId !== next.accountPublicId) {
+            setList(key, without, { totalCount: Math.max(0, entry.totalCount - 1) });
+            return;
+        }
+        setList(
+            key,
+            entry.items.map((row) => (row.publicId === next.publicId ? next : row))
+        );
+    }
+
     function upsertExpense(item: RecurringExpense) {
         const next = normalizeRecurringExpense(item);
         details.set(`expense:${next.publicId}`, next);
@@ -159,6 +233,10 @@ export function createRecurringPaymentsState() {
             const entry = expensesByKey.get(key);
             const without = (entry?.items ?? []).filter((row) => row.publicId !== next.publicId);
             const existed = without.length !== (entry?.items.length ?? 0);
+            if (isFilteredListKey(key)) {
+                if (entry) upsertIntoFilteredList(key, entry, without, existed, next, setExpenseList);
+                continue;
+            }
             const matchesAccount = key === listCacheKey('expense') || key === listCacheKey('expense', next.accountPublicId);
             if (!existed && !matchesAccount) continue;
             if (!matchesAccount) {
@@ -180,6 +258,10 @@ export function createRecurringPaymentsState() {
             const entry = incomesByKey.get(key);
             const without = (entry?.items ?? []).filter((row) => row.publicId !== item.publicId);
             const existed = without.length !== (entry?.items.length ?? 0);
+            if (isFilteredListKey(key)) {
+                if (entry) upsertIntoFilteredList(key, entry, without, existed, item, setIncomeList);
+                continue;
+            }
             const matchesAccount = key === listCacheKey('income') || key === listCacheKey('income', item.accountPublicId);
             if (!existed && !matchesAccount) continue;
             if (!matchesAccount) {

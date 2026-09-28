@@ -69,7 +69,13 @@ export function createNotificationsInbox(state: NotificationsState, native: Noti
             });
             if (gen !== inboxListGen) return;
             const nextItems = Array.isArray(result?.items) ? result.items : [];
-            items.value = append ? [...items.value, ...nextItems] : nextItems;
+            if (append) {
+                // Les notifs live sont préfixées : les pages offset se chevauchent → dédoublonnage par id.
+                const seen = new Set(items.value.map((n) => n.id));
+                items.value = [...items.value, ...nextItems.filter((n) => !seen.has(n.id))];
+            } else {
+                items.value = nextItems;
+            }
             page.value = result?.page ?? nextPage;
             pageSize.value = result?.pageSize ?? pageSize.value;
             totalCount.value = result?.totalCount ?? nextItems.length;

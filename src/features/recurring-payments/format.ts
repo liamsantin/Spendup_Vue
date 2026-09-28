@@ -247,7 +247,9 @@ export function sortUpcomingDueRows<T extends UpcomingDueRowSortable>(items: rea
 export function addMonthsYmd(ymd: string, months: number): string {
     if (!isValidYmd(ymd)) return ymd;
     const [y, m, d] = ymd.split('-').map(Number);
-    const date = new Date(y, m - 1 + months, d);
+    // Jour borné au dernier jour du mois cible (30 nov. + 3 mois → 28/29 févr., pas 2 mars).
+    const lastDay = new Date(y, m + months, 0).getDate();
+    const date = new Date(y, m - 1 + months, Math.min(d, lastDay));
     const yy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const dd = String(date.getDate()).padStart(2, '0');

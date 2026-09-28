@@ -312,7 +312,8 @@ export function createFriendsLists(state: FriendsState) {
     /** Relance la recherche si une requête active est présente. */
     function refreshSearchIfNeeded() {
         if (searchQuery.value.trim().length < 2) return;
-        void searchUsers(searchQuery.value);
+        // Refresh en arrière-plan : l’erreur est déjà exposée via `state.error`.
+        void searchUsers(searchQuery.value).catch(() => undefined);
     }
 
     /** Vide la recherche et invalide les réponses en vol. */

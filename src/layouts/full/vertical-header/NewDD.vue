@@ -64,7 +64,11 @@ async function onQrScanned(publicId: string) {
                     </template>
                     <v-list-item-title class="text-subtitle-1 font-weight-medium"> + {{ t('nav.items.files') }} </v-list-item-title>
                 </v-list-item>
-                <v-list-item class="px-4" :aria-label="t('nav.items.transactions')" @click="goTo('/app/finances/transactions')">
+                <v-list-item
+                    class="px-4"
+                    :aria-label="t('nav.items.transactions')"
+                    @click="goTo('/app/finances/transactions', { create: '1' })"
+                >
                     <template #prepend>
                         <ArrowsExchangeIcon stroke-width="1.5" size="20" class="mr-3" />
                     </template>

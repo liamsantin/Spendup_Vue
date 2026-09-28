@@ -157,10 +157,22 @@ function resolveAccountsDeepLink(notification?: Pick<AppNotification, 'type' | '
     return `/app/finances/comptes?${params.toString()}`;
 }
 
+/**
+ * Décode un segment de lien API ; `%` malformé (URIError) → chaîne vide (repli sur la liste).
+ * @param segment Segment brut.
+ */
+function safeDecodeSegment(segment: string): string {
+    try {
+        return decodeURIComponent(segment);
+    } catch {
+        return '';
+    }
+}
+
 function mapBudgetsApiLink(link: string): string {
     const rest = link.slice('/budgets'.length);
     if (rest.startsWith('/')) {
-        const id = normalizePublicId(decodeURIComponent(rest.slice(1).split(/[?#]/)[0] ?? ''));
+        const id = normalizePublicId(safeDecodeSegment(rest.slice(1).split(/[?#]/)[0] ?? ''));
         if (id) return budgetDetailPath(id);
     }
     return BUDGETS_PATHS.list;
@@ -180,7 +192,7 @@ function resolveBudgetsDeepLink(notification?: Pick<AppNotification, 'type' | 'm
 function mapSavingsGoalsApiLink(link: string): string {
     const rest = link.slice('/savings-goals'.length);
     if (rest.startsWith('/')) {
-        const id = normalizePublicId(decodeURIComponent(rest.slice(1).split(/[?#]/)[0] ?? ''));
+        const id = normalizePublicId(safeDecodeSegment(rest.slice(1).split(/[?#]/)[0] ?? ''));
         if (id) return savingsGoalDetailPath(id);
     }
     return SAVINGS_GOALS_PATHS.list;

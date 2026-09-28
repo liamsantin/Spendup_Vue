@@ -123,6 +123,12 @@ describe('resolveNotificationLink', () => {
         expect(resolveNotificationLink('/savings-goals')).toBe('/app/planning/objectifs');
         expect(resolveNotificationLink('/savings-goals/guid-3')).toBe('/app/planning/objectifs/guid-3');
     });
+
+    it('`%` malformé dans un lien API → repli sur la liste sans lever', () => {
+        expect(() => resolveNotificationLink('/budgets/%E0%A4%A')).not.toThrow();
+        expect(resolveNotificationLink('/budgets/%E0%A4%A')).toBe('/app/planning/budgets');
+        expect(resolveNotificationLink('/savings-goals/%zz')).toBe('/app/planning/objectifs');
+    });
 });
 
 describe('isSafeAppNotificationPath', () => {

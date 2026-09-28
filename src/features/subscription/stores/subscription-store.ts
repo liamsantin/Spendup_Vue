@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { AppError } from '@/utils/errors/app-error';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
 import { subscriptionApi } from '@/features/subscription/api';
+import { resetSubscriptionMock } from '@/features/subscription/mock';
 import { findPlan, firstPlanWithFeature, firstPlanWithQuota, planHasFeature, quotaUsageRows } from '@/features/subscription/format';
 import type { PlanSelectorReason, SubscriptionPlan, UserSubscription } from '@/features/subscription/types';
 
@@ -136,6 +137,7 @@ export const useSubscriptionStore = defineStore('subscription', () => {
         return findPlan(plans.value, code);
     }
 
+    /** Logout : vide l’état (et le mock en mémoire s’il est utilisé). */
     function reset() {
         subscription.value = null;
         plans.value = [];
@@ -146,6 +148,8 @@ export const useSubscriptionStore = defineStore('subscription', () => {
         selectorOpen.value = false;
         selectorReason.value = null;
         cache.reset();
+        // Mock : état plan module-level → sans reset, l’utilisateur suivant hériterait du plan (même onglet).
+        resetSubscriptionMock();
     }
 
     return {

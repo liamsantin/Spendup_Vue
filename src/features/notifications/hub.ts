@@ -31,6 +31,8 @@ export type NotificationsHubHandlers = {
     onSavingsGoalChanged?: (payload: SavingsGoalChangedPayload) => void;
     onInboxCleared?: (payload: InboxClearedPayload) => void;
     onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
+    /** Après reconnexion auto : resynchroniser ce qui a pu être poussé pendant la coupure. */
+    onReconnected?: () => void | Promise<void>;
 };
 
 let connection: HubConnection | null = null;
@@ -145,6 +147,12 @@ function buildConnection(): HubConnection {
 
     conn.onreconnected(() => {
         attachHandlers(conn);
+        // Les événements émis pendant la coupure sont perdus : le store refetch badge / inbox.
+        try {
+            void Promise.resolve(handlers.onReconnected?.()).catch(() => undefined);
+        } catch {
+            // ignore
+        }
     });
 
     return conn;

@@ -20,7 +20,9 @@ export const useNotificationsStore = defineStore('notifications', () => {
     const hub = createNotificationsHub(state, {
         pushLiveFriendChip: native.pushLiveFriendChip,
         maybeShowNativeOsNotification: native.maybeShowNativeOsNotification,
-        applyInboxCleared: inbox.applyInboxCleared
+        applyInboxCleared: inbox.applyInboxCleared,
+        fetchUnreadCount: inbox.fetchUnreadCount,
+        loadInbox: inbox.loadInbox
     });
     const lifecycle = createNotificationsLifecycle(state, {
         clearLiveFriendChips: native.clearLiveFriendChips,

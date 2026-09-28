@@ -23,7 +23,12 @@ import {
     type RecurringIncome,
     type RecurringKind
 } from '@/features/recurring-payments/types';
-import { listCacheKey, type RecurringPaymentsState } from '@/features/recurring-payments/stores/internal/recurring-payments-state';
+import {
+    listCacheKey,
+    normalizeListFilters,
+    parseListCacheKey,
+    type RecurringPaymentsState
+} from '@/features/recurring-payments/stores/internal/recurring-payments-state';
 
 export const RECURRING_NOT_FOUND_CODE = 'recurring_not_found';
 export const RECURRING_NOT_FOUND_MESSAGE = 'Charge/revenu/échéance introuvable.';
@@ -153,7 +158,9 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
 
     async function loadExpenses(query: ListRecurringTemplatesQuery & { force?: boolean } = {}) {
         const accountPublicId = query.accountPublicId?.trim() || null;
-        const key = listCacheKey('expense', accountPublicId);
+        // Les filtres serveur (dates, actif) font partie de la clé : un résultat filtré ne doit pas écraser la liste complète.
+        const filters = normalizeListFilters(query);
+        const key = listCacheKey('expense', accountPublicId, filters);
         const requestId = ++expenseListSeq;
         const force = !!query.force;
         activateExpenseList(key);
@@ -169,7 +176,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
                 async () => {
                     try {
                         const result = await recurringExpensesApi.list({
-                            ...query,
+                            ...filters,
                             accountPublicId: accountPublicId ?? undefined,
                             page: 1,
                             pageSize: query.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT
@@ -215,7 +222,9 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
 
     async function loadIncomes(query: ListRecurringTemplatesQuery & { force?: boolean } = {}) {
         const accountPublicId = query.accountPublicId?.trim() || null;
-        const key = listCacheKey('income', accountPublicId);
+        // Les filtres serveur (dates, actif) font partie de la clé : un résultat filtré ne doit pas écraser la liste complète.
+        const filters = normalizeListFilters(query);
+        const key = listCacheKey('income', accountPublicId, filters);
         const requestId = ++incomeListSeq;
         const force = !!query.force;
         activateIncomeList(key);
@@ -231,7 +240,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
                 async () => {
                     try {
                         const result = await recurringIncomesApi.list({
-                            ...query,
+                            ...filters,
                             accountPublicId: accountPublicId ?? undefined,
                             page: 1,
                             pageSize: query.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT
@@ -294,13 +303,15 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         if (loadingExpenses.value || loadingMoreExpenses.value) return;
         if (expenses.value.length >= expenseTotalCount.value) return;
         const key = activeExpenseKey.value;
-        const accountPublicId = key.endsWith(':all') ? null : key.slice('expense:'.length);
+        // « Charger plus » reprend les filtres de la liste active (compte, dates, actif).
+        const { accountPublicId, filters } = parseListCacheKey(key);
         const requestId = ++expenseListSeq;
         loadingMoreExpenses.value = true;
         clearError();
         try {
             const nextPage = expensePage.value + 1;
             const result = await recurringExpensesApi.list({
+                ...filters,
                 accountPublicId: accountPublicId ?? undefined,
                 page: nextPage,
                 pageSize: expensePageSize.value || RECURRING_PAGE_SIZE_DEFAULT
@@ -329,13 +340,15 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         if (loadingIncomes.value || loadingMoreIncomes.value) return;
         if (incomes.value.length >= incomeTotalCount.value) return;
         const key = activeIncomeKey.value;
-        const accountPublicId = key.endsWith(':all') ? null : key.slice('income:'.length);
+        // « Charger plus » reprend les filtres de la liste active (compte, dates, actif).
+        const { accountPublicId, filters } = parseListCacheKey(key);
         const requestId = ++incomeListSeq;
         loadingMoreIncomes.value = true;
         clearError();
         try {
             const nextPage = incomePage.value + 1;
             const result = await recurringIncomesApi.list({
+                ...filters,
                 accountPublicId: accountPublicId ?? undefined,
                 page: nextPage,
                 pageSize: incomePageSize.value || RECURRING_PAGE_SIZE_DEFAULT
@@ -744,15 +757,23 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
     async function refetchKind(kind: RecurringKind) {
         state.invalidateKind(kind);
         if (kind === 'expense' && initializedExpenses.value) {
-            const key = activeExpenseKey.value;
-            const accountPublicId = key.endsWith(':all') ? undefined : key.slice('expense:'.length);
-            await loadExpenses({ accountPublicId, force: true }).catch(() => undefined);
+            const { accountPublicId, filters } = parseListCacheKey(activeExpenseKey.value);
+            await loadExpenses({
+                ...filters,
+                accountPublicId: accountPublicId ?? undefined,
+                pageSize: expensePageSize.value || RECURRING_PAGE_SIZE_DEFAULT,
+                force: true
+            }).catch(() => undefined);
             return;
         }
         if (kind === 'income' && initializedIncomes.value) {
-            const key = activeIncomeKey.value;
-            const accountPublicId = key.endsWith(':all') ? undefined : key.slice('income:'.length);
-            await loadIncomes({ accountPublicId, force: true }).catch(() => undefined);
+            const { accountPublicId, filters } = parseListCacheKey(activeIncomeKey.value);
+            await loadIncomes({
+                ...filters,
+                accountPublicId: accountPublicId ?? undefined,
+                pageSize: incomePageSize.value || RECURRING_PAGE_SIZE_DEFAULT,
+                force: true
+            }).catch(() => undefined);
         }
     }
 

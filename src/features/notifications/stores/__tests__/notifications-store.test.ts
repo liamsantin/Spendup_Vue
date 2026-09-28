@@ -85,7 +85,23 @@ vi.mock('@/features/user-settings', async () => {
 
 import { useNotificationsStore } from '@/features/notifications/stores/notifications-store';
 
+function makeNotification(id: number) {
+    return {
+        id,
+        type: 'other',
+        title: `N${id}`,
+        subtitle: null,
+        message: null,
+        isRead: false,
+        readAt: null,
+        link: null,
+        photoUrl: null,
+        createdAt: '2026-01-01T00:00:00Z'
+    };
+}
+
 type HubHandlers = {
+    onReconnected?: () => void | Promise<void>;
     onSessionEnded?: (payload: { reason: string; deviceIdentifier: string | null }) => void;
     onFriendshipChanged?: (payload: { change: string; friendshipPublicId: string }) => void;
     onInboxCleared?: (payload: { unreadCount: number }) => void;
@@ -182,6 +198,64 @@ describe('useNotificationsStore', () => {
         expect(store.items).toHaveLength(1);
         expect(store.unreadCount).toBe(1);
         expect(store.inboxLoaded).toBe(true);
+    });
+
+    it('loadMore dédoublonne les items déjà présents (chevauchement après notif live)', async () => {
+        list.mockResolvedValueOnce({
+            items: [makeNotification(3), makeNotification(2)],
+            unreadCount: 3,
+            page: 1,
+            pageSize: 2,
+            totalCount: 4
+        });
+        const store = useNotificationsStore();
+        await store.openInbox();
+        list.mockResolvedValueOnce({
+            items: [makeNotification(2), makeNotification(1)],
+            unreadCount: 3,
+            page: 2,
+            pageSize: 2,
+            totalCount: 4
+        });
+
+        await store.loadMore();
+
+        expect(store.items.map((n) => n.id)).toEqual([3, 2, 1]);
+    });
+
+    it('onReconnected refetch le badge et recharge la page 1 si l’inbox était chargée', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+        list.mockResolvedValueOnce({ items: [makeNotification(1)], unreadCount: 0, page: 1, pageSize: 20, totalCount: 1 });
+        await store.openInbox();
+
+        unreadCount.mockResolvedValue({ unreadCount: 2 });
+        list.mockResolvedValueOnce({
+            items: [makeNotification(2), makeNotification(1)],
+            unreadCount: 2,
+            page: 1,
+            pageSize: 20,
+            totalCount: 2
+        });
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        await handlers.onReconnected?.();
+
+        expect(store.unreadCount).toBe(2);
+        expect(store.items.map((n) => n.id)).toEqual([2, 1]);
+        expect(list).toHaveBeenLastCalledWith({ page: 1, pageSize: 20 });
+    });
+
+    it('onReconnected ignore les erreurs et ne charge pas l’inbox si jamais ouverte', async () => {
+        unreadCount.mockResolvedValue({ unreadCount: 0 });
+        const store = useNotificationsStore();
+        await store.onAuthenticatedSession();
+        unreadCount.mockRejectedValue(new Error('offline'));
+
+        const handlers = setHandlers.mock.calls.at(-1)?.[0] as HubHandlers;
+        await expect(handlers.onReconnected?.()).resolves.toBeUndefined();
+
+        expect(list).not.toHaveBeenCalled();
     });
 
     it('markAllRead met à jour le badge et les items', async () => {

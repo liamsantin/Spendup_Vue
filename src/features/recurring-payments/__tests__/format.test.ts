@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+    addMonthsYmd,
     displayDueStatus,
     groupDuesForDetail,
     isDueLinkable,
@@ -85,5 +86,15 @@ describe('recurring format', () => {
         ]);
         expect(grouped.existing.map((due) => due.publicId)).toEqual(['d1', 'd0']);
         expect(grouped.upcoming.map((due) => due.publicId)).toEqual(['d2']);
+    });
+
+    it('borne addMonthsYmd au dernier jour du mois cible', () => {
+        expect(addMonthsYmd('2026-11-30', 3)).toBe('2027-02-28');
+        expect(addMonthsYmd('2027-11-30', 3)).toBe('2028-02-29');
+        expect(addMonthsYmd('2026-01-31', 1)).toBe('2026-02-28');
+        expect(addMonthsYmd('2026-08-31', 1)).toBe('2026-09-30');
+        expect(addMonthsYmd('2026-09-15', 3)).toBe('2026-12-15');
+        expect(addMonthsYmd('2026-12-31', 2)).toBe('2027-02-28');
+        expect(addMonthsYmd('2026-03-31', -1)).toBe('2026-02-28');
     });
 });

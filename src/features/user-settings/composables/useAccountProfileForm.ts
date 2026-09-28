@@ -139,6 +139,8 @@ export function useAccountProfileForm(options: {
                 commitBaseline();
             }
             const user = await auth.fetchMe();
+            // Saisie commencée pendant le chargement : ne pas l’écraser avec les valeurs serveur.
+            if (isDirty.value) return;
             hydrateFromUser(user);
             commitBaseline();
         } catch (e: unknown) {

@@ -131,7 +131,7 @@ export const subscriptionMockApi = {
     }
 };
 
-/** Tests uniquement : remet le mock à son état initial. */
+/** Remet le mock à son état initial (tests, et `reset()` du store au logout). */
 export function resetSubscriptionMock() {
     state = initialState();
 }

@@ -9,6 +9,12 @@ const api = vi.hoisted(() => ({
     changePlan: vi.fn()
 }));
 
+const resetSubscriptionMock = vi.hoisted(() => vi.fn());
+
+vi.mock('@/features/subscription/mock', () => ({
+    resetSubscriptionMock: () => resetSubscriptionMock()
+}));
+
 vi.mock('@/features/subscription/api', () => ({
     subscriptionApi: {
         listPlans: (...args: unknown[]) => api.listPlans(...args),
@@ -46,6 +52,7 @@ describe('useSubscriptionStore', () => {
     beforeEach(() => {
         createTestPinia();
         Object.values(api).forEach((mock) => mock.mockReset());
+        resetSubscriptionMock.mockReset();
     });
 
     it('charge l’abonnement et les plans, et aligne isCurrent sur le plan courant', async () => {
@@ -111,5 +118,11 @@ describe('useSubscriptionStore', () => {
         expect(store.subscription).toBeNull();
         expect(store.plans).toEqual([]);
         expect(store.selectorOpen).toBe(false);
+    });
+
+    it('reset remet aussi le mock en mémoire (pas d’héritage de plan entre utilisateurs)', () => {
+        const store = useSubscriptionStore();
+        store.reset();
+        expect(resetSubscriptionMock).toHaveBeenCalledTimes(1);
     });
 });

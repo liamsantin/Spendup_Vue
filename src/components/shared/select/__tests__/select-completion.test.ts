@@ -9,6 +9,15 @@ const items = [
 ];
 
 describe('findSelectCompletion', () => {
+    it('ne propose rien quand le texte correspond exactement à un autre libellé', () => {
+        const sportItems = [
+            { title: "Sports d'hiver", value: 'ski' },
+            { title: 'Sport', value: 'sport' }
+        ];
+        expect(findSelectCompletion(sportItems, 'Sport')).toBeNull();
+        expect(findSelectCompletion(sportItems, 'spo')?.value).toBe('ski');
+    });
+
     it('complète un préfixe insensible à la casse', () => {
         expect(findSelectCompletion(items, 'cou')).toEqual({ title: 'Courant', value: 'acc-1', ghost: 'rant' });
     });

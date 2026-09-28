@@ -44,7 +44,7 @@ function t(key: string) {
 }
 
 type HubDeps = Pick<NotificationsNative, 'pushLiveFriendChip' | 'maybeShowNativeOsNotification'> &
-    Pick<NotificationsInbox, 'applyInboxCleared'>;
+    Pick<NotificationsInbox, 'applyInboxCleared' | 'fetchUnreadCount' | 'loadInbox'>;
 
 /**
  * SignalR + listeners (amis / partage de compte / friendship changed / session ended).
@@ -72,7 +72,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         upsertItem
     } = state;
 
-    const { pushLiveFriendChip, maybeShowNativeOsNotification, applyInboxCleared } = deps;
+    const { pushLiveFriendChip, maybeShowNativeOsNotification, applyInboxCleared, fetchUnreadCount, loadInbox } = deps;
 
     let handlingSessionEnded = false;
 
@@ -162,6 +162,19 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
     /** SignalR multi-appareils après DELETE /api/notifications. */
     function onInboxCleared(payload: InboxClearedPayload) {
         applyInboxCleared(payload?.unreadCount ?? 0);
+    }
+
+    /**
+     * Reconnexion SignalR : les événements émis pendant la coupure sont perdus.
+     * Refetch du badge et, si l’inbox était chargée, de la page 1 (erreurs ignorées).
+     */
+    async function onReconnected() {
+        hubConnected.value = true;
+        const tasks: Promise<unknown>[] = [fetchUnreadCount().catch(() => undefined)];
+        if (state.inboxLoaded.value) {
+            tasks.push(loadInbox({ page: 1, append: false }).catch(() => undefined));
+        }
+        await Promise.all(tasks);
     }
 
     /**
@@ -326,7 +339,8 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
             onBudgetChanged,
             onSavingsGoalChanged,
             onInboxCleared,
-            onSessionEnded: (payload) => onSessionEnded(payload)
+            onSessionEnded: (payload) => onSessionEnded(payload),
+            onReconnected
         });
     }
 

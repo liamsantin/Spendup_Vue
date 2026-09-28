@@ -19,15 +19,18 @@ export function createFriendsRealtime(state: FriendsState, lists: FriendsLists) 
 
     /** Réagit aux notifs friendRequest / friendAccepted. */
     function handleRealtime(notification: AppNotification) {
+        // Refresh en arrière-plan : les erreurs remontent déjà via `state.error`.
         if (notification.type === 'friendRequest') {
-            void loadIncoming(true);
+            void loadIncoming(true).catch(() => undefined);
             refreshSearchIfNeeded();
             return;
         }
         if (notification.type === 'friendAccepted') {
-            void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true)]).then(() => {
-                refreshSearchIfNeeded();
-            });
+            void Promise.all([loadFriends(true), loadOutgoing(true), loadIncoming(true)])
+                .then(() => {
+                    refreshSearchIfNeeded();
+                })
+                .catch(() => undefined);
         }
     }
 
@@ -71,7 +74,11 @@ export function createFriendsRealtime(state: FriendsState, lists: FriendsLists) 
                 while (friendshipRefreshQueue[0] === change) {
                     friendshipRefreshQueue.shift();
                 }
-                await applyFriendshipChange(change);
+                try {
+                    await applyFriendshipChange(change);
+                } catch {
+                    // Erreur déjà exposée via `state.error` : on continue de vider la file.
+                }
             }
         } finally {
             friendshipRefreshRunning = false;

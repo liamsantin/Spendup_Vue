@@ -295,6 +295,26 @@ describe('useFriendsStore', () => {
         expect(api.outgoing).toHaveBeenCalledTimes(1);
     });
 
+    it('un refresh friendshipChanged en échec n’interrompt pas la file', async () => {
+        api.outgoing.mockRejectedValue(new Error('boom'));
+        api.incoming.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        let listener: ((p: { change: string; friendshipPublicId: string }) => void) | undefined;
+        subscribeToFriendshipChanged.mockImplementation((fn: (p: { change: string; friendshipPublicId: string }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useFriendsStore();
+        store.onAuthenticatedSession();
+
+        listener?.({ change: 'refused', friendshipPublicId: 'a' });
+        listener?.({ change: 'canceled', friendshipPublicId: 'b' });
+
+        await vi.waitFor(() => expect(api.incoming).toHaveBeenCalledTimes(1));
+        expect(api.outgoing).toHaveBeenCalledTimes(1);
+    });
+
     it('onAuthenticatedSession branche le realtime sans charger les listes', () => {
         const store = useFriendsStore();
         store.onAuthenticatedSession();

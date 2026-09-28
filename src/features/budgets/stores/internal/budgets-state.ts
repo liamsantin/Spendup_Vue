@@ -15,6 +15,8 @@ export function listCacheKey(query: BudgetsListQuery): string {
     return `list:${query.isActive ?? 'all'}:${query.periode ?? 'all'}:${query.categoryPublicId ?? 'all'}`;
 }
 
+export const UNFILTERED_LIST_KEY = listCacheKey({ isActive: null, periode: null, categoryPublicId: null });
+
 export type BudgetsCacheEntry = {
     items: Budget[];
     totalCount: number;
@@ -83,6 +85,17 @@ export function createBudgetsState() {
             items.value = entry.items;
             totalCount.value = entry.totalCount;
         }
+    }
+
+    /**
+     * Liste complète et non filtrée reçue du serveur : elle fait autorité. Les budgets connus absents
+     * (supprimés ailleurs pendant une coupure du temps réel) sont oubliés et retirés des autres listes,
+     * sinon ils déclencheraient un faux `scopeDuplicate` côté client.
+     */
+    function pruneKnownAbsentFrom(authoritative: Budget[]) {
+        const present = new Set(authoritative.map((item) => item.publicId));
+        const stale = [...knownById.keys()].filter((id) => !present.has(id));
+        for (const id of stale) removeItemLocal(id);
     }
 
     function activateList(key: string) {
@@ -201,6 +214,7 @@ export function createBudgetsState() {
         activateList,
         upsertItem,
         removeItemLocal,
+        pruneKnownAbsentFrom,
         invalidateAllLists,
         rememberLocalMutation,
         consumeLocalMutation,

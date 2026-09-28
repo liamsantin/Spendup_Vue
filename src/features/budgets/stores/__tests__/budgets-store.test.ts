@@ -121,6 +121,32 @@ describe('useBudgetsStore', () => {
         expect(api.create).not.toHaveBeenCalled();
     });
 
+    it('oublie un budget supprimé ailleurs quand la liste complète ne le contient plus', async () => {
+        api.list.mockResolvedValue(page([alimentation]));
+        const store = useBudgetsStore();
+        await store.loadList();
+        api.list.mockResolvedValue(page([alimentation]));
+        await store.loadList({ isActive: true });
+        expect(store.findByPublicId('b-1')).not.toBeNull();
+
+        api.list.mockResolvedValue(page([]));
+        await store.loadList({ force: true });
+        expect(store.findByPublicId('b-1')).toBeNull();
+        expect(store.allKnownItems()).toHaveLength(0);
+
+        api.create.mockResolvedValue(alimentation);
+        await expect(store.createBudget(form())).resolves.toMatchObject({ publicId: 'b-1' });
+    });
+
+    it('ne purge pas les budgets connus sur une liste filtrée', async () => {
+        api.list.mockResolvedValue(page([alimentation]));
+        const store = useBudgetsStore();
+        await store.loadList();
+        api.list.mockResolvedValue(page([]));
+        await store.loadList({ isActive: false });
+        expect(store.findByPublicId('b-1')).not.toBeNull();
+    });
+
     it('normalise un 404 en message neutre', async () => {
         api.update.mockRejectedValue(new AppError('Not found', 404));
         const store = useBudgetsStore();

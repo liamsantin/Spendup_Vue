@@ -29,6 +29,10 @@ function ghostFrom(title: string, query: string) {
 export function findSelectCompletion<T>(items: readonly SelectCompletionItem<T>[], query: string): SelectCompletion<T> | null {
     const needle = query.trim();
     if (!needle) return null;
+    // Le texte correspond déjà exactement à un libellé : rien à compléter. Sinon Tab / Entrée
+    // accepteraient un libellé plus long (« Sport » → « Sports d’hiver ») à la place du bon.
+    const lower = needle.toLowerCase();
+    if (items.some((item) => searchTitle(item.title).trim().toLowerCase() === lower)) return null;
 
     for (const item of items) {
         const title = searchTitle(item.title).trim();

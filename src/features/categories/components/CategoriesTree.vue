@@ -121,27 +121,48 @@ function toggleExpanded(category: Category) {
     expandedIds.value = next;
 }
 
+/** Comptages de liens en cours : la confirmation attend pour choisir le bon parcours. */
+const countingLinks = ref(false);
+let deleteRequestSeq = 0;
+
 async function requestDelete(category: Category) {
+    const requestId = ++deleteRequestSeq;
+    // une réponse tardive d'une demande précédente ne doit pas écraser les comptes de celle-ci
+    const isCurrent = () => requestId === deleteRequestSeq && deleteTarget.value?.publicId === category.publicId;
     deleteTarget.value = category;
     linkedCount.value = 0;
     linkedBudgetCount.value = 0;
-    if (category.children?.length) return;
-    try {
-        linkedCount.value = await store.countLinkedTransactions(category.publicId);
-    } catch {
-        linkedCount.value = 0;
+    if (category.children?.length) {
+        countingLinks.value = false;
+        return;
     }
-    if (linkedCount.value) return;
+    countingLinks.value = true;
     try {
-        const result = await budgetsApi.list({ categoryPublicId: category.publicId });
-        linkedBudgetCount.value = result?.totalCount ?? result?.items?.length ?? 0;
-    } catch {
-        linkedBudgetCount.value = 0;
+        let transactions = 0;
+        try {
+            transactions = await store.countLinkedTransactions(category.publicId);
+        } catch {
+            transactions = 0;
+        }
+        if (!isCurrent()) return;
+        linkedCount.value = transactions;
+        if (transactions) return;
+        let budgets = 0;
+        try {
+            const result = await budgetsApi.list({ categoryPublicId: category.publicId });
+            budgets = result?.totalCount ?? result?.items?.length ?? 0;
+        } catch {
+            budgets = 0;
+        }
+        if (!isCurrent()) return;
+        linkedBudgetCount.value = budgets;
+    } finally {
+        if (requestId === deleteRequestSeq) countingLinks.value = false;
     }
 }
 
 async function confirmDelete() {
-    if (!deleteTarget.value) return;
+    if (!deleteTarget.value || countingLinks.value) return;
     if (deleteBlockedByChildren.value) {
         deleteTarget.value = null;
         return;
@@ -253,7 +274,7 @@ defineExpose({ openCreate });
             :message="deleteMessage"
             :confirm-label="deleteConfirmLabel"
             :confirm-color="deleteBlockedByChildren || deleteBlockedByTransactions || deleteBlockedByBudgets ? 'primary' : 'error'"
-            :loading="store.acting"
+            :loading="store.acting || countingLinks"
             @confirm="confirmDelete"
         />
     </div>

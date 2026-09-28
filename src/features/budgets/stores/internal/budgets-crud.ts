@@ -3,7 +3,7 @@ import { budgetsApi } from '@/features/budgets/api';
 import { normalizeListQuery } from '@/features/budgets/format';
 import { buildCreateBudgetPayload, buildUpdateBudgetPayload, type BudgetFormFields } from '@/features/budgets/payload';
 import type { Budget, ListBudgetsQuery } from '@/features/budgets/types';
-import { listCacheKey, type BudgetsState } from '@/features/budgets/stores/internal/budgets-state';
+import { listCacheKey, UNFILTERED_LIST_KEY, type BudgetsState } from '@/features/budgets/stores/internal/budgets-state';
 
 export const BUDGET_NOT_FOUND_CODE = 'budget_not_found';
 export const BUDGET_NOT_FOUND_MESSAGE = 'Budget introuvable.';
@@ -52,6 +52,7 @@ export function createBudgetsCrud(state: BudgetsState) {
         activateList,
         upsertItem,
         removeItemLocal,
+        pruneKnownAbsentFrom,
         invalidateAllLists,
         rememberLocalMutation,
         notifyDeleted,
@@ -93,7 +94,11 @@ export function createBudgetsCrud(state: BudgetsState) {
                         });
                         if (requestId !== listRequestSeq) return;
                         const nextItems = Array.isArray(result?.items) ? result.items : [];
-                        setList(key, nextItems, { totalCount: result?.totalCount ?? nextItems.length });
+                        const listTotal = result?.totalCount ?? nextItems.length;
+                        setList(key, nextItems, { totalCount: listTotal });
+                        if (key === UNFILTERED_LIST_KEY && nextItems.length >= listTotal) {
+                            pruneKnownAbsentFrom(nextItems);
+                        }
                         applied = true;
                     } catch (e: unknown) {
                         if (requestId === listRequestSeq) {

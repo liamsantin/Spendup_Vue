@@ -169,21 +169,30 @@ async function onConfirm() {
     linking.value = true;
     localError.value = null;
     const chosen = candidates.value.filter((item) => selectedIds.value.includes(item.publicId));
+    let updatedCount = 0;
+    let failure: string | null = null;
     try {
         const nextCategory = isUnlink.value ? '' : categoryPublicId;
         for (const item of chosen) {
             const fields = transactionFormFieldsWithCategory(item, nextCategory);
             if (!fields) continue;
             await transactionsStore.updateTransaction(item.publicId, fields);
+            updatedCount += 1;
         }
-        await budgetsStore.fetchBudget(budget.publicId, true).catch(() => undefined);
-        emit('linked');
-        open.value = false;
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
-        localError.value = err.status === 404 ? t('transactionsPage.errors.notFound') : getErrorMessage(e);
-        await loadCandidates();
+        failure = err.status === 404 ? t('transactionsPage.errors.notFound') : getErrorMessage(e);
     } finally {
+        // Même en cas d'échec partiel, les mises à jour déjà faites modifient dépensé/restant : on rafraîchit le budget.
+        await budgetsStore.fetchBudget(budget.publicId, true).catch(() => undefined);
+        if (updatedCount > 0 || !failure) emit('linked');
+        if (failure) {
+            await loadCandidates();
+            // loadCandidates efface l'erreur locale : on réaffiche celle de la mise à jour.
+            localError.value = failure;
+        } else {
+            open.value = false;
+        }
         linking.value = false;
     }
 }

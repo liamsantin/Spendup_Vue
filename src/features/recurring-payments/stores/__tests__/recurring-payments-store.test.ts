@@ -273,6 +273,43 @@ describe('useRecurringPaymentsStore', () => {
         expect(store.getDetail('expense', 're-1')?.accountPublicId).toBe('acc-2');
     });
 
+    it("une liste filtrée par dates n'écrase pas la liste complète en cache", async () => {
+        const second: RecurringExpense = { ...rent, publicId: 're-2', name: 'Assurance', nextDueDate: '2027-06-01' };
+        expensesApi.list.mockResolvedValueOnce({ items: [rent, second], page: 1, pageSize: 50, totalCount: 2 });
+        const store = useRecurringPaymentsStore();
+        await store.loadExpenses();
+        expensesApi.list.mockResolvedValueOnce({ items: [rent], page: 1, pageSize: 1, totalCount: 2 });
+        await store.loadExpenses({ from: '2026-09-01', to: '2026-12-01', pageSize: 1, force: true });
+        expect(store.expenses.map((item) => item.publicId)).toEqual(['re-1']);
+
+        // « Charger plus » reprend les filtres de la liste active.
+        expensesApi.list.mockResolvedValueOnce({ items: [], page: 2, pageSize: 1, totalCount: 2 });
+        await store.loadMoreExpenses();
+        expect(expensesApi.list).toHaveBeenLastCalledWith(expect.objectContaining({ from: '2026-09-01', to: '2026-12-01', page: 2 }));
+
+        // Retour à la liste complète dans le TTL : servie depuis le cache, sans le filtre de dates.
+        await store.loadExpenses();
+        expect(expensesApi.list).toHaveBeenCalledTimes(3);
+        expect(store.expenses.map((item) => item.publicId).sort()).toEqual(['re-1', 're-2']);
+    });
+
+    it("n'ajoute pas un modèle créé à une liste filtrée et l'invalide", async () => {
+        expensesApi.list.mockResolvedValueOnce({ items: [], page: 1, pageSize: 50, totalCount: 0 });
+        const store = useRecurringPaymentsStore();
+        await store.loadExpenses({ from: '2026-09-01', to: '2026-12-01' });
+        expensesApi.create.mockResolvedValue(rent);
+        const fields = emptyRecurringForm('expense', 'acc-1');
+        fields.name = 'Loyer';
+        fields.plannedAmount = '1500';
+        fields.startDate = '2026-08-01';
+        await store.createExpense(fields);
+        expect(store.expenses).toHaveLength(0);
+        expensesApi.list.mockResolvedValueOnce({ items: [rent], page: 1, pageSize: 50, totalCount: 1 });
+        await store.loadExpenses({ from: '2026-09-01', to: '2026-12-01' });
+        expect(expensesApi.list).toHaveBeenCalledTimes(2);
+        expect(store.expenses).toHaveLength(1);
+    });
+
     it('onAuthenticatedSession branche le realtime sans charger', () => {
         const store = useRecurringPaymentsStore();
         store.onAuthenticatedSession();
