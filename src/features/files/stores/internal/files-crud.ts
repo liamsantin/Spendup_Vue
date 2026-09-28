@@ -3,7 +3,7 @@ import { filesApi } from '@/features/files/api';
 import { isQuotaExceededMessage } from '@/features/files/format';
 import { buildUpdateFileRequest, type FileFormFields } from '@/features/files/payload';
 import { FILE_PAGE_SIZE_DEFAULT, type FileDto, type ListFilesQuery } from '@/features/files/types';
-import { FILES_LIST_CACHE_KEY, type FilesState } from '@/features/files/stores/internal/files-state';
+import { FILES_LIST_CACHE_KEY, nextPageFromLoaded, type FilesState } from '@/features/files/stores/internal/files-state';
 
 export const FILE_NOT_FOUND_MESSAGE = 'Ce fichier n’est plus disponible.';
 
@@ -22,7 +22,6 @@ export function createFilesCrud(state: FilesState) {
     const {
         items,
         itemsByListKey,
-        page,
         pageSize,
         totalCount,
         loading,
@@ -57,6 +56,8 @@ export function createFilesCrud(state: FilesState) {
         const key = FILES_LIST_CACHE_KEY;
         const requestId = ++listRequestSeq;
         const force = !!query.force;
+        // Un loadMore en vol est supplanté (sa réponse sera ignorée via le seq) : libérer le verrou.
+        loadingMore.value = false;
         activateList(key);
         loading.value = true;
         clearError();
@@ -75,7 +76,7 @@ export function createFilesCrud(state: FilesState) {
                         const nextItems = Array.isArray(result?.items) ? result.items : [];
                         setList(key, nextItems, {
                             page: result?.page ?? 1,
-                            pageSize: result?.pageSize ?? FILE_PAGE_SIZE_DEFAULT,
+                            pageSize: result?.pageSize ?? query.pageSize ?? FILE_PAGE_SIZE_DEFAULT,
                             totalCount: result?.totalCount ?? nextItems.length
                         });
                         applied = true;
@@ -123,21 +124,24 @@ export function createFilesCrud(state: FilesState) {
         loadingMore.value = true;
         clearError();
         try {
-            const nextPage = page.value + 1;
+            const size = pageSize.value || FILE_PAGE_SIZE_DEFAULT;
+            const prev = itemsByListKey.get(key)?.items ?? [];
+            const nextPage = nextPageFromLoaded(prev.length, size);
             const result = await filesApi.list({
                 page: nextPage,
-                pageSize: pageSize.value || FILE_PAGE_SIZE_DEFAULT
+                pageSize: size
             });
             if (requestId !== listRequestSeq) return;
             const incoming = Array.isArray(result?.items) ? result.items : [];
-            const prev = itemsByListKey.get(key)?.items ?? [];
             const byId = new Map<string, FileDto>();
             for (const item of prev) byId.set(item.publicId, item);
             for (const item of incoming) byId.set(item.publicId, item);
-            setList(key, [...byId.values()], {
+            const merged = [...byId.values()];
+            setList(key, merged, {
                 page: result?.page ?? nextPage,
-                pageSize: result?.pageSize ?? pageSize.value,
-                totalCount: result?.totalCount ?? totalCount.value
+                pageSize: result?.pageSize ?? size,
+                // Page vide : plus rien côté serveur, on arrête hasMore.
+                totalCount: incoming.length ? (result?.totalCount ?? totalCount.value) : merged.length
             });
             cache.touch(key);
         } catch (e: unknown) {

@@ -7,6 +7,16 @@ export const FILES_LIST_MAX_AGE_MS = 30_000;
 
 export const FILES_LIST_CACHE_KEY = 'list:all';
 
+/**
+ * Page suivante à demander d’après le nombre d’éléments déjà chargés.
+ * Après une suppression locale, les offsets serveur reculent d’un cran : repartir de `page + 1`
+ * sauterait un élément. On recharge la page qui contient le premier élément manquant (dédup par `publicId`).
+ */
+export function nextPageFromLoaded(loaded: number, pageSize: number): number {
+    const size = pageSize > 0 ? pageSize : FILE_PAGE_SIZE_DEFAULT;
+    return Math.floor(Math.max(0, loaded) / size) + 1;
+}
+
 export type FilesCacheEntry = {
     items: FileDto[];
     page: number;

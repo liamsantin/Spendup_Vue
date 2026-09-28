@@ -42,7 +42,6 @@ export function createAccountsSnapshots(state: AccountsState) {
         selectedAccount,
         loadingSnapshots,
         loadingMoreSnapshots,
-        snapshotsPage,
         snapshotsPageSize,
         snapshotsTotalCount,
         error,
@@ -73,6 +72,8 @@ export function createAccountsSnapshots(state: AccountsState) {
         const requestId = ++snapshotsRequestSeq;
         const cacheKey = `snapshots:${accountPublicId}`;
         const needsFetch = force || !cache.isFresh(cacheKey);
+        // Un loadMore en vol est supplanté (sa réponse sera ignorée via le seq) : libérer le verrou.
+        loadingMoreSnapshots.value = false;
         loadingSnapshots.value = true;
         clearError();
 
@@ -145,19 +146,24 @@ export function createAccountsSnapshots(state: AccountsState) {
         loadingMoreSnapshots.value = true;
         clearError();
         try {
-            const nextPage = snapshotsPage.value + 1;
+            const size = snapshotsPageSize.value || 50;
+            // Page déduite du nombre de relevés chargés : après une suppression locale les offsets serveur
+            // reculent d’un cran, `page + 1` sauterait un relevé (dédup par `publicId` au merge).
+            const nextPage = Math.floor(balanceSnapshotsLength(accountPublicId) / size) + 1;
             const result = await accountsApi.listBalanceSnapshots(accountPublicId, {
                 page: nextPage,
-                pageSize: snapshotsPageSize.value || 50
+                pageSize: size
             });
             if (requestId !== snapshotsRequestSeq) return;
             if (selectedAccount.value?.publicId !== accountPublicId) return;
             const incoming = Array.isArray(result?.items) ? result.items : [];
             const prev = snapshotsByAccountId.get(accountPublicId)?.items ?? [];
-            setSnapshotsForAccount(accountPublicId, mergeSnapshotsDesc(prev, incoming), {
+            const merged = mergeSnapshotsDesc(prev, incoming);
+            setSnapshotsForAccount(accountPublicId, merged, {
                 page: result?.page ?? nextPage,
-                pageSize: result?.pageSize ?? snapshotsPageSize.value,
-                totalCount: result?.totalCount ?? snapshotsTotalCount.value,
+                pageSize: result?.pageSize ?? size,
+                // Page vide : plus rien côté serveur, on arrête hasMore.
+                totalCount: incoming.length ? (result?.totalCount ?? snapshotsTotalCount.value) : merged.length,
                 append: false
             });
             cache.touch(`snapshots:${accountPublicId}`);

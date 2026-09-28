@@ -76,7 +76,6 @@ export function createTransactionsCrud(state: TransactionsState) {
         items,
         itemsByListKey,
         activeListKey,
-        page,
         pageSize,
         totalCount,
         loading,
@@ -145,6 +144,8 @@ export function createTransactionsCrud(state: TransactionsState) {
         const key = listCacheKey(normalized);
         const requestId = ++listRequestSeq;
         const force = !!query.force;
+        // Un loadMore en vol est supplanté (sa réponse sera ignorée via le seq) : libérer le verrou.
+        loadingMore.value = false;
         activateList(key);
         loading.value = true;
         clearError();
@@ -171,7 +172,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                         const nextItems = Array.isArray(result?.items) ? result.items : [];
                         setList(key, nextItems, {
                             page: result?.page ?? 1,
-                            pageSize: result?.pageSize ?? TRANSACTION_PAGE_SIZE_DEFAULT,
+                            pageSize: result?.pageSize ?? query.pageSize ?? TRANSACTION_PAGE_SIZE_DEFAULT,
                             totalCount: result?.totalCount ?? nextItems.length
                         });
                         applied = true;
@@ -221,7 +222,10 @@ export function createTransactionsCrud(state: TransactionsState) {
         loadingMore.value = true;
         clearError();
         try {
-            const nextPage = page.value + 1;
+            const size = pageSize.value || TRANSACTION_PAGE_SIZE_DEFAULT;
+            // Page déduite du nombre d’éléments chargés (robuste aux suppressions locales qui décalent les offsets serveur).
+            const loaded = itemsByListKey.get(key)?.items.length ?? items.value.length;
+            const nextPage = Math.floor(loaded / size) + 1;
             const result = await transactionsApi.list({
                 accountPublicId: query.accountPublicId ?? undefined,
                 categoryPublicId: query.categoryPublicId ?? undefined,
@@ -232,7 +236,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                 from: query.from ?? undefined,
                 to: query.to ?? undefined,
                 page: nextPage,
-                pageSize: pageSize.value || TRANSACTION_PAGE_SIZE_DEFAULT
+                pageSize: size
             });
             if (requestId !== listRequestSeq) return;
             const incoming = Array.isArray(result?.items) ? result.items : [];
@@ -240,10 +244,12 @@ export function createTransactionsCrud(state: TransactionsState) {
             const byId = new Map<string, Transaction>();
             for (const item of prev) byId.set(item.publicId, item);
             for (const item of incoming) byId.set(item.publicId, item);
-            setList(key, [...byId.values()], {
+            const merged = [...byId.values()];
+            setList(key, merged, {
                 page: result?.page ?? nextPage,
-                pageSize: result?.pageSize ?? pageSize.value,
-                totalCount: result?.totalCount ?? totalCount.value
+                pageSize: result?.pageSize ?? size,
+                // Page vide : plus rien côté serveur, on arrête hasMore.
+                totalCount: incoming.length ? (result?.totalCount ?? totalCount.value) : merged.length
             });
             cache.touch(key);
         } catch (e: unknown) {
@@ -433,23 +439,27 @@ export function createTransactionsCrud(state: TransactionsState) {
                 categoryPublicId: current.categoryPublicId ?? undefined,
                 tagPublicId: current.tagPublicId ?? undefined,
                 tierPublicId: current.tierPublicId ?? undefined,
+                recurringExpensePublicId: current.recurringExpensePublicId ?? undefined,
+                recurringIncomePublicId: current.recurringIncomePublicId ?? undefined,
                 from: current.from ?? undefined,
                 to: current.to ?? undefined,
+                pageSize: pageSize.value || TRANSACTION_PAGE_SIZE_DEFAULT,
                 force: true
             }).catch(() => undefined);
             return;
         }
         const key = listCacheKey({ ...EMPTY_LIST_QUERY, accountPublicId });
+        const size = itemsByListKey.get(key)?.pageSize || TRANSACTION_PAGE_SIZE_DEFAULT;
         try {
             const result = await transactionsApi.list({
                 accountPublicId,
                 page: 1,
-                pageSize: TRANSACTION_PAGE_SIZE_DEFAULT
+                pageSize: size
             });
             const nextItems = Array.isArray(result?.items) ? result.items : [];
             setList(key, nextItems, {
                 page: result?.page ?? 1,
-                pageSize: result?.pageSize ?? TRANSACTION_PAGE_SIZE_DEFAULT,
+                pageSize: result?.pageSize ?? size,
                 totalCount: result?.totalCount ?? nextItems.length
             });
             cache.touch(key);
@@ -465,8 +475,11 @@ export function createTransactionsCrud(state: TransactionsState) {
             categoryPublicId: current.categoryPublicId ?? undefined,
             tagPublicId: current.tagPublicId ?? undefined,
             tierPublicId: current.tierPublicId ?? undefined,
+            recurringExpensePublicId: current.recurringExpensePublicId ?? undefined,
+            recurringIncomePublicId: current.recurringIncomePublicId ?? undefined,
             from: current.from ?? undefined,
             to: current.to ?? undefined,
+            pageSize: pageSize.value || TRANSACTION_PAGE_SIZE_DEFAULT,
             force
         }).catch(() => undefined);
     }
