@@ -1,12 +1,10 @@
 import { useNotificationsStore } from '@/features/notifications';
-import { parseAccountChangedPayload, parseSavingsGoalChangedPayload } from '@/features/notifications/normalize';
+import { isTransactionAccountChange, parseAccountChangedPayload, parseSavingsGoalChangedPayload } from '@/features/notifications/normalize';
 import type { AccountChangedPayload, SavingsGoalChangedPayload } from '@/features/notifications';
 import type { SavingsGoalsCrud } from '@/features/savings-goals/stores/internal/savings-goals-crud';
 import type { SavingsGoalsState } from '@/features/savings-goals/stores/internal/savings-goals-state';
 
 type RealtimeDeps = Pick<SavingsGoalsCrud, 'refetchActive' | 'fetchSavingsGoal'>;
-
-const LINKED_TX_CHANGES = new Set(['transactionCreated', 'transactionUpdated', 'transactionDeleted']);
 
 /**
  * `savingsGoalChanged` — CRUD perso, acteur inclus, pas d’inbox.
@@ -54,7 +52,7 @@ export function createSavingsGoalsRealtime(state: SavingsGoalsState, deps: Realt
 
     function handleAccountChanged(payload: AccountChangedPayload) {
         const parsed = parseAccountChangedPayload(payload);
-        if (!parsed || !LINKED_TX_CHANGES.has(parsed.change)) return;
+        if (!parsed || !isTransactionAccountChange(parsed.change)) return;
         invalidateAllLists();
         for (const goal of knownById.values()) {
             if (goal.accountPublicId === parsed.accountPublicId) {

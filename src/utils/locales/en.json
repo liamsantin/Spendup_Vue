@@ -1915,7 +1915,8 @@
             "myTier": "My counterparty: {name}",
             "hasAttachments": "{count} receipt | {count} receipt | {count} receipts",
             "sourceRecurrence": "Recurring",
-            "recurrenceDelta": "{delta} vs planned ({planned})"
+            "recurrenceDelta": "{delta} vs planned ({planned})",
+            "sourceImport": "Imported"
         },
         "deleteModal": {
             "title": "Delete this transaction?",
@@ -2034,6 +2035,357 @@
             "amount": "Amount",
             "type": "Type",
             "currency": "Currency"
+        }
+    },
+    "importsPage": {
+        "title": "Imports",
+        "subtitle": "Import a CSV or Excel statement, review the lines, then create the transactions in one go.",
+        "count": "{count} import | {count} import | {count} imports",
+        "loadMore": "Load more",
+        "tabs": {
+            "label": "View",
+            "history": "History",
+            "templates": "Templates"
+        },
+        "filters": {
+            "status": "Status",
+            "allStatuses": "All statuses",
+            "account": "Account",
+            "allAccounts": "All accounts"
+        },
+        "statuses": {
+            "erreur": "Columns to map",
+            "aValider": "In review",
+            "valide": "Validated",
+            "annule": "Cancelled"
+        },
+        "lineStatuses": {
+            "validee": "Validated",
+            "aValider": "To review",
+            "erreur": "Error",
+            "ignoree": "Ignored"
+        },
+        "lineTabs": {
+            "label": "Lines",
+            "all": "All",
+            "aValider": "To review",
+            "erreur": "Errors",
+            "ignoree": "Ignored"
+        },
+        "sourceTypes": {
+            "csv": "CSV",
+            "excel": "Excel"
+        },
+        "fields": {
+            "operationDate": "Operation date",
+            "valueDate": "Value date",
+            "label": "Label",
+            "amount": "Amount",
+            "debit": "Debit",
+            "credit": "Credit",
+            "currency": "Currency",
+            "balance": "Balance",
+            "category": "Category",
+            "tier": "Counterparty"
+        },
+        "actions": {
+            "create": "Import a statement",
+            "delete": "Delete",
+            "cancel": "Discard",
+            "commit": "Validate import",
+            "remap": "Columns",
+            "revert": "Undo this import",
+            "saveAsTemplate": "Save as template",
+            "editTemplate": "Edit template",
+            "deleteTemplate": "Delete template"
+        },
+        "empty": {
+            "list": "No imports yet. Import a CSV or Excel statement exported from your bank.",
+            "filtered": "No import matches these filters."
+        },
+        "list": {
+            "deletedAccount": "Deleted account",
+            "period": "{from} to {to}",
+            "needsMapping": "Columns to map before review",
+            "imported": "No transaction created | {count} transaction created | {count} transactions created",
+            "lines": "No lines | {count} line | {count} lines",
+            "pending": "Nothing to decide | {count} line to decide | {count} lines to decide",
+            "ready": "No line ready | {count} line ready | {count} lines ready",
+            "expires": "expires on {date}"
+        },
+        "deleteModal": {
+            "title": "Delete this import?",
+            "body": "The import and its lines will be removed from history. No transaction is affected."
+        },
+        "cancelModal": {
+            "title": "Discard this import?",
+            "body": "No transaction will be created. The import stays in history as Cancelled."
+        },
+        "revertModal": {
+            "title": "Undo this import?",
+            "body": "No transaction will be deleted. | 1 transaction will be deleted, even if you edited it after the import (category, tags…). | {count} transactions will be deleted, including those edited after the import (category, tags…)."
+        },
+        "detail": {
+            "title": "Import",
+            "back": "Imports",
+            "gone": "This import is no longer available. It may have been deleted from another device.",
+            "template": "template {name}"
+        },
+        "upload": {
+            "title": "Import a statement",
+            "subtitle": "Nothing is written to the account before your final validation.",
+            "account": "Target account",
+            "pick": "Choose a file or drop it here",
+            "formats": ".csv (2 MB max.) or .xlsx (5 MB max.)",
+            "clearFile": "Remove file",
+            "template": "Template",
+            "autoDetect": "Automatic detection",
+            "templateHint": "Optional. A template reuses a saved mapping.",
+            "templateNeedsFile": "Choose a file first.",
+            "templateSearch": "Search a template",
+            "submit": "Analyse file",
+            "noWritableAccount": "You have no active account to import into (owner or editor).",
+            "notes": {
+                "noWrite": "Analysis creates no transaction: the balance does not move.",
+                "limits": "2,000 lines and 100 columns max. Dates are read day before month.",
+                "transfers": "Internal transfers: importing both accounts’ statements counts the transfer twice."
+            },
+            "errors": {
+                "required": "Choose a file.",
+                "empty": "The file is empty.",
+                "legacyXls": ".xls is not supported: save the workbook as .xlsx or .csv.",
+                "macroXlsm": "Macro-enabled workbooks (.xlsm) are not accepted: save as .xlsx.",
+                "unsupported": "Unsupported format. Use a .csv or .xlsx file (OFX and CAMT are not accepted).",
+                "tooLarge": "File too large ({max} max.)."
+            }
+        },
+        "warnings": {
+            "alreadyImported": "This file was already imported into this account on {date}.",
+            "periodOverlap": "The last validated import of this account ends on {date}: shared operations will show up as probable duplicates.",
+            "openPrevious": "Open previous import"
+        },
+        "mapping": {
+            "errorLead": "Map the file’s columns to continue.",
+            "tooManyLines": "Split the file into statements of 2,000 lines at most.",
+            "suggestion": "This file looks like the “{name}” template.",
+            "useTemplate": "Use this template",
+            "readTitle": "File reading",
+            "formatTitle": "Formats",
+            "columnsTitle": "Columns",
+            "sampleTitle": "File preview",
+            "sampleEmpty": "Preview unavailable: raw data is no longer kept.",
+            "auto": "Automatic detection",
+            "sheet": "Sheet",
+            "encoding": "Encoding",
+            "separator": "Separator",
+            "separators": {
+                "semicolon": "Semicolon",
+                "comma": "Comma",
+                "pipe": "Vertical bar",
+                "tab": "Tab"
+            },
+            "headerRow": "Header row",
+            "headerRowHint": "Displayed row number. 0 = no header. Empty = automatic search.",
+            "layoutChanged": "Reading settings changed: the file will be re-read and columns re-detected.",
+            "dateFormat": "Date format",
+            "dateFormatHint": "Force a format if dates are misread (US export: MM/dd/yyyy).",
+            "decimalSeparator": "Decimal separator",
+            "decimals": {
+                "dot": "Dot (1234.50)",
+                "comma": "Comma (1234,50)"
+            },
+            "invertSign": "Invert amount sign",
+            "invertSignHint": "For card statements where purchases are positive.",
+            "amountMode": "Amount columns",
+            "amountModes": {
+                "signed": "Signed amount",
+                "debitCredit": "Debit / credit"
+            },
+            "amountModeHints": {
+                "signed": "One column: negative = expense, positive = income.",
+                "debitCredit": "Two columns: the direction comes from the column."
+            },
+            "debitCreditHint": "At least one of the two columns. The absolute value counts: already negative debits work too.",
+            "noColumn": "No column",
+            "columnNamed": "Column {n} · {name}",
+            "columnIndex": "Column {n}",
+            "applyTemplate": "Apply a template",
+            "autoDetect": "Detect again",
+            "backToReview": "Back to review",
+            "apply": "Apply mapping",
+            "reread": "Re-read file",
+            "confirm": {
+                "title": "Re-read the file?",
+                "body": "All lines will be recomputed: corrections made during review will be lost.",
+                "action": "Re-read"
+            },
+            "errors": {
+                "operationDateRequired": "Map the operation date column.",
+                "labelRequired": "Map the label column.",
+                "amountRequired": "Map the amount column.",
+                "debitCreditRequired": "Map at least a debit or a credit column.",
+                "headerRowInvalid": "Enter a row number (0 for no header)."
+            }
+        },
+        "bulk": {
+            "label": "Bulk actions",
+            "validateToReview": "No line to review | Validate the line to review | Validate the {count} lines to review",
+            "validateToReviewConfirm": "No line to review. | The line to review (probable duplicate or unknown category) will be written on commit. | The {count} lines to review (probable duplicates, unknown categories) will be written on commit.",
+            "ignoreToReview": "No line to ignore | Ignore the line to review | Ignore the {count} lines to review",
+            "ignoreErrors": "No errors | Ignore the line in error | Ignore the {count} lines in error",
+            "confirmTitle": "Apply to all lines?",
+            "sameLabelHint": "To categorise every line with the same label, open a line and tick “Apply to lines with the same label”."
+        },
+        "lines": {
+            "count": "{count} line | {count} line | {count} lines",
+            "lineNumber": "Line {n}",
+            "noLabel": "No label",
+            "created": "Created",
+            "search": "Search",
+            "clearSearch": "Clear search",
+            "searchPlaceholder": "Search a label",
+            "bulkResult": "No line updated ({skipped} not editable). | 1 line updated ({skipped} not editable). | {updated} lines updated ({skipped} not editable).",
+            "columns": {
+                "lineNumber": "Line",
+                "date": "Date",
+                "label": "Label",
+                "category": "Category",
+                "tier": "Counterparty",
+                "amount": "Amount",
+                "status": "Status"
+            },
+            "sortDir": {
+                "asc": "ascending",
+                "desc": "descending"
+            },
+            "sort": {
+                "label": "Sort",
+                "lineNumber": "File order",
+                "firstFirst": "Start",
+                "lastFirst": "End",
+                "date": "Date",
+                "recent": "Recent",
+                "oldest": "Oldest",
+                "amount": "Amount",
+                "lowest": "Expenses",
+                "highest": "Income",
+                "status": "Status",
+                "asc": "A → Z",
+                "desc": "Z → A"
+            },
+            "empty": {
+                "all": "No lines in this file.",
+                "search": "No line matches this search.",
+                "validee": "No validated line.",
+                "aValider": "Nothing to decide: no line to review.",
+                "erreur": "No line in error.",
+                "ignoree": "No ignored line."
+            },
+            "badges": {
+                "duplicate": "Probable duplicate",
+                "duplicateInFile": "Same as line {n}",
+                "unknownCategory": "Unknown category “{name}”",
+                "suggested": "Suggested category",
+                "autoIgnored": "Ignored automatically",
+                "edited": "Corrected"
+            },
+            "actions": {
+                "validate": "Validate",
+                "validateAnyway": "Validate anyway",
+                "ignore": "Ignore",
+                "restore": "Restore",
+                "reset": "Revert",
+                "edit": "Correct"
+            },
+            "edit": {
+                "amountHint": "Negative = expense, positive = income ({currency}).",
+                "noCategory": "No category",
+                "noCategoryAction": "Leave without category",
+                "categorySearch": "Search a category",
+                "createCategoryNew": "New category",
+                "createCategory": "Create “{name}”",
+                "suggestedHint": "Suggested from your history.",
+                "unknownCategory": "The file’s category “{name}” does not exist in your categories.",
+                "unknownTier": "File counterparty “{name}” not recognised (does not block the import).",
+                "duplicate": "This line looks like a transaction already on the account.",
+                "duplicateLink": "See that day’s transactions",
+                "duplicateInFile": "Same as line {n} of the file. These are often two genuine operations.",
+                "currencyHint": "The currency cannot be edited: ignore this line to continue.",
+                "applySameLabel": "Also apply to lines with the same label as “{label}”",
+                "original": "File values",
+                "errors": {
+                    "operationDateRequired": "The operation date is required.",
+                    "operationDateInvalid": "Invalid date.",
+                    "operationDateFuture": "The date cannot be in the future.",
+                    "valueDateBeforeOperation": "The value date must follow the operation date.",
+                    "labelRequired": "The label is required.",
+                    "labelTooLong": "The label exceeds 255 characters.",
+                    "amountRequired": "The amount is required.",
+                    "amountInvalid": "Invalid amount.",
+                    "amountZero": "The amount cannot be zero.",
+                    "categoryTypeMismatch": "This category does not match the amount’s direction.",
+                    "noChanges": "No changes."
+                }
+            }
+        },
+        "commit": {
+            "title": "Validate import",
+            "toCreate": "No transaction to create | 1 transaction to create | {count} transactions to create",
+            "totalDebit": "Expenses",
+            "totalCredit": "Income",
+            "balanceBefore": "Balance before",
+            "balanceAfter": "Balance after",
+            "balanceCheck": {
+                "match": "The balance matches your statement",
+                "mismatch": "The balance differs from your statement",
+                "unavailable": "Balance check unavailable"
+            },
+            "balanceMismatch": "Statement balance: {bank} · difference: {difference}. Normal if the account has history that was not imported.",
+            "balanceUnavailable": "The file has no balance column, or this shared account’s balance is hidden from you.",
+            "unresolved": "No undecided line. | 1 line is still to review or in error: it will be ignored. | {count} lines are still to review or in error: they will be ignored.",
+            "nothingToCreate": "No validated line: validate at least one line before continuing.",
+            "note": "All or nothing: if one line fails, no transaction is created.",
+            "confirm": "Create | Create 1 transaction | Create {count} transactions",
+            "confirmIgnoring": "Ignore and create | Ignore and create 1 transaction | Ignore and create {count} transactions"
+        },
+        "result": {
+            "createdTitle": "No transaction created | 1 transaction created | {count} transactions created",
+            "validatedOn": "Import validated on {date}",
+            "ignored": "no line ignored | 1 line ignored | {count} lines ignored",
+            "cancelledTitle": "Import cancelled",
+            "cancelledBody": "Discarded, expired after 30 days without activity, or undone after validation. No transaction is attached to it.",
+            "viewTransactions": "View transactions",
+            "reverted": "No transaction deleted. | 1 transaction deleted. | {count} transactions deleted.",
+            "templateSaved": "Template saved. It will be offered on the next import."
+        },
+        "templates": {
+            "personal": "My templates",
+            "systemSection": "Spend.Up templates",
+            "system": "Spend.Up",
+            "systemReadOnly": "Template provided by Spend.Up, read-only",
+            "emptyPersonal": "No personal template. After an import, use “Save as template”.",
+            "inactive": "disabled",
+            "invertedSign": "inverted sign",
+            "deleteModal": {
+                "title": "Delete this template?",
+                "body": "“{name}” will no longer be offered. Past imports do not change."
+            }
+        },
+        "templateForm": {
+            "createTitle": "Save as template",
+            "createSubtitle": "Reuse this mapping for this bank’s next statements.",
+            "editTitle": "Edit template",
+            "editSubtitle": "The mapping comes from the original import.",
+            "bankHint": "Optional: the bank of this statement.",
+            "fields": {
+                "name": "Name",
+                "bank": "Bank",
+                "active": "Offer this template on import"
+            },
+            "errors": {
+                "nameRequired": "The name is required.",
+                "nameTooLong": "The name exceeds {max} characters."
+            }
         }
     },
     "friendsPage": {

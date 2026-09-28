@@ -80,6 +80,18 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.gestion,
             activeId: SHELL_NAV_IDS.files
         });
+        expect(idsFromPath('/app/finances/imports')).toEqual({
+            openId: SHELL_NAV_IDS.finances,
+            activeId: SHELL_NAV_IDS.import
+        });
+        expect(idsFromPath('/app/finances/imports/modeles')).toEqual({
+            openId: SHELL_NAV_IDS.finances,
+            activeId: SHELL_NAV_IDS.import
+        });
+        expect(idsFromPath('/app/finances/imports/guid-1')).toEqual({
+            openId: SHELL_NAV_IDS.finances,
+            activeId: SHELL_NAV_IDS.import
+        });
         expect(idsFromPath('/app/gestion/tags')).toEqual({
             openId: SHELL_NAV_IDS.gestion,
             activeId: SHELL_NAV_IDS.tags

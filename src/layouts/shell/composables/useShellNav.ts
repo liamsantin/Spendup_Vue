@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 import { useNotificationsStore } from '@/features/notifications';
 import { BUDGETS_PATHS } from '@/features/budgets/paths';
+import { IMPORTS_PATHS } from '@/features/imports/paths';
 import { SAVINGS_GOALS_PATHS } from '@/features/savings-goals/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
@@ -118,6 +119,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, '/app/finances/transactions')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.transactions };
     }
+    if (pathIs(path, IMPORTS_PATHS.list)) {
+        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.import };
+    }
     if (pathIs(path, '/app/finances/moyens-de-paiement')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.paymentMethods };
     }
@@ -200,7 +204,7 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.accounts, t('nav.items.accounts'), AccountsNavIcon, '/app/finances/comptes'),
         live(SHELL_NAV_IDS.paymentMethods, t('nav.items.paymentMethods'), PaymentMethodsNavIcon, '/app/finances/moyens-de-paiement'),
         live(SHELL_NAV_IDS.transactions, t('nav.items.transactions'), TransactionsNavIcon, '/app/finances/transactions'),
-        upcoming(SHELL_NAV_IDS.import, t('nav.items.import'), ImportNavIcon)
+        live(SHELL_NAV_IDS.import, t('nav.items.import'), ImportNavIcon, IMPORTS_PATHS.list)
     ]);
 
     const recurrencesLeaves = computed<NavLeaf[]>(() => [

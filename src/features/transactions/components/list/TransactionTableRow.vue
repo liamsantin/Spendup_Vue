@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { MinusIcon, PaperclipIcon, PencilIcon, PlusIcon, RepeatIcon, TrashIcon } from 'vue-tabler-icons';
+import { FileImportIcon, MinusIcon, PaperclipIcon, PencilIcon, PlusIcon, RepeatIcon, TrashIcon } from 'vue-tabler-icons';
 import { useTransactionRowDisplay } from '@/features/transactions/composables/useTransactionRowDisplay';
 import { formatOperationDate } from '@/features/transactions/format';
 import TagChips from '@/features/tags/components/list/TagChips.vue';
@@ -48,12 +48,16 @@ function onDoubleClick(event: MouseEvent) {
                 <span class="app-data-table__identity">
                     <span class="app-data-table__title">{{ transaction.label }}</span>
                     <span
-                        v-if="transaction.source === 'recurrence' || transaction.files?.length"
+                        v-if="transaction.source === 'recurrence' || transaction.source === 'import' || transaction.files?.length"
                         class="app-data-table__muted transaction-table__flags"
                     >
                         <span v-if="transaction.source === 'recurrence'" class="transaction-table__flag">
                             <RepeatIcon :size="12" stroke-width="1.8" />
                             {{ t('transactionsPage.list.sourceRecurrence') }}
+                        </span>
+                        <span v-else-if="transaction.source === 'import'" class="transaction-table__flag">
+                            <FileImportIcon :size="12" stroke-width="1.8" />
+                            {{ t('transactionsPage.list.sourceImport') }}
                         </span>
                         <span
                             v-if="transaction.files?.length"

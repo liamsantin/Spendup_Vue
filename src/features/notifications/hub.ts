@@ -14,7 +14,9 @@ import type {
     SessionEndedPayload,
     TierChangedPayload,
     BudgetChangedPayload,
-    SavingsGoalChangedPayload
+    SavingsGoalChangedPayload,
+    ImportChangedPayload,
+    ImportTemplateChangedPayload
 } from '@/features/notifications/types';
 
 export type NotificationsHubHandlers = {
@@ -29,6 +31,8 @@ export type NotificationsHubHandlers = {
     onRecurringIncomeChanged?: (payload: RecurringIncomeChangedPayload) => void;
     onBudgetChanged?: (payload: BudgetChangedPayload) => void;
     onSavingsGoalChanged?: (payload: SavingsGoalChangedPayload) => void;
+    onImportChanged?: (payload: ImportChangedPayload) => void;
+    onImportTemplateChanged?: (payload: ImportTemplateChangedPayload) => void;
     onInboxCleared?: (payload: InboxClearedPayload) => void;
     onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
     /** Après reconnexion auto : resynchroniser ce qui a pu être poussé pendant la coupure. */
@@ -77,6 +81,8 @@ function attachHandlers(conn: HubConnection) {
     conn.off('recurringIncomeChanged');
     conn.off('budgetChanged');
     conn.off('savingsGoalChanged');
+    conn.off('importChanged');
+    conn.off('importTemplateChanged');
     conn.off('inboxCleared');
     conn.off('sessionEnded');
 
@@ -122,6 +128,14 @@ function attachHandlers(conn: HubConnection) {
 
     conn.on('savingsGoalChanged', (payload: SavingsGoalChangedPayload) => {
         handlers.onSavingsGoalChanged?.(payload);
+    });
+
+    conn.on('importChanged', (payload: ImportChangedPayload) => {
+        handlers.onImportChanged?.(payload);
+    });
+
+    conn.on('importTemplateChanged', (payload: ImportTemplateChangedPayload) => {
+        handlers.onImportTemplateChanged?.(payload);
     });
 
     conn.on('inboxCleared', (payload: InboxClearedPayload) => {

@@ -2,6 +2,7 @@ import { useNotificationsStore } from '@/features/notifications';
 import {
     getAccountPublicId,
     getAccountSharePublicId,
+    isTransactionAccountChange,
     parseAccountChangedPayload,
     parseTierChangedPayload
 } from '@/features/notifications/normalize';
@@ -284,7 +285,7 @@ export function createAccountsRealtime(state: AccountsState, deps: RealtimeDeps)
             return;
         }
 
-        if (change === 'transactionCreated' || change === 'transactionUpdated' || change === 'transactionDeleted') {
+        if (isTransactionAccountChange(change)) {
             scheduleBalanceRefresh(id);
         }
     }

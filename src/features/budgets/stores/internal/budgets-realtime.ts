@@ -1,12 +1,10 @@
 import { useNotificationsStore } from '@/features/notifications';
-import { parseBudgetChangedPayload } from '@/features/notifications/normalize';
+import { isTransactionAccountChange, parseBudgetChangedPayload } from '@/features/notifications/normalize';
 import type { AccountChangedPayload, BudgetChangedPayload, RecurringExpenseChangedPayload } from '@/features/notifications';
 import type { BudgetsCrud } from '@/features/budgets/stores/internal/budgets-crud';
 import type { BudgetsState } from '@/features/budgets/stores/internal/budgets-state';
 
 type RealtimeDeps = Pick<BudgetsCrud, 'refetchActive' | 'fetchBudget'>;
-
-const SPENT_ACCOUNT_CHANGES = new Set(['transactionCreated', 'transactionUpdated', 'transactionDeleted']);
 
 /**
  * `budgetChanged` (CRUD) + `accountChanged` / `recurringExpenseChanged` (consommé).
@@ -53,7 +51,7 @@ export function createBudgetsRealtime(state: BudgetsState, deps: RealtimeDeps) {
     }
 
     function handleAccountChanged(payload: AccountChangedPayload) {
-        if (!SPENT_ACCOUNT_CHANGES.has(payload?.change)) return;
+        if (!isTransactionAccountChange(payload?.change)) return;
         invalidateAllLists();
         scheduleRefetch();
     }

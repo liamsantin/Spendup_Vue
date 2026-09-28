@@ -1,4 +1,5 @@
 import { useNotificationsStore } from '@/features/notifications';
+import { isTransactionAccountChange } from '@/features/notifications/normalize';
 import type { AccountChangedPayload, RecurringExpenseChangedPayload, RecurringIncomeChangedPayload } from '@/features/notifications';
 import { useTagsStore } from '@/features/tags/stores/tags-store';
 import type { RecurringPaymentsCrud } from '@/features/recurring-payments/stores/internal/recurring-payments-crud';
@@ -37,13 +38,7 @@ export function createRecurringPaymentsRealtime(state: RecurringPaymentsState, d
     }
 
     function handleAccountChanged(payload: AccountChangedPayload) {
-        if (
-            payload?.change !== 'transactionDeleted' &&
-            payload?.change !== 'transactionCreated' &&
-            payload?.change !== 'transactionUpdated'
-        ) {
-            return;
-        }
+        if (!isTransactionAccountChange(payload?.change)) return;
         const keys = new Set([...state.details.keys(), ...state.duesByTemplate.keys()]);
         for (const key of keys) {
             const colon = key.indexOf(':');

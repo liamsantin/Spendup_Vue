@@ -21,19 +21,19 @@ Identifiant UI = `publicId` (GUID). Jamais d’id SQL, jamais de `sha256Hash` co
 
 Auth : Bearer JWT **ou** cookie `spendup_access`. JSON camelCase, enveloppe `{ success, message, result }` — **sauf** `DELETE` (`204` vide).
 
-| Méthode | Endpoint                                              | Rôle    | Notes                                                                        |
-| ------- | ----------------------------------------------------- | ------- | ---------------------------------------------------------------------------- |
-| GET     | `/api/transactions`                                   | viewer+ | Liste paginée. `files[]` hydraté (éventuellement `[]`)                       |
-| GET     | `/api/transactions/{txPublicId}`                      | viewer+ | Détail. `files[]` toujours présent                                           |
-| POST    | `/api/transactions`                                   | editor+ | Création. `filePublicIds?: string[]` optionnel (PDF **déjà** uploadés)       |
-| `PUT`     | `/api/transactions/{txPublicId}`                      | editor+ | Libellé / montant / dates / PM / catégorie / **tags** / tier / récurrence / **objectif d’épargne**. **Ne touche pas** `files` |
-| DELETE  | `/api/transactions/{txPublicId}`                      | editor+ | `204`. Les liens PJ disparaissent, les PDF **restent**                       |
-| POST    | `/api/transactions/{txPublicId}/files`                | editor+ | Body `{ filePublicId }`. `200` + TX à jour                                   |
-| DELETE  | `/api/transactions/{txPublicId}/files/{filePublicId}` | editor+ | Détache, `204`. Le PDF reste dans Fichiers                                   |
+| Méthode | Endpoint                                              | Rôle    | Notes                                                                                                                         |
+| ------- | ----------------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| GET     | `/api/transactions`                                   | viewer+ | Liste paginée. `files[]` hydraté (éventuellement `[]`)                                                                        |
+| GET     | `/api/transactions/{txPublicId}`                      | viewer+ | Détail. `files[]` toujours présent                                                                                            |
+| POST    | `/api/transactions`                                   | editor+ | Création. `filePublicIds?: string[]` optionnel (PDF **déjà** uploadés)                                                        |
+| `PUT`   | `/api/transactions/{txPublicId}`                      | editor+ | Libellé / montant / dates / PM / catégorie / **tags** / tier / récurrence / **objectif d’épargne**. **Ne touche pas** `files` |
+| DELETE  | `/api/transactions/{txPublicId}`                      | editor+ | `204`. Les liens PJ disparaissent, les PDF **restent**                                                                        |
+| POST    | `/api/transactions/{txPublicId}/files`                | editor+ | Body `{ filePublicId }`. `200` + TX à jour                                                                                    |
+| DELETE  | `/api/transactions/{txPublicId}/files/{filePublicId}` | editor+ | Détache, `204`. Le PDF reste dans Fichiers                                                                                    |
 
 Filtres liste : `accountPublicId`, `categoryPublicId`, `tagPublicId`, `tierPublicId`, `recurringExpensePublicId`, `recurringIncomePublicId`, `from`, `to`, `page`, `pageSize` (défaut 50, max 200).
 
-`source` : `manuelle` (saisie) ou `recurrence` (due confirmée). Ne **pas** envoyer `source` au POST TX. Sur une TX récurrente : `recurringExpensePublicId` / `recurringIncomePublicId` / `duePublicId`.
+`source` : `manuelle` (saisie), `recurrence` (due confirmée) ou `import` (commit d’un relevé, voir `features/imports/contract.md`). Ne **pas** envoyer `source` au POST TX. Sur une TX récurrente : `recurringExpensePublicId` / `recurringIncomePublicId` / `duePublicId`.
 
 `PUT` : ne **pas** renvoyer `files` / `filePublicIds`. Pas de multipart sur `POST /api/transactions`.
 
@@ -84,6 +84,7 @@ Delete Fichiers d’un PDF encore lié → 400 « Impossible de supprimer un fic
 - create TX (y compris pièces à la création) → `transactionCreated`
 - attache / détache → `transactionUpdated` → refetch liste / détail pour rafraîchir `files`
 - delete TX → `transactionDeleted`
+- commit / revert d’un import → **un seul** `transactionsImported` / `transactionsReverted` par compte (autres co-détenteurs ; l’acteur le rejoue localement)
 
 ## Tests critiques
 

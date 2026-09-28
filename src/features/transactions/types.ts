@@ -1,6 +1,6 @@
 export type TransactionType = 'depense' | 'revenu' | 'transfert';
 export type TransactionStatus = 'validee' | 'rapprochee';
-export type TransactionSource = 'manuelle' | 'recurrence';
+export type TransactionSource = 'manuelle' | 'recurrence' | 'import';
 export type MovementSens = 'debit' | 'credit';
 
 export type TransactionFile = {

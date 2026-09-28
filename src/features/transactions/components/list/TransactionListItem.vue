@@ -91,6 +91,7 @@ function onActivate(event: MouseEvent) {
             <p class="su-person__sub">
                 {{ t(`transactionsPage.types.${transaction.type}`) }}
                 <template v-if="transaction.source === 'recurrence'"> · {{ t('transactionsPage.list.sourceRecurrence') }}</template>
+                <template v-else-if="transaction.source === 'import'"> · {{ t('transactionsPage.list.sourceImport') }}</template>
                 · {{ accountLine }}
                 <template v-if="categoryLabel"> · {{ t('transactionsPage.list.myCategory', { name: categoryLabel }) }}</template>
                 <TagChips :tag-public-ids="transaction.tagPublicIds" compact class="transaction-list-item__tags" />

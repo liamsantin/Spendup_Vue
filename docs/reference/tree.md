@@ -23,6 +23,7 @@ src/
 │   ├── tiers/           # annuaire perso de contreparties (stores/internal/)
 │   ├── files/           # documents PDF perso (stores/internal/)
 │   ├── transactions/    # journal, pièces PDF (stores/internal/)
+│   ├── imports/         # imports de relevés CSV / XLSX, modèles (stores/internal/)
 │   ├── savings-goals/   # objectifs d’épargne perso (stores/internal/)
 │   └── user-settings/   # composables account/security
 ├── views/

@@ -1915,7 +1915,8 @@
             "myTier": "Ma contrepartie : {name}",
             "hasAttachments": "{count} justificatif | {count} justificatif | {count} justificatifs",
             "sourceRecurrence": "Récurrence",
-            "recurrenceDelta": "{delta} par rapport au prévu ({planned})"
+            "recurrenceDelta": "{delta} par rapport au prévu ({planned})",
+            "sourceImport": "Importée"
         },
         "deleteModal": {
             "title": "Supprimer cette transaction ?",
@@ -2034,6 +2035,357 @@
             "amount": "Montant",
             "type": "Type",
             "currency": "Devise"
+        }
+    },
+    "importsPage": {
+        "title": "Imports",
+        "subtitle": "Importez un relevé CSV ou Excel, vérifiez les lignes, puis créez les transactions en une fois.",
+        "count": "{count} import | {count} import | {count} imports",
+        "loadMore": "Charger plus",
+        "tabs": {
+            "label": "Vue",
+            "history": "Historique",
+            "templates": "Modèles"
+        },
+        "filters": {
+            "status": "Statut",
+            "allStatuses": "Tous les statuts",
+            "account": "Compte",
+            "allAccounts": "Tous les comptes"
+        },
+        "statuses": {
+            "erreur": "Colonnes à associer",
+            "aValider": "En revue",
+            "valide": "Validé",
+            "annule": "Annulé"
+        },
+        "lineStatuses": {
+            "validee": "Validée",
+            "aValider": "À valider",
+            "erreur": "Erreur",
+            "ignoree": "Ignorée"
+        },
+        "lineTabs": {
+            "label": "Lignes",
+            "all": "Tout",
+            "aValider": "À valider",
+            "erreur": "Erreurs",
+            "ignoree": "Ignorées"
+        },
+        "sourceTypes": {
+            "csv": "CSV",
+            "excel": "Excel"
+        },
+        "fields": {
+            "operationDate": "Date d’opération",
+            "valueDate": "Date de valeur",
+            "label": "Libellé",
+            "amount": "Montant",
+            "debit": "Débit",
+            "credit": "Crédit",
+            "currency": "Devise",
+            "balance": "Solde",
+            "category": "Catégorie",
+            "tier": "Tiers"
+        },
+        "actions": {
+            "create": "Importer un relevé",
+            "delete": "Supprimer",
+            "cancel": "Abandonner",
+            "commit": "Valider l’import",
+            "remap": "Colonnes",
+            "revert": "Annuler cet import",
+            "saveAsTemplate": "Enregistrer comme modèle",
+            "editTemplate": "Modifier le modèle",
+            "deleteTemplate": "Supprimer le modèle"
+        },
+        "empty": {
+            "list": "Aucun import pour l’instant. Importez un relevé CSV ou Excel exporté depuis votre banque.",
+            "filtered": "Aucun import ne correspond à ces filtres."
+        },
+        "list": {
+            "deletedAccount": "Compte supprimé",
+            "period": "du {from} au {to}",
+            "needsMapping": "Colonnes à associer avant la revue",
+            "imported": "Aucune transaction créée | {count} transaction créée | {count} transactions créées",
+            "lines": "Aucune ligne | {count} ligne | {count} lignes",
+            "pending": "Aucune ligne à trancher | {count} ligne à trancher | {count} lignes à trancher",
+            "ready": "Aucune ligne prête | {count} ligne prête | {count} lignes prêtes",
+            "expires": "expire le {date}"
+        },
+        "deleteModal": {
+            "title": "Supprimer cet import ?",
+            "body": "L’import et ses lignes seront retirés de l’historique. Aucune transaction n’est touchée."
+        },
+        "cancelModal": {
+            "title": "Abandonner cet import ?",
+            "body": "Aucune transaction ne sera créée. L’import reste dans l’historique avec le statut Annulé."
+        },
+        "revertModal": {
+            "title": "Annuler cet import ?",
+            "body": "Aucune transaction ne sera supprimée. | 1 transaction sera supprimée, même si vous l’avez modifiée depuis l’import (catégorie, tags…). | {count} transactions seront supprimées, y compris celles modifiées depuis l’import (catégorie, tags…)."
+        },
+        "detail": {
+            "title": "Import",
+            "back": "Imports",
+            "gone": "Cet import n’est plus disponible. Il a peut-être été supprimé depuis un autre appareil.",
+            "template": "modèle {name}"
+        },
+        "upload": {
+            "title": "Importer un relevé",
+            "subtitle": "Rien n’est écrit sur le compte avant votre validation finale.",
+            "account": "Compte cible",
+            "pick": "Choisir un fichier ou le déposer ici",
+            "formats": ".csv (2 Mo max.) ou .xlsx (5 Mo max.)",
+            "clearFile": "Retirer le fichier",
+            "template": "Modèle",
+            "autoDetect": "Détection automatique",
+            "templateHint": "Optionnel. Un modèle réutilise un mapping déjà enregistré.",
+            "templateNeedsFile": "Choisissez d’abord un fichier.",
+            "templateSearch": "Rechercher un modèle",
+            "submit": "Analyser le fichier",
+            "noWritableAccount": "Vous n’avez aucun compte actif sur lequel importer (propriétaire ou éditeur).",
+            "notes": {
+                "noWrite": "L’analyse ne crée aucune transaction : le solde ne bouge pas.",
+                "limits": "2 000 lignes et 100 colonnes maximum. Dates lues jour avant mois.",
+                "transfers": "Virements internes : importer les relevés des deux comptes compte le virement deux fois."
+            },
+            "errors": {
+                "required": "Choisissez un fichier.",
+                "empty": "Le fichier est vide.",
+                "legacyXls": "Format .xls non pris en charge : enregistrez le classeur en .xlsx ou .csv.",
+                "macroXlsm": "Les classeurs avec macros (.xlsm) ne sont pas acceptés : enregistrez en .xlsx.",
+                "unsupported": "Format non pris en charge. Utilisez un fichier .csv ou .xlsx (OFX et CAMT ne sont pas acceptés).",
+                "tooLarge": "Fichier trop volumineux (maximum {max})."
+            }
+        },
+        "warnings": {
+            "alreadyImported": "Ce fichier a déjà été importé sur ce compte le {date}.",
+            "periodOverlap": "Le dernier import validé de ce compte va jusqu’au {date} : les opérations communes apparaîtront comme doublons probables.",
+            "openPrevious": "Voir l’import précédent"
+        },
+        "mapping": {
+            "errorLead": "Associez les colonnes du fichier pour continuer.",
+            "tooManyLines": "Découpez le fichier en plusieurs relevés de 2 000 lignes au plus.",
+            "suggestion": "Ce fichier ressemble au modèle « {name} ».",
+            "useTemplate": "Utiliser ce modèle",
+            "readTitle": "Lecture du fichier",
+            "formatTitle": "Formats",
+            "columnsTitle": "Colonnes",
+            "sampleTitle": "Aperçu du fichier",
+            "sampleEmpty": "Aperçu indisponible : les données brutes ne sont plus conservées.",
+            "auto": "Détection automatique",
+            "sheet": "Feuille",
+            "encoding": "Encodage",
+            "separator": "Séparateur",
+            "separators": {
+                "semicolon": "Point-virgule",
+                "comma": "Virgule",
+                "pipe": "Barre verticale",
+                "tab": "Tabulation"
+            },
+            "headerRow": "Ligne d’en-tête",
+            "headerRowHint": "Numéro de ligne affiché. 0 = fichier sans en-tête. Vide = recherche automatique.",
+            "layoutChanged": "Les réglages de lecture ont changé : le fichier sera relu et les colonnes redétectées.",
+            "dateFormat": "Format de date",
+            "dateFormatHint": "Imposez un format si les dates sont mal lues (export américain : MM/dd/yyyy).",
+            "decimalSeparator": "Séparateur décimal",
+            "decimals": {
+                "dot": "Point (1234.50)",
+                "comma": "Virgule (1234,50)"
+            },
+            "invertSign": "Inverser le signe des montants",
+            "invertSignHint": "Pour les relevés de carte où les achats sont positifs.",
+            "amountMode": "Colonnes de montant",
+            "amountModes": {
+                "signed": "Montant signé",
+                "debitCredit": "Débit / crédit"
+            },
+            "amountModeHints": {
+                "signed": "Une colonne : négatif = dépense, positif = revenu.",
+                "debitCredit": "Deux colonnes : le sens vient de la colonne."
+            },
+            "debitCreditHint": "Au moins une des deux colonnes. La valeur absolue compte : des débits déjà négatifs fonctionnent aussi.",
+            "noColumn": "Aucune colonne",
+            "columnNamed": "Colonne {n} · {name}",
+            "columnIndex": "Colonne {n}",
+            "applyTemplate": "Appliquer un modèle",
+            "autoDetect": "Relancer la détection",
+            "backToReview": "Retour à la revue",
+            "apply": "Appliquer le mapping",
+            "reread": "Relire le fichier",
+            "confirm": {
+                "title": "Relire le fichier ?",
+                "body": "Toutes les lignes seront recalculées : les corrections faites pendant la revue seront perdues.",
+                "action": "Relire"
+            },
+            "errors": {
+                "operationDateRequired": "Associez la colonne de date d’opération.",
+                "labelRequired": "Associez la colonne de libellé.",
+                "amountRequired": "Associez la colonne de montant.",
+                "debitCreditRequired": "Associez au moins une colonne de débit ou de crédit.",
+                "headerRowInvalid": "Saisissez un numéro de ligne (0 pour aucun en-tête)."
+            }
+        },
+        "bulk": {
+            "label": "Actions groupées",
+            "validateToReview": "Aucune ligne à valider | Valider la ligne à valider | Valider les {count} lignes à valider",
+            "validateToReviewConfirm": "Aucune ligne à valider. | La ligne à valider (doublon probable ou catégorie inconnue) sera écrite au commit. | Les {count} lignes à valider (doublons probables, catégories inconnues) seront écrites au commit.",
+            "ignoreToReview": "Aucune ligne à ignorer | Ignorer la ligne à valider | Ignorer les {count} lignes à valider",
+            "ignoreErrors": "Aucune erreur | Ignorer la ligne en erreur | Ignorer les {count} lignes en erreur",
+            "confirmTitle": "Appliquer à toutes les lignes ?",
+            "sameLabelHint": "Pour catégoriser toutes les lignes d’un même libellé, ouvrez une ligne et cochez « Appliquer aux lignes au même libellé »."
+        },
+        "lines": {
+            "count": "{count} ligne | {count} ligne | {count} lignes",
+            "lineNumber": "Ligne {n}",
+            "noLabel": "Sans libellé",
+            "created": "Créée",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche",
+            "searchPlaceholder": "Rechercher un libellé",
+            "bulkResult": "Aucune ligne mise à jour ({skipped} non modifiable(s)). | 1 ligne mise à jour ({skipped} non modifiable(s)). | {updated} lignes mises à jour ({skipped} non modifiable(s)).",
+            "columns": {
+                "lineNumber": "Ligne",
+                "date": "Date",
+                "label": "Libellé",
+                "category": "Catégorie",
+                "tier": "Tiers",
+                "amount": "Montant",
+                "status": "Statut"
+            },
+            "sortDir": {
+                "asc": "croissant",
+                "desc": "décroissant"
+            },
+            "sort": {
+                "label": "Trier",
+                "lineNumber": "Ordre du fichier",
+                "firstFirst": "Début",
+                "lastFirst": "Fin",
+                "date": "Date",
+                "recent": "Récentes",
+                "oldest": "Anciennes",
+                "amount": "Montant",
+                "lowest": "Dépenses",
+                "highest": "Revenus",
+                "status": "Statut",
+                "asc": "A → Z",
+                "desc": "Z → A"
+            },
+            "empty": {
+                "all": "Aucune ligne dans ce fichier.",
+                "search": "Aucune ligne ne correspond à cette recherche.",
+                "validee": "Aucune ligne validée.",
+                "aValider": "Rien à trancher : aucune ligne à valider.",
+                "erreur": "Aucune ligne en erreur.",
+                "ignoree": "Aucune ligne ignorée."
+            },
+            "badges": {
+                "duplicate": "Doublon probable",
+                "duplicateInFile": "Identique à la ligne {n}",
+                "unknownCategory": "Catégorie « {name} » inconnue",
+                "suggested": "Catégorie suggérée",
+                "autoIgnored": "Ignorée automatiquement",
+                "edited": "Corrigée"
+            },
+            "actions": {
+                "validate": "Valider",
+                "validateAnyway": "Valider quand même",
+                "ignore": "Ignorer",
+                "restore": "Réintégrer",
+                "reset": "Rétablir",
+                "edit": "Corriger"
+            },
+            "edit": {
+                "amountHint": "Négatif = dépense, positif = revenu ({currency}).",
+                "noCategory": "Aucune catégorie",
+                "noCategoryAction": "Laisser sans catégorie",
+                "categorySearch": "Rechercher une catégorie",
+                "createCategoryNew": "Nouvelle catégorie",
+                "createCategory": "Créer « {name} »",
+                "suggestedHint": "Suggérée d’après votre historique.",
+                "unknownCategory": "La catégorie « {name} » du fichier n’existe pas dans vos catégories.",
+                "unknownTier": "Tiers « {name} » du fichier non reconnu (n’empêche pas l’import).",
+                "duplicate": "Cette ligne ressemble à une transaction déjà présente sur le compte.",
+                "duplicateLink": "Voir les transactions de ce jour",
+                "duplicateInFile": "Identique à la ligne {n} du fichier. Ce sont souvent deux vraies opérations.",
+                "currencyHint": "La devise n’est pas modifiable : ignorez cette ligne pour continuer.",
+                "applySameLabel": "Appliquer aussi aux lignes au même libellé que « {label} »",
+                "original": "Valeurs du fichier",
+                "errors": {
+                    "operationDateRequired": "La date d’opération est obligatoire.",
+                    "operationDateInvalid": "Date invalide.",
+                    "operationDateFuture": "La date ne peut pas être dans le futur.",
+                    "valueDateBeforeOperation": "La date de valeur doit suivre la date d’opération.",
+                    "labelRequired": "Le libellé est obligatoire.",
+                    "labelTooLong": "Le libellé dépasse 255 caractères.",
+                    "amountRequired": "Le montant est obligatoire.",
+                    "amountInvalid": "Montant invalide.",
+                    "amountZero": "Le montant ne peut pas être nul.",
+                    "categoryTypeMismatch": "Cette catégorie ne correspond pas au sens du montant.",
+                    "noChanges": "Aucune modification."
+                }
+            }
+        },
+        "commit": {
+            "title": "Valider l’import",
+            "toCreate": "Aucune transaction à créer | 1 transaction à créer | {count} transactions à créer",
+            "totalDebit": "Dépenses",
+            "totalCredit": "Revenus",
+            "balanceBefore": "Solde avant",
+            "balanceAfter": "Solde après",
+            "balanceCheck": {
+                "match": "Le solde correspond à votre relevé",
+                "mismatch": "Le solde diffère de votre relevé",
+                "unavailable": "Contrôle du solde indisponible"
+            },
+            "balanceMismatch": "Solde du relevé : {bank} · écart : {difference}. Normal si le compte a un historique non importé.",
+            "balanceUnavailable": "Le fichier n’a pas de colonne solde, ou le solde de ce compte partagé vous est masqué.",
+            "unresolved": "Aucune ligne non tranchée. | 1 ligne reste à valider ou en erreur : elle sera ignorée. | {count} lignes restent à valider ou en erreur : elles seront ignorées.",
+            "nothingToCreate": "Aucune ligne validée : validez au moins une ligne avant de continuer.",
+            "note": "Tout ou rien : si une ligne pose problème, aucune transaction n’est créée.",
+            "confirm": "Créer | Créer 1 transaction | Créer {count} transactions",
+            "confirmIgnoring": "Ignorer et créer | Ignorer et créer 1 transaction | Ignorer et créer {count} transactions"
+        },
+        "result": {
+            "createdTitle": "Aucune transaction créée | 1 transaction créée | {count} transactions créées",
+            "validatedOn": "Import validé le {date}",
+            "ignored": "aucune ligne ignorée | 1 ligne ignorée | {count} lignes ignorées",
+            "cancelledTitle": "Import annulé",
+            "cancelledBody": "Abandonné, expiré après 30 jours sans activité, ou annulé après validation. Aucune transaction n’y est rattachée.",
+            "viewTransactions": "Voir les transactions",
+            "reverted": "Aucune transaction supprimée. | 1 transaction supprimée. | {count} transactions supprimées.",
+            "templateSaved": "Modèle enregistré. Il sera proposé au prochain import."
+        },
+        "templates": {
+            "personal": "Mes modèles",
+            "systemSection": "Modèles Spend.Up",
+            "system": "Spend.Up",
+            "systemReadOnly": "Modèle fourni par Spend.Up, en lecture seule",
+            "emptyPersonal": "Aucun modèle perso. Après un import, utilisez « Enregistrer comme modèle ».",
+            "inactive": "désactivé",
+            "invertedSign": "signe inversé",
+            "deleteModal": {
+                "title": "Supprimer ce modèle ?",
+                "body": "« {name} » ne sera plus proposé. Les imports déjà faits ne changent pas."
+            }
+        },
+        "templateForm": {
+            "createTitle": "Enregistrer comme modèle",
+            "createSubtitle": "Réutilisez ce mapping pour les prochains relevés de cette banque.",
+            "editTitle": "Modifier le modèle",
+            "editSubtitle": "Le mapping vient de l’import d’origine.",
+            "bankHint": "Optionnel : la banque de ce relevé.",
+            "fields": {
+                "name": "Nom",
+                "bank": "Banque",
+                "active": "Proposer ce modèle à l’import"
+            },
+            "errors": {
+                "nameRequired": "Le nom est obligatoire.",
+                "nameTooLong": "Le nom dépasse {max} caractères."
+            }
         }
     },
     "friendsPage": {

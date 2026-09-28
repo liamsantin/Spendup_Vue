@@ -17,7 +17,11 @@ import type {
     BudgetChange,
     BudgetChangedPayload,
     SavingsGoalChange,
-    SavingsGoalChangedPayload
+    SavingsGoalChangedPayload,
+    ImportChange,
+    ImportChangedPayload,
+    ImportTemplateChange,
+    ImportTemplateChangedPayload
 } from '@/features/notifications/types';
 
 /** Identifiants publics SignalR / metadata (UUID, slug) — refuse vide, espaces, chemins. */
@@ -38,7 +42,18 @@ const ACCOUNT_CHANGES = new Set<AccountChange>([
     'paymentMethodDeleted',
     'transactionCreated',
     'transactionUpdated',
-    'transactionDeleted'
+    'transactionDeleted',
+    'transactionsImported',
+    'transactionsReverted'
+]);
+
+/** Changements qui touchent le journal (solde, dépensé, contributions) — un seul événement par import. */
+const TRANSACTION_ACCOUNT_CHANGES = new Set<AccountChange>([
+    'transactionCreated',
+    'transactionUpdated',
+    'transactionDeleted',
+    'transactionsImported',
+    'transactionsReverted'
 ]);
 
 const CATEGORY_CHANGES = new Set<CategoryChange>(['categoryCreated', 'categoryUpdated', 'categoryDeleted']);
@@ -56,6 +71,20 @@ const RECURRING_INCOME_CHANGES = new Set<RecurringIncomeChange>([
 ]);
 const BUDGET_CHANGES = new Set<BudgetChange>(['budgetCreated', 'budgetUpdated', 'budgetDeleted']);
 const SAVINGS_GOAL_CHANGES = new Set<SavingsGoalChange>(['savingsGoalCreated', 'savingsGoalUpdated', 'savingsGoalDeleted']);
+const IMPORT_CHANGES = new Set<ImportChange>([
+    'importCreated',
+    'importUpdated',
+    'importCommitted',
+    'importCancelled',
+    'importReverted',
+    'importDeleted'
+]);
+const IMPORT_TEMPLATE_CHANGES = new Set<ImportTemplateChange>(['importTemplateCreated', 'importTemplateUpdated', 'importTemplateDeleted']);
+
+/** `accountChanged` qui modifie les transactions du compte (unitaire ou import / revert groupé). */
+export function isTransactionAccountChange(change: unknown): boolean {
+    return typeof change === 'string' && TRANSACTION_ACCOUNT_CHANGES.has(change as AccountChange);
+}
 
 /** Normalise un publicId (trim + charset) ; `null` si invalide. */
 export function normalizePublicId(value: unknown): string | null {
@@ -202,6 +231,26 @@ export function parseSavingsGoalChangedPayload(raw: unknown): SavingsGoalChanged
     const savingsGoalPublicId = normalizePublicId(payload.savingsGoalPublicId);
     if (!savingsGoalPublicId) return null;
     return { change: change as SavingsGoalChange, savingsGoalPublicId };
+}
+
+export function parseImportChangedPayload(raw: unknown): ImportChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!IMPORT_CHANGES.has(change as ImportChange)) return null;
+    const importPublicId = normalizePublicId(payload.importPublicId);
+    if (!importPublicId) return null;
+    return { change: change as ImportChange, importPublicId };
+}
+
+export function parseImportTemplateChangedPayload(raw: unknown): ImportTemplateChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!IMPORT_TEMPLATE_CHANGES.has(change as ImportTemplateChange)) return null;
+    const templatePublicId = normalizePublicId(payload.templatePublicId);
+    if (!templatePublicId) return null;
+    return { change: change as ImportTemplateChange, templatePublicId };
 }
 
 /** Normalise un item inbox / SignalR (metadata string → objet). */

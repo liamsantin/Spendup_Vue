@@ -305,6 +305,29 @@ describe('normalizeAppNotification', () => {
         });
         expect(parseSavingsGoalChangedPayload({ change: 'nope', savingsGoalPublicId: 'g-1' })).toBeNull();
     });
+
+    it('valide les payloads import et les changements de journal groupés', async () => {
+        const { parseAccountChangedPayload, parseImportChangedPayload, parseImportTemplateChangedPayload, isTransactionAccountChange } =
+            await import('@/features/notifications/normalize');
+        expect(parseAccountChangedPayload({ change: 'transactionsImported', accountPublicId: 'acc-1' })).toEqual({
+            change: 'transactionsImported',
+            accountPublicId: 'acc-1'
+        });
+        expect(isTransactionAccountChange('transactionsReverted')).toBe(true);
+        expect(isTransactionAccountChange('transactionCreated')).toBe(true);
+        expect(isTransactionAccountChange('archived')).toBe(false);
+        expect(parseImportChangedPayload({ change: 'importCommitted', importPublicId: 'imp-1' })).toEqual({
+            change: 'importCommitted',
+            importPublicId: 'imp-1'
+        });
+        expect(parseImportChangedPayload({ change: 'importExpired', importPublicId: 'imp-1' })).toBeNull();
+        expect(parseImportChangedPayload({ change: 'importDeleted', importPublicId: '../x' })).toBeNull();
+        expect(parseImportTemplateChangedPayload({ change: 'importTemplateDeleted', templatePublicId: 'tpl-1' })).toEqual({
+            change: 'importTemplateDeleted',
+            templatePublicId: 'tpl-1'
+        });
+        expect(parseImportTemplateChangedPayload({ change: 'tagDeleted', templatePublicId: 'tpl-1' })).toBeNull();
+    });
 });
 
 describe('notification type helpers', () => {

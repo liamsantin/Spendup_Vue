@@ -18,7 +18,9 @@ import {
     parseRecurringIncomeChangedPayload,
     parseTierChangedPayload,
     parseBudgetChangedPayload,
-    parseSavingsGoalChangedPayload
+    parseSavingsGoalChangedPayload,
+    parseImportChangedPayload,
+    parseImportTemplateChangedPayload
 } from '@/features/notifications/normalize';
 import type {
     AppNotification,
@@ -33,7 +35,9 @@ import type {
     SessionEndedPayload,
     TierChangedPayload,
     BudgetChangedPayload,
-    SavingsGoalChangedPayload
+    SavingsGoalChangedPayload,
+    ImportChangedPayload,
+    ImportTemplateChangedPayload
 } from '@/features/notifications/types';
 import type { NotificationsState } from '@/features/notifications/stores/internal/notifications-state';
 import type { NotificationsNative } from '@/features/notifications/stores/internal/notifications-native';
@@ -68,6 +72,8 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         recurringIncomeChangeListeners,
         budgetChangeListeners,
         savingsGoalChangeListeners,
+        importChangeListeners,
+        importTemplateChangeListeners,
         applyUnreadCount,
         upsertItem
     } = state;
@@ -157,6 +163,28 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         const parsed = parseSavingsGoalChangedPayload(payload);
         if (!parsed) return;
         savingsGoalChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /** Live sans inbox : imports du créateur, session acteur incluse. */
+    function onImportChanged(payload: ImportChangedPayload) {
+        const parsed = parseImportChangedPayload(payload);
+        if (!parsed) return;
+        importChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /** Live sans inbox : modèles d’import perso (acteur inclus). */
+    function onImportTemplateChanged(payload: ImportTemplateChangedPayload) {
+        const parsed = parseImportTemplateChangedPayload(payload);
+        if (!parsed) return;
+        importTemplateChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /**
+     * Rejoue un `accountChanged` pour la session courante : l’API ne l’envoie qu’aux **autres**
+     * co-détenteurs (commit / revert d’import). Même fan-out que l’événement SignalR.
+     */
+    function dispatchLocalAccountChanged(payload: AccountChangedPayload) {
+        onAccountChanged(payload);
     }
 
     /** SignalR multi-appareils après DELETE /api/notifications. */
@@ -322,6 +350,20 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         };
     }
 
+    function subscribeToImportChanged(listener: (payload: ImportChangedPayload) => void) {
+        importChangeListeners.add(listener);
+        return () => {
+            importChangeListeners.delete(listener);
+        };
+    }
+
+    function subscribeToImportTemplateChanged(listener: (payload: ImportTemplateChangedPayload) => void) {
+        importTemplateChangeListeners.add(listener);
+        return () => {
+            importTemplateChangeListeners.delete(listener);
+        };
+    }
+
     /** Branche les handlers SignalR sur le hub partagé. */
     function wireHubHandlers() {
         setNotificationsHubHandlers({
@@ -338,6 +380,8 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
             onRecurringIncomeChanged,
             onBudgetChanged,
             onSavingsGoalChanged,
+            onImportChanged,
+            onImportTemplateChanged,
             onInboxCleared,
             onSessionEnded: (payload) => onSessionEnded(payload),
             onReconnected
@@ -377,7 +421,10 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         subscribeToRecurringExpenseChanged,
         subscribeToRecurringIncomeChanged,
         subscribeToBudgetChanged,
-        subscribeToSavingsGoalChanged
+        subscribeToSavingsGoalChanged,
+        subscribeToImportChanged,
+        subscribeToImportTemplateChanged,
+        dispatchLocalAccountChanged
     };
 }
 

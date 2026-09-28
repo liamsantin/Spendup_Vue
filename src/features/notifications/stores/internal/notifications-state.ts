@@ -9,7 +9,9 @@ import type {
     RecurringIncomeChangedPayload,
     TierChangedPayload,
     BudgetChangedPayload,
-    SavingsGoalChangedPayload
+    SavingsGoalChangedPayload,
+    ImportChangedPayload,
+    ImportTemplateChangedPayload
 } from '@/features/notifications/types';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -47,6 +49,8 @@ export function createNotificationsState() {
     const recurringIncomeChangeListeners = new Set<(payload: RecurringIncomeChangedPayload) => void>();
     const budgetChangeListeners = new Set<(payload: BudgetChangedPayload) => void>();
     const savingsGoalChangeListeners = new Set<(payload: SavingsGoalChangedPayload) => void>();
+    const importChangeListeners = new Set<(payload: ImportChangedPayload) => void>();
+    const importTemplateChangeListeners = new Set<(payload: ImportTemplateChangedPayload) => void>();
     const liveFriendChips = ref<LiveFriendChip[]>([]);
 
     const hasUnread = computed(() => unreadCount.value > 0);
@@ -107,6 +111,8 @@ export function createNotificationsState() {
         recurringIncomeChangeListeners,
         budgetChangeListeners,
         savingsGoalChangeListeners,
+        importChangeListeners,
+        importTemplateChangeListeners,
         liveFriendChips,
         hasUnread,
         badgeContent,

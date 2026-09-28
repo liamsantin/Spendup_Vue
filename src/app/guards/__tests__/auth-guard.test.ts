@@ -57,6 +57,12 @@ vi.mock('@/features/tags/stores/tags-store', () => ({
     })
 }));
 
+vi.mock('@/features/imports/stores/imports-store', () => ({
+    useImportsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
 vi.mock('@/features/tiers/stores/tiers-store', () => ({
     useTiersStore: () => ({
         onAuthenticatedSession: vi.fn()

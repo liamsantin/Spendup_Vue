@@ -1,13 +1,11 @@
 import { useNotificationsStore } from '@/features/notifications';
-import { parseAccountChangedPayload } from '@/features/notifications/normalize';
+import { isTransactionAccountChange, parseAccountChangedPayload } from '@/features/notifications/normalize';
 import type { AccountChangedPayload } from '@/features/notifications';
 import { useTagsStore } from '@/features/tags/stores/tags-store';
 import type { TransactionsCrud } from '@/features/transactions/stores/internal/transactions-crud';
 import type { TransactionsState } from '@/features/transactions/stores/internal/transactions-state';
 
 type RealtimeDeps = Pick<TransactionsCrud, 'refetchActive' | 'refreshAccountBalances'>;
-
-const TRANSACTION_CHANGES = new Set(['transactionCreated', 'transactionUpdated', 'transactionDeleted']);
 
 /**
  * Abonnement SignalR `accountChanged` pour invalider les transactions (et les soldes).
@@ -54,7 +52,7 @@ export function createTransactionsRealtime(state: TransactionsState, deps: Realt
             return;
         }
 
-        if (TRANSACTION_CHANGES.has(change)) {
+        if (isTransactionAccountChange(change)) {
             scheduleRefresh(accountPublicId);
         }
     }

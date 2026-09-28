@@ -110,7 +110,9 @@ export type AccountChange =
     | 'paymentMethodDeleted'
     | 'transactionCreated'
     | 'transactionUpdated'
-    | 'transactionDeleted';
+    | 'transactionDeleted'
+    | 'transactionsImported'
+    | 'transactionsReverted';
 
 export type AccountChangedPayload = {
     change: AccountChange;
@@ -171,6 +173,22 @@ export type SavingsGoalChange = 'savingsGoalCreated' | 'savingsGoalUpdated' | 's
 export type SavingsGoalChangedPayload = {
     change: SavingsGoalChange;
     savingsGoalPublicId: string;
+};
+
+/** Payload SignalR `importChanged` — imports du créateur, session acteur incluse (sync multi-onglets). */
+export type ImportChange = 'importCreated' | 'importUpdated' | 'importCommitted' | 'importCancelled' | 'importReverted' | 'importDeleted';
+
+export type ImportChangedPayload = {
+    change: ImportChange;
+    importPublicId: string;
+};
+
+/** Payload SignalR `importTemplateChanged` — modèles d’import perso (acteur inclus, pas d’inbox). */
+export type ImportTemplateChange = 'importTemplateCreated' | 'importTemplateUpdated' | 'importTemplateDeleted';
+
+export type ImportTemplateChangedPayload = {
+    change: ImportTemplateChange;
+    templatePublicId: string;
 };
 
 export type NotificationsListQuery = {

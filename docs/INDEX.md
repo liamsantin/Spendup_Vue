@@ -31,6 +31,7 @@
 | Tags          | [`features/tags/contract.md`](features/tags/contract.md)                   |
 | Files         | [`features/files/contract.md`](features/files/contract.md)                 |
 | Transactions  | [`features/transactions/contract.md`](features/transactions/contract.md)   |
+| Imports       | [`features/imports/contract.md`](features/imports/contract.md)             |
 | Subscription  | [`features/subscription/contract.md`](features/subscription/contract.md)   |
 | User settings | [`features/user-settings/contract.md`](features/user-settings/contract.md) |
 | Countries     | [`features/countries/contract.md`](features/countries/contract.md)         |

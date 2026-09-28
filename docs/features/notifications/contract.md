@@ -32,19 +32,21 @@ Réponses list/read : passer par `normalize*` (metadata JSON string → objet).
 
 Hub `{apiBase}/hubs/realtime` — détails `architecture/realtime.md`.
 
-| Event                     | Effet                                        |
-| ------------------------- | -------------------------------------------- |
-| `notificationReceived`    | upsert inbox / badge / chips                 |
-| `friendshipChanged`       | listeners only — **pas** de badge            |
-| `accountChanged`          | fan-out stores comptes / PM / transactions   |
-| `categoryChanged`         | fan-out store catégories (acteur inclus)     |
-| `tagChanged`              | fan-out store tags (acteur inclus)           |
-| `recurringExpenseChanged` | fan-out store récurrences (acteur inclus)    |
-| `recurringIncomeChanged`  | fan-out store récurrences (acteur inclus)    |
-| `budgetChanged`           | fan-out store budgets (acteur inclus)        |
+| Event                     | Effet                                             |
+| ------------------------- | ------------------------------------------------- |
+| `notificationReceived`    | upsert inbox / badge / chips                      |
+| `friendshipChanged`       | listeners only — **pas** de badge                 |
+| `accountChanged`          | fan-out stores comptes / PM / transactions        |
+| `categoryChanged`         | fan-out store catégories (acteur inclus)          |
+| `tagChanged`              | fan-out store tags (acteur inclus)                |
+| `recurringExpenseChanged` | fan-out store récurrences (acteur inclus)         |
+| `recurringIncomeChanged`  | fan-out store récurrences (acteur inclus)         |
+| `budgetChanged`           | fan-out store budgets (acteur inclus)             |
 | `savingsGoalChanged`      | fan-out store objectifs d’épargne (acteur inclus) |
-| `inboxCleared`            | reset liste                                  |
-| `sessionEnded`            | `forceReLogin` (all devices ou device match) |
+| `importChanged`           | fan-out store imports (créateur, acteur inclus)   |
+| `importTemplateChanged`   | fan-out store imports (modèles, acteur inclus)    |
+| `inboxCleared`            | reset liste                                       |
+| `sessionEnded`            | `forceReLogin` (all devices ou device match)      |
 
 ## Invariants
 
