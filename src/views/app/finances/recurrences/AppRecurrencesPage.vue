@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
-import { ArrowsSortIcon, BuildingBankIcon, CoinIcon, FileExportIcon } from 'vue-tabler-icons';
+import { AbcIcon, ArrowsSortIcon, BuildingBankIcon, CalendarDueIcon, CoinIcon, FileExportIcon } from 'vue-tabler-icons';
 import AppChoiceList from '@/components/shared/dropdown-filter/AppChoiceList.vue';
 import AppBoard from '@/components/shared/board/AppBoard.vue';
 import AppBoardSearch from '@/components/shared/board/AppBoardSearch.vue';
@@ -11,6 +11,7 @@ import { useBoardSearch } from '@/components/shared/board/useBoardSearch';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppAmountRangeFields from '@/components/shared/dropdown-filter/AppAmountRangeFields.vue';
 import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
+import type { AppSortGroup } from '@/components/shared/dropdown-filter/sort-choices';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
@@ -21,9 +22,9 @@ import {
     RECURRING_SEARCH_MAX,
     TEMPLATE_SORT_DEFAULT,
     UPCOMING_DUE_SORT_DEFAULT,
-    UPCOMING_DUE_SORTS,
     parseTemplateSort,
-    parseUpcomingDueSort
+    parseUpcomingDueSort,
+    type UpcomingDueSort
 } from '@/features/recurring-payments/format';
 import { recurrencesPathForTab, recurrencesTabFromPath, type RecurrenceTab } from '@/features/recurring-payments/paths';
 import { serializeAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
@@ -235,6 +236,30 @@ const filterCount = computed(
 const amountCount = computed(() => [filterMinAmount.value, filterMaxAmount.value].filter(Boolean).length);
 const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ? 0 : 1));
 
+/** Critères de tri des échéances : une ligne par critère, le sens en segments. */
+const sortGroups = computed<AppSortGroup<UpcomingDueSort>[]>(() => {
+    const option = (value: UpcomingDueSort) => ({
+        value,
+        label: t(`recurrencesPage.sortShort.${value}`),
+        ariaLabel: t(`recurrencesPage.sort.${value}`)
+    });
+    return [
+        {
+            id: 'date',
+            label: t('recurrencesPage.sortGroups.date'),
+            icon: CalendarDueIcon,
+            options: [option('dateAsc'), option('dateDesc')]
+        },
+        { id: 'name', label: t('recurrencesPage.sortGroups.name'), icon: AbcIcon, options: [option('nameAsc'), option('nameDesc')] },
+        {
+            id: 'amount',
+            label: t('recurrencesPage.sortGroups.amount'),
+            icon: CoinIcon,
+            options: [option('amountDesc'), option('amountAsc')]
+        }
+    ];
+});
+
 /** Total affiché sur le bouton « Filtres » replié (mobile). */
 const activeFilterTotal = computed(() =>
     tab.value === 'upcoming' ? sortCount.value + filterCount.value : amountCount.value + (filterAccountId.value ? 1 : 0)
@@ -249,17 +274,13 @@ const activeFilterTotal = computed(() =>
                     <AppDropdownFilter
                         :label="t('recurrencesPage.actions.sort')"
                         :icon="ArrowsSortIcon"
-                        :min-width="280"
+                        :min-width="320"
                         close-on-content-click
                         :count="sortCount"
                         :reset-disabled="listSort === UPCOMING_DUE_SORT_DEFAULT"
                         @reset="listSort = UPCOMING_DUE_SORT_DEFAULT"
                     >
-                        <AppSortChoices
-                            v-model="listSort"
-                            :items="UPCOMING_DUE_SORTS"
-                            :label-for="(value) => t(`recurrencesPage.sort.${value}`)"
-                        />
+                        <AppSortChoices v-model="listSort" :groups="sortGroups" :label="t('recurrencesPage.actions.sort')" />
                     </AppDropdownFilter>
                     <AppDropdownFilter
                         :label="t('recurrencesPage.actions.filter')"

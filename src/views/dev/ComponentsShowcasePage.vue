@@ -5,7 +5,19 @@
 defineOptions({ name: 'ComponentsShowcasePage' });
 
 import { ref } from 'vue';
-import { BellPlusIcon, BuildingBankIcon, ChecksIcon, PlusIcon, SearchIcon, UserCircleIcon, XIcon } from 'vue-tabler-icons';
+import {
+    AbcIcon,
+    ArrowsSortIcon,
+    BellPlusIcon,
+    BuildingBankIcon,
+    CalendarIcon,
+    ChecksIcon,
+    PlusIcon,
+    ScaleIcon,
+    SearchIcon,
+    UserCircleIcon,
+    XIcon
+} from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppAccordion from '@/components/shared/accordion/AppAccordion.vue';
 import AppCheckbox from '@/components/shared/checkbox/AppCheckbox.vue';
@@ -14,6 +26,8 @@ import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue'
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
+import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
+import type { AppSortGroup } from '@/components/shared/dropdown-filter/sort-choices';
 import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
@@ -56,6 +70,36 @@ const switchOff = ref(false);
 const checkboxOn = ref(true);
 const checkboxOff = ref(false);
 const radioRole = ref('viewer');
+const sortValue = ref('recent');
+const sortGroups: AppSortGroup[] = [
+    {
+        id: 'added',
+        label: 'Date d’ajout',
+        icon: CalendarIcon,
+        options: [
+            { value: 'recent', label: 'Récents' },
+            { value: 'oldest', label: 'Anciens' }
+        ]
+    },
+    {
+        id: 'name',
+        label: 'Nom',
+        icon: AbcIcon,
+        options: [
+            { value: 'nameAsc', label: 'A → Z' },
+            { value: 'nameDesc', label: 'Z → A' }
+        ]
+    },
+    {
+        id: 'size',
+        label: 'Taille',
+        icon: ScaleIcon,
+        options: [
+            { value: 'sizeAsc', label: 'Légers' },
+            { value: 'sizeDesc', label: 'Lourds' }
+        ]
+    }
+];
 const dateValue = ref<string | null>('1998-04-12');
 const colorValue = ref<string | null>(ACCOUNT_COLOR_PRESETS[0]);
 const chipVisible = ref(true);
@@ -210,6 +254,20 @@ const accordionOpen = ref(false);
                 <AppGlassCard title="Filtre" subtitle="AppDropdownFilter.">
                     <AppDropdownFilter label="Filtres" :reset-disabled="!filterHidden" @reset="filterHidden = false">
                         <AppSwitch v-model="filterHidden" label="Masquer les archivés" class="px-3 py-2" />
+                    </AppDropdownFilter>
+                </AppGlassCard>
+
+                <AppGlassCard title="Tri" subtitle="AppSortChoices — un critère par ligne, le sens en segments.">
+                    <AppDropdownFilter
+                        label="Trier"
+                        :icon="ArrowsSortIcon"
+                        :min-width="340"
+                        close-on-content-click
+                        :count="sortValue === 'recent' ? 0 : 1"
+                        :reset-disabled="sortValue === 'recent'"
+                        @reset="sortValue = 'recent'"
+                    >
+                        <AppSortChoices v-model="sortValue" :groups="sortGroups" label="Trier" />
                     </AppDropdownFilter>
                 </AppGlassCard>
 

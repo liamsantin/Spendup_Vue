@@ -2,23 +2,29 @@
 import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeftIcon, ArrowsSortIcon, DownloadIcon, FileExportIcon, PencilIcon, TrashIcon, UploadIcon } from 'vue-tabler-icons';
+import {
+    AbcIcon,
+    ArrowLeftIcon,
+    ArrowsSortIcon,
+    CalendarIcon,
+    DownloadIcon,
+    FileExportIcon,
+    FileTextIcon,
+    PencilIcon,
+    ScaleIcon,
+    TrashIcon,
+    UploadIcon
+} from 'vue-tabler-icons';
 import AppBoard from '@/components/shared/board/AppBoard.vue';
 import AppBoardSearch from '@/components/shared/board/AppBoardSearch.vue';
 import { useBoardSearch } from '@/components/shared/board/useBoardSearch';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
+import type { AppSortGroup } from '@/components/shared/dropdown-filter/sort-choices';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import FilePreview from '@/features/files/components/FilePreview.vue';
-import {
-    FILE_SEARCH_MAX,
-    FILE_SORT_DEFAULT,
-    FILE_SORTS,
-    FilesDirectory,
-    isFileSort,
-    parseFileSort,
-    useFilesStore
-} from '@/features/files';
+import { FILE_SEARCH_MAX, FILE_SORT_DEFAULT, FilesDirectory, isFileSort, parseFileSort, useFilesStore } from '@/features/files';
+import type { FileSort } from '@/features/files/format';
 import type { FileDto } from '@/features/files/types';
 
 const FILES_PATH = '/app/gestion/files';
@@ -61,6 +67,26 @@ const listSort = computed({
 const visibleCount = computed(() => directoryRef.value?.visibleCount ?? 0);
 
 const sortCount = computed(() => (listSort.value === FILE_SORT_DEFAULT ? 0 : 1));
+
+/** Critères de tri : une ligne par critère, le sens en segments (libellé complet pour l'a11y). */
+const sortGroups = computed<AppSortGroup<FileSort>[]>(() => {
+    const option = (value: FileSort) => ({
+        value,
+        label: t(`filesPage.sortShort.${value}`),
+        ariaLabel: t(`filesPage.sort.${value}`)
+    });
+    return [
+        { id: 'added', label: t('filesPage.sortGroups.added'), icon: CalendarIcon, options: [option('recent'), option('oldest')] },
+        { id: 'name', label: t('filesPage.sortGroups.name'), icon: AbcIcon, options: [option('nameAsc'), option('nameDesc')] },
+        { id: 'size', label: t('filesPage.sortGroups.size'), icon: ScaleIcon, options: [option('sizeAsc'), option('sizeDesc')] },
+        {
+            id: 'documentDate',
+            label: t('filesPage.sortGroups.documentDate'),
+            icon: FileTextIcon,
+            options: [option('documentDateDesc'), option('documentDateAsc')]
+        }
+    ];
+});
 
 const pageTitle = computed(() => previewFile.value?.nameOriginal || t('filesPage.title'));
 
@@ -145,13 +171,13 @@ watch(
                     <AppDropdownFilter
                         :label="t('filesPage.actions.sort')"
                         :icon="ArrowsSortIcon"
-                        :min-width="240"
+                        :min-width="340"
                         close-on-content-click
                         :count="sortCount"
                         :reset-disabled="listSort === FILE_SORT_DEFAULT"
                         @reset="listSort = FILE_SORT_DEFAULT"
                     >
-                        <AppSortChoices v-model="listSort" :items="FILE_SORTS" :label-for="(value) => t(`filesPage.sort.${value}`)" />
+                        <AppSortChoices v-model="listSort" :groups="sortGroups" :label="t('filesPage.actions.sort')" />
                     </AppDropdownFilter>
                 </template>
                 <template #bar>
@@ -191,12 +217,7 @@ watch(
                     </button>
                 </template>
 
-                <FilesDirectory
-                    ref="directoryRef"
-                    :search="queryString('q') || null"
-                    :sort="listSort"
-                    @sort="listSort = $event"
-                />
+                <FilesDirectory ref="directoryRef" :search="queryString('q') || null" :sort="listSort" @sort="listSort = $event" />
             </AppBoard>
         </AppPageShell>
     </div>
