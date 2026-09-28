@@ -678,6 +678,202 @@
     background: rgba(var(--v-theme-primary), 0.1);
 }
 
+/* ---------- Hébergement Infomaniak ---------- */
+.home-hosting {
+    padding: 0 0 108px;
+}
+
+/* bleu Infomaniak, identique au logo (#0098FF) */
+.home-hosting .section-heading h2 span {
+    color: #0098ff;
+}
+
+.hosting-panel {
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    gap: 22px;
+    align-items: stretch;
+}
+
+.hosting-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 26px;
+    overflow: hidden;
+    padding: 48px 44px;
+    border: 1px solid rgba(0, 152, 255, 0.18);
+    border-radius: 26px;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(0, 152, 255, 0.14), transparent 45%),
+        radial-gradient(circle at 0% 100%, rgba(218, 41, 28, 0.06), transparent 40%), rgb(var(--v-theme-surface));
+    box-shadow: 0 24px 60px -38px rgba(24, 28, 75, 0.35);
+}
+
+.hosting-card__label {
+    color: rgba(var(--v-theme-textPrimary), 0.55);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.085em;
+    text-transform: uppercase;
+}
+
+.hosting-card__logo {
+    display: block;
+    width: min(100%, 244px);
+    height: auto;
+    margin-top: -12px;
+}
+
+.hosting-card__place {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 14px 16px;
+    border: 1px solid var(--home-border);
+    border-radius: 16px;
+    background: rgba(var(--v-theme-surface), 0.85);
+}
+
+.hosting-card__place svg {
+    width: 34px;
+    height: 34px;
+    flex: none;
+}
+
+.hosting-card__place strong {
+    display: block;
+    color: rgb(var(--v-theme-textPrimary));
+    font-size: 0.86rem;
+    font-weight: 680;
+}
+
+.hosting-card__place small {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+    color: rgba(var(--v-theme-textPrimary), 0.58);
+    font-size: 0.74rem;
+}
+
+.hosting-card__scope {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.hosting-card__scope li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    color: rgb(0, 112, 196);
+    font-size: 0.72rem;
+    font-weight: 620;
+    background: rgba(0, 152, 255, 0.1);
+}
+
+.hosting-facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.hosting-fact {
+    padding: 28px 26px;
+    border: 1px solid var(--home-border);
+    border-radius: 22px;
+    background: rgb(var(--v-theme-surface));
+    transition:
+        transform 0.35s ease,
+        box-shadow 0.35s ease;
+}
+
+.hosting-fact:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 44px -30px rgba(24, 28, 75, 0.4);
+}
+
+.hosting-fact__icon {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.1);
+}
+
+.hosting-fact h3 {
+    margin: 18px 0 8px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.hosting-fact p {
+    margin: 0;
+    font-size: 0.84rem;
+    line-height: 1.6;
+}
+
+@media (max-width: 959px) {
+    .home-hosting {
+        padding-bottom: 80px;
+    }
+
+    .hosting-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .hosting-card {
+        align-items: center;
+        padding: 40px 32px;
+        text-align: center;
+    }
+
+    .hosting-card__logo {
+        margin-inline: auto;
+    }
+
+    .hosting-card__place {
+        text-align: left;
+    }
+
+    .hosting-card__scope {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 599px) {
+    .home-hosting {
+        padding-bottom: 64px;
+    }
+
+    .hosting-card {
+        padding: 32px 22px;
+        gap: 22px;
+    }
+
+    .hosting-facts {
+        grid-template-columns: 1fr;
+    }
+
+    .hosting-fact {
+        padding: 22px 20px;
+    }
+}
+
 .home-anywhere {
     padding-top: 0;
 }

@@ -9,14 +9,19 @@ import {
     CheckIcon,
     DeviceDesktopIcon,
     DownloadIcon,
+    GavelIcon,
+    LeafIcon,
     LockIcon,
+    MapPinIcon,
     PlugConnectedIcon,
+    ServerIcon,
     ShieldCheckIcon,
     SparklesIcon,
     TargetIcon,
     UserPlusIcon
 } from 'vue-tabler-icons';
 import heroVisual from '@/assets/images/front-pages/dashboard-preview.png';
+import infomaniakLogo from '@/assets/images/front-pages/infomaniak-logo.svg';
 
 const PLATFORM_IMG = '/assets/images/front-pages/features/home-platform-central.png';
 
@@ -29,6 +34,31 @@ const assurances = [
     'Export et suppression de vos données',
     'Contrôle précis des accès partagés'
 ];
+
+const hostingFacts = [
+    {
+        icon: ServerIcon,
+        title: 'Des serveurs en Suisse',
+        text: 'Vos comptes, transactions et documents sont stockés dans des centres de données situés en Suisse, pas sur des serveurs à l’étranger.'
+    },
+    {
+        icon: GavelIcon,
+        title: 'Protégées par le droit suisse',
+        text: 'Vos données relèvent de la loi fédérale sur la protection des données (nLPD), l’un des cadres les plus exigeants au monde.'
+    },
+    {
+        icon: ShieldCheckIcon,
+        title: 'Un hébergeur suisse indépendant',
+        text: 'Infomaniak est une entreprise suisse fondée à Genève en 1994, indépendante des géants du cloud étrangers.'
+    },
+    {
+        icon: LeafIcon,
+        title: 'Une infrastructure responsable',
+        text: 'Des centres de données alimentés en énergie renouvelable, dont la chaleur est valorisée plutôt que perdue.'
+    }
+];
+
+const hostingScope = ['Base de données', 'Documents & justificatifs', 'Sauvegardes'];
 
 const pillars = [
     {
@@ -282,6 +312,50 @@ const faqs = [
                             <ArrowRightIcon size="17" class="ms-2" />
                         </v-btn>
                     </div>
+                </div>
+            </v-container>
+        </section>
+
+        <section id="hebergement" class="home-hosting">
+            <v-container class="max-width-1218">
+                <div v-reveal class="section-heading">
+                    <span class="section-kicker">Hébergement souverain</span>
+                    <h2 class="textPrimary">Vos données restent en Suisse,<br /><span>chez Infomaniak.</span></h2>
+                    <p class="text-medium-emphasis">
+                        Spendup confie l’hébergement de vos données à Infomaniak, un hébergeur cloud suisse reconnu. Pas de détour par
+                        l’étranger : vos finances restent là où vous vivez.
+                    </p>
+                </div>
+
+                <div v-reveal class="hosting-panel">
+                    <div class="hosting-card">
+                        <span class="hosting-card__label">Hébergé par</span>
+                        <img :src="infomaniakLogo" alt="Infomaniak" class="hosting-card__logo" width="244" height="32" />
+                        <div class="hosting-card__place">
+                            <svg viewBox="0 0 32 32" aria-hidden="true">
+                                <rect width="32" height="32" rx="7" fill="#DA291C" />
+                                <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
+                                <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
+                            </svg>
+                            <div>
+                                <strong>Centres de données en Suisse</strong>
+                                <small><MapPinIcon size="13" /> Genève, Suisse</small>
+                            </div>
+                        </div>
+                        <ul class="hosting-card__scope" aria-label="Données hébergées en Suisse">
+                            <li v-for="item in hostingScope" :key="item"><CheckIcon size="14" stroke-width="2.4" />{{ item }}</li>
+                        </ul>
+                    </div>
+
+                    <ul v-reveal class="hosting-facts" data-reveal-stagger="90">
+                        <li v-for="fact in hostingFacts" :key="fact.title" class="hosting-fact">
+                            <span class="hosting-fact__icon">
+                                <component :is="fact.icon" size="21" stroke-width="1.65" />
+                            </span>
+                            <h3 class="textPrimary">{{ fact.title }}</h3>
+                            <p class="text-medium-emphasis">{{ fact.text }}</p>
+                        </li>
+                    </ul>
                 </div>
             </v-container>
         </section>
