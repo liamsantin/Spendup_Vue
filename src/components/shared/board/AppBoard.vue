@@ -2,18 +2,56 @@
 /**
  * Plateau de liste : barre de filtres + encoche d’actions à droite, panneau blanc dessous.
  * `#filters` : pastilles de filtre (gauche de la barre).
+ * `#filters-pinned` : pastilles placées avant `#filters`, jamais repliées (voir ci-dessous).
  * `#bar` : recherche / compteur (suite de la barre).
  * `#actions` : boutons de l’encoche (libellés dans `.app-board__label`, masqués sur mobile).
+ *
+ * `mobileFilters="sheet"` : sur téléphone, les pastilles sont repliées derrière un seul
+ * bouton « Filtres » qui ouvre un panneau bas où elles s’empilent en pleine largeur.
+ * À réserver aux pages dont les pastilles ne tiennent pas sur une ligne ;
+ * `activeFilters` alimente alors la pastille de compte du bouton ; les filtres de
+ * `#filters-pinned` restent visibles à sa gauche et ne sont pas comptés.
  */
 defineOptions({ name: 'AppBoard' });
+
+import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { AdjustmentsHorizontalIcon } from 'vue-tabler-icons';
+import { useIsMobile } from '@/layouts/shell/composables/useBreakpoint';
+
+const props = withDefaults(
+    defineProps<{
+        mobileFilters?: 'inline' | 'sheet';
+        activeFilters?: number;
+    }>(),
+    { mobileFilters: 'inline', activeFilters: 0 }
+);
+
+const { t } = useI18n();
+const isMobile = useIsMobile();
+const filtersCollapsed = computed(() => props.mobileFilters === 'sheet' && isMobile.value);
+const sheetOpen = ref(false);
 </script>
 
 <template>
     <section class="app-board" :class="{ 'app-board--notched': $slots.actions }">
         <div class="app-board__top">
             <div class="app-board__bar">
-                <div v-if="$slots.filters" class="app-board__filters">
-                    <slot name="filters" />
+                <div v-if="$slots.filters || $slots['filters-pinned']" class="app-board__filters">
+                    <slot name="filters-pinned" />
+                    <button
+                        v-if="filtersCollapsed && $slots.filters"
+                        type="button"
+                        class="su-btn"
+                        aria-haspopup="dialog"
+                        :aria-expanded="sheetOpen"
+                        @click="sheetOpen = true"
+                    >
+                        <AdjustmentsHorizontalIcon :size="16" stroke-width="1.6" />
+                        {{ t('common.filters') }}
+                        <span v-if="activeFilters > 0" class="su-btn__count">{{ activeFilters }}</span>
+                    </button>
+                    <slot v-else name="filters" />
                 </div>
                 <slot name="bar" />
             </div>
@@ -25,6 +63,21 @@ defineOptions({ name: 'AppBoard' });
             <slot />
         </div>
     </section>
+
+    <v-bottom-sheet v-if="filtersCollapsed" v-model="sheetOpen" :aria-label="t('common.filters')">
+        <div class="app-board-sheet">
+            <span class="app-board-sheet__handle" aria-hidden="true" />
+            <header class="app-board-sheet__head">
+                <p class="app-board-sheet__title">{{ t('common.filters') }}</p>
+                <button type="button" class="su-btn app-board-sheet__done" @click="sheetOpen = false">
+                    {{ t('common.done') }}
+                </button>
+            </header>
+            <div class="app-board-sheet__list">
+                <slot name="filters" />
+            </div>
+        </div>
+    </v-bottom-sheet>
 </template>
 
 <!-- Non scopé : s’applique aux composants passés en slot (pastilles, recherche, boutons). -->
@@ -214,5 +267,75 @@ defineOptions({ name: 'AppBoard' });
     .app-board--notched .app-board__panel {
         border-radius: 0 22px 22px 22px;
     }
+}
+
+/* ── panneau bas des filtres repliés (mobile) ─────────── */
+.app-board-sheet {
+    max-height: 80dvh;
+    overflow-y: auto;
+    padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    border-radius: 26px 26px 0 0;
+    background: #fff;
+    color: var(--ink);
+    font-family: var(--font-ui);
+}
+
+.app-board-sheet__handle {
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: 0 auto 10px;
+    border-radius: 2px;
+    background: rgba(16, 16, 20, 0.16);
+}
+
+.app-board-sheet__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px 12px;
+}
+
+.app-board-sheet__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+}
+
+.app-board-sheet .app-board-sheet__done {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 17px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.app-board-sheet__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* chaque pastille devient une ligne pleine largeur ; son menu s’ouvre par-dessus */
+.app-board-sheet__list > *,
+.app-board-sheet__list > * > button {
+    width: 100%;
+}
+
+/* spécificité relevée : passe devant les styles scopés des déclencheurs de page */
+.app-board-sheet .app-board-sheet__list button,
+.app-board-sheet .app-board-sheet__list > label {
+    justify-content: flex-start;
+    min-height: 48px;
+    padding: 0 16px;
+    border-radius: 16px;
+    background: rgba(16, 16, 20, 0.04);
+    box-shadow: none;
+    font-size: 0.95rem;
+}
+
+.app-board-sheet__list .su-btn__count {
+    margin-left: auto;
 }
 </style>

@@ -3,6 +3,7 @@ import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
+import { useCreateFromQuery } from '@/components/shared/board/useCreateFromQuery';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
@@ -100,6 +101,8 @@ function onCreate() {
     if (store.acting) return;
     directoryRef.value?.openCreate();
 }
+
+useCreateFromQuery(onCreate, () => !store.acting);
 
 onUnmounted(() => {
     if (searchTimer) clearTimeout(searchTimer);

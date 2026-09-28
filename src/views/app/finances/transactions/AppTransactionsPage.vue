@@ -6,6 +6,7 @@ import { PlusIcon, CalendarIcon, ChevronDownIcon, CheckIcon, CoinIcon, FileExpor
 import AppBoard from '@/components/shared/board/AppBoard.vue';
 import AppBoardSearch from '@/components/shared/board/AppBoardSearch.vue';
 import { useBoardSearch } from '@/components/shared/board/useBoardSearch';
+import { useCreateFromQuery } from '@/components/shared/board/useCreateFromQuery';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppAmountRangeFields from '@/components/shared/dropdown-filter/AppAmountRangeFields.vue';
@@ -433,6 +434,9 @@ const periodCount = computed(() => [filterFrom.value, filterTo.value].filter(Boo
 
 const amountCount = computed(() => [filterMinAmount.value, filterMaxAmount.value].filter(Boolean).length);
 
+/** Total affiché sur le bouton « Filtres » replié (mobile). */
+const activeFilterTotal = computed(() => filterCount.value + periodCount.value + amountCount.value);
+
 const typeTabLabel = computed(() =>
     filterType.value ? t(`transactionsPage.types.${filterType.value}`) : t('transactionsPage.filters.allTypes')
 );
@@ -460,6 +464,8 @@ onMounted(() => {
 onUnmounted(() => {
     unsubscribeTagDeleted();
 });
+
+useCreateFromQuery(onCreate, () => canCreate.value && !store.acting);
 
 watch(
     () => [queryString('recurringExpensePublicId'), queryString('recurringIncomePublicId')] as const,
@@ -495,8 +501,8 @@ watch(
             @update:scope="envelopeScope = $event"
             @dismiss="clearBudgetEnvelope"
         />
-        <AppBoard>
-            <template #filters>
+        <AppBoard mobile-filters="sheet" :active-filters="activeFilterTotal">
+            <template #filters-pinned>
                 <v-menu v-if="!filterBudgetId" v-model="typeMenuOpen" location="bottom start" :offset="8" scrim>
                     <template #activator="{ props: menuProps }">
                         <nav class="transactions-type-tabs" :aria-label="t('transactionsPage.filters.type')">
@@ -506,10 +512,11 @@ watch(
                                 v-bind="menuProps"
                                 :aria-expanded="typeMenuOpen"
                                 :aria-haspopup="true"
+                                :aria-label="`${t('transactionsPage.filters.type')} : ${typeTabLabel}`"
                             >
                                 <span class="su-tab__body">
                                     <component :is="typeTabIcon" :size="16" />
-                                    {{ typeTabLabel }}
+                                    <span class="transactions-type-trigger__label">{{ typeTabLabel }}</span>
                                 </span>
                                 <ChevronDownIcon
                                     class="transactions-type-menu__chevron"
@@ -550,6 +557,8 @@ watch(
                         </button>
                     </v-sheet>
                 </v-menu>
+            </template>
+            <template #filters>
                 <AppDropdownFilter
                     :label="t('transactionsPage.actions.filter')"
                     :min-width="520"
@@ -731,8 +740,14 @@ watch(
 }
 
 @media (max-width: 767px) {
+    /* mobile : icône du type + chevron, le libellé passe dans l'aria-label */
     .transactions-type-trigger {
+        gap: 4px;
         padding: 0 10px;
+    }
+
+    .transactions-type-trigger__label {
+        display: none;
     }
 
     .transactions-filters {

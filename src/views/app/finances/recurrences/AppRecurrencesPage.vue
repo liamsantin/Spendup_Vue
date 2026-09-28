@@ -32,6 +32,7 @@ import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/
 import type { RecurringKind } from '@/features/recurring-payments/types';
 import type { RecurringTypePick } from '@/features/recurring-payments/components/forms/RecurringTypeChoice.vue';
 import { useAccountsStore } from '@/features/accounts';
+import { useCreateFromQuery } from '@/components/shared/board/useCreateFromQuery';
 
 const TABS = ['all', 'expenses', 'incomes', 'upcoming'] as const;
 type DueSettlement = 'all' | 'planned' | 'settled';
@@ -202,6 +203,11 @@ function onPick(pick: RecurringTypePick) {
     directoryRef.value?.openCreate(pick.kind, pick.type);
 }
 
+useCreateFromQuery(
+    () => onCreate(),
+    () => canCreate.value && !store.acting
+);
+
 function resetUpcomingFilters() {
     patchQuery({ account: undefined, kind: undefined, due: undefined, minAmount: undefined, maxAmount: undefined });
 }
@@ -228,11 +234,16 @@ const filterCount = computed(
 );
 const amountCount = computed(() => [filterMinAmount.value, filterMaxAmount.value].filter(Boolean).length);
 const sortCount = computed(() => (listSort.value === UPCOMING_DUE_SORT_DEFAULT ? 0 : 1));
+
+/** Total affiché sur le bouton « Filtres » replié (mobile). */
+const activeFilterTotal = computed(() =>
+    tab.value === 'upcoming' ? sortCount.value + filterCount.value : amountCount.value + (filterAccountId.value ? 1 : 0)
+);
 </script>
 
 <template>
     <AppPageShell :title="pageTitle" :body-scroll="false">
-        <AppBoard>
+        <AppBoard mobile-filters="sheet" :active-filters="activeFilterTotal">
             <template #filters>
                 <template v-if="tab === 'upcoming'">
                     <AppDropdownFilter

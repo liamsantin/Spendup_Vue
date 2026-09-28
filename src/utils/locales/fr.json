@@ -23,7 +23,9 @@
         "skipToContent": "Aller au contenu",
         "reset": "Réinitialiser",
         "minAmount": "Montant min.",
-        "maxAmount": "Montant max."
+        "maxAmount": "Montant max.",
+        "filters": "Filtres",
+        "done": "Terminé"
     },
     "shell": {
         "save": "Enregistrer",
@@ -84,6 +86,25 @@
         },
         "subCaptions": {
             "soon": "Bientôt"
+        },
+        "tabBar": {
+            "label": "Navigation principale",
+            "home": "Accueil",
+            "finances": "Finances",
+            "add": "Ajouter",
+            "planning": "Planning",
+            "menu": "Menu",
+            "pagesOf": "Pages de la section {section}"
+        },
+        "quickAdd": {
+            "title": "Ajouter",
+            "close": "Fermer",
+            "transaction": "Transaction",
+            "recurrence": "Récurrence",
+            "budget": "Budget",
+            "goal": "Objectif",
+            "file": "Fichier",
+            "friend": "Ami"
         }
     },
     "header": {
@@ -908,7 +929,6 @@
             "createCategory": "Nouvelle catégorie",
             "createTag": "Nouveau tag",
             "fields": {
-                "isActive": "Actif",
                 "isActive": "Actif",
                 "account": "Compte",
                 "name": "Nom",

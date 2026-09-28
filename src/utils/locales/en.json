@@ -23,7 +23,9 @@
         "skipToContent": "Skip to content",
         "reset": "Reset",
         "minAmount": "Min. amount",
-        "maxAmount": "Max. amount"
+        "maxAmount": "Max. amount",
+        "filters": "Filters",
+        "done": "Done"
     },
     "shell": {
         "save": "Save",
@@ -84,6 +86,25 @@
         },
         "subCaptions": {
             "soon": "Soon"
+        },
+        "tabBar": {
+            "label": "Main navigation",
+            "home": "Home",
+            "finances": "Finances",
+            "add": "Add",
+            "planning": "Planning",
+            "menu": "Menu",
+            "pagesOf": "{section} pages"
+        },
+        "quickAdd": {
+            "title": "Add",
+            "close": "Close",
+            "transaction": "Transaction",
+            "recurrence": "Recurring",
+            "budget": "Budget",
+            "goal": "Goal",
+            "file": "File",
+            "friend": "Friend"
         }
     },
     "header": {

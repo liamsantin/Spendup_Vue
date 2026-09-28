@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AppHeader from './AppHeader.vue';
 import AppSidebar from './AppSidebar.vue';
+import MobileTabBar from './MobileTabBar.vue';
 import type { NavItem, NavLeaf } from '../types/navigation';
 
 /**
@@ -66,6 +67,9 @@ const emit = defineEmits<{
                 <slot />
             </main>
         </div>
+
+        <!-- après la colonne principale et sous le volet (z-index de .shell__aside) -->
+        <MobileTabBar v-model:menu-open="open" :items="[...items, ...bottomItems]" />
     </div>
 </template>
 
@@ -142,6 +146,8 @@ const emit = defineEmits<{
         --shell-pad: 8px;
         /* plus de rail dans le flux : le header occupe toute la largeur */
         gap: 0;
+        /* réserve la place de la barre d'onglets fixée en bas */
+        padding-bottom: calc(var(--tabbar-h) + 2 * var(--shell-pad) + env(safe-area-inset-bottom, 0px));
     }
     .shell__glow {
         top: -240px;

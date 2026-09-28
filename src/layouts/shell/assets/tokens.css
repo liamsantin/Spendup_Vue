@@ -67,6 +67,7 @@
 
     --header-h: 68px;
     --header-h-mobile: 58px;
+    --tabbar-h: 64px;
 
     /* ── mouvement ──────────────────────────────────────── */
     --ease: cubic-bezier(0.19, 1, 0.22, 1);

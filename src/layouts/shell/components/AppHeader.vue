@@ -36,7 +36,10 @@ const { t } = useI18n();
 
         <div class="bar__tools">
             <Searchbar />
-            <NewDD class="bar__new" />
+            <!-- enveloppe : NewDD a plusieurs racines, une classe posée dessus serait ignorée -->
+            <div class="bar__new-wrap">
+                <NewDD class="bar__new" />
+            </div>
         </div>
 
         <div class="bar__spacer" />
@@ -85,6 +88,11 @@ const { t } = useI18n();
     margin: -2px;
 }
 
+.bar__new-wrap {
+    display: flex;
+    align-items: center;
+}
+
 .bar__spacer {
     flex: 1;
     min-width: 0;
@@ -125,9 +133,9 @@ const { t } = useI18n();
         gap: 2px;
     }
 
-    .brand {
-        display: grid;
-        --burger-size: 40px;
+    /* burger et « Nouveau » vivent dans la barre d'onglets du bas (Menu, +) */
+    .bar__new-wrap {
+        display: none;
     }
 
     .bar__sep {
