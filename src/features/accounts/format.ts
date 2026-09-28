@@ -201,18 +201,23 @@ export function ymdToSnapshotIso(ymd: string, now = new Date()): string {
     return `${datePart}T12:00:00.000Z`;
 }
 
+/** Heure conventionnelle d'un relevé « jour seul » (midi ou minuit UTC, cf. `ymdToSnapshotIso`). */
+const DATE_ONLY_TIME_RE = /^\d{4}-\d{2}-\d{2}(?:T(?:12|00):00(?::00(?:\.0+)?)?Z)?$/i;
+
 /**
- * Extrait le jour calendaire `YYYY-MM-DD` d’un `snapshotAt` ISO (partie date, pas de conversion locale).
+ * Extrait le jour calendaire `YYYY-MM-DD` d’un `snapshotAt` ISO.
+ * - Relevé « jour seul » (date nue, midi ou minuit UTC) → partie date, sans conversion.
+ * - Instant réel (relevé du jour, `now.toISOString()`) → jour **local** : un relevé saisi
+ *   à 00:30 en UTC+2 est stocké la veille en UTC mais appartient bien à aujourd’hui.
  */
 export function snapshotIsoToYmd(iso: string, now = new Date()): string {
-    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso.trim());
+    const trimmed = iso.trim();
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(trimmed);
+    if (match && DATE_ONLY_TIME_RE.test(trimmed)) return `${match[1]}-${match[2]}-${match[3]}`;
+    const parsed = new Date(trimmed);
+    if (!Number.isNaN(parsed.getTime())) return todayYmd(parsed);
     if (match) return `${match[1]}-${match[2]}-${match[3]}`;
-    const parsed = new Date(iso);
-    if (Number.isNaN(parsed.getTime())) return todayYmd(now);
-    const y = parsed.getUTCFullYear();
-    const m = String(parsed.getUTCMonth() + 1).padStart(2, '0');
-    const d = String(parsed.getUTCDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
+    return todayYmd(now);
 }
 
 /**
@@ -228,15 +233,13 @@ export function snapshotAtForUpdate(formYmd: string, originalIso: string, now = 
 }
 
 /**
- * Affiche la date calendaire d’un `snapshotAt` (sémantique date-only) sans dérive timezone.
+ * Affiche la date calendaire d’un `snapshotAt` (même règle que `snapshotIsoToYmd`) sans dérive timezone.
  */
 export function formatSnapshotDate(value: string, locale?: string): string {
-    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value.trim());
-    if (match) {
-        const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12));
-        return new Intl.DateTimeFormat(locale || undefined, { dateStyle: 'medium', timeZone: 'UTC' }).format(date);
-    }
-    return new Intl.DateTimeFormat(locale || undefined, { dateStyle: 'medium' }).format(new Date(value));
+    const ymd = snapshotIsoToYmd(value);
+    const [y, m, d] = ymd.split('-').map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d, 12));
+    return new Intl.DateTimeFormat(locale || undefined, { dateStyle: 'medium', timeZone: 'UTC' }).format(date);
 }
 
 /**

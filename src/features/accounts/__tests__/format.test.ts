@@ -67,6 +67,14 @@ describe('snapshot date helpers', () => {
         expect(snapshotAtForUpdate('2026-08-10', '2026-08-18T09:00:00Z', now)).toBe('2026-08-10T12:00:00.000Z');
     });
 
+    it('snapshotIsoToYmd rattache un relevé du jour à la date locale, même près de minuit', () => {
+        const justAfterMidnight = new Date(2026, 7, 26, 0, 30, 0);
+        expect(snapshotIsoToYmd(ymdToSnapshotIso('2026-08-26', justAfterMidnight))).toBe('2026-08-26');
+        const lateEvening = new Date(2026, 7, 26, 23, 45, 0);
+        expect(snapshotIsoToYmd(ymdToSnapshotIso('2026-08-26', lateEvening))).toBe('2026-08-26');
+        expect(formatSnapshotDate(ymdToSnapshotIso('2026-08-26', justAfterMidnight), 'en-GB')).toMatch(/26/);
+    });
+
     it('todayYmd reflète la date locale fournie', () => {
         expect(todayYmd(new Date(2026, 7, 23, 23, 30))).toBe('2026-08-23');
     });

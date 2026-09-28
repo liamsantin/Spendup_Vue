@@ -1,4 +1,4 @@
-import { rm } from 'node:fs/promises';
+import { readFile, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { Plugin } from 'vite';
 
@@ -14,6 +14,30 @@ export function excludeDesktopInstaller(): Plugin {
         async closeBundle() {
             if (!process.env.TAURI_ENV_PLATFORM) return;
             await rm(resolve(process.cwd(), 'dist/downloads'), { recursive: true, force: true });
+        }
+    };
+}
+
+/**
+ * `public/_headers` (Netlify) est copié tel quel dans `dist/` : sa CSP figée n’autorise
+ * que localhost en `connect-src`. Un header CSP s’applique en plus de la meta CSP (le
+ * navigateur impose les deux), donc on y réécrit la politique calculée pour le build —
+ * sinon l’API de prod (`VITE_API_BASE_URL`) et SignalR seraient bloqués.
+ */
+export function netlifyHeadersCsp(csp: string): Plugin {
+    return {
+        name: 'spendup-netlify-headers-csp',
+        apply: 'build',
+        async closeBundle() {
+            const file = resolve(process.cwd(), 'dist/_headers');
+            let content: string;
+            try {
+                content = await readFile(file, 'utf8');
+            } catch {
+                return;
+            }
+            const next = content.replace(/^(\s*Content-Security-Policy:).*$/m, `$1 ${csp}`);
+            if (next !== content) await writeFile(file, next, 'utf8');
         }
     };
 }

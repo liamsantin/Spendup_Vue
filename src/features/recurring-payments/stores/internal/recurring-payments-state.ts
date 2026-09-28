@@ -161,12 +161,13 @@ export function createRecurringPaymentsState() {
             const existed = without.length !== (entry?.items.length ?? 0);
             const matchesAccount = key === listCacheKey('expense') || key === listCacheKey('expense', next.accountPublicId);
             if (!existed && !matchesAccount) continue;
-            const nextItems = matchesAccount || existed ? [...without, next] : without;
-            const nextTotal = existed
-                ? (entry?.totalCount ?? nextItems.length)
-                : matchesAccount
-                  ? (entry?.totalCount ?? 0) + 1
-                  : (entry?.totalCount ?? 0);
+            if (!matchesAccount) {
+                // Le modèle a changé de compte : on le retire de la liste de l'ancien compte.
+                setExpenseList(key, without, { totalCount: Math.max(0, (entry?.totalCount ?? without.length + 1) - 1) });
+                continue;
+            }
+            const nextItems = [...without, next];
+            const nextTotal = existed ? (entry?.totalCount ?? nextItems.length) : (entry?.totalCount ?? 0) + 1;
             setExpenseList(key, nextItems, { totalCount: nextTotal });
         }
     }
@@ -181,12 +182,13 @@ export function createRecurringPaymentsState() {
             const existed = without.length !== (entry?.items.length ?? 0);
             const matchesAccount = key === listCacheKey('income') || key === listCacheKey('income', item.accountPublicId);
             if (!existed && !matchesAccount) continue;
-            const nextItems = matchesAccount || existed ? [...without, item] : without;
-            const nextTotal = existed
-                ? (entry?.totalCount ?? nextItems.length)
-                : matchesAccount
-                  ? (entry?.totalCount ?? 0) + 1
-                  : (entry?.totalCount ?? 0);
+            if (!matchesAccount) {
+                // Le modèle a changé de compte : on le retire de la liste de l'ancien compte.
+                setIncomeList(key, without, { totalCount: Math.max(0, (entry?.totalCount ?? without.length + 1) - 1) });
+                continue;
+            }
+            const nextItems = [...without, item];
+            const nextTotal = existed ? (entry?.totalCount ?? nextItems.length) : (entry?.totalCount ?? 0) + 1;
             setIncomeList(key, nextItems, { totalCount: nextTotal });
         }
     }

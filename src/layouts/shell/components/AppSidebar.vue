@@ -55,15 +55,17 @@ function toggleItem(item: NavItem) {
         if (!open.value) open.value = true;
         return;
     }
+    const isLeafTab = !item.children?.length && !item.detail?.length;
+    // un onglet sans sous-menu est un lien : il navigue sans déployer la colonne, reste
+    // sélectionné (le refermer casserait le surlignage) et referme le volet mobile
+    if (isLeafTab) {
+        openId.value = item.id;
+        if (isMobile.value) open.value = false;
+        return;
+    }
     // replié, un clic déploie la colonne sur l'onglet visé
     if (!open.value) {
         open.value = true;
-        openId.value = item.id;
-        return;
-    }
-    const isLeafTab = !item.children?.length && !item.detail?.length;
-    // un onglet sans sous-menu reste sélectionné : le refermer casserait le surlignage de la page courante
-    if (isLeafTab) {
         openId.value = item.id;
         return;
     }

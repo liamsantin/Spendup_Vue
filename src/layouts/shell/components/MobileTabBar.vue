@@ -89,7 +89,13 @@ const allTabs = computed(() => [...tabs.value.left, ...tabs.value.right]);
 
 /* dérivé de la route et non d'openId : ouvrir un accordéon de la sidebar ne doit
    pas déplacer le surlignage de la barre */
-const currentSection = computed(() => idsFromPath(route.path).openId);
+const currentSection = computed(() => {
+    const { openId } = idsFromPath(route.path);
+    // idsFromPath retombe sur le tableau de bord pour les pages hors menu (notifications,
+    // applications…) : ici seul `/app` est l'Accueil, le reste relève de l'onglet Menu.
+    if (openId === SHELL_NAV_IDS.dashboard && route.path.replace(/\/$/, '') !== '/app') return null;
+    return openId;
+});
 const currentTab = computed(() => allTabs.value.find((tab) => tab.sections.includes(currentSection.value ?? '')) ?? null);
 
 function isActive(tab: SectionTab): boolean {

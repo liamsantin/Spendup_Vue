@@ -39,8 +39,13 @@ async function verify(submittedCode?: string) {
         error.value = err.message;
         const msg = err.message.toLowerCase();
         // Uniquement challenge expiré / session invalide — pas un simple OTP faux (« invalid code »).
+        // L'API répond aussi 401 pour un code faux (« Code de vérification invalide ») : le défi
+        // reste alors valide et compte les tentatives, on garde le jeton pour réessayer.
+        const wrongCode = msg.includes('code') && msg.includes('invalid');
         const challengeExpired =
-            err.status === 401 || (err.status === 400 && msg.includes('expired')) || (err.status === 403 && msg.includes('expired'));
+            (err.status === 401 && !wrongCode) ||
+            (err.status === 400 && msg.includes('expired')) ||
+            (err.status === 403 && msg.includes('expired'));
         if (challengeExpired) {
             authStore.twoFactorToken = null;
         }

@@ -5,7 +5,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
 import { buildCspProdEnforce, CSP_DEV_REPORT_ONLY, SECURITY_HEADERS_BASE } from './src/security/csp';
-import { excludeDesktopInstaller, vueTablerIconsTreeshake } from './vite.plugins';
+import { excludeDesktopInstaller, netlifyHeadersCsp, vueTablerIconsTreeshake } from './vite.plugins';
 
 /** Injecte une CSP enforce en meta sur le HTML de build (filet si le CDN omet le header). */
 function htmlCspMetaPlugin(cspProd: string): Plugin {
@@ -29,7 +29,14 @@ export default defineConfig(({ mode }) => {
 
     return {
         clearScreen: false,
-        plugins: [vue(), vueTablerIconsTreeshake(), vuetify({ autoImport: true }), htmlCspMetaPlugin(cspProd), excludeDesktopInstaller()],
+        plugins: [
+            vue(),
+            vueTablerIconsTreeshake(),
+            vuetify({ autoImport: true }),
+            htmlCspMetaPlugin(cspProd),
+            netlifyHeadersCsp(cspProd),
+            excludeDesktopInstaller()
+        ],
         /**
          * vue-i18n v9 compile les messages via `new Function` par défaut → casse CSP prod
          * (`script-src` sans `unsafe-eval`). Le JIT (v9.3+) évite eval tout en gardant les JSON runtime.

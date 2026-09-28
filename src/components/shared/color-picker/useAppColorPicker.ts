@@ -186,6 +186,9 @@ export function useAppColorPicker(options: {
         }
 
         if (!HEX_RE.test(hexInput.value)) return;
+        // `#RGB` est aussi le début d'un `#RRGGBB` en cours de frappe : l'émettre ici ferait
+        // réécrire le champ en 6 chiffres au 3ᵉ caractère. La forme courte s'applique au blur.
+        if (hexInput.value.length === 3) return;
 
         const hsv = hexToHsv(hexInput.value);
         hue.value = hsv.h;
@@ -199,8 +202,17 @@ export function useAppColorPicker(options: {
         options.emit(currentHex.value);
     }
 
-    /** Sur blur : réaligne l’input sur le modèle. */
+    /** Sur blur : applique une saisie courte `#RGB`, sinon réaligne l’input sur le modèle. */
     function onHexBlur() {
+        if (hexInput.value.length === 3 && HEX_RE.test(hexInput.value)) {
+            const hsv = hexToHsv(hexInput.value);
+            hue.value = hsv.h;
+            saturation.value = hsv.s;
+            value.value = hsv.v;
+            options.emit(currentHex.value);
+            hexInput.value = currentHex.value.slice(1);
+            return;
+        }
         const model = toValue(options.modelValue);
         hexInput.value = model ? model.replace('#', '').toUpperCase() : '';
     }

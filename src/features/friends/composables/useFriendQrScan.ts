@@ -90,8 +90,9 @@ export function useFriendQrScan(options: {
             throw new Error('Scanner element missing');
         }
         scannerHost.value.innerHTML = '';
-        scanner = new Html5Qrcode(scannerElementId);
-        await scanner.start(
+        const instance = new Html5Qrcode(scannerElementId);
+        scanner = instance;
+        await instance.start(
             config,
             {
                 fps: 10,
@@ -105,6 +106,20 @@ export function useFriendQrScan(options: {
             },
             () => undefined
         );
+        // Fermé pendant le démarrage : stopScanner a déjà lâché la référence sans pouvoir
+        // arrêter un flux pas encore actif — on coupe ici la caméra qui vient de s'ouvrir.
+        if (scanner !== instance) {
+            try {
+                await instance.stop();
+            } catch {
+                // ignore
+            }
+            try {
+                instance.clear();
+            } catch {
+                // ignore
+            }
+        }
     }
 
     /**

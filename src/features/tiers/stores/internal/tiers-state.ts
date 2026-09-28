@@ -57,12 +57,44 @@ function queryMatchesTier(query: TiersListQuery, tier: Tier): boolean {
 }
 
 /**
+ * Map dont chaque écriture (`set` / `delete` / `clear`) appelle `onChange` :
+ * permet de bumper un compteur réactif sans rendre la Map elle-même réactive.
+ */
+function createTrackedMap<K, V>(onChange: () => void): Map<K, V> {
+    const map = new Map<K, V>();
+    const rawSet = map.set.bind(map);
+    const rawDelete = map.delete.bind(map);
+    const rawClear = map.clear.bind(map);
+    map.set = (key: K, value: V) => {
+        rawSet(key, value);
+        onChange();
+        return map;
+    };
+    map.delete = (key: K) => {
+        const removed = rawDelete(key);
+        if (removed) onChange();
+        return removed;
+    };
+    map.clear = () => {
+        if (map.size === 0) return;
+        rawClear();
+        onChange();
+    };
+    return map;
+}
+
+/**
  * État partagé du store tiers (listes paginées par filtre + index par publicId).
  */
 export function createTiersState() {
     const items = ref<Tier[]>([]);
     const itemsByListKey = new Map<string, TiersCacheEntry>();
-    const knownById = new Map<string, Tier>();
+    // `knownById` est une Map non suivie par Vue : `knownVersion` est la dépendance réactive
+    // lue par `findByPublicId` / `allKnownItems` (sélecteurs, titres…).
+    const knownVersion = ref(0);
+    const knownById = createTrackedMap<string, Tier>(() => {
+        knownVersion.value += 1;
+    });
     const activeListKey = ref(listCacheKey({ nature: null, role: null, search: null }));
     const page = ref(1);
     const pageSize = ref(TIER_PAGE_SIZE_DEFAULT);
@@ -224,10 +256,12 @@ export function createTiersState() {
     }
 
     function allKnownItems(): Tier[] {
+        void knownVersion.value;
         return [...knownById.values()];
     }
 
     function findByPublicId(publicId: string): Tier | null {
+        void knownVersion.value;
         const id = publicId.trim();
         if (!id) return null;
         return knownById.get(id) ?? null;
@@ -237,6 +271,7 @@ export function createTiersState() {
         items,
         itemsByListKey,
         knownById,
+        knownVersion,
         activeListKey,
         page,
         pageSize,

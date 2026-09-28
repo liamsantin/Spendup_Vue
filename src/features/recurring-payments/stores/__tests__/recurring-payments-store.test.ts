@@ -194,6 +194,85 @@ describe('useRecurringPaymentsStore', () => {
         expect(store.getDues('expense', 're-1')).toEqual([due]);
     });
 
+    it('réinitialise loadingMore quand un rechargement de liste remplace un « charger plus »', async () => {
+        const second: RecurringExpense = { ...rent, publicId: 're-2', name: 'Assurance' };
+        expensesApi.list.mockResolvedValueOnce({ items: [rent], page: 1, pageSize: 1, totalCount: 2 });
+        const store = useRecurringPaymentsStore();
+        await store.loadExpenses();
+        let resolveMore: (value: unknown) => void = () => undefined;
+        expensesApi.list.mockReturnValueOnce(new Promise((resolve) => (resolveMore = resolve)));
+        const more = store.loadMoreExpenses();
+        expect(store.loadingMoreExpenses).toBe(true);
+        expensesApi.list.mockResolvedValueOnce({ items: [rent], page: 1, pageSize: 1, totalCount: 2 });
+        await store.loadExpenses({ force: true });
+        expect(store.loadingMoreExpenses).toBe(false);
+        resolveMore({ items: [second], page: 2, pageSize: 1, totalCount: 2 });
+        await more;
+        expect(store.loadingMoreExpenses).toBe(false);
+        expect(store.expenses.map((item) => item.publicId)).toEqual(['re-1']);
+    });
+
+    it('applique les dues de chargements parallèles pour des modèles différents', async () => {
+        const due = (publicId: string) => ({
+            publicId,
+            scheduledAt: '2026-09-11',
+            plannedAmount: 1500,
+            actualAmount: null,
+            status: 'prevue',
+            transactionPublicId: null,
+            notes: null
+        });
+        const resolvers: Array<(value: unknown) => void> = [];
+        expensesApi.listDues.mockImplementation(() => new Promise((resolve) => resolvers.push(resolve)));
+        const store = useRecurringPaymentsStore();
+        const first = store.loadDues('expense', 're-1');
+        const second = store.loadDues('expense', 're-2');
+        expect(store.loadingDues).toBe(true);
+        resolvers[0]({ items: [due('due-1')], page: 1, pageSize: 50, totalCount: 1 });
+        await first;
+        expect(store.loadingDues).toBe(true);
+        resolvers[1]({ items: [due('due-2')], page: 1, pageSize: 50, totalCount: 1 });
+        await second;
+        expect(store.loadingDues).toBe(false);
+        expect(store.getDues('expense', 're-1').map((item) => item.publicId)).toEqual(['due-1']);
+        expect(store.getDues('expense', 're-2').map((item) => item.publicId)).toEqual(['due-2']);
+    });
+
+    it('ignore une réponse de dues obsolète pour le même modèle', async () => {
+        const due = (publicId: string) => ({
+            publicId,
+            scheduledAt: '2026-09-11',
+            plannedAmount: 1500,
+            actualAmount: null,
+            status: 'prevue',
+            transactionPublicId: null,
+            notes: null
+        });
+        const resolvers: Array<(value: unknown) => void> = [];
+        expensesApi.listDues.mockImplementation(() => new Promise((resolve) => resolvers.push(resolve)));
+        const store = useRecurringPaymentsStore();
+        const stale = store.loadDues('expense', 're-1');
+        const fresh = store.loadDues('expense', 're-1');
+        resolvers[1]({ items: [due('due-new')], page: 1, pageSize: 50, totalCount: 1 });
+        await fresh;
+        resolvers[0]({ items: [due('due-old')], page: 1, pageSize: 50, totalCount: 1 });
+        await stale;
+        expect(store.loadingDues).toBe(false);
+        expect(store.getDues('expense', 're-1').map((item) => item.publicId)).toEqual(['due-new']);
+    });
+
+    it("retire un modèle de la liste de l'ancien compte après changement de compte", async () => {
+        expensesApi.list.mockResolvedValueOnce({ items: [rent], page: 1, pageSize: 50, totalCount: 1 });
+        const store = useRecurringPaymentsStore();
+        await store.loadExpenses({ accountPublicId: 'acc-1' });
+        expect(store.expenses).toHaveLength(1);
+        expensesApi.get.mockResolvedValue({ ...rent, accountPublicId: 'acc-2' });
+        await store.getExpense('re-1', true);
+        expect(store.expenses).toHaveLength(0);
+        expect(store.expenseTotalCount).toBe(0);
+        expect(store.getDetail('expense', 're-1')?.accountPublicId).toBe('acc-2');
+    });
+
     it('onAuthenticatedSession branche le realtime sans charger', () => {
         const store = useRecurringPaymentsStore();
         store.onAuthenticatedSession();

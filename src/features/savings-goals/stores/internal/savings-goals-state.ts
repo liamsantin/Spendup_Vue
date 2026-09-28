@@ -19,10 +19,42 @@ export type SavingsGoalsCacheEntry = {
     totalCount: number;
 };
 
+/**
+ * Map dont chaque écriture (`set` / `delete` / `clear`) appelle `onChange` :
+ * permet de bumper un compteur réactif sans rendre la Map elle-même réactive.
+ */
+function createTrackedMap<K, V>(onChange: () => void): Map<K, V> {
+    const map = new Map<K, V>();
+    const rawSet = map.set.bind(map);
+    const rawDelete = map.delete.bind(map);
+    const rawClear = map.clear.bind(map);
+    map.set = (key: K, value: V) => {
+        rawSet(key, value);
+        onChange();
+        return map;
+    };
+    map.delete = (key: K) => {
+        const removed = rawDelete(key);
+        if (removed) onChange();
+        return removed;
+    };
+    map.clear = () => {
+        if (map.size === 0) return;
+        rawClear();
+        onChange();
+    };
+    return map;
+}
+
 export function createSavingsGoalsState() {
     const items = ref<SavingsGoal[]>([]);
     const itemsByListKey = new Map<string, SavingsGoalsCacheEntry>();
-    const knownById = new Map<string, SavingsGoal>();
+    // `knownById` est une Map non suivie par Vue : `knownVersion` est la dépendance réactive
+    // lue par `findByPublicId` / `allKnownItems` (formulaire d’objectif, sélecteur de transaction…).
+    const knownVersion = ref(0);
+    const knownById = createTrackedMap<string, SavingsGoal>(() => {
+        knownVersion.value += 1;
+    });
     const activeListKey = ref(listCacheKey({ status: null, accountPublicId: null }));
     const totalCount = ref(0);
 
@@ -174,12 +206,16 @@ export function createSavingsGoalsState() {
     }
 
     function allKnownItems(): SavingsGoal[] {
+        void knownVersion.value;
         return [...knownById.values()];
     }
 
     function findByPublicId(publicId: string): SavingsGoal | null {
+        void knownVersion.value;
         const id = publicId.trim();
         if (!id) return null;
+        // `knownById` est toujours la version la plus fraîche (mise à jour par `upsertItem` même
+        // quand l’objectif ne correspond plus à la liste active) ; `items` ne sert que de repli.
         return knownById.get(id) ?? items.value.find((item) => item.publicId === id) ?? null;
     }
 
@@ -193,6 +229,7 @@ export function createSavingsGoalsState() {
         items,
         itemsByListKey,
         knownById,
+        knownVersion,
         activeListKey,
         totalCount,
         loading,

@@ -116,6 +116,12 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
     let expenseListSeq = 0;
     let incomeListSeq = 0;
     let duesSeq = 0;
+    // Dernière requête d'échéances par modèle (`${kind}:${publicId}`) : des chargements parallèles
+    // pour des modèles différents ne doivent pas s'annuler entre eux.
+    const latestDuesRequest = new Map<string, number>();
+    // Nombre de chargements d'échéances en cours ; la génération invalide ceux annulés.
+    let duesInFlight = 0;
+    let duesGeneration = 0;
 
     function accounts() {
         return useAccountsStore().accounts;
@@ -152,6 +158,8 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         const force = !!query.force;
         activateExpenseList(key);
         loadingExpenses.value = true;
+        // Ce rechargement remplace un éventuel « charger plus » en cours, qui ne réinitialisera plus son flag.
+        loadingMoreExpenses.value = false;
         clearError();
 
         async function fetchPage(ensureForce: boolean): Promise<boolean> {
@@ -212,6 +220,8 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         const force = !!query.force;
         activateIncomeList(key);
         loadingIncomes.value = true;
+        // Ce rechargement remplace un éventuel « charger plus » en cours, qui ne réinitialisera plus son flag.
+        loadingMoreIncomes.value = false;
         clearError();
 
         async function fetchPage(ensureForce: boolean): Promise<boolean> {
@@ -269,6 +279,9 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         expenseListSeq += 1;
         incomeListSeq += 1;
         duesSeq += 1;
+        duesGeneration += 1;
+        duesInFlight = 0;
+        latestDuesRequest.clear();
         loadingExpenses.value = false;
         loadingIncomes.value = false;
         loadingMoreExpenses.value = false;
@@ -542,7 +555,12 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
     }
 
     async function loadDues(kind: RecurringKind, publicId: string, query: ListRecurringDuesQuery & { force?: boolean } = {}) {
+        const dueKey = `${kind}:${publicId}`;
         const requestId = ++duesSeq;
+        const generation = duesGeneration;
+        latestDuesRequest.set(dueKey, requestId);
+        const isCurrent = () => latestDuesRequest.get(dueKey) === requestId;
+        duesInFlight += 1;
         loadingDues.value = true;
         clearError();
         try {
@@ -550,7 +568,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
                 kind === 'expense'
                     ? await recurringExpensesApi.listDues(publicId, query)
                     : await recurringIncomesApi.listDues(publicId, query);
-            if (requestId !== duesSeq) return [];
+            if (!isCurrent()) return [];
             const items = Array.isArray(result?.items) ? result.items : [];
             setDues(kind, publicId, items, {
                 page: result?.page ?? 1,
@@ -559,13 +577,17 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
             });
             return items;
         } catch (e: unknown) {
-            if (requestId === duesSeq) {
+            if (isCurrent()) {
                 const err = AppError.fromUnknown(e);
                 error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
             }
             throw e;
         } finally {
-            if (requestId === duesSeq) loadingDues.value = false;
+            if (isCurrent()) latestDuesRequest.delete(dueKey);
+            if (generation === duesGeneration) {
+                duesInFlight = Math.max(0, duesInFlight - 1);
+                loadingDues.value = duesInFlight > 0;
+            }
         }
     }
 

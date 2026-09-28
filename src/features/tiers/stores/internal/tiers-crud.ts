@@ -101,6 +101,9 @@ export function createTiersCrud(state: TiersState) {
         const requestId = ++listRequestSeq;
         const force = !!query.force;
         activateList(key);
+        // Le compteur est partagé avec `loadMore` : un `loadMore` en vol est désormais obsolète
+        // et son `finally` ne remettra jamais `loadingMore` à false.
+        loadingMore.value = false;
         loading.value = true;
         clearError();
 
@@ -207,20 +210,25 @@ export function createTiersCrud(state: TiersState) {
      */
     async function searchForPicker(search: string, options: { role?: ListTiersQuery['role'] } = {}): Promise<Tier[]> {
         const term = search.trim();
+        // Filtre côté serveur : sans `search`, les tiers au-delà des 200 premiers restent introuvables.
         const result = await tiersApi.list({
             role: options.role,
+            search: term || undefined,
             page: 1,
             pageSize: TIER_PAGE_SIZE_MAX
         });
         const found = Array.isArray(result?.items) ? result.items : [];
         for (const tier of found) state.knownById.set(tier.publicId, tier);
         if (!term) return found;
+        // Résultats serveur conservés tels quels (déjà filtrés), complétés par les tiers connus localement.
         const byId = new Map<string, Tier>();
         for (const tier of found) byId.set(tier.publicId, tier);
         for (const tier of state.allKnownItems()) {
+            if (byId.has(tier.publicId)) continue;
+            if (options.role && !tier.roles.includes(options.role)) continue;
             if (matchesTierSearch(tier, term)) byId.set(tier.publicId, tier);
         }
-        return [...byId.values()].filter((tier) => matchesTierSearch(tier, term));
+        return [...byId.values()];
     }
 
     /** Charge un tier (détail) et l’indexe ; `null` si 404. */
