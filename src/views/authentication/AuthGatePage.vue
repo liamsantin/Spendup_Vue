@@ -7,6 +7,7 @@ import AuthShell from '@/components/auth/AuthShell.vue';
 import LoginForm from '@/components/auth/LoginForm.vue';
 import RegisterForm from '@/components/auth/RegisterForm.vue';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
+import AuthLegalLink from '@/components/auth/AuthLegalLink.vue';
 import AuthProcessingOverlay from '@/components/auth/AuthProcessingOverlay.vue';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 
@@ -80,7 +81,16 @@ async function onGoogleCredential(idToken: string) {
 
         <AppAlert v-if="googleError" type="error" class="mb-4">{{ googleError }}</AppAlert>
 
-        <GoogleSignInButton class="mb-6" :label="googleLabel" @credential="onGoogleCredential" />
+        <GoogleSignInButton :class="isRegister ? 'mb-2' : 'mb-6'" :label="googleLabel" @credential="onGoogleCredential" />
+        <!-- Google crée le compte sans passer par le formulaire : consentement affiché avant le clic -->
+        <i18n-t v-if="isRegister" keypath="auth.google.legalNotice" tag="p" class="auth-google-legal">
+            <template #terms>
+                <AuthLegalLink to="/conditions-utilisation">{{ t('auth.register.termsLink') }}</AuthLegalLink>
+            </template>
+            <template #privacy>
+                <AuthLegalLink to="/politique-confidentialite">{{ t('auth.register.privacyLink') }}</AuthLegalLink>
+            </template>
+        </i18n-t>
 
         <div class="auth-divider">
             <span>{{ t('auth.login.or') }}</span>

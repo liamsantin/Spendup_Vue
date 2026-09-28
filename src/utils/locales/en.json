@@ -2582,7 +2582,8 @@
             "desktopCancel": "Cancel",
             "desktopWaitingSession": "Signing in to Spend.Up…",
             "finalizingTitle": "Signing you in…",
-            "finalizingSubtitle": "Finalizing your Google sign-in."
+            "finalizingSubtitle": "Finalizing your Google sign-in.",
+            "legalNotice": "By continuing with Google, you accept our {terms} and our {privacy}."
         },
         "login": {
             "username": "Username",
@@ -2611,8 +2612,12 @@
                 "email": "Enter a valid email address.",
                 "username": "Username must be 3–30 characters ([a-z0-9._-]).",
                 "password": "Password must be at least 8 characters, with a letter and a digit.",
-                "mismatch": "Password confirmation does not match."
-            }
+                "mismatch": "Password confirmation does not match.",
+                "terms": "You must accept the terms of use to create an account."
+            },
+            "acceptTerms": "I accept the {terms} and the {privacy}.",
+            "termsLink": "terms of use",
+            "privacyLink": "privacy policy"
         },
         "twoStep": {
             "title": "Two-step verification",

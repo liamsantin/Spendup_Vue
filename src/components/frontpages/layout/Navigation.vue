@@ -63,7 +63,7 @@ const linkClass = (href: string) => [
         <v-divider class="my-2" />
 
         <div class="front-nav-dropdown__login px-3 pb-2 d-flex flex-column ga-2">
-            <v-btn class="text-none h-43 px-5" color="primary" flat block to="/auth?tab=register">Commencer gratuitement</v-btn>
+            <v-btn class="text-none h-43 px-5" color="primary" flat block to="/auth?tab=register">Créer un compte</v-btn>
             <v-btn class="text-none h-43 px-5" color="primary" variant="outlined" block to="/auth?tab=login">Connexion</v-btn>
         </div>
     </v-list>

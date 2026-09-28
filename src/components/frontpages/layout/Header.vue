@@ -80,7 +80,7 @@ watch(
                             flat
                             to="/auth?tab=register"
                         >
-                            Commencer gratuitement
+                            Créer un compte
                             <ArrowRightIcon size="17" class="ms-2" />
                         </v-btn>
 

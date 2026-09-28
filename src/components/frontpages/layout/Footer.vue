@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ArrowRightIcon, ArrowUpIcon, BrandWindowsIcon, DatabaseExportIcon, LockIcon, MailIcon, ShieldCheckIcon } from 'vue-tabler-icons';
+import { ArrowRightIcon, ArrowUpIcon, BrandWindowsIcon, DatabaseExportIcon, LockIcon, ShieldCheckIcon } from 'vue-tabler-icons';
 import infomaniakLogo from '@/assets/images/front-pages/infomaniak-logo.svg';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
@@ -56,24 +56,6 @@ function scrollToTop() {
         <div class="landing-footer__glow landing-footer__glow--right" aria-hidden="true"></div>
 
         <v-container class="max-width-1218 landing-footer__content">
-            <!-- appel à l'action -->
-            <div class="footer-cta">
-                <div>
-                    <h2>Prêt à y voir clair dans vos finances ?</h2>
-                    <p>Créez votre espace en moins d’une minute. Gratuit, sans carte bancaire, sans engagement.</p>
-                </div>
-                <div class="footer-cta__actions">
-                    <v-btn color="primary" size="large" flat class="text-none px-6" to="/auth?tab=register">
-                        Commencer gratuitement
-                        <ArrowRightIcon size="18" class="ms-2" />
-                    </v-btn>
-                    <v-btn variant="outlined" size="large" class="text-none px-6 footer-cta__ghost" to="/contact">
-                        <MailIcon size="18" class="me-2" />
-                        Nous contacter
-                    </v-btn>
-                </div>
-            </div>
-
             <div class="footer-main">
                 <div class="footer-brand">
                     <Logo home-to="/" />
@@ -135,7 +117,7 @@ function scrollToTop() {
             </div>
         </v-container>
 
-        <div class="footer-wordmark" aria-hidden="true">Spendup</div>
+        <div class="footer-wordmark" aria-hidden="true">Spend.Up</div>
     </footer>
 </template>
 

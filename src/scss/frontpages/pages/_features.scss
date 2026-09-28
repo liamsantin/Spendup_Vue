@@ -93,10 +93,7 @@
 }
 
 .features-hero__copy h1 span {
-    background: linear-gradient(100deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-secondary)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: rgb(var(--v-theme-primary));
 }
 
 .features-hero__copy > p {

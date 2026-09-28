@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore, isValidUsername, normalizeUsername } from '@/features/auth';
+import AuthLegalLink from '@/components/auth/AuthLegalLink.vue';
 import AuthPasswordField from '@/components/auth/AuthPasswordField.vue';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 
@@ -16,6 +17,7 @@ const success = ref<string | null>(null);
 const identifier = ref('');
 const password = ref('');
 const confirmPassword = ref('');
+const acceptTerms = ref(false);
 
 const identifierTrimmed = computed(() => identifier.value.trim());
 const isEmailMode = computed(() => identifierTrimmed.value.includes('@'));
@@ -41,6 +43,7 @@ const confirmPasswordRules = [
     (v: string) => !!v || t('auth.register.errors.mismatch'),
     (v: string) => v === password.value || t('auth.register.errors.mismatch')
 ];
+const acceptTermsRules = [(v: boolean) => v || t('auth.register.errors.terms')];
 
 async function onSubmit() {
     error.value = null;
@@ -69,6 +72,8 @@ async function onSubmit() {
         error.value = t('auth.register.errors.mismatch');
         return;
     }
+    // le message s'affiche sous la case (règle du formulaire) : pas de doublon dans l'alerte
+    if (!acceptTerms.value) return;
 
     loading.value = true;
     try {
@@ -125,6 +130,26 @@ onMounted(() => {
                 :rules="confirmPasswordRules"
                 autocomplete="new-password"
             />
+
+            <v-checkbox
+                v-model="acceptTerms"
+                :rules="acceptTermsRules"
+                color="primary"
+                density="compact"
+                hide-details="auto"
+                class="auth-terms"
+            >
+                <template #label>
+                    <i18n-t keypath="auth.register.acceptTerms" tag="span" class="auth-terms__label">
+                        <template #terms>
+                            <AuthLegalLink to="/conditions-utilisation">{{ t('auth.register.termsLink') }}</AuthLegalLink>
+                        </template>
+                        <template #privacy>
+                            <AuthLegalLink to="/politique-confidentialite">{{ t('auth.register.privacyLink') }}</AuthLegalLink>
+                        </template>
+                    </i18n-t>
+                </template>
+            </v-checkbox>
 
             <button type="submit" class="su-btn su-btn--ink auth-submit" :disabled="loading">
                 <span v-if="loading" class="su-spin" aria-hidden="true" />

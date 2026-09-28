@@ -1,5 +1,5 @@
 /*
- * Footer des landing pages : appel à l'action, marque + hébergement suisse, colonnes de liens,
+ * Footer des landing pages : marque + hébergement suisse, colonnes de liens,
  * bloc application, ligne légale et grand logotype en filigrane.
  */
 
@@ -40,61 +40,13 @@
     z-index: 1;
 }
 
-/* ---------- Appel à l'action ---------- */
-
-.footer-cta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 32px;
-    margin-top: 72px;
-    padding: 36px 40px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 26px;
-    background:
-        linear-gradient(120deg, rgba(var(--v-theme-primary), 0.24), rgba(var(--v-theme-secondary), 0.08) 60%, transparent),
-        rgba(255, 255, 255, 0.03);
-    box-shadow: 0 30px 70px -40px rgba(0, 0, 0, 0.6);
-}
-
-.footer-cta h2 {
-    margin: 0;
-    color: #fff;
-    font-size: clamp(1.4rem, 2.2vw, 1.9rem);
-    font-weight: 730;
-    line-height: 1.2;
-    letter-spacing: -0.035em;
-}
-
-.footer-cta p {
-    margin: 8px 0 0;
-    color: rgba(255, 255, 255, 0.64);
-    font-size: 0.92rem;
-}
-
-.footer-cta__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    flex: none;
-}
-
-.footer-cta__ghost {
-    border-color: rgba(255, 255, 255, 0.28) !important;
-    color: #fff !important;
-}
-
-.footer-cta__ghost:hover {
-    background: rgba(255, 255, 255, 0.06);
-}
-
 /* ---------- Grille principale ---------- */
 
 .footer-main {
     display: grid;
     grid-template-columns: minmax(280px, 1.5fr) repeat(3, minmax(0, 0.7fr)) minmax(220px, 1fr);
     gap: 44px;
-    padding: 64px 0 56px;
+    padding: 80px 0 56px;
 }
 
 .footer-brand :deep(.spendup-logo) {
@@ -353,12 +305,6 @@
 }
 
 @media (max-width: 959px) {
-    .footer-cta {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 30px 28px;
-    }
-
     .footer-main {
         grid-template-columns: repeat(3, 1fr);
         gap: 42px 30px;
@@ -374,17 +320,6 @@
 }
 
 @media (max-width: 599px) {
-    .footer-cta {
-        margin-top: 48px;
-        padding: 26px 22px;
-        border-radius: 22px;
-    }
-
-    .footer-cta__actions,
-    .footer-cta__actions :deep(.v-btn) {
-        width: 100%;
-    }
-
     .footer-main {
         grid-template-columns: 1fr 1fr;
         gap: 38px 24px;

@@ -12,6 +12,8 @@ interface ImportMetaEnv {
     readonly VITE_AUTH_COOKIE_MODE: string;
     /** Destinataire du formulaire /contact (mailto:). Vide = formulaire désactivé. */
     readonly VITE_CONTACT_EMAIL?: string;
+    /** URL publique du site (sans slash final) : liens légaux ouverts depuis l'application Windows. */
+    readonly VITE_PUBLIC_SITE_URL?: string;
 }
 
 interface ImportMeta {

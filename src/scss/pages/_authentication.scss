@@ -303,6 +303,34 @@ body:has(.auth-shell) {
     padding: 0 12px;
 }
 
+.auth-terms {
+    margin-top: 6px;
+}
+
+.auth-terms .v-selection-control {
+    align-items: flex-start;
+}
+
+.auth-terms .v-selection-control__wrapper {
+    margin-top: -6px;
+}
+
+.auth-terms__label,
+.auth-google-legal {
+    color: var(--ink-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.auth-terms__label {
+    opacity: 1;
+}
+
+.auth-google-legal {
+    margin: 0 0 22px;
+    text-align: center;
+}
+
 .auth-submit {
     width: 100%;
     height: 48px;
