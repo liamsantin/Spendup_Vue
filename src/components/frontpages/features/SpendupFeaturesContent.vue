@@ -13,6 +13,7 @@ import {
     LayoutDashboardIcon,
     LockIcon,
     RepeatIcon,
+    ShieldCheckIcon,
     SparklesIcon,
     TagsIcon,
     TargetIcon,
@@ -20,45 +21,42 @@ import {
     WalletIcon
 } from 'vue-tabler-icons';
 import type { Component } from 'vue';
-import { spendupAdditionalDomains } from '@/data/front-pages/spendup-additional-domains';
+import AccountsScene from '@/components/frontpages/mockups/scenes/AccountsScene.vue';
+import BudgetScene from '@/components/frontpages/mockups/scenes/BudgetScene.vue';
+import FeaturesHeroScene from '@/components/frontpages/mockups/scenes/FeaturesHeroScene.vue';
+import SharedScene from '@/components/frontpages/mockups/scenes/SharedScene.vue';
+import WealthScene from '@/components/frontpages/mockups/scenes/WealthScene.vue';
+import {
+    spendupAdditionalDomains,
+    spendupDomainGroups,
+    type SpendupAdditionalDomain,
+    type SpendupDomainGroup
+} from '@/data/front-pages/spendup-additional-domains';
 
-type FeatureTone = 'success' | 'alert' | 'info';
-
-interface FeatureCard {
-    icon: Component;
-    title: string;
-    text?: string;
-    items?: string[];
-}
-
-interface FeatureSection {
-    id: string;
-    number: string;
-    kicker: string;
+interface JourneyFeature {
     icon: Component;
     title: string;
     text: string;
-    image: string;
-    imageAlt: string;
-    floats: { label: string; value: string; tone: FeatureTone }[];
-    cards: FeatureCard[];
-    footer?: string;
 }
 
-const journeys = [
+interface Journey {
+    number: string;
+    icon: Component;
+    kicker: string;
+    title: string;
+    text: string;
+    scene: Component;
+    features: JourneyFeature[];
+}
+
+const journeys: Journey[] = [
     {
         number: '01',
         icon: WalletIcon,
         kicker: 'Au quotidien',
-        title: 'Comprenez chaque mouvement de votre argent',
-        text: 'Tous vos comptes, moyens de paiement et transactions réunis dans une expérience claire.',
-        image: '/assets/images/front-pages/features/feature-imports.png',
-        imageAlt: 'Import et organisation de documents financiers',
-        floats: [
-            { label: 'Import PDF', value: 'Synchronisé', tone: 'success' },
-            { label: 'Anomalie', value: 'Détectée', tone: 'alert' },
-            { label: 'Comptes liés', value: '4 actifs', tone: 'info' }
-        ],
+        title: 'Comprenez chaque mouvement de votre argent.',
+        text: 'Comptes bancaires, cartes, TWINT et espèces réunis dans une seule vue. Vos relevés s’importent, se classent et se relient tout seuls.',
+        scene: AccountsScene,
         features: [
             { icon: BuildingBankIcon, title: 'Comptes consolidés', text: 'Banques, cash, wallets et cartes dans une vue unique.' },
             { icon: TagsIcon, title: 'Catégorisation intelligente', text: 'Catégories, tags et règles automatiques selon vos habitudes.' },
@@ -70,15 +68,9 @@ const journeys = [
         number: '02',
         icon: ChartPieIcon,
         kicker: 'Planifier',
-        title: 'Donnez une direction à votre budget',
-        text: 'Passez du simple suivi à une vraie capacité d’anticipation financière.',
-        image: '/assets/images/front-pages/features/feature-budget.jpg',
-        imageAlt: 'Gestion du budget familial et de l’épargne',
-        floats: [
-            { label: 'Budget courses', value: '82 %', tone: 'info' },
-            { label: 'Objectif vacances', value: 'Atteint', tone: 'success' },
-            { label: 'Reste à vivre', value: 'CHF 640', tone: 'info' }
-        ],
+        title: 'Donnez une direction à votre budget.',
+        text: 'Passez du simple suivi à une vraie capacité d’anticipation : des limites claires, des projets chiffrés et un reste à vivre toujours à jour.',
+        scene: BudgetScene,
         features: [
             { icon: ChartPieIcon, title: 'Budgets personnalisés', text: 'Limites mensuelles ou annuelles avec suivi par catégorie.' },
             { icon: TargetIcon, title: 'Objectifs d’épargne', text: 'Mesurez vos progrès et planifiez vos projets importants.' },
@@ -90,18 +82,12 @@ const journeys = [
         number: '03',
         icon: HomeEcoIcon,
         kicker: 'Construire',
-        title: 'Pilotez votre patrimoine dans son ensemble',
-        text: 'Une lecture consolidée de ce que vous possédez, devez et préparez pour demain.',
-        image: '/assets/images/front-pages/features/feature-properties.png',
-        imageAlt: 'Suivi des propriétés, véhicules et actifs patrimoniaux',
-        floats: [
-            { label: 'Patrimoine net', value: '+6.2 %', tone: 'success' },
-            { label: 'Immobilier', value: 'CHF 820k', tone: 'info' },
-            { label: 'Projection 2030', value: 'Active', tone: 'info' }
-        ],
+        title: 'Pilotez votre patrimoine dans son ensemble.',
+        text: 'Immobilier, placements, 3e pilier et véhicules : une lecture consolidée de ce que vous possédez, devez et préparez pour demain.',
+        scene: WealthScene,
         features: [
             { icon: ChartLineIcon, title: 'Placements & crypto', text: 'Portefeuilles, positions, opérations et valorisations.' },
-            { icon: HomeEcoIcon, title: 'Immobilier & actifs', text: 'Biens, lots, baux, véhicules, charges et rendement.' },
+            { icon: HomeEcoIcon, title: 'Immobilier & actifs', text: 'Biens, hypothèques, baux, véhicules, charges et rendement.' },
             { icon: FileInvoiceIcon, title: 'Fiscalité & revenus', text: 'Employeurs, salaires, retenues et préparation fiscale.' },
             { icon: LayoutDashboardIcon, title: 'Scénarios & projections', text: 'Trésorerie, patrimoine net et santé financière.' }
         ]
@@ -110,15 +96,9 @@ const journeys = [
         number: '04',
         icon: UsersIcon,
         kicker: 'Partager',
-        title: 'Gérez ensemble, sans tout mélanger',
-        text: 'Collaborez autour des finances communes en gardant le contrôle de votre espace personnel.',
-        image: '/assets/images/front-pages/features/feature-collaboration.jpg',
-        imageAlt: 'Collaboration financière entre proches',
-        floats: [
-            { label: 'Espace Famille', value: '5 membres', tone: 'info' },
-            { label: 'Dépense partagée', value: 'Répartie', tone: 'success' },
-            { label: 'Vos droits', value: 'Admin', tone: 'info' }
-        ],
+        title: 'Gérez ensemble, sans tout mélanger.',
+        text: 'Couple, famille ou colocation : partagez budgets et dépenses communes en gardant chacun le contrôle de son espace personnel.',
+        scene: SharedScene,
         features: [
             { icon: UsersIcon, title: 'Espaces partagés', text: 'Famille, couple ou colocation, jusqu’à 5 membres.' },
             { icon: LockIcon, title: 'Rôles & permissions', text: 'Contrôlez précisément qui peut voir ou modifier.' },
@@ -128,33 +108,66 @@ const journeys = [
     }
 ];
 
-/** Parcours (01–04) puis domaines détaillés (05–14) : une seule structure de section pour toute la page. */
-const sections: FeatureSection[] = [
-    ...journeys.map((journey) => ({
-        id: `journey-${journey.number}`,
-        number: journey.number,
-        kicker: journey.kicker,
-        icon: journey.icon,
-        title: journey.title,
-        text: journey.text,
-        image: journey.image,
-        imageAlt: journey.imageAlt,
-        floats: journey.floats as FeatureSection['floats'],
-        cards: journey.features
-    })),
-    ...spendupAdditionalDomains.map((domain, index) => ({
-        id: `domaine-${domain.id}`,
-        number: String(journeys.length + index + 1).padStart(2, '0'),
-        kicker: domain.kicker,
-        icon: domain.icon,
-        title: domain.title,
-        text: domain.lead,
-        image: domain.image,
-        imageAlt: domain.imageAlt,
-        floats: domain.floats,
-        cards: (domain.cards ?? []).map((card) => ({ icon: card.icon, title: card.title, text: card.intro, items: card.items })),
-        footer: domain.footer
-    }))
+/** 19 domaines couverts : bandeau défilant sous le hero. */
+const domainNames = [
+    'Comptes',
+    'Transactions',
+    'Moyens de paiement',
+    'Catégories & tags',
+    'Tiers',
+    'Documents',
+    'Budgets',
+    'Objectifs d’épargne',
+    'Revenus récurrents',
+    'Abonnements',
+    'Calendrier',
+    'Employeurs & salaires',
+    'Patrimoine',
+    'Immobilier',
+    'Placements',
+    'Crypto',
+    'Alertes',
+    'Famille & partage',
+    'Sécurité'
+];
+
+interface DomainTile {
+    domain: SpendupAdditionalDomain;
+    number: string;
+    points: string[];
+    /** Largeur de la tuile sur 12 colonnes. */
+    span: 6 | 12;
+}
+
+/**
+ * Rythme de la grille : deux tuiles par ligne (au moins la moitié de la largeur, pour que
+ * les maquettes restent lisibles), et une tuile pleine largeur disposée à l'horizontale
+ * quand le groupe est impair.
+ */
+const SPAN_PATTERNS: Record<number, DomainTile['span'][]> = {
+    1: [12],
+    2: [6, 6],
+    3: [6, 6, 12],
+    4: [6, 6, 6, 6]
+};
+
+const groups = spendupDomainGroups.map((group: SpendupDomainGroup) => {
+    const domains = spendupAdditionalDomains.filter((domain) => domain.group === group.id);
+    const pattern = SPAN_PATTERNS[domains.length] ?? domains.map(() => 12 as const);
+    return {
+        ...group,
+        tiles: domains.map<DomainTile>((domain, index) => ({
+            domain,
+            number: String(journeys.length + spendupAdditionalDomains.indexOf(domain) + 1).padStart(2, '0'),
+            points: [...(domain.cards ?? []).flatMap((card) => card.items), ...(domain.items ?? [])].slice(0, 5),
+            span: pattern[index] ?? 12
+        }))
+    };
+});
+
+const navItems = [
+    ...journeys.map((journey) => ({ href: `#journey-${journey.number}`, number: journey.number, label: journey.kicker })),
+    ...groups.map((group) => ({ href: `#groupe-${group.id}`, number: group.number, label: group.kicker }))
 ];
 
 const securityItems = [
@@ -163,136 +176,158 @@ const securityItems = [
     'Journal des activités sensibles',
     'Visibilité configurable par champ',
     'Export et suppression des données',
-    'Hébergement des données en Suisse'
+    'Hébergement en Suisse, chez Infomaniak'
 ];
 </script>
 
 <template>
     <div class="features-page">
         <section class="features-hero">
+            <div class="features-hero__grid" aria-hidden="true"></div>
             <v-container class="max-width-1218">
-                <div class="features-hero__copy">
-                    <v-chip color="primary" variant="tonal" rounded="pill" class="features-eyebrow">
-                        <SparklesIcon size="15" class="me-2" />
-                        19 domaines financiers, une seule plateforme
-                    </v-chip>
-                    <h1 class="textPrimary">Tout ce qu’il faut pour piloter votre vie financière.</h1>
-                    <p class="text-medium-emphasis">
-                        Du premier budget au patrimoine familial, Spendup relie chaque donnée pour vous donner une vision claire et
-                        exploitable.
-                    </p>
-                    <div class="features-hero__actions">
-                        <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth?tab=register">
-                            Commencer gratuitement
-                            <ArrowRightIcon size="19" class="ms-2" />
-                        </v-btn>
-                        <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-7" to="/tarifs">Voir les tarifs</v-btn>
+                <div class="features-hero__layout">
+                    <div class="features-hero__copy">
+                        <v-chip color="primary" variant="tonal" rounded="pill" class="features-eyebrow su-hero-in">
+                            <SparklesIcon size="15" class="me-2" />
+                            19 domaines financiers, une seule plateforme
+                        </v-chip>
+                        <h1 class="textPrimary su-hero-in" style="--su-in-delay: 80ms">
+                            Tout ce qu’il faut pour piloter <span>votre vie financière.</span>
+                        </h1>
+                        <p class="text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
+                            Du premier budget au patrimoine familial, Spendup relie chaque donnée pour vous donner une vision claire, en
+                            francs suisses, et toujours à jour.
+                        </p>
+                        <div class="features-hero__actions su-hero-in" style="--su-in-delay: 240ms">
+                            <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth?tab=register">
+                                Commencer gratuitement
+                                <ArrowRightIcon size="19" class="ms-2" />
+                            </v-btn>
+                            <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-7" to="/tarifs"
+                                >Voir les tarifs</v-btn
+                            >
+                        </div>
+                        <ul class="features-hero__proof su-hero-in" style="--su-in-delay: 320ms">
+                            <li><CheckIcon size="15" stroke-width="2.4" /> Sans carte bancaire</li>
+                            <li><CheckIcon size="15" stroke-width="2.4" /> Données hébergées en Suisse</li>
+                            <li><CheckIcon size="15" stroke-width="2.4" /> Web &amp; Windows</li>
+                        </ul>
                     </div>
-                </div>
 
-                <div class="features-hero__visual">
-                    <div class="feature-orbit feature-orbit--one"></div>
-                    <div class="feature-orbit feature-orbit--two"></div>
-                    <div class="features-core">
-                        <LayoutDashboardIcon size="38" stroke-width="1.4" />
-                        <strong>Spendup</strong>
-                        <span>Votre vision à 360°</span>
+                    <div class="features-hero__visual su-hero-visual-in">
+                        <FeaturesHeroScene />
                     </div>
-                    <div class="orbit-item orbit-item--accounts"><BuildingBankIcon size="23" /><span>Comptes</span></div>
-                    <div class="orbit-item orbit-item--budget"><ChartPieIcon size="23" /><span>Budgets</span></div>
-                    <div class="orbit-item orbit-item--wealth"><HomeEcoIcon size="23" /><span>Patrimoine</span></div>
-                    <div class="orbit-item orbit-item--family"><UsersIcon size="23" /><span>Famille</span></div>
                 </div>
             </v-container>
+
+            <div class="features-marquee" aria-label="Domaines couverts par Spendup">
+                <div class="features-marquee__track">
+                    <ul v-for="copy in 2" :key="copy" :aria-hidden="copy === 2 ? 'true' : undefined">
+                        <li v-for="name in domainNames" :key="name">{{ name }}</li>
+                    </ul>
+                </div>
+            </div>
         </section>
 
-        <section class="features-nav">
+        <nav class="features-nav" aria-label="Sections de la page">
             <v-container class="max-width-1218">
                 <div class="features-nav__items">
-                    <a v-for="journey in journeys" :key="journey.number" :href="`#journey-${journey.number}`">
-                        <span>{{ journey.number }}</span>
-                        {{ journey.kicker }}
-                    </a>
-                    <a href="#domaine-categorisation">
-                        <span>05+</span>
-                        Dans le détail
+                    <a v-for="item in navItems" :key="item.href" :href="item.href">
+                        <span>{{ item.number }}</span>
+                        {{ item.label }}
                     </a>
                 </div>
             </v-container>
-        </section>
-
-        <section class="features-intro">
-            <v-container class="max-width-1218">
-                <div v-reveal class="features-heading">
-                    <span class="features-kicker">Un parcours financier complet</span>
-                    <h2 class="textPrimary">Une plateforme qui évolue avec vos besoins</h2>
-                    <p class="text-medium-emphasis">
-                        Commencez avec l’essentiel, puis activez les outils dont vous avez besoin à mesure que votre situation évolue.
-                    </p>
-                </div>
-            </v-container>
-        </section>
+        </nav>
 
         <section
-            v-for="(section, index) in sections"
-            :id="section.id"
-            :key="section.id"
-            class="feature-section"
-            :class="{ 'feature-section--alt': index % 2 === 1 }"
+            v-for="(journey, index) in journeys"
+            :id="`journey-${journey.number}`"
+            :key="journey.number"
+            class="journey"
+            :class="{ 'journey--alt': index % 2 === 1 }"
         >
-            <span class="feature-watermark" aria-hidden="true">{{ section.number }}</span>
-
             <v-container class="max-width-1218">
-                <div v-reveal class="feature-layout" :class="{ 'feature-layout--reversed': index % 2 === 1 }">
-                    <div class="feature-main">
-                        <div class="feature-copy">
-                            <div class="feature-copy__meta">
-                                <span class="feature-number">{{ section.number }}</span>
-                                <span class="features-kicker">{{ section.kicker }}</span>
-                            </div>
-                            <div class="feature-icon">
-                                <component :is="section.icon" size="29" stroke-width="1.55" />
-                            </div>
-                            <h2 class="textPrimary">{{ section.title }}</h2>
-                            <p class="text-medium-emphasis">{{ section.text }}</p>
+                <div v-reveal class="journey__layout" :class="{ 'journey__layout--reversed': index % 2 === 1 }">
+                    <div class="journey__copy">
+                        <div class="journey__meta">
+                            <span class="journey__number">{{ journey.number }}</span>
+                            <span class="features-kicker">{{ journey.kicker }}</span>
                         </div>
+                        <h2 class="textPrimary">{{ journey.title }}</h2>
+                        <p class="journey__lead text-medium-emphasis">{{ journey.text }}</p>
 
-                        <div class="feature-grid">
-                            <article v-for="card in section.cards" :key="card.title" class="feature-card">
-                                <div class="feature-card__top">
-                                    <div class="feature-card__icon">
-                                        <component :is="card.icon" size="22" stroke-width="1.6" />
-                                    </div>
-                                    <span class="feature-card__check"><CheckIcon size="14" stroke-width="2.5" /></span>
+                        <ul class="journey__features">
+                            <li v-for="feature in journey.features" :key="feature.title">
+                                <span class="journey__feature-icon">
+                                    <component :is="feature.icon" size="19" stroke-width="1.7" />
+                                </span>
+                                <div>
+                                    <strong class="textPrimary">{{ feature.title }}</strong>
+                                    <p>{{ feature.text }}</p>
                                 </div>
-                                <h3 class="textPrimary">{{ card.title }}</h3>
-                                <p v-if="card.text" class="text-medium-emphasis">{{ card.text }}</p>
-                                <ul v-if="card.items?.length">
-                                    <li v-for="item in card.items" :key="item">{{ item }}</li>
-                                </ul>
-                            </article>
-                        </div>
-
-                        <p v-if="section.footer" class="feature-footnote">{{ section.footer }}</p>
+                            </li>
+                        </ul>
                     </div>
 
-                    <aside class="feature-showcase">
-                        <div class="feature-showcase__stage">
-                            <div class="feature-showcase__aura" aria-hidden="true"></div>
-                            <div class="feature-showcase__frame">
-                                <img :src="section.image" :alt="section.imageAlt" loading="lazy" />
-                            </div>
-                            <div
-                                v-for="(item, floatIndex) in section.floats"
-                                :key="item.label"
-                                class="feature-float"
-                                :class="[`feature-float--${floatIndex + 1}`, `feature-float--${item.tone}`]"
-                            >
-                                <span>{{ item.label }}</span>
-                                <strong>{{ item.value }}</strong>
-                            </div>
+                    <div class="journey__visual">
+                        <component :is="journey.scene" />
+                    </div>
+                </div>
+            </v-container>
+        </section>
+
+        <section id="domaines" class="domains">
+            <v-container class="max-width-1218">
+                <div v-reveal class="features-heading">
+                    <span class="features-kicker">Dans le détail</span>
+                    <h2 class="textPrimary">Chaque domaine, pensé jusqu’au bout.</h2>
+                    <p class="text-medium-emphasis">
+                        Derrière les grands parcours, une dizaine de modules spécialisés qui se parlent entre eux et alimentent vos budgets,
+                        vos prévisions et votre patrimoine.
+                    </p>
+                </div>
+
+                <div v-for="group in groups" :id="`groupe-${group.id}`" :key="group.id" class="domain-group">
+                    <header v-reveal class="domain-group__head">
+                        <span class="domain-group__number">{{ group.number }}</span>
+                        <div>
+                            <span class="features-kicker">{{ group.kicker }}</span>
+                            <h3 class="textPrimary">{{ group.title }}</h3>
                         </div>
-                    </aside>
+                        <p class="text-medium-emphasis">{{ group.lead }}</p>
+                    </header>
+
+                    <div v-reveal class="domain-grid" data-reveal-stagger="90">
+                        <article
+                            v-for="tile in group.tiles"
+                            :id="`domaine-${tile.domain.id}`"
+                            :key="tile.domain.id"
+                            class="domain-tile"
+                            :class="[`domain-tile--span-${tile.span}`, { 'domain-tile--wide': tile.span === 12 }]"
+                        >
+                            <div class="domain-tile__visual">
+                                <component :is="tile.domain.scene" />
+                            </div>
+                            <div class="domain-tile__body">
+                                <div class="domain-tile__meta">
+                                    <span class="domain-tile__icon">
+                                        <component :is="tile.domain.icon" size="19" stroke-width="1.7" />
+                                    </span>
+                                    <span class="domain-tile__kicker">{{ tile.number }} · {{ tile.domain.kicker }}</span>
+                                </div>
+                                <h4 class="textPrimary">{{ tile.domain.title }}</h4>
+                                <p class="text-medium-emphasis">{{ tile.domain.lead }}</p>
+                                <ul>
+                                    <li v-for="point in tile.points" :key="point">
+                                        <CheckIcon size="14" stroke-width="2.4" />
+                                        <span>{{ point }}</span>
+                                    </li>
+                                </ul>
+                                <p v-if="tile.domain.footer" class="domain-tile__footnote">{{ tile.domain.footer }}</p>
+                            </div>
+                        </article>
+                    </div>
                 </div>
             </v-container>
         </section>
@@ -300,39 +335,50 @@ const securityItems = [
         <section class="features-security">
             <v-container class="max-width-1218">
                 <div v-reveal class="features-security__panel">
+                    <div class="features-security__glow" aria-hidden="true"></div>
                     <div class="features-security__copy">
-                        <span class="features-kicker">La sécurité, sans compromis</span>
+                        <span class="features-security__badge"><ShieldCheckIcon size="17" stroke-width="1.8" /> Sécurité incluse</span>
                         <h2>Protégé par défaut.<br />Contrôlé par vous.</h2>
-                        <p>La sécurité, la confidentialité et la maîtrise des données sont incluses dans toutes les offres Spendup.</p>
-                        <v-btn color="primary" size="large" flat class="text-none" to="/politique-confidentialite">
-                            Notre engagement sécurité
-                            <ArrowRightIcon size="18" class="ms-2" />
-                        </v-btn>
-                    </div>
-
-                    <div class="features-security__list">
-                        <div v-for="item in securityItems" :key="item">
-                            <span><CheckIcon size="15" stroke-width="2.5" /></span>
-                            {{ item }}
+                        <p>
+                            La sécurité, la confidentialité et la maîtrise de vos données sont incluses dans toutes les offres Spendup —
+                            jamais vendues en option.
+                        </p>
+                        <div class="features-security__actions">
+                            <v-btn color="white" size="large" flat class="text-none" to="/politique-confidentialite">
+                                Notre engagement confidentialité
+                                <ArrowRightIcon size="18" class="ms-2" />
+                            </v-btn>
+                            <RouterLink to="/#hebergement" class="features-security__link">Hébergement en Suisse</RouterLink>
                         </div>
                     </div>
+
+                    <ul class="features-security__list">
+                        <li v-for="item in securityItems" :key="item">
+                            <span><CheckIcon size="15" stroke-width="2.5" /></span>
+                            {{ item }}
+                        </li>
+                    </ul>
                 </div>
             </v-container>
         </section>
 
         <section class="features-final">
-            <v-container class="max-width-1218 text-center">
-                <span class="features-kicker">À vous de jouer</span>
-                <h2 class="textPrimary">Découvrez une autre façon de gérer vos finances.</h2>
-                <p>Commencez gratuitement, sans carte bancaire et sans engagement.</p>
-                <div class="features-final__actions">
-                    <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
-                        Créer mon espace
-                        <ArrowRightIcon size="19" class="ms-2" />
-                    </v-btn>
-                    <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-8" to="/tarifs">
-                        Comparer les offres
-                    </v-btn>
+            <v-container class="max-width-1218">
+                <div v-reveal class="features-final__card">
+                    <div class="features-final__ring features-final__ring--one" aria-hidden="true"></div>
+                    <div class="features-final__ring features-final__ring--two" aria-hidden="true"></div>
+                    <span class="features-kicker">À vous de jouer</span>
+                    <h2 class="textPrimary">Découvrez une autre façon <span>de gérer vos finances.</span></h2>
+                    <p class="text-medium-emphasis">Commencez gratuitement, sans carte bancaire et sans engagement.</p>
+                    <div class="features-final__actions">
+                        <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
+                            Créer mon espace
+                            <ArrowRightIcon size="19" class="ms-2" />
+                        </v-btn>
+                        <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-8" to="/tarifs">
+                            Comparer les offres
+                        </v-btn>
+                    </div>
                 </div>
             </v-container>
         </section>

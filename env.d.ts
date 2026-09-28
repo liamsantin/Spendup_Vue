@@ -10,6 +10,8 @@ interface ImportMetaEnv {
     readonly VITE_APP_ENV: string;
     /** `true` = cookies HttpOnly + CSRF (same-site). Défaut / prod = Bearer (`false`). */
     readonly VITE_AUTH_COOKIE_MODE: string;
+    /** Destinataire du formulaire /contact (mailto:). Vide = formulaire désactivé. */
+    readonly VITE_CONTACT_EMAIL?: string;
 }
 
 interface ImportMeta {

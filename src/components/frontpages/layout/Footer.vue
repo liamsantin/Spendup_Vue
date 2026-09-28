@@ -1,80 +1,141 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { DatabaseExportIcon, LockIcon, MapPinIcon, ShieldCheckIcon } from 'vue-tabler-icons';
+import { ArrowRightIcon, ArrowUpIcon, BrandWindowsIcon, DatabaseExportIcon, LockIcon, MailIcon, ShieldCheckIcon } from 'vue-tabler-icons';
+import infomaniakLogo from '@/assets/images/front-pages/infomaniak-logo.svg';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 
-const productLinks = computed(() => [
-    { label: 'Fonctionnalités', to: '/fonctionnalites' },
-    ...(isPricingPageEnabled() ? [{ label: 'Tarifs', to: '/tarifs' }] : []),
-    { label: 'Créer un compte', to: '/auth?tab=register' },
-    { label: 'Se connecter', to: '/auth?tab=login' }
+const INSTALLER_PATH = '/downloads/SpendUp-Setup-x64.msi';
+const windowsDownloadUrl = (import.meta.env.VITE_WINDOWS_APP_DOWNLOAD_URL as string | undefined)?.trim() || INSTALLER_PATH;
+
+const columns = computed(() => [
+    {
+        title: 'Produit',
+        links: [
+            { label: 'Fonctionnalités', to: '/fonctionnalites' },
+            ...(isPricingPageEnabled() ? [{ label: 'Tarifs', to: '/tarifs' }] : []),
+            { label: 'Hébergement en Suisse', to: '/#hebergement' },
+            { label: 'Questions fréquentes', to: '/#questions' }
+        ]
+    },
+    {
+        title: 'Spendup',
+        links: [
+            { label: 'À propos', to: '/a-propos' },
+            { label: 'Contact', to: '/contact' },
+            { label: 'Se connecter', to: '/auth?tab=login' },
+            { label: 'Créer un compte', to: '/auth?tab=register' }
+        ]
+    },
+    {
+        title: 'Légal',
+        links: [
+            { label: "Conditions d'utilisation", to: '/conditions-utilisation' },
+            { label: 'Politique de confidentialité', to: '/politique-confidentialite' }
+        ]
+    }
 ]);
 
-const companyLinks = [
-    { label: 'À propos', to: '/a-propos' },
-    { label: 'Application', to: '/app' },
-    { label: 'Télécharger pour Windows', href: '/downloads/SpendUp-Setup-x64.msi' }
-];
-
-const legalLinks = [
-    { label: "Conditions d'utilisation", to: '/conditions-utilisation' },
-    { label: 'Politique de confidentialité', to: '/politique-confidentialite' }
-];
-
 const trustItems = [
-    { icon: MapPinIcon, label: 'Données en Suisse' },
     { icon: LockIcon, label: '2FA incluse' },
-    { icon: DatabaseExportIcon, label: 'Export libre' }
+    { icon: DatabaseExportIcon, label: 'Export libre' },
+    { icon: ShieldCheckIcon, label: 'Conforme nLPD' }
 ];
+
+const year = new Date().getFullYear();
+
+function scrollToTop() {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+}
 </script>
 
 <template>
     <footer class="landing-footer">
-        <div class="landing-footer__glow landing-footer__glow--left"></div>
-        <div class="landing-footer__glow landing-footer__glow--right"></div>
+        <div class="landing-footer__glow landing-footer__glow--left" aria-hidden="true"></div>
+        <div class="landing-footer__glow landing-footer__glow--right" aria-hidden="true"></div>
 
         <v-container class="max-width-1218 landing-footer__content">
+            <!-- appel à l'action -->
+            <div class="footer-cta">
+                <div>
+                    <h2>Prêt à y voir clair dans vos finances ?</h2>
+                    <p>Créez votre espace en moins d’une minute. Gratuit, sans carte bancaire, sans engagement.</p>
+                </div>
+                <div class="footer-cta__actions">
+                    <v-btn color="primary" size="large" flat class="text-none px-6" to="/auth?tab=register">
+                        Commencer gratuitement
+                        <ArrowRightIcon size="18" class="ms-2" />
+                    </v-btn>
+                    <v-btn variant="outlined" size="large" class="text-none px-6 footer-cta__ghost" to="/contact">
+                        <MailIcon size="18" class="me-2" />
+                        Nous contacter
+                    </v-btn>
+                </div>
+            </div>
+
             <div class="footer-main">
                 <div class="footer-brand">
                     <Logo home-to="/" />
                     <p>La plateforme suisse qui réunit budget, objectifs et patrimoine dans un espace simple, sécurisé et collaboratif.</p>
+
+                    <RouterLink to="/#hebergement" class="footer-hosting" aria-label="Données hébergées en Suisse chez Infomaniak">
+                        <svg viewBox="0 0 32 32" aria-hidden="true">
+                            <rect width="32" height="32" rx="7" fill="#DA291C" />
+                            <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
+                            <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
+                        </svg>
+                        <span>
+                            <small>Données hébergées en Suisse chez</small>
+                            <img :src="infomaniakLogo" alt="Infomaniak" width="244" height="32" />
+                        </span>
+                    </RouterLink>
+
                     <div class="footer-trust">
                         <span v-for="item in trustItems" :key="item.label">
-                            <component :is="item.icon" size="16" stroke-width="1.7" />
+                            <component :is="item.icon" size="15" stroke-width="1.8" />
                             {{ item.label }}
                         </span>
                     </div>
                 </div>
 
-                <nav class="footer-column" aria-label="Produit">
-                    <h3>Produit</h3>
-                    <RouterLink v-for="item in productLinks" :key="item.label" :to="item.to">{{ item.label }}</RouterLink>
+                <nav v-for="column in columns" :key="column.title" class="footer-column" :aria-label="column.title">
+                    <h3>{{ column.title }}</h3>
+                    <RouterLink v-for="item in column.links" :key="item.label" :to="item.to">{{ item.label }}</RouterLink>
                 </nav>
 
-                <nav class="footer-column" aria-label="Spendup">
-                    <h3>Spendup</h3>
-                    <template v-for="item in companyLinks" :key="item.label">
-                        <RouterLink v-if="item.to" :to="item.to">{{ item.label }}</RouterLink>
-                        <a v-else :href="item.href" download>{{ item.label }}</a>
-                    </template>
-                </nav>
-
-                <nav class="footer-column" aria-label="Informations légales">
-                    <h3>Légal</h3>
-                    <RouterLink v-for="item in legalLinks" :key="item.label" :to="item.to">{{ item.label }}</RouterLink>
-                    <div class="footer-security">
-                        <ShieldCheckIcon size="18" stroke-width="1.7" />
-                        Sécurité incluse dans toutes les offres
-                    </div>
-                </nav>
+                <div class="footer-app">
+                    <h3>Application</h3>
+                    <p>Dans votre navigateur, sur ordinateur comme sur smartphone, ou en application Windows.</p>
+                    <a :href="windowsDownloadUrl" download class="footer-app__download">
+                        <BrandWindowsIcon size="20" />
+                        <span>
+                            <small>Télécharger pour</small>
+                            Windows 10 / 11
+                        </span>
+                    </a>
+                    <RouterLink to="/app" class="footer-app__web">Ouvrir l’application web <ArrowRightIcon size="15" /></RouterLink>
+                </div>
             </div>
 
             <div class="footer-bottom">
-                <p>© {{ new Date().getFullYear() }} Spendup. Tous droits réservés.</p>
-                <p>Conçu avec soin en Suisse.</p>
+                <p>© {{ year }} Spendup. Tous droits réservés.</p>
+                <p class="footer-bottom__made">
+                    <svg viewBox="0 0 32 32" aria-hidden="true">
+                        <rect width="32" height="32" rx="7" fill="#DA291C" />
+                        <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
+                        <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
+                    </svg>
+                    Conçu avec soin en Suisse
+                </p>
+                <button type="button" class="footer-top" @click="scrollToTop">
+                    Haut de page
+                    <ArrowUpIcon size="15" />
+                </button>
             </div>
         </v-container>
+
+        <div class="footer-wordmark" aria-hidden="true">Spendup</div>
     </footer>
 </template>
 

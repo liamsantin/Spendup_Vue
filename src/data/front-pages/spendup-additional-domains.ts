@@ -10,10 +10,20 @@ import {
     CalendarIcon,
     ShieldLockIcon,
     WalletIcon,
-    CurrencyEuroIcon,
+    CurrencyFrankIcon,
     FileInvoiceIcon,
     BriefcaseIcon
 } from 'vue-tabler-icons';
+import AlertsScene from '@/components/frontpages/mockups/scenes/AlertsScene.vue';
+import AnomaliesScene from '@/components/frontpages/mockups/scenes/AnomaliesScene.vue';
+import CalendarScene from '@/components/frontpages/mockups/scenes/CalendarScene.vue';
+import CategorisationScene from '@/components/frontpages/mockups/scenes/CategorisationScene.vue';
+import EmployerScene from '@/components/frontpages/mockups/scenes/EmployerScene.vue';
+import InvestScene from '@/components/frontpages/mockups/scenes/InvestScene.vue';
+import NetworkScene from '@/components/frontpages/mockups/scenes/NetworkScene.vue';
+import RecurringIncomeScene from '@/components/frontpages/mockups/scenes/RecurringIncomeScene.vue';
+import SecurityScene from '@/components/frontpages/mockups/scenes/SecurityScene.vue';
+import SubscriptionsScene from '@/components/frontpages/mockups/scenes/SubscriptionsScene.vue';
 
 export type DomainCard = {
     title: string;
@@ -24,12 +34,6 @@ export type DomainCard = {
     toneClass?: string;
 };
 
-export type DomainFloat = {
-    label: string;
-    value: string;
-    tone: 'success' | 'alert' | 'info';
-};
-
 export type SpendupAdditionalDomain = {
     id: string;
     icon: Component;
@@ -37,22 +41,56 @@ export type SpendupAdditionalDomain = {
     kicker: string;
     title: string;
     lead: string;
-    /** Pastilles flottantes autour de l’illustration. */
-    floats: DomainFloat[];
     footer?: string;
     items?: string[];
     cards?: DomainCard[];
-    bgClass: 'bg-lightprimary' | 'bg-surface';
-    image: string;
-    imageAlt: string;
+    /** Groupe de la grille « Dans le détail » de la page Fonctionnalités. */
+    group: SpendupDomainGroupId;
+    /** Maquette produit codée qui illustre le domaine. */
+    scene: Component;
 };
 
-const FEATURES_IMG = '/assets/images/front-pages/features';
+export type SpendupDomainGroupId = 'organiser' | 'revenus' | 'proteger';
+
+export type SpendupDomainGroup = {
+    id: SpendupDomainGroupId;
+    number: string;
+    kicker: string;
+    title: string;
+    lead: string;
+};
+
+/** Groupes de la grille « Dans le détail » : trois familles de besoins plutôt que dix sections identiques. */
+export const spendupDomainGroups: SpendupDomainGroup[] = [
+    {
+        id: 'organiser',
+        number: '05',
+        kicker: 'Organiser & contrôler',
+        title: 'Des données propres, classées, fiables.',
+        lead: 'Catégories, règles, tiers et contrôles continus : votre historique reste lisible et juste, sans effort de tri.'
+    },
+    {
+        id: 'revenus',
+        number: '06',
+        kicker: 'Revenus & échéances',
+        title: 'Ce qui entre, ce qui sort, et quand.',
+        lead: 'Salaires, loyers, abonnements et échéances réunis dans le temps pour anticiper chaque fin de mois.'
+    },
+    {
+        id: 'proteger',
+        number: '07',
+        kicker: 'Investir & protéger',
+        title: 'Faire grandir, être prévenu, rester protégé.',
+        lead: 'Placements, alertes et sécurité travaillent ensemble pour que rien d’important ne vous échappe.'
+    }
+];
 
 /** Domaines métier complémentaires — contenu enrichi sans duplication avec les sections existantes. */
 export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'categorisation',
+        group: 'organiser',
+        scene: CategorisationScene,
         kicker: 'Organiser',
         icon: TagsIcon,
         title: 'Catégorisation & organisation',
@@ -69,18 +107,12 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
                 items: ['règles sur libellé, montant ou tiers', "classement intelligent à l'import"]
             }
         ],
-        footer: 'Exemple : une transaction « Netflix » classée automatiquement en « Abonnements ».',
-        floats: [
-            { label: 'Règles actives', value: '12', tone: 'info' },
-            { label: 'Netflix', value: 'Abonnements', tone: 'success' },
-            { label: 'Tag', value: 'Vacances', tone: 'info' }
-        ],
-        bgClass: 'bg-lightprimary',
-        image: `${FEATURES_IMG}/domain-categorisation.png`,
-        imageAlt: 'Catégorisation et organisation des transactions'
+        footer: 'Exemple : chaque achat « Migros » est classé automatiquement en « Alimentation ».'
     },
     {
         id: 'revenus-recurrents',
+        group: 'revenus',
+        scene: RecurringIncomeScene,
         kicker: 'Anticiper',
         icon: TrendingUpIcon,
         title: 'Revenus récurrents',
@@ -97,18 +129,12 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
                 items: ['loyers et revenus locatifs', 'échéances générées automatiquement', "lien avec vos objectifs d'épargne"]
             }
         ],
-        footer: "Chaque revenu récurrent peut alimenter vos prévisions et vos objectifs d'épargne.",
-        floats: [
-            { label: 'Salaire', value: 'Le 25', tone: 'info' },
-            { label: 'Loyer perçu', value: 'CHF 1’450', tone: 'success' },
-            { label: 'Prévision', value: '+3 mois', tone: 'info' }
-        ],
-        bgClass: 'bg-surface',
-        image: `${FEATURES_IMG}/domain-recurring-income.png`,
-        imageAlt: 'Suivi des revenus récurrents'
+        footer: "Chaque revenu récurrent peut alimenter vos prévisions et vos objectifs d'épargne."
     },
     {
         id: 'employeurs-salaires',
+        group: 'revenus',
+        scene: EmployerScene,
         kicker: 'Carrière',
         icon: BriefcaseIcon,
         title: 'Employeurs, contrats & salaires',
@@ -129,18 +155,12 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
                 ]
             }
         ],
-        footer: 'Chaque salaire enregistré alimente automatiquement vos revenus et vos projections.',
-        floats: [
-            { label: 'Contrat', value: '100 %', tone: 'info' },
-            { label: 'Bulletin', value: 'Importé', tone: 'success' },
-            { label: 'Fiscalité', value: 'Prête', tone: 'info' }
-        ],
-        bgClass: 'bg-surface',
-        image: `${FEATURES_IMG}/feature-employers.png`,
-        imageAlt: 'Suivi des employeurs, contrats et salaires'
+        footer: 'Chaque salaire enregistré alimente automatiquement vos revenus et vos projections.'
     },
     {
         id: 'tiers-paiements',
+        group: 'organiser',
+        scene: NetworkScene,
         kicker: 'Réseau',
         icon: UsersIcon,
         title: 'Réseau, tiers & moyens de paiement',
@@ -156,18 +176,12 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
                 icon: WalletIcon,
                 items: ['carte, virement, espèces', 'liens avec transactions, prêts et contrats']
             }
-        ],
-        floats: [
-            { label: 'Tiers', value: '48 contacts', tone: 'info' },
-            { label: 'Paiement', value: 'Carte ••42', tone: 'info' },
-            { label: 'Demande d’ami', value: 'Acceptée', tone: 'success' }
-        ],
-        bgClass: 'bg-lightprimary',
-        image: `${FEATURES_IMG}/domain-network.png`,
-        imageAlt: 'Réseau et collaboration entre utilisateurs'
+        ]
     },
     {
         id: 'anomalies',
+        group: 'organiser',
+        scene: AnomaliesScene,
         kicker: 'Contrôler',
         icon: AlertTriangleIcon,
         title: 'Anomalies & qualité des données',
@@ -183,18 +197,12 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
                 icon: ShieldLockIcon,
                 items: ['statuts nouvelle, confirmée ou résolue', "contrôle à l'import", 'historique plus fiable']
             }
-        ],
-        floats: [
-            { label: 'Doublon', value: 'Détecté', tone: 'alert' },
-            { label: 'Facture', value: '+38 %', tone: 'alert' },
-            { label: 'Alerte', value: 'Résolue', tone: 'success' }
-        ],
-        bgClass: 'bg-surface',
-        image: `${FEATURES_IMG}/domain-anomalies.png`,
-        imageAlt: "Détection d'anomalies financières"
+        ]
     },
     {
         id: 'investissements-crypto',
+        group: 'proteger',
+        scene: InvestScene,
         kicker: 'Investir',
         icon: ChartLineIcon,
         title: 'Investissements & crypto',
@@ -211,18 +219,12 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
                 items: ['actifs crypto suivis', 'valorisation historique', 'intégration au patrimoine net']
             }
         ],
-        footer: 'Complète le suivi immobilier et véhicules déjà proposé sur la plateforme.',
-        floats: [
-            { label: 'Portefeuille', value: '+4.8 %', tone: 'success' },
-            { label: 'Bitcoin', value: '0.12 BTC', tone: 'info' },
-            { label: 'Patrimoine net', value: 'À jour', tone: 'info' }
-        ],
-        bgClass: 'bg-lightprimary',
-        image: `${FEATURES_IMG}/domain-investments.jpg`,
-        imageAlt: 'Sécurisation des actifs et crypto'
+        footer: 'Complète le suivi immobilier et véhicules déjà proposé sur la plateforme.'
     },
     {
         id: 'depenses-abonnements',
+        group: 'revenus',
+        scene: SubscriptionsScene,
         kicker: 'Récurrent',
         icon: RepeatIcon,
         title: 'Dépenses récurrentes & abonnements',
@@ -243,18 +245,12 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
                 ]
             }
         ],
-        footer: 'Définissez fréquence et montants pour anticiper les paiements et éviter les oublis.',
-        floats: [
-            { label: 'Abonnements', value: '7 actifs', tone: 'info' },
-            { label: 'Prochain débit', value: 'Dans 3 j', tone: 'alert' },
-            { label: 'Mensuel', value: 'CHF 86', tone: 'info' }
-        ],
-        bgClass: 'bg-surface',
-        image: `${FEATURES_IMG}/domain-subscriptions.png`,
-        imageAlt: 'Gestion des abonnements et charges'
+        footer: 'Définissez fréquence et montants pour anticiper les paiements et éviter les oublis.'
     },
     {
         id: 'alertes-notifications',
+        group: 'proteger',
+        scene: AlertsScene,
         kicker: 'Alerter',
         icon: BellIcon,
         title: 'Alertes & notifications',
@@ -270,18 +266,12 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
                 icon: UsersIcon,
                 items: ['sécurité du compte', "demandes d'amis", 'rappels et préférences e-mail ou push']
             }
-        ],
-        floats: [
-            { label: 'Budget courses', value: '92 %', tone: 'alert' },
-            { label: 'Échéance', value: 'Demain', tone: 'info' },
-            { label: 'Objectif', value: 'Atteint', tone: 'success' }
-        ],
-        bgClass: 'bg-lightprimary',
-        image: `${FEATURES_IMG}/domain-alerts.png`,
-        imageAlt: 'Célébration et notifications positives'
+        ]
     },
     {
         id: 'calendrier',
+        group: 'revenus',
+        scene: CalendarScene,
         kicker: 'Planifier',
         icon: CalendarIcon,
         title: 'Calendrier & échéances',
@@ -298,18 +288,12 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
                 items: ['rappels et récurrences automatisées', 'visualisation cashflow et échéances']
             }
         ],
-        footer: 'Les événements récurrents automatisent ce qui se répète : loyer, salaire, abonnements, etc.',
-        floats: [
-            { label: 'Loyer', value: '1er du mois', tone: 'info' },
-            { label: 'Événement', value: 'Partagé', tone: 'success' },
-            { label: 'Cashflow', value: 'Positif', tone: 'success' }
-        ],
-        bgClass: 'bg-surface',
-        image: `${FEATURES_IMG}/domain-calendar.png`,
-        imageAlt: 'Calendrier et planification financière'
+        footer: 'Les événements récurrents automatisent ce qui se répète : loyer, salaire, abonnements, etc.'
     },
     {
         id: 'securite-devises',
+        group: 'proteger',
+        scene: SecurityScene,
         kicker: 'Protéger',
         icon: ShieldLockIcon,
         title: 'Sécurité, conformité & multi-devises',
@@ -318,25 +302,17 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
             {
                 title: 'Sécurité & conformité',
                 icon: ShieldLockIcon,
-                items: ['2FA, sessions et appareils connectés', 'journal de sécurité et conformité RGPD']
+                items: ['2FA, sessions et appareils connectés', 'journal de sécurité, conformité nLPD et RGPD']
             },
             {
                 title: 'Multi-devises',
-                icon: CurrencyEuroIcon,
+                icon: CurrencyFrankIcon,
                 items: [
                     'devise par compte, transaction ou actif',
                     'taux de change et CHF par défaut',
                     "préférences d'affichage et de compte"
                 ]
             }
-        ],
-        floats: [
-            { label: '2FA', value: 'Activée', tone: 'success' },
-            { label: 'Appareils', value: '2 connectés', tone: 'info' },
-            { label: 'Devises', value: 'CHF · EUR', tone: 'info' }
-        ],
-        bgClass: 'bg-lightprimary',
-        image: `${FEATURES_IMG}/domain-security.png`,
-        imageAlt: 'Sécurité et conformité des données'
+        ]
     }
 ];

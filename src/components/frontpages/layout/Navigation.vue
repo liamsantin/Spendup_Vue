@@ -21,7 +21,8 @@ const navigation = computed(() => {
         { menu: 'Accueil', href: '/', badge: false },
         { menu: 'Fonctionnalités', href: '/fonctionnalites', badge: false },
         ...(isPricingPageEnabled() ? [{ menu: 'Tarifs', href: '/tarifs', badge: false }] : []),
-        { menu: 'À propos', href: '/a-propos', badge: false }
+        { menu: 'À propos', href: '/a-propos', badge: false },
+        { menu: 'Contact', href: '/contact', badge: false }
     ];
     return items;
 });

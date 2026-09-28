@@ -17,13 +17,12 @@ import {
     ServerIcon,
     ShieldCheckIcon,
     SparklesIcon,
-    TargetIcon,
     UserPlusIcon
 } from 'vue-tabler-icons';
 import heroVisual from '@/assets/images/front-pages/dashboard-preview.png';
 import infomaniakLogo from '@/assets/images/front-pages/infomaniak-logo.svg';
-
-const PLATFORM_IMG = '/assets/images/front-pages/features/home-platform-central.png';
+import AnywhereScene from '@/components/frontpages/mockups/scenes/AnywhereScene.vue';
+import HubScene from '@/components/frontpages/mockups/scenes/HubScene.vue';
 
 const INSTALLER_PATH = '/downloads/SpendUp-Setup-x64.msi';
 const windowsDownloadUrl = (import.meta.env.VITE_WINDOWS_APP_DOWNLOAD_URL as string | undefined)?.trim() || INSTALLER_PATH;
@@ -116,6 +115,14 @@ const faqs = [
     {
         question: 'Puis-je utiliser Spendup en famille ?',
         answer: 'Oui. L’offre Famille (5) permet à un payeur de créer un foyer jusqu’à 5 personnes (propriétaire inclus). Les membres héritent du plan du propriétaire et n’ont pas besoin d’un abonnement payant.'
+    },
+    {
+        question: 'Où sont hébergées mes données ?',
+        answer: 'En Suisse, chez Infomaniak. Vos comptes, transactions et documents sont stockés dans des centres de données situés en Suisse et relèvent du droit suisse sur la protection des données (nLPD).'
+    },
+    {
+        question: 'Sur quels appareils puis-je utiliser Spendup ?',
+        answer: 'Depuis n’importe quel navigateur récent, sur ordinateur comme sur smartphone, ou via l’application Windows. Vos données restent synchronisées d’un appareil à l’autre.'
     },
     {
         question: 'Que deviennent mes données après résiliation ?',
@@ -234,14 +241,7 @@ const faqs = [
             <v-container class="max-width-1218">
                 <div v-reveal class="platform-layout">
                     <div class="platform-visual">
-                        <div class="platform-visual__glow" aria-hidden="true"></div>
-                        <img
-                            :src="PLATFORM_IMG"
-                            alt="Toutes les dimensions de vos finances convergent vers un tableau de bord unique"
-                            loading="lazy"
-                            width="1536"
-                            height="1024"
-                        />
+                        <HubScene />
                     </div>
 
                     <div class="platform-copy">
@@ -383,26 +383,13 @@ const faqs = [
                     </div>
 
                     <div class="anywhere-panel__devices">
-                        <div class="device-card device-card--main">
-                            <BuildingBankIcon size="23" />
-                            <span>Solde disponible</span>
-                            <strong>CHF 12’840.50</strong>
-                            <div class="device-card__chart">
-                                <i v-for="height in [45, 68, 54, 82, 64, 92, 75]" :key="height" :style="{ height: `${height}%` }"></i>
-                            </div>
-                        </div>
-                        <div class="device-card device-card--side">
-                            <TargetIcon size="20" />
-                            <span>Objectif vacances</span>
-                            <strong>72 %</strong>
-                            <div class="device-card__progress"><i></i></div>
-                        </div>
+                        <AnywhereScene />
                     </div>
                 </div>
             </v-container>
         </section>
 
-        <section class="home-faq">
+        <section id="questions" class="home-faq">
             <v-container class="max-width-1218">
                 <div v-reveal class="section-heading">
                     <span class="section-kicker">Questions fréquentes</span>
