@@ -109,7 +109,8 @@ describe('imports mapping', () => {
             currency: null,
             balance: 'Saldo',
             category: null,
-            tier: null
+            tier: null,
+            paymentMethod: null
         });
         expect(built.mapping.encoding).toBe('windows-1252');
         expect(built.mapping.sheetName).toBeUndefined();

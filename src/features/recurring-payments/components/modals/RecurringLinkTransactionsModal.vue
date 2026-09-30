@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Lie une TX manuelle (sans récurrence) à une échéance ouverte — 1 TX ↔ 1 due.
+ * Lie une TX manuelle ou importée (sans récurrence) à une échéance ouverte — 1 TX ↔ 1 due.
  */
 defineOptions({ name: 'RecurringLinkTransactionsModal' });
 

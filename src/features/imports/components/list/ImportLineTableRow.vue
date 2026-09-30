@@ -23,7 +23,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const { dateLabel, amountText, amountTone, categoryLabel, tierLabel, labelText, badges } = useImportLineDisplay(
+const { dateLabel, amountText, amountTone, categoryLabel, tierLabel, paymentMethodLabel, labelText, badges } = useImportLineDisplay(
     toRef(props, 'line'),
     toRef(props, 'currency')
 );
@@ -47,7 +47,13 @@ function onDoubleClick(event: MouseEvent) {
         <td>
             <span class="app-data-table__identity">
                 <span class="app-data-table__title" :title="labelText">{{ labelText }}</span>
-                <ImportLineBadges class="import-line-row__badges" :badges="badges" />
+                <ImportLineBadges
+                    class="import-line-row__badges"
+                    :badges="badges"
+                    :line="line"
+                    :currency="currency"
+                    :editable="editable && !acting"
+                />
             </span>
         </td>
         <td>
@@ -57,6 +63,13 @@ function onDoubleClick(event: MouseEvent) {
         <td>
             <span v-if="tierLabel" :class="{ 'app-data-table__muted': !line.tierPublicId }" :title="tierLabel">{{ tierLabel }}</span>
             <span v-else class="app-data-table__muted">—</span>
+            <span
+                v-if="paymentMethodLabel"
+                class="import-line-row__sub app-data-table__muted"
+                :title="`${t('importsPage.fields.paymentMethod')} : ${paymentMethodLabel}`"
+            >
+                {{ paymentMethodLabel }}
+            </span>
         </td>
         <td>
             <span class="app-data-table__strong import-line-row__amount" :class="amountTone">{{ amountText }}</span>
@@ -90,6 +103,14 @@ function onDoubleClick(event: MouseEvent) {
 
 .import-line-row__amount {
     font-variant-numeric: tabular-nums;
+}
+
+.import-line-row__sub {
+    display: block;
+    overflow: hidden;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .import-line-row__amount.is-debit {

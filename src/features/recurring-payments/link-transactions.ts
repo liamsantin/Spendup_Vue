@@ -17,7 +17,7 @@ export function isTransactionLinkedToRecurrence(
 
 /**
  * Candidat pour `POST …/dues/{due}/link` :
- * TX manuelle, bon type, même compte que le template, pas déjà liée, éditable.
+ * TX manuelle ou importée, bon type, même compte que le template, pas déjà liée, éditable.
  */
 export function isTransactionLinkableToRecurrence(
     transaction: Transaction,
@@ -30,7 +30,7 @@ export function isTransactionLinkableToRecurrence(
     if (transaction.amount == null) return false;
     if (!canWriteTransaction(transaction, accounts)) return false;
     if (isTransactionLinkedToRecurrence(transaction)) return false;
-    if (transaction.source !== 'manuelle') return false;
+    if (transaction.source !== 'manuelle' && transaction.source !== 'import') return false;
     if (kind === 'expense' && transaction.type !== 'depense') return false;
     if (kind === 'income' && transaction.type !== 'revenu') return false;
     const sourceId = sourceAccountPublicId(transaction);

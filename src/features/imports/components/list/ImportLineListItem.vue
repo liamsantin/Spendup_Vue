@@ -24,7 +24,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const { dateLabel, amountText, amountTone, categoryLabel, labelText, badges } = useImportLineDisplay(
+const { dateLabel, amountText, amountTone, categoryLabel, paymentMethodLabel, labelText, badges } = useImportLineDisplay(
     toRef(props, 'line'),
     toRef(props, 'currency')
 );
@@ -44,11 +44,12 @@ function onActivate(event: MouseEvent) {
                 <p class="import-line-card__sub">
                     {{ t('importsPage.lines.lineNumber', { n: line.lineNumber }) }} · {{ dateLabel }}
                     <span v-if="categoryLabel"> · {{ categoryLabel }}</span>
+                    <span v-if="paymentMethodLabel"> · {{ paymentMethodLabel }}</span>
                 </p>
             </div>
             <span class="import-line-card__amount" :class="amountTone">{{ amountText }}</span>
         </div>
-        <ImportLineBadges v-if="badges.length" :badges="badges" wrap />
+        <ImportLineBadges v-if="badges.length" :badges="badges" wrap :line="line" :currency="currency" :editable="editable && !acting" />
         <div class="import-line-card__bottom">
             <ImportStatusChip :status="line.status" kind="line" />
             <ImportLineActions

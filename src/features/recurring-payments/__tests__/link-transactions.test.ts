@@ -69,8 +69,9 @@ describe('recurring link transactions', () => {
         expect(isTransactionLinkedToRecurrence(tx({ duePublicId: 'd-1' }))).toBe(true);
     });
 
-    it('accepte une dépense manuelle sur le bon compte', () => {
+    it('accepte une dépense manuelle ou importée sur le bon compte', () => {
         expect(isTransactionLinkableToRecurrence(tx(), 'expense', 'acc-1', accounts)).toBe(true);
+        expect(isTransactionLinkableToRecurrence(tx({ source: 'import' }), 'expense', 'acc-1', accounts)).toBe(true);
     });
 
     it('refuse type / compte / source / lien existant', () => {

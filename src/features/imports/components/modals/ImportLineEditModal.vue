@@ -1,6 +1,7 @@
 <script setup lang="ts">
 /**
- * Corriger / trancher une ligne : dates, libellé, montant signé, catégorie, tier.
+ * Corriger / trancher une ligne : dates, libellé, montant signé, catégorie, tier, moyen de paiement,
+ * échéance récurrente rapprochée (réglée au commit).
  * `validee` / `ignoree` gardent leur statut tant qu’elles restent valides ;
  * `aValider` / `erreur` sont réévaluées par l’API après chaque correction.
  */
@@ -13,10 +14,12 @@ import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
+import { importsApi } from '@/features/imports/api';
 import { parseAccountAmount, todayYmd } from '@/features/accounts/format';
 import CategoryFormModal from '@/features/categories/components/modals/CategoryFormModal.vue';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import type { Category } from '@/features/categories/types';
+import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
 import { formatOperationDate } from '@/features/transactions/format';
 import ImportStatusChip from '@/features/imports/components/list/ImportStatusChip.vue';
@@ -26,12 +29,20 @@ import {
     importLineToFormFields,
     isCategoryCompatibleWithAmount,
     isImportLineFormDirty,
+    recurringDueKey,
     sanitizeSignedAmountInput,
+    willCreatePaymentMethod,
+    willCreateTier,
     type ImportLineFormFields,
     type ImportLinePayloadErrorCode
 } from '@/features/imports/payload';
 import { useImportsStore } from '@/features/imports/stores/imports-store';
-import { IMPORT_LINE_LABEL_MAX, type ImportLine, type UpdateImportLinePayload } from '@/features/imports/types';
+import {
+    IMPORT_LINE_LABEL_MAX,
+    type ImportLine,
+    type ImportLineRecurringDue,
+    type UpdateImportLinePayload
+} from '@/features/imports/types';
 
 /** Après le PATCH : fermer, rester si la ligne est toujours en erreur, ou rester pour continuer. */
 type AfterPatch = 'close' | 'stayIfError' | 'stay';
@@ -51,6 +62,7 @@ const emit = defineEmits<{
 const { t, locale } = useI18n();
 const store = useImportsStore();
 const categoriesStore = useCategoriesStore();
+const paymentMethodsStore = usePaymentMethodsStore();
 
 const form = reactive<ImportLineFormFields>({
     operationDate: '',
@@ -58,8 +70,13 @@ const form = reactive<ImportLineFormFields>({
     label: '',
     amount: '',
     categoryPublicId: '',
-    tierPublicId: ''
+    tierPublicId: '',
+    paymentMethodPublicId: '',
+    recurringDueKey: '',
+    dropUnmatchedTier: false,
+    dropUnmatchedPaymentMethod: false
 });
+const recurringCandidates = ref<ImportLineRecurringDue[]>([]);
 const fieldErrors = reactive<Partial<Record<keyof ImportLineFormFields, string>>>({});
 const localError = ref<string | null>(null);
 const applySameLabel = ref(false);
@@ -104,9 +121,95 @@ const categoryItems = computed(() => {
     return items;
 });
 
+/** Valeur du fichier non reconnue et sans choix : créée au commit, sauf case « Ne pas créer ». */
+const tierToCreate = computed(() => !!live.value && willCreateTier(live.value) && !form.tierPublicId);
+const paymentMethodToCreate = computed(() => !!live.value && willCreatePaymentMethod(live.value) && !form.paymentMethodPublicId);
+
+const tierHint = computed(() => {
+    const name = live.value?.unmatchedTierName;
+    if (!live.value || !willCreateTier(live.value) || !name) return undefined;
+    if (form.tierPublicId) return t('importsPage.lines.edit.learnTierAlias', { name });
+    return form.dropUnmatchedTier ? t('importsPage.lines.edit.noTierCreated') : t('importsPage.lines.edit.unknownTier', { name });
+});
+
+const paymentMethodHint = computed(() => {
+    const name = live.value?.unmatchedPaymentMethodName;
+    if (!live.value || !willCreatePaymentMethod(live.value) || !name) return undefined;
+    if (form.paymentMethodPublicId) return t('importsPage.lines.edit.learnPaymentMethodAlias', { name });
+    return form.dropUnmatchedPaymentMethod
+        ? t('importsPage.lines.edit.noPaymentMethodCreated')
+        : t('importsPage.lines.edit.unknownPaymentMethod', { name });
+});
+
+/** Moyens actifs du compte cible : l’API refuse tout autre moyen. */
+const paymentMethodItems = computed(() => {
+    const newName = live.value?.unmatchedPaymentMethodName;
+    const items = [
+        {
+            title:
+                paymentMethodToCreate.value && !form.dropUnmatchedPaymentMethod && newName
+                    ? t('importsPage.lines.edit.newPaymentMethodOption', { name: newName })
+                    : t('importsPage.lines.edit.noPaymentMethod'),
+            value: ''
+        },
+        ...paymentMethodsStore.items
+            .filter((item) => item.accountPublicId === props.accountPublicId && item.isActive)
+            .map((item) => ({ title: item.label, value: item.publicId }))
+    ];
+    const selected = form.paymentMethodPublicId;
+    if (selected && !items.some((item) => item.value === selected)) {
+        const known = paymentMethodsStore.allKnownItems().find((item) => item.publicId === selected);
+        items.push({ title: known?.label ?? selected, value: selected });
+    }
+    return items;
+});
+
+function recurringDueLabel(due: ImportLineRecurringDue): string {
+    return t('importsPage.lines.edit.recurringDueOption', {
+        name: due.name,
+        date: formatOperationDate(due.scheduledAt, locale.value),
+        amount: formatImportAmount(due.plannedAmount, props.currency, locale.value)
+    });
+}
+
+/** Échéance actuelle d’abord (elle n’est pas renvoyée si l’API ne la propose plus), puis les candidates. */
+const recurringDueItems = computed(() => {
+    const items = [{ title: t('importsPage.lines.edit.noRecurringDue'), value: '' }];
+    const current = live.value?.recurringDue;
+    if (current) items.push({ title: recurringDueLabel(current), value: recurringDueKey(current) });
+    for (const due of recurringCandidates.value) {
+        const key = recurringDueKey(due);
+        if (!items.some((item) => item.value === key)) items.push({ title: recurringDueLabel(due), value: key });
+    }
+    return items;
+});
+
+async function loadRecurringCandidates(line: ImportLine | null) {
+    recurringCandidates.value = [];
+    const importPublicId = store.current?.publicId;
+    if (!line || !importPublicId) return;
+    try {
+        recurringCandidates.value = await importsApi.listLineRecurringDues(importPublicId, line.publicId);
+    } catch {
+        // Liste indicative : sans elle, seule l’échéance déjà rapprochée reste proposée.
+    }
+}
+
 const categoryChanged = computed(() => !!live.value && (form.categoryPublicId || null) !== (live.value.categoryPublicId ?? null));
-const tierChanged = computed(() => !!live.value && (form.tierPublicId || null) !== (live.value.tierPublicId ?? null));
-const canApplySameLabel = computed(() => (categoryChanged.value || tierChanged.value) && !!live.value?.label?.trim());
+const tierChanged = computed(
+    () =>
+        !!live.value &&
+        ((form.tierPublicId || null) !== (live.value.tierPublicId ?? null) || (tierToCreate.value && form.dropUnmatchedTier))
+);
+const paymentMethodChanged = computed(
+    () =>
+        !!live.value &&
+        ((form.paymentMethodPublicId || null) !== (live.value.paymentMethodPublicId ?? null) ||
+            (paymentMethodToCreate.value && form.dropUnmatchedPaymentMethod))
+);
+const canApplySameLabel = computed(
+    () => (categoryChanged.value || tierChanged.value || paymentMethodChanged.value) && !!live.value?.label?.trim()
+);
 
 const duplicateLink = computed(() => {
     const item = live.value;
@@ -137,7 +240,11 @@ watch(
     (value) => {
         if (!value) return;
         resetForm();
+        void loadRecurringCandidates(live.value);
         void categoriesStore.loadList().catch(() => undefined);
+        if (props.accountPublicId) {
+            void paymentMethodsStore.loadList({ accountPublicId: props.accountPublicId }).catch(() => undefined);
+        }
     }
 );
 
@@ -169,6 +276,15 @@ async function applyToSameLabel(line: ImportLine) {
             await store.bulkUpdateLines({ action: 'setTier', sameLabelAs: line.publicId, tierPublicId: form.tierPublicId || null })
         );
     }
+    if (paymentMethodChanged.value) {
+        results.push(
+            await store.bulkUpdateLines({
+                action: 'setPaymentMethod',
+                sameLabelAs: line.publicId,
+                paymentMethodPublicId: form.paymentMethodPublicId || null
+            })
+        );
+    }
     const updated = Math.max(0, ...results.map((result) => result.updated));
     const skipped = Math.max(0, ...results.map((result) => result.skipped));
     emit('notice', t('importsPage.lines.bulkResult', { updated, skipped }, updated));
@@ -185,6 +301,7 @@ async function patch(payload: UpdateImportLinePayload, after: AfterPatch) {
             await applyToSameLabel(item);
             delete payload.categoryPublicId;
             delete payload.tierPublicId;
+            delete payload.paymentMethodPublicId;
         }
         const updated = Object.keys(payload).length ? await store.updateLine(item.publicId, payload) : (live.value ?? item);
         // Toujours invalide (ou action « sur place ») : garder la modale avec l’état relu.
@@ -358,12 +475,46 @@ const categoryDefaultType = computed(() => ((formAmount.value ?? 0) >= 0 ? 'reve
                     v-model="form.tierPublicId"
                     :label="t('importsPage.fields.tier')"
                     hide-details="auto"
-                    :hint="
-                        live.unmatchedTierName && !form.tierPublicId
-                            ? t('importsPage.lines.edit.unknownTier', { name: live.unmatchedTierName })
-                            : undefined
-                    "
-                    :persistent-hint="!!live.unmatchedTierName && !form.tierPublicId"
+                    :hint="tierHint"
+                    :persistent-hint="!!tierHint"
+                />
+                <AppCheckbox
+                    v-if="tierToCreate"
+                    v-model="form.dropUnmatchedTier"
+                    class="import-line-edit__drop"
+                    density="compact"
+                    :label="t('importsPage.lines.edit.dropTier', { name: live.unmatchedTierName })"
+                />
+
+                <AppSelect
+                    v-model="form.paymentMethodPublicId"
+                    :items="paymentMethodItems"
+                    :label="t('importsPage.fields.paymentMethod')"
+                    float-label
+                    hide-details="auto"
+                    :error="isFaulty('paymentMethod')"
+                    :hint="paymentMethodHint"
+                    :persistent-hint="!!paymentMethodHint"
+                    searchable
+                    :search-placeholder="t('importsPage.lines.edit.paymentMethodSearch')"
+                />
+                <AppCheckbox
+                    v-if="paymentMethodToCreate"
+                    v-model="form.dropUnmatchedPaymentMethod"
+                    class="import-line-edit__drop"
+                    density="compact"
+                    :label="t('importsPage.lines.edit.dropPaymentMethod', { name: live.unmatchedPaymentMethodName })"
+                />
+
+                <AppSelect
+                    v-model="form.recurringDueKey"
+                    :items="recurringDueItems"
+                    :label="t('importsPage.fields.recurringDue')"
+                    float-label
+                    hide-details="auto"
+                    :error="isFaulty('recurringDue')"
+                    :hint="form.recurringDueKey ? t('importsPage.lines.edit.recurringDueHint') : undefined"
+                    :persistent-hint="!!form.recurringDueKey"
                 />
 
                 <AppCheckbox
@@ -388,6 +539,10 @@ const categoryDefaultType = computed(() => ((formAmount.value ?? 0) >= 0 ? 'reve
                         <template v-if="original.tierName">
                             <dt>{{ t('importsPage.fields.tier') }}</dt>
                             <dd>{{ original.tierName }}</dd>
+                        </template>
+                        <template v-if="original.paymentMethodName">
+                            <dt>{{ t('importsPage.fields.paymentMethod') }}</dt>
+                            <dd>{{ original.paymentMethodName }}</dd>
                         </template>
                     </dl>
                 </div>
@@ -438,6 +593,10 @@ const categoryDefaultType = computed(() => ((formAmount.value ?? 0) >= 0 ? 'reve
 </template>
 
 <style scoped>
+.import-line-edit__drop {
+    margin-top: -8px;
+}
+
 .import-line-edit {
     display: flex;
     flex-direction: column;

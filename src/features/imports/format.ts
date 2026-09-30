@@ -148,6 +148,44 @@ export function isAutoIgnored(line: Pick<ImportLine, 'issues'>): boolean {
     return line.issues.some((issue) => issue.code === 'AUTO_IGNORED');
 }
 
+/**
+ * Normalisation de l’API pour les valeurs du fichier : casse, accents et ponctuation ignorés
+ * (« COOP-4521 » = « coop 4521 », « Café » = « cafe »).
+ */
+export function normalizeMatchValue(value: string): string {
+    return value
+        .normalize('NFD')
+        .replace(/\p{M}/gu, '')
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}]+/gu, ' ')
+        .trim();
+}
+
+export type ImportEntitiesToCreate = { tiers: number; paymentMethods: number };
+
+/** Tiers et moyens créés au commit : valeurs distinctes non reconnues des lignes `validee`. */
+export function countEntitiesToCreate(
+    lines: readonly Pick<
+        ImportLine,
+        'status' | 'tierPublicId' | 'unmatchedTierName' | 'paymentMethodPublicId' | 'unmatchedPaymentMethodName'
+    >[]
+): ImportEntitiesToCreate {
+    const tiers = new Set<string>();
+    const paymentMethods = new Set<string>();
+    for (const line of lines) {
+        if (line.status !== 'validee') continue;
+        if (!line.tierPublicId && line.unmatchedTierName) {
+            const key = normalizeMatchValue(line.unmatchedTierName);
+            if (key) tiers.add(key);
+        }
+        if (!line.paymentMethodPublicId && line.unmatchedPaymentMethodName) {
+            const key = normalizeMatchValue(line.unmatchedPaymentMethodName);
+            if (key) paymentMethods.add(key);
+        }
+    }
+    return { tiers: tiers.size, paymentMethods: paymentMethods.size };
+}
+
 /** Champ UI fautif d’après `issues[].field` (surlignage du formulaire). */
 export function issueFields(line: Pick<ImportLine, 'issues'>): Set<string> {
     const fields = new Set<string>();

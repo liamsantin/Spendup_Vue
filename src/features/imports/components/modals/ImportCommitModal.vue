@@ -10,9 +10,10 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { formatOperationDate } from '@/features/transactions/format';
-import { formatImportAmount } from '@/features/imports/format';
+import { importsApi } from '@/features/imports/api';
+import { countEntitiesToCreate, formatImportAmount, type ImportEntitiesToCreate } from '@/features/imports/format';
 import { useImportsStore } from '@/features/imports/stores/imports-store';
-import type { Import } from '@/features/imports/types';
+import { IMPORT_LINES_PAGE_SIZE_MAX, type Import, type ImportCommitSummary, type ImportLine } from '@/features/imports/types';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -21,13 +22,14 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     'update:modelValue': [value: boolean];
-    committed: [createdTransactions: number];
+    committed: [summary: ImportCommitSummary];
 }>();
 
 const { t, locale } = useI18n();
 const store = useImportsStore();
 
 const localError = ref<string | null>(null);
+const toCreateEntities = ref<ImportEntitiesToCreate | null>(null);
 
 const open = computed({
     get: () => props.modelValue,
@@ -48,6 +50,35 @@ const periodLabel = computed(() => {
     return t('importsPage.list.period', { from: formatOperationDate(from, locale.value), to: formatOperationDate(to, locale.value) });
 });
 
+/** « 12 tiers et 2 moyens de paiement seront créés. » */
+const entitiesText = computed(() => {
+    const counts = toCreateEntities.value;
+    if (!counts || (!counts.tiers && !counts.paymentMethods)) return null;
+    const parts: string[] = [];
+    if (counts.tiers) parts.push(t('importsPage.commit.entities.tiers', { count: counts.tiers }, counts.tiers));
+    if (counts.paymentMethods) {
+        parts.push(t('importsPage.commit.entities.paymentMethods', { count: counts.paymentMethods }, counts.paymentMethods));
+    }
+    const total = counts.tiers + counts.paymentMethods;
+    return t('importsPage.commit.entities.willCreate', { list: parts.join(t('importsPage.commit.entities.and')) }, total);
+});
+
+/** Toutes les lignes `validee` (l’aperçu API ne compte pas les entités à créer). */
+async function loadEntitiesToCreate(publicId: string) {
+    toCreateEntities.value = null;
+    try {
+        const lines: ImportLine[] = [];
+        for (let page = 1; ; page++) {
+            const result = await importsApi.listLines(publicId, { status: 'validee', page, pageSize: IMPORT_LINES_PAGE_SIZE_MAX });
+            lines.push(...result.items);
+            if (!result.items.length || lines.length >= result.totalCount) break;
+        }
+        if (props.item.publicId === publicId) toCreateEntities.value = countEntitiesToCreate(lines);
+    } catch {
+        // Indicatif : le commit reste possible sans ce décompte.
+    }
+}
+
 const unresolved = computed(() => preview.value?.unresolved ?? 0);
 const canCommit = computed(() => !!preview.value && preview.value.toCreate > 0 && !store.acting && !store.previewLoading);
 const hasBalance = computed(() => preview.value?.balanceBefore != null && preview.value?.balanceAfter != null);
@@ -60,6 +91,7 @@ watch(
         store.loadPreview(props.item.publicId).catch((e: unknown) => {
             localError.value = getErrorMessage(e);
         });
+        void loadEntitiesToCreate(props.item.publicId);
     }
 );
 
@@ -68,12 +100,17 @@ async function onCommit() {
     localError.value = null;
     try {
         const result = await store.commitImport(props.item.publicId, { ignoreUnresolved: unresolved.value > 0 });
-        emit('committed', result.createdTransactions);
+        emit('committed', {
+            createdTransactions: result.createdTransactions,
+            createdTiers: result.createdTiers,
+            createdPaymentMethods: result.createdPaymentMethods
+        });
         open.value = false;
     } catch (e: unknown) {
         localError.value = getErrorMessage(e);
         // Lignes changées entre-temps (autre onglet, ligne supprimée) : relire l’aperçu.
         void store.loadPreview(props.item.publicId).catch(() => undefined);
+        void loadEntitiesToCreate(props.item.publicId);
     }
 }
 </script>
@@ -133,6 +170,7 @@ async function onCommit() {
                 </div>
             </div>
 
+            <AppAlert v-if="entitiesText" type="info">{{ entitiesText }}</AppAlert>
             <AppAlert v-if="unresolved > 0" type="warning">
                 {{ t('importsPage.commit.unresolved', { count: unresolved }, unresolved) }}
             </AppAlert>

@@ -41,6 +41,7 @@ import {
     IMPORT_LINE_SORT_DEFAULT,
     type BulkUpdateImportLinesPayload,
     type Import,
+    type ImportCommitSummary,
     type ImportLine,
     type ImportLineSort,
     type ImportLineStatus
@@ -54,7 +55,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     remap: [];
-    committed: [createdTransactions: number];
+    committed: [summary: ImportCommitSummary];
 }>();
 
 const { t, locale } = useI18n();

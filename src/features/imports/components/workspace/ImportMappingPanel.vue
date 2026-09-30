@@ -11,6 +11,7 @@ import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
+import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { reparseLosesReviewWork } from '@/features/imports/format';
 import {
     IMPORT_MAPPING_OPTIONAL,
@@ -50,12 +51,14 @@ const SEPARATOR_KEYS: Record<(typeof IMPORT_SEPARATORS)[number], string> = { ';'
 
 const { t } = useI18n();
 const store = useImportsStore();
+const paymentMethodsStore = usePaymentMethodsStore();
 
 const form = reactive<ImportMappingForm>(mappingFormFromAnalysis(props.item.analysis));
 const fieldError = ref<{ field: string; message: string } | null>(null);
 const localError = ref<string | null>(null);
 const templateToApply = ref('');
 const pendingReparse = ref<ReparseImportPayload | null>(null);
+const paymentMethodPublicId = ref(props.item.defaultPaymentMethodPublicId ?? '');
 
 const confirmOpen = computed({
     get: () => !!pendingReparse.value,
@@ -78,6 +81,35 @@ watch(
         fieldError.value = null;
     }
 );
+
+watch(
+    () => props.item.defaultPaymentMethodPublicId,
+    (next) => {
+        paymentMethodPublicId.value = next ?? '';
+    }
+);
+
+/** Moyens actifs du compte de l’import ; le moyen actuel reste affiché même s’il a été désactivé. */
+const paymentMethodItems = computed(() => {
+    const items = [
+        { title: t('importsPage.upload.noPaymentMethod'), value: '' },
+        ...paymentMethodsStore.items
+            .filter((item) => item.accountPublicId === props.item.accountPublicId && item.isActive)
+            .map((item) => ({ title: item.label, value: item.publicId }))
+    ];
+    const selected = paymentMethodPublicId.value;
+    if (selected && !items.some((item) => item.value === selected)) {
+        const known = paymentMethodsStore.allKnownItems().find((item) => item.publicId === selected);
+        items.push({ title: known?.label ?? selected, value: selected });
+    }
+    return items;
+});
+
+/** Clé absente = moyen par défaut conservé : on ne l’envoie que s’il a changé. */
+function withPaymentMethod(body: ReparseImportPayload): ReparseImportPayload {
+    const next = paymentMethodPublicId.value || null;
+    return next === (props.item.defaultPaymentMethodPublicId ?? null) ? body : { ...body, paymentMethodPublicId: next };
+}
 
 const columnItems = computed(() => [
     { title: t('importsPage.mapping.noColumn'), value: '' },
@@ -164,7 +196,8 @@ async function runReparse(body: ReparseImportPayload) {
     }
 }
 
-function requestReparse(body: ReparseImportPayload) {
+function requestReparse(input: ReparseImportPayload) {
+    const body = withPaymentMethod(input);
     if (reparseLosesReviewWork(props.item)) {
         pendingReparse.value = body;
         return;
@@ -292,6 +325,16 @@ void store.loadTemplates().catch(() => undefined);
                     />
                     <AppSwitch v-model="form.invertSign" :label="t('importsPage.mapping.invertSign')" />
                     <p class="import-mapping__hint">{{ t('importsPage.mapping.invertSignHint') }}</p>
+                    <AppSelect
+                        v-model="paymentMethodPublicId"
+                        :items="paymentMethodItems"
+                        :label="t('importsPage.upload.paymentMethod')"
+                        :hint="t('importsPage.upload.paymentMethodHint')"
+                        persistent-hint
+                        float-label
+                        searchable
+                        :search-placeholder="t('importsPage.lines.edit.paymentMethodSearch')"
+                    />
                 </div>
             </div>
         </div>

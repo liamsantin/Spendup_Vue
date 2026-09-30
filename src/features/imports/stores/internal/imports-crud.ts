@@ -274,8 +274,17 @@ export function createImportsCrud(state: ImportsState, deps: CrudDeps) {
             if (current.value?.publicId === publicId) {
                 await loadLines({ status: null, q: '' }).catch(() => undefined);
             }
+            const createdTiers = result.createdTiers ?? 0;
+            const createdPaymentMethods = result.createdPaymentMethods ?? 0;
+            // Moyens créés : `accountChanged` ne revient pas à l’émetteur, on le rejoue (les tiers ont `tierChanged`).
+            if (createdPaymentMethods > 0 && next.accountPublicId) {
+                useNotificationsStore().dispatchLocalAccountChanged({
+                    change: 'paymentMethodCreated',
+                    accountPublicId: next.accountPublicId
+                });
+            }
             notifyAccountTransactions(next.accountPublicId, 'transactionsImported');
-            return { import: next, createdTransactions: result.createdTransactions };
+            return { import: next, createdTransactions: result.createdTransactions, createdTiers, createdPaymentMethods };
         });
     }
 

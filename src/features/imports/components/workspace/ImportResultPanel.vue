@@ -10,12 +10,12 @@ import { getErrorMessage } from '@/utils/errors/app-error';
 import ImportTemplateFormModal from '@/features/imports/components/modals/ImportTemplateFormModal.vue';
 import { canDeleteImport, canRevertImport, canSaveImportAsTemplate, formatImportTimestamp } from '@/features/imports/format';
 import { useImportsStore } from '@/features/imports/stores/imports-store';
-import type { Import } from '@/features/imports/types';
+import type { Import, ImportCommitSummary } from '@/features/imports/types';
 
 const props = defineProps<{
     item: Import;
     /** Renvoyé par le commit qui vient d’avoir lieu (sinon : lignes validées). */
-    createdTransactions?: number | null;
+    summary?: ImportCommitSummary | null;
 }>();
 
 const emit = defineEmits<{
@@ -32,7 +32,18 @@ const notice = ref<string | null>(null);
 const localError = ref<string | null>(null);
 
 const isValid = computed(() => props.item.status === 'valide');
-const created = computed(() => props.createdTransactions ?? props.item.counts.validated);
+const created = computed(() => props.summary?.createdTransactions ?? props.item.counts.validated);
+
+/** « 5 tiers et 1 moyen de paiement créés » : seulement juste après le commit. */
+const createdEntitiesText = computed(() => {
+    const tiers = props.summary?.createdTiers ?? 0;
+    const paymentMethods = props.summary?.createdPaymentMethods ?? 0;
+    if (!tiers && !paymentMethods) return null;
+    const parts: string[] = [];
+    if (tiers) parts.push(t('importsPage.commit.entities.tiers', { count: tiers }, tiers));
+    if (paymentMethods) parts.push(t('importsPage.commit.entities.paymentMethods', { count: paymentMethods }, paymentMethods));
+    return t('importsPage.result.entitiesCreated', { list: parts.join(t('importsPage.commit.entities.and')) }, tiers + paymentMethods);
+});
 
 const transactionsLink = computed(() => {
     const query: Record<string, string> = {};
@@ -97,6 +108,7 @@ function onTemplateSaved() {
                             · {{ t('importsPage.result.ignored', { count: item.counts.ignored }, item.counts.ignored) }}</span
                         >
                     </p>
+                    <p v-if="createdEntitiesText" class="import-result__text">{{ createdEntitiesText }}</p>
                 </template>
                 <template v-else>
                     <h2 class="import-result__title">{{ t('importsPage.result.cancelledTitle') }}</h2>
@@ -138,7 +150,7 @@ function onTemplateSaved() {
         <AppConfirmationModal
             v-model="revertOpen"
             :title="t('importsPage.revertModal.title')"
-            :message="t('importsPage.revertModal.body', { count: created }, created)"
+            :message="`${t('importsPage.revertModal.body', { count: created }, created)} ${t('importsPage.revertModal.keepsEntities')}`"
             :confirm-label="t('importsPage.actions.revert')"
             confirm-color="error"
             :loading="store.acting"

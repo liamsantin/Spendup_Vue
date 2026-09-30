@@ -3,9 +3,11 @@ import {
     buildImportLineSort,
     canDeleteImport,
     canRevertImport,
+    countEntitiesToCreate,
     importLineDoubt,
     importLineSortParts,
     normalizeImport,
+    normalizeMatchValue,
     parseImportLineSort,
     reparseLosesReviewWork,
     unresolvedLineCount,
@@ -67,5 +69,25 @@ describe('imports format', () => {
         expect(normalized.analysis.sample).toEqual([]);
         expect(normalized.analysis.columns).toEqual([]);
         expect(normalized.counts.total).toBe(0);
+    });
+});
+
+describe('imports entities to create', () => {
+    it('normalise comme l’API : casse, accents, ponctuation', () => {
+        expect(normalizeMatchValue('COOP-4521')).toBe(normalizeMatchValue('coop 4521'));
+        expect(normalizeMatchValue(' Café ')).toBe('cafe');
+    });
+
+    it('compte les valeurs distinctes des lignes validées sans rattachement', () => {
+        const base = { status: 'validee' as const, tierPublicId: null, paymentMethodPublicId: null, unmatchedPaymentMethodName: null };
+        expect(
+            countEntitiesToCreate([
+                { ...base, unmatchedTierName: 'COOP-4521' },
+                { ...base, unmatchedTierName: 'coop 4521', unmatchedPaymentMethodName: 'Visa 1234' },
+                { ...base, unmatchedTierName: 'Migros', status: 'aValider' },
+                { ...base, unmatchedTierName: 'Denner', tierPublicId: 't-1' },
+                { ...base, unmatchedTierName: null }
+            ])
+        ).toEqual({ tiers: 1, paymentMethods: 1 });
     });
 });

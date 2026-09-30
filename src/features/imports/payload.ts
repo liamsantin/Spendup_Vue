@@ -11,7 +11,22 @@ export type ImportLineFormFields = {
     amount: string;
     categoryPublicId: string;
     tierPublicId: string;
+    paymentMethodPublicId: string;
+    /** `recurringPublicId|scheduledAt`, `''` = aucune échéance. */
+    recurringDueKey: string;
+    /** Valeur du fichier non reconnue : ne pas créer le tier / moyen au commit (`PATCH … null`). */
+    dropUnmatchedTier: boolean;
+    dropUnmatchedPaymentMethod: boolean;
 };
+
+export function recurringDueKey(due: { recurringPublicId: string; scheduledAt: string } | null | undefined): string {
+    return due ? `${due.recurringPublicId}|${due.scheduledAt}` : '';
+}
+
+function parseRecurringDueKey(key: string): { recurringPublicId: string; scheduledAt: string } | null {
+    const [recurringPublicId, scheduledAt] = key.split('|');
+    return recurringPublicId && scheduledAt ? { recurringPublicId, scheduledAt } : null;
+}
 
 export type ImportLinePayloadErrorCode =
     | 'operationDateRequired'
@@ -52,8 +67,30 @@ export function importLineToFormFields(line: ImportLine): ImportLineFormFields {
         label: line.label ?? '',
         amount: formatAmountInput(line.amount),
         categoryPublicId: line.categoryPublicId ?? '',
-        tierPublicId: line.tierPublicId ?? ''
+        tierPublicId: line.tierPublicId ?? '',
+        paymentMethodPublicId: line.paymentMethodPublicId ?? '',
+        recurringDueKey: recurringDueKey(line.recurringDue),
+        dropUnmatchedTier: false,
+        dropUnmatchedPaymentMethod: false
     };
+}
+
+/** Aucun tier choisi mais une valeur du fichier : il sera créé au commit (sauf si on la retire). */
+export function willCreateTier(line: Pick<ImportLine, 'tierPublicId' | 'unmatchedTierName'>): boolean {
+    return !line.tierPublicId && !!line.unmatchedTierName?.trim();
+}
+
+export function willCreatePaymentMethod(line: Pick<ImportLine, 'paymentMethodPublicId' | 'unmatchedPaymentMethodName'>): boolean {
+    return !line.paymentMethodPublicId && !!line.unmatchedPaymentMethodName?.trim();
+}
+
+/** Retrait explicite de la valeur à créer : aucun choix + case cochée. */
+function dropsTier(line: ImportLine, fields: ImportLineFormFields): boolean {
+    return fields.dropUnmatchedTier && !fields.tierPublicId.trim() && willCreateTier(line);
+}
+
+function dropsPaymentMethod(line: ImportLine, fields: ImportLineFormFields): boolean {
+    return fields.dropUnmatchedPaymentMethod && !fields.paymentMethodPublicId.trim() && willCreatePaymentMethod(line);
 }
 
 /** Saisie d’un montant signé : chiffres, un séparateur décimal et un signe en tête. */
@@ -126,7 +163,14 @@ export function buildImportLinePayload(
     if (categoryChanged) payload.categoryPublicId = categoryPublicId;
 
     const tierPublicId = fields.tierPublicId.trim() || null;
-    if (tierPublicId !== (line.tierPublicId ?? null)) payload.tierPublicId = tierPublicId;
+    if (tierPublicId !== (line.tierPublicId ?? null) || dropsTier(line, fields)) payload.tierPublicId = tierPublicId;
+
+    const paymentMethodPublicId = fields.paymentMethodPublicId.trim() || null;
+    if (paymentMethodPublicId !== (line.paymentMethodPublicId ?? null) || dropsPaymentMethod(line, fields)) {
+        payload.paymentMethodPublicId = paymentMethodPublicId;
+    }
+
+    if (fields.recurringDueKey !== initial.recurringDueKey) payload.recurringDue = parseRecurringDueKey(fields.recurringDueKey);
 
     if (!Object.keys(payload).length) return fail('noChanges');
     return { ok: true, payload };
@@ -140,6 +184,10 @@ export function isImportLineFormDirty(line: ImportLine, fields: ImportLineFormFi
         fields.label.trim() !== initial.label.trim() ||
         fields.amount.trim() !== initial.amount ||
         fields.categoryPublicId !== initial.categoryPublicId ||
-        fields.tierPublicId !== initial.tierPublicId
+        fields.tierPublicId !== initial.tierPublicId ||
+        fields.paymentMethodPublicId !== initial.paymentMethodPublicId ||
+        fields.recurringDueKey !== initial.recurringDueKey ||
+        dropsTier(line, fields) ||
+        dropsPaymentMethod(line, fields)
     );
 }

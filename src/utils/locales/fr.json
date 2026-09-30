@@ -706,6 +706,10 @@
                 "expirationInvalid": "Date d’expiration invalide.",
                 "expirationPast": "Un moyen actif ne peut pas être déjà expiré.",
                 "isActiveRequired": "Le statut actif est obligatoire."
+            },
+            "tabs": {
+                "details": "Détails",
+                "aliases": "Alias"
             }
         },
         "searchPlaceholder": "Rechercher…",
@@ -826,7 +830,7 @@
             "pickTransaction": "Transaction",
             "pickDue": "Échéance",
             "searchPlaceholder": "Rechercher une transaction",
-            "empty": "Aucune transaction manuelle à lier sur ce compte.",
+            "empty": "Aucune transaction manuelle ou importée à lier sur ce compte.",
             "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
             "emptyDues": "Aucune échéance ouverte.",
             "confirm": "Lier"
@@ -1708,6 +1712,10 @@
                 "companyRegistrationNumberTooLong": "Le numéro d’entreprise dépasse 100 caractères.",
                 "organizationOfficialNameTooLong": "Le nom officiel dépasse 200 caractères.",
                 "organizationTypeTooLong": "Le type d’organisation dépasse 100 caractères."
+            },
+            "tabs": {
+                "details": "Détails",
+                "aliases": "Alias"
             }
         }
     },
@@ -2086,7 +2094,9 @@
             "currency": "Devise",
             "balance": "Solde",
             "category": "Catégorie",
-            "tier": "Tiers"
+            "tier": "Tiers",
+            "paymentMethod": "Moyen de paiement",
+            "recurringDue": "Échéance récurrente"
         },
         "actions": {
             "create": "Importer un relevé",
@@ -2123,7 +2133,8 @@
         },
         "revertModal": {
             "title": "Annuler cet import ?",
-            "body": "Aucune transaction ne sera supprimée. | 1 transaction sera supprimée, même si vous l’avez modifiée depuis l’import (catégorie, tags…). | {count} transactions seront supprimées, y compris celles modifiées depuis l’import (catégorie, tags…)."
+            "body": "Aucune transaction ne sera supprimée. | 1 transaction sera supprimée, même si vous l’avez modifiée depuis l’import (catégorie, tags…). | {count} transactions seront supprimées, y compris celles modifiées depuis l’import (catégorie, tags…).",
+            "keepsEntities": "Les tiers, moyens de paiement et alias créés par l’import sont conservés."
         },
         "detail": {
             "title": "Import",
@@ -2143,6 +2154,9 @@
             "templateHint": "Optionnel. Un modèle réutilise un mapping déjà enregistré.",
             "templateNeedsFile": "Choisissez d’abord un fichier.",
             "templateSearch": "Rechercher un modèle",
+            "paymentMethod": "Moyen de paiement par défaut",
+            "paymentMethodHint": "Optionnel. Posé sur les lignes dont le fichier n’indique aucun moyen (ex. relevé de carte).",
+            "noPaymentMethod": "Aucun",
             "submit": "Analyser le fichier",
             "noWritableAccount": "Vous n’avez aucun compte actif sur lequel importer (propriétaire ou éditeur).",
             "notes": {
@@ -2286,8 +2300,11 @@
                 "duplicateInFile": "Identique à la ligne {n}",
                 "unknownCategory": "Catégorie « {name} » inconnue",
                 "suggested": "Catégorie suggérée",
+                "recurringDue": "{name} du {date}",
                 "autoIgnored": "Ignorée automatiquement",
-                "edited": "Corrigée"
+                "edited": "Corrigée",
+                "newTier": "Nouveau tiers : {name}",
+                "newPaymentMethod": "Nouveau moyen : {name}"
             },
             "actions": {
                 "validate": "Valider",
@@ -2306,7 +2323,13 @@
                 "createCategory": "Créer « {name} »",
                 "suggestedHint": "Suggérée d’après votre historique.",
                 "unknownCategory": "La catégorie « {name} » du fichier n’existe pas dans vos catégories.",
-                "unknownTier": "Tiers « {name} » du fichier non reconnu (n’empêche pas l’import).",
+                "unknownTier": "« {name} » sera créé comme nouveau tiers à la validation. Choisissez un tiers existant pour le rattacher à la place.",
+                "noPaymentMethod": "Aucun moyen de paiement",
+                "paymentMethodSearch": "Rechercher un moyen de paiement",
+                "unknownPaymentMethod": "« {name} » sera créé comme nouveau moyen de paiement à la validation. Choisissez un moyen existant pour le rattacher à la place.",
+                "noRecurringDue": "Aucune échéance",
+                "recurringDueHint": "Réglée par cette ligne à la validation de l’import.",
+                "recurringDueOption": "{name} · {date} · {amount}",
                 "duplicate": "Cette ligne ressemble à une transaction déjà présente sur le compte.",
                 "duplicateLink": "Voir les transactions de ce jour",
                 "duplicateInFile": "Identique à la ligne {n} du fichier. Ce sont souvent deux vraies opérations.",
@@ -2325,7 +2348,21 @@
                     "amountZero": "Le montant ne peut pas être nul.",
                     "categoryTypeMismatch": "Cette catégorie ne correspond pas au sens du montant.",
                     "noChanges": "Aucune modification."
-                }
+                },
+                "learnTierAlias": "« {name} » sera retenu comme alias de ce tiers : les prochains imports le reconnaîtront.",
+                "learnPaymentMethodAlias": "« {name} » sera retenu comme alias de ce moyen : les prochains imports le reconnaîtront.",
+                "noTierCreated": "Aucun tiers ne sera créé pour cette ligne.",
+                "noPaymentMethodCreated": "Aucun moyen de paiement ne sera créé pour cette ligne.",
+                "dropTier": "Ne pas créer le tiers « {name} »",
+                "dropPaymentMethod": "Ne pas créer le moyen « {name} »",
+                "newPaymentMethodOption": "Nouveau : {name}"
+            },
+            "dueMenu": {
+                "title": "Échéance rapprochée : {label}. Cliquer pour changer ou détacher.",
+                "change": "Changer d’échéance",
+                "loading": "Recherche des échéances…",
+                "noOther": "Aucune autre échéance ouverte à proximité.",
+                "detach": "Détacher l’échéance"
             }
         },
         "commit": {
@@ -2346,7 +2383,13 @@
             "nothingToCreate": "Aucune ligne validée : validez au moins une ligne avant de continuer.",
             "note": "Tout ou rien : si une ligne pose problème, aucune transaction n’est créée.",
             "confirm": "Créer | Créer 1 transaction | Créer {count} transactions",
-            "confirmIgnoring": "Ignorer et créer | Ignorer et créer 1 transaction | Ignorer et créer {count} transactions"
+            "confirmIgnoring": "Ignorer et créer | Ignorer et créer 1 transaction | Ignorer et créer {count} transactions",
+            "entities": {
+                "tiers": "aucun tiers | 1 tiers | {count} tiers",
+                "paymentMethods": "aucun moyen de paiement | 1 moyen de paiement | {count} moyens de paiement",
+                "and": " et ",
+                "willCreate": "{list} | {list} sera créé à partir des valeurs du fichier non reconnues. | {list} seront créés à partir des valeurs du fichier non reconnues."
+            }
         },
         "result": {
             "createdTitle": "Aucune transaction créée | 1 transaction créée | {count} transactions créées",
@@ -2356,7 +2399,8 @@
             "cancelledBody": "Abandonné, expiré après 30 jours sans activité, ou annulé après validation. Aucune transaction n’y est rattachée.",
             "viewTransactions": "Voir les transactions",
             "reverted": "Aucune transaction supprimée. | 1 transaction supprimée. | {count} transactions supprimées.",
-            "templateSaved": "Modèle enregistré. Il sera proposé au prochain import."
+            "templateSaved": "Modèle enregistré. Il sera proposé au prochain import.",
+            "entitiesCreated": "{list} | {list} créé | {list} créés"
         },
         "templates": {
             "personal": "Mes modèles",
@@ -3068,6 +3112,57 @@
             "errors": {
                 "incomplete": "Complétez la vérification demandée."
             }
+        }
+    },
+    "aliases": {
+        "title": "Reconnaissance à l’import",
+        "help": {
+            "tier": "Valeurs qui désignent ce tiers dans un relevé : colonne Tiers, ou à défaut libellé banque. Casse, accents et ponctuation sont ignorés (« COOP-4521 » = « coop 4521 »).",
+            "paymentMethod": "Valeurs qui désignent ce moyen dans un relevé : colonne Moyen de paiement, ou à défaut libellé banque. Casse, accents et ponctuation sont ignorés (« VISA-1234 » = « visa 1234 »)."
+        },
+        "empty": "Aucun alias pour l’instant. Ils s’ajoutent aussi tout seuls quand vous rattachez une ligne d’import.",
+        "newValue": "Nouvel alias",
+        "editValue": "Modifier l’alias",
+        "valuePlaceholder": "ex. COOP-4521, twint",
+        "matchType": "Correspondance",
+        "matchTypes": {
+            "exact": "Exact",
+            "startsWith": "Commence par",
+            "endsWith": "Finit par",
+            "contains": "Contient",
+            "regex": "Expression régulière"
+        },
+        "matchTypeHints": {
+            "exact": "La valeur entière doit correspondre.",
+            "startsWith": "La valeur doit commencer par ce texte.",
+            "endsWith": "La valeur doit finir par ce texte.",
+            "contains": "Le texte peut apparaître n’importe où. Pratique pour les libellés banque (ex. « twint »).",
+            "regex": "Appliquée au texte brut, sans tenir compte de la casse."
+        },
+        "priority": "Priorité",
+        "priorityHint": "De {min} à {max}. Si plusieurs alias correspondent, la plus haute gagne.",
+        "priorityShort": "Priorité {n}",
+        "advanced": "Avancé : priorité, expression régulière",
+        "add": "Ajouter",
+        "update": "Mettre à jour",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "active": "Actif",
+        "inactive": "Inactif",
+        "auto": "auto",
+        "autoHint": "Créé automatiquement par un import.",
+        "nextAnalysis": "Un changement s’applique à la prochaine analyse (nouvel import, relecture ou réinitialisation d’une ligne). Les transactions existantes ne changent pas.",
+        "deleteConfirm": {
+            "title": "Supprimer cet alias ?",
+            "body": "« {value} » ne sera plus reconnu lors des prochains imports."
+        },
+        "errors": {
+            "valueRequired": "Saisissez une valeur.",
+            "valueTooLong": "{max} caractères au maximum.",
+            "valueNoAlphanumeric": "La valeur doit contenir au moins une lettre ou un chiffre.",
+            "regexInvalid": "Expression régulière invalide.",
+            "matchTypeInvalid": "Type de correspondance inconnu.",
+            "priorityInvalid": "Nombre entier entre {min} et {maxPriority}."
         }
     }
 }

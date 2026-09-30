@@ -1,18 +1,21 @@
 import { computed, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
+import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { formatOperationDate } from '@/features/transactions/format';
 import { formatImportAmount, hasUncorrectableIssue, importAmountTone, importLineDoubt, isAutoIgnored } from '@/features/imports/format';
+import { willCreatePaymentMethod, willCreateTier } from '@/features/imports/payload';
 import type { ImportLine } from '@/features/imports/types';
 
-export type ImportLineBadge = { key: string; label: string; tone: 'warning' | 'error' | 'info' | 'muted' };
+export type ImportLineBadge = { key: string; label: string; tone: 'warning' | 'error' | 'info' | 'success' | 'muted' };
 
 /** Libellés, montant et badges d’une ligne importée (tableau desktop + liste mobile). */
 export function useImportLineDisplay(line: Ref<ImportLine>, currency: Ref<string | null | undefined>) {
     const { t, locale } = useI18n();
     const categoriesStore = useCategoriesStore();
     const tiersStore = useTiersStore();
+    const paymentMethodsStore = usePaymentMethodsStore();
 
     const dateLabel = computed(() => (line.value.operationDate ? formatOperationDate(line.value.operationDate, locale.value) : '—'));
 
@@ -29,6 +32,12 @@ export function useImportLineDisplay(line: Ref<ImportLine>, currency: Ref<string
         const id = line.value.tierPublicId;
         if (id) return tiersStore.findByPublicId(id)?.name ?? null;
         return line.value.unmatchedTierName;
+    });
+
+    const paymentMethodLabel = computed(() => {
+        const id = line.value.paymentMethodPublicId;
+        if (id) return paymentMethodsStore.allKnownItems().find((item) => item.publicId === id)?.label ?? null;
+        return line.value.unmatchedPaymentMethodName;
     });
 
     const labelText = computed(() => line.value.label?.trim() || t('importsPage.lines.noLabel'));
@@ -53,6 +62,27 @@ export function useImportLineDisplay(line: Ref<ImportLine>, currency: Ref<string
                 tone: 'warning'
             });
         }
+        // Valeur du fichier non reconnue : l’entité sera créée au commit.
+        if (willCreateTier(item)) {
+            list.push({ key: 'newTier', label: t('importsPage.lines.badges.newTier', { name: item.unmatchedTierName }), tone: 'success' });
+        }
+        if (willCreatePaymentMethod(item)) {
+            list.push({
+                key: 'newPaymentMethod',
+                label: t('importsPage.lines.badges.newPaymentMethod', { name: item.unmatchedPaymentMethodName }),
+                tone: 'success'
+            });
+        }
+        if (item.recurringDue) {
+            list.push({
+                key: 'recurringDue',
+                label: t('importsPage.lines.badges.recurringDue', {
+                    name: item.recurringDue.name,
+                    date: formatOperationDate(item.recurringDue.scheduledAt, locale.value)
+                }),
+                tone: 'info'
+            });
+        }
         if (item.categorySuggested && item.categoryPublicId) {
             list.push({ key: 'suggested', label: t('importsPage.lines.badges.suggested'), tone: 'info' });
         }
@@ -67,5 +97,5 @@ export function useImportLineDisplay(line: Ref<ImportLine>, currency: Ref<string
 
     const uncorrectable = computed(() => hasUncorrectableIssue(line.value));
 
-    return { dateLabel, amountText, amountTone, categoryLabel, tierLabel, labelText, badges, uncorrectable };
+    return { dateLabel, amountText, amountTone, categoryLabel, tierLabel, paymentMethodLabel, labelText, badges, uncorrectable };
 }

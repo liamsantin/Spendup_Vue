@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Choix du compte + fichier (+ modèle optionnel) → `POST /api/imports`.
+ * Choix du compte + fichier (+ modèle et moyen de paiement par défaut optionnels) → `POST /api/imports`.
  * N’écrit aucune transaction : ouvre ensuite l’écran de mapping ou de revue.
  */
 import { computed, ref, watch } from 'vue';
@@ -12,6 +12,7 @@ import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { fileSizeParts } from '@/features/files/format';
+import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { canWriteTransactions } from '@/features/transactions/rights';
 import { validateImportFile } from '@/features/imports/format';
 import { selectableTemplates } from '@/features/imports/mapping';
@@ -31,9 +32,11 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const store = useImportsStore();
 const accountsStore = useAccountsStore();
+const paymentMethodsStore = usePaymentMethodsStore();
 
 const accountPublicId = ref('');
 const templatePublicId = ref('');
+const paymentMethodPublicId = ref('');
 const file = ref<File | null>(null);
 const sourceType = ref<ImportSourceType | null>(null);
 const fileError = ref<string | null>(null);
@@ -57,6 +60,14 @@ const templateItems = computed(() => [
     }))
 ]);
 
+/** Moyens actifs du compte choisi (relevé de carte : tout le fichier est payé avec la même carte). */
+const paymentMethodItems = computed(() => [
+    { title: t('importsPage.upload.noPaymentMethod'), value: '' },
+    ...paymentMethodsStore.items
+        .filter((item) => item.accountPublicId === accountPublicId.value && item.isActive)
+        .map((item) => ({ title: item.label, value: item.publicId }))
+]);
+
 const fileSizeLabel = computed(() => {
     if (!file.value) return '';
     const parts = fileSizeParts(file.value.size);
@@ -72,6 +83,7 @@ function resetForm() {
         ? preferred!
         : (fallback?.publicId ?? '');
     templatePublicId.value = '';
+    paymentMethodPublicId.value = '';
     file.value = null;
     sourceType.value = null;
     fileError.value = null;
@@ -86,8 +98,20 @@ watch(
         resetForm();
         await Promise.all([accountsStore.loadAccounts().catch(() => undefined), store.loadTemplates().catch(() => undefined)]);
         if (!accountPublicId.value) resetForm();
+        // Même compte qu’à la dernière ouverture : le watch du compte ne se redéclenche pas.
+        loadPaymentMethods(accountPublicId.value);
     }
 );
+
+function loadPaymentMethods(value: string) {
+    if (value) void paymentMethodsStore.loadList({ accountPublicId: value }).catch(() => undefined);
+}
+
+watch(accountPublicId, (value) => {
+    // Un moyen d’un autre compte → 400 : on le retire au changement de compte.
+    paymentMethodPublicId.value = '';
+    if (open.value) loadPaymentMethods(value);
+});
 
 function fileErrorText(code: string, maxBytes?: number): string {
     if (code === 'tooLarge' && maxBytes) {
@@ -136,7 +160,8 @@ async function onSubmit() {
         const created = await store.uploadImport({
             file: file.value,
             accountPublicId: accountPublicId.value,
-            importTemplatePublicId: templatePublicId.value || null
+            importTemplatePublicId: templatePublicId.value || null,
+            paymentMethodPublicId: paymentMethodPublicId.value || null
         });
         emit('created', created);
         open.value = false;
@@ -215,6 +240,18 @@ async function onSubmit() {
                 float-label
                 searchable
                 :search-placeholder="t('importsPage.upload.templateSearch')"
+            />
+
+            <AppSelect
+                v-model="paymentMethodPublicId"
+                :items="paymentMethodItems"
+                :label="t('importsPage.upload.paymentMethod')"
+                :disabled="store.acting || !accountPublicId"
+                :hint="t('importsPage.upload.paymentMethodHint')"
+                persistent-hint
+                float-label
+                searchable
+                :search-placeholder="t('importsPage.lines.edit.paymentMethodSearch')"
             />
 
             <ul class="import-upload__notes">

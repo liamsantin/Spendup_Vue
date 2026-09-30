@@ -186,7 +186,7 @@ export type ConfirmDueBody = {
     notes?: string | null;
 };
 
-/** Lie une TX manuelle existante à une échéance ouverte (1 TX ↔ 1 due). */
+/** Lie une TX manuelle ou importée existante à une échéance ouverte (1 TX ↔ 1 due). */
 export type LinkDueBody = {
     transactionPublicId: string;
 };

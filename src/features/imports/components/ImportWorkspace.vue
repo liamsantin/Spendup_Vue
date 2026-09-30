@@ -9,6 +9,7 @@ import { BanIcon, TemplateIcon, TrashIcon } from 'vue-tabler-icons';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
+import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { formatOperationDate } from '@/features/transactions/format';
 import ImportStatusChip from '@/features/imports/components/list/ImportStatusChip.vue';
 import ImportTemplateFormModal from '@/features/imports/components/modals/ImportTemplateFormModal.vue';
@@ -17,7 +18,7 @@ import ImportResultPanel from '@/features/imports/components/workspace/ImportRes
 import ImportReviewPanel from '@/features/imports/components/workspace/ImportReviewPanel.vue';
 import { canCancelImport, canReviewImport, formatImportTimestamp, importTemplateLabel, isImportOpen } from '@/features/imports/format';
 import { useImportsStore } from '@/features/imports/stores/imports-store';
-import type { Import } from '@/features/imports/types';
+import type { Import, ImportCommitSummary } from '@/features/imports/types';
 
 const props = defineProps<{
     item: Import;
@@ -31,9 +32,10 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n();
 const store = useImportsStore();
+const paymentMethodsStore = usePaymentMethodsStore();
 
 const remapping = ref(false);
-const justCommitted = ref<number | null>(null);
+const justCommitted = ref<ImportCommitSummary | null>(null);
 const cancelOpen = ref(false);
 const deleteOpen = ref(false);
 const templateOpen = ref(false);
@@ -55,6 +57,15 @@ const panel = computed<'mapping' | 'review' | 'result'>(() => {
 });
 
 watch(panel, (value) => emit('layout', value === 'review' ? 'board' : 'scroll'), { immediate: true });
+
+// Libellés des moyens de paiement affichés sur les lignes.
+watch(
+    () => props.item.accountPublicId,
+    (accountPublicId) => {
+        if (accountPublicId) void paymentMethodsStore.loadList({ accountPublicId }).catch(() => undefined);
+    },
+    { immediate: true }
+);
 
 const meta = computed(() => {
     const parts: string[] = [props.item.accountName ?? t('importsPage.list.deletedAccount')];
@@ -105,8 +116,8 @@ async function confirmDelete() {
     }
 }
 
-function onCommitted(count: number) {
-    justCommitted.value = count;
+function onCommitted(summary: ImportCommitSummary) {
+    justCommitted.value = summary;
 }
 </script>
 
@@ -170,7 +181,7 @@ function onCommitted(count: number) {
             @remap="remapping = true"
             @committed="onCommitted"
         />
-        <ImportResultPanel v-else :item="item" :created-transactions="justCommitted" @deleted="emit('deleted')" />
+        <ImportResultPanel v-else :item="item" :summary="justCommitted" @deleted="emit('deleted')" />
 
         <AppConfirmationModal
             v-model="cancelOpen"

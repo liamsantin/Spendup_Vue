@@ -13,6 +13,7 @@ import {
     type Import,
     type ImportLine,
     type ImportLineList,
+    type ImportLineRecurringDue,
     type ImportList,
     type ImportPreview,
     type ImportSourceType,
@@ -59,7 +60,15 @@ export const importsApi = {
         form.append('accountPublicId', payload.accountPublicId);
         if (payload.mapping) form.append('mapping', JSON.stringify(payload.mapping));
         if (payload.importTemplatePublicId) form.append('importTemplatePublicId', payload.importTemplatePublicId);
+        if (payload.paymentMethodPublicId) form.append('paymentMethodPublicId', payload.paymentMethodPublicId);
         return fetchWrapper.postForm('/api/imports', form, options) as Promise<Import>;
+    },
+
+    /** Échéances ouvertes rapprochables d’une ligne (même sens, compte cible), les plus probables d’abord. */
+    listLineRecurringDues(publicId: string, linePublicId: string) {
+        return fetchWrapper.get(importPath(publicId, `/lines/${encodeURIComponent(linePublicId)}/recurring-dues`)) as Promise<
+            ImportLineRecurringDue[]
+        >;
     },
 
     listLines(publicId: string, query: ListImportLinesQuery = {}) {

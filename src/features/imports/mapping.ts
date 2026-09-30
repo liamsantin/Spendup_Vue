@@ -42,7 +42,14 @@ export type BuildImportMappingResult =
 
 /** Champs affichés dans l’écran de mapping, dans l’ordre. Montant selon `amountMode`. */
 export const IMPORT_MAPPING_REQUIRED: readonly ImportMappingField[] = ['operationDate', 'label'];
-export const IMPORT_MAPPING_OPTIONAL: readonly ImportMappingField[] = ['valueDate', 'currency', 'balance', 'category', 'tier'];
+export const IMPORT_MAPPING_OPTIONAL: readonly ImportMappingField[] = [
+    'valueDate',
+    'currency',
+    'balance',
+    'category',
+    'tier',
+    'paymentMethod'
+];
 
 const AMOUNT_FIELDS: readonly ImportMappingField[] = ['amount', 'debit', 'credit'];
 

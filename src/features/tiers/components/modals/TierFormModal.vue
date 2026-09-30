@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { FileDescriptionIcon, ListSearchIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
+import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
+import AliasManager from '@/features/aliases/components/AliasManager.vue';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import {
     buildCreateTierPayload,
@@ -37,6 +41,14 @@ const store = useTiersStore();
 const isEdit = ref(false);
 const editTier = ref<Tier | null>(null);
 const createStep = ref<'nature' | 'form'>('nature');
+const activeTab = ref<'details' | 'aliases'>('details');
+const aliasCount = ref<number | null>(null);
+
+/** Édition seulement : un tier doit exister pour porter des alias. */
+const editTabs = computed(() => [
+    { value: 'details' as const, label: t('tiersPage.form.tabs.details'), icon: FileDescriptionIcon },
+    { value: 'aliases' as const, label: t('tiersPage.form.tabs.aliases'), icon: ListSearchIcon, chip: aliasCount.value || undefined }
+]);
 
 const natureItems = computed(() => TIER_NATURES.map((value) => ({ title: t(`tiersPage.natures.${value}`), value })));
 
@@ -83,6 +95,7 @@ function clearFieldErrors() {
 function applyPayloadErrors(code: TierPayloadErrorCode, field?: string) {
     const message = t(`tiersPage.form.errors.${code}`);
     if (field) {
+        activeTab.value = 'details';
         (fieldErrors as Record<string, string | null>)[field] = message;
         return;
     }
@@ -150,6 +163,8 @@ watch(
         if (!value) return;
         isEdit.value = !!props.tier;
         editTier.value = props.tier ?? null;
+        activeTab.value = 'details';
+        aliasCount.value = null;
         resetForm();
     }
 );
@@ -183,7 +198,54 @@ async function onSave() {
 </script>
 
 <template>
+    <AppModalTabs
+        v-if="isEdit"
+        v-model="open"
+        v-model:tab="activeTab"
+        :title="modalTitle"
+        :subtitle="modalSubtitle"
+        :tabs="editTabs"
+        :max-width="680"
+        :height="760"
+    >
+        <AppAlert v-if="localError.message" type="error" class="mb-4" closable @dismiss="localError.message = null">
+            {{ localError.message }}
+        </AppAlert>
+
+        <template #panel-details>
+            <AppModalPanelScroll>
+                <TierForm
+                    :form="form"
+                    :is-edit="isEdit"
+                    :nature-items="natureItems"
+                    :field-errors="fieldErrors"
+                    :nature-hint="natureHint"
+                    :lock-nature="false"
+                    :show-roles="true"
+                />
+            </AppModalPanelScroll>
+        </template>
+
+        <template #panel-aliases>
+            <AppModalPanelScroll>
+                <AliasManager v-if="editTier" target="tier" :owner-public-id="editTier.publicId" @count="aliasCount = $event" />
+            </AppModalPanelScroll>
+        </template>
+
+        <template #footer="{ close }">
+            <template v-if="activeTab === 'details'">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
+                    {{ t('common.cancel') }}
+                </button>
+                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
+                    {{ t('common.save') }}
+                </button>
+            </template>
+            <button v-else type="button" class="su-btn su-btn--ghost" @click="close">{{ t('common.close') }}</button>
+        </template>
+    </AppModalTabs>
     <AppModalBase
+        v-else
         v-model="open"
         :title="modalTitle"
         :subtitle="modalSubtitle"

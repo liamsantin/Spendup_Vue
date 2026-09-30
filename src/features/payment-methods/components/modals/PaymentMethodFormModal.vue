@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { FileDescriptionIcon, ListSearchIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
+import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
+import AliasManager from '@/features/aliases/components/AliasManager.vue';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { canWritePaymentMethods } from '@/features/payment-methods/rights';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
@@ -43,6 +47,19 @@ const store = usePaymentMethodsStore();
  */
 const isEdit = ref(false);
 const editMethod = ref<PaymentMethod | null>(null);
+const activeTab = ref<'details' | 'aliases'>('details');
+const aliasCount = ref<number | null>(null);
+
+/** Édition seulement : un moyen doit exister pour porter des alias. */
+const editTabs = computed(() => [
+    { value: 'details' as const, label: t('paymentMethodsPage.form.tabs.details'), icon: FileDescriptionIcon },
+    {
+        value: 'aliases' as const,
+        label: t('paymentMethodsPage.form.tabs.aliases'),
+        icon: ListSearchIcon,
+        chip: aliasCount.value || undefined
+    }
+]);
 
 const writableAccounts = computed(() => accountsStore.accounts.filter((a) => canWritePaymentMethods(a)));
 
@@ -68,6 +85,12 @@ const open = computed({
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
+/** Alias : écriture réservée aux éditeurs d’un compte non archivé (l’API répond 404 sinon). */
+const aliasesReadonly = computed(() => {
+    const account = accountsStore.accounts.find((a) => a.publicId === editMethod.value?.accountPublicId);
+    return !account || !canWritePaymentMethods(account);
+});
+
 /** En édition : Enregistrer seulement s’il y a un changement. */
 const canSave = computed(() => {
     if (!isEdit.value || !editMethod.value) return true;
@@ -91,6 +114,7 @@ function payloadErrorText(code: PaymentMethodPayloadErrorCode): string {
 function applyPayloadErrors(code: PaymentMethodPayloadErrorCode, field?: string) {
     const message = payloadErrorText(code);
     if (field && field in fieldErrors) {
+        activeTab.value = 'details';
         (fieldErrors as Record<string, string | null>)[field] = message;
         return;
     }
@@ -126,6 +150,8 @@ watch(
         if (!value) return;
         isEdit.value = !!props.method;
         editMethod.value = props.method ?? null;
+        activeTab.value = 'details';
+        aliasCount.value = null;
         resetForm();
     }
 );
@@ -161,9 +187,62 @@ async function onSave() {
 </script>
 
 <template>
-    <AppModalBase
+    <AppModalTabs
+        v-if="isEdit"
         v-model="open"
-        :title="isEdit ? t('paymentMethodsPage.form.editTitle') : t('paymentMethodsPage.form.createTitle')"
+        v-model:tab="activeTab"
+        :title="t('paymentMethodsPage.form.editTitle')"
+        :subtitle="t('paymentMethodsPage.form.subtitle')"
+        :tabs="editTabs"
+        :max-width="640"
+        :height="720"
+    >
+        <AppAlert v-if="localError.message" type="error" class="mb-4" closable @dismiss="localError.message = null">
+            {{ localError.message }}
+        </AppAlert>
+
+        <template #panel-details>
+            <AppModalPanelScroll>
+                <PaymentMethodForm
+                    :form="form"
+                    :is-edit="isEdit"
+                    :account-items="accountItems"
+                    :type-items="typeItems"
+                    :field-errors="fieldErrors"
+                    :account-disabled="false"
+                />
+            </AppModalPanelScroll>
+        </template>
+
+        <template #panel-aliases>
+            <AppModalPanelScroll>
+                <AliasManager
+                    v-if="editMethod"
+                    target="paymentMethod"
+                    :owner-public-id="editMethod.publicId"
+                    :account-public-id="editMethod.accountPublicId"
+                    :readonly="aliasesReadonly"
+                    @count="aliasCount = $event"
+                />
+            </AppModalPanelScroll>
+        </template>
+
+        <template #footer="{ close }">
+            <template v-if="activeTab === 'details'">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
+                    {{ t('common.cancel') }}
+                </button>
+                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
+                    {{ t('common.save') }}
+                </button>
+            </template>
+            <button v-else type="button" class="su-btn su-btn--ghost" @click="close">{{ t('common.close') }}</button>
+        </template>
+    </AppModalTabs>
+    <AppModalBase
+        v-else
+        v-model="open"
+        :title="t('paymentMethodsPage.form.createTitle')"
         :subtitle="t('paymentMethodsPage.form.subtitle')"
         :max-width="640"
         :height="640"

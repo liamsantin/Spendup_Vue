@@ -4,7 +4,8 @@ import {
     importLineToFormFields,
     isCategoryCompatibleWithAmount,
     isImportLineFormDirty,
-    sanitizeSignedAmountInput
+    sanitizeSignedAmountInput,
+    willCreateTier
 } from '@/features/imports/payload';
 import type { ImportLine } from '@/features/imports/types';
 
@@ -27,6 +28,9 @@ function line(partial: Partial<ImportLine> = {}): ImportLine {
         unmatchedCategoryName: null,
         tierPublicId: null,
         unmatchedTierName: null,
+        paymentMethodPublicId: null,
+        unmatchedPaymentMethodName: null,
+        recurringDue: null,
         duplicateOfTransactionPublicId: null,
         duplicateOfLineNumber: null,
         isEdited: false,
@@ -38,6 +42,28 @@ function line(partial: Partial<ImportLine> = {}): ImportLine {
 }
 
 describe('imports line payload', () => {
+    it('rapproche puis détache une échéance récurrente', () => {
+        const item = line();
+        const linked = { ...importLineToFormFields(item), recurringDueKey: 're-1|2026-07-01' };
+        expect(buildImportLinePayload(item, linked, { now: NOW })).toEqual({
+            ok: true,
+            payload: { recurringDue: { recurringPublicId: 're-1', scheduledAt: '2026-07-01' } }
+        });
+
+        const matched = line({
+            recurringDue: {
+                kind: 'expense',
+                recurringPublicId: 're-1',
+                duePublicId: null,
+                name: 'Loyer',
+                scheduledAt: '2026-07-01',
+                plannedAmount: 1500
+            }
+        });
+        const detached = { ...importLineToFormFields(matched), recurringDueKey: '' };
+        expect(buildImportLinePayload(matched, detached, { now: NOW })).toEqual({ ok: true, payload: { recurringDue: null } });
+    });
+
     it('ne renvoie que les champs modifiés', () => {
         const item = line();
         const fields = { ...importLineToFormFields(item), label: 'Migros Genève' };
@@ -91,11 +117,11 @@ describe('imports line payload', () => {
     });
 
     it('retire la catégorie et le tier avec null', () => {
-        const item = line({ categoryPublicId: 'c-1', tierPublicId: 't-1' });
-        const fields = { ...importLineToFormFields(item), categoryPublicId: '', tierPublicId: '' };
+        const item = line({ categoryPublicId: 'c-1', tierPublicId: 't-1', paymentMethodPublicId: 'pm-1' });
+        const fields = { ...importLineToFormFields(item), categoryPublicId: '', tierPublicId: '', paymentMethodPublicId: '' };
         expect(buildImportLinePayload(item, fields, { now: NOW })).toEqual({
             ok: true,
-            payload: { categoryPublicId: null, tierPublicId: null }
+            payload: { categoryPublicId: null, tierPublicId: null, paymentMethodPublicId: null }
         });
     });
 
@@ -119,5 +145,31 @@ describe('imports line payload', () => {
         expect(isCategoryCompatibleWithAmount('depense', 1)).toBe(false);
         expect(isCategoryCompatibleWithAmount('mixte', 1)).toBe(true);
         expect(isCategoryCompatibleWithAmount(null, 1)).toBe(true);
+    });
+});
+
+describe('imports line payload : valeurs à créer', () => {
+    it('garde la valeur du fichier par défaut, sans rien envoyer', () => {
+        const item = line({ unmatchedTierName: 'COOP-4521', unmatchedPaymentMethodName: 'Visa 1234' });
+        expect(willCreateTier(item)).toBe(true);
+        const fields = importLineToFormFields(item);
+        expect(isImportLineFormDirty(item, fields)).toBe(false);
+        expect(buildImportLinePayload(item, fields, { now: NOW })).toMatchObject({ ok: false, code: 'noChanges' });
+    });
+
+    it('« Ne pas créer » envoie null explicitement', () => {
+        const item = line({ unmatchedTierName: 'COOP-4521', unmatchedPaymentMethodName: 'Visa 1234' });
+        const fields = { ...importLineToFormFields(item), dropUnmatchedTier: true, dropUnmatchedPaymentMethod: true };
+        expect(isImportLineFormDirty(item, fields)).toBe(true);
+        expect(buildImportLinePayload(item, fields, { now: NOW })).toEqual({
+            ok: true,
+            payload: { tierPublicId: null, paymentMethodPublicId: null }
+        });
+    });
+
+    it('un choix existant l’emporte sur la case « Ne pas créer »', () => {
+        const item = line({ unmatchedTierName: 'COOP-4521' });
+        const fields = { ...importLineToFormFields(item), tierPublicId: 't-1', dropUnmatchedTier: true };
+        expect(buildImportLinePayload(item, fields, { now: NOW })).toEqual({ ok: true, payload: { tierPublicId: 't-1' } });
     });
 });

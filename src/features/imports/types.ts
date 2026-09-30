@@ -21,7 +21,8 @@ export type ImportMappingField =
     | 'currency'
     | 'balance'
     | 'category'
-    | 'tier';
+    | 'tier'
+    | 'paymentMethod';
 
 /**
  * Colonnes du mapping. Clé **absente** = détection automatique ; `null` = aucune colonne ;
@@ -100,6 +101,8 @@ export type Import = {
     sourceType: ImportSourceType;
     status: ImportStatus;
     templatePublicId: string | null;
+    /** Moyen de paiement par défaut choisi à l’upload (posé sur les lignes sans moyen reconnu). */
+    defaultPaymentMethodPublicId: string | null;
     counts: ImportCounts;
     periodFrom: string | null;
     periodTo: string | null;
@@ -133,6 +136,20 @@ export type ImportLineOriginal = {
     currency: string | null;
     categoryName: string | null;
     tierName: string | null;
+    paymentMethodName?: string | null;
+};
+
+/**
+ * Échéance récurrente (modèle + date prévue) réglée au commit par la ligne.
+ * `duePublicId` est `null` si l’échéance n’est pas (ou plus) matérialisée : elle l’est au commit.
+ */
+export type ImportLineRecurringDue = {
+    kind: 'expense' | 'income';
+    recurringPublicId: string;
+    duePublicId: string | null;
+    name: string;
+    scheduledAt: string;
+    plannedAmount: number;
 };
 
 export type ImportLine = {
@@ -152,6 +169,10 @@ export type ImportLine = {
     unmatchedCategoryName: string | null;
     tierPublicId: string | null;
     unmatchedTierName: string | null;
+    /** Moyen actif du compte cible (colonne du fichier, défaut de l’import ou historique). */
+    paymentMethodPublicId: string | null;
+    unmatchedPaymentMethodName: string | null;
+    recurringDue: ImportLineRecurringDue | null;
     duplicateOfTransactionPublicId: string | null;
     duplicateOfLineNumber: number | null;
     isEdited: boolean;
@@ -188,11 +209,14 @@ export type UpdateImportLinePayload = {
     amount?: number | null;
     categoryPublicId?: string | null;
     tierPublicId?: string | null;
+    paymentMethodPublicId?: string | null;
+    /** `null` = détacher l’échéance rapprochée. */
+    recurringDue?: { recurringPublicId: string; scheduledAt: string } | null;
     status?: 'validee' | 'ignoree';
     reset?: boolean;
 };
 
-export type ImportBulkAction = 'validate' | 'ignore' | 'setCategory' | 'setTier';
+export type ImportBulkAction = 'validate' | 'ignore' | 'setCategory' | 'setTier' | 'setPaymentMethod';
 
 /** Sélection : exactement un de `linePublicIds`, `sameLabelAs`, `status`. */
 export type BulkUpdateImportLinesPayload = {
@@ -202,6 +226,7 @@ export type BulkUpdateImportLinesPayload = {
     status?: ImportLineStatus;
     categoryPublicId?: string | null;
     tierPublicId?: string | null;
+    paymentMethodPublicId?: string | null;
 };
 
 export type BulkUpdateImportLinesResult = {
@@ -210,7 +235,14 @@ export type BulkUpdateImportLinesResult = {
     import: Import;
 };
 
-export type ReparseImportPayload = { mapping: ImportMapping } | { importTemplatePublicId: string } | Record<string, never>;
+/** `paymentMethodPublicId` absent = moyen par défaut conservé, `null` = retiré. */
+export type ReparseImportPayload = (
+    | { mapping: ImportMapping; importTemplatePublicId?: never }
+    | { importTemplatePublicId: string; mapping?: never }
+    | { mapping?: never; importTemplatePublicId?: never }
+) & {
+    paymentMethodPublicId?: string | null;
+};
 
 export type ImportPreview = {
     toCreate: number;
@@ -231,7 +263,13 @@ export type ImportPreview = {
 export type CommitImportResult = {
     import: Import;
     createdTransactions: number;
+    /** Tiers / moyens créés depuis les valeurs du fichier non reconnues (`unmatched…Name`). */
+    createdTiers: number;
+    createdPaymentMethods: number;
 };
+
+/** Ce que le commit vient de créer (panneau de résultat). */
+export type ImportCommitSummary = Omit<CommitImportResult, 'import'>;
 
 export type RevertImportResult = {
     import: Import;
@@ -243,6 +281,8 @@ export type CreateImportPayload = {
     accountPublicId: string;
     mapping?: ImportMapping | null;
     importTemplatePublicId?: string | null;
+    /** Moyen par défaut, du compte cible. */
+    paymentMethodPublicId?: string | null;
 };
 
 export type SaveImportAsTemplatePayload = {
@@ -300,7 +340,8 @@ export const IMPORT_MAPPING_FIELDS: readonly ImportMappingField[] = [
     'currency',
     'balance',
     'category',
-    'tier'
+    'tier',
+    'paymentMethod'
 ];
 
 export const IMPORT_ENCODINGS = ['utf-8', 'utf-16', 'windows-1252', 'iso-8859-1'] as const;

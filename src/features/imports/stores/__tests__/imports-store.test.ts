@@ -56,6 +56,7 @@ function makeImport(partial: Partial<Import> = {}): Import {
         sourceType: 'csv',
         status: 'aValider',
         templatePublicId: null,
+        defaultPaymentMethodPublicId: null,
         counts: { total: 2, validated: 1, toReview: 1, errors: 0, ignored: 0 },
         periodFrom: '2026-07-01',
         periodTo: '2026-07-31',
@@ -97,6 +98,9 @@ function makeLine(partial: Partial<ImportLine> = {}): ImportLine {
         unmatchedCategoryName: null,
         tierPublicId: null,
         unmatchedTierName: null,
+        paymentMethodPublicId: null,
+        unmatchedPaymentMethodName: null,
+        recurringDue: null,
         duplicateOfTransactionPublicId: 'tx-1',
         duplicateOfLineNumber: null,
         isEdited: false,
@@ -182,11 +186,20 @@ describe('useImportsStore', () => {
         const store = useImportsStore();
         await store.openImport('imp-1');
 
-        api.commit.mockResolvedValue({ import: makeImport({ status: 'valide', expiresAt: null }), createdTransactions: 2 });
+        api.commit.mockResolvedValue({
+            import: makeImport({ status: 'valide', expiresAt: null }),
+            createdTransactions: 2,
+            createdTiers: 3,
+            createdPaymentMethods: 1
+        });
         const result = await store.commitImport('imp-1', { ignoreUnresolved: true });
 
         expect(api.commit).toHaveBeenCalledWith('imp-1', true);
-        expect(result.createdTransactions).toBe(2);
+        expect(result).toMatchObject({ createdTransactions: 2, createdTiers: 3, createdPaymentMethods: 1 });
+        expect(notifications.dispatchLocalAccountChanged).toHaveBeenCalledWith({
+            change: 'paymentMethodCreated',
+            accountPublicId: 'acc-1'
+        });
         expect(store.current?.status).toBe('valide');
         expect(notifications.dispatchLocalAccountChanged).toHaveBeenCalledWith({
             change: 'transactionsImported',

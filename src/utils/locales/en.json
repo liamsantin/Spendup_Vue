@@ -706,6 +706,10 @@
                 "expirationInvalid": "Invalid expiration date.",
                 "expirationPast": "An active method cannot already be expired.",
                 "isActiveRequired": "Active status is required."
+            },
+            "tabs": {
+                "details": "Details",
+                "aliases": "Aliases"
             }
         },
         "searchPlaceholder": "Search…",
@@ -826,7 +830,7 @@
             "pickTransaction": "Transaction",
             "pickDue": "Due",
             "searchPlaceholder": "Search a transaction",
-            "empty": "No manual transaction to link on this account.",
+            "empty": "No manual or imported transaction to link on this account.",
             "emptyFiltered": "No transaction matches this search.",
             "emptyDues": "No open due.",
             "confirm": "Link"
@@ -1708,6 +1712,10 @@
                 "companyRegistrationNumberTooLong": "Company registration number exceeds 100 characters.",
                 "organizationOfficialNameTooLong": "Official name exceeds 200 characters.",
                 "organizationTypeTooLong": "Organization type exceeds 100 characters."
+            },
+            "tabs": {
+                "details": "Details",
+                "aliases": "Aliases"
             }
         }
     },
@@ -2086,7 +2094,9 @@
             "currency": "Currency",
             "balance": "Balance",
             "category": "Category",
-            "tier": "Counterparty"
+            "tier": "Counterparty",
+            "paymentMethod": "Payment method",
+            "recurringDue": "Recurring due"
         },
         "actions": {
             "create": "Import a statement",
@@ -2123,7 +2133,8 @@
         },
         "revertModal": {
             "title": "Undo this import?",
-            "body": "No transaction will be deleted. | 1 transaction will be deleted, even if you edited it after the import (category, tags…). | {count} transactions will be deleted, including those edited after the import (category, tags…)."
+            "body": "No transaction will be deleted. | 1 transaction will be deleted, even if you edited it after the import (category, tags…). | {count} transactions will be deleted, including those edited after the import (category, tags…).",
+            "keepsEntities": "Counterparties, payment methods and aliases created by the import are kept."
         },
         "detail": {
             "title": "Import",
@@ -2143,6 +2154,9 @@
             "templateHint": "Optional. A template reuses a saved mapping.",
             "templateNeedsFile": "Choose a file first.",
             "templateSearch": "Search a template",
+            "paymentMethod": "Default payment method",
+            "paymentMethodHint": "Optional. Applied to lines whose file gives no payment method (e.g. a card statement).",
+            "noPaymentMethod": "None",
             "submit": "Analyse file",
             "noWritableAccount": "You have no active account to import into (owner or editor).",
             "notes": {
@@ -2286,8 +2300,11 @@
                 "duplicateInFile": "Same as line {n}",
                 "unknownCategory": "Unknown category “{name}”",
                 "suggested": "Suggested category",
+                "recurringDue": "{name} on {date}",
                 "autoIgnored": "Ignored automatically",
-                "edited": "Corrected"
+                "edited": "Corrected",
+                "newTier": "New counterparty: {name}",
+                "newPaymentMethod": "New payment method: {name}"
             },
             "actions": {
                 "validate": "Validate",
@@ -2306,7 +2323,13 @@
                 "createCategory": "Create “{name}”",
                 "suggestedHint": "Suggested from your history.",
                 "unknownCategory": "The file’s category “{name}” does not exist in your categories.",
-                "unknownTier": "File counterparty “{name}” not recognised (does not block the import).",
+                "unknownTier": "“{name}” will be created as a new counterparty on commit. Pick an existing counterparty to link it instead.",
+                "noPaymentMethod": "No payment method",
+                "paymentMethodSearch": "Search a payment method",
+                "unknownPaymentMethod": "“{name}” will be created as a new payment method on commit. Pick an existing one to link it instead.",
+                "noRecurringDue": "No due",
+                "recurringDueHint": "Settled by this line when the import is committed.",
+                "recurringDueOption": "{name} · {date} · {amount}",
                 "duplicate": "This line looks like a transaction already on the account.",
                 "duplicateLink": "See that day’s transactions",
                 "duplicateInFile": "Same as line {n} of the file. These are often two genuine operations.",
@@ -2325,7 +2348,21 @@
                     "amountZero": "The amount cannot be zero.",
                     "categoryTypeMismatch": "This category does not match the amount’s direction.",
                     "noChanges": "No changes."
-                }
+                },
+                "learnTierAlias": "“{name}” will be saved as an alias of this counterparty so future imports recognise it.",
+                "learnPaymentMethodAlias": "“{name}” will be saved as an alias of this payment method so future imports recognise it.",
+                "noTierCreated": "No counterparty will be created for this line.",
+                "noPaymentMethodCreated": "No payment method will be created for this line.",
+                "dropTier": "Don’t create counterparty “{name}”",
+                "dropPaymentMethod": "Don’t create payment method “{name}”",
+                "newPaymentMethodOption": "New: {name}"
+            },
+            "dueMenu": {
+                "title": "Matched due: {label}. Click to change or detach.",
+                "change": "Change due",
+                "loading": "Looking for dues…",
+                "noOther": "No other open due nearby.",
+                "detach": "Detach due"
             }
         },
         "commit": {
@@ -2346,7 +2383,13 @@
             "nothingToCreate": "No validated line: validate at least one line before continuing.",
             "note": "All or nothing: if one line fails, no transaction is created.",
             "confirm": "Create | Create 1 transaction | Create {count} transactions",
-            "confirmIgnoring": "Ignore and create | Ignore and create 1 transaction | Ignore and create {count} transactions"
+            "confirmIgnoring": "Ignore and create | Ignore and create 1 transaction | Ignore and create {count} transactions",
+            "entities": {
+                "tiers": "no counterparty | 1 counterparty | {count} counterparties",
+                "paymentMethods": "no payment method | 1 payment method | {count} payment methods",
+                "and": " and ",
+                "willCreate": "{list} | {list} will be created from unrecognised file values. | {list} will be created from unrecognised file values."
+            }
         },
         "result": {
             "createdTitle": "No transaction created | 1 transaction created | {count} transactions created",
@@ -2356,7 +2399,8 @@
             "cancelledBody": "Discarded, expired after 30 days without activity, or undone after validation. No transaction is attached to it.",
             "viewTransactions": "View transactions",
             "reverted": "No transaction deleted. | 1 transaction deleted. | {count} transactions deleted.",
-            "templateSaved": "Template saved. It will be offered on the next import."
+            "templateSaved": "Template saved. It will be offered on the next import.",
+            "entitiesCreated": "{list} | {list} created | {list} created"
         },
         "templates": {
             "personal": "My templates",
@@ -3068,6 +3112,57 @@
             "errors": {
                 "incomplete": "Complete the requested verification."
             }
+        }
+    },
+    "aliases": {
+        "title": "Import recognition",
+        "help": {
+            "tier": "Values that point to this counterparty in a statement: the counterparty column, or the bank label otherwise. Case, accents and punctuation are ignored (“COOP-4521” = “coop 4521”).",
+            "paymentMethod": "Values that point to this payment method in a statement: the payment method column, or the bank label otherwise. Case, accents and punctuation are ignored (“VISA-1234” = “visa 1234”)."
+        },
+        "empty": "No alias yet. They are also added automatically when you link an import line.",
+        "newValue": "New alias",
+        "editValue": "Edit alias",
+        "valuePlaceholder": "e.g. COOP-4521, twint",
+        "matchType": "Match",
+        "matchTypes": {
+            "exact": "Exact",
+            "startsWith": "Starts with",
+            "endsWith": "Ends with",
+            "contains": "Contains",
+            "regex": "Regular expression"
+        },
+        "matchTypeHints": {
+            "exact": "The whole value must match.",
+            "startsWith": "The value must start with this text.",
+            "endsWith": "The value must end with this text.",
+            "contains": "The text can appear anywhere. Handy for bank labels (e.g. “twint”).",
+            "regex": "Applied to the raw text, case-insensitive."
+        },
+        "priority": "Priority",
+        "priorityHint": "From {min} to {max}. When several aliases match, the highest wins.",
+        "priorityShort": "Priority {n}",
+        "advanced": "Advanced: priority, regular expression",
+        "add": "Add",
+        "update": "Update",
+        "edit": "Edit",
+        "delete": "Delete",
+        "active": "Active",
+        "inactive": "Inactive",
+        "auto": "auto",
+        "autoHint": "Created automatically by an import.",
+        "nextAnalysis": "Changes apply to the next analysis (new import, re-read or line reset). Existing transactions don’t change.",
+        "deleteConfirm": {
+            "title": "Delete this alias?",
+            "body": "“{value}” will no longer be recognised by future imports."
+        },
+        "errors": {
+            "valueRequired": "Enter a value.",
+            "valueTooLong": "{max} characters at most.",
+            "valueNoAlphanumeric": "The value must contain at least one letter or digit.",
+            "regexInvalid": "Invalid regular expression.",
+            "matchTypeInvalid": "Unknown match type.",
+            "priorityInvalid": "Whole number between {min} and {maxPriority}."
         }
     }
 }
