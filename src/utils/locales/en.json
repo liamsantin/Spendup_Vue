@@ -666,7 +666,8 @@
             "body": "It will disappear from lists. The label can be reused."
         },
         "errors": {
-            "notFound": "Payment method not found."
+            "notFound": "Payment method not found.",
+            "aliasesPartial": "The payment method was created, but some aliases could not be. Check them in the Aliases tab."
         },
         "types": {
             "carte": "Card",
@@ -1628,7 +1629,8 @@
             "blockedTitle": "Counterparty in use"
         },
         "errors": {
-            "notFound": "This counterparty is no longer available."
+            "notFound": "This counterparty is no longer available.",
+            "aliasesPartial": "The counterparty was created, but some aliases could not be. Check them in the Aliases tab."
         },
         "form": {
             "createTitle": "New counterparty",
@@ -3157,6 +3159,7 @@
             "body": "“{value}” will no longer be recognised by future imports."
         },
         "errors": {
+            "duplicateDraft": "This alias is already in the list.",
             "valueRequired": "Enter a value.",
             "valueTooLong": "{max} characters at most.",
             "valueNoAlphanumeric": "The value must contain at least one letter or digit.",

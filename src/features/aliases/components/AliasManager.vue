@@ -3,6 +3,8 @@
  * Onglet « Alias » d’un tier ou d’un moyen de paiement : CRUD des alias de reconnaissance à l’import.
  * Chaque action part tout de suite (indépendante du bouton Enregistrer de la fiche).
  * Un changement ne s’applique qu’à la prochaine analyse d’un import.
+ * Mode `draft` (création : l’entité n’existe pas encore) : les alias restent locaux et sont
+ * remontés via `update:drafts` pour être créés par la modale après l’enregistrement.
  */
 defineOptions({ name: 'AliasManager' });
 
@@ -30,12 +32,16 @@ import {
     ALIAS_PRIORITY_MIN,
     ALIAS_VALUE_MAX,
     type Alias,
-    type AliasTarget
+    type AliasTarget,
+    type UpdateAliasPayload
 } from '@/features/aliases/types';
 
 const props = defineProps<{
     target: AliasTarget;
-    ownerPublicId: string;
+    ownerPublicId?: string;
+    /** Création : pas de propriétaire, les alias sont conservés localement. */
+    draft?: boolean;
+    drafts?: UpdateAliasPayload[];
     /** Moyen de paiement : compte du moyen, pour l’écoute `accountChanged`. */
     accountPublicId?: string | null;
     readonly?: boolean;
@@ -44,6 +50,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     /** Nombre d’alias listés (pastille de l’onglet). */
     count: [value: number];
+    'update:drafts': [value: UpdateAliasPayload[]];
 }>();
 
 const { t } = useI18n();
@@ -58,6 +65,19 @@ const form = reactive<AliasFormFields>(emptyAliasFormFields());
 const editing = ref<Alias | null>(null);
 const advanced = ref(false);
 const pendingDelete = ref<Alias | null>(null);
+let draftSeq = 0;
+
+function draftToAlias(payload: UpdateAliasPayload, publicId = `draft-${++draftSeq}`): Alias {
+    return { publicId, ...payload, createdByImport: false, createdAt: '', updatedAt: null };
+}
+
+function commitDrafts() {
+    emit(
+        'update:drafts',
+        items.value.map(({ value, matchType, priority, isActive }) => ({ value, matchType, priority, isActive }))
+    );
+    emit('count', items.value.length);
+}
 
 const deleteOpen = computed({
     get: () => !!pendingDelete.value,
@@ -78,7 +98,7 @@ function matchTypeLabel(alias: Alias) {
 }
 
 async function load() {
-    if (!props.ownerPublicId) return;
+    if (props.draft || !props.ownerPublicId) return;
     loading.value = true;
     try {
         items.value = (await aliasesApi.list(props.target, props.ownerPublicId)).items;
@@ -133,17 +153,42 @@ function onSubmit() {
         return;
     }
     const current = editing.value;
+    if (props.draft) {
+        const duplicate = items.value.some(
+            (a) =>
+                a.publicId !== current?.publicId &&
+                a.value.toLowerCase() === built.payload.value.toLowerCase() &&
+                a.matchType === built.payload.matchType
+        );
+        if (duplicate) {
+            fieldErrors.value = t('aliases.errors.duplicateDraft');
+            return;
+        }
+        items.value = current
+            ? items.value.map((a) => (a.publicId === current.publicId ? draftToAlias(built.payload, a.publicId) : a))
+            : [...items.value, draftToAlias(built.payload)];
+        resetForm();
+        commitDrafts();
+        return;
+    }
+    const ownerId = props.ownerPublicId!;
     void run(async () => {
-        if (current) await aliasesApi.update(props.target, props.ownerPublicId, current.publicId, built.payload);
-        else await aliasesApi.create(props.target, props.ownerPublicId, built.payload);
+        if (current) await aliasesApi.update(props.target, ownerId, current.publicId, built.payload);
+        else await aliasesApi.create(props.target, ownerId, built.payload);
         resetForm();
         await load();
     });
 }
 
 function toggleActive(alias: Alias, isActive: boolean | null) {
+    if (props.draft) {
+        items.value = items.value.map((a) => (a.publicId === alias.publicId ? { ...a, isActive: !!isActive } : a));
+        commitDrafts();
+        return;
+    }
+    const ownerId = props.ownerPublicId!;
     void run(async () => {
-        await aliasesApi.update(props.target, props.ownerPublicId, alias.publicId, {
+        await aliasesApi.update(props.target, ownerId, alias.publicId, {
             value: alias.value,
             matchType: alias.matchType,
             priority: alias.priority,
@@ -157,28 +202,36 @@ function confirmDelete() {
     const alias = pendingDelete.value;
     pendingDelete.value = null;
     if (!alias) return;
+    if (props.draft) {
+        items.value = items.value.filter((a) => a.publicId !== alias.publicId);
+        if (editing.value?.publicId === alias.publicId) resetForm();
+        commitDrafts();
+        return;
+    }
+    const ownerId = props.ownerPublicId!;
     void run(async () => {
-        await aliasesApi.remove(props.target, props.ownerPublicId, alias.publicId);
+        await aliasesApi.remove(props.target, ownerId, alias.publicId);
         if (editing.value?.publicId === alias.publicId) resetForm();
         await load();
     });
 }
 
 // Sync multi-onglets : `tierUpdated` / `paymentMethodUpdated` à chaque changement d’alias.
-const unsubscribe =
-    props.target === 'tier'
-        ? notifications.subscribeToTierChanged((payload) => {
-              if (payload.change === 'tierUpdated' && payload.tierPublicId === props.ownerPublicId) void load();
-          })
-        : notifications.subscribeToAccountChanged((payload) => {
-              if (payload.change === 'paymentMethodUpdated' && payload.accountPublicId === props.accountPublicId) void load();
-          });
+const unsubscribe = props.draft
+    ? () => {}
+    : props.target === 'tier'
+      ? notifications.subscribeToTierChanged((payload) => {
+            if (payload.change === 'tierUpdated' && payload.tierPublicId === props.ownerPublicId) void load();
+        })
+      : notifications.subscribeToAccountChanged((payload) => {
+            if (payload.change === 'paymentMethodUpdated' && payload.accountPublicId === props.accountPublicId) void load();
+        });
 onBeforeUnmount(unsubscribe);
 
 watch(
-    () => props.ownerPublicId,
+    () => [props.ownerPublicId, props.draft],
     () => {
-        items.value = [];
+        items.value = props.draft ? (props.drafts ?? []).map((d) => draftToAlias(d)) : [];
         localError.value = null;
         resetForm();
         void load();

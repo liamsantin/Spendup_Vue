@@ -666,7 +666,8 @@
             "body": "Il disparaîtra des listes. Le libellé pourra être réutilisé."
         },
         "errors": {
-            "notFound": "Moyen de paiement introuvable."
+            "notFound": "Moyen de paiement introuvable.",
+            "aliasesPartial": "Le moyen de paiement a été créé, mais certains alias n’ont pas pu l’être. Vérifiez-les dans l’onglet Alias."
         },
         "types": {
             "carte": "Carte",
@@ -1628,7 +1629,8 @@
             "blockedTitle": "Tiers utilisé"
         },
         "errors": {
-            "notFound": "Ce tiers n’est plus disponible."
+            "notFound": "Ce tiers n’est plus disponible.",
+            "aliasesPartial": "Le tiers a été créé, mais certains alias n’ont pas pu l’être. Vérifiez-les dans l’onglet Alias."
         },
         "form": {
             "createTitle": "Nouveau tiers",
@@ -3157,6 +3159,7 @@
             "body": "« {value} » ne sera plus reconnu lors des prochains imports."
         },
         "errors": {
+            "duplicateDraft": "Cet alias est déjà dans la liste.",
             "valueRequired": "Saisissez une valeur.",
             "valueTooLong": "{max} caractères au maximum.",
             "valueNoAlphanumeric": "La valeur doit contenir au moins une lettre ou un chiffre.",

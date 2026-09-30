@@ -8,6 +8,8 @@ import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.v
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import AliasManager from '@/features/aliases/components/AliasManager.vue';
+import { aliasesApi } from '@/features/aliases/api';
+import type { UpdateAliasPayload } from '@/features/aliases/types';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { canWritePaymentMethods } from '@/features/payment-methods/rights';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
@@ -49,6 +51,8 @@ const isEdit = ref(false);
 const editMethod = ref<PaymentMethod | null>(null);
 const activeTab = ref<'details' | 'aliases'>('details');
 const aliasCount = ref<number | null>(null);
+/** Création : alias saisis avant l’existence du moyen, créés juste après l’enregistrement. */
+const aliasDrafts = ref<UpdateAliasPayload[]>([]);
 
 /** Édition seulement : un moyen doit exister pour porter des alias. */
 const editTabs = computed(() => [
@@ -152,9 +156,15 @@ watch(
         editMethod.value = props.method ?? null;
         activeTab.value = 'details';
         aliasCount.value = null;
+        aliasDrafts.value = [];
         resetForm();
     }
 );
+
+async function createDraftAliases(methodPublicId: string) {
+    const results = await Promise.allSettled(aliasDrafts.value.map((d) => aliasesApi.create('paymentMethod', methodPublicId, d)));
+    return results.filter((r) => r.status === 'rejected').length;
+}
 
 async function onSave() {
     if (isEdit.value && !canSave.value) return;
@@ -173,7 +183,17 @@ async function onSave() {
             isEdit.value && editMethod.value
                 ? await store.updatePaymentMethod(editMethod.value.publicId, form)
                 : await store.createPaymentMethod(form);
+        const failed = isEdit.value ? 0 : await createDraftAliases(saved.publicId);
         emit('saved', saved);
+        if (failed) {
+            // Le moyen existe : on bascule en édition pour laisser corriger les alias restants.
+            isEdit.value = true;
+            editMethod.value = saved;
+            activeTab.value = 'aliases';
+            aliasCount.value = null;
+            localError.message = t('paymentMethodsPage.errors.aliasesPartial');
+            return;
+        }
         open.value = false;
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
@@ -261,6 +281,7 @@ async function onSave() {
             :field-errors="fieldErrors"
             :account-disabled="!!lockAccount && !isEdit"
         />
+        <AliasManager class="mt-6" target="paymentMethod" draft :drafts="aliasDrafts" @update:drafts="aliasDrafts = $event" />
 
         <template #footer="{ close }">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">

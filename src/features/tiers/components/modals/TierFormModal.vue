@@ -8,6 +8,8 @@ import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.v
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import AliasManager from '@/features/aliases/components/AliasManager.vue';
+import { aliasesApi } from '@/features/aliases/api';
+import type { UpdateAliasPayload } from '@/features/aliases/types';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import {
     buildCreateTierPayload,
@@ -43,6 +45,8 @@ const editTier = ref<Tier | null>(null);
 const createStep = ref<'nature' | 'form'>('nature');
 const activeTab = ref<'details' | 'aliases'>('details');
 const aliasCount = ref<number | null>(null);
+/** Création : alias saisis avant l’existence du tiers, créés juste après l’enregistrement. */
+const aliasDrafts = ref<UpdateAliasPayload[]>([]);
 
 /** Édition seulement : un tier doit exister pour porter des alias. */
 const editTabs = computed(() => [
@@ -165,9 +169,15 @@ watch(
         editTier.value = props.tier ?? null;
         activeTab.value = 'details';
         aliasCount.value = null;
+        aliasDrafts.value = [];
         resetForm();
     }
 );
+
+async function createDraftAliases(tierPublicId: string) {
+    const results = await Promise.allSettled(aliasDrafts.value.map((d) => aliasesApi.create('tier', tierPublicId, d)));
+    return results.filter((r) => r.status === 'rejected').length;
+}
 
 async function onSave() {
     if (pickingNature.value || (isEdit.value && !canSave.value)) return;
@@ -181,7 +191,17 @@ async function onSave() {
     }
     try {
         const saved = isEdit.value && editTier.value ? await store.updateTier(editTier.value.publicId, form) : await store.createTier(form);
+        const failed = isEdit.value ? 0 : await createDraftAliases(saved.publicId);
         emit('saved', saved);
+        if (failed) {
+            // Le tiers existe : on bascule en édition pour laisser corriger les alias restants.
+            isEdit.value = true;
+            editTier.value = saved;
+            activeTab.value = 'aliases';
+            aliasCount.value = null;
+            localError.message = t('tiersPage.errors.aliasesPartial');
+            return;
+        }
         open.value = false;
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
@@ -271,6 +291,7 @@ async function onSave() {
             :show-roles="isEdit"
             @change-nature="createStep = 'nature'"
         />
+        <AliasManager v-if="!pickingNature" class="mt-6" target="tier" draft :drafts="aliasDrafts" @update:drafts="aliasDrafts = $event" />
 
         <template #footer="{ close }">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
