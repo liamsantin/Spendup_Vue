@@ -20,7 +20,7 @@ import {
     type TierFormFields,
     type TierPayloadErrorCode
 } from '@/features/tiers/payload';
-import { TIER_NATURES, type Tier, type TierNature } from '@/features/tiers/types';
+import { TIER_NATURES, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
 import TierForm, { type TierFormFieldErrors } from '@/features/tiers/components/forms/TierForm.vue';
 import TierNatureChoice from '@/features/tiers/components/forms/TierNatureChoice.vue';
 
@@ -30,6 +30,8 @@ const props = defineProps<{
     /** Pré-remplit le nom (création rapide depuis un sélecteur). */
     defaultName?: string | null;
     defaultNature?: TierNature | null;
+    /** Rôles pré-cochés à la création (ex. `banque` depuis la page Banques). */
+    defaultRoles?: TierRole[];
 }>();
 
 const emit = defineEmits<{
@@ -122,7 +124,7 @@ function assignForm(next: TierFormFields) {
 function applyCreateDefaults(nature: TierNature, name: string) {
     const next = emptyTierFormFields(nature);
     next.name = name;
-    next.roles = [];
+    next.roles = [...(props.defaultRoles ?? [])];
     assignForm(next);
 }
 
@@ -219,7 +221,7 @@ async function onSave() {
 
 <template>
     <AppModalTabs
-        v-if="isEdit"
+        v-if="!pickingNature"
         v-model="open"
         v-model:tab="activeTab"
         :title="modalTitle"
@@ -240,8 +242,9 @@ async function onSave() {
                     :nature-items="natureItems"
                     :field-errors="fieldErrors"
                     :nature-hint="natureHint"
-                    :lock-nature="false"
-                    :show-roles="true"
+                    :lock-nature="!isEdit"
+                    :show-roles="isEdit"
+                    @change-nature="createStep = 'nature'"
                 />
             </AppModalPanelScroll>
         </template>
@@ -249,11 +252,19 @@ async function onSave() {
         <template #panel-aliases>
             <AppModalPanelScroll>
                 <AliasManager v-if="editTier" target="tier" :owner-public-id="editTier.publicId" @count="aliasCount = $event" />
+                <AliasManager
+                    v-else
+                    target="tier"
+                    draft
+                    :drafts="aliasDrafts"
+                    @update:drafts="aliasDrafts = $event"
+                    @count="aliasCount = $event"
+                />
             </AppModalPanelScroll>
         </template>
 
         <template #footer="{ close }">
-            <template v-if="activeTab === 'details'">
+            <template v-if="activeTab === 'details' || !isEdit">
                 <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
                     {{ t('common.cancel') }}
                 </button>
@@ -269,9 +280,9 @@ async function onSave() {
         v-model="open"
         :title="modalTitle"
         :subtitle="modalSubtitle"
-        :max-width="pickingNature ? 480 : 680"
-        :height="pickingNature ? 560 : 760"
-        :show-footer="!pickingNature"
+        :max-width="480"
+        :height="560"
+        :show-footer="false"
         scrollable
         mobile-layout="fullscreen"
     >
@@ -279,27 +290,6 @@ async function onSave() {
             {{ localError.message }}
         </AppAlert>
 
-        <TierNatureChoice v-if="pickingNature" @select="pickNature" />
-        <TierForm
-            v-else
-            :form="form"
-            :is-edit="isEdit"
-            :nature-items="natureItems"
-            :field-errors="fieldErrors"
-            :nature-hint="natureHint"
-            :lock-nature="!isEdit"
-            :show-roles="isEdit"
-            @change-nature="createStep = 'nature'"
-        />
-        <AliasManager v-if="!pickingNature" class="mt-6" target="tier" draft :drafts="aliasDrafts" @update:drafts="aliasDrafts = $event" />
-
-        <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
-                {{ t('common.cancel') }}
-            </button>
-            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
-                {{ t('common.save') }}
-            </button>
-        </template>
+        <TierNatureChoice @select="pickNature" />
     </AppModalBase>
 </template>

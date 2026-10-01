@@ -3,7 +3,6 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FileDescriptionIcon, ListSearchIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
-import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
@@ -208,10 +207,9 @@ async function onSave() {
 
 <template>
     <AppModalTabs
-        v-if="isEdit"
         v-model="open"
         v-model:tab="activeTab"
-        :title="t('paymentMethodsPage.form.editTitle')"
+        :title="isEdit ? t('paymentMethodsPage.form.editTitle') : t('paymentMethodsPage.form.createTitle')"
         :subtitle="t('paymentMethodsPage.form.subtitle')"
         :tabs="editTabs"
         :max-width="640"
@@ -229,7 +227,7 @@ async function onSave() {
                     :account-items="accountItems"
                     :type-items="typeItems"
                     :field-errors="fieldErrors"
-                    :account-disabled="false"
+                    :account-disabled="!!lockAccount && !isEdit"
                 />
             </AppModalPanelScroll>
         </template>
@@ -244,11 +242,19 @@ async function onSave() {
                     :readonly="aliasesReadonly"
                     @count="aliasCount = $event"
                 />
+                <AliasManager
+                    v-else
+                    target="paymentMethod"
+                    draft
+                    :drafts="aliasDrafts"
+                    @update:drafts="aliasDrafts = $event"
+                    @count="aliasCount = $event"
+                />
             </AppModalPanelScroll>
         </template>
 
         <template #footer="{ close }">
-            <template v-if="activeTab === 'details'">
+            <template v-if="activeTab === 'details' || !isEdit">
                 <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
                     {{ t('common.cancel') }}
                 </button>
@@ -259,37 +265,4 @@ async function onSave() {
             <button v-else type="button" class="su-btn su-btn--ghost" @click="close">{{ t('common.close') }}</button>
         </template>
     </AppModalTabs>
-    <AppModalBase
-        v-else
-        v-model="open"
-        :title="t('paymentMethodsPage.form.createTitle')"
-        :subtitle="t('paymentMethodsPage.form.subtitle')"
-        :max-width="640"
-        :height="640"
-        scrollable
-        mobile-layout="fullscreen"
-    >
-        <AppAlert v-if="localError.message" type="error" class="mb-4" closable @dismiss="localError.message = null">
-            {{ localError.message }}
-        </AppAlert>
-
-        <PaymentMethodForm
-            :form="form"
-            :is-edit="isEdit"
-            :account-items="accountItems"
-            :type-items="typeItems"
-            :field-errors="fieldErrors"
-            :account-disabled="!!lockAccount && !isEdit"
-        />
-        <AliasManager class="mt-6" target="paymentMethod" draft :drafts="aliasDrafts" @update:drafts="aliasDrafts = $event" />
-
-        <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
-                {{ t('common.cancel') }}
-            </button>
-            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
-                {{ t('common.save') }}
-            </button>
-        </template>
-    </AppModalBase>
 </template>
