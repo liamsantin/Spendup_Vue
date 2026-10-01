@@ -56,10 +56,15 @@ const aliasCount = ref<number | null>(null);
 /** Création : alias saisis avant l’existence du tiers, créés juste après l’enregistrement. */
 const aliasDrafts = ref<UpdateAliasPayload[]>([]);
 
-/** Édition seulement : un tier doit exister pour porter des alias. */
+/**
+ * Onglet « Banque » : en modification, ou à la création depuis la page Banques (volet imposé).
+ * À la création d’un tiers quelconque, le volet banque s’active plus tard depuis la fiche.
+ */
+const showBankTab = computed(() => isEdit.value || !!props.lockBank);
+
 const editTabs = computed(() => [
     { value: 'details' as const, label: t('tiersPage.form.tabs.details'), icon: FileDescriptionIcon },
-    { value: 'bank' as const, label: t('tiersPage.form.tabs.bank'), icon: BuildingBankIcon },
+    ...(showBankTab.value ? [{ value: 'bank' as const, label: t('tiersPage.form.tabs.bank'), icon: BuildingBankIcon }] : []),
     { value: 'aliases' as const, label: t('tiersPage.form.tabs.aliases'), icon: ListSearchIcon, chip: aliasCount.value || undefined }
 ]);
 
