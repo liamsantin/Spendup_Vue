@@ -24,9 +24,7 @@ const sizeLabel = computed(() => {
     return t(`filesPage.size.${parts.unit}`, { n: parts.n });
 });
 
-const documentDateLabel = computed(() =>
-    props.file.documentDate ? formatDocumentDate(props.file.documentDate, locale.value) : ''
-);
+const documentDateLabel = computed(() => (props.file.documentDate ? formatDocumentDate(props.file.documentDate, locale.value) : ''));
 
 const addedLabel = computed(() => formatInstant(props.file.createdAt, locale.value));
 

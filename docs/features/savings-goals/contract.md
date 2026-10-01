@@ -6,14 +6,14 @@
 
 ## Boundaries
 
-| Couche   | Détail                                                                                          |
-| -------- | ----------------------------------------------------------------------------------------------- |
+| Couche   | Détail                                                                                                                                 |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | Route    | `/app/planning/objectifs` → `AppSavingsGoalsPage` (Page Shell, `/:publicId?` ouvre le détail à onglets : Détails · Transactions liées) |
-| Nav      | Sidebar **Planning** → **Objectifs**                                                            |
-| Store    | `useSavingsGoalsStore` (state · crud · realtime · lifecycle)                                    |
-| API      | `savingsGoalsApi` via **`fetchWrapper`**                                                        |
-| Droits   | Ressource **personnelle**. Compte lié : owner + actif uniquement (partagé / archivé → 400).     |
-| Realtime | `savingsGoalChanged` (acteur inclus, pas d’inbox) + `accountChanged` `transaction*`             |
+| Nav      | Sidebar **Planning** → **Objectifs**                                                                                                   |
+| Store    | `useSavingsGoalsStore` (state · crud · realtime · lifecycle)                                                                           |
+| API      | `savingsGoalsApi` via **`fetchWrapper`**                                                                                               |
+| Droits   | Ressource **personnelle**. Compte lié : owner + actif uniquement (partagé / archivé → 400).                                            |
+| Realtime | `savingsGoalChanged` (acteur inclus, pas d’inbox) + `accountChanged` `transaction*`                                                    |
 
 `currentAmount` = `openingAmount` + `contributedAmount`. Seule l’ouverture est saisie par le client. Les contributions viennent des transactions **explicitement** liées. Le solde du compte ne compte pas. Pas de foyer, pas de plusieurs objectifs sur une même TX, pas de conversion, pas de prise en compte automatique de toutes les écritures du compte.
 
@@ -21,13 +21,13 @@
 
 Auth JWT. JSON camelCase. Enveloppe `{ success, message, result }` sauf DELETE → **204** sans corps.
 
-| Méthode | Route                                                 | Résultat     |
-| ------- | ----------------------------------------------------- | ------------ |
-| GET     | `/api/savings-goals?status=&accountPublicId=`         | Liste        |
-| GET     | `/api/savings-goals/{publicId}`                       | Détail       |
-| POST    | `/api/savings-goals`                                  | Création     |
-| PUT     | `/api/savings-goals/{publicId}`                       | Remplacement |
-| DELETE  | `/api/savings-goals/{publicId}`                       | Soft-delete  |
+| Méthode | Route                                         | Résultat     |
+| ------- | --------------------------------------------- | ------------ |
+| GET     | `/api/savings-goals?status=&accountPublicId=` | Liste        |
+| GET     | `/api/savings-goals/{publicId}`               | Détail       |
+| POST    | `/api/savings-goals`                          | Création     |
+| PUT     | `/api/savings-goals/{publicId}`               | Remplacement |
+| DELETE  | `/api/savings-goals/{publicId}`               | Soft-delete  |
 
 Inconnu, d’un autre utilisateur ou déjà supprimé : **404** message neutre (`Objectif introuvable.`).
 
@@ -80,7 +80,7 @@ Au franchissement de la cible, une notification `savingsGoalReached` part **une 
 
 ## Compte lié
 
-Archiver ou supprimer un compte qui a encore un objectif vivant → 400 : *Impossible de supprimer ou d'archiver un compte lié à un objectif d'épargne. Déliez-le d'abord.*
+Archiver ou supprimer un compte qui a encore un objectif vivant → 400 : _Impossible de supprimer ou d'archiver un compte lié à un objectif d'épargne. Déliez-le d'abord._
 
 Le front propose de détacher (`accountPublicId: null`) ou de supprimer l’objectif avant l’action (`AccountLinkedSavingsGoalsModal`).
 

@@ -9,7 +9,16 @@ import {
 
 const YMD_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-export const FILE_SORTS = ['recent', 'oldest', 'nameAsc', 'nameDesc', 'sizeAsc', 'sizeDesc', 'documentDateAsc', 'documentDateDesc'] as const;
+export const FILE_SORTS = [
+    'recent',
+    'oldest',
+    'nameAsc',
+    'nameDesc',
+    'sizeAsc',
+    'sizeDesc',
+    'documentDateAsc',
+    'documentDateDesc'
+] as const;
 export type FileSort = (typeof FILE_SORTS)[number];
 export const FILE_SORT_DEFAULT: FileSort = 'recent';
 

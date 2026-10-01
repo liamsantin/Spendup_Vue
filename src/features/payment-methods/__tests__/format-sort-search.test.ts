@@ -39,7 +39,11 @@ describe('payment methods sort & search', () => {
     });
 
     it('trie par libellé, type et expiration', () => {
-        expect(sortPaymentMethodsBy(items, 'labelAsc', labels).map((item) => item.label)).toEqual(['Ancienne carte', 'Twint perso', 'Visa']);
+        expect(sortPaymentMethodsBy(items, 'labelAsc', labels).map((item) => item.label)).toEqual([
+            'Ancienne carte',
+            'Twint perso',
+            'Visa'
+        ]);
         expect(sortPaymentMethodsBy(items, 'typeDesc', labels)[0].type).toBe('twint');
         expect(sortPaymentMethodsBy(items, 'expirationAsc', labels).map((item) => item.publicId)).toEqual(['3', '1', '2']);
     });

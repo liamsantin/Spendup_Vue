@@ -6,13 +6,13 @@
 
 ## Boundaries
 
-| Couche   | Détail                                                                           |
-| -------- | -------------------------------------------------------------------------------- |
-| Route    | `/app/gestion/tags` → `AppTagsPage` (Page Shell + AppBoard)                      |
-| Nav      | Sidebar **Gestion** → sous-menu **Tags**                                         |
-| Store    | `useTagsStore` (split `stores/internal/` : state · crud · realtime · lifecycle)  |
-| API      | `tagsApi` via **`fetchWrapper`** — `/api/tags`                                   |
-| Realtime | SignalR `tagChanged` (acteur inclus, groupe utilisateur, sans inbox)             |
+| Couche   | Détail                                                                          |
+| -------- | ------------------------------------------------------------------------------- |
+| Route    | `/app/gestion/tags` → `AppTagsPage` (Page Shell + AppBoard)                     |
+| Nav      | Sidebar **Gestion** → sous-menu **Tags**                                        |
+| Store    | `useTagsStore` (split `stores/internal/` : state · crud · realtime · lifecycle) |
+| API      | `tagsApi` via **`fetchWrapper`** — `/api/tags`                                  |
+| Realtime | SignalR `tagChanged` (acteur inclus, groupe utilisateur, sans inbox)            |
 
 Libellés **libres, plats, personnels**. Pas de type dépense/revenu, pas de hiérarchie, pas de foyer. Une écriture peut porter **0 à 10** tags (`tagPublicIds[]`), contrairement à la catégorie (0 ou 1).
 
@@ -20,13 +20,13 @@ Libellés **libres, plats, personnels**. Pas de type dépense/revenu, pas de hi�
 
 Auth Bearer ou cookie `spendup_access`. JSON camelCase, enveloppe `{ success, message, result }` — **sauf** `DELETE` (`204` vide). Pas de query string, pas de pagination. Tri **nom** puis id. `totalCount` = `items.length`.
 
-| Méthode | Endpoint              | Succès | Notes                                                                 |
-| ------- | --------------------- | ------ | --------------------------------------------------------------------- |
-| GET     | `/api/tags`           | 200    | `TagList`                                                             |
-| GET     | `/api/tags/{publicId}`| 200    | `Tag`                                                                 |
-| POST    | `/api/tags`           | 200    | `color` omis / `""` / `null` → `color: null`                          |
-| PUT     | `/api/tags/{publicId}`| 200    | **État complet**. `color: null` vide la couleur (ne pas omettre)      |
-| DELETE  | `/api/tags/{publicId}`| 204    | Toujours accepté. Détache les liens TX / charges, ne bloque pas       |
+| Méthode | Endpoint               | Succès | Notes                                                            |
+| ------- | ---------------------- | ------ | ---------------------------------------------------------------- |
+| GET     | `/api/tags`            | 200    | `TagList`                                                        |
+| GET     | `/api/tags/{publicId}` | 200    | `Tag`                                                            |
+| POST    | `/api/tags`            | 200    | `color` omis / `""` / `null` → `color: null`                     |
+| PUT     | `/api/tags/{publicId}` | 200    | **État complet**. `color: null` vide la couleur (ne pas omettre) |
+| DELETE  | `/api/tags/{publicId}` | 204    | Toujours accepté. Détache les liens TX / charges, ne bloque pas  |
 
 ## Invariants
 
@@ -53,11 +53,11 @@ UI : `TagPicker` (multi-select 10 + création inline `POST /api/tags`) · `TagCh
 
 `tagChanged` (`tagCreated` \| `tagUpdated` \| `tagDeleted`, `tagPublicId`) via le store notifications (`subscribeToTagChanged`). Pas d’inbox, pas de badge.
 
-| Change        | Réaction front                                                              |
-| ------------- | --------------------------------------------------------------------------- |
-| `tagCreated`  | refetch `GET /api/tags` (ou insert si le détail est connu)                  |
-| `tagUpdated`  | refetch liste + remplacer nom/couleur partout où ce `publicId` est affiché  |
-| `tagDeleted`  | retrait local, `subscribeToDeleted`, pastilles TX / charges déjà en cache   |
+| Change       | Réaction front                                                             |
+| ------------ | -------------------------------------------------------------------------- |
+| `tagCreated` | refetch `GET /api/tags` (ou insert si le détail est connu)                 |
+| `tagUpdated` | refetch liste + remplacer nom/couleur partout où ce `publicId` est affiché |
+| `tagDeleted` | retrait local, `subscribeToDeleted`, pastilles TX / charges déjà en cache  |
 
 Les écritures TX / charges **ne** déclenchent **pas** `tagChanged`. Compteurs stale jusqu’au prochain `GET /api/tags` — `refreshTagCountersIfLoaded()` après attach/détach si la liste Gestion est déjà chargée.
 

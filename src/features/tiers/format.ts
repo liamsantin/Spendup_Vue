@@ -175,7 +175,8 @@ export function sortTiers(
         }
         if (sort === 'emailAsc' || sort === 'emailDesc') return compareText(a.email ?? '', b.email ?? '', direction) || byName || byId;
         if (sort === 'phoneAsc' || sort === 'phoneDesc') return compareText(a.phone ?? '', b.phone ?? '', direction) || byName || byId;
-        if (sort === 'websiteAsc' || sort === 'websiteDesc') return compareText(a.website ?? '', b.website ?? '', direction) || byName || byId;
+        if (sort === 'websiteAsc' || sort === 'websiteDesc')
+            return compareText(a.website ?? '', b.website ?? '', direction) || byName || byId;
         return byName || byId;
     });
 }
