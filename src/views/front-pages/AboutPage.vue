@@ -79,10 +79,10 @@ const commitments = [
                     <div class="founder-visual su-hero-visual-in">
                         <div class="founder-visual__glow"></div>
                         <div class="founder-card">
-                            <img :src="liamPhoto" alt="Liam Santin, créateur de Spendup" />
+                            <img :src="liamPhoto" alt="L.S, créateur de Spendup" />
                             <div class="founder-card__caption">
                                 <span>Créé et développé par</span>
-                                <strong>Liam Santin</strong>
+                                <strong>L.S</strong>
                                 <small>Fondateur &amp; développeur</small>
                             </div>
                         </div>
