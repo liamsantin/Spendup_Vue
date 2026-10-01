@@ -22,6 +22,8 @@ const props = defineProps<{
     /** Page dédiée (ex. Banques) : filtres fixes, sans lecture de `nature` / `role` dans l’URL. */
     lockedNature?: TierNature;
     lockedRole?: TierRole;
+    /** Filtre `isBank` fixe (page Banques : tiers avec volet banque). */
+    lockedIsBank?: boolean;
     /** Clé i18n du texte « liste vide » de la page dédiée. */
     emptyKey?: string;
     exportName?: string;
@@ -99,6 +101,7 @@ async function loadDirectory(force = false) {
         await store.loadList({
             nature: filterNature.value ?? undefined,
             role: filterRole.value ?? undefined,
+            isBank: props.lockedIsBank,
             pageSize: filterSearch.value ? TIER_PAGE_SIZE_MAX : undefined,
             force
         });
@@ -265,8 +268,9 @@ async function confirmDelete() {
             v-model="createOpen"
             :default-nature="createNature ?? lockedNature ?? null"
             :default-roles="lockedRole ? [lockedRole] : undefined"
+            :lock-bank="lockedIsBank === true"
         />
-        <TierFormModal v-model="editOpen" :tier="editTarget" />
+        <TierFormModal v-model="editOpen" :tier="editTarget" :lock-bank="lockedIsBank === true" />
 
         <AppConfirmationModal
             v-model="deleteOpen"

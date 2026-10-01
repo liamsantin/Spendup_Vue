@@ -10,7 +10,9 @@ import { useI18n } from 'vue-i18n';
 import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
-import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import BankPicker from '@/features/banks/components/BankPicker.vue';
+import type { BankChoice } from '@/features/banks/types';
 import { ACCOUNT_COLOR_PRESETS, type AccountType, type Currency } from '@/features/accounts/types';
 
 export type AccountFormFields = {
@@ -22,13 +24,18 @@ export type AccountFormFields = {
     accountNumber: string;
     color: string | null;
     isPrimary: boolean;
-    institutionTierPublicId: string;
+    /** `null` = aucune banque. */
+    bank: BankChoice | null;
 };
+
+/** Retour de la détection de banque depuis l’IBAN (`/api/banks/resolve`). */
+export type AccountBankNotice = { tone: 'info' | 'warning'; text: string };
 
 export type AccountFormFieldErrors = {
     name?: string | null;
     initialBalance?: string | null;
     iban?: string | null;
+    bank?: string | null;
     color?: string | null;
 };
 
@@ -39,10 +46,13 @@ withDefaults(
         showPrimarySwitch: boolean;
         primarySwitchLocked: boolean;
         primarySwitchHint?: string;
-        /** Verrouille type / devise / solde initial / IBAN / institution (rôle editor). */
+        /** Verrouille type / devise / solde initial / IBAN / banque (rôle editor). */
         ownerFieldsLocked?: boolean;
         /** Nom dénormalisé — affichage editor, sans GET `/api/tiers/{id}`. */
-        institutionLockedName?: string | null;
+        bankLockedName?: string | null;
+        /** Banque obligatoire (compte courant ou d’épargne) : pas d’option « Aucune ». */
+        bankRequired?: boolean;
+        bankNotice?: AccountBankNotice | null;
         fieldErrors?: AccountFormFieldErrors;
         typeItems: { title: string; value: AccountType }[];
         currencyItems: { title: string; value: Currency }[];
@@ -50,7 +60,9 @@ withDefaults(
     {
         primarySwitchHint: undefined,
         ownerFieldsLocked: false,
-        institutionLockedName: undefined,
+        bankLockedName: undefined,
+        bankRequired: false,
+        bankNotice: null,
         fieldErrors: () => ({})
     }
 );
@@ -172,6 +184,39 @@ const { t } = useI18n();
         </v-row>
         <v-row class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
+                <label class="v-label font-weight-medium" for="account-form-bank">
+                    {{ t('comptesPage.form.fields.bank') }}<template v-if="bankRequired && !ownerFieldsLocked"> *</template>
+                </label>
+            </v-col>
+            <v-col cols="12" sm="9">
+                <v-text-field
+                    v-if="ownerFieldsLocked"
+                    id="account-form-bank"
+                    :model-value="bankLockedName || t('comptesPage.form.noBank')"
+                    color="primary"
+                    variant="outlined"
+                    hide-details="auto"
+                    disabled
+                    readonly
+                />
+                <BankPicker
+                    v-else
+                    id="account-form-bank"
+                    v-model="form.bank"
+                    :label="t('comptesPage.form.fields.bank')"
+                    :allow-none="!bankRequired"
+                    :none-label="t('comptesPage.form.noBank')"
+                    :placeholder="t('comptesPage.form.bankPlaceholder')"
+                    :error-messages="fieldErrors.bank || undefined"
+                    :hint="bankRequired ? t('comptesPage.form.bankRequiredHint') : undefined"
+                    :persistent-hint="bankRequired"
+                    hide-details="auto"
+                />
+                <AppAlert v-if="bankNotice && !ownerFieldsLocked" :type="bankNotice.tone" class="mt-2">{{ bankNotice.text }}</AppAlert>
+            </v-col>
+        </v-row>
+        <v-row class="align-center" no-gutters>
+            <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="account-form-account-number">
                     {{ t('comptesPage.form.fields.accountNumber') }}
                 </label>
@@ -184,35 +229,6 @@ const { t } = useI18n();
                     variant="outlined"
                     hide-details="auto"
                     autocomplete="off"
-                />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="account-form-institution">
-                    {{ t('comptesPage.form.fields.institution') }}
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
-                <v-text-field
-                    v-if="ownerFieldsLocked"
-                    id="account-form-institution"
-                    :model-value="institutionLockedName || t('comptesPage.form.noInstitution')"
-                    color="primary"
-                    variant="outlined"
-                    hide-details="auto"
-                    disabled
-                    readonly
-                />
-                <TierPicker
-                    v-else
-                    id="account-form-institution"
-                    v-model="form.institutionTierPublicId"
-                    :label="t('comptesPage.form.fields.institution')"
-                    :none-label="t('comptesPage.form.noInstitution')"
-                    :fallback-label="institutionLockedName || undefined"
-                    :search-placeholder="t('comptesPage.form.institutionSearchPlaceholder')"
-                    hide-details="auto"
                 />
             </v-col>
         </v-row>

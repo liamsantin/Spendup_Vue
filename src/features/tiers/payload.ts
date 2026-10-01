@@ -1,3 +1,4 @@
+import { isValidBic, isValidIid, normalizeBic, normalizeIid } from '@/features/banks/format';
 import {
     emptyToNull,
     hasDuplicateRoles,
@@ -25,6 +26,7 @@ import {
     TIER_PHONE_MAX,
     type CreateTierPayload,
     type Tier,
+    type TierBankPayload,
     type TierCompanyPayload,
     type TierNature,
     type TierOrganizationPayload,
@@ -55,7 +57,24 @@ export type TierPayloadErrorCode =
     | 'companyVatNumberTooLong'
     | 'companyRegistrationNumberTooLong'
     | 'organizationOfficialNameTooLong'
-    | 'organizationTypeTooLong';
+    | 'organizationTypeTooLong'
+    | 'bankRequired'
+    | 'bankBicInvalid'
+    | 'bankIidInvalid';
+
+/**
+ * Volet banque du formulaire. `registry` : établissement SIX (`bankPublicId`) ;
+ * `custom` : banque hors référentiel (BIC / IID saisis).
+ */
+export type TierBankFormFields = {
+    enabled: boolean;
+    mode: 'registry' | 'custom';
+    bankPublicId: string;
+    /** Nom officiel de l’établissement choisi (affichage du sélecteur). */
+    bankName: string;
+    bic: string;
+    iid: string;
+};
 
 /** Champs UI : un seul formulaire de volet, commuté par `nature`. Les volets non concernés sont ignorés à l’envoi. */
 export type TierFormFields = {
@@ -69,6 +88,7 @@ export type TierFormFields = {
     person: { firstName: string; lastName: string; birthDate: string | null };
     company: { legalName: string; vatNumber: string; companyRegistrationNumber: string };
     organization: { officialName: string; organizationType: string };
+    bank: TierBankFormFields;
 };
 
 export type BuildTierPayloadOk<T> = { ok: true; payload: T };
@@ -90,7 +110,25 @@ export function emptyTierFormFields(nature: TierNature = 'company'): TierFormFie
         roles: [],
         person: { firstName: '', lastName: '', birthDate: null },
         company: { legalName: '', vatNumber: '', companyRegistrationNumber: '' },
-        organization: { officialName: '', organizationType: '' }
+        organization: { officialName: '', organizationType: '' },
+        bank: emptyTierBankFormFields()
+    };
+}
+
+export function emptyTierBankFormFields(enabled = false): TierBankFormFields {
+    return { enabled, mode: 'registry', bankPublicId: '', bankName: '', bic: '', iid: '' };
+}
+
+function tierBankToFormFields(tier: Tier): TierBankFormFields {
+    const bank = tier.bank;
+    if (!bank) return emptyTierBankFormFields();
+    return {
+        enabled: true,
+        mode: bank.bankPublicId ? 'registry' : 'custom',
+        bankPublicId: bank.bankPublicId ?? '',
+        bankName: bank.bankName ?? '',
+        bic: bank.bic ?? '',
+        iid: bank.iid ?? ''
     };
 }
 
@@ -116,7 +154,8 @@ export function tierToFormFields(tier: Tier): TierFormFields {
         organization: {
             officialName: tier.organization?.officialName ?? '',
             organizationType: tier.organization?.organizationType ?? ''
-        }
+        },
+        bank: tierBankToFormFields(tier)
     };
 }
 
@@ -170,6 +209,25 @@ function buildPanel(fields: TierFormFields, now?: Date): PanelResult {
     }
 }
 
+type BankResult = BuildTierPayloadFail | { ok: true; bank: TierBankPayload | null };
+
+/** Référentiel : seul `bankPublicId` part (BIC / IID repris par le serveur, `400` sinon). */
+function buildBank(fields: TierFormFields): BankResult {
+    const bank = fields.bank;
+    if (!bank?.enabled) return { ok: true, bank: null };
+    if (bank.mode === 'registry') {
+        const bankPublicId = bank.bankPublicId.trim();
+        if (!bankPublicId) return fail('bankRequired', 'bank');
+        return { ok: true, bank: { bankPublicId } };
+    }
+    const bic = normalizeBic(bank.bic) || null;
+    const iid = normalizeIid(bank.iid) || null;
+    if (!bic && !iid) return fail('bankRequired', 'bank');
+    if (bic && !isValidBic(bic)) return fail('bankBicInvalid', 'bank.bic');
+    if (iid && !isValidIid(iid)) return fail('bankIidInvalid', 'bank.iid');
+    return { ok: true, bank: { bic, iid } };
+}
+
 export type TierPayloadContext = {
     /** Tiers connus pour la détection locale de doublon de nom. */
     knownTiers?: readonly Tier[];
@@ -211,10 +269,14 @@ export function buildTierPayload(fields: TierFormFields, context: TierPayloadCon
 
     if (hasDuplicateRoles(fields.roles)) return fail('rolesDuplicate', 'roles');
     if ((fields.roles ?? []).some((role) => !isTierRole(role))) return fail('rolesInvalid', 'roles');
-    const roles = normalizeRoles(fields.roles);
 
     const panel = buildPanel(fields, context.now);
     if (!panel.ok) return panel;
+
+    const bank = buildBank(fields);
+    if (!bank.ok) return bank;
+    // Un tier avec volet banque porte toujours le rôle `banque` (le serveur l’ajoute aussi).
+    const roles = normalizeRoles(bank.bank && !fields.roles.includes('banque') ? [...fields.roles, 'banque'] : fields.roles);
 
     return {
         ok: true,
@@ -228,7 +290,8 @@ export function buildTierPayload(fields: TierFormFields, context: TierPayloadCon
             roles,
             person: panel.person,
             company: panel.company,
-            organization: panel.organization
+            organization: panel.organization,
+            bank: bank.bank
         }
     };
 }
@@ -251,6 +314,15 @@ function sameNullable(a: string | null | undefined, b: string | null | undefined
     return emptyToNull(a ?? null) === emptyToNull(b ?? null);
 }
 
+function isTierBankDirty(tier: Tier, bank: TierBankFormFields | undefined): boolean {
+    const enabled = !!bank?.enabled;
+    if (enabled !== !!tier.bank) return true;
+    if (!bank || !enabled || !tier.bank) return false;
+    if (bank.mode === 'registry') return bank.bankPublicId.trim() !== (tier.bank.bankPublicId ?? '');
+    if (tier.bank.bankPublicId) return true;
+    return normalizeBic(bank.bic) !== normalizeBic(tier.bank.bic) || normalizeIid(bank.iid) !== normalizeIid(tier.bank.iid);
+}
+
 export function isTierFormDirty(tier: Tier, fields: TierFormFields): boolean {
     if (normalizeName(fields.name) !== normalizeName(tier.name)) return true;
     if (fields.nature !== tier.nature) return true;
@@ -261,6 +333,7 @@ export function isTierFormDirty(tier: Tier, fields: TierFormFields): boolean {
     const formRoles = normalizeRoles(fields.roles);
     const tierRoles = normalizeRoles(tier.roles);
     if (formRoles.length !== tierRoles.length || formRoles.some((role, i) => role !== tierRoles[i])) return true;
+    if (isTierBankDirty(tier, fields.bank)) return true;
     switch (fields.nature) {
         case 'person':
             return (

@@ -352,7 +352,9 @@ export function createAccountsState() {
             iban: next.iban ?? selected.iban,
             accountNumber: next.accountNumber ?? selected.accountNumber,
             institutionTierPublicId: next.institutionTierPublicId ?? selected.institutionTierPublicId,
-            institutionName: next.institutionName ?? selected.institutionName
+            institutionName: next.institutionName ?? selected.institutionName,
+            // Jamais masqué : la valeur de la liste fait foi (y compris un détachement).
+            bank: next.bank ?? null
         };
         selectedAccount.value = merged;
         upsertAccount(merged);

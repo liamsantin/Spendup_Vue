@@ -83,6 +83,12 @@ const initialBalanceDisplay = computed(() =>
         : { text: '', hidden: false }
 );
 
+/** Nom officiel SIX, affiché en sous-titre quand le tier banque a été renommé. */
+const bankOfficialName = computed(() => {
+    const bank = account.value?.bank;
+    if (!bank?.bankName || bank.bankName.trim().toLowerCase() === bank.name.trim().toLowerCase()) return null;
+    return bank.bankName;
+});
 const showIban = computed(() => {
     if (!account.value) return false;
     if (isAccountFieldHidden(account.value, 'iban')) return true;
@@ -376,9 +382,12 @@ function seeAllTransactions() {
                             <span>{{ initialBalanceDisplay.text }}</span>
                         </div>
                     </v-col>
-                    <v-col v-if="account.institutionName" cols="12">
-                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.institution') }}</div>
-                        <div class="text-body-1">{{ account.institutionName }}</div>
+                    <v-col v-if="account.bank || account.institutionName" cols="12">
+                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.bank') }}</div>
+                        <div class="text-body-1" :title="bankOfficialName ?? undefined">
+                            {{ account.bank?.name ?? account.institutionName }}
+                        </div>
+                        <div v-if="bankOfficialName" class="text-caption text-medium-emphasis">{{ bankOfficialName }}</div>
                     </v-col>
                     <v-col v-if="showIban" cols="12">
                         <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.iban') }}</div>

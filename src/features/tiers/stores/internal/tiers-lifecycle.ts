@@ -33,7 +33,7 @@ export function createTiersLifecycle(state: TiersState, deps: LifecycleDeps) {
         cache.reset();
         itemsByListKey.clear();
         knownById.clear();
-        activateList(listCacheKey({ nature: null, role: null, search: null }));
+        activateList(listCacheKey({ nature: null, role: null, isBank: null, search: null }));
         items.value = [];
         loading.value = false;
         loadingMore.value = false;

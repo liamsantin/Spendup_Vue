@@ -25,6 +25,7 @@ function tier(partial: Partial<Tier> = {}): Tier {
         person: null,
         company: { legalName: null, vatNumber: null, companyRegistrationNumber: null },
         organization: null,
+        bank: null,
         createdAt: '2026-09-07T14:32:10Z',
         updatedAt: null,
         ...partial

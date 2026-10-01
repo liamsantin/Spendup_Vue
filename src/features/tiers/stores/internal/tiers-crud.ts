@@ -50,6 +50,12 @@ function payloadErrorMessage(code: string): string {
             return 'Le nom officiel dépasse 200 caractères.';
         case 'organizationTypeTooLong':
             return 'Le type d’organisation dépasse 100 caractères.';
+        case 'bankRequired':
+            return 'Choisissez une banque du référentiel, ou saisissez son BIC ou son IID.';
+        case 'bankBicInvalid':
+            return 'BIC invalide (8 ou 11 caractères, ex. UBSWCHZH80A).';
+        case 'bankIidInvalid':
+            return 'IID invalide (1 à 5 chiffres).';
         default:
             return 'Données invalides.';
     }
@@ -116,6 +122,7 @@ export function createTiersCrud(state: TiersState) {
                         const result = await tiersApi.list({
                             nature: normalized.nature ?? undefined,
                             role: normalized.role ?? undefined,
+                            isBank: normalized.isBank ?? undefined,
                             search: normalized.search ?? undefined,
                             page: 1,
                             pageSize: query.pageSize ?? TIER_PAGE_SIZE_DEFAULT
@@ -177,6 +184,7 @@ export function createTiersCrud(state: TiersState) {
             const result = await tiersApi.list({
                 nature: query.nature ?? undefined,
                 role: query.role ?? undefined,
+                isBank: query.isBank ?? undefined,
                 search: query.search ?? undefined,
                 page: nextPage,
                 pageSize: pageSize.value || TIER_PAGE_SIZE_DEFAULT
@@ -208,11 +216,12 @@ export function createTiersCrud(state: TiersState) {
     /**
      * Recherche pour un sélecteur (pas d’impact sur la liste active) : `pageSize` max, résultats mémorisés dans l’index.
      */
-    async function searchForPicker(search: string, options: { role?: ListTiersQuery['role'] } = {}): Promise<Tier[]> {
+    async function searchForPicker(search: string, options: { role?: ListTiersQuery['role']; isBank?: boolean } = {}): Promise<Tier[]> {
         const term = search.trim();
         // Filtre côté serveur : sans `search`, les tiers au-delà des 200 premiers restent introuvables.
         const result = await tiersApi.list({
             role: options.role,
+            isBank: options.isBank,
             search: term || undefined,
             page: 1,
             pageSize: TIER_PAGE_SIZE_MAX
@@ -226,6 +235,7 @@ export function createTiersCrud(state: TiersState) {
         for (const tier of state.allKnownItems()) {
             if (byId.has(tier.publicId)) continue;
             if (options.role && !tier.roles.includes(options.role)) continue;
+            if (options.isBank != null && !!tier.bank !== options.isBank) continue;
             if (matchesTierSearch(tier, term)) byId.set(tier.publicId, tier);
         }
         return [...byId.values()];
@@ -330,6 +340,7 @@ export function createTiersCrud(state: TiersState) {
         await loadList({
             nature: current.nature ?? undefined,
             role: current.role ?? undefined,
+            isBank: current.isBank ?? undefined,
             search: current.search ?? undefined,
             force
         }).catch(() => undefined);

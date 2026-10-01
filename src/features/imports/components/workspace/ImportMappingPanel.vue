@@ -72,6 +72,8 @@ const isCsv = computed(() => props.item.sourceType === 'csv');
 const hasColumns = computed(() => analysis.value.columns.length > 0);
 /** Réglages de lecture modifiés, ou aucune colonne connue (en-tête introuvable) : relire le fichier. */
 const layoutChanged = computed(() => !hasColumns.value || isMappingLayoutChanged(form, analysis.value));
+const primarySuggestion = computed(() => analysis.value.suggestedTemplates[0] ?? null);
+const otherSuggestions = computed(() => analysis.value.suggestedTemplates.slice(1));
 const tooManyLines = computed(() => analysis.value.errors.some((issue) => issue.code === 'TOO_MANY_LINES'));
 
 watch(
@@ -250,11 +252,30 @@ void store.loadTemplates().catch(() => undefined);
             <p v-if="tooManyLines" class="import-mapping__lead mt-2">{{ t('importsPage.mapping.tooManyLines') }}</p>
         </AppAlert>
 
-        <AppAlert v-for="suggestion in analysis.suggestedTemplates" :key="suggestion.publicId" type="info" class="mb-3">
+        <!-- Le premier modèle suggéré (banque du compte en tête) est proposé par défaut ; les autres en alternative. -->
+        <AppAlert v-if="primarySuggestion" type="info" class="mb-3">
             <div class="import-mapping__suggestion">
-                <span>{{ t('importsPage.mapping.suggestion', { name: suggestion.name }) }}</span>
-                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onUseTemplate(suggestion.publicId)">
+                <span>{{ t('importsPage.mapping.suggestion', { name: primarySuggestion.name }) }}</span>
+                <button
+                    type="button"
+                    class="su-btn su-btn--ink"
+                    :disabled="store.acting"
+                    @click="onUseTemplate(primarySuggestion.publicId)"
+                >
                     {{ t('importsPage.mapping.useTemplate') }}
+                </button>
+            </div>
+            <div v-if="otherSuggestions.length" class="import-mapping__suggestion-others">
+                <span>{{ t('importsPage.mapping.otherSuggestions') }}</span>
+                <button
+                    v-for="suggestion in otherSuggestions"
+                    :key="suggestion.publicId"
+                    type="button"
+                    class="su-btn su-btn--ghost"
+                    :disabled="store.acting"
+                    @click="onUseTemplate(suggestion.publicId)"
+                >
+                    {{ suggestion.name }}
                 </button>
             </div>
         </AppAlert>
@@ -468,6 +489,15 @@ void store.loadTemplates().catch(() => undefined);
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+}
+
+.import-mapping__suggestion-others {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    font-size: 0.8rem;
 }
 
 .import-mapping__grid {

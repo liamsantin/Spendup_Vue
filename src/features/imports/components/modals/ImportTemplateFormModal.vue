@@ -9,7 +9,10 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
+import BankPicker from '@/features/banks/components/BankPicker.vue';
+import { bankChoiceFromTier } from '@/features/banks/format';
+import type { BankChoice } from '@/features/banks/types';
+import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { useImportsStore } from '@/features/imports/stores/imports-store';
 import { IMPORT_TEMPLATE_NAME_MAX, type ImportTemplate } from '@/features/imports/types';
 
@@ -29,9 +32,12 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const store = useImportsStore();
+const tiersStore = useTiersStore();
 
 const name = ref('');
-const bankTierPublicId = ref('');
+/** « Mes banques » uniquement : un tier non banque → `400`. */
+const bank = ref<BankChoice | null>(null);
+const bankTierPublicId = computed(() => (bank.value?.kind === 'tier' ? bank.value.tierPublicId : ''));
 const isActive = ref(true);
 const nameError = ref<string | null>(null);
 const localError = ref<string | null>(null);
@@ -61,10 +67,23 @@ watch(
         localError.value = null;
         nameError.value = null;
         name.value = props.template?.name ?? props.defaultName?.trim().slice(0, IMPORT_TEMPLATE_NAME_MAX) ?? '';
-        bankTierPublicId.value = props.template?.bankTierPublicId ?? '';
+        bank.value = initialBank(props.template?.bankTierPublicId ?? null);
         isActive.value = props.template?.isActive ?? true;
     }
 );
+
+function initialBank(tierPublicId: string | null): BankChoice | null {
+    if (!tierPublicId) return null;
+    const tier = tiersStore.findByPublicId(tierPublicId);
+    if (tier) return bankChoiceFromTier(tier);
+    void tiersStore
+        .fetchTier(tierPublicId)
+        .then((found) => {
+            if (found && bank.value?.kind === 'tier' && bank.value.tierPublicId === tierPublicId) bank.value = bankChoiceFromTier(found);
+        })
+        .catch(() => undefined);
+    return { kind: 'tier', tierPublicId, name: '…', bankPublicId: null, bankName: null };
+}
 
 async function onSave() {
     const trimmed = name.value.trim();
@@ -118,9 +137,11 @@ async function onSave() {
                 autofocus
                 @keydown.enter="onSave"
             />
-            <TierPicker
-                v-model="bankTierPublicId"
+            <BankPicker
+                v-model="bank"
                 :label="t('importsPage.templateForm.fields.bank')"
+                :show-registry="false"
+                :none-label="t('importsPage.templateForm.noBank')"
                 :hint="t('importsPage.templateForm.bankHint')"
                 persistent-hint
                 hide-details="auto"

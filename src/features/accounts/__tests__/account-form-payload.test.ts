@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { buildUpdateAccountPayload, isAccountFormDirty, shouldValidateAccountIban } from '@/features/accounts/account-form-payload';
+import {
+    accountBankChoice,
+    accountTypeRequiresBank,
+    bankPayloadFields,
+    buildUpdateAccountPayload,
+    isAccountFormDirty,
+    shouldValidateAccountIban
+} from '@/features/accounts/account-form-payload';
 import type { Account } from '@/features/accounts/types';
 
 function account(partial: Partial<Account> = {}): Account {
@@ -15,6 +22,7 @@ function account(partial: Partial<Account> = {}): Account {
         color: '#4F46E5',
         institutionTierPublicId: null,
         institutionName: null,
+        bank: null,
         isPrimary: false,
         isActive: true,
         createdAt: '2026-01-01T00:00:00Z',
@@ -33,7 +41,7 @@ const fields = {
     iban: 'CH93INVALID',
     accountNumber: '99',
     color: '#10B981',
-    institutionTierPublicId: ''
+    bank: null
 };
 
 describe('account-form-payload (formulaire verrouillé / IBAN)', () => {
@@ -79,7 +87,7 @@ describe('isAccountFormDirty', () => {
                 iban: acc.iban ?? '',
                 accountNumber: acc.accountNumber ?? '',
                 color: acc.color,
-                institutionTierPublicId: acc.institutionTierPublicId ?? ''
+                bank: accountBankChoice(acc)
             })
         ).toBe(false);
     });
@@ -94,7 +102,7 @@ describe('isAccountFormDirty', () => {
                 iban: 'CHANGED',
                 accountNumber: acc.accountNumber ?? '',
                 color: acc.color,
-                institutionTierPublicId: 'other-tier'
+                bank: { kind: 'tier', tierPublicId: 'other-tier', name: 'Autre', bankPublicId: null, bankName: null }
             })
         ).toBe(false);
         expect(
@@ -105,23 +113,83 @@ describe('isAccountFormDirty', () => {
                 iban: acc.iban ?? '',
                 accountNumber: acc.accountNumber ?? '',
                 color: acc.color,
-                institutionTierPublicId: acc.institutionTierPublicId ?? ''
+                bank: accountBankChoice(acc)
             })
         ).toBe(true);
     });
 
-    it('détecte un changement d’institution pour un owner', () => {
-        const acc = account({ institutionTierPublicId: 'tier-ubs', institutionName: 'UBS' });
-        expect(
-            isAccountFormDirty(acc, {
-                name: acc.name,
-                type: acc.type,
-                initialBalance: acc.initialBalance ?? 0,
-                iban: acc.iban ?? '',
-                accountNumber: acc.accountNumber ?? '',
-                color: acc.color,
-                institutionTierPublicId: ''
-            })
-        ).toBe(true);
+    it('détecte un changement de banque pour un owner', () => {
+        const acc = account({ institutionTierPublicId: 'tier-ubs', institutionName: 'UBS', bank: ubsBank });
+        const base = {
+            name: acc.name,
+            type: acc.type,
+            initialBalance: acc.initialBalance ?? 0,
+            iban: acc.iban ?? '',
+            accountNumber: acc.accountNumber ?? '',
+            color: acc.color
+        };
+        expect(isAccountFormDirty(acc, { ...base, bank: accountBankChoice(acc) })).toBe(false);
+        expect(isAccountFormDirty(acc, { ...base, bank: null })).toBe(true);
+        expect(isAccountFormDirty(acc, { ...base, bank: { kind: 'registry', bankPublicId: 'bank-09000', name: 'PostFinance AG' } })).toBe(
+            true
+        );
+    });
+});
+
+const ubsBank = {
+    tierPublicId: 'tier-ubs',
+    name: 'Mon UBS',
+    bankPublicId: 'bank-00230',
+    bankName: 'UBS Switzerland AG',
+    bic: 'UBSWCHZH80A',
+    iid: '00230'
+};
+
+describe('banque du compte', () => {
+    it('banque obligatoire pour courant et épargne seulement', () => {
+        expect(accountTypeRequiresBank('courant')).toBe(true);
+        expect(accountTypeRequiresBank('epargne')).toBe(true);
+        expect(accountTypeRequiresBank('cash')).toBe(false);
+        expect(accountTypeRequiresBank('credit')).toBe(false);
+    });
+
+    it('envoie institutionTierPublicId ou bankPublicId, jamais les deux', () => {
+        expect(bankPayloadFields(null)).toEqual({ institutionTierPublicId: null });
+        expect(bankPayloadFields({ kind: 'tier', tierPublicId: 't1', name: 'UBS', bankPublicId: 'bank-00230', bankName: null })).toEqual({
+            institutionTierPublicId: 't1'
+        });
+        expect(bankPayloadFields({ kind: 'registry', bankPublicId: 'bank-09000', name: 'PostFinance AG' })).toEqual({
+            bankPublicId: 'bank-09000'
+        });
+    });
+
+    it('PUT owner renvoie la banque actuelle du compte', () => {
+        const acc = account({ institutionTierPublicId: 'tier-ubs', institutionName: 'Mon UBS', bank: ubsBank });
+        const payload = buildUpdateAccountPayload(acc, { ...fields, bank: accountBankChoice(acc) });
+        expect(payload.institutionTierPublicId).toBe('tier-ubs');
+        expect(payload).not.toHaveProperty('bankPublicId');
+    });
+
+    it('PUT editor : banque nulle même si un autre choix est fait', () => {
+        const acc = account({ myRole: 'editor', isOwned: false, bank: ubsBank });
+        const payload = buildUpdateAccountPayload(acc, {
+            ...fields,
+            bank: { kind: 'registry', bankPublicId: 'bank-09000', name: 'PostFinance AG' }
+        });
+        expect(payload.institutionTierPublicId).toBeNull();
+        expect(payload).not.toHaveProperty('bankPublicId');
+    });
+
+    it('choix initial : nom du tier, nom SIX en complément', () => {
+        expect(accountBankChoice(account({ bank: ubsBank, institutionTierPublicId: 'tier-ubs', institutionName: 'Mon UBS' }))).toEqual({
+            kind: 'tier',
+            tierPublicId: 'tier-ubs',
+            name: 'Mon UBS',
+            bankPublicId: 'bank-00230',
+            bankName: 'UBS Switzerland AG'
+        });
+        expect(accountBankChoice(account())).toBeNull();
+        // Ancienne institution sans volet banque : ne pas la renvoyer (400 « Ce tier n’est pas une banque »).
+        expect(accountBankChoice(account({ institutionTierPublicId: 'tier-migros', institutionName: 'Migros', bank: null }))).toBeNull();
     });
 });

@@ -58,12 +58,15 @@ const props = withDefaults(
         lockNature?: boolean;
         /** Les rôles ne sont pas demandés à la création. */
         showRoles?: boolean;
+        /** Page Banques : nature et rôles imposés (entreprise, rôle « Banque ») et non affichés. */
+        lockIdentity?: boolean;
     }>(),
     {
         fieldErrors: () => ({}),
         natureHint: null,
         lockNature: false,
-        showRoles: true
+        showRoles: true,
+        lockIdentity: false
     }
 );
 
@@ -94,11 +97,17 @@ const birthDateModel = computed({
     }
 });
 
+/** Un tier avec volet banque porte toujours le rôle `banque` : la puce est cochée et figée. */
+function isRoleLocked(role: TierRole): boolean {
+    return role === 'banque' && props.form.bank.enabled;
+}
+
 function hasRole(role: TierRole): boolean {
-    return props.form.roles.includes(role);
+    return isRoleLocked(role) || props.form.roles.includes(role);
 }
 
 function toggleRole(role: TierRole) {
+    if (isRoleLocked(role)) return;
     if (hasRole(role)) {
         props.form.roles = props.form.roles.filter((item) => item !== role);
         return;
@@ -129,7 +138,7 @@ function toggleRole(role: TierRole) {
                 />
             </v-col>
         </v-row>
-        <v-row v-if="lockNature" class="align-center" no-gutters>
+        <v-row v-if="lockNature && !lockIdentity" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <span class="v-label font-weight-medium">{{ t('tiersPage.form.fields.nature') }}</span>
             </v-col>
@@ -145,7 +154,7 @@ function toggleRole(role: TierRole) {
                 </div>
             </v-col>
         </v-row>
-        <v-row v-else class="align-center" no-gutters>
+        <v-row v-else-if="!lockIdentity" class="align-center" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <label class="v-label font-weight-medium" for="tier-form-nature"> {{ t('tiersPage.form.fields.nature') }} * </label>
             </v-col>
@@ -163,7 +172,7 @@ function toggleRole(role: TierRole) {
                 />
             </v-col>
         </v-row>
-        <v-row v-if="showRoles" class="align-start" no-gutters>
+        <v-row v-if="showRoles && !lockIdentity" class="align-start" no-gutters>
             <v-col cols="12" sm="3" class="pr-sm-3">
                 <span class="v-label font-weight-medium tier-form__roles-label">{{ t('tiersPage.form.fields.roles') }}</span>
             </v-col>
@@ -176,6 +185,8 @@ function toggleRole(role: TierRole) {
                         class="tier-form__role"
                         :class="{ 'is-selected': hasRole(role) }"
                         :aria-pressed="hasRole(role)"
+                        :disabled="isRoleLocked(role)"
+                        :title="isRoleLocked(role) ? t('tiersPage.form.bankRoleLocked') : undefined"
                         @click="toggleRole(role)"
                     >
                         <CheckIcon v-if="hasRole(role)" :size="13" stroke-width="2.4" />
@@ -183,6 +194,9 @@ function toggleRole(role: TierRole) {
                     </button>
                 </div>
                 <div v-if="fieldErrors.roles" class="text-caption text-error mt-1">{{ fieldErrors.roles }}</div>
+                <div v-else-if="form.roles.includes('banque') && !form.bank.enabled" class="text-caption text-warning mt-1">
+                    {{ t('tiersPage.form.bankRoleWithoutPanel') }}
+                </div>
                 <div v-else class="text-caption text-medium-emphasis mt-1">{{ t('tiersPage.form.rolesHint') }}</div>
             </v-col>
         </v-row>
@@ -547,6 +561,11 @@ function toggleRole(role: TierRole) {
 .tier-form__role:hover {
     border-color: rgba(var(--v-theme-primary), 0.35);
     color: var(--ink);
+}
+
+.tier-form__role:disabled {
+    cursor: default;
+    opacity: 0.75;
 }
 
 .tier-form__role.is-selected {

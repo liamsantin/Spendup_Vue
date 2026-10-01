@@ -163,7 +163,15 @@ describe('imports mapping', () => {
     });
 
     it('filtre les modèles actifs du type du fichier', () => {
-        const base = { isSystem: false, bankTierPublicId: null, description: null, mapping: {}, createdAt: null, updatedAt: null };
+        const base = {
+            isSystem: false,
+            bankTierPublicId: null,
+            bankPublicId: null,
+            description: null,
+            mapping: {},
+            createdAt: null,
+            updatedAt: null
+        };
         const templates: ImportTemplate[] = [
             { ...base, publicId: 'a', name: 'UBS', sourceType: 'csv', isActive: true },
             { ...base, publicId: 'b', name: 'Off', sourceType: 'csv', isActive: false },

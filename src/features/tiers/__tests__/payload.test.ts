@@ -37,6 +37,7 @@ function tier(partial: Partial<Tier> = {}): Tier {
         person: null,
         company: { legalName: 'Migros-Genossenschafts-Bund', vatNumber: 'CHE-105.821.212', companyRegistrationNumber: null },
         organization: null,
+        bank: null,
         createdAt: '2026-09-07T14:32:10Z',
         updatedAt: null,
         ...partial
@@ -58,7 +59,8 @@ describe('tier payload', () => {
                 roles: ['fournisseur'],
                 person: null,
                 company: { legalName: 'Migros-Genossenschafts-Bund', vatNumber: 'CHE-105.821.212', companyRegistrationNumber: null },
-                organization: null
+                organization: null,
+                bank: null
             });
         }
     });
@@ -138,5 +140,60 @@ describe('tier payload', () => {
         expect(isTierFormDirty(current, { ...form, roles: ['fournisseur', 'service'] })).toBe(true);
         expect(isTierFormDirty(current, { ...form, company: { ...form.company, vatNumber: '' } })).toBe(true);
         expect(isTierFormDirty(current, { ...form, nature: 'person' })).toBe(true);
+    });
+});
+
+describe('tier payload : volet banque', () => {
+    const ubs = { bankPublicId: 'bank-00230', bankName: 'UBS Switzerland AG', bic: 'UBSWCHZH80A', iid: '00230', countryCode: 'CH' };
+
+    it('référentiel : envoie seulement bankPublicId et ajoute le rôle banque', () => {
+        const result = buildCreateTierPayload(
+            fields({
+                name: 'UBS',
+                roles: [],
+                bank: { enabled: true, mode: 'registry', bankPublicId: 'bank-00230', bankName: 'UBS Switzerland AG', bic: 'X', iid: '1' }
+            }),
+            { now }
+        );
+        expect(result.ok && result.payload.bank).toEqual({ bankPublicId: 'bank-00230' });
+        expect(result.ok && result.payload.roles).toEqual(['banque']);
+    });
+
+    it('hors référentiel : BIC normalisé, IID facultatif, formats contrôlés', () => {
+        const custom = (bic: string, iid: string) =>
+            buildCreateTierPayload(
+                fields({ name: 'Revolut', bank: { enabled: true, mode: 'custom', bankPublicId: '', bankName: '', bic, iid } }),
+                { now }
+            );
+        const ok = custom(' revolt21 ', '');
+        expect(ok.ok && ok.payload.bank).toEqual({ bic: 'REVOLT21', iid: null });
+        expect(custom('ABC', '')).toMatchObject({ ok: false, code: 'bankBicInvalid', field: 'bank.bic' });
+        expect(custom('', '123456')).toMatchObject({ ok: false, code: 'bankIidInvalid', field: 'bank.iid' });
+        expect(custom('', '')).toMatchObject({ ok: false, code: 'bankRequired' });
+    });
+
+    it('référentiel sans établissement choisi → bankRequired', () => {
+        const result = buildCreateTierPayload(fields({ bank: { ...emptyTierFormFields().bank, enabled: true } }), { now });
+        expect(result).toMatchObject({ ok: false, code: 'bankRequired', field: 'bank' });
+    });
+
+    it('le PUT renvoie le volet reçu du GET ; désactivé → bank: null', () => {
+        const bankTier = tier({ name: 'UBS', roles: ['banque'], bank: ubs });
+        const form = tierToFormFields(bankTier);
+        expect(isTierFormDirty(bankTier, form)).toBe(false);
+        const kept = buildUpdateTierPayload(form, { now });
+        expect(kept.ok && kept.payload.bank).toEqual({ bankPublicId: 'bank-00230' });
+
+        form.bank.enabled = false;
+        expect(isTierFormDirty(bankTier, form)).toBe(true);
+        const removed = buildUpdateTierPayload(form, { now });
+        expect(removed.ok && removed.payload.bank).toBeNull();
+    });
+
+    it('banque hors référentiel : repasse en mode custom avec BIC / IID', () => {
+        const form = tierToFormFields(
+            tier({ bank: { bankPublicId: null, bankName: null, bic: 'REVOLT21', iid: null, countryCode: null } })
+        );
+        expect(form.bank).toMatchObject({ enabled: true, mode: 'custom', bic: 'REVOLT21', iid: '' });
     });
 });

@@ -25,9 +25,10 @@ export {
     buildUpdateTierPayload,
     isTierFormDirty,
     emptyTierFormFields,
+    emptyTierBankFormFields,
     tierToFormFields
 } from '@/features/tiers/payload';
-export type { TierFormFields, TierPayloadErrorCode, TierPayloadContext } from '@/features/tiers/payload';
+export type { TierFormFields, TierBankFormFields, TierPayloadErrorCode, TierPayloadContext } from '@/features/tiers/payload';
 export type {
     Tier,
     TierList,
@@ -36,6 +37,8 @@ export type {
     TierPersonPayload,
     TierCompanyPayload,
     TierOrganizationPayload,
+    TierBank,
+    TierBankPayload,
     ListTiersQuery,
     TierWritePayload,
     CreateTierPayload,

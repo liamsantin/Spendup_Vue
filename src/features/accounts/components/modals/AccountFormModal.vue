@@ -1,16 +1,30 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, onUnmounted, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { emptyToNull, isValidAccountColor, isValidIbanFormat, normalizeAccountColor, parseAccountAmount } from '@/features/accounts/format';
-import { buildUpdateAccountPayload, isAccountFormDirty, shouldValidateAccountIban } from '@/features/accounts/account-form-payload';
+import {
+    accountBankChoice,
+    accountTypeRequiresBank,
+    bankPayloadFields,
+    buildUpdateAccountPayload,
+    isAccountFormDirty,
+    shouldValidateAccountIban
+} from '@/features/accounts/account-form-payload';
 import { canEditAccountOwnerFields } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { ACCOUNT_COLOR_PRESETS, ACCOUNT_TYPES, CURRENCIES, type Account, type AccountType, type Currency } from '@/features/accounts/types';
-import AccountForm, { type AccountFormFieldErrors } from '@/features/accounts/components/forms/AccountForm.vue';
+import AccountForm, { type AccountBankNotice, type AccountFormFieldErrors } from '@/features/accounts/components/forms/AccountForm.vue';
+import { banksApi } from '@/features/banks/api';
+import { bankChoiceRegistryId, isResolvableIban, preferredBankChoice, sameBankChoice } from '@/features/banks/format';
+import type { Bank, BankChoice } from '@/features/banks/types';
+import { useTiersStore } from '@/features/tiers/stores/tiers-store';
+import type { Tier } from '@/features/tiers/types';
+
+const IBAN_RESOLVE_DEBOUNCE_MS = 300;
 
 const props = defineProps<{
     modelValue: boolean;
@@ -25,6 +39,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const store = useAccountsStore();
 const settings = useUserSettingsStore();
+const tiersStore = useTiersStore();
 
 /**
  * Figé à l’ouverture : le parent peut passer `account` à null dès la fermeture,
@@ -55,6 +70,7 @@ const fieldErrors = reactive<AccountFormFieldErrors>({
     name: null,
     initialBalance: null,
     iban: null,
+    bank: null,
     color: null
 });
 
@@ -67,7 +83,36 @@ const form = reactive({
     accountNumber: '',
     color: ACCOUNT_COLOR_PRESETS[0] as string | null,
     isPrimary: false,
-    institutionTierPublicId: ''
+    bank: null as BankChoice | null
+});
+
+/** Banque déduite de l’IBAN saisi (`null` : IBAN incomplet, étranger ou IID inconnu). */
+const detectedBank = ref<Bank | null>(null);
+/** Choix pré-rempli depuis l’IBAN (banque vide au moment de la détection). */
+const prefilledBank = ref<BankChoice | null>(null);
+let resolveTimer: ReturnType<typeof setTimeout> | null = null;
+let resolveSeq = 0;
+let myBanksPromise: Promise<Tier[]> | null = null;
+
+const bankRequired = computed(() => accountTypeRequiresBank(form.type));
+
+/** L’IBAN CH / LI désigne une autre banque que celle choisie : l’API répondrait `400`. */
+const bankMismatch = computed(() => {
+    const detected = detectedBank.value;
+    if (!detected || !form.bank) return false;
+    return bankChoiceRegistryId(form.bank) !== detected.publicId;
+});
+
+const bankNotice = computed<AccountBankNotice | null>(() => {
+    const detected = detectedBank.value;
+    if (!detected) return null;
+    if (bankMismatch.value) return { tone: 'warning', text: t('comptesPage.form.bankIbanMismatch', { bank: detected.name }) };
+    if (prefilledBank.value && sameBankChoice(prefilledBank.value, form.bank)) {
+        return { tone: 'info', text: t('comptesPage.form.bankDetected', { bank: detected.name }) };
+    }
+    // « Aucune » avec un IBAN CH / LI : le serveur déduit la banque de l’IBAN.
+    if (!form.bank) return { tone: 'info', text: t('comptesPage.form.bankFromIban', { bank: detected.name }) };
+    return null;
 });
 
 const typeItems = computed(() => ACCOUNT_TYPES.map((value) => ({ title: t(`comptesPage.types.${value}`), value })));
@@ -88,7 +133,7 @@ const canSave = computed(() => {
         iban: form.iban,
         accountNumber: form.accountNumber,
         color: form.color,
-        institutionTierPublicId: form.institutionTierPublicId
+        bank: form.bank
     });
 });
 
@@ -96,12 +141,97 @@ function clearFieldErrors() {
     fieldErrors.name = null;
     fieldErrors.initialBalance = null;
     fieldErrors.iban = null;
+    fieldErrors.bank = null;
     fieldErrors.color = null;
+}
+
+function resetBankDetection() {
+    if (resolveTimer) clearTimeout(resolveTimer);
+    resolveTimer = null;
+    resolveSeq += 1;
+    detectedBank.value = null;
+    prefilledBank.value = null;
+    myBanksPromise = null;
+}
+
+/** « Mes banques », chargées une fois par ouverture : préférer mon tier banque à l’établissement du référentiel. */
+function loadMyBanks(): Promise<Tier[]> {
+    myBanksPromise ??= tiersStore.searchForPicker('', { isBank: true }).catch(() => [] as Tier[]);
+    return myBanksPromise;
+}
+
+async function resolveIban(iban: string) {
+    const requestId = ++resolveSeq;
+    try {
+        const result = await banksApi.resolve(iban);
+        if (requestId !== resolveSeq) return;
+        detectedBank.value = result.bank;
+        if (form.bank) return;
+        const choice = preferredBankChoice(result.bank, await loadMyBanks());
+        if (requestId !== resolveSeq || form.bank) return;
+        form.bank = choice;
+        prefilledBank.value = choice;
+    } catch {
+        // 400 (IBAN invalide / étranger) ou 404 (IID inconnu) : rien à afficher, choix manuel.
+        if (requestId === resolveSeq) detectedBank.value = null;
+    }
+}
+
+/** Appelle `/api/banks/resolve` dès que l’IBAN CH / LI est complet (owner / création seulement). */
+function scheduleIbanResolve(value: string) {
+    if (resolveTimer) clearTimeout(resolveTimer);
+    resolveTimer = null;
+    resolveSeq += 1;
+    detectedBank.value = null;
+    if (!open.value || ownerFieldsLocked.value) return;
+    if (!isResolvableIban(value) || !isValidIbanFormat(value)) return;
+    resolveTimer = setTimeout(() => {
+        resolveTimer = null;
+        void resolveIban(value);
+    }, IBAN_RESOLVE_DEBOUNCE_MS);
+}
+
+watch(() => form.iban, scheduleIbanResolve);
+
+watch(
+    () => form.bank,
+    () => {
+        fieldErrors.bank = null;
+    }
+);
+
+onUnmounted(() => {
+    if (resolveTimer) clearTimeout(resolveTimer);
+});
+
+/**
+ * Un tier banque a pu être créé côté serveur (`bankPublicId`, ou banque déduite de l’IBAN),
+ * ou un tier homonyme a pu recevoir le volet banque : on le recharge pour les sélecteurs et la page Banques.
+ */
+function syncBankTier(account: Account) {
+    const tierPublicId = account.bank?.tierPublicId;
+    if (!tierPublicId || !account.isOwned) return;
+    if (form.bank?.kind === 'tier' && form.bank.tierPublicId === tierPublicId && tiersStore.findByPublicId(tierPublicId)?.bank) return;
+    void tiersStore.fetchTier(tierPublicId).catch(() => undefined);
+}
+
+/** Banque manquante (courant / épargne sans IBAN suisse) ou contredite par l’IBAN. */
+function validateBank(): boolean {
+    if (bankMismatch.value && detectedBank.value) {
+        fieldErrors.bank = t('comptesPage.form.bankIbanMismatch', { bank: detectedBank.value.name });
+        return false;
+    }
+    if (bankRequired.value && !form.bank && !isResolvableIban(form.iban)) {
+        fieldErrors.bank = t('comptesPage.form.errors.bankRequired');
+        return false;
+    }
+    return true;
 }
 
 function resetForm() {
     localError.message = null;
     clearFieldErrors();
+    resetBankDetection();
     const account = editAccount.value;
     if (account) {
         form.name = account.name;
@@ -112,7 +242,7 @@ function resetForm() {
         form.accountNumber = account.accountNumber ?? '';
         form.color = account.color;
         form.isPrimary = account.isPrimary;
-        form.institutionTierPublicId = account.institutionTierPublicId ?? '';
+        form.bank = accountBankChoice(account);
         return;
     }
     form.name = '';
@@ -124,7 +254,7 @@ function resetForm() {
     form.accountNumber = isFirstAccount ? '1' : '';
     form.color = ACCOUNT_COLOR_PRESETS[0];
     form.isPrimary = isFirstAccount;
-    form.institutionTierPublicId = '';
+    form.bank = null;
 }
 
 watch(
@@ -134,6 +264,8 @@ watch(
         isEdit.value = !!props.account;
         editAccount.value = props.account ?? null;
         resetForm();
+        // IBAN identique à la dernière ouverture : le watch ne se redéclenche pas.
+        scheduleIbanResolve(form.iban);
     }
 );
 
@@ -157,6 +289,7 @@ async function onSave() {
         fieldErrors.color = t('comptesPage.form.errors.colorInvalid');
         hasFieldError = true;
     }
+    if (!lockOwner && !validateBank()) hasFieldError = true;
 
     try {
         if (account) {
@@ -169,7 +302,7 @@ async function onSave() {
                     iban: form.iban,
                     accountNumber: form.accountNumber,
                     color: form.color,
-                    institutionTierPublicId: form.institutionTierPublicId
+                    bank: form.bank
                 });
                 const updated = await store.updateAccount(account.publicId, payload);
                 emit('saved', updated);
@@ -188,9 +321,10 @@ async function onSave() {
                     iban: form.iban,
                     accountNumber: form.accountNumber,
                     color: form.color,
-                    institutionTierPublicId: form.institutionTierPublicId
+                    bank: form.bank
                 });
                 const updated = await store.updateAccount(account.publicId, payload);
+                syncBankTier(updated);
                 emit('saved', updated);
             }
         } else {
@@ -210,8 +344,9 @@ async function onSave() {
                 accountNumber: emptyToNull(form.accountNumber),
                 color: normalizeAccountColor(form.color),
                 isPrimary: isFirstOwnedAccount.value ? true : form.isPrimary,
-                institutionTierPublicId: emptyToNull(form.institutionTierPublicId)
+                ...bankPayloadFields(form.bank)
             });
+            syncBankTier(created);
             emit('saved', created);
         }
         open.value = false;
@@ -242,7 +377,9 @@ async function onSave() {
             :primary-switch-locked="primarySwitchLocked"
             :primary-switch-hint="primarySwitchHint"
             :owner-fields-locked="ownerFieldsLocked"
-            :institution-locked-name="editAccount?.institutionName"
+            :bank-locked-name="editAccount?.bank?.name ?? editAccount?.institutionName"
+            :bank-required="bankRequired"
+            :bank-notice="bankNotice"
             :field-errors="fieldErrors"
             :type-items="typeItems"
             :currency-items="currencyItems"

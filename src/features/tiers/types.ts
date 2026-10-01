@@ -32,6 +32,21 @@ export type TierOrganizationPayload = {
     organizationType: string | null;
 };
 
+/** Volet banque en réponse. Hors référentiel : `bankPublicId`, `bankName` et `countryCode` valent `null`. */
+export type TierBank = {
+    bankPublicId: string | null;
+    bankName: string | null;
+    bic: string | null;
+    iid: string | null;
+    countryCode: string | null;
+};
+
+/**
+ * Volet banque en écriture : un établissement du référentiel (BIC / IID repris, ne pas les envoyer),
+ * ou une banque hors référentiel (BIC 8 ou 11 caractères, IID 1 à 5 chiffres).
+ */
+export type TierBankPayload = { bankPublicId: string } | { bic: string | null; iid: string | null };
+
 export type Tier = {
     publicId: string;
     name: string;
@@ -47,6 +62,8 @@ export type Tier = {
     person: TierPersonPayload | null;
     company: TierCompanyPayload | null;
     organization: TierOrganizationPayload | null;
+    /** `null` si le tier n’est pas une banque. Un tier banque porte toujours le rôle `banque`. */
+    bank: TierBank | null;
     createdAt: string;
     updatedAt: string | null;
 };
@@ -61,6 +78,8 @@ export type TierList = {
 export type ListTiersQuery = {
     nature?: TierNature;
     role?: TierRole;
+    /** `true` : seules banques sélectionnables pour un compte ; `false` : tous les autres tiers. */
+    isBank?: boolean;
     search?: string;
     page?: number;
     pageSize?: number;
@@ -78,6 +97,8 @@ export type TierWritePayload = {
     person: TierPersonPayload | null;
     company: TierCompanyPayload | null;
     organization: TierOrganizationPayload | null;
+    /** PUT = état complet : `null` retire le volet (`400` si le tier est la banque d’un compte). */
+    bank: TierBankPayload | null;
 };
 
 export type CreateTierPayload = TierWritePayload;

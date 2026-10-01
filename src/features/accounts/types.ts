@@ -9,6 +9,20 @@ export type ShareStatusRole = 'pending' | 'viewer' | 'editor';
 /** Champs masquables pour un viewer (`balance` couvre initial + current). */
 export type HiddenAccountField = 'iban' | 'accountNumber' | 'balance';
 
+/**
+ * Banque du compte (jamais masquée, même pour un viewer).
+ * `name` = nom du tier, à afficher ; `bankName` = nom officiel SIX (sous-titre / infobulle).
+ * `bankPublicId: null` = banque hors référentiel.
+ */
+export type AccountBank = {
+    tierPublicId: string;
+    name: string;
+    bankPublicId: string | null;
+    bankName: string | null;
+    bic: string | null;
+    iid: string | null;
+};
+
 export type Account = {
     publicId: string;
     name: string;
@@ -21,10 +35,12 @@ export type Account = {
     iban: string | null;
     accountNumber: string | null;
     color: string | null;
-    /** GUID du tier institution (owner). `null` = pas d’institution. */
+    /** GUID du tier banque (= `bank.tierPublicId`). `null` = pas de banque. */
     institutionTierPublicId: string | null;
-    /** Nom actuel du tier (jointure). Afficher tel quel — ne pas GET `/api/tiers/{id}` en editor/viewer. */
+    /** Nom actuel du tier (= `bank.name`). Afficher tel quel — ne pas GET `/api/tiers/{id}` en editor/viewer. */
     institutionName: string | null;
+    /** `null` si le compte n’a pas de banque (cash, etc.). */
+    bank: AccountBank | null;
     isPrimary: boolean;
     isActive: boolean;
     createdAt: string;
@@ -89,13 +105,16 @@ export type CreateAccountPayload = {
     accountNumber?: string | null;
     color?: string | null;
     isPrimary?: boolean;
+    /** Un de mes tiers banque. Exclusif avec `bankPublicId` (`400` si les deux). */
     institutionTierPublicId?: string | null;
+    /** Établissement du référentiel : le serveur réutilise ou crée le tier banque. */
+    bankPublicId?: string | null;
 };
 
 /**
  * PUT compte.
- * - Owner : champs complets ; `iban: null` / `institutionTierPublicId: null` vident le champ.
- * - Editor : `name`, `accountNumber`, `color` ; `institutionTierPublicId: null` (no-op serveur, ne jamais envoyer un autre id).
+ * - Owner : état complet, banque résolue comme à la création. Courant / épargne : toujours renvoyer la banque actuelle.
+ * - Editor : `name`, `accountNumber`, `color` ; banque `null` (= omise, non modifiable).
  */
 export type UpdateAccountPayload = {
     name: string;
@@ -107,6 +126,7 @@ export type UpdateAccountPayload = {
     iban?: string | null;
     isPrimary?: boolean;
     institutionTierPublicId?: string | null;
+    bankPublicId?: string | null;
 };
 
 export type InviteAccountSharePayload = {
@@ -172,6 +192,9 @@ export type UpdateBalanceSnapshotPayload = {
 };
 
 export const ACCOUNT_TYPES: AccountType[] = ['courant', 'epargne', 'credit', 'cash', 'investissement', 'crypto', 'other'];
+
+/** Types de compte pour lesquels une banque est obligatoire. */
+export const BANK_REQUIRED_ACCOUNT_TYPES: readonly AccountType[] = ['courant', 'epargne'];
 
 export const CURRENCIES: Currency[] = ['CHF', 'EUR', 'USD', 'GBP'];
 

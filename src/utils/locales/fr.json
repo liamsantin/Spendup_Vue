@@ -470,8 +470,6 @@
             "clearColor": "Sans couleur",
             "currencyLockedHint": "La devise ne peut plus être modifiée après la création du compte.",
             "ownerFieldsLockedHint": "Avec le rôle éditeur, seuls le nom, la couleur et le n° de compte sont modifiables.",
-            "noInstitution": "Aucune institution",
-            "institutionSearchPlaceholder": "Rechercher un tiers…",
             "fields": {
                 "name": "Nom",
                 "type": "Type",
@@ -479,16 +477,23 @@
                 "initialBalance": "Solde initial",
                 "iban": "IBAN",
                 "accountNumber": "N° de compte",
-                "institution": "Institution",
                 "color": "Couleur",
-                "isPrimary": "Compte principal"
+                "isPrimary": "Compte principal",
+                "bank": "Banque"
             },
             "errors": {
                 "nameRequired": "Le nom est obligatoire.",
                 "balanceInvalid": "Saisissez un solde valide.",
                 "ibanInvalid": "IBAN invalide.",
-                "colorInvalid": "Couleur invalide. Utilisez #RGB, #RRGGBB ou #RRGGBBAA."
-            }
+                "colorInvalid": "Couleur invalide. Utilisez #RGB, #RRGGBB ou #RRGGBBAA.",
+                "bankRequired": "Une banque est obligatoire pour un compte courant ou d’épargne : choisissez-la, ou saisissez un IBAN suisse."
+            },
+            "noBank": "Aucune",
+            "bankPlaceholder": "Choisir une banque",
+            "bankRequiredHint": "Obligatoire pour un compte courant ou d’épargne. Un IBAN suisse permet de la déduire.",
+            "bankDetected": "Banque détectée : {bank}",
+            "bankIbanMismatch": "L’IBAN correspond à {bank}. Choisissez cette banque ou corrigez l’IBAN.",
+            "bankFromIban": "Sans banque choisie, elle sera déduite de l’IBAN : {bank}."
         },
         "share": {
             "title": "Partage",
@@ -1656,7 +1661,8 @@
                 "contact": "Contact",
                 "person": "Détails de la personne",
                 "company": "Détails de l’entreprise",
-                "organization": "Détails de l’organisation"
+                "organization": "Détails de l’organisation",
+                "bank": "Banque"
             },
             "fields": {
                 "name": "Nom",
@@ -1673,7 +1679,11 @@
                 "vatNumber": "Numéro TVA",
                 "companyRegistrationNumber": "Numéro d’entreprise (IDE)",
                 "officialName": "Nom officiel",
-                "organizationType": "Type d’organisation"
+                "organizationType": "Type d’organisation",
+                "isBank": "Ce tiers est une banque",
+                "bank": "Établissement",
+                "bic": "BIC",
+                "iid": "IID (clearing)"
             },
             "placeholders": {
                 "name": "Ex. Migros",
@@ -1691,7 +1701,9 @@
                 "birthDate": "Date de naissance",
                 "vatNumber": "CHE-123.456.789 TVA",
                 "companyRegistrationNumber": "CHE-123.456.789",
-                "organizationType": "Association, fondation, club…"
+                "organizationType": "Association, fondation, club…",
+                "bic": "UBSWCHZH80A",
+                "iid": "00230"
             },
             "errors": {
                 "nameRequired": "Le nom du tiers est obligatoire.",
@@ -1714,12 +1726,24 @@
                 "companyVatNumberTooLong": "Le numéro TVA dépasse 100 caractères.",
                 "companyRegistrationNumberTooLong": "Le numéro d’entreprise dépasse 100 caractères.",
                 "organizationOfficialNameTooLong": "Le nom officiel dépasse 200 caractères.",
-                "organizationTypeTooLong": "Le type d’organisation dépasse 100 caractères."
+                "organizationTypeTooLong": "Le type d’organisation dépasse 100 caractères.",
+                "bankRequired": "Choisissez une banque du référentiel, ou saisissez son BIC ou son IID.",
+                "bankBicInvalid": "BIC invalide (8 ou 11 caractères, ex. UBSWCHZH80A).",
+                "bankIidInvalid": "IID invalide (1 à 5 chiffres)."
             },
             "tabs": {
                 "details": "Détails",
+                "bank": "Banque",
                 "aliases": "Alias"
-            }
+            },
+            "bankHint": "Seuls les tiers banque peuvent être la banque d’un compte ou d’un modèle d’import. Le rôle « Banque » est ajouté automatiquement.",
+            "bankCustom": "Banque hors référentiel",
+            "bankCustomHint": "Néobanque ou banque étrangère : saisissez son BIC et/ou son IID.",
+            "bankUseRegistry": "Choisir dans le référentiel",
+            "bankLockedHint": "Choisissez l’établissement dans le référentiel SIX, ou saisissez une banque hors référentiel. Le rôle « Banque » est ajouté automatiquement.",
+            "bankRoleLocked": "Ce tiers est une banque (onglet Banque) : le rôle est obligatoire.",
+            "bankRoleWithoutPanel": "Pour choisir ce tiers comme banque d’un compte, activez-le dans l’onglet Banque.",
+            "bankNotListed": "Votre banque n’est pas dans la liste ?"
         }
     },
     "filesPage": {
@@ -2242,7 +2266,8 @@
                 "amountRequired": "Associez la colonne de montant.",
                 "debitCreditRequired": "Associez au moins une colonne de débit ou de crédit.",
                 "headerRowInvalid": "Saisissez un numéro de ligne (0 pour aucun en-tête)."
-            }
+            },
+            "otherSuggestions": "Autres modèles possibles :"
         },
         "bulk": {
             "label": "Actions groupées",
@@ -2423,7 +2448,7 @@
             "createSubtitle": "Réutilisez ce mapping pour les prochains relevés de cette banque.",
             "editTitle": "Modifier le modèle",
             "editSubtitle": "Le mapping vient de l’import d’origine.",
-            "bankHint": "Optionnel : la banque de ce relevé.",
+            "bankHint": "Optionnel : une de vos banques. Le modèle sera proposé en premier pour ses comptes.",
             "fields": {
                 "name": "Nom",
                 "bank": "Banque",
@@ -2432,7 +2457,8 @@
             "errors": {
                 "nameRequired": "Le nom est obligatoire.",
                 "nameTooLong": "Le nom dépasse {max} caractères."
-            }
+            },
+            "noBank": "Aucune"
         }
     },
     "friendsPage": {
@@ -3127,15 +3153,20 @@
             "export": "Exporter",
             "search": "Rechercher",
             "clearSearch": "Effacer la recherche"
+        },
+        "form": {
+            "createTitle": "Nouvelle banque",
+            "editTitle": "Modifier la banque",
+            "subtitle": "Choisissez l’établissement, puis complétez les coordonnées si besoin."
         }
     },
     "aliases": {
         "title": "Reconnaissance à l’import",
         "help": {
-            "tier": "Valeurs qui désignent ce tiers dans un relevé : colonne Tiers, ou à défaut libellé banque. Casse, accents et ponctuation sont ignorés (« COOP-4521 » = « coop 4521 »).",
-            "paymentMethod": "Valeurs qui désignent ce moyen dans un relevé : colonne Moyen de paiement, ou à défaut libellé banque. Casse, accents et ponctuation sont ignorés (« VISA-1234 » = « visa 1234 »)."
+            "tier": "Textes qui désignent ce tiers dans vos relevés.",
+            "paymentMethod": "Textes qui désignent ce moyen dans vos relevés."
         },
-        "empty": "Aucun alias pour l’instant. Ils s’ajoutent aussi tout seuls quand vous rattachez une ligne d’import.",
+        "empty": "Aucun alias. Ils s’ajoutent aussi automatiquement à l’import.",
         "newValue": "Nouvel alias",
         "editValue": "Modifier l’alias",
         "valuePlaceholder": "ex. COOP-4521, twint",
@@ -3148,16 +3179,16 @@
             "regex": "Expression régulière"
         },
         "matchTypeHints": {
-            "exact": "La valeur entière doit correspondre.",
-            "startsWith": "La valeur doit commencer par ce texte.",
-            "endsWith": "La valeur doit finir par ce texte.",
-            "contains": "Le texte peut apparaître n’importe où. Pratique pour les libellés banque (ex. « twint »).",
-            "regex": "Appliquée au texte brut, sans tenir compte de la casse."
+            "exact": "Toute la valeur doit correspondre.",
+            "startsWith": "Doit commencer par ce texte.",
+            "endsWith": "Doit finir par ce texte.",
+            "contains": "Peut apparaître n’importe où.",
+            "regex": "Sur le texte brut, sans tenir compte de la casse."
         },
         "priority": "Priorité",
-        "priorityHint": "De {min} à {max}. Si plusieurs alias correspondent, la plus haute gagne.",
+        "priorityHint": "{min} à {max} : la plus haute l’emporte.",
         "priorityShort": "Priorité {n}",
-        "advanced": "Avancé : priorité, expression régulière",
+        "advanced": "Options avancées",
         "add": "Ajouter",
         "update": "Mettre à jour",
         "edit": "Modifier",
@@ -3166,7 +3197,7 @@
         "inactive": "Inactif",
         "auto": "auto",
         "autoHint": "Créé automatiquement par un import.",
-        "nextAnalysis": "Un changement s’applique à la prochaine analyse (nouvel import, relecture ou réinitialisation d’une ligne). Les transactions existantes ne changent pas.",
+        "nextAnalysis": "S’applique aux prochains imports, pas aux transactions existantes.",
         "deleteConfirm": {
             "title": "Supprimer cet alias ?",
             "body": "« {value} » ne sera plus reconnu lors des prochains imports."
@@ -3179,6 +3210,28 @@
             "regexInvalid": "Expression régulière invalide.",
             "matchTypeInvalid": "Type de correspondance inconnu.",
             "priorityInvalid": "Nombre entier entre {min} et {maxPriority}."
+        },
+        "helpDetails": {
+            "tier": "Recherchés dans la colonne Tiers, sinon dans le libellé. Casse, accents et ponctuation ignorés (« COOP-4521 » = « coop 4521 »).",
+            "paymentMethod": "Recherchés dans la colonne Moyen de paiement, sinon dans le libellé. Casse, accents et ponctuation ignorés (« VISA-1234 » = « visa 1234 »)."
+        }
+    },
+    "banks": {
+        "picker": {
+            "placeholder": "Choisir une banque",
+            "none": "Aucune",
+            "searchPlaceholder": "Nom, BIC ou numéro de clearing…",
+            "country": "Pays",
+            "countries": {
+                "CH": "Suisse",
+                "LI": "Liechtenstein"
+            },
+            "myBanks": "Mes banques",
+            "allBanks": "Toutes les banques",
+            "offRegistry": "Hors référentiel",
+            "noResults": "Aucune banque ne correspond.",
+            "empty": "Aucune banque disponible.",
+            "searchMine": "Rechercher une de vos banques…"
         }
     }
 }

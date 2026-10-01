@@ -17,7 +17,8 @@ function normalizeAccount(account: Account): Account {
         ...account,
         hiddenFields: Array.isArray(account.hiddenFields) ? account.hiddenFields : [],
         institutionTierPublicId: account.institutionTierPublicId ?? null,
-        institutionName: account.institutionName ?? null
+        institutionName: account.institutionName ?? null,
+        bank: account.bank ?? null
     };
 }
 

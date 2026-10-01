@@ -33,6 +33,8 @@ const balanceDisplay = computed(() =>
     )
 );
 const typeLabel = computed(() => t(`comptesPage.types.${props.account.type}`));
+/** Nom du tier banque (renommable), pas le nom officiel SIX. */
+const bankName = computed(() => props.account.bank?.name ?? props.account.institutionName);
 const roleLabel = computed(() => t(`comptesPage.roles.${props.account.myRole}`));
 const focused = computed(() => store.isFocusedAccount(props.account.publicId));
 const promoted = computed(() => store.isPromotedAccount(props.account.publicId));
@@ -80,7 +82,7 @@ const accountNumberLine = computed(() =>
                 </div>
             </div>
             <p class="su-person__sub">
-                {{ typeLabel }} · {{ account.currency }}<template v-if="account.institutionName"> · {{ account.institutionName }}</template
+                {{ typeLabel }} · {{ account.currency }}<template v-if="bankName"> · {{ bankName }}</template
                 >{{ accountNumberLine }}
             </p>
             <div v-if="account.isPrimary || !account.isActive || !account.isOwned" class="account-list-item__chips">

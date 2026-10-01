@@ -10,7 +10,7 @@ defineOptions({ name: 'AliasManager' });
 
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PencilIcon, PlusIcon, TrashIcon } from 'vue-tabler-icons';
+import { InfoCircleIcon, PencilIcon, PlusIcon, TrashIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
@@ -242,7 +242,17 @@ watch(
 
 <template>
     <section class="alias-manager">
-        <p class="alias-manager__section">{{ t('aliases.title') }}</p>
+        <div class="alias-manager__head">
+            <p class="alias-manager__section">{{ t('aliases.title') }}</p>
+            <InfoCircleIcon
+                class="alias-manager__info"
+                :size="15"
+                stroke-width="1.8"
+                role="img"
+                :aria-label="t(`aliases.helpDetails.${target}`)"
+                :title="t(`aliases.helpDetails.${target}`)"
+            />
+        </div>
         <p class="alias-manager__help">{{ t(`aliases.help.${target}`) }}</p>
 
         <AppAlert v-if="localError" type="error" closable @dismiss="localError = null">{{ localError }}</AppAlert>
@@ -326,7 +336,7 @@ watch(
                     :disabled="acting"
                 />
             </div>
-            <p class="alias-manager__hint">{{ t(`aliases.matchTypeHints.${form.matchType}`) }}</p>
+            <p v-if="form.matchType !== 'exact'" class="alias-manager__hint">{{ t(`aliases.matchTypeHints.${form.matchType}`) }}</p>
 
             <div v-if="advanced" class="alias-manager__row">
                 <v-text-field
@@ -380,6 +390,18 @@ watch(
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.alias-manager__head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.alias-manager__info {
+    flex: none;
+    color: var(--ink-muted);
+    cursor: help;
 }
 
 .alias-manager__section {

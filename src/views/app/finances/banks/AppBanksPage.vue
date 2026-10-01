@@ -98,7 +98,7 @@ const search = useBoardSearch({
             <TiersDirectory
                 ref="directoryRef"
                 locked-nature="company"
-                locked-role="banque"
+                :locked-is-bank="true"
                 empty-key="banksPage.empty"
                 export-name="banques"
                 @sort="listSort = $event"

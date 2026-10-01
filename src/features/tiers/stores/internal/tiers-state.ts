@@ -15,6 +15,7 @@ export const TIERS_LIST_MAX_AGE_MS = 30_000;
 export type TiersListQuery = {
     nature: TierNature | null;
     role: TierRole | null;
+    isBank: boolean | null;
     /** Recherche normalisée (trim, minuscules, tronquée à 100). */
     search: string | null;
 };
@@ -24,20 +25,23 @@ export function normalizeListQuery(query: ListTiersQuery = {}): TiersListQuery {
     return {
         nature: isTierNature(query.nature) ? query.nature : null,
         role: isTierRole(query.role) ? query.role : null,
+        isBank: typeof query.isBank === 'boolean' ? query.isBank : null,
         search
     };
 }
 
 export function listCacheKey(query: TiersListQuery): string {
-    return `list:${query.nature ?? 'all'}:${query.role ?? 'all'}:${query.search ?? ''}`;
+    const bank = query.isBank == null ? 'all' : String(query.isBank);
+    return `list:${query.nature ?? 'all'}:${query.role ?? 'all'}:${bank}:${query.search ?? ''}`;
 }
 
 export function parseListCacheKey(key: string): TiersListQuery {
-    const [, nature, role, ...rest] = key.split(':');
+    const [, nature, role, bank, ...rest] = key.split(':');
     const search = rest.join(':');
     return {
         nature: !nature || nature === 'all' ? null : (nature as TierNature),
         role: !role || role === 'all' ? null : (role as TierRole),
+        isBank: bank === 'true' ? true : bank === 'false' ? false : null,
         search: search ? search : null
     };
 }
@@ -52,6 +56,7 @@ export type TiersCacheEntry = {
 function queryMatchesTier(query: TiersListQuery, tier: Tier): boolean {
     if (query.nature && tier.nature !== query.nature) return false;
     if (query.role && !tier.roles.includes(query.role)) return false;
+    if (query.isBank != null && !!tier.bank !== query.isBank) return false;
     if (query.search && !matchesTierSearch(tier, query.search)) return false;
     return true;
 }
@@ -95,7 +100,7 @@ export function createTiersState() {
     const knownById = createTrackedMap<string, Tier>(() => {
         knownVersion.value += 1;
     });
-    const activeListKey = ref(listCacheKey({ nature: null, role: null, search: null }));
+    const activeListKey = ref(listCacheKey({ nature: null, role: null, isBank: null, search: null }));
     const page = ref(1);
     const pageSize = ref(TIER_PAGE_SIZE_DEFAULT);
     const totalCount = ref(0);

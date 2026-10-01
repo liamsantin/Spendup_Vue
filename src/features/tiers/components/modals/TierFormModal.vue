@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { FileDescriptionIcon, ListSearchIcon } from 'vue-tabler-icons';
+import { BuildingBankIcon, FileDescriptionIcon, ListSearchIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
@@ -22,6 +22,7 @@ import {
 } from '@/features/tiers/payload';
 import { TIER_NATURES, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
 import TierForm, { type TierFormFieldErrors } from '@/features/tiers/components/forms/TierForm.vue';
+import TierBankForm, { type TierBankFormFieldErrors } from '@/features/tiers/components/forms/TierBankForm.vue';
 import TierNatureChoice from '@/features/tiers/components/forms/TierNatureChoice.vue';
 
 const props = defineProps<{
@@ -32,6 +33,11 @@ const props = defineProps<{
     defaultNature?: TierNature | null;
     /** Rôles pré-cochés à la création (ex. `banque` depuis la page Banques). */
     defaultRoles?: TierRole[];
+    /**
+     * Page Banques : le tier est forcément une banque. Volet activé et sans interrupteur,
+     * création ouverte sur l’onglet « Banque » (choix de l’établissement, qui pré-remplit le nom).
+     */
+    lockBank?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -45,7 +51,7 @@ const store = useTiersStore();
 const isEdit = ref(false);
 const editTier = ref<Tier | null>(null);
 const createStep = ref<'nature' | 'form'>('nature');
-const activeTab = ref<'details' | 'aliases'>('details');
+const activeTab = ref<'details' | 'bank' | 'aliases'>('details');
 const aliasCount = ref<number | null>(null);
 /** Création : alias saisis avant l’existence du tiers, créés juste après l’enregistrement. */
 const aliasDrafts = ref<UpdateAliasPayload[]>([]);
@@ -53,13 +59,14 @@ const aliasDrafts = ref<UpdateAliasPayload[]>([]);
 /** Édition seulement : un tier doit exister pour porter des alias. */
 const editTabs = computed(() => [
     { value: 'details' as const, label: t('tiersPage.form.tabs.details'), icon: FileDescriptionIcon },
+    { value: 'bank' as const, label: t('tiersPage.form.tabs.bank'), icon: BuildingBankIcon },
     { value: 'aliases' as const, label: t('tiersPage.form.tabs.aliases'), icon: ListSearchIcon, chip: aliasCount.value || undefined }
 ]);
 
 const natureItems = computed(() => TIER_NATURES.map((value) => ({ title: t(`tiersPage.natures.${value}`), value })));
 
 const localError = reactive({ message: null as string | null });
-const fieldErrors = reactive<TierFormFieldErrors>({});
+const fieldErrors = reactive<TierFormFieldErrors & TierBankFormFieldErrors>({});
 
 const form = reactive<TierFormFields>(emptyTierFormFields());
 
@@ -75,12 +82,14 @@ const natureHint = computed(() =>
 const pickingNature = computed(() => !isEdit.value && createStep.value === 'nature');
 
 const modalTitle = computed(() => {
-    if (isEdit.value) return t('tiersPage.form.editTitle');
+    if (isEdit.value) return props.lockBank ? t('banksPage.form.editTitle') : t('tiersPage.form.editTitle');
+    if (props.lockBank) return t('banksPage.form.createTitle');
     if (pickingNature.value) return t('tiersPage.form.pickNatureTitle');
     return t(`tiersPage.form.createTitles.${form.nature}`);
 });
 
 const modalSubtitle = computed(() => {
+    if (props.lockBank) return t('banksPage.form.subtitle');
     if (isEdit.value) return t('tiersPage.form.subtitle');
     if (pickingNature.value) return t('tiersPage.form.pickNatureSubtitle');
     return t('tiersPage.form.createSubtitle');
@@ -93,7 +102,7 @@ const canSave = computed(() => {
 });
 
 function clearFieldErrors() {
-    for (const key of Object.keys(fieldErrors) as (keyof TierFormFieldErrors)[]) {
+    for (const key of Object.keys(fieldErrors) as (keyof (TierFormFieldErrors & TierBankFormFieldErrors))[]) {
         fieldErrors[key] = null;
     }
 }
@@ -101,7 +110,7 @@ function clearFieldErrors() {
 function applyPayloadErrors(code: TierPayloadErrorCode, field?: string) {
     const message = t(`tiersPage.form.errors.${code}`);
     if (field) {
-        activeTab.value = 'details';
+        activeTab.value = field.startsWith('bank') ? 'bank' : 'details';
         (fieldErrors as Record<string, string | null>)[field] = message;
         return;
     }
@@ -119,12 +128,14 @@ function assignForm(next: TierFormFields) {
     form.person = { ...next.person };
     form.company = { ...next.company };
     form.organization = { ...next.organization };
+    form.bank = { ...next.bank };
 }
 
 function applyCreateDefaults(nature: TierNature, name: string) {
     const next = emptyTierFormFields(nature);
     next.name = name;
-    next.roles = [...(props.defaultRoles ?? [])];
+    next.roles = props.lockBank ? ['banque'] : [...(props.defaultRoles ?? [])];
+    next.bank.enabled = !!props.lockBank;
     assignForm(next);
 }
 
@@ -134,9 +145,11 @@ function pickNature(nature: TierNature) {
         email: form.email,
         phone: form.phone,
         website: form.website,
-        notes: form.notes
+        notes: form.notes,
+        bank: { ...form.bank }
     };
     applyCreateDefaults(nature, kept.name);
+    form.bank = kept.bank;
     form.email = kept.email;
     form.phone = kept.phone;
     form.website = kept.website;
@@ -151,6 +164,11 @@ function resetForm() {
     if (tier) {
         createStep.value = 'form';
         assignForm(tierToFormFields(tier));
+        if (props.lockBank) {
+            // Page Banques : le tier est une banque, avec le seul rôle « Banque ».
+            form.bank.enabled = true;
+            form.roles = ['banque'];
+        }
         return;
     }
     const defaultName = props.defaultName?.trim() || '';
@@ -169,7 +187,7 @@ watch(
         if (!value) return;
         isEdit.value = !!props.tier;
         editTier.value = props.tier ?? null;
-        activeTab.value = 'details';
+        activeTab.value = props.lockBank && !props.tier ? 'bank' : 'details';
         aliasCount.value = null;
         aliasDrafts.value = [];
         resetForm();
@@ -242,10 +260,17 @@ async function onSave() {
                     :nature-items="natureItems"
                     :field-errors="fieldErrors"
                     :nature-hint="natureHint"
-                    :lock-nature="!isEdit"
-                    :show-roles="isEdit"
+                    :lock-nature="!isEdit || lockBank"
+                    :show-roles="isEdit || lockBank"
+                    :lock-identity="lockBank"
                     @change-nature="createStep = 'nature'"
                 />
+            </AppModalPanelScroll>
+        </template>
+
+        <template #panel-bank>
+            <AppModalPanelScroll>
+                <TierBankForm :form="form" :field-errors="fieldErrors" :locked="lockBank" />
             </AppModalPanelScroll>
         </template>
 
@@ -264,7 +289,7 @@ async function onSave() {
         </template>
 
         <template #footer="{ close }">
-            <template v-if="activeTab === 'details' || !isEdit">
+            <template v-if="activeTab !== 'aliases' || !isEdit">
                 <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
                     {{ t('common.cancel') }}
                 </button>

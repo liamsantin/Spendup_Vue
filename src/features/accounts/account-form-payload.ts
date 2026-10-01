@@ -1,6 +1,14 @@
 import { emptyToNull, normalizeAccountColor, normalizeIban } from '@/features/accounts/format';
 import { canEditAccountOwnerFields } from '@/features/accounts/rights';
-import type { Account, AccountType, UpdateAccountPayload } from '@/features/accounts/types';
+import {
+    BANK_REQUIRED_ACCOUNT_TYPES,
+    type Account,
+    type AccountType,
+    type CreateAccountPayload,
+    type UpdateAccountPayload
+} from '@/features/accounts/types';
+import { sameBankChoice } from '@/features/banks/format';
+import type { BankChoice } from '@/features/banks/types';
 
 export type AccountFormUpdateFields = {
     name: string;
@@ -10,9 +18,34 @@ export type AccountFormUpdateFields = {
     iban: string;
     accountNumber: string;
     color: string | null;
-    /** `''` = aucune institution. Ignoré pour un editor (PUT envoie `null`). */
-    institutionTierPublicId: string;
+    /** `null` = aucune banque. Ignoré pour un editor (PUT envoie `null`). */
+    bank: BankChoice | null;
 };
+
+/** Banque obligatoire pour un compte courant ou d’épargne. */
+export function accountTypeRequiresBank(type: AccountType): boolean {
+    return BANK_REQUIRED_ACCOUNT_TYPES.includes(type);
+}
+
+/**
+ * Choix du sélecteur « Banque » correspondant à la banque actuelle du compte.
+ * Seul `bank` compte : un ancien `institutionTierPublicId` sans volet banque serait refusé (`400`) au PUT.
+ */
+export function accountBankChoice(account: Pick<Account, 'bank'>): BankChoice | null {
+    const bank = account.bank;
+    if (!bank) return null;
+    return { kind: 'tier', tierPublicId: bank.tierPublicId, name: bank.name, bankPublicId: bank.bankPublicId, bankName: bank.bankName };
+}
+
+/**
+ * Champs banque du POST / PUT : `institutionTierPublicId` (un de mes tiers banque)
+ * ou `bankPublicId` (référentiel), jamais les deux (`400`). Aucun choix → banque déduite de l’IBAN CH / LI.
+ */
+export function bankPayloadFields(choice: BankChoice | null): Pick<CreateAccountPayload, 'institutionTierPublicId' | 'bankPublicId'> {
+    if (!choice) return { institutionTierPublicId: null };
+    if (choice.kind === 'tier') return { institutionTierPublicId: choice.tierPublicId };
+    return { bankPublicId: choice.bankPublicId };
+}
 
 /**
  * IBAN à valider seulement à la création ou pour un owner.
@@ -24,7 +57,7 @@ export function shouldValidateAccountIban(account: Pick<Account, 'myRole'> | nul
 }
 
 /**
- * Construit le payload PUT : editor → name / accountNumber / color + institution nulle.
+ * Construit le payload PUT : editor → name / accountNumber / color + banque nulle (= omise).
  */
 export function buildUpdateAccountPayload(
     account: Pick<Account, 'myRole' | 'currency' | 'isPrimary'>,
@@ -47,7 +80,7 @@ export function buildUpdateAccountPayload(
         accountNumber: emptyToNull(fields.accountNumber),
         color: normalizeAccountColor(fields.color),
         isPrimary: account.isPrimary,
-        institutionTierPublicId: emptyToNull(fields.institutionTierPublicId)
+        ...bankPayloadFields(fields.bank)
     };
 }
 
@@ -56,7 +89,19 @@ export function buildUpdateAccountPayload(
  * (champs éditables selon le rôle).
  */
 export function isAccountFormDirty(
-    account: Pick<Account, 'name' | 'type' | 'initialBalance' | 'iban' | 'accountNumber' | 'color' | 'myRole' | 'institutionTierPublicId'>,
+    account: Pick<
+        Account,
+        | 'name'
+        | 'type'
+        | 'initialBalance'
+        | 'iban'
+        | 'accountNumber'
+        | 'color'
+        | 'myRole'
+        | 'institutionTierPublicId'
+        | 'institutionName'
+        | 'bank'
+    >,
     fields: AccountFormUpdateFields
 ): boolean {
     if (fields.name.trim() !== account.name.trim()) return true;
@@ -68,6 +113,6 @@ export function isAccountFormDirty(
     if (fields.type !== account.type) return true;
     if (Number(fields.initialBalance) !== Number(account.initialBalance ?? 0)) return true;
     if (normalizeIban(fields.iban) !== normalizeIban(account.iban)) return true;
-    if (emptyToNull(fields.institutionTierPublicId) !== emptyToNull(account.institutionTierPublicId)) return true;
+    if (!sameBankChoice(fields.bank, accountBankChoice(account))) return true;
     return false;
 }

@@ -70,6 +70,10 @@ export type ImportWarning = {
     date?: string | null;
 };
 
+/**
+ * Modèle suggéré à l’upload (sans mapping ni modèle). En premier : ceux de la banque du compte
+ * (modèle système de l’établissement, modèles perso de ce tier banque), même si les en-têtes ne correspondent pas.
+ */
 export type ImportTemplateSuggestion = {
     publicId: string;
     name: string;
@@ -297,7 +301,10 @@ export type ImportTemplate = {
     /** Modèle fourni par Spend.Up : lecture seule. */
     isSystem: boolean;
     isActive: boolean;
+    /** Modèle perso : tier banque associé (doit être un tier banque, `400` sinon). */
     bankTierPublicId: string | null;
+    /** Modèle système : établissement du référentiel (UBS, PostFinance, Raiffeisen). `null` sinon. */
+    bankPublicId: string | null;
     description: string | null;
     mapping: ImportMapping;
     createdAt: string | null;

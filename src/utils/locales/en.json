@@ -470,8 +470,6 @@
             "clearColor": "No color",
             "currencyLockedHint": "Currency cannot be changed after the account is created.",
             "ownerFieldsLockedHint": "With the editor role, only name, color, and account number can be changed.",
-            "noInstitution": "No institution",
-            "institutionSearchPlaceholder": "Search a counterparty…",
             "fields": {
                 "name": "Name",
                 "type": "Type",
@@ -479,16 +477,23 @@
                 "initialBalance": "Initial balance",
                 "iban": "IBAN",
                 "accountNumber": "Account number",
-                "institution": "Institution",
                 "color": "Color",
-                "isPrimary": "Primary account"
+                "isPrimary": "Primary account",
+                "bank": "Bank"
             },
             "errors": {
                 "nameRequired": "Name is required.",
                 "balanceInvalid": "Enter a valid balance.",
                 "ibanInvalid": "Invalid IBAN.",
-                "colorInvalid": "Invalid color. Use #RGB, #RRGGBB, or #RRGGBBAA."
-            }
+                "colorInvalid": "Invalid color. Use #RGB, #RRGGBB, or #RRGGBBAA.",
+                "bankRequired": "A bank is required for a current or savings account: choose one, or enter a Swiss IBAN."
+            },
+            "noBank": "None",
+            "bankPlaceholder": "Choose a bank",
+            "bankRequiredHint": "Required for a current or savings account. A Swiss IBAN lets us detect it.",
+            "bankDetected": "Bank detected: {bank}",
+            "bankIbanMismatch": "This IBAN belongs to {bank}. Pick that bank or fix the IBAN.",
+            "bankFromIban": "With no bank selected, it will be detected from the IBAN: {bank}."
         },
         "share": {
             "title": "Sharing",
@@ -1656,7 +1661,8 @@
                 "contact": "Contact",
                 "person": "Person details",
                 "company": "Company details",
-                "organization": "Organization details"
+                "organization": "Organization details",
+                "bank": "Bank"
             },
             "fields": {
                 "name": "Name",
@@ -1673,7 +1679,11 @@
                 "vatNumber": "VAT number",
                 "companyRegistrationNumber": "Company registration number",
                 "officialName": "Official name",
-                "organizationType": "Organization type"
+                "organizationType": "Organization type",
+                "isBank": "This counterparty is a bank",
+                "bank": "Institution",
+                "bic": "BIC",
+                "iid": "IID (clearing)"
             },
             "placeholders": {
                 "name": "E.g. Migros",
@@ -1691,7 +1701,9 @@
                 "birthDate": "Birth date",
                 "vatNumber": "CHE-123.456.789 VAT",
                 "companyRegistrationNumber": "CHE-123.456.789",
-                "organizationType": "Association, foundation, club…"
+                "organizationType": "Association, foundation, club…",
+                "bic": "UBSWCHZH80A",
+                "iid": "00230"
             },
             "errors": {
                 "nameRequired": "The counterparty name is required.",
@@ -1714,12 +1726,24 @@
                 "companyVatNumberTooLong": "VAT number exceeds 100 characters.",
                 "companyRegistrationNumberTooLong": "Company registration number exceeds 100 characters.",
                 "organizationOfficialNameTooLong": "Official name exceeds 200 characters.",
-                "organizationTypeTooLong": "Organization type exceeds 100 characters."
+                "organizationTypeTooLong": "Organization type exceeds 100 characters.",
+                "bankRequired": "Pick a bank from the registry, or enter its BIC or IID.",
+                "bankBicInvalid": "Invalid BIC (8 or 11 characters, e.g. UBSWCHZH80A).",
+                "bankIidInvalid": "Invalid IID (1 to 5 digits)."
             },
             "tabs": {
                 "details": "Details",
+                "bank": "Bank",
                 "aliases": "Aliases"
-            }
+            },
+            "bankHint": "Only bank counterparties can be the bank of an account or an import template. The “Bank” role is added automatically.",
+            "bankCustom": "Bank not in registry",
+            "bankCustomHint": "Neobank or foreign bank: enter its BIC and/or IID.",
+            "bankUseRegistry": "Pick from registry",
+            "bankLockedHint": "Pick the institution from the SIX registry, or enter a bank that is not in it. The “Bank” role is added automatically.",
+            "bankRoleLocked": "This counterparty is a bank (Bank tab): the role is required.",
+            "bankRoleWithoutPanel": "To use this counterparty as an account’s bank, enable it in the Bank tab.",
+            "bankNotListed": "Bank not in the list?"
         }
     },
     "filesPage": {
@@ -2242,7 +2266,8 @@
                 "amountRequired": "Map the amount column.",
                 "debitCreditRequired": "Map at least a debit or a credit column.",
                 "headerRowInvalid": "Enter a row number (0 for no header)."
-            }
+            },
+            "otherSuggestions": "Other possible templates:"
         },
         "bulk": {
             "label": "Bulk actions",
@@ -2423,7 +2448,7 @@
             "createSubtitle": "Reuse this mapping for this bank’s next statements.",
             "editTitle": "Edit template",
             "editSubtitle": "The mapping comes from the original import.",
-            "bankHint": "Optional: the bank of this statement.",
+            "bankHint": "Optional: one of your banks. The template will be suggested first for its accounts.",
             "fields": {
                 "name": "Name",
                 "bank": "Bank",
@@ -2432,7 +2457,8 @@
             "errors": {
                 "nameRequired": "The name is required.",
                 "nameTooLong": "The name exceeds {max} characters."
-            }
+            },
+            "noBank": "None"
         }
     },
     "friendsPage": {
@@ -3127,15 +3153,20 @@
             "export": "Export",
             "search": "Search",
             "clearSearch": "Clear search"
+        },
+        "form": {
+            "createTitle": "New bank",
+            "editTitle": "Edit bank",
+            "subtitle": "Pick the institution, then complete the contact details if needed."
         }
     },
     "aliases": {
         "title": "Import recognition",
         "help": {
-            "tier": "Values that point to this counterparty in a statement: the counterparty column, or the bank label otherwise. Case, accents and punctuation are ignored (“COOP-4521” = “coop 4521”).",
-            "paymentMethod": "Values that point to this payment method in a statement: the payment method column, or the bank label otherwise. Case, accents and punctuation are ignored (“VISA-1234” = “visa 1234”)."
+            "tier": "Text that points to this counterparty in your statements.",
+            "paymentMethod": "Text that points to this payment method in your statements."
         },
-        "empty": "No alias yet. They are also added automatically when you link an import line.",
+        "empty": "No alias yet. They are also added automatically on import.",
         "newValue": "New alias",
         "editValue": "Edit alias",
         "valuePlaceholder": "e.g. COOP-4521, twint",
@@ -3149,15 +3180,15 @@
         },
         "matchTypeHints": {
             "exact": "The whole value must match.",
-            "startsWith": "The value must start with this text.",
-            "endsWith": "The value must end with this text.",
-            "contains": "The text can appear anywhere. Handy for bank labels (e.g. “twint”).",
-            "regex": "Applied to the raw text, case-insensitive."
+            "startsWith": "Must start with this text.",
+            "endsWith": "Must end with this text.",
+            "contains": "Can appear anywhere.",
+            "regex": "On the raw text, case-insensitive."
         },
         "priority": "Priority",
-        "priorityHint": "From {min} to {max}. When several aliases match, the highest wins.",
+        "priorityHint": "{min} to {max}: the highest wins.",
         "priorityShort": "Priority {n}",
-        "advanced": "Advanced: priority, regular expression",
+        "advanced": "Advanced options",
         "add": "Add",
         "update": "Update",
         "edit": "Edit",
@@ -3166,7 +3197,7 @@
         "inactive": "Inactive",
         "auto": "auto",
         "autoHint": "Created automatically by an import.",
-        "nextAnalysis": "Changes apply to the next analysis (new import, re-read or line reset). Existing transactions don’t change.",
+        "nextAnalysis": "Applies to future imports, not existing transactions.",
         "deleteConfirm": {
             "title": "Delete this alias?",
             "body": "“{value}” will no longer be recognised by future imports."
@@ -3179,6 +3210,28 @@
             "regexInvalid": "Invalid regular expression.",
             "matchTypeInvalid": "Unknown match type.",
             "priorityInvalid": "Whole number between {min} and {maxPriority}."
+        },
+        "helpDetails": {
+            "tier": "Looked up in the counterparty column, otherwise in the label. Case, accents and punctuation are ignored (“COOP-4521” = “coop 4521”).",
+            "paymentMethod": "Looked up in the payment method column, otherwise in the label. Case, accents and punctuation are ignored (“VISA-1234” = “visa 1234”)."
+        }
+    },
+    "banks": {
+        "picker": {
+            "placeholder": "Choose a bank",
+            "none": "None",
+            "searchPlaceholder": "Name, BIC or clearing number…",
+            "country": "Country",
+            "countries": {
+                "CH": "Switzerland",
+                "LI": "Liechtenstein"
+            },
+            "myBanks": "My banks",
+            "allBanks": "All banks",
+            "offRegistry": "Not in registry",
+            "noResults": "No matching bank.",
+            "empty": "No bank available.",
+            "searchMine": "Search your banks…"
         }
     }
 }

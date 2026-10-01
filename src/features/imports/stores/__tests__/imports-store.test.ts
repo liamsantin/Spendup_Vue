@@ -265,6 +265,7 @@ describe('useImportsStore', () => {
             isSystem: false,
             isActive: true,
             bankTierPublicId: null,
+            bankPublicId: null,
             description: null,
             mapping: { separator: ';' },
             createdAt: null,

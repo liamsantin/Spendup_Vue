@@ -27,6 +27,7 @@ export const tiersApi = {
         });
         if (query.nature && TIER_NATURES.includes(query.nature)) params.set('nature', query.nature);
         if (query.role && TIER_ROLES.includes(query.role)) params.set('role', query.role);
+        if (typeof query.isBank === 'boolean') params.set('isBank', String(query.isBank));
         const search = query.search?.trim().slice(0, TIER_SEARCH_MAX);
         if (search) params.set('search', search);
         return fetchWrapper.get(`/api/tiers?${params}`) as Promise<TierList>;

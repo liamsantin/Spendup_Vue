@@ -44,6 +44,7 @@ const migros: Tier = {
     person: null,
     company: { legalName: null, vatNumber: null, companyRegistrationNumber: null },
     organization: null,
+    bank: null,
     createdAt: '2026-09-07T14:32:10Z',
     updatedAt: null
 };
@@ -88,7 +89,11 @@ describe('useTiersStore', () => {
         await store.loadList({ role: 'banque', search: '  ub ', force: true });
         expect(api.list).toHaveBeenLastCalledWith({ nature: undefined, role: 'banque', search: 'ub', page: 1, pageSize: 50 });
         expect(store.items).toHaveLength(1);
-        expect(store.activeQuery).toEqual({ nature: null, role: 'banque', search: 'ub' });
+        expect(store.activeQuery).toEqual({ nature: null, role: 'banque', isBank: null, search: 'ub' });
+
+        await store.loadList({ isBank: true, force: true });
+        expect(api.list).toHaveBeenLastCalledWith(expect.objectContaining({ isBank: true }));
+        expect(store.activeQuery).toEqual({ nature: null, role: null, isBank: true, search: null });
     });
 
     it('crée, met à jour et supprime en mémorisant l’index', async () => {
