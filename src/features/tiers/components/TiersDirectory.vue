@@ -18,6 +18,15 @@ const route = useRoute();
 const router = useRouter();
 const store = useTiersStore();
 
+const props = defineProps<{
+    /** Page dédiée (ex. Banques) : filtres fixes, sans lecture de `nature` / `role` dans l’URL. */
+    lockedNature?: TierNature;
+    lockedRole?: TierRole;
+    /** Clé i18n du texte « liste vide » de la page dédiée. */
+    emptyKey?: string;
+    exportName?: string;
+}>();
+
 const emit = defineEmits<{
     sort: [value: TierSort];
 }>();
@@ -54,10 +63,12 @@ function queryString(name: string): string | null {
 
 const filterSearch = computed(() => queryString('q')?.slice(0, TIER_SEARCH_MAX) ?? null);
 const filterNature = computed<TierNature | null>(() => {
+    if (props.lockedNature) return props.lockedNature;
     const raw = queryString('nature');
     return isTierNature(raw) ? raw : null;
 });
 const filterRole = computed<TierRole | null>(() => {
+    if (props.lockedRole) return props.lockedRole;
     const raw = queryString('role');
     return isTierRole(raw) ? raw : null;
 });
@@ -70,8 +81,9 @@ const visibleItems = computed(() => {
         roleLabel: (role) => t(`tiersPage.roles.${role}`)
     });
 });
-const hasExtraFilters = computed(() => !!(filterSearch.value || filterRole.value));
+const hasExtraFilters = computed(() => !!(filterSearch.value || (filterRole.value && !props.lockedRole)));
 const emptyCopy = computed(() => {
+    if (props.emptyKey && !filterSearch.value) return t(props.emptyKey);
     if (hasExtraFilters.value) return t('tiersPage.empty.filtered');
     if (filterNature.value) return t(`tiersPage.empty.byNature.${filterNature.value}`);
     return t('tiersPage.empty.list');
@@ -145,7 +157,7 @@ function exportCsv() {
         tier.phone,
         tier.website
     ]);
-    downloadCsv('tiers', header, rows);
+    downloadCsv(props.exportName ?? 'tiers', header, rows);
 }
 
 defineExpose({ openCreate, exportCsv });
@@ -249,7 +261,11 @@ async function confirmDelete() {
             </div>
         </div>
 
-        <TierFormModal v-model="createOpen" :default-nature="createNature" />
+        <TierFormModal
+            v-model="createOpen"
+            :default-nature="createNature ?? lockedNature ?? null"
+            :default-roles="lockedRole ? [lockedRole] : undefined"
+        />
         <TierFormModal v-model="editOpen" :tier="editTarget" />
 
         <AppConfirmationModal

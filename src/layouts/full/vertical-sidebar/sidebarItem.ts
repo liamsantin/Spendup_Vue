@@ -10,6 +10,7 @@ import {
     GestionNavIcon,
     NetworkNavIcon,
     NotificationsNavIcon,
+    BanksNavIcon,
     PaymentMethodsNavIcon,
     PreferencesNavIcon,
     PrivacyNavIcon,
@@ -104,6 +105,11 @@ const sidebarThemes: sidebarTheme[] = [
                 title: 'nav.items.accounts',
                 icon: AccountsNavIcon,
                 to: '/app/finances/comptes'
+            },
+            {
+                title: 'nav.items.banks',
+                icon: BanksNavIcon,
+                to: '/app/finances/banques'
             },
             {
                 title: 'nav.items.paymentMethods',

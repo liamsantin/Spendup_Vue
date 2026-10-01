@@ -57,6 +57,11 @@ const horizontalItems: menu[] = [
         to: '/app/finances/comptes'
     },
     {
+        title: 'nav.items.banks',
+        icon: BuildingBankIcon,
+        to: '/app/finances/banques'
+    },
+    {
         title: 'nav.items.paymentMethods',
         icon: CreditCardIcon,
         to: '/app/finances/moyens-de-paiement'

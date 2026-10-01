@@ -19,6 +19,7 @@ export { SettingsIcon as SettingsNavIcon } from '@solar-icons/vue/bold-duotone/s
 export { Widget5Icon as DashboardNavIcon } from '@solar-icons/vue/line-duotone/widget-5';
 export { CalendarIcon as CalendarNavIcon } from '@solar-icons/vue/bold-duotone/calendar';
 export { Buildings2Icon as AccountsNavIcon } from '@solar-icons/vue/line-duotone/buildings-2';
+export { BuildingsIcon as BanksNavIcon } from '@solar-icons/vue/line-duotone/buildings';
 export { CardIcon as PaymentMethodsNavIcon } from '@solar-icons/vue/line-duotone/card';
 export { RoundTransferHorizontalIcon as TransactionsNavIcon } from '@solar-icons/vue/line-duotone/round-transfer-horizontal';
 export { ImportIcon as ImportNavIcon } from '@solar-icons/vue/line-duotone/import';

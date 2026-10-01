@@ -55,6 +55,7 @@
             "household": "Household",
             "accounts": "Accounts",
             "transactions": "Transactions",
+            "banks": "Banks",
             "paymentMethods": "Payment methods",
             "import": "Import",
             "recurrences": "Recurring",
@@ -3114,6 +3115,18 @@
             "errors": {
                 "incomplete": "Complete the requested verification."
             }
+        }
+    },
+    "banksPage": {
+        "title": "Banks",
+        "count": "{count} bank | {count} bank | {count} banks",
+        "searchPlaceholder": "Search a bank",
+        "empty": "No banks yet. Add your first bank.",
+        "actions": {
+            "create": "Add a bank",
+            "export": "Export",
+            "search": "Search",
+            "clearSearch": "Clear search"
         }
     },
     "aliases": {

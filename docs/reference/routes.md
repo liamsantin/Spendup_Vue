@@ -43,6 +43,7 @@
 | `/app/comptes`                       | redirect → pages paramètres (`?tab=`)          |
 | `/app/finances/comptes`              | accounts (Tabs Shell : Accounts / Invitations) |
 | `/app/finances/transactions`         | transactions                                   |
+| `/app/finances/banques`              | banks                                          |
 | `/app/finances/moyens-de-paiement`   | payment-methods                                |
 | `/app/finances/imports`              | imports (historique)                           |
 | `/app/finances/imports/modeles`      | imports (modèles)                              |

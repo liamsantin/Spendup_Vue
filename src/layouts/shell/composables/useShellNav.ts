@@ -30,6 +30,7 @@ import {
     InvestmentsNavIcon,
     NetworkNavIcon,
     NotificationsNavIcon,
+    BanksNavIcon,
     PaymentMethodsNavIcon,
     PlanningNavIcon,
     PreferencesNavIcon,
@@ -58,6 +59,7 @@ export const SHELL_NAV_IDS = {
     finances: 'finances',
     accounts: 'accounts',
     paymentMethods: 'payment-methods',
+    banks: 'banks',
     transactions: 'transactions',
     import: 'import',
     recurrences: 'recurrences',
@@ -121,6 +123,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     }
     if (pathIs(path, IMPORTS_PATHS.list)) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.import };
+    }
+    if (pathIs(path, '/app/finances/banques')) {
+        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.banks };
     }
     if (pathIs(path, '/app/finances/moyens-de-paiement')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.paymentMethods };
@@ -202,6 +207,7 @@ export function useShellNav() {
 
     const financeLeaves = computed<NavLeaf[]>(() => [
         live(SHELL_NAV_IDS.accounts, t('nav.items.accounts'), AccountsNavIcon, '/app/finances/comptes'),
+        live(SHELL_NAV_IDS.banks, t('nav.items.banks'), BanksNavIcon, '/app/finances/banques'),
         live(SHELL_NAV_IDS.paymentMethods, t('nav.items.paymentMethods'), PaymentMethodsNavIcon, '/app/finances/moyens-de-paiement'),
         live(SHELL_NAV_IDS.transactions, t('nav.items.transactions'), TransactionsNavIcon, '/app/finances/transactions'),
         live(SHELL_NAV_IDS.import, t('nav.items.import'), ImportNavIcon, IMPORTS_PATHS.list)
