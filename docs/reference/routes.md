@@ -40,6 +40,7 @@
 | `/app/parametres/confidentialite`    | user-settings (visibilité, demandes d’amis)    |
 | `/app/parametres/securite`           | user-settings (2FA, appareils)                 |
 | `/app/parametres/abonnement`         | subscription (Page Shell, API mockée)          |
+| `/app/calendrier`                    | calendar (maquette, données de test)           |
 | `/app/comptes`                       | redirect → pages paramètres (`?tab=`)          |
 | `/app/finances/comptes`              | accounts (Tabs Shell : Accounts / Invitations) |
 | `/app/finances/transactions`         | transactions                                   |

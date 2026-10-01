@@ -106,6 +106,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (path === '/app' || path === '/app/') {
         return { openId: SHELL_NAV_IDS.dashboard, activeId: SHELL_NAV_IDS.dashboard };
     }
+    if (pathIs(path, '/app/calendrier')) {
+        return { openId: SHELL_NAV_IDS.calendar, activeId: SHELL_NAV_IDS.calendar };
+    }
     if (pathIs(path, RECURRENCES_PATHS.charges)) {
         return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesExpenses };
     }
@@ -263,7 +266,7 @@ export function useShellNav() {
 
     const primaryNav = computed<NavItem[]>(() => [
         live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardNavIcon, '/app'),
-        upcoming(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarNavIcon),
+        live(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarNavIcon, '/app/calendrier'),
         section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesNavIcon, financeLeaves.value),
         section(SHELL_NAV_IDS.recurrences, t('nav.headers.recurrences'), RecurrencesNavIcon, recurrencesLeaves.value),
         section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionNavIcon, gestionLeaves.value),

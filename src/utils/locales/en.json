@@ -3233,5 +3233,26 @@
             "empty": "No bank available.",
             "searchMine": "Search your banks…"
         }
+    },
+    "calendarPage": {
+        "title": "Calendar",
+        "previous": "Previous month",
+        "next": "Next month",
+        "today": "Today",
+        "selectedDay": "Selected day",
+        "emptyDay": "Nothing planned that day.",
+        "monthSummary": "Month summary",
+        "inflows": "Planned income",
+        "outflows": "Planned outgoings",
+        "balance": "Month balance",
+        "upcomingDues": "Upcoming dues",
+        "more": "+{count} more",
+        "eventCount": "no event | {count} event | {count} events",
+        "kinds": {
+            "income": "Income",
+            "expense": "Charge",
+            "due": "Due",
+            "goal": "Goal"
+        }
     }
 }

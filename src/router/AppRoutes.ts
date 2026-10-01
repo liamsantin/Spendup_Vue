@@ -24,6 +24,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/dashboard/AppDashboardView.vue')
         },
         {
+            name: 'AppCalendar',
+            path: 'calendrier',
+            component: () => import('@/views/app/calendar/AppCalendarPage.vue')
+        },
+        {
             name: 'AppNotifications',
             path: 'notifications',
             component: () => import('@/views/app/notifications/AppNotificationsPage.vue')
