@@ -4,8 +4,6 @@ import {
     BrandWindowsIcon,
     BuildingBankIcon,
     ChartPieIcon,
-    HomeEcoIcon,
-    UsersIcon,
     CheckIcon,
     DeviceDesktopIcon,
     DownloadIcon,
@@ -89,29 +87,6 @@ const hostingFacts = [
 ];
 
 const hostingScope = ['Base de données', 'Documents & justificatifs', 'Sauvegardes'];
-
-const pillars = [
-    {
-        icon: BuildingBankIcon,
-        label: 'Comptes & transactions',
-        text: 'Banques, cash, cartes et wallets réunis à partir de vos imports et de vos saisies, avec catégorisation automatique.'
-    },
-    {
-        icon: ChartPieIcon,
-        label: 'Budgets & objectifs',
-        text: 'Des limites claires, des projets suivis pas à pas et des alertes avant le dépassement.'
-    },
-    {
-        icon: HomeEcoIcon,
-        label: 'Patrimoine & placements',
-        text: 'Immobilier, véhicules, investissements et crypto réunis dans un patrimoine net vivant.'
-    },
-    {
-        icon: UsersIcon,
-        label: 'Famille & partage',
-        text: 'Un espace commun, des rôles précis et des dépenses réparties sans mélanger vos comptes.'
-    }
-];
 
 const steps = [
     {
@@ -305,13 +280,22 @@ const faqColumns = [faqs.slice(0, Math.ceil(faqs.length / 2)), faqs.slice(Math.c
 
         <section id="comment-ca-marche" class="home-steps">
             <v-container class="max-width-1218">
-                <div v-reveal class="section-heading">
-                    <span class="section-kicker">Comment ça marche</span>
-                    <h2 class="textPrimary">Trois étapes pour y voir clair</h2>
-                    <p class="text-medium-emphasis">
-                        Pas de connexion bancaire à configurer, pas de paramétrage interminable : un relevé exporté depuis votre e-banking
-                        suffit pour démarrer.
-                    </p>
+                <div v-reveal class="steps-intro">
+                    <div class="steps-intro__copy">
+                        <span class="section-kicker">Comment ça marche</span>
+                        <h2 class="textPrimary">Trois étapes pour y voir clair</h2>
+                        <p class="text-medium-emphasis">
+                            Un relevé exporté depuis votre e-banking suffit pour démarrer. Chaque import nourrit ensuite les
+                            <strong>{{ spendupDomainNames.length }} domaines métiers</strong> de votre carnet de bord.
+                        </p>
+                        <v-btn variant="text" color="primary" class="text-none px-0" to="/fonctionnalites">
+                            Découvrir toutes les fonctionnalités
+                            <ArrowRightIcon size="17" class="ms-2" />
+                        </v-btn>
+                    </div>
+                    <div class="steps-intro__visual">
+                        <HubScene />
+                    </div>
                 </div>
 
                 <ol v-reveal class="steps-grid" data-reveal-stagger="120">
@@ -354,54 +338,6 @@ const faqColumns = [faqs.slice(0, Math.ceil(faqs.length / 2)), faqs.slice(Math.c
                 <p v-reveal class="home-features__note text-medium-emphasis">
                     Vos soldes sont à jour de votre dernier import : importez chaque semaine ou chaque mois, à votre rythme.
                 </p>
-            </v-container>
-        </section>
-
-        <section id="plateforme" class="home-platform">
-            <div class="home-platform__backdrop" aria-hidden="true"></div>
-            <v-container class="max-width-1218">
-                <div v-reveal class="platform-layout">
-                    <div class="platform-visual">
-                        <HubScene />
-                    </div>
-
-                    <div class="platform-copy">
-                        <span class="section-kicker">Une seule plateforme</span>
-                        <h2 class="textPrimary">
-                            <span class="platform-count">{{ spendupDomainNames.length }}</span> domaines métiers.<br />Une seule vision, la
-                            vôtre.
-                        </h2>
-                        <p class="platform-copy__lead text-medium-emphasis">
-                            Fini les fichiers dispersés et les applications qui ne se parlent pas. Chaque relevé importé, chaque
-                            justificatif joint enrichit le même historique : du compte courant au patrimoine familial, tout est relié pour
-                            vous donner une lecture claire et complète de votre situation.
-                        </p>
-
-                        <ul class="platform-pillars">
-                            <li v-for="pillar in pillars" :key="pillar.label">
-                                <span class="platform-pillars__icon">
-                                    <component :is="pillar.icon" size="21" stroke-width="1.65" />
-                                </span>
-                                <div>
-                                    <strong>{{ pillar.label }}</strong>
-                                    <p>{{ pillar.text }}</p>
-                                </div>
-                            </li>
-                        </ul>
-
-                        <ul class="platform-domains" :aria-label="`Les ${spendupDomainNames.length} domaines métiers`">
-                            <li v-for="name in spendupDomainNames" :key="name">{{ name }}</li>
-                        </ul>
-
-                        <div class="platform-copy__actions">
-                            <v-btn color="primary" size="large" flat class="text-none px-6" to="/fonctionnalites">
-                                Découvrir toutes les fonctionnalités
-                                <ArrowRightIcon size="18" class="ms-2" />
-                            </v-btn>
-                            <span>Gratuit pour commencer · Sans carte bancaire</span>
-                        </div>
-                    </div>
-                </div>
             </v-container>
         </section>
 
