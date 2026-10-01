@@ -1225,11 +1225,11 @@
         "form": {
             "createTitle": "Nouvel objectif",
             "editTitle": "Modifier l’objectif",
-            "subtitle": "L’ouverture est l’argent déjà de côté avant Spendup. Le reste vient des transactions liées.",
+            "subtitle": "L’ouverture est l’argent déjà de côté avant Spend.Up. Le reste vient des transactions liées.",
             "noAccount": "Aucun compte",
             "accountHint": "Compte actif dont vous êtes propriétaire. Sans compte, aucune transaction ne peut être liée.",
             "abandonHint": "Un objectif abandonné le reste, même si le montant couvre la cible. Pas de notification.",
-            "openingAmountHint": "Argent déjà de côté avant Spendup. Il s’ajoute aux contributions, il ne les remplace pas.",
+            "openingAmountHint": "Argent déjà de côté avant Spend.Up. Il s’ajoute aux contributions, il ne les remplace pas.",
             "progressHint": "Contributions : {contributed} · Suivi : {current}",
             "projectedOn": "Atteinte estimée le {date}",
             "detachAccountHint": "Détacher le compte retire toutes les transactions liées à cet objectif.",

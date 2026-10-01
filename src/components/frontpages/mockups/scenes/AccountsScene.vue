@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Parcours « Au quotidien » : transactions (desktop) + comptes consolidés (mobile) + import PDF.
+ * Parcours « Au quotidien » : transactions (desktop) + comptes consolidés (mobile) + import de relevé CSV.
  */
 import {
     ArrowsExchangeIcon,
@@ -40,8 +40,8 @@ const accounts = [
 </script>
 
 <template>
-    <MockStage label="Transactions du mois et comptes consolidés dans Spendup, montants en francs suisses">
-        <MockWindow title="Spendup · Transactions" style="left: 1.2em; top: 3.4em; width: 30.5em; height: 23.6em">
+    <MockStage label="Transactions du mois et comptes consolidés dans Spend.Up, montants en francs suisses">
+        <MockWindow title="Spend.Up · Transactions" style="left: 1.2em; top: 3.4em; width: 30.5em; height: 23.6em">
             <div class="mk-between" style="margin-bottom: 0.9em">
                 <div>
                     <span class="mk-eyebrow">Septembre 2026</span>
@@ -114,8 +114,8 @@ const accounts = [
         <div class="mk-float mk-bob mk-bob--late" style="left: 3em; top: 25.6em">
             <span class="mk-ico mk-tone-red"><FileUploadIcon /></span>
             <div>
-                <span class="mk-title">Relevé UBS importé</span>
-                <span class="mk-label">42 opérations classées automatiquement</span>
+                <span class="mk-title">Relevé UBS importé · CSV</span>
+                <span class="mk-label">42 opérations relues et classées</span>
             </div>
         </div>
     </MockStage>

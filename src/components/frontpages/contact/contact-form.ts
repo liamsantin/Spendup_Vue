@@ -12,6 +12,7 @@ export const CONTACT_MESSAGE_MAX = 2000;
 export const CONTACT_SUBJECTS = [
     { value: 'question', label: 'Question générale' },
     { value: 'support', label: 'Aide à l’utilisation' },
+    { value: 'import', label: 'Import d’un relevé' },
     { value: 'data', label: 'Mes données personnelles' },
     { value: 'partner', label: 'Presse & partenariats' }
 ] as const;
@@ -52,7 +53,7 @@ export function validateContactForm(values: ContactFormValues): ContactFormError
 /** Lien `mailto:` pré-rempli (objet + corps encodés). */
 export function buildContactMailto(to: string, values: ContactFormValues): string {
     const subjectLabel = CONTACT_SUBJECTS.find((item) => item.value === values.subject)?.label ?? 'Contact';
-    const subject = `[Spendup] ${subjectLabel} — ${values.name.trim()}`;
+    const subject = `[Spend.Up] ${subjectLabel} — ${values.name.trim()}`;
     const body = [values.message.trim(), '', '—', `${values.name.trim()} <${values.email.trim()}>`].join('\n');
     return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }

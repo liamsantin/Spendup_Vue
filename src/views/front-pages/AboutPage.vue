@@ -25,7 +25,7 @@ const principles = [
     {
         icon: UserIcon,
         title: 'Vous laisser le contrôle',
-        text: 'Vos données, vos règles, vos choix de partage. Spendup s’adapte à votre façon de gérer.'
+        text: 'Spend.Up ne se connecte jamais à votre banque : vous décidez de ce que vous importez, et quand. Vos données, vos règles.'
     },
     {
         icon: LockIcon,
@@ -40,6 +40,7 @@ const principles = [
 ];
 
 const commitments = [
+    'Aucun accès à vos comptes bancaires, jamais',
     'Une tarification lisible, sans frais cachés',
     'Aucune revente de données personnelles',
     'Export et suppression des données à tout moment',
@@ -62,12 +63,12 @@ const commitments = [
                         </v-chip>
                         <h1 class="textPrimary">Construire l’outil financier que j’aurais aimé avoir.</h1>
                         <p class="text-medium-emphasis">
-                            Spendup est né d’un besoin simple : comprendre toute sa vie financière sans multiplier les fichiers, les
-                            applications et les compromis.
+                            Spend.Up est né d’un besoin simple : comprendre toute sa vie financière sans multiplier les fichiers, les
+                            applications et les compromis, et sans confier ses accès bancaires à qui que ce soit.
                         </p>
                         <div class="about-hero__actions">
                             <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth?tab=register">
-                                Découvrir Spendup
+                                Découvrir Spend.Up
                                 <ArrowRightIcon size="19" class="ms-2" />
                             </v-btn>
                             <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-7" to="/fonctionnalites">
@@ -79,7 +80,7 @@ const commitments = [
                     <div class="founder-visual su-hero-visual-in">
                         <div class="founder-visual__glow"></div>
                         <div class="founder-card">
-                            <img :src="liamPhoto" alt="L.S, créateur de Spendup" />
+                            <img :src="liamPhoto" alt="L.S, créateur de Spend.Up" />
                             <div class="founder-card__caption">
                                 <span>Créé et développé par</span>
                                 <strong>L.S</strong>
@@ -101,7 +102,7 @@ const commitments = [
             <section class="about-story">
                 <v-container class="max-width-1218">
                     <div v-reveal class="about-heading">
-                        <span class="about-kicker">Pourquoi Spendup existe</span>
+                        <span class="about-kicker">Pourquoi Spend.Up existe</span>
                         <h2 class="textPrimary">Une meilleure décision commence par une meilleure vision</h2>
                         <p class="text-medium-emphasis">
                             Les finances personnelles ne se résument pas à une liste de dépenses. Elles relient le quotidien, les projets,
@@ -122,8 +123,8 @@ const commitments = [
                             <span>02</span>
                             <h3 class="textPrimary">L’idée</h3>
                             <p class="text-medium-emphasis">
-                                Réunir toutes ces dimensions dans une plateforme cohérente, suffisamment simple pour le quotidien et assez
-                                complète pour durer.
+                                Un carnet de bord financier alimenté par vos propres relevés : simple pour le quotidien, assez complet pour
+                                réunir toutes ces dimensions, et durable puisqu’il ne dépend d’aucune banque.
                             </p>
                         </article>
                         <article>
@@ -175,7 +176,7 @@ const commitments = [
                             <span class="about-kicker">Ancré en Suisse</span>
                             <h2>Conçu localement.<br />Pensé pour durer.</h2>
                             <p>
-                                Spendup est développé en Suisse et vos données y sont hébergées. Cette proximité guide nos exigences en
+                                Spend.Up est développé en Suisse et vos données y sont hébergées. Cette proximité guide nos exigences en
                                 matière de confidentialité, de fiabilité et de transparence.
                             </p>
                             <div class="about-swiss__facts">
@@ -194,7 +195,7 @@ const commitments = [
                             <span class="about-kicker">Construit dans la transparence</span>
                             <h2 class="textPrimary">Un projet indépendant, encore en mouvement.</h2>
                             <p class="text-medium-emphasis">
-                                Spendup est actuellement en version bêta. La plateforme évolue rapidement au fil des apprentissages et des
+                                Spend.Up est actuellement en version bêta. La plateforme évolue rapidement au fil des apprentissages et des
                                 retours, avec une priorité constante : rester utile, fiable et honnête.
                             </p>
                         </div>
@@ -212,7 +213,7 @@ const commitments = [
                 <v-container class="max-width-1218 text-center">
                     <span class="about-kicker">L’histoire ne fait que commencer</span>
                     <h2 class="textPrimary">Construisez une vision plus claire de vos finances.</h2>
-                    <p>Essayez Spendup gratuitement, sans carte bancaire et sans engagement.</p>
+                    <p>Essayez Spend.Up gratuitement, sans carte bancaire et sans engagement.</p>
                     <div class="about-final__actions">
                         <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
                             Commencer gratuitement

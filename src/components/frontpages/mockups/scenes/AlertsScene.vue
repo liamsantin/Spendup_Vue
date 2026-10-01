@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * « Alertes & notifications » : Spendup dans le navigateur, panneau de notifications ouvert
+ * « Alertes & notifications » : Spend.Up dans le navigateur, panneau de notifications ouvert
  * depuis la cloche de l'en-tête, et préférences (e-mail, application web, application Windows).
  */
 import {
@@ -46,8 +46,8 @@ const channels = [
 </script>
 
 <template>
-    <MockStage label="Spendup dans le navigateur : panneau de notifications et préférences d’alerte">
-        <MockWindow title="Spendup · Tableau de bord" style="left: 1.2em; top: 2.6em; width: 25.8em; height: 28.4em">
+    <MockStage label="Spend.Up dans le navigateur : panneau de notifications et préférences d’alerte">
+        <MockWindow title="Spend.Up · Tableau de bord" style="left: 1.2em; top: 2.6em; width: 25.8em; height: 28.4em">
             <div class="al-header">
                 <span class="al-search"><SearchIcon /> Rechercher…</span>
                 <span class="al-bell">

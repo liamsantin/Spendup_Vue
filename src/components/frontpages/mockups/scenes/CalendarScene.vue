@@ -45,7 +45,7 @@ const outflows = upcoming.filter((item) => item.amount < 0).reduce((sum, item) =
 
 <template>
     <MockStage label="Calendrier d’octobre 2026 avec les échéances, les revenus planifiés et le cashflow du mois">
-        <MockWindow title="Spendup · Calendrier" style="left: 1.2em; top: 1.6em; width: 43.6em; height: 30.2em">
+        <MockWindow title="Spend.Up · Calendrier" style="left: 1.2em; top: 1.6em; width: 43.6em; height: 30.2em">
             <div class="cal-layout">
                 <div class="cal-month">
                     <div class="mk-between" style="margin-bottom: 0.9em">

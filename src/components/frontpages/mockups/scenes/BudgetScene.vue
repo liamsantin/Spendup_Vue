@@ -40,8 +40,8 @@ const goalPercent = 72;
 </script>
 
 <template>
-    <MockStage label="Budgets mensuels par catégorie et objectif d’épargne « Voyage au Japon » dans Spendup, montants en francs suisses">
-        <MockWindow title="Spendup · Budgets" style="left: 1.2em; top: 3em; width: 30em; height: 25.8em">
+    <MockStage label="Budgets mensuels par catégorie et objectif d’épargne « Voyage au Japon » dans Spend.Up, montants en francs suisses">
+        <MockWindow title="Spend.Up · Budgets" style="left: 1.2em; top: 3em; width: 30em; height: 25.8em">
             <div class="mk-between" style="margin-bottom: 0.9em">
                 <div>
                     <span class="mk-eyebrow">Octobre 2026</span>

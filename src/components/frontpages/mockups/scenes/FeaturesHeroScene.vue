@@ -66,8 +66,8 @@ const quickCategories = [
 </script>
 
 <template>
-    <MockStage ratio="5 / 4" label="Tableau de bord Spendup sur ordinateur et saisie rapide d’une dépense sur smartphone">
-        <MockWindow title="Spendup · Tableau de bord" style="left: 1.2em; top: 3.8em; width: 31.4em; height: 27.6em">
+    <MockStage ratio="5 / 4" label="Tableau de bord Spend.Up sur ordinateur et saisie rapide d’une dépense sur smartphone">
+        <MockWindow title="Spend.Up · Tableau de bord" style="left: 1.2em; top: 3.8em; width: 31.4em; height: 27.6em">
             <div class="fh-layout">
                 <nav class="fh-nav">
                     <span class="fh-nav__logo"><WalletIcon /></span>

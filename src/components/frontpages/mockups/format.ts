@@ -22,5 +22,5 @@ export function signedAmount(value: number): string {
     return `${value < 0 ? '−' : '+'} ${swissNumber(Math.abs(value))}`;
 }
 
-/** Domaine affiché dans les barres d'adresse des maquettes (Spendup est une application web). */
+/** Domaine affiché dans les barres d'adresse des maquettes (Spend.Up est une application web). */
 export const MOCK_APP_HOST = 'spendup.ch';

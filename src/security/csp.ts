@@ -1,5 +1,5 @@
 /**
- * Politiques CSP Spendup (SPA Vue).
+ * Politiques CSP Spend.Up (SPA Vue).
  * - Dev : Report-Only (HMR Vite nécessite unsafe-eval / ws).
  * - Prod : enforce (build hashé + Google GIS + fonts).
  * - Desktop Tauri : miroir dans `src-tauri/tauri.conf.json` (`app.security.csp` + `devCsp`)

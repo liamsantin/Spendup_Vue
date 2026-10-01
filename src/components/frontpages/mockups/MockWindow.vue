@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Fenêtre de navigateur (Spendup est une application web) : navigation, barre d'adresse
+ * Fenêtre de navigateur (Spend.Up est une application web) : navigation, barre d'adresse
  * sécurisée et contrôles de fenêtre façon Windows. Dimensionnée en `em`.
  */
 import { computed } from 'vue';
@@ -8,15 +8,15 @@ import { MOCK_APP_HOST } from './format';
 
 const props = withDefaults(
     defineProps<{
-        /** Libellé de la page, ex. « Spendup · Transactions » → `/transactions`. */
+        /** Libellé de la page, ex. « Spend.Up · Transactions » → `/transactions`. */
         title?: string;
         /** Chemin affiché dans la barre d'adresse (déduit du titre sinon). */
         path?: string;
     }>(),
-    { title: 'Spendup', path: undefined }
+    { title: 'Spend.Up', path: undefined }
 );
 
-/** « Spendup · Octobre 2026 » → « /octobre-2026 » */
+/** « Spend.Up · Octobre 2026 » → « /octobre-2026 » */
 function slug(value: string): string {
     return value
         .normalize('NFD')

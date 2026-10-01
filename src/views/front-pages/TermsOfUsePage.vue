@@ -13,10 +13,10 @@ import Footer from '@/components/frontpages/layout/Footer.vue';
         <section class="legal-hero">
             <v-container class="max-width-1218">
                 <div class="legal-hero__icon"><FileTextIcon size="30" stroke-width="1.5" /></div>
-                <span class="legal-kicker">Accès et utilisation de Spendup</span>
+                <span class="legal-kicker">Accès et utilisation de Spend.Up</span>
                 <h1 class="textPrimary">Conditions d’utilisation</h1>
                 <p class="text-medium-emphasis">
-                    Les règles essentielles pour utiliser Spendup de manière sûre, responsable et transparente.
+                    Les règles essentielles pour utiliser Spend.Up de manière sûre, responsable et transparente.
                 </p>
                 <div class="legal-hero__meta">
                     <span><ShieldCheckIcon size="16" /> Document officiel</span>
@@ -30,7 +30,7 @@ import Footer from '@/components/frontpages/layout/Footer.vue';
                 <div class="legal-intro">
                     <strong>En bref</strong>
                     <p>
-                        Vous restez propriétaire de vos données et responsable de l’utilisation de votre compte. Spendup met en œuvre les
+                        Vous restez propriétaire de vos données et responsable de l’utilisation de votre compte. Spend.Up met en œuvre les
                         mesures nécessaires pour assurer un service fiable et sécurisé.
                     </p>
                 </div>

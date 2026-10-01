@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * « 19 domaines financiers. Une seule vision » : tableau de bord central relié aux domaines
+ * « 20 domaines métiers. Une seule vision » : tableau de bord central relié aux domaines
  * (comptes, budgets, objectifs, patrimoine…) par des connecteurs discrets.
  */
 import {
@@ -34,7 +34,7 @@ const budgets = [true, true, false, true, true];
 
 <template>
     <MockStage
-        label="Tableau de bord Spendup relié à huit domaines financiers : comptes, budgets, objectifs, patrimoine, placements, échéances, documents et famille"
+        label="Tableau de bord Spend.Up relié à huit domaines financiers : comptes, budgets, objectifs, patrimoine, placements, échéances, documents et famille"
     >
         <svg class="hub-links" viewBox="0 0 46 34.5" preserveAspectRatio="none">
             <g v-for="n in nodes" :key="n.label">
@@ -42,13 +42,13 @@ const budgets = [true, true, false, true, true];
             </g>
         </svg>
 
-        <MockWindow title="Spendup · Vue d’ensemble" style="left: 12.5em; top: 6.9em; width: 21em; height: 20.7em">
+        <MockWindow title="Spend.Up · Vue d’ensemble" style="left: 12.5em; top: 6.9em; width: 21em; height: 20.7em">
             <div class="mk-between" style="margin-bottom: 0.7em">
                 <div>
                     <span class="mk-eyebrow">Vue d’ensemble</span>
                     <span class="mk-title" style="margin-top: 0.15em">Octobre 2026</span>
                 </div>
-                <span class="mk-chip mk-tone-primary">19 domaines</span>
+                <span class="mk-chip mk-tone-primary">20 domaines</span>
             </div>
 
             <div class="mk-card" style="position: relative; padding: 0.8em 0.9em 0.5em">

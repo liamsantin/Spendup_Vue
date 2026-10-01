@@ -29,7 +29,7 @@ describe('buildContactMailto', () => {
         const href = buildContactMailto('contact@example.ch', valid);
         expect(href.startsWith('mailto:contact@example.ch?subject=')).toBe(true);
         const params = new URLSearchParams(href.split('?')[1]);
-        expect(params.get('subject')).toBe('[Spendup] Aide à l’utilisation — Léa Rochat');
+        expect(params.get('subject')).toBe('[Spend.Up] Aide à l’utilisation — Léa Rochat');
         expect(params.get('body')).toContain('Comment importer un relevé PDF ?');
         expect(params.get('body')).toContain('Léa Rochat <lea@example.ch>');
     });

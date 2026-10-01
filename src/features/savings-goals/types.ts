@@ -15,7 +15,7 @@ export type SavingsGoal = {
     publicId: string;
     name: string;
     targetAmount: number;
-    /** Argent déjà de côté avant Spendup — seul montant saisi par le client. */
+    /** Argent déjà de côté avant Spend.Up — seul montant saisi par le client. */
     openingAmount: number;
     /** Somme des transactions rattachées (validee/rapprochee, même devise, mouvement sur le compte). */
     contributedAmount: number;

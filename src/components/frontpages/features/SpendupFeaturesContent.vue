@@ -2,16 +2,17 @@
 import {
     AlertTriangleIcon,
     ArrowRightIcon,
-    BuildingBankIcon,
     CalendarIcon,
     ChartLineIcon,
     ChartPieIcon,
     CheckIcon,
+    FileImportIcon,
     FileInvoiceIcon,
-    FolderIcon,
     HomeEcoIcon,
+    KeyOffIcon,
     LayoutDashboardIcon,
     LockIcon,
+    PaperclipIcon,
     RepeatIcon,
     ShieldCheckIcon,
     SparklesIcon,
@@ -29,6 +30,7 @@ import WealthScene from '@/components/frontpages/mockups/scenes/WealthScene.vue'
 import {
     spendupAdditionalDomains,
     spendupDomainGroups,
+    spendupDomainNames,
     type SpendupAdditionalDomain,
     type SpendupDomainGroup
 } from '@/data/front-pages/spendup-additional-domains';
@@ -55,13 +57,25 @@ const journeys: Journey[] = [
         icon: WalletIcon,
         kicker: 'Au quotidien',
         title: 'Comprenez chaque mouvement de votre argent.',
-        text: 'Comptes bancaires, cartes, TWINT et espèces réunis dans une seule vue. Vos relevés s’importent, se classent et se relient tout seuls.',
+        text: 'Exportez vos relevés depuis votre e-banking et importez-les en CSV ou en Excel : Spend.Up reconnaît les colonnes, vous laisse relire chaque ligne, puis classe et relie tout. Banques, cartes, TWINT et espèces se retrouvent dans une seule vue.',
         scene: AccountsScene,
         features: [
-            { icon: BuildingBankIcon, title: 'Comptes consolidés', text: 'Banques, cash, wallets et cartes dans une vue unique.' },
-            { icon: TagsIcon, title: 'Catégorisation intelligente', text: 'Catégories, tags et règles automatiques selon vos habitudes.' },
-            { icon: FolderIcon, title: 'Imports & documents', text: 'Relevés, factures et justificatifs liés à vos opérations.' },
-            { icon: AlertTriangleIcon, title: 'Détection d’anomalies', text: 'Doublons, montants inhabituels et variations à surveiller.' }
+            {
+                icon: FileImportIcon,
+                title: 'Imports de relevés',
+                text: 'CSV et Excel, modèle mémorisé par banque, revue ligne par ligne avant validation.'
+            },
+            {
+                icon: TagsIcon,
+                title: 'Reconnaissance qui apprend',
+                text: 'Tiers et moyens de paiement retrouvés grâce aux alias appris de vos corrections.'
+            },
+            { icon: PaperclipIcon, title: 'Justificatifs PDF', text: 'Factures, reçus et contrats joints à vos opérations.' },
+            {
+                icon: AlertTriangleIcon,
+                title: 'Doublons détectés',
+                text: 'Une ligne déjà importée est signalée avant d’être comptée deux fois.'
+            }
         ]
     },
     {
@@ -69,7 +83,7 @@ const journeys: Journey[] = [
         icon: ChartPieIcon,
         kicker: 'Planifier',
         title: 'Donnez une direction à votre budget.',
-        text: 'Passez du simple suivi à une vraie capacité d’anticipation : des limites claires, des projets chiffrés et un reste à vivre toujours à jour.',
+        text: 'Passez du simple suivi à une vraie capacité d’anticipation : des limites claires, des projets chiffrés et un reste à vivre recalculé à chaque import.',
         scene: BudgetScene,
         features: [
             { icon: ChartPieIcon, title: 'Budgets personnalisés', text: 'Limites mensuelles ou annuelles avec suivi par catégorie.' },
@@ -106,29 +120,6 @@ const journeys: Journey[] = [
             { icon: TargetIcon, title: 'Projets collectifs', text: 'Budgets, objectifs et patrimoine du foyer réunis.' }
         ]
     }
-];
-
-/** 19 domaines couverts : bandeau défilant sous le hero. */
-const domainNames = [
-    'Comptes',
-    'Transactions',
-    'Moyens de paiement',
-    'Catégories & tags',
-    'Tiers',
-    'Documents',
-    'Budgets',
-    'Objectifs d’épargne',
-    'Revenus récurrents',
-    'Abonnements',
-    'Calendrier',
-    'Employeurs & salaires',
-    'Patrimoine',
-    'Immobilier',
-    'Placements',
-    'Crypto',
-    'Alertes',
-    'Famille & partage',
-    'Sécurité'
 ];
 
 interface DomainTile {
@@ -171,8 +162,8 @@ const navItems = [
 ];
 
 const securityItems = [
-    'Authentification à deux facteurs',
-    'Gestion des appareils connectés',
+    'Aucun identifiant bancaire demandé',
+    'Authentification à deux facteurs et appareils',
     'Journal des activités sensibles',
     'Visibilité configurable par champ',
     'Export et suppression des données',
@@ -189,14 +180,14 @@ const securityItems = [
                     <div class="features-hero__copy">
                         <v-chip color="primary" variant="tonal" rounded="pill" class="features-eyebrow su-hero-in">
                             <SparklesIcon size="15" class="me-2" />
-                            19 domaines financiers, une seule plateforme
+                            Votre carnet de bord financier, en {{ spendupDomainNames.length }} domaines métiers
                         </v-chip>
                         <h1 class="textPrimary su-hero-in" style="--su-in-delay: 80ms">
                             Tout ce qu’il faut pour piloter <span>votre vie financière.</span>
                         </h1>
                         <p class="text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
-                            Du premier budget au patrimoine familial, Spendup relie chaque donnée pour vous donner une vision claire, en
-                            francs suisses, et toujours à jour.
+                            Importez vos relevés, joignez vos justificatifs : du premier budget au patrimoine familial, Spend.Up relie
+                            chaque donnée pour vous donner une vision claire, en francs suisses. Sans jamais se connecter à votre banque.
                         </p>
                         <div class="features-hero__actions su-hero-in" style="--su-in-delay: 240ms">
                             <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth?tab=register">
@@ -208,7 +199,7 @@ const securityItems = [
                             >
                         </div>
                         <ul class="features-hero__proof su-hero-in" style="--su-in-delay: 320ms">
-                            <li><CheckIcon size="15" stroke-width="2.4" /> Sans carte bancaire</li>
+                            <li><KeyOffIcon size="15" stroke-width="2.2" /> Sans connexion bancaire</li>
                             <li><CheckIcon size="15" stroke-width="2.4" /> Données hébergées en Suisse</li>
                             <li><CheckIcon size="15" stroke-width="2.4" /> Web &amp; Windows</li>
                         </ul>
@@ -220,10 +211,10 @@ const securityItems = [
                 </div>
             </v-container>
 
-            <div class="features-marquee" aria-label="Domaines couverts par Spendup">
+            <div class="features-marquee" aria-label="Domaines couverts par Spend.Up">
                 <div class="features-marquee__track">
                     <ul v-for="copy in 2" :key="copy" :aria-hidden="copy === 2 ? 'true' : undefined">
-                        <li v-for="name in domainNames" :key="name">{{ name }}</li>
+                        <li v-for="name in spendupDomainNames" :key="name">{{ name }}</li>
                     </ul>
                 </div>
             </div>
@@ -283,8 +274,8 @@ const securityItems = [
                     <span class="features-kicker">Dans le détail</span>
                     <h2 class="textPrimary">Chaque domaine, pensé jusqu’au bout.</h2>
                     <p class="text-medium-emphasis">
-                        Derrière les grands parcours, une dizaine de modules spécialisés qui se parlent entre eux et alimentent vos budgets,
-                        vos prévisions et votre patrimoine.
+                        Derrière les grands parcours, une dizaine de modules spécialisés qui se parlent entre eux : chaque relevé importé
+                        alimente vos budgets, vos prévisions et votre patrimoine.
                     </p>
                 </div>
 
@@ -340,8 +331,8 @@ const securityItems = [
                         <span class="features-security__badge"><ShieldCheckIcon size="17" stroke-width="1.8" /> Sécurité incluse</span>
                         <h2>Protégé par défaut.<br />Contrôlé par vous.</h2>
                         <p>
-                            La sécurité, la confidentialité et la maîtrise de vos données sont incluses dans toutes les offres Spendup —
-                            jamais vendues en option.
+                            Spend.Up n’a aucun accès à vos comptes bancaires. La sécurité, la confidentialité et la maîtrise de vos données
+                            sont incluses dans toutes les offres, jamais vendues en option.
                         </p>
                         <div class="features-security__actions">
                             <v-btn color="white" size="large" flat class="text-none" to="/politique-confidentialite">

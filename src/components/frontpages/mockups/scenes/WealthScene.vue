@@ -30,8 +30,8 @@ const line = 'M0 79.4 L30 72.8 L60 62.6 L90 59 L120 49.4 L150 42.8 L180 33.3 L21
 </script>
 
 <template>
-    <MockStage label="Patrimoine net de CHF 486’200 en hausse sur cinq ans et sa répartition par classe d’actifs dans Spendup">
-        <MockWindow title="Spendup · Patrimoine" style="left: 1.2em; top: 1.4em; width: 43.6em; height: 27.2em">
+    <MockStage label="Patrimoine net de CHF 486’200 en hausse sur cinq ans et sa répartition par classe d’actifs dans Spend.Up">
+        <MockWindow title="Spend.Up · Patrimoine" style="left: 1.2em; top: 1.4em; width: 43.6em; height: 27.2em">
             <div class="mk-card mk-card--pad" style="left: 1em; top: 1em; width: 22.4em; bottom: 1em">
                 <div class="mk-between" style="align-items: flex-start">
                     <div>

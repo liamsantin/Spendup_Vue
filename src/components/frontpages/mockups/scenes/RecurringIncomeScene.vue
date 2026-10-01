@@ -36,7 +36,7 @@ const h = (value: number) => `${(value / max) * barHeight}em`;
 
 <template>
     <MockStage label="Revenus récurrents à venir et prévision des trois prochains mois avec le 13e salaire en décembre, en francs suisses">
-        <MockWindow title="Spendup · Revenus à venir" style="left: 1.2em; top: 1.6em; width: 43.6em; height: 27.8em">
+        <MockWindow title="Spend.Up · Revenus à venir" style="left: 1.2em; top: 1.6em; width: 43.6em; height: 27.8em">
             <div class="mk-card mk-card--pad" style="left: 1em; top: 1em; width: 23.4em; bottom: 1em">
                 <div class="mk-between">
                     <div>

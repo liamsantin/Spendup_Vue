@@ -1,18 +1,19 @@
 <script setup lang="ts">
 /**
- * « Votre espace financier vous suit » : le même solde synchronisé sur ordinateur portable
- * et smartphone. Conçue pour un fond de section sombre (pas de halo).
+ * « Votre espace financier vous suit » : le même solde, à jour du dernier import, sur ordinateur
+ * portable et smartphone. Conçue pour un fond de section sombre (pas de halo).
  */
 import {
     ArrowsExchangeIcon,
     BuildingBankIcon,
     ChartPieIcon,
     CreditCardIcon,
+    DevicesIcon,
+    FileCheckIcon,
     HomeIcon,
     MenuIcon,
     PigMoneyIcon,
     PlusIcon,
-    RefreshIcon,
     SettingsIcon,
     TargetIcon,
     WalletIcon
@@ -34,7 +35,11 @@ const nav = [HomeIcon, ArrowsExchangeIcon, ChartPieIcon, TargetIcon];
 </script>
 
 <template>
-    <MockStage ratio="5 / 4" decor="none" label="Le même solde de CHF 12’840.50 synchronisé entre un ordinateur portable et un smartphone">
+    <MockStage
+        ratio="5 / 4"
+        decor="none"
+        label="Le même solde de CHF 12’840.50, à jour du dernier import, sur un ordinateur portable et un smartphone"
+    >
         <div class="aw-laptop" style="left: 2.2em; top: 6.6em">
             <div class="aw-laptop__screen">
                 <span class="aw-laptop__cam"></span>
@@ -61,7 +66,7 @@ const nav = [HomeIcon, ArrowsExchangeIcon, ChartPieIcon, TargetIcon];
                                     <span class="mk-eyebrow">Octobre 2026</span>
                                     <span class="mk-title" style="font-size: 1.05em; margin-top: 0.15em">Mes comptes</span>
                                 </div>
-                                <span class="mk-chip mk-tone-green"><RefreshIcon class="aw-chip-ico" />Synchronisé</span>
+                                <span class="mk-chip mk-tone-green"><FileCheckIcon class="aw-chip-ico" />Import du 30 sept.</span>
                             </div>
 
                             <div class="mk-card" style="position: relative; padding: 0.85em 1em 0.6em">
@@ -120,7 +125,7 @@ const nav = [HomeIcon, ArrowsExchangeIcon, ChartPieIcon, TargetIcon];
             <div class="mk-between" style="margin-top: 0.2em">
                 <span class="mk-label">Solde total</span>
                 <span class="mk-chip mk-tone-green" style="height: 1.6em; font-size: 0.58em"
-                    ><RefreshIcon class="aw-chip-ico" />Synchronisé</span
+                    ><FileCheckIcon class="aw-chip-ico" />À jour</span
                 >
             </div>
             <span class="mk-kpi" style="font-size: 1.55em; margin-top: 0.2em"><small>CHF</small>{{ swissNumber(total) }}</span>
@@ -161,9 +166,9 @@ const nav = [HomeIcon, ArrowsExchangeIcon, ChartPieIcon, TargetIcon];
         </MockPhone>
 
         <div class="mk-float mk-bob mk-bob--late" style="left: 11em; top: 31em">
-            <span class="mk-ico mk-tone-green"><RefreshIcon /></span>
+            <span class="mk-ico mk-tone-green"><DevicesIcon /></span>
             <div>
-                <span class="mk-title">Synchronisé · à l’instant</span>
+                <span class="mk-title">Le même carnet, partout</span>
                 <span class="mk-label">Ordinateur portable et smartphone</span>
             </div>
         </div>

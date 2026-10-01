@@ -31,7 +31,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
                 <div class="legal-intro">
                     <strong>Notre engagement</strong>
                     <p>
-                        Vos données ne sont jamais vendues. Elles sont utilisées uniquement pour faire fonctionner Spendup, sécuriser votre
+                        Vos données ne sont jamais vendues. Elles sont utilisées uniquement pour faire fonctionner Spend.Up, sécuriser votre
                         compte et vous fournir les fonctionnalités demandées.
                     </p>
                 </div>

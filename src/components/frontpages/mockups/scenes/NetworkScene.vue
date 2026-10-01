@@ -55,8 +55,8 @@ const methods = [
 </script>
 
 <template>
-    <MockStage label="Répertoire des tiers liés aux transactions et moyens de paiement dans Spendup : cartes, TWINT et espèces">
-        <MockWindow title="Spendup · Tiers" style="left: 1.2em; top: 4em; width: 28.4em; height: 23.8em">
+    <MockStage label="Répertoire des tiers liés aux transactions et moyens de paiement dans Spend.Up : cartes, TWINT et espèces">
+        <MockWindow title="Spend.Up · Tiers" style="left: 1.2em; top: 4em; width: 28.4em; height: 23.8em">
             <div class="mk-between" style="margin-bottom: 0.8em">
                 <div>
                     <span class="mk-eyebrow">Réseau</span>

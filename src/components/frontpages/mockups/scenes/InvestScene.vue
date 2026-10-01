@@ -44,9 +44,9 @@ const line = 'M0 62 L25 58 L50 64 L75 50 L100 53 L125 40 L150 44 L175 28 L200 18
 
 <template>
     <MockStage
-        label="Portefeuille de placements dans Spendup : CHF 58’430.00, en hausse de 4.8 % depuis janvier, réparti entre ETF, obligations et bitcoin"
+        label="Portefeuille de placements dans Spend.Up : CHF 58’430.00, en hausse de 4.8 % depuis janvier, réparti entre ETF, obligations et bitcoin"
     >
-        <MockWindow title="Spendup · Placements" style="left: 1.2em; top: 3.2em; width: 43.6em; height: 24.4em">
+        <MockWindow title="Spend.Up · Placements" style="left: 1.2em; top: 3.2em; width: 43.6em; height: 24.4em">
             <div class="inv-grid">
                 <div class="mk-card mk-card--pad inv-chart">
                     <div class="mk-between">

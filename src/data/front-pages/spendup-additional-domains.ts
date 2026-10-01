@@ -60,6 +60,30 @@ export type SpendupDomainGroup = {
     lead: string;
 };
 
+/** Les domaines métiers couverts (bandeau de la page Fonctionnalités, section plateforme de l'accueil). */
+export const spendupDomainNames = [
+    'Comptes',
+    'Transactions',
+    'Moyens de paiement',
+    'Catégories & tags',
+    'Tiers',
+    'Imports de relevés',
+    'Justificatifs',
+    'Budgets',
+    'Objectifs d’épargne',
+    'Revenus récurrents',
+    'Abonnements',
+    'Calendrier',
+    'Employeurs & salaires',
+    'Patrimoine',
+    'Immobilier',
+    'Placements',
+    'Crypto',
+    'Alertes',
+    'Famille & partage',
+    'Sécurité'
+];
+
 /** Groupes de la grille « Dans le détail » : trois familles de besoins plutôt que dix sections identiques. */
 export const spendupDomainGroups: SpendupDomainGroup[] = [
     {
@@ -67,7 +91,7 @@ export const spendupDomainGroups: SpendupDomainGroup[] = [
         number: '05',
         kicker: 'Organiser & contrôler',
         title: 'Des données propres, classées, fiables.',
-        lead: 'Catégories, règles, tiers et contrôles continus : votre historique reste lisible et juste, sans effort de tri.'
+        lead: 'Catégories, règles, tiers et contrôles à chaque import : votre historique reste lisible et juste, sans effort de tri.'
     },
     {
         id: 'revenus',
@@ -185,7 +209,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
         kicker: 'Contrôler',
         icon: AlertTriangleIcon,
         title: 'Anomalies & qualité des données',
-        lead: 'Surveillez la fiabilité de vos données financières grâce à une logique de contrôle continue.',
+        lead: 'Chaque relevé importé est contrôlé : doublons, écarts et montants inhabituels sont signalés avant de fausser vos chiffres.',
         cards: [
             {
                 title: 'Détection intelligente',
@@ -254,7 +278,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
         kicker: 'Alerter',
         icon: BellIcon,
         title: 'Alertes & notifications',
-        lead: 'Restez informé des événements importants sans surveiller constamment vos comptes.',
+        lead: 'Restez informé des événements importants sans avoir à tout vérifier vous-même.',
         cards: [
             {
                 title: 'Alertes financières',

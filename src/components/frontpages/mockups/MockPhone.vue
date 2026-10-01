@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Smartphone générique affichant Spendup **dans le navigateur mobile** (application web) :
+ * Smartphone générique affichant Spend.Up **dans le navigateur mobile** (application web) :
  * caméra ponctuelle, barre d'état neutre et barre d'adresse sécurisée. Dimensionné en `em`.
  */
 import { MOCK_APP_HOST } from './format';

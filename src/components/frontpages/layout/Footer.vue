@@ -19,7 +19,7 @@ const columns = computed(() => [
         ]
     },
     {
-        title: 'Spendup',
+        title: 'Spend.Up',
         links: [
             { label: 'À propos', to: '/a-propos' },
             { label: 'Contact', to: '/contact' },
@@ -59,7 +59,10 @@ function scrollToTop() {
             <div class="footer-main">
                 <div class="footer-brand">
                     <Logo home-to="/" />
-                    <p>La plateforme suisse qui réunit budget, objectifs et patrimoine dans un espace simple, sécurisé et collaboratif.</p>
+                    <p>
+                        Le carnet de bord financier suisse, alimenté par vos relevés : budget, objectifs et patrimoine, sans connexion
+                        bancaire.
+                    </p>
 
                     <RouterLink to="/#hebergement" class="footer-hosting" aria-label="Données hébergées en Suisse chez Infomaniak">
                         <svg viewBox="0 0 32 32" aria-hidden="true">
@@ -101,7 +104,7 @@ function scrollToTop() {
             </div>
 
             <div class="footer-bottom">
-                <p>© {{ year }} Spendup. Tous droits réservés.</p>
+                <p>© {{ year }} Spend.Up. Tous droits réservés.</p>
                 <p class="footer-bottom__made">
                     <svg viewBox="0 0 32 32" aria-hidden="true">
                         <rect width="32" height="32" rx="7" fill="#DA291C" />

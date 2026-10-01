@@ -50,9 +50,9 @@ const ring = 2 * Math.PI * 15;
 
 <template>
     <MockStage
-        label="Contrôle des données dans Spendup : doublon possible, facture en hausse et montant inhabituel, avec un score de qualité de 98 %"
+        label="Contrôle des données dans Spend.Up : doublon possible, facture en hausse et montant inhabituel, avec un score de qualité de 98 %"
     >
-        <MockWindow title="Spendup · Contrôle des données" style="left: 1.2em; top: 2em; width: 30.8em; height: 30.5em">
+        <MockWindow title="Spend.Up · Contrôle des données" style="left: 1.2em; top: 2em; width: 30.8em; height: 30.5em">
             <div class="mk-between" style="margin-bottom: 0.9em">
                 <div>
                     <span class="mk-eyebrow">Septembre 2026</span>

@@ -33,7 +33,7 @@ const days = [
 
 <template>
     <MockStage
-        label="Abonnements et dépenses récurrentes dans Spendup : CHF 186.50 par mois, calendrier des prochains prélèvements et abonnement inutilisé détecté"
+        label="Abonnements et dépenses récurrentes dans Spend.Up : CHF 186.50 par mois, calendrier des prochains prélèvements et abonnement inutilisé détecté"
     >
         <MockPhone class="mk-bob" style="left: 3.4em; top: 1.75em">
             <span class="mk-eyebrow">Dépenses récurrentes</span>
@@ -70,7 +70,7 @@ const days = [
             </nav>
         </MockPhone>
 
-        <MockWindow title="Spendup · Prochains prélèvements" style="left: 20.6em; top: 4.4em; width: 24.2em; height: 17.4em">
+        <MockWindow title="Spend.Up · Prochains prélèvements" style="left: 20.6em; top: 4.4em; width: 24.2em; height: 17.4em">
             <div class="mk-between" style="margin-bottom: 0.8em">
                 <div>
                     <span class="mk-eyebrow">Cette semaine</span>

@@ -32,7 +32,7 @@ const plans: PricingPlan[] = [
         priceYearly: 0,
         features: [
             'Jusqu’à 3 comptes',
-            'Transactions, catégories et tiers',
+            'Saisie des transactions, catégories et tiers',
             'Justificatifs PDF (30 Mo)',
             'Partage d’un compte entre amis',
             'Budgets et récurrents limités (1 budget, 3 récurrences)',
@@ -52,7 +52,7 @@ const plans: PricingPlan[] = [
             'Jusqu’à 20 comptes',
             '300 Mo de justificatifs PDF',
             'Budgets et récurrents',
-            'Imports de relevés',
+            'Imports de relevés CSV et Excel',
             'Multi-devises et taux',
             'Partage de comptes entre amis',
             'Justificatif annuel (carte, certificat ou e-mail institutionnel)'
@@ -70,7 +70,7 @@ const plans: PricingPlan[] = [
             'Jusqu’à 20 comptes',
             '300 Mo de justificatifs PDF',
             'Budgets et récurrents',
-            'Imports de relevés',
+            'Imports de relevés CSV et Excel',
             'Multi-devises et taux',
             'Partage de comptes entre amis',
             'Rejoindre un foyer Famille, sans le créer'
@@ -119,7 +119,7 @@ const comparisonRows: { label: string; values: Record<PlanCode, CompareValue> }[
         values: { free: 'limited', student: true, solo: true, family: true }
     },
     {
-        label: 'Imports de relevés',
+        label: 'Imports de relevés (CSV, Excel)',
         values: { free: false, student: true, solo: true, family: true }
     },
     {

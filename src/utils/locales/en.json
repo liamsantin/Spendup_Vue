@@ -1225,11 +1225,11 @@
         "form": {
             "createTitle": "New goal",
             "editTitle": "Edit goal",
-            "subtitle": "Opening is money already set aside before Spendup. The rest comes from linked transactions.",
+            "subtitle": "Opening is money already set aside before Spend.Up. The rest comes from linked transactions.",
             "noAccount": "No account",
             "accountHint": "Active account you own. Without an account, no transaction can be linked.",
             "abandonHint": "An abandoned goal stays abandoned, even if the amount covers the target. No notification.",
-            "openingAmountHint": "Money already set aside before Spendup. It adds to contributions; it does not replace them.",
+            "openingAmountHint": "Money already set aside before Spend.Up. It adds to contributions; it does not replace them.",
             "progressHint": "Contributions: {contributed} · Tracked: {current}",
             "projectedOn": "Estimated reach date {date}",
             "detachAccountHint": "Detaching the account unlinks every transaction attached to this goal.",

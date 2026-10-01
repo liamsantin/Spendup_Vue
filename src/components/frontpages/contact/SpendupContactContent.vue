@@ -108,7 +108,7 @@ const channels = computed<ContactChannel[]>(() => [
                     <span class="contact-kicker su-hero-in">Contact</span>
                     <h1 class="textPrimary su-hero-in" style="--su-in-delay: 80ms">Une question ? <span>Parlons-en.</span></h1>
                     <p class="text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
-                        Support, données personnelles, presse ou partenariat : écrivez-nous, une personne de l’équipe Spendup vous répond
+                        Support, données personnelles, presse ou partenariat : écrivez-nous, une personne de l’équipe Spend.Up vous répond
                         directement.
                     </p>
                 </div>

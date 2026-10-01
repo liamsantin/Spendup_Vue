@@ -22,7 +22,7 @@ const currencies = [
 </script>
 
 <template>
-    <MockStage label="Validation en deux étapes, appareils connectés et devises gérées dans Spendup, données hébergées en Suisse">
+    <MockStage label="Validation en deux étapes, appareils connectés et devises gérées dans Spend.Up, données hébergées en Suisse">
         <div class="mk-card mk-card--lg mk-card--pad" style="left: 1.4em; top: 2.8em; width: 20.6em">
             <div class="mk-flex">
                 <span class="mk-ico mk-tone-primary"><ShieldLockIcon /></span>

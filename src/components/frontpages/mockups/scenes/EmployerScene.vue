@@ -33,7 +33,7 @@ const months = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S'];
 
 <template>
     <MockStage
-        label="Fiche de salaire de septembre 2026 avec le détail des déductions sociales, contrat de travail et certificat de salaire dans Spendup"
+        label="Fiche de salaire de septembre 2026 avec le détail des déductions sociales, contrat de travail et certificat de salaire dans Spend.Up"
     >
         <MockWindow
             title="Fiche de salaire · Septembre 2026 · Alpina Conseil SA"

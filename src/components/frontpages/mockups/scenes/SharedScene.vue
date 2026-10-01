@@ -33,9 +33,9 @@ const settlements = [
 
 <template>
     <MockStage
-        label="Espace partagé de la famille Rochat dans Spendup : membres et rôles, budget commun, dépenses réparties et soldes entre membres"
+        label="Espace partagé de la famille Rochat dans Spend.Up : membres et rôles, budget commun, dépenses réparties et soldes entre membres"
     >
-        <MockWindow title="Spendup · Espace Famille Rochat" style="left: 1.2em; top: 2.4em; width: 30em; height: 27.2em">
+        <MockWindow title="Spend.Up · Espace Famille Rochat" style="left: 1.2em; top: 2.4em; width: 30em; height: 27.2em">
             <div class="mk-between" style="margin-bottom: 0.9em; width: 25.8em">
                 <div>
                     <span class="mk-eyebrow">Espace partagé</span>

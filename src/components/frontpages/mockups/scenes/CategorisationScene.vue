@@ -70,8 +70,8 @@ const transactions = [
 </script>
 
 <template>
-    <MockStage label="Opérations classées par catégorie et par tag dans Spendup, avec une règle de catégorisation automatique">
-        <MockWindow title="Spendup · Opérations" style="left: 1.2em; top: 1.5em; width: 43.6em; height: 23.8em">
+    <MockStage label="Opérations classées par catégorie et par tag dans Spend.Up, avec une règle de catégorisation automatique">
+        <MockWindow title="Spend.Up · Opérations" style="left: 1.2em; top: 1.5em; width: 43.6em; height: 23.8em">
             <div style="margin-bottom: 0.9em">
                 <span class="mk-eyebrow">Septembre 2026</span>
                 <span class="mk-title" style="font-size: 1.1em; margin-top: 0.2em">Opérations</span>
