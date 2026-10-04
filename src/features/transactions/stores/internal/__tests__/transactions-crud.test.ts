@@ -18,7 +18,12 @@ vi.mock('@/features/tags/stores/tags-store', () => ({
     refreshTagCountersIfLoaded: vi.fn()
 }));
 
-import { createTransactionsState, listCacheKey, normalizeListQuery } from '@/features/transactions/stores/internal/transactions-state';
+import {
+    createTransactionsState,
+    listCacheKey,
+    normalizeListQuery,
+    parseListCacheKey
+} from '@/features/transactions/stores/internal/transactions-state';
 import { createTransactionsCrud } from '@/features/transactions/stores/internal/transactions-crud';
 
 function setup() {
@@ -68,5 +73,14 @@ describe('transactions-crud', () => {
         api.list.mockResolvedValueOnce({ items: [], page: 1, pageSize: 50, totalCount: 0 });
         await crud.loadList({ force: true });
         expect(state.loadingMore.value).toBe(false);
+    });
+});
+
+describe('transactions : recherche serveur', () => {
+    it('la recherche fait partie de la clé de cache, « : » compris', () => {
+        const query = normalizeListQuery({ accountPublicId: 'acc-1', search: '  coop: 4521 ' });
+        expect(query.search).toBe('coop: 4521');
+        expect(parseListCacheKey(listCacheKey(query))).toEqual(query);
+        expect(listCacheKey(normalizeListQuery({}))).not.toBe(listCacheKey(normalizeListQuery({ search: 'migros' })));
     });
 });

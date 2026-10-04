@@ -165,6 +165,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                             recurringIncomePublicId: normalized.recurringIncomePublicId ?? undefined,
                             from: normalized.from ?? undefined,
                             to: normalized.to ?? undefined,
+                            search: normalized.search ?? undefined,
                             page: 1,
                             pageSize: query.pageSize ?? TRANSACTION_PAGE_SIZE_DEFAULT
                         });
@@ -235,6 +236,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                 recurringIncomePublicId: query.recurringIncomePublicId ?? undefined,
                 from: query.from ?? undefined,
                 to: query.to ?? undefined,
+                search: query.search ?? undefined,
                 page: nextPage,
                 pageSize: size
             });
@@ -443,6 +445,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                 recurringIncomePublicId: current.recurringIncomePublicId ?? undefined,
                 from: current.from ?? undefined,
                 to: current.to ?? undefined,
+                search: current.search ?? undefined,
                 pageSize: pageSize.value || TRANSACTION_PAGE_SIZE_DEFAULT,
                 force: true
             }).catch(() => undefined);
@@ -479,6 +482,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             recurringIncomePublicId: current.recurringIncomePublicId ?? undefined,
             from: current.from ?? undefined,
             to: current.to ?? undefined,
+            search: current.search ?? undefined,
             pageSize: pageSize.value || TRANSACTION_PAGE_SIZE_DEFAULT,
             force
         }).catch(() => undefined);

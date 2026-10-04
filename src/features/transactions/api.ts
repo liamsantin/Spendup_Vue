@@ -2,6 +2,7 @@ import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
 import {
     TRANSACTION_PAGE_SIZE_DEFAULT,
     TRANSACTION_PAGE_SIZE_MAX,
+    TRANSACTION_SEARCH_MAX,
     type CreateTransactionPayload,
     type ListTransactionsQuery,
     type Transaction,
@@ -38,6 +39,8 @@ export const transactionsApi = {
         if (from) params.set('from', from);
         const to = query.to?.trim();
         if (to) params.set('to', to);
+        const search = query.search?.trim().slice(0, TRANSACTION_SEARCH_MAX);
+        if (search) params.set('search', search);
         return fetchWrapper.get(`/api/transactions?${params}`) as Promise<TransactionList>;
     },
 

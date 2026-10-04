@@ -335,6 +335,7 @@ async function loadTimeline(force = false) {
                 recurringIncomePublicId: filterRecurringIncomeId.value ?? undefined,
                 from: filterFrom.value ?? undefined,
                 to: filterTo.value ?? undefined,
+                search: filterSearch.value ?? undefined,
                 pageSize: needsClientFullScan.value ? TRANSACTION_PAGE_SIZE_MAX : TRANSACTION_PAGE_SIZE_DEFAULT,
                 force
             }),
@@ -472,9 +473,11 @@ watch(
     }
 );
 
+// La query `q` est déjà écrite après un délai (`useBoardSearch`) : chaque valeur recharge la liste côté serveur.
 watch(filterSearch, (query, previous) => {
     if (query) hasSearched.value = true;
     if (query || previous) searchRevealKey.value += 1;
+    if ((query ?? '') !== (previous ?? '')) void loadTimeline().catch(() => undefined);
 });
 
 async function confirmDelete() {

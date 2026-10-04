@@ -1,8 +1,13 @@
 import { computed, ref } from 'vue';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
-import { involvedAccountPublicIds, normalizeTransaction, sortTransactions } from '@/features/transactions/format';
+import { involvedAccountPublicIds, matchesTransactionSearch, normalizeTransaction, sortTransactions } from '@/features/transactions/format';
 import { withoutTagPublicId } from '@/features/tags/format';
-import { TRANSACTION_PAGE_SIZE_DEFAULT, type ListTransactionsQuery, type Transaction } from '@/features/transactions/types';
+import {
+    TRANSACTION_PAGE_SIZE_DEFAULT,
+    TRANSACTION_SEARCH_MAX,
+    type ListTransactionsQuery,
+    type Transaction
+} from '@/features/transactions/types';
 
 export const TRANSACTIONS_LIST_MAX_AGE_MS = 30_000;
 
@@ -15,6 +20,8 @@ export type TransactionsListQuery = {
     recurringIncomePublicId: string | null;
     from: string | null;
     to: string | null;
+    /** Recherche serveur normalisée (trim, tronquée à 100). */
+    search: string | null;
 };
 
 export const EMPTY_LIST_QUERY: TransactionsListQuery = {
@@ -25,7 +32,8 @@ export const EMPTY_LIST_QUERY: TransactionsListQuery = {
     recurringExpensePublicId: null,
     recurringIncomePublicId: null,
     from: null,
-    to: null
+    to: null,
+    search: null
 };
 
 export function normalizeListQuery(query: ListTransactionsQuery = {}): TransactionsListQuery {
@@ -37,7 +45,8 @@ export function normalizeListQuery(query: ListTransactionsQuery = {}): Transacti
         recurringExpensePublicId: query.recurringExpensePublicId?.trim() || null,
         recurringIncomePublicId: query.recurringIncomePublicId?.trim() || null,
         from: query.from?.trim() || null,
-        to: query.to?.trim() || null
+        to: query.to?.trim() || null,
+        search: query.search?.trim().slice(0, TRANSACTION_SEARCH_MAX) || null
     };
 }
 
@@ -50,7 +59,8 @@ export function listCacheKey(query: TransactionsListQuery): string {
     const tier = query.tierPublicId || 'all';
     const recExp = query.recurringExpensePublicId || 'all';
     const recInc = query.recurringIncomePublicId || 'all';
-    return `list:${account}:${from}:${to}:${category}:${tag}:${tier}:${recExp}:${recInc}`;
+    // `search` en dernier : il peut contenir des « : » (reconstitué par `parseListCacheKey`).
+    return `list:${account}:${from}:${to}:${category}:${tag}:${tier}:${recExp}:${recInc}:${query.search ?? ''}`;
 }
 
 export function parseListCacheKey(key: string): TransactionsListQuery {
@@ -63,7 +73,8 @@ export function parseListCacheKey(key: string): TransactionsListQuery {
         tagPublicId: !parts[5] || parts[5] === 'all' ? null : parts[5],
         tierPublicId: !parts[6] || parts[6] === 'all' ? null : parts[6],
         recurringExpensePublicId: !parts[7] || parts[7] === 'all' ? null : parts[7],
-        recurringIncomePublicId: !parts[8] || parts[8] === 'all' ? null : parts[8]
+        recurringIncomePublicId: !parts[8] || parts[8] === 'all' ? null : parts[8],
+        search: parts.slice(9).join(':') || null
     };
 }
 
@@ -84,6 +95,8 @@ function queryMatchesTransaction(query: TransactionsListQuery, tx: Transaction):
     if (query.tierPublicId && tx.tierPublicId !== query.tierPublicId) return false;
     if (query.recurringExpensePublicId && tx.recurringExpensePublicId !== query.recurringExpensePublicId) return false;
     if (query.recurringIncomePublicId && tx.recurringIncomePublicId !== query.recurringIncomePublicId) return false;
+    // `search` n’est pas vérifié ici : le serveur cherche aussi dans les noms liés (tiers, catégorie, tags…),
+    // qu’on ne connaît pas toujours localement. Voir `upsertItem`.
     return true;
 }
 
@@ -181,6 +194,8 @@ export function createTransactionsState() {
             const query = parseListCacheKey(key);
             const existed = prev.items.some((item) => item.publicId === next.publicId);
             if (!existed && !queryMatchesTransaction(query, next)) continue;
+            // Nouvelle transaction dans une liste de recherche : ajoutée seulement si ses propres champs correspondent.
+            if (!existed && query.search && !matchesTransactionSearch(next, query.search)) continue;
             if (existed && !queryMatchesTransaction(query, next)) {
                 const nextItems = prev.items.filter((item) => item.publicId !== next.publicId);
                 setList(key, nextItems, { totalCount: Math.max(0, prev.totalCount - 1) });

@@ -76,6 +76,11 @@ export type ListTransactionsQuery = {
     recurringIncomePublicId?: string;
     from?: string;
     to?: string;
+    /**
+     * Recherche serveur (100 car. max) : chaque mot doit apparaître dans le libellé, le montant, les dates,
+     * le compte, la catégorie, les tags, le tiers, le moyen de paiement ou les justificatifs.
+     */
+    search?: string;
     page?: number;
     pageSize?: number;
 };
