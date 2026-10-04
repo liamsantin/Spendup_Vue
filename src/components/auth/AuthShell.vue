@@ -21,9 +21,12 @@ const { t } = useI18n();
 
 <template>
     <div class="auth-shell">
-        <div class="auth-shell__glow auth-shell__glow--north" aria-hidden="true" />
-        <div class="auth-shell__glow auth-shell__glow--east" aria-hidden="true" />
-        <div class="auth-shell__ring" aria-hidden="true" />
+        <!-- Décor découpé dans son propre calque : il ne doit jamais agrandir la zone qui défile. -->
+        <div class="auth-shell__decor" aria-hidden="true">
+            <div class="auth-shell__glow auth-shell__glow--north" />
+            <div class="auth-shell__glow auth-shell__glow--east" />
+            <div class="auth-shell__ring" />
+        </div>
 
         <div class="auth-shell__layout">
             <aside class="auth-shell__brand su-hero-in">

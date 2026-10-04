@@ -36,6 +36,14 @@ body:has(.auth-shell) {
         linear-gradient(160deg, #f3f3f5 0%, #e9e9ee 48%, #dedee5 100%);
 }
 
+.auth-shell__decor {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
 .auth-shell__glow {
     position: absolute;
     border-radius: 50%;
@@ -167,6 +175,9 @@ body:has(.auth-shell) {
 
 .auth-shell__tabs {
     display: flex;
+    /* Sur mobile, `.su-tabs` reçoit `flex: 1 1 100%` (motion.css, pensé pour les en-têtes en ligne) :
+       dans la carte en colonne, ça étirait les onglets en hauteur. */
+    flex: none;
     width: 100%;
     margin: 0 0 28px;
     background: rgba(255, 255, 255, 0.4);
@@ -394,8 +405,32 @@ body:has(.auth-shell) {
 }
 
 @media screen and (max-width: 1099.98px) {
+    /* Une colonne : la carte peut dépasser l’écran (inscription, clavier mobile) → la page défile. */
     .auth-shell {
         padding: 16px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .auth-shell__layout {
+        height: auto;
+        min-height: 100%;
+    }
+
+    .auth-shell__stage,
+    .auth-shell__card.su-surface {
+        max-height: none;
+    }
+
+    .auth-shell__card.su-surface {
+        overflow: visible;
+    }
+
+    .auth-shell__ring {
+        right: -80px;
+        bottom: -180px;
+        width: 360px;
+        height: 360px;
     }
 
     .auth-shell__layout {
@@ -413,13 +448,6 @@ body:has(.auth-shell) {
 
     .auth-shell__mobile-logo {
         display: block;
-    }
-
-    .auth-shell__ring {
-        right: -80px;
-        bottom: -180px;
-        width: 360px;
-        height: 360px;
     }
 }
 
