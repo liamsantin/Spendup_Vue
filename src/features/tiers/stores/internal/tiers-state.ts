@@ -11,6 +11,11 @@ import {
 } from '@/features/tiers/types';
 
 export const TIERS_LIST_MAX_AGE_MS = 30_000;
+/**
+ * Résultats serveur des sélecteurs (`searchForPicker`, ex. « Mes banques »). Plus long que les listes :
+ * toute mutation locale ou `tierChanged` vide ce cache, le délai ne couvre que les cas manqués.
+ */
+export const TIERS_PICKER_MAX_AGE_MS = 5 * 60_000;
 
 export type TiersListQuery = {
     nature: TierNature | null;
@@ -113,6 +118,12 @@ export function createTiersState() {
     const error = ref<string | null>(null);
 
     const cache = createResourceCache({ defaultMaxAgeMs: TIERS_LIST_MAX_AGE_MS });
+    /** Clé `role|isBank|terme` → résultat serveur d’un sélecteur, requêtes en vol partagées. */
+    const pickerCache = new Map<string, { at: number; promise: Promise<Tier[]> }>();
+
+    function clearPickerCache() {
+        pickerCache.clear();
+    }
     const recentMutations = new Map<string, ReturnType<typeof setTimeout>>();
     const deletedListeners = new Set<(publicId: string) => void>();
 
@@ -179,6 +190,7 @@ export function createTiersState() {
     }
 
     function upsertItem(tier: Tier) {
+        clearPickerCache();
         remember(tier);
         for (const key of [...itemsByListKey.keys()]) {
             const prev = itemsByListKey.get(key);
@@ -202,6 +214,7 @@ export function createTiersState() {
     }
 
     function removeItemLocal(publicId: string) {
+        clearPickerCache();
         knownById.delete(publicId);
         for (const key of [...itemsByListKey.keys()]) {
             const prev = itemsByListKey.get(key);
@@ -213,6 +226,7 @@ export function createTiersState() {
     }
 
     function invalidateAllLists() {
+        clearPickerCache();
         for (const key of [...itemsByListKey.keys()]) {
             cache.invalidate(key);
         }
@@ -287,6 +301,8 @@ export function createTiersState() {
         initialized,
         error,
         cache,
+        pickerCache,
+        clearPickerCache,
         hasItems,
         hasMore,
         activeQuery,

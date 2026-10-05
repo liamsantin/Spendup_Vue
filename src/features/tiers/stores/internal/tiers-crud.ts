@@ -3,7 +3,13 @@ import { tiersApi } from '@/features/tiers/api';
 import { buildCreateTierPayload, buildUpdateTierPayload, type TierFormFields } from '@/features/tiers/payload';
 import { matchesTierSearch } from '@/features/tiers/format';
 import { TIER_PAGE_SIZE_DEFAULT, TIER_PAGE_SIZE_MAX, type ListTiersQuery, type Tier } from '@/features/tiers/types';
-import { listCacheKey, normalizeListQuery, parseListCacheKey, type TiersState } from '@/features/tiers/stores/internal/tiers-state';
+import {
+    TIERS_PICKER_MAX_AGE_MS,
+    listCacheKey,
+    normalizeListQuery,
+    parseListCacheKey,
+    type TiersState
+} from '@/features/tiers/stores/internal/tiers-state';
 
 export const TIER_NOT_FOUND_CODE = 'tier_not_found';
 export const TIER_NOT_FOUND_MESSAGE = 'Ce tiers n’est plus disponible.';
@@ -213,20 +219,32 @@ export function createTiersCrud(state: TiersState) {
         }
     }
 
+    function fetchPickerTiers(term: string, options: { role?: ListTiersQuery['role']; isBank?: boolean }): Promise<Tier[]> {
+        const key = `${options.role ?? ''}|${options.isBank ?? ''}|${term.toLowerCase()}`;
+        const now = Date.now();
+        const hit = state.pickerCache.get(key);
+        if (hit && now - hit.at < TIERS_PICKER_MAX_AGE_MS) return hit.promise;
+
+        // Filtre côté serveur : sans `search`, les tiers au-delà des 200 premiers restent introuvables.
+        const promise = tiersApi
+            .list({ role: options.role, isBank: options.isBank, search: term || undefined, page: 1, pageSize: TIER_PAGE_SIZE_MAX })
+            .then((result) => (Array.isArray(result?.items) ? result.items : []));
+        const entry = { at: now, promise };
+        state.pickerCache.set(key, entry);
+        promise.catch(() => {
+            if (state.pickerCache.get(key) === entry) state.pickerCache.delete(key);
+        });
+        return promise;
+    }
+
     /**
      * Recherche pour un sélecteur (pas d’impact sur la liste active) : `pageSize` max, résultats mémorisés dans l’index.
+     * Réponse serveur mise en cache (`TIERS_PICKER_MAX_AGE_MS`), vidée à chaque mutation de tier ou `tierChanged` :
+     * rouvrir un sélecteur ne refait pas d’appel.
      */
     async function searchForPicker(search: string, options: { role?: ListTiersQuery['role']; isBank?: boolean } = {}): Promise<Tier[]> {
         const term = search.trim();
-        // Filtre côté serveur : sans `search`, les tiers au-delà des 200 premiers restent introuvables.
-        const result = await tiersApi.list({
-            role: options.role,
-            isBank: options.isBank,
-            search: term || undefined,
-            page: 1,
-            pageSize: TIER_PAGE_SIZE_MAX
-        });
-        const found = Array.isArray(result?.items) ? result.items : [];
+        const found = await fetchPickerTiers(term, options);
         for (const tier of found) state.knownById.set(tier.publicId, tier);
         if (!term) return found;
         // Résultats serveur conservés tels quels (déjà filtrés), complétés par les tiers connus localement.

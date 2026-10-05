@@ -31,6 +31,7 @@ export function createTiersLifecycle(state: TiersState, deps: LifecycleDeps) {
     function reset() {
         cancelPendingLoads();
         cache.reset();
+        state.clearPickerCache();
         itemsByListKey.clear();
         knownById.clear();
         activateList(listCacheKey({ nature: null, role: null, isBank: null, search: null }));

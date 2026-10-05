@@ -14,7 +14,7 @@ import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import { sortTiers } from '@/features/tiers/format';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import type { Tier } from '@/features/tiers/types';
-import { banksApi } from '@/features/banks/api';
+import { listRegistryBanks } from '@/features/banks/registry-cache';
 import { bankChoiceFromRegistry, bankChoiceFromTier, dedupeRegistryBanks, sameBankChoice } from '@/features/banks/format';
 import {
     BANK_COUNTRIES,
@@ -116,10 +116,9 @@ async function runSearch(term: string) {
                 ? tiersStore.searchForPicker(term, { isBank: true }).catch(() => [] as Tier[])
                 : Promise.resolve([] as Tier[]),
             props.showRegistry
-                ? banksApi
-                      .list({ q: term || undefined, country: country.value, pageSize: REGISTRY_PAGE_SIZE })
-                      .then((result) => (Array.isArray(result?.items) ? result.items : []))
-                      .catch(() => [] as Bank[])
+                ? listRegistryBanks({ q: term || undefined, country: country.value, pageSize: REGISTRY_PAGE_SIZE }).catch(
+                      () => [] as Bank[]
+                  )
                 : Promise.resolve([] as Bank[])
         ]);
         if (requestId !== searchSeq) return;
