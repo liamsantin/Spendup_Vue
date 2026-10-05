@@ -4,15 +4,14 @@
  */
 defineOptions({ name: 'FriendQrModal' });
 
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import QRCode from 'qrcode';
-import { Html5Qrcode } from 'html5-qrcode';
 import { CameraIcon, QrcodeIcon } from 'vue-tabler-icons';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { useAuthStore } from '@/features/auth';
-import { buildFriendQrPayload, parseFriendQrPayload } from '../qr';
+import { useFriendQrGenerate } from '@/features/friends/composables/useFriendQrGenerate';
+import { useFriendQrScan } from '@/features/friends/composables/useFriendQrScan';
 
 type FriendQrView = 'Qr' | 'Add';
 
@@ -28,7 +27,6 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const auth = useAuthStore();
 const modalRef = ref<InstanceType<typeof AppModalBase> | null>(null);
-const scannerHost = ref<HTMLElement | null>(null);
 
 const open = computed({
     get: () => props.modelValue,
@@ -36,245 +34,41 @@ const open = computed({
 });
 
 const view = ref<FriendQrView>('Qr');
-const qrDataUrl = ref<string | null>(null);
-const qrError = ref<string | null>(null);
-const scanError = ref<string | null>(null);
-const scannerReady = ref(false);
-const cameraStarting = ref(false);
-/** Affiche le CTA d’activation caméra. */
-const cameraNeedsEnable = ref(true);
-
-/** Id unique par ouverture — évite collisions si plusieurs instances / HMR. */
-const scannerElementId = `friend-qr-scanner-${Math.random().toString(36).slice(2, 9)}`;
-
-let scanner: Html5Qrcode | null = null;
-let startGeneration = 0;
-let handledScan = false;
+const qrTabs = computed(() => [
+    { value: 'Qr' as const, label: t('friendsPage.qr.tabs.qr'), icon: QrcodeIcon },
+    { value: 'Add' as const, label: t('friendsPage.qr.tabs.add'), icon: CameraIcon }
+]);
 
 const publicId = computed(() => auth.user?.userPublicId?.trim().toUpperCase() || '');
 
-async function generateQr() {
-    qrError.value = null;
-    qrDataUrl.value = null;
-    if (!publicId.value) {
-        qrError.value = t('friendsPage.qr.missingPublicId');
-        return;
-    }
-    try {
-        const payload = buildFriendQrPayload(publicId.value);
-        qrDataUrl.value = await QRCode.toDataURL(payload, {
-            width: 240,
-            margin: 2,
-            errorCorrectionLevel: 'M'
-        });
-    } catch (e: unknown) {
-        qrError.value = e instanceof Error ? e.message : String(e);
-    }
-}
-
-function errorDetail(error: unknown): string {
-    if (typeof error === 'string') return error;
-    if (error instanceof DOMException) return `${error.name}: ${error.message}`;
-    if (error instanceof Error) return error.name ? `${error.name}: ${error.message}` : error.message;
-    return String(error ?? '');
-}
-
-function cameraErrorMessage(error: unknown): string {
-    const detail = errorDetail(error);
-    const lower = detail.toLowerCase();
-    let base = t('friendsPage.qr.cameraError');
-    if (/notfound|no camera|devicesnotfound|unavailable/i.test(lower)) {
-        base = t('friendsPage.qr.cameraUnavailable');
-    } else if (/notallowed|permission|denied|securityerror|insecure/i.test(lower)) {
-        base = `${t('friendsPage.qr.cameraPermissionNeeded')} ${t('friendsPage.qr.cameraPermissionDeniedHint')}`;
-    } else if (/notreadable|trackstart|abort|in use|busy/i.test(lower)) {
-        base = t('friendsPage.qr.cameraBusy');
-    }
-    return detail ? `${base} (${detail})` : base;
-}
-
-async function stopScanner() {
-    scannerReady.value = false;
-    const current = scanner;
-    scanner = null;
-    if (!current) return;
-    try {
-        if (current.isScanning) {
-            await current.stop();
-        }
-    } catch {
-        // ignore
-    }
-    try {
-        current.clear();
-    } catch {
-        // ignore
-    }
-    if (scannerHost.value) {
-        scannerHost.value.innerHTML = '';
-    }
-}
-
-async function tryStartWithConfig(config: string | MediaTrackConstraints) {
-    if (!scannerHost.value) {
-        throw new Error('Scanner element missing');
-    }
-    scannerHost.value.innerHTML = '';
-    scanner = new Html5Qrcode(scannerElementId);
-    await scanner.start(
-        config,
-        {
-            fps: 10,
-            qrbox: (viewfinderWidth, viewfinderHeight) => {
-                const side = Math.min(220, Math.floor(Math.min(viewfinderWidth, viewfinderHeight) * 0.75));
-                return { width: side, height: side };
-            }
-        },
-        (decodedText) => {
-            void onScanSuccess(decodedText);
-        },
-        () => undefined
-    );
-}
-
-/**
- * Démarrage caméra — uniquement depuis un clic.
- * Important : `getUserMedia` doit être le premier await (geste utilisateur Chrome).
- */
-async function startScanner() {
-    if (cameraStarting.value) return;
-    if (scanner?.isScanning) return;
-
-    const generation = ++startGeneration;
-    scanError.value = null;
-    handledScan = false;
-
-    if (!window.isSecureContext && !['localhost', '127.0.0.1'].includes(location.hostname)) {
-        scanError.value = cameraErrorMessage(new DOMException('Camera requires HTTPS or localhost', 'SecurityError'));
-        cameraNeedsEnable.value = true;
-        return;
-    }
-    if (!navigator.mediaDevices?.getUserMedia) {
-        scanError.value = cameraErrorMessage(new DOMException('getUserMedia unavailable', 'NotFoundError'));
-        cameraNeedsEnable.value = true;
-        return;
-    }
-
-    // 1) Premier await = getUserMedia (conserve le geste utilisateur → popup permission).
-    let unlockStream: MediaStream;
-    try {
-        unlockStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    } catch (e: unknown) {
-        scanError.value = cameraErrorMessage(e);
-        cameraNeedsEnable.value = true;
-        return;
-    }
-
-    cameraStarting.value = true;
-    cameraNeedsEnable.value = false;
-
-    try {
-        const deviceId = unlockStream.getVideoTracks()[0]?.getSettings()?.deviceId || '';
-        unlockStream.getTracks().forEach((track) => track.stop());
-
-        await nextTick();
-        if (generation !== startGeneration) return;
-
-        await stopScanner();
-        if (generation !== startGeneration) return;
-
-        // 2) Démarrer le scan avec le device déjà autorisé (évite un 2e prompt).
-        if (deviceId) {
-            await tryStartWithConfig(deviceId);
-        } else {
-            await tryStartWithConfig({ facingMode: 'user' });
-        }
-
-        if (generation !== startGeneration) {
-            await stopScanner();
-            return;
-        }
-
-        scannerReady.value = true;
-        cameraNeedsEnable.value = false;
-        scanError.value = null;
-    } catch (e: unknown) {
-        if (generation !== startGeneration) return;
-        scanError.value = cameraErrorMessage(e);
-        cameraNeedsEnable.value = true;
-        await stopScanner();
-    } finally {
-        if (generation === startGeneration) {
-            cameraStarting.value = false;
-        }
-        await modalRef.value?.refreshScrollbar();
-    }
-}
-
-async function onScanSuccess(decodedText: string) {
-    if (handledScan) return;
-    const id = parseFriendQrPayload(decodedText);
-    if (!id) {
-        scanError.value = t('friendsPage.qr.invalidQr');
-        return;
-    }
-    if (publicId.value && id === publicId.value) {
-        scanError.value = t('friendsPage.qr.selfScan');
-        return;
-    }
-    handledScan = true;
-    await stopScanner();
-    open.value = false;
-    emit('scanned', id);
-}
+const generate = useFriendQrGenerate({ publicId });
+const { scannerHost, scanError, scannerReady, cameraStarting, cameraNeedsEnable, scannerElementId, startScanner } = useFriendQrScan({
+    modelValue: () => props.modelValue,
+    view,
+    publicId,
+    onScanned: (id) => emit('scanned', id),
+    onClose: () => {
+        open.value = false;
+    },
+    refreshScrollbar: () => modalRef.value?.refreshScrollbar()
+});
 
 function onOpenChange(value: boolean) {
     open.value = value;
 }
 
-function resetCameraUi() {
-    scanError.value = null;
-    cameraNeedsEnable.value = true;
-    cameraStarting.value = false;
-    scannerReady.value = false;
-}
-
 watch(
     () => props.modelValue,
     async (isOpen) => {
-        startGeneration += 1;
         if (isOpen) {
             view.value = 'Qr';
-            handledScan = false;
-            resetCameraUi();
-            await generateQr();
+            await generate.generateQr();
             await modalRef.value?.refreshScrollbar();
             return;
         }
-        await stopScanner();
         view.value = 'Qr';
-        resetCameraUi();
     }
 );
-
-watch(view, async (value) => {
-    if (!props.modelValue) return;
-    startGeneration += 1;
-    if (value === 'Add') {
-        resetCameraUi();
-        await nextTick();
-        await modalRef.value?.refreshScrollbar();
-        return;
-    }
-    await stopScanner();
-    resetCameraUi();
-    await modalRef.value?.refreshScrollbar();
-});
-
-onBeforeUnmount(() => {
-    startGeneration += 1;
-    void stopScanner();
-});
 </script>
 
 <template>
@@ -288,30 +82,35 @@ onBeforeUnmount(() => {
         @update:model-value="onOpenChange"
     >
         <template #toolbar>
-            <v-tabs v-model="view" align-tabs="start" color="primary" bg-color="transparent" density="comfortable" class="friend-qr-tabs">
-                <v-tab value="Qr" class="text-none">
-                    <QrcodeIcon class="mr-2" size="18" stroke-width="1.5" />
-                    {{ t('friendsPage.qr.tabs.qr') }}
-                </v-tab>
-                <v-tab value="Add" class="text-none">
-                    <CameraIcon class="mr-2" size="18" stroke-width="1.5" />
-                    {{ t('friendsPage.qr.tabs.add') }}
-                </v-tab>
-            </v-tabs>
-            <v-divider />
+            <div class="app-modal-tabs__toolbar">
+                <nav class="app-modal-tabs__nav" :aria-label="t('friendsPage.qr.title')">
+                    <button
+                        v-for="item in qrTabs"
+                        :key="item.value"
+                        type="button"
+                        class="app-modal-tabs__tab"
+                        :class="{ 'is-active': view === item.value }"
+                        :aria-current="view === item.value ? 'page' : undefined"
+                        @click="view = item.value"
+                    >
+                        <component :is="item.icon" v-if="item.icon" :size="16" stroke-width="1.6" />
+                        <span class="app-modal-tabs__label">{{ item.label }}</span>
+                    </button>
+                </nav>
+            </div>
         </template>
 
         <v-window v-model="view">
             <v-window-item value="Qr">
                 <div class="friend-qr-panel d-flex flex-column align-center text-center ga-3 py-2">
-                    <AppAlert v-if="qrError" type="error" density="default" class="w-100" closable @dismiss="qrError = null">
-                        {{ qrError }}
+                    <AppAlert v-if="generate.qrError" type="error" class="w-100" closable @dismiss="generate.qrError = null">
+                        {{ generate.qrError }}
                     </AppAlert>
                     <template v-else>
                         <p class="text-body-2 text-medium-emphasis mb-0">{{ t('friendsPage.qr.showHint') }}</p>
-                        <v-img v-if="qrDataUrl" :src="qrDataUrl" width="240" height="240" class="friend-qr-panel__img" />
-                        <v-progress-circular v-else indeterminate color="primary" size="32" />
-                        <div v-if="publicId" class="text-subtitle-1 font-weight-semibold textPrimary">
+                        <v-img v-if="generate.qrDataUrl" :src="generate.qrDataUrl" width="240" height="240" class="friend-qr-panel__img" />
+                        <span v-else class="su-spin" />
+                        <div v-if="publicId" class="text-subtitle-1 font-weight-semibold">
                             {{ t('friendsPage.qr.yourId', { id: publicId }) }}
                         </div>
                     </template>
@@ -322,18 +121,18 @@ onBeforeUnmount(() => {
                 <div class="friend-qr-panel d-flex flex-column align-center ga-3 py-2">
                     <p class="text-body-2 text-medium-emphasis text-center mb-0">{{ t('friendsPage.qr.scanHint') }}</p>
 
-                    <AppAlert v-if="scanError" type="warning" density="default" class="w-100">
+                    <AppAlert v-if="scanError" type="warning" class="w-100">
                         {{ scanError }}
                     </AppAlert>
 
-                    <v-btn v-if="cameraNeedsEnable && !cameraStarting" color="primary" flat @click="startScanner">
-                        <CameraIcon class="mr-2" size="18" stroke-width="1.5" />
+                    <button v-if="cameraNeedsEnable && !cameraStarting" type="button" class="su-btn su-btn--ink" @click="startScanner">
+                        <CameraIcon size="18" stroke-width="1.5" />
                         {{ t('friendsPage.qr.enableCamera') }}
-                    </v-btn>
+                    </button>
 
                     <div v-if="!cameraNeedsEnable || cameraStarting || scannerReady" class="friend-qr-scanner-wrap">
                         <div v-if="cameraStarting" class="friend-qr-scanner-loading">
-                            <v-progress-circular indeterminate color="primary" size="36" />
+                            <span class="su-spin" />
                             <p class="text-body-2 text-medium-emphasis mb-0">{{ t('friendsPage.qr.enableCamera') }}…</p>
                         </div>
                         <div
@@ -348,25 +147,101 @@ onBeforeUnmount(() => {
         </v-window>
 
         <template #footer="{ close }">
-            <v-spacer />
-            <v-btn color="primary" flat @click="close">{{ t('common.close') }}</v-btn>
+            <button type="button" class="su-btn su-btn--ink" @click="close">{{ t('common.close') }}</button>
         </template>
     </AppModalBase>
 </template>
 
 <style scoped>
-.friend-qr-tabs {
-    padding-inline: 8px;
+.app-modal-tabs__toolbar {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 2px 24px 12px;
+    box-sizing: border-box;
 }
 
-.friend-qr-tabs :deep(.v-slide-group__content) {
+.app-modal-tabs__nav {
+    display: flex;
+    flex-wrap: nowrap;
     justify-content: flex-start;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    border: 0;
+    background: transparent;
+    box-sizing: border-box;
 }
 
-.friend-qr-tabs :deep(.v-tabs-bar),
-.friend-qr-tabs :deep(.v-toolbar),
-.friend-qr-tabs :deep(.v-tabs) {
-    background: transparent !important;
+.app-modal-tabs__nav::-webkit-scrollbar {
+    display: none;
+}
+
+.app-modal-tabs__tab {
+    appearance: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    min-width: 0;
+    height: 34px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 17px;
+    background: transparent;
+    color: var(--ink-mute);
+    font: inherit;
+    font-size: 13.5px;
+    font-weight: 550;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        color 0.25s var(--ease),
+        background 0.25s var(--ease),
+        box-shadow 0.3s var(--ease),
+        transform 0.35s var(--spring);
+}
+
+.app-modal-tabs__tab:hover:not(:disabled):not(.is-active) {
+    color: var(--ink);
+    background: rgba(var(--v-theme-primary), 0.05);
+}
+
+.app-modal-tabs__tab.is-active {
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.12);
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.app-modal-tabs__tab:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.app-modal-tabs__tab svg {
+    flex: none;
+    opacity: 0.65;
+}
+
+.app-modal-tabs__tab.is-active svg {
+    opacity: 1;
+}
+
+.app-modal-tabs__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .friend-qr-panel {
@@ -374,7 +249,7 @@ onBeforeUnmount(() => {
 }
 
 .friend-qr-panel__img {
-    border-radius: 8px;
+    border-radius: 16px;
     overflow: hidden;
     background: #fff;
 }
@@ -388,7 +263,7 @@ onBeforeUnmount(() => {
 .friend-qr-scanner {
     width: 100%;
     min-height: 240px;
-    border-radius: 8px;
+    border-radius: 16px;
     overflow: hidden;
     background: rgba(var(--v-theme-on-surface), 0.06);
 }
@@ -402,12 +277,12 @@ onBeforeUnmount(() => {
     align-items: center;
     justify-content: center;
     gap: 12px;
-    border-radius: 8px;
+    border-radius: 16px;
     background: rgba(var(--v-theme-surface), 0.92);
 }
 
 .friend-qr-scanner :deep(video) {
     width: 100%;
-    border-radius: 8px;
+    border-radius: 16px;
 }
 </style>

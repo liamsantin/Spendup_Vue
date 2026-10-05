@@ -96,15 +96,15 @@ fn oauth_loopback_cancel(state: State<'_, OauthState>) -> Result<(), String> {
 }
 
 /// Échange le code OAuth contre un `id_token` côté native (évite le CORS WebView).
-/// Les clients « Application de bureau » Google ont souvent un Client secret affiché
-/// dans la console ; le token endpoint peut l’exiger même avec PKCE.
+/// Le secret client Desktop est lu depuis l’environnement natif
+/// (`GOOGLE_DESKTOP_CLIENT_SECRET` ou `VITE_GOOGLE_DESKTOP_CLIENT_SECRET`) —
+/// jamais passé depuis le WebView (évite le bundle JS).
 #[tauri::command]
 async fn google_exchange_code(
     client_id: String,
     code: String,
     code_verifier: String,
     redirect_uri: String,
-    client_secret: Option<String>,
 ) -> Result<String, String> {
     #[derive(Deserialize)]
     struct TokenResponse {
@@ -122,7 +122,7 @@ async fn google_exchange_code(
         ("grant_type", "authorization_code".to_string()),
         ("redirect_uri", redirect_uri.clone()),
     ];
-    if let Some(secret) = client_secret.filter(|s| !s.trim().is_empty()) {
+    if let Some(secret) = resolve_google_desktop_client_secret() {
         form.push(("client_secret", secret));
     }
 
@@ -148,6 +148,25 @@ async fn google_exchange_code(
         .error_description
         .or(json.error)
         .unwrap_or_else(|| format!("Google token exchange failed ({status})")))
+}
+
+/// Secret OAuth Desktop : compile-time (`build.rs`) puis variables d’environnement process.
+fn resolve_google_desktop_client_secret() -> Option<String> {
+    if let Some(embedded) = option_env!("GOOGLE_DESKTOP_CLIENT_SECRET") {
+        let trimmed = embedded.trim();
+        if !trimmed.is_empty() {
+            return Some(trimmed.to_string());
+        }
+    }
+    for key in ["GOOGLE_DESKTOP_CLIENT_SECRET", "VITE_GOOGLE_DESKTOP_CLIENT_SECRET"] {
+        if let Ok(value) = std::env::var(key) {
+            let trimmed = value.trim().to_string();
+            if !trimmed.is_empty() {
+                return Some(trimmed);
+            }
+        }
+    }
+    None
 }
 
 fn validate_exchange_inputs(

@@ -1,5 +1,5 @@
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
-import type { CountriesResult } from './types';
+import type { CountriesResult } from '@/features/countries/types';
 
 /** `GET /api/countries` — JWT requis. */
 export const countriesApi = {

@@ -2,7 +2,10 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { LayoutDashboardIcon } from 'vue-tabler-icons';
-import type { UserSettings } from '../../types';
+import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
+import AppSelect from '@/components/shared/select/AppSelect.vue';
+import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
+import type { UserSettings } from '@/features/user-settings/types';
 
 const draft = defineModel<UserSettings>({ required: true });
 const { t } = useI18n();
@@ -15,47 +18,26 @@ const dashboardViewItems = computed(() => [
 </script>
 
 <template>
-    <v-card elevation="10">
-        <v-card-item>
-            <div class="d-flex align-center ga-3 flex-wrap">
-                <v-avatar size="48" rounded="md" color="lightprimary">
-                    <LayoutDashboardIcon class="text-primary" size="25" />
-                </v-avatar>
-                <div>
-                    <h4 class="text-h4 mb-0">{{ t('userSettings.dashboard.title') }}</h4>
-                    <div class="text-subtitle-1 text-medium-emphasis text-10">
-                        {{ t('userSettings.dashboard.subtitle') }}
-                    </div>
-                </div>
-            </div>
-            <v-row dense class="mt-4">
-                <v-col cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('userSettings.dashboard.defaultView') }}</v-label>
-                    <v-select
-                        v-model="draft.defaultDashboardView"
-                        :items="dashboardViewItems"
-                        item-title="title"
-                        item-value="value"
-                        variant="outlined"
-                        hide-details
-                    />
-                </v-col>
-                <v-col cols="12" md="6" class="d-flex flex-column justify-center">
-                    <v-switch
-                        v-model="draft.showBalanceOnDashboard"
-                        color="primary"
-                        hide-details
-                        class="mb-2"
-                        :label="t('userSettings.dashboard.showBalance')"
-                    />
-                    <v-switch
-                        v-model="draft.hideSensitiveAmounts"
-                        color="primary"
-                        hide-details
-                        :label="t('userSettings.dashboard.hideSensitiveAmounts')"
-                    />
-                </v-col>
-            </v-row>
-        </v-card-item>
-    </v-card>
+    <AppGlassCard :title="t('userSettings.dashboard.title')" :subtitle="t('userSettings.dashboard.subtitle')">
+        <template #icon>
+            <LayoutDashboardIcon :size="20" stroke-width="1.5" />
+        </template>
+        <v-row>
+            <v-col cols="12" md="6">
+                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.dashboard.defaultView') }}</v-label>
+                <AppSelect
+                    v-model="draft.defaultDashboardView"
+                    :items="dashboardViewItems"
+                    item-title="title"
+                    item-value="value"
+                    :label="t('userSettings.dashboard.defaultView')"
+                    hide-details
+                />
+            </v-col>
+            <v-col cols="12" md="6" class="d-flex flex-column justify-end">
+                <AppSwitch v-model="draft.showBalanceOnDashboard" class="mb-2" :label="t('userSettings.dashboard.showBalance')" />
+                <AppSwitch v-model="draft.hideSensitiveAmounts" :label="t('userSettings.dashboard.hideSensitiveAmounts')" />
+            </v-col>
+        </v-row>
+    </AppGlassCard>
 </template>

@@ -1,19 +1,35 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useFriendAvatarUrl } from '../composables/useFriendAvatarUrl';
-import { useFriendsStore } from '../stores/friends-store';
-import type { FriendUser } from '../types';
+import { useFriendAvatarUrl } from '@/features/friends/composables/useFriendAvatarUrl';
+import { getFriendDisplayName, getFriendProfileLabel } from '@/features/friends/display-name';
+import { useFriendsStore } from '@/features/friends/stores/friends-store';
+import type { FriendUser } from '@/features/friends/types';
 
-const props = defineProps<{
-    user: FriendUser;
-    friendshipPublicId?: string | null;
-    subtitle?: string | null;
-    highlight?: boolean;
-}>();
+const props = withDefaults(
+    defineProps<{
+        user: FriendUser;
+        friendshipPublicId?: string | null;
+        nickname?: string | null;
+        subtitle?: string | null;
+        highlight?: boolean;
+        variant?: 'default' | 'glass';
+        index?: number;
+    }>(),
+    { variant: 'glass', index: 0 }
+);
 
 const store = useFriendsStore();
-const fullName = computed(() => [props.user.firstName, props.user.name].filter(Boolean).join(' ').trim());
-const title = computed(() => fullName.value || props.user.username || props.user.publicId);
+const title = computed(() => getFriendDisplayName(props.user, props.nickname));
+const secondaryLine = computed(() => {
+    if (props.nickname?.trim()) {
+        const profile = getFriendProfileLabel(props.user);
+        if (props.subtitle) {
+            return `${profile} · ${props.subtitle}`;
+        }
+        return profile;
+    }
+    return props.subtitle || props.user.username || props.user.publicId;
+});
 const focused = computed(
     () => props.highlight === true || (!!props.friendshipPublicId && store.isFocusedFriendship(props.friendshipPublicId))
 );
@@ -25,8 +41,25 @@ const { avatarSrc } = useFriendAvatarUrl(
 </script>
 
 <template>
+    <div
+        v-if="variant === 'glass'"
+        class="su-person"
+        :class="{ 'is-focused': focused }"
+        :style="{ '--i': index }"
+        :data-friendship-id="friendshipPublicId || undefined"
+    >
+        <img class="su-person__avatar" :src="avatarSrc" width="44" height="44" :alt="title" />
+        <div class="su-person__meta">
+            <p class="su-person__name">{{ title }}</p>
+            <p class="su-person__sub">{{ secondaryLine }}</p>
+        </div>
+        <div class="su-person__actions" @click.stop>
+            <slot name="actions" />
+        </div>
+    </div>
     <!-- `link` active le hover Vuetify (comme les items notifications cliquables). -->
     <v-list-item
+        v-else
         link
         color="primary"
         class="friend-list-item px-2 py-3"
@@ -37,7 +70,7 @@ const { avatarSrc } = useFriendAvatarUrl(
     >
         <template #prepend>
             <v-avatar size="46" class="mr-3" color="lightprimary">
-                <v-img :src="avatarSrc" width="46" height="46" cover :alt="title" />
+                <v-img :src="avatarSrc" width="46" height="46" cover eager :alt="title" />
             </v-avatar>
         </template>
 
@@ -45,7 +78,7 @@ const { avatarSrc } = useFriendAvatarUrl(
             <div class="min-width-0">
                 <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">{{ title }}</h6>
                 <p class="text-body-2 text-medium-emphasis mb-0 text-truncate">
-                    {{ subtitle || user.username || user.publicId }}
+                    {{ secondaryLine }}
                 </p>
             </div>
             <div class="d-flex flex-wrap justify-end ga-2 friend-list-item__actions" @click.stop>

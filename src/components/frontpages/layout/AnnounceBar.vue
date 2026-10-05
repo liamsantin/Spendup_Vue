@@ -19,7 +19,7 @@ const hideOfferBar = () => {
         class="bg-primary py-2 offerbar d-sm-flex justify-center gap-4 align-center position-relative px-4 overflow-hidden"
     >
         <div class="d-flex ga-sm-4 ga-2 align-center">
-            <v-btn class="white-btn" size="small" to="/auth/register">Nouveau</v-btn>
+            <v-btn class="white-btn" size="small" to="/auth?tab=register">Nouveau</v-btn>
             <p class="text-13 font-weight-medium position-relative z-1 pr-md-0 pr-5">
                 Spend.Up — plateforme de gestion financière personnelle (projet expérimental)
             </p>

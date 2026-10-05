@@ -25,9 +25,18 @@
 | Auth          | [`features/auth/contract.md`](features/auth/contract.md)                   |
 | Notifications | [`features/notifications/contract.md`](features/notifications/contract.md) |
 | Friends       | [`features/friends/contract.md`](features/friends/contract.md)             |
+| Accounts      | [`features/accounts/contract.md`](features/accounts/contract.md)           |
+| Categories    | [`features/categories/contract.md`](features/categories/contract.md)       |
+| Tiers         | [`features/tiers/contract.md`](features/tiers/contract.md)                 |
+| Tags          | [`features/tags/contract.md`](features/tags/contract.md)                   |
+| Files         | [`features/files/contract.md`](features/files/contract.md)                 |
+| Transactions  | [`features/transactions/contract.md`](features/transactions/contract.md)   |
+| Imports       | [`features/imports/contract.md`](features/imports/contract.md)             |
+| Subscription  | [`features/subscription/contract.md`](features/subscription/contract.md)   |
 | User settings | [`features/user-settings/contract.md`](features/user-settings/contract.md) |
 | Countries     | [`features/countries/contract.md`](features/countries/contract.md)         |
 | Dashboard     | [`features/dashboard/contract.md`](features/dashboard/contract.md)         |
+| Savings goals | [`features/savings-goals/contract.md`](features/savings-goals/contract.md) |
 
 ## Règles d’évolution
 

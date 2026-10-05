@@ -1,8 +1,71 @@
 @use '../variables' as *;
 
-/*This is for the logo*/
+.theme-rail {
+    background: rgb(var(--v-theme-lightprimary)) !important;
+    border-right: 1px solid rgb(var(--v-theme-borderColor)) !important;
+}
+
+.theme-rail--embedded {
+    width: var(--theme-rail-width, 80px);
+    flex-shrink: 0;
+    height: 100%;
+}
+
+/* Même hauteur que le bloc logo (pa-5 + icône 32px) ; même offset que le v-list (pa-6). */
+.theme-rail__inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    min-height: 0;
+    padding: 0 8px 16px;
+}
+
+.theme-rail__brand {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    height: 72px;
+    width: 100%;
+}
+
+.theme-rail__themes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding-top: 24px;
+}
+
+.theme-rail__themes--mobile {
+    padding-top: 12px;
+}
+
+.theme-rail__btn {
+    color: rgb(var(--v-theme-textSecondary));
+}
+
+.theme-rail__divider {
+    align-self: center;
+    flex: 0 0 auto;
+    width: 40px !important;
+    max-width: 40px;
+    margin-inline: auto;
+    border-color: rgb(var(--v-theme-borderColor)) !important;
+    opacity: 1;
+}
+
+.theme-rail__btn--active {
+    --rail-icon-tone-stroke: currentColor;
+    background: rgb(var(--v-theme-primary)) !important;
+    color: rgb(var(--v-theme-on-primary)) !important;
+}
+
 .leftSidebar {
     box-shadow: none !important;
+    background: rgb(var(--v-theme-surface)) !important;
     border-right: 1px solid rgb(var(--v-theme-borderColor));
 
     .logo {
@@ -21,15 +84,102 @@
     }
 }
 
-/*This is for the Vertical sidebar*/
-.scrollnavbar {
-    height: calc(100vh - 190px);
+.leftSidebar--embedded {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    border-right: none;
+}
 
-    .userbottom {
-        position: fixed;
-        bottom: 0px;
-        width: 100%;
-    }
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.sidebar-nav__brand {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    height: 72px;
+    padding: 0 20px;
+}
+
+.mobile-dual-overlay {
+    position: fixed;
+    inset-block-start: var(--v-layout-top, 70px);
+    inset-block-end: 0;
+    inset-inline: 0;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.mobile-dual-overlay__scrim {
+    position: absolute;
+    inset: 0;
+    inset-inline-start: var(--theme-rail-width, 80px);
+    background: rgba(var(--v-theme-on-surface), 0.5);
+    pointer-events: auto;
+}
+
+.mobile-dual-overlay__rail,
+.mobile-dual-overlay__menu {
+    position: absolute;
+    inset-block: 0;
+    pointer-events: auto;
+}
+
+.mobile-dual-overlay__rail {
+    inset-inline-start: 0;
+    width: var(--theme-rail-width, 80px);
+    z-index: 2;
+}
+
+.mobile-dual-overlay__menu {
+    inset-inline-start: var(--theme-rail-width, 80px);
+    width: var(--content-sidebar-width, 250px);
+    z-index: 1;
+    background: rgb(var(--v-theme-surface));
+    box-shadow:
+        0 8px 10px -5px rgba(0, 0, 0, 0.12),
+        0 16px 24px 2px rgba(0, 0, 0, 0.08);
+}
+
+.mobile-dual-enter-active .mobile-dual-overlay__scrim,
+.mobile-dual-leave-active .mobile-dual-overlay__scrim {
+    transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-dual-enter-active .mobile-dual-overlay__rail,
+.mobile-dual-leave-active .mobile-dual-overlay__rail {
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-dual-enter-active .mobile-dual-overlay__menu,
+.mobile-dual-leave-active .mobile-dual-overlay__menu {
+    transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-dual-enter-from .mobile-dual-overlay__scrim,
+.mobile-dual-leave-to .mobile-dual-overlay__scrim {
+    opacity: 0;
+}
+
+.mobile-dual-enter-from .mobile-dual-overlay__rail,
+.mobile-dual-leave-to .mobile-dual-overlay__rail {
+    transform: translateX(-100%);
+}
+
+.mobile-dual-enter-from .mobile-dual-overlay__menu,
+.mobile-dual-leave-to .mobile-dual-overlay__menu {
+    transform: translateX(-100%);
+}
+
+.scrollnavbar {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
 
     .smallCap {
         padding: 3px 0px !important;
@@ -43,7 +193,6 @@
         }
     }
 
-    /*General Menu css*/
     .v-list-group__items .v-list-item,
     .v-list-item {
         border-radius: $border-radius-root;
@@ -72,7 +221,6 @@
         }
     }
 
-    /*This is for the dropdown*/
     .v-list {
         color: rgb(var(--v-theme-textSecondary));
 
@@ -95,90 +243,6 @@
             .v-list-group__items .v-list-item.v-list-item--active > .v-list-item__overlay {
                 background: transparent;
                 color: rgb(var(--v-theme-primary));
-            }
-        }
-    }
-}
-
-.v-navigation-drawer--rail {
-    .scrollnavbar .v-list .v-list-group__items,
-    .hide-menu {
-        opacity: 1;
-    }
-
-    .leftPadding {
-        margin-left: 0px;
-    }
-}
-
-@media only screen and (min-width: 1170px) {
-    .mini-sidebar {
-        .logo {
-            width: 40px;
-            overflow: hidden;
-            padding-left: 0;
-        }
-
-        .leftSidebar .v-list--density-default .v-list-subheader {
-            padding-inline-start: 16px !important;
-        }
-
-        .smallCap {
-            padding: 3px 16px !important;
-        }
-
-        .mini-icon {
-            display: block;
-        }
-
-        .sidebarchip.hide-menu {
-            opacity: 0;
-        }
-
-        .userbottom .hide-menu {
-            opacity: 0;
-        }
-
-        .mini-text {
-            display: none;
-        }
-
-        .v-list {
-            padding: 14px !important;
-        }
-
-        .leftSidebar:hover {
-            box-shadow: $box-shadow !important;
-
-            .mini-icon {
-                display: none;
-            }
-
-            .mini-text {
-                display: block;
-            }
-            .smallCap {
-                padding: 3px 0px !important;
-            }
-            .v-list--density-default .v-list-subheader {
-                padding-inline-start: 0px !important;
-            }
-        }
-
-        .v-navigation-drawer--expand-on-hover:hover {
-            .logo {
-                width: 100%;
-            }
-
-            .v-list .v-list-group__items,
-            .hide-menu {
-                opacity: 1;
-            }
-            .sidebarchip.hide-menu {
-                opacity: 1;
-            }
-            .userbottom .hide-menu {
-                opacity: 1;
             }
         }
     }

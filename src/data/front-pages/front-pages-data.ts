@@ -8,7 +8,7 @@ export const SpendupPricingPackages: PackageType[] = [
         price: 0,
         period: 'mois',
         buttontext: 'Créer un compte',
-        url: '/auth/register',
+        url: '/auth?tab=register',
         list: [
             { listtitle: 'Gestion des revenus', status: false, icon: true, disable: false },
             { listtitle: 'Gestion des dépenses', status: false, icon: true, disable: false },
@@ -28,7 +28,7 @@ export const SpendupPricingPackages: PackageType[] = [
         price: 9.9,
         period: 'mois',
         buttontext: 'Être informé',
-        url: '/auth/register',
+        url: '/auth?tab=register',
         buttonOutlined: true,
         list: [
             { listtitle: "Toutes les fonctionnalités de l'offre Gratuite", status: false, icon: true, disable: false },
@@ -47,8 +47,8 @@ export const FooterMenu1: FooterType[] = [
     { menu: 'Accueil', link: '/' },
     { menu: 'Fonctionnalités', link: '/fonctionnalites' },
     { menu: 'À propos', link: '/a-propos' },
-    { menu: 'Connexion', link: '/auth/login' },
-    { menu: 'Créer un compte', link: '/auth/register' }
+    { menu: 'Connexion', link: '/auth?tab=login' },
+    { menu: 'Créer un compte', link: '/auth?tab=register' }
 ];
 
 export const FooterMenu2: FooterType[] = [

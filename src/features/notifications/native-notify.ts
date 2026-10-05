@@ -1,6 +1,6 @@
 import { isPermissionGranted, requestPermission, sendNotification, onAction } from '@tauri-apps/plugin-notification';
-import type { AppNotification } from './types';
-import { isSafeAppNotificationPath, resolveNotificationLink } from './link';
+import type { AppNotification } from '@/features/notifications/types';
+import { isSafeAppNotificationPath, resolveNotificationLink } from '@/features/notifications/link';
 import { isTauri } from '@/utils/helpers/platform-helpers';
 
 let actionListenerReady = false;

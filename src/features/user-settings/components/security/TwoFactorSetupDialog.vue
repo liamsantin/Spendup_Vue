@@ -3,8 +3,9 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import QRCode from 'qrcode';
 import { useAuthStore, type TwoFactorSetup } from '@/features/auth';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppCheckbox from '@/components/shared/checkbox/AppCheckbox.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 
 const props = defineProps<{
@@ -135,7 +136,7 @@ async function enable(submittedCode?: string) {
         :height="640"
     >
         <div v-if="step === 'loading'" class="d-flex justify-center py-10">
-            <v-progress-circular indeterminate color="primary" size="40" />
+            <span class="su-spin" />
         </div>
 
         <template v-else-if="step === 'setup' && setup">
@@ -146,12 +147,12 @@ async function enable(submittedCode?: string) {
             <v-label class="mb-2 font-weight-medium">{{ t('security.setupDialog.secretLabel') }}</v-label>
             <div class="d-flex align-center ga-2 mb-6">
                 <v-text-field :model-value="setup.secret" variant="outlined" readonly hide-details density="comfortable" />
-                <v-btn variant="tonal" color="primary" flat @click="copyText(setup.secret, 'secret')">
+                <button type="button" class="su-btn su-btn--ink" @click="copyText(setup.secret, 'secret')">
                     {{ copiedSecret ? t('security.setupDialog.copied') : t('security.setupDialog.copy') }}
-                </v-btn>
+                </button>
             </div>
 
-            <AppAlert type="warning" variant="tonal" class="mb-4">
+            <AppAlert type="warning" class="mb-4">
                 {{ t('security.setupDialog.recoveryWarning') }}
             </AppAlert>
 
@@ -161,12 +162,17 @@ async function enable(submittedCode?: string) {
                         {{ recovery }}
                     </v-chip>
                 </div>
-                <v-btn class="mt-4" variant="tonal" color="primary" flat block @click="copyText(setup.recoveryCodes.join('\n'), 'codes')">
+                <button
+                    type="button"
+                    class="su-btn su-btn--ink mt-4"
+                    style="width: 100%"
+                    @click="copyText(setup.recoveryCodes.join('\n'), 'codes')"
+                >
                     {{ copiedCodes ? t('security.setupDialog.codesCopied') : t('security.setupDialog.copyCodes') }}
-                </v-btn>
+                </button>
             </v-sheet>
 
-            <v-checkbox v-model="codesAcknowledged" hide-details color="primary" :label="t('security.setupDialog.acknowledge')" />
+            <AppCheckbox v-model="codesAcknowledged" :label="t('security.setupDialog.acknowledge')" />
         </template>
 
         <template v-else-if="step === 'verify'">
@@ -177,17 +183,20 @@ async function enable(submittedCode?: string) {
         <AppAlert v-if="error" type="error" class="mt-4">{{ error }}</AppAlert>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
+            <button type="button" class="su-btn su-btn--ghost" @click="close">{{ t('common.cancel') }}</button>
             <template v-if="step === 'setup' || step === 'loading'">
-                <v-btn v-if="!setup" color="primary" flat :loading="loading" @click="startSetup">{{
-                    t('security.setupDialog.retry')
-                }}</v-btn>
-                <v-btn v-else color="primary" flat @click="goToVerify">{{ t('security.setupDialog.continue') }}</v-btn>
+                <button v-if="!setup" type="button" class="su-btn su-btn--ink" :disabled="loading" @click="startSetup">
+                    {{ t('security.setupDialog.retry') }}
+                </button>
+                <button v-else type="button" class="su-btn su-btn--ink" @click="goToVerify">
+                    {{ t('security.setupDialog.continue') }}
+                </button>
             </template>
             <template v-else-if="step === 'verify'">
-                <v-btn variant="text" flat class="mr-2" @click="step = 'setup'">{{ t('security.setupDialog.back') }}</v-btn>
-                <v-btn color="primary" flat :loading="loading" @click="enable()">{{ t('security.setupDialog.activate') }}</v-btn>
+                <button type="button" class="su-btn" @click="step = 'setup'">{{ t('security.setupDialog.back') }}</button>
+                <button type="button" class="su-btn su-btn--ink" :disabled="loading" @click="enable()">
+                    {{ t('security.setupDialog.activate') }}
+                </button>
             </template>
         </template>
     </AppModalBase>

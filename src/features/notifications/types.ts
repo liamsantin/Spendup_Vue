@@ -12,6 +12,14 @@ export type NotificationType =
     | 'friendRemoved'
     /** @deprecated plus produit — historique inbox uniquement */
     | 'friendBlocked'
+    | 'accountShareInvite'
+    | 'accountShareAccepted'
+    | 'accountShareRefused'
+    | 'accountShareRevoked'
+    | 'accountShareLeft'
+    | 'accountShareRoleChanged'
+    | 'budgetAlert'
+    | 'savingsGoalReached'
     | 'other'
     | (string & {});
 
@@ -75,11 +83,112 @@ export type NotificationReceivedPayload = {
 };
 
 /** Payload SignalR `friendshipChanged` — live sans inbox / badge. */
-export type FriendshipChange = 'refused' | 'canceled' | 'blocked' | 'removed';
+export type FriendshipChange = 'refused' | 'canceled' | 'blocked' | 'removed' | 'nicknameUpdated';
 
 export type FriendshipChangedPayload = {
     change: FriendshipChange;
     friendshipPublicId: string;
+};
+
+/**
+ * Payload SignalR `accountChanged` — sync live même si pushNotifications est off
+ * (archive/restore/visibilité/relevés/révocation/changement de rôle). Les notifs inbox
+ * restent pour historique/badge ; ne pas compter uniquement sur elles pour la liste.
+ */
+export type AccountChange =
+    | 'archived'
+    | 'restored'
+    | 'visibility'
+    | 'updated'
+    | 'balanceSnapshotCreated'
+    | 'balanceSnapshotUpdated'
+    | 'balanceSnapshotDeleted'
+    | 'revoked'
+    | 'roleChanged'
+    | 'paymentMethodCreated'
+    | 'paymentMethodUpdated'
+    | 'paymentMethodDeleted'
+    | 'transactionCreated'
+    | 'transactionUpdated'
+    | 'transactionDeleted'
+    | 'transactionsImported'
+    | 'transactionsReverted';
+
+export type AccountChangedPayload = {
+    change: AccountChange;
+    accountPublicId: string;
+};
+
+/** Payload SignalR `categoryChanged` — sync de l’arbre perso (acteur inclus). */
+export type CategoryChange = 'categoryCreated' | 'categoryUpdated' | 'categoryDeleted';
+
+export type CategoryChangedPayload = {
+    change: CategoryChange;
+    categoryPublicId: string;
+};
+
+/** Payload SignalR `tagChanged` — sync du vocabulaire perso (acteur inclus, pas d’inbox). */
+export type TagChange = 'tagCreated' | 'tagUpdated' | 'tagDeleted';
+
+export type TagChangedPayload = {
+    change: TagChange;
+    tagPublicId: string;
+};
+
+/** Payload SignalR `tierChanged` — sync de l’annuaire de tiers perso (acteur inclus). */
+export type TierChange = 'tierCreated' | 'tierUpdated' | 'tierDeleted';
+
+export type TierChangedPayload = {
+    change: TierChange;
+    tierPublicId: string;
+};
+
+/** Payload SignalR `recurringExpenseChanged` — templates perso (acteur inclus, pas d’inbox). */
+export type RecurringExpenseChange = 'recurringExpenseCreated' | 'recurringExpenseUpdated' | 'recurringExpenseDeleted';
+
+export type RecurringExpenseChangedPayload = {
+    change: RecurringExpenseChange;
+    recurringExpensePublicId: string;
+};
+
+/** Payload SignalR `recurringIncomeChanged` — templates perso (acteur inclus, pas d’inbox). */
+export type RecurringIncomeChange = 'recurringIncomeCreated' | 'recurringIncomeUpdated' | 'recurringIncomeDeleted';
+
+export type RecurringIncomeChangedPayload = {
+    change: RecurringIncomeChange;
+    recurringIncomePublicId: string;
+};
+
+/** Payload SignalR `budgetChanged` — sync CRUD perso (acteur inclus, pas d’inbox). */
+export type BudgetChange = 'budgetCreated' | 'budgetUpdated' | 'budgetDeleted';
+
+export type BudgetChangedPayload = {
+    change: BudgetChange;
+    budgetPublicId: string;
+};
+
+/** Payload SignalR `savingsGoalChanged` — sync CRUD perso (acteur inclus, pas d’inbox). */
+export type SavingsGoalChange = 'savingsGoalCreated' | 'savingsGoalUpdated' | 'savingsGoalDeleted';
+
+export type SavingsGoalChangedPayload = {
+    change: SavingsGoalChange;
+    savingsGoalPublicId: string;
+};
+
+/** Payload SignalR `importChanged` — imports du créateur, session acteur incluse (sync multi-onglets). */
+export type ImportChange = 'importCreated' | 'importUpdated' | 'importCommitted' | 'importCancelled' | 'importReverted' | 'importDeleted';
+
+export type ImportChangedPayload = {
+    change: ImportChange;
+    importPublicId: string;
+};
+
+/** Payload SignalR `importTemplateChanged` — modèles d’import perso (acteur inclus, pas d’inbox). */
+export type ImportTemplateChange = 'importTemplateCreated' | 'importTemplateUpdated' | 'importTemplateDeleted';
+
+export type ImportTemplateChangedPayload = {
+    change: ImportTemplateChange;
+    templatePublicId: string;
 };
 
 export type NotificationsListQuery = {

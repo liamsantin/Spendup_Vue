@@ -30,7 +30,7 @@ export function getErrorMessage(error: unknown, fallback = 'Une erreur est surve
     return AppError.fromUnknown(error, fallback).message;
 }
 
-/** Dépaquete une enveloppe `{ success, message, result }` Spendup. */
+/** Dépaquete une enveloppe `{ success, message, result }` Spend.Up. */
 export function unwrapSpendupEnvelope<T = unknown>(data: unknown, statusText = 'Request failed'): T {
     if (data && typeof data === 'object' && 'success' in data) {
         const envelope = data as { success: boolean; message?: string; result?: T };

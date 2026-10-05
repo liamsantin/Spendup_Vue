@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute } from 'vue-router';
-import { BellPlusIcon, ShieldLockIcon, UserHeartIcon, UsersIcon } from 'vue-tabler-icons';
-import AppTabsShell from '@/components/shared/AppTabsShell.vue';
-import { BlockedUsersTab, DiscoverFriendsTab, DiscoverSearchBar, FriendsTab, RequestsTab, useFriendsStore } from '@/features/friends';
+import { useRoute, useRouter } from 'vue-router';
+import { BellPlusIcon, CameraIcon, SearchIcon, ShieldLockIcon, UserHeartIcon, UsersIcon, XIcon } from 'vue-tabler-icons';
+import AppTabsShell from '@/components/shared/tabs/AppTabsShell.vue';
+import { BlockedUsersTab, DiscoverFriendsTab, FriendQrModal, FriendsTab, RequestsTab, useFriendsStore } from '@/features/friends';
 
 const FRIEND_TABS = ['Friends', 'Requests', 'Discover', 'Blocked'] as const;
 type FriendTab = (typeof FRIEND_TABS)[number];
 
 const { t } = useI18n();
 const route = useRoute();
+const router = useRouter();
 const store = useFriendsStore();
+const qrOpen = ref(false);
 
 function tabFromQuery(): FriendTab {
     const raw = route.query.tab;
@@ -27,17 +29,19 @@ function friendshipFromQuery(): string | null {
 }
 
 const tab = ref<FriendTab>(tabFromQuery());
+const syncingTabFromRoute = ref(false);
+const discoverSearching = computed(() => tab.value === 'Discover' && store.searchQuery.trim().length > 0);
 
 const tabs = computed(() => [
-    { value: 'Friends', label: t('friendsPage.tabs.friends'), icon: UsersIcon },
+    { value: 'Friends' as const, label: t('friendsPage.tabs.friends'), icon: UsersIcon },
     {
-        value: 'Requests',
+        value: 'Requests' as const,
         label: t('friendsPage.tabs.requests'),
         icon: BellPlusIcon,
         chip: store.incomingCount > 0 ? store.incomingCount : undefined
     },
-    { value: 'Discover', label: t('friendsPage.tabs.discover'), icon: UserHeartIcon },
-    { value: 'Blocked', label: t('friendsPage.tabs.blocked'), icon: ShieldLockIcon }
+    { value: 'Discover' as const, label: t('friendsPage.tabs.discover'), icon: UserHeartIcon },
+    { value: 'Blocked' as const, label: t('friendsPage.tabs.blocked'), icon: ShieldLockIcon }
 ]);
 
 async function scrollToFocusedFriendship() {
@@ -50,10 +54,34 @@ async function scrollToFocusedFriendship() {
     }
 }
 
+function syncTabQuery(value: FriendTab) {
+    const nextQuery: Record<string, string | string[] | undefined> = {
+        ...route.query,
+        tab: value
+    };
+    if (value !== 'Friends' && value !== 'Requests') {
+        delete nextQuery.friendship;
+    }
+    if (route.query.tab === value && String(route.query.friendship ?? '') === String(nextQuery.friendship ?? '')) {
+        return;
+    }
+    void router.replace({ query: nextQuery });
+}
+
+async function onQrScanned(publicId: string) {
+    tab.value = 'Discover';
+    try {
+        await store.searchUsers(publicId);
+    } catch {
+        // erreur via store.error
+    }
+}
+
 onMounted(() => {
     store.setFocusFriendship(friendshipFromQuery());
+    syncTabQuery(tab.value);
     void store
-        .bootstrap()
+        .bootstrap(tab.value)
         .then(() => scrollToFocusedFriendship())
         .catch(() => undefined);
 });
@@ -61,7 +89,13 @@ onMounted(() => {
 watch(
     () => route.query.tab,
     () => {
-        tab.value = tabFromQuery();
+        const next = tabFromQuery();
+        if (next === tab.value) return;
+        syncingTabFromRoute.value = true;
+        tab.value = next;
+        void nextTick(() => {
+            syncingTabFromRoute.value = false;
+        });
     }
 );
 
@@ -74,34 +108,65 @@ watch(
 );
 
 watch(tab, (value) => {
-    if (value === 'Friends' || value === 'Requests' || value === 'Blocked' || value === 'Discover') {
-        void store
-            .openTab(value)
-            .then(() => scrollToFocusedFriendship())
-            .catch(() => undefined);
+    if (!syncingTabFromRoute.value) {
+        syncTabQuery(value);
     }
+    void store
+        .openTab(value)
+        .then(() => scrollToFocusedFriendship())
+        .catch(() => undefined);
 });
 </script>
 
 <template>
-    <AppTabsShell v-model="tab" :tabs="tabs" align-tabs="center" hide-actions>
+    <AppTabsShell
+        v-model="tab"
+        :tabs="tabs"
+        :title="t('friendsPage.title')"
+        :subtitle="discoverSearching ? undefined : t('friendsPage.subtitle')"
+        hide-actions
+        :class="{ 'su-page--discover-idle': tab === 'Discover' && !discoverSearching }"
+        :hero-class="{ 'su-hero--searching': discoverSearching }"
+    >
         <template v-if="tab === 'Discover'" #toolbar>
-            <DiscoverSearchBar />
+            <div class="su-search su-search--discover">
+                <button
+                    class="su-search__orb"
+                    type="button"
+                    :aria-label="t('friendsPage.discover.openQr')"
+                    :title="t('friendsPage.discover.openQr')"
+                    @click="qrOpen = true"
+                >
+                    <CameraIcon :size="20" stroke-width="1.5" />
+                </button>
+                <SearchIcon :size="18" stroke-width="1.5" class="su-search__icon" />
+                <input
+                    class="su-search__input"
+                    type="search"
+                    :value="store.searchQuery"
+                    :placeholder="t('friendsPage.discover.searchLabel')"
+                    :aria-label="t('friendsPage.discover.searchLabel')"
+                    @input="store.searchUsers(String(($event.target as HTMLInputElement).value || ''))"
+                />
+                <button
+                    v-if="store.searchQuery"
+                    class="su-search__orb"
+                    type="button"
+                    :aria-label="t('header.search.clear')"
+                    @click="store.clearSearch()"
+                >
+                    <XIcon :size="16" stroke-width="1.5" />
+                </button>
+            </div>
         </template>
 
-        <v-window v-model="tab">
-            <v-window-item value="Friends">
-                <FriendsTab />
-            </v-window-item>
-            <v-window-item value="Requests">
-                <RequestsTab />
-            </v-window-item>
-            <v-window-item value="Discover">
-                <DiscoverFriendsTab />
-            </v-window-item>
-            <v-window-item value="Blocked">
-                <BlockedUsersTab />
-            </v-window-item>
-        </v-window>
+        <Transition name="su-pane" mode="out-in">
+            <FriendsTab v-if="tab === 'Friends'" key="Friends" />
+            <RequestsTab v-else-if="tab === 'Requests'" key="Requests" />
+            <DiscoverFriendsTab v-else-if="tab === 'Discover'" key="Discover" />
+            <BlockedUsersTab v-else key="Blocked" />
+        </Transition>
     </AppTabsShell>
+
+    <FriendQrModal v-model="qrOpen" @scanned="onQrScanned" />
 </template>

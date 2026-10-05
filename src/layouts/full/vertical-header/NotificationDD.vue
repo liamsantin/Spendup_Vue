@@ -28,6 +28,20 @@ function formatCreatedAt(iso: string): string {
     }
 }
 
+function formatRelativeAgo(iso: string): string {
+    const then = new Date(iso).getTime();
+    if (Number.isNaN(then)) return '';
+    const totalMinutes = Math.max(0, Math.floor((Date.now() - then) / 60_000));
+    if (totalMinutes < 1) return t('header.notifications.ago.justNow');
+    if (totalMinutes < 60) return t('header.notifications.ago.minutes', { count: totalMinutes });
+    if (totalMinutes < 24 * 60) {
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        return t('header.notifications.ago.hours', { value: `${hours}h${String(minutes).padStart(2, '0')}` });
+    }
+    return t('header.notifications.ago.days', { count: Math.floor(totalMinutes / (24 * 60)) });
+}
+
 async function onMenuUpdate(open: boolean) {
     menuOpen.value = open;
     if (open) {
@@ -73,34 +87,29 @@ async function onItemClick(item: AppNotification) {
 <template>
     <v-menu :model-value="menuOpen" :close-on-content-click="false" :scrim="scrim" :opacity="opacity" @update:model-value="onMenuUpdate">
         <template #activator="{ props }">
-            <v-btn icon variant="text" color="primary" class="custom-hover-primary" v-bind="props">
-                <v-badge :content="notifications.badgeContent" :model-value="notifications.hasUnread" color="primary">
-                    <BellRingingIcon stroke-width="1.5" size="22" />
+            <button type="button" class="su-orb" v-bind="props" :aria-label="t('header.notifications.title')">
+                <v-badge class="header-notif-badge" :content="notifications.badgeContent" :model-value="notifications.hasUnread">
+                    <BellRingingIcon stroke-width="1.5" :size="20" />
                 </v-badge>
-            </v-btn>
+            </button>
         </template>
-        <v-sheet rounded="md" width="360" elevation="10">
+        <v-sheet rounded="md" width="360" elevation="0" class="su-menu">
             <div class="px-8 pb-4 pt-6">
                 <div class="d-flex align-center justify-space-between">
                     <h6 class="text-h5">{{ t('header.notifications.title') }}</h6>
                     <div class="d-flex align-center ga-1">
-                        <v-chip v-if="notifications.hasUnread" color="primary" variant="flat" size="small" class="text-white">
-                            {{ unreadLabel }}
-                        </v-chip>
-                        <v-btn
-                            icon
-                            variant="text"
-                            color="primary"
-                            size="small"
-                            class="custom-hover-primary"
-                            :loading="notifications.markingAll"
+                        <span v-if="notifications.hasUnread" class="su-chip">{{ unreadLabel }}</span>
+                        <button
+                            type="button"
+                            class="su-orb"
                             :disabled="!notifications.hasUnread || notifications.markingAll"
                             :aria-label="t('header.notifications.markAllRead')"
                             :title="t('header.notifications.markAllRead')"
                             @click="onMarkAllRead"
                         >
-                            <ChecksIcon stroke-width="1.5" size="20" />
-                        </v-btn>
+                            <span v-if="notifications.markingAll" class="su-spin notification-dd__spin" aria-hidden="true" />
+                            <ChecksIcon v-else stroke-width="1.5" size="20" />
+                        </button>
                     </div>
                 </div>
             </div>
@@ -115,34 +124,85 @@ async function onItemClick(item: AppNotification) {
                 {{ t('header.notifications.empty') }}
             </div>
             <perfect-scrollbar v-else style="height: 280px" :options="PERFECT_SCROLLBAR_OPTIONS">
-                <v-list class="py-0 theme-list" lines="two">
-                    <v-list-item
+                <div class="px-2 py-1">
+                    <button
                         v-for="item in notifications.items"
                         :key="item.id"
-                        :value="item.id"
-                        color="primary"
-                        class="py-4 px-8"
-                        :class="{ 'bg-lightprimary': !item.isRead }"
+                        type="button"
+                        class="su-person"
+                        :class="{ 'is-focused': !item.isRead }"
                         @click="onItemClick(item)"
                     >
-                        <template #prepend>
-                            <UserPhotoAvatar class="mr-3" :photo-url="item.photoUrl" :fallback-label="item.title" :size="48" />
-                        </template>
-                        <div>
-                            <h6 class="text-subtitle-1 font-weight-bold mb-1">{{ item.title }}</h6>
+                        <UserPhotoAvatar :photo-url="item.photoUrl" :fallback-label="item.title" :size="44" />
+                        <div class="su-person__meta">
+                            <div class="notification-dd__when">
+                                <p class="notification-dd__time">{{ formatCreatedAt(item.createdAt) }}</p>
+                                <p class="notification-dd__ago">{{ formatRelativeAgo(item.createdAt) }}</p>
+                            </div>
+                            <p class="su-person__name">{{ item.title }}</p>
+                            <p v-if="item.subtitle || item.message" class="su-person__sub">{{ item.subtitle || item.message }}</p>
                         </div>
-                        <p class="text-subtitle-1 font-weight-regular textSecondary mb-0">
-                            {{ item.subtitle || item.message || formatCreatedAt(item.createdAt) }}
-                        </p>
-                    </v-list-item>
-                </v-list>
+                    </button>
+                </div>
             </perfect-scrollbar>
 
             <div class="py-4 px-6 text-center">
-                <v-btn color="primary" variant="outlined" block :to="'/app/notifications'" @click="closeMenu">
+                <router-link class="su-btn su-btn--ink notification-dd__view-all" to="/app/notifications" @click="closeMenu">
                     {{ t('header.notifications.viewAll') }}
-                </v-btn>
+                </router-link>
             </div>
         </v-sheet>
     </v-menu>
 </template>
+
+<style scoped>
+.header-notif-badge :deep(.v-badge__badge) {
+    background: rgb(var(--v-theme-primary)) !important;
+    color: #fff !important;
+    border: 0;
+    box-shadow: 0 6px 14px -10px rgba(var(--v-theme-primary), 0.45);
+    font-weight: 600;
+}
+
+.notification-dd__when {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 2px;
+}
+
+.notification-dd__time,
+.notification-dd__ago {
+    margin: 0;
+    color: var(--ink-mute);
+    font-size: 10.5px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+.notification-dd__time {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notification-dd__ago {
+    flex: none;
+}
+
+.notification-dd__spin {
+    width: 18px;
+    height: 18px;
+}
+
+.notification-dd__view-all {
+    width: 100%;
+    box-shadow: 0 8px 18px -14px rgba(var(--v-theme-primary), 0.35);
+}
+
+.notification-dd__view-all:hover {
+    box-shadow: 0 10px 22px -12px rgba(var(--v-theme-primary), 0.42);
+}
+</style>

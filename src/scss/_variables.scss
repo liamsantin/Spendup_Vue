@@ -10,7 +10,8 @@ $white: #fff !default;
 // cards
 $card-title-size: 18px !default;
 
-$body-font-family: 'Plus Jakarta Sans' !default;
+$body-font-family: 'Outfit' !default;
+$heading-font-family: 'Urbanist' !default;
 $border-radius-root: 7px;
 $btn-font-weight: 400 !default;
 $btn-letter-spacing: 0 !default;
@@ -28,44 +29,44 @@ $box-shadow:
     $font-size-root: 1rem,
     $border-radius-root: $border-radius-root,
     $body-font-family: $body-font-family,
-    $heading-font-family: $body-font-family !default,
+    $heading-font-family: $heading-font-family !default,
     // 👉 Typography
     $typography: (
             'h1': (
                 'size': 2.25rem,
                 'weight': 600,
                 'line-height': 2.75rem,
-                'font-family': inherit
+                'font-family': $heading-font-family
             ),
             'h2': (
                 'size': 1.875rem,
                 'weight': 600,
                 'line-height': 2.25rem,
-                'font-family': inherit
+                'font-family': $heading-font-family
             ),
             'h3': (
                 'size': 1.5rem,
                 'weight': 600,
                 'line-height': 2rem,
-                'font-family': inherit
+                'font-family': $heading-font-family
             ),
             'h4': (
                 'size': 1.3125rem,
                 'weight': 600,
                 'line-height': 1.6rem,
-                'font-family': inherit
+                'font-family': $heading-font-family
             ),
             'h5': (
                 'size': 1.125rem,
                 'weight': 600,
                 'line-height': 1.6rem,
-                'font-family': inherit
+                'font-family': $heading-font-family
             ),
             'h6': (
                 'size': 1rem,
                 'weight': 600,
                 'line-height': 1.2rem,
-                'font-family': inherit
+                'font-family': $heading-font-family
             ),
             'subtitle-1': (
                 'size': 0.875rem,

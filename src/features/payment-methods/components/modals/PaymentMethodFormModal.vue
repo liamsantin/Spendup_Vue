@@ -1,0 +1,268 @@
+<script setup lang="ts">
+import { computed, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { FileDescriptionIcon, ListSearchIcon } from 'vue-tabler-icons';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
+import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
+import { AppError, getErrorMessage } from '@/utils/errors/app-error';
+import AliasManager from '@/features/aliases/components/AliasManager.vue';
+import { aliasesApi } from '@/features/aliases/api';
+import type { UpdateAliasPayload } from '@/features/aliases/types';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { canWritePaymentMethods } from '@/features/payment-methods/rights';
+import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
+import {
+    buildCreatePaymentMethodPayload,
+    buildUpdatePaymentMethodPayload,
+    isPaymentMethodFormDirty,
+    type PaymentMethodFormFields,
+    type PaymentMethodPayloadErrorCode
+} from '@/features/payment-methods/payload';
+import { PAYMENT_METHOD_TYPES, type PaymentMethod, type PaymentMethodType } from '@/features/payment-methods/types';
+import PaymentMethodForm, { type PaymentMethodFormFieldErrors } from '@/features/payment-methods/components/forms/PaymentMethodForm.vue';
+
+const props = defineProps<{
+    modelValue: boolean;
+    method?: PaymentMethod | null;
+    /** Compte pré-sélectionné (fiche compte / transaction). */
+    defaultAccountPublicId?: string | null;
+    /** Empêche de changer le compte (création depuis une transaction). */
+    lockAccount?: boolean;
+    /** Pré-remplit le libellé (création rapide depuis un sélecteur). */
+    defaultLabel?: string | null;
+}>();
+
+const emit = defineEmits<{
+    'update:modelValue': [value: boolean];
+    saved: [method: PaymentMethod];
+}>();
+
+const { t } = useI18n();
+const accountsStore = useAccountsStore();
+const store = usePaymentMethodsStore();
+
+/**
+ * Figé à l’ouverture : le parent peut passer `method` à null dès la fermeture,
+ * avant la fin de l’animation — sans ça le titre bascule en « Nouveau… ».
+ */
+const isEdit = ref(false);
+const editMethod = ref<PaymentMethod | null>(null);
+const activeTab = ref<'details' | 'aliases'>('details');
+const aliasCount = ref<number | null>(null);
+/** Création : alias saisis avant l’existence du moyen, créés juste après l’enregistrement. */
+const aliasDrafts = ref<UpdateAliasPayload[]>([]);
+
+/** Édition seulement : un moyen doit exister pour porter des alias. */
+const editTabs = computed(() => [
+    { value: 'details' as const, label: t('paymentMethodsPage.form.tabs.details'), icon: FileDescriptionIcon },
+    {
+        value: 'aliases' as const,
+        label: t('paymentMethodsPage.form.tabs.aliases'),
+        icon: ListSearchIcon,
+        chip: aliasCount.value || undefined
+    }
+]);
+
+const writableAccounts = computed(() => accountsStore.accounts.filter((a) => canWritePaymentMethods(a)));
+
+const accountItems = computed(() => writableAccounts.value.map((a) => ({ title: a.name, value: a.publicId })));
+
+const typeItems = computed(() => PAYMENT_METHOD_TYPES.map((value) => ({ title: t(`paymentMethodsPage.types.${value}`), value })));
+
+const localError = reactive({ message: null as string | null });
+const fieldErrors = reactive<PaymentMethodFormFieldErrors>({});
+
+const form = reactive<PaymentMethodFormFields>({
+    accountPublicId: '',
+    type: 'carte',
+    label: '',
+    reference: '',
+    lastFourDigits: '',
+    expirationDate: null,
+    isActive: true
+});
+
+const open = computed({
+    get: () => props.modelValue,
+    set: (value: boolean) => emit('update:modelValue', value)
+});
+
+/** Alias : écriture réservée aux éditeurs d’un compte non archivé (l’API répond 404 sinon). */
+const aliasesReadonly = computed(() => {
+    const account = accountsStore.accounts.find((a) => a.publicId === editMethod.value?.accountPublicId);
+    return !account || !canWritePaymentMethods(account);
+});
+
+/** En édition : Enregistrer seulement s’il y a un changement. */
+const canSave = computed(() => {
+    if (!isEdit.value || !editMethod.value) return true;
+    return isPaymentMethodFormDirty(editMethod.value, form);
+});
+
+function clearFieldErrors() {
+    fieldErrors.accountPublicId = null;
+    fieldErrors.type = null;
+    fieldErrors.label = null;
+    fieldErrors.reference = null;
+    fieldErrors.lastFourDigits = null;
+    fieldErrors.expirationDate = null;
+    fieldErrors.isActive = null;
+}
+
+function payloadErrorText(code: PaymentMethodPayloadErrorCode): string {
+    return t(`paymentMethodsPage.form.errors.${code}`);
+}
+
+function applyPayloadErrors(code: PaymentMethodPayloadErrorCode, field?: string) {
+    const message = payloadErrorText(code);
+    if (field && field in fieldErrors) {
+        activeTab.value = 'details';
+        (fieldErrors as Record<string, string | null>)[field] = message;
+        return;
+    }
+    localError.message = message;
+}
+
+function resetForm() {
+    localError.message = null;
+    clearFieldErrors();
+    const method = editMethod.value;
+    if (method) {
+        form.accountPublicId = method.accountPublicId;
+        form.type = method.type;
+        form.label = method.label;
+        form.reference = method.reference ?? '';
+        form.lastFourDigits = method.lastFourDigits ?? '';
+        form.expirationDate = method.expirationDate;
+        form.isActive = method.isActive;
+        return;
+    }
+    form.accountPublicId = props.defaultAccountPublicId?.trim() || writableAccounts.value[0]?.publicId || '';
+    form.type = 'carte' as PaymentMethodType;
+    form.label = props.defaultLabel?.trim() || '';
+    form.reference = '';
+    form.lastFourDigits = '';
+    form.expirationDate = null;
+    form.isActive = true;
+}
+
+watch(
+    () => props.modelValue,
+    (value) => {
+        if (!value) return;
+        isEdit.value = !!props.method;
+        editMethod.value = props.method ?? null;
+        activeTab.value = 'details';
+        aliasCount.value = null;
+        aliasDrafts.value = [];
+        resetForm();
+    }
+);
+
+async function createDraftAliases(methodPublicId: string) {
+    const results = await Promise.allSettled(aliasDrafts.value.map((d) => aliasesApi.create('paymentMethod', methodPublicId, d)));
+    return results.filter((r) => r.status === 'rejected').length;
+}
+
+async function onSave() {
+    if (isEdit.value && !canSave.value) return;
+    localError.message = null;
+    clearFieldErrors();
+    const siblings = store.allKnownItems();
+    const built = isEdit.value
+        ? buildUpdatePaymentMethodPayload(form, siblings, editMethod.value?.publicId)
+        : buildCreatePaymentMethodPayload(form, siblings);
+    if (!built.ok) {
+        applyPayloadErrors(built.code, built.field);
+        return;
+    }
+    try {
+        const saved =
+            isEdit.value && editMethod.value
+                ? await store.updatePaymentMethod(editMethod.value.publicId, form)
+                : await store.createPaymentMethod(form);
+        const failed = isEdit.value ? 0 : await createDraftAliases(saved.publicId);
+        emit('saved', saved);
+        if (failed) {
+            // Le moyen existe : on bascule en édition pour laisser corriger les alias restants.
+            isEdit.value = true;
+            editMethod.value = saved;
+            activeTab.value = 'aliases';
+            aliasCount.value = null;
+            localError.message = t('paymentMethodsPage.errors.aliasesPartial');
+            return;
+        }
+        open.value = false;
+    } catch (e: unknown) {
+        const err = AppError.fromUnknown(e);
+        if (err.status === 404) {
+            localError.message = t('paymentMethodsPage.errors.notFound');
+            return;
+        }
+        localError.message = getErrorMessage(e);
+    }
+}
+</script>
+
+<template>
+    <AppModalTabs
+        v-model="open"
+        v-model:tab="activeTab"
+        :title="isEdit ? t('paymentMethodsPage.form.editTitle') : t('paymentMethodsPage.form.createTitle')"
+        :subtitle="t('paymentMethodsPage.form.subtitle')"
+        :tabs="editTabs"
+        :max-width="640"
+        :height="720"
+    >
+        <AppAlert v-if="localError.message" type="error" class="mb-4" closable @dismiss="localError.message = null">
+            {{ localError.message }}
+        </AppAlert>
+
+        <template #panel-details>
+            <AppModalPanelScroll>
+                <PaymentMethodForm
+                    :form="form"
+                    :is-edit="isEdit"
+                    :account-items="accountItems"
+                    :type-items="typeItems"
+                    :field-errors="fieldErrors"
+                    :account-disabled="!!lockAccount && !isEdit"
+                />
+            </AppModalPanelScroll>
+        </template>
+
+        <template #panel-aliases>
+            <AppModalPanelScroll>
+                <AliasManager
+                    v-if="editMethod"
+                    target="paymentMethod"
+                    :owner-public-id="editMethod.publicId"
+                    :account-public-id="editMethod.accountPublicId"
+                    :readonly="aliasesReadonly"
+                    @count="aliasCount = $event"
+                />
+                <AliasManager
+                    v-else
+                    target="paymentMethod"
+                    draft
+                    :drafts="aliasDrafts"
+                    @update:drafts="aliasDrafts = $event"
+                    @count="aliasCount = $event"
+                />
+            </AppModalPanelScroll>
+        </template>
+
+        <template #footer="{ close }">
+            <template v-if="activeTab === 'details' || !isEdit">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
+                    {{ t('common.cancel') }}
+                </button>
+                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
+                    {{ t('common.save') }}
+                </button>
+            </template>
+            <button v-else type="button" class="su-btn su-btn--ghost" @click="close">{{ t('common.close') }}</button>
+        </template>
+    </AppModalTabs>
+</template>

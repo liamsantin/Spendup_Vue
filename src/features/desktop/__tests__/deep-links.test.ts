@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveSpendupDeepLink } from '../deep-links';
+import { resolveSpendupDeepLink } from '@/features/desktop/deep-links';
 
 describe('resolveSpendupDeepLink', () => {
     it('mappe spendup://host/path vers /host/path si /app…', () => {
@@ -17,6 +17,8 @@ describe('resolveSpendupDeepLink', () => {
         expect(resolveSpendupDeepLink('https://evil.test/app')).toBeNull();
         expect(resolveSpendupDeepLink('spendup://auth/login')).toBeNull();
         expect(resolveSpendupDeepLink('spendup://evil.com/phishing')).toBeNull();
+        expect(resolveSpendupDeepLink('spendup://application/x')).toBeNull();
+        expect(resolveSpendupDeepLink('spendup://app.evil.com/x')).toBeNull();
         expect(resolveSpendupDeepLink('spendup:user:762H2M3')).toBeNull();
     });
 

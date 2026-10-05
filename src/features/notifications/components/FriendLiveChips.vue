@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import AppChip from '@/components/shared/AppChip.vue';
+import AppChip from '@/components/shared/chip/AppChip.vue';
 import { UserPhotoAvatar } from '@/features/friends';
 import { friendLiveChipColor, resolveNotificationLink, useNotificationsStore } from '@/features/notifications';
 
@@ -51,15 +51,13 @@ async function onChipClick(key: string, notificationId: number) {
 
 <style scoped>
 .friend-live-chips {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    z-index: 20;
+    position: static;
+    z-index: 2;
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: flex-start;
     gap: 8px;
-    max-width: min(320px, calc(100% - 24px));
+    max-width: 100%;
     pointer-events: none;
 }
 

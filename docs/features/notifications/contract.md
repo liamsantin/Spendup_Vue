@@ -1,7 +1,7 @@
 # Notifications — contrat front
 
 > Code : `src/features/notifications/`  
-> Statut : active · Relu : 2026-08-13  
+> Statut : active · Relu : 2026-08-18  
 > Voir aussi : `architecture/realtime.md`, `architecture/http.md`, `patterns/app-page-shell.md`
 
 ## Boundaries
@@ -32,22 +32,37 @@ Réponses list/read : passer par `normalize*` (metadata JSON string → objet).
 
 Hub `{apiBase}/hubs/realtime` — détails `architecture/realtime.md`.
 
-| Event                  | Effet                                        |
-| ---------------------- | -------------------------------------------- |
-| `notificationReceived` | upsert inbox / badge / chips                 |
-| `friendshipChanged`    | listeners only — **pas** de badge            |
-| `inboxCleared`         | reset liste                                  |
-| `sessionEnded`         | `forceReLogin` (all devices ou device match) |
+| Event                     | Effet                                             |
+| ------------------------- | ------------------------------------------------- |
+| `notificationReceived`    | upsert inbox / badge / chips                      |
+| `friendshipChanged`       | listeners only — **pas** de badge                 |
+| `accountChanged`          | fan-out stores comptes / PM / transactions        |
+| `categoryChanged`         | fan-out store catégories (acteur inclus)          |
+| `tagChanged`              | fan-out store tags (acteur inclus)                |
+| `recurringExpenseChanged` | fan-out store récurrences (acteur inclus)         |
+| `recurringIncomeChanged`  | fan-out store récurrences (acteur inclus)         |
+| `budgetChanged`           | fan-out store budgets (acteur inclus)             |
+| `savingsGoalChanged`      | fan-out store objectifs d’épargne (acteur inclus) |
+| `importChanged`           | fan-out store imports (créateur, acteur inclus)   |
+| `importTemplateChanged`   | fan-out store imports (modèles, acteur inclus)    |
+| `inboxCleared`            | reset liste                                       |
+| `sessionEnded`            | `forceReLogin` (all devices ou device match)      |
 
 ## Invariants
 
 - Types inbox produit (amis) : `friendRequest`, `friendAccepted` ; anciens types friend encore deep-linkables.
+- Types inbox produit (comptes) : `accountShareInvite`, `accountShareAccepted`, `accountShareRefused`, `accountShareRevoked`, `accountShareLeft`, `accountShareRoleChanged`.
+- Types inbox produit (budgets) : `budgetAlert`.
+- Types inbox produit (objectifs) : `savingsGoalReached` (`pushFinancialAlerts`, `link` `/savings-goals/{id}`).
+- Chips live : `friendRequest`, `friendAccepted`, `accountShareInvite`.
+- Inbox transactionnelle : la ligne est écrite même si `pushNotifications` est off — seul le push SignalR est filtré. Incoming shares / inbox REST restent la source de vérité pour les invitations en attente.
 - Prefs push (`pushNotifications` + sous-flags) :
-    - **Web** : gate les **chips live** uniquement — **pas** inbox, badge, ni refresh friends.
+    - **Web** : gate les **chips live** uniquement — **pas** inbox, badge, ni refresh friends / comptes.
     - **Tauri** (`isTauri`) : gate aussi les **notifications OS** natives (`plugin-notification`) sur `notificationReceived`.
+    - Sous-flags : `pushFriendRequest` (amis), `pushFinancialAlerts` (partage de comptes, alertes budget, objectif atteint), `pushSecurityAlerts` (sécu).
 - Hub toujours up pour `sessionEnded`.
 - Upsert par `id` ; prepend sur insert realtime.
-- Deep-links : `/security*` → `/app/comptes` ; friend → `/app/friends?tab=&friendship=`.
+- Deep-links : `/security*` → `/app/comptes` ; friend → `/app/friends?tab=&friendship=` ; comptes → `/app/finances/comptes?tab=&share=` ; budgets → `/app/planning/budgets/{id}` ; objectifs → `/app/planning/objectifs/{id}`.
 - Clic notif OS (Tauri) → navigation via `resolveNotificationLink`.
 
 ## Bootstrap

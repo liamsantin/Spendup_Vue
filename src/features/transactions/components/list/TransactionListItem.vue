@@ -1,0 +1,391 @@
+<script setup lang="ts">
+import { toRef } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { MinusIcon, PaperclipIcon, PencilIcon, PlusIcon, TrashIcon, DotsVerticalIcon } from 'vue-tabler-icons';
+import { useRowTap } from '@/components/shared/board/useRowTap';
+import { UserPhotoAvatar } from '@/features/friends';
+import { useTransactionRowDisplay } from '@/features/transactions/composables/useTransactionRowDisplay';
+import { formatOperationDate } from '@/features/transactions/format';
+import type { Transaction } from '@/features/transactions/types';
+import TagChips from '@/features/tags/components/list/TagChips.vue';
+
+const props = defineProps<{
+    transaction: Transaction;
+    canWrite: boolean;
+    acting?: boolean;
+    /** Relevés : afficher le sens du mouvement de ce compte (pas `movements[0]`). */
+    statementAccountPublicId?: string | null;
+    envelopeAction?: 'add' | 'remove' | null;
+}>();
+
+const emit = defineEmits<{
+    edit: [transaction: Transaction];
+    delete: [transaction: Transaction];
+    envelope: [transaction: Transaction];
+}>();
+
+const { t, locale } = useI18n();
+
+const {
+    typeIcon,
+    typeColor,
+    amountDisplay,
+    amountTone,
+    amountVariance,
+    plannedAmountLabel,
+    deltaAmountLabel,
+    accountLine,
+    authorLabel,
+    categoryLabel,
+    tierLabel
+} = useTransactionRowDisplay(toRef(props, 'transaction'), toRef(props, 'statementAccountPublicId'));
+
+const tap = useRowTap(
+    () => emit('edit', props.transaction),
+    () => props.canWrite && !props.acting
+);
+
+function onDoubleClick(event: MouseEvent) {
+    if (!props.canWrite || props.acting) return;
+    if (event.target instanceof Element && event.target.closest('button')) return;
+    emit('edit', props.transaction);
+}
+
+function onActivate(event: MouseEvent) {
+    if (!props.canWrite || props.acting) return;
+    if (event.target instanceof Element && event.target.closest('button')) return;
+    if (!window.matchMedia('(max-width: 767px)').matches) return;
+    emit('edit', props.transaction);
+}
+</script>
+
+<template>
+    <div
+        class="su-person transaction-list-item"
+        :class="{ 'transaction-list-item--editable': canWrite && !acting }"
+        :data-transaction-id="transaction.publicId"
+        @click="onActivate"
+        @dblclick="onDoubleClick"
+        @touchstart.passive="tap.onTouchstart"
+        @touchend="tap.onTouchend"
+        @touchcancel="tap.onTouchcancel"
+    >
+        <span
+            class="su-person__avatar su-person__avatar--tile transaction-list-item__icon"
+            :class="`transaction-list-item__icon--${typeColor}`"
+        >
+            <component :is="typeIcon" :size="20" />
+        </span>
+        <div class="su-person__meta">
+            <p class="su-person__name">
+                {{ transaction.label }}
+                <span
+                    v-if="transaction.files?.length"
+                    class="transaction-list-item__clip"
+                    :title="t('transactionsPage.list.hasAttachments', { count: transaction.files.length }, transaction.files.length)"
+                >
+                    <PaperclipIcon :size="14" stroke-width="1.8" />
+                    {{ transaction.files.length }}
+                </span>
+            </p>
+            <p class="su-person__sub">
+                {{ t(`transactionsPage.types.${transaction.type}`) }}
+                <template v-if="transaction.source === 'recurrence'"> · {{ t('transactionsPage.list.sourceRecurrence') }}</template>
+                <template v-else-if="transaction.source === 'import'"> · {{ t('transactionsPage.list.sourceImport') }}</template>
+                · {{ accountLine }}
+                <template v-if="categoryLabel"> · {{ t('transactionsPage.list.myCategory', { name: categoryLabel }) }}</template>
+                <TagChips :tag-public-ids="transaction.tagPublicIds" compact class="transaction-list-item__tags" />
+                <template v-if="tierLabel">
+                    ·
+                    <span class="transaction-list-item__tier">{{ t('transactionsPage.list.myTier', { name: tierLabel }) }}</span>
+                </template>
+            </p>
+            <p class="su-person__sub d-flex align-center ga-2 min-width-0">
+                <UserPhotoAvatar
+                    :photo-url="transaction.createdByPhotoUrl"
+                    :user-public-id="transaction.createdByUserPublicId"
+                    :fallback-label="transaction.createdByDisplayName ?? undefined"
+                    :size="18"
+                />
+                <span class="text-truncate">{{ authorLabel }}</span>
+                <span>· {{ formatOperationDate(transaction.operationDate, locale) }}</span>
+            </p>
+        </div>
+        <div class="su-person__actions">
+            <div class="transaction-list-item__amounts">
+                <span class="transaction-list-item__amount" :class="amountTone">{{ amountDisplay.text }}</span>
+                <span
+                    v-if="amountVariance"
+                    class="transaction-list-item__delta"
+                    :class="`is-${amountVariance.tone}`"
+                    :title="t('transactionsPage.list.recurrenceDelta', { delta: deltaAmountLabel, planned: plannedAmountLabel })"
+                >
+                    {{ deltaAmountLabel }}
+                </span>
+            </div>
+            <template v-if="canWrite">
+                <div class="transaction-list-item__orbs">
+                    <button
+                        v-if="envelopeAction"
+                        type="button"
+                        class="su-orb"
+                        :disabled="acting"
+                        :aria-label="envelopeAction === 'add' ? t('transactionsPage.envelope.add') : t('transactionsPage.envelope.remove')"
+                        @click.stop="emit('envelope', transaction)"
+                    >
+                        <PlusIcon v-if="envelopeAction === 'add'" :size="16" stroke-width="1.6" />
+                        <MinusIcon v-else :size="16" stroke-width="1.6" />
+                    </button>
+                    <button
+                        type="button"
+                        class="su-orb"
+                        :disabled="acting"
+                        :aria-label="t('transactionsPage.actions.edit')"
+                        @click.stop="emit('edit', transaction)"
+                    >
+                        <PencilIcon :size="16" stroke-width="1.6" />
+                    </button>
+                    <button
+                        type="button"
+                        class="su-orb su-orb--danger"
+                        :disabled="acting"
+                        :aria-label="t('transactionsPage.actions.delete')"
+                        @click.stop="emit('delete', transaction)"
+                    >
+                        <TrashIcon :size="16" stroke-width="1.6" />
+                    </button>
+                </div>
+                <v-menu location="bottom end" :offset="8">
+                    <template #activator="{ props: menuProps }">
+                        <button
+                            v-bind="menuProps"
+                            type="button"
+                            class="su-orb transaction-list-item__more"
+                            :disabled="acting"
+                            :aria-label="t('common.more')"
+                            @click.stop
+                        >
+                            <DotsVerticalIcon size="18" stroke-width="1.75" />
+                        </button>
+                    </template>
+                    <v-sheet class="su-menu transaction-actions-menu">
+                        <button
+                            v-if="envelopeAction"
+                            type="button"
+                            class="su-btn su-btn--tonal"
+                            :disabled="acting"
+                            @click="emit('envelope', transaction)"
+                        >
+                            <PlusIcon v-if="envelopeAction === 'add'" :size="16" stroke-width="1.6" />
+                            <MinusIcon v-else :size="16" stroke-width="1.6" />
+                            {{ envelopeAction === 'add' ? t('transactionsPage.envelope.add') : t('transactionsPage.envelope.remove') }}
+                        </button>
+                        <button type="button" class="su-btn su-btn--ink" :disabled="acting" @click="emit('edit', transaction)">
+                            <PencilIcon :size="16" stroke-width="1.6" />
+                            {{ t('transactionsPage.actions.edit') }}
+                        </button>
+                        <button
+                            type="button"
+                            class="transaction-actions-menu__delete"
+                            :disabled="acting"
+                            @click="emit('delete', transaction)"
+                        >
+                            {{ t('transactionsPage.actions.delete') }}
+                        </button>
+                    </v-sheet>
+                </v-menu>
+            </template>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.transaction-list-item {
+    cursor: default;
+    position: relative;
+    z-index: 0;
+    animation: none;
+    transition:
+        transform 0.5s var(--spring),
+        box-shadow 0.45s var(--ease),
+        background 0.3s var(--ease);
+}
+
+.transaction-list-item--editable {
+    cursor: pointer;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .transaction-list-item:hover {
+        z-index: 1;
+        transform: scale(1.012);
+        box-shadow:
+            0 1px 2px rgba(16, 16, 20, 0.04),
+            0 12px 28px -16px rgba(16, 16, 20, 0.18);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .transaction-list-item {
+        transition: none;
+    }
+}
+
+.transaction-list-item__icon {
+    box-shadow: none;
+}
+
+.transaction-list-item__icon--error {
+    color: rgb(var(--amount-debit));
+    background: rgba(var(--amount-debit), 0.12);
+}
+
+.transaction-list-item__icon--success {
+    color: rgb(var(--amount-credit));
+    background: rgba(var(--amount-credit), 0.12);
+}
+
+.transaction-list-item__icon--primary {
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.12);
+}
+
+.transaction-list-item__amounts {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.transaction-list-item__amount {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+}
+
+.transaction-list-item__amount.is-debit {
+    color: rgb(var(--amount-debit));
+}
+
+.transaction-list-item__amount.is-credit {
+    color: rgb(var(--amount-credit));
+}
+
+.transaction-list-item__delta {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.transaction-list-item__delta.is-unfavorable {
+    color: rgb(var(--amount-debit));
+}
+
+.transaction-list-item__delta.is-favorable {
+    color: rgb(var(--amount-credit));
+}
+
+.transaction-list-item__tags {
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.transaction-list-item__tier {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 7px;
+    border-radius: 999px;
+    background: rgba(var(--v-theme-primary), 0.09);
+    color: rgb(var(--v-theme-primary));
+    font-weight: 600;
+}
+
+.transaction-list-item__clip {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: 8px;
+    color: var(--ink-muted);
+    font-size: 0.75rem;
+    font-weight: 650;
+    vertical-align: middle;
+}
+
+.transaction-list-item__orbs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.transaction-list-item__more {
+    display: none;
+}
+
+.transaction-actions-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(200px, calc(100vw - 32px));
+    padding: 12px !important;
+}
+
+.transaction-actions-menu .su-btn {
+    width: 100%;
+}
+
+.transaction-actions-menu__delete {
+    appearance: none;
+    display: block;
+    width: 100%;
+    margin: 2px 0 0;
+    padding: 6px 4px;
+    border: 0;
+    background: transparent;
+    color: #e11d48;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    cursor: pointer;
+}
+
+.transaction-actions-menu__delete:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+@media (max-width: 767px) {
+    .transaction-list-item.su-person {
+        align-items: flex-start;
+        flex-wrap: nowrap;
+        gap: 10px;
+        margin: 0;
+        padding: 12px 10px;
+        border-radius: 16px;
+        background: var(--surface);
+        border: 1px solid var(--stroke);
+        backdrop-filter: var(--blur);
+        box-shadow: var(--shadow-rest);
+        min-height: 0;
+        animation: none;
+    }
+
+    .transaction-list-item :deep(.su-person__actions) {
+        width: auto;
+        padding-left: 0;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .transaction-list-item__orbs {
+        display: none;
+    }
+
+    .transaction-list-item__more {
+        display: grid;
+    }
+}
+</style>

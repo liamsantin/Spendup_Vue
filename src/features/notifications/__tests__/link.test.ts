@@ -1,18 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import { friendLiveChipColor, isFriendLiveChipType } from '../friendChip';
-import { isFriendNotificationType, isSafeAppNotificationPath, isSecurityNotificationType, resolveNotificationLink } from '../link';
-import { getFriendshipPublicId, normalizeAppNotification, parseNotificationMetadata } from '../normalize';
+import { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '@/features/notifications/friendChip';
+import {
+    isAccountShareNotificationType,
+    isBudgetAlertNotificationType,
+    isFriendNotificationType,
+    isSafeAppNotificationPath,
+    isSavingsGoalReachedNotificationType,
+    isSecurityNotificationType,
+    resolveNotificationLink
+} from '@/features/notifications/link';
+import { getFriendshipPublicId, normalizeAppNotification, parseNotificationMetadata } from '@/features/notifications/normalize';
 
 describe('resolveNotificationLink', () => {
-    it('mappe /security* vers /app/comptes', () => {
-        expect(resolveNotificationLink('/security')).toBe('/app/comptes');
-        expect(resolveNotificationLink('/security/devices')).toBe('/app/comptes');
+    it('mappe /security* vers /app/parametres/securite', () => {
+        expect(resolveNotificationLink('/security')).toBe('/app/parametres/securite');
+        expect(resolveNotificationLink('/security/devices')).toBe('/app/parametres/securite');
+    });
+
+    it('réécrit /app/comptes?tab= vers les pages paramètres', () => {
+        expect(resolveNotificationLink('/app/comptes')).toBe('/app/parametres/compte');
+        expect(resolveNotificationLink('/app/comptes?tab=Preferences')).toBe('/app/parametres/preferences');
+        expect(resolveNotificationLink('/app/comptes?tab=Notifications')).toBe('/app/parametres/notifications');
+        expect(resolveNotificationLink('/app/comptes?tab=Security')).toBe('/app/parametres/securite');
+        expect(resolveNotificationLink('/app/applications')).toBe('/app/parametres/compte');
     });
 
     it('conserve les routes /app', () => {
         expect(resolveNotificationLink('/app')).toBe('/app');
-        expect(resolveNotificationLink('/app/comptes')).toBe('/app/comptes');
         expect(resolveNotificationLink('/app/friends?tab=Friends')).toBe('/app/friends?tab=Friends');
+        expect(resolveNotificationLink('/app/parametres/compte')).toBe('/app/parametres/compte');
     });
 
     it('ignore les valeurs vides ou non relatives', () => {
@@ -20,11 +36,13 @@ describe('resolveNotificationLink', () => {
         expect(resolveNotificationLink('https://evil.test')).toBeNull();
     });
 
-    it('bloque open-redirect (protocol-relative, escape, hors /app)', () => {
+    it('bloque open-redirect (protocol-relative, escape, hors /app, préfixe ambigu)', () => {
         expect(resolveNotificationLink('//evil.com')).toBeNull();
         expect(resolveNotificationLink('/\\evil.com')).toBeNull();
         expect(resolveNotificationLink('/auth/login')).toBeNull();
         expect(resolveNotificationLink('/unknown')).toBeNull();
+        expect(resolveNotificationLink('/application')).toBeNull();
+        expect(resolveNotificationLink('/app/../auth/login')).toBeNull();
     });
 
     it('deep-link amis via type + metadata', () => {
@@ -49,27 +67,103 @@ describe('resolveNotificationLink', () => {
             })
         ).toBe('/app/friends?tab=Friends');
     });
+
+    it('deep-link comptes via type + metadata', () => {
+        expect(
+            resolveNotificationLink('/accounts/shares', {
+                type: 'accountShareInvite',
+                metadata: { sharePublicId: 'sh-1' }
+            })
+        ).toBe('/app/finances/comptes?tab=Invitations&share=sh-1');
+
+        expect(
+            resolveNotificationLink(null, {
+                type: 'accountShareAccepted',
+                metadata: null
+            })
+        ).toBe('/app/finances/comptes?tab=Accounts');
+
+        expect(resolveNotificationLink('/accounts')).toBe('/app/finances/comptes');
+    });
+
+    it('deep-link budgets via type + metadata ou /budgets/{id}', () => {
+        expect(
+            resolveNotificationLink('/budgets/guid-1', {
+                type: 'budgetAlert',
+                metadata: { budgetPublicId: 'guid-1' }
+            })
+        ).toBe('/app/planning/budgets/guid-1');
+
+        expect(
+            resolveNotificationLink(null, {
+                type: 'budgetAlert',
+                metadata: { budgetPublicId: 'guid-2', level: 80, periodStart: '2026-07-01' }
+            })
+        ).toBe('/app/planning/budgets/guid-2');
+
+        expect(resolveNotificationLink('/budgets')).toBe('/app/planning/budgets');
+        expect(resolveNotificationLink('/budgets/guid-3')).toBe('/app/planning/budgets/guid-3');
+    });
+
+    it('deep-link objectifs via type + metadata ou /savings-goals/{id}', () => {
+        expect(
+            resolveNotificationLink('/savings-goals/guid-1', {
+                type: 'savingsGoalReached',
+                metadata: { savingsGoalPublicId: 'guid-1' }
+            })
+        ).toBe('/app/planning/objectifs/guid-1');
+
+        expect(
+            resolveNotificationLink(null, {
+                type: 'savingsGoalReached',
+                metadata: { savingsGoalPublicId: 'guid-2' }
+            })
+        ).toBe('/app/planning/objectifs/guid-2');
+
+        expect(resolveNotificationLink('/savings-goals')).toBe('/app/planning/objectifs');
+        expect(resolveNotificationLink('/savings-goals/guid-3')).toBe('/app/planning/objectifs/guid-3');
+    });
+
+    it('`%` malformé dans un lien API → repli sur la liste sans lever', () => {
+        expect(() => resolveNotificationLink('/budgets/%E0%A4%A')).not.toThrow();
+        expect(resolveNotificationLink('/budgets/%E0%A4%A')).toBe('/app/planning/budgets');
+        expect(resolveNotificationLink('/savings-goals/%zz')).toBe('/app/planning/objectifs');
+    });
 });
 
 describe('isSafeAppNotificationPath', () => {
-    it('n’accepte que des chemins /app internes', () => {
+    it('n’accepte que des chemins /app internes stricts', () => {
         expect(isSafeAppNotificationPath('/app')).toBe(true);
         expect(isSafeAppNotificationPath('/app/comptes')).toBe(true);
         expect(isSafeAppNotificationPath('/app/friends?tab=1')).toBe(true);
         expect(isSafeAppNotificationPath('//evil.com')).toBe(false);
         expect(isSafeAppNotificationPath('/\\evil.com')).toBe(false);
         expect(isSafeAppNotificationPath('/auth/login')).toBe(false);
+        expect(isSafeAppNotificationPath('/application')).toBe(false);
+        expect(isSafeAppNotificationPath('/app.evil.com/x')).toBe(false);
+        expect(isSafeAppNotificationPath('/app/../auth/login')).toBe(false);
         expect(isSafeAppNotificationPath('https://evil.com')).toBe(false);
         expect(isSafeAppNotificationPath(null)).toBe(false);
     });
 });
 
 describe('friendLiveChipColor', () => {
-    it('ne déclenche un chip que pour friendRequest / friendAccepted', () => {
+    it('ne déclenche un chip que pour friendRequest / friendAccepted / accountShareInvite', () => {
         expect(isFriendLiveChipType('friendAccepted')).toBe(true);
         expect(isFriendLiveChipType('friendRequest')).toBe(true);
         expect(isFriendLiveChipType('friendRemoved')).toBe(false);
         expect(isFriendLiveChipType('friendBlocked')).toBe(false);
+        expect(isFriendLiveChipType('accountShareInvite')).toBe(false);
+
+        expect(isAccountShareLiveChipType('accountShareInvite')).toBe(true);
+        expect(isAccountShareLiveChipType('accountShareAccepted')).toBe(false);
+        expect(isAccountShareLiveChipType('accountShareRefused')).toBe(false);
+        expect(isAccountShareLiveChipType('accountShareRevoked')).toBe(false);
+
+        expect(isLiveChipType('friendRequest')).toBe(true);
+        expect(isLiveChipType('accountShareInvite')).toBe(true);
+        expect(isLiveChipType('accountShareAccepted')).toBe(false);
+        expect(isLiveChipType('securityAlert')).toBe(false);
 
         expect(friendLiveChipColor()).toBe('primary');
     });
@@ -114,6 +208,126 @@ describe('normalizeAppNotification', () => {
         expect(n?.metadata).toEqual({ friendshipPublicId: 'f-9' });
         expect(getFriendshipPublicId(n?.metadata)).toBe('f-9');
     });
+
+    it('normalise / refuse les publicIds et payloads accountChanged', async () => {
+        const {
+            normalizePublicId,
+            parseAccountChangedPayload,
+            parseCategoryChangedPayload,
+            parseTagChangedPayload,
+            parseBudgetChangedPayload,
+            parseSavingsGoalChangedPayload,
+            getAccountPublicId
+        } = await import('@/features/notifications/normalize');
+        expect(normalizePublicId('acc-1')).toBe('acc-1');
+        expect(normalizePublicId('  share_2  ')).toBe('share_2');
+        expect(normalizePublicId('../x')).toBeNull();
+        expect(normalizePublicId('a b')).toBeNull();
+        expect(normalizePublicId('')).toBeNull();
+        expect(getAccountPublicId({ accountPublicId: 'acc-ok' })).toBe('acc-ok');
+        expect(getAccountPublicId({ accountPublicId: 'bad id' })).toBeNull();
+        expect(parseAccountChangedPayload({ change: 'revoked', accountPublicId: 'acc-1' })).toEqual({
+            change: 'revoked',
+            accountPublicId: 'acc-1'
+        });
+        expect(parseAccountChangedPayload({ change: 'paymentMethodCreated', accountPublicId: 'acc-1' })).toEqual({
+            change: 'paymentMethodCreated',
+            accountPublicId: 'acc-1'
+        });
+        expect(parseAccountChangedPayload({ change: 'paymentMethodUpdated', accountPublicId: 'acc-1' })).toEqual({
+            change: 'paymentMethodUpdated',
+            accountPublicId: 'acc-1'
+        });
+        expect(parseAccountChangedPayload({ change: 'paymentMethodDeleted', accountPublicId: 'acc-1' })).toEqual({
+            change: 'paymentMethodDeleted',
+            accountPublicId: 'acc-1'
+        });
+        expect(parseAccountChangedPayload({ change: 'transactionCreated', accountPublicId: 'acc-1' })).toEqual({
+            change: 'transactionCreated',
+            accountPublicId: 'acc-1'
+        });
+        expect(parseAccountChangedPayload({ change: 'transactionUpdated', accountPublicId: 'acc-1' })).toEqual({
+            change: 'transactionUpdated',
+            accountPublicId: 'acc-1'
+        });
+        expect(parseAccountChangedPayload({ change: 'transactionDeleted', accountPublicId: 'acc-1' })).toEqual({
+            change: 'transactionDeleted',
+            accountPublicId: 'acc-1'
+        });
+        expect(parseAccountChangedPayload({ change: 'balanceSnapshotUpdated', accountPublicId: 'acc-1' })).toEqual({
+            change: 'balanceSnapshotUpdated',
+            accountPublicId: 'acc-1'
+        });
+        expect(parseAccountChangedPayload({ change: 'nope', accountPublicId: 'acc-1' })).toBeNull();
+        expect(parseAccountChangedPayload({ change: 'revoked', accountPublicId: '' })).toBeNull();
+        expect(parseCategoryChangedPayload({ change: 'categoryCreated', categoryPublicId: 'cat-1' })).toEqual({
+            change: 'categoryCreated',
+            categoryPublicId: 'cat-1'
+        });
+        expect(parseCategoryChangedPayload({ change: 'nope', categoryPublicId: 'cat-1' })).toBeNull();
+        expect(parseTagChangedPayload({ change: 'tagCreated', tagPublicId: 't-1' })).toEqual({
+            change: 'tagCreated',
+            tagPublicId: 't-1'
+        });
+        expect(parseTagChangedPayload({ change: 'tagUpdated', tagPublicId: 't-1' })).toEqual({
+            change: 'tagUpdated',
+            tagPublicId: 't-1'
+        });
+        expect(parseTagChangedPayload({ change: 'tagDeleted', tagPublicId: 't-1' })).toEqual({
+            change: 'tagDeleted',
+            tagPublicId: 't-1'
+        });
+        expect(parseTagChangedPayload({ change: 'nope', tagPublicId: 't-1' })).toBeNull();
+        expect(parseBudgetChangedPayload({ change: 'budgetCreated', budgetPublicId: 'b-1' })).toEqual({
+            change: 'budgetCreated',
+            budgetPublicId: 'b-1'
+        });
+        expect(parseBudgetChangedPayload({ change: 'budgetUpdated', budgetPublicId: 'b-1' })).toEqual({
+            change: 'budgetUpdated',
+            budgetPublicId: 'b-1'
+        });
+        expect(parseBudgetChangedPayload({ change: 'budgetDeleted', budgetPublicId: 'b-1' })).toEqual({
+            change: 'budgetDeleted',
+            budgetPublicId: 'b-1'
+        });
+        expect(parseBudgetChangedPayload({ change: 'nope', budgetPublicId: 'b-1' })).toBeNull();
+        expect(parseSavingsGoalChangedPayload({ change: 'savingsGoalCreated', savingsGoalPublicId: 'g-1' })).toEqual({
+            change: 'savingsGoalCreated',
+            savingsGoalPublicId: 'g-1'
+        });
+        expect(parseSavingsGoalChangedPayload({ change: 'savingsGoalUpdated', savingsGoalPublicId: 'g-1' })).toEqual({
+            change: 'savingsGoalUpdated',
+            savingsGoalPublicId: 'g-1'
+        });
+        expect(parseSavingsGoalChangedPayload({ change: 'savingsGoalDeleted', savingsGoalPublicId: 'g-1' })).toEqual({
+            change: 'savingsGoalDeleted',
+            savingsGoalPublicId: 'g-1'
+        });
+        expect(parseSavingsGoalChangedPayload({ change: 'nope', savingsGoalPublicId: 'g-1' })).toBeNull();
+    });
+
+    it('valide les payloads import et les changements de journal groupés', async () => {
+        const { parseAccountChangedPayload, parseImportChangedPayload, parseImportTemplateChangedPayload, isTransactionAccountChange } =
+            await import('@/features/notifications/normalize');
+        expect(parseAccountChangedPayload({ change: 'transactionsImported', accountPublicId: 'acc-1' })).toEqual({
+            change: 'transactionsImported',
+            accountPublicId: 'acc-1'
+        });
+        expect(isTransactionAccountChange('transactionsReverted')).toBe(true);
+        expect(isTransactionAccountChange('transactionCreated')).toBe(true);
+        expect(isTransactionAccountChange('archived')).toBe(false);
+        expect(parseImportChangedPayload({ change: 'importCommitted', importPublicId: 'imp-1' })).toEqual({
+            change: 'importCommitted',
+            importPublicId: 'imp-1'
+        });
+        expect(parseImportChangedPayload({ change: 'importExpired', importPublicId: 'imp-1' })).toBeNull();
+        expect(parseImportChangedPayload({ change: 'importDeleted', importPublicId: '../x' })).toBeNull();
+        expect(parseImportTemplateChangedPayload({ change: 'importTemplateDeleted', templatePublicId: 'tpl-1' })).toEqual({
+            change: 'importTemplateDeleted',
+            templatePublicId: 'tpl-1'
+        });
+        expect(parseImportTemplateChangedPayload({ change: 'tagDeleted', templatePublicId: 'tpl-1' })).toBeNull();
+    });
 });
 
 describe('notification type helpers', () => {
@@ -128,5 +342,14 @@ describe('notification type helpers', () => {
         expect(isFriendNotificationType('friendRemoved')).toBe(false);
         expect(isFriendNotificationType('friendBlocked')).toBe(false);
         expect(isFriendNotificationType('other')).toBe(false);
+        expect(isAccountShareNotificationType('accountShareInvite')).toBe(true);
+        expect(isAccountShareNotificationType('accountShareRevoked')).toBe(true);
+        expect(isAccountShareNotificationType('accountShareLeft')).toBe(true);
+        expect(isAccountShareNotificationType('accountShareRoleChanged')).toBe(true);
+        expect(isAccountShareNotificationType('friendRequest')).toBe(false);
+        expect(isBudgetAlertNotificationType('budgetAlert')).toBe(true);
+        expect(isBudgetAlertNotificationType('accountShareInvite')).toBe(false);
+        expect(isSavingsGoalReachedNotificationType('savingsGoalReached')).toBe(true);
+        expect(isSavingsGoalReachedNotificationType('budgetAlert')).toBe(false);
     });
 });

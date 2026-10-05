@@ -1,4 +1,4 @@
-import type { DeviceInfo } from './types';
+import type { DeviceInfo } from '@/features/auth/types';
 
 const DEVICE_ID_KEY = 'spendup_device_id';
 

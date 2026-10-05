@@ -2,8 +2,8 @@
 import { computed, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
 import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
 import { useStepUpStore } from '@/features/auth/stores/step-up-store';
@@ -96,9 +96,8 @@ function onOpenChange(value: boolean) {
         </div>
 
         <template #footer="{ close }">
-            <v-btn variant="text" flat @click="close">{{ t('common.cancel') }}</v-btn>
-            <v-spacer />
-            <v-btn color="primary" flat :disabled="!canSubmit" @click="submit">{{ t('auth.stepUp.confirm') }}</v-btn>
+            <button type="button" class="su-btn su-btn--ghost" @click="close">{{ t('common.cancel') }}</button>
+            <button type="button" class="su-btn su-btn--ink" :disabled="!canSubmit" @click="submit">{{ t('auth.stepUp.confirm') }}</button>
         </template>
     </AppModalBase>
 </template>

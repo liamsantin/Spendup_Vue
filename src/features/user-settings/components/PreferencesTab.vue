@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { useUserSettingsStore } from '../stores/user-settings-store';
-import PreferencesPrivacyCard from './preferences/PreferencesPrivacyCard.vue';
-import PreferencesRegionalCard from './preferences/PreferencesRegionalCard.vue';
-import PreferencesThemeColorsCard from './preferences/PreferencesThemeColorsCard.vue';
-import PreferencesDashboardCard from './preferences/PreferencesDashboardCard.vue';
+import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
+import PreferencesRegionalCard from '@/features/user-settings/components/preferences/PreferencesRegionalCard.vue';
+import PreferencesThemeColorsCard from '@/features/user-settings/components/preferences/PreferencesThemeColorsCard.vue';
+import PreferencesDashboardCard from '@/features/user-settings/components/preferences/PreferencesDashboardCard.vue';
 
 const store = useUserSettingsStore();
 const { draft, isDirty, draftReady, saving } = storeToRefs(store);
@@ -66,7 +65,7 @@ defineExpose({
 <template>
     <div class="preferences-tab">
         <div v-if="loading" class="d-flex justify-center py-10">
-            <v-progress-circular indeterminate color="primary" size="36" />
+            <span class="su-spin" />
         </div>
 
         <v-row v-else class="justify-center py-1" no-gutters>
@@ -76,9 +75,6 @@ defineExpose({
                 </AppAlert>
             </v-col>
 
-            <v-col cols="12" md="9" class="pb-4">
-                <PreferencesPrivacyCard v-model="draft" />
-            </v-col>
             <v-col cols="12" md="9" class="pb-4">
                 <PreferencesRegionalCard v-model="draft" />
             </v-col>

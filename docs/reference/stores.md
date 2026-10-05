@@ -11,3 +11,11 @@
 | `user-settings` | `features/user-settings/stores/user-settings-store.ts` | Préférences `/api/settings`             | mémoire (+ side-effects app-settings) |
 | `notifications` | `features/notifications/stores/notifications-store.ts` | Inbox, badge, hub                       | mémoire                               |
 | `friends`       | `features/friends/stores/friends-store.ts`             | Graphe social                           | mémoire                               |
+| `categories`    | `features/categories/stores/categories-store.ts`       | Arbre de catégories perso               | mémoire                               |
+| `tiers`         | `features/tiers/stores/tiers-store.ts`                 | Annuaire perso de contreparties         | mémoire                               |
+| `tags`          | `features/tags/stores/tags-store.ts`                   | Libellés perso (plats)                  | mémoire                               |
+| `files`         | `features/files/stores/files-store.ts`                 | Documents PDF perso                     | mémoire                               |
+| `transactions`  | `features/transactions/stores/transactions-store.ts`   | Journal + justificatifs PDF             | mémoire                               |
+| `imports`       | `features/imports/stores/imports-store.ts`             | Imports de relevés + modèles            | mémoire                               |
+| `savings-goals` | `features/savings-goals/stores/savings-goals-store.ts` | Objectifs d’épargne perso               | mémoire                               |
+| `subscription`  | `features/subscription/stores/subscription-store.ts`   | Abonnement, plans, sélecteur de plan    | mémoire (API mockée)                  |

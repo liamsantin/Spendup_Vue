@@ -1,0 +1,149 @@
+// ---------------------------------------------------------------------------
+// Landing pages — système de mouvement & micro-interactions
+// Utilisé par la directive `v-reveal` et par les composants front-pages.
+// ---------------------------------------------------------------------------
+
+// Révélation au scroll --------------------------------------------------------
+.su-reveal {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0);
+    transition:
+        opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--su-reveal-delay, 0ms);
+    will-change: opacity, transform;
+}
+
+.su-reveal--visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
+// Décalage automatique des enfants (parent porteur de `data-reveal-stagger`)
+[data-reveal-stagger] > * {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+    transition:
+        opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--su-reveal-delay, 0ms);
+}
+
+[data-reveal-stagger].su-reveal--visible > * {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
+// Entrée du hero (au chargement, sans observer) -------------------------------
+@keyframes su-hero-in {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 24px, 0);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes su-hero-visual-in {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 40px, 0) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+}
+
+@keyframes su-float-soft {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.su-hero-in {
+    animation: su-hero-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--su-in-delay, 0ms);
+}
+
+.su-hero-visual-in {
+    animation: su-hero-visual-in 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--su-in-delay, 180ms);
+}
+
+.su-float-soft {
+    animation: su-float-soft 6s ease-in-out infinite;
+    animation-delay: var(--su-float-delay, 0ms);
+}
+
+// Micro-interactions des boutons landing --------------------------------------
+.front-wraper {
+    .v-btn:not(.v-btn--icon) {
+        transition:
+            transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+            box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+            background-color 0.2s ease,
+            border-color 0.2s ease,
+            color 0.2s ease;
+
+        .v-btn__content > svg:last-child {
+            transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        &:hover .v-btn__content > svg:last-child {
+            transform: translateX(3px);
+        }
+    }
+
+    .v-btn--variant-flat.bg-primary,
+    .v-btn--variant-flat[class*='bg-primary'],
+    .v-btn--variant-flat.text-white {
+        box-shadow: 0 10px 24px -10px rgba(var(--v-theme-primary), 0.55);
+    }
+
+    .v-btn--variant-flat:not(.v-btn--icon):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 30px -10px rgba(var(--v-theme-primary), 0.6);
+    }
+
+    .v-btn--variant-outlined:not(.v-btn--icon):hover {
+        transform: translateY(-2px);
+        background: rgba(var(--v-theme-primary), 0.06);
+    }
+
+    .v-btn--variant-flat:not(.v-btn--icon):active,
+    .v-btn--variant-outlined:not(.v-btn--icon):active {
+        transform: translateY(0);
+        transition-duration: 0.08s;
+    }
+}
+
+// Accessibilité : aucun mouvement si l’utilisateur le demande ------------------
+@media (prefers-reduced-motion: reduce) {
+    .su-reveal,
+    [data-reveal-stagger] > * {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .su-hero-in,
+    .su-hero-visual-in,
+    .su-float-soft {
+        animation: none !important;
+    }
+
+    .front-wraper .v-btn:not(.v-btn--icon),
+    .front-wraper .v-btn:not(.v-btn--icon):hover {
+        transform: none !important;
+    }
+}

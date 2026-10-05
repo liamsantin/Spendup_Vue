@@ -1,0 +1,823 @@
+import { AppError } from '@/utils/errors/app-error';
+import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
+import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
+import {
+    buildConfirmDuePayload,
+    buildCreateExpensePayload,
+    buildCreateIncomePayload,
+    buildUpdateExpensePayload,
+    buildUpdateIncomePayload,
+    type ConfirmDueFormFields,
+    type RecurringTemplateFormFields
+} from '@/features/recurring-payments/payload';
+import { refreshTagCountersIfLoaded } from '@/features/tags/stores/tags-store';
+import { dueAfterLinkedTransactionRemoved } from '@/features/recurring-payments/format';
+import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
+import {
+    RECURRING_PAGE_SIZE_DEFAULT,
+    type ConfirmDueBody,
+    type ListRecurringDuesQuery,
+    type ListRecurringTemplatesQuery,
+    type RecurringExpense,
+    type RecurringIncome,
+    type RecurringKind
+} from '@/features/recurring-payments/types';
+import {
+    listCacheKey,
+    normalizeListFilters,
+    parseListCacheKey,
+    type RecurringPaymentsState
+} from '@/features/recurring-payments/stores/internal/recurring-payments-state';
+
+export const RECURRING_NOT_FOUND_CODE = 'recurring_not_found';
+export const RECURRING_NOT_FOUND_MESSAGE = 'Charge/revenu/échéance introuvable.';
+export const RECURRING_FORBIDDEN_CODE = 'recurring_forbidden';
+export const RECURRING_FORBIDDEN_MESSAGE = 'Action non autorisée sur cette récurrence.';
+
+function payloadErrorMessage(code: string): string {
+    switch (code) {
+        case 'nameRequired':
+            return 'Nom requis.';
+        case 'nameTooLong':
+            return 'Nom trop long.';
+        case 'typeInvalid':
+            return 'Type invalide.';
+        case 'frequencyInvalid':
+            return 'Fréquence invalide.';
+        case 'amountInvalid':
+            return 'Montant invalide.';
+        case 'amountNotPositive':
+            return 'Le montant doit être supérieur à 0.';
+        case 'startDateRequired':
+            return 'Date de début requise.';
+        case 'startDateInvalid':
+            return 'Date de début invalide.';
+        case 'endDateInvalid':
+            return 'Date de fin invalide.';
+        case 'endDateBeforeStart':
+            return 'La date de fin doit être après le début.';
+        case 'accountRequired':
+            return 'Compte requis.';
+        case 'accountArchived':
+            return 'Ce compte est archivé.';
+        case 'forbidden':
+            return RECURRING_FORBIDDEN_MESSAGE;
+        case 'paymentDayInvalid':
+            return 'Le jour de paiement doit être entre 1 et 28.';
+        case 'notesTooLong':
+            return 'Notes trop longues.';
+        case 'paymentDateInvalid':
+            return 'Date de paiement invalide.';
+        case 'paymentDateFuture':
+            return 'La date de paiement ne peut pas être dans le futur.';
+        default:
+            return 'Données invalides.';
+    }
+}
+
+export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
+    const {
+        expenses,
+        incomes,
+        expensesByKey,
+        incomesByKey,
+        activeExpenseKey,
+        activeIncomeKey,
+        expensePage,
+        expensePageSize,
+        expenseTotalCount,
+        incomePage,
+        incomePageSize,
+        incomeTotalCount,
+        loadingExpenses,
+        loadingIncomes,
+        loadingMoreExpenses,
+        loadingMoreIncomes,
+        loadingDetail,
+        loadingDues,
+        error,
+        cache,
+        initializedExpenses,
+        initializedIncomes,
+        clearError,
+        beginActing,
+        endActing,
+        setExpenseList,
+        setIncomeList,
+        activateExpenseList,
+        activateIncomeList,
+        upsertExpense,
+        upsertIncome,
+        removeExpenseLocal,
+        removeIncomeLocal,
+        setDues,
+        upsertDue,
+        duesByTemplate,
+        getDetail,
+        getDues
+    } = state;
+
+    let expenseListSeq = 0;
+    let incomeListSeq = 0;
+    let duesSeq = 0;
+    // Dernière requête d'échéances par modèle (`${kind}:${publicId}`) : des chargements parallèles
+    // pour des modèles différents ne doivent pas s'annuler entre eux.
+    const latestDuesRequest = new Map<string, number>();
+    // Nombre de chargements d'échéances en cours ; la génération invalide ceux annulés.
+    let duesInFlight = 0;
+    let duesGeneration = 0;
+
+    function accounts() {
+        return useAccountsStore().accounts;
+    }
+
+    function payloadContext() {
+        return { accounts: accounts(), requireWrite: true as const };
+    }
+
+    function rememberNotFound() {
+        error.value = RECURRING_NOT_FOUND_MESSAGE;
+    }
+
+    async function refreshLinkedFinance(accountPublicId?: string | null) {
+        const tx = useTransactionsStore();
+        if (tx.initialized) {
+            void tx.refetchActive(true).catch(() => undefined);
+        }
+        await useAccountsStore()
+            .loadAccounts(true)
+            .catch(() => undefined);
+        const selected = useAccountsStore().selectedAccount?.publicId;
+        if (selected && accountPublicId && selected === accountPublicId) {
+            await useAccountsStore()
+                .loadAccountDetail(selected, true)
+                .catch(() => undefined);
+        }
+    }
+
+    async function loadExpenses(query: ListRecurringTemplatesQuery & { force?: boolean } = {}) {
+        const accountPublicId = query.accountPublicId?.trim() || null;
+        // Les filtres serveur (dates, actif) font partie de la clé : un résultat filtré ne doit pas écraser la liste complète.
+        const filters = normalizeListFilters(query);
+        const key = listCacheKey('expense', accountPublicId, filters);
+        const requestId = ++expenseListSeq;
+        const force = !!query.force;
+        activateExpenseList(key);
+        loadingExpenses.value = true;
+        // Ce rechargement remplace un éventuel « charger plus » en cours, qui ne réinitialisera plus son flag.
+        loadingMoreExpenses.value = false;
+        clearError();
+
+        async function fetchPage(ensureForce: boolean): Promise<boolean> {
+            let applied = false;
+            await cache.ensure(
+                key,
+                async () => {
+                    try {
+                        const result = await recurringExpensesApi.list({
+                            ...filters,
+                            accountPublicId: accountPublicId ?? undefined,
+                            page: 1,
+                            pageSize: query.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT
+                        });
+                        if (requestId !== expenseListSeq) return;
+                        const nextItems = Array.isArray(result?.items) ? result.items : [];
+                        setExpenseList(key, nextItems, {
+                            page: result?.page ?? 1,
+                            pageSize: result?.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT,
+                            totalCount: result?.totalCount ?? nextItems.length
+                        });
+                        applied = true;
+                    } catch (e: unknown) {
+                        if (requestId === expenseListSeq) {
+                            const err = AppError.fromUnknown(e);
+                            error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
+                        }
+                        throw e;
+                    }
+                },
+                { force: ensureForce }
+            );
+            return applied;
+        }
+
+        try {
+            const applied = await fetchPage(force);
+            if (requestId === expenseListSeq && (force || !cache.isFresh(key)) && !applied) {
+                await fetchPage(true);
+            }
+        } finally {
+            if (requestId === expenseListSeq) {
+                loadingExpenses.value = false;
+                initializedExpenses.value = true;
+            }
+        }
+        if (requestId !== expenseListSeq) {
+            cache.invalidate(key);
+            return;
+        }
+        activateExpenseList(key);
+    }
+
+    async function loadIncomes(query: ListRecurringTemplatesQuery & { force?: boolean } = {}) {
+        const accountPublicId = query.accountPublicId?.trim() || null;
+        // Les filtres serveur (dates, actif) font partie de la clé : un résultat filtré ne doit pas écraser la liste complète.
+        const filters = normalizeListFilters(query);
+        const key = listCacheKey('income', accountPublicId, filters);
+        const requestId = ++incomeListSeq;
+        const force = !!query.force;
+        activateIncomeList(key);
+        loadingIncomes.value = true;
+        // Ce rechargement remplace un éventuel « charger plus » en cours, qui ne réinitialisera plus son flag.
+        loadingMoreIncomes.value = false;
+        clearError();
+
+        async function fetchPage(ensureForce: boolean): Promise<boolean> {
+            let applied = false;
+            await cache.ensure(
+                key,
+                async () => {
+                    try {
+                        const result = await recurringIncomesApi.list({
+                            ...filters,
+                            accountPublicId: accountPublicId ?? undefined,
+                            page: 1,
+                            pageSize: query.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT
+                        });
+                        if (requestId !== incomeListSeq) return;
+                        const nextItems = Array.isArray(result?.items) ? result.items : [];
+                        setIncomeList(key, nextItems, {
+                            page: result?.page ?? 1,
+                            pageSize: result?.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT,
+                            totalCount: result?.totalCount ?? nextItems.length
+                        });
+                        applied = true;
+                    } catch (e: unknown) {
+                        if (requestId === incomeListSeq) {
+                            const err = AppError.fromUnknown(e);
+                            error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
+                        }
+                        throw e;
+                    }
+                },
+                { force: ensureForce }
+            );
+            return applied;
+        }
+
+        try {
+            const applied = await fetchPage(force);
+            if (requestId === incomeListSeq && (force || !cache.isFresh(key)) && !applied) {
+                await fetchPage(true);
+            }
+        } finally {
+            if (requestId === incomeListSeq) {
+                loadingIncomes.value = false;
+                initializedIncomes.value = true;
+            }
+        }
+        if (requestId !== incomeListSeq) {
+            cache.invalidate(key);
+            return;
+        }
+        activateIncomeList(key);
+    }
+
+    function cancelPendingLoads() {
+        expenseListSeq += 1;
+        incomeListSeq += 1;
+        duesSeq += 1;
+        duesGeneration += 1;
+        duesInFlight = 0;
+        latestDuesRequest.clear();
+        loadingExpenses.value = false;
+        loadingIncomes.value = false;
+        loadingMoreExpenses.value = false;
+        loadingMoreIncomes.value = false;
+        loadingDetail.value = false;
+        loadingDues.value = false;
+    }
+
+    async function loadMoreExpenses() {
+        if (loadingExpenses.value || loadingMoreExpenses.value) return;
+        if (expenses.value.length >= expenseTotalCount.value) return;
+        const key = activeExpenseKey.value;
+        // « Charger plus » reprend les filtres de la liste active (compte, dates, actif).
+        const { accountPublicId, filters } = parseListCacheKey(key);
+        const requestId = ++expenseListSeq;
+        loadingMoreExpenses.value = true;
+        clearError();
+        try {
+            const nextPage = expensePage.value + 1;
+            const result = await recurringExpensesApi.list({
+                ...filters,
+                accountPublicId: accountPublicId ?? undefined,
+                page: nextPage,
+                pageSize: expensePageSize.value || RECURRING_PAGE_SIZE_DEFAULT
+            });
+            if (requestId !== expenseListSeq) return;
+            const incoming = Array.isArray(result?.items) ? result.items : [];
+            const prev = expensesByKey.get(key)?.items ?? [];
+            const byId = new Map<string, RecurringExpense>();
+            for (const item of prev) byId.set(item.publicId, item);
+            for (const item of incoming) byId.set(item.publicId, item);
+            setExpenseList(key, [...byId.values()], {
+                page: result?.page ?? nextPage,
+                pageSize: result?.pageSize ?? expensePageSize.value,
+                totalCount: result?.totalCount ?? expenseTotalCount.value
+            });
+            cache.touch(key);
+        } catch (e: unknown) {
+            if (requestId === expenseListSeq) error.value = AppError.fromUnknown(e).message;
+            throw e;
+        } finally {
+            if (requestId === expenseListSeq) loadingMoreExpenses.value = false;
+        }
+    }
+
+    async function loadMoreIncomes() {
+        if (loadingIncomes.value || loadingMoreIncomes.value) return;
+        if (incomes.value.length >= incomeTotalCount.value) return;
+        const key = activeIncomeKey.value;
+        // « Charger plus » reprend les filtres de la liste active (compte, dates, actif).
+        const { accountPublicId, filters } = parseListCacheKey(key);
+        const requestId = ++incomeListSeq;
+        loadingMoreIncomes.value = true;
+        clearError();
+        try {
+            const nextPage = incomePage.value + 1;
+            const result = await recurringIncomesApi.list({
+                ...filters,
+                accountPublicId: accountPublicId ?? undefined,
+                page: nextPage,
+                pageSize: incomePageSize.value || RECURRING_PAGE_SIZE_DEFAULT
+            });
+            if (requestId !== incomeListSeq) return;
+            const incoming = Array.isArray(result?.items) ? result.items : [];
+            const prev = incomesByKey.get(key)?.items ?? [];
+            const byId = new Map<string, RecurringIncome>();
+            for (const item of prev) byId.set(item.publicId, item);
+            for (const item of incoming) byId.set(item.publicId, item);
+            setIncomeList(key, [...byId.values()], {
+                page: result?.page ?? nextPage,
+                pageSize: result?.pageSize ?? incomePageSize.value,
+                totalCount: result?.totalCount ?? incomeTotalCount.value
+            });
+            cache.touch(key);
+        } catch (e: unknown) {
+            if (requestId === incomeListSeq) error.value = AppError.fromUnknown(e).message;
+            throw e;
+        } finally {
+            if (requestId === incomeListSeq) loadingMoreIncomes.value = false;
+        }
+    }
+
+    async function getExpense(publicId: string, force = false) {
+        loadingDetail.value = true;
+        clearError();
+        try {
+            const cached = state.getDetail('expense', publicId);
+            if (cached && !force && 'files' in cached) return cached as RecurringExpense;
+            const detail = await recurringExpensesApi.get(publicId);
+            upsertExpense(detail);
+            if (detail.upcomingDues?.length && !getDues('expense', publicId).length) {
+                setDues('expense', publicId, detail.upcomingDues);
+            }
+            return detail;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            if (err.status === 404) {
+                rememberNotFound();
+                removeExpenseLocal(publicId);
+            } else {
+                error.value = err.message;
+            }
+            throw err;
+        } finally {
+            loadingDetail.value = false;
+        }
+    }
+
+    async function getIncome(publicId: string, force = false) {
+        loadingDetail.value = true;
+        clearError();
+        try {
+            const cached = state.getDetail('income', publicId);
+            if (cached && !force && 'incomeType' in cached && cached.upcomingDues?.length) return cached as RecurringIncome;
+            const detail = await recurringIncomesApi.get(publicId);
+            upsertIncome(detail);
+            if (detail.upcomingDues?.length && !getDues('income', publicId).length) {
+                setDues('income', publicId, detail.upcomingDues);
+            }
+            return detail;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            if (err.status === 404) {
+                rememberNotFound();
+                removeIncomeLocal(publicId);
+            } else {
+                error.value = err.message;
+            }
+            throw err;
+        } finally {
+            loadingDetail.value = false;
+        }
+    }
+
+    async function createExpense(fields: RecurringTemplateFormFields) {
+        beginActing();
+        clearError();
+        try {
+            const built = buildCreateExpensePayload(fields, payloadContext());
+            if (!built.ok) throw new AppError(payloadErrorMessage(built.code), 400, built.code);
+            assertCanWriteAccount(built.payload.accountPublicId);
+            const created = await recurringExpensesApi.create(built.payload);
+            upsertExpense(created);
+            cache.touch(listCacheKey('expense'));
+            cache.touch(listCacheKey('expense', created.accountPublicId));
+            refreshTagCountersIfLoaded();
+            return created;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function createIncome(fields: RecurringTemplateFormFields) {
+        beginActing();
+        clearError();
+        try {
+            const built = buildCreateIncomePayload(fields, payloadContext());
+            if (!built.ok) throw new AppError(payloadErrorMessage(built.code), 400, built.code);
+            assertCanWriteAccount(built.payload.accountPublicId);
+            const created = await recurringIncomesApi.create(built.payload);
+            upsertIncome(created);
+            cache.touch(listCacheKey('income'));
+            cache.touch(listCacheKey('income', created.accountPublicId));
+            return created;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function updateExpense(publicId: string, fields: RecurringTemplateFormFields) {
+        beginActing();
+        clearError();
+        try {
+            assertCanWriteTemplate('expense', publicId);
+            const built = buildUpdateExpensePayload(fields, payloadContext());
+            if (!built.ok) throw new AppError(payloadErrorMessage(built.code), 400, built.code);
+            assertCanWriteAccount(built.payload.accountPublicId);
+            const updated = await recurringExpensesApi.update(publicId, built.payload);
+            upsertExpense(updated);
+            cache.touch(listCacheKey('expense'));
+            cache.touch(listCacheKey('expense', updated.accountPublicId));
+            refreshTagCountersIfLoaded();
+            return updated;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            if (err.status === 404) {
+                rememberNotFound();
+                removeExpenseLocal(publicId);
+            } else {
+                error.value = err.message;
+            }
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function updateIncome(publicId: string, fields: RecurringTemplateFormFields) {
+        beginActing();
+        clearError();
+        try {
+            assertCanWriteTemplate('income', publicId);
+            const built = buildUpdateIncomePayload(fields, payloadContext());
+            if (!built.ok) throw new AppError(payloadErrorMessage(built.code), 400, built.code);
+            assertCanWriteAccount(built.payload.accountPublicId);
+            const updated = await recurringIncomesApi.update(publicId, built.payload);
+            upsertIncome(updated);
+            cache.touch(listCacheKey('income'));
+            cache.touch(listCacheKey('income', updated.accountPublicId));
+            return updated;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            if (err.status === 404) {
+                rememberNotFound();
+                removeIncomeLocal(publicId);
+            } else {
+                error.value = err.message;
+            }
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function deleteExpense(publicId: string) {
+        beginActing();
+        clearError();
+        try {
+            assertCanWriteTemplate('expense', publicId);
+            await recurringExpensesApi.remove(publicId);
+            removeExpenseLocal(publicId);
+            refreshTagCountersIfLoaded();
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            if (err.status === 404) {
+                rememberNotFound();
+                removeExpenseLocal(publicId);
+                refreshTagCountersIfLoaded();
+            } else {
+                error.value = err.message;
+            }
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function deleteIncome(publicId: string) {
+        beginActing();
+        clearError();
+        try {
+            assertCanWriteTemplate('income', publicId);
+            await recurringIncomesApi.remove(publicId);
+            removeIncomeLocal(publicId);
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            if (err.status === 404) {
+                rememberNotFound();
+                removeIncomeLocal(publicId);
+            } else {
+                error.value = err.message;
+            }
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function loadDues(kind: RecurringKind, publicId: string, query: ListRecurringDuesQuery & { force?: boolean } = {}) {
+        const dueKey = `${kind}:${publicId}`;
+        const requestId = ++duesSeq;
+        const generation = duesGeneration;
+        latestDuesRequest.set(dueKey, requestId);
+        const isCurrent = () => latestDuesRequest.get(dueKey) === requestId;
+        duesInFlight += 1;
+        loadingDues.value = true;
+        clearError();
+        try {
+            const result =
+                kind === 'expense'
+                    ? await recurringExpensesApi.listDues(publicId, query)
+                    : await recurringIncomesApi.listDues(publicId, query);
+            if (!isCurrent()) return [];
+            const items = Array.isArray(result?.items) ? result.items : [];
+            setDues(kind, publicId, items, {
+                page: result?.page ?? 1,
+                pageSize: result?.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT,
+                totalCount: result?.totalCount ?? items.length
+            });
+            return items;
+        } catch (e: unknown) {
+            if (isCurrent()) {
+                const err = AppError.fromUnknown(e);
+                error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
+            }
+            throw e;
+        } finally {
+            if (isCurrent()) latestDuesRequest.delete(dueKey);
+            if (generation === duesGeneration) {
+                duesInFlight = Math.max(0, duesInFlight - 1);
+                loadingDues.value = duesInFlight > 0;
+            }
+        }
+    }
+
+    async function confirmDue(kind: RecurringKind, templatePublicId: string, duePublicId: string, fields?: ConfirmDueFormFields) {
+        beginActing();
+        clearError();
+        try {
+            assertCanWriteTemplate(kind, templatePublicId);
+            let body: ConfirmDueBody = {};
+            if (fields) {
+                const built = buildConfirmDuePayload(fields);
+                if (!built.ok) throw new AppError(payloadErrorMessage(built.code), 400, built.code);
+                body = built.payload;
+            }
+            const due =
+                kind === 'expense'
+                    ? await recurringExpensesApi.confirmDue(templatePublicId, duePublicId, body)
+                    : await recurringIncomesApi.confirmDue(templatePublicId, duePublicId, body);
+            upsertDue(kind, templatePublicId, due);
+            const template = kind === 'expense' ? await getExpense(templatePublicId, true) : await getIncome(templatePublicId, true);
+            await refreshLinkedFinance(template.accountPublicId);
+            if (kind === 'expense') refreshTagCountersIfLoaded();
+            return due;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function linkDue(kind: RecurringKind, templatePublicId: string, duePublicId: string, transactionPublicId: string) {
+        beginActing();
+        clearError();
+        try {
+            assertCanWriteTemplate(kind, templatePublicId);
+            const txId = transactionPublicId.trim();
+            if (!txId) throw new AppError(RECURRING_NOT_FOUND_MESSAGE, 400);
+            const body = { transactionPublicId: txId };
+            const due =
+                kind === 'expense'
+                    ? await recurringExpensesApi.linkDue(templatePublicId, duePublicId, body)
+                    : await recurringIncomesApi.linkDue(templatePublicId, duePublicId, body);
+            upsertDue(kind, templatePublicId, due);
+            const template = kind === 'expense' ? await getExpense(templatePublicId, true) : await getIncome(templatePublicId, true);
+            await loadDues(kind, templatePublicId, { force: true }).catch(() => undefined);
+            await refreshLinkedFinance(template.accountPublicId);
+            return due;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function skipDue(kind: RecurringKind, templatePublicId: string, duePublicId: string) {
+        beginActing();
+        clearError();
+        try {
+            assertCanWriteTemplate(kind, templatePublicId);
+            const due =
+                kind === 'expense'
+                    ? await recurringExpensesApi.skipDue(templatePublicId, duePublicId)
+                    : await recurringIncomesApi.skipDue(templatePublicId, duePublicId);
+            upsertDue(kind, templatePublicId, due);
+            if (kind === 'expense') await getExpense(templatePublicId, true);
+            else await getIncome(templatePublicId, true);
+            return due;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function attachExpenseFile(publicId: string, filePublicId: string) {
+        beginActing();
+        clearError();
+        try {
+            assertCanWriteTemplate('expense', publicId);
+            const updated = await recurringExpensesApi.attachFile(publicId, filePublicId);
+            upsertExpense(updated);
+            return updated;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function detachExpenseFile(publicId: string, filePublicId: string) {
+        beginActing();
+        clearError();
+        try {
+            assertCanWriteTemplate('expense', publicId);
+            await recurringExpensesApi.detachFile(publicId, filePublicId);
+            await getExpense(publicId, true);
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.status === 404 ? RECURRING_NOT_FOUND_MESSAGE : err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    async function syncDuesAfterTransactionRemoved(input: {
+        transactionPublicId: string;
+        recurringExpensePublicId?: string | null;
+        recurringIncomePublicId?: string | null;
+    }) {
+        const txId = input.transactionPublicId.trim();
+        if (!txId) return;
+
+        const targets = new Map<string, RecurringKind>();
+        const expenseId = input.recurringExpensePublicId?.trim();
+        const incomeId = input.recurringIncomePublicId?.trim();
+        if (expenseId) targets.set(expenseId, 'expense');
+        if (incomeId) targets.set(incomeId, 'income');
+
+        for (const [key, entry] of duesByTemplate.entries()) {
+            const colon = key.indexOf(':');
+            if (colon < 0) continue;
+            const kind = key.slice(0, colon) as RecurringKind;
+            const templatePublicId = key.slice(colon + 1);
+            if (kind !== 'expense' && kind !== 'income') continue;
+            for (const due of entry.items) {
+                if (due.transactionPublicId !== txId) continue;
+                upsertDue(kind, templatePublicId, dueAfterLinkedTransactionRemoved(due, kind));
+                targets.set(templatePublicId, kind);
+            }
+        }
+
+        await Promise.all(
+            [...targets.entries()].map(async ([publicId, kind]) => {
+                if (kind === 'expense') await getExpense(publicId, true).catch(() => undefined);
+                else await getIncome(publicId, true).catch(() => undefined);
+                await loadDues(kind, publicId, { force: true }).catch(() => undefined);
+                const stillLinked = getDues(kind, publicId).filter((due) => due.transactionPublicId === txId);
+                for (const due of stillLinked) {
+                    upsertDue(kind, publicId, dueAfterLinkedTransactionRemoved(due, kind));
+                }
+            })
+        );
+    }
+
+    async function refetchKind(kind: RecurringKind) {
+        state.invalidateKind(kind);
+        if (kind === 'expense' && initializedExpenses.value) {
+            const { accountPublicId, filters } = parseListCacheKey(activeExpenseKey.value);
+            await loadExpenses({
+                ...filters,
+                accountPublicId: accountPublicId ?? undefined,
+                pageSize: expensePageSize.value || RECURRING_PAGE_SIZE_DEFAULT,
+                force: true
+            }).catch(() => undefined);
+            return;
+        }
+        if (kind === 'income' && initializedIncomes.value) {
+            const { accountPublicId, filters } = parseListCacheKey(activeIncomeKey.value);
+            await loadIncomes({
+                ...filters,
+                accountPublicId: accountPublicId ?? undefined,
+                pageSize: incomePageSize.value || RECURRING_PAGE_SIZE_DEFAULT,
+                force: true
+            }).catch(() => undefined);
+        }
+    }
+
+    function assertCanWriteAccount(accountPublicId: string) {
+        const account = accounts().find((item) => item.publicId === accountPublicId);
+        if (!account || !canWriteRecurringOnAccount(account)) {
+            throw new AppError(RECURRING_FORBIDDEN_MESSAGE, 403, RECURRING_FORBIDDEN_CODE);
+        }
+    }
+
+    function assertCanWriteTemplate(kind: RecurringKind, publicId: string) {
+        const detail =
+            getDetail(kind, publicId) ??
+            (kind === 'expense'
+                ? expenses.value.find((item) => item.publicId === publicId)
+                : incomes.value.find((item) => item.publicId === publicId)) ??
+            null;
+        if (detail) assertCanWriteAccount(detail.accountPublicId);
+    }
+
+    return {
+        loadExpenses,
+        loadIncomes,
+        loadMoreExpenses,
+        loadMoreIncomes,
+        cancelPendingLoads,
+        getExpense,
+        getIncome,
+        createExpense,
+        createIncome,
+        updateExpense,
+        updateIncome,
+        deleteExpense,
+        deleteIncome,
+        loadDues,
+        confirmDue,
+        linkDue,
+        skipDue,
+        attachExpenseFile,
+        detachExpenseFile,
+        syncDuesAfterTransactionRemoved,
+        refetchKind,
+        assertCanWriteAccount
+    };
+}
+
+export type RecurringPaymentsCrud = ReturnType<typeof createRecurringPaymentsCrud>;

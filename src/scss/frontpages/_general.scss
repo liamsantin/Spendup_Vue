@@ -110,7 +110,13 @@
 }
 
 .front-wraper {
+    /* clip et non hidden : `hidden` crée un conteneur de défilement qui casse `position: sticky` */
     overflow: hidden;
+    overflow: clip;
+
+    .v-btn:not(.v-btn--icon) {
+        border-radius: 12px;
+    }
 
     .sticky-header {
         position: fixed !important;

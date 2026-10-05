@@ -1,0 +1,756 @@
+/*
+ * Kit de maquettes produit (landing pages).
+ *
+ * Espace de coordonnées : une scène mesure toujours 46em de large (voir `.mk-stage__scene`),
+ * la hauteur découle du `ratio` de MockStage. Tout se positionne et se dimensionne en `em` :
+ * la maquette se met à l'échelle comme une image vectorielle.
+ *
+ * Palette volontairement figée (indépendante du thème) : une maquette doit rendre à
+ * l'identique quel que soit le thème de la page.
+ */
+
+.mk-stage {
+    --mk-ink: #111a33;
+    --mk-ink-soft: #4a5572;
+    --mk-muted: #8790a8;
+    --mk-line: rgba(17, 26, 51, 0.08);
+    --mk-surface: #ffffff;
+    --mk-canvas: #f4f6fb;
+    --mk-primary: 93, 135, 255;
+    --mk-secondary: 73, 190, 255;
+    --mk-green: 19, 170, 128;
+    --mk-red: 226, 96, 84;
+    --mk-amber: 240, 160, 40;
+    --mk-violet: 139, 108, 245;
+    --mk-teal: 20, 175, 190;
+    --mk-slate: 100, 116, 139;
+    --mk-shadow: 0 0.1em 0.2em rgba(17, 26, 51, 0.04), 0 1.2em 2.6em -1.2em rgba(17, 26, 51, 0.28);
+    --mk-shadow-lg: 0 0.2em 0.4em rgba(17, 26, 51, 0.05), 0 2.4em 4.4em -1.8em rgba(17, 26, 51, 0.38);
+
+    position: relative;
+    width: 100%;
+    margin: 0;
+    container-type: inline-size;
+    font-family:
+        'Outfit',
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        system-ui,
+        sans-serif;
+    font-variant-numeric: tabular-nums;
+    color: var(--mk-ink);
+    /* une section centrée (mobile) ne doit pas centrer le contenu des maquettes */
+    text-align: left;
+    letter-spacing: normal;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+}
+
+.mk-stage__scene {
+    position: absolute;
+    inset: 0;
+    /* 46em = largeur de la scène, quelle que soit sa taille réelle */
+    font-size: calc(100cqw / 46);
+    line-height: 1.25;
+}
+
+.mk-stage--aura::before {
+    content: '';
+    position: absolute;
+    inset: 4% 6%;
+    border-radius: 50%;
+    background:
+        radial-gradient(closest-side, rgba(var(--mk-primary), 0.22), transparent 70%),
+        radial-gradient(closest-side at 80% 70%, rgba(var(--mk-secondary), 0.18), transparent 70%);
+    filter: blur(1.5cqw);
+}
+
+/* ---------- Primitives ---------- */
+
+.mk-abs {
+    position: absolute;
+}
+
+.mk-card {
+    position: absolute;
+    border: 0.06em solid var(--mk-line);
+    border-radius: 1.15em;
+    background: var(--mk-surface);
+    box-shadow: var(--mk-shadow);
+}
+
+.mk-card--lg {
+    box-shadow: var(--mk-shadow-lg);
+}
+
+.mk-card--pad {
+    padding: 1.1em 1.2em;
+}
+
+.mk-card--glass {
+    border-color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(0.8em);
+}
+
+.mk-label {
+    display: block;
+    color: var(--mk-muted);
+    font-size: 0.72em;
+    font-weight: 560;
+    letter-spacing: 0.01em;
+}
+
+.mk-eyebrow {
+    display: block;
+    color: var(--mk-muted);
+    font-size: 0.62em;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.mk-title {
+    display: block;
+    color: var(--mk-ink);
+    font-size: 0.92em;
+    font-weight: 660;
+    letter-spacing: -0.01em;
+}
+
+.mk-kpi {
+    display: block;
+    color: var(--mk-ink);
+    font-size: 1.9em;
+    font-weight: 720;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
+}
+
+.mk-kpi small {
+    margin-right: 0.25em;
+    color: var(--mk-muted);
+    font-size: 0.48em;
+    font-weight: 620;
+    letter-spacing: 0;
+    vertical-align: 0.35em;
+}
+
+.mk-sub {
+    display: block;
+    color: var(--mk-ink-soft);
+    font-size: 0.74em;
+}
+
+.mk-amount {
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.mk-amount--neg {
+    color: var(--mk-ink);
+}
+
+.mk-amount--pos {
+    color: rgb(var(--mk-green));
+}
+
+.mk-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2em;
+    padding: 0.18em 0.5em;
+    border-radius: 99em;
+    font-size: 0.66em;
+    font-weight: 680;
+    white-space: nowrap;
+}
+
+.mk-delta--up {
+    color: rgb(var(--mk-green));
+    background: rgba(var(--mk-green), 0.12);
+}
+
+.mk-delta--down {
+    color: rgb(var(--mk-red));
+    background: rgba(var(--mk-red), 0.12);
+}
+
+/* pastille / chip */
+.mk-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    height: 1.75em;
+    padding: 0 0.7em;
+    border-radius: 99em;
+    font-size: 0.66em;
+    font-weight: 640;
+    white-space: nowrap;
+    color: rgb(var(--tone, var(--mk-primary)));
+    background: rgba(var(--tone, var(--mk-primary)), 0.12);
+}
+
+.mk-chip--solid {
+    color: #fff;
+    background: rgb(var(--tone, var(--mk-primary)));
+}
+
+/* icône dans une tuile arrondie */
+.mk-ico {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 2.3em;
+    height: 2.3em;
+    border-radius: 0.75em;
+    color: rgb(var(--tone, var(--mk-primary)));
+    background: rgba(var(--tone, var(--mk-primary)), 0.12);
+}
+
+.mk-ico svg {
+    width: 1.15em;
+    height: 1.15em;
+}
+
+.mk-ico--sm {
+    width: 1.8em;
+    height: 1.8em;
+    border-radius: 0.6em;
+}
+
+.mk-ico--sm svg {
+    width: 0.95em;
+    height: 0.95em;
+}
+
+.mk-ico--solid {
+    color: #fff;
+    background: rgb(var(--tone, var(--mk-primary)));
+}
+
+/* avatar à initiales */
+.mk-avatar {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 2.1em;
+    height: 2.1em;
+    border: 0.14em solid #fff;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 0.8em;
+    font-weight: 700;
+    background: linear-gradient(145deg, rgb(var(--tone, var(--mk-primary))), rgba(var(--tone, var(--mk-primary)), 0.72));
+}
+
+.mk-avatars {
+    display: flex;
+}
+
+.mk-avatars .mk-avatar + .mk-avatar {
+    margin-left: -0.55em;
+}
+
+/* ligne de liste */
+.mk-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.mk-row {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    min-height: 2.9em;
+    padding: 0.45em 0;
+}
+
+.mk-row + .mk-row {
+    border-top: 0.06em solid var(--mk-line);
+}
+
+.mk-row__main {
+    flex: 1;
+    min-width: 0;
+}
+
+.mk-row__main .mk-title {
+    overflow: hidden;
+    font-size: 0.8em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mk-row__main .mk-label {
+    margin-top: 0.12em;
+    font-size: 0.64em;
+}
+
+.mk-row__end {
+    flex: none;
+    text-align: right;
+    font-size: 0.8em;
+}
+
+/* trait de couleur (compte, catégorie) */
+.mk-accent {
+    flex: none;
+    width: 0.3em;
+    height: 1.9em;
+    border-radius: 99em;
+    background: rgb(var(--tone, var(--mk-primary)));
+}
+
+/* barre d'onglets mobile (comme l'app) */
+.mk-tabbar {
+    position: absolute;
+    right: 0.7em;
+    bottom: 1.1em;
+    left: 0.7em;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    align-items: center;
+    height: 3.1em;
+    border: 0.06em solid var(--mk-line);
+    border-radius: 1.2em;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: var(--mk-shadow);
+}
+
+.mk-tabbar > span {
+    display: grid;
+    place-items: center;
+    color: var(--mk-muted);
+}
+
+.mk-tabbar > span svg {
+    width: 1.1em;
+    height: 1.1em;
+}
+
+.mk-tabbar > span.is-active {
+    color: rgb(var(--mk-primary));
+}
+
+.mk-tabbar__add {
+    width: 2.3em;
+    height: 2.3em;
+    margin: -1.1em auto 0;
+    border: 0.16em solid #fff;
+    border-radius: 50%;
+    color: #fff !important;
+    background: rgb(var(--mk-primary));
+    box-shadow: 0 0.6em 1.2em -0.5em rgba(var(--mk-primary), 0.8);
+}
+
+/* barre de progression */
+.mk-bar {
+    position: relative;
+    height: 0.5em;
+    overflow: hidden;
+    border-radius: 99em;
+    background: rgba(17, 26, 51, 0.07);
+}
+
+.mk-bar > i {
+    position: absolute;
+    inset: 0 auto 0 0;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(var(--tone, var(--mk-primary)), 0.8), rgb(var(--tone, var(--mk-primary))));
+}
+
+/* bulle flottante (callout) */
+.mk-float {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 0.65em;
+    padding: 0.7em 0.95em 0.7em 0.7em;
+    border: 0.06em solid rgba(255, 255, 255, 0.9);
+    border-radius: 1em;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: var(--mk-shadow-lg);
+    backdrop-filter: blur(0.8em);
+    white-space: nowrap;
+}
+
+.mk-float .mk-title {
+    font-size: 0.78em;
+}
+
+.mk-float .mk-label {
+    font-size: 0.62em;
+}
+
+.mk-divider {
+    height: 0.06em;
+    margin: 0.8em 0;
+    background: var(--mk-line);
+}
+
+.mk-flex {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+}
+
+.mk-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6em;
+}
+
+.mk-spark {
+    display: block;
+    width: 100%;
+    overflow: visible;
+}
+
+.mk-tone-primary {
+    --tone: var(--mk-primary);
+}
+.mk-tone-secondary {
+    --tone: var(--mk-secondary);
+}
+.mk-tone-green {
+    --tone: var(--mk-green);
+}
+.mk-tone-red {
+    --tone: var(--mk-red);
+}
+.mk-tone-amber {
+    --tone: var(--mk-amber);
+}
+.mk-tone-violet {
+    --tone: var(--mk-violet);
+}
+.mk-tone-teal {
+    --tone: var(--mk-teal);
+}
+.mk-tone-slate {
+    --tone: var(--mk-slate);
+}
+
+/* ---------- Smartphone : Spend.Up dans le navigateur mobile ---------- */
+
+.mk-phone {
+    position: absolute;
+    width: 15em;
+    height: 31em;
+    padding: 0.45em;
+    border-radius: 2.4em;
+    background: linear-gradient(150deg, #353c4d, #151a27 60%, #30374a);
+    box-shadow:
+        0 0 0 0.08em #545c6e inset,
+        0 2.8em 4.8em -1.6em rgba(10, 16, 34, 0.55),
+        0 0.6em 1.2em -0.4em rgba(10, 16, 34, 0.3);
+}
+
+.mk-phone__screen {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 2em;
+    background: var(--mk-canvas);
+}
+
+.mk-phone__status {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: none;
+    height: 2.1em;
+    padding: 0 1.3em 0 1.45em;
+    font-size: 0.72em;
+    font-weight: 650;
+    background: #fff;
+}
+
+/* caméra ponctuelle centrée */
+.mk-phone__camera {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.95em;
+    height: 0.95em;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #2b3345, #05070d 70%);
+    transform: translate(-50%, -50%);
+}
+
+.mk-phone__icons {
+    display: flex;
+    align-items: center;
+    gap: 0.35em;
+}
+
+.mk-phone__signal {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.1em;
+    height: 0.7em;
+}
+
+.mk-phone__signal b {
+    width: 0.18em;
+    border-radius: 0.1em;
+    background: currentColor;
+}
+
+.mk-phone__signal b:nth-child(1) {
+    height: 35%;
+}
+.mk-phone__signal b:nth-child(2) {
+    height: 55%;
+}
+.mk-phone__signal b:nth-child(3) {
+    height: 78%;
+}
+.mk-phone__signal b:nth-child(4) {
+    height: 100%;
+}
+
+.mk-phone__battery {
+    position: relative;
+    width: 1.55em;
+    height: 0.75em;
+    padding: 0.1em;
+    border: 0.08em solid currentColor;
+    border-radius: 0.25em;
+    opacity: 0.9;
+}
+
+.mk-phone__battery b {
+    display: block;
+    width: 78%;
+    height: 100%;
+    border-radius: 0.12em;
+    background: currentColor;
+}
+
+/* barre d'adresse du navigateur mobile */
+.mk-phone__browser {
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+    flex: none;
+    padding: 0.15em 0.7em 0.5em;
+    border-bottom: 0.06em solid var(--mk-line);
+    background: #fff;
+}
+
+.mk-phone__omnibox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3em;
+    flex: 1;
+    height: 1.9em;
+    border-radius: 99em;
+    color: var(--mk-ink-soft);
+    font-size: 0.66em;
+    font-weight: 600;
+    background: #eef1f7;
+}
+
+.mk-phone__omnibox svg,
+.mk-window__lock {
+    width: 1em;
+    height: 1em;
+    fill: none;
+    stroke: rgb(var(--mk-green));
+    stroke-width: 2.4;
+    stroke-linecap: round;
+}
+
+.mk-phone__tabs {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 1.35em;
+    height: 1.35em;
+    border: 0.12em solid var(--mk-ink-soft);
+    border-radius: 0.35em;
+    color: var(--mk-ink-soft);
+    font-size: 0.6em;
+    font-weight: 750;
+}
+
+.mk-phone__content {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    padding: 0.55em 1em 1em;
+}
+
+.mk-phone__home {
+    position: absolute;
+    bottom: 0.45em;
+    left: 50%;
+    width: 4.6em;
+    height: 0.22em;
+    border-radius: 99em;
+    background: rgba(17, 26, 51, 0.55);
+    transform: translateX(-50%);
+}
+
+/* ---------- Fenêtre de navigateur (desktop) ---------- */
+
+.mk-window {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 0.06em solid rgba(17, 26, 51, 0.1);
+    border-radius: 0.9em;
+    background: var(--mk-canvas);
+    box-shadow: var(--mk-shadow-lg);
+}
+
+.mk-window__bar {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    flex: none;
+    height: 2.3em;
+    padding: 0 0.7em 0 0.8em;
+    border-bottom: 0.06em solid var(--mk-line);
+    background: #fff;
+}
+
+.mk-window__nav {
+    display: flex;
+    gap: 0.35em;
+    flex: none;
+}
+
+.mk-window__nav svg {
+    width: 0.85em;
+    height: 0.85em;
+    fill: none;
+    stroke: var(--mk-ink-soft);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.mk-window__nav svg.is-off {
+    opacity: 0.35;
+}
+
+.mk-window__omnibox {
+    display: flex;
+    align-items: center;
+    gap: 0.35em;
+    flex: 1;
+    min-width: 0;
+    height: 1.55em;
+    padding: 0 0.7em;
+    overflow: hidden;
+    border-radius: 99em;
+    font-size: 0.62em;
+    white-space: nowrap;
+    background: #eef1f7;
+}
+
+.mk-window__lock {
+    flex: none;
+}
+
+.mk-window__host {
+    color: var(--mk-ink);
+    font-weight: 650;
+}
+
+.mk-window__path {
+    overflow: hidden;
+    color: var(--mk-muted);
+    font-weight: 560;
+    text-overflow: ellipsis;
+}
+
+/* contrôles de fenêtre façon Windows : réduire, agrandir, fermer */
+.mk-window__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+    flex: none;
+    margin-left: 0.2em;
+}
+
+.mk-window__controls i {
+    position: relative;
+    display: block;
+    width: 0.62em;
+    height: 0.62em;
+}
+
+.mk-window__controls .is-min::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    bottom: 45%;
+    left: 0;
+    height: 0.07em;
+    background: var(--mk-ink-soft);
+}
+
+.mk-window__controls .is-max {
+    border: 0.07em solid var(--mk-ink-soft);
+    border-radius: 0.1em;
+}
+
+.mk-window__controls .is-close::before,
+.mk-window__controls .is-close::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -0.1em;
+    width: 0.82em;
+    height: 0.07em;
+    background: var(--mk-ink-soft);
+    transform: rotate(45deg);
+}
+
+.mk-window__controls .is-close::after {
+    transform: rotate(-45deg);
+}
+
+.mk-window__body {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    padding: 1em;
+}
+
+/* ---------- Mouvement ---------- */
+
+@keyframes mk-bob {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-0.45em);
+    }
+}
+
+.mk-bob {
+    animation: mk-bob 6s ease-in-out infinite;
+}
+
+.mk-bob--late {
+    animation-delay: -3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mk-bob {
+        animation: none;
+    }
+}

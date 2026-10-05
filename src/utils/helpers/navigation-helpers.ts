@@ -9,7 +9,7 @@ import { isTauri } from '@/utils/helpers/platform-helpers';
  */
 export function useAppHomeTarget(explicitHomeTo?: string) {
     return computed(() => {
-        if (isTauri()) return '/auth/login';
+        if (isTauri()) return '/auth';
         return explicitHomeTo ?? '/';
     });
 }

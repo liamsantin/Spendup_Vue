@@ -1,410 +1,381 @@
 <script setup lang="ts">
 import {
-    LayoutDashboardIcon,
-    UsersIcon,
-    HomeEcoIcon,
-    FileInvoiceIcon,
-    FolderIcon,
-    TargetIcon,
-    BriefcaseIcon,
-    UploadIcon,
-    UsersGroupIcon,
-    CircleCheckIcon,
-    CarIcon,
-    BuildingIcon,
+    AlertTriangleIcon,
+    ArrowRightIcon,
+    CalendarIcon,
+    ChartLineIcon,
     ChartPieIcon,
-    CurrencyEuroIcon,
-    WalletIcon,
-    TrendingUpIcon,
-    CalculatorIcon,
-    RocketIcon
+    CheckIcon,
+    FileImportIcon,
+    FileInvoiceIcon,
+    HomeEcoIcon,
+    KeyOffIcon,
+    LayoutDashboardIcon,
+    LockIcon,
+    PaperclipIcon,
+    RepeatIcon,
+    ShieldCheckIcon,
+    SparklesIcon,
+    TagsIcon,
+    TargetIcon,
+    UsersIcon,
+    WalletIcon
 } from 'vue-tabler-icons';
+import type { Component } from 'vue';
+import AccountsScene from '@/components/frontpages/mockups/scenes/AccountsScene.vue';
+import BudgetScene from '@/components/frontpages/mockups/scenes/BudgetScene.vue';
+import FeaturesHeroScene from '@/components/frontpages/mockups/scenes/FeaturesHeroScene.vue';
+import SharedScene from '@/components/frontpages/mockups/scenes/SharedScene.vue';
+import WealthScene from '@/components/frontpages/mockups/scenes/WealthScene.vue';
+import {
+    spendupAdditionalDomains,
+    spendupDomainGroups,
+    spendupDomainNames,
+    type SpendupAdditionalDomain,
+    type SpendupDomainGroup
+} from '@/data/front-pages/spendup-additional-domains';
 
-import ctaVisual from '@/assets/images/front-pages/background/design-collection.webp';
-import SpendupDomainSection from '@/components/frontpages/features/sections/SpendupDomainSection.vue';
-import SpendupDomainSectionCenter from '@/components/frontpages/features/sections/SpendupDomainSectionCenter.vue';
-import { spendupAdditionalDomains } from '@/data/front-pages/spendup-additional-domains';
+interface JourneyFeature {
+    icon: Component;
+    title: string;
+    text: string;
+}
 
-const FEATURES_IMG = '/assets/images/front-pages/features';
+interface Journey {
+    number: string;
+    icon: Component;
+    kicker: string;
+    title: string;
+    text: string;
+    scene: Component;
+    features: JourneyFeature[];
+}
 
-const fichiersSection = {
-    icon: FolderIcon,
-    title: 'Fichiers et importations',
-    lead: 'Centralisez factures et justificatifs, puis retrouvez-les depuis vos opérations financières.',
-    footer: "Base prête pour OCR, reconnaissance documentaire et détection de doublons à l'import.",
-    cards: [
-        {
-            title: 'Import & prévisualisation',
-            icon: UploadIcon,
-            items: ['import unitaire ou en masse', 'aperçu intégré des PDF et images']
-        },
-        {
-            title: 'Organisation & liens',
-            icon: FolderIcon,
-            items: [
-                'classement par année, catégorie et dossier',
-                'recherche sur toute la bibliothèque',
-                'liaison avec transactions, actifs et contrats'
-            ]
-        }
-    ],
-    image: `${FEATURES_IMG}/feature-imports.png`,
-    imageAlt: 'Import et gestion de fichiers financiers'
-};
-
-const employeursSection = {
-    icon: BriefcaseIcon,
-    title: 'Employeurs, contrats et salaires',
-    lead: 'Structurez employeurs, contrats et bulletins de salaire pour piloter rémunération et fiscalité.',
-    footer: 'Chaque bulletin est rattaché à son employeur pour alimenter fiscalité et trésorerie.',
-    cards: [
-        {
-            title: 'Employeurs & contrats',
-            icon: BriefcaseIcon,
-            items: ['plusieurs employeurs et types de contrat', 'dates clés et historique par poste']
-        },
-        {
-            title: 'Bulletins & fiscalité',
-            icon: FileInvoiceIcon,
-            items: [
-                'historique brut, net, primes et retenues',
-                'retenues à la source et déclaration salariale',
-                'anticipation de trésorerie selon vos dates de paie'
-            ]
-        }
-    ],
-    image: `${FEATURES_IMG}/feature-employers.png`,
-    imageAlt: 'Employeurs, contrats et bulletins de salaire'
-};
-
-const patrimoineSection = {
-    icon: HomeEcoIcon,
-    title: 'Propriétés & patrimoine',
-    lead: 'Suivez véhicules, logements et actifs avec leurs dépenses, documents et historique.',
-    cards: [
-        {
-            title: 'Véhicules',
-            icon: CarIcon,
-            items: ['kilométrage et dépenses carburant', 'rappels entretien et contrôle technique', 'coût réel et documents liés']
-        },
-        {
-            title: 'Immeubles & actifs',
-            icon: BuildingIcon,
-            items: ['logements et biens locatifs', 'charges, travaux et rendement locatif']
-        }
-    ],
-    image: `${FEATURES_IMG}/feature-properties.png`,
-    imageAlt: 'Propriétés et patrimoine'
-};
-
-const budgetSection = {
-    icon: ChartPieIcon,
-    title: 'Budgets et dettes',
-    lead: 'Maîtrisez vos engagements, anticipez la trésorerie et suivez vos remboursements.',
-    cards: [
-        {
-            title: 'Budgets',
-            icon: ChartPieIcon,
-            sheetClass: 'bg-lightsuccess',
-            toneClass: 'text-success',
-            items: ['budgets mensuels ou annuels par catégorie', 'alertes de dépassement en temps réel']
-        },
-        {
-            title: 'Dettes',
-            icon: CurrencyEuroIcon,
-            sheetClass: 'bg-lightwarning',
-            toneClass: 'text-warning',
-            items: ['capital restant et échéancier', 'taux, mensualités et durée', 'dettes partagées']
-        }
-    ],
-    image: `${FEATURES_IMG}/feature-budget.jpg`,
-    imageAlt: 'Budgets et dettes',
-    imageClass: 'su-budget-img'
-};
-
-const dashboardTiles = [
-    { title: 'Trésorerie consolidée (comptes, cash, wallets)', icon: WalletIcon },
-    { title: 'Flux financiers en continu (revenus, dépenses, transferts)', icon: TrendingUpIcon },
-    { title: 'Budgets, catégories et dérive des postes', icon: ChartPieIcon },
-    { title: "Indicateurs patrimoniaux et projection d'épargne", icon: CalculatorIcon }
+const journeys: Journey[] = [
+    {
+        number: '01',
+        icon: WalletIcon,
+        kicker: 'Au quotidien',
+        title: 'Comprenez chaque mouvement de votre argent.',
+        text: 'Exportez vos relevés depuis votre e-banking et importez-les en CSV ou en Excel : Spend.Up reconnaît les colonnes, vous laisse relire chaque ligne, puis classe et relie tout. Banques, cartes, TWINT et espèces se retrouvent dans une seule vue.',
+        scene: AccountsScene,
+        features: [
+            {
+                icon: FileImportIcon,
+                title: 'Imports de relevés',
+                text: 'CSV et Excel, modèle mémorisé par banque, revue ligne par ligne avant validation.'
+            },
+            {
+                icon: TagsIcon,
+                title: 'Reconnaissance qui apprend',
+                text: 'Tiers et moyens de paiement retrouvés grâce aux alias appris de vos corrections.'
+            },
+            { icon: PaperclipIcon, title: 'Justificatifs PDF', text: 'Factures, reçus et contrats joints à vos opérations.' },
+            {
+                icon: AlertTriangleIcon,
+                title: 'Doublons détectés',
+                text: 'Une ligne déjà importée est signalée avant d’être comptée deux fois.'
+            }
+        ]
+    },
+    {
+        number: '02',
+        icon: ChartPieIcon,
+        kicker: 'Planifier',
+        title: 'Donnez une direction à votre budget.',
+        text: 'Passez du simple suivi à une vraie capacité d’anticipation : des limites claires, des projets chiffrés et un reste à vivre recalculé à chaque import.',
+        scene: BudgetScene,
+        features: [
+            { icon: ChartPieIcon, title: 'Budgets personnalisés', text: 'Limites mensuelles ou annuelles avec suivi par catégorie.' },
+            { icon: TargetIcon, title: 'Objectifs d’épargne', text: 'Mesurez vos progrès et planifiez vos projets importants.' },
+            { icon: RepeatIcon, title: 'Revenus & charges récurrents', text: 'Anticipez salaires, loyers, crédits et abonnements.' },
+            { icon: CalendarIcon, title: 'Calendrier financier', text: 'Échéances, rappels et événements réunis dans le temps.' }
+        ]
+    },
+    {
+        number: '03',
+        icon: HomeEcoIcon,
+        kicker: 'Construire',
+        title: 'Pilotez votre patrimoine dans son ensemble.',
+        text: 'Immobilier, placements, 3e pilier et véhicules : une lecture consolidée de ce que vous possédez, devez et préparez pour demain.',
+        scene: WealthScene,
+        features: [
+            { icon: ChartLineIcon, title: 'Placements & crypto', text: 'Portefeuilles, positions, opérations et valorisations.' },
+            { icon: HomeEcoIcon, title: 'Immobilier & actifs', text: 'Biens, hypothèques, baux, véhicules, charges et rendement.' },
+            { icon: FileInvoiceIcon, title: 'Fiscalité & revenus', text: 'Employeurs, salaires, retenues et préparation fiscale.' },
+            { icon: LayoutDashboardIcon, title: 'Scénarios & projections', text: 'Trésorerie, patrimoine net et santé financière.' }
+        ]
+    },
+    {
+        number: '04',
+        icon: UsersIcon,
+        kicker: 'Partager',
+        title: 'Gérez ensemble, sans tout mélanger.',
+        text: 'Couple, famille ou colocation : partagez budgets et dépenses communes en gardant chacun le contrôle de son espace personnel.',
+        scene: SharedScene,
+        features: [
+            { icon: UsersIcon, title: 'Espaces partagés', text: 'Famille, couple ou colocation, jusqu’à 5 membres.' },
+            { icon: LockIcon, title: 'Rôles & permissions', text: 'Contrôlez précisément qui peut voir ou modifier.' },
+            { icon: WalletIcon, title: 'Dépenses communes', text: 'Répartition, remboursements et engagements partagés.' },
+            { icon: TargetIcon, title: 'Projets collectifs', text: 'Budgets, objectifs et patrimoine du foyer réunis.' }
+        ]
+    }
 ];
 
-const multiSection = {
-    chip: 'Collaboration multi-utilisateurs',
-    title: 'Partagez Spend.Up à plusieurs',
-    lead: 'Famille, couple ou colocation : organisez vos finances communes sans perdre le contrôle individuel.',
-    ctaLabel: 'Commencer maintenant',
-    ctaTo: '/auth/register',
-    cards: [
-        {
-            title: 'Vous pouvez',
-            icon: UsersGroupIcon,
-            items: [
-                'inviter des proches dans un espace financier partagé',
-                'définir des rôles et permissions par membre',
-                'gérer plusieurs foyers (famille, couple, colocation)'
-            ]
-        },
-        {
-            title: 'Concrètement',
-            icon: UsersIcon,
-            items: [
-                'suivre des budgets communs et individuels',
-                'répartir des dépenses entre participants',
-                'piloter dettes et patrimoines partagés'
-            ]
-        }
-    ],
-    alert: "Chaque utilisateur reste maître de ses données et choisit ce qu'il souhaite partager ou non.",
-    image: `${FEATURES_IMG}/feature-collaboration.jpg`,
-    imageAlt: 'À plusieurs sur Spend.Up',
-    imageClass: 'su-friends-img',
-    bgClass: 'bg-surface' as const
+interface DomainTile {
+    domain: SpendupAdditionalDomain;
+    number: string;
+    points: string[];
+    /** Largeur de la tuile sur 12 colonnes. */
+    span: 6 | 12;
+}
+
+/**
+ * Rythme de la grille : deux tuiles par ligne (au moins la moitié de la largeur, pour que
+ * les maquettes restent lisibles), et une tuile pleine largeur disposée à l'horizontale
+ * quand le groupe est impair.
+ */
+const SPAN_PATTERNS: Record<number, DomainTile['span'][]> = {
+    1: [12],
+    2: [6, 6],
+    3: [6, 6, 12],
+    4: [6, 6, 6, 6]
 };
 
-const objectifListe = [
-    'centraliser tous vos flux financiers et documents',
-    'anticiper vos échéances et engagements récurrents',
-    'préparer fiscalité, patrimoine et projets long terme',
-    'prendre des décisions basées sur des données fiables'
+const groups = spendupDomainGroups.map((group: SpendupDomainGroup) => {
+    const domains = spendupAdditionalDomains.filter((domain) => domain.group === group.id);
+    const pattern = SPAN_PATTERNS[domains.length] ?? domains.map(() => 12 as const);
+    return {
+        ...group,
+        tiles: domains.map<DomainTile>((domain, index) => ({
+            domain,
+            number: String(journeys.length + spendupAdditionalDomains.indexOf(domain) + 1).padStart(2, '0'),
+            points: [...(domain.cards ?? []).flatMap((card) => card.items), ...(domain.items ?? [])].slice(0, 5),
+            span: pattern[index] ?? 12
+        }))
+    };
+});
+
+const navItems = [
+    ...journeys.map((journey) => ({ href: `#journey-${journey.number}`, number: journey.number, label: journey.kicker })),
+    ...groups.map((group) => ({ href: `#groupe-${group.id}`, number: group.number, label: group.kicker }))
 ];
 
-const objectifPillars = [
-    { label: 'Plus simple', sheetClass: 'bg-lightwarning' },
-    { label: 'Plus claire', sheetClass: 'bg-lightsuccess' },
-    { label: 'Plus accessible', sheetClass: 'bg-lightsecondary' }
+const securityItems = [
+    'Aucun identifiant bancaire demandé',
+    'Authentification à deux facteurs et appareils',
+    'Journal des activités sensibles',
+    'Visibilité configurable par champ',
+    'Export et suppression des données',
+    'Hébergement en Suisse, chez Infomaniak'
 ];
-
-/** Index 0 = fichiers, 1 = employeurs, 2 = patrimoine, 3 = budgets, 4+ = domaines métier. */
-const domainSectionBg = (index: number): 'bg-lightprimary' | 'bg-surface' => (index % 2 === 0 ? 'bg-lightprimary' : 'bg-surface');
-
-const domainSectionReversed = (index: number): boolean => index % 2 === 1;
 </script>
 
 <template>
-    <!-- Introduction -->
-    <section class="py-12 py-md-16">
-        <v-container class="max-width-1218">
-            <div class="text-center mb-0">
-                <p class="text-18 text-medium-emphasis mx-auto su-narrow lh-lg mb-0">
-                    Spend.Up vous accompagne dans la gestion quotidienne de votre argent, mais aussi dans le suivi de votre patrimoine, de
-                    vos projets, de vos dettes, de vos abonnements et de vos objectifs financiers. La plateforme centralise vos comptes,
-                    transactions, budgets, revenus, dépenses récurrentes, actifs et prévisions pour une vision claire et exploitable de
-                    votre situation financière.
-                </p>
-            </div>
-        </v-container>
-    </section>
-
-    <!-- Tableau de bord -->
-    <section class="py-12 py-md-16 bg-lightprimary">
-        <v-container class="max-width-1218">
-            <div class="text-center mb-12 mb-md-16">
-                <v-chip color="primary" variant="tonal" rounded="md" class="mb-4 font-weight-semibold text-14">
-                    Une plateforme complète
-                </v-chip>
-                <h2 class="display-2 font-weight-bold textPrimary mb-4">Tout ce dont vous avez besoin</h2>
-                <p class="text-18 text-medium-emphasis lh-lg mx-auto su-narrow">
-                    De la donnée transactionnelle à la stratégie patrimoniale, Spend.Up couvre toute votre chaîne financière.
-                </p>
-            </div>
-
-            <v-row align="center">
-                <v-col cols="12" md="5" class="pe-md-10">
-                    <div class="su-icon-wrap su-icon-wrap--lg rounded-xl d-inline-flex mb-5">
-                        <LayoutDashboardIcon size="32" class="text-primary" stroke-width="1.5" />
+    <div class="features-page">
+        <section class="features-hero">
+            <div class="features-hero__grid" aria-hidden="true"></div>
+            <v-container class="max-width-1218">
+                <div class="features-hero__layout">
+                    <div class="features-hero__copy">
+                        <v-chip color="primary" variant="tonal" rounded="pill" class="features-eyebrow su-hero-in">
+                            <SparklesIcon size="15" class="me-2" />
+                            Votre carnet de bord financier, en {{ spendupDomainNames.length }} domaines métiers
+                        </v-chip>
+                        <h1 class="textPrimary su-hero-in" style="--su-in-delay: 80ms">
+                            Tout ce qu’il faut pour piloter <span>votre vie financière.</span>
+                        </h1>
+                        <p class="text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
+                            Importez vos relevés, joignez vos justificatifs : du premier budget au patrimoine familial, Spend.Up relie
+                            chaque donnée pour vous donner une vision claire, en francs suisses. Sans jamais se connecter à votre banque.
+                        </p>
+                        <div class="features-hero__actions su-hero-in" style="--su-in-delay: 240ms">
+                            <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth?tab=register">
+                                Commencer gratuitement
+                                <ArrowRightIcon size="19" class="ms-2" />
+                            </v-btn>
+                            <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-7" to="/tarifs"
+                                >Voir les tarifs</v-btn
+                            >
+                        </div>
+                        <ul class="features-hero__proof su-hero-in" style="--su-in-delay: 320ms">
+                            <li><KeyOffIcon size="15" stroke-width="2.2" /> Sans connexion bancaire</li>
+                            <li><CheckIcon size="15" stroke-width="2.4" /> Données hébergées en Suisse</li>
+                            <li><CheckIcon size="15" stroke-width="2.4" /> Web &amp; Windows</li>
+                        </ul>
                     </div>
-                    <h3 class="text-h4 text-md-h3 font-weight-bold textPrimary mb-4">Tableau de bord</h3>
-                    <p class="text-16 text-medium-emphasis lh-lg mb-0">
-                        Une lecture instantanée de votre santé financière : flux, soldes, dérives budgétaires, évolution patrimoniale et
-                        indicateurs clés.
-                    </p>
-                </v-col>
-                <v-col cols="12" md="7" class="mt-6 mt-md-0">
-                    <v-row>
-                        <v-col v-for="(t, i) in dashboardTiles" :key="i" cols="12" sm="6">
-                            <v-card class="su-card h-100 pa-5 rounded-xl border" elevation="0">
-                                <div class="su-icon-wrap rounded-lg mb-4">
-                                    <component :is="t.icon" size="24" class="text-primary" stroke-width="1.5" />
-                                </div>
-                                <p class="text-body-1 font-weight-semibold textPrimary lh-md mb-0">{{ t.title }}</p>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-col>
-            </v-row>
-        </v-container>
-    </section>
 
-    <SpendupDomainSectionCenter
-        :chip="multiSection.chip"
-        :title="multiSection.title"
-        :lead="multiSection.lead"
-        :cards="multiSection.cards"
-        :bg-class="multiSection.bgClass"
-        :image="multiSection.image"
-        :image-alt="multiSection.imageAlt"
-        :image-class="multiSection.imageClass"
-        :alert="multiSection.alert"
-        :cta-label="multiSection.ctaLabel"
-        :cta-to="multiSection.ctaTo"
-    />
-
-    <SpendupDomainSection
-        :icon="fichiersSection.icon"
-        :title="fichiersSection.title"
-        :lead="fichiersSection.lead"
-        :footer="fichiersSection.footer"
-        :cards="fichiersSection.cards"
-        :bg-class="domainSectionBg(0)"
-        :image="fichiersSection.image"
-        :image-alt="fichiersSection.imageAlt"
-        :reversed="domainSectionReversed(0)"
-    />
-
-    <SpendupDomainSection
-        :icon="employeursSection.icon"
-        :title="employeursSection.title"
-        :lead="employeursSection.lead"
-        :footer="employeursSection.footer"
-        :cards="employeursSection.cards"
-        :bg-class="domainSectionBg(1)"
-        :image="employeursSection.image"
-        :image-alt="employeursSection.imageAlt"
-        :reversed="domainSectionReversed(1)"
-    />
-
-    <SpendupDomainSection
-        :icon="patrimoineSection.icon"
-        :title="patrimoineSection.title"
-        :lead="patrimoineSection.lead"
-        :cards="patrimoineSection.cards"
-        :bg-class="domainSectionBg(2)"
-        :image="patrimoineSection.image"
-        :image-alt="patrimoineSection.imageAlt"
-        :reversed="domainSectionReversed(2)"
-    />
-
-    <SpendupDomainSection
-        :icon="budgetSection.icon"
-        :title="budgetSection.title"
-        :lead="budgetSection.lead"
-        :cards="budgetSection.cards"
-        :bg-class="domainSectionBg(3)"
-        :image="budgetSection.image"
-        :image-alt="budgetSection.imageAlt"
-        :image-class="budgetSection.imageClass"
-        :reversed="domainSectionReversed(3)"
-    />
-
-    <SpendupDomainSection
-        v-for="(domain, index) in spendupAdditionalDomains"
-        :key="domain.id"
-        :icon="domain.icon"
-        :title="domain.title"
-        :lead="domain.lead"
-        :footer="domain.footer"
-        :items="domain.items"
-        :cards="domain.cards"
-        :bg-class="domainSectionBg(index + 4)"
-        :image="domain.image"
-        :image-alt="domain.imageAlt"
-        :reversed="domainSectionReversed(index + 4)"
-    />
-
-    <!-- Notre objectif -->
-    <section class="py-12 py-md-16 bg-surface">
-        <v-container class="max-width-1218">
-            <div class="text-center mb-10">
-                <div class="su-icon-wrap su-icon-wrap--lg rounded-xl d-inline-flex mb-5">
-                    <TargetIcon size="32" class="text-primary" stroke-width="1.5" />
+                    <div class="features-hero__visual su-hero-visual-in">
+                        <FeaturesHeroScene />
+                    </div>
                 </div>
-                <h3 class="text-h4 text-md-h3 font-weight-bold textPrimary mb-4">Notre objectif</h3>
-                <p class="text-18 text-medium-emphasis mx-auto su-narrow mb-0">
-                    Rendre la gestion financière plus simple, plus claire et plus accessible — pour mieux comprendre vos habitudes,
-                    anticiper vos obligations et prendre des décisions patrimoniales éclairées.
-                </p>
-            </div>
-            <v-row class="mb-8">
-                <v-col v-for="p in objectifPillars" :key="p.label" cols="12" sm="4" class="mb-3 mb-sm-0">
-                    <v-sheet
-                        rounded="xl"
-                        :class="[p.sheetClass, 'pa-6 text-center h-100 d-flex align-center justify-center']"
-                        elevation="0"
-                    >
-                        <span class="text-h6 font-weight-bold textPrimary">{{ p.label }}</span>
-                    </v-sheet>
-                </v-col>
-            </v-row>
-            <v-card class="su-card su-card--wide pa-8 pa-md-10 rounded-xl border" elevation="0">
-                <p class="text-h6 font-weight-bold textPrimary mb-6 text-center">Seul ou à plusieurs, Spend.Up vous aide à :</p>
-                <v-row class="justify-center">
-                    <v-col cols="12" md="10">
-                        <div v-for="(text, i) in objectifListe" :key="i" class="d-flex align-start ga-3 mb-3">
-                            <div class="su-check-bubble rounded-md flex-shrink-0 d-flex align-center justify-center">
-                                <CircleCheckIcon size="20" class="text-primary" stroke-width="1.5" />
-                            </div>
-                            <p class="text-16 text-medium-emphasis lh-lg mb-0">{{ text }}</p>
-                        </div>
-                    </v-col>
-                </v-row>
-            </v-card>
-        </v-container>
-    </section>
+            </v-container>
 
-    <!-- Tagline -->
-    <section class="su-tagline py-16 py-md-20 text-center">
-        <v-container class="max-width-1218">
-            <p class="su-tagline-line text-h4 text-md-h3 font-weight-bold textPrimary mb-3">Simple. Centralisé. Intelligent.</p>
-            <p class="text-18 text-medium-emphasis mx-auto su-narrow mb-0">
-                Spend.Up transforme la gestion financière en un pilotage 360° : personnel, familial et patrimonial.
-            </p>
-        </v-container>
-    </section>
-
-    <!-- CTA — image design-collection.webp -->
-    <section class="pb-16 pb-md-20">
-        <v-container class="max-content">
-            <div class="bg-lightprimary rounded-16 overflow-hidden position-relative">
-                <v-row>
-                    <v-col cols="12" lg="7" class="py-2">
-                        <div class="py-lg-16 py-10 ps-lg-12 pe-lg-4">
-                            <RocketIcon size="36" class="text-primary mb-4" stroke-width="1.25" />
-                            <h2 class="display-2 font-weight-bold textPrimary mb-4">Prêt à reprendre le contrôle de vos finances ?</h2>
-                            <p class="text-18 text-medium-emphasis lh-lg mb-8">
-                                Rejoignez Spend.Up en quelques clics. Créez votre compte gratuitement, configurez vos comptes, salaires et
-                                budgets, et gardez la main sur vos finances dès aujourd'hui.
-                            </p>
-                            <div class="d-sm-flex d-block ga-3 align-center">
-                                <v-btn color="primary" class="h-48 px-8 text-none" size="large" flat to="/auth/register">
-                                    Créer un compte
-                                </v-btn>
-                                <v-btn
-                                    variant="outlined"
-                                    color="primary"
-                                    class="h-48 px-8 text-none mt-3 mt-sm-0"
-                                    size="large"
-                                    flat
-                                    to="/auth/login"
-                                >
-                                    J'ai déjà un compte
-                                </v-btn>
-                            </div>
-                        </div>
-                    </v-col>
-                </v-row>
-                <img
-                    :src="ctaVisual"
-                    alt=""
-                    class="position-absolute top-0 end-0 d-lg-block d-none rtlImg su-cta-img"
-                    width="900"
-                    height="365"
-                />
+            <div class="features-marquee" aria-label="Domaines couverts par Spend.Up">
+                <div class="features-marquee__track">
+                    <ul v-for="copy in 2" :key="copy" :aria-hidden="copy === 2 ? 'true' : undefined">
+                        <li v-for="name in spendupDomainNames" :key="name">{{ name }}</li>
+                    </ul>
+                </div>
             </div>
-        </v-container>
-    </section>
+        </section>
+
+        <nav class="features-nav" aria-label="Sections de la page">
+            <v-container class="max-width-1218">
+                <div class="features-nav__items">
+                    <a v-for="item in navItems" :key="item.href" :href="item.href">
+                        <span>{{ item.number }}</span>
+                        {{ item.label }}
+                    </a>
+                </div>
+            </v-container>
+        </nav>
+
+        <section
+            v-for="(journey, index) in journeys"
+            :id="`journey-${journey.number}`"
+            :key="journey.number"
+            class="journey"
+            :class="{ 'journey--alt': index % 2 === 1 }"
+        >
+            <v-container class="max-width-1218">
+                <div v-reveal class="journey__layout" :class="{ 'journey__layout--reversed': index % 2 === 1 }">
+                    <div class="journey__copy">
+                        <div class="journey__meta">
+                            <span class="journey__number">{{ journey.number }}</span>
+                            <span class="features-kicker">{{ journey.kicker }}</span>
+                        </div>
+                        <h2 class="textPrimary">{{ journey.title }}</h2>
+                        <p class="journey__lead text-medium-emphasis">{{ journey.text }}</p>
+
+                        <ul class="journey__features">
+                            <li v-for="feature in journey.features" :key="feature.title">
+                                <span class="journey__feature-icon">
+                                    <component :is="feature.icon" size="19" stroke-width="1.7" />
+                                </span>
+                                <div>
+                                    <strong class="textPrimary">{{ feature.title }}</strong>
+                                    <p>{{ feature.text }}</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="journey__visual">
+                        <component :is="journey.scene" />
+                    </div>
+                </div>
+            </v-container>
+        </section>
+
+        <section id="domaines" class="domains">
+            <v-container class="max-width-1218">
+                <div v-reveal class="features-heading">
+                    <span class="features-kicker">Dans le détail</span>
+                    <h2 class="textPrimary">Chaque domaine, pensé jusqu’au bout.</h2>
+                    <p class="text-medium-emphasis">
+                        Derrière les grands parcours, une dizaine de modules spécialisés qui se parlent entre eux : chaque relevé importé
+                        alimente vos budgets, vos prévisions et votre patrimoine.
+                    </p>
+                </div>
+
+                <div v-for="group in groups" :id="`groupe-${group.id}`" :key="group.id" class="domain-group">
+                    <header v-reveal class="domain-group__head">
+                        <span class="domain-group__number">{{ group.number }}</span>
+                        <div>
+                            <span class="features-kicker">{{ group.kicker }}</span>
+                            <h3 class="textPrimary">{{ group.title }}</h3>
+                        </div>
+                        <p class="text-medium-emphasis">{{ group.lead }}</p>
+                    </header>
+
+                    <div v-reveal class="domain-grid" data-reveal-stagger="90">
+                        <article
+                            v-for="tile in group.tiles"
+                            :id="`domaine-${tile.domain.id}`"
+                            :key="tile.domain.id"
+                            class="domain-tile"
+                            :class="[`domain-tile--span-${tile.span}`, { 'domain-tile--wide': tile.span === 12 }]"
+                        >
+                            <div class="domain-tile__visual">
+                                <component :is="tile.domain.scene" />
+                            </div>
+                            <div class="domain-tile__body">
+                                <div class="domain-tile__meta">
+                                    <span class="domain-tile__icon">
+                                        <component :is="tile.domain.icon" size="19" stroke-width="1.7" />
+                                    </span>
+                                    <span class="domain-tile__kicker">{{ tile.number }} · {{ tile.domain.kicker }}</span>
+                                </div>
+                                <h4 class="textPrimary">{{ tile.domain.title }}</h4>
+                                <p class="text-medium-emphasis">{{ tile.domain.lead }}</p>
+                                <ul>
+                                    <li v-for="point in tile.points" :key="point">
+                                        <CheckIcon size="14" stroke-width="2.4" />
+                                        <span>{{ point }}</span>
+                                    </li>
+                                </ul>
+                                <p v-if="tile.domain.footer" class="domain-tile__footnote">{{ tile.domain.footer }}</p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+            </v-container>
+        </section>
+
+        <section class="features-security">
+            <v-container class="max-width-1218">
+                <div v-reveal class="features-security__panel">
+                    <div class="features-security__glow" aria-hidden="true"></div>
+                    <div class="features-security__copy">
+                        <span class="features-security__badge"><ShieldCheckIcon size="17" stroke-width="1.8" /> Sécurité incluse</span>
+                        <h2>Protégé par défaut.<br />Contrôlé par vous.</h2>
+                        <p>
+                            Spend.Up n’a aucun accès à vos comptes bancaires. La sécurité, la confidentialité et la maîtrise de vos données
+                            sont incluses dans toutes les offres, jamais vendues en option.
+                        </p>
+                        <div class="features-security__actions">
+                            <v-btn color="white" size="large" flat class="text-none" to="/politique-confidentialite">
+                                Notre engagement confidentialité
+                                <ArrowRightIcon size="18" class="ms-2" />
+                            </v-btn>
+                            <RouterLink to="/#hebergement" class="features-security__link">Hébergement en Suisse</RouterLink>
+                        </div>
+                    </div>
+
+                    <ul class="features-security__list">
+                        <li v-for="item in securityItems" :key="item">
+                            <span><CheckIcon size="15" stroke-width="2.5" /></span>
+                            {{ item }}
+                        </li>
+                    </ul>
+                </div>
+            </v-container>
+        </section>
+
+        <section class="features-final">
+            <v-container class="max-width-1218">
+                <div v-reveal class="features-final__card">
+                    <div class="features-final__ring features-final__ring--one" aria-hidden="true"></div>
+                    <div class="features-final__ring features-final__ring--two" aria-hidden="true"></div>
+                    <span class="features-kicker">À vous de jouer</span>
+                    <h2 class="textPrimary">Découvrez une autre façon <span>de gérer vos finances.</span></h2>
+                    <p class="text-medium-emphasis">Commencez gratuitement, sans carte bancaire et sans engagement.</p>
+                    <div class="features-final__actions">
+                        <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
+                            Créer mon espace
+                            <ArrowRightIcon size="19" class="ms-2" />
+                        </v-btn>
+                        <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-8" to="/tarifs">
+                            Comparer les offres
+                        </v-btn>
+                    </div>
+                </div>
+            </v-container>
+        </section>
+    </div>
 </template>
 
 <style scoped lang="scss">
-@use '@/scss/frontpages/spendup-shared';
+@use '@/scss/frontpages/pages/features';
 </style>

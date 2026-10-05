@@ -1,11 +1,42 @@
-export { notificationsApi } from './api';
-export { useNotificationsStore } from './stores/notifications-store';
-export { resolveNotificationLink, isSafeAppNotificationPath, isSecurityNotificationType, isFriendNotificationType } from './link';
-export { friendLiveChipColor, isFriendLiveChipType } from './friendChip';
-export { parseNotificationMetadata, getFriendshipPublicId, normalizeAppNotification } from './normalize';
-export { ensureNativeNotificationPermission, setNativeNotificationNavigate, showNativeNotification } from './native-notify';
-export { default as InboxTab } from './components/InboxTab.vue';
-export { default as FriendLiveChips } from './components/FriendLiveChips.vue';
+export { notificationsApi } from '@/features/notifications/api';
+export { useNotificationsStore } from '@/features/notifications/stores/notifications-store';
+export {
+    resolveNotificationLink,
+    isSafeAppNotificationPath,
+    isSecurityNotificationType,
+    isFriendNotificationType,
+    isAccountShareNotificationType,
+    isBudgetAlertNotificationType,
+    isSavingsGoalReachedNotificationType
+} from '@/features/notifications/link';
+export { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '@/features/notifications/friendChip';
+export {
+    parseNotificationMetadata,
+    getFriendshipPublicId,
+    getAccountSharePublicId,
+    getAccountPublicId,
+    normalizeAppNotification,
+    parseAccountChangedPayload,
+    parseCategoryChangedPayload,
+    parseTagChangedPayload,
+    parseTierChangedPayload,
+    parseRecurringExpenseChangedPayload,
+    parseRecurringIncomeChangedPayload,
+    parseBudgetChangedPayload,
+    parseSavingsGoalChangedPayload,
+    parseImportChangedPayload,
+    parseImportTemplateChangedPayload,
+    isTransactionAccountChange,
+    getBudgetPublicId,
+    getSavingsGoalPublicId
+} from '@/features/notifications/normalize';
+export {
+    ensureNativeNotificationPermission,
+    setNativeNotificationNavigate,
+    showNativeNotification
+} from '@/features/notifications/native-notify';
+export { default as InboxTab } from '@/features/notifications/components/InboxTab.vue';
+export { default as FriendLiveChips } from '@/features/notifications/components/FriendLiveChips.vue';
 export type {
     AppNotification,
     NotificationType,
@@ -17,7 +48,27 @@ export type {
     NotificationReceivedPayload,
     FriendshipChange,
     FriendshipChangedPayload,
+    AccountChange,
+    AccountChangedPayload,
+    CategoryChange,
+    CategoryChangedPayload,
+    TagChange,
+    TagChangedPayload,
+    TierChange,
+    TierChangedPayload,
+    RecurringExpenseChange,
+    RecurringExpenseChangedPayload,
+    RecurringIncomeChange,
+    RecurringIncomeChangedPayload,
+    BudgetChange,
+    BudgetChangedPayload,
+    SavingsGoalChange,
+    SavingsGoalChangedPayload,
+    ImportChange,
+    ImportChangedPayload,
+    ImportTemplateChange,
+    ImportTemplateChangedPayload,
     InboxClearedPayload,
     SessionEndedPayload,
     NotificationsListQuery
-} from './types';
+} from '@/features/notifications/types';

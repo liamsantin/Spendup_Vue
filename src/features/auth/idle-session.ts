@@ -1,4 +1,4 @@
-import { ApiError } from './api';
+import { ApiError } from '@/features/auth/api';
 
 /** Message API idle logout (`IdleSessionGuard`). */
 const IDLE_MESSAGE_RE = /inactivit[eé]|inactivity/i;

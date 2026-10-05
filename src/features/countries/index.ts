@@ -1,3 +1,3 @@
-export { countriesApi } from './api';
-export { useCountriesStore } from './stores/countries-store';
-export type { Country, CountriesResult } from './types';
+export { countriesApi } from '@/features/countries/api';
+export { useCountriesStore } from '@/features/countries/stores/countries-store';
+export type { Country, CountriesResult } from '@/features/countries/types';

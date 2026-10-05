@@ -22,13 +22,9 @@ function desktopClientId(): string {
     return String(import.meta.env.VITE_GOOGLE_DESKTOP_CLIENT_ID ?? '').trim();
 }
 
-function desktopClientSecret(): string {
-    return String(import.meta.env.VITE_GOOGLE_DESKTOP_CLIENT_SECRET ?? '').trim();
-}
-
 export function isGoogleDesktopConfigured(): boolean {
-    // Google Desktop affiche un secret client et le token endpoint l’exige souvent même avec PKCE.
-    return desktopClientId().length > 0 && desktopClientSecret().length > 0;
+    // Secret lu côté Rust (`GOOGLE_DESKTOP_CLIENT_SECRET`) — jamais dans le bundle JS.
+    return desktopClientId().length > 0;
 }
 
 export function isGoogleDesktopOAuthInProgress(): boolean {
@@ -107,7 +103,7 @@ export type GoogleDesktopOAuthOptions = {
  */
 export async function requestGoogleIdTokenDesktop(options: GoogleDesktopOAuthOptions = {}): Promise<string> {
     if (!isGoogleDesktopConfigured()) {
-        throw new Error('VITE_GOOGLE_DESKTOP_CLIENT_ID and VITE_GOOGLE_DESKTOP_CLIENT_SECRET must both be configured');
+        throw new Error('VITE_GOOGLE_DESKTOP_CLIENT_ID must be configured');
     }
     if (flowActive) {
         throw new Error(IN_PROGRESS_ERROR);
@@ -189,8 +185,7 @@ export async function requestGoogleIdTokenDesktop(options: GoogleDesktopOAuthOpt
             clientId: desktopClientId(),
             code: parsed.code,
             codeVerifier,
-            redirectUri,
-            clientSecret: desktopClientSecret() || null
+            redirectUri
         });
     } finally {
         unlisten?.();

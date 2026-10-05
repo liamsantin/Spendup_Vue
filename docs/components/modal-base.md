@@ -1,6 +1,6 @@
 # AppModalBase
 
-> Code : `src/components/shared/AppModalBase.vue`  
+> Code : `src/components/shared/modal/AppModalBase.vue`  
 > Shell modal — header fixe · body ± scroll · footer fixe  
 > Preview : `/components` → Modal (`VITE_APP_ENV=development`) · Catalogue : `catalog.md` · Relu : 2026-08-13
 
@@ -26,13 +26,15 @@
 - Croix de fermeture en haut à droite (toujours présente).
 - Scroll horizontal désactivé (`suppressScrollX`) quand `scrollable` est actif.
 - Hauteur max. viewport : `85vh`.
+- La card se dimensionne au contenu sans dépasser `height` : avec `scrollable`, le rail n’apparaît
+  que s’il y a réellement débordement (plus de scrollbar sur un contenu court).
 
 ---
 
 ## Import
 
 ```vue
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 ```
 
 ---
@@ -45,7 +47,7 @@ import AppModalBase from '@/components/shared/AppModalBase.vue';
 | `title`      | `string`           | —      | Titre du header                                                         |
 | `subtitle`   | `string`           | —      | Sous-titre optionnel                                                    |
 | `maxWidth`   | `number \| string` | `520`  | Largeur max. du dialog                                                  |
-| `height`     | `number \| string` | `640`  | Hauteur fixe de la card (**ignorée** si `scrollable=false`)             |
+| `height`     | `number \| string` | `640`  | Hauteur **max.** de la card (**ignorée** si `scrollable=false`)         |
 | `persistent` | `boolean`          | `true` | Empêche la fermeture au clic overlay                                    |
 | `showFooter` | `boolean`          | `true` | Affiche le footer / slot `footer`                                       |
 | `scrollable` | `boolean`          | `true` | Active `perfect-scrollbar`. **`false`** si le contenu ne déborde jamais |
@@ -57,7 +59,8 @@ import AppModalBase from '@/components/shared/AppModalBase.vue';
 | Contenu long (QR, listes, formulaires multi-sections) | `true`       |
 | Contenu court (OTP 6 chiffres, confirmation simple)   | `false`      |
 
-Avec `scrollable=false`, la card s’adapte en **hauteur auto** (pas de rails / scroll inutiles).
+Dans les deux cas la hauteur s’adapte au contenu. `scrollable=false` évite en plus de monter
+perfect-scrollbar quand le contenu ne peut jamais déborder.
 
 ---
 
@@ -94,7 +97,7 @@ await modalRef.value?.refreshScrollbar();
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 
 const open = ref(false);
 </script>

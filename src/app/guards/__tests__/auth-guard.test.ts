@@ -27,6 +27,72 @@ vi.mock('@/features/friends', () => ({
     })
 }));
 
+vi.mock('@/features/accounts', () => ({
+    useAccountsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/payment-methods/stores/payment-methods-store', () => ({
+    usePaymentMethodsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/transactions/stores/transactions-store', () => ({
+    useTransactionsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/categories/stores/categories-store', () => ({
+    useCategoriesStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/tags/stores/tags-store', () => ({
+    useTagsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/imports/stores/imports-store', () => ({
+    useImportsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/tiers/stores/tiers-store', () => ({
+    useTiersStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/recurring-payments/stores/recurring-payments-store', () => ({
+    useRecurringPaymentsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/recurring-payments/stores/recurring-suggestions-store', () => ({
+    useRecurringSuggestionsStore: () => ({
+        reset: vi.fn()
+    })
+}));
+
+vi.mock('@/features/budgets/stores/budgets-store', () => ({
+    useBudgetsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/savings-goals/stores/savings-goals-store', () => ({
+    useSavingsGoalsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
 vi.mock('@/features/user-settings', () => ({
     useUserSettingsStore: () => ({
         ensureLoaded: vi.fn().mockResolvedValue(undefined),
@@ -62,7 +128,7 @@ describe('authGuard', () => {
         const auth = useAuthStore();
         const next = vi.fn();
         await authGuard(route('/app/comptes'), route('/'), next);
-        expect(next).toHaveBeenCalledWith('/auth/login');
+        expect(next).toHaveBeenCalledWith('/auth');
         expect(auth.returnUrl).toBe('/app/comptes');
     });
 
@@ -78,7 +144,8 @@ describe('authGuard', () => {
 
         expect(auth.fetchMe).toHaveBeenCalled();
         expect(auth.forceReLogin).toHaveBeenCalled();
-        expect(next).toHaveBeenCalledWith('/auth/login');
+        expect(auth.returnUrl).toBe('/app/settings');
+        expect(next).toHaveBeenCalledWith(false);
     });
 
     it('laisse passer si user déjà chargé', async () => {

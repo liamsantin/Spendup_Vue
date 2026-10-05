@@ -9,20 +9,37 @@ export const LOGIN_NOTICE_KEY = 'spendup_login_notice';
 /** Marge avant expiration pour déclencher un refresh proactif. */
 export const ACCESS_EXPIRY_SKEW_MS = 30_000;
 
+function readSession(key: string): string | null {
+    return sessionStorage.getItem(key);
+}
+
+/**
+ * Refresh : mémoire Pinia + sessionStorage (pas localStorage — surface XSS).
+ * Migre une fois un jeton legacy resté en localStorage.
+ */
 export function readRefreshToken(): string | null {
-    return localStorage.getItem(REFRESH_KEY);
+    const fromSession = readSession(REFRESH_KEY);
+    if (fromSession) {
+        localStorage.removeItem(REFRESH_KEY);
+        return fromSession;
+    }
+    const fromLocal = localStorage.getItem(REFRESH_KEY);
+    if (!fromLocal) return null;
+    sessionStorage.setItem(REFRESH_KEY, fromLocal);
+    localStorage.removeItem(REFRESH_KEY);
+    return fromLocal;
 }
 
 export function readAccessToken(): string | null {
-    return sessionStorage.getItem(ACCESS_KEY);
+    return readSession(ACCESS_KEY);
 }
 
 export function readExpiresAt(): string | null {
-    return sessionStorage.getItem(EXPIRES_AT_KEY);
+    return readSession(EXPIRES_AT_KEY);
 }
 
 export function readPendingEmail(): string | null {
-    return sessionStorage.getItem(PENDING_EMAIL_KEY);
+    return readSession(PENDING_EMAIL_KEY);
 }
 
 export function writePendingEmail(email: string | null) {
@@ -52,15 +69,16 @@ export function clearLegacyPendingPassword() {
     sessionStorage.removeItem('spendup_pending_password');
 }
 
-/** Supprime un refresh éventuellement resté en localStorage (mode cookie). */
+/** Purge refresh sessionStorage + localStorage (legacy / cookie-mode). */
 export function clearStoredRefreshToken() {
+    sessionStorage.removeItem(REFRESH_KEY);
     localStorage.removeItem(REFRESH_KEY);
 }
 
 /**
  * Persiste les jetons.
  * - Cookie-mode (`persistAccess: false`) : rien en storage JS (access + refresh = cookies HttpOnly).
- * - Legacy : access en sessionStorage, refresh en localStorage si `persistRefresh`.
+ * - Bearer : access + refresh en sessionStorage (jamais localStorage).
  */
 export function writeTokens(
     accessToken: string,
@@ -83,15 +101,17 @@ export function writeTokens(
 
     const persistRefresh = options?.persistRefresh !== false;
     if (persistRefresh && refreshToken) {
-        localStorage.setItem(REFRESH_KEY, refreshToken);
+        sessionStorage.setItem(REFRESH_KEY, refreshToken);
     } else {
-        localStorage.removeItem(REFRESH_KEY);
+        sessionStorage.removeItem(REFRESH_KEY);
     }
+    localStorage.removeItem(REFRESH_KEY);
 }
 
 export function clearStoredTokens() {
     sessionStorage.removeItem(ACCESS_KEY);
     sessionStorage.removeItem(EXPIRES_AT_KEY);
+    sessionStorage.removeItem(REFRESH_KEY);
     localStorage.removeItem(REFRESH_KEY);
     clearLegacyPendingPassword();
 }

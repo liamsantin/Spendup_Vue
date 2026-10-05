@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildFriendQrPayload, parseFriendQrPayload } from '../qr';
+import { buildFriendQrPayload, parseFriendQrPayload } from '@/features/friends/qr';
 
 describe('friend qr payload', () => {
     it('buildFriendQrPayload sérialise le publicId', () => {

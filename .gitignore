@@ -3,6 +3,9 @@ dist/
 coverage/
 src-tauri/target/
 
+# Références locales lecture seule — hors commit / verify
+_template/
+
 # Env locaux (garder .env.example versionné)
 .env
 .env.local

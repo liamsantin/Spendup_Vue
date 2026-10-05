@@ -12,6 +12,7 @@ const api = vi.hoisted(() => ({
     refuse: vi.fn(),
     cancel: vi.fn(),
     remove: vi.fn(),
+    updateNickname: vi.fn(),
     block: vi.fn(),
     unblock: vi.fn()
 }));
@@ -31,6 +32,7 @@ vi.mock('../../api', () => ({
         refuse: (...args: unknown[]) => api.refuse(...args),
         cancel: (...args: unknown[]) => api.cancel(...args),
         remove: (...args: unknown[]) => api.remove(...args),
+        updateNickname: (...args: unknown[]) => api.updateNickname(...args),
         block: (...args: unknown[]) => api.block(...args),
         unblock: (...args: unknown[]) => api.unblock(...args)
     }
@@ -43,7 +45,7 @@ vi.mock('@/features/notifications', () => ({
     })
 }));
 
-import { useFriendsStore } from '../friends-store';
+import { useFriendsStore } from '@/features/friends/stores/friends-store';
 
 describe('useFriendsStore', () => {
     beforeEach(() => {
@@ -53,12 +55,13 @@ describe('useFriendsStore', () => {
         subscribeToFriendshipChanged.mockReset().mockReturnValue(() => undefined);
     });
 
-    it('charge les listes principales au bootstrap', async () => {
+    it('charge l’onglet actif au bootstrap', async () => {
         api.list.mockResolvedValue({
             items: [
                 {
                     friendshipPublicId: 'f1',
                     user: { publicId: 'U1', username: 'alice', firstName: null, name: null, profilePicture: null },
+                    nickname: null,
                     friendsSince: '2026-01-01'
                 }
             ],
@@ -66,17 +69,28 @@ describe('useFriendsStore', () => {
             pageSize: 20,
             totalCount: 1
         });
-        api.incoming.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
-        api.outgoing.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
-        api.blocked.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
 
         const store = useFriendsStore();
-        await store.bootstrap();
+        await store.bootstrap('Friends');
 
         expect(store.friendsCount).toBe(1);
+        expect(api.list).toHaveBeenCalledTimes(1);
+        expect(api.incoming).not.toHaveBeenCalled();
+        expect(api.outgoing).not.toHaveBeenCalled();
+        expect(api.blocked).not.toHaveBeenCalled();
         expect(subscribeToFriendNotifications).toHaveBeenCalled();
         expect(subscribeToFriendshipChanged).toHaveBeenCalled();
         expect(store.initialized).toBe(true);
+    });
+
+    it('openTab dans le TTL ne refetch pas', async () => {
+        api.list.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        const store = useFriendsStore();
+        await store.openTab('Friends');
+        await store.openTab('Friends');
+
+        expect(api.list).toHaveBeenCalledTimes(1);
     });
 
     it('vide la recherche si moins de 2 caractères', async () => {
@@ -120,7 +134,7 @@ describe('useFriendsStore', () => {
         });
 
         const store = useFriendsStore();
-        await store.bootstrap();
+        await store.bootstrap('Friends');
         api.list.mockClear();
         api.incoming.mockClear();
         api.outgoing.mockClear();
@@ -281,12 +295,85 @@ describe('useFriendsStore', () => {
         expect(api.outgoing).toHaveBeenCalledTimes(1);
     });
 
+    it('un refresh friendshipChanged en échec n’interrompt pas la file', async () => {
+        api.outgoing.mockRejectedValue(new Error('boom'));
+        api.incoming.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        let listener: ((p: { change: string; friendshipPublicId: string }) => void) | undefined;
+        subscribeToFriendshipChanged.mockImplementation((fn: (p: { change: string; friendshipPublicId: string }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useFriendsStore();
+        store.onAuthenticatedSession();
+
+        listener?.({ change: 'refused', friendshipPublicId: 'a' });
+        listener?.({ change: 'canceled', friendshipPublicId: 'b' });
+
+        await vi.waitFor(() => expect(api.incoming).toHaveBeenCalledTimes(1));
+        expect(api.outgoing).toHaveBeenCalledTimes(1);
+    });
+
     it('onAuthenticatedSession branche le realtime sans charger les listes', () => {
         const store = useFriendsStore();
         store.onAuthenticatedSession();
         expect(subscribeToFriendNotifications).toHaveBeenCalled();
         expect(subscribeToFriendshipChanged).toHaveBeenCalled();
         expect(api.list).not.toHaveBeenCalled();
+    });
+
+    it('sur friendshipChanged nicknameUpdated rafraîchit la liste amis', async () => {
+        api.list.mockResolvedValue({ items: [], page: 1, pageSize: 20, totalCount: 0 });
+
+        let listener: ((p: { change: string; friendshipPublicId: string }) => void) | undefined;
+        subscribeToFriendshipChanged.mockImplementation((fn: (p: { change: string; friendshipPublicId: string }) => void) => {
+            listener = fn;
+            return () => undefined;
+        });
+
+        const store = useFriendsStore();
+        store.onAuthenticatedSession();
+        api.list.mockClear();
+
+        listener?.({ change: 'nicknameUpdated', friendshipPublicId: 'fr-5' });
+        await vi.waitFor(() => expect(api.list).toHaveBeenCalled());
+    });
+
+    it('updateNickname patch la liste locale avec la réponse API', async () => {
+        const existing = {
+            friendshipPublicId: 'f1',
+            user: { publicId: 'U1', username: 'alice', firstName: null, name: null, profilePicture: null },
+            nickname: null,
+            friendsSince: '2026-01-01'
+        };
+        const updated = { ...existing, nickname: 'Mon pote' };
+
+        api.updateNickname.mockResolvedValue(updated);
+
+        const store = useFriendsStore();
+        store.friends = [existing];
+
+        await store.updateNickname('f1', 'Mon pote');
+
+        expect(api.updateNickname).toHaveBeenCalledWith('f1', { nickname: 'Mon pote' });
+        expect(store.friends[0]?.nickname).toBe('Mon pote');
+    });
+
+    it('updateNickname rejette un surnom trop long côté client', async () => {
+        const store = useFriendsStore();
+        store.friends = [
+            {
+                friendshipPublicId: 'f1',
+                user: { publicId: 'U1', username: 'alice', firstName: null, name: null, profilePicture: null },
+                nickname: null,
+                friendsSince: '2026-01-01'
+            }
+        ];
+
+        await expect(store.updateNickname('f1', 'a'.repeat(65))).rejects.toThrow();
+        expect(api.updateNickname).not.toHaveBeenCalled();
+        expect(store.error).toContain('64');
     });
 
     it('loadMoreFriends append les pages suivantes', async () => {
@@ -296,6 +383,7 @@ describe('useFriendsStore', () => {
                     {
                         friendshipPublicId: 'f1',
                         user: { publicId: 'U1', username: 'alice', firstName: null, name: null, profilePicture: null },
+                        nickname: null,
                         friendsSince: '2026-01-01'
                     }
                 ],
@@ -308,6 +396,7 @@ describe('useFriendsStore', () => {
                     {
                         friendshipPublicId: 'f2',
                         user: { publicId: 'U2', username: 'bob', firstName: null, name: null, profilePicture: null },
+                        nickname: null,
                         friendsSince: '2026-01-02'
                     }
                 ],

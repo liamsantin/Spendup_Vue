@@ -2,39 +2,87 @@ import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } fro
 import { useAuthStore } from '@/features/auth';
 import { getApiBaseUrl, isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 import type {
+    AccountChangedPayload,
+    CategoryChangedPayload,
+    TagChangedPayload,
     FriendshipChangedPayload,
     InboxClearedPayload,
     NotificationConnectedPayload,
     NotificationReceivedPayload,
-    SessionEndedPayload
-} from './types';
+    RecurringExpenseChangedPayload,
+    RecurringIncomeChangedPayload,
+    SessionEndedPayload,
+    TierChangedPayload,
+    BudgetChangedPayload,
+    SavingsGoalChangedPayload,
+    ImportChangedPayload,
+    ImportTemplateChangedPayload
+} from '@/features/notifications/types';
 
 export type NotificationsHubHandlers = {
     onConnected?: (payload: NotificationConnectedPayload) => void;
     onNotificationReceived?: (payload: NotificationReceivedPayload) => void;
     onFriendshipChanged?: (payload: FriendshipChangedPayload) => void;
+    onAccountChanged?: (payload: AccountChangedPayload) => void;
+    onCategoryChanged?: (payload: CategoryChangedPayload) => void;
+    onTagChanged?: (payload: TagChangedPayload) => void;
+    onTierChanged?: (payload: TierChangedPayload) => void;
+    onRecurringExpenseChanged?: (payload: RecurringExpenseChangedPayload) => void;
+    onRecurringIncomeChanged?: (payload: RecurringIncomeChangedPayload) => void;
+    onBudgetChanged?: (payload: BudgetChangedPayload) => void;
+    onSavingsGoalChanged?: (payload: SavingsGoalChangedPayload) => void;
+    onImportChanged?: (payload: ImportChangedPayload) => void;
+    onImportTemplateChanged?: (payload: ImportTemplateChangedPayload) => void;
     onInboxCleared?: (payload: InboxClearedPayload) => void;
     onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
+    /** Après reconnexion auto : resynchroniser ce qui a pu être poussé pendant la coupure. */
+    onReconnected?: () => void | Promise<void>;
 };
 
 let connection: HubConnection | null = null;
 let handlers: NotificationsHubHandlers = {};
 let startPromise: Promise<void> | null = null;
 
+/** Cookie `spendup_access` est Path=/api — hors scope du hub `/hubs/realtime`. */
+export const HUB_ACCESS_TOKEN_REQUIRED = 'SignalR requires an access token in memory (API: ReturnAccessTokenInBody=true).';
+
 function hubUrl(): string {
     return `${getApiBaseUrl()}/hubs/realtime`;
 }
 
+/**
+ * JWT pour negotiate / WebSocket.
+ * Le client SignalR pose `Authorization: Bearer` (HTTP) et `?access_token=` (WebSocket).
+ */
 async function accessTokenFactory(): Promise<string> {
     const auth = useAuthStore();
-    const token = await auth.ensureAccessToken();
-    return token ?? '';
+    let token = (await auth.ensureAccessToken())?.trim() || '';
+    if (token) return token;
+
+    // Refresh une fois : souvent le body renvoie un access même en cookie-mode.
+    const refreshed = await auth.refreshSession();
+    if (refreshed) {
+        token = String(auth.accessToken ?? '').trim();
+        if (token) return token;
+    }
+
+    throw new Error(HUB_ACCESS_TOKEN_REQUIRED);
 }
 
 function attachHandlers(conn: HubConnection) {
     conn.off('connected');
     conn.off('notificationReceived');
     conn.off('friendshipChanged');
+    conn.off('accountChanged');
+    conn.off('categoryChanged');
+    conn.off('tagChanged');
+    conn.off('tierChanged');
+    conn.off('recurringExpenseChanged');
+    conn.off('recurringIncomeChanged');
+    conn.off('budgetChanged');
+    conn.off('savingsGoalChanged');
+    conn.off('importChanged');
+    conn.off('importTemplateChanged');
     conn.off('inboxCleared');
     conn.off('sessionEnded');
 
@@ -48,6 +96,46 @@ function attachHandlers(conn: HubConnection) {
 
     conn.on('friendshipChanged', (payload: FriendshipChangedPayload) => {
         handlers.onFriendshipChanged?.(payload);
+    });
+
+    conn.on('accountChanged', (payload: AccountChangedPayload) => {
+        handlers.onAccountChanged?.(payload);
+    });
+
+    conn.on('categoryChanged', (payload: CategoryChangedPayload) => {
+        handlers.onCategoryChanged?.(payload);
+    });
+
+    conn.on('tagChanged', (payload: TagChangedPayload) => {
+        handlers.onTagChanged?.(payload);
+    });
+
+    conn.on('tierChanged', (payload: TierChangedPayload) => {
+        handlers.onTierChanged?.(payload);
+    });
+
+    conn.on('recurringExpenseChanged', (payload: RecurringExpenseChangedPayload) => {
+        handlers.onRecurringExpenseChanged?.(payload);
+    });
+
+    conn.on('recurringIncomeChanged', (payload: RecurringIncomeChangedPayload) => {
+        handlers.onRecurringIncomeChanged?.(payload);
+    });
+
+    conn.on('budgetChanged', (payload: BudgetChangedPayload) => {
+        handlers.onBudgetChanged?.(payload);
+    });
+
+    conn.on('savingsGoalChanged', (payload: SavingsGoalChangedPayload) => {
+        handlers.onSavingsGoalChanged?.(payload);
+    });
+
+    conn.on('importChanged', (payload: ImportChangedPayload) => {
+        handlers.onImportChanged?.(payload);
+    });
+
+    conn.on('importTemplateChanged', (payload: ImportTemplateChangedPayload) => {
+        handlers.onImportTemplateChanged?.(payload);
     });
 
     conn.on('inboxCleared', (payload: InboxClearedPayload) => {
@@ -73,6 +161,12 @@ function buildConnection(): HubConnection {
 
     conn.onreconnected(() => {
         attachHandlers(conn);
+        // Les événements émis pendant la coupure sont perdus : le store refetch badge / inbox.
+        try {
+            void Promise.resolve(handlers.onReconnected?.()).catch(() => undefined);
+        } catch {
+            // ignore
+        }
     });
 
     return conn;
@@ -92,6 +186,9 @@ export async function startNotificationsHub(): Promise<void> {
     if (startPromise) return startPromise;
 
     startPromise = (async () => {
+        // Échoue tôt si aucun JWT mémoire (évite un start opaque 401).
+        await accessTokenFactory();
+
         if (!connection) {
             connection = buildConnection();
         } else {

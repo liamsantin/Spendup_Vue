@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
-import { userSettingsApi } from '../api';
+import { userSettingsApi } from '@/features/user-settings/api';
 import {
     applyUserSettingsToRuntime,
     cloneSettings,
@@ -8,8 +8,8 @@ import {
     isEmptySettingsPatch,
     normalizeSecuritySettings,
     settingsEqual
-} from '../mappers';
-import { USER_SETTINGS_DEFAULTS, type UserSettings } from '../types';
+} from '@/features/user-settings/mappers';
+import { USER_SETTINGS_DEFAULTS, type UserSettings } from '@/features/user-settings/types';
 
 export const useUserSettingsStore = defineStore('user-settings', () => {
     const settings = ref<UserSettings | null>(null);

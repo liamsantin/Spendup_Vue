@@ -1,6 +1,6 @@
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { isAppLocale, type AppLocale } from '@/plugins/i18n';
-import { HEX_TO_DARK_THEME, HEX_TO_LIGHT_THEME, normalizeHex } from './themeColorOptions';
+import { HEX_TO_DARK_THEME, HEX_TO_LIGHT_THEME, normalizeHex } from '@/features/user-settings/themeColorOptions';
 import {
     IDLE_LOGOUT_MINUTES_MAX,
     IDLE_LOGOUT_MINUTES_MIN,
@@ -8,7 +8,7 @@ import {
     TRUSTED_DEVICE_DAYS_MIN,
     type UserSettings,
     type UserSettingsPatch
-} from './types';
+} from '@/features/user-settings/types';
 
 function clampInt(value: number, min: number, max: number): number {
     if (!Number.isFinite(value)) return min;

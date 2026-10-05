@@ -1,7 +1,18 @@
 import type { NavigationGuard } from 'vue-router';
-import { useAuthStore, APP_HOME_ROUTE } from '@/features/auth';
+import { useAuthStore } from '@/features/auth';
+import { APP_HOME_ROUTE, AUTH_ROUTE } from '@/features/auth/stores/internal/auth-session';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 import { useFriendsStore } from '@/features/friends';
+import { useAccountsStore } from '@/features/accounts';
+import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
+import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
+import { useCategoriesStore } from '@/features/categories/stores/categories-store';
+import { useTagsStore } from '@/features/tags/stores/tags-store';
+import { useImportsStore } from '@/features/imports/stores/imports-store';
+import { useTiersStore } from '@/features/tiers/stores/tiers-store';
+import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
+import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
+import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import { useNotificationsStore } from '@/features/notifications';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isDevAppEnv } from '@/utils/helpers/env-helpers';
@@ -21,7 +32,7 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
     if (requiresAuth) {
         if (!auth.isAuthenticated) {
             auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
-            return next('/auth/login');
+            return next(AUTH_ROUTE);
         }
         if (!auth.user) {
             try {
@@ -29,12 +40,13 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
                 if (!me || !auth.isAuthenticated) {
                     auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
                     await auth.forceReLogin();
-                    return next('/auth/login');
+                    // `forceReLogin` a déjà navigué vers /auth — annuler la nav courante.
+                    return next(false);
                 }
             } catch {
                 auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
                 await auth.forceReLogin();
-                return next('/auth/login');
+                return next(false);
             }
         }
         try {
@@ -48,15 +60,25 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
             // Hub / badge non bloquants
         }
         useFriendsStore().onAuthenticatedSession();
+        useAccountsStore().onAuthenticatedSession();
+        usePaymentMethodsStore().onAuthenticatedSession();
+        useTransactionsStore().onAuthenticatedSession();
+        useCategoriesStore().onAuthenticatedSession();
+        useTagsStore().onAuthenticatedSession();
+        useImportsStore().onAuthenticatedSession();
+        useTiersStore().onAuthenticatedSession();
+        useRecurringPaymentsStore().onAuthenticatedSession();
+        useBudgetsStore().onAuthenticatedSession();
+        useSavingsGoalsStore().onAuthenticatedSession();
         return next();
     }
 
-    if (auth.isAuthenticated && (to.path === '/auth/login' || to.path === '/auth/register')) {
+    if (auth.isAuthenticated && (to.path === AUTH_ROUTE || to.path === `${AUTH_ROUTE}/login` || to.path === `${AUTH_ROUTE}/register`)) {
         return next(APP_HOME_ROUTE);
     }
 
     if (to.path === '/auth/two-step' && !auth.twoFactorToken) {
-        return next('/auth/login');
+        return next(AUTH_ROUTE);
     }
 
     next();

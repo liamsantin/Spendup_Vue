@@ -1,4 +1,4 @@
-import type { AuthDevice } from './types';
+import type { AuthDevice } from '@/features/auth/types';
 
 function pickString(source: Record<string, unknown>, ...keys: string[]): string | null {
     for (const key of keys) {

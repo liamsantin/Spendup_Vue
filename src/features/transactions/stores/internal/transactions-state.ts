@@ -1,0 +1,297 @@
+import { computed, ref } from 'vue';
+import { createResourceCache } from '@/utils/helpers/resource-cache';
+import { involvedAccountPublicIds, matchesTransactionSearch, normalizeTransaction, sortTransactions } from '@/features/transactions/format';
+import { withoutTagPublicId } from '@/features/tags/format';
+import {
+    TRANSACTION_PAGE_SIZE_DEFAULT,
+    TRANSACTION_SEARCH_MAX,
+    type ListTransactionsQuery,
+    type Transaction
+} from '@/features/transactions/types';
+
+export const TRANSACTIONS_LIST_MAX_AGE_MS = 30_000;
+
+export type TransactionsListQuery = {
+    accountPublicId: string | null;
+    categoryPublicId: string | null;
+    tagPublicId: string | null;
+    tierPublicId: string | null;
+    recurringExpensePublicId: string | null;
+    recurringIncomePublicId: string | null;
+    from: string | null;
+    to: string | null;
+    /** Recherche serveur normalisée (trim, tronquée à 100). */
+    search: string | null;
+};
+
+export const EMPTY_LIST_QUERY: TransactionsListQuery = {
+    accountPublicId: null,
+    categoryPublicId: null,
+    tagPublicId: null,
+    tierPublicId: null,
+    recurringExpensePublicId: null,
+    recurringIncomePublicId: null,
+    from: null,
+    to: null,
+    search: null
+};
+
+export function normalizeListQuery(query: ListTransactionsQuery = {}): TransactionsListQuery {
+    return {
+        accountPublicId: query.accountPublicId?.trim() || null,
+        categoryPublicId: query.categoryPublicId?.trim() || null,
+        tagPublicId: query.tagPublicId?.trim() || null,
+        tierPublicId: query.tierPublicId?.trim() || null,
+        recurringExpensePublicId: query.recurringExpensePublicId?.trim() || null,
+        recurringIncomePublicId: query.recurringIncomePublicId?.trim() || null,
+        from: query.from?.trim() || null,
+        to: query.to?.trim() || null,
+        search: query.search?.trim().slice(0, TRANSACTION_SEARCH_MAX) || null
+    };
+}
+
+export function listCacheKey(query: TransactionsListQuery): string {
+    const account = query.accountPublicId || 'all';
+    const from = query.from || '-';
+    const to = query.to || '-';
+    const category = query.categoryPublicId || 'all';
+    const tag = query.tagPublicId || 'all';
+    const tier = query.tierPublicId || 'all';
+    const recExp = query.recurringExpensePublicId || 'all';
+    const recInc = query.recurringIncomePublicId || 'all';
+    // `search` en dernier : il peut contenir des « : » (reconstitué par `parseListCacheKey`).
+    return `list:${account}:${from}:${to}:${category}:${tag}:${tier}:${recExp}:${recInc}:${query.search ?? ''}`;
+}
+
+export function parseListCacheKey(key: string): TransactionsListQuery {
+    const parts = key.split(':');
+    return {
+        accountPublicId: !parts[1] || parts[1] === 'all' ? null : parts[1],
+        from: !parts[2] || parts[2] === '-' ? null : parts[2],
+        to: !parts[3] || parts[3] === '-' ? null : parts[3],
+        categoryPublicId: !parts[4] || parts[4] === 'all' ? null : parts[4],
+        tagPublicId: !parts[5] || parts[5] === 'all' ? null : parts[5],
+        tierPublicId: !parts[6] || parts[6] === 'all' ? null : parts[6],
+        recurringExpensePublicId: !parts[7] || parts[7] === 'all' ? null : parts[7],
+        recurringIncomePublicId: !parts[8] || parts[8] === 'all' ? null : parts[8],
+        search: parts.slice(9).join(':') || null
+    };
+}
+
+export type TransactionsCacheEntry = {
+    items: Transaction[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+};
+
+function queryMatchesTransaction(query: TransactionsListQuery, tx: Transaction): boolean {
+    const involved = involvedAccountPublicIds(tx);
+    if (query.accountPublicId && !involved.includes(query.accountPublicId)) return false;
+    if (query.from && tx.operationDate < query.from) return false;
+    if (query.to && tx.operationDate > query.to) return false;
+    if (query.categoryPublicId && tx.categoryPublicId !== query.categoryPublicId) return false;
+    if (query.tagPublicId && !(tx.tagPublicIds ?? []).includes(query.tagPublicId)) return false;
+    if (query.tierPublicId && tx.tierPublicId !== query.tierPublicId) return false;
+    if (query.recurringExpensePublicId && tx.recurringExpensePublicId !== query.recurringExpensePublicId) return false;
+    if (query.recurringIncomePublicId && tx.recurringIncomePublicId !== query.recurringIncomePublicId) return false;
+    // `search` n’est pas vérifié ici : le serveur cherche aussi dans les noms liés (tiers, catégorie, tags…),
+    // qu’on ne connaît pas toujours localement. Voir `upsertItem`.
+    return true;
+}
+
+/**
+ * État partagé du store transactions.
+ */
+export function createTransactionsState() {
+    const items = ref<Transaction[]>([]);
+    const itemsByListKey = new Map<string, TransactionsCacheEntry>();
+    const activeListKey = ref(listCacheKey(EMPTY_LIST_QUERY));
+    const page = ref(1);
+    const pageSize = ref(TRANSACTION_PAGE_SIZE_DEFAULT);
+    const totalCount = ref(0);
+
+    const loading = ref(false);
+    const loadingMore = ref(false);
+    const acting = ref(false);
+    let actingDepth = 0;
+    const initialized = ref(false);
+    const error = ref<string | null>(null);
+
+    const cache = createResourceCache({ defaultMaxAgeMs: TRANSACTIONS_LIST_MAX_AGE_MS });
+
+    const hasItems = computed(() => items.value.length > 0);
+    const hasMore = computed(() => items.value.length > 0 && items.value.length < totalCount.value);
+    const activeQuery = computed(() => parseListCacheKey(activeListKey.value));
+
+    function beginActing() {
+        actingDepth += 1;
+        acting.value = true;
+    }
+
+    function endActing() {
+        actingDepth = Math.max(0, actingDepth - 1);
+        acting.value = actingDepth > 0;
+    }
+
+    function resetActing() {
+        actingDepth = 0;
+        acting.value = false;
+    }
+
+    function clearError() {
+        error.value = null;
+    }
+
+    function setList(key: string, nextItems: Transaction[], meta?: { page?: number; pageSize?: number; totalCount?: number }) {
+        const prev = itemsByListKey.get(key);
+        const previousById = new Map((prev?.items ?? []).map((item) => [item.publicId, item]));
+        const sorted = sortTransactions(nextItems.map((item) => normalizeTransaction(item, previousById.get(item.publicId))));
+        const entry: TransactionsCacheEntry = {
+            items: sorted,
+            page: meta?.page ?? prev?.page ?? 1,
+            pageSize: meta?.pageSize ?? prev?.pageSize ?? TRANSACTION_PAGE_SIZE_DEFAULT,
+            totalCount: meta?.totalCount ?? prev?.totalCount ?? sorted.length
+        };
+        itemsByListKey.set(key, entry);
+        if (activeListKey.value === key) {
+            items.value = entry.items;
+            page.value = entry.page;
+            pageSize.value = entry.pageSize;
+            totalCount.value = entry.totalCount;
+        }
+    }
+
+    function activateList(key: string) {
+        activeListKey.value = key;
+        const entry = itemsByListKey.get(key);
+        if (entry) {
+            items.value = entry.items;
+            page.value = entry.page;
+            pageSize.value = entry.pageSize;
+            totalCount.value = entry.totalCount;
+            return;
+        }
+        items.value = [];
+        page.value = 1;
+        pageSize.value = TRANSACTION_PAGE_SIZE_DEFAULT;
+        totalCount.value = 0;
+    }
+
+    function cachedTransaction(publicId: string): Transaction | undefined {
+        for (const entry of itemsByListKey.values()) {
+            const hit = entry.items.find((item) => item.publicId === publicId);
+            if (hit) return hit;
+        }
+        return undefined;
+    }
+
+    function upsertItem(transaction: Transaction) {
+        const next = normalizeTransaction(transaction, cachedTransaction(transaction.publicId));
+        for (const key of [...itemsByListKey.keys()]) {
+            const prev = itemsByListKey.get(key);
+            if (!prev) continue;
+            const query = parseListCacheKey(key);
+            const existed = prev.items.some((item) => item.publicId === next.publicId);
+            if (!existed && !queryMatchesTransaction(query, next)) continue;
+            // Nouvelle transaction dans une liste de recherche : ajoutée seulement si ses propres champs correspondent.
+            if (!existed && query.search && !matchesTransactionSearch(next, query.search)) continue;
+            if (existed && !queryMatchesTransaction(query, next)) {
+                const nextItems = prev.items.filter((item) => item.publicId !== next.publicId);
+                setList(key, nextItems, { totalCount: Math.max(0, prev.totalCount - 1) });
+                continue;
+            }
+            const without = prev.items.filter((item) => item.publicId !== next.publicId);
+            const nextTotal = existed ? (prev.totalCount ?? without.length) : (prev.totalCount ?? without.length) + 1;
+            setList(key, [...without, next], { totalCount: nextTotal });
+        }
+    }
+
+    function removeItemLocal(publicId: string) {
+        for (const key of [...itemsByListKey.keys()]) {
+            const prev = itemsByListKey.get(key);
+            if (!prev) continue;
+            const nextItems = prev.items.filter((item) => item.publicId !== publicId);
+            if (nextItems.length === prev.items.length) continue;
+            setList(key, nextItems, { totalCount: Math.max(0, prev.totalCount - 1) });
+        }
+    }
+
+    function stripTag(publicId: string) {
+        const id = publicId.trim();
+        if (!id) return;
+        for (const key of [...itemsByListKey.keys()]) {
+            const prev = itemsByListKey.get(key);
+            if (!prev) continue;
+            const query = parseListCacheKey(key);
+            const nextItems = prev.items
+                .map((item) => {
+                    if (!(item.tagPublicIds ?? []).includes(id)) return item;
+                    return { ...item, tagPublicIds: withoutTagPublicId(item.tagPublicIds, id) };
+                })
+                .filter((item) => queryMatchesTransaction(query, item));
+            if (nextItems.length === prev.items.length && nextItems.every((item, index) => item === prev.items[index])) continue;
+            const removed = prev.items.length - nextItems.length;
+            setList(key, nextItems, { totalCount: Math.max(0, prev.totalCount - removed) });
+        }
+    }
+
+    function removeByAccount(accountPublicId: string) {
+        for (const key of [...itemsByListKey.keys()]) {
+            const prev = itemsByListKey.get(key);
+            if (!prev) continue;
+            const nextItems = prev.items.filter((item) => !involvedAccountPublicIds(item).includes(accountPublicId));
+            if (nextItems.length === prev.items.length) continue;
+            const removed = prev.items.length - nextItems.length;
+            setList(key, nextItems, { totalCount: Math.max(0, prev.totalCount - removed) });
+        }
+        cache.invalidate(listCacheKey({ ...EMPTY_LIST_QUERY, accountPublicId }));
+    }
+
+    function invalidateAllLists() {
+        for (const key of [...itemsByListKey.keys()]) {
+            cache.invalidate(key);
+        }
+    }
+
+    function allKnownItems(): Transaction[] {
+        const byId = new Map<string, Transaction>();
+        for (const entry of itemsByListKey.values()) {
+            for (const item of entry.items) byId.set(item.publicId, item);
+        }
+        for (const item of items.value) byId.set(item.publicId, item);
+        return [...byId.values()];
+    }
+
+    return {
+        items,
+        itemsByListKey,
+        activeListKey,
+        page,
+        pageSize,
+        totalCount,
+        loading,
+        loadingMore,
+        acting,
+        initialized,
+        error,
+        cache,
+        hasItems,
+        hasMore,
+        activeQuery,
+        beginActing,
+        endActing,
+        resetActing,
+        clearError,
+        setList,
+        activateList,
+        upsertItem,
+        removeItemLocal,
+        stripTag,
+        removeByAccount,
+        invalidateAllLists,
+        allKnownItems
+    };
+}
+
+export type TransactionsState = ReturnType<typeof createTransactionsState>;

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import { BrandGoogleIcon } from 'vue-tabler-icons';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import {
     cancelGoogleDesktopOAuth,
     isGoogleDesktopBrowserOpenError,
@@ -52,15 +53,34 @@ function loadGisScript(): Promise<void> {
     if (gisScriptPromise) return gisScriptPromise;
 
     gisScriptPromise = new Promise((resolve, reject) => {
+        const fail = () => {
+            const dead = document.getElementById('google-gis');
+            dead?.remove();
+            gisScriptPromise = null;
+            reject(new Error(t('auth.google.scriptFailed')));
+        };
+
         const existing = document.getElementById('google-gis') as HTMLScriptElement | null;
         if (existing) {
             if (typeof google !== 'undefined' && google.accounts?.id) {
                 resolve();
                 return;
             }
-            existing.addEventListener('load', () => resolve(), { once: true });
-            existing.addEventListener('error', () => reject(new Error(t('auth.google.scriptFailed'))), { once: true });
-            return;
+            // Script déjà en échec / bloqué : retirer et retenter un insert propre.
+            if (existing.dataset.gisFailed === '1') {
+                existing.remove();
+            } else {
+                existing.addEventListener('load', () => resolve(), { once: true });
+                existing.addEventListener(
+                    'error',
+                    () => {
+                        existing.dataset.gisFailed = '1';
+                        fail();
+                    },
+                    { once: true }
+                );
+                return;
+            }
         }
         const script = document.createElement('script');
         script.id = 'google-gis';
@@ -69,8 +89,8 @@ function loadGisScript(): Promise<void> {
         script.defer = true;
         script.onload = () => resolve();
         script.onerror = () => {
-            gisScriptPromise = null;
-            reject(new Error(t('auth.google.scriptFailed')));
+            script.dataset.gisFailed = '1';
+            fail();
         };
         document.head.appendChild(script);
     });
@@ -106,7 +126,7 @@ async function renderGis() {
             size: 'large',
             width: buttonWidth(),
             text: 'continue_with',
-            shape: 'rectangular'
+            shape: 'pill'
         });
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
@@ -194,18 +214,11 @@ onUnmounted(() => {
             {{ useDesktopFlow ? t('auth.google.desktopNotConfigured') : t('auth.google.notConfigured') }}
         </div>
         <template v-else-if="useDesktopFlow">
-            <v-btn
-                block
-                size="large"
-                variant="outlined"
-                color="primary"
-                class="text-none"
-                :loading="desktopBusy"
-                :disabled="desktopBusy"
-                @click="onDesktopClick"
-            >
+            <button type="button" class="su-btn auth-submit" :disabled="desktopBusy" @click="onDesktopClick">
+                <span v-if="desktopBusy" class="su-spin" aria-hidden="true" />
+                <BrandGoogleIcon v-else :size="18" stroke-width="1.8" />
                 {{ displayLabel }}
-            </v-btn>
+            </button>
 
             <div
                 v-if="desktopBusy"

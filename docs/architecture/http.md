@@ -9,6 +9,8 @@
 | ---------------------------------------- | ---------------------------------------------------------------- |
 | `authApi` / `authHttp` (`features/auth`) | `/api/auth/*` — **sans** interceptor refresh (évite les boucles) |
 | `fetchWrapper` (`fetch-helpers`)         | API domaine authentifiée + refresh sur 401 + retry               |
+| `fetchWrapper.postForm`                  | Multipart (`FormData`) — boundary navigateur, timeout 120 s      |
+| `fetchWrapper.getBlob`                   | GET binaire (PDF `/content`, images). 4xx JSON parsé depuis blob |
 | `authAxios` / `createApiAxios`           | Instances Axios partagées (ex. blob avatar cross-user)           |
 
 ## Enveloppe API
@@ -19,19 +21,21 @@
 
 Toujours lire **HTTP status** + `body.success`. Payload métier = `body.result`. JSON camelCase.
 
+Exceptions : réponses **binaires** (`GET /api/files/{id}/content`, avatars uploadés) et **`204`** (pas d’enveloppe).
+
 ## Refresh & session
 
 1. `ensureAccessToken()` : access absent ou `expiresAt` proche (~30 s) → `refreshSession()`.
 2. Mutex : un seul refresh concurrent (partagé store / `fetchWrapper`).
 3. 401 domaine → refresh → retry une fois ; sinon `forceReLogin()`.
-4. Mode cookie P1 (`VITE_AUTH_COOKIE_MODE=true`) : credentials + cookies HttpOnly ; CSRF double-submit (`csrf.ts`) sur refresh/logout — pas de Bearer JS.
+4. Mode Bearer (`VITE_AUTH_COOKIE_MODE=false`, défaut / prod) : header `Authorization` ; refresh `{ refreshToken }` dans le body ; pas de CSRF. Cookie-mode (`true`) : credentials + cookies HttpOnly + CSRF — same-site only.
 
 ## Variables
 
-| Variable                | Rôle                            |
-| ----------------------- | ------------------------------- |
-| `VITE_API_BASE_URL`     | Base API (paths `/api/...`)     |
-| `VITE_AUTH_COOKIE_MODE` | Cookies HttpOnly access/refresh |
-| `VITE_GOOGLE_CLIENT_ID` | GIS — même ID que l’API         |
+| Variable                | Rôle                                             |
+| ----------------------- | ------------------------------------------------ |
+| `VITE_API_BASE_URL`     | Base API (paths `/api/...`)                      |
+| `VITE_AUTH_COOKIE_MODE` | `false` = Bearer (prod). `true` = cookies + CSRF |
+| `VITE_GOOGLE_CLIENT_ID` | GIS — même ID que l’API                          |
 
 Les `VITE_*` sont publiques (bundle). Secrets → backend uniquement.

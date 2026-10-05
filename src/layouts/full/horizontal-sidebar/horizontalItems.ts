@@ -1,5 +1,16 @@
 import type { Component } from 'vue';
-import { LayoutDashboardIcon, BellIcon, UserCircleIcon, UsersIcon } from 'vue-tabler-icons';
+import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
+import {
+    AdjustmentsHorizontalIcon,
+    BellIcon,
+    BuildingBankIcon,
+    CreditCardIcon,
+    EyeOffIcon,
+    LayoutDashboardIcon,
+    LockIcon,
+    UserCircleIcon,
+    UsersIcon
+} from 'vue-tabler-icons';
 
 export interface menu {
     header?: string;
@@ -41,9 +52,44 @@ const horizontalItems: menu[] = [
         to: '/app/friends'
     },
     {
-        title: 'nav.items.preferences',
+        title: 'nav.items.accounts',
+        icon: BuildingBankIcon,
+        to: '/app/finances/comptes'
+    },
+    {
+        title: 'nav.items.banks',
+        icon: BuildingBankIcon,
+        to: '/app/finances/banques'
+    },
+    {
+        title: 'nav.items.paymentMethods',
+        icon: CreditCardIcon,
+        to: '/app/finances/moyens-de-paiement'
+    },
+    {
+        title: 'nav.items.profile',
         icon: UserCircleIcon,
-        to: '/app/comptes'
+        to: SETTINGS_PATHS.account
+    },
+    {
+        title: 'nav.items.preferences',
+        icon: AdjustmentsHorizontalIcon,
+        to: SETTINGS_PATHS.preferences
+    },
+    {
+        title: 'nav.items.notificationSettings',
+        icon: BellIcon,
+        to: SETTINGS_PATHS.notifications
+    },
+    {
+        title: 'nav.items.privacy',
+        icon: EyeOffIcon,
+        to: SETTINGS_PATHS.privacy
+    },
+    {
+        title: 'nav.items.security',
+        icon: LockIcon,
+        to: SETTINGS_PATHS.security
     }
 ];
 

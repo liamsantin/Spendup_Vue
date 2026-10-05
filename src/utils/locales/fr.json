@@ -18,27 +18,94 @@
         "logout": "Se déconnecter",
         "emptyValue": "—",
         "open": "Ouvrir",
-        "skipToContent": "Aller au contenu"
+        "refresh": "Actualiser",
+        "more": "Plus d’actions",
+        "skipToContent": "Aller au contenu",
+        "reset": "Réinitialiser",
+        "minAmount": "Montant min.",
+        "maxAmount": "Montant max.",
+        "filters": "Filtres",
+        "done": "Terminé"
     },
     "shell": {
         "save": "Enregistrer",
         "cancel": "Annuler"
     },
     "nav": {
+        "menu": "Menu",
+        "closeMenu": "Fermer le menu",
+        "toggleMenu": "Ouvrir ou fermer le menu",
         "headers": {
-            "spendup": "Spend.Up",
+            "general": "Général",
+            "friends": "Amis",
             "finances": "Finances",
-            "settings": "Préférences"
+            "recurrences": "Récurrences",
+            "gestion": "Gestion",
+            "planning": "Planification",
+            "wealth": "Patrimoine",
+            "analytics": "Analyses",
+            "network": "Réseau",
+            "settings": "Paramètres"
         },
         "items": {
             "dashboard": "Tableau de bord",
+            "calendar": "Calendrier",
             "notifications": "Notifications",
             "friends": "Amis",
+            "household": "Foyer",
+            "accounts": "Comptes",
             "transactions": "Transactions",
-            "preferences": "Mon compte"
+            "banks": "Banques",
+            "paymentMethods": "Moyens de paiement",
+            "import": "Import",
+            "recurrences": "Récurrences",
+            "recurrencesOverview": "Vue d’ensemble",
+            "recurrencesExpenses": "Charges",
+            "recurrencesIncomes": "Revenus",
+            "recurrencesUpcoming": "Échéances",
+            "files": "Fichiers",
+            "categories": "Catégories",
+            "tags": "Tags",
+            "tiers": "Tiers",
+            "contracts": "Contrats",
+            "budgets": "Budgets",
+            "goals": "Objectifs",
+            "wealthOverview": "Vue d’ensemble",
+            "assets": "Actifs",
+            "investments": "Placements",
+            "realEstate": "Immobilier",
+            "debts": "Dettes",
+            "forecasts": "Prévisions",
+            "tax": "Fiscalité",
+            "profile": "Profil",
+            "preferences": "Préférences",
+            "notificationSettings": "Notifications",
+            "privacy": "Confidentialité",
+            "security": "Sécurité",
+            "subscription": "Abonnement",
+            "account": "Compte"
         },
         "subCaptions": {
             "soon": "Bientôt"
+        },
+        "tabBar": {
+            "label": "Navigation principale",
+            "home": "Accueil",
+            "finances": "Finances",
+            "add": "Ajouter",
+            "planning": "Planning",
+            "menu": "Menu",
+            "pagesOf": "Pages de la section {section}"
+        },
+        "quickAdd": {
+            "title": "Ajouter",
+            "close": "Fermer",
+            "transaction": "Transaction",
+            "recurrence": "Récurrence",
+            "budget": "Budget",
+            "goal": "Objectif",
+            "file": "Fichier",
+            "friend": "Ami"
         }
     },
     "header": {
@@ -50,6 +117,12 @@
             "clearAll": "Tout supprimer",
             "empty": "Aucune notification",
             "loading": "Chargement…",
+            "ago": {
+                "justNow": "à l'instant",
+                "minutes": "il y a {count}min",
+                "hours": "il y a {value}",
+                "days": "il y a {count}j"
+            },
             "items": {
                 "welcome": {
                     "title": "Bienvenue sur Spend.Up",
@@ -185,34 +258,317 @@
     },
     "dashboard": {
         "pageTitle": "Tableau de bord",
+        "subtitle": "Vos comptes, vos dépenses du mois et ce qui arrive.",
         "breadcrumbs": {
             "application": "Application",
             "dashboard": "Tableau de bord"
         },
-        "banner": {
-            "title": "Espace authentifié Spend.Up",
-            "body": "Tableau de bord Spend.Up. Les modules ci-dessous préfigurent les prochaines fonctionnalités (/app)."
+        "hello": {
+            "morning": "Bonjour, {name}",
+            "afternoon": "Bon après-midi, {name}",
+            "evening": "Bonsoir, {name}",
+            "morningAnonymous": "Bonjour",
+            "afternoonAnonymous": "Bon après-midi",
+            "eveningAnonymous": "Bonsoir"
+        },
+        "hero": {
+            "lede": "Voici où en sont vos finances aujourd’hui.",
+            "balance": "Solde visible",
+            "accountsMeta": "{count} compte actif | {count} compte actif | {count} comptes actifs",
+            "ledePositive": "En {month}, vous avez gagné {amount} de plus que vous n’avez dépensé.",
+            "ledeNegative": "En {month}, vos dépenses dépassent vos revenus de {amount}.",
+            "ledeMonth": "Voici le bilan de {month} jusqu’à aujourd’hui."
         },
         "actions": {
             "open": "Ouvrir",
-            "comingSoon": "Bientôt disponible"
+            "comingSoon": "Bientôt disponible",
+            "seeAll": "Tout voir",
+            "addTransaction": "Ajouter une transaction",
+            "addBudget": "Ajouter un budget",
+            "addSavingsGoal": "Ajouter un objectif"
         },
-        "modules": {
-            "transactions": {
-                "title": "Transactions",
-                "caption": "Revenus, dépenses et catégories"
+        "recent": {
+            "title": "Dernières transactions",
+            "subtitle": "Les mouvements les plus récents.",
+            "empty": "Aucune transaction pour l’instant."
+        },
+        "budgets": {
+            "title": "Budgets",
+            "subtitle": "Période en cours.",
+            "empty": "Aucun budget actif pour l’instant.",
+            "used": "{percent} utilisé",
+            "overspent": "Limite dépassée"
+        },
+        "savingsGoals": {
+            "title": "Objectifs d’épargne",
+            "subtitle": "Versement initial et transactions liées.",
+            "empty": "Aucun objectif actif pour l’instant.",
+            "reached": "{percent} atteint",
+            "overdue": "Échéance dépassée"
+        },
+        "alerts": {
+            "label": "À traiter",
+            "budgets": "{count} budget dépassé | {count} budget dépassé | {count} budgets dépassés",
+            "goals": "{count} objectif en retard | {count} objectif en retard | {count} objectifs en retard",
+            "friends": "{count} demande d’ami | {count} demande d’ami | {count} demandes d’ami",
+            "notifications": "{count} notification non lue | {count} notification non lue | {count} notifications non lues"
+        },
+        "month": {
+            "title": "Chiffres de {month}",
+            "income": "Revenus de {month}",
+            "expense": "Dépenses de {month}",
+            "net": "Solde du mois",
+            "netHint": "aucune opération | {count} opération | {count} opérations",
+            "upcoming": "À payer sous {days} jours",
+            "upcomingHint": "aucune échéance | {count} échéance | {count} échéances",
+            "vsPrevious": "{change} vs {month}",
+            "noComparison": "Pas de comparaison possible"
+        },
+        "spending": {
+            "title": "Dépenses par catégorie",
+            "subtitle": "En {month}, jusqu’à aujourd’hui.",
+            "empty": "Aucune dépense ce mois-ci.",
+            "other": "Autres",
+            "uncategorized": "Sans catégorie"
+        },
+        "accounts": {
+            "title": "Mes comptes",
+            "subtitle": "Soldes actuels.",
+            "empty": "Aucun compte pour l’instant.",
+            "more": "+{count} autres comptes",
+            "shared": "Partagé"
+        },
+        "upcoming": {
+            "title": "Prochaines échéances",
+            "subtitle": "Charges et revenus des {days} prochains jours.",
+            "empty": "Rien de prévu dans les prochains jours."
+        }
+    },
+    "comptesPage": {
+        "title": "Comptes",
+        "subtitle": "Banques, épargne et moyens de paiement",
+        "tabs": {
+            "accounts": "Comptes",
+            "invitations": "Invitations"
+        },
+        "sections": {
+            "owned": "Mes comptes",
+            "ownedSubtitle": "Comptes que vous possédez.",
+            "shared": "Partagés avec moi",
+            "sharedSubtitle": "Comptes auxquels vous avez accès.",
+            "archived": "Archivés"
+        },
+        "empty": {
+            "owned": "Aucun compte pour l’instant. Créez votre premier compte.",
+            "shared": "Aucun compte partagé.",
+            "invitations": "Aucune invitation en attente."
+        },
+        "badges": {
+            "primary": "Principal",
+            "archived": "Archivé"
+        },
+        "list": {
+            "accountNumber": "N° {number}",
+            "accountNumberHidden": "N° caché"
+        },
+        "roles": {
+            "owner": "Propriétaire",
+            "viewer": "Lecteur",
+            "editor": "Éditeur",
+            "pending": "En attente"
+        },
+        "types": {
+            "courant": "Courant",
+            "epargne": "Épargne",
+            "credit": "Crédit",
+            "cash": "Espèces",
+            "investissement": "Investissement",
+            "crypto": "Crypto",
+            "other": "Autre"
+        },
+        "actions": {
+            "create": "Nouveau compte",
+            "edit": "Modifier",
+            "setPrimary": "Définir comme principal",
+            "archive": "Archiver",
+            "restore": "Restaurer",
+            "delete": "Supprimer",
+            "leave": "Quitter",
+            "accept": "Accepter",
+            "refuse": "Refuser"
+        },
+        "hints": {
+            "primaryNoArchive": "Le compte principal ne peut pas être archivé.",
+            "primaryNoDelete": "Le compte principal ne peut pas être supprimé.",
+            "primaryFirstAccount": "Le premier compte est toujours principal.",
+            "primaryChangeViaPromote": "Pour changer de compte principal, ouvrez un autre compte et utilisez « Définir comme principal ».",
+            "archivedNoPrimary": "Impossible de définir un compte archivé comme compte primaire."
+        },
+        "detail": {
+            "title": "Détail du compte",
+            "currentBalance": "Solde actuel",
+            "initialBalance": "Solde initial",
+            "fieldHidden": "Caché",
+            "tabs": {
+                "details": "Détails",
+                "snapshots": "Relevé",
+                "paymentMethods": "Moyens de paiement",
+                "shares": "Partage"
             },
-            "accounts": {
-                "title": "Comptes",
-                "caption": "Banques, épargne et moyens de paiement"
+            "seeAllTransactions": "Voir toutes les transactions",
+            "snapshotsHiddenHint": "Les relevés sont masqués car le solde n’est pas visible pour vous.",
+            "shareUnavailable": "Vous n’avez pas accès à la gestion du partage de ce compte."
+        },
+        "form": {
+            "createTitle": "Nouveau compte",
+            "editTitle": "Modifier le compte",
+            "subtitle": "Renseignez les informations du compte.",
+            "clearColor": "Sans couleur",
+            "currencyLockedHint": "La devise ne peut plus être modifiée après la création du compte.",
+            "ownerFieldsLockedHint": "Avec le rôle éditeur, seuls le nom, la couleur et le n° de compte sont modifiables.",
+            "fields": {
+                "name": "Nom",
+                "type": "Type",
+                "currency": "Devise",
+                "initialBalance": "Solde initial",
+                "iban": "IBAN",
+                "accountNumber": "N° de compte",
+                "color": "Couleur",
+                "isPrimary": "Compte principal",
+                "bank": "Banque"
             },
-            "budgets": {
-                "title": "Budgets",
-                "caption": "Suivi et alertes budgétaires"
+            "errors": {
+                "nameRequired": "Le nom est obligatoire.",
+                "balanceInvalid": "Saisissez un solde valide.",
+                "ibanInvalid": "IBAN invalide.",
+                "colorInvalid": "Couleur invalide. Utilisez #RGB, #RRGGBB ou #RRGGBBAA.",
+                "bankRequired": "Une banque est obligatoire pour un compte courant ou d’épargne : choisissez-la, ou saisissez un IBAN suisse."
             },
-            "goals": {
-                "title": "Objectifs",
-                "caption": "Projets et épargne"
+            "noBank": "Aucune",
+            "bankPlaceholder": "Choisir une banque",
+            "bankRequiredHint": "Obligatoire pour un compte courant ou d’épargne. Un IBAN suisse permet de la déduire.",
+            "bankDetected": "Banque détectée : {bank}",
+            "bankIbanMismatch": "L’IBAN correspond à {bank}. Choisissez cette banque ou corrigez l’IBAN.",
+            "bankFromIban": "Sans banque choisie, elle sera déduite de l’IBAN : {bank}."
+        },
+        "share": {
+            "title": "Partage",
+            "subtitle": "Invitez des amis et gérez leurs droits.",
+            "invite": "Inviter",
+            "inviteTitle": "Partager ce compte",
+            "inviteSubtitle": "Le destinataire doit être un ami accepté.",
+            "empty": "Aucun partage pour l’instant.",
+            "emptyFriends": "Aucun ami disponible à inviter.",
+            "searchFriend": "Rechercher un ami",
+            "noMatchingFriends": "Aucun ami ne correspond.",
+            "revoke": "Révoquer",
+            "cancelInvite": "Annuler",
+            "pendingRole": "En attente · {role}",
+            "fields": {
+                "friend": "Ami",
+                "role": "Rôle",
+                "hiddenFields": "Champs masqués"
+            },
+            "hiddenFields": {
+                "hint": "Ces informations resteront invisibles pour le lecteur.",
+                "iban": "IBAN",
+                "accountNumber": "N° de compte",
+                "balance": "Soldes",
+                "summary": "Masqués : {fields}",
+                "none": "Aucun champ masqué"
+            },
+            "roleHints": {
+                "viewer": "Consulte les soldes et les relevés.",
+                "editor": "Peut renommer le compte et gérer les relevés de solde."
+            },
+            "errors": {
+                "friendRequired": "Choisissez un ami."
+            },
+            "revokeModal": {
+                "title": "Révoquer l’accès ?",
+                "body": "{name} perdra l’accès à ce compte."
+            },
+            "cancelInviteModal": {
+                "title": "Annuler l’invitation ?",
+                "body": "L’invitation envoyée à {name} sera retirée."
+            },
+            "editTitle": "Modifier le partage",
+            "editConfirm": "Modifier"
+        },
+        "invitations": {
+            "title": "Invitations reçues",
+            "subtitle": "Acceptez ou refusez les partages de comptes.",
+            "from": "De {name}",
+            "hiddenFields": "Champs masqués : {fields}",
+            "noHiddenFields": "Tous les champs seront visibles."
+        },
+        "modals": {
+            "archive": {
+                "title": "Archiver ce compte ?",
+                "body": "Le compte sera masqué des listes actives. Vous pourrez le restaurer plus tard."
+            },
+            "restore": {
+                "title": "Restaurer ce compte ?",
+                "body": "Le compte redeviendra actif."
+            },
+            "delete": {
+                "title": "Supprimer ce compte ?",
+                "body": "Cette action est définitive si le compte n’a aucun mouvement.",
+                "linkedRecurrences": "Déliez d’abord ces récurrences : {names}."
+            },
+            "deleteBlocked": {
+                "title": "Suppression impossible",
+                "body": "Ce compte a des mouvements. Vous pouvez l’archiver à la place."
+            },
+            "leave": {
+                "title": "Quitter ce partage ?",
+                "body": "Vous perdrez l’accès à ce compte. Le propriétaire en sera informé."
+            }
+        },
+        "snapshots": {
+            "title": "Relevés de solde",
+            "subtitle": "Soldes bancaires déclarés manuellement.",
+            "add": "Ajouter",
+            "edit": "Modifier",
+            "addTitle": "Nouveau relevé de solde",
+            "addSubtitle": "Saisissez le solde constaté dans votre application bancaire.",
+            "editTitle": "Corriger le relevé",
+            "editSubtitle": "Le solde calculé du compte ne change pas.",
+            "empty": "Aucun relevé pour l’instant.",
+            "emptyHint": "Ajoutez le solde affiché dans votre banque pour suivre les écarts.",
+            "latestDeclared": "Dernier solde déclaré",
+            "diff": "Écart avec le solde calculé",
+            "diffShort": "Écart",
+            "matched": "À jour",
+            "mismatch": "Écart détecté",
+            "summaryTitle": "Synthèse",
+            "summarySubtitle": "Dernier solde déclaré et écart avec le solde calculé.",
+            "history": "Historique",
+            "loadMore": "Charger plus",
+            "createdBy": "Par {name}",
+            "createdByMe": "Par moi",
+            "createdByUnknown": "Auteur inconnu",
+            "sources": {
+                "manual": "Manuel",
+                "bank_import": "Import bancaire",
+                "statement": "Relevé",
+                "system": "Système"
+            },
+            "fields": {
+                "balance": "Solde constaté",
+                "snapshotAt": "Date du relevé",
+                "note": "Note (optionnel)"
+            },
+            "deleteModal": {
+                "title": "Supprimer ce relevé ?",
+                "body": "Le relevé de {balance} du {date} sera supprimé.",
+                "confirm": "Supprimer"
+            },
+            "errors": {
+                "balanceInvalid": "Saisissez un solde valide.",
+                "notFound": "Relevé introuvable.",
+                "noteTooLong": "La note ne peut pas dépasser 255 caractères.",
+                "archived": "Ce compte est archivé. Restaurez-le avant de corriger un relevé."
             }
         }
     },
@@ -231,7 +587,1860 @@
             "confirm": "Tout supprimer"
         }
     },
+    "paymentMethodsPage": {
+        "title": "Moyens de paiement",
+        "subtitle": "Cartes, virements et portefeuilles liés à vos comptes.",
+        "loadMore": "Charger plus",
+        "unknownAccount": "Compte",
+        "groupTitle": "Compte : {name}",
+        "badges": {
+            "inactive": "Inactif",
+            "active": "Actif"
+        },
+        "filters": {
+            "showInactive": "Afficher les inactifs",
+            "type": "Type",
+            "allTypes": "Tous les types"
+        },
+        "empty": {
+            "wallet": "Aucun moyen de paiement pour l’instant.",
+            "account": "Aucun moyen de paiement sur ce compte.",
+            "filtered": "Aucun moyen de paiement ne correspond à ces filtres."
+        },
+        "actions": {
+            "filter": "Filtre",
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "export": "Exporter",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche"
+        },
+        "list": {
+            "expires": "Exp. {date}"
+        },
+        "detail": {
+            "title": "Moyens de paiement",
+            "subtitle": "Méthodes liées à ce compte."
+        },
+        "deleteModal": {
+            "title": "Supprimer ce moyen de paiement ?",
+            "body": "Il disparaîtra des listes. Le libellé pourra être réutilisé."
+        },
+        "errors": {
+            "notFound": "Moyen de paiement introuvable.",
+            "aliasesPartial": "Le moyen de paiement a été créé, mais certains alias n’ont pas pu l’être. Vérifiez-les dans l’onglet Alias."
+        },
+        "types": {
+            "carte": "Carte",
+            "virement": "Virement",
+            "prelevement": "Prélèvement",
+            "cash": "Espèces",
+            "twint": "TWINT",
+            "paypal": "PayPal",
+            "applePay": "Apple Pay",
+            "googlePay": "Google Pay",
+            "other": "Autre"
+        },
+        "form": {
+            "createTitle": "Nouveau moyen de paiement",
+            "editTitle": "Modifier le moyen de paiement",
+            "subtitle": "Les numéros de carte complets ne sont jamais demandés.",
+            "referencePlaceholder": "IBAN, e-mail PayPal… (pas un numéro de carte)",
+            "lastFourPlaceholder": "4242",
+            "expirationPlaceholder": "Date d’expiration",
+            "fields": {
+                "account": "Compte",
+                "type": "Type",
+                "label": "Libellé",
+                "reference": "Référence",
+                "lastFourDigits": "4 derniers chiffres",
+                "expirationDate": "Expiration",
+                "isActive": "Actif"
+            },
+            "errors": {
+                "accountRequired": "Choisissez un compte.",
+                "typeInvalid": "Type invalide.",
+                "labelRequired": "Le libellé est obligatoire.",
+                "labelTooLong": "Le libellé est trop long (150 caractères max).",
+                "labelDuplicate": "Ce libellé existe déjà sur ce compte.",
+                "referenceTooLong": "La référence est trop longue (100 caractères max).",
+                "lastFourInvalid": "Saisissez exactement 4 chiffres, ou laissez vide.",
+                "expirationInvalid": "Date d’expiration invalide.",
+                "expirationPast": "Un moyen actif ne peut pas être déjà expiré.",
+                "isActiveRequired": "Le statut actif est obligatoire."
+            },
+            "tabs": {
+                "details": "Détails",
+                "aliases": "Alias"
+            }
+        },
+        "searchPlaceholder": "Rechercher…",
+        "count": "{count} moyen de paiement | {count} moyens de paiement",
+        "sort": {
+            "asc": "Croissant",
+            "desc": "Décroissant"
+        },
+        "columns": {
+            "label": "Libellé",
+            "type": "Type",
+            "account": "Compte",
+            "number": "Numéro",
+            "expiration": "Expiration",
+            "status": "Statut",
+            "reference": "Référence"
+        }
+    },
+    "recurrencesPage": {
+        "title": "Récurrences",
+        "subtitle": "Charges et revenus prévus. Une échéance ne devient une transaction qu’après confirmation.",
+        "loadMore": "Charger plus",
+        "unknownAccount": "Compte",
+        "tabs": {
+            "label": "Type de récurrence",
+            "all": "Tous",
+            "expenses": "Charges",
+            "incomes": "Revenus",
+            "upcoming": "Échéances"
+        },
+        "suggestions": {
+            "open": "Suggestions",
+            "title": "Récurrences détectées",
+            "subtitle": "Paiements et rentrées réguliers repérés dans l’historique, pas encore suivis par une récurrence.",
+            "account": "Compte",
+            "chooseAccount": "Choisis un compte pour voir ses récurrences détectées.",
+            "scan": "Analyser l’historique",
+            "scanning": "Analyse…",
+            "loading": "Chargement…",
+            "empty": "Aucune récurrence détectée pour le moment.",
+            "accept": "Créer la récurrence",
+            "dismiss": "Ignorer",
+            "accepted": "« {name} » ajoutée à tes récurrences.",
+            "dismissed": "Suggestion ignorée : elle ne sera plus proposée.",
+            "occurrences": "aucune occurrence | 1 occurrence | {count} occurrences",
+            "next": "Prochaine le {date}",
+            "confidence": "Confiance {value} %"
+        },
+        "createAs": {
+            "expense": "Une dépense",
+            "income": "Un revenu"
+        },
+        "createHints": {
+            "expense": "Loyer, abonnement, assurance…",
+            "income": "Salaire, freelance, loyer encaissé…"
+        },
+        "kinds": {
+            "expense": "Charge",
+            "income": "Revenu"
+        },
+        "badges": {
+            "paused": "En pause",
+            "active": "Active"
+        },
+        "filters": {
+            "showInactive": "Afficher les pauses",
+            "account": "Compte",
+            "allAccounts": "Tous les comptes",
+            "kind": "Type",
+            "allKinds": "Charges et revenus",
+            "dueState": "Statut",
+            "allDueStates": "Tous les statuts",
+            "planned": "Prévu",
+            "settled": "Déjà encaissé",
+            "amount": "Montant",
+            "activeOnly": "Actif"
+        },
+        "sort": {
+            "dateAsc": "Date (proche → lointain)",
+            "dateDesc": "Date (lointain → proche)",
+            "nameAsc": "Nom (A → Z)",
+            "amountDesc": "Montant (décroissant)",
+            "amountAsc": "Montant (croissant)",
+            "nameDesc": "Nom (Z → A)",
+            "asc": "Croissant",
+            "desc": "Décroissant"
+        },
+        "empty": {
+            "all": "Aucune récurrence pour l’instant.",
+            "expenses": "Aucune charge récurrente pour l’instant.",
+            "incomes": "Aucun revenu récurrent pour l’instant.",
+            "upcoming": "Aucune échéance dans les trois prochains mois.",
+            "upcomingPlanned": "Aucune échéance prévue dans les trois prochains mois.",
+            "upcomingSettled": "Aucune échéance déjà encaissée dans les trois prochains mois.",
+            "upcomingFiltered": "Aucune échéance ne correspond à ces filtres.",
+            "filtered": "Aucune récurrence ne correspond à ces filtres."
+        },
+        "actions": {
+            "sort": "Trier",
+            "filter": "Filtre",
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "confirmDue": "Confirmer",
+            "skipDue": "Ignorer",
+            "openTransaction": "Voir la transaction",
+            "addTransactions": "Ajouter des transactions",
+            "export": "Exporter",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche"
+        },
+        "list": {
+            "nextDue": "Prochaine échéance le {date}",
+            "noNextDue": "Pas d’échéance à venir"
+        },
+        "detail": {
+            "title": "Récurrence",
+            "subtitle": "Échéances générées. Confirmez pour créer une transaction.",
+            "duesTitle": "Échéances",
+            "duesEmpty": "Aucune échéance matérialisée.",
+            "duesExisting": "Transactions existantes",
+            "duesUpcoming": "Transactions à venir",
+            "filesTitle": "Justificatifs PDF",
+            "filesOnTemplate": "Sur la récurrence",
+            "filesOnTransactions": "Sur les transactions",
+            "filesOnTransactionsEmpty": "Aucun PDF lié aux transactions de cette récurrence.",
+            "tabs": {
+                "dues": "Échéances",
+                "attachments": "Justificatifs"
+            },
+            "seeTransactions": "Voir les transactions liées"
+        },
+        "linkTransactions": {
+            "title": "Lier une transaction",
+            "subtitle": "Choisissez une transaction manuelle, puis une échéance ouverte.",
+            "pickTransaction": "Transaction",
+            "pickDue": "Échéance",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune transaction manuelle ou importée à lier sur ce compte.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "emptyDues": "Aucune échéance ouverte.",
+            "confirm": "Lier"
+        },
+        "deleteModal": {
+            "expenseTitle": "Supprimer cette charge ?",
+            "incomeTitle": "Supprimer ce revenu ?",
+            "body": "Les échéances non payées disparaîtront. Les transactions déjà créées restent."
+        },
+        "skipModal": {
+            "title": "Ignorer cette échéance ?",
+            "body": "Elle sera annulée. Aucune transaction ne sera créée."
+        },
+        "errors": {
+            "notFound": "Charge, revenu ou échéance introuvable.",
+            "transactionGone": "La transaction n’existe plus. L’échéance a peut-être été rouverte."
+        },
+        "expenseTypes": {
+            "leasing": "Leasing",
+            "assurance": "Assurance",
+            "credit": "Crédit",
+            "abonnement": "Abonnement",
+            "loyer": "Loyer",
+            "impot": "Impôt",
+            "service": "Service",
+            "entretien": "Entretien",
+            "other": "Autre"
+        },
+        "incomeTypes": {
+            "salaire": "Salaire",
+            "prime": "Prime",
+            "treiziemeSalaire": "13e salaire",
+            "freelance": "Freelance",
+            "loyerEncaisse": "Loyer encaissé",
+            "dividende": "Dividende",
+            "interet": "Intérêt",
+            "rente": "Rente",
+            "pension": "Pension",
+            "allocation": "Allocation",
+            "remboursement": "Remboursement",
+            "other": "Autre"
+        },
+        "expenseFrequencies": {
+            "quotidien": "Quotidien",
+            "hebdomadaire": "Hebdomadaire",
+            "mensuel": "Mensuel",
+            "trimestriel": "Trimestriel",
+            "semestriel": "Semestriel",
+            "annuel": "Annuel"
+        },
+        "incomeFrequencies": {
+            "hebdomadaire": "Hebdomadaire",
+            "mensuelle": "Mensuelle",
+            "trimestrielle": "Trimestrielle",
+            "semestrielle": "Semestrielle",
+            "annuelle": "Annuelle"
+        },
+        "dueStatuses": {
+            "prevue": "Prévue",
+            "generee": "Générée",
+            "payee": "Payée",
+            "enRetard": "En retard",
+            "canceled": "Annulée",
+            "prevu": "Prévu",
+            "pending": "En attente",
+            "encaisse": "Encaissé",
+            "partiel": "Partiel",
+            "annule": "Annulé",
+            "retard": "Retard"
+        },
+        "confirm": {
+            "expenseTitle": "Confirmer le paiement",
+            "incomeTitle": "Confirmer l’encaissement",
+            "subtitle": "Cela crée une transaction et met à jour le solde.",
+            "fields": {
+                "paymentDate": "Date",
+                "amount": "Montant",
+                "paymentMethod": "Moyen de paiement"
+            },
+            "noPaymentMethod": "Aucun moyen de paiement"
+        },
+        "form": {
+            "createExpenseTitle": "Nouvelle charge récurrente",
+            "createIncomeTitle": "Nouveau revenu récurrent",
+            "editExpenseTitle": "Modifier la charge",
+            "editIncomeTitle": "Modifier le revenu",
+            "subtitle": "Les échéances sont générées par le serveur. Confirmez-les ensuite.",
+            "pickKindTitle": "Quel type de récurrence ?",
+            "pickKindSubtitle": "Une dépense (charge) ou un revenu. Vous pourrez tout régler ensuite.",
+            "pickTypeSubtitle": "Salaire, abonnement… Choisissez un type, le reste se règle ensuite.",
+            "tabs": {
+                "template": "Récurrence",
+                "classification": "Classification"
+            },
+            "pauseHint": "Les échéances déjà prévues restent à traiter.",
+            "paymentDayPlaceholder": "1–28",
+            "noPaymentMethod": "Aucun",
+            "noCategory": "Aucune",
+            "createPaymentMethod": "Nouveau moyen de paiement",
+            "createCategory": "Nouvelle catégorie",
+            "createTag": "Nouveau tag",
+            "fields": {
+                "isActive": "Actif",
+                "account": "Compte",
+                "name": "Nom",
+                "expenseType": "Type de charge",
+                "incomeType": "Type de revenu",
+                "frequency": "Fréquence",
+                "paymentDay": "Jour de paiement",
+                "plannedAmount": "Montant prévu",
+                "startDate": "Début",
+                "endDate": "Fin",
+                "paymentMethod": "Moyen de paiement",
+                "category": "Catégorie",
+                "tags": "Tags",
+                "tier": "Tiers",
+                "notes": "Notes"
+            },
+            "errors": {
+                "nameRequired": "Le nom est obligatoire.",
+                "nameTooLong": "Le nom est trop long.",
+                "typeInvalid": "Type invalide.",
+                "frequencyInvalid": "Fréquence invalide.",
+                "amountInvalid": "Montant invalide.",
+                "amountNotPositive": "Le montant doit être supérieur à 0.",
+                "startDateRequired": "La date de début est obligatoire.",
+                "startDateInvalid": "Date de début invalide.",
+                "endDateInvalid": "Date de fin invalide.",
+                "endDateBeforeStart": "La date de fin doit être après le début.",
+                "accountRequired": "Choisissez un compte.",
+                "accountArchived": "Ce compte est archivé.",
+                "forbidden": "Action non autorisée.",
+                "paymentDayInvalid": "Le jour de paiement doit être entre 1 et 28.",
+                "notesTooLong": "Notes trop longues.",
+                "isActiveRequired": "Le statut actif est obligatoire.",
+                "paymentDateInvalid": "Date invalide.",
+                "paymentDateFuture": "La date ne peut pas être dans le futur."
+            }
+        },
+        "searchPlaceholder": "Rechercher…",
+        "count": "{count} récurrence | {count} récurrences",
+        "dueCount": "{count} échéance | {count} échéances",
+        "columns": {
+            "name": "Nom",
+            "kind": "Nature",
+            "type": "Type",
+            "frequency": "Fréquence",
+            "account": "Compte",
+            "nextDue": "Prochaine échéance",
+            "date": "Date",
+            "amount": "Montant",
+            "status": "Statut"
+        },
+        "sortGroups": {
+            "date": "Échéance",
+            "name": "Nom",
+            "amount": "Montant"
+        },
+        "sortShort": {
+            "dateAsc": "Proche",
+            "dateDesc": "Lointaine",
+            "nameAsc": "A → Z",
+            "nameDesc": "Z → A",
+            "amountDesc": "Élevé",
+            "amountAsc": "Faible"
+        }
+    },
+    "budgetsPage": {
+        "title": "Budgets",
+        "subtitle": "Enveloppes récurrentes, suivi de la période en cours et alertes.",
+        "searchPlaceholder": "Rechercher un budget",
+        "count": "{count} budget | {count} budget | {count} budgets",
+        "tabs": {
+            "label": "Statut des budgets",
+            "all": "Tous",
+            "active": "Actifs",
+            "paused": "En pause"
+        },
+        "periodes": {
+            "hebdomadaire": "Hebdomadaire",
+            "mensuel": "Mensuel",
+            "trimestriel": "Trimestriel",
+            "annuel": "Annuel"
+        },
+        "scope": {
+            "global": "Toutes les dépenses",
+            "unknownCategory": "Catégorie"
+        },
+        "badges": {
+            "paused": "En pause",
+            "upcoming": "Pas encore commencé",
+            "ended": "Terminé",
+            "overspent": "Dépassé"
+        },
+        "list": {
+            "spentOf": "{spent} / {limit}",
+            "remaining": "Reste {amount}",
+            "overBy": "Dépassé de {amount}",
+            "window": "{start} → {end}"
+        },
+        "empty": {
+            "list": "Aucun budget pour l’instant. Créez une première enveloppe.",
+            "active": "Aucun budget actif.",
+            "paused": "Aucun budget en pause.",
+            "filtered": "Aucun budget ne correspond à ces filtres."
+        },
+        "actions": {
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "pause": "Mettre en pause",
+            "resume": "Réactiver",
+            "addTransactions": "Ajouter des transactions",
+            "removeTransactions": "Retirer des transactions",
+            "filter": "Filtrer",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche"
+        },
+        "filters": {
+            "periode": "Période",
+            "category": "Catégorie",
+            "allPeriodes": "Toutes les périodes",
+            "allCategories": "Toutes les catégories"
+        },
+        "detail": {
+            "seeTransactions": "Voir les transactions liées"
+        },
+        "linkTransactions": {
+            "title": "Ajouter des transactions",
+            "subtitle": "Dépenses de la période qui n’entrent pas encore dans cette enveloppe. Elles seront classées dans « {category} ».",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune dépense à lier pour cette période.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "uncategorized": "Sans catégorie",
+            "confirm": "Ajouter {count} transaction | Ajouter {count} transaction | Ajouter {count} transactions"
+        },
+        "unlinkTransactions": {
+            "title": "Retirer des transactions",
+            "subtitle": "Dépenses déjà dans cette enveloppe (« {category} » ou une sous-catégorie). Elles redeviendront sans catégorie.",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune dépense liée à retirer pour cette période.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "confirm": "Retirer {count} transaction | Retirer {count} transaction | Retirer {count} transactions"
+        },
+        "deleteModal": {
+            "title": "Supprimer ce budget ?",
+            "body": "L’enveloppe disparaîtra. Vous pourrez recréer le même couple catégorie / période / date de début ensuite."
+        },
+        "errors": {
+            "notFound": "Budget introuvable."
+        },
+        "form": {
+            "createTitle": "Nouveau budget",
+            "editTitle": "Modifier le budget",
+            "subtitle": "Une enveloppe récurrente. Le consommé est calculé à chaque lecture.",
+            "linkedTransactions": {
+                "title": "Transactions de l’enveloppe",
+                "hint": "Les dépenses de la période classées dans « {category} » comptent ici.",
+                "hintAll": "Toutes les dépenses de la période comptent dans cette enveloppe.",
+                "view": "Voir",
+                "add": "Ajouter",
+                "remove": "Retirer"
+            },
+            "allExpenses": "Toutes les dépenses",
+            "createCategory": "Créer une catégorie",
+            "createCategoryNamed": "Créer « {name} »",
+            "pauseHint": "Plus d’alertes. Le progrès reste calculé si la période est en cours.",
+            "currencyLockedHint": "La devise d’un budget ne peut pas être modifiée.",
+            "currencyDefaultHint": "Vide = devise des paramètres ({currency}).",
+            "fields": {
+                "name": "Nom",
+                "limitAmount": "Montant limite",
+                "periode": "Période",
+                "startDate": "Début",
+                "endDate": "Fin",
+                "category": "Catégorie",
+                "currency": "Devise",
+                "isActive": "Actif"
+            },
+            "errors": {
+                "nameRequired": "Le nom du budget est obligatoire.",
+                "nameTooLong": "Le nom du budget dépasse 150 caractères.",
+                "amountInvalid": "La limite du budget est invalide.",
+                "amountNotPositive": "La limite du budget doit être strictement positive.",
+                "periodeInvalid": "Période invalide (hebdomadaire, mensuel, trimestriel, annuel).",
+                "startDateRequired": "La date de début est obligatoire.",
+                "startDateInvalid": "La date de début est invalide.",
+                "endDateInvalid": "La date de fin est invalide.",
+                "endDateBeforeStart": "La date de fin ne peut pas précéder la date de début.",
+                "currencyInvalid": "Devise non supportée (CHF, EUR, USD, GBP).",
+                "currencyLocked": "La devise d'un budget ne peut pas être modifiée.",
+                "scopeDuplicate": "Un budget existe déjà pour cette catégorie, cette période et cette date de début.",
+                "categoryTypeInvalid": "Un budget ne peut être rattaché qu'à une catégorie de dépense ou mixte."
+            }
+        }
+    },
+    "savingsGoalsPage": {
+        "title": "Objectifs d’épargne",
+        "subtitle": "Le montant suivi = ouverture + transactions explicitement liées.",
+        "searchPlaceholder": "Rechercher un objectif",
+        "count": "{count} objectif | {count} objectif | {count} objectifs",
+        "tabs": {
+            "label": "Statut des objectifs",
+            "all": "Tous",
+            "active": "Actifs",
+            "atteint": "Atteints",
+            "abandonne": "Abandonnés"
+        },
+        "badges": {
+            "atteint": "Atteint",
+            "abandonne": "Abandonné",
+            "overdue": "En retard"
+        },
+        "list": {
+            "savedOf": "{current} / {target}",
+            "remaining": "Reste {amount}",
+            "exceededBy": "Dépassé de {amount}",
+            "dueOn": "Échéance {date}",
+            "noDate": "Sans échéance",
+            "noAccount": "Aucun compte lié",
+            "unknownAccount": "Compte",
+            "projectedOn": "Estimé {date}"
+        },
+        "empty": {
+            "list": "Aucun objectif pour l’instant. Créez un premier projet d’épargne.",
+            "active": "Aucun objectif actif.",
+            "atteint": "Aucun objectif atteint.",
+            "abandonne": "Aucun objectif abandonné.",
+            "filtered": "Aucun objectif ne correspond à ces filtres."
+        },
+        "actions": {
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "filter": "Filtrer",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche"
+        },
+        "filters": {
+            "account": "Compte",
+            "allAccounts": "Tous les comptes"
+        },
+        "deleteModal": {
+            "title": "Supprimer cet objectif ?",
+            "body": "L’objectif disparaîtra. Les transactions liées seront détachées, pas supprimées."
+        },
+        "errors": {
+            "notFound": "Objectif introuvable."
+        },
+        "detail": {
+            "tabs": {
+                "details": "Détails",
+                "transactions": "Transactions liées"
+            }
+        },
+        "linkTransactions": {
+            "title": "Lier des transactions",
+            "subtitle": "Écritures validées ou rapprochées qui touchent le compte de l’objectif, dans la même devise. Un crédit l’augmente, un débit le diminue.",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune transaction à lier sur ce compte.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "confirm": "Lier {count} transaction | Lier {count} transaction | Lier {count} transactions"
+        },
+        "unlinkTransactions": {
+            "title": "Détacher des transactions",
+            "subtitle": "Écritures déjà rattachées à cet objectif. Elles resteront sur le compte.",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune transaction liée à détacher.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "confirm": "Détacher {count} transaction | Détacher {count} transaction | Détacher {count} transactions"
+        },
+        "linkedAccount": {
+            "title": "Objectifs d’épargne liés",
+            "subtitle": "Impossible de supprimer ou d’archiver un compte lié à un objectif. Déliez-le d’abord.",
+            "empty": "Aucun objectif n’est plus lié à ce compte.",
+            "unlink": "Détacher"
+        },
+        "form": {
+            "createTitle": "Nouvel objectif",
+            "editTitle": "Modifier l’objectif",
+            "subtitle": "L’ouverture est l’argent déjà de côté avant Spend.Up. Le reste vient des transactions liées.",
+            "noAccount": "Aucun compte",
+            "accountHint": "Compte actif dont vous êtes propriétaire. Sans compte, aucune transaction ne peut être liée.",
+            "abandonHint": "Un objectif abandonné le reste, même si le montant couvre la cible. Pas de notification.",
+            "openingAmountHint": "Argent déjà de côté avant Spend.Up. Il s’ajoute aux contributions, il ne les remplace pas.",
+            "progressHint": "Contributions : {contributed} · Suivi : {current}",
+            "projectedOn": "Atteinte estimée le {date}",
+            "detachAccountHint": "Détacher le compte retire toutes les transactions liées à cet objectif.",
+            "changeAccountHint": "Changer de compte détache les transactions qui ne touchent pas le nouveau compte.",
+            "currencyLockedHint": "La devise d’un objectif ne peut pas être modifiée.",
+            "currencyDefaultHint": "Vide = devise des paramètres ({currency}).",
+            "linkedTransactions": {
+                "title": "Transactions liées",
+                "hint": "Seules les écritures explicitement rattachées comptent. Le solde du compte n’est pas pris en compte.",
+                "noAccount": "Liez un compte pour rattacher des transactions (souvent un transfert vers le compte d’épargne).",
+                "empty": "Aucune contribution pour l’instant.",
+                "add": "Lier",
+                "remove": "Détacher"
+            },
+            "fields": {
+                "name": "Nom",
+                "targetAmount": "Montant cible",
+                "openingAmount": "Ouverture",
+                "targetDate": "Échéance",
+                "account": "Compte lié",
+                "currency": "Devise",
+                "abandon": "Abandonner"
+            },
+            "errors": {
+                "nameRequired": "Le nom de l’objectif est obligatoire.",
+                "nameTooLong": "Le nom de l’objectif dépasse 150 caractères.",
+                "targetAmountInvalid": "Le montant cible est invalide.",
+                "targetAmountNotPositive": "Le montant cible doit être strictement positif.",
+                "openingAmountInvalid": "Le montant d’ouverture est invalide.",
+                "openingAmountNegative": "Le montant d’ouverture ne peut pas être négatif.",
+                "targetDateInvalid": "La date d’échéance est invalide.",
+                "currencyInvalid": "Devise non supportée (CHF, EUR, USD, GBP).",
+                "currencyLocked": "La devise d’un objectif d’épargne ne peut pas être modifiée.",
+                "accountInvalid": "Le compte lié doit être un compte actif dont vous êtes propriétaire."
+            }
+        }
+    },
+    "tagsPage": {
+        "title": "Tags",
+        "subtitle": "Libellés libres, sans hiérarchie. Une écriture peut en porter plusieurs.",
+        "searchPlaceholder": "Rechercher un tag",
+        "count": "{count} tag | {count} tag | {count} tags",
+        "empty": {
+            "list": "Aucun tag pour l’instant. Créez un premier libellé, par exemple Urgent.",
+            "filtered": "Aucun tag ne correspond à cette recherche."
+        },
+        "actions": {
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche"
+        },
+        "list": {
+            "unused": "Non utilisé",
+            "transactions": "{count} transaction | {count} transaction | {count} transactions",
+            "recurringExpenses": "{count} charge | {count} charge | {count} charges"
+        },
+        "deleteModal": {
+            "title": "Supprimer ce tag ?",
+            "body": "Le vocabulaire perdra ce libellé. Les écritures restent.",
+            "bodyUsed": "Il sera retiré de {usage}. Les écritures restent.",
+            "join": " et "
+        },
+        "errors": {
+            "notFound": "Tag introuvable."
+        },
+        "picker": {
+            "add": "Ajouter un tag",
+            "search": "Rechercher un tag…",
+            "empty": "Aucun tag ne correspond.",
+            "createNew": "Nouveau tag",
+            "create": "Créer « {name} »",
+            "remove": "Retirer {name}",
+            "limit": "Maximum {max} tags par écriture."
+        },
+        "form": {
+            "createTitle": "Nouveau tag",
+            "editTitle": "Modifier le tag",
+            "subtitle": "Le nom est unique (casse ignorée). La couleur est optionnelle.",
+            "clearColor": "Sans couleur",
+            "fields": {
+                "name": "Nom",
+                "color": "Couleur"
+            },
+            "errors": {
+                "nameRequired": "Le nom du tag est obligatoire.",
+                "nameTooLong": "Le nom du tag dépasse 100 caractères.",
+                "nameDuplicate": "Un tag porte déjà ce nom.",
+                "colorInvalid": "La couleur doit être un code hexadécimal (#RGB ou #RRGGBB)."
+            }
+        }
+    },
+    "categoriesPage": {
+        "title": "Catégories",
+        "subtitle": "Votre arbre personnel pour classer les transactions.",
+        "empty": {
+            "tree": "Aucune catégorie pour l’instant. Créez un premier domaine, par exemple Logement."
+        },
+        "actions": {
+            "create": "Ajouter",
+            "applyPlan": "Boutique",
+            "deleteAll": "Tout supprimer",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "addChild": "Ajouter une sous-catégorie",
+            "expand": "Déplier",
+            "collapse": "Replier"
+        },
+        "plan": {
+            "modal": {
+                "title": "Boutique de catégories",
+                "subtitle": "Ajoutez uniquement les domaines dont vous avez besoin.",
+                "intro": "Cochez un ou plusieurs domaines. Vous pourrez revenir plus tard pour en ajouter d’autres. Les catégories déjà présentes (même nom et type) sont ignorées.",
+                "apply": "Ajouter {count} domaine | Ajouter {count} domaine | Ajouter {count} domaines",
+                "applyNone": "Choisir un domaine",
+                "selected": "{count} sélectionné | {count} sélectionné | {count} sélectionnés",
+                "selectAll": "Tout sélectionner",
+                "selectNone": "Tout désélectionner",
+                "selectDomain": "Sélectionner {name}",
+                "alreadyPresent": "Déjà présent",
+                "childCount": "{count} sous-catégorie | {count} sous-catégorie | {count} sous-catégories",
+                "noChildren": "Aucune sous-catégorie dans ce domaine."
+            },
+            "nodes": {
+                "logement": "Logement",
+                "loyer": "Loyer",
+                "hypotheque": "Hypothèque",
+                "charges": "Charges",
+                "entretienLogement": "Entretien & rénovation",
+                "assuranceMenage": "Assurance ménage",
+                "alimentation": "Alimentation",
+                "courses": "Courses",
+                "restaurants": "Restaurants",
+                "cafes": "Cafés",
+                "transport": "Transport",
+                "transportsPublics": "CFF & transports publics",
+                "carburant": "Carburant",
+                "parking": "Parking",
+                "entretienVehicule": "Entretien véhicule",
+                "assuranceVehicule": "Assurance véhicule",
+                "sante": "Santé",
+                "assuranceMaladie": "Assurance maladie",
+                "assuranceComplementaire": "Assurance complémentaire",
+                "franchiseSoins": "Franchise & soins",
+                "pharmacie": "Pharmacie",
+                "dentiste": "Dentiste",
+                "impots": "Impôts & taxes",
+                "impotsRevenu": "Impôts",
+                "acomptesProvisionnels": "Acomptes provisionnels",
+                "taxesAmendes": "Taxes & amendes",
+                "loisirs": "Loisirs & vacances",
+                "sorties": "Sorties",
+                "sport": "Sport & fitness",
+                "vacances": "Vacances",
+                "culture": "Culture & hobbies",
+                "shopping": "Shopping",
+                "vetements": "Vêtements",
+                "maisonEquipement": "Maison & équipement",
+                "electronique": "Électronique",
+                "abonnements": "Abonnements",
+                "telecom": "Télécom",
+                "streaming": "Streaming",
+                "logiciels": "Logiciels",
+                "famille": "Famille",
+                "gardeEnfants": "Garde d’enfants",
+                "ecoleActivites": "École & activités",
+                "animaux": "Animaux",
+                "banque": "Banque & dons",
+                "fraisBancaires": "Frais bancaires",
+                "dons": "Dons",
+                "revenus": "Revenus",
+                "salaire": "Salaire",
+                "treiziemeBonus": "13e salaire & bonus",
+                "independant": "Indépendant",
+                "allocations": "Allocations",
+                "rentes": "Rentes (AVS / 2e pilier)",
+                "autresRevenus": "Autres revenus",
+                "epargne": "Épargne & prévoyance",
+                "troisiemePilier": "3e pilier",
+                "epargneCourante": "Épargne",
+                "virementInterne": "Virement interne"
+            }
+        },
+        "types": {
+            "depense": "Dépense",
+            "revenu": "Revenu",
+            "transfert": "Transfert",
+            "mixte": "Mixte"
+        },
+        "deleteModal": {
+            "title": "Supprimer cette catégorie ?",
+            "body": "Elle disparaîtra de l’arbre et des sélecteurs. Le nom pourra être réutilisé.",
+            "childrenTitle": "Des sous-catégories existent",
+            "childrenBody": "Impossible de supprimer une catégorie qui possède des sous-catégories. Supprimez-les d’abord.",
+            "linkedTitle": "Catégorie utilisée",
+            "linkedBody": "Impossible de supprimer une catégorie utilisée par des transactions. Déliez-les d’abord ({count}).",
+            "seeTransactions": "Voir les transactions",
+            "budgetsTitle": "Catégorie utilisée par des budgets",
+            "budgetsBody": "Impossible de supprimer une catégorie utilisée par des budgets. Déliez-les d’abord ({count}).",
+            "seeBudgets": "Voir les budgets"
+        },
+        "deleteAllModal": {
+            "title": "Supprimer toutes les catégories ?",
+            "body": "Tout l’arbre sera effacé. Les catégories encore liées à des transactions ne pourront pas être supprimées.",
+            "confirm": "Tout supprimer",
+            "partialError": "{count} catégorie(s) n’ont pas pu être supprimée(s), probablement encore liées à des transactions."
+        },
+        "errors": {
+            "notFound": "Catégorie introuvable."
+        },
+        "form": {
+            "createTitle": "Nouvelle catégorie",
+            "editTitle": "Modifier la catégorie",
+            "subtitle": "Deux niveaux maximum : un domaine et ses sous-catégories.",
+            "noParent": "Aucun — catégorie racine",
+            "noIcon": "Aucune icône",
+            "clearColor": "Aucune couleur",
+            "parentLockedHint": "Une catégorie qui a des sous-catégories doit rester une racine.",
+            "fields": {
+                "name": "Nom",
+                "type": "Type",
+                "parent": "Parent",
+                "color": "Couleur",
+                "icone": "Icône"
+            },
+            "errors": {
+                "nameRequired": "Le nom de la catégorie est obligatoire.",
+                "nameTooLong": "Le nom de la catégorie dépasse 150 caractères.",
+                "nameDuplicate": "Une catégorie porte déjà ce nom et ce type au même niveau.",
+                "typeInvalid": "Type de catégorie invalide (depense, revenu, transfert, mixte).",
+                "colorInvalid": "La couleur doit être un code hexadécimal (#RGB ou #RRGGBB).",
+                "iconeTooLong": "La clé d’icône dépasse 50 caractères.",
+                "parentNotRoot": "Une sous-catégorie ne peut pas servir de parent : la hiérarchie est limitée à deux niveaux.",
+                "parentSelf": "Une catégorie ne peut pas être son propre parent.",
+                "parentHasChildren": "Une catégorie qui possède des sous-catégories ne peut pas être rangée sous un parent.",
+                "parentTypeIncompatible": "Une catégorie ne peut pas être rangée sous un parent de type incompatible."
+            }
+        }
+    },
+    "subscriptionPage": {
+        "empty": "Impossible de charger votre abonnement.",
+        "changed": "Votre plan est maintenant « {name} ».",
+        "actions": {
+            "changePlan": "Changer de plan"
+        },
+        "status": {
+            "active": "Actif",
+            "canceled": "Résilié",
+            "expired": "Expiré",
+            "pending": "En attente"
+        },
+        "overview": {
+            "title": "Plan courant",
+            "subtitle": "Votre abonnement Spend.Up.",
+            "startedAt": "Depuis le",
+            "expiresAt": "Échéance",
+            "canceledAt": "Résilié le"
+        },
+        "features": {
+            "title": "Fonctionnalités incluses",
+            "subtitle": "Ce que votre plan vous ouvre.",
+            "empty": "Aucune fonctionnalité listée pour ce plan."
+        },
+        "quotas": {
+            "title": "Quotas",
+            "subtitle": "Votre consommation par rapport aux limites du plan.",
+            "empty": "Aucun quota pour ce plan.",
+            "unlimited": "Illimité",
+            "notIncluded": "Non inclus",
+            "notApplicable": "—",
+            "limitValue": "{count} {unit} | {count} {unit} | {count} {unit}s",
+            "usedOfLimit": "{used} / {limit} {unit} | {used} / {limit} {unit} | {used} / {limit} {unit}s",
+            "usedUnlimited": "{used} {unit} · illimité | {used} {unit} · illimité | {used} {unit}s · illimité"
+        },
+        "selector": {
+            "title": "Choisir un plan",
+            "subtitle": "Comparez les fonctionnalités et les quotas. Le changement est immédiat.",
+            "features": "Fonctionnalités",
+            "quotas": "Quotas",
+            "current": "Plan actuel",
+            "recommended": "Recommandé",
+            "currentAction": "Votre plan",
+            "choose": "Choisir",
+            "empty": "Aucun plan disponible pour l’instant.",
+            "confirmTitle": "Passer au plan « {name} » ?",
+            "confirmBody": "Votre abonnement basculera immédiatement sur le plan « {name} ». Vous pourrez changer à nouveau plus tard.",
+            "confirm": "Confirmer",
+            "noPaymentNote": "Aucun paiement n’est demandé pour l’instant : les tarifs arriveront avec le prestataire de paiement."
+        },
+        "upsell": {
+            "thisFeature": "Cette fonctionnalité",
+            "title": "{feature} nécessite le plan {plan}.",
+            "titleGeneric": "{feature} n’est pas incluse dans votre plan.",
+            "body": "Changez de plan pour la débloquer. Le changement est immédiat.",
+            "cta": "Voir les plans"
+        }
+    },
+    "tiersPage": {
+        "title": "Tiers",
+        "subtitle": "Votre annuaire personnel de contreparties : commerçants, banques, employeurs, bailleurs, contacts.",
+        "loadMore": "Charger plus",
+        "count": "{count} tiers | {count} tiers | {count} tiers",
+        "searchPlaceholder": "Rechercher…",
+        "empty": {
+            "list": "Aucun tiers pour l’instant. Ajoutez votre première contrepartie, par exemple votre banque.",
+            "filtered": "Aucun tiers ne correspond à ces filtres.",
+            "byNature": {
+                "person": "Aucune personne pour l’instant.",
+                "company": "Aucune entreprise pour l’instant.",
+                "organization": "Aucune organisation pour l’instant.",
+                "administration": "Aucune administration pour l’instant.",
+                "unknown": "Aucun tiers non précisé pour l’instant."
+            }
+        },
+        "tabs": {
+            "label": "Type de tiers",
+            "all": "Tous"
+        },
+        "actions": {
+            "sort": "Trier",
+            "filter": "Filtre",
+            "create": "Ajouter",
+            "export": "Exporter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "seeTransactions": "Voir les transactions",
+            "seeAccounts": "Voir les comptes",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche"
+        },
+        "filters": {
+            "nature": "Nature",
+            "allNatures": "Toutes les natures",
+            "role": "Rôle",
+            "allRoles": "Tous les rôles"
+        },
+        "sort": {
+            "nameAsc": "Nom (A → Z)",
+            "nameDesc": "Nom (Z → A)",
+            "natureAsc": "Type (A → Z)",
+            "recent": "Plus récents",
+            "oldest": "Plus anciens",
+            "asc": "Croissant",
+            "desc": "Décroissant"
+        },
+        "createAs": {
+            "person": "Une personne",
+            "company": "Une entreprise",
+            "organization": "Une organisation",
+            "administration": "Une administration",
+            "unknown": "Un tiers non précisé"
+        },
+        "createHints": {
+            "person": "Particulier, contact, médecin",
+            "company": "Commerçant, banque, employeur",
+            "organization": "Association, fondation, club",
+            "administration": "Commune, impôts, caisse",
+            "unknown": "Le type n’est pas encore clair"
+        },
+        "natures": {
+            "person": "Personne",
+            "company": "Entreprise",
+            "organization": "Organisation",
+            "administration": "Administration",
+            "unknown": "Non précisé"
+        },
+        "roles": {
+            "contactPersonnel": "Contact personnel",
+            "banque": "Banque",
+            "assurance": "Assurance",
+            "employeur": "Employeur",
+            "bailleur": "Bailleur",
+            "service": "Service",
+            "fournisseur": "Fournisseur",
+            "administration": "Administration",
+            "medecin": "Médecin",
+            "preteur": "Prêteur",
+            "emprunteur": "Emprunteur",
+            "other": "Autre"
+        },
+        "list": {
+            "noRoles": "Aucun rôle",
+            "person": "{firstName} {lastName}",
+            "birthDate": "né(e) le {date}"
+        },
+        "columns": {
+            "name": "Nom",
+            "nature": "Nature",
+            "roles": "Rôles",
+            "email": "E-mail",
+            "phone": "Téléphone",
+            "website": "Site"
+        },
+        "deleteModal": {
+            "title": "Supprimer ce tiers ?",
+            "body": "Il disparaîtra de l’annuaire et des sélecteurs. Le nom pourra être réutilisé.",
+            "blockedTitle": "Tiers utilisé"
+        },
+        "errors": {
+            "notFound": "Ce tiers n’est plus disponible.",
+            "aliasesPartial": "Le tiers a été créé, mais certains alias n’ont pas pu l’être. Vérifiez-les dans l’onglet Alias."
+        },
+        "form": {
+            "createTitle": "Nouveau tiers",
+            "createTitles": {
+                "person": "Nouvelle personne",
+                "company": "Nouvelle entreprise",
+                "organization": "Nouvelle organisation",
+                "administration": "Nouvelle administration",
+                "unknown": "Nouveau tiers"
+            },
+            "editTitle": "Modifier le tiers",
+            "subtitle": "La nature détermine le volet de détails. Les rôles sont libres et cumulables.",
+            "pickNatureTitle": "Quel type de tiers ?",
+            "pickNatureSubtitle": "Choisissez une personne, une entreprise, une organisation… Les rôles se règlent plus tard.",
+            "createSubtitle": "Le type est déjà choisi. Vous pourrez ajouter des rôles ensuite, depuis la fiche.",
+            "changeNature": "Changer",
+            "natureChangeHint": "Changer la nature efface les détails de l’ancien volet.",
+            "noRoles": "Aucun rôle sélectionné",
+            "rolesHint": "Une personne peut être à la fois bailleur et prêteur.",
+            "sections": {
+                "identity": "Identité",
+                "contact": "Contact",
+                "person": "Détails de la personne",
+                "company": "Détails de l’entreprise",
+                "organization": "Détails de l’organisation",
+                "bank": "Banque"
+            },
+            "fields": {
+                "name": "Nom",
+                "nature": "Nature",
+                "roles": "Rôles",
+                "email": "E-mail",
+                "phone": "Téléphone",
+                "website": "Site web",
+                "notes": "Notes",
+                "firstName": "Prénom",
+                "lastName": "Nom de famille",
+                "birthDate": "Date de naissance",
+                "legalName": "Raison sociale",
+                "vatNumber": "Numéro TVA",
+                "companyRegistrationNumber": "Numéro d’entreprise (IDE)",
+                "officialName": "Nom officiel",
+                "organizationType": "Type d’organisation",
+                "isBank": "Ce tiers est une banque",
+                "bank": "Établissement",
+                "bic": "BIC",
+                "iid": "IID (clearing)"
+            },
+            "placeholders": {
+                "name": "Ex. Migros",
+                "nameByNature": {
+                    "person": "Ex. Marie Dupont",
+                    "company": "Ex. Migros",
+                    "organization": "Ex. Croix-Rouge",
+                    "administration": "Ex. AFC",
+                    "unknown": "Ex. Migros"
+                },
+                "email": "contact@exemple.ch",
+                "phone": "+41 58 570 00 00",
+                "website": "exemple.ch",
+                "notes": "Informations utiles, horaires, référence client…",
+                "birthDate": "Date de naissance",
+                "vatNumber": "CHE-123.456.789 TVA",
+                "companyRegistrationNumber": "CHE-123.456.789",
+                "organizationType": "Association, fondation, club…",
+                "bic": "UBSWCHZH80A",
+                "iid": "00230"
+            },
+            "errors": {
+                "nameRequired": "Le nom du tiers est obligatoire.",
+                "nameTooLong": "Le nom du tiers dépasse 200 caractères.",
+                "nameDuplicate": "Un tiers porte déjà ce nom.",
+                "natureInvalid": "Nature de tiers invalide.",
+                "emailInvalid": "L’adresse e-mail est invalide (format attendu : local@domaine.tld).",
+                "emailTooLong": "L’adresse e-mail dépasse 180 caractères.",
+                "phoneInvalid": "Le téléphone accepte chiffres, espaces, + - . ( ) et au moins 3 chiffres.",
+                "phoneTooLong": "Le numéro de téléphone dépasse 50 caractères.",
+                "websiteInvalid": "Le site web doit être une URL http(s) valide (ex. migros.ch).",
+                "notesTooLong": "Les notes dépassent 4000 caractères.",
+                "rolesInvalid": "Un rôle est inconnu.",
+                "rolesDuplicate": "Un rôle est présent en double.",
+                "personFirstNameTooLong": "Le prénom dépasse 100 caractères.",
+                "personLastNameTooLong": "Le nom de famille dépasse 100 caractères.",
+                "personBirthDateInvalid": "La date de naissance est invalide.",
+                "personBirthDateFuture": "La date de naissance ne peut pas être dans le futur.",
+                "companyLegalNameTooLong": "La raison sociale dépasse 200 caractères.",
+                "companyVatNumberTooLong": "Le numéro TVA dépasse 100 caractères.",
+                "companyRegistrationNumberTooLong": "Le numéro d’entreprise dépasse 100 caractères.",
+                "organizationOfficialNameTooLong": "Le nom officiel dépasse 200 caractères.",
+                "organizationTypeTooLong": "Le type d’organisation dépasse 100 caractères.",
+                "bankRequired": "Choisissez une banque du référentiel, ou saisissez son BIC ou son IID.",
+                "bankBicInvalid": "BIC invalide (8 ou 11 caractères, ex. UBSWCHZH80A).",
+                "bankIidInvalid": "IID invalide (1 à 5 chiffres)."
+            },
+            "tabs": {
+                "details": "Détails",
+                "bank": "Banque",
+                "aliases": "Alias"
+            },
+            "bankHint": "Seuls les tiers banque peuvent être la banque d’un compte ou d’un modèle d’import. Le rôle « Banque » est ajouté automatiquement.",
+            "bankCustom": "Banque hors référentiel",
+            "bankCustomHint": "Néobanque ou banque étrangère : saisissez son BIC et/ou son IID.",
+            "bankUseRegistry": "Choisir dans le référentiel",
+            "bankLockedHint": "Choisissez l’établissement dans le référentiel SIX, ou saisissez une banque hors référentiel. Le rôle « Banque » est ajouté automatiquement.",
+            "bankRoleLocked": "Ce tiers est une banque (onglet Banque) : le rôle est obligatoire.",
+            "bankRoleWithoutPanel": "Pour choisir ce tiers comme banque d’un compte, activez-le dans l’onglet Banque.",
+            "bankNotListed": "Votre banque n’est pas dans la liste ?"
+        }
+    },
+    "filesPage": {
+        "title": "Fichiers",
+        "subtitle": "Vos documents PDF personnels. Stockés de façon privée, accessibles uniquement depuis Spend.Up.",
+        "loadMore": "Charger plus",
+        "count": "{count} fichier | {count} fichier | {count} fichiers",
+        "searchPlaceholder": "Rechercher un document…",
+        "uploadHint": "PDF uniquement, 10 Mo maximum.",
+        "usage": {
+            "usedOfQuota": "{used} / {quota}",
+            "usedUnlimited": "{used}",
+            "mo": "{n} Mo",
+            "meta": "{documents} · {unique}",
+            "documents": "{count} document | {count} document | {count} documents",
+            "unique": "{count} fichier unique | {count} fichier unique | {count} fichiers uniques"
+        },
+        "drop": {
+            "title": "Déposer le PDF ici",
+            "body": "Un fichier à la fois, 10 Mo maximum."
+        },
+        "empty": {
+            "list": "Aucun document pour l’instant. Ajoutez un PDF pour le conserver ici.",
+            "filtered": "Aucun document ne correspond à cette recherche."
+        },
+        "actions": {
+            "upload": "Ajouter un PDF",
+            "create": "Ajouter",
+            "export": "Exporter",
+            "search": "Rechercher",
+            "sort": "Trier",
+            "preview": "Aperçu",
+            "download": "Télécharger",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "clearSearch": "Effacer la recherche"
+        },
+        "columns": {
+            "name": "Nom",
+            "documentDate": "Date du document",
+            "size": "Taille",
+            "added": "Ajouté le",
+            "description": "Description"
+        },
+        "sort": {
+            "recent": "Plus récents",
+            "oldest": "Plus anciens",
+            "nameAsc": "Nom (A → Z)",
+            "nameDesc": "Nom (Z → A)",
+            "sizeAsc": "Plus légers",
+            "sizeDesc": "Plus volumineux",
+            "documentDateAsc": "Date du document (ancienne → récente)",
+            "documentDateDesc": "Date du document (récente → ancienne)",
+            "asc": "Croissant",
+            "desc": "Décroissant"
+        },
+        "list": {
+            "addedOn": "ajouté le {date}"
+        },
+        "size": {
+            "bytes": "{n} o",
+            "kb": "{n} Ko",
+            "mb": "{n} Mo"
+        },
+        "preview": {
+            "title": "Aperçu",
+            "unavailable": "Impossible d’afficher ce PDF."
+        },
+        "upload": {
+            "progress": "Envoi de {name}… {percent} %"
+        },
+        "deleteModal": {
+            "title": "Supprimer ce fichier ?",
+            "body": "Le document disparaîtra de la liste. Cette action est définitive."
+        },
+        "errors": {
+            "notFound": "Ce fichier n’est plus disponible.",
+            "required": "Fichier PDF requis.",
+            "tooLarge": "Le fichier dépasse 10 Mo.",
+            "notPdf": "Seuls les fichiers PDF sont acceptés.",
+            "quotaExceeded": "Quota de stockage dépassé.",
+            "linkedToTransactions": "Ce fichier est encore lié à une transaction. Déliez-le d’abord.",
+            "nameRequired": "Le nom du fichier est obligatoire.",
+            "documentDateInvalid": "La date du document est invalide."
+        },
+        "form": {
+            "editTitle": "Modifier le fichier",
+            "subtitle": "Ces informations n’apparaissent que dans Spend.Up.",
+            "fields": {
+                "nameOriginal": "Nom",
+                "description": "Description",
+                "documentDate": "Date du document"
+            },
+            "placeholders": {
+                "nameOriginal": "Nom du fichier",
+                "description": "Notes, contexte, référence…",
+                "documentDate": "Date du document"
+            }
+        },
+        "sortGroups": {
+            "added": "Date d’ajout",
+            "name": "Nom",
+            "size": "Taille",
+            "documentDate": "Date du document"
+        },
+        "sortShort": {
+            "recent": "Récents",
+            "oldest": "Anciens",
+            "nameAsc": "A → Z",
+            "nameDesc": "Z → A",
+            "sizeAsc": "Légers",
+            "sizeDesc": "Lourds",
+            "documentDateDesc": "Récente",
+            "documentDateAsc": "Ancienne"
+        }
+    },
+    "transactionsPage": {
+        "title": "Transactions",
+        "titleForAccount": "Transactions du compte : {name}",
+        "titleForRecurrence": "Transactions de récurrence : {name}",
+        "titleForBudget": "Transactions du budget : {name}",
+        "subtitle": "Dépenses, revenus et transferts sur vos comptes.",
+        "loadMore": "Charger plus",
+        "unknownAccount": "Compte",
+        "unknownRecurrence": "Récurrence",
+        "unknownBudget": "Budget",
+        "empty": {
+            "timeline": "Aucune transaction pour l’instant.",
+            "account": "Aucune transaction sur ce compte.",
+            "recurrence": "Aucune transaction pour cette récurrence.",
+            "budget": "Aucune transaction pour ce budget.",
+            "budgetOut": "Aucune dépense à ajouter à cette enveloppe pour cette période.",
+            "byType": "Aucune transaction de type « {type} ».",
+            "filtered": "Aucune transaction ne correspond à cette recherche."
+        },
+        "searchPlaceholder": "Rechercher…",
+        "actions": {
+            "sort": "Trier",
+            "filter": "Filtre",
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche",
+            "export": "Exporter"
+        },
+        "filters": {
+            "account": "Compte",
+            "allAccounts": "Tous les comptes",
+            "type": "Type",
+            "allTypes": "Tous les types",
+            "category": "Catégorie",
+            "allCategories": "Toutes les catégories",
+            "tag": "Tag",
+            "allTags": "Tous les tags",
+            "tier": "Contrepartie",
+            "allTiers": "Toutes les contreparties",
+            "paymentMethod": "Moyen de paiement",
+            "allPaymentMethods": "Tous les moyens de paiement",
+            "recurrence": "Récurrence",
+            "allRecurrences": "Toutes les récurrences",
+            "budget": "Budget",
+            "allBudgets": "Tous les budgets",
+            "from": "Du",
+            "to": "Au",
+            "period": "Période",
+            "amount": "Montant"
+        },
+        "envelope": {
+            "title": "Enveloppe du budget",
+            "window": "{start} → {end}",
+            "dismiss": "Quitter le budget",
+            "scopeLabel": "Transactions de l’enveloppe",
+            "scopeIn": "Dans le budget",
+            "scopeOut": "Hors budget",
+            "add": "Ajouter à l’enveloppe",
+            "remove": "Retirer du budget",
+            "unlinkLink": "Délier la transaction",
+            "addedToast": "{name} : ajoutée au budget",
+            "unlinkModal": {
+                "title": "Retirer du budget ?",
+                "body": "Elle redeviendra sans catégorie et ne comptera plus dans ce budget."
+            }
+        },
+        "sort": {
+            "dateDesc": "Date (récent → ancien)",
+            "dateAsc": "Date (ancien → récent)",
+            "labelAsc": "Libellé (A → Z)",
+            "labelDesc": "Libellé (Z → A)",
+            "amountDesc": "Montant (décroissant)",
+            "amountAsc": "Montant (croissant)"
+        },
+        "types": {
+            "depense": "Dépense",
+            "revenu": "Revenu",
+            "transfert": "Transfert"
+        },
+        "list": {
+            "transferLine": "{from} → {to}",
+            "createdByMe": "Saisi par vous",
+            "createdBy": "Saisi par {name}",
+            "createdByUnknown": "Saisi par un utilisateur",
+            "myCategory": "Ma catégorie : {name}",
+            "myTier": "Ma contrepartie : {name}",
+            "hasAttachments": "{count} justificatif | {count} justificatif | {count} justificatifs",
+            "sourceRecurrence": "Récurrence",
+            "recurrenceDelta": "{delta} par rapport au prévu ({planned})",
+            "sourceImport": "Importée"
+        },
+        "deleteModal": {
+            "title": "Supprimer cette transaction ?",
+            "body": "Les mouvements liés seront annulés et le solde du compte sera recalculé."
+        },
+        "errors": {
+            "notFound": "Cette transaction n’est plus disponible."
+        },
+        "form": {
+            "createTitle": "Nouvelle transaction",
+            "editTitle": "Modifier la transaction",
+            "subtitle": "Le type et les comptes ne peuvent pas être changés après création.",
+            "tabs": {
+                "operation": "Opération",
+                "classification": "Classification",
+                "attachments": "Justificatifs"
+            },
+            "amountPlaceholder": "42.50",
+            "recurrenceAmountVariance": "{delta} par rapport au prévu ({planned})",
+            "operationDatePlaceholder": "Date d’opération",
+            "valueDatePlaceholder": "Date de valeur (optionnel)",
+            "noPaymentMethod": "Aucun",
+            "noCategory": "Aucune",
+            "noRecurrence": "Aucune",
+            "noSavingsGoal": "Aucun",
+            "savingsGoalSearchPlaceholder": "Rechercher un objectif…",
+            "savingsGoalNoResults": "Aucun objectif ne correspond.",
+            "savingsGoalHint": "La transaction doit toucher le compte de l’objectif, dans la même devise. Cas typique : un transfert vers le compte d’épargne.",
+            "savingsGoalAccountHint": "Choisissez d’abord un compte pour lier un objectif.",
+            "savingsGoalEmptyHint": "Aucun objectif compatible. Liez un compte à l’objectif, puis une écriture qui le touche.",
+            "categoryPersonalHint": "Cette catégorie n’est visible que par vous, même sur un compte partagé.",
+            "tagsPersonalHint": "Ces tags ne sont visibles que par vous, même sur un compte partagé.",
+            "noTier": "Aucune",
+            "tierSearchPlaceholder": "Rechercher une contrepartie…",
+            "tierNoResults": "Aucune contrepartie ne correspond.",
+            "tierCreate": "Créer « {name} »",
+            "tierCreateNew": "Nouvelle contrepartie",
+            "categorySearchPlaceholder": "Rechercher une catégorie…",
+            "categoryNoResults": "Aucune catégorie ne correspond.",
+            "categoryCreate": "Créer « {name} »",
+            "categoryCreateNew": "Nouvelle catégorie",
+            "paymentMethodSearchPlaceholder": "Rechercher un moyen de paiement…",
+            "paymentMethodNoResults": "Aucun moyen de paiement ne correspond.",
+            "paymentMethodCreate": "Créer « {name} »",
+            "paymentMethodCreateNew": "Nouveau moyen de paiement",
+            "recurrenceSearchPlaceholder": "Rechercher une récurrence…",
+            "recurrenceNoResults": "Aucune récurrence ne correspond.",
+            "tierPersonalHint": "Cette contrepartie n’est visible que par vous, même sur un compte partagé.",
+            "tierDeletedHint": "La contrepartie sélectionnée a été supprimée. Le champ a été vidé.",
+            "archivedHint": "Ce compte est archivé. Restaurez-le pour modifier ses transactions.",
+            "noCounterpartyOption": "Aucun compte cible",
+            "noCounterpartyHint": "Aucun autre compte éditable n’est disponible. Créez un second compte pour faire un transfert.",
+            "noCounterpartySameCurrencyHint": "Aucun autre compte en {currency} n’est éditable. Un transfert exige deux comptes actifs, avec droit d’édition, dans la même devise.",
+            "fields": {
+                "type": "Type",
+                "account": "Compte",
+                "sourceAccount": "Compte source",
+                "counterpartyAccount": "Compte cible",
+                "label": "Libellé",
+                "amount": "Montant",
+                "operationDate": "Date d’opération",
+                "valueDate": "Date de valeur",
+                "recurrence": "Récurrence",
+                "paymentMethod": "Moyen de paiement",
+                "category": "Ma catégorie",
+                "tags": "Mes tags",
+                "tier": "Ma contrepartie",
+                "savingsGoal": "Objectif d’épargne",
+                "attachments": "Justificatifs PDF"
+            },
+            "attachments": {
+                "hint": "PDF uniquement, {max} maximum. Détacher ne supprime pas le fichier de votre bibliothèque.",
+                "empty": "Aucun justificatif.",
+                "upload": "Uploader un PDF",
+                "uploading": "Envoi…",
+                "pick": "Choisir dans Fichiers",
+                "detach": "Détacher",
+                "maxReached": "Une transaction accepte au plus {max} fichiers.",
+                "alreadyLinked": "Fichier déjà lié."
+            },
+            "errors": {
+                "typeInvalid": "Type de transaction invalide (depense, revenu, transfert).",
+                "accountRequired": "Choisissez un compte.",
+                "labelRequired": "Le libellé de la transaction est obligatoire.",
+                "labelTooLong": "Le libellé de la transaction dépasse 255 caractères.",
+                "amountInvalid": "Le montant de la transaction est invalide.",
+                "amountNotPositive": "Le montant de la transaction doit être strictement positif.",
+                "operationDateRequired": "La date d’opération est obligatoire.",
+                "operationDateInvalid": "La date d’opération est invalide.",
+                "operationDateFuture": "La date d’opération ne peut pas être dans le futur.",
+                "valueDateInvalid": "La date de valeur est invalide.",
+                "valueDateBeforeOperation": "La date de valeur ne peut pas précéder la date d’opération.",
+                "counterpartyRequired": "Le compte cible est obligatoire pour un transfert.",
+                "counterpartyNotAllowed": "Un compte cible n’est accepté que pour un transfert.",
+                "counterpartySame": "Les deux comptes d’un transfert doivent être différents.",
+                "accountArchived": "Impossible de modifier un compte archivé. Restaurez-le d’abord.",
+                "currencyMismatch": "Les deux comptes d’un transfert doivent partager la même devise.",
+                "forbidden": "Action non autorisée sur cette transaction.",
+                "savingsGoalInvalid": "Objectif d’épargne introuvable.",
+                "savingsGoalNoAccount": "Liez un compte à l’objectif avant d’y rattacher une transaction.",
+                "savingsGoalCurrencyMismatch": "La devise de la transaction doit être celle de l’objectif.",
+                "savingsGoalAccountMismatch": "La transaction doit toucher le compte rattaché à l’objectif."
+            }
+        },
+        "count": "{count} transaction | {count} transactions",
+        "sortDir": {
+            "asc": "Croissant",
+            "desc": "Décroissant"
+        },
+        "columns": {
+            "label": "Libellé",
+            "date": "Date",
+            "account": "Compte",
+            "category": "Catégorie",
+            "tier": "Contrepartie",
+            "amount": "Montant",
+            "type": "Type",
+            "currency": "Devise"
+        }
+    },
+    "importsPage": {
+        "title": "Imports",
+        "subtitle": "Importez un relevé CSV ou Excel, vérifiez les lignes, puis créez les transactions en une fois.",
+        "count": "{count} import | {count} import | {count} imports",
+        "loadMore": "Charger plus",
+        "tabs": {
+            "label": "Vue",
+            "history": "Historique",
+            "templates": "Modèles"
+        },
+        "filters": {
+            "status": "Statut",
+            "allStatuses": "Tous les statuts",
+            "account": "Compte",
+            "allAccounts": "Tous les comptes"
+        },
+        "statuses": {
+            "erreur": "Colonnes à associer",
+            "aValider": "En revue",
+            "valide": "Validé",
+            "annule": "Annulé"
+        },
+        "lineStatuses": {
+            "validee": "Validée",
+            "aValider": "À valider",
+            "erreur": "Erreur",
+            "ignoree": "Ignorée"
+        },
+        "lineTabs": {
+            "label": "Lignes",
+            "all": "Tout",
+            "aValider": "À valider",
+            "erreur": "Erreurs",
+            "ignoree": "Ignorées"
+        },
+        "sourceTypes": {
+            "csv": "CSV",
+            "excel": "Excel"
+        },
+        "fields": {
+            "operationDate": "Date d’opération",
+            "valueDate": "Date de valeur",
+            "label": "Libellé",
+            "amount": "Montant",
+            "debit": "Débit",
+            "credit": "Crédit",
+            "currency": "Devise",
+            "balance": "Solde",
+            "category": "Catégorie",
+            "tier": "Tiers",
+            "paymentMethod": "Moyen de paiement",
+            "recurringDue": "Échéance récurrente"
+        },
+        "actions": {
+            "create": "Importer un relevé",
+            "delete": "Supprimer",
+            "cancel": "Abandonner",
+            "commit": "Valider l’import",
+            "remap": "Colonnes",
+            "revert": "Annuler cet import",
+            "saveAsTemplate": "Enregistrer comme modèle",
+            "editTemplate": "Modifier le modèle",
+            "deleteTemplate": "Supprimer le modèle"
+        },
+        "empty": {
+            "list": "Aucun import pour l’instant. Importez un relevé CSV ou Excel exporté depuis votre banque.",
+            "filtered": "Aucun import ne correspond à ces filtres."
+        },
+        "list": {
+            "deletedAccount": "Compte supprimé",
+            "period": "du {from} au {to}",
+            "needsMapping": "Colonnes à associer avant la revue",
+            "imported": "Aucune transaction créée | {count} transaction créée | {count} transactions créées",
+            "lines": "Aucune ligne | {count} ligne | {count} lignes",
+            "pending": "Aucune ligne à trancher | {count} ligne à trancher | {count} lignes à trancher",
+            "ready": "Aucune ligne prête | {count} ligne prête | {count} lignes prêtes",
+            "expires": "expire le {date}"
+        },
+        "deleteModal": {
+            "title": "Supprimer cet import ?",
+            "body": "L’import et ses lignes seront retirés de l’historique. Aucune transaction n’est touchée."
+        },
+        "cancelModal": {
+            "title": "Abandonner cet import ?",
+            "body": "Aucune transaction ne sera créée. L’import reste dans l’historique avec le statut Annulé."
+        },
+        "revertModal": {
+            "title": "Annuler cet import ?",
+            "body": "Aucune transaction ne sera supprimée. | 1 transaction sera supprimée, même si vous l’avez modifiée depuis l’import (catégorie, tags…). | {count} transactions seront supprimées, y compris celles modifiées depuis l’import (catégorie, tags…).",
+            "keepsEntities": "Les tiers, moyens de paiement et alias créés par l’import sont conservés."
+        },
+        "detail": {
+            "title": "Import",
+            "back": "Imports",
+            "gone": "Cet import n’est plus disponible. Il a peut-être été supprimé depuis un autre appareil.",
+            "template": "modèle {name}"
+        },
+        "upload": {
+            "title": "Importer un relevé",
+            "subtitle": "Rien n’est écrit sur le compte avant votre validation finale.",
+            "account": "Compte cible",
+            "pick": "Choisir un fichier ou le déposer ici",
+            "formats": ".csv (2 Mo max.) ou .xlsx (5 Mo max.)",
+            "clearFile": "Retirer le fichier",
+            "template": "Modèle",
+            "autoDetect": "Détection automatique",
+            "templateHint": "Optionnel. Un modèle réutilise un mapping déjà enregistré.",
+            "templateNeedsFile": "Choisissez d’abord un fichier.",
+            "templateSearch": "Rechercher un modèle",
+            "paymentMethod": "Moyen de paiement par défaut",
+            "paymentMethodHint": "Optionnel. Posé sur les lignes dont le fichier n’indique aucun moyen (ex. relevé de carte).",
+            "noPaymentMethod": "Aucun",
+            "submit": "Analyser le fichier",
+            "noWritableAccount": "Vous n’avez aucun compte actif sur lequel importer (propriétaire ou éditeur).",
+            "notes": {
+                "noWrite": "L’analyse ne crée aucune transaction : le solde ne bouge pas.",
+                "limits": "2 000 lignes et 100 colonnes maximum. Dates lues jour avant mois.",
+                "transfers": "Virements internes : importer les relevés des deux comptes compte le virement deux fois."
+            },
+            "errors": {
+                "required": "Choisissez un fichier.",
+                "empty": "Le fichier est vide.",
+                "legacyXls": "Format .xls non pris en charge : enregistrez le classeur en .xlsx ou .csv.",
+                "macroXlsm": "Les classeurs avec macros (.xlsm) ne sont pas acceptés : enregistrez en .xlsx.",
+                "unsupported": "Format non pris en charge. Utilisez un fichier .csv ou .xlsx (OFX et CAMT ne sont pas acceptés).",
+                "tooLarge": "Fichier trop volumineux (maximum {max})."
+            }
+        },
+        "warnings": {
+            "alreadyImported": "Ce fichier a déjà été importé sur ce compte le {date}.",
+            "periodOverlap": "Le dernier import validé de ce compte va jusqu’au {date} : les opérations communes apparaîtront comme doublons probables.",
+            "openPrevious": "Voir l’import précédent"
+        },
+        "mapping": {
+            "errorLead": "Associez les colonnes du fichier pour continuer.",
+            "tooManyLines": "Découpez le fichier en plusieurs relevés de 2 000 lignes au plus.",
+            "suggestion": "Ce fichier ressemble au modèle « {name} ».",
+            "useTemplate": "Utiliser ce modèle",
+            "readTitle": "Lecture du fichier",
+            "formatTitle": "Formats",
+            "columnsTitle": "Colonnes",
+            "sampleTitle": "Aperçu du fichier",
+            "sampleEmpty": "Aperçu indisponible : les données brutes ne sont plus conservées.",
+            "auto": "Détection automatique",
+            "sheet": "Feuille",
+            "encoding": "Encodage",
+            "separator": "Séparateur",
+            "separators": {
+                "semicolon": "Point-virgule",
+                "comma": "Virgule",
+                "pipe": "Barre verticale",
+                "tab": "Tabulation"
+            },
+            "headerRow": "Ligne d’en-tête",
+            "headerRowHint": "Numéro de ligne affiché. 0 = fichier sans en-tête. Vide = recherche automatique.",
+            "layoutChanged": "Les réglages de lecture ont changé : le fichier sera relu et les colonnes redétectées.",
+            "dateFormat": "Format de date",
+            "dateFormatHint": "Imposez un format si les dates sont mal lues (export américain : MM/dd/yyyy).",
+            "decimalSeparator": "Séparateur décimal",
+            "decimals": {
+                "dot": "Point (1234.50)",
+                "comma": "Virgule (1234,50)"
+            },
+            "invertSign": "Inverser le signe des montants",
+            "invertSignHint": "Pour les relevés de carte où les achats sont positifs.",
+            "amountMode": "Colonnes de montant",
+            "amountModes": {
+                "signed": "Montant signé",
+                "debitCredit": "Débit / crédit"
+            },
+            "amountModeHints": {
+                "signed": "Une colonne : négatif = dépense, positif = revenu.",
+                "debitCredit": "Deux colonnes : le sens vient de la colonne."
+            },
+            "debitCreditHint": "Au moins une des deux colonnes. La valeur absolue compte : des débits déjà négatifs fonctionnent aussi.",
+            "noColumn": "Aucune colonne",
+            "columnNamed": "Colonne {n} · {name}",
+            "columnIndex": "Colonne {n}",
+            "applyTemplate": "Appliquer un modèle",
+            "autoDetect": "Relancer la détection",
+            "backToReview": "Retour à la revue",
+            "apply": "Appliquer le mapping",
+            "reread": "Relire le fichier",
+            "confirm": {
+                "title": "Relire le fichier ?",
+                "body": "Toutes les lignes seront recalculées : les corrections faites pendant la revue seront perdues.",
+                "action": "Relire"
+            },
+            "errors": {
+                "operationDateRequired": "Associez la colonne de date d’opération.",
+                "labelRequired": "Associez la colonne de libellé.",
+                "amountRequired": "Associez la colonne de montant.",
+                "debitCreditRequired": "Associez au moins une colonne de débit ou de crédit.",
+                "headerRowInvalid": "Saisissez un numéro de ligne (0 pour aucun en-tête)."
+            },
+            "otherSuggestions": "Autres modèles possibles :"
+        },
+        "bulk": {
+            "label": "Actions groupées",
+            "validateToReview": "Aucune ligne à valider | Valider la ligne à valider | Valider les {count} lignes à valider",
+            "validateToReviewConfirm": "Aucune ligne à valider. | La ligne à valider (doublon probable ou catégorie inconnue) sera écrite au commit. | Les {count} lignes à valider (doublons probables, catégories inconnues) seront écrites au commit.",
+            "ignoreToReview": "Aucune ligne à ignorer | Ignorer la ligne à valider | Ignorer les {count} lignes à valider",
+            "ignoreErrors": "Aucune erreur | Ignorer la ligne en erreur | Ignorer les {count} lignes en erreur",
+            "confirmTitle": "Appliquer à toutes les lignes ?",
+            "sameLabelHint": "Pour catégoriser toutes les lignes d’un même libellé, ouvrez une ligne et cochez « Appliquer aux lignes au même libellé »."
+        },
+        "lines": {
+            "count": "{count} ligne | {count} ligne | {count} lignes",
+            "lineNumber": "Ligne {n}",
+            "noLabel": "Sans libellé",
+            "created": "Créée",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche",
+            "searchPlaceholder": "Rechercher un libellé",
+            "bulkResult": "Aucune ligne mise à jour ({skipped} non modifiable(s)). | 1 ligne mise à jour ({skipped} non modifiable(s)). | {updated} lignes mises à jour ({skipped} non modifiable(s)).",
+            "columns": {
+                "lineNumber": "Ligne",
+                "date": "Date",
+                "label": "Libellé",
+                "category": "Catégorie",
+                "tier": "Tiers",
+                "amount": "Montant",
+                "status": "Statut"
+            },
+            "sortDir": {
+                "asc": "croissant",
+                "desc": "décroissant"
+            },
+            "sort": {
+                "label": "Trier",
+                "lineNumber": "Ordre du fichier",
+                "firstFirst": "Début",
+                "lastFirst": "Fin",
+                "date": "Date",
+                "recent": "Récentes",
+                "oldest": "Anciennes",
+                "amount": "Montant",
+                "lowest": "Dépenses",
+                "highest": "Revenus",
+                "status": "Statut",
+                "asc": "A → Z",
+                "desc": "Z → A"
+            },
+            "empty": {
+                "all": "Aucune ligne dans ce fichier.",
+                "search": "Aucune ligne ne correspond à cette recherche.",
+                "validee": "Aucune ligne validée.",
+                "aValider": "Rien à trancher : aucune ligne à valider.",
+                "erreur": "Aucune ligne en erreur.",
+                "ignoree": "Aucune ligne ignorée."
+            },
+            "badges": {
+                "duplicate": "Doublon probable",
+                "duplicateInFile": "Identique à la ligne {n}",
+                "unknownCategory": "Catégorie « {name} » inconnue",
+                "suggested": "Catégorie suggérée",
+                "recurringDue": "{name} du {date}",
+                "autoIgnored": "Ignorée automatiquement",
+                "edited": "Corrigée",
+                "newTier": "Nouveau tiers : {name}",
+                "newPaymentMethod": "Nouveau moyen : {name}"
+            },
+            "actions": {
+                "validate": "Valider",
+                "validateAnyway": "Valider quand même",
+                "ignore": "Ignorer",
+                "restore": "Réintégrer",
+                "reset": "Rétablir",
+                "edit": "Corriger"
+            },
+            "edit": {
+                "amountHint": "Négatif = dépense, positif = revenu ({currency}).",
+                "noCategory": "Aucune catégorie",
+                "noCategoryAction": "Laisser sans catégorie",
+                "categorySearch": "Rechercher une catégorie",
+                "createCategoryNew": "Nouvelle catégorie",
+                "createCategory": "Créer « {name} »",
+                "suggestedHint": "Suggérée d’après votre historique.",
+                "unknownCategory": "La catégorie « {name} » du fichier n’existe pas dans vos catégories.",
+                "unknownTier": "« {name} » sera créé comme nouveau tiers à la validation. Choisissez un tiers existant pour le rattacher à la place.",
+                "noPaymentMethod": "Aucun moyen de paiement",
+                "paymentMethodSearch": "Rechercher un moyen de paiement",
+                "unknownPaymentMethod": "« {name} » sera créé comme nouveau moyen de paiement à la validation. Choisissez un moyen existant pour le rattacher à la place.",
+                "noRecurringDue": "Aucune échéance",
+                "recurringDueHint": "Réglée par cette ligne à la validation de l’import.",
+                "recurringDueOption": "{name} · {date} · {amount}",
+                "duplicate": "Cette ligne ressemble à une transaction déjà présente sur le compte.",
+                "duplicateLink": "Voir les transactions de ce jour",
+                "duplicateInFile": "Identique à la ligne {n} du fichier. Ce sont souvent deux vraies opérations.",
+                "currencyHint": "La devise n’est pas modifiable : ignorez cette ligne pour continuer.",
+                "applySameLabel": "Appliquer aussi aux lignes au même libellé que « {label} »",
+                "original": "Valeurs du fichier",
+                "errors": {
+                    "operationDateRequired": "La date d’opération est obligatoire.",
+                    "operationDateInvalid": "Date invalide.",
+                    "operationDateFuture": "La date ne peut pas être dans le futur.",
+                    "valueDateBeforeOperation": "La date de valeur doit suivre la date d’opération.",
+                    "labelRequired": "Le libellé est obligatoire.",
+                    "labelTooLong": "Le libellé dépasse 255 caractères.",
+                    "amountRequired": "Le montant est obligatoire.",
+                    "amountInvalid": "Montant invalide.",
+                    "amountZero": "Le montant ne peut pas être nul.",
+                    "categoryTypeMismatch": "Cette catégorie ne correspond pas au sens du montant.",
+                    "noChanges": "Aucune modification."
+                },
+                "learnTierAlias": "« {name} » sera retenu comme alias de ce tiers : les prochains imports le reconnaîtront.",
+                "learnPaymentMethodAlias": "« {name} » sera retenu comme alias de ce moyen : les prochains imports le reconnaîtront.",
+                "noTierCreated": "Aucun tiers ne sera créé pour cette ligne.",
+                "noPaymentMethodCreated": "Aucun moyen de paiement ne sera créé pour cette ligne.",
+                "dropTier": "Ne pas créer le tiers « {name} »",
+                "dropPaymentMethod": "Ne pas créer le moyen « {name} »",
+                "newPaymentMethodOption": "Nouveau : {name}"
+            },
+            "dueMenu": {
+                "title": "Échéance rapprochée : {label}. Cliquer pour changer ou détacher.",
+                "change": "Changer d’échéance",
+                "loading": "Recherche des échéances…",
+                "noOther": "Aucune autre échéance ouverte à proximité.",
+                "detach": "Détacher l’échéance"
+            }
+        },
+        "commit": {
+            "title": "Valider l’import",
+            "toCreate": "Aucune transaction à créer | 1 transaction à créer | {count} transactions à créer",
+            "totalDebit": "Dépenses",
+            "totalCredit": "Revenus",
+            "balanceBefore": "Solde avant",
+            "balanceAfter": "Solde après",
+            "balanceCheck": {
+                "match": "Le solde correspond à votre relevé",
+                "mismatch": "Le solde diffère de votre relevé",
+                "unavailable": "Contrôle du solde indisponible"
+            },
+            "balanceMismatch": "Solde du relevé : {bank} · écart : {difference}. Normal si le compte a un historique non importé.",
+            "balanceUnavailable": "Le fichier n’a pas de colonne solde, ou le solde de ce compte partagé vous est masqué.",
+            "unresolved": "Aucune ligne non tranchée. | 1 ligne reste à valider ou en erreur : elle sera ignorée. | {count} lignes restent à valider ou en erreur : elles seront ignorées.",
+            "nothingToCreate": "Aucune ligne validée : validez au moins une ligne avant de continuer.",
+            "note": "Tout ou rien : si une ligne pose problème, aucune transaction n’est créée.",
+            "confirm": "Créer | Créer 1 transaction | Créer {count} transactions",
+            "confirmIgnoring": "Ignorer et créer | Ignorer et créer 1 transaction | Ignorer et créer {count} transactions",
+            "entities": {
+                "tiers": "aucun tiers | 1 tiers | {count} tiers",
+                "paymentMethods": "aucun moyen de paiement | 1 moyen de paiement | {count} moyens de paiement",
+                "and": " et ",
+                "willCreate": "{list} | {list} sera créé à partir des valeurs du fichier non reconnues. | {list} seront créés à partir des valeurs du fichier non reconnues."
+            }
+        },
+        "result": {
+            "createdTitle": "Aucune transaction créée | 1 transaction créée | {count} transactions créées",
+            "validatedOn": "Import validé le {date}",
+            "ignored": "aucune ligne ignorée | 1 ligne ignorée | {count} lignes ignorées",
+            "cancelledTitle": "Import annulé",
+            "cancelledBody": "Abandonné, expiré après 30 jours sans activité, ou annulé après validation. Aucune transaction n’y est rattachée.",
+            "viewTransactions": "Voir les transactions",
+            "reverted": "Aucune transaction supprimée. | 1 transaction supprimée. | {count} transactions supprimées.",
+            "templateSaved": "Modèle enregistré. Il sera proposé au prochain import.",
+            "entitiesCreated": "{list} | {list} créé | {list} créés",
+            "recurrencesDetected": "Aucune récurrence détectée | 1 récurrence détectée dans ton historique | {count} récurrences détectées dans ton historique",
+            "recurrencesTitle": "Aucune récurrence à suivre | 1 récurrence à suivre ? | {count} récurrences à suivre ?",
+            "recurrencesHint": "Ces opérations reviennent régulièrement sur ce compte. Crée la récurrence pour anticiper les prochaines échéances."
+        },
+        "templates": {
+            "personal": "Mes modèles",
+            "systemSection": "Modèles Spend.Up",
+            "system": "Spend.Up",
+            "systemReadOnly": "Modèle fourni par Spend.Up, en lecture seule",
+            "emptyPersonal": "Aucun modèle perso. Après un import, utilisez « Enregistrer comme modèle ».",
+            "inactive": "désactivé",
+            "invertedSign": "signe inversé",
+            "deleteModal": {
+                "title": "Supprimer ce modèle ?",
+                "body": "« {name} » ne sera plus proposé. Les imports déjà faits ne changent pas."
+            }
+        },
+        "templateForm": {
+            "createTitle": "Enregistrer comme modèle",
+            "createSubtitle": "Réutilisez ce mapping pour les prochains relevés de cette banque.",
+            "editTitle": "Modifier le modèle",
+            "editSubtitle": "Le mapping vient de l’import d’origine.",
+            "bankHint": "Optionnel : une de vos banques. Le modèle sera proposé en premier pour ses comptes.",
+            "fields": {
+                "name": "Nom",
+                "bank": "Banque",
+                "active": "Proposer ce modèle à l’import"
+            },
+            "errors": {
+                "nameRequired": "Le nom est obligatoire.",
+                "nameTooLong": "Le nom dépasse {max} caractères."
+            },
+            "noBank": "Aucune"
+        }
+    },
     "friendsPage": {
+        "title": "Amis",
+        "subtitle": "Retrouvez vos proches, les demandes en attente et de nouvelles personnes.",
         "tabs": {
             "friends": "Mes amis",
             "requests": "Demandes",
@@ -245,7 +2454,17 @@
             "cancel": "Annuler",
             "remove": "Retirer",
             "block": "Bloquer",
-            "unblock": "Débloquer"
+            "unblock": "Débloquer",
+            "nickname": "Surnom"
+        },
+        "nicknameModal": {
+            "title": "Modifier le surnom",
+            "subtitle": "Pour {name}",
+            "label": "Surnom",
+            "placeholder": "Ex. Mon pote",
+            "hint": "Visible uniquement par vous. L’autre personne ne le verra pas.",
+            "save": "Enregistrer",
+            "remove": "Supprimer le surnom"
         },
         "removeModal": {
             "title": "Retirer cet ami ?",
@@ -317,7 +2536,29 @@
             "account": "Profil",
             "preferences": "Préférences",
             "notifications": "Notifications",
-            "security": "Sécurité"
+            "privacy": "Confidentialité",
+            "security": "Sécurité",
+            "subscription": "Abonnement"
+        },
+        "pages": {
+            "account": {
+                "subtitle": "Photo, informations personnelles et identifiants."
+            },
+            "preferences": {
+                "subtitle": "Région, thème et tableau de bord."
+            },
+            "notifications": {
+                "subtitle": "E-mail, alertes in-app et fréquence du résumé."
+            },
+            "privacy": {
+                "subtitle": "Visibilité du profil, demandes d’amis et recherche."
+            },
+            "security": {
+                "subtitle": "Double authentification, appareils et session."
+            },
+            "subscription": {
+                "subtitle": "Votre plan, les fonctionnalités incluses et vos quotas."
+            }
         },
         "leaveDirtyConfirm": "Vous avez des modifications non enregistrées. Quitter cette page ?",
         "leaveDirtyModal": {
@@ -708,11 +2949,22 @@
         },
         "pages": {
             "welcomeTitle": "Bienvenue sur Spend.Up",
-            "welcomeSubtitle": "Votre plateforme de gestion financière",
+            "welcomeSubtitle": "Votre plateforme de {accent}",
+            "welcomeSubtitleAccent": "gestion financière",
+            "loginTitle": "Bon retour",
+            "loginSubtitle": "Retrouvez vos comptes, budgets et partages.",
+            "registerTitle": "Créer votre espace",
+            "registerSubtitle": "Moins d’une minute. Sans carte bancaire.",
+            "tabLogin": "Connexion",
+            "tabRegister": "Inscription",
+            "brandEyebrow": "Finance personnelle, enfin claire",
+            "assurance": "2FA, contrôle des appareils et export de vos données.",
             "newHere": "Nouveau sur Spend.Up ?",
             "createAccount": "Créer un compte",
             "alreadyHaveAccount": "Déjà un compte ?",
             "signIn": "Se connecter",
+            "showPassword": "Afficher le mot de passe",
+            "hidePassword": "Masquer le mot de passe",
             "errorTitle": "Oups !",
             "errorNotFound": "La page que vous recherchez est introuvable.",
             "maintenanceBody": "Le site est en maintenance. Revenez un peu plus tard.",
@@ -722,7 +2974,7 @@
             "signIn": "Se connecter avec Google",
             "signUp": "S’inscrire avec Google",
             "notConfigured": "Connexion Google non configurée (définir VITE_GOOGLE_CLIENT_ID).",
-            "desktopNotConfigured": "Connexion Google desktop non configurée (définir VITE_GOOGLE_DESKTOP_CLIENT_ID et VITE_GOOGLE_DESKTOP_CLIENT_SECRET).",
+            "desktopNotConfigured": "Connexion Google desktop non configurée (définir VITE_GOOGLE_DESKTOP_CLIENT_ID ; secret via GOOGLE_DESKTOP_CLIENT_SECRET pour le shell natif).",
             "scriptFailed": "Échec du chargement du script Google",
             "desktopFailed": "La connexion Google a échoué. Réessayez.",
             "desktopTimeout": "La connexion Google a expiré. Réessayez.",
@@ -732,13 +2984,15 @@
             "desktopCancel": "Annuler",
             "desktopWaitingSession": "Connexion à Spend.Up…",
             "finalizingTitle": "Connexion en cours…",
-            "finalizingSubtitle": "Finalisation de votre connexion Google."
+            "finalizingSubtitle": "Finalisation de votre connexion Google.",
+            "legalNotice": "En continuant avec Google, vous acceptez nos {terms} et notre {privacy}."
         },
         "login": {
             "username": "Nom d’utilisateur",
             "email": "Email",
             "password": "Mot de passe",
             "forgotPassword": "Mot de passe oublié ?",
+            "identifierPlaceholder": "Nom d’utilisateur ou e-mail",
             "submit": "Connexion",
             "or": "ou",
             "errors": {
@@ -752,6 +3006,7 @@
             "email": "Email",
             "password": "Mot de passe",
             "confirmPassword": "Confirmation du mot de passe",
+            "passwordHint": "8 caractères minimum, dont une lettre et un chiffre.",
             "submit": "Créer un compte",
             "or": "ou",
             "errors": {
@@ -759,8 +3014,12 @@
                 "email": "Saisissez une adresse e-mail valide.",
                 "username": "Le nom d’utilisateur doit faire 3–30 caractères ([a-z0-9._-]).",
                 "password": "Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.",
-                "mismatch": "La confirmation ne correspond pas au mot de passe."
-            }
+                "mismatch": "La confirmation ne correspond pas au mot de passe.",
+                "terms": "Vous devez accepter les conditions générales d’utilisation pour créer un compte."
+            },
+            "acceptTerms": "J’accepte les {terms} et la {privacy}.",
+            "termsLink": "conditions générales d’utilisation",
+            "privacyLink": "politique de confidentialité"
         },
         "twoStep": {
             "title": "Vérification en deux étapes",
@@ -788,6 +3047,7 @@
             "backToRegister": "Retour à l’inscription",
             "backToLogin": "Retour à la connexion",
             "resendSuccess": "Si un compte existe pour cet e-mail, un nouveau code a été envoyé.",
+            "retryLogin": "Réessayer la connexion",
             "errors": {
                 "missingEmail": "E-mail manquant. Reprenez l’inscription.",
                 "otp": "Saisissez le code à 6 chiffres."
@@ -858,6 +3118,118 @@
             "errors": {
                 "incomplete": "Complétez la vérification demandée."
             }
+        }
+    },
+    "banksPage": {
+        "title": "Banques",
+        "count": "{count} banque | {count} banque | {count} banques",
+        "searchPlaceholder": "Rechercher une banque",
+        "empty": "Aucune banque pour l’instant. Ajoutez votre première banque.",
+        "actions": {
+            "create": "Ajouter une banque",
+            "export": "Exporter",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche"
+        },
+        "form": {
+            "createTitle": "Nouvelle banque",
+            "editTitle": "Modifier la banque",
+            "subtitle": "Choisissez l’établissement, puis complétez les coordonnées si besoin."
+        }
+    },
+    "aliases": {
+        "title": "Reconnaissance à l’import",
+        "help": {
+            "tier": "Textes qui désignent ce tiers dans vos relevés.",
+            "paymentMethod": "Textes qui désignent ce moyen dans vos relevés."
+        },
+        "empty": "Aucun alias. Ils s’ajoutent aussi automatiquement à l’import.",
+        "newValue": "Nouvel alias",
+        "editValue": "Modifier l’alias",
+        "valuePlaceholder": "ex. COOP-4521, twint",
+        "matchType": "Correspondance",
+        "matchTypes": {
+            "exact": "Exact",
+            "startsWith": "Commence par",
+            "endsWith": "Finit par",
+            "contains": "Contient",
+            "regex": "Expression régulière"
+        },
+        "matchTypeHints": {
+            "exact": "Toute la valeur doit correspondre.",
+            "startsWith": "Doit commencer par ce texte.",
+            "endsWith": "Doit finir par ce texte.",
+            "contains": "Peut apparaître n’importe où.",
+            "regex": "Sur le texte brut, sans tenir compte de la casse."
+        },
+        "priority": "Priorité",
+        "priorityHint": "{min} à {max} : la plus haute l’emporte.",
+        "priorityShort": "Priorité {n}",
+        "advanced": "Options avancées",
+        "add": "Ajouter",
+        "update": "Mettre à jour",
+        "edit": "Modifier",
+        "delete": "Supprimer",
+        "active": "Actif",
+        "inactive": "Inactif",
+        "auto": "auto",
+        "autoHint": "Créé automatiquement par un import.",
+        "nextAnalysis": "S’applique aux prochains imports, pas aux transactions existantes.",
+        "deleteConfirm": {
+            "title": "Supprimer cet alias ?",
+            "body": "« {value} » ne sera plus reconnu lors des prochains imports."
+        },
+        "errors": {
+            "duplicateDraft": "Cet alias est déjà dans la liste.",
+            "valueRequired": "Saisissez une valeur.",
+            "valueTooLong": "{max} caractères au maximum.",
+            "valueNoAlphanumeric": "La valeur doit contenir au moins une lettre ou un chiffre.",
+            "regexInvalid": "Expression régulière invalide.",
+            "matchTypeInvalid": "Type de correspondance inconnu.",
+            "priorityInvalid": "Nombre entier entre {min} et {maxPriority}."
+        },
+        "helpDetails": {
+            "tier": "Recherchés dans la colonne Tiers, sinon dans le libellé. Casse, accents et ponctuation ignorés (« COOP-4521 » = « coop 4521 »).",
+            "paymentMethod": "Recherchés dans la colonne Moyen de paiement, sinon dans le libellé. Casse, accents et ponctuation ignorés (« VISA-1234 » = « visa 1234 »)."
+        }
+    },
+    "banks": {
+        "picker": {
+            "placeholder": "Choisir une banque",
+            "none": "Aucune",
+            "searchPlaceholder": "Nom, BIC ou numéro de clearing…",
+            "country": "Pays",
+            "countries": {
+                "CH": "Suisse",
+                "LI": "Liechtenstein"
+            },
+            "myBanks": "Mes banques",
+            "allBanks": "Toutes les banques",
+            "offRegistry": "Hors référentiel",
+            "noResults": "Aucune banque ne correspond.",
+            "empty": "Aucune banque disponible.",
+            "searchMine": "Rechercher une de vos banques…"
+        }
+    },
+    "calendarPage": {
+        "title": "Calendrier",
+        "previous": "Mois précédent",
+        "next": "Mois suivant",
+        "today": "Aujourd’hui",
+        "selectedDay": "Jour sélectionné",
+        "emptyDay": "Rien de prévu ce jour-là.",
+        "monthSummary": "Bilan du mois",
+        "inflows": "Entrées prévues",
+        "outflows": "Sorties prévues",
+        "balance": "Solde du mois",
+        "upcomingDues": "Prochaines échéances",
+        "more": "+{count} autres",
+        "eventCount": "aucun événement | {count} événement | {count} événements",
+        "kinds": {
+            "income": "Revenu",
+            "expense": "Charge",
+            "due": "Échéance",
+            "goal": "Objectif"
         }
     }
 }

@@ -1,7 +1,7 @@
 import axios, { type AxiosRequestConfig, type Method } from 'axios';
 import { authAxios, shouldSendBearerAuth } from '@/utils/helpers/axios-helpers';
-import { getDeviceInfo } from './device';
-import { normalizeAuthDevices } from './normalizeDevices';
+import { getDeviceInfo } from '@/features/auth/device';
+import { normalizeAuthDevices } from '@/features/auth/normalizeDevices';
 import type {
     ApiResponse,
     AuthSession,
@@ -12,7 +12,7 @@ import type {
     TwoFactorSetup,
     UpdateProfilePayload,
     UploadAvatarResult
-} from './types';
+} from '@/features/auth/types';
 
 function bearerHeaders(accessToken: string | null | undefined): Record<string, string> | undefined {
     if (!shouldSendBearerAuth() || !accessToken) return undefined;
@@ -159,7 +159,7 @@ export const authApi = {
     },
 
     /**
-     * Refresh : cookie HttpOnly et/ou body `refreshToken`.
+     * Refresh : body `{ refreshToken }` en Bearer ; cookie HttpOnly si cookie-mode.
      * `deviceIdentifier` optionnel — s’il est envoyé, doit matcher la session (sinon 401).
      */
     refresh(refreshToken?: string | null) {
@@ -170,7 +170,7 @@ export const authApi = {
         });
     },
 
-    /** Session courante — body refresh optionnel en mode cookie. */
+    /** Révocation : body `refreshToken` en Bearer ; cookie-mode sans body. */
     logout(refreshToken?: string | null, accessToken?: string | null) {
         return authHttp.post<null>('/api/auth/logout', refreshToken ? { refreshToken } : {}, accessToken);
     },

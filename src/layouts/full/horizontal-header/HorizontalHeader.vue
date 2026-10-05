@@ -23,7 +23,7 @@ watch(priority, (newPriority) => {
             <div class="hidden-md-and-down">
                 <Logo />
             </div>
-            <v-btn class="hidden-lg-and-up ms-3" icon rounded="sm" variant="flat" @click.stop="appSettings.SET_SIDEBAR_DRAWER" size="small">
+            <v-btn class="hidden-md-and-up ms-3" icon rounded="sm" variant="flat" @click.stop="appSettings.SET_SIDEBAR_DRAWER" size="small">
                 <Menu2Icon size="20" stroke-width="1.5" />
             </v-btn>
 

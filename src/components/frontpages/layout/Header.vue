@@ -3,7 +3,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import Navigations from './Navigation.vue';
-import { Menu2Icon } from 'vue-tabler-icons';
+import { ArrowRightIcon, Menu2Icon } from 'vue-tabler-icons';
 
 const HEADER_HEIGHT = 80;
 
@@ -49,7 +49,7 @@ watch(
         <v-app-bar
             :height="HEADER_HEIGHT"
             class="front-lp-header"
-            color="white"
+            :color="isScrolled ? 'white' : 'transparent'"
             flat
             fixed
             elevation="0"
@@ -61,16 +61,27 @@ watch(
                         <Logo home-to="/" />
                     </div>
 
+                    <div class="header-nav-center d-lg-flex d-none align-center">
+                        <Navigations :mobile="false" />
+                    </div>
+
                     <div class="header-actions ms-auto d-flex align-center ga-2">
-                        <div class="d-lg-flex d-none align-center">
-                            <Navigations :mobile="false" />
-                        </div>
                         <v-btn
-                            class="custom-hover-primary bg-primary d-md-flex d-none text-white h-43 px-5 transform-none flex-shrink-0"
-                            flat
-                            to="/auth/login"
+                            class="header-login d-md-flex d-none text-none h-43 px-4 flex-shrink-0"
+                            variant="text"
+                            color="textPrimary"
+                            to="/auth?tab=login"
                         >
-                            <span class="text-white">Connexion</span>
+                            Connexion
+                        </v-btn>
+                        <v-btn
+                            class="header-cta d-md-flex d-none text-none h-43 px-5 flex-shrink-0"
+                            color="primary"
+                            flat
+                            to="/auth?tab=register"
+                        >
+                            Créer un compte
+                            <ArrowRightIcon size="17" class="ms-2" />
                         </v-btn>
 
                         <!-- Menu déroulant : visible mobile & tablette (d-lg-none), masqué en PC -->
@@ -114,8 +125,6 @@ watch(
                 </v-toolbar>
             </v-container>
         </v-app-bar>
-
-        <div class="front-header-spacer" aria-hidden="true" />
 
         <!-- Drawer latéral — conservé pour usage futur -->
         <v-navigation-drawer v-if="useDrawerNav" v-model="appsdrawer" class="lp-drawer" location="left" temporary width="300">

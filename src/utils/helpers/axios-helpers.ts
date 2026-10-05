@@ -5,8 +5,13 @@ export function getApiBaseUrl(): string {
     return (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '');
 }
 
-/** Activer uniquement quand l’API expose refresh (+ access) en cookie HttpOnly. */
+/**
+ * Cookie HttpOnly + CSRF — same-site / dev only.
+ * En production le SPA est toujours Bearer (front et API sont cross-site ;
+ * un throw ici viderait toute la page).
+ */
 export function isAuthCookieMode(): boolean {
+    if (import.meta.env.PROD) return false;
     const raw = String(import.meta.env.VITE_AUTH_COOKIE_MODE ?? '').toLowerCase();
     return raw === 'true' || raw === '1';
 }
@@ -29,14 +34,14 @@ export function createApiAxios(): AxiosInstance {
 function needsCsrfHeader(config: InternalAxiosRequestConfig): boolean {
     if (!isAuthCookieMode()) return false;
     const method = (config.method ?? 'get').toLowerCase();
-    if (method !== 'post' && method !== 'put' && method !== 'delete' && method !== 'patch') return false;
-    const url = config.url ?? '';
-    return url.includes('/api/auth/refresh') || url.includes('/api/auth/logout');
+    // Cookie session = auth par cookie : toute mutation doit double-submit le CSRF
+    // (refresh/logout + profil / avatar / devices / etc.).
+    return method === 'post' || method === 'put' || method === 'delete' || method === 'patch';
 }
 
 /**
  * Client auth `/api/auth/*` — volontairement sans interceptor refresh
- * (évite les boucles sur login / refresh). CSRF sur refresh/logout cookie-mode.
+ * (évite les boucles sur login / refresh). CSRF sur mutations cookie-mode.
  */
 export const authAxios = createApiAxios();
 

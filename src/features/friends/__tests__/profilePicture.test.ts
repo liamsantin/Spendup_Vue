@@ -5,7 +5,7 @@ vi.mock('@/utils/helpers/axios-helpers', () => ({
     getApiBaseUrl: () => 'https://api.example.test'
 }));
 
-import { extractPublicIdFromUserAvatarPath, needsUserAvatarFetch, resolveFriendAvatarSrc } from '../profilePicture';
+import { extractPublicIdFromUserAvatarPath, needsUserAvatarFetch, resolveFriendAvatarSrc } from '@/features/friends/profilePicture';
 
 describe('resolveFriendAvatarSrc', () => {
     beforeEach(() => {
@@ -19,6 +19,7 @@ describe('resolveFriendAvatarSrc', () => {
 
     it('mappe un avatar catalogue', () => {
         expect(resolveFriendAvatarSrc('/avatar/user-2')).toBe(catalogAvatarSrc('/avatar/user-2'));
+        expect(resolveFriendAvatarSrc('/avatar/joane')).toBe(catalogAvatarSrc('/avatar/joane'));
     });
 
     it('préfixe les chemins relatifs API', () => {

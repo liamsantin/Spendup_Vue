@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
-import AppAlert from '@/components/shared/AppAlert.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { useUserSettingsStore } from '../stores/user-settings-store';
-import PreferencesNotificationsCard from './preferences/PreferencesNotificationsCard.vue';
+import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
+import PreferencesNotificationsCard from '@/features/user-settings/components/preferences/PreferencesNotificationsCard.vue';
 
 const store = useUserSettingsStore();
 const { draft, isDirty, draftReady, saving } = storeToRefs(store);
@@ -70,7 +70,7 @@ defineExpose({
             </v-col>
             <v-col cols="12" md="9">
                 <div v-if="loading" class="d-flex justify-center py-6">
-                    <v-progress-circular indeterminate color="primary" size="28" />
+                    <span class="su-spin" />
                 </div>
                 <PreferencesNotificationsCard v-else v-model="draft" />
             </v-col>

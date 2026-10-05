@@ -1,20 +1,40 @@
 <script setup lang="ts">
+import { FileTextIcon, LockIcon, ShieldCheckIcon } from 'vue-tabler-icons';
 import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
 import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
-import ContactBar from '@/components/frontpages/shared/ContactBar.vue';
-import TextBannerCard from '@/components/frontpages/shared/TextBannerCard.vue';
 </script>
 
 <template>
-    <div class="front-wraper">
+    <div class="front-wraper legal-page">
         <AnnounceBar />
         <Header />
 
-        <TextBannerCard caption="Accès et utilisation de Spend.Up" title="Conditions d'utilisation" />
+        <section class="legal-hero">
+            <v-container class="max-width-1218">
+                <div class="legal-hero__icon"><FileTextIcon size="30" stroke-width="1.5" /></div>
+                <span class="legal-kicker">Accès et utilisation de Spend.Up</span>
+                <h1 class="textPrimary">Conditions d’utilisation</h1>
+                <p class="text-medium-emphasis">
+                    Les règles essentielles pour utiliser Spend.Up de manière sûre, responsable et transparente.
+                </p>
+                <div class="legal-hero__meta">
+                    <span><ShieldCheckIcon size="16" /> Document officiel</span>
+                    <span><LockIcon size="16" /> Vos droits sont protégés</span>
+                </div>
+            </v-container>
+        </section>
 
-        <div class="py-12 py-md-16">
+        <main class="legal-main">
             <v-container class="max-width-1218 terms-body">
+                <div class="legal-intro">
+                    <strong>En bref</strong>
+                    <p>
+                        Vous restez propriétaire de vos données et responsable de l’utilisation de votre compte. Spend.Up met en œuvre les
+                        mesures nécessaires pour assurer un service fiable et sécurisé.
+                    </p>
+                </div>
+
                 <section class="mb-10">
                     <h2 class="text-h5 font-weight-bold textPrimary mb-4">1. Objet</h2>
                     <p class="text-body-1 text-medium-emphasis lh-lg mb-4">
@@ -160,13 +180,13 @@ import TextBannerCard from '@/components/frontpages/shared/TextBannerCard.vue';
                     <v-btn variant="outlined" color="primary" class="text-none" to="/">Retour à l'accueil</v-btn>
                 </div>
             </v-container>
-        </div>
+        </main>
 
-        <ContactBar />
         <Footer />
     </div>
 </template>
 
 <style scoped lang="scss">
+@use '@/scss/frontpages/pages/legal';
 @use '@/scss/frontpages/pages/terms';
 </style>

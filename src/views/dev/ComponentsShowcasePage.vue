@@ -1,506 +1,394 @@
 <script setup lang="ts">
 /**
- * Showcase composants (dev only).
- * Onglet Alert = clone `_template/modernize/components/ui-components/alert/*`.
- * Onglet Chip = clone `_template/modernize/components/ui-components/chip/*` via AppChip.
- * Onglet Modal = AppModalBase / AppConfirmationModal.
+ * Showcase du kit verre Spend.Up (dev only, /components).
  */
 defineOptions({ name: 'ComponentsShowcasePage' });
 
-import { computed, ref } from 'vue';
-import { ChecksIcon, CircleXIcon, MoodSmileIcon, UserCircleIcon } from 'vue-tabler-icons';
-import AppAlert from '@/components/shared/AppAlert.vue';
-import AppChip from '@/components/shared/AppChip.vue';
-import AppConfirmationModal from '@/components/shared/AppConfirmationModal.vue';
-import AppModalBase from '@/components/shared/AppModalBase.vue';
-import user1 from '@/assets/images/profile/avatar/user-1.jpg';
-import user2 from '@/assets/images/profile/avatar/user-2.jpg';
-import user5 from '@/assets/images/profile/avatar/user-5.jpg';
+import { ref } from 'vue';
+import {
+    AbcIcon,
+    ArrowsSortIcon,
+    BellPlusIcon,
+    BuildingBankIcon,
+    CalendarIcon,
+    ChecksIcon,
+    PlusIcon,
+    ScaleIcon,
+    SearchIcon,
+    UserCircleIcon,
+    XIcon
+} from 'vue-tabler-icons';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import AppAccordion from '@/components/shared/accordion/AppAccordion.vue';
+import AppCheckbox from '@/components/shared/checkbox/AppCheckbox.vue';
+import AppChip from '@/components/shared/chip/AppChip.vue';
+import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue';
+import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
+import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
+import AppSortChoices from '@/components/shared/dropdown-filter/AppSortChoices.vue';
+import type { AppSortGroup } from '@/components/shared/dropdown-filter/sort-choices';
+import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
+import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
+import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
+import AppRadioButton from '@/components/shared/radio/AppRadioButton.vue';
+import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
+import AppTabsShell from '@/components/shared/tabs/AppTabsShell.vue';
+import { ACCOUNT_COLOR_PRESETS } from '@/features/accounts/types';
 
-const tab = ref('alert');
-const closableOpen = ref(true);
+const tab = ref('chrome');
+const tabs = [
+    { value: 'chrome', label: 'Chrome' },
+    { value: 'surfaces', label: 'Surfaces' },
+    { value: 'forms', label: 'Formulaires' },
+    { value: 'lists', label: 'Listes' },
+    { value: 'modals', label: 'Modales' },
+    { value: 'feedback', label: 'Feedback' }
+];
 
-const modalScrollableOpen = ref(false);
-const modalStaticOpen = ref(false);
+const pageTab = ref('Accounts');
+const pageTabs = [
+    { value: 'Accounts', label: 'Comptes', icon: BuildingBankIcon },
+    { value: 'Invitations', label: 'Invitations', icon: BellPlusIcon, chip: 2 }
+];
+
+const modalTab = ref('one');
+const modalTabs = [
+    { value: 'one', label: 'Détails' },
+    { value: 'two', label: 'Partages', chip: 1 },
+    { value: 'three', label: 'Sécurité' }
+];
+
+const modalBaseOpen = ref(false);
+const modalTabsOpen = ref(false);
 const confirmationOpen = ref(false);
+const confirmationDangerOpen = ref(false);
 
-const chipClosable = ref({
-    primary: true,
-    secondary: true,
-    warning: true,
-    success: true,
-    error: true,
-    info: true
-});
-
-const anyChipClosableHidden = computed(() => Object.values(chipClosable.value).some((v) => !v));
-
-function resetChipClosable() {
-    chipClosable.value = {
-        primary: true,
-        secondary: true,
-        warning: true,
-        success: true,
-        error: true,
-        info: true
-    };
-}
+const switchOn = ref(true);
+const switchOff = ref(false);
+const checkboxOn = ref(true);
+const checkboxOff = ref(false);
+const radioRole = ref('viewer');
+const sortValue = ref('recent');
+const sortGroups: AppSortGroup[] = [
+    {
+        id: 'added',
+        label: 'Date d’ajout',
+        icon: CalendarIcon,
+        options: [
+            { value: 'recent', label: 'Récents' },
+            { value: 'oldest', label: 'Anciens' }
+        ]
+    },
+    {
+        id: 'name',
+        label: 'Nom',
+        icon: AbcIcon,
+        options: [
+            { value: 'nameAsc', label: 'A → Z' },
+            { value: 'nameDesc', label: 'Z → A' }
+        ]
+    },
+    {
+        id: 'size',
+        label: 'Taille',
+        icon: ScaleIcon,
+        options: [
+            { value: 'sizeAsc', label: 'Légers' },
+            { value: 'sizeDesc', label: 'Lourds' }
+        ]
+    }
+];
+const dateValue = ref<string | null>('1998-04-12');
+const colorValue = ref<string | null>(ACCOUNT_COLOR_PRESETS[0]);
+const chipVisible = ref(true);
+const filterHidden = ref(false);
+const accordionOpen = ref(false);
 </script>
 
 <template>
-    <div class="pa-6 pa-md-10 mx-auto" style="max-width: 880px">
-        <h1 class="text-h4 font-weight-bold textPrimary mb-2">Présentation des composants</h1>
-        <p class="text-subtitle-1 text-medium-emphasis mb-6">
-            Page interne développement uniquement (<code>VITE_APP_ENV=development</code>). Accès par URL
-            <code>/components</code> — aucun lien dans l’app.
-        </p>
+    <div class="su-showcase">
+        <AppTabsShell
+            v-model="tab"
+            :tabs="tabs"
+            title="Composants"
+            subtitle="Kit verre de l’application — page interne (VITE_APP_ENV=development)."
+            hide-actions
+            embedded
+        >
+            <div v-if="tab === 'chrome'" class="su-showcase__grid">
+                <AppGlassCard title="Onglets page" subtitle="su-tabs — pastille à la couleur du thème.">
+                    <nav class="su-tabs" aria-label="Démo onglets">
+                        <button
+                            v-for="item in pageTabs"
+                            :key="item.value"
+                            type="button"
+                            class="su-tab"
+                            :class="{ 'is-active': pageTab === item.value }"
+                            @click="pageTab = item.value"
+                        >
+                            <component :is="item.icon" :size="18" stroke-width="1.6" />
+                            {{ item.label }}
+                            <span v-if="item.chip" class="su-tab__chip">{{ item.chip }}</span>
+                        </button>
+                    </nav>
+                </AppGlassCard>
 
-        <v-tabs v-model="tab" color="primary" class="mb-4">
-            <v-tab value="alert">Alert</v-tab>
-            <v-tab value="chip">Chip</v-tab>
-            <v-tab value="modal">Modal</v-tab>
-        </v-tabs>
-
-        <v-tabs-window v-model="tab">
-            <v-tabs-window-item value="alert">
-                <p class="text-body-2 text-medium-emphasis mb-6">
-                    <code>AppAlert</code> — clone Modernize
-                    <code>_template/modernize/components/ui-components/alert/</code>
-                </p>
-
-                <!-- Basic.vue → tonal + color (pas de density = default) -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Basic (tonal)</h3>
-                <div class="mb-8">
-                    <AppAlert class="mb-3" color="error" variant="tonal" density="default">This is an error alert — check it out!</AppAlert>
-                    <AppAlert class="mb-3" color="warning" variant="tonal" density="default"
-                        >This is a warning alert — check it out!</AppAlert
-                    >
-                    <AppAlert class="mb-3" color="info" variant="tonal" density="default">This is an info alert — check it out!</AppAlert>
-                    <AppAlert color="success" variant="tonal" density="default">This is a success alert — check it out!</AppAlert>
-                </div>
-
-                <!-- Filled.vue → type uniquement -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Filled</h3>
-                <div class="mb-8">
-                    <AppAlert class="mb-3" type="error" density="default">This is an error alert — check it out!</AppAlert>
-                    <AppAlert class="mb-3" type="warning" density="default">This is a warning alert — check it out!</AppAlert>
-                    <AppAlert class="mb-3" type="info" density="default">This is an info alert — check it out!</AppAlert>
-                    <AppAlert type="success" density="default">This is a success alert — check it out!</AppAlert>
-                </div>
-
-                <!-- Outlined.vue → outlined + compact + prepend icons -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Outlined</h3>
-                <div class="mb-8">
-                    <AppAlert type="error" variant="outlined" density="compact" class="mb-4">
-                        <template #prepend>
-                            <v-icon class="text-24" icon="$error" />
-                        </template>
-                        <div>This is an error alert — check it out!</div>
-                    </AppAlert>
-                    <AppAlert type="warning" variant="outlined" density="compact" class="mb-4">
-                        <template #prepend>
-                            <v-icon class="text-24" icon="$warning" />
-                        </template>
-                        <div>This is a warning alert — check it out!</div>
-                    </AppAlert>
-                    <AppAlert type="info" variant="outlined" density="compact" class="mb-4">
-                        <template #prepend>
-                            <v-icon class="text-24" icon="$error" />
-                        </template>
-                        <div>This is an info alert — check it out!</div>
-                    </AppAlert>
-                    <AppAlert type="success" variant="outlined" density="compact" class="mb-4">
-                        <template #prepend>
-                            <v-icon class="text-24" icon="$success" />
-                        </template>
-                        <div>This is a success alert — check it out!</div>
-                    </AppAlert>
-                </div>
-
-                <!-- Description.vue -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Description</h3>
-                <div class="mb-8">
-                    <AppAlert type="error" variant="tonal" density="default" class="mb-4">
-                        <h5 class="text-h6 text-capitalize">error</h5>
-                        <div>This is an error alert — check it out!</div>
-                    </AppAlert>
-                    <AppAlert type="warning" variant="tonal" density="default" class="mb-4">
-                        <h5 class="text-h6 text-capitalize">warning</h5>
-                        <div>This is an warning alert — check it out!</div>
-                    </AppAlert>
-                    <AppAlert type="info" variant="tonal" density="default" class="mb-4">
-                        <h5 class="text-h6 text-capitalize">info</h5>
-                        <div>This is an info alert — check it out!</div>
-                    </AppAlert>
-                    <AppAlert type="success" variant="tonal" density="default" class="mb-4">
-                        <h5 class="text-h6 text-capitalize">success</h5>
-                        <div>This is an success alert — check it out!</div>
-                    </AppAlert>
-                </div>
-
-                <!-- Icons.vue -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Icons</h3>
-                <div class="mb-8">
-                    <AppAlert color="success" variant="tonal" density="default" class="mb-4">
-                        <template #prepend>
-                            <v-icon class="text-24" icon="$success" />
-                        </template>
-                        <div>This is an success alert.</div>
-                    </AppAlert>
-                    <AppAlert color="info" variant="tonal" density="default" class="mb-4">
-                        <template #prepend>
-                            <v-icon class="text-24" icon="$error" />
-                        </template>
-                        <div>This is an info alert.</div>
-                    </AppAlert>
-                    <AppAlert color="warning" variant="tonal" density="default" class="mb-4">
-                        <template #prepend>
-                            <v-icon class="text-24" icon="$warning" />
-                        </template>
-                        <div>This is an warning alert.</div>
-                    </AppAlert>
-                    <AppAlert color="error" variant="tonal" density="default" class="mb-4">
-                        <template #prepend>
-                            <v-icon class="text-24" icon="$error" />
-                        </template>
-                        <div>This is an error alert.</div>
-                    </AppAlert>
-                </div>
-
-                <!-- Closable.vue -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Closable</h3>
-                <div class="mb-8">
-                    <AppAlert
-                        v-model="closableOpen"
-                        border="start"
-                        variant="tonal"
-                        density="default"
-                        closable
-                        close-label="Close Alert"
-                        color="primary"
-                        title="Closable Alert"
-                    >
-                        Aenean imperdiet. Quisque id odio. Cras dapibus. Pellentesque ut neque. Cras dapibus. Vivamus consectetuer hendrerit
-                        lacus. Sed mollis, eros et ultrices tempus, mauris ipsum aliquam libero, non
-                    </AppAlert>
-                    <div v-if="!closableOpen" class="mt-3">
-                        <v-btn color="primary" flat @click="closableOpen = true">Reset</v-btn>
+                <AppGlassCard title="Boutons" subtitle="su-btn, su-orb.">
+                    <div class="su-showcase__row">
+                        <button type="button" class="su-btn su-btn--ink">
+                            <PlusIcon :size="16" stroke-width="1.6" />
+                            Enregistrer
+                        </button>
+                        <button type="button" class="su-btn su-btn--ghost">Annuler</button>
+                        <button type="button" class="su-btn">Secondaire</button>
+                        <button type="button" class="su-btn su-btn--danger">Supprimer</button>
+                        <button type="button" class="su-btn su-btn--warn">Attention</button>
+                        <button type="button" class="su-btn su-btn--ink" disabled>Désactivé</button>
                     </div>
-                </div>
-
-                <!-- Action.vue → compact + single-line-alert -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Action</h3>
-                <div class="mb-8">
-                    <AppAlert type="warning" density="compact" class="mb-4 single-line-alert" closable>
-                        <div>This is an warning alert — check it out!</div>
-                        <template #prepend>
-                            <v-icon class="text-24" icon="$warning" />
-                        </template>
-                    </AppAlert>
-                    <AppAlert type="info" density="compact" class="mb-4 single-line-alert" closable>
-                        <div>This is an info alert — check it out!</div>
-                        <template #prepend>
-                            <v-icon class="text-24" icon="$error" />
-                        </template>
-                    </AppAlert>
-                </div>
-            </v-tabs-window-item>
-
-            <v-tabs-window-item value="chip">
-                <p class="text-body-2 text-medium-emphasis mb-6">
-                    <code>AppChip</code> — clone Modernize
-                    <code>_template/modernize/components/ui-components/chip/</code>
-                </p>
-
-                <!-- FilledColor.vue -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Filled</h3>
-                <div class="mb-8 d-flex flex-wrap align-center ga-3">
-                    <AppChip class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Default Filled
-                    </AppChip>
-                    <AppChip class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Default Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip color="primary" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user1" width="25" alt="" />
-                        </v-avatar>
-                        Primary Filled
-                    </AppChip>
-                    <AppChip color="primary" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user1" width="25" alt="" />
-                        </v-avatar>
-                        Primary Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip color="secondary" class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Secondary Filled
-                    </AppChip>
-                    <AppChip color="secondary" class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Secondary Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip color="success" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user2" width="25" alt="" />
-                        </v-avatar>
-                        Success Filled
-                    </AppChip>
-                    <AppChip color="success" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user2" width="25" alt="" />
-                        </v-avatar>
-                        Success Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip color="warning" class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Warning Filled
-                    </AppChip>
-                    <AppChip color="warning" class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Warning Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip color="error" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user5" width="25" alt="" />
-                        </v-avatar>
-                        Error Filled
-                    </AppChip>
-                    <AppChip color="error" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user5" width="25" alt="" />
-                        </v-avatar>
-                        Error Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                </div>
-
-                <!-- Outlined.vue -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Outlined</h3>
-                <div class="mb-8 d-flex flex-wrap align-center ga-3">
-                    <AppChip variant="outlined" class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Default Outlined
-                    </AppChip>
-                    <AppChip variant="outlined" class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Default Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip variant="outlined" color="primary" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user1" width="25" alt="" />
-                        </v-avatar>
-                        Primary Outlined
-                    </AppChip>
-                    <AppChip variant="outlined" color="primary" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user1" width="25" alt="" />
-                        </v-avatar>
-                        Primary Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip variant="outlined" color="secondary" class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Secondary Outlined
-                    </AppChip>
-                    <AppChip variant="outlined" color="secondary" class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Secondary Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip variant="outlined" color="success" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user2" width="25" alt="" />
-                        </v-avatar>
-                        Success Outlined
-                    </AppChip>
-                    <AppChip variant="outlined" color="success" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user2" width="25" alt="" />
-                        </v-avatar>
-                        Success Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip variant="outlined" color="warning" class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Warning Outlined
-                    </AppChip>
-                    <AppChip variant="outlined" color="warning" class="text-body-2">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Warning Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip variant="outlined" color="error" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user5" width="25" alt="" />
-                        </v-avatar>
-                        Error Outlined
-                    </AppChip>
-                    <AppChip variant="outlined" color="error" class="text-body-2">
-                        <v-avatar start size="25">
-                            <img :src="user5" width="25" alt="" />
-                        </v-avatar>
-                        Error Deletable
-                        <CircleXIcon class="ml-2" start size="20" />
-                    </AppChip>
-                </div>
-
-                <!-- CustomIcon.vue -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Custom Icon</h3>
-                <div class="mb-8 d-flex flex-column flex-sm-row flex-wrap align-center ga-3">
-                    <AppChip color="primary">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Custom Icon
-                        <ChecksIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip color="secondary">
-                        <UserCircleIcon class="mr-2" start size="20" />
-                        Custom Icon
-                        <ChecksIcon class="ml-2" start size="20" />
-                    </AppChip>
-                </div>
-
-                <!-- CustomIconOutlined.vue -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Custom Outlined Icon</h3>
-                <div class="mb-8 d-flex flex-column flex-sm-row flex-wrap align-center ga-3">
-                    <AppChip color="primary" variant="outlined">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Custom Icon
-                        <ChecksIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip color="secondary" variant="outlined">
-                        <UserCircleIcon class="mr-2" start size="20" />
-                        Custom Icon
-                        <ChecksIcon class="ml-2" start size="20" />
-                    </AppChip>
-                </div>
-
-                <!-- Disabled.vue -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Disabled</h3>
-                <div class="mb-8 d-flex flex-column flex-sm-row flex-wrap align-center ga-3">
-                    <AppChip disabled variant="outlined">
-                        <MoodSmileIcon class="mr-2" start size="20" />
-                        Custom Icon
-                        <ChecksIcon class="ml-2" start size="20" />
-                    </AppChip>
-                    <AppChip color="secondary" disabled variant="outlined">
-                        <UserCircleIcon class="mr-2" start size="20" />
-                        Custom Icon
-                        <ChecksIcon class="ml-2" start size="20" />
-                    </AppChip>
-                </div>
-
-                <!-- Sizes.vue -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Sizes</h3>
-                <div class="mb-8 d-flex flex-column flex-sm-row flex-wrap align-center ga-3">
-                    <AppChip color="primary" size="x-small">x-small</AppChip>
-                    <AppChip color="primary" size="small">small</AppChip>
-                    <AppChip color="primary">Default</AppChip>
-                    <AppChip color="primary" size="large">large</AppChip>
-                    <AppChip color="primary" size="x-large">x-large</AppChip>
-                </div>
-
-                <!-- Closable.vue -->
-                <h3 class="text-h6 font-weight-semibold mb-3">Closable</h3>
-                <div class="mb-8">
-                    <div class="d-flex flex-wrap align-center ga-3">
-                        <AppChip v-model:visible="chipClosable.primary" closable color="primary">Primary Deletable</AppChip>
-                        <AppChip v-model:visible="chipClosable.secondary" closable color="secondary">Secondary Deletable</AppChip>
-                        <AppChip v-model:visible="chipClosable.warning" closable color="warning">Warning Deletable</AppChip>
-                        <AppChip v-model:visible="chipClosable.success" closable color="success">Success Deletable</AppChip>
-                        <AppChip v-model:visible="chipClosable.error" closable color="error">Error Deletable</AppChip>
-                        <AppChip v-model:visible="chipClosable.info" closable color="info">Info Deletable</AppChip>
+                    <div class="su-showcase__row" style="margin-top: 12px">
+                        <button type="button" class="su-orb" aria-label="Rechercher">
+                            <SearchIcon :size="18" stroke-width="1.5" />
+                        </button>
+                        <button type="button" class="su-orb" aria-label="Tout lu">
+                            <ChecksIcon :size="18" stroke-width="1.5" />
+                        </button>
+                        <button type="button" class="su-orb su-orb--danger" aria-label="Fermer">
+                            <XIcon :size="18" stroke-width="1.5" />
+                        </button>
                     </div>
-                    <div v-if="anyChipClosableHidden" class="mt-3">
-                        <v-btn color="primary" flat @click="resetChipClosable">Reset</v-btn>
+                </AppGlassCard>
+
+                <AppGlassCard title="Chips" subtitle="su-chip et AppChip.">
+                    <div class="su-showcase__row">
+                        <span class="su-chip">Principal</span>
+                        <span class="su-chip">2 non lus</span>
+                        <AppChip color="success" variant="tonal">Succès</AppChip>
+                        <AppChip v-if="chipVisible" closable @dismiss="chipVisible = false">Fermable</AppChip>
+                        <button v-if="!chipVisible" type="button" class="su-btn su-btn--ghost" @click="chipVisible = true">
+                            Réafficher
+                        </button>
                     </div>
-                </div>
-            </v-tabs-window-item>
+                </AppGlassCard>
+            </div>
 
-            <v-tabs-window-item value="modal">
-                <p class="text-body-2 text-medium-emphasis mb-6">
-                    <code>AppModalBase</code> — shell modal Spend.Up. Doc :
-                    <code>docs/components/modal-base.md</code>
-                </p>
-
-                <h3 class="text-h6 font-weight-semibold mb-3">Scrollable (contenu long)</h3>
-                <div class="mb-8">
-                    <p class="text-body-2 text-medium-emphasis mb-3">
-                        Header + footer fixes, body avec <code>perfect-scrollbar</code> (<code>scrollable</code> par défaut).
+            <div v-else-if="tab === 'surfaces'" class="su-showcase__grid">
+                <AppGlassCard title="Carte verre" subtitle="AppGlassCard — surface, icône, actions.">
+                    <template #icon>
+                        <UserCircleIcon :size="20" stroke-width="1.5" />
+                    </template>
+                    <template #actions>
+                        <button type="button" class="su-btn su-btn--ink">Action</button>
+                    </template>
+                    <p style="margin: 0; color: var(--ink-muted); font-size: 13.5px; line-height: 1.5">
+                        Corps de carte. Champs, listes et interrupteurs s’y empilent avec de l’air.
                     </p>
-                    <v-btn color="primary" flat @click="modalScrollableOpen = true">Ouvrir modal scrollable</v-btn>
+                </AppGlassCard>
 
-                    <AppModalBase
-                        v-model="modalScrollableOpen"
-                        title="Exemple scrollable"
-                        subtitle="Le header et le footer restent fixes pendant le scroll."
-                        :max-width="520"
-                        :height="640"
-                    >
-                        <p v-for="n in 24" :key="n" class="mb-3 text-body-1">
-                            Ligne de démonstration {{ n }} — contenu volontairement long pour activer le scroll.
-                        </p>
+                <AppGlassCard title="Danger" subtitle="Carte destructive." danger>
+                    <template #icon>
+                        <XIcon :size="20" stroke-width="1.5" />
+                    </template>
+                    <p style="margin: 0; color: var(--ink-muted); font-size: 13.5px">Zone sensible (suppression de compte, révocation).</p>
+                </AppGlassCard>
 
-                        <template #footer="{ close }">
-                            <v-btn variant="text" flat @click="close">Annuler</v-btn>
-                            <v-spacer />
-                            <v-btn color="primary" flat @click="close">Confirmer</v-btn>
-                        </template>
-                    </AppModalBase>
+                <div class="su-split">
+                    <section class="su-surface">
+                        <header class="su-panel__head">
+                            <span class="su-panel__icon"><BuildingBankIcon :size="20" stroke-width="1.5" /></span>
+                            <div>
+                                <h2>Colonne gauche</h2>
+                                <p>su-split + su-surface</p>
+                            </div>
+                        </header>
+                        <div class="su-empty">Liste vide</div>
+                    </section>
+                    <section class="su-surface">
+                        <header class="su-panel__head">
+                            <span class="su-panel__icon"><BellPlusIcon :size="20" stroke-width="1.5" /></span>
+                            <div>
+                                <h2>Colonne droite</h2>
+                                <p>Chargement</p>
+                            </div>
+                            <span class="su-panel__chip">3</span>
+                        </header>
+                        <div class="su-loading"><span class="su-spin" /></div>
+                    </section>
                 </div>
+            </div>
 
-                <h3 class="text-h6 font-weight-semibold mb-3">Confirmation (AppConfirmationModal)</h3>
-                <div class="mb-8">
-                    <p class="text-body-2 text-medium-emphasis mb-3">
-                        Header + footer uniquement — titre et message (style secondaire), sans section body.
-                    </p>
-                    <v-btn color="error" variant="tonal" flat @click="confirmationOpen = true">Ouvrir confirmation</v-btn>
+            <div v-else-if="tab === 'forms'" class="su-showcase__grid">
+                <AppGlassCard title="Interrupteurs" subtitle="AppSwitch — piste du thème, curseur blanc.">
+                    <div class="su-showcase__row">
+                        <AppSwitch v-model="switchOn" label="Activé" />
+                        <AppSwitch v-model="switchOff" label="Inactif" />
+                    </div>
+                </AppGlassCard>
 
-                    <AppConfirmationModal
-                        v-model="confirmationOpen"
-                        title="Retirer cet ami ?"
-                        message="Vous ne serez plus ami avec Alice. Vous pourrez renvoyer une demande plus tard."
-                        confirm-label="Retirer"
-                        confirm-color="error"
-                        @confirm="confirmationOpen = false"
+                <AppGlassCard title="Cases à cocher" subtitle="AppCheckbox — case arrondie, coche du thème.">
+                    <div class="su-showcase__row">
+                        <AppCheckbox v-model="checkboxOn" label="Coché" />
+                        <AppCheckbox v-model="checkboxOff" label="Non coché" />
+                    </div>
+                </AppGlassCard>
+
+                <AppGlassCard title="Radios" subtitle="AppRadioButton.">
+                    <AppRadioButton
+                        v-model="radioRole"
+                        :items="[
+                            { title: 'Lecteur', value: 'viewer' },
+                            { title: 'Éditeur', value: 'editor' }
+                        ]"
                     />
-                </div>
+                </AppGlassCard>
 
-                <h3 class="text-h6 font-weight-semibold mb-3">Statique (sans scroll)</h3>
-                <div class="mb-8">
-                    <p class="text-body-2 text-medium-emphasis mb-3">
-                        Contenu court : <code>:scrollable="false"</code> — pas de perfect-scrollbar, hauteur auto.
-                    </p>
-                    <v-btn color="primary" variant="tonal" flat @click="modalStaticOpen = true">Ouvrir modal statique</v-btn>
+                <AppGlassCard title="Date" subtitle="AppDatePicker.">
+                    <AppDatePicker v-model="dateValue" label="Date de naissance" />
+                </AppGlassCard>
 
-                    <AppModalBase
-                        v-model="modalStaticOpen"
-                        title="Exemple sans scroll"
-                        subtitle="Idéal pour une saisie OTP ou un formulaire court."
-                        :max-width="440"
-                        :scrollable="false"
+                <AppGlassCard title="Couleur" subtitle="AppColorPicker.">
+                    <AppColorPicker v-model="colorValue" :colors="ACCOUNT_COLOR_PRESETS" label="Couleur du compte" />
+                </AppGlassCard>
+
+                <AppGlassCard title="Filtre" subtitle="AppDropdownFilter.">
+                    <AppDropdownFilter label="Filtres" :reset-disabled="!filterHidden" @reset="filterHidden = false">
+                        <AppSwitch v-model="filterHidden" label="Masquer les archivés" class="px-3 py-2" />
+                    </AppDropdownFilter>
+                </AppGlassCard>
+
+                <AppGlassCard title="Tri" subtitle="AppSortChoices — un critère par ligne, le sens en segments.">
+                    <AppDropdownFilter
+                        label="Trier"
+                        :icon="ArrowsSortIcon"
+                        :min-width="340"
+                        close-on-content-click
+                        :count="sortValue === 'recent' ? 0 : 1"
+                        :reset-disabled="sortValue === 'recent'"
+                        @reset="sortValue = 'recent'"
                     >
-                        <p class="text-body-1 mb-0">
-                            Cette modale n’active pas perfect-scrollbar. Utilisez ce mode dès que le contenu ne peut pas déborder.
-                        </p>
+                        <AppSortChoices v-model="sortValue" :groups="sortGroups" label="Trier" />
+                    </AppDropdownFilter>
+                </AppGlassCard>
 
-                        <template #footer="{ close }">
-                            <v-btn variant="text" flat @click="close">Annuler</v-btn>
-                            <v-spacer />
-                            <v-btn color="primary" flat @click="close">OK</v-btn>
+                <AppGlassCard title="Accordion" subtitle="AppAccordion — panneau verre repliable.">
+                    <AppAccordion v-model="accordionOpen" title="Synthèse" subtitle="Dernier solde et écart détecté.">
+                        <template #extra>
+                            <span class="su-chip">À jour</span>
                         </template>
-                    </AppModalBase>
-                </div>
-            </v-tabs-window-item>
-        </v-tabs-window>
+                        <p class="text-body-2 text-medium-emphasis mb-0">Contenu déplié — métriques, détails, etc.</p>
+                    </AppAccordion>
+                </AppGlassCard>
+            </div>
+
+            <div v-else-if="tab === 'lists'" class="su-showcase__grid">
+                <AppGlassCard title="Ligne personne" subtitle="su-person — amis, notifications, invitations.">
+                    <div class="su-person">
+                        <span class="su-person__avatar su-person__avatar--tile">A</span>
+                        <div class="su-person__meta">
+                            <p class="su-person__name">Compte courant</p>
+                            <p class="su-person__sub">CHF · N° 1</p>
+                        </div>
+                        <div class="su-person__actions">
+                            <span class="su-chip">Principal</span>
+                        </div>
+                    </div>
+                    <div class="su-person is-focused">
+                        <span class="su-person__avatar" />
+                        <div class="su-person__meta">
+                            <p class="su-person__name">Lina Martin</p>
+                            <p class="su-person__sub">@lina · focus / non lu</p>
+                        </div>
+                        <div class="su-person__actions">
+                            <button type="button" class="su-btn su-btn--ink">Accepter</button>
+                            <button type="button" class="su-btn su-btn--danger">Refuser</button>
+                        </div>
+                    </div>
+                </AppGlassCard>
+            </div>
+
+            <div v-else-if="tab === 'modals'" class="su-showcase__grid">
+                <AppGlassCard title="Modales" subtitle="AppModalBase, AppModalTabs, AppConfirmationModal.">
+                    <div class="su-showcase__row">
+                        <button type="button" class="su-btn su-btn--ink" @click="modalBaseOpen = true">Base</button>
+                        <button type="button" class="su-btn" @click="modalTabsOpen = true">Onglets</button>
+                        <button type="button" class="su-btn" @click="confirmationOpen = true">Confirmer</button>
+                        <button type="button" class="su-btn su-btn--danger" @click="confirmationDangerOpen = true">Détruire</button>
+                    </div>
+                </AppGlassCard>
+
+                <AppModalBase
+                    v-model="modalBaseOpen"
+                    title="Modale base"
+                    subtitle="Header, body, footer verre."
+                    :max-width="480"
+                    :height="420"
+                >
+                    <p style="margin: 0; color: var(--ink-muted)">Contenu scrollable. Pied Annuler / Enregistrer.</p>
+                    <template #footer="{ close }">
+                        <button type="button" class="su-btn su-btn--ghost" @click="close">Annuler</button>
+                        <button type="button" class="su-btn su-btn--ink" @click="close">Enregistrer</button>
+                    </template>
+                </AppModalBase>
+
+                <AppModalTabs
+                    v-model="modalTabsOpen"
+                    v-model:tab="modalTab"
+                    :tabs="modalTabs"
+                    title="Modale à onglets"
+                    subtitle="Onglets plats, pas de pastilles."
+                >
+                    <template #panel-one>
+                        <AppModalPanelScroll>
+                            <p style="margin: 0; color: var(--ink-muted)">Panneau détails.</p>
+                        </AppModalPanelScroll>
+                    </template>
+                    <template #panel-two>
+                        <AppModalPanelScroll>
+                            <p style="margin: 0; color: var(--ink-muted)">Panneau partages.</p>
+                        </AppModalPanelScroll>
+                    </template>
+                    <template #panel-three>
+                        <AppModalPanelScroll>
+                            <p style="margin: 0; color: var(--ink-muted)">Panneau sécurité.</p>
+                        </AppModalPanelScroll>
+                    </template>
+                    <template #footer="{ close }">
+                        <button type="button" class="su-btn su-btn--ghost" @click="close">Fermer</button>
+                    </template>
+                </AppModalTabs>
+
+                <AppConfirmationModal
+                    v-model="confirmationOpen"
+                    title="Enregistrer les modifications ?"
+                    message="Les changements non sauvés seront conservés."
+                    @confirm="confirmationOpen = false"
+                />
+                <AppConfirmationModal
+                    v-model="confirmationDangerOpen"
+                    title="Supprimer ce compte ?"
+                    message="Action irréversible."
+                    confirm-color="error"
+                    confirm-label="Supprimer"
+                    @confirm="confirmationDangerOpen = false"
+                />
+            </div>
+
+            <div v-else class="su-showcase__grid">
+                <AppGlassCard title="Alertes" subtitle="AppAlert.">
+                    <div class="su-showcase__grid" style="gap: 10px">
+                        <AppAlert type="success">Opération réussie.</AppAlert>
+                        <AppAlert type="info">Information utile.</AppAlert>
+                        <AppAlert type="warning">Vérifiez ce champ.</AppAlert>
+                        <AppAlert type="error" closable>Une erreur s’est produite.</AppAlert>
+                    </div>
+                </AppGlassCard>
+
+                <AppGlassCard title="États" subtitle="su-empty, su-loading.">
+                    <div class="su-empty">Aucune invitation en attente.</div>
+                    <div class="su-loading" style="margin-top: 8px"><span class="su-spin" /></div>
+                </AppGlassCard>
+            </div>
+        </AppTabsShell>
     </div>
 </template>

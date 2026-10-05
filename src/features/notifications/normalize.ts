@@ -1,4 +1,98 @@
-import type { AppNotification, NotificationReceivedPayload, NotificationsListResult } from './types';
+import type {
+    AccountChange,
+    AccountChangedPayload,
+    AppNotification,
+    CategoryChange,
+    CategoryChangedPayload,
+    NotificationReceivedPayload,
+    TagChange,
+    TagChangedPayload,
+    NotificationsListResult,
+    RecurringExpenseChange,
+    RecurringExpenseChangedPayload,
+    RecurringIncomeChange,
+    RecurringIncomeChangedPayload,
+    TierChange,
+    TierChangedPayload,
+    BudgetChange,
+    BudgetChangedPayload,
+    SavingsGoalChange,
+    SavingsGoalChangedPayload,
+    ImportChange,
+    ImportChangedPayload,
+    ImportTemplateChange,
+    ImportTemplateChangedPayload
+} from '@/features/notifications/types';
+
+/** Identifiants publics SignalR / metadata (UUID, slug) — refuse vide, espaces, chemins. */
+const PUBLIC_ID_RE = /^[A-Za-z0-9._~-]{1,128}$/;
+
+const ACCOUNT_CHANGES = new Set<AccountChange>([
+    'archived',
+    'restored',
+    'visibility',
+    'updated',
+    'balanceSnapshotCreated',
+    'balanceSnapshotUpdated',
+    'balanceSnapshotDeleted',
+    'revoked',
+    'roleChanged',
+    'paymentMethodCreated',
+    'paymentMethodUpdated',
+    'paymentMethodDeleted',
+    'transactionCreated',
+    'transactionUpdated',
+    'transactionDeleted',
+    'transactionsImported',
+    'transactionsReverted'
+]);
+
+/** Changements qui touchent le journal (solde, dépensé, contributions) — un seul événement par import. */
+const TRANSACTION_ACCOUNT_CHANGES = new Set<AccountChange>([
+    'transactionCreated',
+    'transactionUpdated',
+    'transactionDeleted',
+    'transactionsImported',
+    'transactionsReverted'
+]);
+
+const CATEGORY_CHANGES = new Set<CategoryChange>(['categoryCreated', 'categoryUpdated', 'categoryDeleted']);
+const TAG_CHANGES = new Set<TagChange>(['tagCreated', 'tagUpdated', 'tagDeleted']);
+const TIER_CHANGES = new Set<TierChange>(['tierCreated', 'tierUpdated', 'tierDeleted']);
+const RECURRING_EXPENSE_CHANGES = new Set<RecurringExpenseChange>([
+    'recurringExpenseCreated',
+    'recurringExpenseUpdated',
+    'recurringExpenseDeleted'
+]);
+const RECURRING_INCOME_CHANGES = new Set<RecurringIncomeChange>([
+    'recurringIncomeCreated',
+    'recurringIncomeUpdated',
+    'recurringIncomeDeleted'
+]);
+const BUDGET_CHANGES = new Set<BudgetChange>(['budgetCreated', 'budgetUpdated', 'budgetDeleted']);
+const SAVINGS_GOAL_CHANGES = new Set<SavingsGoalChange>(['savingsGoalCreated', 'savingsGoalUpdated', 'savingsGoalDeleted']);
+const IMPORT_CHANGES = new Set<ImportChange>([
+    'importCreated',
+    'importUpdated',
+    'importCommitted',
+    'importCancelled',
+    'importReverted',
+    'importDeleted'
+]);
+const IMPORT_TEMPLATE_CHANGES = new Set<ImportTemplateChange>(['importTemplateCreated', 'importTemplateUpdated', 'importTemplateDeleted']);
+
+/** `accountChanged` qui modifie les transactions du compte (unitaire ou import / revert groupé). */
+export function isTransactionAccountChange(change: unknown): boolean {
+    return typeof change === 'string' && TRANSACTION_ACCOUNT_CHANGES.has(change as AccountChange);
+}
+
+/** Normalise un publicId (trim + charset) ; `null` si invalide. */
+export function normalizePublicId(value: unknown): string | null {
+    if (typeof value !== 'string') return null;
+    const trimmed = value.trim();
+    if (!PUBLIC_ID_RE.test(trimmed)) return null;
+    return trimmed;
+}
 
 /** Parse le `metadata` API (souvent une string JSON) en objet. */
 export function parseNotificationMetadata(raw: unknown): Record<string, unknown> | null {
@@ -24,10 +118,139 @@ export function parseNotificationMetadata(raw: unknown): Record<string, unknown>
 }
 
 export function getFriendshipPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
-    const value = metadata?.friendshipPublicId;
-    if (typeof value !== 'string') return null;
-    const trimmed = value.trim();
-    return trimmed || null;
+    return normalizePublicId(metadata?.friendshipPublicId);
+}
+
+export function getAccountSharePublicId(metadata: Record<string, unknown> | null | undefined): string | null {
+    return normalizePublicId(metadata?.sharePublicId);
+}
+
+export function getAccountPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
+    return normalizePublicId(metadata?.accountPublicId);
+}
+
+export function getBudgetPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
+    return normalizePublicId(metadata?.budgetPublicId);
+}
+
+export function getSavingsGoalPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
+    return normalizePublicId(metadata?.savingsGoalPublicId);
+}
+
+/**
+ * Valide un payload SignalR `accountChanged` (change connu + publicId).
+ * @returns Payload normalisé, ou `null` si malformé.
+ */
+export function parseAccountChangedPayload(raw: unknown): AccountChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!ACCOUNT_CHANGES.has(change as AccountChange)) return null;
+    const accountPublicId = normalizePublicId(payload.accountPublicId);
+    if (!accountPublicId) return null;
+    return { change: change as AccountChange, accountPublicId };
+}
+
+/**
+ * Valide un payload SignalR `categoryChanged` (change connu + publicId).
+ * @returns Payload normalisé, ou `null` si malformé.
+ */
+export function parseCategoryChangedPayload(raw: unknown): CategoryChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!CATEGORY_CHANGES.has(change as CategoryChange)) return null;
+    const categoryPublicId = normalizePublicId(payload.categoryPublicId);
+    if (!categoryPublicId) return null;
+    return { change: change as CategoryChange, categoryPublicId };
+}
+
+/**
+ * Valide un payload SignalR `tagChanged` (change connu + publicId).
+ * @returns Payload normalisé, ou `null` si malformé.
+ */
+export function parseTagChangedPayload(raw: unknown): TagChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!TAG_CHANGES.has(change as TagChange)) return null;
+    const tagPublicId = normalizePublicId(payload.tagPublicId);
+    if (!tagPublicId) return null;
+    return { change: change as TagChange, tagPublicId };
+}
+
+/**
+ * Valide un payload SignalR `tierChanged` (change connu + publicId).
+ * @returns Payload normalisé, ou `null` si malformé.
+ */
+export function parseTierChangedPayload(raw: unknown): TierChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!TIER_CHANGES.has(change as TierChange)) return null;
+    const tierPublicId = normalizePublicId(payload.tierPublicId);
+    if (!tierPublicId) return null;
+    return { change: change as TierChange, tierPublicId };
+}
+
+export function parseRecurringExpenseChangedPayload(raw: unknown): RecurringExpenseChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!RECURRING_EXPENSE_CHANGES.has(change as RecurringExpenseChange)) return null;
+    const recurringExpensePublicId = normalizePublicId(payload.recurringExpensePublicId);
+    if (!recurringExpensePublicId) return null;
+    return { change: change as RecurringExpenseChange, recurringExpensePublicId };
+}
+
+export function parseRecurringIncomeChangedPayload(raw: unknown): RecurringIncomeChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!RECURRING_INCOME_CHANGES.has(change as RecurringIncomeChange)) return null;
+    const recurringIncomePublicId = normalizePublicId(payload.recurringIncomePublicId);
+    if (!recurringIncomePublicId) return null;
+    return { change: change as RecurringIncomeChange, recurringIncomePublicId };
+}
+
+export function parseBudgetChangedPayload(raw: unknown): BudgetChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!BUDGET_CHANGES.has(change as BudgetChange)) return null;
+    const budgetPublicId = normalizePublicId(payload.budgetPublicId);
+    if (!budgetPublicId) return null;
+    return { change: change as BudgetChange, budgetPublicId };
+}
+
+export function parseSavingsGoalChangedPayload(raw: unknown): SavingsGoalChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!SAVINGS_GOAL_CHANGES.has(change as SavingsGoalChange)) return null;
+    const savingsGoalPublicId = normalizePublicId(payload.savingsGoalPublicId);
+    if (!savingsGoalPublicId) return null;
+    return { change: change as SavingsGoalChange, savingsGoalPublicId };
+}
+
+export function parseImportChangedPayload(raw: unknown): ImportChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!IMPORT_CHANGES.has(change as ImportChange)) return null;
+    const importPublicId = normalizePublicId(payload.importPublicId);
+    if (!importPublicId) return null;
+    return { change: change as ImportChange, importPublicId };
+}
+
+export function parseImportTemplateChangedPayload(raw: unknown): ImportTemplateChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!IMPORT_TEMPLATE_CHANGES.has(change as ImportTemplateChange)) return null;
+    const templatePublicId = normalizePublicId(payload.templatePublicId);
+    if (!templatePublicId) return null;
+    return { change: change as ImportTemplateChange, templatePublicId };
 }
 
 /** Normalise un item inbox / SignalR (metadata string → objet). */

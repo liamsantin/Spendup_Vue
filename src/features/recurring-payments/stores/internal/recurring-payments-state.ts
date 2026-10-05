@@ -1,0 +1,429 @@
+import { computed, ref } from 'vue';
+import { createResourceCache } from '@/utils/helpers/resource-cache';
+import { sortDues, sortTemplates, normalizeRecurringExpense } from '@/features/recurring-payments/format';
+import { withoutTagPublicId } from '@/features/tags/format';
+import {
+    RECURRING_PAGE_SIZE_DEFAULT,
+    type RecurringDue,
+    type RecurringExpense,
+    type RecurringIncome,
+    type RecurringKind
+} from '@/features/recurring-payments/types';
+
+export const RECURRING_LIST_MAX_AGE_MS = 30_000;
+
+export type RecurringListKind = RecurringKind;
+
+/** Filtres serveur qui restreignent le jeu de résultats (hors compte et pagination). */
+export type RecurringListFilters = {
+    isActive?: boolean;
+    from?: string;
+    to?: string;
+};
+
+export function normalizeListFilters(filters?: RecurringListFilters | null): RecurringListFilters {
+    const out: RecurringListFilters = {};
+    if (typeof filters?.isActive === 'boolean') out.isActive = filters.isActive;
+    const from = filters?.from?.trim();
+    if (from) out.from = from;
+    const to = filters?.to?.trim();
+    if (to) out.to = to;
+    return out;
+}
+
+/**
+ * Clé de cache d'une liste : `${kind}:${compte|all}` pour une liste non filtrée (cible des upserts),
+ * suivie de `|isActive=…|from=…|to=…` quand un filtre serveur restreint le résultat.
+ */
+export function listCacheKey(kind: RecurringListKind, accountPublicId?: string | null, filters?: RecurringListFilters | null): string {
+    const id = accountPublicId?.trim();
+    const base = id ? `${kind}:${id}` : `${kind}:all`;
+    const normalized = normalizeListFilters(filters);
+    const parts: string[] = [];
+    if (normalized.isActive !== undefined) parts.push(`isActive=${normalized.isActive}`);
+    if (normalized.from) parts.push(`from=${normalized.from}`);
+    if (normalized.to) parts.push(`to=${normalized.to}`);
+    return parts.length ? `${base}|${parts.join('|')}` : base;
+}
+
+export function parseListCacheKey(key: string): { accountPublicId: string | null; filters: RecurringListFilters } {
+    const [base = '', ...parts] = key.split('|');
+    const colon = base.indexOf(':');
+    const account = colon >= 0 ? base.slice(colon + 1) : '';
+    const filters: RecurringListFilters = {};
+    for (const part of parts) {
+        const eq = part.indexOf('=');
+        if (eq < 0) continue;
+        const name = part.slice(0, eq);
+        const value = part.slice(eq + 1);
+        if (name === 'isActive') filters.isActive = value === 'true';
+        else if (name === 'from') filters.from = value;
+        else if (name === 'to') filters.to = value;
+    }
+    return { accountPublicId: account && account !== 'all' ? account : null, filters };
+}
+
+function isFilteredListKey(key: string): boolean {
+    return key.includes('|');
+}
+
+export type RecurringCacheEntry<T> = {
+    items: T[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+};
+
+export function createRecurringPaymentsState() {
+    const expenses = ref<RecurringExpense[]>([]);
+    const incomes = ref<RecurringIncome[]>([]);
+    const expensesByKey = new Map<string, RecurringCacheEntry<RecurringExpense>>();
+    const incomesByKey = new Map<string, RecurringCacheEntry<RecurringIncome>>();
+    const activeExpenseKey = ref(listCacheKey('expense'));
+    const activeIncomeKey = ref(listCacheKey('income'));
+
+    const expensePage = ref(1);
+    const expensePageSize = ref(RECURRING_PAGE_SIZE_DEFAULT);
+    const expenseTotalCount = ref(0);
+    const incomePage = ref(1);
+    const incomePageSize = ref(RECURRING_PAGE_SIZE_DEFAULT);
+    const incomeTotalCount = ref(0);
+
+    const details = new Map<string, RecurringExpense | RecurringIncome>();
+    const duesByTemplate = new Map<string, RecurringCacheEntry<RecurringDue>>();
+    const detailsEpoch = ref(0);
+    const duesEpoch = ref(0);
+
+    const loadingExpenses = ref(false);
+    const loadingIncomes = ref(false);
+    const loadingMoreExpenses = ref(false);
+    const loadingMoreIncomes = ref(false);
+    const loadingDetail = ref(false);
+    const loadingDues = ref(false);
+    const acting = ref(false);
+    let actingDepth = 0;
+    const initializedExpenses = ref(false);
+    const initializedIncomes = ref(false);
+    const error = ref<string | null>(null);
+
+    const cache = createResourceCache({ defaultMaxAgeMs: RECURRING_LIST_MAX_AGE_MS });
+
+    const hasExpenses = computed(() => expenses.value.length > 0);
+    const hasIncomes = computed(() => incomes.value.length > 0);
+    const hasMoreExpenses = computed(() => expenses.value.length > 0 && expenses.value.length < expenseTotalCount.value);
+    const hasMoreIncomes = computed(() => incomes.value.length > 0 && incomes.value.length < incomeTotalCount.value);
+
+    function beginActing() {
+        actingDepth += 1;
+        acting.value = true;
+    }
+
+    function endActing() {
+        actingDepth = Math.max(0, actingDepth - 1);
+        acting.value = actingDepth > 0;
+    }
+
+    function resetActing() {
+        actingDepth = 0;
+        acting.value = false;
+    }
+
+    function clearError() {
+        error.value = null;
+    }
+
+    function setExpenseList(key: string, nextItems: RecurringExpense[], meta?: { page?: number; pageSize?: number; totalCount?: number }) {
+        const prev = expensesByKey.get(key);
+        const entry: RecurringCacheEntry<RecurringExpense> = {
+            items: sortTemplates(nextItems.map(normalizeRecurringExpense)),
+            page: meta?.page ?? prev?.page ?? 1,
+            pageSize: meta?.pageSize ?? prev?.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT,
+            totalCount: meta?.totalCount ?? prev?.totalCount ?? nextItems.length
+        };
+        expensesByKey.set(key, entry);
+        if (activeExpenseKey.value === key) {
+            expenses.value = entry.items;
+            expensePage.value = entry.page;
+            expensePageSize.value = entry.pageSize;
+            expenseTotalCount.value = entry.totalCount;
+        }
+    }
+
+    function setIncomeList(key: string, nextItems: RecurringIncome[], meta?: { page?: number; pageSize?: number; totalCount?: number }) {
+        const prev = incomesByKey.get(key);
+        const entry: RecurringCacheEntry<RecurringIncome> = {
+            items: sortTemplates(nextItems),
+            page: meta?.page ?? prev?.page ?? 1,
+            pageSize: meta?.pageSize ?? prev?.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT,
+            totalCount: meta?.totalCount ?? prev?.totalCount ?? nextItems.length
+        };
+        incomesByKey.set(key, entry);
+        if (activeIncomeKey.value === key) {
+            incomes.value = entry.items;
+            incomePage.value = entry.page;
+            incomePageSize.value = entry.pageSize;
+            incomeTotalCount.value = entry.totalCount;
+        }
+    }
+
+    function activateExpenseList(key: string) {
+        activeExpenseKey.value = key;
+        const entry = expensesByKey.get(key);
+        if (entry) {
+            expenses.value = entry.items;
+            expensePage.value = entry.page;
+            expensePageSize.value = entry.pageSize;
+            expenseTotalCount.value = entry.totalCount;
+            return;
+        }
+        expenses.value = [];
+        expensePage.value = 1;
+        expensePageSize.value = RECURRING_PAGE_SIZE_DEFAULT;
+        expenseTotalCount.value = 0;
+    }
+
+    function activateIncomeList(key: string) {
+        activeIncomeKey.value = key;
+        const entry = incomesByKey.get(key);
+        if (entry) {
+            incomes.value = entry.items;
+            incomePage.value = entry.page;
+            incomePageSize.value = entry.pageSize;
+            incomeTotalCount.value = entry.totalCount;
+            return;
+        }
+        incomes.value = [];
+        incomePage.value = 1;
+        incomePageSize.value = RECURRING_PAGE_SIZE_DEFAULT;
+        incomeTotalCount.value = 0;
+    }
+
+    /**
+     * Liste filtrée (dates, actif) : on ne sait pas côté client si le modèle correspond encore aux filtres.
+     * On ne l'y ajoute jamais ; s'il y figurait, on le met à jour sur place (ou on le retire s'il a changé de
+     * compte) ; dans tous les cas la liste est invalidée pour que le prochain chargement refasse le GET.
+     */
+    function upsertIntoFilteredList<T extends { publicId: string; accountPublicId: string }>(
+        key: string,
+        entry: RecurringCacheEntry<T>,
+        without: T[],
+        existed: boolean,
+        next: T,
+        setList: (key: string, items: T[], meta?: { totalCount?: number }) => void
+    ) {
+        cache.invalidate(key);
+        if (!existed) return;
+        const { accountPublicId } = parseListCacheKey(key);
+        if (accountPublicId && accountPublicId !== next.accountPublicId) {
+            setList(key, without, { totalCount: Math.max(0, entry.totalCount - 1) });
+            return;
+        }
+        setList(
+            key,
+            entry.items.map((row) => (row.publicId === next.publicId ? next : row))
+        );
+    }
+
+    function upsertExpense(item: RecurringExpense) {
+        const next = normalizeRecurringExpense(item);
+        details.set(`expense:${next.publicId}`, next);
+        detailsEpoch.value += 1;
+        const keys = new Set<string>([listCacheKey('expense'), listCacheKey('expense', next.accountPublicId), ...expensesByKey.keys()]);
+        for (const key of keys) {
+            const entry = expensesByKey.get(key);
+            const without = (entry?.items ?? []).filter((row) => row.publicId !== next.publicId);
+            const existed = without.length !== (entry?.items.length ?? 0);
+            if (isFilteredListKey(key)) {
+                if (entry) upsertIntoFilteredList(key, entry, without, existed, next, setExpenseList);
+                continue;
+            }
+            const matchesAccount = key === listCacheKey('expense') || key === listCacheKey('expense', next.accountPublicId);
+            if (!existed && !matchesAccount) continue;
+            if (!matchesAccount) {
+                // Le modèle a changé de compte : on le retire de la liste de l'ancien compte.
+                setExpenseList(key, without, { totalCount: Math.max(0, (entry?.totalCount ?? without.length + 1) - 1) });
+                continue;
+            }
+            const nextItems = [...without, next];
+            const nextTotal = existed ? (entry?.totalCount ?? nextItems.length) : (entry?.totalCount ?? 0) + 1;
+            setExpenseList(key, nextItems, { totalCount: nextTotal });
+        }
+    }
+
+    function upsertIncome(item: RecurringIncome) {
+        details.set(`income:${item.publicId}`, item);
+        detailsEpoch.value += 1;
+        const keys = new Set<string>([listCacheKey('income'), listCacheKey('income', item.accountPublicId), ...incomesByKey.keys()]);
+        for (const key of keys) {
+            const entry = incomesByKey.get(key);
+            const without = (entry?.items ?? []).filter((row) => row.publicId !== item.publicId);
+            const existed = without.length !== (entry?.items.length ?? 0);
+            if (isFilteredListKey(key)) {
+                if (entry) upsertIntoFilteredList(key, entry, without, existed, item, setIncomeList);
+                continue;
+            }
+            const matchesAccount = key === listCacheKey('income') || key === listCacheKey('income', item.accountPublicId);
+            if (!existed && !matchesAccount) continue;
+            if (!matchesAccount) {
+                // Le modèle a changé de compte : on le retire de la liste de l'ancien compte.
+                setIncomeList(key, without, { totalCount: Math.max(0, (entry?.totalCount ?? without.length + 1) - 1) });
+                continue;
+            }
+            const nextItems = [...without, item];
+            const nextTotal = existed ? (entry?.totalCount ?? nextItems.length) : (entry?.totalCount ?? 0) + 1;
+            setIncomeList(key, nextItems, { totalCount: nextTotal });
+        }
+    }
+
+    function removeExpenseLocal(publicId: string) {
+        details.delete(`expense:${publicId}`);
+        duesByTemplate.delete(`expense:${publicId}`);
+        detailsEpoch.value += 1;
+        duesEpoch.value += 1;
+        for (const [key, entry] of expensesByKey.entries()) {
+            const nextItems = entry.items.filter((row) => row.publicId !== publicId);
+            if (nextItems.length === entry.items.length) continue;
+            setExpenseList(key, nextItems, { totalCount: Math.max(0, entry.totalCount - 1) });
+        }
+    }
+
+    function removeIncomeLocal(publicId: string) {
+        details.delete(`income:${publicId}`);
+        duesByTemplate.delete(`income:${publicId}`);
+        detailsEpoch.value += 1;
+        duesEpoch.value += 1;
+        for (const [key, entry] of incomesByKey.entries()) {
+            const nextItems = entry.items.filter((row) => row.publicId !== publicId);
+            if (nextItems.length === entry.items.length) continue;
+            setIncomeList(key, nextItems, { totalCount: Math.max(0, entry.totalCount - 1) });
+        }
+    }
+
+    function stripTag(publicId: string) {
+        const id = publicId.trim();
+        if (!id) return;
+        for (const key of [...expensesByKey.keys()]) {
+            const prev = expensesByKey.get(key);
+            if (!prev) continue;
+            let changed = false;
+            const nextItems = prev.items.map((item) => {
+                if (!(item.tagPublicIds ?? []).includes(id)) return item;
+                changed = true;
+                return { ...item, tagPublicIds: withoutTagPublicId(item.tagPublicIds, id) };
+            });
+            if (changed) setExpenseList(key, nextItems);
+        }
+        let detailsChanged = false;
+        for (const [key, item] of details.entries()) {
+            if (!key.startsWith('expense:')) continue;
+            const expense = item as RecurringExpense;
+            if (!(expense.tagPublicIds ?? []).includes(id)) continue;
+            details.set(key, { ...expense, tagPublicIds: withoutTagPublicId(expense.tagPublicIds, id) });
+            detailsChanged = true;
+        }
+        if (detailsChanged) detailsEpoch.value += 1;
+    }
+
+    function setDues(
+        kind: RecurringKind,
+        publicId: string,
+        items: RecurringDue[],
+        meta?: { page?: number; pageSize?: number; totalCount?: number }
+    ) {
+        const key = `${kind}:${publicId}`;
+        const prev = duesByTemplate.get(key);
+        duesByTemplate.set(key, {
+            items: sortDues(items),
+            page: meta?.page ?? prev?.page ?? 1,
+            pageSize: meta?.pageSize ?? prev?.pageSize ?? RECURRING_PAGE_SIZE_DEFAULT,
+            totalCount: meta?.totalCount ?? prev?.totalCount ?? items.length
+        });
+        duesEpoch.value += 1;
+    }
+
+    function upsertDue(kind: RecurringKind, templatePublicId: string, due: RecurringDue) {
+        const key = `${kind}:${templatePublicId}`;
+        const prev = duesByTemplate.get(key);
+        if (!prev) {
+            setDues(kind, templatePublicId, [due], { totalCount: 1 });
+            return;
+        }
+        const without = prev.items.filter((item) => item.publicId !== due.publicId);
+        const existed = without.length !== prev.items.length;
+        setDues(kind, templatePublicId, [...without, due], {
+            totalCount: existed ? prev.totalCount : prev.totalCount + 1
+        });
+    }
+
+    function getDetail(kind: RecurringKind, publicId: string): RecurringExpense | RecurringIncome | null {
+        void detailsEpoch.value;
+        return details.get(`${kind}:${publicId}`) ?? null;
+    }
+
+    function getDues(kind: RecurringKind, publicId: string): RecurringDue[] {
+        void duesEpoch.value;
+        return duesByTemplate.get(`${kind}:${publicId}`)?.items ?? [];
+    }
+
+    function invalidateKind(kind: RecurringKind) {
+        if (kind === 'expense') {
+            for (const key of expensesByKey.keys()) cache.invalidate(key);
+        } else {
+            for (const key of incomesByKey.keys()) cache.invalidate(key);
+        }
+    }
+
+    return {
+        expenses,
+        incomes,
+        expensesByKey,
+        incomesByKey,
+        activeExpenseKey,
+        activeIncomeKey,
+        expensePage,
+        expensePageSize,
+        expenseTotalCount,
+        incomePage,
+        incomePageSize,
+        incomeTotalCount,
+        details,
+        duesByTemplate,
+        detailsEpoch,
+        duesEpoch,
+        loadingExpenses,
+        loadingIncomes,
+        loadingMoreExpenses,
+        loadingMoreIncomes,
+        loadingDetail,
+        loadingDues,
+        acting,
+        initializedExpenses,
+        initializedIncomes,
+        error,
+        cache,
+        hasExpenses,
+        hasIncomes,
+        hasMoreExpenses,
+        hasMoreIncomes,
+        beginActing,
+        endActing,
+        resetActing,
+        clearError,
+        setExpenseList,
+        setIncomeList,
+        activateExpenseList,
+        activateIncomeList,
+        upsertExpense,
+        upsertIncome,
+        removeExpenseLocal,
+        removeIncomeLocal,
+        stripTag,
+        setDues,
+        upsertDue,
+        getDetail,
+        getDues,
+        invalidateKind
+    };
+}
+
+export type RecurringPaymentsState = ReturnType<typeof createRecurringPaymentsState>;

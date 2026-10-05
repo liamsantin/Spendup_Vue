@@ -5,9 +5,12 @@
  * Les vues :
  *   dashboard / notifications → views/app/<page>/
  *   Paramètres               → views/app/parametres/
- *   Finances (à venir)       → views/app/finances/
+ *   Finances                 → views/app/finances/
  */
-const AppRoutes = {
+import type { RouteRecordRaw } from 'vue-router';
+import { SETTINGS_PATHS, resolveLegacySettingsRedirect } from '@/features/user-settings/settings-paths';
+
+const AppRoutes: RouteRecordRaw = {
     path: '/app',
     meta: {
         requiresAuth: true
@@ -21,9 +24,9 @@ const AppRoutes = {
             component: () => import('@/views/app/dashboard/AppDashboardView.vue')
         },
         {
-            name: 'AppAccounts',
-            path: 'comptes',
-            component: () => import('@/views/app/parametres/accounts/AppAccountsPage.vue')
+            name: 'AppCalendar',
+            path: 'calendrier',
+            component: () => import('@/views/app/calendar/AppCalendarPage.vue')
         },
         {
             name: 'AppNotifications',
@@ -36,8 +39,131 @@ const AppRoutes = {
             component: () => import('@/views/app/friends/AppFriendsPage.vue')
         },
         {
+            name: 'AppComptes',
+            path: 'finances/comptes',
+            component: () => import('@/views/app/finances/comptes/AppComptesPage.vue')
+        },
+        {
+            name: 'AppTransactions',
+            path: 'finances/transactions',
+            component: () => import('@/views/app/finances/transactions/AppTransactionsPage.vue')
+        },
+        {
+            name: 'AppPaymentMethods',
+            path: 'finances/moyens-de-paiement',
+            component: () => import('@/views/app/finances/payment-methods/AppPaymentMethodsPage.vue')
+        },
+        {
+            name: 'AppBanks',
+            path: 'finances/banques',
+            component: () => import('@/views/app/finances/banks/AppBanksPage.vue')
+        },
+        {
+            name: 'AppImports',
+            path: 'finances/imports',
+            component: () => import('@/views/app/finances/imports/AppImportsPage.vue')
+        },
+        {
+            name: 'AppImportTemplates',
+            path: 'finances/imports/modeles',
+            component: () => import('@/views/app/finances/imports/AppImportsPage.vue')
+        },
+        {
+            name: 'AppImportDetail',
+            path: 'finances/imports/:publicId',
+            component: () => import('@/views/app/finances/imports/AppImportDetailPage.vue')
+        },
+        {
+            name: 'AppRecurrencesCharges',
+            path: 'finances/recurrences/charges',
+            component: () => import('@/views/app/finances/recurrences/AppRecurrencesPage.vue')
+        },
+        {
+            name: 'AppRecurrencesIncomes',
+            path: 'finances/recurrences/revenus',
+            component: () => import('@/views/app/finances/recurrences/AppRecurrencesPage.vue')
+        },
+        {
+            name: 'AppRecurrencesUpcoming',
+            path: 'finances/recurrences/echeances',
+            component: () => import('@/views/app/finances/recurrences/AppRecurrencesPage.vue')
+        },
+        {
+            name: 'AppRecurrences',
+            path: 'finances/recurrences',
+            component: () => import('@/views/app/finances/recurrences/AppRecurrencesPage.vue')
+        },
+        {
+            name: 'AppFiles',
+            path: 'gestion/files/:publicId?',
+            component: () => import('@/views/app/gestion/files/AppFilesPage.vue')
+        },
+        {
+            name: 'AppCategories',
+            path: 'gestion/categories',
+            component: () => import('@/views/app/gestion/categories/AppCategoriesPage.vue')
+        },
+        {
+            name: 'AppTags',
+            path: 'gestion/tags',
+            component: () => import('@/views/app/gestion/tags/AppTagsPage.vue')
+        },
+        {
+            name: 'AppTiers',
+            path: 'gestion/tiers',
+            component: () => import('@/views/app/gestion/tiers/AppTiersPage.vue')
+        },
+        {
+            name: 'AppBudgets',
+            path: 'planning/budgets/:publicId?',
+            component: () => import('@/views/app/planning/budgets/AppBudgetsPage.vue')
+        },
+        {
+            name: 'AppSavingsGoals',
+            path: 'planning/objectifs/:publicId?',
+            component: () => import('@/views/app/planning/objectifs/AppSavingsGoalsPage.vue')
+        },
+        {
+            path: 'parametres',
+            redirect: SETTINGS_PATHS.account
+        },
+        {
+            name: 'AppSettingsAccount',
+            path: 'parametres/compte',
+            component: () => import('@/views/app/parametres/compte/AppSettingsAccountPage.vue')
+        },
+        {
+            name: 'AppSettingsPreferences',
+            path: 'parametres/preferences',
+            component: () => import('@/views/app/parametres/preferences/AppSettingsPreferencesPage.vue')
+        },
+        {
+            name: 'AppSettingsNotifications',
+            path: 'parametres/notifications',
+            component: () => import('@/views/app/parametres/notifications/AppSettingsNotificationsPage.vue')
+        },
+        {
+            name: 'AppSettingsPrivacy',
+            path: 'parametres/confidentialite',
+            component: () => import('@/views/app/parametres/confidentialite/AppSettingsPrivacyPage.vue')
+        },
+        {
+            name: 'AppSettingsSecurity',
+            path: 'parametres/securite',
+            component: () => import('@/views/app/parametres/securite/AppSettingsSecurityPage.vue')
+        },
+        {
+            name: 'AppSettingsSubscription',
+            path: 'parametres/abonnement',
+            component: () => import('@/views/app/parametres/abonnement/AppSettingsSubscriptionPage.vue')
+        },
+        {
+            path: 'comptes',
+            redirect: (to) => resolveLegacySettingsRedirect(to)
+        },
+        {
             path: 'applications',
-            redirect: '/app/comptes'
+            redirect: SETTINGS_PATHS.account
         }
     ]
 };

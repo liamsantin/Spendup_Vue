@@ -1,6 +1,6 @@
 # Inventaire — arborescence `src/`
 
-> Snapshot doc — le code prime en cas d’écart · Relu : 2026-08-13  
+> Snapshot doc — le code prime en cas d’écart · Relu : 2026-08-24  
 > Architecture : `architecture/layers.md`
 
 ```
@@ -10,19 +10,29 @@ src/
 │   ├── stores/          # app-settings-store (localStorage)
 │   └── guards/          # auth-guard (+ __tests__)
 ├── features/
-│   ├── auth/
+│   ├── accounts/        # stores/internal/ (référence split)
+│   ├── categories/      # arbre perso deux niveaux
+│   ├── tags/            # libellés perso plats (stores/internal/)
+│   ├── auth/            # stores/internal/ session·actions·profile·logout
 │   ├── countries/
 │   ├── dashboard/
-│   ├── friends/
-│   ├── notifications/
-│   └── user-settings/
+│   ├── desktop/         # deep-links / helpers desktop
+│   ├── friends/         # stores/internal/ + composables QR
+│   ├── notifications/   # stores/internal/
+│   ├── subscription/    # abonnement, plans, sélecteur / upsell (API mockée)
+│   ├── tiers/           # annuaire perso de contreparties (stores/internal/)
+│   ├── files/           # documents PDF perso (stores/internal/)
+│   ├── transactions/    # journal, pièces PDF (stores/internal/)
+│   ├── imports/         # imports de relevés CSV / XLSX, modèles (stores/internal/)
+│   ├── savings-goals/   # objectifs d’épargne perso (stores/internal/)
+│   └── user-settings/   # composables account/security
 ├── views/
-│   ├── app/             # dashboard, notifications, friends, parametres/…
+│   ├── app/             # dashboard, finances/…, gestion/…, planning/budgets, planning/objectifs, notifications, friends, parametres/…
 │   ├── front-pages/
 │   ├── authentication/
 │   └── dev/             # showcase /components (dev only)
 ├── components/
-│   ├── shared/          # AppAlert, AppModalBase, AppTabsShell, AppPageShell…
+│   ├── shared/          # alert/, modal/, tabs/, color-picker/, chip/, switch/, radio/, …
 │   ├── auth/
 │   └── frontpages/
 ├── layouts/blank/ · full/

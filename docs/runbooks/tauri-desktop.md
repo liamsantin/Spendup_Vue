@@ -8,7 +8,8 @@
 1. Copier `.env.example` → `.env` ; renseigner :
     - `VITE_API_BASE_URL`
     - `VITE_GOOGLE_CLIENT_ID` (web / GIS)
-    - `VITE_GOOGLE_DESKTOP_CLIENT_ID` **et** `VITE_GOOGLE_DESKTOP_CLIENT_SECRET` (client OAuth **Desktop** — le secret est affiché dans Google Cloud et requis pour l’échange de code, même avec PKCE)
+    - `VITE_GOOGLE_DESKTOP_CLIENT_ID` (client OAuth **Desktop**)
+    - `GOOGLE_DESKTOP_CLIENT_SECRET` (secret lu par le shell Rust / `build.rs` — **pas** de préfixe `VITE_`, hors bundle JS ; alias `VITE_GOOGLE_DESKTOP_CLIENT_SECRET` encore accepté en transition)
 2. API : audience Desktop Client ID + CORS (`http://localhost:5173` en dev).
 3. Google Cloud : client OAuth **Application de bureau** (pas d’URI à saisir — loopback `127.0.0.1` géré par l’app).
 4. `npm run tauri:dev` (lance Vite + fenêtre Tauri).

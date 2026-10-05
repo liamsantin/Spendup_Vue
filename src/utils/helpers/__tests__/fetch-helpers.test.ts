@@ -70,6 +70,22 @@ describe('fetchWrapper', () => {
         expect(forceReLogin).not.toHaveBeenCalled();
     });
 
+    it('attache Authorization Bearer et n’envoie pas de CSRF', async () => {
+        axiosRequest.mockResolvedValue({
+            status: 200,
+            data: { success: true, message: null, result: { ok: true } },
+            statusText: 'OK'
+        });
+
+        await fetchWrapper.get('/api/countries');
+
+        expect(axiosRequest).toHaveBeenCalledWith(
+            expect.objectContaining({
+                headers: { Authorization: 'Bearer access-token' }
+            })
+        );
+    });
+
     it('force le re-login si le retry après refresh renvoie encore 401', async () => {
         axiosRequest.mockResolvedValue({
             status: 401,
@@ -113,5 +129,59 @@ describe('fetchWrapper', () => {
             code: 'STEP_UP_REQUIRED',
             details: expect.objectContaining({ requiresPassword: true })
         });
+    });
+
+    it('renvoie un blob et parse une erreur JSON encapsulée dans un blob', async () => {
+        const pdf = new Blob(['%PDF-1.4'], { type: 'application/pdf' });
+        axiosRequest.mockResolvedValue({
+            status: 200,
+            data: pdf,
+            statusText: 'OK'
+        });
+
+        await expect(fetchWrapper.getBlob('/api/files/abc/content')).resolves.toBe(pdf);
+        expect(axiosRequest).toHaveBeenCalledWith(expect.objectContaining({ responseType: 'blob' }));
+
+        axiosRequest.mockResolvedValue({
+            status: 404,
+            data: new Blob([JSON.stringify({ success: false, message: 'Introuvable.' })], { type: 'application/json' }),
+            statusText: 'Not Found'
+        });
+
+        await expect(fetchWrapper.getBlob('/api/files/missing/content')).rejects.toMatchObject({
+            name: 'AppError',
+            status: 404,
+            message: 'Introuvable.'
+        });
+    });
+
+    it('envoie un FormData sans forcer Content-Type JSON', async () => {
+        axiosRequest.mockResolvedValue({
+            status: 200,
+            data: { success: true, message: null, result: { publicId: 'file-1' } },
+            statusText: 'OK'
+        });
+        const form = new FormData();
+        form.append('file', new Blob(['%PDF'], { type: 'application/pdf' }), 'a.pdf');
+
+        const result = await fetchWrapper.postForm('/api/files', form);
+        expect(result).toEqual({ publicId: 'file-1' });
+        expect(axiosRequest).toHaveBeenCalledWith(
+            expect.objectContaining({
+                method: 'POST',
+                data: form,
+                transformRequest: expect.any(Array)
+            })
+        );
+    });
+
+    it('traite un 204 comme succès sans enveloppe', async () => {
+        axiosRequest.mockResolvedValue({
+            status: 204,
+            data: '',
+            statusText: 'No Content'
+        });
+
+        await expect(fetchWrapper.delete('/api/files/abc')).resolves.toBeUndefined();
     });
 });

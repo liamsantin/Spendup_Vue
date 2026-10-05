@@ -2,12 +2,9 @@
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore, isValidUsername, normalizeUsername } from '@/features/auth';
-import GoogleSignInButton from '@/components/auth/GoogleSignInButton.vue';
-import AppAlert from '@/components/shared/AppAlert.vue';
-
-const emit = defineEmits<{
-    googleProcessing: [value: boolean];
-}>();
+import AuthLegalLink from '@/components/auth/AuthLegalLink.vue';
+import AuthPasswordField from '@/components/auth/AuthPasswordField.vue';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 
 const authStore = useAuthStore();
 const { t } = useI18n();
@@ -20,6 +17,7 @@ const success = ref<string | null>(null);
 const identifier = ref('');
 const password = ref('');
 const confirmPassword = ref('');
+const acceptTerms = ref(false);
 
 const identifierTrimmed = computed(() => identifier.value.trim());
 const isEmailMode = computed(() => identifierTrimmed.value.includes('@'));
@@ -45,6 +43,7 @@ const confirmPasswordRules = [
     (v: string) => !!v || t('auth.register.errors.mismatch'),
     (v: string) => v === password.value || t('auth.register.errors.mismatch')
 ];
+const acceptTermsRules = [(v: boolean) => v || t('auth.register.errors.terms')];
 
 async function onSubmit() {
     error.value = null;
@@ -73,6 +72,8 @@ async function onSubmit() {
         error.value = t('auth.register.errors.mismatch');
         return;
     }
+    // le message s'affiche sous la case (règle du formulaire) : pas de doublon dans l'alerte
+    if (!acceptTerms.value) return;
 
     loading.value = true;
     try {
@@ -90,18 +91,6 @@ async function onSubmit() {
     }
 }
 
-async function onGoogleCredential(idToken: string) {
-    error.value = null;
-    // Succès : on garde l'état actif, la navigation démonte le formulaire.
-    emit('googleProcessing', true);
-    try {
-        await authStore.loginWithGoogle(idToken);
-    } catch (e: unknown) {
-        error.value = e instanceof Error ? e.message : String(e);
-        emit('googleProcessing', false);
-    }
-}
-
 onMounted(() => {
     success.value = null;
 });
@@ -109,46 +98,63 @@ onMounted(() => {
 
 <template>
     <div class="auth-form">
-        <GoogleSignInButton class="mb-4" :label="t('auth.google.signUp')" @credential="onGoogleCredential" />
-
-        <div class="d-flex align-center text-center mb-6">
-            <div class="text-h6 w-100 px-5 font-weight-regular auth-divider position-relative">
-                <span class="bg-surface px-5 py-3 position-relative">{{ t('auth.register.or') }}</span>
+        <v-form v-model="formValid" @submit.prevent="onSubmit">
+            <div class="auth-field">
+                <label class="auth-field__label">
+                    <span :class="{ 'text-primary': !isEmailMode && !!identifierTrimmed }">{{ t('auth.register.username') }}</span>
+                    <span class="auth-label-sep"> / </span>
+                    <span :class="{ 'text-primary': isEmailMode && !!identifierTrimmed }">{{ t('auth.register.email') }}</span>
+                </label>
+                <VTextField
+                    v-model="identifier"
+                    :rules="identifierRules"
+                    :placeholder="t('auth.login.identifierPlaceholder')"
+                    required
+                    hide-details="auto"
+                    class="auth-field__control"
+                    autocomplete="username"
+                />
             </div>
-        </div>
 
-        <v-form v-model="formValid" @submit.prevent="onSubmit" class="mt-5">
-            <v-label class="text-subtitle-1 font-weight-medium pb-2">
-                <span :class="{ 'text-primary': !isEmailMode && !!identifierTrimmed }">{{ t('auth.register.username') }}</span>
-                <span class="auth-label-sep"> / </span>
-                <span :class="{ 'text-primary': isEmailMode && !!identifierTrimmed }">{{ t('auth.register.email') }}</span>
-            </v-label>
-            <VTextField v-model="identifier" :rules="identifierRules" class="mb-4" required hide-details autocomplete="username" />
-
-            <v-label class="text-subtitle-1 font-weight-medium pb-2">{{ t('auth.register.password') }}</v-label>
-            <VTextField
+            <AuthPasswordField
                 v-model="password"
+                :label="t('auth.register.password')"
                 :rules="passwordRules"
-                class="mb-4"
-                required
-                hide-details
-                type="password"
+                :hint="t('auth.register.passwordHint')"
                 autocomplete="new-password"
             />
 
-            <v-label class="text-subtitle-1 font-weight-medium pb-2">{{ t('auth.register.confirmPassword') }}</v-label>
-            <VTextField
+            <AuthPasswordField
                 v-model="confirmPassword"
+                :label="t('auth.register.confirmPassword')"
                 :rules="confirmPasswordRules"
-                required
-                hide-details
-                type="password"
                 autocomplete="new-password"
             />
 
-            <v-btn size="large" class="mt-4" color="primary" block type="submit" :loading="loading" flat>
+            <v-checkbox
+                v-model="acceptTerms"
+                :rules="acceptTermsRules"
+                color="primary"
+                density="compact"
+                hide-details="auto"
+                class="auth-terms"
+            >
+                <template #label>
+                    <i18n-t keypath="auth.register.acceptTerms" tag="span" class="auth-terms__label">
+                        <template #terms>
+                            <AuthLegalLink to="/conditions-utilisation">{{ t('auth.register.termsLink') }}</AuthLegalLink>
+                        </template>
+                        <template #privacy>
+                            <AuthLegalLink to="/politique-confidentialite">{{ t('auth.register.privacyLink') }}</AuthLegalLink>
+                        </template>
+                    </i18n-t>
+                </template>
+            </v-checkbox>
+
+            <button type="submit" class="su-btn su-btn--ink auth-submit" :disabled="loading">
+                <span v-if="loading" class="su-spin" aria-hidden="true" />
                 {{ t('auth.register.submit') }}
-            </v-btn>
+            </button>
 
             <AppAlert v-if="error" type="error" class="mt-3">{{ error }}</AppAlert>
             <AppAlert v-if="success" type="success" class="mt-3">{{ success }}</AppAlert>
