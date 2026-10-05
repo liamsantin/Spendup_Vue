@@ -2,10 +2,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
 import { USER_SETTINGS_DEFAULTS } from '@/features/user-settings/types';
 
-const { getSettings, putSettings, patchSettings } = vi.hoisted(() => ({
+const { getSettings, putSettings, patchSettings, syncRealtimePreference } = vi.hoisted(() => ({
     getSettings: vi.fn(),
     putSettings: vi.fn(),
-    patchSettings: vi.fn()
+    patchSettings: vi.fn(),
+    syncRealtimePreference: vi.fn()
 }));
 
 vi.mock('../../api', () => ({
@@ -24,6 +25,11 @@ vi.mock('../../mappers', async () => {
     };
 });
 
+// Importé dynamiquement après une sauvegarde : mocké pour ne pas charger SignalR après la fin du test.
+vi.mock('@/features/notifications/stores/notifications-store', () => ({
+    useNotificationsStore: () => ({ syncRealtimePreference })
+}));
+
 import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
 
 describe('useUserSettingsStore draft', () => {
@@ -32,6 +38,7 @@ describe('useUserSettingsStore draft', () => {
         getSettings.mockReset();
         putSettings.mockReset();
         patchSettings.mockReset();
+        syncRealtimePreference.mockReset();
     });
 
     it('hydrate un brouillon unique et détecte le dirty', async () => {
@@ -60,6 +67,7 @@ describe('useUserSettingsStore draft', () => {
         await store.ensureLoaded();
         store.draft.locale = 'fr-CH';
         await store.saveDraft();
+        await vi.waitFor(() => expect(syncRealtimePreference).toHaveBeenCalled());
 
         expect(patchSettings).toHaveBeenCalledWith({ locale: 'fr-CH' });
         expect(putSettings).not.toHaveBeenCalled();
@@ -80,6 +88,7 @@ describe('useUserSettingsStore draft', () => {
         store.draft.idleLogoutMinutes = 2;
         store.draft.trustedDeviceDurationDays = 999;
         await store.saveDraft();
+        await vi.waitFor(() => expect(syncRealtimePreference).toHaveBeenCalled());
 
         expect(patchSettings).toHaveBeenCalledWith({
             idleLogoutMinutes: 5,
