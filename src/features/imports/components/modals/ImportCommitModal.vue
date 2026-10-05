@@ -103,7 +103,8 @@ async function onCommit() {
         emit('committed', {
             createdTransactions: result.createdTransactions,
             createdTiers: result.createdTiers,
-            createdPaymentMethods: result.createdPaymentMethods
+            createdPaymentMethods: result.createdPaymentMethods,
+            detectedRecurrences: result.detectedRecurrences
         });
         open.value = false;
     } catch (e: unknown) {

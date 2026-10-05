@@ -1,5 +1,6 @@
-export { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
+export { recurringExpensesApi, recurringIncomesApi, recurringSuggestionsApi } from '@/features/recurring-payments/api';
 export { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
+export { useRecurringSuggestionsStore } from '@/features/recurring-payments/stores/recurring-suggestions-store';
 export { canWriteRecurringOnAccount, canConfirmRecurringOnAccount } from '@/features/recurring-payments/rights';
 export {
     emptyToNull,
@@ -45,7 +46,13 @@ export type {
     RecurringIncomeFrequency,
     ConfirmDueBody,
     LinkDueBody,
-    ListRecurringTemplatesQuery
+    ListRecurringTemplatesQuery,
+    RecurringSuggestion,
+    RecurringSuggestionStatus,
+    RecurringSuggestionFrequency,
+    ListRecurringSuggestionsQuery,
+    AcceptRecurringSuggestionPayload,
+    AcceptRecurringSuggestionResult
 } from '@/features/recurring-payments/types';
 export {
     RECURRING_EXPENSE_TYPES,
@@ -53,7 +60,8 @@ export {
     RECURRING_EXPENSE_FREQUENCIES,
     RECURRING_INCOME_FREQUENCIES,
     RECURRING_FILES_MAX,
-    RECURRING_PAGE_SIZE_MAX
+    RECURRING_PAGE_SIZE_MAX,
+    RECURRING_SUGGESTION_FREQUENCIES
 } from '@/features/recurring-payments/types';
 export { RECURRENCES_BASE, RECURRENCES_PATHS, recurrencesPathForTab, recurrencesTabFromPath } from '@/features/recurring-payments/paths';
 export type { RecurrenceTab } from '@/features/recurring-payments/paths';
@@ -63,3 +71,5 @@ export { default as RecurringUpcomingPanel } from '@/features/recurring-payments
 export { default as RecurringTemplateFormModal } from '@/features/recurring-payments/components/modals/RecurringTemplateFormModal.vue';
 export { default as RecurringTemplateDetailModal } from '@/features/recurring-payments/components/modals/RecurringTemplateDetailModal.vue';
 export { default as RecurringLinkTransactionsModal } from '@/features/recurring-payments/components/modals/RecurringLinkTransactionsModal.vue';
+export { default as RecurringSuggestionsPanel } from '@/features/recurring-payments/components/RecurringSuggestionsPanel.vue';
+export { default as RecurringSuggestionsModal } from '@/features/recurring-payments/components/modals/RecurringSuggestionsModal.vue';

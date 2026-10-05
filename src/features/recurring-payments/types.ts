@@ -195,6 +195,77 @@ export type AttachRecurringFilePayload = {
     filePublicId: string;
 };
 
+/** Suggestion de récurrence : `propose` à traiter, `accepte` (modèle créé), `ignore` (refusée). */
+export type RecurringSuggestionStatus = 'propose' | 'accepte' | 'ignore';
+
+/** Fréquence détectée (même vocabulaire que les revenus récurrents). */
+export type RecurringSuggestionFrequency = 'hebdomadaire' | 'mensuelle' | 'trimestrielle' | 'semestrielle' | 'annuelle';
+
+/** Série régulière détectée dans l’historique d’un compte, pas encore suivie par une récurrence. */
+export type RecurringSuggestion = {
+    publicId: string;
+    /** `null` si le compte a été supprimé. */
+    accountPublicId: string | null;
+    type: 'depense' | 'revenu';
+    /** Libellé banque de la série. */
+    label: string;
+    suggestedName: string;
+    frequency: RecurringSuggestionFrequency | string;
+    /** Positif : le sens est porté par `type`. Médian des 3 dernières occurrences. */
+    amount: number;
+    currency: string;
+    occurrenceCount: number;
+    firstOccurrence: string;
+    lastOccurrence: string;
+    nextExpectedDate: string;
+    /** 0 à 0.99. */
+    confidence: number;
+    status: RecurringSuggestionStatus;
+    categoryPublicId: string | null;
+    tierPublicId: string | null;
+    tierName: string | null;
+    paymentMethodPublicId: string | null;
+    /** Import qui a créé ou rafraîchi la suggestion. */
+    sourceImportPublicId: string | null;
+    recurringExpensePublicId: string | null;
+    recurringIncomePublicId: string | null;
+    transactionPublicIds: string[];
+    createdAt: string;
+    updatedAt: string | null;
+};
+
+/** Confiance décroissante. Non paginée. */
+export type RecurringSuggestionList = {
+    items: RecurringSuggestion[];
+    totalCount: number;
+};
+
+/** `status` absent = `propose`. */
+export type ListRecurringSuggestionsQuery = {
+    accountPublicId?: string | null;
+    status?: RecurringSuggestionStatus | null;
+    importPublicId?: string | null;
+};
+
+/** Tout est optionnel : absent = valeur détectée ; `null` explicite = aucun (catégorie / tier / moyen). */
+export type AcceptRecurringSuggestionPayload = {
+    name?: string;
+    type?: RecurringExpenseType | RecurringIncomeType;
+    frequency?: RecurringExpenseFrequency | RecurringIncomeFrequency;
+    plannedAmount?: number;
+    startDate?: string;
+    categoryPublicId?: string | null;
+    tierPublicId?: string | null;
+    paymentMethodPublicId?: string | null;
+};
+
+/** Un seul des deux modèles est renseigné, selon le sens de la suggestion. */
+export type AcceptRecurringSuggestionResult = {
+    suggestion: RecurringSuggestion;
+    recurringExpense: RecurringExpense | null;
+    recurringIncome: RecurringIncome | null;
+};
+
 export const RECURRING_EXPENSE_TYPES: RecurringExpenseType[] = [
     'leasing',
     'assurance',
@@ -232,6 +303,14 @@ export const RECURRING_INCOME_TYPES: RecurringIncomeType[] = [
 ];
 
 export const RECURRING_INCOME_FREQUENCIES: RecurringIncomeFrequency[] = [
+    'hebdomadaire',
+    'mensuelle',
+    'trimestrielle',
+    'semestrielle',
+    'annuelle'
+];
+
+export const RECURRING_SUGGESTION_FREQUENCIES: RecurringSuggestionFrequency[] = [
     'hebdomadaire',
     'mensuelle',
     'trimestrielle',

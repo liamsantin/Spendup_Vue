@@ -1,7 +1,7 @@
 # Récurrences — contrat front
 
 > Code : `src/features/recurring-payments/`  
-> Statut : active · Relu : 2026-09-11  
+> Statut : active · Relu : 2026-10-05  
 > Voir aussi : `features/transactions/contract.md`, `architecture/realtime.md`, `patterns/app-tabs-shell.md`
 
 ## Boundaries
@@ -10,8 +10,8 @@
 | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Route    | `/app/finances/recurrences` → `AppRecurrencesPage` (Tabs Shell : Charges / Revenus / Échéances)                                   |
 | Nav      | Sidebar **Finances** → **Récurrences**                                                                                            |
-| Store    | `useRecurringPaymentsStore` (state · crud · realtime · lifecycle)                                                                 |
-| API      | `recurringExpensesApi` / `recurringIncomesApi` via **`fetchWrapper`**                                                             |
+| Store    | `useRecurringPaymentsStore` (state · crud · realtime · lifecycle) · `useRecurringSuggestionsStore` (suggestions)                  |
+| API      | `recurringExpensesApi` / `recurringIncomesApi` / `recurringSuggestionsApi` via **`fetchWrapper`**                                 |
 | Droits   | Templates **personnels**. Create/update/confirm : editor+ sur le **compte cible actif**. Un ami editor ne voit pas tes templates. |
 | Realtime | `recurringExpenseChanged` / `recurringIncomeChanged` (+ `accountChanged` TX pour rouverture de due)                               |
 
@@ -35,6 +35,19 @@ Même CRUD + dues/confirm/skip/**link**. **Pas** de `/files`. Skip → `annule`.
 
 `POST …/dues/{duePublicId}/link` body `{ transactionPublicId }`. Due **ouverte**, TX **manuelle** du bon type sur le **même compte**, pas déjà liée. Effet : due `payee`/`encaisse`, TX `source: "recurrence"`, `actualAmount` / date = TX.
 
+### Suggestions `/api/recurring-suggestions`
+
+Séries régulières détectées dans l’historique d’un compte (commit / revert d’import, ou `scan`), pas encore suivies. **Personnelles**, visibles tant que l’utilisateur est editor du compte.
+
+| Méthode | Route                                         | Rôle                                                                             |
+| ------- | --------------------------------------------- | -------------------------------------------------------------------------------- |
+| GET     | `?accountPublicId=&status=&importPublicId=`   | Liste (défaut `status=propose`), confiance décroissante, non paginée             |
+| POST    | `/scan` `{ accountPublicId }`                 | Relance la détection, renvoie les `propose` du compte                            |
+| POST    | `/{id}/accept` (corps optionnel : surcharges) | Crée la charge / le revenu → `{ suggestion, recurringExpense, recurringIncome }` |
+| POST    | `/{id}/dismiss`                               | `ignore` : plus jamais reproposée                                                |
+
+UI : `RecurringSuggestionsPanel` (liste + Créer / Ignorer, valeurs détectées — modifiables ensuite comme toute récurrence) dans `ImportResultPanel` (portée import) et `RecurringSuggestionsModal` (bouton « Suggestions » de `AppRecurrencesPage`, portée compte + « Analyser l’historique »). Pas de SignalR dédié : liste relue à l’ouverture ; accepter déclenche `recurring*Changed` et le store des récurrences est relu tout de suite.
+
 ## Enums (camelCase C#)
 
 - Charge `expenseType` : `leasing` `assurance` `credit` `abonnement` `loyer` `impot` `service` `entretien` `other`
@@ -43,6 +56,7 @@ Même CRUD + dues/confirm/skip/**link**. **Pas** de `/files`. Skip → `annule`.
 - Revenu `frequency` : `hebdomadaire` `mensuelle` `trimestrielle` `semestrielle` `annuelle` (pas de quotidien)
 - Due charge : `prevue` `generee` `payee` `enRetard` `canceled`
 - Due revenu : `prevu` `pending` `encaisse` `partiel` `annule` `retard`
+- Suggestion `type` : `depense` `revenu` · `frequency` : vocabulaire des revenus · `status` : `propose` `accepte` `ignore`
 
 Confirmable : prévu / généré-pending / retard. Retard recalculé à la lecture si `scheduledAt` &lt; aujourd’hui (fuseau local).
 
@@ -67,11 +81,11 @@ Owner only, pas d’inbox. L’onglet acteur reçoit aussi.
 | `recurringExpenseChanged` | `{ change: recurringExpenseCreated\|Updated\|Deleted, recurringExpensePublicId }` |
 | `recurringIncomeChanged`  | `{ change: recurringIncomeCreated\|Updated\|Deleted, recurringIncomePublicId }`   |
 
-Confirm : aussi `accountChanged` / `transactionCreated`. Invalider templates **et** comptes / TX.
+Confirm : aussi `accountChanged` / `transactionCreated`. Invalider templates **et** comptes / TX. Commit et revert d’import : `recurring*Updated` pour chaque modèle dont une échéance est réglée / rouverte.
 
 ## Bootstrap
 
-`auth-guard` → `onAuthenticatedSession()` sans charger les listes. `reset()` au logout.
+`auth-guard` → `onAuthenticatedSession()` sans charger les listes. `reset()` au logout (les deux stores).
 
 ## Hors scope V1
 

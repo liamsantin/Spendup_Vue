@@ -2,16 +2,21 @@ import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
 import {
     RECURRING_PAGE_SIZE_DEFAULT,
     RECURRING_PAGE_SIZE_MAX,
+    type AcceptRecurringSuggestionPayload,
+    type AcceptRecurringSuggestionResult,
     type ConfirmDueBody,
     type CreateRecurringExpensePayload,
     type CreateRecurringIncomePayload,
     type LinkDueBody,
     type ListRecurringDuesQuery,
+    type ListRecurringSuggestionsQuery,
     type ListRecurringTemplatesQuery,
     type RecurringDue,
     type RecurringDueList,
     type RecurringExpense,
     type RecurringIncome,
+    type RecurringSuggestion,
+    type RecurringSuggestionList,
     type RecurringTemplateList,
     type UpdateRecurringExpensePayload,
     type UpdateRecurringIncomePayload
@@ -161,5 +166,39 @@ export const recurringIncomesApi = {
             `/api/recurring-incomes/${encodeURIComponent(publicId)}/dues/${encodeURIComponent(duePublicId)}/skip`,
             {}
         ) as Promise<RecurringDue>;
+    }
+};
+
+/** Suggestions personnelles : visibles tant que l’utilisateur est éditeur du compte. */
+export const recurringSuggestionsApi = {
+    /** Confiance décroissante ; `status` absent = `propose`. */
+    list(query: ListRecurringSuggestionsQuery = {}) {
+        const params = new URLSearchParams();
+        const accountPublicId = query.accountPublicId?.trim();
+        if (accountPublicId) params.set('accountPublicId', accountPublicId);
+        if (query.status) params.set('status', query.status);
+        const importPublicId = query.importPublicId?.trim();
+        if (importPublicId) params.set('importPublicId', importPublicId);
+        const qs = params.toString();
+        const suffix = qs ? `?${qs}` : '';
+        return fetchWrapper.get(`/api/recurring-suggestions${suffix}`) as Promise<RecurringSuggestionList>;
+    },
+
+    /** Relance la détection sur le compte ; renvoie ses suggestions `propose`. */
+    scan(accountPublicId: string) {
+        return fetchWrapper.post('/api/recurring-suggestions/scan', { accountPublicId }) as Promise<RecurringSuggestionList>;
+    },
+
+    /** Crée la charge ou le revenu récurrent ; `{}` = valeurs détectées. */
+    accept(publicId: string, body: AcceptRecurringSuggestionPayload = {}) {
+        return fetchWrapper.post(
+            `/api/recurring-suggestions/${encodeURIComponent(publicId)}/accept`,
+            body
+        ) as Promise<AcceptRecurringSuggestionResult>;
+    },
+
+    /** Ne sera plus jamais reproposée. */
+    dismiss(publicId: string) {
+        return fetchWrapper.post(`/api/recurring-suggestions/${encodeURIComponent(publicId)}/dismiss`, {}) as Promise<RecurringSuggestion>;
     }
 };

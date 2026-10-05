@@ -15,7 +15,7 @@ import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { importsApi } from '@/features/imports/api';
-import { parseAccountAmount, todayYmd } from '@/features/accounts/format';
+import { parseAccountAmount, todayYmdInTimeZone } from '@/features/accounts/format';
 import CategoryFormModal from '@/features/categories/components/modals/CategoryFormModal.vue';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import type { Category } from '@/features/categories/types';
@@ -37,6 +37,7 @@ import {
     type ImportLinePayloadErrorCode
 } from '@/features/imports/payload';
 import { useImportsStore } from '@/features/imports/stores/imports-store';
+import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
 import {
     IMPORT_LINE_LABEL_MAX,
     type ImportLine,
@@ -63,6 +64,9 @@ const { t, locale } = useI18n();
 const store = useImportsStore();
 const categoriesStore = useCategoriesStore();
 const paymentMethodsStore = usePaymentMethodsStore();
+const userSettingsStore = useUserSettingsStore();
+/** « Aujourd’hui » dans le fuseau des réglages, comme l’API. */
+const timeZone = computed(() => userSettingsStore.current.timezone || null);
 
 const form = reactive<ImportLineFormFields>({
     operationDate: '',
@@ -98,7 +102,7 @@ const faulty = computed(() => (live.value ? issueFields(live.value) : new Set<st
 const uncorrectable = computed(() => (live.value ? hasUncorrectableIssue(live.value) : false));
 const doubt = computed(() => (live.value ? importLineDoubt(live.value) : null));
 const dirty = computed(() => (live.value ? isImportLineFormDirty(live.value, form) : false));
-const maxDate = computed(() => todayYmd());
+const maxDate = computed(() => todayYmdInTimeZone(timeZone.value));
 
 const formAmount = computed(() => parseAccountAmount(form.amount.trim()) ?? live.value?.amount ?? null);
 
@@ -321,7 +325,8 @@ function onSubmit() {
     if (!item) return;
     for (const key of Object.keys(fieldErrors) as (keyof ImportLineFormFields)[]) delete fieldErrors[key];
     const built = buildImportLinePayload(item, form, {
-        categoryType: (id) => categoriesStore.findByPublicId(id)?.type ?? null
+        categoryType: (id) => categoriesStore.findByPublicId(id)?.type ?? null,
+        timeZone: timeZone.value
     });
     let payload: UpdateImportLinePayload = {};
     if (built.ok) {

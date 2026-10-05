@@ -284,7 +284,13 @@ export function createImportsCrud(state: ImportsState, deps: CrudDeps) {
                 });
             }
             notifyAccountTransactions(next.accountPublicId, 'transactionsImported');
-            return { import: next, createdTransactions: result.createdTransactions, createdTiers, createdPaymentMethods };
+            return {
+                import: next,
+                createdTransactions: result.createdTransactions,
+                createdTiers,
+                createdPaymentMethods,
+                detectedRecurrences: result.detectedRecurrences ?? 0
+            };
         });
     }
 

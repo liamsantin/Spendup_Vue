@@ -96,6 +96,20 @@ describe('imports line payload', () => {
         });
     });
 
+    it('juge « date future » dans le fuseau de l’utilisateur, comme l’API', () => {
+        const item = line();
+        // 28.09.2026 23:30 UTC : déjà le 29 à Zurich, encore le 28 à New York.
+        const lateUtc = new Date(Date.UTC(2026, 8, 28, 23, 30));
+        const fields = { ...importLineToFormFields(item), operationDate: '2026-09-29' };
+        expect(buildImportLinePayload(item, fields, { now: lateUtc, timeZone: 'Europe/Zurich' })).toEqual({
+            ok: true,
+            payload: { operationDate: '2026-09-29' }
+        });
+        expect(buildImportLinePayload(item, fields, { now: lateUtc, timeZone: 'America/New_York' })).toMatchObject({
+            code: 'operationDateFuture'
+        });
+    });
+
     it('vide une date de valeur avec null explicite', () => {
         const item = line({ valueDate: '2026-07-02' });
         expect(buildImportLinePayload(item, { ...importLineToFormFields(item), valueDate: null }, { now: NOW })).toEqual({

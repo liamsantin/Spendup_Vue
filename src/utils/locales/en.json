@@ -703,6 +703,24 @@
             "incomes": "Income",
             "upcoming": "Upcoming"
         },
+        "suggestions": {
+            "open": "Suggestions",
+            "title": "Detected recurrences",
+            "subtitle": "Regular payments and income spotted in your history, not tracked by a recurrence yet.",
+            "account": "Account",
+            "chooseAccount": "Pick an account to see its detected recurrences.",
+            "scan": "Analyze history",
+            "scanning": "Analyzing…",
+            "loading": "Loading…",
+            "empty": "No recurrence detected yet.",
+            "accept": "Create recurrence",
+            "dismiss": "Dismiss",
+            "accepted": "“{name}” added to your recurrences.",
+            "dismissed": "Suggestion dismissed: it won’t be suggested again.",
+            "occurrences": "no occurrence | 1 occurrence | {count} occurrences",
+            "next": "Next on {date}",
+            "confidence": "Confidence {value}%"
+        },
         "createAs": {
             "expense": "An expense",
             "income": "An income"
@@ -2384,7 +2402,10 @@
             "viewTransactions": "View transactions",
             "reverted": "No transaction deleted. | 1 transaction deleted. | {count} transactions deleted.",
             "templateSaved": "Template saved. It will be offered on the next import.",
-            "entitiesCreated": "{list} | {list} created | {list} created"
+            "entitiesCreated": "{list} | {list} created | {list} created",
+            "recurrencesDetected": "No recurrence detected | 1 recurrence detected in your history | {count} recurrences detected in your history",
+            "recurrencesTitle": "No recurrence to track | Track 1 recurrence? | Track {count} recurrences?",
+            "recurrencesHint": "These transactions come back regularly on this account. Create the recurrence to anticipate upcoming dues."
         },
         "templates": {
             "personal": "My templates",

@@ -38,18 +38,39 @@ export function aliasToFormFields(alias: Alias): AliasFormFields {
 /** Même contrôle que l’API : au moins une lettre ou un chiffre (Unicode). */
 const ALPHANUMERIC = /[\p{L}\p{N}]/u;
 
-/** Contrôles locaux ; l’API reste l’arbitre (doublons, unicité d’un alias exact). */
+function compiles(pattern: string, flags: string): boolean {
+    try {
+        new RegExp(pattern, flags);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * L’API valide avec le moteur .NET, plus permissif que celui du navigateur sur certains points.
+ * On ne refuse localement que ce qui ne compile **ni** avec ni sans le flag `u`, après avoir neutralisé
+ * les constructions propres à .NET (options en ligne `(?i)`, groupes atomiques `(?>…)`, groupes nommés
+ * `(?'nom'…)`) : pas de faux refus, l’API tranche le reste.
+ */
+export function isPlausibleDotNetRegex(value: string): boolean {
+    const normalized = value
+        .replace(/\(\?[imnsx]+(?:-[imnsx]+)?\)/g, '')
+        .replace(/\(\?-[imnsx]+\)/g, '')
+        .replace(/\(\?[imnsx]*(?:-[imnsx]+)?:/g, '(?:')
+        .replace(/\(\?>/g, '(?:')
+        .replace(/\(\?'[A-Za-z_]\w*'/g, '(?:');
+    return compiles(normalized, 'iu') || compiles(normalized, 'i');
+}
+
+/** Contrôles locaux ; l’API reste l’arbitre (doublons, unicité d’un alias exact, syntaxe .NET). */
 export function buildAliasPayload(fields: AliasFormFields): BuildAliasPayloadResult {
     const value = fields.value.trim();
     if (!value) return { ok: false, code: 'valueRequired', field: 'value' };
     if (value.length > ALIAS_VALUE_MAX) return { ok: false, code: 'valueTooLong', field: 'value' };
     if (!ALIAS_MATCH_TYPES.includes(fields.matchType)) return { ok: false, code: 'matchTypeInvalid', field: 'matchType' };
     if (fields.matchType === 'regex') {
-        try {
-            new RegExp(value, 'i');
-        } catch {
-            return { ok: false, code: 'regexInvalid', field: 'value' };
-        }
+        if (!isPlausibleDotNetRegex(value)) return { ok: false, code: 'regexInvalid', field: 'value' };
     } else if (!ALPHANUMERIC.test(value)) {
         return { ok: false, code: 'valueNoAlphanumeric', field: 'value' };
     }

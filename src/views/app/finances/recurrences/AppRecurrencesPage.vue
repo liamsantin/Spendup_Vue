@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
-import { AbcIcon, ArrowsSortIcon, BuildingBankIcon, CalendarDueIcon, CoinIcon, FileExportIcon } from 'vue-tabler-icons';
+import { AbcIcon, ArrowsSortIcon, BuildingBankIcon, CalendarDueIcon, CoinIcon, FileExportIcon, SparklesIcon } from 'vue-tabler-icons';
 import AppChoiceList from '@/components/shared/dropdown-filter/AppChoiceList.vue';
 import AppBoard from '@/components/shared/board/AppBoard.vue';
 import AppBoardSearch from '@/components/shared/board/AppBoardSearch.vue';
@@ -18,6 +18,7 @@ import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import RecurringCreateMenu from '@/features/recurring-payments/components/RecurringCreateMenu.vue';
 import RecurringTemplatesDirectory from '@/features/recurring-payments/components/RecurringTemplatesDirectory.vue';
 import RecurringUpcomingPanel from '@/features/recurring-payments/components/RecurringUpcomingPanel.vue';
+import RecurringSuggestionsModal from '@/features/recurring-payments/components/modals/RecurringSuggestionsModal.vue';
 import {
     RECURRING_SEARCH_MAX,
     TEMPLATE_SORT_DEFAULT,
@@ -50,6 +51,7 @@ const directoryRef = ref<{
 } | null>(null);
 const upcomingRef = ref<{ exportCsv: () => void; visibleCount: number } | null>(null);
 const showInactive = ref(true);
+const suggestionsOpen = ref(false);
 const { width: viewportWidth } = useDisplay();
 const compactNotch = computed(() => viewportWidth.value < 768);
 
@@ -366,6 +368,16 @@ const activeFilterTotal = computed(() =>
                     <FileExportIcon :size="16" stroke-width="1.6" />
                     <span class="app-board__label">{{ t('recurrencesPage.actions.export') }}</span>
                 </button>
+                <button
+                    type="button"
+                    class="su-btn"
+                    :disabled="!canCreate"
+                    :aria-label="t('recurrencesPage.suggestions.open')"
+                    @click="suggestionsOpen = true"
+                >
+                    <SparklesIcon :size="16" stroke-width="1.6" />
+                    <span class="app-board__label">{{ t('recurrencesPage.suggestions.open') }}</span>
+                </button>
                 <RecurringCreateMenu
                     v-if="tab !== 'upcoming'"
                     :compact="compactNotch"
@@ -404,6 +416,7 @@ const activeFilterTotal = computed(() =>
                 @sort="templateSort = $event"
             />
         </AppBoard>
+        <RecurringSuggestionsModal v-model="suggestionsOpen" :account-public-id="filterAccountId || null" />
     </AppPageShell>
 </template>
 

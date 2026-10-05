@@ -28,6 +28,13 @@ describe('buildAliasPayload', () => {
         expect(buildAliasPayload(fields({ value: '^twint\\s', matchType: 'regex' }))).toMatchObject({ ok: true });
     });
 
+    it('does not reject .NET-only regex constructs (the API arbitrates)', () => {
+        for (const value of ['(?i)twint', '(?>coop|migros)\\s\\d+', "(?'shop'coop)-\\d{4}", '\\p{Lu}{3}\\d+', '\\Asbb\\z', '(?<id>\\d+)']) {
+            expect(buildAliasPayload(fields({ value, matchType: 'regex' }))).toMatchObject({ ok: true });
+        }
+        expect(buildAliasPayload(fields({ value: '(?i)twint(', matchType: 'regex' }))).toMatchObject({ ok: false, code: 'regexInvalid' });
+    });
+
     it('checks the priority range', () => {
         expect(buildAliasPayload(fields({ value: 'x', priority: '1001' }))).toMatchObject({ ok: false, code: 'priorityInvalid' });
         expect(buildAliasPayload(fields({ value: 'x', priority: '1.5' }))).toMatchObject({ ok: false, code: 'priorityInvalid' });

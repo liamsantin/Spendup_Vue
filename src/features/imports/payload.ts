@@ -1,4 +1,4 @@
-import { parseAccountAmount, todayYmd } from '@/features/accounts/format';
+import { parseAccountAmount, todayYmdInTimeZone } from '@/features/accounts/format';
 import type { CategoryType } from '@/features/categories/types';
 import { isValidYmd } from '@/features/transactions/format';
 import { IMPORT_LINE_LABEL_MAX, type ImportLine, type UpdateImportLinePayload } from '@/features/imports/types';
@@ -48,6 +48,8 @@ export type BuildImportLinePayloadResult =
 export type ImportLinePayloadContext = {
     /** Type de la catégorie choisie (`null` si inconnue localement : le serveur tranche). */
     categoryType?: (publicId: string) => CategoryType | null;
+    /** Fuseau IANA de l’utilisateur (réglages) : l’API juge « date future » dans ce fuseau. */
+    timeZone?: string | null;
     now?: Date;
 };
 
@@ -123,7 +125,7 @@ export function buildImportLinePayload(
     if (operationDate !== initial.operationDate) {
         if (!operationDate) return fail('operationDateRequired', 'operationDate');
         if (!isValidYmd(operationDate)) return fail('operationDateInvalid', 'operationDate');
-        if (operationDate > todayYmd(context.now)) return fail('operationDateFuture', 'operationDate');
+        if (operationDate > todayYmdInTimeZone(context.timeZone, context.now)) return fail('operationDateFuture', 'operationDate');
         payload.operationDate = operationDate;
     }
 

@@ -35,6 +35,7 @@ export {
     safeAccountColor,
     isLightAccountColor,
     todayYmd,
+    todayYmdInTimeZone,
     ymdToSnapshotIso,
     snapshotIsoToYmd,
     snapshotAtForUpdate,

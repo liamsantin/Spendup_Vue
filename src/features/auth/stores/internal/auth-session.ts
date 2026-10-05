@@ -26,6 +26,7 @@ import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
+import { useRecurringSuggestionsStore } from '@/features/recurring-payments/stores/recurring-suggestions-store';
 import { useFilesStore } from '@/features/files/stores/files-store';
 import { useSubscriptionStore } from '@/features/subscription/stores/subscription-store';
 import { useSidebarNavStore } from '@/layouts/full/vertical-sidebar/sidebar-nav-store';
@@ -175,6 +176,7 @@ export function createAuthSession() {
         useImportsStore().reset();
         useTiersStore().reset();
         useRecurringPaymentsStore().reset();
+        useRecurringSuggestionsStore().reset();
         useBudgetsStore().reset();
         useSavingsGoalsStore().reset();
         useFilesStore().reset();

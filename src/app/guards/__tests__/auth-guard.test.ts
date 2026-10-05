@@ -75,6 +75,12 @@ vi.mock('@/features/recurring-payments/stores/recurring-payments-store', () => (
     })
 }));
 
+vi.mock('@/features/recurring-payments/stores/recurring-suggestions-store', () => ({
+    useRecurringSuggestionsStore: () => ({
+        reset: vi.fn()
+    })
+}));
+
 vi.mock('@/features/budgets/stores/budgets-store', () => ({
     useBudgetsStore: () => ({
         onAuthenticatedSession: vi.fn()

@@ -7,6 +7,7 @@ import { ArrowBackUpIcon, CircleCheckIcon, InfoCircleIcon, TemplateIcon, TrashIc
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
+import RecurringSuggestionsPanel from '@/features/recurring-payments/components/RecurringSuggestionsPanel.vue';
 import ImportTemplateFormModal from '@/features/imports/components/modals/ImportTemplateFormModal.vue';
 import { canDeleteImport, canRevertImport, canSaveImportAsTemplate, formatImportTimestamp } from '@/features/imports/format';
 import { useImportsStore } from '@/features/imports/stores/imports-store';
@@ -43,6 +44,12 @@ const createdEntitiesText = computed(() => {
     if (tiers) parts.push(t('importsPage.commit.entities.tiers', { count: tiers }, tiers));
     if (paymentMethods) parts.push(t('importsPage.commit.entities.paymentMethods', { count: paymentMethods }, paymentMethods));
     return t('importsPage.result.entitiesCreated', { list: parts.join(t('importsPage.commit.entities.and')) }, tiers + paymentMethods);
+});
+
+/** « 2 récurrences détectées » : seulement juste après le commit (la liste ci-dessous reste la référence). */
+const detectedRecurrencesText = computed(() => {
+    const detected = props.summary?.detectedRecurrences ?? 0;
+    return detected ? t('importsPage.result.recurrencesDetected', { count: detected }, detected) : null;
 });
 
 const transactionsLink = computed(() => {
@@ -109,6 +116,7 @@ function onTemplateSaved() {
                         >
                     </p>
                     <p v-if="createdEntitiesText" class="import-result__text">{{ createdEntitiesText }}</p>
+                    <p v-if="detectedRecurrencesText" class="import-result__text">{{ detectedRecurrencesText }}</p>
                 </template>
                 <template v-else>
                     <h2 class="import-result__title">{{ t('importsPage.result.cancelledTitle') }}</h2>
@@ -146,6 +154,15 @@ function onTemplateSaved() {
                 {{ t('importsPage.actions.delete') }}
             </button>
         </div>
+
+        <RecurringSuggestionsPanel v-if="isValid" :import-public-id="item.publicId" hide-when-empty class="import-result__suggestions">
+            <template #header="{ count }">
+                <div>
+                    <h3 class="import-result__subtitle">{{ t('importsPage.result.recurrencesTitle', { count }, count) }}</h3>
+                    <p class="import-result__text">{{ t('importsPage.result.recurrencesHint') }}</p>
+                </div>
+            </template>
+        </RecurringSuggestionsPanel>
 
         <AppConfirmationModal
             v-model="revertOpen"
@@ -219,6 +236,17 @@ function onTemplateSaved() {
     margin: 4px 0 0;
     font-size: 0.86rem;
     color: var(--ink-soft);
+}
+
+.import-result__suggestions {
+    margin-top: 8px;
+}
+
+.import-result__subtitle {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 650;
+    letter-spacing: -0.01em;
 }
 
 .import-result__actions {

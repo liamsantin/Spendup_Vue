@@ -190,12 +190,13 @@ describe('useImportsStore', () => {
             import: makeImport({ status: 'valide', expiresAt: null }),
             createdTransactions: 2,
             createdTiers: 3,
-            createdPaymentMethods: 1
+            createdPaymentMethods: 1,
+            detectedRecurrences: 2
         });
         const result = await store.commitImport('imp-1', { ignoreUnresolved: true });
 
         expect(api.commit).toHaveBeenCalledWith('imp-1', true);
-        expect(result).toMatchObject({ createdTransactions: 2, createdTiers: 3, createdPaymentMethods: 1 });
+        expect(result).toMatchObject({ createdTransactions: 2, createdTiers: 3, createdPaymentMethods: 1, detectedRecurrences: 2 });
         expect(notifications.dispatchLocalAccountChanged).toHaveBeenCalledWith({
             change: 'paymentMethodCreated',
             accountPublicId: 'acc-1'

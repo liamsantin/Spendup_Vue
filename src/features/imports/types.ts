@@ -270,6 +270,8 @@ export type CommitImportResult = {
     /** Tiers / moyens créés depuis les valeurs du fichier non reconnues (`unmatched…Name`). */
     createdTiers: number;
     createdPaymentMethods: number;
+    /** Suggestions de récurrences créées ou rafraîchies par cet import (`GET /api/recurring-suggestions?importPublicId=`). */
+    detectedRecurrences: number;
 };
 
 /** Ce que le commit vient de créer (panneau de résultat). */

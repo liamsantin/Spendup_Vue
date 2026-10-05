@@ -703,6 +703,24 @@
             "incomes": "Revenus",
             "upcoming": "Échéances"
         },
+        "suggestions": {
+            "open": "Suggestions",
+            "title": "Récurrences détectées",
+            "subtitle": "Paiements et rentrées réguliers repérés dans l’historique, pas encore suivis par une récurrence.",
+            "account": "Compte",
+            "chooseAccount": "Choisis un compte pour voir ses récurrences détectées.",
+            "scan": "Analyser l’historique",
+            "scanning": "Analyse…",
+            "loading": "Chargement…",
+            "empty": "Aucune récurrence détectée pour le moment.",
+            "accept": "Créer la récurrence",
+            "dismiss": "Ignorer",
+            "accepted": "« {name} » ajoutée à tes récurrences.",
+            "dismissed": "Suggestion ignorée : elle ne sera plus proposée.",
+            "occurrences": "aucune occurrence | 1 occurrence | {count} occurrences",
+            "next": "Prochaine le {date}",
+            "confidence": "Confiance {value} %"
+        },
         "createAs": {
             "expense": "Une dépense",
             "income": "Un revenu"
@@ -2384,7 +2402,10 @@
             "viewTransactions": "Voir les transactions",
             "reverted": "Aucune transaction supprimée. | 1 transaction supprimée. | {count} transactions supprimées.",
             "templateSaved": "Modèle enregistré. Il sera proposé au prochain import.",
-            "entitiesCreated": "{list} | {list} créé | {list} créés"
+            "entitiesCreated": "{list} | {list} créé | {list} créés",
+            "recurrencesDetected": "Aucune récurrence détectée | 1 récurrence détectée dans ton historique | {count} récurrences détectées dans ton historique",
+            "recurrencesTitle": "Aucune récurrence à suivre | 1 récurrence à suivre ? | {count} récurrences à suivre ?",
+            "recurrencesHint": "Ces opérations reviennent régulièrement sur ce compte. Crée la récurrence pour anticiper les prochaines échéances."
         },
         "templates": {
             "personal": "Mes modèles",

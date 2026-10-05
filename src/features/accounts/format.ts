@@ -171,6 +171,21 @@ export function todayYmd(now = new Date()): string {
 }
 
 /**
+ * Date calendaire du jour dans un fuseau IANA (`Europe/Zurich`…), comme l’API qui juge les dates futures
+ * dans le fuseau de l’utilisateur. Fuseau absent ou invalide → date locale du navigateur.
+ */
+export function todayYmdInTimeZone(timeZone: string | null | undefined, now = new Date()): string {
+    if (!timeZone) return todayYmd(now);
+    try {
+        const parts = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(now);
+        const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
+        return `${part('year')}-${part('month')}-${part('day')}`;
+    } catch {
+        return todayYmd(now);
+    }
+}
+
+/**
  * Convertit une date calendaire `YYYY-MM-DD` en ISO UTC pour `snapshotAt`.
  * - Aujourd’hui (fuseau local) → heure actuelle (`now.toISOString()`), jamais fin de journée.
  * - Jour passé → midi UTC (`…T12:00:00.000Z`).
