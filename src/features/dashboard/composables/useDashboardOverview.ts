@@ -7,17 +7,15 @@ import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import {
+    DASHBOARD_ACCOUNTS_LIMIT,
     DASHBOARD_MASKED_AMOUNT,
     DASHBOARD_RECENT_LIMIT,
     greetingPeriod,
     pickPrimaryCurrency,
     sumVisibleBalances
 } from '@/features/dashboard/format';
-import { useFilesStore } from '@/features/files/stores/files-store';
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
 import { useNotificationsStore } from '@/features/notifications/stores/notifications-store';
-import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
-import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
 
@@ -27,14 +25,11 @@ export function useDashboardOverview() {
     const settings = useUserSettingsStore();
     const accounts = useAccountsStore();
     const transactions = useTransactionsStore();
-    const files = useFilesStore();
     const friends = useFriendsStore();
     const notifications = useNotificationsStore();
     const categories = useCategoriesStore();
     const budgets = useBudgetsStore();
     const savingsGoals = useSavingsGoalsStore();
-    const tiers = useTiersStore();
-    const paymentMethods = usePaymentMethodsStore();
 
     const greetingName = computed(() => {
         const first = auth.user?.firstName?.trim();
@@ -82,18 +77,25 @@ export function useDashboardOverview() {
 
     const recentTransactions = computed(() => transactions.items.slice(0, DASHBOARD_RECENT_LIMIT));
 
+    /** Comptes actifs (possédés puis partagés), le principal en tête. */
+    const topAccounts = computed(() =>
+        [...accounts.accounts]
+            .filter((account) => account.isActive)
+            .sort(
+                (a, b) => Number(b.isPrimary) - Number(a.isPrimary) || Number(b.isOwned) - Number(a.isOwned) || a.name.localeCompare(b.name)
+            )
+            .slice(0, DASHBOARD_ACCOUNTS_LIMIT)
+    );
+    const activeAccountCount = computed(() => accounts.accounts.filter((account) => account.isActive).length);
+
     async function load() {
         await Promise.allSettled([
             accounts.bootstrap('Accounts'),
             transactions.bootstrap(),
-            files.loadUsage(),
-            friends.bootstrap('Friends'),
             friends.loadIncoming(),
             categories.bootstrap(),
             budgets.bootstrap({ isActive: true }),
             savingsGoals.bootstrap({ status: 'active' }),
-            tiers.bootstrap(),
-            paymentMethods.bootstrap(),
             notifications.fetchUnreadCount()
         ]);
     }
@@ -107,25 +109,20 @@ export function useDashboardOverview() {
         todayLabel,
         showBalance,
         hideAmounts,
+        primaryCurrency,
         primaryTotal,
         otherTotals,
         accountCount: computed(() => accounts.activeOwnedAccounts.length),
-        sharedCount: computed(() => accounts.sharedAccounts.length),
-        transactionCount: computed(() => transactions.totalCount),
+        topAccounts,
+        activeAccountCount,
         recentTransactions,
-        fileUsage: computed(() => files.usage),
-        friendsCount: computed(() => friends.friendsCount),
         incomingFriends: computed(() => friends.incomingCount),
         unreadCount: computed(() => notifications.unreadCount),
-        categoryCount: computed(() => categories.totalCount),
-        budgetCount: computed(() => budgets.totalCount),
         overspentBudgetCount: computed(
             () => budgets.items.filter((item) => item.isActive && item.isCurrent && item.remainingAmount < 0).length
         ),
-        savingsGoalCount: computed(() => savingsGoals.totalCount),
         overdueSavingsGoalCount: computed(() => savingsGoals.items.filter((item) => item.status === 'active' && item.isOverdue).length),
         defaultDashboardView: computed(() => settings.current.defaultDashboardView),
-        tierCount: computed(() => tiers.totalCount),
-        paymentMethodCount: computed(() => paymentMethods.totalCount)
+        categoryById: (publicId: string) => categories.findByPublicId(publicId)
     };
 }

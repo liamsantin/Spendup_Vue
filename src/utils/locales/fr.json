@@ -258,7 +258,7 @@
     },
     "dashboard": {
         "pageTitle": "Tableau de bord",
-        "subtitle": "Vos finances, documents et réseau au même endroit.",
+        "subtitle": "Vos comptes, vos dépenses du mois et ce qui arrive.",
         "breadcrumbs": {
             "application": "Application",
             "dashboard": "Tableau de bord"
@@ -272,13 +272,12 @@
             "eveningAnonymous": "Bonsoir"
         },
         "hero": {
-            "lede": "Un aperçu de ce qui est déjà en place dans Spend.Up.",
+            "lede": "Voici où en sont vos finances aujourd’hui.",
             "balance": "Solde visible",
-            "accountsMeta": "{count} compte actif | {count} compte actif | {count} comptes actifs"
-        },
-        "banner": {
-            "title": "Espace authentifié Spend.Up",
-            "body": "Tableau de bord Spend.Up. Les modules ci-dessous préfigurent les prochaines fonctionnalités (/app)."
+            "accountsMeta": "{count} compte actif | {count} compte actif | {count} comptes actifs",
+            "ledePositive": "En {month}, vous avez gagné {amount} de plus que vous n’avez dépensé.",
+            "ledeNegative": "En {month}, vos dépenses dépassent vos revenus de {amount}.",
+            "ledeMonth": "Voici le bilan de {month} jusqu’à aujourd’hui."
         },
         "actions": {
             "open": "Ouvrir",
@@ -288,44 +287,10 @@
             "addBudget": "Ajouter un budget",
             "addSavingsGoal": "Ajouter un objectif"
         },
-        "kpis": {
-            "accounts": "Comptes",
-            "accountsHint": "Banques et épargne",
-            "sharedAccounts": "{count} partagé | {count} partagé | {count} partagés",
-            "transactions": "Transactions",
-            "transactionsHint": "Mouvements enregistrés",
-            "files": "Fichiers",
-            "filesHint": "Documents PDF",
-            "friends": "Amis",
-            "friendsHint": "Votre réseau",
-            "incomingFriends": "{count} demande | {count} demande | {count} demandes",
-            "notifications": "Notifications",
-            "notificationsHint": "Non lues",
-            "categories": "Catégories",
-            "categoriesHint": "Classement",
-            "tiers": "Tiers",
-            "tiersHint": "Contreparties",
-            "paymentMethods": "Paiements",
-            "paymentMethodsHint": "Cartes et moyens",
-            "budgets": "Budgets",
-            "budgetsHint": "Enveloppes actives",
-            "budgetsOver": "{count} dépassé | {count} dépassé | {count} dépassés",
-            "savingsGoals": "Objectifs",
-            "savingsGoalsHint": "Épargne en cours",
-            "savingsGoalsOverdue": "{count} en retard | {count} en retard | {count} en retard"
-        },
         "recent": {
             "title": "Dernières transactions",
             "subtitle": "Les mouvements les plus récents.",
             "empty": "Aucune transaction pour l’instant."
-        },
-        "shortcuts": {
-            "title": "Accès rapides",
-            "subtitle": "Les espaces déjà disponibles."
-        },
-        "storage": {
-            "title": "Stockage",
-            "subtitle": "Blobs PDF uniques, hors avatar."
         },
         "budgets": {
             "title": "Budgets",
@@ -335,57 +300,48 @@
             "overspent": "Limite dépassée"
         },
         "savingsGoals": {
-            "title": "Savings goals",
-            "subtitle": "Opening plus linked transactions.",
+            "title": "Objectifs d’épargne",
+            "subtitle": "Versement initial et transactions liées.",
             "empty": "Aucun objectif actif pour l’instant.",
             "reached": "{percent} atteint",
             "overdue": "Échéance dépassée"
         },
-        "modules": {
-            "transactions": {
-                "title": "Transactions",
-                "caption": "Dépenses, revenus et transferts"
-            },
-            "accounts": {
-                "title": "Comptes",
-                "caption": "Banques, épargne et moyens de paiement"
-            },
-            "paymentMethods": {
-                "title": "Moyens de paiement",
-                "caption": "Cartes, espèces et autres moyens"
-            },
-            "recurrences": {
-                "title": "Récurrences",
-                "caption": "Charges et revenus prévus"
-            },
-            "files": {
-                "title": "Fichiers",
-                "caption": "Documents PDF privés"
-            },
-            "categories": {
-                "title": "Catégories",
-                "caption": "Votre plan de classement"
-            },
-            "tiers": {
-                "title": "Tiers",
-                "caption": "Personnes, enseignes et organismes"
-            },
-            "friends": {
-                "title": "Amis",
-                "caption": "Réseau et demandes"
-            },
-            "notifications": {
-                "title": "Notifications",
-                "caption": "Alertes et messages"
-            },
-            "budgets": {
-                "title": "Budgets",
-                "caption": "Suivi et alertes budgétaires"
-            },
-            "goals": {
-                "title": "Objectifs",
-                "caption": "Projets et épargne"
-            }
+        "alerts": {
+            "label": "À traiter",
+            "budgets": "{count} budget dépassé | {count} budget dépassé | {count} budgets dépassés",
+            "goals": "{count} objectif en retard | {count} objectif en retard | {count} objectifs en retard",
+            "friends": "{count} demande d’ami | {count} demande d’ami | {count} demandes d’ami",
+            "notifications": "{count} notification non lue | {count} notification non lue | {count} notifications non lues"
+        },
+        "month": {
+            "title": "Chiffres de {month}",
+            "income": "Revenus de {month}",
+            "expense": "Dépenses de {month}",
+            "net": "Solde du mois",
+            "netHint": "aucune opération | {count} opération | {count} opérations",
+            "upcoming": "À payer sous {days} jours",
+            "upcomingHint": "aucune échéance | {count} échéance | {count} échéances",
+            "vsPrevious": "{change} vs {month}",
+            "noComparison": "Pas de comparaison possible"
+        },
+        "spending": {
+            "title": "Dépenses par catégorie",
+            "subtitle": "En {month}, jusqu’à aujourd’hui.",
+            "empty": "Aucune dépense ce mois-ci.",
+            "other": "Autres",
+            "uncategorized": "Sans catégorie"
+        },
+        "accounts": {
+            "title": "Mes comptes",
+            "subtitle": "Soldes actuels.",
+            "empty": "Aucun compte pour l’instant.",
+            "more": "+{count} autres comptes",
+            "shared": "Partagé"
+        },
+        "upcoming": {
+            "title": "Prochaines échéances",
+            "subtitle": "Charges et revenus des {days} prochains jours.",
+            "empty": "Rien de prévu dans les prochains jours."
         }
     },
     "comptesPage": {
