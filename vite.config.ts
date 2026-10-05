@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
+import vueDevTools from 'vite-plugin-vue-devtools';
 import { buildCspProdEnforce, CSP_DEV_REPORT_ONLY, SECURITY_HEADERS_BASE } from './src/security/csp';
 import { excludeDesktopInstaller, netlifyHeadersCsp, vueTablerIconsTreeshake } from './vite.plugins';
 
@@ -23,7 +24,7 @@ function htmlCspMetaPlugin(cspProd: string): Plugin {
 }
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ command, mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
     const cspProd = buildCspProdEnforce(env.VITE_API_BASE_URL || 'http://localhost:5124');
 
@@ -31,6 +32,8 @@ export default defineConfig(({ mode }) => {
         clearScreen: false,
         plugins: [
             vue(),
+            // Vue DevTools : serveur de dev uniquement (ni build, ni Vitest)
+            ...(command === 'serve' && !process.env.VITEST ? [vueDevTools()] : []),
             vueTablerIconsTreeshake(),
             vuetify({ autoImport: true }),
             htmlCspMetaPlugin(cspProd),
