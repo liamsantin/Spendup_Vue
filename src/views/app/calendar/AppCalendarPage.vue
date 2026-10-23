@@ -612,8 +612,12 @@ function selectCell(cell: Cell) {
 
 /* ── responsive ───────────────────────────────────── */
 @media (max-width: 1100px) {
+    /* Empilé : chaque rangée prend la hauteur de son contenu (le conteneur est à hauteur fixe,
+       sinon la rangée du mois se comprime et la grille déborde sur le panneau). */
     .cal {
         grid-template-columns: minmax(0, 1fr);
+        grid-auto-rows: max-content;
+        align-content: start;
     }
 
     .cal__side {
