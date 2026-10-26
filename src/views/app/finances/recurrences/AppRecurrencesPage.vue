@@ -341,19 +341,9 @@ const activeFilterTotal = computed(() =>
 </script>
 
 <template>
-    <AppPageShell :title="pageTitle" :subtitle="pageSubtitle" :body-scroll="false">
-        <template v-if="tab !== 'upcoming'" #actions>
-            <RecurringCreateMenu
-                :compact="compactNotch"
-                :label="t('recurrencesPage.actions.create')"
-                :disabled="!canCreate || store.acting"
-                :kind="directoryKind"
-                @select="onCreate"
-                @pick="onPick"
-            />
-        </template>
-        <!-- sous-navigation : passer d'une vue à l'autre sans repasser par le menu -->
-        <template #toolbar>
+    <AppPageShell class="recurrences-page" :title="pageTitle" :subtitle="pageSubtitle" :body-scroll="false">
+        <!-- sous-navigation en haut à droite : passer d'une vue à l'autre sans repasser par le menu -->
+        <template #tabs>
             <nav class="su-tabs recurrences-subnav" :aria-label="t('recurrencesPage.subnav')">
                 <RouterLink
                     v-for="view in subnav"
@@ -486,6 +476,15 @@ const activeFilterTotal = computed(() =>
                     <SparklesIcon :size="16" stroke-width="1.6" />
                     <span class="app-board__label">{{ t('recurrencesPage.suggestions.open') }}</span>
                 </button>
+                <RecurringCreateMenu
+                    v-if="tab !== 'upcoming'"
+                    :compact="compactNotch"
+                    :label="t('recurrencesPage.actions.create')"
+                    :disabled="!canCreate || store.acting"
+                    :kind="directoryKind"
+                    @select="onCreate"
+                    @pick="onPick"
+                />
             </template>
 
             <RecurringUpcomingPanel
@@ -520,8 +519,12 @@ const activeFilterTotal = computed(() =>
 </template>
 
 <style scoped>
+/* titre un cran sous le h1 standard (40 px) : la ligne d'onglets à droite prend la place */
+.recurrences-page :deep(.su-hero h1) {
+    font-size: 32px;
+}
+
 .recurrences-subnav {
-    margin-left: 0;
     text-decoration: none;
 }
 
