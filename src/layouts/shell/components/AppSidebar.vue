@@ -70,6 +70,16 @@ function selectLeaf(leaf: NavLeafType) {
     if (isMobile.value) open.value = false;
 }
 
+/* rail replié : l'icône d'une section déploie la colonne sur cette section ; une entrée seule navigue */
+function openTab(item: NavItem) {
+    if (!item.children?.length) {
+        selectLeaf(item);
+        return;
+    }
+    open.value = true;
+    if (item.muted) expanded.value = new Set(expanded.value).add(item.id);
+}
+
 const generalLabel = computed(() => t('nav.headers.general'));
 
 /* ── overlay mobile : scroll, focus, échappement ───────── */
@@ -112,7 +122,9 @@ void props;
         >
             <nav class="rail" :aria-label="title">
                 <header class="head">
-                    <BurgerButton class="head__burger" :open="open" :label="t('nav.toggleMenu')" @click="toggle" />
+                    <span class="head__toggle">
+                        <BurgerButton class="head__burger" :open="open" :label="t('nav.toggleMenu')" @click="toggle" />
+                    </span>
                     <!-- desktop : le logo replie / déploie la colonne ; mobile : il reste un lien -->
                     <button
                         v-if="!isMobile"
@@ -143,6 +155,7 @@ void props;
                             :group-label="generalLabel"
                             @toggle="toggleItem"
                             @select="selectLeaf"
+                            @tab="openTab"
                         />
                     </ul>
                 </div>
@@ -160,6 +173,7 @@ void props;
                             row-toggle
                             @toggle="toggleItem"
                             @select="selectLeaf"
+                            @tab="openTab"
                         />
                     </ul>
                 </div>
@@ -201,6 +215,7 @@ void props;
     flex-direction: column;
     padding: 24px var(--gutter) 24px;
     overflow: hidden;
+    transition: padding var(--dur-expand) var(--ease);
 }
 
 .head {
@@ -212,9 +227,15 @@ void props;
 }
 
 /* les barres du burger s'alignent sur la gouttière, comme les icônes des entrées */
+.head__toggle {
+    flex: none;
+    display: flex;
+    margin-left: -11px;
+    transition: margin-left var(--dur-expand) var(--ease);
+}
+
 .head__burger {
     --burger-size: 40px;
-    margin-left: -11px;
 }
 
 .head__brand {
@@ -230,6 +251,9 @@ void props;
     font: inherit;
     text-align: left;
     cursor: pointer;
+    transition:
+        opacity 0.2s var(--ease) 0.1s,
+        visibility 0s linear 0s;
 }
 
 .head__brand:focus-visible {
@@ -241,21 +265,22 @@ void props;
     display: none;
 }
 
-/* ── rail replié (desktop) : gouttière réduite, burger seul en tête ── */
+/* ── rail replié (desktop) : gouttière réduite, burger seul en tête, logo effacé ── */
 .sidebar:not(.is-expanded) .rail {
     padding-inline: 20px;
 }
 
-.sidebar:not(.is-expanded) .head {
-    justify-content: center;
-}
-
-.sidebar:not(.is-expanded) .head__burger {
+.sidebar:not(.is-expanded) .head__toggle {
     margin-left: 0;
 }
 
 .sidebar:not(.is-expanded) .head__brand {
-    display: none;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+        opacity 0.15s var(--ease),
+        visibility 0s linear 0.15s;
 }
 
 .rail__scroll {
@@ -327,15 +352,14 @@ void props;
         padding: 16px 20px 20px;
     }
 
-    .head,
-    .sidebar:not(.is-expanded) .head {
+    .head {
         justify-content: space-between;
         height: 40px;
         margin-bottom: 20px;
     }
 
     /* le burger vit dans le header sur mobile : ici une croix suffit */
-    .head__burger {
+    .head__toggle {
         display: none;
     }
 

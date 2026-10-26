@@ -11,6 +11,10 @@ import type { NavItem, NavLeaf as NavLeafType } from '../types/navigation';
  * seule, sous son propre libellé. Les groupes annoncés (`muted`) sont repliables
  * et fermés par défaut ; en bas de colonne (`rowToggle`) le déclencheur prend la
  * forme d'une entrée (icône + libellé), façon « Paramètres ».
+ *
+ * Rail replié (`expanded = false`) : le groupe ne montre plus que l'icône de sa
+ * section, en carré de 40 px ; libellé et liste restent dans le DOM et s'effacent
+ * en opacité, pour que le repli glisse sans reconstruire la colonne.
  */
 const props = defineProps<{
     item: NavItem;
@@ -18,7 +22,7 @@ const props = defineProps<{
     open?: boolean;
     /** Feuille sélectionnée. */
     activeId?: string | null;
-    /** Colonne déployée ; repliée, seules les icônes restent (libellés en info-bulle). */
+    /** Colonne déployée ; repliée, seule l'icône de section reste. */
     expanded?: boolean;
     index?: number;
     /** Libellé affiché au-dessus d'une entrée sans enfants. */
@@ -30,14 +34,18 @@ const props = defineProps<{
 const emit = defineEmits<{
     toggle: [item: NavItem];
     select: [leaf: NavLeafType];
+    /** Clic sur l'icône de section du rail replié. */
+    tab: [item: NavItem];
 }>();
 
 const subId = useId();
 const compact = computed(() => props.expanded === false);
 const hasChildren = computed(() => !!props.item.children?.length);
 const collapsible = computed(() => hasChildren.value && !!props.item.muted);
-const isOpen = computed(() => !collapsible.value || !!props.open);
+/* replié, toutes les listes se ferment : seule l'icône de section reste visible */
+const isOpen = computed(() => !compact.value && (!collapsible.value || !!props.open));
 const childActive = computed(() => !!props.item.children?.some((child) => child.id === props.activeId));
+const sectionActive = computed(() => childActive.value || props.activeId === props.item.id);
 
 function subLabel(index: number): string | null {
     const child = props.item.children?.[index];
@@ -48,51 +56,58 @@ function subLabel(index: number): string | null {
 </script>
 
 <template>
-    <li class="group" :class="{ 'is-muted': item.muted, 'is-open': isOpen, 'group--row': rowToggle, 'group--compact': compact }">
-        <!-- libellé de groupe : texte simple, ou bouton quand le groupe est repliable.
-             Rail replié : le bouton ne garde que son icône, le texte simple disparaît. -->
-        <button
-            v-if="collapsible"
-            type="button"
-            class="group__label group__label--toggle"
-            :class="{ 'is-current': childActive }"
-            :title="compact ? item.label : undefined"
-            :aria-label="compact ? item.label : undefined"
-            :aria-expanded="isOpen"
-            :aria-controls="subId"
-            @click="emit('toggle', item)"
-        >
-            <span v-if="rowToggle || compact" class="group__icon"><ShellNavIcon :icon="item.icon" :size="16" /></span>
-            <template v-if="!compact">
+    <li class="group" :class="{ 'is-muted': item.muted, 'is-open': isOpen, 'group--row': rowToggle, 'is-compact': compact }">
+        <div class="group__head">
+            <!-- icône de section : seule visible dans le rail replié -->
+            <button
+                type="button"
+                class="group__tab"
+                :class="{ 'is-current': sectionActive }"
+                :title="item.label"
+                :aria-label="item.label"
+                :tabindex="compact ? 0 : -1"
+                :aria-hidden="!compact || undefined"
+                @click="emit('tab', item)"
+            >
+                <ShellNavIcon :icon="item.icon" :size="18" />
+            </button>
+
+            <!-- libellé de groupe : texte simple, ou bouton quand le groupe est repliable -->
+            <button
+                v-if="collapsible"
+                type="button"
+                class="group__label group__label--toggle"
+                :class="{ 'is-current': childActive }"
+                :tabindex="compact ? -1 : 0"
+                :aria-hidden="compact || undefined"
+                :aria-expanded="isOpen"
+                :aria-controls="subId"
+                @click="emit('toggle', item)"
+            >
+                <span v-if="rowToggle" class="group__icon"><ShellNavIcon :icon="item.icon" :size="16" /></span>
                 <span class="group__text">{{ item.label }}</span>
                 <span v-if="item.badge" class="group__badge">{{ item.badge }}</span>
                 <BaseIcon name="chevron-right" :size="14" class="group__chev" />
-            </template>
-        </button>
-        <p v-else-if="!compact" class="group__label">
-            <span class="group__text">{{ hasChildren ? item.label : (groupLabel ?? item.label) }}</span>
-            <span v-if="item.badge" class="group__badge">{{ item.badge }}</span>
-        </p>
+            </button>
+            <p v-else class="group__label" :aria-hidden="compact || undefined">
+                <span class="group__text">{{ hasChildren ? item.label : (groupLabel ?? item.label) }}</span>
+                <span v-if="item.badge" class="group__badge">{{ item.badge }}</span>
+            </p>
+        </div>
 
         <!-- un seul enfant de grille : la hauteur 0fr se replie proprement -->
         <div :id="subId" class="group__fold" :inert="!isOpen || undefined" :aria-hidden="!isOpen || undefined">
             <ul v-if="hasChildren" class="group__list">
                 <template v-for="(child, ci) in item.children" :key="child.id">
-                    <li v-if="subLabel(ci) && !compact" class="group__sublabel">{{ subLabel(ci) }}</li>
+                    <li v-if="subLabel(ci)" class="group__sublabel">{{ subLabel(ci) }}</li>
                     <li>
-                        <NavLeaf
-                            :leaf="child"
-                            :active="activeId === child.id"
-                            :nested="!!child.group"
-                            :compact="compact"
-                            @select="emit('select', $event)"
-                        />
+                        <NavLeaf :leaf="child" :active="activeId === child.id" :nested="!!child.group" @select="emit('select', $event)" />
                     </li>
                 </template>
             </ul>
             <ul v-else class="group__list">
                 <li>
-                    <NavLeaf :leaf="item" :active="activeId === item.id" :compact="compact" @select="emit('select', $event)" />
+                    <NavLeaf :leaf="item" :active="activeId === item.id" @select="emit('select', $event)" />
                 </li>
             </ul>
         </div>
@@ -108,6 +123,57 @@ function subLabel(index: number): string | null {
 
 .group + .group {
     margin-top: 20px;
+    transition: margin-top var(--dur-expand) var(--ease);
+}
+
+/* l'en-tête porte le libellé (déployé) et l'icône de section (replié), superposés */
+.group__head {
+    position: relative;
+    min-height: 0;
+    transition: min-height var(--dur-expand) var(--ease);
+}
+
+.group__tab {
+    appearance: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+        opacity 0.2s var(--ease),
+        background 0.15s var(--ease),
+        visibility 0s linear 0.2s;
+}
+
+.group__tab :deep(svg) {
+    display: block;
+    width: 18px;
+    height: 18px;
+    --rail-icon-tone-stroke: currentColor;
+}
+
+.group__tab.is-current {
+    color: var(--blue);
+}
+
+.group__tab:hover {
+    background: var(--soft);
+}
+
+.group__tab:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: -2px;
 }
 
 .group__label {
@@ -127,6 +193,9 @@ function subLabel(index: number): string | null {
     line-height: 1.2;
     text-align: left;
     cursor: default;
+    transition:
+        opacity 0.2s var(--ease),
+        visibility 0s linear 0s;
 }
 
 .group__text {
@@ -215,7 +284,9 @@ function subLabel(index: number): string | null {
 .group__fold {
     display: grid;
     grid-template-rows: 1fr;
-    transition: grid-template-rows 0.25s var(--ease);
+    transition:
+        grid-template-rows 0.25s var(--ease),
+        opacity 0.2s var(--ease);
 }
 
 .group:not(.is-open) .group__fold {
@@ -249,24 +320,35 @@ function subLabel(index: number): string | null {
     border-top: 0;
 }
 
-/* ── rail replié : groupes séparés par l'espace, déclencheurs en carré de 40 px ── */
-.group--compact + .group--compact {
-    margin-top: 12px;
+/* ── rail replié : l'icône de section remplace libellé et liste, sans changer le DOM ── */
+.is-compact + .is-compact {
+    margin-top: 4px;
 }
 
-.group--compact .group__label--toggle {
-    justify-content: center;
-    gap: 0;
+.is-compact .group__head {
     min-height: 40px;
-    margin: 0;
-    color: var(--ink);
 }
 
-.group--compact .group__label--toggle:hover {
-    background: var(--soft);
+.is-compact .group__tab {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+        opacity 0.2s var(--ease) 0.12s,
+        background 0.15s var(--ease),
+        visibility 0s linear 0s;
 }
 
-.group--compact .group__label--toggle.is-current .group__icon {
-    color: var(--blue);
+.is-compact .group__label {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+        opacity 0.15s var(--ease),
+        visibility 0s linear 0.15s;
+}
+
+.is-compact .group__fold {
+    opacity: 0;
 }
 </style>
