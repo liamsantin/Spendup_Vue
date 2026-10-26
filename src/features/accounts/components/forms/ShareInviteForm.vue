@@ -170,9 +170,10 @@ defineExpose({
 .share-invite-form__label {
     flex-shrink: 0;
     margin-bottom: 8px;
-    font-size: 0.875rem;
-    font-weight: 500;
+    font-size: 13px;
+    font-weight: 400;
     line-height: 1.35;
+    color: var(--ink);
 }
 
 .share-invite-form__friends {
@@ -194,8 +195,9 @@ defineExpose({
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
-    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-    border-radius: 10px;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
 }
 
 .share-invite-form__list-scroll {
@@ -212,7 +214,7 @@ defineExpose({
     min-height: 0;
     margin-top: 16px;
     overflow: hidden;
-    background: rgb(var(--v-theme-surface));
+    background: var(--raise);
 }
 
 .share-invite-form__options-scroll {

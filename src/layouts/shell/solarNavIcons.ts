@@ -14,6 +14,7 @@ export { BuildingsIcon as WealthNavIcon } from '@solar-icons/vue/bold-duotone/bu
 export { GraphNewUpIcon as AnalyticsNavIcon } from '@solar-icons/vue/bold-duotone/graph-new-up';
 export { UsersGroupRoundedIcon as NetworkNavIcon } from '@solar-icons/vue/bold-duotone/users-group-rounded';
 export { SettingsIcon as SettingsNavIcon } from '@solar-icons/vue/bold-duotone/settings';
+export { StarsIcon as UpcomingNavIcon } from '@solar-icons/vue/bold-duotone/stars';
 
 /* ── Entrées top-level & feuilles (line-duotone) ───────────── */
 export { Widget5Icon as DashboardNavIcon } from '@solar-icons/vue/line-duotone/widget-5';

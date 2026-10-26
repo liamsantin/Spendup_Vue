@@ -52,9 +52,6 @@ function scrollToTop() {
 
 <template>
     <footer class="landing-footer">
-        <div class="landing-footer__glow landing-footer__glow--left" aria-hidden="true"></div>
-        <div class="landing-footer__glow landing-footer__glow--right" aria-hidden="true"></div>
-
         <v-container class="max-width-1218 landing-footer__content">
             <div class="footer-main">
                 <div class="footer-brand">
@@ -66,7 +63,7 @@ function scrollToTop() {
 
                     <RouterLink to="/#hebergement" class="footer-hosting" aria-label="Données hébergées en Suisse chez Infomaniak">
                         <svg viewBox="0 0 32 32" aria-hidden="true">
-                            <rect width="32" height="32" rx="7" fill="#DA291C" />
+                            <rect width="32" height="32" fill="#E4002B" />
                             <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
                             <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
                         </svg>
@@ -107,7 +104,7 @@ function scrollToTop() {
                 <p>© {{ year }} Spend.Up. Tous droits réservés.</p>
                 <p class="footer-bottom__made">
                     <svg viewBox="0 0 32 32" aria-hidden="true">
-                        <rect width="32" height="32" rx="7" fill="#DA291C" />
+                        <rect width="32" height="32" fill="#E4002B" />
                         <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
                         <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
                     </svg>

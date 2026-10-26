@@ -101,23 +101,57 @@ const channels = computed<ContactChannel[]>(() => [
 
 <template>
     <div class="contact-page">
-        <section class="contact-hero">
-            <div class="contact-hero__grid" aria-hidden="true"></div>
-            <v-container class="max-width-1218">
-                <div class="contact-hero__copy">
-                    <span class="contact-kicker su-hero-in">Contact</span>
-                    <h1 class="textPrimary su-hero-in" style="--su-in-delay: 80ms">Une question ? <span>Parlons-en.</span></h1>
-                    <p class="text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
-                        Support, données personnelles, presse ou partenariat : écrivez-nous, une personne de l’équipe Spend.Up vous répond
-                        directement.
-                    </p>
-                </div>
-            </v-container>
-        </section>
-
         <section class="contact-main">
             <v-container class="max-width-1218">
                 <div class="contact-layout">
+                    <div class="contact-intro">
+                        <div class="contact-hero__copy">
+                            <span class="contact-kicker su-hero-in">Contact</span>
+                            <h1 class="textPrimary su-hero-in" style="--su-in-delay: 80ms">
+                                Une question&nbsp;? <span class="s-primary">Parlons‑en.</span>
+                            </h1>
+                            <p class="text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
+                                Support, données personnelles, presse ou partenariat : écrivez-nous, une personne de l’équipe Spend.Up vous
+                                répond directement.
+                            </p>
+                        </div>
+                        <aside class="contact-aside">
+                            <article v-for="channel in channels" :key="channel.title" class="contact-channel">
+                                <span class="contact-channel__icon"><component :is="channel.icon" size="21" stroke-width="1.7" /></span>
+                                <div>
+                                    <h3 class="textPrimary">{{ channel.title }}</h3>
+                                    <p class="text-medium-emphasis">{{ channel.text }}</p>
+                                    <button
+                                        v-if="'action' in channel && email"
+                                        type="button"
+                                        class="contact-channel__email"
+                                        @click="copyEmail"
+                                    >
+                                        <span>{{ email }}</span>
+                                        <component :is="copied ? CheckIcon : CopyIcon" size="16" />
+                                        <span class="contact-sr">{{ copied ? 'Adresse copiée' : 'Copier l’adresse' }}</span>
+                                    </button>
+                                    <RouterLink v-else-if="'to' in channel" :to="channel.to" class="contact-channel__link">
+                                        {{ channel.linkLabel }}
+                                        <ArrowRightIcon size="16" />
+                                    </RouterLink>
+                                </div>
+                            </article>
+
+                            <div class="contact-swiss">
+                                <svg viewBox="0 0 32 32" aria-hidden="true">
+                                    <rect width="32" height="32" fill="#E4002B" />
+                                    <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
+                                    <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
+                                </svg>
+                                <div>
+                                    <strong>Une équipe et des données en Suisse</strong>
+                                    <span><MapPinIcon size="14" /> Hébergement chez Infomaniak, à Genève</span>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+
                     <div class="contact-card">
                         <div v-if="sent" class="contact-sent" role="status">
                             <span class="contact-sent__icon"><MailOpenedIcon size="30" stroke-width="1.6" /></span>
@@ -217,37 +251,6 @@ const channels = computed<ContactChannel[]>(() => [
                             </div>
                         </form>
                     </div>
-
-                    <aside class="contact-aside">
-                        <article v-for="channel in channels" :key="channel.title" class="contact-channel">
-                            <span class="contact-channel__icon"><component :is="channel.icon" size="21" stroke-width="1.7" /></span>
-                            <div>
-                                <h3 class="textPrimary">{{ channel.title }}</h3>
-                                <p class="text-medium-emphasis">{{ channel.text }}</p>
-                                <button v-if="'action' in channel && email" type="button" class="contact-channel__email" @click="copyEmail">
-                                    <span>{{ email }}</span>
-                                    <component :is="copied ? CheckIcon : CopyIcon" size="16" />
-                                    <span class="contact-sr">{{ copied ? 'Adresse copiée' : 'Copier l’adresse' }}</span>
-                                </button>
-                                <RouterLink v-else-if="'to' in channel" :to="channel.to" class="contact-channel__link">
-                                    {{ channel.linkLabel }}
-                                    <ArrowRightIcon size="16" />
-                                </RouterLink>
-                            </div>
-                        </article>
-
-                        <div class="contact-swiss">
-                            <svg viewBox="0 0 32 32" aria-hidden="true">
-                                <rect width="32" height="32" rx="7" fill="#DA291C" />
-                                <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
-                                <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
-                            </svg>
-                            <div>
-                                <strong>Une équipe et des données en Suisse</strong>
-                                <span><MapPinIcon size="14" /> Hébergement chez Infomaniak, à Genève</span>
-                            </div>
-                        </div>
-                    </aside>
                 </div>
             </v-container>
         </section>

@@ -91,31 +91,32 @@ watch(popoverOpen, (open) => {
 .app-board .app-board-search--full {
     flex: 1 1 220px;
     width: auto;
-    max-width: none;
-    height: 34px;
+    max-width: 520px;
+    height: 40px;
     margin: 0;
-    border-radius: 17px;
-    background: #fff;
-    border: 1px solid rgba(16, 16, 20, 0.05);
-    box-shadow: 0 1px 2px rgba(16, 16, 20, 0.05);
+    border-radius: 0;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--ink);
+    box-shadow: none;
     backdrop-filter: none;
 }
 
 .app-board .app-board-search__trigger {
     flex: none;
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
     padding: 0;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow:
-        0 1px 2px rgba(16, 16, 20, 0.06),
-        0 0 0 1px rgba(16, 16, 20, 0.05);
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 .app-board .app-board-search__trigger.is-active {
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.14);
+    color: var(--ink);
+    border-color: var(--ink);
+    background: transparent;
     box-shadow: none;
 }
 

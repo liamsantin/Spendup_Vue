@@ -56,25 +56,19 @@ const targetDateModel = computed({
 
 <template>
     <div class="savings-goal-form">
-        <v-row v-if="isEdit" class="align-center" no-gutters>
-            <v-col cols="auto" sm="3" class="pr-3">
-                <label class="v-label font-weight-medium" for="savings-goal-form-abandon">
-                    {{ t('savingsGoalsPage.form.fields.abandon') }}
-                </label>
-            </v-col>
-            <v-col cols="auto" sm="9">
+        <div v-if="isEdit" class="savings-goal-form__row">
+            <label class="savings-goal-form__label" for="savings-goal-form-abandon">
+                {{ t('savingsGoalsPage.form.fields.abandon') }}
+            </label>
+            <div class="savings-goal-form__field">
                 <AppSwitch id="savings-goal-form-abandon" v-model="form.abandon" />
                 <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ t('savingsGoalsPage.form.abandonHint') }}</p>
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="savings-goal-form-name">
-                    {{ t('savingsGoalsPage.form.fields.name') }} *
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="savings-goal-form__row">
+            <label class="savings-goal-form__label" for="savings-goal-form-name"> {{ t('savingsGoalsPage.form.fields.name') }} * </label>
+            <div class="savings-goal-form__field">
                 <v-text-field
                     id="savings-goal-form-name"
                     v-model="form.name"
@@ -85,16 +79,14 @@ const targetDateModel = computed({
                     :error="!!fieldErrors.name"
                     :error-messages="fieldErrors.name || undefined"
                 />
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="savings-goal-form-target">
-                    {{ t('savingsGoalsPage.form.fields.targetAmount') }} *
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="savings-goal-form__row">
+            <label class="savings-goal-form__label" for="savings-goal-form-target">
+                {{ t('savingsGoalsPage.form.fields.targetAmount') }} *
+            </label>
+            <div class="savings-goal-form__field">
                 <v-text-field
                     id="savings-goal-form-target"
                     v-model="form.targetAmount"
@@ -107,16 +99,14 @@ const targetDateModel = computed({
                     :error="!!fieldErrors.targetAmount"
                     :error-messages="fieldErrors.targetAmount || undefined"
                 />
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="savings-goal-form-opening">
-                    {{ t('savingsGoalsPage.form.fields.openingAmount') }}
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="savings-goal-form__row">
+            <label class="savings-goal-form__label" for="savings-goal-form-opening">
+                {{ t('savingsGoalsPage.form.fields.openingAmount') }}
+            </label>
+            <div class="savings-goal-form__field">
                 <v-text-field
                     id="savings-goal-form-opening"
                     v-model="form.openingAmount"
@@ -131,24 +121,20 @@ const targetDateModel = computed({
                 />
                 <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ t('savingsGoalsPage.form.openingAmountHint') }}</p>
                 <p v-if="progressHint" class="text-caption text-medium-emphasis mb-0 mt-1">{{ progressHint }}</p>
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('savingsGoalsPage.form.fields.targetDate') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="savings-goal-form__row">
+            <label class="savings-goal-form__label">{{ t('savingsGoalsPage.form.fields.targetDate') }}</label>
+            <div class="savings-goal-form__field">
                 <AppDatePicker v-model="targetDateModel" :label="t('savingsGoalsPage.form.fields.targetDate')" clearable />
                 <p v-if="fieldErrors.targetDate" class="text-caption text-error mt-1 mb-0">{{ fieldErrors.targetDate }}</p>
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('savingsGoalsPage.form.fields.account') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="savings-goal-form__row">
+            <label class="savings-goal-form__label">{{ t('savingsGoalsPage.form.fields.account') }}</label>
+            <div class="savings-goal-form__field">
                 <AppSelect
                     id="savings-goal-form-account"
                     v-model="form.accountPublicId"
@@ -161,14 +147,12 @@ const targetDateModel = computed({
                 />
                 <p v-if="accountHint" class="text-caption text-medium-emphasis mb-0 mt-1">{{ accountHint }}</p>
                 <p v-if="accountChangeHint" class="text-caption text-medium-emphasis mb-0 mt-1">{{ accountChangeHint }}</p>
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('savingsGoalsPage.form.fields.currency') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="savings-goal-form__row">
+            <label class="savings-goal-form__label">{{ t('savingsGoalsPage.form.fields.currency') }}</label>
+            <div class="savings-goal-form__field">
                 <AppSelect
                     id="savings-goal-form-currency"
                     v-model="form.currency"
@@ -180,13 +164,65 @@ const targetDateModel = computed({
                     :error-messages="fieldErrors.currency || undefined"
                 />
                 <p v-if="currencyHint" class="text-caption text-medium-emphasis mb-0 mt-1">{{ currencyHint }}</p>
-            </v-col>
-        </v-row>
+            </div>
+        </div>
     </div>
 </template>
 
 <style scoped>
-.savings-goal-form :deep(.v-row) {
-    margin-bottom: 12px;
+/* Formulaire de fenêtre modale (maquette 04) : libellé à gauche sur 170 px | champ carré. */
+.savings-goal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.savings-goal-form__row {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 16px;
+}
+
+.savings-goal-form__label {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.3;
+}
+
+.savings-goal-form__field {
+    min-width: 0;
+}
+
+/* champ texte Vuetify : 42 px, carré (bordure et focus gérés par le kit) */
+.savings-goal-form__field :deep(.v-field) {
+    --v-input-control-height: 42px;
+}
+
+.savings-goal-form__field :deep(.v-input--density-default .v-field--variant-outlined) {
+    --v-input-control-height: 42px;
+}
+
+.savings-goal-form__field :deep(.v-text-field input) {
+    min-height: 42px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.savings-goal-form__field .text-caption {
+    color: var(--gray) !important;
+    font-size: 13px !important;
+}
+
+.savings-goal-form__field .text-error {
+    color: var(--danger) !important;
+}
+
+@media (max-width: 599.98px) {
+    .savings-goal-form__row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
 }
 </style>

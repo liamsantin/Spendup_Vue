@@ -1,24 +1,22 @@
-/* Contrôles : search, orb, btn, chip, empty, spin. */
+/* Contrôles Swiss : recherche, bouton-icône, boutons carrés, pastille, états vides. */
 
+/* ── recherche de liste : simple ligne 1 px noire en bas ── */
 .su-search {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 10px;
     width: min(420px, 100%);
-    margin: 16px 0 0 auto;
+    margin: 0 0 0 auto;
     min-width: 0;
-    height: 50px;
-    padding: 0 8px 0 6px;
-    border-radius: 26px;
-    background: var(--surface);
-    border: 1px solid var(--stroke);
-    backdrop-filter: var(--blur);
-    box-shadow: var(--shadow-rest);
-    animation: su-in 0.55s var(--ease) both;
-    transition:
-        width 0.45s var(--ease),
-        margin 0.45s var(--ease),
-        max-width 0.45s var(--ease);
+    height: 40px;
+    padding: 0 0 0 2px;
+    border: 0;
+    border-bottom: 1px solid var(--ink);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    transition: border-color 0.15s var(--ease);
 }
 
 .su-search--center {
@@ -37,10 +35,8 @@
 }
 
 .su-search:focus-within {
-    border-color: rgba(var(--v-theme-primary), 0.45);
-    box-shadow:
-        0 0 0 4px rgba(var(--v-theme-primary), 0.12),
-        var(--shadow-rest);
+    border-bottom-color: var(--blue-btn);
+    box-shadow: none;
 }
 
 .su-discover-search-slot {
@@ -50,19 +46,20 @@
     align-items: flex-start;
     width: 100%;
     min-width: 0;
-    padding: 2px 8px 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
 .su-hero--searching {
-    padding-bottom: 0;
+    padding-bottom: 20px;
 }
 
 .su-page--discover-idle .su-body {
     flex: 0 0 auto;
-    padding-top: 0;
+    padding-top: 32px;
 }
 
+/* ── bouton-icône : carré, nu ─────────────────────────── */
 .su-search__orb,
 .su-orb {
     appearance: none;
@@ -73,55 +70,70 @@
     flex: none;
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: 0;
     background: transparent;
     color: var(--ink-mute);
     cursor: pointer;
     transition:
-        background 0.35s var(--ease),
-        color 0.3s,
-        transform 0.4s var(--spring);
+        background 0.15s var(--ease),
+        color 0.15s var(--ease);
 }
 
 .su-search__orb:hover,
 .su-orb:hover {
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.1);
-    transform: scale(1.06);
+    color: var(--ink);
+    background: var(--soft);
+    transform: none;
 }
 
 .su-search__orb:active,
 .su-orb:active {
-    transform: scale(0.94);
+    transform: none;
+}
+
+.su-orb:focus-visible,
+.su-btn:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+}
+
+/* recherche : jamais de cadre au focus, seul le trait du bas passe au bleu */
+.su-search__input:focus,
+.su-search__input:focus-visible {
+    outline: none;
+    box-shadow: none;
 }
 
 .su-orb:disabled {
     opacity: 0.4;
     cursor: default;
-    transform: none;
 }
 
 .su-orb--danger {
-    color: #b42318;
+    color: var(--danger);
+}
+
+.su-orb--danger:hover {
+    color: var(--danger);
+    background: var(--danger-soft);
 }
 
 .su-search__icon {
     flex: none;
-    margin-left: 2px;
-    color: var(--ink-muted);
+    color: var(--gray);
 }
 
 .su-search__input {
     flex: 1;
     min-width: 0;
-    height: 40px;
+    height: 38px;
     border: 0;
     outline: none;
     background: none;
     color: var(--ink);
     font: inherit;
-    font-size: 14.5px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 400;
 }
 
 @media (pointer: coarse), (max-width: 959.98px) {
@@ -135,68 +147,63 @@
 }
 
 .su-search__input::placeholder {
-    color: var(--ink-muted);
+    color: var(--gray);
 }
 
 .su-search.su-search-pop {
     width: min(360px, calc(100vw - 24px));
     min-width: min(280px, calc(100vw - 24px));
     max-width: calc(100vw - 24px);
-    height: 50px;
+    height: 44px;
     margin: 0;
-    padding: 0 8px 0 10px !important;
+    padding: 0 4px 0 12px !important;
     overflow: visible;
-    border-radius: 26px !important;
-    animation: none;
-    box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.95) inset,
-        0 8px 20px rgba(16, 16, 20, 0.16),
-        0 18px 40px -12px rgba(16, 16, 20, 0.28);
-}
-
-.su-search.su-search-pop .su-search__input {
-    font-size: 15px;
+    border: 1px solid var(--ink);
+    border-radius: 0 !important;
+    background: var(--raise);
+    box-shadow: var(--shadow-offset);
 }
 
 .su-search.su-search-pop:focus-within {
-    border-color: rgba(var(--v-theme-primary), 0.5);
-    box-shadow:
-        0 0 0 4px rgba(var(--v-theme-primary), 0.14),
-        0 8px 20px rgba(16, 16, 20, 0.16),
-        0 18px 40px -12px rgba(16, 16, 20, 0.28);
+    border-color: var(--ink);
+    box-shadow: var(--shadow-offset);
 }
 
+/* ── boutons : carrés, 40 px, 700 ─────────────────────── */
 .su-btn {
     appearance: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    border: 0;
-    height: 34px;
-    padding: 0 14px;
-    border-radius: 17px;
-    background: var(--surface-raised);
+    gap: 8px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    background: transparent;
     color: var(--ink);
-    box-shadow: var(--shadow-pill-soft);
+    box-shadow: none;
     font: inherit;
-    font-size: 13px;
-    font-weight: 580;
+    font-size: 13.5px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
     cursor: pointer;
     text-decoration: none;
     transition:
-        transform 0.35s var(--spring),
-        box-shadow 0.3s var(--ease),
-        background 0.3s var(--ease),
-        color 0.3s;
+        background 0.15s var(--ease),
+        color 0.15s var(--ease),
+        border-color 0.15s var(--ease);
 }
 
 .su-btn:hover:not(:disabled) {
-    transform: scale(1.04);
+    background: var(--soft);
+    transform: none;
 }
 
 .su-btn:active:not(:disabled) {
-    transform: scale(0.96);
+    transform: none;
 }
 
 .su-btn:disabled {
@@ -204,77 +211,173 @@
     cursor: default;
 }
 
+.su-btn > svg {
+    flex: none;
+}
+
 .su-btn__count {
-    display: grid;
+    display: inline-grid;
     place-items: center;
     min-width: 18px;
     height: 18px;
     padding: 0 5px;
     border-radius: 9px;
-    background: var(--hair);
-    color: var(--ink-mute);
+    background: var(--blue);
+    color: #fff;
     font-size: 11px;
     font-weight: 700;
     line-height: 1;
 }
 
+/* principal : fond bleu, texte blanc */
 .su-btn--ink {
-    background: rgb(var(--v-theme-primary));
+    background: var(--blue-btn);
+    border-color: var(--blue-btn);
     color: #fff;
-    /* Glow primary plus discret — moins « flash » sur les CTA. */
-    box-shadow: 0 10px 22px -16px rgba(var(--v-theme-primary), 0.42);
+    box-shadow: none;
 }
 
 .su-btn--ink:hover:not(:disabled) {
-    box-shadow: 0 12px 26px -14px rgba(var(--v-theme-primary), 0.5);
+    background: var(--blue-ink);
+    border-color: var(--blue-ink);
+    box-shadow: none;
 }
 
+/* discret : bordure fine grise, texte gris 400 */
 .su-btn--ghost {
     background: transparent;
-    box-shadow: none;
-    color: var(--ink-mute);
+    border-color: var(--line);
+    color: var(--gray);
+    font-weight: 400;
 }
 
 .su-btn--ghost:hover:not(:disabled) {
-    background: var(--surface-hover);
+    background: var(--soft);
     color: var(--ink);
 }
 
+/* tonal : bleu pâle, texte bleu lisible */
 .su-btn--tonal {
-    background: rgb(var(--v-theme-lightprimary));
-    color: rgb(var(--v-theme-primary));
-    box-shadow: none;
+    background: var(--blue-soft);
+    border-color: transparent;
+    color: var(--blue-ink);
+}
+
+.su-btn--tonal:hover:not(:disabled) {
+    background: var(--blue-btn);
+    color: #fff;
 }
 
 .su-btn--danger {
-    color: #9f2d23;
-    background: rgba(180, 35, 24, 0.06);
-    box-shadow: none;
+    color: var(--danger);
+    border-color: var(--danger);
+    background: transparent;
+}
+
+.su-btn--danger:hover:not(:disabled) {
+    background: var(--danger-soft);
 }
 
 .su-btn--warn {
-    color: #8a5a00;
-    background: rgba(154, 103, 0, 0.08);
+    color: var(--violet-ink);
+    border-color: var(--violet-ink);
+    background: transparent;
+}
+
+.su-btn--warn:hover:not(:disabled) {
+    background: rgba(119, 92, 255, 0.08);
+}
+
+.su-btn--sm {
+    height: 32px;
+    min-height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
+}
+
+.su-person__actions .su-btn--ink {
     box-shadow: none;
 }
 
-/* Actions dans une ligne personne : CTA un cran plus soft. */
-.su-person__actions .su-btn--ink {
-    box-shadow: 0 6px 16px -12px rgba(var(--v-theme-primary), 0.35);
-}
-
+/* ── pastille : petit carré de couleur + texte gris ──── */
 .su-chip {
     display: inline-flex;
     align-items: center;
-    height: 28px;
-    padding: 0 10px;
-    border-radius: 14px;
-    background: var(--hair);
-    color: var(--ink-mute);
-    font-size: 12.5px;
-    font-weight: 560;
+    gap: 8px;
+    height: 24px;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--gray);
+    font-size: 13px;
+    font-weight: 400;
 }
 
+.su-chip::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    background: var(--chip-color, var(--blue));
+    flex: none;
+}
+
+.su-chip--plain::before {
+    display: none;
+}
+
+/* carré teinté d'icône de catégorie / type */
+.su-tile {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 0;
+    background: var(--t-gray-bg);
+    color: var(--t-gray-ink);
+}
+
+.su-tile > svg {
+    width: 18px;
+    height: 18px;
+}
+
+.su-tile--blue {
+    background: var(--t-blue-bg);
+    color: var(--t-blue-ink);
+}
+.su-tile--violet {
+    background: var(--t-violet-bg);
+    color: var(--t-violet-ink);
+}
+.su-tile--amber {
+    background: var(--t-amber-bg);
+    color: var(--t-amber-ink);
+}
+.su-tile--teal {
+    background: var(--t-teal-bg);
+    color: var(--t-teal-ink);
+}
+.su-tile--rose {
+    background: var(--t-rose-bg);
+    color: var(--t-rose-ink);
+}
+.su-tile--green {
+    background: var(--t-green-bg);
+    color: var(--t-green-ink);
+}
+
+/* petit carré 7 px de couleur (catégorie, légende) */
+.su-sq {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    flex: none;
+    background: var(--sq-color, var(--blue));
+    vertical-align: middle;
+}
+
+/* ── états vides et chargement ────────────────────────── */
 .su-empty,
 .su-loading {
     display: flex;
@@ -284,28 +387,29 @@
     gap: 12px;
     min-height: 180px;
     padding: 32px 16px;
-    color: var(--ink-muted);
+    color: var(--gray);
     text-align: center;
-    font-size: 14.5px;
+    font-size: 14px;
     line-height: 1.5;
 }
 
 .su-empty__mark {
     display: grid;
     place-items: center;
-    width: 56px;
-    height: 56px;
-    border-radius: 18px;
-    background: var(--surface-raised);
-    color: var(--ink-mute);
-    box-shadow: var(--shadow-pill-soft);
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    box-shadow: none;
 }
 
 .su-spin {
-    width: 28px;
-    height: 28px;
-    border: 2px solid var(--hair);
-    border-top-color: rgb(var(--v-theme-primary));
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--line);
+    border-top-color: var(--blue);
     border-radius: 50%;
     animation: su-spin 0.7s linear infinite;
 }
@@ -319,9 +423,9 @@
 .su-more {
     display: flex;
     justify-content: center;
-    padding: 8px 0 4px;
+    padding: 24px 0 0;
 }
 
 .su-alert {
-    margin: 0 0 12px;
+    margin: 0 0 16px;
 }

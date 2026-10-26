@@ -24,6 +24,12 @@ const sizeLabel = computed(() => {
     return t(`filesPage.size.${parts.unit}`, { n: parts.n });
 });
 
+/** Sous-ligne grise : type de fichier (sigle) · taille, puis la description si elle existe. */
+const subLine = computed(() => {
+    const type = props.file.extension ? props.file.extension.toUpperCase() : 'PDF';
+    return `${type} · ${sizeLabel.value}`;
+});
+
 const documentDateLabel = computed(() => (props.file.documentDate ? formatDocumentDate(props.file.documentDate, locale.value) : ''));
 
 const addedLabel = computed(() => formatInstant(props.file.createdAt, locale.value));
@@ -39,12 +45,12 @@ function onDoubleClick(event: MouseEvent) {
     <tr class="app-data-table__row file-table__row" :data-file-id="file.publicId" @dblclick="onDoubleClick">
         <td>
             <div class="app-data-table__name">
-                <span class="app-data-table__avatar">
-                    <PdfIcon size="16" stroke-width="1.8" />
+                <span class="su-tile su-tile--rose file-table__tile" aria-hidden="true">
+                    <PdfIcon :size="18" stroke-width="1.7" />
                 </span>
                 <span class="app-data-table__identity">
                     <span class="app-data-table__title">{{ file.nameOriginal }}</span>
-                    <span v-if="file.description" class="app-data-table__muted">{{ file.description }}</span>
+                    <span class="app-data-table__muted">{{ file.description ? `${subLine} · ${file.description}` : subLine }}</span>
                 </span>
             </div>
         </td>
@@ -98,7 +104,11 @@ function onDoubleClick(event: MouseEvent) {
 </template>
 
 <style scoped>
-.file-table__row {
-    --tint: rgb(var(--v-theme-error));
+.app-data-table__row.file-table__row {
+    --tint: var(--t-rose-ink);
+}
+
+.file-table__tile {
+    flex: none;
 }
 </style>

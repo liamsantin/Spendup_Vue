@@ -49,10 +49,10 @@ async function onLogout() {
     <v-menu v-model="menuOpen" :close-on-content-click="false" :scrim="scrim" :opacity="opacity">
         <template v-slot:activator="{ props }">
             <button type="button" class="su-orb" v-bind="props" :aria-label="t('header.profile.title')">
-                <img :src="avatarSrc" width="32" height="32" alt="" class="obj-cover profile-dd__orb-photo" />
+                <img :src="avatarSrc" width="40" height="40" alt="" class="obj-cover profile-dd__orb-photo" />
             </button>
         </template>
-        <v-sheet rounded="md" width="360" elevation="0" class="su-menu">
+        <v-sheet rounded="0" width="360" elevation="0" class="su-menu">
             <div class="px-8 pt-6">
                 <h6 class="text-h5 font-weight-medium">{{ t('header.profile.title') }}</h6>
                 <div class="d-flex align-center mt-4 pb-6">
@@ -97,6 +97,11 @@ async function onLogout() {
 .profile-dd__icon {
     display: grid;
     place-items: center;
-    background: var(--hair);
+    background: var(--t-blue-bg);
+}
+
+.profile-dd__orb-photo {
+    width: 40px;
+    height: 40px;
 }
 </style>

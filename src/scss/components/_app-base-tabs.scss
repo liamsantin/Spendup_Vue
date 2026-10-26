@@ -1,3 +1,6 @@
+// Onglets partagés Spend.Up — mode « pilled » rendu façon Swiss :
+// texte seul, 22 px d'écart, actif = noir 700 souligné d'un trait de 2 px (l'indicateur
+// animé devient ce trait). Les flèches de défilement restent disponibles en débordement.
 .app-base-tabs--pilled {
     width: 100%;
     max-width: 100%;
@@ -13,13 +16,11 @@
         min-width: 0;
         gap: 0;
         padding: 0;
-        border-radius: 9999px;
+        border-radius: 0;
         overflow: hidden;
-        background-color: rgb(var(--v-theme-surface));
-        border: 1px solid rgba(var(--v-theme-on-surface), 0.06);
-        box-shadow:
-            0 1px 2px rgba(var(--v-theme-on-surface), 0.06),
-            0 2px 8px rgba(var(--v-theme-on-surface), 0.08);
+        background-color: transparent;
+        border: 0;
+        box-shadow: none;
 
         &--overflow {
             display: flex;
@@ -48,27 +49,17 @@
         flex: 0 0 auto;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        min-width: 32px;
+        width: 28px;
+        min-width: 28px;
         height: auto;
         min-height: 40px;
         padding: 0;
         border: 0;
         border-radius: 0;
-        background: rgb(var(--v-theme-surface));
-        color: rgba(var(--v-theme-on-surface), 0.55);
+        background: var(--bg, #fff);
+        color: var(--gray, #686b75);
         cursor: pointer;
         box-shadow: none;
-
-        &--prev {
-            justify-content: center;
-            border-radius: 9999px 0 0 9999px;
-        }
-
-        &--next {
-            justify-content: center;
-            border-radius: 0 9999px 9999px 0;
-        }
 
         &:disabled {
             opacity: 0.28;
@@ -76,7 +67,7 @@
         }
 
         &:not(:disabled):hover {
-            color: rgb(var(--v-theme-on-surface));
+            color: var(--ink, #0b0c10);
         }
 
         .app-base-tabs__arrow-icon {
@@ -136,16 +127,19 @@
         }
     }
 
+    // l'indicateur suit l'onglet actif : il devient un trait de 2 px collé en bas
     .app-base-tabs__pill {
         position: absolute;
-        top: 0;
+        top: auto !important;
+        bottom: 0;
         left: 0;
         z-index: 0;
-        border-radius: 9999px;
-        background-color: rgb(var(--v-theme-primary));
+        height: 2px !important;
+        border-radius: 0;
+        background-color: var(--ink, #0b0c10);
         pointer-events: none;
         opacity: 0;
-        will-change: transform, width, height;
+        will-change: transform, width;
 
         &--visible {
             opacity: 1;
@@ -153,9 +147,8 @@
 
         &--animate {
             transition:
-                transform 0.25s cubic-bezier(0.32, 0.72, 0, 1),
-                width 0.25s cubic-bezier(0.32, 0.72, 0, 1),
-                height 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+                transform 0.2s cubic-bezier(0.2, 0.7, 0.2, 1),
+                width 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
         }
     }
 
@@ -183,13 +176,12 @@
         }
 
         .v-slide-group__content {
-            gap: 0;
+            gap: 22px;
             height: auto !important;
             align-items: center;
             flex: 0 0 auto !important;
         }
 
-        /* Always hide Vuetify arrows in pilled mode. */
         .v-slide-group__prev,
         .v-slide-group__next {
             display: none !important;
@@ -200,18 +192,18 @@
             min-width: auto;
             height: auto;
             min-height: 40px;
-            padding: 8px 16px;
-            border-radius: 9999px !important;
-            letter-spacing: normal;
+            padding: 0;
+            border-radius: 0 !important;
+            letter-spacing: 0;
             text-transform: none;
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: rgba(var(--v-theme-textPrimary), 0.78);
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--gray, #686b75);
             background-color: transparent !important;
             background-image: none !important;
             box-shadow: none !important;
             opacity: 1;
-            transition: color 0.2s ease;
+            transition: color 0.15s ease;
 
             .v-btn__content {
                 flex: 0 0 auto;
@@ -220,9 +212,7 @@
             }
 
             .app-base-tabs__icon {
-                flex-shrink: 0;
-                width: 18px;
-                height: 18px;
+                display: none;
             }
 
             .app-base-tabs__label {
@@ -232,6 +222,7 @@
                 justify-content: center;
                 white-space: nowrap;
 
+                // réserve la largeur de la graisse 700 : l'onglet ne bouge pas en devenant actif
                 &::after {
                     content: attr(data-label);
                     height: 0;
@@ -239,10 +230,23 @@
                     visibility: hidden;
                     user-select: none;
                     pointer-events: none;
-                    font-weight: 600;
+                    font-weight: 700;
                     letter-spacing: inherit;
                     font-size: inherit;
                 }
+            }
+
+            .app-base-tabs__chip {
+                display: inline-grid;
+                place-items: center;
+                min-width: 18px;
+                height: 18px;
+                padding: 0 5px;
+                border-radius: 9px;
+                background: var(--blue, #5d87ff);
+                color: #fff;
+                font-size: 11px;
+                font-weight: 700;
             }
 
             .v-btn__overlay,
@@ -257,7 +261,7 @@
             }
 
             &:hover:not(:active):not(.v-tab--selected):not(.v-tab--disabled) {
-                color: rgb(var(--v-theme-textPrimary));
+                color: var(--ink, #0b0c10);
             }
 
             &:focus,
@@ -267,39 +271,31 @@
                 box-shadow: none !important;
             }
 
-            &:active:not(.v-tab--selected):not(.v-tab--disabled) {
-                color: rgba(var(--v-theme-textPrimary), 0.78);
+            &:focus-visible {
+                outline: 2px solid var(--ink, #0b0c10);
+                outline-offset: 2px;
             }
 
             &.v-tab--disabled,
             &.v-btn--disabled,
             &.app-base-tabs__tab--disabled {
                 opacity: 1 !important;
-                color: rgba(var(--v-theme-on-surface), 0.22) !important;
+                color: var(--line, #ebecef) !important;
                 background-color: transparent !important;
                 cursor: not-allowed;
 
-                .app-base-tabs__icon,
                 .app-base-tabs__label,
                 .app-base-tabs__chip {
                     color: inherit !important;
                     opacity: 1;
-                }
-
-                &:hover,
-                &:focus,
-                &:active,
-                &:focus-visible {
-                    color: rgba(var(--v-theme-on-surface), 0.22) !important;
-                    background-color: transparent !important;
                 }
             }
         }
 
         .app-base-tabs__tab--active,
         .v-tab--selected {
-            font-weight: 600;
-            color: #fff !important;
+            font-weight: 700;
+            color: var(--ink, #0b0c10) !important;
             background-color: transparent !important;
             box-shadow: none !important;
 
@@ -307,14 +303,9 @@
             &:focus,
             &:active,
             &:focus-visible {
-                color: #fff !important;
+                color: var(--ink, #0b0c10) !important;
                 background-color: transparent !important;
                 box-shadow: none !important;
-            }
-
-            .app-base-tabs__chip {
-                color: #fff !important;
-                background: rgba(255, 255, 255, 0.22) !important;
             }
         }
     }

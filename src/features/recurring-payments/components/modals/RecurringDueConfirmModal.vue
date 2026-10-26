@@ -145,62 +145,78 @@ async function onConfirm() {
             {{ localError.message }}
         </AppAlert>
 
-        <div class="mb-2">
-            <AppDatePicker
-                v-model="paymentDateModel"
-                :label="t('recurrencesPage.confirm.fields.paymentDate')"
-                :max="todayLocalYmd()"
-                color="primary"
-                hide-details
-                :clearable="false"
-            />
-            <div v-if="fieldErrors.paymentDate" class="text-caption text-error mt-1">{{ fieldErrors.paymentDate }}</div>
+        <div class="due-form">
+            <div class="due-form__row">
+                <label class="due-form__label" for="due-confirm-date">{{ t('recurrencesPage.confirm.fields.paymentDate') }}</label>
+                <div class="due-form__field">
+                    <AppDatePicker
+                        id="due-confirm-date"
+                        v-model="paymentDateModel"
+                        :label="t('recurrencesPage.confirm.fields.paymentDate')"
+                        :max="todayLocalYmd()"
+                        color="primary"
+                        hide-details
+                        :clearable="false"
+                    />
+                    <p v-if="fieldErrors.paymentDate" class="due-form__error">{{ fieldErrors.paymentDate }}</p>
+                </div>
+            </div>
+            <div class="due-form__row">
+                <label class="due-form__label" for="due-confirm-amount">{{ t('recurrencesPage.confirm.fields.amount') }}</label>
+                <div class="due-form__field">
+                    <v-text-field
+                        id="due-confirm-amount"
+                        :model-value="form.amount"
+                        color="primary"
+                        variant="outlined"
+                        hide-details="auto"
+                        inputmode="decimal"
+                        :error="!!fieldErrors.amount"
+                        :error-messages="fieldErrors.amount || undefined"
+                        @update:model-value="onAmountInput"
+                    />
+                </div>
+            </div>
+            <div class="due-form__row">
+                <label class="due-form__label">{{ t('recurrencesPage.confirm.fields.paymentMethod') }}</label>
+                <div class="due-form__field">
+                    <AppSelect
+                        v-model="form.paymentMethodPublicId"
+                        searchable
+                        :label="t('recurrencesPage.confirm.fields.paymentMethod')"
+                        :items="paymentMethodItems"
+                        hide-details="auto"
+                        :search-placeholder="t('transactionsPage.form.paymentMethodSearchPlaceholder')"
+                        :no-results-label="t('transactionsPage.form.paymentMethodNoResults')"
+                        :create-label="canCreatePaymentMethod ? t('recurrencesPage.form.createPaymentMethod') : undefined"
+                        :create-named-label="
+                            canCreatePaymentMethod ? t('transactionsPage.form.paymentMethodCreate', { name: '{name}' }) : undefined
+                        "
+                        @create="openPaymentMethodCreate"
+                    />
+                </div>
+            </div>
+            <div class="due-form__row due-form__row--top">
+                <label class="due-form__label" for="due-confirm-notes">{{ t('recurrencesPage.form.fields.notes') }}</label>
+                <div class="due-form__field">
+                    <v-textarea
+                        id="due-confirm-notes"
+                        v-model="form.notes"
+                        color="primary"
+                        variant="outlined"
+                        density="comfortable"
+                        hide-details="auto"
+                        rows="3"
+                        :maxlength="RECURRING_NOTES_MAX"
+                        :error="!!fieldErrors.notes"
+                        :error-messages="fieldErrors.notes || undefined"
+                    />
+                </div>
+            </div>
         </div>
-        <v-text-field
-            :model-value="form.amount"
-            :label="t('recurrencesPage.confirm.fields.amount')"
-            color="primary"
-            variant="outlined"
-            density="comfortable"
-            class="mb-2"
-            hide-details="auto"
-            inputmode="decimal"
-            :error="!!fieldErrors.amount"
-            :error-messages="fieldErrors.amount || undefined"
-            @update:model-value="onAmountInput"
-        />
-        <div class="mb-2">
-            <AppSelect
-                v-model="form.paymentMethodPublicId"
-                float-label
-                searchable
-                :label="t('recurrencesPage.confirm.fields.paymentMethod')"
-                :items="paymentMethodItems"
-                hide-details="auto"
-                :search-placeholder="t('transactionsPage.form.paymentMethodSearchPlaceholder')"
-                :no-results-label="t('transactionsPage.form.paymentMethodNoResults')"
-                :create-label="canCreatePaymentMethod ? t('recurrencesPage.form.createPaymentMethod') : undefined"
-                :create-named-label="
-                    canCreatePaymentMethod ? t('transactionsPage.form.paymentMethodCreate', { name: '{name}' }) : undefined
-                "
-                @create="openPaymentMethodCreate"
-            />
-        </div>
-        <v-textarea
-            v-model="form.notes"
-            :label="t('recurrencesPage.form.fields.notes')"
-            color="primary"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            rows="3"
-            :maxlength="RECURRING_NOTES_MAX"
-            :error="!!fieldErrors.notes"
-            :error-messages="fieldErrors.notes || undefined"
-        />
 
         <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">{{ t('common.cancel') }}</button>
+            <button type="button" class="su-btn" :disabled="store.acting" @click="close">{{ t('common.cancel') }}</button>
             <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onConfirm">
                 {{ t('recurrencesPage.actions.confirmDue') }}
             </button>
@@ -215,3 +231,54 @@ async function onConfirm() {
         @saved="onPaymentMethodCreated"
     />
 </template>
+
+<style scoped>
+/* libellé à gauche sur 170 px | champ carré (maquette 04) */
+.due-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.due-form__row {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 16px;
+}
+
+.due-form__row--top {
+    align-items: start;
+}
+
+.due-form__row--top .due-form__label {
+    padding-top: 12px;
+}
+
+.due-form__label {
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.due-form__field {
+    min-width: 0;
+}
+
+.due-form__error {
+    margin: 4px 0 0;
+    color: var(--danger);
+    font-size: 13px;
+}
+
+@media (max-width: 599.98px) {
+    .due-form__row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .due-form__row--top .due-form__label {
+        padding-top: 0;
+    }
+}
+</style>

@@ -310,6 +310,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* Sélecteur de banque : champ carré 42 px, bordure fine, focus noir sans halo ; menu Swiss (app-select-menu). */
 .bank-picker {
     width: 100%;
     min-width: 0;
@@ -322,45 +323,40 @@ onUnmounted(() => {
     justify-content: space-between;
     gap: 12px;
     width: 100%;
-    min-height: 48px;
-    padding: 0 14px 0 16px;
-    border: 1px solid var(--thread);
-    border-radius: var(--radius-field);
-    background: var(--surface-raised);
+    min-height: 42px;
+    padding: 0 12px 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--raise);
     color: var(--ink);
     font: inherit;
-    font-size: 0.875rem;
-    font-weight: 600;
-    line-height: 1.5;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
     text-align: left;
     cursor: pointer;
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background 0.2s ease;
+    transition: border-color 0.15s var(--ease);
 }
 
 .bank-picker__control:hover:not(:disabled) {
-    background: var(--surface-hover);
-    border-color: rgba(var(--v-theme-primary), 0.3);
+    border-color: var(--gray);
 }
 
 .bank-picker__control:focus-visible,
 .bank-picker__control--open {
     outline: none;
-    border-color: rgba(var(--v-theme-primary), 0.55);
-    box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.1);
+    border-color: var(--ink);
+    box-shadow: none;
 }
 
 .bank-picker--error .bank-picker__control {
-    border-color: rgb(var(--v-theme-error));
+    border-color: var(--danger);
 }
 
 .bank-picker--disabled .bank-picker__control {
-    background: var(--hair);
-    color: var(--ink-muted);
+    background: var(--soft);
+    color: var(--gray);
     cursor: default;
-    opacity: 0.68;
 }
 
 .bank-picker__value {
@@ -373,21 +369,19 @@ onUnmounted(() => {
 }
 
 .bank-picker__value--empty {
-    color: var(--ink-muted);
-    font-weight: 500;
+    color: var(--gray);
 }
 
 .bank-picker__value-sub {
     flex: 0 1 auto;
-    font-size: 0.72rem;
-    font-weight: 500;
-    color: var(--ink-muted);
+    font-size: 12.5px;
+    color: var(--gray);
 }
 
 .bank-picker__chevron {
     flex: none;
-    color: var(--ink-mute);
-    transition: transform 0.25s var(--ease);
+    color: var(--gray);
+    transition: transform 0.2s var(--ease);
 }
 
 .bank-picker__control--open .bank-picker__chevron {
@@ -399,25 +393,27 @@ onUnmounted(() => {
     max-width: 100%;
 }
 
+/* recherche : simple ligne 1 px noire en bas */
 .bank-picker__search {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 6px 6px 2px;
-    padding: 0 10px;
+    margin: 4px 8px 6px;
+    padding: 0 2px;
     height: 38px;
-    border: 1px solid var(--thread);
-    border-radius: 10px;
-    background: var(--surface);
+    border: 0;
+    border-bottom: 1px solid var(--ink);
+    border-radius: 0;
+    background: transparent;
 }
 
 .bank-picker__search:focus-within {
-    border-color: rgba(var(--v-theme-primary), 0.45);
+    border-bottom-color: var(--blue-btn);
 }
 
 .bank-picker__search-icon {
     flex: none;
-    color: var(--ink-muted);
+    color: var(--gray);
 }
 
 .bank-picker__search-input {
@@ -429,75 +425,84 @@ onUnmounted(() => {
     background: none;
     color: var(--ink);
     font: inherit;
-    font-size: 0.85rem;
+    font-size: 14px;
 }
 
 .bank-picker__search-input::-webkit-search-cancel-button {
     display: none;
 }
 
+.bank-picker__search-input::placeholder {
+    color: var(--gray);
+}
+
+/* pays : filtres texte, actif = 700 souligné */
 .bank-picker__countries {
     display: flex;
-    gap: 6px;
-    margin: 6px 6px 2px;
+    gap: 18px;
+    margin: 4px 10px 6px;
 }
 
 .bank-picker__country {
     appearance: none;
-    padding: 4px 10px;
-    border: 1px solid var(--thread);
-    border-radius: 999px;
-    background: var(--surface-raised);
-    color: var(--ink-muted);
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--gray);
     font: inherit;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 13px;
     cursor: pointer;
 }
 
+.bank-picker__country:hover {
+    color: var(--ink);
+}
+
 .bank-picker__country.is-selected {
-    border-color: rgba(var(--v-theme-primary), 0.55);
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: inset 0 -2px 0 var(--ink);
 }
 
 .bank-picker__group {
     padding: 10px 14px 4px;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--gray);
 }
 
 .bank-picker__option {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 8px;
     min-width: 0;
 }
 
 .bank-picker__option-meta {
     flex: 0 1 auto;
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: var(--ink-muted);
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--gray);
 }
 
 .bank-picker__empty {
     padding: 10px 14px;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .bank-picker__details {
-    margin: 6px 16px 0;
-    font-size: 0.75rem;
+    margin: 6px 0 0;
+    font-size: 12.5px;
     line-height: 1.4;
-    color: var(--ink-muted);
+    color: var(--gray);
 }
 
 .bank-picker__details--error {
-    color: rgb(var(--v-theme-error));
+    color: var(--danger);
 }
 </style>

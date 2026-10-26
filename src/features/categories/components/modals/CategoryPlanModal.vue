@@ -116,6 +116,10 @@ function itemSubtitle(item: ShopItem): string {
     return t('categoriesPage.plan.modal.childCount', { count: item.children.length }, item.children.length);
 }
 
+function iconStyle(color: string | undefined) {
+    return color ? { '--cat-color': color } : undefined;
+}
+
 function setSelected(nameKey: string, value: boolean | null) {
     if (busy.value) return;
     if (value) {
@@ -159,7 +163,7 @@ async function onApply() {
         v-model="open"
         :title="t('categoriesPage.plan.modal.title')"
         :subtitle="t('categoriesPage.plan.modal.subtitle')"
-        :max-width="640"
+        :max-width="600"
         :height="720"
         mobile-layout="sheet"
     >
@@ -176,7 +180,7 @@ async function onApply() {
             {{ localError || store.error }}
         </AppAlert>
 
-        <p class="text-body-2 text-medium-emphasis mb-3">
+        <p class="category-plan-shop__intro">
             {{ t('categoriesPage.plan.modal.intro') }}
         </p>
 
@@ -185,15 +189,16 @@ async function onApply() {
                 {{ selectedLabel }}
             </span>
             <div class="category-plan-shop__toolbar-actions">
-                <button type="button" class="su-btn su-btn--ghost" :disabled="busy || allSelected" @click="selectAll">
+                <button type="button" class="su-btn su-btn--ghost su-btn--sm" :disabled="busy || allSelected" @click="selectAll">
                     {{ t('categoriesPage.plan.modal.selectAll') }}
                 </button>
-                <button type="button" class="su-btn su-btn--ghost" :disabled="busy || selectedCount === 0" @click="selectNone">
+                <button type="button" class="su-btn su-btn--ghost su-btn--sm" :disabled="busy || selectedCount === 0" @click="selectNone">
                     {{ t('categoriesPage.plan.modal.selectNone') }}
                 </button>
             </div>
         </div>
 
+        <!-- domaines sur filets fins : case à cocher | accordéon (carré teinté + nom 700 + type gris) -->
         <div class="category-plan-shop" role="list">
             <div
                 v-for="item in shopItems"
@@ -224,17 +229,17 @@ async function onApply() {
                             <span
                                 class="category-plan-shop__icon"
                                 :class="{ 'category-plan-shop__icon--empty': !item.color }"
-                                :style="item.color ? { backgroundColor: item.color } : undefined"
+                                :style="iconStyle(item.color)"
                                 aria-hidden="true"
                             >
-                                <component :is="resolveCategoryIcon(item.icone)" size="16" stroke-width="1.8" />
+                                <component :is="resolveCategoryIcon(item.icone)" :size="16" stroke-width="1.7" />
                             </span>
                             <span class="category-plan-shop__name">{{ item.name }}</span>
                         </span>
                     </template>
 
                     <template #extra>
-                        <span class="category-plan-shop__badge" :class="`is-${item.type}`">
+                        <span class="category-plan-shop__type">
                             {{ t(`categoriesPage.types.${item.type}`) }}
                         </span>
                     </template>
@@ -242,17 +247,14 @@ async function onApply() {
                     <ul v-if="item.children.length" class="category-plan-shop__children">
                         <li v-for="child in item.children" :key="child.name" class="category-plan-shop__child">
                             <span
-                                class="category-plan-shop__icon category-plan-shop__icon--sm"
-                                :class="{ 'category-plan-shop__icon--empty': !(child.color || item.color) }"
-                                :style="child.color || item.color ? { backgroundColor: child.color || item.color } : undefined"
+                                class="su-sq"
+                                :style="child.color || item.color ? { '--sq-color': child.color || item.color } : undefined"
                                 aria-hidden="true"
-                            >
-                                <component :is="resolveCategoryIcon(child.icone || item.icone)" size="14" stroke-width="1.8" />
-                            </span>
+                            />
                             <span>{{ child.name }}</span>
                         </li>
                     </ul>
-                    <p v-else class="category-plan-shop__empty-children text-body-2 text-medium-emphasis">
+                    <p v-else class="category-plan-shop__empty-children">
                         {{ t('categoriesPage.plan.modal.noChildren') }}
                     </p>
                 </AppAccordion>
@@ -272,62 +274,90 @@ async function onApply() {
 </template>
 
 <style scoped>
+.category-plan-shop__intro {
+    margin: 0 0 16px;
+    font-size: 14px;
+    color: var(--gray);
+    line-height: 1.45;
+}
+
 .category-plan-shop__toolbar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 8px 12px;
-    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
 }
 
 .category-plan-shop__count {
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: rgba(var(--v-theme-on-surface), 0.72);
+    font-size: 13px;
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
 }
 
 .category-plan-shop__toolbar-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 6px;
 }
 
 .category-plan-shop {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0;
 }
 
 .category-plan-shop__row {
     display: flex;
     align-items: flex-start;
-    gap: 8px;
+    gap: 4px;
+    border-bottom: 1px solid var(--line);
+}
+
+.category-plan-shop__row.is-selected {
+    background: var(--blue-soft);
 }
 
 .category-plan-shop__check {
     flex: none;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
+/* accordéon à plat : plus de cadre ni d’ombre, l’en-tête devient une ligne */
 .category-plan-shop__accordion {
     flex: 1 1 auto;
     min-width: 0;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
-.category-plan-shop__accordion.is-selected {
-    border-color: rgba(var(--v-theme-primary), 0.45);
-    box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.75) inset,
-        inset 0 0 0 1px rgba(var(--v-theme-primary), 0.18);
-    background: rgba(var(--v-theme-primary), 0.06);
+.category-plan-shop__accordion :deep(.app-accordion__trigger) {
+    padding: 10px 8px 10px 4px;
+    border-radius: 0;
+}
+
+.category-plan-shop__accordion :deep(.app-accordion__trigger:hover:not(:disabled)) {
+    background: transparent;
+}
+
+.category-plan-shop__accordion :deep(.app-accordion__title) {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.category-plan-shop__accordion :deep(.app-accordion__subtitle) {
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .category-plan-shop__title {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     min-width: 0;
 }
 
@@ -338,41 +368,19 @@ async function onApply() {
     white-space: nowrap;
 }
 
-.category-plan-shop__badge {
+.category-plan-shop__type {
     flex: none;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 11px;
-    font-weight: 650;
-    letter-spacing: -0.01em;
-}
-
-.category-plan-shop__badge.is-depense {
-    color: #b45309;
-    background: rgba(245, 158, 11, 0.14);
-}
-
-.category-plan-shop__badge.is-revenu {
-    color: #047857;
-    background: rgba(16, 185, 129, 0.14);
-}
-
-.category-plan-shop__badge.is-transfert {
-    color: #4338ca;
-    background: rgba(79, 70, 229, 0.14);
-}
-
-.category-plan-shop__badge.is-mixte {
-    color: rgba(var(--v-theme-on-surface), 0.7);
-    background: rgba(var(--v-theme-on-surface), 0.08);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray);
 }
 
 .category-plan-shop__children {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0;
     margin: 0;
-    padding: 0;
+    padding: 0 0 4px 44px;
     list-style: none;
 }
 
@@ -381,32 +389,34 @@ async function onApply() {
     align-items: center;
     gap: 10px;
     min-width: 0;
-    color: rgba(var(--v-theme-on-surface), 0.84);
-    font-size: 0.925rem;
+    min-height: 32px;
+    border-top: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 14px;
 }
 
 .category-plan-shop__empty-children {
     margin: 0;
+    padding: 0 0 8px 44px;
+    font-size: 13px;
+    color: var(--gray);
 }
 
+/* carré 28 px teinté de la couleur du domaine */
 .category-plan-shop__icon {
+    --cat-color: var(--t-gray-ink);
     display: grid;
     flex: none;
     width: 28px;
     height: 28px;
     place-items: center;
-    color: #fff;
-    border-radius: 9px;
-}
-
-.category-plan-shop__icon--sm {
-    width: 22px;
-    height: 22px;
-    border-radius: 7px;
+    border-radius: 0;
+    background: color-mix(in srgb, var(--cat-color) 14%, transparent);
+    color: color-mix(in srgb, var(--cat-color) 78%, var(--ink));
 }
 
 .category-plan-shop__icon--empty {
-    color: rgba(var(--v-theme-on-surface), 0.55);
-    background: rgba(var(--v-theme-on-surface), 0.08);
+    background: var(--t-gray-bg);
+    color: var(--t-gray-ink);
 }
 </style>

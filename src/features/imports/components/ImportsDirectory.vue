@@ -132,10 +132,15 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
+/* Historique : lignes à filet fin, la première fermée par un filet 2 px noir. */
 .imports-directory__list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
     width: 100%;
+    border-top: 1px solid var(--line);
+}
+
+.imports-directory__list > :first-child {
+    border-top: 0;
 }
 </style>

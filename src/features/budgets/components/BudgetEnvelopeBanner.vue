@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * Contexte « enveloppe » sur la page Transactions — mobile first.
- * Scopes empilés / grille 2 colonnes ; fermeture toujours accessible.
+ * Contexte « enveloppe » sur la page Transactions : bloc sur filet 2 px, sans fond.
+ * Scopes en onglets texte ; fermeture toujours accessible.
  */
 defineOptions({ name: 'BudgetEnvelopeBanner' });
 
@@ -35,7 +35,7 @@ const windowLabel = computed(() =>
 
 <template>
     <section class="budget-envelope" :class="{ 'budget-envelope--split': canSplit }" :aria-label="t('transactionsPage.envelope.title')">
-        <div class="budget-envelope__icon" aria-hidden="true">
+        <div class="su-tile su-tile--blue budget-envelope__icon" aria-hidden="true">
             <WalletIcon :size="18" stroke-width="1.7" />
         </div>
         <div class="budget-envelope__copy">
@@ -50,11 +50,11 @@ const windowLabel = computed(() =>
         >
             <XIcon :size="18" stroke-width="1.8" />
         </button>
-        <div v-if="canSplit" class="budget-envelope__scopes" role="tablist" :aria-label="t('transactionsPage.envelope.scopeLabel')">
+        <div v-if="canSplit" class="su-tabs budget-envelope__scopes" role="tablist" :aria-label="t('transactionsPage.envelope.scopeLabel')">
             <button
                 type="button"
-                class="su-btn"
-                :class="scope === 'in' ? 'su-btn--tonal' : 'su-btn--ghost'"
+                class="su-tab"
+                :class="{ 'is-active': scope === 'in' }"
                 role="tab"
                 :aria-selected="scope === 'in'"
                 @click="emit('update:scope', 'in')"
@@ -63,8 +63,8 @@ const windowLabel = computed(() =>
             </button>
             <button
                 type="button"
-                class="su-btn"
-                :class="scope === 'out' ? 'su-btn--tonal' : 'su-btn--ghost'"
+                class="su-tab"
+                :class="{ 'is-active': scope === 'out' }"
                 role="tab"
                 :aria-selected="scope === 'out'"
                 @click="emit('update:scope', 'out')"
@@ -78,36 +78,27 @@ const windowLabel = computed(() =>
 <style scoped>
 .budget-envelope {
     display: grid;
-    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    grid-template-columns: 36px minmax(0, 1fr) 40px;
     grid-template-areas:
         'icon copy close'
         'scopes scopes scopes';
-    gap: 8px 10px;
+    align-items: center;
+    gap: 8px 14px;
     width: 100%;
     max-width: 100%;
-    margin: 0 0 12px;
-    padding: 12px;
-    border-radius: var(--radius-surface);
-    border: 1px solid var(--stroke);
-    background: var(--surface-raised);
+    margin: 0 0 16px;
+    padding: 12px 0 8px;
+    border-top: 1px solid var(--line);
     box-sizing: border-box;
 }
 
 .budget-envelope__icon {
     grid-area: icon;
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 14px;
-    background: var(--surface);
-    color: var(--ink);
 }
 
 .budget-envelope__copy {
     grid-area: copy;
     min-width: 0;
-    align-self: center;
 }
 
 .budget-envelope__close {
@@ -117,40 +108,29 @@ const windowLabel = computed(() =>
 
 .budget-envelope__name {
     margin: 0;
-    font-size: 15px;
-    font-weight: 620;
-    letter-spacing: -0.02em;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
     line-height: 1.25;
 }
 
 .budget-envelope__meta {
     margin: 2px 0 0;
-    color: var(--ink-muted);
+    color: var(--gray);
     font-size: 13px;
     line-height: 1.35;
 }
 
 .budget-envelope__scopes {
     grid-area: scopes;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 6px;
+    margin: 0;
     min-width: 0;
-}
-
-.budget-envelope__scopes .su-btn {
-    flex: 0 0 auto;
-    white-space: nowrap;
 }
 
 @media (min-width: 960px) {
     .budget-envelope--split {
-        grid-template-columns: 40px minmax(0, 1fr) minmax(220px, 320px) 40px;
+        grid-template-columns: 36px minmax(0, 1fr) auto 40px;
         grid-template-areas: 'icon copy scopes close';
-        align-items: center;
-        padding: 10px 12px;
     }
 }
 </style>

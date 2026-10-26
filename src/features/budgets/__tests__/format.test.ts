@@ -68,3 +68,28 @@ describe('budgets format', () => {
         );
     });
 });
+
+describe('budgets overview helpers', () => {
+    it('compte les jours restants, aujourd’hui compris', async () => {
+        const { budgetDaysRemaining, budgetAvailablePerDay, budgetFilledSegments } = await import('@/features/budgets/format');
+        expect(budgetDaysRemaining('2026-10-31', '2026-10-24')).toBe(8);
+        expect(budgetDaysRemaining('2026-10-31', '2026-10-31')).toBe(1);
+        expect(budgetDaysRemaining('2026-10-31', '2026-11-02')).toBe(0);
+        expect(budgetAvailablePerDay(1087.4, 8)).toBeCloseTo(135.925);
+        expect(budgetAvailablePerDay(-10, 8)).toBe(0);
+        expect(budgetFilledSegments(76)).toBe(15);
+        expect(budgetFilledSegments(140)).toBe(20);
+        expect(budgetFilledSegments(0)).toBe(0);
+    });
+});
+
+describe('budgets month label', () => {
+    it('élide « de » devant une voyelle en français', async () => {
+        const { formatBudgetMonth, endOfMonthYmd } = await import('@/features/budgets/format');
+        expect(formatBudgetMonth('fr-CH', '2026-10-23')).toBe('d’octobre');
+        expect(formatBudgetMonth('fr-CH', '2026-11-02')).toBe('de novembre');
+        expect(formatBudgetMonth('en-GB', '2026-10-23')).toBe('October');
+        expect(endOfMonthYmd('2026-02-10')).toBe('2026-02-28');
+        expect(endOfMonthYmd('2026-10-23')).toBe('2026-10-31');
+    });
+});

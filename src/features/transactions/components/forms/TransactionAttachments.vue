@@ -108,6 +108,7 @@ function pick(file: FileDto) {
 </template>
 
 <style scoped>
+/* Justificatifs : lignes à filet fin, menu de choix carré (bordure noire, ombre décalée). */
 .tx-files {
     min-height: 0;
 }
@@ -117,21 +118,22 @@ function pick(file: FileDto) {
 .tx-files__max,
 .tx-files__size {
     margin: 0;
-    color: var(--ink-muted);
-    font-size: 0.78rem;
+    color: var(--gray);
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 .tx-files__empty {
-    margin-top: 10px;
+    margin-top: 12px;
 }
 
 .tx-files__list {
     list-style: none;
-    margin: 10px 0 0;
+    margin: 12px 0 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    border-top: 1px solid var(--line);
 }
 
 .tx-files__chip {
@@ -139,25 +141,34 @@ function pick(file: FileDto) {
     align-items: center;
     gap: 6px;
     min-width: 0;
+    border-bottom: 1px solid var(--line);
 }
 
 .tx-files__open {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     min-width: 0;
     flex: 1;
-    padding: 8px 10px;
-    border: 1px solid var(--stroke);
-    border-radius: 12px;
-    background: var(--surface-raised);
-    color: inherit;
+    min-height: 44px;
+    padding: 8px 4px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
     text-align: left;
     cursor: pointer;
 }
 
 .tx-files__open:hover:not(:disabled) {
-    border-color: color-mix(in srgb, rgb(var(--v-theme-primary)) 35%, var(--stroke));
+    background: var(--soft);
+}
+
+.tx-files__open > svg {
+    flex: none;
+    color: var(--gray);
 }
 
 .tx-files__name {
@@ -165,12 +176,13 @@ function pick(file: FileDto) {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .tx-files__size {
     margin: 0 0 0 auto;
     flex: none;
+    font-variant-numeric: tabular-nums;
 }
 
 .tx-files__actions {
@@ -178,7 +190,7 @@ function pick(file: FileDto) {
     flex-wrap: wrap;
     align-items: center;
     gap: 8px;
-    margin-top: 10px;
+    margin-top: 16px;
 }
 
 .tx-files__input {
@@ -192,39 +204,58 @@ function pick(file: FileDto) {
 .tx-files__menu {
     position: absolute;
     z-index: 4;
-    top: calc(100% + 6px);
+    top: calc(100% + 4px);
     left: 0;
-    min-width: 240px;
+    min-width: 260px;
     max-height: 220px;
     overflow: auto;
-    padding: 6px;
-    border-radius: 12px;
-    border: 1px solid var(--stroke);
-    background: var(--surface);
-    box-shadow: var(--shadow-rest);
+    padding: 8px;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    background: var(--raise);
+    box-shadow: var(--shadow-offset);
 }
 
 .tx-files__option {
     display: flex;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
     width: 100%;
-    padding: 8px 10px;
+    min-height: 40px;
+    padding: 0 10px;
     border: 0;
-    border-radius: 8px;
+    border-radius: 0;
     background: transparent;
-    color: inherit;
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
     text-align: left;
     cursor: pointer;
 }
 
-.tx-files__option:hover {
-    background: color-mix(in srgb, rgb(var(--v-theme-primary)) 8%, transparent);
+.tx-files__option + .tx-files__option {
+    border-top: 1px solid var(--line);
+}
+
+.tx-files__option:hover,
+.tx-files__option:focus-visible {
+    background: var(--soft);
+    outline: none;
+}
+
+.tx-files__option span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .tx-files__option span:last-child {
-    color: var(--ink-muted);
-    font-size: 0.75rem;
+    flex: none;
+    color: var(--gray);
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
 }
 
 .tx-files__max {

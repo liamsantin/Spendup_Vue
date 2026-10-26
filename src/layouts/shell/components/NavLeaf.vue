@@ -6,8 +6,10 @@ import type { NavLeaf } from '../types/navigation';
 const props = defineProps<{
     leaf: NavLeaf;
     active?: boolean;
-    /** Variante de la colonne de détail : un peu plus haute. */
+    /** Conservé pour compatibilité (colonne de détail) : même rendu. */
     wide?: boolean;
+    /** Entrée imbriquée sous un sous-groupe : légèrement en retrait. */
+    nested?: boolean;
 }>();
 
 const emit = defineEmits<{ select: [leaf: NavLeaf] }>();
@@ -25,123 +27,122 @@ function onSelect() {
         :is="tag"
         v-bind="attrs"
         class="leaf"
-        :class="{ 'is-active': active, 'leaf--wide': wide, 'is-disabled': leaf.disabled }"
+        :class="{ 'is-active': active, 'is-disabled': leaf.disabled, 'leaf--nested': nested }"
         :aria-current="active && !leaf.disabled ? 'page' : undefined"
         :aria-disabled="leaf.disabled ? 'true' : undefined"
         :disabled="leaf.disabled || undefined"
         @click="onSelect"
     >
-        <ShellNavIcon :icon="leaf.icon" :size="20" />
+        <span class="leaf__icon"><ShellNavIcon :icon="leaf.icon" :size="16" /></span>
         <span class="leaf__label">{{ leaf.label }}</span>
         <span v-if="leaf.caption" class="leaf__caption">{{ leaf.caption }}</span>
+        <span v-else-if="active" class="leaf__mark" aria-hidden="true" />
     </component>
 </template>
 
 <style scoped>
+/* entrée 40 px, filet fin au-dessus, icône trait 16 px ; actif = 700 + icône bleue + carré bleu 6 px */
 .leaf {
     appearance: none;
     border: 0;
+    border-top: 1px solid var(--line);
     cursor: pointer;
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 13px;
-    padding: 9px 14px;
-    margin: 2px 0;
-    border-radius: var(--radius-leaf);
+    gap: 12px;
+    min-height: 40px;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
     background: transparent;
-    color: var(--ink-mute);
+    color: var(--ink);
     font: inherit;
-    font-size: 14.5px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 400;
     white-space: nowrap;
     text-align: left;
     text-decoration: none;
-    --rail-icon-tone-stroke: currentColor;
-    /* replié, la ligne s'efface derrière son point sur le fil ; `visibility`
-     la sort aussi de l'ordre de tabulation, ce que `opacity` ne fait pas. */
-    visibility: hidden;
-    opacity: 0;
-    transform: translateX(-10px);
     transition:
-        visibility 0s linear 0.45s,
-        opacity 0.45s var(--ease),
-        transform 0.5s var(--ease),
-        background 0.2s var(--ease),
-        color 0.18s var(--ease),
-        box-shadow 0.2s var(--ease);
+        color 0.15s var(--ease),
+        background 0.15s var(--ease);
 }
+
 .leaf:hover {
-    color: var(--ink);
-    background: var(--surface-hover-soft);
+    background: var(--soft);
 }
+
+.leaf:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: -2px;
+}
+
 .leaf.is-active {
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.12);
-    box-shadow: none;
+    font-weight: 700;
 }
+
+.leaf.is-active .leaf__icon {
+    color: var(--blue);
+}
+
 .leaf.is-disabled {
     cursor: not-allowed;
-    opacity: 0.55;
+    color: var(--gray);
 }
+
 .leaf.is-disabled:hover {
-    color: var(--ink-mute);
     background: transparent;
 }
-.leaf__caption {
-    flex: none;
-    margin-left: auto;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    color: var(--ink-mute);
+
+.leaf--nested {
+    padding-left: 12px;
 }
-.leaf :deep(svg) {
-    display: block;
+
+.leaf__icon {
     flex: none;
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    color: var(--ink-mute);
+    --rail-icon-tone-stroke: currentColor;
+}
+
+.leaf__icon :deep(svg) {
+    display: block;
+    width: 16px;
+    height: 16px;
     color: inherit;
 }
-.leaf--wide {
-    padding: 10px 14px;
-}
+
 .leaf__label {
+    flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* visible dès que la colonne est déployée : sous-onglets d'un accordéon ouvert,
-   et lignes de la colonne de détail (toujours montées avec leur propre volet) */
-.is-expanded .sub.is-open .leaf,
-.is-expanded .leaf--wide {
-    visibility: visible;
-    opacity: 1;
-    transform: none;
-    transition-delay: 0s;
+.leaf__caption {
+    flex: none;
+    color: var(--gray);
+    font-size: 12px;
+    font-weight: 400;
 }
-/* Le décalage en cascade ne porte que sur l'apparition. Appliqué à tout, il
-   retardait aussi le fond et l'ombre : un clic sur le troisième sous-onglet
-   restait 280 ms sans réaction avant de commencer son fondu. */
-.is-expanded .sub.is-open .leaf {
-    transition:
-        visibility 0s linear calc(var(--i) * 60ms + 160ms),
-        opacity 0.45s var(--ease) calc(var(--i) * 60ms + 160ms),
-        transform 0.5s var(--ease) calc(var(--i) * 60ms + 160ms),
-        background 0.2s var(--ease),
-        color 0.18s var(--ease),
-        box-shadow 0.2s var(--ease);
+
+.leaf__mark {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    background: var(--blue);
 }
 
 @media (max-width: 767px) {
     .leaf {
-        padding: 12px 14px;
-        font-size: 15.5px;
+        min-height: 46px;
+        font-size: 15px;
     }
     .leaf:hover {
         background: transparent;
-    }
-    .leaf.is-active:hover {
-        background: rgba(var(--v-theme-primary), 0.12);
     }
 }
 </style>

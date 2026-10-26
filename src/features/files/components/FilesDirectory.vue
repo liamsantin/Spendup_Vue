@@ -164,8 +164,12 @@ function exportCsv() {
 
 const visibleCount = computed(() => visibleItems.value.length);
 
+function openPicker() {
+    fileInputRef.value?.click();
+}
+
 defineExpose({
-    openPicker: () => fileInputRef.value?.click(),
+    openPicker,
     onFiles: (files: FileList | File[]) => void uploadFiles(files),
     openEdit: (file: FileDto) => {
         editTarget.value = file;
@@ -296,11 +300,6 @@ function onDrop(event: DragEvent) {
     <div class="files-panel" @dragenter="onDragEnter" @dragover="onDragOver" @dragleave="onDragLeave" @drop="onDrop">
         <input ref="fileInputRef" class="files-panel__input" type="file" :accept="`${FILE_PDF_MIME},.pdf`" @change="onFileSelected" />
 
-        <div v-if="dragging" class="files-panel__drop">
-            <p class="files-panel__drop-title">{{ t('filesPage.drop.title') }}</p>
-            <p>{{ t('filesPage.drop.body') }}</p>
-        </div>
-
         <AppAlert
             v-if="localError || store.error"
             type="error"
@@ -314,10 +313,21 @@ function onDrop(event: DragEvent) {
             {{ localError || store.error }}
         </AppAlert>
 
+        <!-- zone de dépôt : cadre 1 px noir pointillé, sans fond ; s’active au survol d’un fichier -->
+        <div class="files-dropzone" :class="{ 'is-dragging': dragging, 'is-busy': uploading }">
+            <div class="files-dropzone__copy">
+                <p class="files-dropzone__title">{{ t('filesPage.drop.title') }}</p>
+                <p class="files-dropzone__body">{{ t('filesPage.drop.body') }}</p>
+            </div>
+            <button type="button" class="su-btn" :disabled="store.acting || uploading" @click="openPicker">
+                {{ t('filesPage.actions.upload') }}
+            </button>
+        </div>
+
         <div v-if="uploading" class="files-panel__progress" role="status">
             <p>{{ t('filesPage.upload.progress', { name: uploadingName, percent: uploadProgress }) }}</p>
-            <div class="files-panel__bar">
-                <span class="files-panel__bar-fill" :style="{ width: `${uploadProgress}%` }" />
+            <div class="su-gauge files-panel__bar">
+                <span class="su-gauge__fill su-gauge__fill--blue" :style="{ width: `${uploadProgress}%` }" />
             </div>
         </div>
 
@@ -396,59 +406,76 @@ function onDrop(event: DragEvent) {
     display: none;
 }
 
-.files-panel__drop {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    display: grid;
-    place-content: center;
-    gap: 4px;
-    min-height: 220px;
-    border-radius: 16px;
-    border: 1.5px dashed rgb(var(--v-theme-primary));
-    background: color-mix(in srgb, rgb(var(--v-theme-primary)) 8%, var(--surface-raised));
-    color: var(--ink-muted);
-    text-align: center;
-    pointer-events: none;
+/* ── zone de dépôt ──────────────────────────────────── */
+.files-dropzone {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin: 0 0 24px;
+    padding: 20px 24px;
+    border: 1px dashed var(--ink);
+    border-radius: 0;
+    background: transparent;
+    color: var(--gray);
+    transition:
+        border-color 0.15s var(--ease),
+        color 0.15s var(--ease);
 }
 
-.files-panel__drop-title {
+.files-dropzone.is-dragging {
+    border-style: solid;
+    border-color: var(--blue-btn);
+    color: var(--blue-ink);
+}
+
+.files-dropzone.is-busy {
+    opacity: 0.6;
+}
+
+.files-dropzone__copy {
+    min-width: 0;
+}
+
+.files-dropzone__title {
     margin: 0;
-    font-weight: 650;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.files-dropzone.is-dragging .files-dropzone__title {
+    color: var(--blue-ink);
+}
+
+.files-dropzone__body {
+    margin: 2px 0 0;
+    font-size: 13px;
     color: inherit;
 }
 
+/* ── envoi en cours : texte + jauge carrée bleue ───── */
 .files-panel__progress {
     flex: none;
-    margin: 12px 16px 0;
-    padding: 12px 14px;
-    border-radius: 12px;
-    background: var(--surface-raised);
+    margin: 0 0 16px;
 }
 
 .files-panel__progress p {
     margin: 0 0 8px;
-    font-size: 0.85rem;
+    font-size: 13px;
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
 }
 
 .files-panel__bar {
-    height: 6px;
-    border-radius: 999px;
-    background: var(--hair);
-    overflow: hidden;
-}
-
-.files-panel__bar-fill {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: rgb(var(--v-theme-primary));
-    transition: width 0.2s var(--ease);
+    height: 4px;
 }
 
 .files-panel :deep(.file-usage) {
     flex: none;
-    margin: 12px 18px 0;
+    margin: 0 0 24px;
 }
 
 .files-panel__scroll {
@@ -464,13 +491,13 @@ function onDrop(event: DragEvent) {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    padding: 4px 16px 10px;
+    padding: 0;
 }
 
 .files-directory__list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0;
     overflow: visible;
 }
 
@@ -500,13 +527,16 @@ function onDrop(event: DragEvent) {
 
     .files-directory {
         display: block;
-        padding: 0 4px 4px;
+        padding: 0;
     }
 
-    .files-panel :deep(.file-usage),
-    .files-panel__progress {
-        margin-left: 8px;
-        margin-right: 8px;
+    .files-dropzone {
+        margin-bottom: 16px;
+        padding: 16px;
+    }
+
+    .files-panel :deep(.file-usage) {
+        margin-bottom: 16px;
     }
 }
 </style>

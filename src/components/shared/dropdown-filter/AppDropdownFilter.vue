@@ -24,6 +24,8 @@ const props = withDefaults(
         count?: number;
         /** Sur téléphone : panneau bas pleine largeur (listes de filtres longues). */
         mobileSheet?: boolean;
+        /** `ghost` : déclencheur discret (bordure fine grise, texte gris, sans icône) façon « Période · Octobre ». */
+        variant?: 'default' | 'ghost';
     }>(),
     {
         icon: undefined,
@@ -32,7 +34,8 @@ const props = withDefaults(
         resetDisabled: false,
         closeOnContentClick: false,
         count: 0,
-        mobileSheet: false
+        mobileSheet: false,
+        variant: 'default'
     }
 );
 
@@ -54,14 +57,14 @@ function onReset() {
 <template>
     <v-menu v-model="open" :location="location" :close-on-content-click="closeOnContentClick" scrim>
         <template #activator="{ props: menuProps }">
-            <button type="button" class="su-btn" v-bind="menuProps">
-                <component :is="resolvedIcon" :size="16" stroke-width="1.6" />
+            <button type="button" class="su-btn" :class="{ 'su-btn--ghost': variant === 'ghost' }" v-bind="menuProps">
+                <component :is="resolvedIcon" v-if="variant !== 'ghost'" :size="16" stroke-width="1.6" />
                 {{ label }}
                 <span v-if="count > 0" class="su-btn__count">{{ count }}</span>
             </button>
         </template>
         <v-sheet
-            rounded="md"
+            rounded="0"
             elevation="0"
             class="su-menu app-dropdown-filter"
             :class="{ 'app-dropdown-filter--sheet': mobileSheet }"
@@ -90,29 +93,29 @@ function onReset() {
 }
 
 .app-dropdown-filter__footer {
-    padding: 8px 6px 4px;
-    margin-top: 4px;
-    border-top: 1px solid var(--hair);
+    padding: 8px 0 0;
+    margin-top: 8px;
+    border-top: 1px solid var(--line);
 }
 
 .app-dropdown-filter__reset {
     width: 100%;
     justify-content: center;
     text-align: center;
-    border-radius: 999px;
+    border-radius: 0;
     background: transparent;
     box-shadow: none;
-    color: #9f2d23;
-    border: 1px solid #9f2d23;
+    color: var(--danger);
+    border: 1px solid var(--danger);
 }
 
 .app-dropdown-filter__reset:hover:not(:disabled) {
-    background: rgba(180, 35, 24, 0.06);
-    color: #9f2d23;
+    background: var(--danger-soft);
+    color: var(--danger);
 }
 
 .app-dropdown-filter :deep(.app-select--active:not(.app-select--error) .app-select__control) {
-    border-color: rgb(var(--v-theme-primary));
+    border-color: var(--ink);
 }
 
 .app-dropdown-filter :deep(.app-select--active:not(.app-select--error) .app-select__control:hover:not(:has(.app-select__input:disabled))),

@@ -2,6 +2,7 @@
 /**
  * Champs du formulaire tier. `form` est détenu par le parent.
  * Un seul volet affiché, commuté par le sélecteur de nature.
+ * Mise en page modale Swiss : libellé 170 px à gauche | champ carré à droite.
  */
 /* eslint-disable vue/no-mutating-props -- shared reactive form owned by parent */
 defineOptions({ name: 'TierForm' });
@@ -12,7 +13,7 @@ import { CheckIcon } from 'vue-tabler-icons';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { todayUtcYmd } from '@/features/tiers/format';
-import { TIER_NATURE_ICONS } from '@/features/tiers/natureUi';
+import { TIER_NATURE_ICONS, tierNatureTileClass } from '@/features/tiers/natureUi';
 import {
     TIER_COMPANY_IDENTIFIER_MAX,
     TIER_COMPANY_LEGAL_NAME_MAX,
@@ -90,6 +91,8 @@ const panelTitle = computed(() => {
     }
 });
 
+const natureTileClass = computed(() => tierNatureTileClass(props.form.nature));
+
 const birthDateModel = computed({
     get: () => props.form.person.birthDate,
     set: (value: string | null) => {
@@ -118,12 +121,13 @@ function toggleRole(role: TierRole) {
 
 <template>
     <div class="tier-form">
-        <p class="tier-form__section">{{ t('tiersPage.form.sections.identity') }}</p>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tier-form-name"> {{ t('tiersPage.form.fields.name') }} * </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <h2 class="tier-form__section">{{ t('tiersPage.form.sections.identity') }}</h2>
+
+        <div class="tier-form__row">
+            <label class="tier-form__label" for="tier-form-name">
+                {{ t('tiersPage.form.fields.name') }} <span class="tier-form__req" aria-hidden="true">*</span>
+            </label>
+            <div class="tier-form__field">
                 <v-text-field
                     id="tier-form-name"
                     v-model="form.name"
@@ -136,29 +140,26 @@ function toggleRole(role: TierRole) {
                     :error="!!fieldErrors.name"
                     :error-messages="fieldErrors.name || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="lockNature && !lockIdentity" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <span class="v-label font-weight-medium">{{ t('tiersPage.form.fields.nature') }}</span>
-            </v-col>
-            <v-col cols="12" sm="9">
-                <div class="tier-form__nature-lock">
-                    <span class="tier-form__nature-badge" :class="`tier-form__nature-badge--${form.nature}`">
-                        <component :is="TIER_NATURE_ICONS[form.nature]" :size="16" stroke-width="1.8" />
-                        {{ t(`tiersPage.natures.${form.nature}`) }}
-                    </span>
-                    <button type="button" class="su-btn su-btn--ghost tier-form__nature-change" @click="emit('change-nature')">
-                        {{ t('tiersPage.form.changeNature') }}
-                    </button>
-                </div>
-            </v-col>
-        </v-row>
-        <v-row v-else-if="!lockIdentity" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tier-form-nature"> {{ t('tiersPage.form.fields.nature') }} * </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+
+        <div v-if="lockNature && !lockIdentity" class="tier-form__row">
+            <span class="tier-form__label">{{ t('tiersPage.form.fields.nature') }}</span>
+            <div class="tier-form__field tier-form__nature-lock">
+                <span class="tier-form__nature-tile" :class="natureTileClass" aria-hidden="true">
+                    <component :is="TIER_NATURE_ICONS[form.nature]" :size="18" stroke-width="1.7" />
+                </span>
+                <span class="tier-form__nature-name">{{ t(`tiersPage.natures.${form.nature}`) }}</span>
+                <button type="button" class="su-btn su-btn--ghost su-btn--sm" @click="emit('change-nature')">
+                    {{ t('tiersPage.form.changeNature') }}
+                </button>
+            </div>
+        </div>
+        <div v-else-if="!lockIdentity" class="tier-form__row">
+            <label class="tier-form__label" for="tier-form-nature">
+                {{ t('tiersPage.form.fields.nature') }} <span class="tier-form__req" aria-hidden="true">*</span>
+            </label>
+            <div class="tier-form__field">
                 <AppSelect
                     id="tier-form-nature"
                     v-model="form.nature"
@@ -170,13 +171,12 @@ function toggleRole(role: TierRole) {
                     :hint="natureHint || undefined"
                     :persistent-hint="!!natureHint"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showRoles && !lockIdentity" class="align-start" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <span class="v-label font-weight-medium tier-form__roles-label">{{ t('tiersPage.form.fields.roles') }}</span>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+
+        <div v-if="showRoles && !lockIdentity" class="tier-form__row tier-form__row--top">
+            <span class="tier-form__label">{{ t('tiersPage.form.fields.roles') }}</span>
+            <div class="tier-form__field">
                 <div class="tier-form__roles" role="group" :aria-label="t('tiersPage.form.fields.roles')">
                     <button
                         v-for="role in TIER_ROLES"
@@ -193,25 +193,21 @@ function toggleRole(role: TierRole) {
                         {{ t(`tiersPage.roles.${role}`) }}
                     </button>
                 </div>
-                <div v-if="fieldErrors.roles" class="text-caption text-error mt-1">{{ fieldErrors.roles }}</div>
-                <div v-else-if="form.roles.includes('banque') && !form.bank.enabled" class="text-caption text-warning mt-1">
+                <p v-if="fieldErrors.roles" class="tier-form__note tier-form__note--error">{{ fieldErrors.roles }}</p>
+                <p v-else-if="form.roles.includes('banque') && !form.bank.enabled" class="tier-form__note tier-form__note--warn">
                     {{ t('tiersPage.form.bankRoleWithoutPanel') }}
-                </div>
-                <div v-else class="text-caption text-medium-emphasis mt-1">{{ t('tiersPage.form.rolesHint') }}</div>
-            </v-col>
-        </v-row>
+                </p>
+                <p v-else class="tier-form__note">{{ t('tiersPage.form.rolesHint') }}</p>
+            </div>
+        </div>
 
         <template v-if="panelTitle">
-            <p class="tier-form__section">{{ panelTitle }}</p>
+            <h2 class="tier-form__section">{{ panelTitle }}</h2>
 
             <template v-if="form.nature === 'person'">
-                <v-row class="align-center" no-gutters>
-                    <v-col cols="12" sm="3" class="pr-sm-3">
-                        <label class="v-label font-weight-medium" for="tier-form-first-name">{{
-                            t('tiersPage.form.fields.firstName')
-                        }}</label>
-                    </v-col>
-                    <v-col cols="12" sm="9">
+                <div class="tier-form__row">
+                    <label class="tier-form__label" for="tier-form-first-name">{{ t('tiersPage.form.fields.firstName') }}</label>
+                    <div class="tier-form__field">
                         <v-text-field
                             id="tier-form-first-name"
                             v-model="form.person.firstName"
@@ -223,15 +219,11 @@ function toggleRole(role: TierRole) {
                             :error="!!fieldErrors['person.firstName']"
                             :error-messages="fieldErrors['person.firstName'] || undefined"
                         />
-                    </v-col>
-                </v-row>
-                <v-row class="align-center" no-gutters>
-                    <v-col cols="12" sm="3" class="pr-sm-3">
-                        <label class="v-label font-weight-medium" for="tier-form-last-name">{{
-                            t('tiersPage.form.fields.lastName')
-                        }}</label>
-                    </v-col>
-                    <v-col cols="12" sm="9">
+                    </div>
+                </div>
+                <div class="tier-form__row">
+                    <label class="tier-form__label" for="tier-form-last-name">{{ t('tiersPage.form.fields.lastName') }}</label>
+                    <div class="tier-form__field">
                         <v-text-field
                             id="tier-form-last-name"
                             v-model="form.person.lastName"
@@ -243,13 +235,11 @@ function toggleRole(role: TierRole) {
                             :error="!!fieldErrors['person.lastName']"
                             :error-messages="fieldErrors['person.lastName'] || undefined"
                         />
-                    </v-col>
-                </v-row>
-                <v-row class="align-center" no-gutters>
-                    <v-col cols="12" sm="3" class="pr-sm-3">
-                        <label class="v-label font-weight-medium">{{ t('tiersPage.form.fields.birthDate') }}</label>
-                    </v-col>
-                    <v-col cols="12" sm="9">
+                    </div>
+                </div>
+                <div class="tier-form__row">
+                    <span class="tier-form__label">{{ t('tiersPage.form.fields.birthDate') }}</span>
+                    <div class="tier-form__field">
                         <AppDatePicker
                             v-model="birthDateModel"
                             color="primary"
@@ -257,21 +247,17 @@ function toggleRole(role: TierRole) {
                             :max="todayUtc"
                             :placeholder="t('tiersPage.form.placeholders.birthDate')"
                         />
-                        <div v-if="fieldErrors['person.birthDate']" class="text-caption text-error mt-1">
+                        <p v-if="fieldErrors['person.birthDate']" class="tier-form__note tier-form__note--error">
                             {{ fieldErrors['person.birthDate'] }}
-                        </div>
-                    </v-col>
-                </v-row>
+                        </p>
+                    </div>
+                </div>
             </template>
 
             <template v-else-if="form.nature === 'company'">
-                <v-row class="align-center" no-gutters>
-                    <v-col cols="12" sm="3" class="pr-sm-3">
-                        <label class="v-label font-weight-medium" for="tier-form-legal-name">{{
-                            t('tiersPage.form.fields.legalName')
-                        }}</label>
-                    </v-col>
-                    <v-col cols="12" sm="9">
+                <div class="tier-form__row">
+                    <label class="tier-form__label" for="tier-form-legal-name">{{ t('tiersPage.form.fields.legalName') }}</label>
+                    <div class="tier-form__field">
                         <v-text-field
                             id="tier-form-legal-name"
                             v-model="form.company.legalName"
@@ -283,13 +269,11 @@ function toggleRole(role: TierRole) {
                             :error="!!fieldErrors['company.legalName']"
                             :error-messages="fieldErrors['company.legalName'] || undefined"
                         />
-                    </v-col>
-                </v-row>
-                <v-row class="align-center" no-gutters>
-                    <v-col cols="12" sm="3" class="pr-sm-3">
-                        <label class="v-label font-weight-medium" for="tier-form-vat">{{ t('tiersPage.form.fields.vatNumber') }}</label>
-                    </v-col>
-                    <v-col cols="12" sm="9">
+                    </div>
+                </div>
+                <div class="tier-form__row">
+                    <label class="tier-form__label" for="tier-form-vat">{{ t('tiersPage.form.fields.vatNumber') }}</label>
+                    <div class="tier-form__field">
                         <v-text-field
                             id="tier-form-vat"
                             v-model="form.company.vatNumber"
@@ -302,15 +286,13 @@ function toggleRole(role: TierRole) {
                             :error="!!fieldErrors['company.vatNumber']"
                             :error-messages="fieldErrors['company.vatNumber'] || undefined"
                         />
-                    </v-col>
-                </v-row>
-                <v-row class="align-center" no-gutters>
-                    <v-col cols="12" sm="3" class="pr-sm-3">
-                        <label class="v-label font-weight-medium" for="tier-form-registration">
-                            {{ t('tiersPage.form.fields.companyRegistrationNumber') }}
-                        </label>
-                    </v-col>
-                    <v-col cols="12" sm="9">
+                    </div>
+                </div>
+                <div class="tier-form__row">
+                    <label class="tier-form__label" for="tier-form-registration">
+                        {{ t('tiersPage.form.fields.companyRegistrationNumber') }}
+                    </label>
+                    <div class="tier-form__field">
                         <v-text-field
                             id="tier-form-registration"
                             v-model="form.company.companyRegistrationNumber"
@@ -323,18 +305,14 @@ function toggleRole(role: TierRole) {
                             :error="!!fieldErrors['company.companyRegistrationNumber']"
                             :error-messages="fieldErrors['company.companyRegistrationNumber'] || undefined"
                         />
-                    </v-col>
-                </v-row>
+                    </div>
+                </div>
             </template>
 
             <template v-else-if="form.nature === 'organization'">
-                <v-row class="align-center" no-gutters>
-                    <v-col cols="12" sm="3" class="pr-sm-3">
-                        <label class="v-label font-weight-medium" for="tier-form-official-name">
-                            {{ t('tiersPage.form.fields.officialName') }}
-                        </label>
-                    </v-col>
-                    <v-col cols="12" sm="9">
+                <div class="tier-form__row">
+                    <label class="tier-form__label" for="tier-form-official-name">{{ t('tiersPage.form.fields.officialName') }}</label>
+                    <div class="tier-form__field">
                         <v-text-field
                             id="tier-form-official-name"
                             v-model="form.organization.officialName"
@@ -346,15 +324,13 @@ function toggleRole(role: TierRole) {
                             :error="!!fieldErrors['organization.officialName']"
                             :error-messages="fieldErrors['organization.officialName'] || undefined"
                         />
-                    </v-col>
-                </v-row>
-                <v-row class="align-center" no-gutters>
-                    <v-col cols="12" sm="3" class="pr-sm-3">
-                        <label class="v-label font-weight-medium" for="tier-form-organization-type">
-                            {{ t('tiersPage.form.fields.organizationType') }}
-                        </label>
-                    </v-col>
-                    <v-col cols="12" sm="9">
+                    </div>
+                </div>
+                <div class="tier-form__row">
+                    <label class="tier-form__label" for="tier-form-organization-type">
+                        {{ t('tiersPage.form.fields.organizationType') }}
+                    </label>
+                    <div class="tier-form__field">
                         <v-text-field
                             id="tier-form-organization-type"
                             v-model="form.organization.organizationType"
@@ -367,17 +343,15 @@ function toggleRole(role: TierRole) {
                             :error="!!fieldErrors['organization.organizationType']"
                             :error-messages="fieldErrors['organization.organizationType'] || undefined"
                         />
-                    </v-col>
-                </v-row>
+                    </div>
+                </div>
             </template>
         </template>
 
-        <p class="tier-form__section">{{ t('tiersPage.form.sections.contact') }}</p>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tier-form-email">{{ t('tiersPage.form.fields.email') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <h2 class="tier-form__section">{{ t('tiersPage.form.sections.contact') }}</h2>
+        <div class="tier-form__row">
+            <label class="tier-form__label" for="tier-form-email">{{ t('tiersPage.form.fields.email') }}</label>
+            <div class="tier-form__field">
                 <v-text-field
                     id="tier-form-email"
                     v-model="form.email"
@@ -392,13 +366,11 @@ function toggleRole(role: TierRole) {
                     :error="!!fieldErrors.email"
                     :error-messages="fieldErrors.email || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tier-form-phone">{{ t('tiersPage.form.fields.phone') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div class="tier-form__row">
+            <label class="tier-form__label" for="tier-form-phone">{{ t('tiersPage.form.fields.phone') }}</label>
+            <div class="tier-form__field">
                 <v-text-field
                     id="tier-form-phone"
                     v-model="form.phone"
@@ -413,13 +385,11 @@ function toggleRole(role: TierRole) {
                     :error="!!fieldErrors.phone"
                     :error-messages="fieldErrors.phone || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tier-form-website">{{ t('tiersPage.form.fields.website') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div class="tier-form__row">
+            <label class="tier-form__label" for="tier-form-website">{{ t('tiersPage.form.fields.website') }}</label>
+            <div class="tier-form__field">
                 <v-text-field
                     id="tier-form-website"
                     v-model="form.website"
@@ -433,15 +403,11 @@ function toggleRole(role: TierRole) {
                     :error="!!fieldErrors.website"
                     :error-messages="fieldErrors.website || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row class="align-start" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium tier-form__roles-label" for="tier-form-notes">{{
-                    t('tiersPage.form.fields.notes')
-                }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div class="tier-form__row tier-form__row--top">
+            <label class="tier-form__label" for="tier-form-notes">{{ t('tiersPage.form.fields.notes') }}</label>
+            <div class="tier-form__field">
                 <v-textarea
                     id="tier-form-notes"
                     v-model="form.notes"
@@ -455,8 +421,8 @@ function toggleRole(role: TierRole) {
                     :error="!!fieldErrors.notes"
                     :error-messages="fieldErrors.notes || undefined"
                 />
-            </v-col>
-        </v-row>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -464,126 +430,147 @@ function toggleRole(role: TierRole) {
 .tier-form {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
+/* titre de section : 16 px 700 sur filet 2 px (le premier s’appuie sur le filet de l’en-tête) */
 .tier-form__section {
-    margin: 12px 0 2px;
-    font-size: 0.72rem;
+    margin: 20px 0 4px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
+    letter-spacing: -0.025em;
+    line-height: 1.25;
 }
 
 .tier-form__section:first-child {
     margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
 }
 
+/* ligne libellé 170 px | champ */
+.tier-form__row {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 8px 16px;
+    align-items: center;
+}
+
+.tier-form__row--top {
+    align-items: start;
+}
+
+.tier-form__row--top .tier-form__label {
+    padding-top: 10px;
+}
+
+.tier-form__label {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.3;
+}
+
+.tier-form__req {
+    color: var(--blue-ink);
+}
+
+.tier-form__field {
+    min-width: 0;
+}
+
+.tier-form__note {
+    margin: 6px 0 0;
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.4;
+}
+
+.tier-form__note--error {
+    color: var(--danger);
+}
+
+.tier-form__note--warn {
+    color: var(--violet-ink);
+}
+
+/* nature figée : carré teinté + libellé + « Changer » */
 .tier-form__nature-lock {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
-    padding: 4px 0;
+    gap: 12px;
 }
 
-.tier-form__nature-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    font-weight: 650;
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
+.tier-form__nature-tile {
+    flex: none;
 }
 
-.tier-form__nature-badge--person {
-    background: rgba(var(--v-theme-success), 0.12);
-    color: rgb(var(--v-theme-success));
+.tier-form__nature-name {
+    font-weight: 700;
 }
 
-.tier-form__nature-badge--organization {
-    background: rgba(var(--v-theme-secondary), 0.16);
-    color: rgb(var(--v-theme-secondary));
-}
-
-.tier-form__nature-badge--administration {
-    background: rgba(var(--v-theme-warning), 0.14);
-    color: rgb(var(--v-theme-warning));
-}
-
-.tier-form__nature-badge--unknown {
-    background: var(--hair);
-    color: var(--ink-muted);
-}
-
-.tier-form__nature-change {
-    min-height: 34px;
-    padding: 0 12px;
-}
-
-.tier-form__roles-label {
-    display: inline-block;
-    padding-top: 10px;
-}
-
+/* rôles : cases carrées à bascule, sélection = bordure noire + 700 */
 .tier-form__roles {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    padding-top: 6px;
 }
 
 .tier-form__role {
     appearance: none;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 6px 12px;
-    border: 1px solid var(--thread);
-    border-radius: 999px;
-    background: var(--surface-raised);
-    color: var(--ink-muted);
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--gray);
     font: inherit;
-    font-size: 0.8rem;
-    font-weight: 600;
-    line-height: 1.2;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1;
     cursor: pointer;
     transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease;
+        border-color 0.15s var(--ease),
+        color 0.15s var(--ease),
+        background 0.15s var(--ease);
 }
 
-.tier-form__role:hover {
-    border-color: rgba(var(--v-theme-primary), 0.35);
+.tier-form__role:hover:not(:disabled) {
+    border-color: var(--gray);
     color: var(--ink);
+}
+
+.tier-form__role:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
 }
 
 .tier-form__role:disabled {
     cursor: default;
-    opacity: 0.75;
 }
 
 .tier-form__role.is-selected {
-    border-color: rgba(var(--v-theme-primary), 0.55);
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
+    border-color: var(--ink);
+    color: var(--ink);
+    font-weight: 700;
+}
+
+.tier-form__role.is-selected > svg {
+    color: var(--blue-ink);
 }
 
 @media (max-width: 599.98px) {
-    .tier-form {
-        gap: 12px;
+    .tier-form__row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
     }
 
-    .tier-form :deep(.v-label) {
-        margin-bottom: 4px;
-    }
-
-    .tier-form__roles-label {
+    .tier-form__row--top .tier-form__label {
         padding-top: 0;
     }
 }

@@ -193,7 +193,7 @@ async function onConfirm() {
             </label>
 
             <div v-if="transactionsStore.loading && !candidates.length" class="su-loading"><span class="su-spin" /></div>
-            <p v-else-if="!visibleItems.length" class="text-medium-emphasis">
+            <p v-else-if="!visibleItems.length" class="recurring-link-tx__empty">
                 {{ search.trim() ? t('recurrencesPage.linkTransactions.emptyFiltered') : t('recurrencesPage.linkTransactions.empty') }}
             </p>
             <div v-else class="recurring-link-tx__list" role="listbox" :aria-label="t('recurrencesPage.linkTransactions.pickTransaction')">
@@ -219,7 +219,7 @@ async function onConfirm() {
 
         <section class="recurring-link-tx__section">
             <h3 class="recurring-link-tx__title">{{ t('recurrencesPage.linkTransactions.pickDue') }}</h3>
-            <p v-if="!openDues.length" class="text-medium-emphasis">{{ t('recurrencesPage.linkTransactions.emptyDues') }}</p>
+            <p v-if="!openDues.length" class="recurring-link-tx__empty">{{ t('recurrencesPage.linkTransactions.emptyDues') }}</p>
             <div v-else class="recurring-link-tx__list" role="listbox" :aria-label="t('recurrencesPage.linkTransactions.pickDue')">
                 <button
                     v-for="due in openDues"
@@ -242,7 +242,7 @@ async function onConfirm() {
         </section>
 
         <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="linking" @click="close">
+            <button type="button" class="su-btn" :disabled="linking" @click="close">
                 {{ t('common.cancel') }}
             </button>
             <button type="button" class="su-btn su-btn--ink" :disabled="!canSubmit" @click="onConfirm">
@@ -254,48 +254,72 @@ async function onConfirm() {
 
 <style scoped>
 .recurring-link-tx__section + .recurring-link-tx__section {
-    margin-top: 22px;
+    margin-top: 32px;
 }
 
+/* titre de section 16 px 700 sur filet 2 px */
 .recurring-link-tx__title {
-    margin: 0 0 10px;
-    color: var(--ink-mute);
-    font-size: 13px;
-    font-weight: 560;
-    letter-spacing: 0.01em;
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.recurring-link-tx__empty {
+    margin: 0;
+    color: var(--gray);
+    font-size: 14px;
 }
 
 .recurring-link-tx__list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
 }
 
+/* ligne sélectionnable sur filet fin ; sélection = fond bleu pâle + filet gauche 2 px */
 .recurring-link-tx__row {
     appearance: none;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid transparent;
-    border-radius: 14px;
-    background: var(--surface-raised);
-    color: inherit;
+    min-height: 52px;
+    padding: 10px 8px;
+    border: 0;
+    border-top: 1px solid var(--line);
+    box-shadow: inset 2px 0 0 transparent;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
     text-align: left;
     cursor: pointer;
+    transition:
+        background 0.15s var(--ease),
+        box-shadow 0.15s var(--ease);
+}
+
+.recurring-link-tx__list > .recurring-link-tx__row:first-child {
+    border-top: 0;
 }
 
 .recurring-link-tx__row:hover:not(:disabled) {
-    border-color: var(--thread);
+    background: var(--soft);
 }
 
 .recurring-link-tx__row.is-selected {
-    border-color: rgb(var(--v-theme-primary));
+    background: var(--blue-soft);
+    box-shadow: inset 2px 0 0 var(--blue-btn);
+}
+
+.recurring-link-tx__row:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: -2px;
 }
 
 .recurring-link-tx__row:disabled {
-    opacity: 0.55;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
@@ -308,20 +332,20 @@ async function onConfirm() {
 }
 
 .recurring-link-tx__name {
-    font-weight: 600;
+    font-weight: 700;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.recurring-link-tx__sub,
-.recurring-link-tx__amount {
-    font-size: 0.8125rem;
-    color: rgba(var(--v-theme-on-surface), 0.64);
+.recurring-link-tx__sub {
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .recurring-link-tx__amount {
     flex: 0 0 auto;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
 }
 </style>

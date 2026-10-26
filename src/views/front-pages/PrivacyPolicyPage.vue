@@ -3,6 +3,7 @@ import { DatabaseExportIcon, LockIcon, ShieldCheckIcon } from 'vue-tabler-icons'
 import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
 import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
+import LegalToc from '@/components/frontpages/legal/LegalToc.vue';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 </script>
 
@@ -28,6 +29,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 
         <main class="legal-main">
             <v-container class="max-width-1218 privacy-body">
+                <LegalToc />
                 <div class="legal-intro">
                     <strong>Notre engagement</strong>
                     <p>

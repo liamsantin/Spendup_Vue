@@ -7,16 +7,28 @@ import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { budgetToFormFields } from '@/features/budgets/payload';
 import { BUDGETS_PATHS, budgetDetailPath, budgetPublicIdFromPath } from '@/features/budgets/paths';
-import { isBudgetPeriode, matchesBudgetSearch } from '@/features/budgets/format';
+import {
+    budgetAvailablePerDay,
+    budgetDaysRemaining,
+    budgetFilledSegments,
+    endOfMonthYmd,
+    formatBudgetAmount,
+    formatBudgetMonth,
+    formatPercentUsed,
+    isBudgetPeriode,
+    matchesBudgetSearch
+} from '@/features/budgets/format';
+import { useUserSettingsStore } from '@/features/user-settings';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { BUDGET_NAME_MAX, type Budget, type BudgetPeriode } from '@/features/budgets/types';
 import BudgetListItem from '@/features/budgets/components/list/BudgetListItem.vue';
 import BudgetFormModal from '@/features/budgets/components/modals/BudgetFormModal.vue';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useBudgetsStore();
+const settings = useUserSettingsStore();
 
 const createOpen = ref(false);
 const editTarget = ref<Budget | null>(null);
@@ -63,6 +75,66 @@ const visibleItems = computed(() => {
     if (!needle) return store.items;
     return store.items.filter((budget) => matchesBudgetSearch(budget, needle));
 });
+
+const GAUGE_SEGMENTS = 20;
+
+/**
+ * Bloc « Budget du mois » (maquette 06) : le budget global en cours (sans catégorie, mensuel de préférence) ;
+ * à défaut, total des budgets actifs en cours dans la devise par défaut (signalé par une note).
+ */
+const overview = computed(() => {
+    const current = store.items.filter((budget) => budget.isActive && budget.isCurrent);
+    if (!current.length) return null;
+    const globals = current.filter((budget) => !budget.categoryPublicId);
+    const global = globals.find((budget) => budget.periode === 'mensuel') ?? globals[0] ?? null;
+    if (global) {
+        return {
+            spent: global.spentAmount,
+            limit: global.limitAmount,
+            remaining: global.remainingAmount,
+            percent: global.percentUsed,
+            currency: global.currency,
+            periodEnd: global.periodEnd,
+            aggregate: false
+        };
+    }
+    const preferred = settings.current.defaultCurrency;
+    const currency = current.some((budget) => budget.currency === preferred) ? preferred : current[0].currency;
+    const scoped = current.filter((budget) => budget.currency === currency);
+    const spent = scoped.reduce((sum, budget) => sum + budget.spentAmount, 0);
+    const limit = scoped.reduce((sum, budget) => sum + budget.limitAmount, 0);
+    return {
+        spent,
+        limit,
+        remaining: limit - spent,
+        percent: limit > 0 ? (spent / limit) * 100 : 0,
+        currency,
+        periodEnd: endOfMonthYmd(),
+        aggregate: true
+    };
+});
+
+const overviewView = computed(() => {
+    const data = overview.value;
+    if (!data) return null;
+    const daysLeft = budgetDaysRemaining(data.periodEnd);
+    const over = data.remaining < 0;
+    const filled = budgetFilledSegments(data.percent, GAUGE_SEGMENTS);
+    const money = (amount: number) => formatBudgetAmount(amount, data.currency, locale.value);
+    return {
+        percentInt: new Intl.NumberFormat(locale.value || undefined, { maximumFractionDigits: 0 }).format(Math.max(0, data.percent)),
+        percentText: formatPercentUsed(data.percent, locale.value),
+        segments: Array.from({ length: GAUGE_SEGMENTS }, (_, index) => (over ? 'is-over' : index < filled ? 'is-used' : '')),
+        spent: money(data.spent),
+        limit: money(data.limit),
+        remaining: money(Math.abs(data.remaining)),
+        over,
+        perDay: money(budgetAvailablePerDay(data.remaining, daysLeft)),
+        aggregate: data.aggregate
+    };
+});
+
+const monthLabel = computed(() => t('budgetsPage.hero.monthBudget', { month: formatBudgetMonth(locale.value) }));
 
 const hasExtraFilters = computed(() => !!(filterSearch.value || filterPeriode.value || filterCategory.value));
 const emptyCopy = computed(() => {
@@ -221,19 +293,48 @@ async function toggleActive(budget: Budget) {
         >
             <p>{{ emptyCopy }}</p>
         </div>
-        <div v-else class="budgets-directory">
-            <div :key="searchRevealKey" class="budgets-directory__list" :class="{ 'is-search-reveal': searchReveals }">
-                <BudgetListItem
-                    v-for="(budget, index) in visibleItems"
-                    :key="budget.publicId"
-                    :budget="budget"
-                    :acting="store.acting"
-                    :style="{ '--i': index }"
-                    @edit="openDetail"
-                    @delete="requestDelete"
-                    @toggle-active="toggleActive"
-                />
-            </div>
+        <div v-else class="budgets-directory su-g12">
+            <section v-if="overviewView" class="budgets-overview" :aria-label="monthLabel">
+                <p class="budgets-overview__label">{{ monthLabel }}</p>
+                <p class="su-hero-num budgets-overview__num">{{ overviewView.percentInt }}<small> %</small></p>
+                <div class="budgets-overview__gauge" role="img" :aria-label="overviewView.percentText">
+                    <span v-for="(tone, index) in overviewView.segments" :key="index" class="budgets-overview__segment" :class="tone" />
+                </div>
+                <div class="su-kv">
+                    <span>{{ t('budgetsPage.overview.spent') }}</span
+                    ><span>{{ overviewView.spent }}</span>
+                </div>
+                <div class="su-kv">
+                    <span>{{ t('budgetsPage.overview.budget') }}</span
+                    ><span>{{ overviewView.limit }}</span>
+                </div>
+                <div class="su-kv su-kv--strong">
+                    <span>{{ overviewView.over ? t('budgetsPage.overview.overBy') : t('budgetsPage.overview.remaining') }}</span>
+                    <span :class="{ 'su-over': overviewView.over }">{{ overviewView.remaining }}</span>
+                </div>
+                <div class="su-kv">
+                    <span>{{ t('budgetsPage.overview.perDay') }}</span
+                    ><span>{{ overviewView.perDay }}</span>
+                </div>
+                <p v-if="overviewView.aggregate" class="budgets-overview__note">{{ t('budgetsPage.overview.aggregateNote') }}</p>
+            </section>
+            <section class="budgets-list" :class="{ 'budgets-list--full': !overviewView }">
+                <header class="su-section__head">
+                    <h2>{{ t('budgetsPage.overview.byCategory') }}</h2>
+                </header>
+                <div :key="searchRevealKey" class="budgets-directory__list" :class="{ 'is-search-reveal': searchReveals }">
+                    <BudgetListItem
+                        v-for="(budget, index) in visibleItems"
+                        :key="budget.publicId"
+                        :budget="budget"
+                        :acting="store.acting"
+                        :style="{ '--i': index }"
+                        @edit="openDetail"
+                        @delete="requestDelete"
+                        @toggle-active="toggleActive"
+                    />
+                </div>
+            </section>
         </div>
 
         <BudgetFormModal v-model="createOpen" />
@@ -252,29 +353,93 @@ async function toggleActive(budget: Budget) {
 </template>
 
 <style scoped>
+/* grille 12 colonnes : bloc global (5) | par catégorie (7) ; empilée sous 960 px (kit) */
 .budgets-directory {
     width: 100%;
     min-width: 0;
+    padding: 8px 0 24px;
+}
+
+.budgets-overview {
+    grid-column: span 5;
+    min-width: 0;
+    /* résumé du mois mis en avant dans une carte douce */
+    align-self: start;
+    padding: 24px;
+    background: var(--soft);
+}
+
+.budgets-list {
+    grid-column: span 7;
+    min-width: 0;
+}
+
+.budgets-list--full {
+    grid-column: 1 / -1;
+}
+
+.budgets-list .su-section__head {
+    margin-bottom: 0;
+    padding-top: 2px;
+}
+
+.budgets-overview__label {
+    margin: 0 0 12px;
+    font-size: 13px;
+    color: var(--ink);
+}
+
+.budgets-overview__num {
+    margin-bottom: 16px;
+}
+
+/* jauge segmentée : 20 carrés, bleus consommés, gris restants, violets au-delà de 100 % */
+.budgets-overview__gauge {
+    display: grid;
+    grid-template-columns: repeat(20, minmax(0, 1fr));
+    gap: 3px;
+    margin-bottom: 20px;
+}
+
+.budgets-overview__segment {
+    display: block;
+    height: 24px;
+    /* reste visible sur le fond doux de la carte */
+    background: color-mix(in srgb, var(--gray) 22%, transparent);
+}
+
+.budgets-overview__segment.is-used {
+    background: var(--blue);
+}
+
+.budgets-overview__segment.is-over {
+    background: var(--violet);
+}
+
+.budgets-overview__note {
+    margin: 12px 0 0;
+    color: var(--gray);
+    font-size: 13px;
 }
 
 .budgets-directory__list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
     width: 100%;
-    overflow: visible;
-    padding: 0;
+    min-width: 0;
+}
+
+.budgets-directory__list > :deep(.budget-row:first-child) {
+    border-top: 0;
 }
 
 @media (max-width: 767px) {
     .budgets-directory {
-        /* Récupère le padding latéral du su-body pour maximiser la largeur. */
-        margin-inline: -8px;
-        width: calc(100% + 16px);
+        padding: 0 0 16px;
     }
 
-    .budgets-directory__list {
-        gap: 8px;
+    .budgets-overview__segment {
+        height: 28px;
     }
 }
 </style>

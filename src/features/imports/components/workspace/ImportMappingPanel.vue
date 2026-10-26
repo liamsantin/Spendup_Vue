@@ -281,8 +281,8 @@ void store.loadTemplates().catch(() => undefined);
         </AppAlert>
 
         <div class="import-mapping__grid">
-            <div class="import-mapping__card">
-                <h3 class="import-mapping__title">{{ t('importsPage.mapping.readTitle') }}</h3>
+            <section class="su-section import-mapping__card">
+                <h2 class="su-h2 import-mapping__title">{{ t('importsPage.mapping.readTitle') }}</h2>
                 <div class="import-mapping__fields">
                     <AppSelect
                         v-if="!isCsv && sheetItems.length"
@@ -324,10 +324,10 @@ void store.loadTemplates().catch(() => undefined);
                 <AppAlert v-if="layoutChanged && hasColumns" type="info" class="mt-3">{{
                     t('importsPage.mapping.layoutChanged')
                 }}</AppAlert>
-            </div>
+            </section>
 
-            <div class="import-mapping__card">
-                <h3 class="import-mapping__title">{{ t('importsPage.mapping.formatTitle') }}</h3>
+            <section class="su-section import-mapping__card">
+                <h2 class="su-h2 import-mapping__title">{{ t('importsPage.mapping.formatTitle') }}</h2>
                 <div class="import-mapping__fields">
                     <AppSelect
                         v-model="form.dateFormat"
@@ -357,11 +357,11 @@ void store.loadTemplates().catch(() => undefined);
                         :search-placeholder="t('importsPage.lines.edit.paymentMethodSearch')"
                     />
                 </div>
-            </div>
+            </section>
         </div>
 
-        <div v-if="hasColumns && !layoutChanged" class="import-mapping__card">
-            <h3 class="import-mapping__title">{{ t('importsPage.mapping.columnsTitle') }}</h3>
+        <section v-if="hasColumns && !layoutChanged" class="su-section import-mapping__card">
+            <h2 class="su-h2 import-mapping__title">{{ t('importsPage.mapping.columnsTitle') }}</h2>
             <div class="import-mapping__modes" role="radiogroup" :aria-label="t('importsPage.mapping.amountMode')">
                 <button
                     v-for="mode in amountModes"
@@ -400,17 +400,19 @@ void store.loadTemplates().catch(() => undefined);
                 />
             </div>
             <p v-if="form.amountMode === 'debitCredit'" class="import-mapping__hint mt-2">{{ t('importsPage.mapping.debitCreditHint') }}</p>
-        </div>
+        </section>
 
-        <div v-if="analysis.sample.length" class="import-mapping__card">
-            <h3 class="import-mapping__title">{{ t('importsPage.mapping.sampleTitle') }}</h3>
-            <div class="import-mapping__sample">
-                <table>
+        <section v-if="analysis.sample.length" class="su-section import-mapping__card">
+            <h2 class="su-h2 import-mapping__title">{{ t('importsPage.mapping.sampleTitle') }}</h2>
+            <div class="su-table-wrap import-mapping__sample">
+                <table class="su-table">
                     <thead>
                         <tr>
                             <th v-for="head in sampleHeaders" :key="head.index">
                                 <span class="import-mapping__sample-head">{{ head.header }}</span>
-                                <span v-if="head.field && !layoutChanged" class="import-mapping__sample-field">{{ head.field }}</span>
+                                <span v-if="head.field && !layoutChanged" class="su-chip import-mapping__sample-field">{{
+                                    head.field
+                                }}</span>
                             </th>
                         </tr>
                     </thead>
@@ -421,7 +423,7 @@ void store.loadTemplates().catch(() => undefined);
                     </tbody>
                 </table>
             </div>
-        </div>
+        </section>
         <p v-else class="import-mapping__hint">{{ t('importsPage.mapping.sampleEmpty') }}</p>
 
         <div class="import-mapping__footer">
@@ -466,16 +468,17 @@ void store.loadTemplates().catch(() => undefined);
 </template>
 
 <style scoped>
+/* Mapping : sections sur filet 2 px (h2 16 px), modes de montant en blocs carrés, échantillon en tableau éditorial. */
 .import-mapping {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 4px 16px 16px;
+    gap: 40px;
+    padding: 0 0 24px;
 }
 
 .import-mapping__lead {
     margin: 0;
-    font-weight: 560;
+    font-weight: 700;
 }
 
 .import-mapping__issues {
@@ -495,48 +498,44 @@ void store.loadTemplates().catch(() => undefined);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     margin-top: 10px;
-    font-size: 0.8rem;
+    font-size: 13px;
 }
 
 .import-mapping__grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    gap: 40px 32px;
 }
 
 .import-mapping__card {
-    padding: 16px;
-    border: 1px solid var(--stroke, rgba(16, 16, 20, 0.08));
-    border-radius: 18px;
-    background: var(--surface-raised, transparent);
+    padding-top: 12px;
+    border-radius: 0;
+    background: transparent;
 }
 
 .import-mapping__title {
-    margin: 0 0 12px;
-    font-size: 0.9rem;
-    font-weight: 650;
-    letter-spacing: -0.01em;
+    margin: 0 0 16px;
 }
 
 .import-mapping__fields {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 16px;
 }
 
 .import-mapping__hint {
     margin: -6px 0 0;
-    font-size: 0.78rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .import-mapping__modes {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    margin-bottom: 14px;
+    gap: 10px;
+    margin-bottom: 16px;
 }
 
 .import-mapping__mode {
@@ -544,62 +543,61 @@ void store.loadTemplates().catch(() => undefined);
     display: flex;
     flex-direction: column;
     gap: 2px;
-    padding: 10px 12px;
-    border: 1px solid var(--stroke, rgba(16, 16, 20, 0.1));
-    border-radius: 14px;
+    padding: 12px;
+    border: 1px solid var(--line);
+    border-radius: 0;
     background: transparent;
     color: inherit;
     font: inherit;
     text-align: left;
     cursor: pointer;
     transition:
-        border-color 0.2s var(--ease, ease),
-        background 0.2s var(--ease, ease);
+        border-color 0.15s var(--ease),
+        background 0.15s var(--ease);
+}
+
+.import-mapping__mode:hover {
+    background: var(--soft);
+}
+
+.import-mapping__mode:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
 }
 
 .import-mapping__mode.is-selected {
-    border-color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.06);
+    border-color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink);
 }
 
 .import-mapping__mode-title {
-    font-size: 0.86rem;
-    font-weight: 620;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .import-mapping__mode-hint {
-    font-size: 0.75rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .import-mapping__columns {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-}
-
-.import-mapping__sample {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    gap: 16px;
 }
 
 .import-mapping__sample table {
     min-width: 100%;
-    border-collapse: collapse;
-    font-size: 0.8rem;
+    font-size: 13px;
 }
 
 .import-mapping__sample th,
 .import-mapping__sample td {
-    padding: 6px 10px;
-    border-bottom: 1px solid var(--hair, rgba(16, 16, 20, 0.06));
-    text-align: left;
     white-space: nowrap;
 }
 
 .import-mapping__sample th {
     vertical-align: bottom;
-    font-weight: 600;
 }
 
 .import-mapping__sample-head {
@@ -607,14 +605,9 @@ void store.loadTemplates().catch(() => undefined);
 }
 
 .import-mapping__sample-field {
-    display: inline-block;
     margin-top: 4px;
-    padding: 1px 8px;
-    border-radius: 999px;
-    background: rgba(var(--v-theme-primary), 0.12);
-    color: rgb(var(--v-theme-primary));
-    font-size: 0.7rem;
-    font-weight: 620;
+    height: 20px;
+    font-size: 12.5px;
 }
 
 .import-mapping__footer {
@@ -623,6 +616,8 @@ void store.loadTemplates().catch(() => undefined);
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
 }
 
 .import-mapping__templates {
@@ -653,13 +648,18 @@ void store.loadTemplates().catch(() => undefined);
 
 @media (max-width: 767px) {
     .import-mapping {
-        padding: 0 4px 8px;
+        gap: 32px;
+        padding: 0 0 8px;
     }
 
     .import-mapping__grid,
     .import-mapping__columns,
     .import-mapping__modes {
         grid-template-columns: 1fr;
+    }
+
+    .import-mapping__grid {
+        gap: 32px;
     }
 
     .import-mapping__templates {

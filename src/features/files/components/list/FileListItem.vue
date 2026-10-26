@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Ligne de fichier (téléphone) : carré 36 px teinté | nom 700 + type · taille · date en gris | actions.
+ */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { DownloadIcon, EyeIcon, PdfIcon, PencilIcon, TrashIcon } from 'vue-tabler-icons';
@@ -31,7 +34,8 @@ const dateLabel = computed(() => {
 });
 
 const subLine = computed(() => {
-    const bits = [sizeLabel.value];
+    const type = props.file.extension ? props.file.extension.toUpperCase() : 'PDF';
+    const bits = [type, sizeLabel.value];
     if (props.file.documentDate) bits.push(dateLabel.value);
     else bits.push(t('filesPage.list.addedOn', { date: dateLabel.value }));
     return bits.join(' · ');
@@ -59,14 +63,14 @@ const tap = useRowTap(
         @touchend="tap.onTouchend"
         @touchcancel="tap.onTouchcancel"
     >
-        <span class="file-row__icon">
-            <PdfIcon size="18" stroke-width="1.8" />
+        <span class="su-tile su-tile--rose file-row__tile" aria-hidden="true">
+            <PdfIcon :size="18" stroke-width="1.7" />
         </span>
 
         <div class="file-row__meta">
             <p class="file-row__name">{{ file.nameOriginal }}</p>
             <p class="file-row__sub">{{ subLine }}</p>
-            <p v-if="file.description" class="file-row__desc">{{ file.description }}</p>
+            <p v-if="file.description" class="file-row__sub">{{ file.description }}</p>
         </div>
 
         <div class="file-row__actions">
@@ -111,39 +115,32 @@ const tap = useRowTap(
 </template>
 
 <style scoped>
+/* ligne sur filet fin, sans fond ni ombre */
 .file-row {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
+    gap: 14px;
     width: 100%;
     min-width: 0;
-    padding: 10px 10px;
+    min-height: 56px;
+    padding: 12px 0;
     box-sizing: border-box;
-    border-radius: 12px;
+    border-top: 1px solid var(--line);
     color: inherit;
-    position: relative;
-    z-index: 0;
-    transition:
-        transform 0.5s var(--spring),
-        box-shadow 0.45s var(--ease),
-        background 0.3s var(--ease);
+    transition: background 0.15s var(--ease);
+}
+
+.file-row:last-child {
+    border-bottom: 1px solid var(--line);
 }
 
 .file-row--editable {
     cursor: pointer;
 }
 
-.file-row:hover {
-    background: var(--surface-hover-soft);
-}
-
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+@media (hover: hover) and (pointer: fine) {
     .file-row:hover {
-        z-index: 1;
-        transform: scale(1.012);
-        box-shadow:
-            0 1px 2px rgba(16, 16, 20, 0.04),
-            0 12px 28px -16px rgba(16, 16, 20, 0.18);
+        background: var(--soft);
     }
 }
 
@@ -153,16 +150,8 @@ const tap = useRowTap(
     }
 }
 
-.file-row__icon {
-    display: grid;
-    place-items: center;
+.file-row__tile {
     flex: none;
-    width: 38px;
-    height: 38px;
-    margin-top: 1px;
-    border-radius: 12px;
-    background: rgba(var(--v-theme-error), 0.1);
-    color: rgb(var(--v-theme-error));
 }
 
 .file-row__meta {
@@ -170,28 +159,29 @@ const tap = useRowTap(
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
 }
 
 .file-row__name {
     margin: 0;
     min-width: 0;
-    font-size: 14.5px;
-    font-weight: 620;
-    letter-spacing: -0.01em;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.006em;
+    line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.file-row__sub,
-.file-row__desc {
+.file-row__sub {
     margin: 0;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-variant-numeric: tabular-nums;
 }
 
 .file-row__actions {
@@ -199,21 +189,19 @@ const tap = useRowTap(
     flex: none;
     align-items: center;
     justify-content: flex-end;
-    gap: 4px;
-    padding: 2px;
-    margin: -2px;
+    gap: 2px;
 }
 
 @media (max-width: 600px) {
     .file-row {
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 8px 12px;
     }
 
     .file-row__actions {
         width: 100%;
         justify-content: flex-start;
-        padding-left: 46px;
+        padding-left: 48px;
     }
 }
 </style>

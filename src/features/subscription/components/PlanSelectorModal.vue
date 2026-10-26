@@ -155,17 +155,18 @@ async function confirmChange() {
 </template>
 
 <style scoped>
+/* blocs de plan côte à côte, gouttière 32 px, pas de carte */
 .plan-selector__grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 14px;
+    gap: 32px;
     align-items: stretch;
 }
 
 .plan-selector__note {
-    margin: 16px 0 0;
-    font-size: 0.78rem;
-    color: var(--ink-muted);
+    margin: 24px 0 0;
+    color: var(--gray);
+    font-size: 13px;
     text-align: center;
 }
 </style>

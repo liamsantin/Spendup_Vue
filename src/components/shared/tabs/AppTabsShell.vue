@@ -1,6 +1,7 @@
 <script setup lang="ts">
 /**
- * Shell de page à onglets — hero verre + onglets pill + corps scrollable.
+ * Shell de page à onglets — en-tête Swiss (h1, onglets texte, filet 2 px) + corps scrollable.
+ * `#actions` : boutons libres à droite de l'en-tête (ex. « + Ajouter un compte »).
  */
 defineOptions({ name: 'AppTabsShell' });
 
@@ -103,13 +104,16 @@ function selectTab(value: string) {
                         <span v-if="item.chip" class="su-tab__chip">{{ item.chip }}</span>
                     </button>
                 </nav>
-                <div v-if="!hideActions" class="su-hero__actions">
-                    <button type="button" class="su-btn su-btn--ghost" :disabled="cancelDisabled" @click="emit('cancel')">
-                        {{ t('shell.cancel') }}
-                    </button>
-                    <button type="button" class="su-btn su-btn--ink" :disabled="saveDisabled || saveLoading" @click="emit('save')">
-                        {{ t('shell.save') }}
-                    </button>
+                <div v-if="!hideActions || $slots.actions" class="su-hero__actions">
+                    <slot name="actions" />
+                    <template v-if="!hideActions">
+                        <button type="button" class="su-btn" :disabled="cancelDisabled" @click="emit('cancel')">
+                            {{ t('shell.cancel') }}
+                        </button>
+                        <button type="button" class="su-btn su-btn--ink" :disabled="saveDisabled || saveLoading" @click="emit('save')">
+                            {{ t('shell.save') }}
+                        </button>
+                    </template>
                 </div>
             </div>
             <p v-if="subtitle">{{ subtitle }}</p>

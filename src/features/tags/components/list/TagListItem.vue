@@ -1,7 +1,10 @@
 <script setup lang="ts">
+/**
+ * Ligne de tag sur filet fin : carré 7 px de couleur + nom 700 | usage gris à droite | actions au survol.
+ */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PencilIcon, TagIcon, TrashIcon } from 'vue-tabler-icons';
+import { PencilIcon, TrashIcon } from 'vue-tabler-icons';
 import type { Tag } from '@/features/tags/types';
 
 const props = defineProps<{
@@ -16,7 +19,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
-const swatchStyle = computed(() => (props.tag.color ? { backgroundColor: props.tag.color } : undefined));
+const colorStyle = computed(() => (props.tag.color ? { '--sq-color': props.tag.color } : undefined));
 const usageText = computed(() => {
     const tx = props.tag.transactionCount;
     const rec = props.tag.recurringExpenseCount;
@@ -35,14 +38,10 @@ function onActivate(event: MouseEvent) {
 </script>
 
 <template>
-    <div class="tag-row" :class="{ 'tag-row--editable': !acting }" :data-tag-id="tag.publicId" @click="onActivate">
-        <span class="tag-row__icon" :style="swatchStyle" :class="{ 'tag-row__icon--empty': !tag.color }">
-            <TagIcon size="18" stroke-width="1.8" />
-        </span>
-        <div class="tag-row__meta">
-            <p class="tag-row__name">{{ tag.name }}</p>
-            <p class="tag-row__sub">{{ usageText }}</p>
-        </div>
+    <div class="tag-row" :class="{ 'tag-row--editable': !acting }" :style="colorStyle" :data-tag-id="tag.publicId" @click="onActivate">
+        <span class="su-sq tag-row__sq" aria-hidden="true" />
+        <p class="tag-row__name">{{ tag.name }}</p>
+        <span class="tag-row__usage">{{ usageText }}</span>
         <div class="tag-row__actions">
             <button
                 type="button"
@@ -68,17 +67,18 @@ function onActivate(event: MouseEvent) {
 
 <style scoped>
 .tag-row {
+    --sq-color: var(--t-gray-ink);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
     width: 100%;
     min-width: 0;
     min-height: 52px;
-    padding: 8px 10px;
+    padding: 8px 8px;
     box-sizing: border-box;
-    border-radius: 12px;
+    border-top: 1px solid var(--line);
     color: inherit;
-    transition: background 0.2s ease;
+    transition: background 0.15s var(--ease);
 }
 
 .tag-row--editable {
@@ -86,50 +86,67 @@ function onActivate(event: MouseEvent) {
 }
 
 .tag-row:hover {
-    background: var(--surface-hover-soft);
+    background: var(--soft);
 }
 
-.tag-row__icon {
-    display: grid;
-    place-items: center;
+.tag-row__sq {
     flex: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    color: inherit;
-    box-shadow: 0 6px 14px -10px rgba(16, 16, 20, 0.35);
-}
-
-.tag-row__icon--empty {
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
-}
-
-.tag-row__meta {
-    flex: 1 1 auto;
-    min-width: 0;
 }
 
 .tag-row__name {
+    flex: 1 1 auto;
     margin: 0;
-    font-size: 14.5px;
-    font-weight: 620;
-    letter-spacing: -0.01em;
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.006em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.tag-row__sub {
-    margin: 2px 0 0;
-    font-size: 0.78rem;
-    color: var(--ink-muted);
+.tag-row__usage {
+    flex: none;
+    font-size: 13px;
+    color: var(--gray);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 .tag-row__actions {
     display: flex;
     flex: none;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s var(--ease);
+}
+
+.tag-row:hover .tag-row__actions,
+.tag-row:focus-within .tag-row__actions {
+    opacity: 1;
+}
+
+@media (hover: none) {
+    .tag-row__actions {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 600px) {
+    .tag-row {
+        flex-wrap: wrap;
+        gap: 8px 10px;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .tag-row__usage {
+        flex: 1 1 100%;
+        order: 3;
+        padding-left: 17px;
+        text-align: left;
+    }
 }
 </style>

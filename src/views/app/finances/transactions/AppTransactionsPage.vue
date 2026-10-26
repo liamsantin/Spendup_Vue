@@ -2,9 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon, CalendarIcon, ChevronDownIcon, CheckIcon, CoinIcon, FileExportIcon, LayoutGridIcon } from 'vue-tabler-icons';
-import AppBoard from '@/components/shared/board/AppBoard.vue';
-import AppBoardSearch from '@/components/shared/board/AppBoardSearch.vue';
+import { CheckIcon, FileExportIcon, PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
 import { useBoardSearch } from '@/components/shared/board/useBoardSearch';
 import { useCreateFromQuery } from '@/components/shared/board/useCreateFromQuery';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
@@ -17,13 +15,18 @@ import {
     TransactionsTimeline,
     TRANSACTION_SEARCH_MAX,
     TRANSACTION_SORT_DEFAULT,
+    TRANSACTION_SORTS,
     TRANSACTION_TYPES,
     canWriteTransactions,
+    formatOperationDate,
     isTransactionSort,
     parseTransactionSort,
+    resolveTransactionAmountDisplay,
     useTransactionsStore
 } from '@/features/transactions';
-import type { TransactionType } from '@/features/transactions';
+import type { TransactionSort, TransactionType } from '@/features/transactions';
+import type { TransactionsSummary } from '@/features/transactions/components/TransactionsTimeline.vue';
+import { amountSignOf } from '@/features/transactions/composables/useTransactionRowDisplay';
 import { useAccountsStore } from '@/features/accounts';
 import { budgetLinkedTransactionsQuery, parseBudgetTransactionScope, useBudgetsStore } from '@/features/budgets';
 import BudgetEnvelopeBanner from '@/features/budgets/components/BudgetEnvelopeBanner.vue';
@@ -32,8 +35,7 @@ import { useTagsStore } from '@/features/tags/stores/tags-store';
 import { PAYMENT_METHOD_PAGE_SIZE_MAX, usePaymentMethodsStore } from '@/features/payment-methods';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { tierSelectItems, useTiersStore } from '@/features/tiers';
-import { TRANSACTION_TYPE_ICONS } from '@/features/transactions/typeUi';
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useTransactionsStore();
@@ -44,15 +46,21 @@ const tagsStore = useTagsStore();
 const tiersStore = useTiersStore();
 const paymentMethodsStore = usePaymentMethodsStore();
 const recurringStore = useRecurringPaymentsStore();
-const timelineRef = ref<{ openCreate: () => void; exportCsv: () => void; visibleCount: number } | null>(null);
+const timelineRef = ref<{
+    openCreate: () => void;
+    exportCsv: () => void;
+    visibleCount: number;
+    summary: TransactionsSummary | null;
+} | null>(null);
 const visibleCount = computed(() => timelineRef.value?.visibleCount ?? 0);
+const summary = computed(() => timelineRef.value?.summary ?? null);
 
 function queryString(name: string): string {
     const raw = route.query[name];
     return typeof raw === 'string' ? raw : '';
 }
 
-const typeMenuOpen = ref(false);
+const sortMenuOpen = ref(false);
 
 const canCreate = computed(() => accountsStore.accounts.some((a) => canWriteTransactions(a)));
 
@@ -434,19 +442,96 @@ const periodCount = computed(() => [filterFrom.value, filterTo.value].filter(Boo
 
 const amountCount = computed(() => [filterMinAmount.value, filterMaxAmount.value].filter(Boolean).length);
 
-/** Total affiché sur le bouton « Filtres » replié (mobile). */
-const activeFilterTotal = computed(() => filterCount.value + periodCount.value + amountCount.value);
+/** Onglets de type : Toutes / Entrées / Sorties / Virements. */
+const typeTabs = computed<{ value: TransactionType | ''; label: string }[]>(() => [
+    { value: '', label: t('transactionsPage.typeTabs.all') },
+    ...TRANSACTION_TYPES.map((type) => ({ value: type, label: t(`transactionsPage.typeTabs.${type}`) }))
+]);
 
-const typeTabLabel = computed(() =>
-    filterType.value ? t(`transactionsPage.types.${filterType.value}`) : t('transactionsPage.filters.allTypes')
+/** Libellé de bouton discret « Période · Octobre » : le libellé seul si aucune valeur. */
+function withValue(label: string, value: string | null): string {
+    return value ? `${label} · ${value}` : label;
+}
+
+const filterLabel = computed(() => withValue(t('transactionsPage.actions.filter'), filterCount.value ? String(filterCount.value) : null));
+
+const periodLabel = computed(() => {
+    const from = filterFrom.value;
+    const to = filterTo.value;
+    let value: string | null = null;
+    if (from && to) {
+        value = t('transactionsPage.envelope.window', {
+            start: formatOperationDate(from, locale.value),
+            end: formatOperationDate(to, locale.value)
+        });
+    } else if (from) {
+        value = `${t('transactionsPage.filters.from')} ${formatOperationDate(from, locale.value)}`;
+    } else if (to) {
+        value = `${t('transactionsPage.filters.to')} ${formatOperationDate(to, locale.value)}`;
+    }
+    return withValue(t('transactionsPage.filters.period'), value);
+});
+
+const amountLabel = computed(() => {
+    const min = filterMinAmount.value;
+    const max = filterMaxAmount.value;
+    let value: string | null = null;
+    if (min && max) value = t('transactionsPage.envelope.window', { start: min, end: max });
+    else if (min) value = `≥ ${min}`;
+    else if (max) value = `≤ ${max}`;
+    return withValue(t('transactionsPage.filters.amount'), value);
+});
+
+const sortLabel = computed(() =>
+    withValue(
+        t('transactionsPage.actions.sort'),
+        listSort.value === TRANSACTION_SORT_DEFAULT ? null : t(`transactionsPage.sort.${listSort.value}`)
+    )
 );
 
-const typeTabIcon = computed(() => (filterType.value ? TRANSACTION_TYPE_ICONS[filterType.value] : LayoutGridIcon));
-
-function selectType(value: TransactionType | '') {
-    filterType.value = value;
-    typeMenuOpen.value = false;
+function selectSort(value: TransactionSort) {
+    listSort.value = value;
+    sortMenuOpen.value = false;
 }
+
+/** Sous-titre « Octobre 2026 · 42 opérations » (mois seulement si toutes les opérations visibles le partagent). */
+const subtitle = computed(() => {
+    const data = summary.value;
+    if (!data) return undefined;
+    const operations = t('transactionsPage.operations', { count: data.count }, data.count);
+    return data.monthLabel ? `${data.monthLabel} · ${operations}` : operations;
+});
+
+/** Chiffres clés calculés sur la liste chargée : Entrées (+ bleu), Sorties (− noir), Solde net (bleu si positif). */
+const figures = computed(() => {
+    const data = summary.value;
+    if (!data) return null;
+    const format = (value: number) => resolveTransactionAmountDisplay(Math.abs(value), data.currency, locale.value).text;
+    const operations = (count: number) => t('transactionsPage.operations', { count }, count);
+    return [
+        {
+            key: 'inflow',
+            label: t('transactionsPage.figures.inflow'),
+            num: `${amountSignOf(data.inflow)}${format(data.inflow)}`,
+            tone: data.inflow > 0 ? 'is-credit' : '',
+            note: operations(data.inflowCount)
+        },
+        {
+            key: 'outflow',
+            label: t('transactionsPage.figures.outflow'),
+            num: `${amountSignOf(-data.outflow)}${format(data.outflow)}`,
+            tone: '',
+            note: operations(data.outflowCount)
+        },
+        {
+            key: 'net',
+            label: t('transactionsPage.figures.net'),
+            num: `${amountSignOf(data.net)}${format(data.net)}`,
+            tone: data.net > 0 ? 'is-credit' : '',
+            note: operations(data.count)
+        }
+    ];
+});
 
 const unsubscribeTagDeleted = tagsStore.subscribeToDeleted((publicId) => {
     if (queryString('tag') !== publicId) return;
@@ -492,7 +577,176 @@ watch(
 </script>
 
 <template>
-    <AppPageShell class="transactions-page" :title="pageTitle" :body-scroll="false">
+    <AppPageShell class="transactions-page" :title="pageTitle" :subtitle="subtitle">
+        <template #actions>
+            <button
+                type="button"
+                class="su-btn"
+                :disabled="!visibleCount"
+                :aria-label="t('transactionsPage.actions.export')"
+                @click="timelineRef?.exportCsv()"
+            >
+                <FileExportIcon :size="16" stroke-width="1.6" />
+                {{ t('transactionsPage.actions.export') }}
+            </button>
+            <button
+                type="button"
+                class="su-btn su-btn--ink"
+                :disabled="!canCreate || store.acting"
+                :aria-label="t('transactionsPage.actions.create')"
+                @click="onCreate"
+            >
+                <PlusIcon :size="16" stroke-width="1.6" />
+                {{ t('transactionsPage.actions.create') }}
+            </button>
+        </template>
+
+        <template #toolbar>
+            <div class="transactions-toolbar">
+                <nav v-if="!filterBudgetId" class="su-tabs transactions-toolbar__tabs" :aria-label="t('transactionsPage.filters.type')">
+                    <button
+                        v-for="tab in typeTabs"
+                        :key="tab.value || 'all'"
+                        type="button"
+                        class="su-tab"
+                        :class="{ 'is-active': filterType === tab.value }"
+                        :aria-pressed="filterType === tab.value"
+                        @click="filterType = tab.value"
+                    >
+                        {{ tab.label }}
+                    </button>
+                </nav>
+
+                <label class="su-search transactions-toolbar__search">
+                    <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
+                    <input
+                        class="su-search__input"
+                        type="search"
+                        :value="search.input.value"
+                        :maxlength="TRANSACTION_SEARCH_MAX"
+                        :placeholder="t('transactionsPage.searchPlaceholder')"
+                        :aria-label="t('transactionsPage.actions.search')"
+                        autocomplete="off"
+                        @input="search.onInput(($event.target as HTMLInputElement).value)"
+                    />
+                    <button
+                        v-if="search.input.value"
+                        type="button"
+                        class="su-search__orb"
+                        :aria-label="t('transactionsPage.actions.clearSearch')"
+                        @click="search.clear"
+                    >
+                        <XIcon :size="16" stroke-width="1.8" />
+                    </button>
+                </label>
+
+                <div class="transactions-toolbar__filters">
+                    <AppDropdownFilter
+                        :label="filterLabel"
+                        :min-width="520"
+                        mobile-sheet
+                        :reset-disabled="!filtersActive"
+                        @reset="resetFilters"
+                    >
+                        <div class="pa-3 transactions-filters">
+                            <AppSelect
+                                v-model="filterAccountId"
+                                :items="accountItems"
+                                :label="t('transactionsPage.filters.account')"
+                                hide-details
+                            />
+                            <AppSelect
+                                v-model="filterCategoryId"
+                                :items="categoryItems"
+                                :label="t('transactionsPage.filters.category')"
+                                hide-details
+                            />
+                            <AppSelect v-model="filterTagId" :items="tagItems" :label="t('transactionsPage.filters.tag')" hide-details />
+                            <AppSelect v-model="filterTierId" :items="tierItems" :label="t('transactionsPage.filters.tier')" hide-details />
+                            <AppSelect
+                                v-model="filterPaymentMethodId"
+                                :items="paymentMethodItems"
+                                :label="t('transactionsPage.filters.paymentMethod')"
+                                searchable
+                                :search-placeholder="t('transactionsPage.filters.paymentMethod')"
+                                hide-details
+                            />
+                            <AppSelect
+                                v-model="filterRecurrenceKey"
+                                :items="recurrenceItems"
+                                :label="t('transactionsPage.filters.recurrence')"
+                                searchable
+                                :search-placeholder="t('transactionsPage.filters.recurrence')"
+                                hide-details
+                            />
+                            <AppSelect
+                                v-model="filterBudgetId"
+                                :items="budgetItems"
+                                :label="t('transactionsPage.filters.budget')"
+                                searchable
+                                :search-placeholder="t('transactionsPage.filters.budget')"
+                                hide-details
+                            />
+                        </div>
+                    </AppDropdownFilter>
+                    <AppDropdownFilter :label="periodLabel" :min-width="320" :reset-disabled="!periodCount" @reset="resetPeriod">
+                        <div class="pa-3 d-flex flex-column ga-3">
+                            <AppDatePicker
+                                v-model="filterFrom"
+                                :label="t('transactionsPage.filters.from')"
+                                :placeholder="t('transactionsPage.filters.from')"
+                                :max="filterTo || undefined"
+                            />
+                            <AppDatePicker
+                                v-model="filterTo"
+                                :label="t('transactionsPage.filters.to')"
+                                :placeholder="t('transactionsPage.filters.to')"
+                                :min="filterFrom || undefined"
+                            />
+                        </div>
+                    </AppDropdownFilter>
+                    <AppDropdownFilter :label="amountLabel" :min-width="320" :reset-disabled="!amountCount" @reset="resetAmount">
+                        <div class="pa-3">
+                            <AppAmountRangeFields v-model:min="filterMinAmount" v-model:max="filterMaxAmount" />
+                        </div>
+                    </AppDropdownFilter>
+                    <v-menu v-model="sortMenuOpen" location="bottom end" :offset="4">
+                        <template #activator="{ props: menuProps }">
+                            <button
+                                type="button"
+                                class="su-btn su-btn--ghost"
+                                v-bind="menuProps"
+                                :aria-expanded="sortMenuOpen"
+                                :aria-haspopup="true"
+                            >
+                                {{ sortLabel }}
+                            </button>
+                        </template>
+                        <v-sheet
+                            elevation="0"
+                            class="su-menu transactions-sort-menu"
+                            role="listbox"
+                            :aria-label="t('transactionsPage.actions.sort')"
+                        >
+                            <button
+                                v-for="sort in TRANSACTION_SORTS"
+                                :key="sort"
+                                type="button"
+                                class="transactions-sort-menu__item"
+                                :class="{ 'is-active': listSort === sort }"
+                                role="option"
+                                :aria-selected="listSort === sort"
+                                @click="selectSort(sort)"
+                            >
+                                <span>{{ t(`transactionsPage.sort.${sort}`) }}</span>
+                                <CheckIcon v-if="listSort === sort" :size="16" stroke-width="2" />
+                            </button>
+                        </v-sheet>
+                    </v-menu>
+                </div>
+            </div>
+        </template>
+
         <BudgetEnvelopeBanner
             v-if="envelopeBudget"
             class="transactions-page__banner"
@@ -501,195 +755,99 @@ watch(
             @update:scope="envelopeScope = $event"
             @dismiss="clearBudgetEnvelope"
         />
-        <AppBoard mobile-filters="sheet" :active-filters="activeFilterTotal">
-            <template #filters-pinned>
-                <v-menu v-if="!filterBudgetId" v-model="typeMenuOpen" location="bottom start" :offset="8" scrim>
-                    <template #activator="{ props: menuProps }">
-                        <nav class="transactions-type-tabs" :aria-label="t('transactionsPage.filters.type')">
-                            <button
-                                type="button"
-                                class="transactions-type-trigger"
-                                v-bind="menuProps"
-                                :aria-expanded="typeMenuOpen"
-                                :aria-haspopup="true"
-                                :aria-label="`${t('transactionsPage.filters.type')} : ${typeTabLabel}`"
-                            >
-                                <span class="su-tab__body">
-                                    <component :is="typeTabIcon" :size="16" />
-                                    <span class="transactions-type-trigger__label">{{ typeTabLabel }}</span>
-                                </span>
-                                <ChevronDownIcon
-                                    class="transactions-type-menu__chevron"
-                                    :class="{ 'is-open': typeMenuOpen }"
-                                    :size="16"
-                                    stroke-width="1.8"
-                                />
-                            </button>
-                        </nav>
-                    </template>
-                    <v-sheet elevation="0" class="su-menu transactions-type-menu">
-                        <p class="transactions-type-menu__label">{{ t('transactionsPage.filters.type') }}</p>
-                        <button
-                            type="button"
-                            class="transactions-type-menu__item is-all"
-                            :class="{ 'is-active': !filterType }"
-                            @click="selectType('')"
-                        >
-                            <span class="transactions-type-menu__icon">
-                                <LayoutGridIcon :size="18" stroke-width="1.75" />
-                            </span>
-                            <span class="transactions-type-menu__name">{{ t('transactionsPage.filters.allTypes') }}</span>
-                            <CheckIcon v-if="!filterType" class="transactions-type-menu__check" :size="16" stroke-width="2" />
-                        </button>
-                        <button
-                            v-for="type in TRANSACTION_TYPES"
-                            :key="type"
-                            type="button"
-                            class="transactions-type-menu__item"
-                            :class="[`is-${type}`, { 'is-active': filterType === type }]"
-                            @click="selectType(type)"
-                        >
-                            <span class="transactions-type-menu__icon">
-                                <component :is="TRANSACTION_TYPE_ICONS[type]" :size="18" />
-                            </span>
-                            <span class="transactions-type-menu__name">{{ t(`transactionsPage.types.${type}`) }}</span>
-                            <CheckIcon v-if="filterType === type" class="transactions-type-menu__check" :size="16" stroke-width="2" />
-                        </button>
-                    </v-sheet>
-                </v-menu>
-            </template>
-            <template #filters>
-                <AppDropdownFilter
-                    :label="t('transactionsPage.actions.filter')"
-                    :min-width="520"
-                    mobile-sheet
-                    :count="filterCount"
-                    :reset-disabled="!filtersActive"
-                    @reset="resetFilters"
-                >
-                    <div class="pa-3 transactions-filters">
-                        <AppSelect
-                            v-model="filterAccountId"
-                            :items="accountItems"
-                            :label="t('transactionsPage.filters.account')"
-                            hide-details
-                        />
-                        <AppSelect
-                            v-model="filterCategoryId"
-                            :items="categoryItems"
-                            :label="t('transactionsPage.filters.category')"
-                            hide-details
-                        />
-                        <AppSelect v-model="filterTagId" :items="tagItems" :label="t('transactionsPage.filters.tag')" hide-details />
-                        <AppSelect v-model="filterTierId" :items="tierItems" :label="t('transactionsPage.filters.tier')" hide-details />
-                        <AppSelect
-                            v-model="filterPaymentMethodId"
-                            :items="paymentMethodItems"
-                            :label="t('transactionsPage.filters.paymentMethod')"
-                            searchable
-                            :search-placeholder="t('transactionsPage.filters.paymentMethod')"
-                            hide-details
-                        />
-                        <AppSelect
-                            v-model="filterRecurrenceKey"
-                            :items="recurrenceItems"
-                            :label="t('transactionsPage.filters.recurrence')"
-                            searchable
-                            :search-placeholder="t('transactionsPage.filters.recurrence')"
-                            hide-details
-                        />
-                        <AppSelect
-                            v-model="filterBudgetId"
-                            :items="budgetItems"
-                            :label="t('transactionsPage.filters.budget')"
-                            searchable
-                            :search-placeholder="t('transactionsPage.filters.budget')"
-                            hide-details
-                        />
-                    </div>
-                </AppDropdownFilter>
-                <AppDropdownFilter
-                    :label="t('transactionsPage.filters.period')"
-                    :icon="CalendarIcon"
-                    :min-width="320"
-                    :count="periodCount"
-                    :reset-disabled="!periodCount"
-                    @reset="resetPeriod"
-                >
-                    <div class="pa-3 d-flex flex-column ga-3">
-                        <AppDatePicker
-                            v-model="filterFrom"
-                            :label="t('transactionsPage.filters.from')"
-                            :placeholder="t('transactionsPage.filters.from')"
-                            :max="filterTo || undefined"
-                        />
-                        <AppDatePicker
-                            v-model="filterTo"
-                            :label="t('transactionsPage.filters.to')"
-                            :placeholder="t('transactionsPage.filters.to')"
-                            :min="filterFrom || undefined"
-                        />
-                    </div>
-                </AppDropdownFilter>
-                <AppDropdownFilter
-                    :label="t('transactionsPage.filters.amount')"
-                    :icon="CoinIcon"
-                    :min-width="320"
-                    :count="amountCount"
-                    :reset-disabled="!amountCount"
-                    @reset="resetAmount"
-                >
-                    <div class="pa-3">
-                        <AppAmountRangeFields v-model:min="filterMinAmount" v-model:max="filterMaxAmount" />
-                    </div>
-                </AppDropdownFilter>
-            </template>
-            <template #bar>
-                <AppBoardSearch
-                    :model-value="search.input.value"
-                    :maxlength="TRANSACTION_SEARCH_MAX"
-                    :placeholder="t('transactionsPage.searchPlaceholder')"
-                    :search-label="t('transactionsPage.actions.search')"
-                    :clear-label="t('transactionsPage.actions.clearSearch')"
-                    @update:model-value="search.onInput"
-                    @clear="search.clear"
-                />
-                <span v-if="visibleCount" class="su-toolbar__count app-board__count">
-                    {{ t('transactionsPage.count', { count: visibleCount }, visibleCount) }}
-                </span>
-            </template>
-            <template #actions>
-                <button
-                    type="button"
-                    class="su-btn su-btn--ink"
-                    :disabled="!visibleCount"
-                    :aria-label="t('transactionsPage.actions.export')"
-                    @click="timelineRef?.exportCsv()"
-                >
-                    <FileExportIcon :size="16" stroke-width="1.6" />
-                    <span class="app-board__label">{{ t('transactionsPage.actions.export') }}</span>
-                </button>
-                <button
-                    type="button"
-                    class="su-btn su-btn--ink app-board__primary"
-                    :disabled="!canCreate || store.acting"
-                    :aria-label="t('transactionsPage.actions.create')"
-                    @click="onCreate"
-                >
-                    <PlusIcon :size="16" stroke-width="1.6" />
-                    <span class="app-board__label">{{ t('transactionsPage.actions.create') }}</span>
-                </button>
-            </template>
 
-            <TransactionsTimeline ref="timelineRef" @sort="listSort = $event" />
-        </AppBoard>
+        <div v-if="figures" class="su-figs transactions-page__figs">
+            <div v-for="figure in figures" :key="figure.key" class="su-fig">
+                <p class="su-fig__label">{{ figure.label }}</p>
+                <p class="su-fig__num" :class="figure.tone">{{ figure.num }}</p>
+                <p class="su-fig__note">{{ figure.note }}</p>
+            </div>
+        </div>
+
+        <TransactionsTimeline ref="timelineRef" />
     </AppPageShell>
 </template>
 
 <style scoped>
-.transactions-page__banner {
+/* ── enveloppe budget : bloc à filet, sans boîte ───────── */
+.transactions-page .transactions-page__banner {
+    margin: 0 0 32px;
+    padding: 12px 0 16px;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+}
+
+.transactions-page__banner :deep(.budget-envelope__icon) {
+    width: 36px;
+    height: 36px;
+    border-radius: 0;
+    background: var(--t-blue-bg);
+    color: var(--t-blue-ink);
+}
+
+/* ── chiffres clés ─────────────────────────────────────── */
+.transactions-page__figs {
+    margin: 0 0 40px;
+}
+
+.transactions-page__figs .su-fig__num.is-credit {
+    color: var(--blue-ink);
+}
+
+/* ── barre d'outils : onglets texte · recherche soulignée · filtres discrets ── */
+/* barre de filtres dans l'en-tête de page : reste fixe pendant le défilement de la liste */
+.transactions-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px 22px;
+    width: 100%;
+    min-width: 0;
+}
+
+.transactions-toolbar__tabs {
     flex: none;
-    margin-bottom: 10px;
+    margin-left: 0;
+}
+
+.transactions-toolbar__search {
+    flex: 1 1 220px;
+    width: auto;
+    max-width: 520px;
+    margin: 0;
+}
+
+.transactions-toolbar__filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    flex: none;
+}
+
+/* déclencheurs des menus de filtre : bouton discret, texte gris, sans icône */
+.transactions-toolbar__filters :deep(.su-btn) {
+    border-color: var(--line);
+    color: var(--gray);
+    font-weight: 400;
+}
+
+.transactions-toolbar__filters :deep(.su-btn:hover:not(:disabled)),
+.transactions-toolbar__filters :deep(.su-btn[aria-expanded='true']) {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: transparent;
+}
+
+.transactions-toolbar__filters :deep(.su-btn > svg) {
+    display: none;
+}
+
+.transactions-toolbar__filters :deep(.su-btn__count) {
+    display: none;
 }
 
 .transactions-filters {
@@ -699,55 +857,103 @@ watch(
     align-items: start;
 }
 
-.transactions-type-tabs {
+/* ── menu de tri : items 40 px, actif en 700 avec coche ── */
+.transactions-sort-menu {
     display: flex;
+    flex-direction: column;
+    width: min(260px, calc(100vw - 24px));
 }
 
-.transactions-type-trigger {
+.transactions-sort-menu__item {
     appearance: none;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 8px;
-    height: 34px;
-    margin: 0;
-    padding: 0 14px;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 40px;
+    padding: 0 10px;
     border: 0;
-    border-radius: 17px;
-    background: #fff;
+    border-radius: 0;
+    background: transparent;
     color: var(--ink);
     font: inherit;
-    font-size: 0.8rem;
+    font-size: 14px;
+    text-align: left;
     cursor: pointer;
-    box-shadow:
-        0 1px 2px rgba(16, 16, 20, 0.06),
-        0 0 0 1px rgba(16, 16, 20, 0.05);
 }
 
-.transactions-type-trigger .su-tab__body {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+.transactions-sort-menu__item + .transactions-sort-menu__item {
+    border-top: 1px solid var(--line);
 }
 
-.transactions-type-menu__chevron {
+.transactions-sort-menu__item:hover,
+.transactions-sort-menu__item:focus-visible {
+    background: var(--soft);
+    outline: none;
+}
+
+.transactions-sort-menu__item.is-active {
+    font-weight: 700;
+}
+
+.transactions-sort-menu__item > svg {
     flex: none;
-    color: var(--ink-mute);
-    transition: transform 0.28s var(--ease, ease);
-}
-
-.transactions-type-menu__chevron.is-open {
-    transform: rotate(180deg);
+    color: var(--blue-ink);
 }
 
 @media (max-width: 767px) {
-    /* mobile : icône du type + chevron, le libellé passe dans l'aria-label */
-    .transactions-type-trigger {
-        gap: 4px;
-        padding: 0 10px;
+    .transactions-page .transactions-page__banner {
+        margin-bottom: 24px;
     }
 
-    .transactions-type-trigger__label {
+    .transactions-page__figs {
+        margin-bottom: 28px;
+    }
+
+    .transactions-toolbar {
+        gap: 6px;
+    }
+
+    .transactions-toolbar .su-tab {
+        height: 34px;
+    }
+
+    .transactions-toolbar .transactions-toolbar__search {
+        height: 36px;
+    }
+
+    .transactions-toolbar__filters :deep(.su-btn) {
+        height: 32px;
+        min-height: 32px;
+        padding: 0 10px;
+        font-size: 13px;
+    }
+
+    .transactions-toolbar__tabs {
+        flex: 1 1 100%;
+    }
+
+    .transactions-toolbar .transactions-toolbar__search {
+        flex: 1 1 100%;
+        max-width: 100%;
+    }
+
+    /* filtres sur une ligne défilante */
+    .transactions-toolbar__filters {
+        flex: 1 1 100%;
+        flex-wrap: nowrap;
+        margin-left: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .transactions-toolbar__filters::-webkit-scrollbar {
         display: none;
+    }
+
+    .transactions-toolbar__filters > * {
+        flex: none;
     }
 
     .transactions-filters {
@@ -759,85 +965,6 @@ watch(
 </style>
 
 <style>
-.transactions-type-menu.su-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    width: min(280px, calc(100vw - 24px));
-    padding: 10px 8px 8px !important;
-}
-
-.transactions-type-menu__label {
-    margin: 2px 10px 8px;
-    font-size: 11px;
-    font-weight: 650;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-}
-
-.transactions-type-menu__item {
-    --type-tint: rgb(var(--v-theme-primary));
-    appearance: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    margin: 0;
-    padding: 8px 10px;
-    border: 0;
-    border-radius: 16px;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    transition: background 0.2s var(--ease, ease);
-}
-
-.transactions-type-menu__item.is-depense {
-    --type-tint: rgb(var(--amount-debit));
-}
-
-.transactions-type-menu__item.is-revenu {
-    --type-tint: rgb(var(--amount-credit));
-}
-
-.transactions-type-menu__item:hover,
-.transactions-type-menu__item:focus-visible {
-    background: color-mix(in srgb, var(--type-tint) 10%, transparent);
-    outline: none;
-}
-
-.transactions-type-menu__item.is-active {
-    background: color-mix(in srgb, var(--type-tint) 14%, transparent);
-}
-
-.transactions-type-menu__icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 34px;
-    height: 34px;
-    border-radius: 11px;
-    background: color-mix(in srgb, var(--type-tint) 16%, var(--surface-raised));
-    color: var(--type-tint);
-}
-
-.transactions-type-menu__name {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-size: 0.9rem;
-    font-weight: 620;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-}
-
-.transactions-type-menu__check {
-    flex: none;
-    color: var(--type-tint);
-}
-
 @media (max-width: 767px) {
     .transactions-filters .app-select__legend {
         font-size: 11px;

@@ -211,6 +211,7 @@ function onCommitted(summary: ImportCommitSummary) {
 </template>
 
 <style scoped>
+/* En-tête de l'import : statut (carré + texte) et méta grise à gauche, actions à droite, filet fin dessous. */
 .import-workspace {
     flex: 1 1 auto;
     min-height: 0;
@@ -224,14 +225,16 @@ function onCommitted(summary: ImportCommitSummary) {
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 8px 12px;
-    margin-bottom: 10px;
+    gap: 8px 16px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
 }
 
 .import-workspace__meta {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 16px;
     min-width: 0;
 }
 
@@ -240,19 +243,19 @@ function onCommitted(summary: ImportCommitSummary) {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.84rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .import-workspace__actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
 .import-workspace__banner {
     flex: none;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 @media (max-width: 767px) {

@@ -106,15 +106,15 @@ async function confirmRevoke() {
 
 <template>
     <div class="shares-panel">
-        <div class="shares-panel__header d-flex align-center justify-space-between ga-3 flex-wrap mb-3">
+        <header class="shares-panel__header su-section__head">
             <div>
-                <h5 class="text-h6 mb-0">{{ t('comptesPage.share.title') }}</h5>
-                <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.share.subtitle') }}</div>
+                <h2>{{ t('comptesPage.share.title') }}</h2>
+                <p>{{ t('comptesPage.share.subtitle') }}</p>
             </div>
             <button type="button" class="su-btn su-btn--ink" @click="inviteOpen = true">
                 {{ t('comptesPage.share.invite') }}
             </button>
-        </div>
+        </header>
 
         <AppModalPanelScroll>
             <AppAlert
@@ -131,49 +131,41 @@ async function confirmRevoke() {
                 {{ localError || store.error }}
             </AppAlert>
 
-            <div v-if="store.loadingShares && !store.shares.length" class="py-6 text-center">
+            <div v-if="store.loadingShares && !store.shares.length" class="su-loading">
                 <span class="su-spin" />
             </div>
-            <div v-else-if="!store.shares.length" class="py-6 text-center text-medium-emphasis">
+            <div v-else-if="!store.shares.length" class="su-empty">
                 {{ t('comptesPage.share.empty') }}
             </div>
-            <v-list v-else class="py-0">
-                <v-list-item v-for="share in store.shares" :key="share.publicId" class="px-2 py-3" rounded="md">
-                    <template #prepend>
-                        <UserPhotoAvatar
-                            class="mr-3"
-                            :photo-url="share.photoUrl"
-                            :user-public-id="share.userPublicId"
-                            :fallback-label="shareLabel(share)"
-                            :size="42"
-                        />
-                    </template>
-
-                    <div class="account-share-row w-100">
-                        <div class="min-width-0">
-                            <h6 class="text-subtitle-1 font-weight-bold mb-1 text-truncate">{{ shareLabel(share) }}</h6>
-                            <p class="text-body-2 text-medium-emphasis mb-0">{{ formatDate(share.createdAt) }}</p>
-                            <p v-if="hiddenFieldsSummary(share)" class="text-caption text-medium-emphasis mb-0 mt-1">
-                                {{ hiddenFieldsSummary(share) }}
-                            </p>
-                        </div>
-                        <div class="account-share-row__meta">
-                            <v-chip size="small" :color="share.role === 'pending' ? 'warning' : 'secondary'" variant="tonal">
-                                {{ roleChipLabel(share) }}
-                            </v-chip>
-                            <button
-                                type="button"
-                                class="su-orb"
-                                :aria-label="t('comptesPage.share.editTitle')"
-                                :disabled="store.acting"
-                                @click="openEdit(share)"
-                            >
-                                <PencilIcon size="18" stroke-width="1.75" />
-                            </button>
-                        </div>
+            <div v-else class="shares-panel__list">
+                <div v-for="share in store.shares" :key="share.publicId" class="su-person account-share-row">
+                    <UserPhotoAvatar
+                        :photo-url="share.photoUrl"
+                        :user-public-id="share.userPublicId"
+                        :fallback-label="shareLabel(share)"
+                        :size="36"
+                    />
+                    <div class="su-person__meta">
+                        <p class="su-person__name">{{ shareLabel(share) }}</p>
+                        <p class="su-person__sub">{{ formatDate(share.createdAt) }}</p>
+                        <p v-if="hiddenFieldsSummary(share)" class="su-person__sub">{{ hiddenFieldsSummary(share) }}</p>
                     </div>
-                </v-list-item>
-            </v-list>
+                    <div class="su-person__actions account-share-row__meta">
+                        <span class="su-chip" :style="{ '--chip-color': share.role === 'pending' ? 'var(--violet)' : 'var(--blue)' }">
+                            {{ roleChipLabel(share) }}
+                        </span>
+                        <button
+                            type="button"
+                            class="su-orb"
+                            :aria-label="t('comptesPage.share.editTitle')"
+                            :disabled="store.acting"
+                            @click="openEdit(share)"
+                        >
+                            <PencilIcon :size="16" stroke-width="1.6" />
+                        </button>
+                    </div>
+                </div>
+            </div>
         </AppModalPanelScroll>
 
         <ShareInviteModal v-model="inviteOpen" :account-public-id="accountPublicId" />
@@ -199,6 +191,7 @@ async function confirmRevoke() {
 </template>
 
 <style scoped>
+/* Partages : lignes su-person (avatar rond = photo), rôle en pastille carrée, action en bouton-icône. */
 .shares-panel {
     display: flex;
     flex-direction: column;
@@ -208,20 +201,17 @@ async function confirmRevoke() {
 
 .shares-panel__header {
     flex-shrink: 0;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
 .account-share-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    cursor: default;
 }
 
 .account-share-row__meta {
-    display: flex;
-    flex-shrink: 0;
-    align-items: center;
-    gap: 8px;
+    flex-wrap: nowrap;
+    gap: 12px;
 }
 
 @media (max-width: 599.98px) {

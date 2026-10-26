@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * Accordion Spend.Up — en-tête cliquable + panneau dépliable.
- * Style verre : surface soft, chevron animé, pas de v-expansion-panels.
+ * Style Swiss : filet 1 px au-dessus, titre 700, chevron trait, pas de v-expansion-panels.
  */
 defineOptions({ name: 'AppAccordion' });
 
@@ -51,7 +51,7 @@ function toggle() {
                 </span>
             </span>
             <span class="app-accordion__chevron" aria-hidden="true">
-                <ChevronDownIcon :size="18" stroke-width="1.75" />
+                <ChevronDownIcon :size="18" stroke-width="1.6" />
             </span>
         </button>
 
@@ -67,21 +67,13 @@ function toggle() {
 
 <style scoped>
 .app-accordion {
-    border-radius: var(--radius-leaf);
-    border: 1px solid rgba(var(--v-theme-primary), 0.12);
-    background: rgba(255, 255, 255, 0.55);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
     overflow: hidden;
-    transition:
-        border-color 0.35s var(--ease),
-        box-shadow 0.4s var(--ease);
 }
 
-.app-accordion.is-open {
-    border-color: rgba(var(--v-theme-primary), 0.16);
-    box-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.75) inset,
-        0 10px 28px -18px rgba(var(--v-theme-primary), 0.28);
+.app-accordion + .app-accordion {
+    border-top: 0;
 }
 
 .app-accordion__trigger {
@@ -91,19 +83,25 @@ function toggle() {
     justify-content: space-between;
     gap: 12px;
     width: 100%;
+    min-height: 48px;
     margin: 0;
-    padding: 12px 14px;
+    padding: 10px 0;
     border: 0;
     background: transparent;
     color: inherit;
     font: inherit;
     text-align: left;
     cursor: pointer;
-    transition: background 0.28s var(--ease);
+    transition: background 0.15s var(--ease);
 }
 
 .app-accordion__trigger:hover:not(:disabled) {
-    background: rgba(var(--v-theme-primary), 0.04);
+    background: var(--soft);
+}
+
+.app-accordion__trigger:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: -2px;
 }
 
 .app-accordion__trigger:disabled {
@@ -130,15 +128,15 @@ function toggle() {
 .app-accordion__title {
     color: var(--ink);
     font-size: 14px;
-    font-weight: 620;
-    letter-spacing: -0.015em;
+    font-weight: 700;
+    letter-spacing: -0.006em;
     line-height: 1.3;
 }
 
 .app-accordion__subtitle {
-    color: var(--ink-muted);
-    font-size: 12.5px;
-    font-weight: 500;
+    color: var(--gray);
+    font-size: 13px;
+    font-weight: 400;
     line-height: 1.35;
 }
 
@@ -155,25 +153,18 @@ function toggle() {
     place-items: center;
     width: 28px;
     height: 28px;
-    border-radius: 50%;
-    color: var(--ink-mute);
-    background: rgba(var(--v-theme-primary), 0.06);
-    transition:
-        transform 0.45s var(--spring),
-        color 0.3s var(--ease),
-        background 0.3s var(--ease);
+    color: var(--ink);
+    transition: transform 0.2s var(--ease);
 }
 
 .app-accordion.is-open .app-accordion__chevron {
     transform: rotate(180deg);
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.12);
 }
 
 .app-accordion__panel {
     display: grid;
     grid-template-rows: 0fr;
-    transition: grid-template-rows 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: grid-template-rows 0.25s var(--ease);
 }
 
 .app-accordion.is-open .app-accordion__panel {
@@ -186,45 +177,27 @@ function toggle() {
 }
 
 .app-accordion__body {
-    padding: 0 14px 0;
-    border-top: 1px solid transparent;
+    padding: 0;
     opacity: 0;
-    transform: translateY(-10px);
-    filter: blur(2px);
     transition:
-        opacity 0.22s ease,
-        transform 0.28s cubic-bezier(0.4, 0, 1, 1),
-        filter 0.22s ease,
-        padding 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-        border-color 0.3s ease;
+        opacity 0.15s ease,
+        padding 0.25s var(--ease);
 }
 
 .app-accordion.is-open .app-accordion__body {
-    padding: 12px 14px 14px;
-    border-top-color: rgba(var(--v-theme-primary), 0.08);
+    padding: 4px 0 16px;
     opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
     transition:
-        opacity 0.38s ease 0.08s,
-        transform 0.48s cubic-bezier(0.22, 1, 0.36, 1) 0.04s,
-        filter 0.35s ease 0.06s,
-        padding 0.48s cubic-bezier(0.22, 1, 0.36, 1),
-        border-color 0.35s ease 0.05s;
+        opacity 0.2s ease 0.05s,
+        padding 0.25s var(--ease);
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .app-accordion,
     .app-accordion__panel,
     .app-accordion__body,
     .app-accordion__chevron {
         transition-duration: 0.01ms !important;
         transition-delay: 0s !important;
-    }
-
-    .app-accordion__body {
-        filter: none;
-        transform: none;
     }
 }
 </style>

@@ -25,6 +25,8 @@ import {
     UPCOMING_DUE_SORT_DEFAULT,
     parseTemplateSort,
     parseUpcomingDueSort,
+    todayLocalYmd,
+    type TemplateSort,
     type UpcomingDueSort
 } from '@/features/recurring-payments/format';
 import { recurrencesPathForTab, recurrencesTabFromPath, type RecurrenceTab } from '@/features/recurring-payments/paths';
@@ -39,7 +41,7 @@ import { useCreateFromQuery } from '@/components/shared/board/useCreateFromQuery
 const TABS = ['all', 'expenses', 'incomes', 'upcoming'] as const;
 type DueSettlement = 'all' | 'planned' | 'settled';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useRecurringPaymentsStore();
@@ -70,6 +72,13 @@ function parseKind(raw: string): RecurringKind | '' {
 
 const tab = computed(() => recurrencesTabFromPath(route.path));
 
+const subnav = computed<{ tab: RecurrenceTab; label: string; to: string }[]>(() => [
+    { tab: 'all', label: t('nav.items.recurrencesOverview'), to: recurrencesPathForTab('all') },
+    { tab: 'expenses', label: t('nav.items.recurrencesExpenses'), to: recurrencesPathForTab('expenses') },
+    { tab: 'incomes', label: t('nav.items.recurrencesIncomes'), to: recurrencesPathForTab('incomes') },
+    { tab: 'upcoming', label: t('nav.items.recurrencesUpcoming'), to: recurrencesPathForTab('upcoming') }
+]);
+
 const directoryKind = computed<RecurringKind | null>(() => {
     if (tab.value === 'expenses') return 'expense';
     if (tab.value === 'incomes') return 'income';
@@ -81,6 +90,37 @@ const pageTitle = computed(() => {
     if (tab.value === 'incomes') return t('nav.items.recurrencesIncomes');
     if (tab.value === 'upcoming') return t('nav.items.recurrencesUpcoming');
     return t('recurrencesPage.title');
+});
+
+/**
+ * Sous-titre « N récurrences actives · N échéances en <mois> », calculé sur les listes chargées
+ * (nature du tab courant ; échéances = prochaines dates tombant dans le mois en cours).
+ */
+const pageSubtitle = computed(() => {
+    const expensesReady = store.initializedExpenses;
+    const incomesReady = store.initializedIncomes;
+    const scoped =
+        tab.value === 'expenses'
+            ? expensesReady
+                ? store.expenses
+                : null
+            : tab.value === 'incomes'
+              ? incomesReady
+                  ? store.incomes
+                  : null
+              : expensesReady || incomesReady
+                ? [...store.expenses, ...store.incomes]
+                : null;
+    if (!scoped) return undefined;
+    const active = scoped.filter((item) => item.isActive).length;
+    const monthPrefix = todayLocalYmd().slice(0, 7);
+    const dues = scoped.filter((item) => item.isActive && item.nextDueDate?.startsWith(monthPrefix)).length;
+    const [y, m] = monthPrefix.split('-').map(Number);
+    const month = new Intl.DateTimeFormat(locale.value || undefined, { month: 'long' }).format(new Date(y, m - 1, 1, 12));
+    return [
+        t('recurrencesPage.hero.active', { count: active }, active),
+        t('recurrencesPage.hero.duesInMonth', { count: dues, month }, dues)
+    ].join(' · ');
 });
 
 const canCreate = computed(() => accountsStore.accounts.some((item) => canWriteRecurringOnAccount(item)));
@@ -262,14 +302,71 @@ const sortGroups = computed<AppSortGroup<UpcomingDueSort>[]>(() => {
     ];
 });
 
+/** Critères de tri des récurrences (prochaine échéance, nom, montant). */
+const templateSortGroups = computed<AppSortGroup<TemplateSort>[]>(() => {
+    const option = (value: TemplateSort, labelKey: string) => ({
+        value,
+        label: t(`recurrencesPage.sortShort.${labelKey}`),
+        ariaLabel: t(`recurrencesPage.sort.${labelKey}`)
+    });
+    return [
+        {
+            id: 'nextDue',
+            label: t('recurrencesPage.sortGroups.date'),
+            icon: CalendarDueIcon,
+            options: [option('nextDueAsc', 'dateAsc'), option('nextDueDesc', 'dateDesc')]
+        },
+        {
+            id: 'name',
+            label: t('recurrencesPage.sortGroups.name'),
+            icon: AbcIcon,
+            options: [option('nameAsc', 'nameAsc'), option('nameDesc', 'nameDesc')]
+        },
+        {
+            id: 'amount',
+            label: t('recurrencesPage.sortGroups.amount'),
+            icon: CoinIcon,
+            options: [option('amountDesc', 'amountDesc'), option('amountAsc', 'amountAsc')]
+        }
+    ];
+});
+const templateSortCount = computed(() => (templateSort.value === TEMPLATE_SORT_DEFAULT ? 0 : 1));
+
 /** Total affiché sur le bouton « Filtres » replié (mobile). */
 const activeFilterTotal = computed(() =>
-    tab.value === 'upcoming' ? sortCount.value + filterCount.value : amountCount.value + (filterAccountId.value ? 1 : 0)
+    tab.value === 'upcoming'
+        ? sortCount.value + filterCount.value
+        : templateSortCount.value + amountCount.value + (filterAccountId.value ? 1 : 0)
 );
 </script>
 
 <template>
-    <AppPageShell :title="pageTitle" :body-scroll="false">
+    <AppPageShell :title="pageTitle" :subtitle="pageSubtitle" :body-scroll="false">
+        <template v-if="tab !== 'upcoming'" #actions>
+            <RecurringCreateMenu
+                :compact="compactNotch"
+                :label="t('recurrencesPage.actions.create')"
+                :disabled="!canCreate || store.acting"
+                :kind="directoryKind"
+                @select="onCreate"
+                @pick="onPick"
+            />
+        </template>
+        <!-- sous-navigation : passer d'une vue à l'autre sans repasser par le menu -->
+        <template #toolbar>
+            <nav class="su-tabs recurrences-subnav" :aria-label="t('recurrencesPage.subnav')">
+                <RouterLink
+                    v-for="view in subnav"
+                    :key="view.tab"
+                    :to="view.to"
+                    class="su-tab"
+                    :class="{ 'is-active': tab === view.tab }"
+                    :aria-current="tab === view.tab ? 'page' : undefined"
+                >
+                    {{ view.label }}
+                </RouterLink>
+            </nav>
+        </template>
         <AppBoard mobile-filters="sheet" :active-filters="activeFilterTotal">
             <template #filters>
                 <template v-if="tab === 'upcoming'">
@@ -310,6 +407,17 @@ const activeFilterTotal = computed(() =>
                     </AppDropdownFilter>
                 </template>
                 <template v-else>
+                    <AppDropdownFilter
+                        :label="t('recurrencesPage.actions.sort')"
+                        :icon="ArrowsSortIcon"
+                        :min-width="320"
+                        close-on-content-click
+                        :count="templateSortCount"
+                        :reset-disabled="templateSort === TEMPLATE_SORT_DEFAULT"
+                        @reset="templateSort = TEMPLATE_SORT_DEFAULT"
+                    >
+                        <AppSortChoices v-model="templateSort" :groups="templateSortGroups" :label="t('recurrencesPage.actions.sort')" />
+                    </AppDropdownFilter>
                     <AppDropdownFilter
                         :label="t('recurrencesPage.filters.amount')"
                         :icon="CoinIcon"
@@ -378,15 +486,6 @@ const activeFilterTotal = computed(() =>
                     <SparklesIcon :size="16" stroke-width="1.6" />
                     <span class="app-board__label">{{ t('recurrencesPage.suggestions.open') }}</span>
                 </button>
-                <RecurringCreateMenu
-                    v-if="tab !== 'upcoming'"
-                    :compact="compactNotch"
-                    :label="t('recurrencesPage.actions.create')"
-                    :disabled="!canCreate || store.acting"
-                    :kind="directoryKind"
-                    @select="onCreate"
-                    @pick="onPick"
-                />
             </template>
 
             <RecurringUpcomingPanel
@@ -421,28 +520,31 @@ const activeFilterTotal = computed(() =>
 </template>
 
 <style scoped>
+.recurrences-subnav {
+    margin-left: 0;
+    text-decoration: none;
+}
+
+.recurrences-subnav .su-tab {
+    text-decoration: none;
+}
+
+/* filtre « Actif » : interrupteur + libellé, sans pilule */
 .recurrences-active-toggle {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    height: 34px;
-    padding: 0 12px 0 6px;
-    border-radius: 17px;
-    background: #fff;
-    font-size: 0.8rem;
-    font-weight: 550;
-    color: var(--ink);
+    height: 40px;
+    padding: 0;
+    color: var(--gray);
+    font-size: 14px;
     white-space: nowrap;
     cursor: pointer;
-    box-shadow:
-        0 1px 2px rgba(16, 16, 20, 0.06),
-        0 0 0 1px rgba(16, 16, 20, 0.05);
 }
 
 .recurrences-active-toggle.is-active {
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.14);
-    box-shadow: none;
+    color: var(--ink);
+    font-weight: 700;
 }
 
 .recurrences-active-toggle :deep(.app-switch) {

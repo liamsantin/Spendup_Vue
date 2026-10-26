@@ -54,39 +54,27 @@ defineExpose({ reload: load });
 
 <template>
     <div class="subscription-tab">
-        <v-row class="justify-center py-1" no-gutters>
-            <v-col cols="12" md="9" class="pb-2">
-                <AppAlert v-if="localError" type="error" class="mb-4" closable @dismiss="localError = null">
-                    {{ localError }}
-                </AppAlert>
-                <AppAlert v-if="successMessage" type="success" class="mb-4" closable :dismiss-ms="6000" @dismiss="successMessage = null">
-                    {{ successMessage }}
-                </AppAlert>
-            </v-col>
+        <div class="subscription-tab__sections">
+            <AppAlert v-if="localError" type="error" class="su-alert" closable @dismiss="localError = null">
+                {{ localError }}
+            </AppAlert>
+            <AppAlert v-if="successMessage" type="success" class="su-alert" closable :dismiss-ms="6000" @dismiss="successMessage = null">
+                {{ successMessage }}
+            </AppAlert>
 
-            <v-col v-if="loading" cols="12" md="9">
-                <div class="su-loading"><span class="su-spin" /></div>
-            </v-col>
+            <div v-if="loading" class="su-loading"><span class="su-spin" /></div>
 
             <template v-else-if="store.subscription">
-                <v-col cols="12" md="9" class="pb-4">
-                    <SubscriptionOverviewCard :subscription="store.subscription" :disabled="store.changing" @change-plan="openSelector" />
-                </v-col>
-                <v-col cols="12" md="9" class="pb-4">
-                    <SubscriptionFeaturesCard :features="store.subscription.plan.features" />
-                </v-col>
-                <v-col cols="12" md="9">
-                    <SubscriptionQuotasCard :rows="store.quotaRows" />
-                </v-col>
+                <SubscriptionOverviewCard :subscription="store.subscription" :disabled="store.changing" @change-plan="openSelector" />
+                <SubscriptionFeaturesCard :features="store.subscription.plan.features" />
+                <SubscriptionQuotasCard :rows="store.quotaRows" />
             </template>
 
-            <v-col v-else cols="12" md="9">
-                <div class="su-empty">
-                    <p class="mb-3">{{ t('subscriptionPage.empty') }}</p>
-                    <button type="button" class="su-btn su-btn--ghost" @click="load(true)">{{ t('common.retry') }}</button>
-                </div>
-            </v-col>
-        </v-row>
+            <div v-else class="su-empty">
+                <p class="mb-3">{{ t('subscriptionPage.empty') }}</p>
+                <button type="button" class="su-btn su-btn--ghost" @click="load(true)">{{ t('common.retry') }}</button>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -94,5 +82,11 @@ defineExpose({ reload: load });
 .subscription-tab {
     max-width: 100%;
     overflow-x: hidden;
+}
+
+/* Les sections s’enchaînent sur leurs filets 2 px ; pas de grille Vuetify. */
+.subscription-tab__sections {
+    display: flex;
+    flex-direction: column;
 }
 </style>

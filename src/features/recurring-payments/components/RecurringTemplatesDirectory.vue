@@ -7,17 +7,23 @@ import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useTagsStore } from '@/features/tags/stores/tags-store';
-import RecurringTemplateListItem from '@/features/recurring-payments/components/list/RecurringTemplateListItem.vue';
+import RecurringMonthCalendar from '@/features/recurring-payments/components/RecurringMonthCalendar.vue';
 import RecurringTemplateDetailModal from '@/features/recurring-payments/components/modals/RecurringTemplateDetailModal.vue';
 import RecurringTemplateFormModal from '@/features/recurring-payments/components/modals/RecurringTemplateFormModal.vue';
-import { recurrencesPathForTab } from '@/features/recurring-payments/paths';
+import { RECURRENCES_PATHS, recurrencesPathForTab } from '@/features/recurring-payments/paths';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import RecurringTemplateTable from '@/features/recurring-payments/components/list/RecurringTemplateTable.vue';
 import {
     TEMPLATE_SORT_DEFAULT,
+    formatPlannedAmount,
+    formatShortDayMonth,
+    formatSignedPlannedAmount,
     isExpenseTemplate,
     matchesRecurringSearch,
+    recurringMonthlyFactor,
+    recurringNature,
     sortTemplatesBy,
+    type RecurringNature,
     type TemplateSort
 } from '@/features/recurring-payments/format';
 import { downloadCsv } from '@/utils/helpers/csv';
@@ -64,7 +70,7 @@ const emit = defineEmits<{
     sort: [value: TemplateSort];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const accountsStore = useAccountsStore();
@@ -138,6 +144,58 @@ const items = computed(() => {
     const found = needle ? scoped.filter((item) => matchesRecurringSearch(needle, item.name, accountName(item.accountPublicId))) : scoped;
     return sortTemplatesBy(found, props.sort);
 });
+/**
+ * Chiffres clés : équivalent mensuel des récurrences actives affichées, par nature
+ * (calculé côté client à partir des listes chargées, devise de la première ligne).
+ */
+const figs = computed(() => {
+    const natures: RecurringNature[] =
+        listingKind.value === 'income'
+            ? ['incomes']
+            : listingKind.value === 'expense'
+              ? ['fixed', 'subscriptions']
+              : ['fixed', 'subscriptions', 'incomes'];
+    const labels: Record<RecurringNature, string> = {
+        fixed: t('recurrencesPage.figs.fixedPerMonth'),
+        subscriptions: t('recurrencesPage.figs.subscriptionsPerMonth'),
+        incomes: t('recurrencesPage.figs.incomesPerMonth')
+    };
+    return natures.map((nature) => {
+        const rows = items.value.filter((item) => item.isActive && recurringNature(item) === nature);
+        const total = rows.reduce((sum, item) => sum + item.plannedAmount * recurringMonthlyFactor(item.frequency), 0);
+        const currency = rows[0]?.currency ?? 'CHF';
+        return {
+            key: nature,
+            label: labels[nature],
+            value: formatPlannedAmount(total, currency, locale.value),
+            tone: nature === 'incomes' ? 'su-pos' : ''
+        };
+    });
+});
+
+/** Panneau latéral : les 5 prochaines échéances des récurrences actives affichées. */
+const NEXT_DUES_MAX = 5;
+const nextDues = computed(() =>
+    items.value
+        .filter((item) => item.isActive && !!item.nextDueDate)
+        .slice()
+        .sort((a, b) => (a.nextDueDate ?? '').localeCompare(b.nextDueDate ?? ''))
+        .slice(0, NEXT_DUES_MAX)
+        .map((item) => {
+            const kind = templateKind(item);
+            return {
+                key: `${kind}-${item.publicId}`,
+                item,
+                kind,
+                date: formatShortDayMonth(item.nextDueDate, locale.value),
+                amount: formatSignedPlannedAmount(item.plannedAmount, kind, item.currency, locale.value)
+            };
+        })
+);
+
+/** Le calendrier du mois n'apparaît que sur la vue d'ensemble (charges et revenus vont droit à la liste). */
+const showCalendar = computed(() => listingKind.value == null);
+
 const hasFilters = computed(
     () => !!(props.search?.trim() || filterAccountId.value || props.minAmount || props.maxAmount || !props.showInactive)
 );
@@ -335,33 +393,54 @@ function loadMore() {
                 <p>{{ emptyCopy }}</p>
             </div>
             <div v-else class="recurring-directory">
-                <div class="recurring-directory__list">
-                    <RecurringTemplateListItem
-                        v-for="(item, index) in items"
-                        :key="`${templateKind(item)}-${item.publicId}`"
-                        :template="item"
-                        :kind="templateKind(item)"
+                <!-- liste en premier : c'est l'information qu'on vient chercher -->
+                <div class="recurring-directory__main">
+                    <RecurringTemplateTable
+                        :items="items"
+                        :sort="sort"
                         :show-kind="!listingKind"
-                        :can-write="canWrite(item.accountPublicId)"
                         :acting="store.acting"
-                        :style="{ '--i': index }"
+                        :can-write="canWrite"
                         @open="openDetail"
                         @edit="editTarget = $event"
                         @delete="deleteTarget = $event"
+                        @sort="emit('sort', $event)"
                     />
+                    <RecurringMonthCalendar v-if="showCalendar" class="recurring-directory__calendar" :items="items" />
                 </div>
-                <RecurringTemplateTable
-                    class="recurring-directory__table"
-                    :items="items"
-                    :sort="sort"
-                    :show-kind="!listingKind"
-                    :acting="store.acting"
-                    :can-write="canWrite"
-                    @open="openDetail"
-                    @edit="editTarget = $event"
-                    @delete="deleteTarget = $event"
-                    @sort="emit('sort', $event)"
-                />
+
+                <!-- panneau latéral fixe : chiffres clés mensuels + prochaines échéances -->
+                <aside class="recurring-directory__aside">
+                    <section class="recurring-aside__block">
+                        <h2 class="recurring-aside__title">{{ t('recurrencesPage.aside.figsTitle') }}</h2>
+                        <dl class="recurring-aside__figs">
+                            <div v-for="fig in figs" :key="fig.key" class="recurring-aside__fig">
+                                <dt>{{ fig.label }}</dt>
+                                <dd :class="fig.tone">{{ fig.value }}</dd>
+                            </div>
+                        </dl>
+                        <p class="recurring-aside__note">{{ t('recurrencesPage.figs.note') }}</p>
+                    </section>
+
+                    <section class="recurring-aside__block recurring-aside__block--dues">
+                        <h2 class="recurring-aside__title">{{ t('recurrencesPage.aside.nextTitle') }}</h2>
+                        <p v-if="!nextDues.length" class="recurring-aside__note">{{ t('recurrencesPage.aside.none') }}</p>
+                        <ul v-else class="recurring-aside__dues">
+                            <li v-for="due in nextDues" :key="due.key">
+                                <button type="button" class="recurring-aside__due" @click="openDetail(due.item)">
+                                    <span class="recurring-aside__date">{{ due.date }}</span>
+                                    <span class="recurring-aside__name">{{ due.item.name }}</span>
+                                    <span class="recurring-aside__amount" :class="due.kind === 'income' ? 'su-pos' : 'su-neg'">{{
+                                        due.amount
+                                    }}</span>
+                                </button>
+                            </li>
+                        </ul>
+                        <RouterLink :to="RECURRENCES_PATHS.echeances" class="su-link recurring-aside__all">{{
+                            t('recurrencesPage.aside.allDues')
+                        }}</RouterLink>
+                    </section>
+                </aside>
             </div>
 
             <div v-if="hasMore" class="su-more">
@@ -414,53 +493,203 @@ function loadMore() {
 .recurring-panel__scroll {
     flex: 1 1 auto;
     min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    overflow: auto;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
 }
 
+/* PC : liste à gauche, panneau fixe à droite ; l'essentiel est visible sans défiler */
 .recurring-directory {
-    flex: 1 1 auto;
-    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 40px;
+    align-items: start;
+    padding: 8px 16px 24px 0;
+}
+
+.recurring-directory__main {
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    padding: 4px 16px 10px;
+    gap: var(--section-gap);
 }
 
-.recurring-directory__list {
+.recurring-directory__aside {
+    position: sticky;
+    top: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    overflow: visible;
+    gap: 16px;
 }
 
-.recurring-directory__table {
-    display: none;
+.recurring-aside__block {
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    background: var(--bg);
 }
 
-@media (min-width: 768px) {
-    .recurring-directory__list {
+.recurring-aside__block--dues {
+    background: var(--soft);
+    border-color: transparent;
+}
+
+.recurring-aside__title {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.recurring-aside__figs {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.recurring-aside__fig {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+}
+
+.recurring-aside__fig:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.recurring-aside__fig dt {
+    color: var(--gray);
+    font-size: 13px;
+}
+
+.recurring-aside__fig dd {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.recurring-aside__note {
+    margin: 10px 0 0;
+    color: var(--gray);
+    font-size: 12px;
+}
+
+.recurring-aside__dues {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+}
+
+.recurring-aside__due {
+    appearance: none;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 13.5px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.recurring-aside__dues li:first-child .recurring-aside__due {
+    border-top: 0;
+}
+
+.recurring-aside__due:hover .recurring-aside__name {
+    text-decoration: underline;
+}
+
+.recurring-aside__due:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+}
+
+.recurring-aside__date {
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
+}
+
+.recurring-aside__name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 700;
+}
+
+.recurring-aside__amount {
+    font-weight: 700;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.recurring-aside__all {
+    font-size: 13px;
+}
+
+/* tablette : le panneau passe au-dessus de la liste, en deux cartes côte à côte */
+@media (max-width: 1199.98px) {
+    .recurring-directory {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+        padding-right: 0;
+    }
+
+    .recurring-directory__aside {
+        position: static;
+        order: -1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* le calendrier est trop large pour un écran étroit : la liste suffit */
+@media (max-width: 959.98px) {
+    .recurring-directory__calendar {
+        display: none;
+    }
+}
+
+/* mobile : seuls les chiffres clés restent en tête, compacts ; les échéances ont leur propre vue */
+@media (max-width: 767px) {
+    .recurring-directory {
+        padding: 0 6px 16px 0;
+        gap: 20px;
+    }
+
+    .recurring-directory__aside {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .recurring-aside__block {
+        padding: 12px 14px;
+    }
+
+    .recurring-aside__block--dues,
+    .recurring-aside__note,
+    .recurring-aside__title {
         display: none;
     }
 
-    .recurring-directory__table {
-        display: flex;
-        flex: 1 1 auto;
-        min-height: 0;
-        flex-direction: column;
-    }
-}
-
-@media (max-width: 767px) {
-    .recurring-panel__scroll {
-        display: block;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
+    .recurring-aside__fig {
+        padding: 6px 0;
     }
 
-    .recurring-directory {
-        display: block;
-        padding: 0 4px 4px;
+    .recurring-aside__fig dd {
+        font-size: 16px;
     }
 }
 </style>

@@ -23,54 +23,52 @@ defineProps<{
                 :currency="currency"
                 :editable="editable"
             />
-            <span v-else class="import-line-badge" :class="`is-${badge.tone}`" :title="badge.label">
-                {{ badge.label }}
+            <span v-else class="su-chip import-line-badge" :class="`is-${badge.tone}`" :title="badge.label">
+                <span class="import-line-badge__label">{{ badge.label }}</span>
             </span>
         </template>
     </span>
 </template>
 
 <style scoped>
+/* Indicateurs de ligne : petit carré de couleur + texte gris 12.5 px (pas de pilule). */
 .import-line-badges {
     display: flex;
-    gap: 4px;
+    gap: 14px;
     min-width: 0;
     overflow: hidden;
 }
 
 .import-line-badges.is-wrap {
     flex-wrap: wrap;
+    gap: 4px 14px;
 }
 
 .import-line-badge {
-    --tint: var(--ink-muted);
+    --chip-color: var(--gray);
     flex: none;
     max-width: 220px;
-    padding: 1px 7px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--tint) 12%, transparent);
-    color: var(--tint);
-    font-size: 0.68rem;
-    font-weight: 600;
-    line-height: 1.5;
+    height: 20px;
+    font-size: 12.5px;
+}
+
+.import-line-badge__label {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .import-line-badge.is-warning {
-    --tint: rgb(var(--v-theme-warning));
+    --chip-color: var(--violet);
 }
 
 .import-line-badge.is-error {
-    --tint: rgb(var(--v-theme-error));
+    --chip-color: var(--danger);
 }
 
-.import-line-badge.is-success {
-    --tint: rgb(var(--v-theme-success));
-}
-
+.import-line-badge.is-success,
 .import-line-badge.is-info {
-    --tint: rgb(var(--v-theme-primary));
+    --chip-color: var(--blue);
 }
 </style>

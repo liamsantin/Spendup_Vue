@@ -237,10 +237,11 @@ watch(
     min-height: 0;
 }
 
+/* lecteur plein écran : le corps devient une colonne sans arrondi ni fond, le cadre du lecteur fait le reste */
 .files-page--reader :deep(.su-body) {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    padding: 8px 10px 10px;
+    padding: 24px 0 0;
 }
 </style>

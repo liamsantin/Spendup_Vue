@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { PencilIcon, TrashIcon } from 'vue-tabler-icons';
-import { TIER_NATURE_ICONS } from '@/features/tiers/natureUi';
+import { TIER_NATURE_ICONS, tierNatureTileClass } from '@/features/tiers/natureUi';
 import type { Tier } from '@/features/tiers/types';
 
 const props = defineProps<{
@@ -19,6 +19,7 @@ const { t } = useI18n();
 
 const natureIcon = computed(() => TIER_NATURE_ICONS[props.tier.nature]);
 const natureLabel = computed(() => t(`tiersPage.natures.${props.tier.nature}`));
+const tileClass = computed(() => tierNatureTileClass(props.tier.nature));
 const rolesLabel = computed(() => props.tier.roles.map((role) => t(`tiersPage.roles.${role}`)).join(', '));
 
 const detailLine = computed(() => {
@@ -58,14 +59,19 @@ function onDoubleClick(event: MouseEvent) {
     <tr class="app-data-table__row tier-table__row" :class="`is-${tier.nature}`" :data-tier-id="tier.publicId" @dblclick="onDoubleClick">
         <td>
             <div class="app-data-table__name">
-                <span class="app-data-table__avatar">
-                    <component :is="natureIcon" size="16" stroke-width="1.8" />
+                <span class="tier-table__tile" :class="tileClass" aria-hidden="true">
+                    <component :is="natureIcon" :size="18" stroke-width="1.7" />
                 </span>
                 <span class="app-data-table__identity">
                     <span class="app-data-table__title">{{ tier.name }}</span>
                     <span v-if="detailLine" class="app-data-table__muted">{{ detailLine }}</span>
                 </span>
             </div>
+        </td>
+        <td>
+            <span class="app-data-table__pill" :title="natureLabel">
+                <span class="app-data-table__pill-label">{{ natureLabel }}</span>
+            </span>
         </td>
         <td>
             <span v-if="rolesLabel">{{ rolesLabel }}</span>
@@ -94,11 +100,6 @@ function onDoubleClick(event: MouseEvent) {
             </a>
             <span v-else class="app-data-table__muted">—</span>
         </td>
-        <td>
-            <span class="app-data-table__pill" :title="natureLabel">
-                <span class="app-data-table__pill-label">{{ natureLabel }}</span>
-            </span>
-        </td>
         <td class="app-data-table__actions-cell" @click.stop>
             <div class="app-data-table__actions">
                 <button
@@ -125,20 +126,29 @@ function onDoubleClick(event: MouseEvent) {
 </template>
 
 <style scoped>
-.tier-table__row.is-person {
-    --tint: rgb(var(--v-theme-success));
+/* `--tint` colore le petit carré 7 px de la colonne Type ; le carré 36 px porte la teinte du kit (su-tile--…). */
+.app-data-table__row.tier-table__row.is-person {
+    --tint: var(--t-teal-ink);
 }
 
-.tier-table__row.is-organization {
-    --tint: rgb(var(--v-theme-secondary));
+.app-data-table__row.tier-table__row.is-company {
+    --tint: var(--t-blue-ink);
 }
 
-.tier-table__row.is-administration {
-    --tint: rgb(var(--v-theme-warning));
+.app-data-table__row.tier-table__row.is-organization {
+    --tint: var(--t-violet-ink);
 }
 
-.tier-table__row.is-unknown {
-    --tint: var(--ink-muted);
+.app-data-table__row.tier-table__row.is-administration {
+    --tint: var(--t-amber-ink);
+}
+
+.app-data-table__row.tier-table__row.is-unknown {
+    --tint: var(--t-gray-ink);
+}
+
+.tier-table__tile {
+    flex: none;
 }
 
 .tier-table__link {
@@ -147,6 +157,7 @@ function onDoubleClick(event: MouseEvent) {
 }
 
 .tier-table__link:hover {
+    color: var(--blue-ink);
     text-decoration: underline;
 }
 </style>

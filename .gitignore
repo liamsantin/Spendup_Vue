@@ -29,3 +29,6 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+
+# Worktrees locaux Claude Code
+.claude/worktrees/

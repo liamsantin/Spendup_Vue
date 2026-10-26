@@ -281,7 +281,7 @@ function contributionAmount(amount: number, currency: string): string {
                     <div class="goal-contributions__actions">
                         <button
                             type="button"
-                            class="su-btn su-btn--tonal"
+                            class="su-btn su-btn--ink"
                             :disabled="!canLinkTransactions || store.acting"
                             @click="openLink('link')"
                         >
@@ -290,7 +290,7 @@ function contributionAmount(amount: number, currency: string): string {
                         </button>
                         <button
                             type="button"
-                            class="su-btn su-btn--ghost"
+                            class="su-btn"
                             :disabled="!canLinkTransactions || store.acting || !contributions.length"
                             @click="openLink('unlink')"
                         >
@@ -298,7 +298,7 @@ function contributionAmount(amount: number, currency: string): string {
                             {{ t('savingsGoalsPage.form.linkedTransactions.remove') }}
                         </button>
                     </div>
-                    <p v-if="!contributions.length" class="text-caption text-medium-emphasis mb-0">
+                    <p v-if="!contributions.length" class="goal-contributions__empty">
                         {{ t('savingsGoalsPage.form.linkedTransactions.empty') }}
                     </p>
                     <ul v-else class="goal-contributions__list">
@@ -307,7 +307,7 @@ function contributionAmount(amount: number, currency: string): string {
                                 <span class="goal-contributions__name">{{ item.label }}</span>
                                 <span class="goal-contributions__sub">{{ formatCalendarDate(item.operationDate, locale) }}</span>
                             </span>
-                            <span class="goal-contributions__amount" :class="{ 'is-out': item.amount < 0 }">
+                            <span class="goal-contributions__amount" :class="item.amount < 0 ? 'su-neg' : 'su-pos'">
                                 {{ contributionAmount(item.amount, liveGoal.currency) }}
                             </span>
                         </li>
@@ -317,7 +317,7 @@ function contributionAmount(amount: number, currency: string): string {
         </template>
 
         <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
+            <button type="button" class="su-btn" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
             <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
@@ -352,7 +352,7 @@ function contributionAmount(amount: number, currency: string): string {
         />
 
         <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
+            <button type="button" class="su-btn" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
             <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
@@ -373,33 +373,43 @@ function contributionAmount(amount: number, currency: string): string {
 
 .goal-contributions__hint {
     margin: 0 0 8px;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .goal-contributions__actions {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 }
 
+.goal-contributions__empty {
+    margin: 0;
+    color: var(--gray);
+    font-size: 14px;
+}
+
+/* contributions : lignes sur filets fins, montant 700 (+ bleu / − noir) */
 .goal-contributions__list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    border-top: 1px solid var(--line);
 }
 
 .goal-contributions__row {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
-    border-radius: 12px;
-    background: var(--surface-raised, var(--hair));
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+}
+
+.goal-contributions__list > .goal-contributions__row:first-child {
+    border-top: 0;
 }
 
 .goal-contributions__meta {
@@ -411,24 +421,20 @@ function contributionAmount(amount: number, currency: string): string {
 }
 
 .goal-contributions__name {
-    font-weight: 600;
+    font-weight: 700;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.goal-contributions__sub,
-.goal-contributions__amount {
-    font-size: 0.8rem;
-    color: var(--ink-muted);
+.goal-contributions__sub {
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .goal-contributions__amount {
     flex: none;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
-}
-
-.goal-contributions__amount.is-out {
-    color: rgb(var(--v-theme-error));
 }
 </style>

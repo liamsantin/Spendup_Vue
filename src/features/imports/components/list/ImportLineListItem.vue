@@ -1,6 +1,6 @@
 <script setup lang="ts">
-/** Ligne importée — carte mobile (tap = corriger). */
-import { toRef } from 'vue';
+/** Ligne importée — version mobile (tap = corriger) : ligne à filet fin, pas de carte. */
+import { computed, toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ImportLineActions from '@/features/imports/components/list/ImportLineActions.vue';
 import ImportLineBadges from '@/features/imports/components/list/ImportLineBadges.vue';
@@ -29,6 +29,13 @@ const { dateLabel, amountText, amountTone, categoryLabel, paymentMethodLabel, la
     toRef(props, 'currency')
 );
 
+/** Présentation du signe : « + » devant un crédit, vrai signe moins (U+2212) devant un débit. */
+const amountLabel = computed(() => {
+    if (amountTone.value === 'is-credit') return `+${amountText.value}`;
+    if (amountTone.value === 'is-debit') return amountText.value.replace('-', '−');
+    return amountText.value;
+});
+
 function onActivate(event: MouseEvent) {
     if (!props.editable || props.acting) return;
     if (event.target instanceof Element && event.target.closest('button')) return;
@@ -47,7 +54,7 @@ function onActivate(event: MouseEvent) {
                     <span v-if="paymentMethodLabel"> · {{ paymentMethodLabel }}</span>
                 </p>
             </div>
-            <span class="import-line-card__amount" :class="amountTone">{{ amountText }}</span>
+            <span class="import-line-card__amount" :class="amountTone">{{ amountLabel }}</span>
         </div>
         <ImportLineBadges v-if="badges.length" :badges="badges" wrap :line="line" :currency="currency" :editable="editable && !acting" />
         <div class="import-line-card__bottom">
@@ -70,10 +77,15 @@ function onActivate(event: MouseEvent) {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 12px;
-    border-radius: 16px;
-    background: var(--surface-raised, rgba(255, 255, 255, 0.6));
-    box-shadow: 0 0 0 1px var(--hair, rgba(16, 16, 20, 0.06));
+    padding: 12px 4px;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.import-line-card:first-child {
+    border-top: 0;
 }
 
 .import-line-card.is-muted .import-line-card__top {
@@ -102,19 +114,19 @@ function onActivate(event: MouseEvent) {
 }
 
 .import-line-card__label {
-    font-size: 0.92rem;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .import-line-card__sub {
     margin-top: 2px;
-    font-size: 0.76rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .import-line-card__amount {
     flex: none;
-    font-weight: 650;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
 }
 

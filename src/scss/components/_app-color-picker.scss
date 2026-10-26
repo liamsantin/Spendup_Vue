@@ -3,8 +3,8 @@
 }
 
 .app-color-picker__field input {
-    font-family: 'Courier New', monospace;
-    letter-spacing: 0.08em;
+    font-family: var(--font-mono, monospace);
+    letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
@@ -28,24 +28,19 @@
     width: 28px;
     height: 28px;
     place-items: center;
-    color: rgba(var(--v-theme-on-surface), 0.55);
+    color: var(--gray);
     background: transparent;
-    border-radius: 6px;
+    border-radius: 0;
     cursor: pointer;
     transition:
         color 160ms ease,
-        background-color 160ms ease,
-        transform 160ms ease;
+        background-color 160ms ease;
 }
 
 .app-color-picker__icon-btn:hover:not(:disabled),
 .app-color-picker__icon-btn--active {
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.1);
-}
-
-.app-color-picker__icon-btn:hover:not(:disabled) {
-    transform: scale(1.08);
+    color: var(--ink);
+    background: var(--soft);
 }
 
 .app-color-picker__icon-btn:disabled {
@@ -61,11 +56,12 @@
 
 .app-color-picker__panel {
     width: min(340px, calc(100vw - 24px));
-    padding: 14px;
-    background: rgb(var(--v-theme-surface));
-    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-    border-radius: 14px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+    padding: 16px;
+    background: var(--raise);
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    box-shadow: var(--shadow-offset);
+    font-family: var(--font-ui);
 }
 
 .app-color-picker__header {
@@ -76,9 +72,9 @@
 }
 
 .app-color-picker__title {
-    color: rgb(var(--v-theme-on-surface));
-    font-size: 0.95rem;
-    font-weight: 600;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .app-color-picker__close {
@@ -86,9 +82,9 @@
     width: 28px;
     height: 28px;
     place-items: center;
-    color: rgba(var(--v-theme-on-surface), 0.6);
+    color: var(--gray);
     background: transparent;
-    border-radius: 50%;
+    border-radius: 0;
     cursor: pointer;
     transition:
         background-color 160ms ease,
@@ -96,8 +92,8 @@
 }
 
 .app-color-picker__close:hover {
-    color: rgb(var(--v-theme-on-surface));
-    background: rgba(var(--v-theme-on-surface), 0.08);
+    color: var(--ink);
+    background: var(--soft);
 }
 
 .app-color-picker__footer {
@@ -107,27 +103,25 @@
 }
 
 .app-color-picker__done {
-    padding: 8px 16px;
-    color: rgb(var(--v-theme-on-primary));
-    background: rgb(var(--v-theme-primary));
-    border-radius: 8px;
-    font-size: 0.875rem;
-    font-weight: 500;
+    height: 36px;
+    padding: 0 14px;
+    color: #fff;
+    background: var(--blue-btn);
+    border-radius: 0;
+    font-size: 13.5px;
+    font-weight: 700;
     cursor: pointer;
-    transition:
-        filter 160ms ease,
-        transform 160ms ease;
+    transition: background 160ms ease;
 }
 
 .app-color-picker__done:hover {
-    filter: brightness(1.08);
-    transform: translateY(-1px);
+    background: var(--blue-ink);
 }
 
 .app-color-picker__area {
     position: relative;
     height: 148px;
-    border-radius: 10px;
+    border-radius: 0;
     cursor: crosshair;
     touch-action: none;
     overflow: hidden;
@@ -170,14 +164,14 @@
     position: relative;
     height: 14px;
     margin-top: 14px;
-    border-radius: 999px;
+    border-radius: 0;
     background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
     cursor: pointer;
     touch-action: none;
 }
 
 .app-color-picker__hue:focus-visible {
-    outline: 2px solid rgb(var(--v-theme-primary));
+    outline: 2px solid var(--ink);
     outline-offset: 3px;
 }
 
@@ -205,49 +199,54 @@
     flex: 1;
     align-items: center;
     gap: 4px;
-    padding: 7px 10px;
-    background: rgba(var(--v-theme-on-surface), 0.04);
-    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-    border-radius: 8px;
+    height: 36px;
+    padding: 0 10px;
+    background: var(--raise);
+    border: 1px solid var(--line);
+    border-radius: 0;
     transition: border-color 160ms ease;
 }
 
 .app-color-picker__hex:focus-within {
-    border-color: rgb(var(--v-theme-primary));
+    border-color: var(--ink);
 }
 
 .app-color-picker__hex-prefix {
-    color: rgba(var(--v-theme-on-surface), 0.5);
-    font-size: 0.9rem;
+    color: var(--gray);
+    font-size: 14px;
 }
 
 .app-color-picker__hex-input {
     width: 100%;
-    color: rgb(var(--v-theme-on-surface));
+    color: var(--ink);
     background: transparent;
     border: none;
     outline: none;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9rem;
-    letter-spacing: 0.08em;
+    font-family: var(--font-mono, monospace);
+    font-size: 14px;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
 }
 
 .app-color-picker__clear {
-    padding: 8px 12px;
-    color: rgba(var(--v-theme-on-surface), 0.7);
+    height: 36px;
+    padding: 0 12px;
+    color: var(--gray);
     background: transparent;
-    border-radius: 8px;
-    font-size: 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    font-size: 13px;
     cursor: pointer;
     transition:
         background-color 160ms ease,
-        color 160ms ease;
+        color 160ms ease,
+        border-color 160ms ease;
 }
 
 .app-color-picker__clear:hover {
-    color: rgb(var(--v-theme-error));
-    background: rgba(var(--v-theme-error), 0.08);
+    color: var(--danger);
+    border-color: var(--danger);
+    background: var(--danger-soft);
 }
 
 .app-color-picker__presets {
@@ -256,7 +255,7 @@
     gap: 8px;
     margin-top: 14px;
     padding-top: 12px;
-    border-top: 1px solid rgba(var(--v-border-color), 0.35);
+    border-top: 1px solid var(--line);
 }
 
 @media (max-width: 599.98px) {
@@ -275,25 +274,23 @@
 .app-color-picker__swatch {
     width: 26px;
     height: 26px;
-    border: 2px solid rgb(var(--v-theme-surface));
+    border: 2px solid var(--raise);
     border-radius: 50%;
-    box-shadow: 0 0 0 1px rgba(var(--v-border-color), 0.28);
+    box-shadow: 0 0 0 1px var(--line);
     cursor: pointer;
-    animation: app-color-picker-swatch-in 260ms both;
-    animation-delay: var(--delay);
-    transition:
-        transform 160ms ease,
-        box-shadow 160ms ease;
+    animation: none;
+    transition: box-shadow 160ms ease;
 }
 
 .app-color-picker__swatch:hover {
-    transform: translateY(-2px) scale(1.1);
+    box-shadow: 0 0 0 1px var(--ink);
 }
 
+/* la pastille choisie est cerclée de noir (maquette 04) */
 .app-color-picker__swatch--selected {
     box-shadow:
-        0 0 0 2px rgb(var(--v-theme-surface)),
-        0 0 0 4px rgb(var(--v-theme-primary));
+        0 0 0 2px var(--raise),
+        0 0 0 4px var(--ink);
 }
 
 .app-color-picker--disabled {

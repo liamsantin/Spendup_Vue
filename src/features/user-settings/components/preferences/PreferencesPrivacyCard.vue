@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { EyeIcon } from 'vue-tabler-icons';
-import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import type { UserSettings } from '@/features/user-settings/types';
@@ -25,14 +23,16 @@ const friendRequestItems = computed(() => [
 </script>
 
 <template>
-    <AppGlassCard :title="t('userSettings.privacy.title')" :subtitle="t('userSettings.privacy.subtitle')">
-        <template #icon>
-            <EyeIcon :size="20" stroke-width="1.5" />
-        </template>
-        <v-row>
-            <v-col cols="12" md="6">
-                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.privacy.profileVisibility') }}</v-label>
+    <section class="su-settings">
+        <div class="su-settings__lead">
+            <h2>{{ t('userSettings.privacy.title') }}</h2>
+            <p>{{ t('userSettings.privacy.subtitle') }}</p>
+        </div>
+        <div class="su-settings__fields">
+            <div class="su-field">
+                <label class="su-field__label" for="pref-profile-visibility">{{ t('userSettings.privacy.profileVisibility') }}</label>
                 <AppSelect
+                    id="pref-profile-visibility"
                     v-model="draft.profileVisibility"
                     :items="visibilityItems"
                     item-title="title"
@@ -40,10 +40,13 @@ const friendRequestItems = computed(() => [
                     :label="t('userSettings.privacy.profileVisibility')"
                     hide-details
                 />
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.privacy.profilePictureVisibility') }}</v-label>
+            </div>
+            <div class="su-field">
+                <label class="su-field__label" for="pref-picture-visibility">{{
+                    t('userSettings.privacy.profilePictureVisibility')
+                }}</label>
                 <AppSelect
+                    id="pref-picture-visibility"
                     v-model="draft.profilePictureVisibility"
                     :items="visibilityItems"
                     item-title="title"
@@ -51,10 +54,11 @@ const friendRequestItems = computed(() => [
                     :label="t('userSettings.privacy.profilePictureVisibility')"
                     hide-details
                 />
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.privacy.friendRequestsFrom') }}</v-label>
+            </div>
+            <div class="su-field">
+                <label class="su-field__label" for="pref-friend-requests">{{ t('userSettings.privacy.friendRequestsFrom') }}</label>
                 <AppSelect
+                    id="pref-friend-requests"
                     v-model="draft.friendRequestsFrom"
                     :items="friendRequestItems"
                     item-title="title"
@@ -62,10 +66,17 @@ const friendRequestItems = computed(() => [
                     :label="t('userSettings.privacy.friendRequestsFrom')"
                     hide-details
                 />
-            </v-col>
-            <v-col cols="12" md="6" class="d-flex align-end">
-                <AppSwitch v-model="draft.discoverableInSearch" :label="t('userSettings.privacy.discoverableInSearch')" />
-            </v-col>
-        </v-row>
-    </AppGlassCard>
+            </div>
+            <div class="is-full">
+                <div class="su-switch-row">
+                    <div class="su-switch-row__text">
+                        <label class="su-switch-row__label" for="pref-discoverable">{{
+                            t('userSettings.privacy.discoverableInSearch')
+                        }}</label>
+                    </div>
+                    <AppSwitch id="pref-discoverable" v-model="draft.discoverableInSearch" />
+                </div>
+            </div>
+        </div>
+    </section>
 </template>

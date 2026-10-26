@@ -1,86 +1,167 @@
 /*
- * Jetons de design du layout.
+ * Jetons de design — Spend.Up « Minimal × Swiss Helvetica ».
  *
- * Tout le rendu de la sidebar et du header passe par ces variables : pour rhabiller
- * le template dans un autre projet, il suffit de redéfinir ce bloc (ou de surcharger
- * les variables sur un conteneur parent). Aucun composant ne contient de couleur
- * ni de dimension en dur.
+ * Tout le chrome de l'application (sidebar, header, pages, kit `su-*`) lit ces
+ * variables. Les anciens noms du kit verre (`--surface`, `--hair`, `--radius-*`,
+ * `--shadow-*`…) sont conservés comme alias pour que les composants existants
+ * adoptent la nouvelle direction artistique sans modification : plus d'arrondi,
+ * plus d'ombre floue, plus de verre.
  */
 :root {
     color-scheme: light;
 
-    /* ── couleurs ───────────────────────────────────────── */
-    --ink: #101014;
-    --ink-soft: rgba(16, 16, 20, 0.82);
-    --ink-mute: rgba(16, 16, 20, 0.72);
-    --ink-muted: #6b6b73;
+    /* ── palette Swiss ──────────────────────────────────── */
+    --bg: #ffffff;
+    --side-bg: #ffffff;
+    --raise: #ffffff;
+    --ink: #0b0c10;
+    --gray: #686b75;
+    --line: #ebecef;
+    --soft: #f4f5f8;
+    --blue: #5d87ff;
+    --blue-ink: #2f5bd9;
+    --blue-btn: #3d63e0;
+    --blue-soft: rgba(93, 135, 255, 0.1);
+    --violet: #775cff;
+    --violet-ink: #5a3fe6;
+    --danger: #c0352b;
+    --danger-line: #f1c9c5;
+    --danger-soft: rgba(192, 53, 43, 0.06);
+    --scrim: rgba(20, 24, 36, 0.38);
+
+    /* teintes de catégorie : fond / encre */
+    --t-blue-bg: #edf1fc;
+    --t-blue-ink: #3a5bbf;
+    --t-violet-bg: #f0edfb;
+    --t-violet-ink: #5b47b8;
+    --t-amber-bg: #f5f0e6;
+    --t-amber-ink: #7f6125;
+    --t-teal-bg: #eaf2f0;
+    --t-teal-ink: #356a61;
+    --t-rose-bg: #f6edf0;
+    --t-rose-ink: #91506a;
+    --t-green-bg: #edf2ec;
+    --t-green-ink: #4a6a4c;
+    --t-gray-bg: #f1f2f4;
+    --t-gray-ink: #5f626c;
+
+    /* ── alias hérités du kit verre ─────────────────────── */
+    --ink-soft: var(--ink);
+    --ink-mute: #3a3d47;
+    --ink-muted: var(--gray);
     --on-ink: #ffffff;
-    --hair: rgba(16, 16, 20, 0.08);
-    --thread: rgba(16, 16, 20, 0.16);
-    --thread-node: rgba(16, 16, 20, 0.3);
-    --accent: #ff5fa2;
-    /* Montants débit / crédit : moins saturés que error (#FA896B) et success (#13DEB9). */
-    --amount-debit: 195, 107, 102;
-    --amount-credit: 69, 143, 124;
+    --hair: var(--line);
+    --thread: var(--line);
+    --thread-node: var(--gray);
+    --accent: var(--violet);
+    /* Montants : positif en bleu lisible, négatif en noir (jamais de vert). */
+    --amount-debit: 11, 12, 16;
+    --amount-credit: 47, 91, 217;
 
-    /* ── surfaces en verre ──────────────────────────────── */
-    --surface: rgba(255, 255, 255, 0.62);
-    --surface-overlay: rgba(255, 255, 255, 0.93);
-    --surface-hover: rgba(255, 255, 255, 0.95);
-    --surface-hover-soft: rgba(255, 255, 255, 0.86);
-    --surface-raised: #ffffff;
-    --stroke: rgba(255, 255, 255, 0.85);
-    --blur: blur(22px) saturate(180%);
+    --surface: var(--bg);
+    --surface-overlay: var(--raise);
+    --surface-hover: var(--soft);
+    --surface-hover-soft: var(--soft);
+    --surface-raised: var(--raise);
+    --stroke: var(--line);
+    --blur: none;
 
-    /* ── ombres ─────────────────────────────────────────── */
-    --shadow-rest: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 24px 60px -28px rgba(16, 16, 20, 0.35), 0 2px 10px -4px rgba(16, 16, 20, 0.12);
-    --shadow-lifted:
-        0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 34px 80px -34px rgba(16, 16, 20, 0.4), 0 2px 12px -6px rgba(16, 16, 20, 0.14);
-    --shadow-overlay: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 34px 80px -34px rgba(16, 16, 20, 0.45);
-    --shadow-hover: 0 10px 24px -14px rgba(16, 16, 20, 0.4);
-    --shadow-pill: 0 6px 18px -6px rgba(16, 16, 20, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.9);
-    --shadow-pill-soft: 0 12px 26px -16px rgba(16, 16, 20, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.9);
-    --shadow-ink: 0 14px 30px -14px rgba(16, 16, 20, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
-    --shadow-handle: 0 6px 16px -8px rgba(16, 16, 20, 0.5);
-    --scrim: rgba(16, 16, 20, 0.32);
+    /* ombre décalée nette, réservée aux menus et fenêtres modales */
+    --shadow-offset: 8px 8px 0 rgba(15, 20, 40, 0.08);
+    --shadow-rest: none;
+    --shadow-lifted: none;
+    --shadow-overlay: var(--shadow-offset);
+    --shadow-hover: none;
+    --shadow-pill: none;
+    --shadow-pill-soft: none;
+    --shadow-ink: none;
+    --shadow-handle: none;
 
     /* ── géométrie ──────────────────────────────────────── */
-    /* --gutter + --slot garantissent que l'icône ne bouge pas d'un pixel
-     entre l'état replié et l'état déployé : son centre vaut toujours
-     --gutter + --slot / 2, soit --rail-w / 2. Ne modifier qu'ensemble. */
-    --gutter: 16px;
-    --slot: 44px;
-    --rail-w: 76px;
-    --rail-open-w: 288px;
-    --detail-w: 248px;
-    --row-gap: 8px;
+    --gutter: 24px;
+    --slot: 40px;
+    --sidebar-w: 272px;
+    --rail-w: 272px;
+    --rail-open-w: 272px;
+    --detail-w: 0px;
+    --row-gap: 0px;
+    --content-max: 1280px;
+    --content-pad-x: 48px;
+    --content-pad-y: 40px;
+    --section-gap: 56px;
 
-    /* légèrement moins que la pilule parfaite (38 px pour un rail de 76) :
-     la surface garde un galbe franc sans devenir une gélule */
-    --radius-surface: 30px;
-    --radius-overlay: 26px;
-    --radius-header: 26px;
-    --radius-header-mobile: 22px;
-    --radius-pill: 22px;
-    --radius-leaf: 16px;
-    --radius-field: 14px;
+    /* tout est carré : les seuls ronds (photo, pastille, interrupteur) le disent eux-mêmes */
+    --radius-surface: 0;
+    --radius-overlay: 0;
+    --radius-header: 0;
+    --radius-header-mobile: 0;
+    --radius-pill: 0;
+    --radius-leaf: 0;
+    --radius-field: 0;
 
-    --header-h: 68px;
-    --header-h-mobile: 58px;
-    --tabbar-h: 64px;
+    --header-h: 72px;
+    --header-h-mobile: 56px;
+    --tabbar-h: 60px;
 
-    /* ── mouvement ──────────────────────────────────────── */
-    --ease: cubic-bezier(0.19, 1, 0.22, 1);
-    --spring: cubic-bezier(0.34, 1.32, 0.44, 1);
-    --dur-expand: 0.72s;
-    --dur-slide: 0.55s;
+    /* ── mouvement : court et sobre ─────────────────────── */
+    --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --spring: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --dur-expand: 0.32s;
+    --dur-slide: 0.32s;
 
     /* ── typographie ────────────────────────────────────── */
-    --font-ui: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    --font-heading: 'Urbanist', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    --font-ui: 'Helvetica Neue', Helvetica, 'Inter Tight', Arial, sans-serif;
+    --font-heading: var(--font-ui);
+    --font-mono: 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+}
 
-    /* Le point de rupture vit dans useBreakpoint.ts (MOBILE_BREAKPOINT) : une media
-     query ne peut pas lire une variable CSS. Les deux doivent rester alignés. */
+/* ── sombre : anthracite, jamais de noir profond ───────── */
+[class*='v-theme--DARK_'] {
+    color-scheme: dark;
+    --bg: #1d1f25;
+    --side-bg: #22242a;
+    --raise: #2a2c33;
+    --soft: #2c2f37;
+    --ink: #eef0f4;
+    --gray: #a6aab5;
+    --line: #353842;
+    --blue-ink: #9db6ff;
+    --violet-ink: #b6a8ff;
+    --blue-btn: #4b74ec;
+    --blue-soft: rgba(93, 135, 255, 0.16);
+    --danger: #ff8a80;
+    --danger-line: #5a3233;
+    --danger-soft: rgba(255, 138, 128, 0.1);
+    --scrim: rgba(0, 0, 0, 0.5);
+    --ink-mute: #cfd3dc;
+    --on-ink: #1d1f25;
+    --amount-debit: 238, 240, 244;
+    --amount-credit: 157, 182, 255;
+    --shadow-offset: 8px 8px 0 rgba(0, 0, 0, 0.28);
+
+    --t-blue-bg: rgba(93, 135, 255, 0.12);
+    --t-blue-ink: #a9bcf0;
+    --t-violet-bg: rgba(119, 92, 255, 0.12);
+    --t-violet-ink: #b9adf2;
+    --t-amber-bg: rgba(201, 160, 72, 0.12);
+    --t-amber-ink: #d9bd86;
+    --t-teal-bg: rgba(64, 150, 134, 0.12);
+    --t-teal-ink: #93cbbf;
+    --t-rose-bg: rgba(190, 110, 140, 0.12);
+    --t-rose-ink: #dcaabf;
+    --t-green-bg: rgba(110, 160, 110, 0.12);
+    --t-green-ink: #a9cba9;
+    --t-gray-bg: rgba(160, 164, 176, 0.12);
+    --t-gray-ink: #b8bcc6;
+}
+
+html,
+body {
+    font-family: var(--font-ui);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.006em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
@@ -96,4 +177,15 @@ h6,
 .text-h5,
 .text-h6 {
     font-family: var(--font-heading);
+    letter-spacing: -0.025em;
+}
+
+/* Deux graisses seulement : tout ce qui est « medium » retombe sur 400 ou 700. */
+.font-weight-medium,
+.font-weight-semibold {
+    font-weight: 700 !important;
+}
+
+.tabular-nums {
+    font-variant-numeric: tabular-nums;
 }

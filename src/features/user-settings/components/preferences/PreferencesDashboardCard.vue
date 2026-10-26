@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { LayoutDashboardIcon } from 'vue-tabler-icons';
-import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import type { UserSettings } from '@/features/user-settings/types';
@@ -18,14 +16,16 @@ const dashboardViewItems = computed(() => [
 </script>
 
 <template>
-    <AppGlassCard :title="t('userSettings.dashboard.title')" :subtitle="t('userSettings.dashboard.subtitle')">
-        <template #icon>
-            <LayoutDashboardIcon :size="20" stroke-width="1.5" />
-        </template>
-        <v-row>
-            <v-col cols="12" md="6">
-                <v-label class="mb-2 font-weight-medium">{{ t('userSettings.dashboard.defaultView') }}</v-label>
+    <section class="su-settings">
+        <div class="su-settings__lead">
+            <h2>{{ t('userSettings.dashboard.title') }}</h2>
+            <p>{{ t('userSettings.dashboard.subtitle') }}</p>
+        </div>
+        <div class="su-settings__fields">
+            <div class="su-field">
+                <label class="su-field__label" for="pref-dashboard-view">{{ t('userSettings.dashboard.defaultView') }}</label>
                 <AppSelect
+                    id="pref-dashboard-view"
                     v-model="draft.defaultDashboardView"
                     :items="dashboardViewItems"
                     item-title="title"
@@ -33,11 +33,23 @@ const dashboardViewItems = computed(() => [
                     :label="t('userSettings.dashboard.defaultView')"
                     hide-details
                 />
-            </v-col>
-            <v-col cols="12" md="6" class="d-flex flex-column justify-end">
-                <AppSwitch v-model="draft.showBalanceOnDashboard" class="mb-2" :label="t('userSettings.dashboard.showBalance')" />
-                <AppSwitch v-model="draft.hideSensitiveAmounts" :label="t('userSettings.dashboard.hideSensitiveAmounts')" />
-            </v-col>
-        </v-row>
-    </AppGlassCard>
+            </div>
+            <div class="is-full">
+                <div class="su-switch-row">
+                    <div class="su-switch-row__text">
+                        <label class="su-switch-row__label" for="pref-show-balance">{{ t('userSettings.dashboard.showBalance') }}</label>
+                    </div>
+                    <AppSwitch id="pref-show-balance" v-model="draft.showBalanceOnDashboard" />
+                </div>
+                <div class="su-switch-row">
+                    <div class="su-switch-row__text">
+                        <label class="su-switch-row__label" for="pref-hide-sensitive">{{
+                            t('userSettings.dashboard.hideSensitiveAmounts')
+                        }}</label>
+                    </div>
+                    <AppSwitch id="pref-hide-sensitive" v-model="draft.hideSensitiveAmounts" />
+                </div>
+            </div>
+        </div>
+    </section>
 </template>

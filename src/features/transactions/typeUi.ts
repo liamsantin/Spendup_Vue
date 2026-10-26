@@ -9,8 +9,7 @@ export const TRANSACTION_TYPE_ICONS = {
     transfert: RoundTransferHorizontalIcon
 } as const satisfies Record<TransactionType, typeof CircleBottomDownIcon>;
 
-export function transactionTypeColor(type: TransactionType): 'error' | 'success' | 'primary' {
-    if (type === 'depense') return 'error';
-    if (type === 'revenu') return 'success';
-    return 'primary';
+/** Teinte du carré d'icône selon le type : revenu et virement en bleu, dépense neutre (sauf couleur de catégorie). */
+export function transactionTypeTint(type: TransactionType): 'blue' | 'gray' {
+    return type === 'depense' ? 'gray' : 'blue';
 }

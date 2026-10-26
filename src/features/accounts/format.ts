@@ -1,12 +1,38 @@
 import type { Account, Currency, HiddenAccountField } from '@/features/accounts/types';
 
+/** Signe moins typographique (U+2212), jamais le trait d'union. */
+export const SWISS_MINUS = '−';
+/** Apostrophe typographique des milliers (U+2019). */
+const SWISS_GROUP = '’';
+
+const swissNumberFormatters = new Map<string, Intl.NumberFormat>();
+
+function swissNumberFormatter(minimumFractionDigits: number, maximumFractionDigits: number): Intl.NumberFormat {
+    const key = `${minimumFractionDigits}:${maximumFractionDigits}`;
+    let formatter = swissNumberFormatters.get(key);
+    if (!formatter) {
+        // `de-CH` donne le point décimal ; le séparateur de milliers est remplacé par l'apostrophe typographique.
+        formatter = new Intl.NumberFormat('de-CH', { minimumFractionDigits, maximumFractionDigits, useGrouping: true });
+        swissNumberFormatters.set(key, formatter);
+    }
+    return formatter;
+}
+
+/**
+ * Nombre au format suisse de la D.A. : « 48’688.55 » (apostrophe typographique, point décimal, signe « − »).
+ * La locale de l'interface ne change pas ce format : les montants sont les mêmes partout dans l'app.
+ */
+export function formatSwissNumber(amount: number, { minimumFractionDigits = 2, maximumFractionDigits = 2 } = {}): string {
+    const parts = swissNumberFormatter(minimumFractionDigits, maximumFractionDigits).formatToParts(Math.abs(amount));
+    const digits = parts.map((part) => (part.type === 'group' ? SWISS_GROUP : part.value)).join('');
+    return amount < 0 ? `${SWISS_MINUS}${digits}` : digits;
+}
+
+/** Montant + devise en suffixe : « 48’688.55 CHF », « −1’650.00 CHF ». `locale` est ignoré (format unique). */
 export function formatAccountBalance(amount: number, currency: Currency, locale?: string): string {
+    void locale;
     try {
-        return new Intl.NumberFormat(locale || undefined, {
-            style: 'currency',
-            currency,
-            maximumFractionDigits: 2
-        }).format(amount);
+        return `${formatSwissNumber(amount)} ${currency}`;
     } catch {
         return `${amount.toFixed(2)} ${currency}`;
     }

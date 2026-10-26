@@ -156,7 +156,7 @@ const currentTab = computed({
     flex-wrap: nowrap;
     justify-content: flex-start;
     align-items: center;
-    gap: 4px;
+    gap: 22px;
     width: 100%;
     max-width: 100%;
     min-width: 0;
@@ -165,6 +165,7 @@ const currentTab = computed({
     overflow-y: hidden;
     scrollbar-width: none;
     border: 0;
+    border-bottom: 1px solid var(--line);
     background: transparent;
     box-sizing: border-box;
 }
@@ -182,35 +183,36 @@ const currentTab = computed({
     gap: 6px;
     flex: 0 0 auto;
     min-width: 0;
-    height: 34px;
-    padding: 0 12px;
+    height: 40px;
+    padding: 0;
     border: 0;
-    border-radius: 17px;
+    border-radius: 0;
     background: transparent;
-    color: var(--ink-mute);
+    color: var(--gray);
     font: inherit;
-    font-size: 13.5px;
-    font-weight: 550;
-    letter-spacing: -0.01em;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0;
     white-space: nowrap;
     cursor: pointer;
     transition:
-        color 0.25s var(--ease),
-        background 0.25s var(--ease),
-        box-shadow 0.3s var(--ease),
-        transform 0.35s var(--spring);
+        color 0.15s var(--ease),
+        box-shadow 0.15s var(--ease);
 }
 
 .app-modal-tabs__tab:hover:not(:disabled):not(.is-active) {
     color: var(--ink);
-    background: rgba(var(--v-theme-primary), 0.05);
+}
+
+.app-modal-tabs__tab:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
 }
 
 .app-modal-tabs__tab.is-active {
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.12);
-    font-weight: 600;
-    box-shadow: none;
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: inset 0 -2px 0 var(--ink);
 }
 
 .app-modal-tabs__tab:disabled {
@@ -219,12 +221,7 @@ const currentTab = computed({
 }
 
 .app-modal-tabs__tab svg {
-    flex: none;
-    opacity: 0.65;
-}
-
-.app-modal-tabs__tab.is-active svg {
-    opacity: 1;
+    display: none;
 }
 
 .app-modal-tabs__label {
@@ -242,15 +239,10 @@ const currentTab = computed({
     height: 18px;
     padding: 0 5px;
     border-radius: 9px;
-    background: rgba(16, 16, 20, 0.06);
-    color: var(--ink-mute);
+    background: var(--blue);
+    color: #fff;
     font-size: 11px;
-    font-weight: 600;
-}
-
-.app-modal-tabs__tab.is-active .app-modal-tabs__chip {
-    background: rgba(var(--v-theme-primary), 0.18);
-    color: rgb(var(--v-theme-primary));
+    font-weight: 700;
 }
 
 .app-modal-tabs__body {

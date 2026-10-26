@@ -1,4 +1,7 @@
 <script setup lang="ts">
+/**
+ * Bouton principal « + Ajouter » avec chevron : ouvre le menu déroulant des natures de tiers.
+ */
 defineOptions({ name: 'TierCreateMenu' });
 
 import { ChevronDownIcon, PlusIcon } from 'vue-tabler-icons';
@@ -10,6 +13,7 @@ withDefaults(
     defineProps<{
         disabled?: boolean;
         label: string;
+        /** Téléphone : bouton carré avec le seul « + ». */
         compact?: boolean;
     }>(),
     { disabled: false, compact: false }
@@ -25,20 +29,21 @@ const emit = defineEmits<{
         <template #activator="{ props: menuProps }">
             <button
                 type="button"
-                class="su-btn su-btn--ink app-board__primary"
-                :class="{ 'tier-create-menu__compact': compact }"
+                class="su-btn su-btn--ink tier-create-menu__trigger"
+                :class="{ 'tier-create-menu__trigger--compact': compact }"
                 v-bind="menuProps"
                 :disabled="disabled"
                 :aria-label="label"
+                aria-haspopup="true"
             >
-                <PlusIcon :size="16" stroke-width="1.6" />
+                <PlusIcon :size="16" stroke-width="1.8" />
                 <template v-if="!compact">
                     {{ label }}
                     <ChevronDownIcon :size="16" stroke-width="1.8" />
                 </template>
             </button>
         </template>
-        <v-sheet rounded="md" width="328" elevation="0" class="su-menu tier-create-menu">
+        <v-sheet elevation="0" class="su-menu tier-create-menu">
             <div class="tier-create-menu__list" role="list">
                 <TierNatureOption
                     v-for="nature in TIER_CREATE_NATURES"
@@ -55,19 +60,18 @@ const emit = defineEmits<{
 
 <style scoped>
 .tier-create-menu.su-menu {
-    padding: 10px 8px !important;
+    width: min(360px, calc(100vw - 24px));
 }
 
 .tier-create-menu__list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0;
 }
 
-.tier-create-menu__compact {
-    width: 36px;
-    height: 36px;
+/* téléphone : carré 40 px, icône seule */
+.tier-create-menu__trigger--compact {
+    width: 40px;
     padding: 0;
-    border-radius: 50%;
 }
 </style>

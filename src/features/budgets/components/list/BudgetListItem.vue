@@ -1,17 +1,21 @@
 <script setup lang="ts">
+/**
+ * Ligne « Par catégorie » (maquette 06) : nom 700 | dépensé / plafond (plafond gris),
+ * jauge carrée 4 px (noire, bleue pour le budget global, violette si dépassé),
+ * note grise « Reste 188 » ou violette « Dépassé de 68 », filet fin entre les lignes.
+ */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { DotsVerticalIcon, PencilIcon, PlayerPauseIcon, PlayerPlayIcon, WalletIcon } from 'vue-tabler-icons';
+import { DotsIcon, PencilIcon, PlayerPauseIcon, PlayerPlayIcon, TrashIcon } from 'vue-tabler-icons';
 import {
     budgetBarWidth,
-    budgetProgressTone,
     budgetScheduleStatus,
     formatBudgetAmount,
     formatCalendarDate,
     formatPercentUsed,
     isBudgetOverspent
 } from '@/features/budgets/format';
-import type { Budget } from '@/features/budgets/types';
+import { BUDGET_ALERT_OVER_PERCENT, type Budget } from '@/features/budgets/types';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 
 const props = defineProps<{
@@ -28,23 +32,19 @@ const emit = defineEmits<{
 const { t, locale } = useI18n();
 const categoriesStore = useCategoriesStore();
 
+const isGlobal = computed(() => !props.budget.categoryPublicId);
 const categoryLabel = computed(() => {
-    if (!props.budget.categoryPublicId) return t('budgetsPage.scope.global');
-    return categoriesStore.findByPublicId(props.budget.categoryPublicId)?.name ?? t('budgetsPage.scope.unknownCategory');
+    if (isGlobal.value) return t('budgetsPage.scope.global');
+    return categoriesStore.findByPublicId(props.budget.categoryPublicId!)?.name ?? t('budgetsPage.scope.unknownCategory');
 });
 
 const periodeLabel = computed(() => t(`budgetsPage.periodes.${props.budget.periode}`));
-
-const tone = computed(() => budgetProgressTone(props.budget));
 const schedule = computed(() => budgetScheduleStatus(props.budget));
 const overspent = computed(() => isBudgetOverspent(props.budget));
-const remainingText = computed(() => formatBudgetAmount(props.budget.remainingAmount, props.budget.currency, locale.value));
-const spentText = computed(() =>
-    t('budgetsPage.list.spentOf', {
-        spent: formatBudgetAmount(props.budget.spentAmount, props.budget.currency, locale.value),
-        limit: formatBudgetAmount(props.budget.limitAmount, props.budget.currency, locale.value)
-    })
-);
+const reached = computed(() => props.budget.isCurrent && !overspent.value && props.budget.percentUsed >= BUDGET_ALERT_OVER_PERCENT);
+const spentText = computed(() => formatBudgetAmount(props.budget.spentAmount, props.budget.currency, locale.value));
+const limitText = computed(() => formatBudgetAmount(props.budget.limitAmount, props.budget.currency, locale.value));
+const remainingText = computed(() => formatBudgetAmount(Math.abs(props.budget.remainingAmount), props.budget.currency, locale.value));
 const windowText = computed(() =>
     t('budgetsPage.list.window', {
         start: formatCalendarDate(props.budget.periodStart, locale.value),
@@ -53,6 +53,21 @@ const windowText = computed(() =>
 );
 const percentText = computed(() => formatPercentUsed(props.budget.isCurrent ? props.budget.percentUsed : 0, locale.value));
 const barWidth = computed(() => budgetBarWidth(props.budget));
+
+/** Note sous la jauge : état du budget en toutes lettres (jamais la couleur seule). */
+const note = computed(() => {
+    if (!props.budget.isActive) return { text: t('budgetsPage.badges.paused'), tone: '' };
+    if (schedule.value === 'upcoming') return { text: t('budgetsPage.badges.upcoming'), tone: '' };
+    if (schedule.value === 'ended') return { text: t('budgetsPage.badges.ended'), tone: '' };
+    if (overspent.value) return { text: t('budgetsPage.list.overBy', { amount: remainingText.value }), tone: 'su-over' };
+    if (reached.value) return { text: t('budgetsPage.overview.reached'), tone: '' };
+    return { text: t('budgetsPage.list.remaining', { amount: remainingText.value }), tone: '' };
+});
+
+const fillClass = computed(() => {
+    if (overspent.value || reached.value) return 'su-gauge__fill--over';
+    return isGlobal.value ? 'su-gauge__fill--blue' : '';
+});
 
 function onActivate(event: MouseEvent) {
     if (props.acting) return;
@@ -66,60 +81,57 @@ function onActivate(event: MouseEvent) {
         class="budget-row"
         :class="{ 'budget-row--editable': !acting, 'is-paused': !budget.isActive, 'is-over': overspent }"
         :data-budget-id="budget.publicId"
+        role="button"
+        tabindex="0"
         @click="onActivate"
+        @keydown.enter.prevent="emit('edit', budget)"
     >
-        <span class="budget-row__icon" :class="`is-${tone}`">
-            <WalletIcon size="18" stroke-width="1.8" />
-        </span>
-        <div class="budget-row__meta">
-            <div class="budget-row__title">
-                <p class="budget-row__name">{{ budget.name }}</p>
-                <span v-if="!budget.isActive" class="budget-row__badge is-paused">{{ t('budgetsPage.badges.paused') }}</span>
-                <span v-else-if="schedule === 'upcoming'" class="budget-row__badge is-idle">{{ t('budgetsPage.badges.upcoming') }}</span>
-                <span v-else-if="schedule === 'ended'" class="budget-row__badge is-idle">{{ t('budgetsPage.badges.ended') }}</span>
-                <span v-else-if="overspent" class="budget-row__badge is-over">{{ t('budgetsPage.badges.overspent') }}</span>
-            </div>
-            <p class="budget-row__sub">{{ categoryLabel }} · {{ periodeLabel }}</p>
-            <p class="budget-row__sub">{{ windowText }}</p>
-            <div class="budget-row__progress">
-                <div class="budget-bar" :class="`is-${tone}`">
-                    <span class="budget-bar__fill" :style="{ width: `${barWidth}%` }" />
-                </div>
-                <span class="budget-row__percent">{{ percentText }}</span>
-            </div>
-            <p class="budget-row__amounts">
-                <span>{{ spentText }}</span>
-                <span :class="{ 'is-over': overspent }">
-                    {{
-                        overspent
-                            ? t('budgetsPage.list.overBy', { amount: remainingText })
-                            : t('budgetsPage.list.remaining', { amount: remainingText })
-                    }}
-                </span>
+        <div class="budget-row__head">
+            <p class="budget-row__name">{{ budget.name }}</p>
+            <p class="budget-row__amounts" :aria-label="percentText">
+                <span class="budget-row__spent">{{ spentText }}</span>
+                <span class="budget-row__limit"> / {{ limitText }}</span>
             </p>
+            <div class="budget-row__actions" @click.stop>
+                <v-menu location="bottom end" :offset="4">
+                    <template #activator="{ props: menuProps }">
+                        <button v-bind="menuProps" type="button" class="su-orb" :disabled="acting" :aria-label="t('common.more')">
+                            <DotsIcon :size="18" stroke-width="1.75" />
+                        </button>
+                    </template>
+                    <v-sheet class="su-menu budget-actions-menu">
+                        <button type="button" class="su-menu-item" :disabled="acting" @click="emit('toggleActive', budget)">
+                            <span class="su-menu-item__icon su-menu-item__icon--gray">
+                                <PlayerPauseIcon v-if="budget.isActive" :size="18" stroke-width="1.6" />
+                                <PlayerPlayIcon v-else :size="18" stroke-width="1.6" />
+                            </span>
+                            <span class="su-menu-item__title">
+                                {{ budget.isActive ? t('budgetsPage.actions.pause') : t('budgetsPage.actions.resume') }}
+                            </span>
+                        </button>
+                        <button type="button" class="su-menu-item" :disabled="acting" @click="emit('edit', budget)">
+                            <span class="su-menu-item__icon"><PencilIcon :size="18" stroke-width="1.6" /></span>
+                            <span class="su-menu-item__title">{{ t('budgetsPage.actions.edit') }}</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="su-menu-item budget-actions-menu__delete"
+                            :disabled="acting"
+                            @click="emit('delete', budget)"
+                        >
+                            <span class="su-menu-item__icon su-menu-item__icon--danger"><TrashIcon :size="18" stroke-width="1.6" /></span>
+                            <span class="su-menu-item__title">{{ t('budgetsPage.actions.delete') }}</span>
+                        </button>
+                    </v-sheet>
+                </v-menu>
+            </div>
         </div>
-        <div class="budget-row__actions" @click.stop>
-            <v-menu location="bottom end" :offset="8">
-                <template #activator="{ props: menuProps }">
-                    <button v-bind="menuProps" type="button" class="su-orb" :disabled="acting" :aria-label="t('common.more')">
-                        <DotsVerticalIcon size="18" stroke-width="1.75" />
-                    </button>
-                </template>
-                <v-sheet class="su-menu budget-actions-menu">
-                    <button type="button" class="su-btn su-btn--tonal" :disabled="acting" @click="emit('toggleActive', budget)">
-                        <PlayerPauseIcon v-if="budget.isActive" :size="16" stroke-width="1.6" />
-                        <PlayerPlayIcon v-else :size="16" stroke-width="1.6" />
-                        {{ budget.isActive ? t('budgetsPage.actions.pause') : t('budgetsPage.actions.resume') }}
-                    </button>
-                    <button type="button" class="su-btn su-btn--ink" :disabled="acting" @click="emit('edit', budget)">
-                        <PencilIcon :size="16" stroke-width="1.6" />
-                        {{ t('budgetsPage.actions.edit') }}
-                    </button>
-                    <button type="button" class="budget-actions-menu__delete" :disabled="acting" @click="emit('delete', budget)">
-                        {{ t('budgetsPage.actions.delete') }}
-                    </button>
-                </v-sheet>
-            </v-menu>
+        <div class="su-gauge budget-row__gauge" role="img" :aria-label="percentText">
+            <span class="su-gauge__fill" :class="fillClass" :style="{ width: `${barWidth}%` }" />
+        </div>
+        <div class="budget-row__foot">
+            <span class="budget-row__note" :class="note.tone">{{ note.text }}</span>
+            <span class="budget-row__sub">{{ categoryLabel }} · {{ periodeLabel }} · {{ windowText }}</span>
         </div>
     </div>
 </template>
@@ -127,25 +139,16 @@ function onActivate(event: MouseEvent) {
 <style scoped>
 .budget-row {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    flex-direction: column;
+    gap: 8px;
     width: 100%;
     min-width: 0;
-    padding: 12px 12px;
-    box-sizing: border-box;
-    border-radius: var(--radius-surface);
-    color: inherit;
-    position: relative;
-    z-index: 0;
-    background: var(--surface);
-    border: 1px solid var(--stroke);
-    backdrop-filter: var(--blur);
-    box-shadow: var(--shadow-rest);
-    transition:
-        transform 0.5s var(--spring),
-        box-shadow 0.45s var(--ease),
-        background 0.3s var(--ease),
-        border-color 0.3s var(--ease);
+    padding: 16px 0 14px;
+    border-top: 1px solid var(--line);
+    color: var(--ink);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    transition: background 0.15s var(--ease);
 }
 
 .budget-row--editable {
@@ -153,215 +156,131 @@ function onActivate(event: MouseEvent) {
 }
 
 .budget-row:hover {
-    background: var(--surface-hover-soft);
+    background: var(--soft);
 }
 
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .budget-row:hover {
-        z-index: 1;
-        transform: scale(1.008);
-        box-shadow: var(--shadow-hover, var(--shadow-rest));
-    }
+.budget-row:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: -2px;
 }
 
-@media (max-width: 767px) {
-    .budget-row {
-        gap: 10px;
-        padding: 12px 10px;
-        border-radius: 16px;
-    }
+.budget-row.is-paused > :not(.budget-row__head),
+.budget-row.is-paused .budget-row__name,
+.budget-row.is-paused .budget-row__amounts {
+    opacity: 0.55;
 }
 
-.budget-row__icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 38px;
-    height: 38px;
-    margin-top: 1px;
-    border-radius: 12px;
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
-}
-
-.budget-row__icon.is-warn {
-    background: rgba(var(--v-theme-warning), 0.14);
-    color: rgb(var(--v-theme-warning));
-}
-
-.budget-row__icon.is-over {
-    background: rgba(var(--v-theme-error), 0.12);
-    color: rgb(var(--v-theme-error));
-}
-
-.budget-row__icon.is-idle {
-    background: var(--hair);
-    color: var(--ink-muted);
-}
-
-.budget-row__meta {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.budget-row__title {
+.budget-row__head {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
     min-width: 0;
 }
 
 .budget-row__name {
-    margin: 0;
-    min-width: 0;
-    font-size: 14.5px;
-    font-weight: 620;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.budget-row__badge {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    line-height: 1.2;
-    background: var(--hair);
-    color: var(--ink-muted);
-}
-
-.budget-row__badge.is-over {
-    background: rgba(var(--v-theme-error), 0.12);
-    color: rgb(var(--v-theme-error));
-}
-
-.budget-row__badge.is-paused {
-    background: rgba(var(--v-theme-warning), 0.14);
-    color: rgb(var(--v-theme-warning));
-}
-
-.budget-row__sub {
-    margin: 0;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.budget-row__progress {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 4px;
-}
-
-.budget-bar {
     flex: 1 1 auto;
     min-width: 0;
-    height: 7px;
-    border-radius: 999px;
-    background: color-mix(in srgb, rgb(var(--v-theme-primary)) 12%, var(--hair));
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.006em;
+    white-space: nowrap;
     overflow: hidden;
-}
-
-.budget-bar__fill {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: rgb(var(--v-theme-primary));
-}
-
-.budget-bar.is-warn .budget-bar__fill {
-    background: rgb(var(--v-theme-warning));
-}
-
-.budget-bar.is-over .budget-bar__fill {
-    background: rgb(var(--v-theme-error));
-}
-
-.budget-bar.is-idle .budget-bar__fill {
-    background: var(--ink-muted);
-}
-
-.budget-row__percent {
-    flex: none;
-    font-size: 0.75rem;
-    font-weight: 650;
-    letter-spacing: -0.01em;
-    color: var(--ink-muted);
+    text-overflow: ellipsis;
 }
 
 .budget-row__amounts {
-    margin: 2px 0 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 12px;
-    font-size: 0.76rem;
-    color: var(--ink-muted);
+    flex: none;
+    margin: 0;
+    white-space: nowrap;
 }
 
-.budget-row__amounts .is-over {
-    color: rgb(var(--v-theme-error));
-    font-weight: 650;
+.budget-row__spent {
+    font-weight: 700;
+}
+
+.budget-row__limit {
+    color: var(--gray);
 }
 
 .budget-row__actions {
-    display: flex;
     flex: none;
-    align-items: flex-start;
-    justify-content: flex-end;
-    padding: 2px;
-    margin: -2px;
+    display: flex;
+    margin: -8px -8px -8px 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .budget-row__actions {
+        opacity: 0;
+        transition: opacity 0.15s var(--ease);
+    }
+
+    .budget-row:hover .budget-row__actions,
+    .budget-row:focus-within .budget-row__actions {
+        opacity: 1;
+    }
+}
+
+.budget-row__gauge {
+    height: 4px;
+}
+
+.budget-row__foot {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
+    font-size: 13px;
+    color: var(--gray);
+}
+
+.budget-row__note {
+    flex: none;
+}
+
+.budget-row__note.su-over {
+    font-weight: 700;
+}
+
+.budget-row__sub {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: right;
 }
 
 .budget-actions-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: min(176px, calc(100vw - 32px));
-    /* Écrase le padding global .su-menu (8px 6px !important). */
-    padding: 12px !important;
+    width: min(240px, calc(100vw - 32px));
 }
 
-.budget-actions-menu .su-btn {
-    width: 100%;
-}
-
-.budget-actions-menu__delete {
-    appearance: none;
-    display: block;
-    width: 100%;
-    margin: 2px 0 0;
-    padding: 6px 4px;
-    border: 0;
-    background: transparent;
-    color: #e11d48;
-    font: inherit;
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1.3;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.18s var(--ease, ease);
-}
-
-.budget-actions-menu__delete:disabled {
+.budget-actions-menu .su-menu-item:disabled {
     opacity: 0.45;
     cursor: default;
 }
 
-.budget-actions-menu__delete:hover:not(:disabled) {
-    color: #be123c;
-    transform: scale(1.06);
+.budget-actions-menu .su-menu-item__icon--gray {
+    background: var(--t-gray-bg);
+    color: var(--t-gray-ink);
+}
+
+.budget-actions-menu .su-menu-item__icon--danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.budget-actions-menu__delete .su-menu-item__title {
+    color: var(--danger);
+}
+
+@media (max-width: 599.98px) {
+    .budget-row__foot {
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .budget-row__sub {
+        text-align: left;
+    }
 }
 </style>

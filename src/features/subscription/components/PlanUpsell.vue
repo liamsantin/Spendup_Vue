@@ -79,7 +79,7 @@ function openSelector() {
 
 <template>
     <div class="plan-upsell" :class="{ 'plan-upsell--compact': compact }" role="status">
-        <span class="plan-upsell__icon">
+        <span class="su-tile su-tile--blue plan-upsell__icon">
             <SparklesIcon :size="compact ? 16 : 22" stroke-width="1.8" />
         </span>
         <div class="plan-upsell__body">
@@ -93,37 +93,31 @@ function openSelector() {
 </template>
 
 <style scoped>
+/* bannière Swiss : filet 2 px noir au-dessus, pas de fond ni de pointillé */
 .plan-upsell {
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 16px 18px;
-    border-radius: var(--radius-surface, 18px);
-    border: 1px dashed rgba(var(--v-theme-primary), 0.45);
-    background: rgba(var(--v-theme-primary), 0.05);
+    padding: 14px 0 16px;
+    border-top: 1px solid var(--line);
+    background: transparent;
 }
 
 .plan-upsell--compact {
-    padding: 10px 14px;
+    padding: 10px 0;
     gap: 10px;
-    border-radius: 12px;
-}
-
-.plan-upsell__icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: rgba(var(--v-theme-primary), 0.12);
-    color: rgb(var(--v-theme-primary));
+    border-top-width: 1px;
+    border-top-color: var(--line);
 }
 
 .plan-upsell--compact .plan-upsell__icon {
     width: 28px;
     height: 28px;
-    border-radius: 8px;
+}
+
+.plan-upsell--compact .plan-upsell__icon > svg {
+    width: 16px;
+    height: 16px;
 }
 
 .plan-upsell__body {
@@ -133,19 +127,19 @@ function openSelector() {
 
 .plan-upsell__title {
     margin: 0;
-    font-weight: 650;
-    font-size: 0.92rem;
+    font-size: 14px;
+    font-weight: 700;
     letter-spacing: -0.01em;
 }
 
 .plan-upsell--compact .plan-upsell__title {
-    font-size: 0.84rem;
+    font-size: 13px;
 }
 
 .plan-upsell__text {
     margin: 2px 0 0;
-    font-size: 0.82rem;
-    color: var(--ink-muted);
+    color: var(--gray);
+    font-size: 13px;
 }
 
 .plan-upsell__cta {

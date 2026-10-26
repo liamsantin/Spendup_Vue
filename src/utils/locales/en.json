@@ -45,7 +45,8 @@
             "wealth": "Wealth",
             "analytics": "Analytics",
             "network": "Network",
-            "settings": "Settings"
+            "settings": "Settings",
+            "upcoming": "Coming up"
         },
         "items": {
             "dashboard": "Dashboard",
@@ -85,6 +86,7 @@
             "subscription": "Subscription",
             "account": "Account"
         },
+        "shortcuts": "Shortcuts",
         "subCaptions": {
             "soon": "Soon"
         },
@@ -297,7 +299,9 @@
             "subtitle": "Current period.",
             "empty": "No active budget yet.",
             "used": "{percent} used",
-            "overspent": "Over the limit"
+            "overspent": "Over the limit",
+            "monthLabel": "Current budget · {month}",
+            "summary": "{spent} spent of {limit} · {remaining} left"
         },
         "savingsGoals": {
             "title": "Savings goals",
@@ -347,6 +351,11 @@
     "comptesPage": {
         "title": "Accounts",
         "subtitle": "Banks, savings and payment methods",
+        "hero": {
+            "accounts": "{count} account | {count} accounts",
+            "banks": "{count} bank | {count} banks",
+            "netWorth": "Net worth"
+        },
         "tabs": {
             "accounts": "Accounts",
             "invitations": "Invitations"
@@ -694,6 +703,33 @@
     "recurrencesPage": {
         "title": "Recurring",
         "subtitle": "Planned expenses and income. A due becomes a transaction only after you confirm it.",
+        "hero": {
+            "active": "{count} active recurrence | {count} active recurrence | {count} active recurrences",
+            "duesInMonth": "{count} due in {month} | {count} due in {month} | {count} dues in {month}"
+        },
+        "figs": {
+            "fixedPerMonth": "Fixed costs / month",
+            "subscriptionsPerMonth": "Subscriptions / month",
+            "incomesPerMonth": "Recurring income / month",
+            "note": "Monthly equivalent of active recurrences"
+        },
+        "calendar": {
+            "legend": "Legend",
+            "savings": "Savings"
+        },
+        "groups": {
+            "incomes": "Income",
+            "fixed": "Fixed costs",
+            "subscriptions": "Subscriptions",
+            "savings": "Scheduled savings"
+        },
+        "row": {
+            "onDay": "on the {day}",
+            "next": "Next {date}"
+        },
+        "timeline": {
+            "dues": "{count} due | {count} due | {count} dues"
+        },
         "loadMore": "Load more",
         "unknownAccount": "Account",
         "tabs": {
@@ -977,11 +1013,32 @@
             "nameDesc": "Z → A",
             "amountDesc": "Highest",
             "amountAsc": "Lowest"
-        }
+        },
+        "aside": {
+            "figsTitle": "Per month",
+            "nextTitle": "Upcoming dues",
+            "allDues": "All dues",
+            "none": "No upcoming due."
+        },
+        "subnav": "Recurrence views"
     },
     "budgetsPage": {
         "title": "Budgets",
         "subtitle": "Recurring envelopes, current-period tracking and alerts.",
+        "hero": {
+            "monthBudget": "{month} budget",
+            "daysLeft": "{count} day left | {count} day left | {count} days left"
+        },
+        "overview": {
+            "spent": "Spent",
+            "budget": "Budget",
+            "remaining": "Left",
+            "overBy": "Over by",
+            "perDay": "Available per day",
+            "byCategory": "By category",
+            "reached": "Reached",
+            "aggregateNote": "Total of current budgets"
+        },
         "searchPlaceholder": "Search a budget",
         "count": "{count} budget | {count} budget | {count} budgets",
         "tabs": {
@@ -1117,6 +1174,11 @@
     "savingsGoalsPage": {
         "title": "Savings goals",
         "subtitle": "Tracked amount = opening plus explicitly linked transactions.",
+        "card": {
+            "saved": "Saved",
+            "target": "Target",
+            "dueDate": "Due date"
+        },
         "searchPlaceholder": "Search a goal",
         "count": "{count} goal | {count} goal | {count} goals",
         "tabs": {
@@ -1568,6 +1630,14 @@
             "organization": "Association, foundation, club",
             "administration": "Municipality, tax office, fund",
             "unknown": "The type is not clear yet"
+        },
+        "naturesPlural": {
+            "all": "Counterparties",
+            "person": "People",
+            "company": "Companies",
+            "organization": "Organizations",
+            "administration": "Administrations",
+            "unknown": "Unspecified"
         },
         "natures": {
             "person": "Person",
@@ -2031,6 +2101,19 @@
             }
         },
         "count": "{count} transaction | {count} transactions",
+        "operations": "{count} operation | {count} operation | {count} operations",
+        "shownOf": "{shown} of {total} transactions shown",
+        "typeTabs": {
+            "all": "All",
+            "revenu": "Income",
+            "depense": "Purchases",
+            "transfert": "Transfers"
+        },
+        "figures": {
+            "inflow": "Income",
+            "outflow": "Purchases",
+            "net": "Net balance"
+        },
         "sortDir": {
             "asc": "Ascending",
             "desc": "Descending"

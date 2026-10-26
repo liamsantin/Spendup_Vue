@@ -460,13 +460,13 @@ watch(open, (value) => {
     max-width: calc(100% - 28px);
     padding: 0 4px;
     overflow: hidden;
-    background: var(--surface-raised);
-    color: var(--ink-mute);
+    background: var(--raise);
+    color: var(--ink);
     font-family: var(--font-ui);
     font-size: 13px;
-    font-weight: 560;
+    font-weight: 400;
     line-height: 1;
-    letter-spacing: 0.009em;
+    letter-spacing: 0;
     white-space: nowrap;
     text-overflow: ellipsis;
     pointer-events: none;
@@ -483,15 +483,15 @@ watch(open, (value) => {
     justify-content: space-between;
     gap: 12px;
     width: 100%;
-    min-height: 48px;
-    padding: 0 14px 0 16px;
-    border: 1px solid var(--thread);
-    border-radius: var(--radius-field);
-    background: var(--surface-raised);
+    min-height: 42px;
+    padding: 0 12px 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--raise);
     color: var(--ink);
     font: inherit;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 400;
     line-height: 1.5;
     text-align: left;
     cursor: text;
@@ -502,15 +502,15 @@ watch(open, (value) => {
 }
 
 .app-select__control:hover:not(:has(.app-select__input:disabled)) {
-    background: var(--surface-hover);
-    border-color: rgba(var(--v-theme-primary), 0.3);
+    background: var(--raise);
+    border-color: var(--gray);
 }
 
 .app-select__control:focus-within,
 .app-select__control--open {
     outline: none;
-    border-color: rgba(var(--v-theme-primary), 0.55);
-    box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.1);
+    border-color: var(--ink);
+    box-shadow: none;
 }
 
 .app-select--error .app-select__control {
@@ -518,10 +518,10 @@ watch(open, (value) => {
 }
 
 .app-select--disabled .app-select__control {
-    background: var(--hair);
-    color: var(--ink-muted);
+    background: var(--soft);
+    color: var(--gray);
     cursor: default;
-    opacity: 0.68;
+    opacity: 1;
 }
 
 .app-select__field {
@@ -539,8 +539,8 @@ watch(open, (value) => {
 .app-select__ghost,
 .app-select__input {
     font: inherit;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 400;
     line-height: 24px;
 }
 
@@ -619,8 +619,8 @@ watch(open, (value) => {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: rgb(var(--v-theme-primary));
-    font-weight: 600;
+    color: var(--blue-ink);
+    font-weight: 700;
 }
 
 .app-select__menu {
