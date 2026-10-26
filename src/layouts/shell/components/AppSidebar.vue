@@ -27,7 +27,7 @@ const props = withDefaults(
 
 /** Desktop : colonne déployée (sinon rail d'icônes) ; mobile : volet ouvert. */
 const open = defineModel<boolean>('open', { default: false });
-/** Conservé pour l'API du shell : groupe « courant » (dérivé de la route). */
+/** Section dépliée (une seule à la fois) : suit la route, puis les clics. */
 const openId = defineModel<string | null>('openId', { default: null });
 /** Entrée terminale sélectionnée. */
 const activeId = defineModel<string | null>('activeId', { default: null });
@@ -45,22 +45,9 @@ function toggle() {
     open.value = !open.value;
 }
 
-/* groupes repliables (annoncés) : fermés par défaut, ouverts à la demande ou quand ils portent la page courante */
-const expanded = ref<Set<string>>(new Set());
-
-function isGroupOpen(item: NavItem): boolean {
-    return expanded.value.has(item.id) || openId.value === item.id;
-}
-
+/* accordéon : un clic sur une section la déplie et replie l'autre ; un second clic la referme */
 function toggleItem(item: NavItem) {
-    const next = new Set(expanded.value);
-    if (isGroupOpen(item)) {
-        next.delete(item.id);
-        if (openId.value === item.id) openId.value = null;
-    } else {
-        next.add(item.id);
-    }
-    expanded.value = next;
+    openId.value = openId.value === item.id ? null : item.id;
 }
 
 function selectLeaf(leaf: NavLeafType) {
@@ -77,10 +64,8 @@ function openTab(item: NavItem) {
         return;
     }
     open.value = true;
-    if (item.muted) expanded.value = new Set(expanded.value).add(item.id);
+    openId.value = item.id;
 }
-
-const generalLabel = computed(() => t('nav.headers.general'));
 
 /* ── overlay mobile : scroll, focus, échappement ───────── */
 useScrollLock(() => open.value && isMobile.value);
@@ -148,11 +133,10 @@ void props;
                             v-for="(item, i) in items"
                             :key="item.id"
                             :item="item"
-                            :open="isGroupOpen(item)"
+                            :open="openId === item.id"
                             :active-id="activeId"
                             :expanded="expandedRail"
                             :index="i"
-                            :group-label="generalLabel"
                             @toggle="toggleItem"
                             @select="selectLeaf"
                             @tab="openTab"
@@ -166,11 +150,10 @@ void props;
                             v-for="(item, i) in bottomItems"
                             :key="item.id"
                             :item="item"
-                            :open="isGroupOpen(item)"
+                            :open="openId === item.id"
                             :active-id="activeId"
                             :expanded="expandedRail"
                             :index="i + items.length"
-                            row-toggle
                             @toggle="toggleItem"
                             @select="selectLeaf"
                             @tab="openTab"

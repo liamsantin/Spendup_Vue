@@ -3,32 +3,29 @@ import { computed, useId } from 'vue';
 import BaseIcon from './BaseIcon.vue';
 import NavLeaf from './NavLeaf.vue';
 import ShellNavIcon from './ShellNavIcon.vue';
+import { useLinkTag } from '../composables/useLinkTag';
 import type { NavItem, NavLeaf as NavLeafType } from '../types/navigation';
 
 /**
- * Groupe de navigation Swiss : libellé de groupe 12 px gris, puis entrées de 40 px
- * séparées par un filet fin. Une entrée sans enfants (Tableau de bord) est rendue
- * seule, sous son propre libellé. Les groupes annoncés (`muted`) sont repliables
- * et fermés par défaut ; en bas de colonne (`rowToggle`) le déclencheur prend la
- * forme d'une entrée (icône + libellé), façon « Paramètres ».
+ * Rangée de section Swiss, même comportement que l'ancienne colonne : icône 16 px,
+ * libellé 14 px et chevron sur 40 px ; un clic déplie ses pages en accordéon (une
+ * seule section ouverte à la fois, arbitrée par le parent). Une section sans
+ * enfants (Tableau de bord) est un lien.
  *
- * Rail replié (`expanded = false`) : le groupe ne montre plus que l'icône de sa
- * section, en carré de 40 px ; libellé et liste restent dans le DOM et s'effacent
- * en opacité, pour que le repli glisse sans reconstruire la colonne.
+ * Rail replié (`expanded = false`) : la rangée devient un carré de 40 px avec sa
+ * seule icône ; libellé, chevron et liste restent dans le DOM et s'effacent en
+ * opacité, pour que le repli glisse sans reconstruire la colonne. Un clic sur
+ * l'icône redéploie la colonne sur cette section.
  */
 const props = defineProps<{
     item: NavItem;
-    /** Groupe déplié (groupes repliables uniquement). */
+    /** Section dépliée. */
     open?: boolean;
     /** Feuille sélectionnée. */
     activeId?: string | null;
     /** Colonne déployée ; repliée, seule l'icône de section reste. */
     expanded?: boolean;
     index?: number;
-    /** Libellé affiché au-dessus d'une entrée sans enfants. */
-    groupLabel?: string;
-    /** Déclencheur rendu comme une entrée de 40 px (icône + libellé) plutôt qu'un libellé de groupe. */
-    rowToggle?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -41,72 +38,57 @@ const emit = defineEmits<{
 const subId = useId();
 const compact = computed(() => props.expanded === false);
 const hasChildren = computed(() => !!props.item.children?.length);
-const collapsible = computed(() => hasChildren.value && !!props.item.muted);
 /* replié, toutes les listes se ferment : seule l'icône de section reste visible */
-const isOpen = computed(() => !compact.value && (!collapsible.value || !!props.open));
+const isOpen = computed(() => hasChildren.value && !!props.open && !compact.value);
 const childActive = computed(() => !!props.item.children?.some((child) => child.id === props.activeId));
-const sectionActive = computed(() => childActive.value || props.activeId === props.item.id);
+const isCurrent = computed(() => childActive.value || props.activeId === props.item.id);
+/** Une section à sous-menu reste un bouton : son rôle est de déplier, pas de naviguer. */
+const { tag, attrs } = useLinkTag(
+    () => props.item,
+    () => hasChildren.value
+);
 
-function subLabel(index: number): string | null {
-    const child = props.item.children?.[index];
-    if (!child?.group) return null;
-    const previous = props.item.children?.[index - 1];
-    return previous?.group === child.group ? null : child.group;
+function onRowClick() {
+    if (compact.value) {
+        emit('tab', props.item);
+        return;
+    }
+    if (hasChildren.value) {
+        emit('toggle', props.item);
+        return;
+    }
+    if (!props.item.disabled) emit('select', props.item);
 }
 </script>
 
 <template>
-    <li class="group" :class="{ 'is-muted': item.muted, 'is-open': isOpen, 'group--row': rowToggle, 'is-compact': compact }">
-        <div class="group__head">
-            <!-- icône de section : à gauche du libellé déployée, seule visible dans le rail replié -->
-            <button
-                type="button"
-                class="group__tab"
-                :class="{ 'is-current': sectionActive }"
-                :title="item.label"
-                :aria-label="item.label"
-                :tabindex="compact ? 0 : -1"
-                :aria-hidden="!compact || undefined"
-                @click="emit('tab', item)"
-            >
-                <ShellNavIcon :icon="item.icon" :size="compact ? 18 : 16" />
-            </button>
-
-            <!-- libellé de groupe : texte simple, ou bouton quand le groupe est repliable -->
-            <button
-                v-if="collapsible"
-                type="button"
-                class="group__label group__label--toggle"
-                :class="{ 'is-current': childActive }"
-                :tabindex="compact ? -1 : 0"
-                :aria-hidden="compact || undefined"
-                :aria-expanded="isOpen"
-                :aria-controls="subId"
-                @click="emit('toggle', item)"
-            >
-                <span class="group__text">{{ item.label }}</span>
-                <span v-if="item.badge" class="group__badge">{{ item.badge }}</span>
-                <BaseIcon name="chevron-right" :size="14" class="group__chev" />
-            </button>
-            <p v-else class="group__label" :aria-hidden="compact || undefined">
-                <span class="group__text">{{ hasChildren ? item.label : (groupLabel ?? item.label) }}</span>
-                <span v-if="item.badge" class="group__badge">{{ item.badge }}</span>
-            </p>
-        </div>
+    <li class="group" :class="{ 'is-open': isOpen, 'is-compact': compact, 'is-muted': item.muted }">
+        <component
+            :is="tag"
+            v-bind="attrs"
+            class="row"
+            :class="{ 'is-current': isCurrent, 'is-disabled': item.disabled }"
+            :title="compact ? item.label : undefined"
+            :aria-label="compact ? item.label : undefined"
+            :aria-expanded="hasChildren && !compact ? isOpen : undefined"
+            :aria-controls="hasChildren ? subId : undefined"
+            :aria-current="!hasChildren && isCurrent && !item.disabled ? 'page' : undefined"
+            :aria-disabled="item.disabled ? 'true' : undefined"
+            @click="onRowClick"
+        >
+            <span class="row__icon"><ShellNavIcon :icon="item.icon" :size="compact ? 18 : 16" /></span>
+            <span class="row__label">{{ item.label }}</span>
+            <span v-if="item.badge" class="row__badge">{{ item.badge }}</span>
+            <span v-else-if="item.caption" class="row__caption">{{ item.caption }}</span>
+            <BaseIcon v-else-if="hasChildren" name="chevron-right" :size="14" class="row__chev" />
+            <span v-else-if="isCurrent" class="row__mark" aria-hidden="true" />
+        </component>
 
         <!-- un seul enfant de grille : la hauteur 0fr se replie proprement -->
-        <div :id="subId" class="group__fold" :inert="!isOpen || undefined" :aria-hidden="!isOpen || undefined">
-            <ul v-if="hasChildren" class="group__list">
-                <template v-for="(child, ci) in item.children" :key="child.id">
-                    <li v-if="subLabel(ci)" class="group__sublabel">{{ subLabel(ci) }}</li>
-                    <li>
-                        <NavLeaf :leaf="child" :active="activeId === child.id" :nested="!!child.group" @select="emit('select', $event)" />
-                    </li>
-                </template>
-            </ul>
-            <ul v-else class="group__list">
-                <li>
-                    <NavLeaf :leaf="item" :active="activeId === item.id" @select="emit('select', $event)" />
+        <div v-if="hasChildren" :id="subId" class="fold" :inert="!isOpen || undefined" :aria-hidden="!isOpen || undefined">
+            <ul class="fold__list">
+                <li v-for="child in item.children" :key="child.id">
+                    <NavLeaf :leaf="child" :active="activeId === child.id" @select="emit('select', $event)" />
                 </li>
             </ul>
         </div>
@@ -121,126 +103,124 @@ function subLabel(index: number): string | null {
 }
 
 .group + .group {
-    margin-top: 20px;
     transition: margin-top var(--dur-expand) var(--ease);
 }
 
-/* l'en-tête porte l'icône de section et le libellé : déployé, l'icône (16 px) précède
-   le texte ; replié, elle grandit en carré de 40 px et le libellé s'efface */
-.group__head {
-    position: relative;
-    margin-bottom: 8px;
-    min-height: 0;
-    transition: min-height var(--dur-expand) var(--ease);
+/* les rangées se suivent, séparées par un filet fin */
+.group + .group .row {
+    border-top-color: var(--line);
 }
 
-.group--row .group__head {
-    margin-bottom: 0;
-}
-
-.group__tab {
+.row {
     appearance: none;
-    position: absolute;
-    top: 50%;
-    left: 0;
-    display: grid;
-    place-items: center;
-    width: 16px;
-    height: 16px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 40px;
+    margin: 0;
     padding: 0;
     border: 0;
+    border-top: 1px solid transparent;
     background: transparent;
-    color: var(--gray);
-    cursor: pointer;
-    transform: translateY(-50%);
-    /* décoratif tant que la colonne est déployée : c'est le libellé qui agit */
-    pointer-events: none;
-    transition:
-        width var(--dur-expand) var(--ease),
-        height var(--dur-expand) var(--ease),
-        color 0.15s var(--ease),
-        background 0.15s var(--ease);
-}
-
-.group__tab :deep(svg) {
-    display: block;
-    --rail-icon-tone-stroke: currentColor;
-}
-
-.group--row .group__tab {
-    color: var(--ink-mute);
-}
-
-.group__tab.is-current,
-.group--row .group__tab.is-current {
-    color: var(--blue);
-}
-
-/* survol du libellé repliable : l'icône fonce avec le texte */
-.group__head:has(.group__label--toggle:hover) .group__tab:not(.is-current) {
     color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    text-align: left;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+        padding-left var(--dur-expand) var(--ease),
+        border-color 0.2s var(--ease),
+        background 0.15s var(--ease),
+        color 0.15s var(--ease);
 }
 
-.group__tab:focus-visible {
+.row:hover {
+    background: var(--soft);
+}
+
+.row:focus-visible {
     outline: 2px solid var(--ink);
     outline-offset: -2px;
 }
 
-.group__label {
-    appearance: none;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    margin: 0;
-    /* place de l'icône de section (16 px) et de son écart */
-    padding: 0 0 0 24px;
-    border: 0;
-    background: transparent;
-    color: var(--gray);
-    font: inherit;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 1.2;
-    text-align: left;
-    cursor: default;
-    transition:
-        opacity 0.2s var(--ease),
-        visibility 0s linear 0s;
+/* section de la page courante : graisse 700, icône bleue */
+.row.is-current {
+    font-weight: 700;
 }
 
-.group__text {
+.row.is-current .row__icon {
+    color: var(--blue);
+}
+
+.row.is-disabled {
+    cursor: not-allowed;
+    color: var(--gray);
+}
+
+.row.is-disabled:hover {
+    background: transparent;
+}
+
+/* section annoncée : en retrait, en gris */
+.is-muted .row {
+    color: var(--gray);
+}
+
+.row__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    color: var(--ink-mute);
+    --rail-icon-tone-stroke: currentColor;
+    transition:
+        width var(--dur-expand) var(--ease),
+        height var(--dur-expand) var(--ease),
+        color 0.15s var(--ease);
+}
+
+.is-muted .row__icon {
+    color: var(--gray);
+}
+
+.row__icon :deep(svg) {
+    display: block;
+}
+
+.row__label {
     flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
-.group__label--toggle {
-    cursor: pointer;
-    min-height: 24px;
-}
-
-.group__label--toggle:hover {
-    color: var(--ink);
-}
-
-.group__label--toggle:focus-visible {
-    outline: 2px solid var(--ink);
-    outline-offset: 2px;
-}
-
-.group__chev {
+.row__caption {
     flex: none;
-    transition: transform 0.2s var(--ease);
+    color: var(--gray);
+    font-size: 12px;
+    font-weight: 400;
 }
 
-.is-open .group__chev {
+.row__chev {
+    flex: none;
+    color: var(--gray);
+    transition:
+        transform 0.2s var(--ease),
+        opacity 0.2s var(--ease);
+}
+
+.is-open .row__chev {
     transform: rotate(90deg);
 }
 
-.group__badge {
+.row__badge {
     flex: none;
     display: grid;
     place-items: center;
@@ -254,99 +234,89 @@ function subLabel(index: number): string | null {
     font-weight: 700;
 }
 
-/* déclencheur-entrée (bas de colonne) : 40 px, icône 16 px, libellé 14 px noir */
-.group--row .group__label--toggle {
-    gap: 12px;
-    min-height: 40px;
-    margin: 0;
-    padding-left: 28px;
-    color: var(--ink);
-    font-size: 14px;
+.row__mark {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    background: var(--blue);
 }
 
-.group--row .group__label--toggle.is-current {
-    font-weight: 700;
+/* ce qui n'est pas l'icône s'efface au repli, et revient après l'élargissement */
+.row__label,
+.row__caption,
+.row__chev,
+.row__badge,
+.row__mark {
+    transition:
+        opacity 0.2s var(--ease) 0.1s,
+        visibility 0s linear 0s;
 }
 
-.group--row .group__label--toggle:hover {
-    background: var(--soft);
-}
-
-.group__fold {
+.fold {
     display: grid;
-    grid-template-rows: 1fr;
+    grid-template-rows: 0fr;
     transition:
         grid-template-rows 0.25s var(--ease),
         opacity 0.2s var(--ease);
 }
 
-.group:not(.is-open) .group__fold {
-    grid-template-rows: 0fr;
+.is-open .fold {
+    grid-template-rows: 1fr;
 }
 
-.group__list {
+/* pages de la section, en retrait de l'icône */
+.fold__list {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0 0 0 28px;
     min-height: 0;
     overflow: hidden;
 }
 
-.group__list > li:last-child {
-    border-bottom: 1px solid var(--line);
-}
-
-.group--row .group__list > li:last-child {
-    border-bottom: 0;
-}
-
-.group__sublabel {
-    padding: 12px 0 6px;
-    color: var(--gray);
-    font-size: 12px;
-    border-top: 1px solid var(--line);
-}
-
-.group__sublabel + li :deep(.leaf) {
-    border-top: 0;
-}
-
-/* ── rail replié : l'icône de section remplace libellé et liste, sans changer le DOM ── */
+/* ── rail replié : l'icône seule, en carré de 40 px, sans changer le DOM ── */
 .is-compact + .is-compact {
     margin-top: 4px;
 }
 
-.is-compact .group__head {
-    min-height: 40px;
-    margin-bottom: 0;
+.is-compact .row {
+    /* (40 − 18) / 2 : l'icône est centrée dans le carré */
+    padding-left: 11px;
+    border-top-color: transparent;
 }
 
-/* l'icône devient le bouton de la section : carré de 40 px, pictogramme 18 px, encre noire */
-.is-compact .group__tab {
-    width: 40px;
-    height: 40px;
+.is-compact .row__icon {
+    width: 18px;
+    height: 18px;
     color: var(--ink);
-    pointer-events: auto;
 }
 
-.is-compact .group__tab.is-current {
+.is-compact .row.is-current .row__icon {
     color: var(--blue);
 }
 
-.is-compact .group__tab:hover {
-    background: var(--soft);
-}
-
-.is-compact .group__label {
+.is-compact .row__label,
+.is-compact .row__caption,
+.is-compact .row__chev,
+.is-compact .row__badge,
+.is-compact .row__mark {
     opacity: 0;
     visibility: hidden;
-    pointer-events: none;
     transition:
         opacity 0.15s var(--ease),
         visibility 0s linear 0.15s;
 }
 
-.is-compact .group__fold {
+.is-compact .fold {
     opacity: 0;
+}
+
+@media (max-width: 767px) {
+    .row {
+        min-height: 46px;
+        font-size: 15px;
+    }
+    .row:hover {
+        background: transparent;
+    }
 }
 </style>

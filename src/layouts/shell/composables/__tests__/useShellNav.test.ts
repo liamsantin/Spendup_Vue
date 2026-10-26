@@ -33,21 +33,21 @@ describe('idsFromPath', () => {
         });
     });
 
-    it('mappe les récurrences dans la section Finances', () => {
+    it('mappe les récurrences dans leur propre section', () => {
         expect(idsFromPath('/app/finances/recurrences')).toEqual({
-            openId: SHELL_NAV_IDS.finances,
+            openId: SHELL_NAV_IDS.recurrences,
             activeId: SHELL_NAV_IDS.recurrencesOverview
         });
         expect(idsFromPath('/app/finances/recurrences/charges')).toEqual({
-            openId: SHELL_NAV_IDS.finances,
+            openId: SHELL_NAV_IDS.recurrences,
             activeId: SHELL_NAV_IDS.recurrencesExpenses
         });
         expect(idsFromPath('/app/finances/recurrences/revenus')).toEqual({
-            openId: SHELL_NAV_IDS.finances,
+            openId: SHELL_NAV_IDS.recurrences,
             activeId: SHELL_NAV_IDS.recurrencesIncomes
         });
         expect(idsFromPath('/app/finances/recurrences/echeances')).toEqual({
-            openId: SHELL_NAV_IDS.finances,
+            openId: SHELL_NAV_IDS.recurrences,
             activeId: SHELL_NAV_IDS.recurrencesUpcoming
         });
     });

@@ -70,7 +70,7 @@ const tabs = computed<{ left: SectionTab[]; right: SectionTab[] }>(() => ({
             id: 'finances',
             label: t('nav.tabBar.finances'),
             icon: FinancesNavIcon,
-            sections: [SHELL_NAV_IDS.finances],
+            sections: [SHELL_NAV_IDS.finances, SHELL_NAV_IDS.recurrences],
             root: '/app/finances/transactions'
         }
     ],

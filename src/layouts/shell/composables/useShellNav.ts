@@ -10,6 +10,7 @@ import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import {
     AccountNavIcon,
     AccountsNavIcon,
+    AnalyticsNavIcon,
     AssetsNavIcon,
     BudgetsNavIcon,
     CalendarNavIcon,
@@ -26,6 +27,7 @@ import {
     GoalsNavIcon,
     HouseholdNavIcon,
     ImportNavIcon,
+    NetworkNavIcon,
     InvestmentsNavIcon,
     NotificationsNavIcon,
     BanksNavIcon,
@@ -37,6 +39,7 @@ import {
     RealEstateNavIcon,
     RecurrencesExpensesNavIcon,
     RecurrencesIncomesNavIcon,
+    RecurrencesNavIcon,
     RecurrencesOverviewNavIcon,
     RecurrencesUpcomingNavIcon,
     SecurityNavIcon,
@@ -45,7 +48,7 @@ import {
     TaxNavIcon,
     TiersNavIcon,
     TransactionsNavIcon,
-    UpcomingNavIcon,
+    WealthNavIcon,
     WealthOverviewNavIcon
 } from '../solarNavIcons';
 import type { NavIcon, NavItem, NavLeaf } from '../types/navigation';
@@ -108,16 +111,16 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
         return { openId: SHELL_NAV_IDS.calendar, activeId: SHELL_NAV_IDS.calendar };
     }
     if (pathIs(path, RECURRENCES_PATHS.charges)) {
-        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.recurrencesExpenses };
+        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesExpenses };
     }
     if (pathIs(path, RECURRENCES_PATHS.revenus)) {
-        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.recurrencesIncomes };
+        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesIncomes };
     }
     if (pathIs(path, RECURRENCES_PATHS.echeances)) {
-        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.recurrencesUpcoming };
+        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesUpcoming };
     }
     if (pathIs(path, RECURRENCES_PATHS.overview)) {
-        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.recurrencesOverview };
+        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesOverview };
     }
     if (pathIs(path, '/app/finances/transactions')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.transactions };
@@ -212,35 +215,14 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.banks, t('nav.items.banks'), BanksNavIcon, '/app/finances/banques'),
         live(SHELL_NAV_IDS.paymentMethods, t('nav.items.paymentMethods'), PaymentMethodsNavIcon, '/app/finances/moyens-de-paiement'),
         live(SHELL_NAV_IDS.transactions, t('nav.items.transactions'), TransactionsNavIcon, '/app/finances/transactions'),
-        live(SHELL_NAV_IDS.import, t('nav.items.import'), ImportNavIcon, IMPORTS_PATHS.list),
-        live(
-            SHELL_NAV_IDS.recurrencesOverview,
-            t('nav.items.recurrencesOverview'),
-            RecurrencesOverviewNavIcon,
-            RECURRENCES_PATHS.overview,
-            t('nav.headers.recurrences')
-        ),
-        live(
-            SHELL_NAV_IDS.recurrencesExpenses,
-            t('nav.items.recurrencesExpenses'),
-            RecurrencesExpensesNavIcon,
-            RECURRENCES_PATHS.charges,
-            t('nav.headers.recurrences')
-        ),
-        live(
-            SHELL_NAV_IDS.recurrencesIncomes,
-            t('nav.items.recurrencesIncomes'),
-            RecurrencesIncomesNavIcon,
-            RECURRENCES_PATHS.revenus,
-            t('nav.headers.recurrences')
-        ),
-        live(
-            SHELL_NAV_IDS.recurrencesUpcoming,
-            t('nav.items.recurrencesUpcoming'),
-            RecurrencesUpcomingNavIcon,
-            RECURRENCES_PATHS.echeances,
-            t('nav.headers.recurrences')
-        )
+        live(SHELL_NAV_IDS.import, t('nav.items.import'), ImportNavIcon, IMPORTS_PATHS.list)
+    ]);
+
+    const recurrencesLeaves = computed<NavLeaf[]>(() => [
+        live(SHELL_NAV_IDS.recurrencesOverview, t('nav.items.recurrencesOverview'), RecurrencesOverviewNavIcon, RECURRENCES_PATHS.overview),
+        live(SHELL_NAV_IDS.recurrencesExpenses, t('nav.items.recurrencesExpenses'), RecurrencesExpensesNavIcon, RECURRENCES_PATHS.charges),
+        live(SHELL_NAV_IDS.recurrencesIncomes, t('nav.items.recurrencesIncomes'), RecurrencesIncomesNavIcon, RECURRENCES_PATHS.revenus),
+        live(SHELL_NAV_IDS.recurrencesUpcoming, t('nav.items.recurrencesUpcoming'), RecurrencesUpcomingNavIcon, RECURRENCES_PATHS.echeances)
     ]);
 
     const gestionLeaves = computed<NavLeaf[]>(() => [
@@ -256,15 +238,22 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.goals, t('nav.items.goals'), GoalsNavIcon, SAVINGS_GOALS_PATHS.list)
     ]);
 
-    const upcomingLeaves = computed<NavLeaf[]>(() => [
-        upcoming(SHELL_NAV_IDS.wealthOverview, t('nav.items.wealthOverview'), WealthOverviewNavIcon, t('nav.headers.wealth')),
-        upcoming(SHELL_NAV_IDS.assets, t('nav.items.assets'), AssetsNavIcon, t('nav.headers.wealth')),
-        upcoming(SHELL_NAV_IDS.investments, t('nav.items.investments'), InvestmentsNavIcon, t('nav.headers.wealth')),
-        upcoming(SHELL_NAV_IDS.realEstate, t('nav.items.realEstate'), RealEstateNavIcon, t('nav.headers.wealth')),
-        upcoming(SHELL_NAV_IDS.debts, t('nav.items.debts'), DebtsNavIcon, t('nav.headers.wealth')),
-        upcoming(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), ForecastsNavIcon, t('nav.headers.analytics')),
-        upcoming(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon, t('nav.headers.analytics')),
-        upcoming(SHELL_NAV_IDS.household, t('nav.items.household'), HouseholdNavIcon, t('nav.headers.network'))
+    const wealthLeaves = computed<NavLeaf[]>(() => [
+        upcoming(SHELL_NAV_IDS.wealthOverview, t('nav.items.wealthOverview'), WealthOverviewNavIcon),
+        upcoming(SHELL_NAV_IDS.assets, t('nav.items.assets'), AssetsNavIcon),
+        upcoming(SHELL_NAV_IDS.investments, t('nav.items.investments'), InvestmentsNavIcon),
+        upcoming(SHELL_NAV_IDS.realEstate, t('nav.items.realEstate'), RealEstateNavIcon),
+        upcoming(SHELL_NAV_IDS.debts, t('nav.items.debts'), DebtsNavIcon)
+    ]);
+
+    const analyticsLeaves = computed<NavLeaf[]>(() => [
+        upcoming(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), ForecastsNavIcon),
+        upcoming(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon)
+    ]);
+
+    const networkLeaves = computed<NavLeaf[]>(() => [
+        live(SHELL_NAV_IDS.friends, t('nav.items.friends'), FriendsNavIcon, '/app/friends'),
+        upcoming(SHELL_NAV_IDS.household, t('nav.items.household'), HouseholdNavIcon)
     ]);
 
     const settingsLeaves = computed<NavLeaf[]>(() => [
@@ -277,12 +266,17 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.account, t('nav.items.account'), AccountNavIcon, SETTINGS_PATHS.account)
     ]);
 
+    /* Une rangée par section, comme l'ancienne colonne : un clic déplie ses pages (accordéon).
+       Patrimoine et Analyses sont annoncées (`muted`) : toutes leurs pages sont à venir. */
     const primaryNav = computed<NavItem[]>(() => [
         live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardNavIcon, '/app'),
         section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesNavIcon, financeLeaves.value),
-        section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), PlanningNavIcon, planningLeaves.value),
+        section(SHELL_NAV_IDS.recurrences, t('nav.headers.recurrences'), RecurrencesNavIcon, recurrencesLeaves.value),
         section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionNavIcon, gestionLeaves.value),
-        section(SHELL_NAV_IDS.upcoming, t('nav.headers.upcoming'), UpcomingNavIcon, upcomingLeaves.value, true)
+        section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), PlanningNavIcon, planningLeaves.value),
+        section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), WealthNavIcon, wealthLeaves.value, true),
+        section(SHELL_NAV_IDS.analytics, t('nav.headers.analytics'), AnalyticsNavIcon, analyticsLeaves.value, true),
+        section(SHELL_NAV_IDS.network, t('nav.headers.network'), NetworkNavIcon, networkLeaves.value)
     ]);
 
     const headerLinks = computed<NavLeaf[]>(() => [
