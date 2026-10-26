@@ -17,7 +17,7 @@ import {
     UsersIcon,
     WalletIcon
 } from 'vue-tabler-icons';
-import type { Component } from 'vue';
+import { computed, ref, type Component } from 'vue';
 import {
     appScreenshot,
     spendupAdditionalDomains,
@@ -146,11 +146,15 @@ const [dailyJourney, planJourney, ...laterJourneys] = journeys;
 
 /** Planche du hero : un aperçu de l’étendue du produit, en vraies captures. */
 const heroShots = [
-    appScreenshot('budgets.jpg', 'Budgets'),
-    appScreenshot('categories.jpg', 'Catégories'),
-    appScreenshot('recurring.jpg', 'Récurrences'),
-    appScreenshot('calendar.jpg', 'Calendrier')
+    { ...appScreenshot('budgets.jpg', 'Budgets'), caption: 'Suivez chaque enveloppe et ce qu’il reste à dépenser.' },
+    { ...appScreenshot('categories.jpg', 'Catégories'), caption: 'Classez vos dépenses et revenus dans votre propre arbre.' },
+    { ...appScreenshot('recurring.jpg', 'Récurrences'), caption: 'Loyer, salaire, abonnements : tout ce qui revient, au même endroit.' },
+    { ...appScreenshot('calendar.jpg', 'Calendrier'), caption: 'Le mois en un coup d’œil, avec revenus, charges et échéances.' }
 ];
+
+/** Vitrine : une capture affichée en grand, choisie dans la liste des écrans. */
+const activeShotIndex = ref(0);
+const activeShot = computed(() => heroShots[activeShotIndex.value]);
 
 const securityItems = [
     'Aucun identifiant bancaire demandé',
@@ -187,12 +191,45 @@ const securityItems = [
                         </p>
                     </div>
 
-                    <ul class="features-hero__sheet su-hero-visual-in" style="--su-in-delay: 160ms" aria-label="Aperçu de l’application">
-                        <li v-for="shot in heroShots" :key="shot.src">
-                            <img :src="shot.src" :alt="`Écran ${shot.alt} de Spend.Up`" width="2160" height="1350" />
-                            <span>{{ shot.alt }}</span>
-                        </li>
-                    </ul>
+                    <div class="features-showcase su-hero-visual-in" style="--su-in-delay: 160ms">
+                        <div class="features-showcase__tabs" role="tablist" aria-label="Aperçu de l’application">
+                            <button
+                                v-for="(shot, index) in heroShots"
+                                :id="`showcase-tab-${index}`"
+                                :key="shot.src"
+                                type="button"
+                                role="tab"
+                                class="features-showcase__tab"
+                                :class="{ 'features-showcase__tab--active': index === activeShotIndex }"
+                                :aria-selected="index === activeShotIndex"
+                                aria-controls="showcase-panel"
+                                @click="activeShotIndex = index"
+                            >
+                                <span class="features-showcase__number">{{ String(index + 1).padStart(2, '0') }}</span>
+                                <span class="features-showcase__label">{{ shot.alt }}</span>
+                                <span class="features-showcase__caption">{{ shot.caption }}</span>
+                            </button>
+                        </div>
+
+                        <a
+                            id="showcase-panel"
+                            role="tabpanel"
+                            class="features-showcase__panel"
+                            :aria-labelledby="`showcase-tab-${activeShotIndex}`"
+                            :href="activeShot.src"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            <img
+                                :key="activeShot.src"
+                                :src="activeShot.src"
+                                :alt="`Écran ${activeShot.alt} de Spend.Up`"
+                                width="2160"
+                                height="1350"
+                            />
+                        </a>
+                        <p class="features-showcase__mobile-caption">{{ activeShot.caption }}</p>
+                    </div>
                 </div>
             </div>
         </section>

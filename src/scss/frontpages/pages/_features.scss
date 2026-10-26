@@ -1,6 +1,6 @@
 /*
  * Page Fonctionnalités — style suisse.
- * Hero (planche de captures) → navigation collante → parcours 01 (texte + capture à fond perdu)
+ * Hero (vitrine de captures) → navigation collante → parcours 01 (texte + capture à fond perdu)
  * → parcours 02 (captures en paire) → parcours 03-04 côte à côte → domaines en détail
  * → sécurité → appel final. Grille, filets et utilitaires dans frontpages/_swiss.scss.
  */
@@ -11,6 +11,7 @@ $hairline: #dedede;
 $white: #ffffff;
 $red: #e4002b;
 $tint: #f4f4f2;
+$primary: rgb(var(--v-theme-primary));
 
 // Distance entre le bord du contenu et le bord de l’écran (pour les visuels « à fond perdu »)
 $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
@@ -43,7 +44,7 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
     }
 
     &__copy {
-        grid-column: 1 / span 6;
+        grid-column: 1 / span 8;
         display: grid;
         justify-items: start;
         gap: 32px;
@@ -57,37 +58,110 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
         color: $grey;
         font-size: var(--s-fs-meta);
     }
+}
 
-    &__sheet {
-        grid-column: 8 / -1;
+// Vitrine du hero : liste numérotée des écrans à gauche, capture en grand à droite
+.features-showcase {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(16px, 2vw, 32px);
+    align-items: start;
+    padding-top: 20px;
+    border-top: 1px solid $ink;
+
+    &__tabs {
+        grid-column: 1 / span 3;
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 28px 16px;
-        padding: 0;
+    }
+
+    &__tab {
+        display: grid;
+        grid-template-columns: 32px minmax(0, 1fr);
+        column-gap: 8px;
+        row-gap: 6px;
+        padding: 18px 0;
+        border: 0;
+        border-bottom: 1px solid $hairline;
+        background: transparent;
+        color: $grey;
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition: color 0.15s ease;
+
+        &:first-child {
+            padding-top: 0;
+        }
+
+        &:hover,
+        &--active {
+            color: $ink;
+        }
+
+        &--active {
+            border-bottom-color: $ink;
+        }
+    }
+
+    &__number {
+        font-size: var(--s-fs-small);
+        font-weight: 500;
+    }
+
+    &__tab--active &__number {
+        color: $primary;
+    }
+
+    &__label {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    &__caption {
+        grid-column: 2;
+        display: none;
+        color: $grey;
+        font-size: var(--s-fs-small);
+        line-height: 1.5;
+    }
+
+    &__tab--active &__caption {
+        display: block;
+    }
+
+    &__mobile-caption {
+        grid-column: 1 / -1;
+        display: none;
         margin: 0;
-        list-style: none;
+        color: $grey;
+        font-size: var(--s-fs-small);
+        line-height: 1.5;
+    }
 
-        li {
-            display: grid;
-            gap: 8px;
-        }
-
-        // Décalage vertical d’une colonne : rythme de planche plutôt que tableau rigide
-        li:nth-child(even) {
-            transform: translateY(40px);
-        }
+    &__panel {
+        grid-column: 4 / -1;
+        display: block;
+        border: 1px solid $hairline;
+        cursor: zoom-in;
 
         img {
             display: block;
             width: 100%;
             height: auto;
-            border: 1px solid $hairline;
+            animation: features-showcase-in 0.35s ease;
         }
+    }
+}
 
-        span {
-            color: $grey;
-            font-size: var(--s-fs-meta);
-        }
+@keyframes features-showcase-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
     }
 }
 
@@ -516,7 +590,6 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
 
 @media (max-width: 959px) {
     .features-hero__copy,
-    .features-hero__sheet,
     .journey-split__copy,
     .journey-split__figure,
     .journey-pair .s-figure,
@@ -540,8 +613,58 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
         grid-row: auto;
     }
 
-    .features-hero__sheet li:nth-child(even) {
-        transform: none;
+    // Mobile et tablette : onglets en bandeau défilant, capture recadrée sur le contenu (sans la barre latérale)
+    .features-showcase {
+        row-gap: 16px;
+
+        &__tabs,
+        &__panel {
+            grid-column: 1 / -1;
+        }
+
+        &__tabs {
+            display: flex;
+            gap: 24px;
+            margin: 0 calc(-1 * var(--s-gutter));
+            padding: 0 var(--s-gutter);
+            overflow-x: auto;
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+        }
+
+        &__tab {
+            display: flex;
+            flex-shrink: 0;
+            align-items: baseline;
+            gap: 8px;
+            padding: 0 0 10px;
+            border-bottom: 2px solid transparent;
+
+            &--active {
+                border-bottom-color: $primary;
+            }
+        }
+
+        &__label {
+            font-size: 16px;
+        }
+
+        &__tab--active &__caption {
+            display: none;
+        }
+
+        &__panel img {
+            aspect-ratio: 4 / 3;
+            object-fit: cover;
+            object-position: 100% 0;
+        }
+
+        &__mobile-caption {
+            display: block;
+        }
     }
 
     .features-nav {
@@ -558,7 +681,9 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
         grid-column: 1 / -1;
     }
 
-    .features-hero__sheet {
-        gap: 20px 12px;
+    // Téléphone : recadrage carré sur la colonne principale de l’écran, lisible sans zoom
+    .features-showcase__panel img {
+        aspect-ratio: 1 / 1;
+        object-position: 56% 0;
     }
 }
