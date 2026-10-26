@@ -97,9 +97,13 @@ watch(popoverOpen, (open) => {
     border-radius: 0;
     background: transparent;
     border: 0;
-    border-bottom: 1px solid var(--ink);
+    border-bottom: 1px solid var(--line);
     box-shadow: none;
     backdrop-filter: none;
+}
+
+.app-board .app-board-search--full:hover {
+    border-bottom-color: var(--gray);
 }
 
 .app-board .app-board-search__trigger {

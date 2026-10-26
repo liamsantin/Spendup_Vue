@@ -1,6 +1,6 @@
 /* Contrôles Swiss : recherche, bouton-icône, boutons carrés, pastille, états vides. */
 
-/* ── recherche de liste : simple ligne 1 px noire en bas ── */
+/* ── recherche de liste : simple ligne 1 px claire en bas (grise au survol, bleue au focus) ── */
 .su-search {
     display: flex;
     align-items: center;
@@ -11,12 +11,16 @@
     height: 40px;
     padding: 0 0 0 2px;
     border: 0;
-    border-bottom: 1px solid var(--ink);
+    border-bottom: 1px solid var(--line);
     border-radius: 0;
     background: transparent;
     box-shadow: none;
     backdrop-filter: none;
     transition: border-color 0.15s var(--ease);
+}
+
+.su-search:hover {
+    border-bottom-color: var(--gray);
 }
 
 .su-search--center {
