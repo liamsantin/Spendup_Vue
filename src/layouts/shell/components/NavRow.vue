@@ -58,7 +58,7 @@ function subLabel(index: number): string | null {
 <template>
     <li class="group" :class="{ 'is-muted': item.muted, 'is-open': isOpen, 'group--row': rowToggle, 'is-compact': compact }">
         <div class="group__head">
-            <!-- icône de section : seule visible dans le rail replié -->
+            <!-- icône de section : à gauche du libellé déployée, seule visible dans le rail replié -->
             <button
                 type="button"
                 class="group__tab"
@@ -69,7 +69,7 @@ function subLabel(index: number): string | null {
                 :aria-hidden="!compact || undefined"
                 @click="emit('tab', item)"
             >
-                <ShellNavIcon :icon="item.icon" :size="18" />
+                <ShellNavIcon :icon="item.icon" :size="compact ? 18 : 16" />
             </button>
 
             <!-- libellé de groupe : texte simple, ou bouton quand le groupe est repliable -->
@@ -84,7 +84,6 @@ function subLabel(index: number): string | null {
                 :aria-controls="subId"
                 @click="emit('toggle', item)"
             >
-                <span v-if="rowToggle" class="group__icon"><ShellNavIcon :icon="item.icon" :size="16" /></span>
                 <span class="group__text">{{ item.label }}</span>
                 <span v-if="item.badge" class="group__badge">{{ item.badge }}</span>
                 <BaseIcon name="chevron-right" :size="14" class="group__chev" />
@@ -126,49 +125,60 @@ function subLabel(index: number): string | null {
     transition: margin-top var(--dur-expand) var(--ease);
 }
 
-/* l'en-tête porte le libellé (déployé) et l'icône de section (replié), superposés */
+/* l'en-tête porte l'icône de section et le libellé : déployé, l'icône (16 px) précède
+   le texte ; replié, elle grandit en carré de 40 px et le libellé s'efface */
 .group__head {
     position: relative;
+    margin-bottom: 8px;
     min-height: 0;
     transition: min-height var(--dur-expand) var(--ease);
+}
+
+.group--row .group__head {
+    margin-bottom: 0;
 }
 
 .group__tab {
     appearance: none;
     position: absolute;
-    top: 0;
+    top: 50%;
     left: 0;
     display: grid;
     place-items: center;
-    width: 40px;
-    height: 40px;
+    width: 16px;
+    height: 16px;
     padding: 0;
     border: 0;
     background: transparent;
-    color: var(--ink);
+    color: var(--gray);
     cursor: pointer;
-    opacity: 0;
-    visibility: hidden;
+    transform: translateY(-50%);
+    /* décoratif tant que la colonne est déployée : c'est le libellé qui agit */
     pointer-events: none;
     transition:
-        opacity 0.2s var(--ease),
-        background 0.15s var(--ease),
-        visibility 0s linear 0.2s;
+        width var(--dur-expand) var(--ease),
+        height var(--dur-expand) var(--ease),
+        color 0.15s var(--ease),
+        background 0.15s var(--ease);
 }
 
 .group__tab :deep(svg) {
     display: block;
-    width: 18px;
-    height: 18px;
     --rail-icon-tone-stroke: currentColor;
 }
 
-.group__tab.is-current {
+.group--row .group__tab {
+    color: var(--ink-mute);
+}
+
+.group__tab.is-current,
+.group--row .group__tab.is-current {
     color: var(--blue);
 }
 
-.group__tab:hover {
-    background: var(--soft);
+/* survol du libellé repliable : l'icône fonce avec le texte */
+.group__head:has(.group__label--toggle:hover) .group__tab:not(.is-current) {
+    color: var(--ink);
 }
 
 .group__tab:focus-visible {
@@ -182,8 +192,9 @@ function subLabel(index: number): string | null {
     align-items: center;
     gap: 8px;
     width: 100%;
-    margin: 0 0 8px;
-    padding: 0;
+    margin: 0;
+    /* place de l'icône de section (16 px) et de son écart */
+    padding: 0 0 0 24px;
     border: 0;
     background: transparent;
     color: var(--gray);
@@ -248,6 +259,7 @@ function subLabel(index: number): string | null {
     gap: 12px;
     min-height: 40px;
     margin: 0;
+    padding-left: 28px;
     color: var(--ink);
     font-size: 14px;
 }
@@ -258,27 +270,6 @@ function subLabel(index: number): string | null {
 
 .group--row .group__label--toggle:hover {
     background: var(--soft);
-}
-
-.group__icon {
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: 16px;
-    height: 16px;
-    color: var(--ink-mute);
-    --rail-icon-tone-stroke: currentColor;
-}
-
-.group--row .is-current .group__icon,
-.group--row .group__label--toggle.is-current .group__icon {
-    color: var(--blue);
-}
-
-.group__icon :deep(svg) {
-    display: block;
-    width: 16px;
-    height: 16px;
 }
 
 .group__fold {
@@ -327,16 +318,23 @@ function subLabel(index: number): string | null {
 
 .is-compact .group__head {
     min-height: 40px;
+    margin-bottom: 0;
 }
 
+/* l'icône devient le bouton de la section : carré de 40 px, pictogramme 18 px, encre noire */
 .is-compact .group__tab {
-    opacity: 1;
-    visibility: visible;
+    width: 40px;
+    height: 40px;
+    color: var(--ink);
     pointer-events: auto;
-    transition:
-        opacity 0.2s var(--ease) 0.12s,
-        background 0.15s var(--ease),
-        visibility 0s linear 0s;
+}
+
+.is-compact .group__tab.is-current {
+    color: var(--blue);
+}
+
+.is-compact .group__tab:hover {
+    background: var(--soft);
 }
 
 .is-compact .group__label {
