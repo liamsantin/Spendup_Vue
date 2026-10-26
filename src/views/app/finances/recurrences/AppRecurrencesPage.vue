@@ -519,11 +519,6 @@ const activeFilterTotal = computed(() =>
 </template>
 
 <style scoped>
-/* titre un cran sous le h1 standard (40 px) : la ligne d'onglets à droite prend la place */
-.recurrences-page :deep(.su-hero h1) {
-    font-size: 32px;
-}
-
 .recurrences-subnav {
     text-decoration: none;
 }

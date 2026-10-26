@@ -37,20 +37,22 @@ async function confirmClearAll() {
 
 <template>
     <AppPageShell :title="t('notificationsPage.title')" :subtitle="t('notificationsPage.subtitle')">
-        <template #actions>
-            <!-- compteur non lues : petit carré bleu + texte gris -->
-            <span v-if="store.hasUnread" class="su-chip notifications-unread" style="--chip-color: var(--blue)">{{ unreadLabel }}</span>
-            <button
-                type="button"
-                class="su-btn"
-                :disabled="!store.hasUnread || store.markingAll || store.clearingAll"
-                @click="onMarkAllRead"
-            >
-                {{ t('header.notifications.markAllRead') }}
-            </button>
-            <button type="button" class="su-btn su-btn--danger" :disabled="!canClearAll" @click="openClearAll">
-                {{ t('header.notifications.clearAll') }}
-            </button>
+        <template #toolbar>
+            <div class="su-toolbar__actions">
+                <!-- compteur non lues : petit carré bleu + texte gris -->
+                <span v-if="store.hasUnread" class="su-chip notifications-unread" style="--chip-color: var(--blue)">{{ unreadLabel }}</span>
+                <button
+                    type="button"
+                    class="su-btn"
+                    :disabled="!store.hasUnread || store.markingAll || store.clearingAll"
+                    @click="onMarkAllRead"
+                >
+                    {{ t('header.notifications.markAllRead') }}
+                </button>
+                <button type="button" class="su-btn su-btn--danger" :disabled="!canClearAll" @click="openClearAll">
+                    {{ t('header.notifications.clearAll') }}
+                </button>
+            </div>
         </template>
 
         <InboxTab />

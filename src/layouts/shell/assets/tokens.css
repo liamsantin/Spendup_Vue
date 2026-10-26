@@ -94,7 +94,7 @@
     --row-gap: 0px;
     --content-max: 1280px;
     --content-pad-x: 48px;
-    --content-pad-y: 40px;
+    --content-pad-y: 24px;
     --section-gap: 56px;
 
     /* tout est carré : les seuls ronds (photo, pastille, interrupteur) le disent eux-mêmes */

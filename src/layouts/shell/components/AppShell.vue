@@ -199,7 +199,7 @@ watch(isMobile, (mobile) => {
 @media (max-width: 1199px) {
     .shell__content > :deep(.page-content) {
         --content-pad-x: 32px;
-        --content-pad-y: 32px;
+        --content-pad-y: 24px;
     }
 }
 

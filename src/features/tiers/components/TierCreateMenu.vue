@@ -29,7 +29,7 @@ const emit = defineEmits<{
         <template #activator="{ props: menuProps }">
             <button
                 type="button"
-                class="su-btn su-btn--ink tier-create-menu__trigger"
+                class="su-btn su-btn--ink app-board__primary tier-create-menu__trigger"
                 :class="{ 'tier-create-menu__trigger--compact': compact }"
                 v-bind="menuProps"
                 :disabled="disabled"

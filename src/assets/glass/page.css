@@ -35,7 +35,8 @@
     align-items: flex-end;
     justify-content: space-between;
     gap: 12px 24px;
-    min-height: 48px;
+    /* la hauteur d'une ligne d'onglets : le titre s'aligne dessus */
+    min-height: 40px;
 }
 
 .su-hero__heading {
@@ -43,13 +44,13 @@
     min-width: 0;
     display: flex;
     align-items: flex-end;
-    min-height: 48px;
+    min-height: 40px;
 }
 
 .su-hero h1 {
     margin: 0;
     min-width: 0;
-    font-size: 40px;
+    font-size: 32px;
     font-weight: 700;
     letter-spacing: -0.045em;
     line-height: 1;

@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
-import { PlusIcon } from 'vue-tabler-icons';
+import { FileExportIcon, PlusIcon } from 'vue-tabler-icons';
 import AppBoard from '@/components/shared/board/AppBoard.vue';
 import AppBoardSearch from '@/components/shared/board/AppBoardSearch.vue';
 import { useBoardSearch } from '@/components/shared/board/useBoardSearch';
@@ -134,29 +134,30 @@ function onCreate(nature?: TierNature) {
 
 <template>
     <AppPageShell class="tiers-page" :title="t('tiersPage.title')" :subtitle="t('tiersPage.subtitle')" :body-scroll="false">
-        <template #actions>
-            <button type="button" class="su-btn" :disabled="!store.items.length" @click="directoryRef?.exportCsv()">
-                {{ t('tiersPage.actions.export') }}
-            </button>
-            <TierCreateMenu
-                v-if="!filterNature"
-                :compact="compactNotch"
-                :label="t('tiersPage.actions.create')"
-                :disabled="store.acting"
-                @select="onCreate"
-            />
-            <button
-                v-else
-                type="button"
-                class="su-btn su-btn--ink tiers-page__create"
-                :class="{ 'tiers-page__create--compact': compactNotch }"
-                :disabled="store.acting"
-                :aria-label="t('tiersPage.actions.create')"
-                @click="onCreate()"
-            >
-                <PlusIcon :size="16" stroke-width="1.8" />
-                <span v-if="!compactNotch">{{ t('tiersPage.actions.create') }}</span>
-            </button>
+        <!-- onglets par nature en haut à droite du titre -->
+        <template #tabs>
+            <nav class="su-tabs" :aria-label="t('tiersPage.tabs.label')">
+                <button
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': !filterNature }"
+                    :aria-pressed="!filterNature"
+                    @click="selectNature('')"
+                >
+                    {{ t('tiersPage.tabs.all') }}
+                </button>
+                <button
+                    v-for="nature in TIER_NATURES"
+                    :key="nature"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': filterNature === nature }"
+                    :aria-pressed="filterNature === nature"
+                    @click="selectNature(nature)"
+                >
+                    {{ t(`tiersPage.naturesPlural.${nature}`) }}
+                </button>
+            </nav>
         </template>
 
         <!-- chiffres clés : court filet 2 px, libellé 13 px, nombre 30 px 700 -->
@@ -168,30 +169,6 @@ function onCreate(nature?: TierNature) {
         </div>
 
         <AppBoard>
-            <template #filters>
-                <nav class="su-tabs tiers-nature-tabs" :aria-label="t('tiersPage.tabs.label')">
-                    <button
-                        type="button"
-                        class="su-tab"
-                        :class="{ 'is-active': !filterNature }"
-                        :aria-pressed="!filterNature"
-                        @click="selectNature('')"
-                    >
-                        {{ t('tiersPage.tabs.all') }}
-                    </button>
-                    <button
-                        v-for="nature in TIER_NATURES"
-                        :key="nature"
-                        type="button"
-                        class="su-tab"
-                        :class="{ 'is-active': filterNature === nature }"
-                        :aria-pressed="filterNature === nature"
-                        @click="selectNature(nature)"
-                    >
-                        {{ t(`tiersPage.naturesPlural.${nature}`) }}
-                    </button>
-                </nav>
-            </template>
             <template #bar>
                 <AppBoardSearch
                     :model-value="search.input.value"
@@ -218,6 +195,37 @@ function onCreate(nature?: TierNature) {
                     </AppDropdownFilter>
                 </div>
             </template>
+            <template #actions>
+                <button
+                    type="button"
+                    class="su-btn su-btn--ink"
+                    :disabled="!store.items.length"
+                    :aria-label="t('tiersPage.actions.export')"
+                    @click="directoryRef?.exportCsv()"
+                >
+                    <FileExportIcon :size="16" stroke-width="1.6" />
+                    <span class="app-board__label">{{ t('tiersPage.actions.export') }}</span>
+                </button>
+                <TierCreateMenu
+                    v-if="!filterNature"
+                    :compact="compactNotch"
+                    :label="t('tiersPage.actions.create')"
+                    :disabled="store.acting"
+                    @select="onCreate"
+                />
+                <button
+                    v-else
+                    type="button"
+                    class="su-btn su-btn--ink app-board__primary tiers-page__create"
+                    :class="{ 'tiers-page__create--compact': compactNotch }"
+                    :disabled="store.acting"
+                    :aria-label="t('tiersPage.actions.create')"
+                    @click="onCreate()"
+                >
+                    <PlusIcon :size="16" stroke-width="1.8" />
+                    <span v-if="!compactNotch">{{ t('tiersPage.actions.create') }}</span>
+                </button>
+            </template>
 
             <TiersDirectory ref="directoryRef" @sort="listSort = $event" />
         </AppBoard>
@@ -243,11 +251,6 @@ function onCreate(nature?: TierNature) {
 
 .tiers-figs__item .su-fig__num {
     font-size: 24px;
-}
-
-/* onglets par nature : texte seul, actif 700 souligné */
-.tiers-nature-tabs {
-    margin-left: 0;
 }
 
 /* filtre « Rôle · Tous » : bouton discret (bordure fine grise, texte gris) */

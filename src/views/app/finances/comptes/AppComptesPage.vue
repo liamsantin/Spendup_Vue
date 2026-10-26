@@ -202,11 +202,13 @@ watch(tab, (value) => {
 
 <template>
     <AppTabsShell v-model="tab" :tabs="tabs" :title="t('comptesPage.title')" :subtitle="subtitle" hide-actions class="comptes-page">
-        <template v-if="tab === 'Accounts'" #actions>
-            <button type="button" class="su-btn su-btn--ink comptes-page__create" @click="accountsTabRef?.openCreate()">
-                <PlusIcon :size="16" stroke-width="1.6" />
-                {{ t('comptesPage.actions.create') }}
-            </button>
+        <template v-if="tab === 'Accounts'" #toolbar>
+            <div class="su-toolbar__actions">
+                <button type="button" class="su-btn su-btn--ink comptes-page__create" @click="accountsTabRef?.openCreate()">
+                    <PlusIcon :size="16" stroke-width="1.6" />
+                    {{ t('comptesPage.actions.create') }}
+                </button>
+            </div>
         </template>
 
         <Transition name="su-pane" mode="out-in">

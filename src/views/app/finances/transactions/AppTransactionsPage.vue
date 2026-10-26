@@ -578,45 +578,25 @@ watch(
 
 <template>
     <AppPageShell class="transactions-page" :title="pageTitle" :subtitle="subtitle">
-        <template #actions>
-            <button
-                type="button"
-                class="su-btn"
-                :disabled="!visibleCount"
-                :aria-label="t('transactionsPage.actions.export')"
-                @click="timelineRef?.exportCsv()"
-            >
-                <FileExportIcon :size="16" stroke-width="1.6" />
-                {{ t('transactionsPage.actions.export') }}
-            </button>
-            <button
-                type="button"
-                class="su-btn su-btn--ink"
-                :disabled="!canCreate || store.acting"
-                :aria-label="t('transactionsPage.actions.create')"
-                @click="onCreate"
-            >
-                <PlusIcon :size="16" stroke-width="1.6" />
-                {{ t('transactionsPage.actions.create') }}
-            </button>
+        <!-- onglets par type en haut à droite du titre -->
+        <template v-if="!filterBudgetId" #tabs>
+            <nav class="su-tabs" :aria-label="t('transactionsPage.filters.type')">
+                <button
+                    v-for="tab in typeTabs"
+                    :key="tab.value || 'all'"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': filterType === tab.value }"
+                    :aria-pressed="filterType === tab.value"
+                    @click="filterType = tab.value"
+                >
+                    {{ tab.label }}
+                </button>
+            </nav>
         </template>
 
         <template #toolbar>
             <div class="transactions-toolbar">
-                <nav v-if="!filterBudgetId" class="su-tabs transactions-toolbar__tabs" :aria-label="t('transactionsPage.filters.type')">
-                    <button
-                        v-for="tab in typeTabs"
-                        :key="tab.value || 'all'"
-                        type="button"
-                        class="su-tab"
-                        :class="{ 'is-active': filterType === tab.value }"
-                        :aria-pressed="filterType === tab.value"
-                        @click="filterType = tab.value"
-                    >
-                        {{ tab.label }}
-                    </button>
-                </nav>
-
                 <label class="su-search transactions-toolbar__search">
                     <SearchIcon class="su-search__icon" :size="18" stroke-width="1.8" />
                     <input
@@ -744,6 +724,30 @@ watch(
                         </v-sheet>
                     </v-menu>
                 </div>
+
+                <!-- actions de la liste, à droite des filtres -->
+                <div class="transactions-toolbar__actions">
+                    <button
+                        type="button"
+                        class="su-btn"
+                        :disabled="!visibleCount"
+                        :aria-label="t('transactionsPage.actions.export')"
+                        @click="timelineRef?.exportCsv()"
+                    >
+                        <FileExportIcon :size="16" stroke-width="1.6" />
+                        {{ t('transactionsPage.actions.export') }}
+                    </button>
+                    <button
+                        type="button"
+                        class="su-btn su-btn--ink"
+                        :disabled="!canCreate || store.acting"
+                        :aria-label="t('transactionsPage.actions.create')"
+                        @click="onCreate"
+                    >
+                        <PlusIcon :size="16" stroke-width="1.6" />
+                        {{ t('transactionsPage.actions.create') }}
+                    </button>
+                </div>
             </div>
         </template>
 
@@ -807,11 +811,6 @@ watch(
     min-width: 0;
 }
 
-.transactions-toolbar__tabs {
-    flex: none;
-    margin-left: 0;
-}
-
 .transactions-toolbar__search {
     flex: 1 1 220px;
     width: auto;
@@ -825,6 +824,13 @@ watch(
     align-items: center;
     gap: 8px;
     margin-left: auto;
+    flex: none;
+}
+
+.transactions-toolbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     flex: none;
 }
 

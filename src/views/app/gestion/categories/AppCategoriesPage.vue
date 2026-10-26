@@ -51,18 +51,20 @@ async function confirmDeleteAll() {
 
 <template>
     <AppPageShell :title="t('categoriesPage.title')" :subtitle="t('categoriesPage.subtitle')">
-        <!-- actions de l’en-tête : danger (bordure rouge), secondaire (bordure noire), principal (bleu) -->
-        <template #actions>
-            <button type="button" class="su-btn su-btn--danger" :disabled="!canDeleteAll" @click="onOpenDeleteAll">
-                {{ t('categoriesPage.actions.deleteAll') }}
-            </button>
-            <button type="button" class="su-btn" :disabled="store.acting" @click="onOpenPlan">
-                {{ t('categoriesPage.actions.applyPlan') }}
-            </button>
-            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onCreate">
-                <PlusIcon :size="16" stroke-width="1.8" />
-                {{ t('categoriesPage.actions.create') }}
-            </button>
+        <!-- ligne d'outils sous le titre : danger (bordure rouge), secondaire (bordure noire), principal (bleu) -->
+        <template #toolbar>
+            <div class="su-toolbar__actions">
+                <button type="button" class="su-btn su-btn--danger" :disabled="!canDeleteAll" @click="onOpenDeleteAll">
+                    {{ t('categoriesPage.actions.deleteAll') }}
+                </button>
+                <button type="button" class="su-btn" :disabled="store.acting" @click="onOpenPlan">
+                    {{ t('categoriesPage.actions.applyPlan') }}
+                </button>
+                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onCreate">
+                    <PlusIcon :size="16" stroke-width="1.8" />
+                    {{ t('categoriesPage.actions.create') }}
+                </button>
+            </div>
         </template>
 
         <CategoriesTree ref="treeRef" />
