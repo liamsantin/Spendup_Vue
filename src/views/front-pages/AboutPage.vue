@@ -3,7 +3,7 @@ import { ArrowRightIcon } from 'vue-tabler-icons';
 import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
 import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
-import founderPhoto from '@/assets/images/profile/avatar/user-23.jpg';
+import founderPhoto from '@/assets/images/profile/avatar/user-26.jpg';
 
 const story = [
     {
@@ -92,8 +92,9 @@ const commitments = [
                             <div class="about-poster__card">
                                 <img :src="founderPhoto" alt="Liam Santin" class="about-poster__photo" />
                                 <div class="about-poster__name">
-                                    <p>Développé par</p>
-                                    <h2>Liam Santin</h2>
+                                    <span class="about-poster__kicker">Développé par</span>
+                                    <p class="about-poster__fullname">Liam Santin</p>
+                                    <span class="about-poster__role">Fondateur et développeur</span>
                                 </div>
                             </div>
                             <figcaption>

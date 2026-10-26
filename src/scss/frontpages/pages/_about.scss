@@ -70,26 +70,41 @@ $tint: #f4f4f2;
         object-fit: cover;
     }
 
+    // Plaque nominative posée en bas à gauche de la photo, filet primary en tête
     &__name {
-        position: relative;
-        margin: -48px 24px 0;
-        padding: 16px 12px;
-        border: 1px solid $ink;
-        background: #ffffff;
-        text-align: center;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        display: grid;
+        gap: 4px;
+        min-width: 72%;
+        padding: 18px 22px 16px;
+        border-top: 3px solid rgb(var(--v-theme-primary));
+        background: $white;
+    }
 
-        p {
-            margin: 0;
-            color: $grey;
-            font-size: var(--s-fs-small);
-        }
+    &__kicker {
+        color: $grey;
+        font-size: var(--s-fs-meta);
+        font-weight: 500;
+        letter-spacing: 0.02em;
+    }
 
-        h2 {
-            margin: 2px 0 0;
-            font-size: 22px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
+    &__fullname {
+        margin: 0;
+        color: $ink;
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        line-height: 1.1;
+    }
+
+    &__role {
+        padding-top: 8px;
+        margin-top: 6px;
+        border-top: 1px solid $hairline;
+        color: $grey;
+        font-size: var(--s-fs-small);
     }
 
     figcaption {
@@ -361,6 +376,10 @@ $tint: #f4f4f2;
 @media (max-width: 599px) {
     .about-hero {
         padding-top: 112px;
+    }
+
+    .about-poster {
+        grid-column: 1 / -1;
     }
 
     .principles__matrix {
