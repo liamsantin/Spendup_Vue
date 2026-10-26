@@ -119,6 +119,31 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
             border-right: 0;
         }
     }
+
+    // Côte à côte, les cartes partagent les mêmes rangées (subgrid) : en-têtes, prix,
+    // boutons et listes restent alignés quelle que soit la longueur des descriptions.
+    @media (min-width: 600px) {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+
+        > *[class*='v-col'] {
+            display: grid;
+            grid-row: span 4;
+            grid-template-rows: subgrid;
+            max-width: none !important;
+        }
+
+        .plan-card {
+            display: grid;
+            grid-row: span 4;
+            grid-template-rows: subgrid;
+            align-items: start;
+        }
+    }
+
+    @media (min-width: 1280px) {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 }
 
 .plan-card {

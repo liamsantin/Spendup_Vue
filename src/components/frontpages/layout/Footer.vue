@@ -117,7 +117,7 @@ function scrollToTop() {
             </div>
         </v-container>
 
-        <div class="footer-wordmark" aria-hidden="true">Spend.Up</div>
+        <div class="footer-wordmark" aria-hidden="true">Spend<span class="footer-wordmark__dot">.</span>Up</div>
     </footer>
 </template>
 

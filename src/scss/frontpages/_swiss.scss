@@ -11,6 +11,7 @@ $s-rule: #111111;
 $s-hairline: #dedede;
 $s-white: #ffffff;
 $s-red: #e4002b;
+$s-primary: rgb(var(--v-theme-primary));
 $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
 
 .front-wraper {
@@ -480,11 +481,11 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
             font-weight: 500 !important;
 
             &:hover {
-                color: $s-red !important;
+                color: $s-primary !important;
             }
 
             &.text-primary {
-                box-shadow: inset 0 -2px 0 $s-red;
+                box-shadow: inset 0 -2px 0 $s-primary;
             }
         }
     }
@@ -502,7 +503,7 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
         color: $s-ink !important;
 
         &:hover {
-            color: $s-red !important;
+            color: $s-primary !important;
         }
     }
 
@@ -512,8 +513,8 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
         color: $s-white !important;
 
         &:hover {
-            border-color: $s-red !important;
-            background: $s-red !important;
+            border-color: $s-primary !important;
+            background: $s-primary !important;
         }
     }
 
@@ -529,7 +530,7 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
 }
 
 .front-wraper .spendup-logo__dot {
-    color: $s-red !important;
+    color: $s-primary !important;
 }
 
 // Menu déroulant mobile (téléporté hors de .front-wraper)
@@ -548,7 +549,7 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
             font-weight: 500;
 
             &--active {
-                color: $s-red !important;
+                color: $s-primary !important;
                 background: transparent;
             }
 

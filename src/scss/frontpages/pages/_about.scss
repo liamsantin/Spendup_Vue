@@ -59,10 +59,37 @@ $tint: #f4f4f2;
     gap: 14px;
     margin: 0;
 
-    svg {
+    &__card {
+        position: relative;
+    }
+
+    &__photo {
         display: block;
         width: 100%;
-        height: auto;
+        aspect-ratio: 4 / 5;
+        object-fit: cover;
+    }
+
+    &__name {
+        position: relative;
+        margin: -48px 24px 0;
+        padding: 16px 12px;
+        border: 1px solid $ink;
+        background: #ffffff;
+        text-align: center;
+
+        p {
+            margin: 0;
+            color: $grey;
+            font-size: var(--s-fs-small);
+        }
+
+        h2 {
+            margin: 2px 0 0;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
     }
 
     figcaption {

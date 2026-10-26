@@ -216,7 +216,7 @@ const faqs = [
                         </p>
                     </div>
 
-                    <ol class="nobank__reasons" data-reveal-stagger="80">
+                    <ol v-reveal class="nobank__reasons" data-reveal-stagger="80">
                         <li v-for="(reason, index) in noBankLinkReasons" :key="reason.title">
                             <span class="nobank__index">{{ String(index + 1).padStart(2, '0') }}</span>
                             <div>

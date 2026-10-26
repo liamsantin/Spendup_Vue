@@ -3,6 +3,7 @@ import { ArrowRightIcon } from 'vue-tabler-icons';
 import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
 import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
+import founderPhoto from '@/assets/images/profile/avatar/user-23.jpg';
 
 const story = [
     {
@@ -74,7 +75,7 @@ const commitments = [
                                 applications et les compromis, et sans confier ses accès bancaires à qui que ce soit.
                             </p>
                             <p class="about-hero__signature su-hero-in" style="--su-in-delay: 180ms">
-                                L.S — fondateur et développeur de Spend.Up, en Suisse
+                                Liam Santin — fondateur et développeur de Spend.Up, en Suisse
                             </p>
                             <div class="s-actions su-hero-in" style="--su-in-delay: 220ms">
                                 <v-btn color="primary" size="x-large" flat class="text-none" to="/auth?tab=register">
@@ -88,11 +89,13 @@ const commitments = [
                         </div>
 
                         <figure class="about-poster su-hero-visual-in" style="--su-in-delay: 160ms">
-                            <svg viewBox="0 0 32 32" role="img" aria-label="Croix suisse">
-                                <rect width="32" height="32" fill="#E4002B" />
-                                <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
-                                <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
-                            </svg>
+                            <div class="about-poster__card">
+                                <img :src="founderPhoto" alt="Liam Santin" class="about-poster__photo" />
+                                <div class="about-poster__name">
+                                    <p>Développé par</p>
+                                    <h2>Liam Santin</h2>
+                                </div>
+                            </div>
                             <figcaption>
                                 <span>Conçu et développé en Suisse</span>
                                 <span>Données hébergées en Suisse</span>
