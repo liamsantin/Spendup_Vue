@@ -30,7 +30,7 @@ import type { NavIcon, NavItem, NavLeaf } from '../types/navigation';
  * Accueil · Finances · [+] · Planning · Menu
  *
  * - Un onglet de section couvre plusieurs pages (Finances = comptes, transactions,
- *   moyens de paiement, récurrences). Le toucher ramène à la dernière page visitée
+ *   moyens de paiement, import, récurrences). Le toucher ramène à la dernière page visitée
  *   dans la section ; le retoucher une fois dedans ouvre la liste de ses pages.
  * - « + » ouvre l'ajout rapide : chaque action mène à la page concernée avec son
  *   formulaire de création déjà ouvert (`?create=1`).
@@ -70,7 +70,7 @@ const tabs = computed<{ left: SectionTab[]; right: SectionTab[] }>(() => ({
             id: 'finances',
             label: t('nav.tabBar.finances'),
             icon: FinancesNavIcon,
-            sections: [SHELL_NAV_IDS.finances, SHELL_NAV_IDS.recurrences],
+            sections: [SHELL_NAV_IDS.finances],
             root: '/app/finances/transactions'
         }
     ],
@@ -106,10 +106,21 @@ const menuActive = computed(() => menuOpen.value || !currentTab.value);
 
 /** Sous-pages navigables d'un onglet, groupées par section. */
 function groupsOf(tab: SectionTab): { id: string; title: string; leaves: NavLeaf[] }[] {
-    return tab.sections
-        .map((id) => props.items.find((item) => item.id === id))
-        .filter((item): item is NavItem => !!item?.children?.length)
-        .map((item) => ({ id: item.id, title: item.label, leaves: item.children ?? [] }));
+    const groups: { id: string; title: string; leaves: NavLeaf[] }[] = [];
+    for (const id of tab.sections) {
+        const item = props.items.find((entry) => entry.id === id);
+        if (!item?.children?.length) continue;
+        for (const leaf of item.children) {
+            const title = leaf.group ?? '';
+            const last = groups[groups.length - 1];
+            if (!last || last.title !== title) {
+                groups.push({ id: `${item.id}:${title || 'root'}:${groups.length}`, title, leaves: [leaf] });
+            } else {
+                last.leaves.push(leaf);
+            }
+        }
+    }
+    return groups;
 }
 
 /* ── mémoire de la dernière page par onglet (filtres compris) ── */
@@ -285,7 +296,7 @@ const quickActions = computed<{ id: string; icon: Component; label: string; run:
                 </button>
             </header>
             <section v-for="group in pagesGroups" :key="group.id" class="pages">
-                <h3 v-if="pagesGroups.length > 1" class="pages__title">{{ group.title }}</h3>
+                <h3 v-if="group.title" class="pages__title">{{ group.title }}</h3>
                 <ul class="pages__list">
                     <li v-for="leaf in group.leaves" :key="leaf.id">
                         <button
@@ -318,30 +329,19 @@ const quickActions = computed<{ id: string; icon: Component; label: string; run:
 @media (max-width: 767px) {
     .tabbar {
         position: fixed;
-        left: 8px;
-        right: 8px;
-        bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+        left: 0;
+        right: 0;
+        bottom: 0;
         z-index: 1;
         display: grid;
         grid-template-columns: repeat(5, 1fr);
         align-items: center;
-        height: var(--tabbar-h);
-        padding: 0 4px;
-        border-radius: var(--radius-header-mobile);
-        background: var(--surface-overlay);
-        border: 1px solid var(--stroke);
-        backdrop-filter: var(--blur);
-        box-shadow: var(--shadow-lifted);
+        height: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+        padding: 0 4px env(safe-area-inset-bottom, 0px);
+        background: var(--bg);
+        border-top: 1px solid var(--ink);
         font-family: var(--font-ui);
         -webkit-tap-highlight-color: transparent;
-        animation: tabbar-in 0.8s var(--ease) both;
-    }
-}
-
-@keyframes tabbar-in {
-    from {
-        opacity: 0;
-        transform: translateY(18px);
     }
 }
 
@@ -352,28 +352,24 @@ const quickActions = computed<{ id: string; icon: Component; label: string; run:
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
+    gap: 3px;
     height: 100%;
     min-width: 0;
     padding: 0;
     border: 0;
     background: transparent;
-    color: var(--ink-muted);
+    color: var(--gray);
     font: inherit;
     cursor: pointer;
-    transition: color 0.3s var(--ease);
+    transition: color 0.15s var(--ease);
 }
 
 .tab__icon {
     position: relative;
     display: grid;
     place-items: center;
-    width: 52px;
-    height: 30px;
-    border-radius: 15px;
-    transition:
-        background 0.35s var(--ease),
-        transform 0.45s var(--spring);
+    width: 44px;
+    height: 26px;
 }
 
 .tab__label {
@@ -382,65 +378,56 @@ const quickActions = computed<{ id: string; icon: Component; label: string; run:
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 11px;
-    font-weight: 560;
-    letter-spacing: 0.01em;
+    font-weight: 400;
 }
 
 .tab.is-active {
-    color: rgb(var(--v-theme-primary));
+    color: var(--ink);
+}
+.tab.is-active .tab__label {
+    font-weight: 700;
 }
 .tab.is-active .tab__icon {
-    background: rgba(var(--v-theme-primary), 0.12);
+    color: var(--blue);
 }
-/* onglet actif à sous-pages : un tiret signale qu'un second appui les liste */
+/* onglet actif à sous-pages : un carré signale qu'un second appui les liste */
 .tab.is-active.has-pages .tab__icon::after {
     content: '';
     position: absolute;
-    top: -7px;
-    left: 50%;
-    width: 14px;
-    height: 3px;
-    margin-left: -7px;
-    border-radius: 2px;
-    background: currentColor;
-    opacity: 0.45;
-}
-.tab:active .tab__icon {
-    transform: scale(0.9);
+    top: -4px;
+    right: 4px;
+    width: 5px;
+    height: 5px;
+    background: var(--blue);
 }
 .tab:focus-visible {
     outline: none;
 }
 .tab:focus-visible .tab__icon {
-    outline: 2px solid rgb(var(--v-theme-primary));
+    outline: 2px solid var(--ink);
     outline-offset: 2px;
 }
 
-/* ── bouton central ────────────────────────────────────── */
+/* ── bouton central : carré bleu ───────────────────────── */
 .add {
     appearance: none;
     display: grid;
     place-items: center;
-    width: 52px;
-    height: 52px;
-    margin-top: -22px;
+    width: 44px;
+    height: 44px;
     padding: 0;
-    border: 3px solid var(--surface-raised);
-    border-radius: 50%;
-    background: rgb(var(--v-theme-primary));
+    border: 0;
+    border-radius: 0;
+    background: var(--blue-btn);
     color: #ffffff;
-    box-shadow: 0 12px 24px -10px rgba(var(--v-theme-primary), 0.75);
     cursor: pointer;
-    transition: transform 0.45s var(--spring);
-}
-.add:active {
-    transform: scale(0.92);
+    transition: transform 0.2s var(--ease);
 }
 .add.is-open {
     transform: rotate(45deg);
 }
 .add:focus-visible {
-    outline: 2px solid rgb(var(--v-theme-primary));
+    outline: 2px solid var(--ink);
     outline-offset: 3px;
 }
 
@@ -448,40 +435,38 @@ const quickActions = computed<{ id: string; icon: Component; label: string; run:
 .sheet {
     max-height: 80dvh;
     overflow-y: auto;
-    padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px));
-    border-radius: var(--radius-overlay) var(--radius-overlay) 0 0;
-    background: var(--surface-raised);
+    padding: 12px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--ink);
+    background: var(--raise);
     color: var(--ink);
     font-family: var(--font-ui);
 }
 .sheet__grip {
-    width: 40px;
-    height: 4px;
-    margin: 0 auto 10px;
-    border-radius: 2px;
-    background: var(--thread);
+    display: none;
 }
 .sheet__head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 4px 10px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
 }
 .sheet__title {
     margin: 0;
     font-size: 18px;
-    font-weight: 650;
-    letter-spacing: -0.02em;
+    font-weight: 700;
+    letter-spacing: -0.025em;
 }
 .sheet__close {
     display: grid;
     place-items: center;
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: var(--hair);
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    background: transparent;
     color: var(--ink);
     cursor: pointer;
 }
@@ -493,7 +478,7 @@ const quickActions = computed<{ id: string; icon: Component; label: string; run:
     padding: 0;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    gap: 8px;
 }
 .tile {
     appearance: none;
@@ -503,50 +488,47 @@ const quickActions = computed<{ id: string; icon: Component; label: string; run:
     gap: 8px;
     width: 100%;
     padding: 14px 6px 12px;
-    border: 1px solid var(--hair);
-    border-radius: var(--radius-leaf);
+    border: 1px solid var(--line);
+    border-radius: 0;
     background: transparent;
     color: inherit;
     font: inherit;
     cursor: pointer;
-    transition:
-        background 0.25s var(--ease),
-        transform 0.35s var(--spring);
+    transition: background 0.15s var(--ease);
 }
-.tile:hover {
-    background: var(--hair);
-}
+.tile:hover,
 .tile:active {
-    transform: scale(0.95);
+    background: var(--soft);
+    border-color: var(--ink);
 }
 .tile__icon {
     display: grid;
     place-items: center;
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
+    width: 40px;
+    height: 40px;
+    border-radius: 0;
+    background: var(--t-blue-bg);
+    color: var(--t-blue-ink);
 }
 .tile__label {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 13.5px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 /* pages d'une section */
 .pages + .pages {
-    margin-top: 10px;
+    margin-top: 16px;
 }
 .pages__title {
     margin: 0;
-    padding: 6px 12px 4px;
-    color: var(--ink-muted);
-    font-size: 13px;
-    font-weight: 560;
+    padding: 6px 0 6px;
+    color: var(--gray);
+    font-size: 12px;
+    font-weight: 400;
 }
 .pages__list {
     list-style: none;
@@ -559,44 +541,58 @@ const quickActions = computed<{ id: string; icon: Component; label: string; run:
     align-items: center;
     gap: 12px;
     width: 100%;
-    min-height: 48px;
-    padding: 10px 12px;
+    min-height: 46px;
+    padding: 0;
     border: 0;
-    border-radius: var(--radius-leaf);
+    border-top: 1px solid var(--line);
+    border-radius: 0;
     background: transparent;
     color: inherit;
     font: inherit;
-    font-size: 15.5px;
-    font-weight: 540;
+    font-size: 15px;
+    font-weight: 400;
     text-align: left;
     cursor: pointer;
 }
+.pages__list > li:last-child .page {
+    border-bottom: 1px solid var(--line);
+}
 .page:not(:disabled):active {
-    background: var(--hair);
+    background: var(--soft);
 }
 .page.is-active {
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
-    font-weight: 620;
+    font-weight: 700;
+}
+.page.is-active .page__icon {
+    color: var(--blue);
+}
+.page.is-active::after {
+    content: '';
+    margin-left: auto;
+    width: 6px;
+    height: 6px;
+    background: var(--blue);
 }
 .page:disabled {
-    color: var(--ink-muted);
+    color: var(--gray);
     cursor: default;
 }
 .page__icon {
     display: grid;
     place-items: center;
-    flex: none;
+    width: 20px;
+    height: 20px;
+    color: var(--ink-mute);
 }
 .page__label {
-    flex: 1;
     min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .page__caption {
-    flex: none;
-    padding: 2px 8px;
-    border-radius: 10px;
-    background: var(--hair);
+    margin-left: auto;
+    color: var(--gray);
     font-size: 12px;
 }
 </style>

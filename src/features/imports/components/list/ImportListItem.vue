@@ -53,32 +53,33 @@ function onActivate(event: MouseEvent) {
 </script>
 
 <template>
+    <!-- Ligne su-person : pictogramme dans un carré 36 px teinté, nom 700, sous-lignes grises, statut en carré + texte. -->
     <div
-        class="import-row"
+        class="su-person import-row"
         role="link"
         tabindex="0"
         :data-import-id="item.publicId"
         @click="onActivate"
         @keydown.enter.self="emit('open', item)"
     >
-        <span class="import-row__icon" :class="`is-${item.sourceType}`">
+        <span class="su-person__avatar su-person__avatar--tile" :class="item.sourceType === 'excel' ? 'su-tile--green' : 'su-tile--blue'">
             <FileSpreadsheetIcon v-if="item.sourceType === 'excel'" :size="18" stroke-width="1.7" />
             <FileTextIcon v-else :size="18" stroke-width="1.7" />
         </span>
-        <div class="import-row__meta">
-            <p class="import-row__name">{{ item.fileName }}</p>
-            <p class="import-row__sub">
+        <div class="su-person__meta">
+            <p class="su-person__name">{{ item.fileName }}</p>
+            <p class="su-person__sub">
                 <span>{{ accountLabel }}</span>
                 <span v-if="periodLabel"> · {{ periodLabel }}</span>
                 <span> · {{ formatImportTimestamp(item.createdAt, locale) }}</span>
             </p>
-            <p class="import-row__summary">
+            <p class="su-person__sub">
                 {{ summary }}
-                <span v-if="expiresLabel" class="import-row__expires"> · {{ expiresLabel }}</span>
+                <span v-if="expiresLabel"> · {{ expiresLabel }}</span>
             </p>
         </div>
         <ImportStatusChip class="import-row__status" :status="item.status" kind="import" />
-        <div class="import-row__actions">
+        <div class="su-person__actions import-row__actions">
             <button
                 v-if="canDeleteImport(item)"
                 type="button"
@@ -94,77 +95,9 @@ function onActivate(event: MouseEvent) {
 </template>
 
 <style scoped>
-.import-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    min-width: 0;
-    min-height: 64px;
-    padding: 10px 12px;
-    box-sizing: border-box;
-    border-radius: 14px;
-    color: inherit;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
-.import-row:hover,
 .import-row:focus-visible {
-    background: var(--surface-hover-soft);
-    outline: none;
-}
-
-.import-row__icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 38px;
-    height: 38px;
-    border-radius: 12px;
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
-}
-
-.import-row__icon.is-excel {
-    background: rgba(var(--v-theme-success), 0.12);
-    color: rgb(var(--v-theme-success));
-}
-
-.import-row__meta {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-.import-row__name,
-.import-row__sub,
-.import-row__summary {
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.import-row__name {
-    font-size: 14.5px;
-    font-weight: 620;
-    letter-spacing: -0.01em;
-}
-
-.import-row__sub {
-    margin-top: 2px;
-    font-size: 0.78rem;
-    color: var(--ink-muted);
-}
-
-.import-row__summary {
-    margin-top: 2px;
-    font-size: 0.78rem;
-    color: var(--ink-soft);
-}
-
-.import-row__expires {
-    color: var(--ink-muted);
+    outline: 2px solid var(--ink);
+    outline-offset: -2px;
 }
 
 .import-row__status {
@@ -172,24 +105,21 @@ function onActivate(event: MouseEvent) {
 }
 
 .import-row__actions {
-    display: flex;
-    flex: none;
-    justify-content: flex-end;
-    width: 36px;
+    width: 40px;
 }
 
 @media (max-width: 767px) {
     .import-row {
         flex-wrap: wrap;
-        gap: 8px 10px;
+        gap: 8px 14px;
     }
 
-    .import-row__meta {
-        flex-basis: calc(100% - 100px);
+    .import-row .su-person__meta {
+        flex-basis: calc(100% - 104px);
     }
 
     .import-row__status {
-        margin-left: 48px;
+        margin-left: 50px;
     }
 }
 </style>

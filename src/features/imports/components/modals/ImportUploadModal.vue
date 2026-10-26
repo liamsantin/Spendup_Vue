@@ -204,8 +204,8 @@ async function onSubmit() {
             >
                 <template v-if="file">
                     <span class="import-upload__file-icon">
-                        <FileSpreadsheetIcon v-if="sourceType === 'excel'" :size="22" stroke-width="1.6" />
-                        <FileTextIcon v-else :size="22" stroke-width="1.6" />
+                        <FileSpreadsheetIcon v-if="sourceType === 'excel'" :size="18" stroke-width="1.7" />
+                        <FileTextIcon v-else :size="18" stroke-width="1.7" />
                     </span>
                     <span class="import-upload__file">
                         <span class="import-upload__file-name">{{ file.name }}</span>
@@ -222,13 +222,13 @@ async function onSubmit() {
                     </button>
                 </template>
                 <button v-else type="button" class="import-upload__pick" :disabled="store.acting" @click="inputRef?.click()">
-                    <CloudUploadIcon :size="28" stroke-width="1.5" />
+                    <CloudUploadIcon :size="24" stroke-width="1.5" />
                     <span class="import-upload__pick-title">{{ t('importsPage.upload.pick') }}</span>
                     <span class="import-upload__pick-hint">{{ t('importsPage.upload.formats') }}</span>
                 </button>
                 <input ref="inputRef" type="file" class="d-none" :accept="IMPORT_ACCEPT" @change="onFileSelected" />
             </div>
-            <p v-if="fileError" class="text-caption text-error mt-n2">{{ fileError }}</p>
+            <p v-if="fileError" class="import-upload__error">{{ fileError }}</p>
 
             <AppSelect
                 v-model="templatePublicId"
@@ -272,29 +272,30 @@ async function onSubmit() {
 </template>
 
 <style scoped>
+/* Zone de dépôt : cadre 1 px noir en pointillés, carré, sans fond ; fichier choisi = cadre plein. */
 .import-upload {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
 }
 
 .import-upload__drop {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     min-height: 132px;
     padding: 14px;
-    border: 1.5px dashed rgba(16, 16, 20, 0.18);
-    border-radius: 18px;
-    background: var(--surface-hover-soft, transparent);
+    border: 1px dashed var(--ink);
+    border-radius: 0;
+    background: transparent;
     transition:
-        border-color 0.2s var(--ease, ease),
-        background 0.2s var(--ease, ease);
+        border-color 0.15s var(--ease),
+        background 0.15s var(--ease);
 }
 
 .import-upload__drop.is-dragging {
-    border-color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.06);
+    border-color: var(--blue-btn);
+    background: var(--blue-soft);
 }
 
 .import-upload__drop.has-file {
@@ -303,7 +304,7 @@ async function onSubmit() {
 }
 
 .import-upload__drop.has-error {
-    border-color: rgba(var(--v-theme-error), 0.6);
+    border-color: var(--danger);
 }
 
 .import-upload__pick {
@@ -317,9 +318,14 @@ async function onSubmit() {
     min-height: 100px;
     border: 0;
     background: transparent;
-    color: var(--ink-soft);
+    color: var(--ink);
     font: inherit;
     cursor: pointer;
+}
+
+.import-upload__pick:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
 }
 
 .import-upload__pick:disabled {
@@ -328,25 +334,26 @@ async function onSubmit() {
 }
 
 .import-upload__pick-title {
-    font-size: 0.92rem;
-    font-weight: 620;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--ink);
 }
 
 .import-upload__pick-hint {
-    font-size: 0.78rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
 }
 
+/* pictogramme du fichier dans un carré 36 px teinté */
 .import-upload__file-icon {
     display: grid;
     place-items: center;
     flex: none;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
+    width: 36px;
+    height: 36px;
+    border-radius: 0;
+    background: var(--t-blue-bg);
+    color: var(--t-blue-ink);
 }
 
 .import-upload__file {
@@ -360,19 +367,25 @@ async function onSubmit() {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .import-upload__file-size {
-    font-size: 0.78rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
+}
+
+.import-upload__error {
+    margin: -12px 0 0;
+    color: var(--danger);
+    font-size: 12.5px;
 }
 
 .import-upload__notes {
     margin: 0;
     padding-left: 18px;
-    font-size: 0.8rem;
+    font-size: 13px;
     line-height: 1.5;
-    color: var(--ink-muted);
+    color: var(--gray);
 }
 </style>

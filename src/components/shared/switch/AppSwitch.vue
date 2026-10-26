@@ -70,16 +70,24 @@ const model = defineModel<boolean>({ default: false });
 }
 
 .app-switch.v-switch--inset :deep(.v-switch__track) {
-    height: 28px;
-    min-width: 48px;
+    height: 26px;
+    min-width: 44px;
+    opacity: 1;
+    background: var(--line) !important;
+}
+
+.app-switch.v-switch--inset :deep(.v-selection-control--dirty .v-switch__track) {
+    background: var(--blue) !important;
 }
 
 .app-switch.v-switch--inset :deep(.v-switch__thumb) {
-    height: 22px;
-    width: 22px;
+    height: 20px;
+    width: 20px;
+    background: #fff !important;
+    box-shadow: 0 1px 2px rgba(11, 12, 16, 0.25);
 }
 
 .app-switch.v-switch--inset :deep(.v-selection-control--dirty .v-switch__thumb) {
-    transform: scale(0.78);
+    transform: scale(0.9);
 }
 </style>

@@ -5,12 +5,11 @@ import MobileTabBar from './MobileTabBar.vue';
 import type { NavItem, NavLeaf } from '../types/navigation';
 
 /**
- * Coquille de layout : sidebar + header + contenu.
+ * Coquille de layout « Swiss » : sidebar 272 px à gauche, header 72 px en haut,
+ * contenu à droite. Fond blanc unique, filets noirs, aucune carte.
  *
- * Elle porte la seule glu nécessaire (état d'ouverture partagé, colonnes, décor
- * de fond, adaptation mobile) pour qu'un projet n'ait qu'à poser
- * `<AppShell :items="…">contenu</AppShell>`. Le header peut être remplacé par le
- * slot `header`, qui reçoit l'état et l'action de bascule.
+ * Elle porte la seule glu nécessaire (état d'ouverture partagé sur mobile, colonnes)
+ * pour qu'un projet n'ait qu'à poser `<AppShell :items="…">contenu</AppShell>`.
  */
 withDefaults(
     defineProps<{
@@ -18,11 +17,20 @@ withDefaults(
         bottomItems?: NavItem[];
         title?: string;
         notifications?: number;
+        headerLinks?: NavLeaf[];
+        headerMenus?: NavItem[];
     }>(),
-    { items: () => [], bottomItems: () => [], title: 'Menu', notifications: 0 }
+    {
+        items: () => [],
+        bottomItems: () => [],
+        title: 'Menu',
+        notifications: 0,
+        headerLinks: () => [],
+        headerMenus: () => []
+    }
 );
 
-/** Sidebar déployée. Exposé pour piloter le layout depuis l'application. */
+/** Volet mobile déployé (sur desktop la sidebar est toujours visible). */
 const open = defineModel<boolean>('open', { default: false });
 const openId = defineModel<string | null>('openId', { default: null });
 const activeId = defineModel<string | null>('activeId', { default: null });
@@ -36,8 +44,6 @@ const emit = defineEmits<{
 
 <template>
     <div class="shell">
-        <div class="shell__glow" />
-
         <div class="shell__aside">
             <AppSidebar
                 v-model:open="open"
@@ -50,14 +56,14 @@ const emit = defineEmits<{
             />
         </div>
 
-        <!-- header et contenu partagent la même colonne : le header se redimensionne
-         donc au rythme du déploiement de la sidebar, sans code de synchronisation -->
         <div class="shell__main">
             <slot name="header" :open="open" :toggle="() => (open = !open)">
                 <AppHeader
                     v-model:search="search"
                     :menu-open="open"
                     :notifications="notifications"
+                    :header-links="headerLinks"
+                    :header-menus="headerMenus"
                     @toggle-menu="open = !open"
                     @search-submit="emit('search-submit', $event)"
                 />
@@ -68,53 +74,38 @@ const emit = defineEmits<{
             </main>
         </div>
 
-        <!-- après la colonne principale et sous le volet (z-index de .shell__aside) -->
         <MobileTabBar v-model:menu-open="open" :items="[...items, ...bottomItems]" />
     </div>
 </template>
 
 <style scoped>
 .shell {
-    --shell-pad: 12px;
     position: relative;
-    display: flex;
+    display: grid;
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
     height: 100dvh;
     min-height: 100vh;
-    padding: var(--shell-pad);
-    gap: 20px;
     overflow: hidden;
-    background:
-        radial-gradient(1200px 700px at 12% -10%, #ffffff 0%, rgba(255, 255, 255, 0) 60%),
-        linear-gradient(160deg, #f3f3f5 0%, #e9e9ee 48%, #dedee5 100%);
-}
-
-/* halo diffus derrière la sidebar, pour donner du relief au verre */
-.shell__glow {
-    position: absolute;
-    top: -180px;
-    left: -160px;
-    width: 720px;
-    height: 720px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0) 68%);
-    pointer-events: none;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
 }
 
 .shell__aside {
     position: relative;
     z-index: 2;
-    height: calc(100vh - 2 * var(--shell-pad));
+    height: 100dvh;
+    background: var(--side-bg);
+    border-right: 1px solid var(--line);
 }
 
 .shell__main {
     position: relative;
     z-index: 1;
-    flex: 1;
     min-width: 0;
     min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 20px;
 }
 
 .shell__content {
@@ -132,8 +123,10 @@ const emit = defineEmits<{
     flex: 1 1 auto;
     min-height: 0;
     width: 100%;
+    max-width: calc(var(--content-max) + 2 * var(--content-pad-x));
+    margin: 0;
     overflow: hidden;
-    padding: 0 4px 8px;
+    padding: var(--content-pad-y) var(--content-pad-x) 0;
 }
 
 .shell__content > :deep(.page-content) > * {
@@ -141,26 +134,30 @@ const emit = defineEmits<{
     min-height: 0;
 }
 
+@media (max-width: 1199px) {
+    .shell__content > :deep(.page-content) {
+        --content-pad-x: 32px;
+        --content-pad-y: 32px;
+    }
+}
+
 @media (max-width: 767px) {
     .shell {
-        --shell-pad: 8px;
-        /* plus de rail dans le flux : le header occupe toute la largeur */
-        gap: 0;
+        grid-template-columns: minmax(0, 1fr);
         /* réserve la place de la barre d'onglets fixée en bas */
-        padding-bottom: calc(var(--tabbar-h) + 2 * var(--shell-pad) + env(safe-area-inset-bottom, 0px));
-    }
-    .shell__glow {
-        top: -240px;
-        left: -220px;
-        width: 520px;
-        height: 520px;
+        padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
     }
     .shell__aside {
+        position: absolute;
+        inset: 0 auto 0 0;
         width: 0;
-        height: calc(100dvh - 2 * var(--shell-pad));
+        height: 100dvh;
+        border-right: 0;
+        background: transparent;
     }
-    .shell__main {
-        gap: 12px;
+    .shell__content > :deep(.page-content) {
+        --content-pad-x: 16px;
+        --content-pad-y: 20px;
     }
 }
 </style>

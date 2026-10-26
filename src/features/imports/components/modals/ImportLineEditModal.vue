@@ -425,7 +425,7 @@ const categoryDefaultType = computed(() => ((formAmount.value ?? 0) >= 0 ? 'reve
                         :class="{ 'is-faulty': isFaulty('valueDate') }"
                     />
                 </div>
-                <p v-if="fieldErrors.operationDate || fieldErrors.valueDate" class="text-caption text-error mt-n2">
+                <p v-if="fieldErrors.operationDate || fieldErrors.valueDate" class="import-line-edit__error">
                     {{ fieldErrors.operationDate || fieldErrors.valueDate }}
                 </p>
 
@@ -619,7 +619,7 @@ const categoryDefaultType = computed(() => ((formAmount.value ?? 0) >= 0 ? 'reve
 
 .import-line-edit__link {
     color: inherit;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .import-line-edit__inline-actions {
@@ -635,35 +635,51 @@ const categoryDefaultType = computed(() => ((formAmount.value ?? 0) >= 0 ? 'reve
 }
 
 .import-line-edit__row :deep(.is-faulty .v-field__outline) {
-    color: rgb(var(--v-theme-error));
+    color: var(--danger);
 }
 
+.import-line-edit__error {
+    margin: -8px 0 0;
+    color: var(--danger);
+    font-size: 12.5px;
+}
+
+/* valeurs d'origine : titre 13 px 700 sur filet 2 px, lignes libellé gris / valeur sur filets fins */
 .import-line-edit__original {
-    padding: 12px 14px;
-    border-radius: 14px;
-    background: var(--hair, rgba(16, 16, 20, 0.04));
-    font-size: 0.82rem;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    font-size: 14px;
 }
 
 .import-line-edit__original-title {
-    margin: 0 0 6px;
-    font-weight: 620;
+    margin: 0 0 4px;
+    font-size: 13px;
+    font-weight: 700;
 }
 
 .import-line-edit__original dl {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr);
-    gap: 4px 12px;
+    gap: 0 16px;
     margin: 0;
 }
 
+.import-line-edit__original dt,
+.import-line-edit__original dd {
+    padding: 8px 0;
+    border-top: 1px solid var(--line);
+}
+
 .import-line-edit__original dt {
-    color: var(--ink-muted);
+    color: var(--gray);
 }
 
 .import-line-edit__original dd {
     margin: 0;
     overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
 }
 
 .import-line-edit__footer {

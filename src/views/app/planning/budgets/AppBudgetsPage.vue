@@ -8,13 +8,14 @@ import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFi
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { BUDGETS_PATHS, BudgetsDirectory, isBudgetPeriode, BUDGET_NAME_MAX, BUDGET_PERIODES, useBudgetsStore } from '@/features/budgets';
+import { budgetDaysRemaining, endOfMonthYmd, formatBudgetMonth } from '@/features/budgets/format';
 import { categorySelectItems } from '@/features/categories/payload';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import type { BudgetPeriode } from '@/features/budgets/types';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useBudgetsStore();
@@ -74,6 +75,15 @@ const visibleCount = computed(() => {
 });
 
 const filterCount = computed(() => (filterPeriode.value ? 1 : 0) + (filterCategory.value ? 1 : 0));
+
+/** « Budget d’octobre · 8 jours restants » : mois civil en cours. */
+const pageSubtitle = computed(() => {
+    const daysLeft = budgetDaysRemaining(endOfMonthYmd());
+    return [
+        t('budgetsPage.hero.monthBudget', { month: formatBudgetMonth(locale.value) }),
+        t('budgetsPage.hero.daysLeft', { count: daysLeft }, daysLeft)
+    ].join(' · ');
+});
 
 function patchQuery(patch: Record<string, string | undefined>) {
     const next: Record<string, string> = {};
@@ -142,7 +152,7 @@ if (!categoriesStore.initialized) {
 </script>
 
 <template>
-    <AppPageShell :title="t('budgetsPage.title')">
+    <AppPageShell :title="t('budgetsPage.title')" :subtitle="pageSubtitle">
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('budgetsPage.tabs.label')">
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterStatus }" @click="filterStatus = ''">
@@ -251,23 +261,29 @@ if (!categoriesStore.initialized) {
 </template>
 
 <style scoped>
+/* bouton « Rechercher » (mobile) : actif = fond gris doux */
 .budgets-search-btn.is-active {
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.14);
-    box-shadow: none;
+    background: var(--soft);
 }
 
 @media (max-width: 767px) {
-    .budgets-search--desktop,
     .budgets-toolbar__count {
+        display: none !important;
+    }
+
+    /* recherche toujours visible en pleine largeur, actions alignées à droite dessous */
+    .budgets-search--desktop {
+        flex: 1 1 100% !important;
+        max-width: 100% !important;
+    }
+
+    .budgets-search--mobile {
         display: none !important;
     }
 }
 
-@media (min-width: 768px) {
-    .budgets-search--mobile {
-        display: none;
-    }
+.budgets-search--mobile {
+    display: none;
 }
 </style>
 

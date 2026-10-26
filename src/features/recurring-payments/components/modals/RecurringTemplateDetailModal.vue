@@ -2,8 +2,7 @@
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { CalendarEventIcon, CheckIcon, EyeIcon, PaperclipIcon, PlusIcon } from 'vue-tabler-icons';
-import AppAccordion from '@/components/shared/accordion/AppAccordion.vue';
+import { CalendarEventIcon, CheckIcon, ChevronDownIcon, EyeIcon, PaperclipIcon, PlusIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
@@ -355,7 +354,7 @@ function seeRelatedTransactions() {
         <template #panel-dues>
             <AppModalPanelScroll>
                 <template v-if="template">
-                    <p class="text-medium-emphasis mb-4">
+                    <p class="recurring-detail__lead">
                         {{ formatPlannedAmount(template.plannedAmount, template.currency, locale) }}
                         ·
                         {{
@@ -365,16 +364,29 @@ function seeRelatedTransactions() {
                         }}
                         · {{ account?.name || t('recurrencesPage.unknownAccount') }}
                     </p>
-                    <p v-if="!template.isActive" class="text-caption text-warning mb-4">{{ t('recurrencesPage.form.pauseHint') }}</p>
+                    <p v-if="!template.isActive" class="recurring-detail__pause">{{ t('recurrencesPage.form.pauseHint') }}</p>
 
                     <div v-if="store.loadingDues && !dues.length" class="su-loading"><span class="su-spin" /></div>
-                    <p v-else-if="!dues.length" class="text-medium-emphasis">{{ t('recurrencesPage.detail.duesEmpty') }}</p>
-                    <div v-else class="su-stack recurring-detail-dues">
-                        <AppAccordion v-for="group in dueGroups" :key="group.key" v-model="groupOpen[group.key]" :title="group.title">
-                            <template #extra>
-                                <span class="recurring-detail-dues__count">{{ group.items.length }}</span>
-                            </template>
-                            <div class="recurring-detail-dues__list">
+                    <p v-else-if="!dues.length" class="recurring-detail__empty">{{ t('recurrencesPage.detail.duesEmpty') }}</p>
+                    <div v-else class="recurring-detail-dues">
+                        <section v-for="group in dueGroups" :key="group.key" class="recurring-dues-group">
+                            <button
+                                type="button"
+                                class="recurring-dues-group__head"
+                                :aria-expanded="groupOpen[group.key]"
+                                @click="groupOpen[group.key] = !groupOpen[group.key]"
+                            >
+                                <span class="recurring-dues-group__title">{{ group.title }}</span>
+                                <span class="recurring-dues-group__count">{{ group.items.length }}</span>
+                                <ChevronDownIcon
+                                    class="recurring-dues-group__chevron"
+                                    :class="{ 'is-open': groupOpen[group.key] }"
+                                    :size="16"
+                                    stroke-width="1.8"
+                                    aria-hidden="true"
+                                />
+                            </button>
+                            <div v-show="groupOpen[group.key]" class="recurring-dues-group__list">
                                 <div
                                     v-for="due in group.items"
                                     :key="due.publicId"
@@ -382,11 +394,11 @@ function seeRelatedTransactions() {
                                     :class="{ 'is-link': group.key === 'existing' && due.transactionPublicId }"
                                     @click="group.key === 'existing' ? openTransaction(due) : undefined"
                                 >
-                                    <span class="recurring-due-row__icon" :class="`is-${group.key}`">
+                                    <span class="su-tile recurring-due-row__icon" :class="`is-${group.key}`" aria-hidden="true">
                                         <component
                                             :is="group.key === 'existing' ? CheckIcon : CalendarEventIcon"
-                                            size="18"
-                                            stroke-width="1.8"
+                                            :size="18"
+                                            stroke-width="1.7"
                                         />
                                     </span>
                                     <div class="recurring-due-row__meta">
@@ -395,7 +407,7 @@ function seeRelatedTransactions() {
                                     </div>
                                     <div class="recurring-due-row__actions" @click.stop>
                                         <span class="recurring-due-row__figures">
-                                            <span class="recurring-due-row__amount" :class="kind === 'expense' ? 'is-debit' : 'is-credit'">
+                                            <span class="recurring-due-row__amount" :class="kind === 'expense' ? 'su-neg' : 'su-pos'">
                                                 {{ dueAmount(due) }}
                                             </span>
                                             <span
@@ -418,7 +430,7 @@ function seeRelatedTransactions() {
                                         <template v-else-if="group.key === 'upcoming' && isDueOpen(due, kind) && canConfirm">
                                             <button
                                                 type="button"
-                                                class="su-btn su-btn--ink"
+                                                class="su-btn su-btn--sm su-btn--ink"
                                                 :disabled="store.acting"
                                                 @click="confirmDue = due"
                                             >
@@ -426,7 +438,7 @@ function seeRelatedTransactions() {
                                             </button>
                                             <button
                                                 type="button"
-                                                class="su-btn su-btn--danger"
+                                                class="su-btn su-btn--sm su-btn--danger"
                                                 :disabled="store.acting"
                                                 @click="skipDue = due"
                                             >
@@ -436,7 +448,7 @@ function seeRelatedTransactions() {
                                     </div>
                                 </div>
                             </div>
-                        </AppAccordion>
+                        </section>
                     </div>
                 </template>
             </AppModalPanelScroll>
@@ -461,7 +473,7 @@ function seeRelatedTransactions() {
                 <section class="recurring-files-block">
                     <h3 class="recurring-files-block__title">{{ t('recurrencesPage.detail.filesOnTransactions') }}</h3>
                     <div v-if="loadingLinkedTx" class="su-loading"><span class="su-spin" /></div>
-                    <p v-else-if="!linkedTxFileGroups.length" class="text-medium-emphasis">
+                    <p v-else-if="!linkedTxFileGroups.length" class="recurring-detail__empty">
                         {{ t('recurrencesPage.detail.filesOnTransactionsEmpty') }}
                     </p>
                     <div v-else class="recurring-tx-files">
@@ -528,22 +540,180 @@ function seeRelatedTransactions() {
 </template>
 
 <style scoped>
+.recurring-detail__lead {
+    margin: 0 0 16px;
+    color: var(--gray);
+    font-size: 14px;
+}
+
+.recurring-detail__pause {
+    margin: -8px 0 16px;
+    color: var(--violet-ink);
+    font-size: 13px;
+}
+
+.recurring-detail__empty {
+    margin: 0;
+    color: var(--gray);
+    font-size: 14px;
+}
+
+/* ── groupes d’échéances : titre 700 sur filet 2 px, repliable ── */
+.recurring-detail-dues {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.recurring-dues-group__head {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 40px;
+    margin: 0;
+    padding: 0 0 8px;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.recurring-dues-group__head:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+}
+
+.recurring-dues-group__title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.recurring-dues-group__count {
+    color: var(--gray);
+    font-size: 13px;
+}
+
+.recurring-dues-group__chevron {
+    margin-left: auto;
+    color: var(--gray);
+    transition: transform 0.2s var(--ease);
+}
+
+.recurring-dues-group__chevron.is-open {
+    transform: rotate(180deg);
+}
+
+/* ligne d’échéance : 36px | date 700 + statut | montant 700 | actions, filet fin */
+.recurring-due-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    min-width: 0;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+    transition: background 0.15s var(--ease);
+}
+
+.recurring-dues-group__list > .recurring-due-row:first-child {
+    border-top: 0;
+}
+
+.recurring-due-row.is-link {
+    cursor: pointer;
+}
+
+.recurring-due-row.is-link:hover {
+    background: var(--soft);
+}
+
+.recurring-due-row__icon.is-existing {
+    background: var(--t-blue-bg);
+    color: var(--t-blue-ink);
+}
+
+.recurring-due-row__icon.is-upcoming {
+    background: var(--t-gray-bg);
+    color: var(--t-gray-ink);
+}
+
+.recurring-due-row__meta {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.recurring-due-row__date {
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.006em;
+}
+
+.recurring-due-row__sub {
+    margin: 2px 0 0;
+    color: var(--gray);
+    font-size: 13px;
+}
+
+.recurring-due-row__actions {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.recurring-due-row__figures {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+    margin-right: 8px;
+}
+
+.recurring-due-row__amount {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.recurring-due-row__delta {
+    font-size: 12.5px;
+    white-space: nowrap;
+    color: var(--gray);
+}
+
+.recurring-due-row__delta.is-unfavorable {
+    color: var(--violet-ink);
+}
+
+.recurring-due-row__delta.is-favorable {
+    color: var(--blue-ink);
+}
+
+/* ── justificatifs ── */
 .recurring-files-block + .recurring-files-block {
-    margin-top: 28px;
+    margin-top: 32px;
 }
 
 .recurring-files-block__title {
-    margin: 0 0 8px;
-    color: var(--ink-mute);
-    font-size: 13px;
-    font-weight: 560;
-    letter-spacing: 0.01em;
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
 }
 
 .recurring-tx-files {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
 }
 
 .recurring-tx-files__group {
@@ -556,13 +726,18 @@ function seeRelatedTransactions() {
     gap: 8px;
     width: 100%;
     min-width: 0;
-    margin: 0 0 8px;
+    margin: 0 0 4px;
     padding: 0;
     border: 0;
     background: transparent;
     color: inherit;
+    font: inherit;
     text-align: left;
     cursor: pointer;
+}
+
+.recurring-tx-files__tx:hover .recurring-tx-files__label {
+    text-decoration: underline;
 }
 
 .recurring-tx-files__label {
@@ -570,15 +745,14 @@ function seeRelatedTransactions() {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 14.5px;
-    font-weight: 620;
+    font-weight: 700;
 }
 
 .recurring-tx-files__date,
 .recurring-tx-files__size {
     flex: none;
-    color: var(--ink-muted);
-    font-size: 0.78rem;
+    color: var(--gray);
+    font-size: 13px;
 }
 
 .recurring-tx-files__list {
@@ -587,7 +761,6 @@ function seeRelatedTransactions() {
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
 }
 
 .recurring-tx-files__chip {
@@ -598,20 +771,27 @@ function seeRelatedTransactions() {
 .recurring-tx-files__open {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     min-width: 0;
     flex: 1;
-    padding: 8px 10px;
-    border: 1px solid var(--stroke);
-    border-radius: 12px;
-    background: var(--surface-raised);
-    color: inherit;
+    min-height: 40px;
+    padding: 8px 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
     text-align: left;
     cursor: pointer;
 }
 
 .recurring-tx-files__open:hover {
-    border-color: color-mix(in srgb, rgb(var(--v-theme-primary)) 35%, var(--stroke));
+    background: var(--soft);
+}
+
+.recurring-tx-files__open > svg {
+    flex: none;
+    color: var(--gray);
 }
 
 .recurring-tx-files__name {
@@ -619,174 +799,22 @@ function seeRelatedTransactions() {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-weight: 600;
 }
 
 .recurring-tx-files__size {
     margin: 0 0 0 auto;
 }
 
-.recurring-detail-dues {
-    gap: 12px;
-}
-
-.recurring-detail-dues :deep(.app-accordion.is-open) {
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
-}
-
-.recurring-detail-dues__count {
-    color: var(--ink-muted);
-    font-size: 12.5px;
-    font-weight: 650;
-}
-
-.recurring-detail-dues__list {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    overflow: visible;
-    margin: 0 -6px;
-}
-
-.recurring-due-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    width: 100%;
-    min-width: 0;
-    padding: 10px;
-    box-sizing: border-box;
-    border-radius: 12px;
-    color: inherit;
-    position: relative;
-    z-index: 0;
-    transition:
-        transform 0.5s var(--spring),
-        box-shadow 0.45s var(--ease),
-        background 0.3s var(--ease);
-}
-
-.recurring-due-row.is-link {
-    cursor: pointer;
-}
-
-.recurring-due-row:hover {
-    background: var(--surface-hover-soft);
-}
-
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .recurring-due-row:hover {
-        z-index: 1;
-        transform: scale(1.012);
-        box-shadow:
-            0 1px 2px rgba(16, 16, 20, 0.04),
-            0 12px 28px -16px rgba(16, 16, 20, 0.18);
-    }
-}
-
-.recurring-due-row__icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 38px;
-    height: 38px;
-    margin-top: 1px;
-    border-radius: 12px;
-    background: var(--hair);
-    color: var(--ink-muted);
-}
-
-.recurring-due-row__icon.is-existing {
-    background: rgba(var(--v-theme-success), 0.12);
-    color: rgb(var(--v-theme-success));
-}
-
-.recurring-due-row__icon.is-upcoming {
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
-}
-
-.recurring-due-row__meta {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.recurring-due-row__date {
-    margin: 0;
-    min-width: 0;
-    font-size: 14.5px;
-    font-weight: 620;
-    letter-spacing: -0.01em;
-}
-
-.recurring-due-row__sub {
-    margin: 0;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
-}
-
-.recurring-due-row__actions {
-    display: flex;
-    flex: none;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    padding: 2px;
-    margin: -2px;
-}
-
-.recurring-due-row__amount {
-    margin-right: 6px;
-    font-size: 0.92rem;
-    font-weight: 680;
-    letter-spacing: -0.02em;
-    white-space: nowrap;
-}
-
-.recurring-due-row__amount.is-debit {
-    color: rgb(var(--amount-debit));
-}
-
-.recurring-due-row__amount.is-credit {
-    color: rgb(var(--amount-credit));
-}
-
-.recurring-due-row__figures {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
-    margin-right: 6px;
-}
-
-.recurring-due-row__delta {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-}
-
-.recurring-due-row__delta.is-unfavorable {
-    color: rgb(var(--amount-debit));
-}
-
-.recurring-due-row__delta.is-favorable {
-    color: rgb(var(--amount-credit));
-}
-
 @media (max-width: 600px) {
     .recurring-due-row {
         flex-wrap: wrap;
-        gap: 8px;
+        gap: 8px 12px;
     }
 
     .recurring-due-row__actions {
         width: 100%;
         justify-content: flex-start;
-        padding-left: 50px;
+        padding-left: 48px;
     }
 }
 </style>

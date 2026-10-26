@@ -66,15 +66,16 @@ defineExpose({ download });
 </template>
 
 <style scoped>
+/* lecteur plein écran : carré, un filet fin autour, ni arrondi ni ombre */
 .file-reader {
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
     min-height: 0;
     height: 100%;
-    border-radius: var(--radius-surface);
-    background: var(--surface);
-    border: 1px solid var(--stroke);
+    border-radius: 0;
+    background: var(--bg);
+    border: 1px solid var(--line);
     overflow: hidden;
 }
 
@@ -88,7 +89,7 @@ defineExpose({ download });
     flex: 1;
     min-height: 240px;
     margin: 0;
-    color: var(--ink-muted);
+    color: var(--gray);
 }
 
 .file-reader__frame {
@@ -98,6 +99,6 @@ defineExpose({ download });
     width: 100%;
     height: 100%;
     border: 0;
-    background: #525659;
+    background: var(--soft);
 }
 </style>

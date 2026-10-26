@@ -4,6 +4,7 @@ import { ArrowRightIcon, CheckIcon, DatabaseExportIcon, LockIcon, ShieldCheckIco
 import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
 import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
+import { APP_SCREENSHOTS_PATH } from '@/data/front-pages/spendup-additional-domains';
 
 type BillingPeriod = 'monthly' | 'yearly';
 
@@ -22,6 +23,8 @@ interface PricingPlan {
 }
 
 const billingPeriod = ref<BillingPeriod>('yearly');
+
+const subscriptionShot = `${APP_SCREENSHOTS_PATH}/subscription.jpg`;
 
 const plans: PricingPlan[] = [
     {
@@ -195,38 +198,56 @@ function yearlyTotal(plan: PricingPlan): string {
 
         <main>
             <section class="pricing-hero">
-                <v-container class="max-width-1218 pricing-hero__content">
-                    <v-chip color="primary" variant="tonal" rounded="pill" class="pricing-eyebrow su-hero-in">
-                        Quatre offres, zéro surprise
-                    </v-chip>
-                    <h1 class="pricing-title textPrimary su-hero-in" style="--su-in-delay: 80ms">
-                        Un plan pour vous. Un foyer, si vous le voulez.
-                    </h1>
-                    <p class="pricing-subtitle text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
-                        Commencez gratuitement, sans carte. Étudiant au tarif réduit (justificatif annuel). Solo pour le quotidien. Famille
-                        pour un payeur et jusqu’à quatre membres. Toutes les offres sont sans engagement.
-                    </p>
+                <div class="s-container">
+                    <div class="s-grid pricing-hero__grid">
+                        <div class="pricing-hero__content">
+                            <v-chip class="su-hero-in">Quatre offres, zéro surprise</v-chip>
+                            <h1 class="s-display su-hero-in" style="--su-in-delay: 80ms">
+                                Un plan pour vous. <span class="s-primary">Un foyer, si vous le voulez.</span>
+                            </h1>
+                            <p class="pricing-subtitle su-hero-in" style="--su-in-delay: 140ms">
+                                Commencez gratuitement, sans carte. Étudiant au tarif réduit (justificatif annuel). Solo pour le quotidien.
+                                Famille pour un payeur et jusqu’à quatre membres. Toutes les offres sont sans engagement.
+                            </p>
 
-                    <div class="billing-switch su-hero-in" style="--su-in-delay: 240ms" role="group" aria-label="Période de facturation">
-                        <button
-                            type="button"
-                            class="billing-switch__option"
-                            :class="{ 'billing-switch__option--active': billingPeriod === 'monthly' }"
-                            @click="billingPeriod = 'monthly'"
-                        >
-                            Mensuel
-                        </button>
-                        <button
-                            type="button"
-                            class="billing-switch__option"
-                            :class="{ 'billing-switch__option--active': billingPeriod === 'yearly' }"
-                            @click="billingPeriod = 'yearly'"
-                        >
-                            Annuel
-                            <span class="billing-switch__saving">3 mois offerts</span>
-                        </button>
+                            <div
+                                class="billing-switch su-hero-in"
+                                style="--su-in-delay: 200ms"
+                                role="group"
+                                aria-label="Période de facturation"
+                            >
+                                <button
+                                    type="button"
+                                    class="billing-switch__option"
+                                    :class="{ 'billing-switch__option--active': billingPeriod === 'monthly' }"
+                                    @click="billingPeriod = 'monthly'"
+                                >
+                                    Mensuel
+                                </button>
+                                <button
+                                    type="button"
+                                    class="billing-switch__option"
+                                    :class="{ 'billing-switch__option--active': billingPeriod === 'yearly' }"
+                                    @click="billingPeriod = 'yearly'"
+                                >
+                                    Annuel
+                                    <span class="billing-switch__saving">3 mois offerts</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <figure class="s-figure pricing-hero__figure su-hero-visual-in" style="--su-in-delay: 160ms">
+                            <img
+                                :src="subscriptionShot"
+                                alt="Page Abonnement de Spend.Up : plan courant, fonctionnalités incluses et quotas"
+                                width="2160"
+                                height="1350"
+                                fetchpriority="high"
+                            />
+                            <figcaption>Votre plan, ses fonctionnalités et vos quotas, toujours visibles depuis l’application.</figcaption>
+                        </figure>
                     </div>
-                </v-container>
+                </div>
             </section>
 
             <section class="pricing-plans">

@@ -38,7 +38,7 @@ function formatDate(value: string) {
             >
                 <template #actions>
                     <button
-                        class="su-btn su-btn--ink"
+                        class="su-btn su-btn--sm su-btn--ink"
                         type="button"
                         :disabled="store.acting"
                         @click.stop="store.unblockUser(item.user.publicId)"

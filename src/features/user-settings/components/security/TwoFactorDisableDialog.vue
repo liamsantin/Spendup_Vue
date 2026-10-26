@@ -67,7 +67,7 @@ async function disable(submittedCode?: string) {
         :max-width="440"
         :scrollable="false"
     >
-        <v-label class="text-subtitle-1 font-weight-semibold pb-2">{{ t('security.disableDialog.otpLabel') }}</v-label>
+        <p class="two-factor-disable__label">{{ t('security.disableDialog.otpLabel') }}</p>
         <OtpDigitsInput v-model="code" field-class="two-factor-disable-otp" @complete="disable" />
         <AppAlert v-if="error" type="error" class="mt-4">{{ error }}</AppAlert>
 
@@ -79,3 +79,11 @@ async function disable(submittedCode?: string) {
         </template>
     </AppModalBase>
 </template>
+
+<style scoped>
+.two-factor-disable__label {
+    margin: 0 0 8px;
+    color: var(--ink);
+    font-size: 13px;
+}
+</style>

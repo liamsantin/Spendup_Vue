@@ -75,9 +75,9 @@ async function confirmSendRequest() {
             >
                 <template #actions>
                     <template v-if="outgoingPendingId(user)">
-                        <span class="su-chip">{{ t('friendsPage.status.pending') }}</span>
+                        <span class="su-chip discover-status discover-status--pending">{{ t('friendsPage.status.pending') }}</span>
                         <button
-                            class="su-btn su-btn--danger"
+                            class="su-btn su-btn--sm su-btn--danger"
                             type="button"
                             :disabled="store.acting"
                             @click.stop="store.cancelRequest(outgoingPendingId(user)!)"
@@ -85,10 +85,20 @@ async function confirmSendRequest() {
                             {{ t('friendsPage.actions.cancel') }}
                         </button>
                     </template>
-                    <span v-else-if="user.friendshipStatus" class="su-chip">
+                    <span
+                        v-else-if="user.friendshipStatus"
+                        class="su-chip discover-status"
+                        :class="`discover-status--${user.friendshipStatus}`"
+                    >
                         {{ t(`friendsPage.status.${user.friendshipStatus}`) }}
                     </span>
-                    <button v-else class="su-btn su-btn--ink" type="button" :disabled="store.acting" @click.stop="openRequestModal(user)">
+                    <button
+                        v-else
+                        class="su-btn su-btn--sm su-btn--ink"
+                        type="button"
+                        :disabled="store.acting"
+                        @click.stop="openRequestModal(user)"
+                    >
                         {{ t('friendsPage.actions.add') }}
                     </button>
                 </template>
@@ -108,9 +118,10 @@ async function confirmSendRequest() {
             :scrollable="false"
             @update:model-value="onRequestOpenChange"
         >
+            <label class="discover-request__label" for="friend-request-message">{{ t('friendsPage.discover.messagePlaceholder') }}</label>
             <v-textarea
+                id="friend-request-message"
                 v-model="requestMessage"
-                :label="t('friendsPage.discover.messagePlaceholder')"
                 :placeholder="t('friendsPage.discover.messagePlaceholder')"
                 variant="outlined"
                 rows="3"
@@ -131,3 +142,26 @@ async function confirmSendRequest() {
         </AppModalBase>
     </div>
 </template>
+
+<style scoped>
+/* statut = petit carré 7 px + texte gris : gris en attente, bleu ami, rouge bloqué */
+.discover-status {
+    --chip-color: var(--gray);
+    margin-right: 8px;
+}
+
+.discover-status--accepted {
+    --chip-color: var(--blue);
+}
+
+.discover-status--blocked {
+    --chip-color: var(--danger);
+}
+
+.discover-request__label {
+    display: block;
+    margin: 0 0 8px;
+    color: var(--ink);
+    font-size: 13px;
+}
+</style>

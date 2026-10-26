@@ -62,7 +62,7 @@ async function onRefuse() {
             :photo-url="props.invite.ownerPhotoUrl"
             :user-public-id="props.invite.ownerPublicId"
             :fallback-label="ownerLabel"
-            :size="44"
+            :size="36"
         />
         <div class="su-person__meta">
             <p class="su-person__name">{{ props.invite.accountName }}</p>
@@ -92,7 +92,7 @@ async function onRefuse() {
             <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || refusing || accepting" @click.stop="onAccept">
                 {{ t('comptesPage.actions.accept') }}
             </button>
-            <button type="button" class="su-btn su-btn--danger" :disabled="store.acting || accepting || refusing" @click.stop="onRefuse">
+            <button type="button" class="su-btn" :disabled="store.acting || accepting || refusing" @click.stop="onRefuse">
                 {{ t('comptesPage.actions.refuse') }}
             </button>
         </div>
@@ -107,10 +107,14 @@ async function onRefuse() {
 
 .incoming-share__note {
     margin: 4px 0 0;
-    color: var(--ink-muted);
-    font-size: 12.5px;
+    color: var(--gray);
+    font-size: 13px;
     line-height: 1.4;
     white-space: normal;
+}
+
+.incoming-share__actions {
+    gap: 8px;
 }
 
 @media (max-width: 599.98px) {

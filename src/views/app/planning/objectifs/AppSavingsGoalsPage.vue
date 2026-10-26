@@ -252,23 +252,29 @@ if (!accountsStore.initialized) {
 </template>
 
 <style scoped>
+/* bouton « Rechercher » (mobile) : actif = fond gris doux */
 .savings-goals-search-btn.is-active {
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.14);
-    box-shadow: none;
+    background: var(--soft);
 }
 
 @media (max-width: 767px) {
-    .savings-goals-search--desktop,
     .savings-goals-toolbar__count {
+        display: none !important;
+    }
+
+    /* recherche toujours visible en pleine largeur, actions alignées à droite dessous */
+    .savings-goals-search--desktop {
+        flex: 1 1 100% !important;
+        max-width: 100% !important;
+    }
+
+    .savings-goals-search--mobile {
         display: none !important;
     }
 }
 
-@media (min-width: 768px) {
-    .savings-goals-search--mobile {
-        display: none;
-    }
+.savings-goals-search--mobile {
+    display: none;
 }
 </style>
 

@@ -8,7 +8,10 @@ import {
     percentChange,
     summarizeFlows,
     topExpenseCategories,
-    upcomingDues
+    upcomingDues,
+    splitHeroAmount,
+    formatShortDayMonth,
+    summarizeBudgets
 } from '@/features/dashboard/format';
 
 function account(partial: Partial<Account> = {}): Account {
@@ -137,5 +140,42 @@ describe('dashboard : chiffres du mois', () => {
             ['salaire', 100],
             ['loyer', -100]
         ]);
+    });
+});
+
+describe('dashboard : affichage éditorial', () => {
+    it('découpe un montant formaté en entier / décimales / devise', () => {
+        expect(splitHeroAmount('48 688,55 CHF')).toEqual({ currency: 'CHF', main: '48 688', decimals: ',55' });
+        expect(splitHeroAmount('CHF 48’688.55')).toEqual({ currency: 'CHF', main: '48’688', decimals: '.55' });
+        expect(splitHeroAmount('1 234,50 €')).toEqual({ currency: '€', main: '1 234', decimals: ',50' });
+        expect(splitHeroAmount('••••')).toEqual({ currency: null, main: '••••', decimals: null });
+        expect(splitHeroAmount('-12,00 CHF')).toEqual({ currency: 'CHF', main: '-12', decimals: ',00' });
+    });
+
+    it('date courte jj.mm', () => {
+        expect(formatShortDayMonth('2026-10-23')).toBe('23.10');
+        expect(formatShortDayMonth('n/a')).toBe('n/a');
+    });
+
+    it('budget global : devise majoritaire, pourcentage et carrés de jauge', () => {
+        const budget = (currency: string, spentAmount: number, limitAmount: number, isCurrent = true) => ({
+            isActive: true,
+            isCurrent,
+            currency,
+            spentAmount,
+            limitAmount
+        });
+        expect(summarizeBudgets([])).toBeNull();
+        expect(summarizeBudgets([budget('CHF', 100, 200, false)])).toBeNull();
+        expect(summarizeBudgets([budget('CHF', 3412.6, 4500), budget('EUR', 10, 20)])).toEqual({
+            currency: 'CHF',
+            spent: 3412.6,
+            limit: 4500,
+            remaining: 1087.4,
+            percent: 76,
+            segments: 15
+        });
+        expect(summarizeBudgets([budget('CHF', 300, 200)])?.segments).toBe(20);
+        expect(summarizeBudgets([budget('CHF', 300, 200)])?.percent).toBe(150);
     });
 });

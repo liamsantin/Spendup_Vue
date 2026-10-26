@@ -245,25 +245,31 @@ async function confirmDelete() {
 .savings-goals-directory {
     width: 100%;
     min-width: 0;
+    padding: 8px 0 24px;
 }
 
+/* trois blocs par rangée (1 sur mobile), gouttière 32 px */
 .savings-goals-directory__list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 40px 32px;
     width: 100%;
-    overflow: visible;
-    padding: 0;
+}
+
+@media (max-width: 1199.98px) {
+    .savings-goals-directory__list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 767px) {
     .savings-goals-directory {
-        margin-inline: -8px;
-        width: calc(100% + 16px);
+        padding: 0 0 16px;
     }
 
     .savings-goals-directory__list {
-        gap: 8px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 32px;
     }
 }
 </style>

@@ -38,12 +38,12 @@ async function onChipClick(key: string, notificationId: number) {
             :key="chip.key"
             class="text-body-2 friend-live-chips__chip"
             :color="friendLiveChipColor()"
-            variant="flat"
+            variant="outlined"
             closable
             @click="onChipClick(chip.key, chip.notification.id)"
             @dismiss="store.dismissLiveFriendChip(chip.key)"
         >
-            <UserPhotoAvatar start :photo-url="chip.notification.photoUrl" :fallback-label="chip.notification.title" :size="25" />
+            <UserPhotoAvatar start :photo-url="chip.notification.photoUrl" :fallback-label="chip.notification.title" :size="24" />
             {{ chipLabel(chip.notification.title, chip.notification.subtitle, chip.notification.message) }}
         </AppChip>
     </div>
@@ -61,24 +61,53 @@ async function onChipClick(key: string, notificationId: number) {
     pointer-events: none;
 }
 
-/* Fond couleur plein (variant par défaut) sans transparence du underlay tonal. */
+/* Pastille Swiss : carrée, bordure 1 px noire, fond blanc, aucune ombre, petit carré bleu en tête. */
 .friend-live-chips__chip {
     pointer-events: auto;
     cursor: pointer;
     max-width: 100%;
+    height: 40px;
+    padding: 0 10px 0 12px;
+    border: 1px solid var(--ink) !important;
+    border-radius: 0 !important;
+    background: var(--raise) !important;
+    color: var(--ink) !important;
+    box-shadow: none !important;
+    font-family: var(--font-ui);
+    font-size: 14px !important;
+    font-weight: 400;
     opacity: 1;
-    color: rgb(var(--v-theme-on-primary)) !important;
+    transition: background 0.15s var(--ease);
+}
+
+.friend-live-chips__chip:hover {
+    background: var(--soft) !important;
 }
 
 .friend-live-chips__chip :deep(.v-chip__underlay) {
-    opacity: 1 !important;
+    opacity: 0 !important;
 }
 
-.friend-live-chips__chip.text-error {
-    color: rgb(var(--v-theme-on-error)) !important;
+.friend-live-chips__chip :deep(.v-chip__content) {
+    gap: 10px;
 }
 
-.friend-live-chips__chip.text-warning {
-    color: rgb(var(--v-theme-on-warning)) !important;
+.friend-live-chips__chip :deep(.v-chip__content::before) {
+    content: '';
+    display: inline-block;
+    flex: none;
+    width: 7px;
+    height: 7px;
+    background: var(--blue);
+}
+
+.friend-live-chips__chip :deep(.v-chip__close) {
+    margin-left: 4px;
+    color: var(--gray);
+    opacity: 1;
+}
+
+.friend-live-chips__chip :deep(.v-chip__close:hover) {
+    color: var(--ink);
 }
 </style>

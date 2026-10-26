@@ -1,42 +1,48 @@
 <script setup lang="ts">
-import {
-    ArrowRightIcon,
-    BulbIcon,
-    CheckIcon,
-    HeartIcon,
-    LockIcon,
-    MapPinIcon,
-    RocketIcon,
-    ShieldCheckIcon,
-    SparklesIcon,
-    UserIcon
-} from 'vue-tabler-icons';
+import { ArrowRightIcon } from 'vue-tabler-icons';
 import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
 import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
-import liamPhoto from '@/assets/images/profile/avatar/user-26.jpg';
+
+const story = [
+    {
+        title: 'Le constat',
+        text: 'Comptes, contrats, objectifs et actifs vivent souvent dans des outils séparés qui ne racontent jamais toute l’histoire.'
+    },
+    {
+        title: 'L’idée',
+        text: 'Un carnet de bord financier alimenté par vos propres relevés : simple pour le quotidien, assez complet pour réunir toutes ces dimensions, et durable puisqu’il ne dépend d’aucune banque.'
+    },
+    {
+        title: 'L’ambition',
+        text: 'Aider chacun à comprendre sa situation, anticiper les prochaines étapes et décider avec davantage de confiance.'
+    }
+];
 
 const principles = [
     {
-        icon: BulbIcon,
         title: 'Rendre simple ce qui ne l’est pas',
         text: 'Transformer des données financières dispersées en informations claires et directement utiles.'
     },
     {
-        icon: UserIcon,
         title: 'Vous laisser le contrôle',
         text: 'Spend.Up ne se connecte jamais à votre banque : vous décidez de ce que vous importez, et quand. Vos données, vos règles.'
     },
     {
-        icon: LockIcon,
         title: 'Protéger par défaut',
         text: 'La sécurité, la 2FA et la maîtrise des données sont intégrées à toutes les offres.'
     },
     {
-        icon: RocketIcon,
         title: 'Évoluer avec vos besoins',
         text: 'Du budget quotidien au patrimoine familial, la plateforme grandit à votre rythme.'
     }
+];
+
+const swissFacts = [
+    { label: 'Développement', value: 'Conçu et développé en Suisse' },
+    { label: 'Hébergement', value: 'Données stockées en Suisse, chez Infomaniak' },
+    { label: 'Cadre légal', value: 'Loi fédérale sur la protection des données (nLPD)' },
+    { label: 'Sécurité', value: '2FA et gestion des appareils incluses pour tous' }
 ];
 
 const commitments = [
@@ -54,176 +60,150 @@ const commitments = [
         <Header />
 
         <main>
+            <!-- Hero : texte à gauche, affiche suisse à droite -->
             <section class="about-hero">
-                <v-container class="max-width-1218">
-                    <div class="about-hero__copy su-hero-in">
-                        <v-chip color="primary" variant="tonal" rounded="pill" class="about-eyebrow">
-                            <SparklesIcon size="15" class="me-2" />
-                            Une histoire personnelle, une ambition collective
-                        </v-chip>
-                        <h1 class="textPrimary">Construire l’outil financier que j’aurais aimé avoir.</h1>
-                        <p class="text-medium-emphasis">
-                            Spend.Up est né d’un besoin simple : comprendre toute sa vie financière sans multiplier les fichiers, les
-                            applications et les compromis, et sans confier ses accès bancaires à qui que ce soit.
-                        </p>
-                        <div class="about-hero__actions">
-                            <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth?tab=register">
-                                Découvrir Spend.Up
-                                <ArrowRightIcon size="19" class="ms-2" />
-                            </v-btn>
-                            <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-7" to="/fonctionnalites">
-                                Voir les fonctionnalités
-                            </v-btn>
-                        </div>
-                    </div>
-
-                    <div class="founder-visual su-hero-visual-in">
-                        <div class="founder-visual__glow"></div>
-                        <div class="founder-card">
-                            <img :src="liamPhoto" alt="L.S, créateur de Spend.Up" />
-                            <div class="founder-card__caption">
-                                <span>Créé et développé par</span>
-                                <strong>L.S</strong>
-                                <small>Fondateur &amp; développeur</small>
+                <div class="s-container">
+                    <div class="s-grid about-hero__grid">
+                        <div class="about-hero__copy">
+                            <v-chip class="su-hero-in">Une histoire personnelle, une ambition collective</v-chip>
+                            <h1 class="s-display su-hero-in" style="--su-in-delay: 80ms">
+                                Construire l’outil financier <span class="s-primary">que j’aurais aimé avoir.</span>
+                            </h1>
+                            <p class="s-lead su-hero-in" style="--su-in-delay: 140ms">
+                                Spend.Up est né d’un besoin simple : comprendre toute sa vie financière sans multiplier les fichiers, les
+                                applications et les compromis, et sans confier ses accès bancaires à qui que ce soit.
+                            </p>
+                            <p class="about-hero__signature su-hero-in" style="--su-in-delay: 180ms">
+                                L.S — fondateur et développeur de Spend.Up, en Suisse
+                            </p>
+                            <div class="s-actions su-hero-in" style="--su-in-delay: 220ms">
+                                <v-btn color="primary" size="x-large" flat class="text-none" to="/auth?tab=register">
+                                    Commencer gratuitement
+                                    <ArrowRightIcon size="18" class="ms-3" />
+                                </v-btn>
+                                <v-btn size="x-large" variant="outlined" class="text-none" to="/fonctionnalites">
+                                    Voir les fonctionnalités
+                                </v-btn>
                             </div>
                         </div>
-                        <div class="founder-note founder-note--location">
-                            <MapPinIcon size="20" />
-                            <div><strong>Conçu en Suisse</strong><small>Développé avec soin</small></div>
-                        </div>
-                        <div class="founder-note founder-note--mission">
-                            <HeartIcon size="20" />
-                            <div><strong>Une vision utile</strong><small>La clarté avant la complexité</small></div>
-                        </div>
+
+                        <figure class="about-poster su-hero-visual-in" style="--su-in-delay: 160ms">
+                            <svg viewBox="0 0 32 32" role="img" aria-label="Croix suisse">
+                                <rect width="32" height="32" fill="#E4002B" />
+                                <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
+                                <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
+                            </svg>
+                            <figcaption>
+                                <span>Conçu et développé en Suisse</span>
+                                <span>Données hébergées en Suisse</span>
+                            </figcaption>
+                        </figure>
                     </div>
-                </v-container>
+                </div>
             </section>
 
-            <section class="about-story">
-                <v-container class="max-width-1218">
-                    <div v-reveal class="about-heading">
-                        <span class="about-kicker">Pourquoi Spend.Up existe</span>
-                        <h2 class="textPrimary">Une meilleure décision commence par une meilleure vision</h2>
-                        <p class="text-medium-emphasis">
-                            Les finances personnelles ne se résument pas à une liste de dépenses. Elles relient le quotidien, les projets,
-                            la famille et le patrimoine.
-                        </p>
-                    </div>
-
-                    <div v-reveal class="story-grid" data-reveal-stagger="110">
-                        <article>
-                            <span>01</span>
-                            <h3 class="textPrimary">Le constat</h3>
-                            <p class="text-medium-emphasis">
-                                Comptes, contrats, objectifs et actifs vivent souvent dans des outils séparés qui ne racontent jamais toute
-                                l’histoire.
+            <!-- Pourquoi : trois lignes de tableau numérotées -->
+            <section class="s-section about-story">
+                <div class="s-container">
+                    <header v-reveal class="s-grid s-head">
+                        <div class="s-head__label"><b>01</b> Pourquoi Spend.Up existe</div>
+                        <div class="s-head__body">
+                            <h2>Une meilleure décision commence par une meilleure vision.</h2>
+                            <p>
+                                Les finances personnelles ne se résument pas à une liste de dépenses. Elles relient le quotidien, les
+                                projets, la famille et le patrimoine.
                             </p>
-                        </article>
-                        <article>
-                            <span>02</span>
-                            <h3 class="textPrimary">L’idée</h3>
-                            <p class="text-medium-emphasis">
-                                Un carnet de bord financier alimenté par vos propres relevés : simple pour le quotidien, assez complet pour
-                                réunir toutes ces dimensions, et durable puisqu’il ne dépend d’aucune banque.
-                            </p>
-                        </article>
-                        <article>
-                            <span>03</span>
-                            <h3 class="textPrimary">L’ambition</h3>
-                            <p class="text-medium-emphasis">
-                                Aider chacun à comprendre sa situation, anticiper les prochaines étapes et décider avec davantage de
-                                confiance.
-                            </p>
-                        </article>
-                    </div>
-                </v-container>
-            </section>
-
-            <section class="about-principles">
-                <v-container class="max-width-1218">
-                    <div v-reveal class="about-heading">
-                        <span class="about-kicker">Nos principes</span>
-                        <h2 class="textPrimary">Des choix de produit guidés par l’essentiel</h2>
-                    </div>
-
-                    <div v-reveal class="principles-grid" data-reveal-stagger="90">
-                        <article v-for="principle in principles" :key="principle.title">
-                            <div class="principle-icon">
-                                <component :is="principle.icon" size="25" stroke-width="1.65" />
-                            </div>
-                            <h3 class="textPrimary">{{ principle.title }}</h3>
-                            <p class="text-medium-emphasis">{{ principle.text }}</p>
-                        </article>
-                    </div>
-                </v-container>
-            </section>
-
-            <section class="about-swiss">
-                <v-container class="max-width-1218">
-                    <div v-reveal class="about-swiss__panel">
-                        <div class="about-swiss__visual">
-                            <div class="swiss-orbit swiss-orbit--outer"></div>
-                            <div class="swiss-orbit swiss-orbit--inner"></div>
-                            <div class="swiss-flag">
-                                <svg viewBox="0 0 32 32" aria-hidden="true">
-                                    <rect width="32" height="32" rx="7" fill="#DA291C" />
-                                    <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
-                                    <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
-                                </svg>
-                            </div>
                         </div>
+                    </header>
+
+                    <ol v-reveal class="story-rows" data-reveal-stagger="110">
+                        <li v-for="(step, index) in story" :key="step.title" class="s-grid">
+                            <span class="story-rows__number">{{ String(index + 1).padStart(2, '0') }}</span>
+                            <h3>{{ step.title }}</h3>
+                            <p>{{ step.text }}</p>
+                        </li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Principes : matrice 2 × 2 à filets -->
+            <section class="s-section about-principles">
+                <div class="s-container">
+                    <div class="s-grid principles">
+                        <div v-reveal class="principles__intro">
+                            <span class="s-kicker"><b>02</b> Nos principes</span>
+                            <h2 class="s-h2">Des choix de produit guidés par l’essentiel.</h2>
+                        </div>
+                        <ul v-reveal class="principles__matrix" data-reveal-stagger="90">
+                            <li v-for="(principle, index) in principles" :key="principle.title">
+                                <span class="s-label">2.{{ index + 1 }}</span>
+                                <h3>{{ principle.title }}</h3>
+                                <p>{{ principle.text }}</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Suisse : section rouge, déclaration à gauche, faits à droite -->
+            <section class="s-section about-swiss">
+                <div class="s-container">
+                    <div v-reveal class="s-grid about-swiss__grid">
                         <div class="about-swiss__copy">
-                            <span class="about-kicker">Ancré en Suisse</span>
-                            <h2>Conçu localement.<br />Pensé pour durer.</h2>
+                            <span class="s-kicker"><b>03</b> Ancré en Suisse</span>
+                            <h2 class="s-h2">Conçu localement. Pensé pour durer.</h2>
                             <p>
                                 Spend.Up est développé en Suisse et vos données y sont hébergées. Cette proximité guide nos exigences en
                                 matière de confidentialité, de fiabilité et de transparence.
                             </p>
-                            <div class="about-swiss__facts">
-                                <span><ShieldCheckIcon size="17" /> Données hébergées en Suisse</span>
-                                <span><LockIcon size="17" /> Sécurité incluse pour tous</span>
-                            </div>
                         </div>
+                        <dl class="about-swiss__facts">
+                            <div v-for="fact in swissFacts" :key="fact.label">
+                                <dt>{{ fact.label }}</dt>
+                                <dd>{{ fact.value }}</dd>
+                            </div>
+                        </dl>
                     </div>
-                </v-container>
+                </div>
             </section>
 
-            <section class="about-transparency">
-                <v-container class="max-width-1218">
-                    <div v-reveal class="transparency-layout">
-                        <div>
-                            <span class="about-kicker">Construit dans la transparence</span>
-                            <h2 class="textPrimary">Un projet indépendant, encore en mouvement.</h2>
-                            <p class="text-medium-emphasis">
+            <!-- Transparence : engagements numérotés -->
+            <section class="s-section about-transparency">
+                <div class="s-container">
+                    <div v-reveal class="s-grid transparency">
+                        <div class="transparency__copy">
+                            <span class="s-kicker"><b>04</b> Construit dans la transparence</span>
+                            <h2 class="s-h2">Un projet indépendant, encore en mouvement.</h2>
+                            <p>
                                 Spend.Up est actuellement en version bêta. La plateforme évolue rapidement au fil des apprentissages et des
                                 retours, avec une priorité constante : rester utile, fiable et honnête.
                             </p>
                         </div>
-                        <ul>
-                            <li v-for="commitment in commitments" :key="commitment">
-                                <span><CheckIcon size="15" stroke-width="2.5" /></span>
-                                {{ commitment }}
-                            </li>
-                        </ul>
+                        <ol class="transparency__list">
+                            <li v-for="commitment in commitments" :key="commitment">{{ commitment }}</li>
+                        </ol>
                     </div>
-                </v-container>
+                </div>
             </section>
 
             <section class="about-final">
-                <v-container class="max-width-1218 text-center">
-                    <span class="about-kicker">L’histoire ne fait que commencer</span>
-                    <h2 class="textPrimary">Construisez une vision plus claire de vos finances.</h2>
-                    <p>Essayez Spend.Up gratuitement, sans carte bancaire et sans engagement.</p>
-                    <div class="about-final__actions">
-                        <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
-                            Commencer gratuitement
-                            <ArrowRightIcon size="19" class="ms-2" />
-                        </v-btn>
-                        <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-8" to="/tarifs">
-                            Découvrir les offres
-                        </v-btn>
+                <div class="s-container">
+                    <div v-reveal class="s-grid about-final__grid">
+                        <h2 class="about-final__title s-display">
+                            Construisez une vision plus claire <span class="s-primary">de vos finances.</span>
+                        </h2>
+                        <div class="about-final__side">
+                            <p>Essayez Spend.Up gratuitement, sans carte bancaire et sans engagement.</p>
+                            <div class="s-actions">
+                                <v-btn color="primary" size="x-large" flat class="text-none" to="/auth?tab=register">
+                                    Commencer gratuitement
+                                    <ArrowRightIcon size="18" class="ms-3" />
+                                </v-btn>
+                                <RouterLink to="/tarifs" class="about-final__link">Découvrir les offres</RouterLink>
+                            </div>
+                        </div>
                     </div>
-                </v-container>
+                </div>
             </section>
         </main>
 

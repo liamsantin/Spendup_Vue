@@ -41,7 +41,7 @@ const { t } = useI18n();
                 max-width="100%"
                 max-height="70vh"
                 contain
-                class="rounded-lg account-picture-lightbox-img"
+                class="account-picture-lightbox-img"
             />
         </div>
     </AppModalBase>
@@ -89,8 +89,14 @@ const { t } = useI18n();
     line-height: 0;
 }
 
+/* avatar = rond autorisé ; sélection = cadre noir 2 px */
 .avatar-catalog-option--selected {
-    border-color: rgb(var(--v-theme-primary));
+    border-color: var(--ink);
+}
+
+.avatar-catalog-option:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
 }
 
 .account-picture-lightbox-img {

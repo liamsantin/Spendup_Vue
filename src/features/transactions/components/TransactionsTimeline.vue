@@ -28,11 +28,10 @@ import {
     sortTransactions,
     sourceAccountPublicId,
     targetAccountPublicId,
-    TRANSACTION_SORT_DEFAULT,
-    type TransactionSort
+    TRANSACTION_SORT_DEFAULT
 } from '@/features/transactions/format';
 import { downloadCsv } from '@/utils/helpers/csv';
-import TransactionTable from '@/features/transactions/components/list/TransactionTable.vue';
+import { amountSignOf, signedTransactionAmount } from '@/features/transactions/composables/useTransactionRowDisplay';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import {
     TRANSACTION_PAGE_SIZE_DEFAULT,
@@ -53,9 +52,18 @@ const props = defineProps<{
     lockedAccountPublicId?: string | null;
 }>();
 
-const emit = defineEmits<{
-    sort: [value: TransactionSort];
-}>();
+/** Agrégats calculés sur la liste chargée (le store n'expose pas de totaux). */
+export type TransactionsSummary = {
+    count: number;
+    currency: string;
+    inflow: number;
+    inflowCount: number;
+    outflow: number;
+    outflowCount: number;
+    net: number;
+    /** « Octobre 2026 » si toutes les opérations visibles sont du même mois, sinon `null`. */
+    monthLabel: string | null;
+};
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -204,9 +212,35 @@ const canCreate = computed(() => {
     return accountsStore.accounts.some((a) => canWriteTransactions(a));
 });
 
+function capitalize(value: string): string {
+    return value ? value.charAt(0).toLocaleUpperCase(locale.value) + value.slice(1) : value;
+}
+
+/** Date calendaire `YYYY-MM-DD` → midi UTC (pas de décalage de fuseau à l'affichage). */
+function calendarDate(ymd: string): Date | null {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(ymd.trim());
+    if (!match) return null;
+    return new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12));
+}
+
+function formatSignedTotal(value: number, currency: string): string {
+    return `${amountSignOf(value)}${resolveTransactionAmountDisplay(Math.abs(value), currency, locale.value).text}`;
+}
+
+/** Total d'un jour : somme des montants signés connus ; `null` si aucun montant n'est lisible. */
+function sumSigned(items: readonly Transaction[]): number | null {
+    let total: number | null = null;
+    for (const item of items) {
+        const signed = signedTransactionAmount(item, filterAccountId.value);
+        if (signed == null) continue;
+        total = (total ?? 0) + signed;
+    }
+    return total;
+}
+
 const dateGroups = computed(() => {
     if (!groupByDate.value) {
-        return [{ date: '_', label: '', items: visibleItems.value }];
+        return [{ date: '_', label: '', day: '', weekday: '', total: null as string | null, totalTone: '', items: visibleItems.value }];
     }
     const order: string[] = [];
     const map = new Map<string, Transaction[]>();
@@ -218,12 +252,60 @@ const dateGroups = computed(() => {
         }
         map.get(key)!.push(item);
     }
-    return order.map((date) => ({
-        date,
-        label: formatOperationDate(date, locale.value),
-        items: map.get(date)!
-    }));
+    const dayFormat = new Intl.DateTimeFormat(locale.value, { day: 'numeric', timeZone: 'UTC' });
+    const weekdayFormat = new Intl.DateTimeFormat(locale.value, { weekday: 'long', timeZone: 'UTC' });
+    return order.map((date) => {
+        const items = map.get(date)!;
+        const parsed = calendarDate(date);
+        const total = sumSigned(items);
+        const currency = items[0]?.currency ?? 'CHF';
+        return {
+            date,
+            label: formatOperationDate(date, locale.value),
+            day: parsed ? dayFormat.format(parsed) : date,
+            weekday: parsed ? capitalize(weekdayFormat.format(parsed)) : '',
+            total: total == null ? null : formatSignedTotal(total, currency),
+            totalTone: total != null && total > 0 ? 'is-credit' : '',
+            items
+        };
+    });
 });
+
+/** Entrées / sorties / solde net sur la liste visible (une seule devise, sinon `null`). */
+const summary = computed<TransactionsSummary | null>(() => {
+    const items = visibleItems.value;
+    if (!items.length) return null;
+    const currency = items[0]!.currency;
+    if (items.some((item) => item.currency !== currency)) return null;
+    let inflow = 0;
+    let inflowCount = 0;
+    let outflow = 0;
+    let outflowCount = 0;
+    for (const item of items) {
+        const signed = signedTransactionAmount(item, filterAccountId.value);
+        if (signed == null) continue;
+        if (signed > 0) {
+            inflow += signed;
+            inflowCount += 1;
+        } else if (signed < 0) {
+            outflow += -signed;
+            outflowCount += 1;
+        }
+    }
+    const months = new Set(items.map((item) => item.operationDate.slice(0, 7)));
+    let monthLabel: string | null = null;
+    if (months.size === 1) {
+        const parsed = calendarDate(`${items[0]!.operationDate.slice(0, 7)}-01`);
+        if (parsed) {
+            monthLabel = capitalize(
+                new Intl.DateTimeFormat(locale.value, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(parsed)
+            );
+        }
+    }
+    return { count: items.length, currency, inflow, inflowCount, outflow, outflowCount, net: inflow - outflow, monthLabel };
+});
+
+const loadedLabel = computed(() => t('transactionsPage.shownOf', { shown: store.items.length, total: store.totalCount }));
 
 const searchAppearIndex = computed(() => {
     const map = new Map<string, number>();
@@ -449,7 +531,7 @@ function exportCsv() {
 
 const visibleCount = computed(() => visibleItems.value.length);
 
-defineExpose({ openCreate, exportCsv, visibleCount });
+defineExpose({ openCreate, exportCsv, visibleCount, summary });
 
 watch(
     () =>
@@ -512,61 +594,50 @@ async function confirmDelete() {
             {{ localError || store.error }}
         </AppAlert>
 
-        <div class="timeline-panel__scroll">
-            <div v-if="store.loading && !store.items.length" class="su-loading">
-                <span class="su-spin" />
-            </div>
-            <div
-                v-else-if="!visibleItems.length"
-                :key="`empty-${searchRevealKey}`"
-                class="su-empty"
-                :class="{ 'is-search-reveal': searchReveals }"
-            >
-                <p>{{ emptyCopy }}</p>
-            </div>
-            <div v-else class="timeline-directory">
-                <div class="timeline-directory__list">
-                    <section v-for="group in dateGroups" :key="group.date" class="transaction-timeline__group">
-                        <h2 v-if="group.label" class="transaction-timeline__date">{{ group.label }}</h2>
-                        <div :key="searchRevealKey" class="transaction-timeline__list" :class="{ 'is-search-reveal': searchReveals }">
-                            <TransactionListItem
-                                v-for="transaction in group.items"
-                                :key="transaction.publicId"
-                                :transaction="transaction"
-                                :can-write="canWriteItem(transaction)"
-                                :acting="store.acting"
-                                :statement-account-public-id="filterAccountId"
-                                :envelope-action="envelopeActionFor(transaction)"
-                                :style="{ '--i': searchAppearIndex.get(transaction.publicId) ?? 0 }"
-                                @edit="editTarget = $event"
-                                @delete="deleteTarget = $event"
-                                @envelope="onEnvelopeAction"
-                            />
-                        </div>
-                    </section>
-                </div>
-                <TransactionTable
-                    class="timeline-directory__table"
-                    :class="{ 'is-search-reveal': searchReveals }"
-                    :items="visibleItems"
-                    :sort="listSort"
-                    :acting="store.acting"
-                    :statement-account-public-id="filterAccountId"
-                    :can-write="canWriteItem"
-                    :envelope-action-for="envelopeActionFor"
-                    @edit="editTarget = $event"
-                    @delete="deleteTarget = $event"
-                    @envelope="onEnvelopeAction"
-                    @sort="emit('sort', $event)"
-                />
-            </div>
-
-            <div v-if="store.hasMore" class="su-more">
-                <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
-                    {{ t('transactionsPage.loadMore') }}
-                </button>
-            </div>
+        <div v-if="store.loading && !store.items.length" class="su-loading">
+            <span class="su-spin" />
         </div>
+        <div
+            v-else-if="!visibleItems.length"
+            :key="`empty-${searchRevealKey}`"
+            class="su-empty"
+            :class="{ 'is-search-reveal': searchReveals }"
+        >
+            <p>{{ emptyCopy }}</p>
+        </div>
+        <div v-else class="tx-days" :class="{ 'tx-days--flat': !groupByDate }">
+            <section v-for="group in dateGroups" :key="group.date" class="tx-day">
+                <header v-if="groupByDate" class="tx-day__head">
+                    <p class="tx-day__num">{{ group.day }}</p>
+                    <p class="tx-day__weekday">{{ group.weekday }}</p>
+                    <p class="tx-day__count">{{ t('transactionsPage.operations', { count: group.items.length }, group.items.length) }}</p>
+                    <p v-if="group.total" class="tx-day__total" :class="group.totalTone">{{ group.total }}</p>
+                </header>
+                <div :key="searchRevealKey" class="tx-day__rows" :class="{ 'is-search-reveal': searchReveals }">
+                    <TransactionListItem
+                        v-for="transaction in group.items"
+                        :key="transaction.publicId"
+                        :transaction="transaction"
+                        :can-write="canWriteItem(transaction)"
+                        :acting="store.acting"
+                        :statement-account-public-id="filterAccountId"
+                        :envelope-action="envelopeActionFor(transaction)"
+                        :show-date="!groupByDate"
+                        :style="{ '--i': searchAppearIndex.get(transaction.publicId) ?? 0 }"
+                        @edit="editTarget = $event"
+                        @delete="deleteTarget = $event"
+                        @envelope="onEnvelopeAction"
+                    />
+                </div>
+            </section>
+        </div>
+
+        <footer v-if="store.hasMore && visibleItems.length" class="tx-more">
+            <p class="tx-more__count">{{ loadedLabel }}</p>
+            <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
+                {{ t('transactionsPage.loadMore') }}
+            </button>
+        </footer>
 
         <TransactionFormModal v-model="createOpen" :default-account-public-id="filterAccountId" :default-type="filterType" />
         <TransactionFormModal
@@ -598,7 +669,7 @@ async function confirmDelete() {
         <Teleport to="body">
             <div v-if="addUndo" class="budget-add-toast" role="status">
                 <p class="budget-add-toast__text">{{ t('transactionsPage.envelope.addedToast', { name: addUndo.label }) }}</p>
-                <button type="button" class="budget-add-toast__undo" :disabled="store.acting" @click="undoAddToBudget">
+                <button type="button" class="su-btn su-btn--sm budget-add-toast__undo" :disabled="store.acting" @click="undoAddToBudget">
                     {{ t('common.cancel') }}
                 </button>
             </div>
@@ -608,77 +679,125 @@ async function confirmDelete() {
 
 <style scoped>
 .timeline-panel {
-    flex: 1 1 auto;
-    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.tx-days {
     display: flex;
     flex-direction: column;
 }
 
-.timeline-panel__scroll {
-    flex: 1 1 auto;
-    min-height: 0;
+/* ── journée façon horaire CFF : filet 2 px, colonne jour 132 px | lignes ── */
+.tx-day {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr);
+    gap: 24px;
+    padding: 16px 0 12px;
+    border-top: 1px solid var(--line);
+}
+
+.tx-days--flat .tx-day {
+    display: block;
+    padding: 0;
+}
+
+.tx-day__head {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    align-items: flex-start;
+    min-width: 0;
+    padding-top: 2px;
 }
 
-.timeline-directory {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    padding: 4px 16px 10px;
-}
-
-.timeline-directory__table {
-    display: none;
-}
-
-.transaction-timeline__date {
+.tx-day__head p {
     margin: 0;
-    padding: 12px 6px 6px;
-    font-size: 0.78rem;
-    font-weight: 650;
-    letter-spacing: 0.02em;
-    color: var(--ink-muted);
 }
 
-.transaction-timeline__list {
+/* numéro du jour 48 px 700, lettrage −0.06em */
+.tx-day__num {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.tx-day__weekday {
+    margin-top: 6px !important;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.tx-day__count {
+    margin-top: 2px !important;
+    color: var(--gray);
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+/* total du jour 700 : bleu avec « + » si positif, noir avec « − » sinon */
+.tx-day__total {
+    margin-top: 6px !important;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.tx-day__total.is-credit {
+    color: var(--blue-ink);
+}
+
+.tx-day__rows > :deep(:first-child) {
+    border-top: 0;
+}
+
+.tx-day__rows {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    min-width: 0;
 }
 
-@media (min-width: 768px) {
-    .timeline-directory__list {
-        display: none;
-    }
-
-    .timeline-directory__table {
-        display: flex;
-        flex: 1 1 auto;
-        min-height: 0;
-        flex-direction: column;
-    }
+/* ── bas de liste : « N affichées sur M » à gauche, « Charger plus » à droite ── */
+.tx-more {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 16px;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--line);
 }
 
+.tx-more__count {
+    margin: 0;
+    color: var(--gray);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── toast « ajoutée au budget » : carré, bordure noire, ombre décalée ── */
 .budget-add-toast {
     position: fixed;
-    top: calc(var(--header-h, 68px) + 10px);
-    right: 16px;
+    top: calc(var(--header-h, 72px) + 12px);
+    right: 24px;
     z-index: 40;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    max-width: min(360px, calc(100vw - 24px));
-    padding: 4px 4px 4px 12px;
-    border-radius: 999px;
-    border: 1px solid var(--stroke);
-    background: var(--surface);
-    box-shadow: 0 10px 28px -20px rgba(16, 16, 20, 0.4);
-    backdrop-filter: var(--blur);
-    color: var(--ink-mute);
-    animation: su-in 0.45s var(--ease) both;
+    gap: 12px;
+    max-width: min(400px, calc(100vw - 24px));
+    padding: 8px 8px 8px 16px;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    background: var(--raise);
+    box-shadow: var(--shadow-offset);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    animation: su-in 0.25s var(--ease) both;
 }
 
 .budget-add-toast__text {
@@ -688,54 +807,77 @@ async function confirmDelete() {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 12.5px;
-    font-weight: 520;
-    letter-spacing: -0.01em;
+    font-size: 13px;
     line-height: 1.3;
 }
 
 .budget-add-toast__undo {
-    appearance: none;
     flex: none;
-    height: 28px;
-    padding: 0 10px;
-    border: 0;
-    border-radius: 14px;
-    background: transparent;
-    color: var(--ink-soft);
-    font: inherit;
-    font-size: 12.5px;
-    font-weight: 620;
-    cursor: pointer;
-}
-
-.budget-add-toast__undo:hover:not(:disabled) {
-    background: var(--surface-hover);
-    color: var(--ink);
-}
-
-.budget-add-toast__undo:disabled {
-    opacity: 0.45;
-    cursor: default;
 }
 
 @media (max-width: 959.98px) {
     .budget-add-toast {
-        top: calc(var(--header-h-mobile, 58px) + 10px);
-        right: 10px;
+        top: calc(var(--header-h-mobile, 56px) + 10px);
+        right: 12px;
     }
 }
 
 @media (max-width: 767px) {
-    .timeline-panel__scroll {
+    /* mobile : la colonne jour devient une ligne d'en-tête (numéro 32 px + jour + total) */
+    .tx-day {
         display: block;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
+        padding: 14px 0 4px;
     }
 
-    .timeline-directory {
-        display: block;
-        padding: 0 4px 4px;
+    .tx-day__head {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas:
+            'num weekday total'
+            'num count total';
+        align-items: center;
+        column-gap: 12px;
+        padding: 0 0 8px;
+    }
+
+    .tx-day__num {
+        grid-area: num;
+        font-size: 32px;
+    }
+
+    .tx-day__weekday {
+        grid-area: weekday;
+        margin-top: 0 !important;
+        align-self: end;
+    }
+
+    .tx-day__count {
+        grid-area: count;
+        margin-top: 0 !important;
+        align-self: start;
+    }
+
+    .tx-day__total {
+        grid-area: total;
+        margin-top: 0 !important;
+        text-align: right;
+    }
+
+    .tx-day__rows {
+        border-top: 1px solid var(--line);
+    }
+
+    .tx-days--flat .tx-day__rows {
+        border-top: 0;
+    }
+
+    .tx-more {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tx-more .su-btn {
+        width: 100%;
     }
 }
 </style>

@@ -134,3 +134,42 @@ export function normalizeListQuery(query: ListBudgetsQuery = {}): {
         categoryPublicId: emptyToNull(query.categoryPublicId)
     };
 }
+
+/** Jours restants dans la période, aujourd’hui compris (au moins 1 tant que la période n’est pas finie, sinon 0). */
+export function budgetDaysRemaining(periodEnd: string, today = todayLocalYmd()): number {
+    if (!isValidYmd(periodEnd) || !isValidYmd(today)) return 0;
+    const [ey, em, ed] = periodEnd.trim().split('-').map(Number);
+    const [ty, tm, td] = today.trim().split('-').map(Number);
+    const diff = Math.round((Date.UTC(ey, em - 1, ed) - Date.UTC(ty, tm - 1, td)) / 86_400_000);
+    return diff < 0 ? 0 : diff + 1;
+}
+
+/** Montant encore disponible par jour jusqu’à la fin de la période (0 si dépassé ou période finie). */
+export function budgetAvailablePerDay(remainingAmount: number, daysRemaining: number): number {
+    if (remainingAmount <= 0 || daysRemaining <= 0) return 0;
+    return remainingAmount / daysRemaining;
+}
+
+/** Jauge segmentée : nombre de segments consommés sur `segments` (plafonné). */
+export function budgetFilledSegments(percentUsed: number, segments = 20): number {
+    if (!Number.isFinite(percentUsed) || percentUsed <= 0) return 0;
+    return Math.min(segments, Math.max(0, Math.round((percentUsed / 100) * segments)));
+}
+
+/** Dernier jour du mois de `today` (`YYYY-MM-DD`). */
+export function endOfMonthYmd(today = todayLocalYmd()): string {
+    const [y, m] = today.split('-').map(Number);
+    const last = new Date(y, m, 0).getDate();
+    return `${y}-${String(m).padStart(2, '0')}-${String(last).padStart(2, '0')}`;
+}
+
+/**
+ * Mois courant pour « Budget {month} » : « d’octobre » / « de novembre » en français (élision),
+ * nom du mois seul dans les autres langues.
+ */
+export function formatBudgetMonth(locale?: string, today = todayLocalYmd()): string {
+    const [y, m] = today.split('-').map(Number);
+    const month = new Intl.DateTimeFormat(locale || undefined, { month: 'long' }).format(new Date(y, m - 1, 1, 12));
+    if (!(locale ?? '').toLowerCase().startsWith('fr')) return month;
+    return /^[aeiouyàâéèêëîïôöûüh]/i.test(month) ? `d’${month}` : `de ${month}`;
+}

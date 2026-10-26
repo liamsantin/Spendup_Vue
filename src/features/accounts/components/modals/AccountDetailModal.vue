@@ -345,7 +345,7 @@ function seeAllTransactions() {
     >
         <v-progress-linear v-if="store.loadingDetail && account" indeterminate color="primary" class="mb-3 flex-shrink-0" height="2" />
 
-        <div v-if="store.loadingDetail && !account" class="py-10 text-center">
+        <div v-if="store.loadingDetail && !account" class="su-loading">
             <span class="su-spin" />
         </div>
 
@@ -364,64 +364,64 @@ function seeAllTransactions() {
 
         <template v-if="account" #panel-details>
             <AppModalPanelScroll>
-                <v-row dense class="mb-4">
-                    <v-col cols="12" sm="6">
-                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.detail.currentBalance') }}</div>
-                        <div class="text-h5 font-weight-bold d-flex align-center ga-2">
-                            <LockIcon v-if="currentBalanceDisplay.hidden" size="20" stroke-width="1.5" class="text-medium-emphasis" />
+                <!-- Soldes en chiffres clés, puis lignes libellé / valeur sur filets fins -->
+                <div class="su-figs account-detail__figs">
+                    <div class="su-fig">
+                        <p class="su-fig__label">{{ t('comptesPage.detail.currentBalance') }}</p>
+                        <p class="su-fig__num account-detail__num">
+                            <LockIcon v-if="currentBalanceDisplay.hidden" :size="18" stroke-width="1.5" aria-hidden="true" />
                             <span>{{ currentBalanceDisplay.text }}</span>
-                        </div>
-                        <div v-if="currentBalanceDisplay.hidden" class="text-caption text-medium-emphasis">
-                            {{ t('comptesPage.detail.fieldHidden') }}
-                        </div>
-                    </v-col>
-                    <v-col cols="12" sm="6">
-                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.detail.initialBalance') }}</div>
-                        <div class="text-subtitle-1 d-flex align-center ga-2">
-                            <LockIcon v-if="initialBalanceDisplay.hidden" size="18" stroke-width="1.5" class="text-medium-emphasis" />
+                        </p>
+                        <p v-if="currentBalanceDisplay.hidden" class="su-fig__note">{{ t('comptesPage.detail.fieldHidden') }}</p>
+                    </div>
+                    <div class="su-fig">
+                        <p class="su-fig__label">{{ t('comptesPage.detail.initialBalance') }}</p>
+                        <p class="su-fig__num account-detail__num account-detail__num--secondary">
+                            <LockIcon v-if="initialBalanceDisplay.hidden" :size="16" stroke-width="1.5" aria-hidden="true" />
                             <span>{{ initialBalanceDisplay.text }}</span>
-                        </div>
-                    </v-col>
-                    <v-col v-if="account.bank || account.institutionName" cols="12">
-                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.bank') }}</div>
-                        <div class="text-body-1" :title="bankOfficialName ?? undefined">
-                            {{ account.bank?.name ?? account.institutionName }}
-                        </div>
-                        <div v-if="bankOfficialName" class="text-caption text-medium-emphasis">{{ bankOfficialName }}</div>
-                    </v-col>
-                    <v-col v-if="showIban" cols="12">
-                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.iban') }}</div>
-                        <div v-if="isAccountFieldHidden(account, 'iban')" class="text-body-1 d-flex align-center ga-2 text-medium-emphasis">
-                            <LockIcon size="16" stroke-width="1.5" />
-                            <span>{{ t('comptesPage.detail.fieldHidden') }}</span>
-                        </div>
-                        <div v-else class="text-body-1">{{ account.iban }}</div>
-                    </v-col>
-                    <v-col v-if="showAccountNumber" cols="12">
-                        <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.form.fields.accountNumber') }}</div>
-                        <div
-                            v-if="isAccountFieldHidden(account, 'accountNumber')"
-                            class="text-body-1 d-flex align-center ga-2 text-medium-emphasis"
-                        >
-                            <LockIcon size="16" stroke-width="1.5" />
-                            <span>{{ t('comptesPage.detail.fieldHidden') }}</span>
-                        </div>
-                        <div v-else class="text-body-1">{{ account.accountNumber }}</div>
-                    </v-col>
-                    <v-col cols="12" class="d-flex flex-wrap ga-2">
-                        <v-chip v-if="account.isPrimary" size="small" color="primary" variant="tonal">
-                            {{ t('comptesPage.badges.primary') }}
-                        </v-chip>
-                        <v-chip v-if="!account.isActive" size="small" color="warning" variant="tonal">
-                            {{ t('comptesPage.badges.archived') }}
-                        </v-chip>
-                        <v-chip v-if="!account.isOwned" size="small" color="secondary" variant="tonal">
-                            {{ t(`comptesPage.roles.${account.myRole}`) }}
-                        </v-chip>
-                    </v-col>
-                </v-row>
+                        </p>
+                    </div>
+                </div>
 
-                <div class="d-flex flex-wrap ga-2">
+                <dl class="account-detail__kv">
+                    <div v-if="account.bank || account.institutionName" class="su-kv">
+                        <dt>{{ t('comptesPage.form.fields.bank') }}</dt>
+                        <dd :title="bankOfficialName ?? undefined">
+                            {{ account.bank?.name ?? account.institutionName }}
+                            <span v-if="bankOfficialName" class="account-detail__official">{{ bankOfficialName }}</span>
+                        </dd>
+                    </div>
+                    <div v-if="showIban" class="su-kv">
+                        <dt>{{ t('comptesPage.form.fields.iban') }}</dt>
+                        <dd v-if="isAccountFieldHidden(account, 'iban')" class="account-detail__hidden">
+                            <LockIcon :size="14" stroke-width="1.5" aria-hidden="true" />
+                            <span>{{ t('comptesPage.detail.fieldHidden') }}</span>
+                        </dd>
+                        <dd v-else class="account-detail__mono">{{ account.iban }}</dd>
+                    </div>
+                    <div v-if="showAccountNumber" class="su-kv">
+                        <dt>{{ t('comptesPage.form.fields.accountNumber') }}</dt>
+                        <dd v-if="isAccountFieldHidden(account, 'accountNumber')" class="account-detail__hidden">
+                            <LockIcon :size="14" stroke-width="1.5" aria-hidden="true" />
+                            <span>{{ t('comptesPage.detail.fieldHidden') }}</span>
+                        </dd>
+                        <dd v-else class="account-detail__mono">{{ account.accountNumber }}</dd>
+                    </div>
+                </dl>
+
+                <div v-if="account.isPrimary || !account.isActive || !account.isOwned" class="account-detail__tags">
+                    <span v-if="account.isPrimary" class="su-chip" style="--chip-color: var(--blue)">
+                        {{ t('comptesPage.badges.primary') }}
+                    </span>
+                    <span v-if="!account.isActive" class="su-chip" style="--chip-color: var(--gray)">
+                        {{ t('comptesPage.badges.archived') }}
+                    </span>
+                    <span v-if="!account.isOwned" class="su-chip" style="--chip-color: var(--violet)">
+                        {{ t(`comptesPage.roles.${account.myRole}`) }}
+                    </span>
+                </div>
+
+                <div class="account-detail__actions">
                     <button
                         v-if="canEditAccount(account)"
                         type="button"
@@ -543,8 +543,8 @@ function seeAllTransactions() {
                     </v-menu>
                 </div>
 
-                <div class="mt-6">
-                    <button type="button" class="su-btn" @click="seeAllTransactions">
+                <div class="account-detail__link">
+                    <button type="button" class="su-link account-detail__link-btn" @click="seeAllTransactions">
                         {{ t('comptesPage.detail.seeAllTransactions') }}
                     </button>
                 </div>
@@ -561,7 +561,7 @@ function seeAllTransactions() {
 
         <template v-if="account" #panel-shares>
             <AccountSharesPanel v-if="canManageShares(account)" :account-public-id="account.publicId" />
-            <div v-else class="py-8 text-center text-medium-emphasis">
+            <div v-else class="su-empty">
                 {{ t('comptesPage.detail.shareUnavailable') }}
             </div>
         </template>
@@ -627,3 +627,83 @@ function seeAllTransactions() {
         @cleared="onLinkedGoalsCleared"
     />
 </template>
+
+<style scoped>
+/* Détail : chiffres clés sur filet 2 px, lignes libellé / valeur sur filets fins, pastilles carrées. */
+.account-detail__figs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 24px;
+}
+
+.account-detail__num {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.account-detail__num--secondary {
+    font-size: 20px;
+    font-weight: 400;
+}
+
+.account-detail__kv {
+    margin: 0 0 20px;
+}
+
+.account-detail__kv dd {
+    margin: 0;
+}
+
+.account-detail__official {
+    display: block;
+    color: var(--gray);
+    font-size: 13px;
+}
+
+.account-detail__mono {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+}
+
+.account-detail__hidden {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--gray);
+}
+
+.account-detail__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin-bottom: 24px;
+}
+
+.account-detail__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.account-detail__link {
+    margin-top: 24px;
+}
+
+.account-detail__link-btn {
+    appearance: none;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+@media (max-width: 479.98px) {
+    .account-detail__figs {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+</style>

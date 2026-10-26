@@ -101,13 +101,18 @@ const canCreatePaymentMethod = computed(() => {
     return !!account && canWritePaymentMethods(account);
 });
 
+/** Devise affichée en suffixe gris du champ montant : celle du compte choisi (CHF par défaut). */
+const amountCurrency = computed(() => {
+    const account = accountsStore.accounts.find((item) => item.publicId === props.form.accountPublicId);
+    return account?.currency ?? 'CHF';
+});
+
 const recurrenceAmountHint = computed(() => {
     if (props.recurrencePlannedAmount == null) return null;
     const actual = parseAccountAmount(props.form.amount);
     const variance = recurrenceAmountVariance(actual, props.recurrencePlannedAmount, props.form.type);
     if (!variance) return null;
-    const account = accountsStore.accounts.find((item) => item.publicId === props.form.accountPublicId);
-    const currency = account?.currency ?? 'CHF';
+    const currency = amountCurrency.value;
     return {
         tone: variance.tone,
         text: t('transactionsPage.form.recurrenceAmountVariance', {
@@ -157,12 +162,13 @@ function openPaymentMethodCreate(name: string) {
 
 <template>
     <div class="transaction-form">
-        <p v-if="showOperation && archivedHint" class="text-caption text-warning mb-2">{{ archivedHint }}</p>
-        <v-row v-if="showOperation" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tx-form-type"> {{ t('transactionsPage.form.fields.type') }} * </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <p v-if="showOperation && archivedHint" class="tx-form__hint is-warn">{{ archivedHint }}</p>
+        <div v-if="showOperation" class="tx-form__row">
+            <label class="tx-form__label" for="tx-form-type">
+                {{ t('transactionsPage.form.fields.type') }}
+                <span class="tx-form__req" aria-hidden="true">*</span>
+            </label>
+            <div class="tx-form__field">
                 <AppSelect
                     id="tx-form-type"
                     v-model="form.type"
@@ -173,15 +179,14 @@ function openPaymentMethodCreate(name: string) {
                     :error="!!fieldErrors.type"
                     :error-messages="fieldErrors.type || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showOperation" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tx-form-account">
-                    {{ isTransfer ? t('transactionsPage.form.fields.sourceAccount') : t('transactionsPage.form.fields.account') }} *
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showOperation" class="tx-form__row">
+            <label class="tx-form__label" for="tx-form-account">
+                {{ isTransfer ? t('transactionsPage.form.fields.sourceAccount') : t('transactionsPage.form.fields.account') }}
+                <span class="tx-form__req" aria-hidden="true">*</span>
+            </label>
+            <div class="tx-form__field">
                 <AppSelect
                     id="tx-form-account"
                     v-model="form.accountPublicId"
@@ -192,15 +197,14 @@ function openPaymentMethodCreate(name: string) {
                     :error="!!fieldErrors.accountPublicId"
                     :error-messages="fieldErrors.accountPublicId || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showOperation && isTransfer" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tx-form-counterparty">
-                    {{ t('transactionsPage.form.fields.counterpartyAccount') }} *
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showOperation && isTransfer" class="tx-form__row">
+            <label class="tx-form__label" for="tx-form-counterparty">
+                {{ t('transactionsPage.form.fields.counterpartyAccount') }}
+                <span class="tx-form__req" aria-hidden="true">*</span>
+            </label>
+            <div class="tx-form__field">
                 <AppSelect
                     id="tx-form-counterparty"
                     v-model="form.counterpartyAccountPublicId"
@@ -211,13 +215,14 @@ function openPaymentMethodCreate(name: string) {
                     :error="!!fieldErrors.counterpartyAccountPublicId || !!counterpartyHint"
                     :error-messages="fieldErrors.counterpartyAccountPublicId || counterpartyHint || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showOperation" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tx-form-label"> {{ t('transactionsPage.form.fields.label') }} * </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showOperation" class="tx-form__row">
+            <label class="tx-form__label" for="tx-form-label">
+                {{ t('transactionsPage.form.fields.label') }}
+                <span class="tx-form__req" aria-hidden="true">*</span>
+            </label>
+            <div class="tx-form__field">
                 <v-text-field
                     id="tx-form-label"
                     v-model="form.label"
@@ -228,13 +233,14 @@ function openPaymentMethodCreate(name: string) {
                     :error="!!fieldErrors.label"
                     :error-messages="fieldErrors.label || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showOperation" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tx-form-amount"> {{ t('transactionsPage.form.fields.amount') }} * </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showOperation" class="tx-form__row">
+            <label class="tx-form__label" for="tx-form-amount">
+                {{ t('transactionsPage.form.fields.amount') }}
+                <span class="tx-form__req" aria-hidden="true">*</span>
+            </label>
+            <div class="tx-form__field">
                 <v-text-field
                     id="tx-form-amount"
                     :model-value="form.amount"
@@ -244,24 +250,22 @@ function openPaymentMethodCreate(name: string) {
                     inputmode="decimal"
                     autocomplete="off"
                     :placeholder="t('transactionsPage.form.amountPlaceholder')"
+                    :suffix="amountCurrency"
                     :error="!!fieldErrors.amount"
                     :error-messages="fieldErrors.amount || undefined"
                     @update:model-value="onAmountInput"
                 />
-                <p
-                    v-if="recurrenceAmountHint"
-                    class="text-caption mt-1"
-                    :class="`text-${recurrenceAmountHint.tone === 'unfavorable' ? 'error' : 'success'}`"
-                >
+                <p v-if="recurrenceAmountHint" class="tx-form__hint" :class="`is-${recurrenceAmountHint.tone}`">
                     {{ recurrenceAmountHint.text }}
                 </p>
-            </v-col>
-        </v-row>
-        <v-row v-if="showOperation" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('transactionsPage.form.fields.operationDate') }} *</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showOperation" class="tx-form__row">
+            <label class="tx-form__label">
+                {{ t('transactionsPage.form.fields.operationDate') }}
+                <span class="tx-form__req" aria-hidden="true">*</span>
+            </label>
+            <div class="tx-form__field">
                 <AppDatePicker
                     v-model="operationDateModel"
                     color="primary"
@@ -269,14 +273,14 @@ function openPaymentMethodCreate(name: string) {
                     :max="todayUtc"
                     :placeholder="t('transactionsPage.form.operationDatePlaceholder')"
                 />
-                <div v-if="fieldErrors.operationDate" class="text-caption text-error mt-1">{{ fieldErrors.operationDate }}</div>
-            </v-col>
-        </v-row>
-        <v-row v-if="showOperation" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('transactionsPage.form.fields.valueDate') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+                <p v-if="fieldErrors.operationDate" class="tx-form__hint is-error">{{ fieldErrors.operationDate }}</p>
+            </div>
+        </div>
+        <div v-if="showOperation" class="tx-form__row">
+            <label class="tx-form__label">
+                {{ t('transactionsPage.form.fields.valueDate') }}
+            </label>
+            <div class="tx-form__field">
                 <AppDatePicker
                     v-model="valueDateModel"
                     color="primary"
@@ -284,16 +288,14 @@ function openPaymentMethodCreate(name: string) {
                     :min="form.operationDate || undefined"
                     :placeholder="t('transactionsPage.form.valueDatePlaceholder')"
                 />
-                <div v-if="fieldErrors.valueDate" class="text-caption text-error mt-1">{{ fieldErrors.valueDate }}</div>
-            </v-col>
-        </v-row>
-        <v-row v-if="showRecurrence" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tx-form-recurrence">
-                    {{ t('transactionsPage.form.fields.recurrence') }}
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+                <p v-if="fieldErrors.valueDate" class="tx-form__hint is-error">{{ fieldErrors.valueDate }}</p>
+            </div>
+        </div>
+        <div v-if="showRecurrence" class="tx-form__row">
+            <label class="tx-form__label" for="tx-form-recurrence">
+                {{ t('transactionsPage.form.fields.recurrence') }}
+            </label>
+            <div class="tx-form__field">
                 <AppSelect
                     id="tx-form-recurrence"
                     v-model="form.recurrencePublicId"
@@ -306,15 +308,13 @@ function openPaymentMethodCreate(name: string) {
                     :search-placeholder="t('transactionsPage.form.recurrenceSearchPlaceholder')"
                     :no-results-label="t('transactionsPage.form.recurrenceNoResults')"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showClassification" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tx-form-payment-method">
-                    {{ t('transactionsPage.form.fields.paymentMethod') }}
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showClassification" class="tx-form__row">
+            <label class="tx-form__label" for="tx-form-payment-method">
+                {{ t('transactionsPage.form.fields.paymentMethod') }}
+            </label>
+            <div class="tx-form__field">
                 <AppSelect
                     id="tx-form-payment-method"
                     v-model="form.paymentMethodPublicId"
@@ -332,15 +332,13 @@ function openPaymentMethodCreate(name: string) {
                     "
                     @create="openPaymentMethodCreate"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showClassification" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tx-form-category">
-                    {{ t('transactionsPage.form.fields.category') }}
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showClassification" class="tx-form__row">
+            <label class="tx-form__label" for="tx-form-category">
+                {{ t('transactionsPage.form.fields.category') }}
+            </label>
+            <div class="tx-form__field">
                 <AppSelect
                     id="tx-form-category"
                     v-model="form.categoryPublicId"
@@ -358,23 +356,21 @@ function openPaymentMethodCreate(name: string) {
                     :create-named-label="t('transactionsPage.form.categoryCreate', { name: '{name}' })"
                     @create="openCategoryCreate"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showClassification" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('transactionsPage.form.fields.tags') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showClassification" class="tx-form__row">
+            <label class="tx-form__label">
+                {{ t('transactionsPage.form.fields.tags') }}
+            </label>
+            <div class="tx-form__field">
                 <TagPicker v-model="form.tagPublicIds" :hint="tagsHint" />
-            </v-col>
-        </v-row>
-        <v-row v-if="showClassification" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tx-form-tier">
-                    {{ t('transactionsPage.form.fields.tier') }}
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showClassification" class="tx-form__row">
+            <label class="tx-form__label" for="tx-form-tier">
+                {{ t('transactionsPage.form.fields.tier') }}
+            </label>
+            <div class="tx-form__field">
                 <TierPicker
                     id="tx-form-tier"
                     v-model="form.tierPublicId"
@@ -385,15 +381,13 @@ function openPaymentMethodCreate(name: string) {
                     :hint="tierHint || undefined"
                     :persistent-hint="!!tierHint"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showClassification" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tx-form-savings-goal">
-                    {{ t('transactionsPage.form.fields.savingsGoal') }}
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showClassification" class="tx-form__row">
+            <label class="tx-form__label" for="tx-form-savings-goal">
+                {{ t('transactionsPage.form.fields.savingsGoal') }}
+            </label>
+            <div class="tx-form__field">
                 <AppSelect
                     id="tx-form-savings-goal"
                     v-model="form.savingsGoalPublicId"
@@ -408,8 +402,8 @@ function openPaymentMethodCreate(name: string) {
                     :search-placeholder="t('transactionsPage.form.savingsGoalSearchPlaceholder')"
                     :no-results-label="t('transactionsPage.form.savingsGoalNoResults')"
                 />
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
         <CategoryFormModal
             v-if="showClassification"
@@ -430,19 +424,71 @@ function openPaymentMethodCreate(name: string) {
 </template>
 
 <style scoped>
+/* ── lignes libellé (170 px) | champ, sans section en boîte ── */
 .transaction-form {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 16px;
+}
+
+.tx-form__row {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 8px 16px;
+    align-items: center;
+}
+
+.tx-form__label {
+    display: block;
+    min-width: 0;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.35;
+}
+
+/* astérisque de champ obligatoire en bleu */
+.tx-form__req {
+    color: var(--blue-ink);
+    margin-left: 2px;
+}
+
+.tx-form__field {
+    min-width: 0;
+}
+
+/* suffixe d'unité (« CHF ») en gris dans le champ */
+.tx-form__field :deep(.v-text-field__suffix) {
+    color: var(--gray);
+    font-size: 13px;
+    opacity: 1;
+}
+
+.tx-form__hint {
+    margin: 6px 0 0;
+    color: var(--gray);
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+
+.tx-form__hint.is-error {
+    color: var(--danger);
+}
+
+.tx-form__hint.is-warn,
+.tx-form__hint.is-unfavorable {
+    color: var(--violet-ink);
+}
+
+.tx-form__hint.is-favorable {
+    color: var(--blue-ink);
 }
 
 @media (max-width: 599.98px) {
-    .transaction-form {
-        gap: 12px;
-    }
-
-    .transaction-form :deep(.v-label) {
-        margin-bottom: 4px;
+    /* mobile : libellé au-dessus du champ */
+    .tx-form__row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
     }
 }
 </style>

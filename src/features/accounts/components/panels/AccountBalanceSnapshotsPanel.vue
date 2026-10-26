@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CalendarIcon, PlusIcon, Receipt2Icon } from 'vue-tabler-icons';
+import { PlusIcon, Receipt2Icon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import type { PerfectScrollbarExpose } from 'vue3-perfect-scrollbar';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
@@ -71,10 +71,11 @@ watch(
     { immediate: true }
 );
 
-const diffColor = computed(() => {
-    if (balanceDiff.value === null) return 'medium-emphasis';
-    if (isMatched.value) return 'success';
-    return balanceDiff.value < 0 ? 'error' : 'warning';
+/** Ton de l'écart : concordance en bleu (donnée clé), écart en violet (alerte), inconnu en gris. */
+const diffTone = computed(() => {
+    if (balanceDiff.value === null) return 'is-unknown';
+    if (isMatched.value) return 'is-matched';
+    return 'is-mismatch';
 });
 
 function formatDate(value: string) {
@@ -183,16 +184,16 @@ async function onLoadMore() {
 
 <template>
     <div class="snapshots-panel">
-        <div class="snapshots-panel__header d-flex align-center justify-space-between ga-3 flex-wrap mb-4">
+        <header class="snapshots-panel__header su-section__head">
             <div class="min-width-0">
-                <h5 class="text-h6 mb-0">{{ t('comptesPage.snapshots.title') }}</h5>
-                <div class="text-body-2 text-medium-emphasis">{{ t('comptesPage.snapshots.subtitle') }}</div>
+                <h2>{{ t('comptesPage.snapshots.title') }}</h2>
+                <p>{{ t('comptesPage.snapshots.subtitle') }}</p>
             </div>
             <button v-if="canWrite" type="button" class="su-btn su-btn--ink" @click="openAdd">
-                <PlusIcon size="16" stroke-width="1.6" />
+                <PlusIcon :size="16" stroke-width="1.6" />
                 {{ t('comptesPage.snapshots.add') }}
             </button>
-        </div>
+        </header>
 
         <div class="snapshots-panel__body">
             <AppAlert
@@ -217,64 +218,55 @@ async function onLoadMore() {
                 :subtitle="t('comptesPage.snapshots.summarySubtitle')"
             >
                 <template #extra>
-                    <v-chip size="small" :color="isMatched ? 'success' : diffColor" variant="tonal">
+                    <span class="su-chip" :style="{ '--chip-color': isMatched ? 'var(--blue)' : 'var(--violet)' }">
                         {{ isMatched ? t('comptesPage.snapshots.matched') : t('comptesPage.snapshots.mismatch') }}
-                    </v-chip>
+                    </span>
                 </template>
 
-                <div class="snapshots-summary">
-                    <div class="snapshots-summary__grid">
-                        <div class="snapshots-summary__metric">
-                            <div class="text-caption text-medium-emphasis mb-1">{{ t('comptesPage.snapshots.latestDeclared') }}</div>
-                            <div class="text-h6 font-weight-bold mb-1">
-                                {{ formatAccountBalance(latestSnapshot.balance, account.currency, locale) }}
-                            </div>
-                            <div class="d-flex align-center ga-1 text-body-2 text-medium-emphasis">
-                                <CalendarIcon size="14" stroke-width="1.5" />
-                                <span>{{ formatDate(latestSnapshot.snapshotAt) }}</span>
-                            </div>
-                            <div v-if="showAuthors" class="text-body-2 text-medium-emphasis mt-1">
-                                {{ authorLabel(latestSnapshot) }}
-                            </div>
-                        </div>
+                <!-- Synthèse en chiffres clés : dernier relevé déclaré, écart avec le solde courant -->
+                <div class="su-figs snapshots-summary">
+                    <div class="su-fig">
+                        <p class="su-fig__label">{{ t('comptesPage.snapshots.latestDeclared') }}</p>
+                        <p class="su-fig__num snapshots-summary__num">
+                            {{ formatAccountBalance(latestSnapshot.balance, account.currency, locale) }}
+                        </p>
+                        <p class="su-fig__note">
+                            {{ formatDate(latestSnapshot.snapshotAt) }}
+                            <template v-if="showAuthors"> · {{ authorLabel(latestSnapshot) }}</template>
+                        </p>
+                    </div>
 
-                        <div v-if="balanceDiff !== null" class="snapshots-summary__metric snapshots-summary__metric--diff">
-                            <div class="text-caption text-medium-emphasis mb-1">{{ t('comptesPage.snapshots.diffShort') }}</div>
-                            <div :class="`text-h6 font-weight-bold text-${diffColor}`">
-                                <template v-if="isMatched">
-                                    {{ formatAccountBalance(0, account.currency, locale) }}
-                                </template>
-                                <template v-else>
-                                    {{ balanceDiff >= 0 ? '+' : '' }}{{ formatAccountBalance(balanceDiff, account.currency, locale) }}
-                                </template>
-                            </div>
-                            <div class="text-body-2 text-medium-emphasis mt-1">{{ t('comptesPage.snapshots.diff') }}</div>
-                        </div>
+                    <div v-if="balanceDiff !== null" class="su-fig">
+                        <p class="su-fig__label">{{ t('comptesPage.snapshots.diffShort') }}</p>
+                        <p class="su-fig__num snapshots-summary__num" :class="diffTone">
+                            <template v-if="isMatched">
+                                {{ formatAccountBalance(0, account.currency, locale) }}
+                            </template>
+                            <template v-else>
+                                {{ balanceDiff >= 0 ? '+' : '' }}{{ formatAccountBalance(balanceDiff, account.currency, locale) }}
+                            </template>
+                        </p>
+                        <p class="su-fig__note">{{ t('comptesPage.snapshots.diff') }}</p>
                     </div>
                 </div>
             </AppAccordion>
 
-            <div v-if="store.loadingSnapshots && !store.balanceSnapshots.length" class="py-8 text-center flex-shrink-0">
+            <div v-if="store.loadingSnapshots && !store.balanceSnapshots.length" class="su-loading flex-shrink-0">
                 <span class="su-spin" />
             </div>
 
-            <div v-else-if="!store.balanceSnapshots.length" class="snapshots-empty text-center py-8 px-4 flex-shrink-0">
-                <v-avatar size="48" rounded="md" color="lightprimary" class="mb-3">
-                    <Receipt2Icon class="text-primary" size="24" stroke-width="1.5" />
-                </v-avatar>
-                <div class="text-subtitle-1 font-weight-medium mb-1">{{ t('comptesPage.snapshots.empty') }}</div>
-                <div class="text-body-2 text-medium-emphasis mb-4">{{ t('comptesPage.snapshots.emptyHint') }}</div>
+            <div v-else-if="!store.balanceSnapshots.length" class="su-empty flex-shrink-0">
+                <span class="su-empty__mark"><Receipt2Icon :size="22" stroke-width="1.5" /></span>
+                <p class="snapshots-empty__title">{{ t('comptesPage.snapshots.empty') }}</p>
+                <p class="snapshots-empty__hint">{{ t('comptesPage.snapshots.emptyHint') }}</p>
                 <button v-if="canWrite" type="button" class="su-btn su-btn--ink" @click="openAdd">
-                    <PlusIcon size="16" stroke-width="1.6" />
+                    <PlusIcon :size="16" stroke-width="1.6" />
                     {{ t('comptesPage.snapshots.add') }}
                 </button>
             </div>
 
             <div v-else class="snapshots-history">
-                <div class="snapshots-history__title flex-shrink-0 d-flex align-center ga-2">
-                    <Receipt2Icon size="16" stroke-width="1.6" class="flex-shrink-0" />
-                    <span>{{ t('comptesPage.snapshots.history') }}</span>
-                </div>
+                <p class="su-section-label snapshots-history__title flex-shrink-0">{{ t('comptesPage.snapshots.history') }}</p>
                 <div ref="historyListRef" class="snapshots-history__list">
                     <div v-if="smAndDown" class="snapshots-history__scroll snapshots-history__scroll--native">
                         <div class="snapshots-list">
@@ -290,7 +282,7 @@ async function onLoadMore() {
                                 @edit="openEdit"
                                 @delete="deleteTarget = $event"
                             />
-                            <div v-if="store.hasMoreSnapshots" class="py-3 text-center">
+                            <div v-if="store.hasMoreSnapshots" class="su-more">
                                 <button
                                     type="button"
                                     class="su-btn su-btn--ghost"
@@ -316,7 +308,7 @@ async function onLoadMore() {
                                 @edit="openEdit"
                                 @delete="deleteTarget = $event"
                             />
-                            <div v-if="store.hasMoreSnapshots" class="py-3 text-center">
+                            <div v-if="store.hasMoreSnapshots" class="su-more">
                                 <button
                                     type="button"
                                     class="su-btn su-btn--ghost"
@@ -357,19 +349,19 @@ async function onLoadMore() {
 </template>
 
 <style scoped>
+/* Relevés : en-tête de section, synthèse en chiffres clés, historique en lignes à filet fin. */
 .snapshots-panel {
     display: flex;
     flex-direction: column;
     height: 100%;
     min-height: 0;
     overflow: hidden;
-    /* Marge pour le scale hover des boutons / orbs en en-tête. */
-    padding: 6px;
     box-sizing: border-box;
 }
 
 .snapshots-panel__header {
     flex-shrink: 0;
+    align-items: center;
 }
 
 .snapshots-panel__body {
@@ -381,27 +373,40 @@ async function onLoadMore() {
 }
 
 .snapshots-summary {
-    padding: 0;
-    background: transparent;
-    border: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-bottom: 8px;
 }
 
-.snapshots-summary__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
+.snapshots-summary__num {
+    font-size: 22px;
 }
 
-@media (min-width: 480px) {
-    .snapshots-summary__grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-    }
+.snapshots-summary__num.is-matched {
+    color: var(--blue-ink);
+}
 
-    .snapshots-summary__metric--diff {
-        padding-inline-start: 20px;
-        border-inline-start: 1px solid rgba(var(--v-theme-primary), 0.12);
+.snapshots-summary__num.is-mismatch {
+    color: var(--violet-ink);
+}
+
+.snapshots-summary__num.is-unknown {
+    color: var(--gray);
+}
+
+@media (max-width: 479.98px) {
+    .snapshots-summary {
+        grid-template-columns: minmax(0, 1fr);
     }
+}
+
+.snapshots-empty__title {
+    margin: 0;
+    color: var(--ink);
+    font-weight: 700;
+}
+
+.snapshots-empty__hint {
+    margin: 0 0 8px;
 }
 
 .snapshots-history {
@@ -413,11 +418,7 @@ async function onLoadMore() {
 }
 
 .snapshots-history__title {
-    margin-bottom: 10px;
-    color: var(--ink-mute);
-    font-size: 12.5px;
-    font-weight: 620;
-    letter-spacing: 0.01em;
+    margin-bottom: 4px;
 }
 
 .snapshots-history__list {
@@ -426,8 +427,6 @@ async function onLoadMore() {
     flex-direction: column;
     min-height: 0;
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 18px), transparent);
-    mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 18px), transparent);
 }
 
 .snapshots-history__scroll {
@@ -451,33 +450,8 @@ async function onLoadMore() {
 }
 
 .snapshots-list {
-    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    /* Assez de marge à gauche pour le point + halo (sinon overflow du scroll les coupe). */
-    padding: 2px 4px 22px 28px;
-}
-
-.snapshots-list::before {
-    content: '';
-    position: absolute;
-    top: 14px;
-    bottom: 28px;
-    left: 13px;
-    width: 2px;
-    border-radius: 99px;
-    background: linear-gradient(
-        180deg,
-        rgba(var(--v-theme-primary), 0.38) 0%,
-        rgba(var(--v-theme-primary), 0.14) 55%,
-        rgba(var(--v-theme-primary), 0.04) 100%
-    );
-}
-
-.snapshots-empty {
-    border-radius: var(--radius-leaf);
-    border: 1px dashed rgba(var(--v-theme-on-surface), 0.14);
-    background: rgba(var(--v-theme-on-surface), 0.02);
+    padding: 0 4px 16px 0;
 }
 </style>

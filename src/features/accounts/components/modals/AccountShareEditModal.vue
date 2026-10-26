@@ -91,11 +91,11 @@ function requestRevoke() {
 
 <template>
     <AppModalBase v-model="open" :title="t('comptesPage.share.editTitle')" :max-width="420" :scrollable="false" mobile-layout="sheet">
-        <div v-if="share" class="d-flex align-center ga-3 mb-5">
-            <UserPhotoAvatar :photo-url="share.photoUrl" :user-public-id="share.userPublicId" :fallback-label="personLabel" :size="42" />
-            <div class="min-width-0">
-                <div class="text-subtitle-1 font-weight-bold text-truncate">{{ personLabel }}</div>
-                <div class="text-body-2 text-medium-emphasis">{{ formatDate(share.createdAt) }}</div>
+        <div v-if="share" class="share-edit__person">
+            <UserPhotoAvatar :photo-url="share.photoUrl" :user-public-id="share.userPublicId" :fallback-label="personLabel" :size="36" />
+            <div class="share-edit__meta">
+                <p class="share-edit__name">{{ personLabel }}</p>
+                <p class="share-edit__sub">{{ formatDate(share.createdAt) }}</p>
             </div>
         </div>
 
@@ -103,13 +103,13 @@ function requestRevoke() {
             {{ editError }}
         </AppAlert>
 
-        <div class="mb-4">
-            <div class="text-subtitle-2 mb-2">{{ t('comptesPage.share.fields.role') }}</div>
+        <div class="share-edit__block">
+            <p class="share-edit__label">{{ t('comptesPage.share.fields.role') }}</p>
             <ShareRolePicker v-model="editRole" :disabled="store.acting || share?.role === 'pending'" />
         </div>
 
-        <div v-if="editRole === 'viewer'" class="mb-4">
-            <div class="text-subtitle-2 mb-2">{{ t('comptesPage.share.fields.hiddenFields') }}</div>
+        <div v-if="editRole === 'viewer'" class="share-edit__block">
+            <p class="share-edit__label">{{ t('comptesPage.share.fields.hiddenFields') }}</p>
             <ShareHiddenFieldsPicker v-model="editHiddenFields" :disabled="store.acting || share?.role === 'pending'" />
         </div>
 
@@ -125,3 +125,44 @@ function requestRevoke() {
         </template>
     </AppModalBase>
 </template>
+
+<style scoped>
+/* Personne en tête (avatar rond = photo), blocs libellé 13 px + sélecteur. */
+.share-edit__person {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+}
+
+.share-edit__meta {
+    min-width: 0;
+}
+
+.share-edit__name {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.share-edit__sub {
+    margin: 2px 0 0;
+    color: var(--gray);
+    font-size: 13px;
+}
+
+.share-edit__block {
+    margin-bottom: 20px;
+}
+
+.share-edit__label {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--ink);
+}
+</style>

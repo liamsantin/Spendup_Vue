@@ -86,7 +86,7 @@ async function apply(due: ImportLineRecurringDue | null) {
         <template #activator="{ props: menuProps }">
             <button
                 type="button"
-                class="import-line-badge is-info import-due-pill"
+                class="su-chip import-line-badge import-due-pill"
                 v-bind="menuProps"
                 :disabled="store.acting"
                 :title="t('importsPage.lines.dueMenu.title', { label })"
@@ -97,7 +97,7 @@ async function apply(due: ImportLineRecurringDue | null) {
                 {{ label }}
             </button>
         </template>
-        <v-sheet rounded="md" width="300" elevation="0" class="su-menu import-due-menu" @click.stop>
+        <v-sheet width="300" elevation="0" class="su-menu import-due-menu" @click.stop>
             <p class="import-due-menu__title">{{ t('importsPage.lines.dueMenu.change') }}</p>
             <ul class="import-due-menu__list">
                 <li v-for="due in options" :key="recurringDueKey(due)">
@@ -124,23 +124,20 @@ async function apply(due: ImportLineRecurringDue | null) {
             </button>
         </v-sheet>
     </v-menu>
-    <span v-else class="import-line-badge is-info" :title="label">{{ label }}</span>
+    <span v-else class="su-chip import-line-badge" :title="label">{{ label }}</span>
 </template>
 
 <style scoped>
+/* Pastille d'échéance : carré bleu + texte gris ; menu carré, items 700, « Détacher » en rouge. */
 .import-line-badge {
-    --tint: rgb(var(--v-theme-primary));
+    --chip-color: var(--blue);
     flex: none;
     max-width: 220px;
-    padding: 1px 7px;
+    height: 20px;
+    padding: 0;
     border: 0;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--tint) 12%, transparent);
-    color: var(--tint);
     font: inherit;
-    font-size: 0.68rem;
-    font-weight: 600;
-    line-height: 1.5;
+    font-size: 12.5px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -153,26 +150,28 @@ async function apply(due: ImportLineRecurringDue | null) {
 .import-due-pill:hover:not(:disabled),
 .import-due-pill:focus-visible,
 .import-due-pill[aria-expanded='true'] {
-    background: color-mix(in srgb, var(--tint) 22%, transparent);
+    color: var(--ink);
+    text-decoration: underline;
+    outline: none;
 }
 
 .import-due-menu.su-menu {
-    padding: 8px 6px !important;
+    padding: 8px !important;
 }
 
 .import-due-menu__title {
-    margin: 2px 8px 6px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
+    margin: 4px 10px 6px;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--gray);
 }
 
 .import-due-menu__list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0;
     max-height: 280px;
     margin: 0;
     padding: 0;
@@ -186,27 +185,30 @@ async function apply(due: ImportLineRecurringDue | null) {
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    padding: 7px 10px;
+    min-height: 44px;
+    padding: 8px 10px;
     border: 0;
-    border-radius: 10px;
+    border-radius: 0;
     background: none;
-    color: inherit;
+    color: var(--ink);
+    font: inherit;
     text-align: left;
     cursor: pointer;
 }
 
 .import-due-menu__item:hover,
 .import-due-menu__item:focus-visible {
-    background: var(--hair, rgba(16, 16, 20, 0.05));
+    background: var(--soft);
+    outline: none;
 }
 
 .import-due-menu__item.is-current {
-    color: rgb(var(--v-theme-primary));
+    color: var(--blue-ink);
 }
 
 .import-due-menu__item.is-danger {
     justify-content: flex-start;
-    color: rgb(var(--v-theme-error));
+    color: var(--danger);
 }
 
 .import-due-menu__main {
@@ -217,15 +219,15 @@ async function apply(due: ImportLineRecurringDue | null) {
 
 .import-due-menu__name {
     overflow: hidden;
-    font-size: 0.86rem;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
 .import-due-menu__meta {
-    font-size: 0.75rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
     font-variant-numeric: tabular-nums;
 }
 
@@ -234,13 +236,13 @@ async function apply(due: ImportLineRecurringDue | null) {
     gap: 6px;
     align-items: center;
     margin: 4px 10px;
-    font-size: 0.76rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .import-due-menu__sep {
     height: 1px;
-    margin: 6px 4px;
-    background: var(--hair, rgba(16, 16, 20, 0.08));
+    margin: 6px 0;
+    background: var(--line);
 }
 </style>

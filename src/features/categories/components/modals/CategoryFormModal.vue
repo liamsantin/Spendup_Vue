@@ -164,7 +164,7 @@ async function onSave() {
         v-model="open"
         :title="isEdit ? t('categoriesPage.form.editTitle') : t('categoriesPage.form.createTitle')"
         :subtitle="t('categoriesPage.form.subtitle')"
-        :max-width="640"
+        :max-width="600"
         :height="720"
         scrollable
         mobile-layout="fullscreen"

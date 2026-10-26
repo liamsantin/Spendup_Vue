@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toRef } from 'vue';
+import { computed, toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ImportLineActions from '@/features/imports/components/list/ImportLineActions.vue';
 import ImportLineBadges from '@/features/imports/components/list/ImportLineBadges.vue';
@@ -27,6 +27,13 @@ const { dateLabel, amountText, amountTone, categoryLabel, tierLabel, paymentMeth
     toRef(props, 'line'),
     toRef(props, 'currency')
 );
+
+/** Présentation du signe : « + » devant un crédit, vrai signe moins (U+2212) devant un débit. */
+const amountLabel = computed(() => {
+    if (amountTone.value === 'is-credit') return `+${amountText.value}`;
+    if (amountTone.value === 'is-debit') return amountText.value.replace('-', '−');
+    return amountText.value;
+});
 
 function onDoubleClick(event: MouseEvent) {
     if (!props.editable || props.acting) return;
@@ -57,7 +64,7 @@ function onDoubleClick(event: MouseEvent) {
             </span>
         </td>
         <td>
-            <span v-if="categoryLabel" :title="categoryLabel">{{ categoryLabel }}</span>
+            <span v-if="categoryLabel" class="app-data-table__muted" :title="categoryLabel">{{ categoryLabel }}</span>
             <span v-else class="app-data-table__muted">—</span>
         </td>
         <td>
@@ -71,8 +78,8 @@ function onDoubleClick(event: MouseEvent) {
                 {{ paymentMethodLabel }}
             </span>
         </td>
-        <td>
-            <span class="app-data-table__strong import-line-row__amount" :class="amountTone">{{ amountText }}</span>
+        <td class="app-data-table__num">
+            <span class="app-data-table__strong import-line-row__amount" :class="amountTone">{{ amountLabel }}</span>
         </td>
         <td><ImportStatusChip :status="line.status" kind="line" /></td>
         <td class="app-data-table__actions-cell" @click.stop>
@@ -92,13 +99,14 @@ function onDoubleClick(event: MouseEvent) {
 </template>
 
 <style scoped>
+/* Montants : crédit bleu lisible avec « + », débit noir avec « − » ; date manquante en rouge. */
 .import-line-row__number {
-    color: var(--ink-muted);
+    color: var(--gray);
     font-variant-numeric: tabular-nums;
 }
 
 .import-line-row__missing {
-    color: rgb(var(--v-theme-error));
+    color: var(--danger);
 }
 
 .import-line-row__amount {
@@ -108,7 +116,7 @@ function onDoubleClick(event: MouseEvent) {
 .import-line-row__sub {
     display: block;
     overflow: hidden;
-    font-size: 0.78rem;
+    font-size: 13px;
     text-overflow: ellipsis;
     white-space: nowrap;
 }

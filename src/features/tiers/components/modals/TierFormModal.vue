@@ -250,7 +250,7 @@ async function onSave() {
         :title="modalTitle"
         :subtitle="modalSubtitle"
         :tabs="editTabs"
-        :max-width="680"
+        :max-width="640"
         :height="760"
     >
         <AppAlert v-if="localError.message" type="error" class="mb-4" closable @dismiss="localError.message = null">
@@ -310,7 +310,7 @@ async function onSave() {
         v-model="open"
         :title="modalTitle"
         :subtitle="modalSubtitle"
-        :max-width="480"
+        :max-width="520"
         :height="560"
         :show-footer="false"
         scrollable

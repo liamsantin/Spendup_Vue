@@ -289,6 +289,7 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
+/* annuaire à plat : la liste (téléphone) ou le tableau éditorial (≥ 768 px), sans cadre ni fond */
 .tiers-panel {
     flex: 1 1 auto;
     min-height: 0;
@@ -309,7 +310,7 @@ async function confirmDelete() {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    padding: 0 4px 4px;
+    padding: 0;
     background: transparent;
 }
 
@@ -324,10 +325,6 @@ async function confirmDelete() {
 }
 
 @media (min-width: 768px) {
-    .tiers-directory {
-        padding: 4px 16px 10px;
-    }
-
     .tiers-directory__list {
         display: none;
     }
@@ -349,7 +346,7 @@ async function confirmDelete() {
 
     .tiers-directory {
         display: block;
-        padding: 0 4px 4px;
+        padding: 0;
     }
 }
 </style>

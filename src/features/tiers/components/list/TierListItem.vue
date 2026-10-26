@@ -1,9 +1,12 @@
 <script setup lang="ts">
+/**
+ * Ligne de tiers (téléphone) : carré 36 px teinté | nom 700 + sous-lignes grises | actions.
+ */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { MailIcon, PencilIcon, PhoneIcon, TrashIcon, WorldIcon, DotsVerticalIcon } from 'vue-tabler-icons';
 import { useRowTap } from '@/components/shared/board/useRowTap';
-import { TIER_NATURE_ICONS } from '@/features/tiers/natureUi';
+import { TIER_NATURE_ICONS, tierNatureTileClass } from '@/features/tiers/natureUi';
 import type { Tier } from '@/features/tiers/types';
 
 const props = defineProps<{
@@ -19,8 +22,9 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const natureIcon = computed(() => TIER_NATURE_ICONS[props.tier.nature]);
-
 const natureLabel = computed(() => t(`tiersPage.natures.${props.tier.nature}`));
+const tileClass = computed(() => tierNatureTileClass(props.tier.nature));
+const rolesLabel = computed(() => props.tier.roles.map((role) => t(`tiersPage.roles.${role}`)).join(', '));
 
 const detailLine = computed(() => {
     const tier = props.tier;
@@ -71,7 +75,7 @@ const tap = useRowTap(
 <template>
     <div
         class="tier-row"
-        :class="{ 'tier-row--editable': !acting }"
+        :class="[`is-${tier.nature}`, { 'tier-row--editable': !acting }]"
         :data-tier-id="tier.publicId"
         @click="onActivate"
         @dblclick="onDoubleClick"
@@ -79,20 +83,19 @@ const tap = useRowTap(
         @touchend="tap.onTouchend"
         @touchcancel="tap.onTouchcancel"
     >
-        <span class="tier-row__icon" :class="`tier-row__icon--${tier.nature}`">
-            <component :is="natureIcon" size="18" stroke-width="1.8" />
+        <span class="tier-row__tile" :class="tileClass" aria-hidden="true">
+            <component :is="natureIcon" :size="18" stroke-width="1.7" />
         </span>
 
         <div class="tier-row__meta">
-            <div class="tier-row__title">
-                <p class="tier-row__name">{{ tier.name }}</p>
-                <span class="tier-row__badge" :class="`is-${tier.nature}`">{{ natureLabel }}</span>
-            </div>
+            <p class="tier-row__name">{{ tier.name }}</p>
             <p v-if="detailLine" class="tier-row__sub">{{ detailLine }}</p>
-            <div class="tier-row__roles">
-                <span v-for="role in tier.roles" :key="role" class="tier-row__role">{{ t(`tiersPage.roles.${role}`) }}</span>
-                <span v-if="!tier.roles.length" class="tier-row__role tier-row__role--empty">{{ t('tiersPage.list.noRoles') }}</span>
-            </div>
+            <p class="tier-row__sub tier-row__type">
+                <span class="su-sq" aria-hidden="true" />
+                <span>{{ natureLabel }}</span>
+                <span v-if="rolesLabel">· {{ rolesLabel }}</span>
+                <span v-else>· {{ t('tiersPage.list.noRoles') }}</span>
+            </p>
             <p v-if="tier.email || tier.phone || websiteLabel" class="tier-row__contact">
                 <a v-if="tier.email" :href="`mailto:${tier.email}`" class="tier-row__contact-item" @click.stop>
                     <MailIcon :size="13" stroke-width="1.8" />
@@ -146,15 +149,16 @@ const tap = useRowTap(
                         :disabled="acting"
                         :aria-label="t('common.more')"
                     >
-                        <DotsVerticalIcon size="18" stroke-width="1.75" />
+                        <DotsVerticalIcon :size="18" stroke-width="1.7" />
                     </button>
                 </template>
-                <v-sheet class="su-menu tier-actions-menu">
+                <v-sheet elevation="0" class="su-menu tier-actions-menu">
                     <button type="button" class="su-btn su-btn--ink" :disabled="acting" @click="emit('edit', tier)">
                         <PencilIcon :size="16" stroke-width="1.6" />
                         {{ t('tiersPage.actions.edit') }}
                     </button>
-                    <button type="button" class="tier-actions-menu__delete" :disabled="acting" @click="emit('delete', tier)">
+                    <button type="button" class="su-btn su-btn--danger" :disabled="acting" @click="emit('delete', tier)">
+                        <TrashIcon :size="16" stroke-width="1.6" />
                         {{ t('tiersPage.actions.delete') }}
                     </button>
                 </v-sheet>
@@ -164,29 +168,44 @@ const tap = useRowTap(
 </template>
 
 <style scoped>
+/* ligne sur filet fin : 36 px | nom + sous-lignes | actions */
 .tier-row {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
+    gap: 14px;
     width: 100%;
     min-width: 0;
-    padding: 13px 10px 14px;
+    min-height: 56px;
+    padding: 12px 8px;
     box-sizing: border-box;
+    border-top: 1px solid var(--line);
     color: inherit;
-    position: relative;
-    border-radius: 18px;
-    transition: background 0.3s var(--ease);
+    transition: background 0.15s var(--ease);
 }
 
-.tier-row::after {
-    content: '';
-    position: absolute;
-    left: 62px;
-    right: 12px;
-    bottom: 0;
-    height: 1px;
-    background: color-mix(in srgb, var(--ink) 14%, transparent);
-    pointer-events: none;
+.tier-row:last-child {
+    border-bottom: 1px solid var(--line);
+}
+
+/* couleur du petit carré de type */
+.tier-row.is-person {
+    --sq-color: var(--t-teal-ink);
+}
+
+.tier-row.is-company {
+    --sq-color: var(--t-blue-ink);
+}
+
+.tier-row.is-organization {
+    --sq-color: var(--t-violet-ink);
+}
+
+.tier-row.is-administration {
+    --sq-color: var(--t-amber-ink);
+}
+
+.tier-row.is-unknown {
+    --sq-color: var(--t-gray-ink);
 }
 
 .tier-row--editable {
@@ -195,16 +214,8 @@ const tap = useRowTap(
 
 @media (hover: hover) and (pointer: fine) {
     .tier-row:hover {
-        background: rgba(16, 16, 20, 0.035);
+        background: var(--soft);
     }
-
-    .tier-row:hover::after {
-        opacity: 0;
-    }
-}
-
-.tier-row:last-child::after {
-    content: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -213,37 +224,8 @@ const tap = useRowTap(
     }
 }
 
-.tier-row__icon {
-    display: grid;
-    place-items: center;
+.tier-row__tile {
     flex: none;
-    width: 38px;
-    height: 38px;
-    margin-top: 1px;
-    border-radius: 14px;
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
-}
-
-.tier-row__icon--person {
-    background: rgba(var(--v-theme-success), 0.12);
-    color: rgb(var(--v-theme-success));
-}
-
-.tier-row__icon--organization {
-    background: rgba(var(--v-theme-secondary), 0.16);
-    color: rgb(var(--v-theme-secondary));
-}
-
-.tier-row__icon--administration {
-    background: rgba(var(--v-theme-warning), 0.14);
-    color: rgb(var(--v-theme-warning));
-}
-
-.tier-row__icon--unknown {
-    background: var(--hair);
-    color: var(--ink-muted);
 }
 
 .tier-row__meta {
@@ -251,101 +233,50 @@ const tap = useRowTap(
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 3px;
-}
-
-.tier-row__title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
+    gap: 2px;
 }
 
 .tier-row__name {
     margin: 0;
     min-width: 0;
-    font-family: var(--font-heading);
-    font-size: 15.5px;
-    font-weight: 650;
-    letter-spacing: -0.02em;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.006em;
+    line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.tier-row__badge {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    line-height: 1.2;
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
-}
-
-.tier-row__badge.is-person {
-    background: rgba(var(--v-theme-success), 0.12);
-    color: rgb(var(--v-theme-success));
-}
-
-.tier-row__badge.is-organization {
-    background: rgba(var(--v-theme-secondary), 0.16);
-    color: rgb(var(--v-theme-secondary));
-}
-
-.tier-row__badge.is-administration {
-    background: rgba(var(--v-theme-warning), 0.14);
-    color: rgb(var(--v-theme-warning));
-}
-
-.tier-row__badge.is-unknown {
-    background: var(--hair);
-    color: var(--ink-muted);
 }
 
 .tier-row__sub {
     margin: 0;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.tier-row__roles {
+.tier-row__type {
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.tier-row__role {
-    display: inline-flex;
     align-items: center;
-    padding: 1px 7px;
-    border-radius: 999px;
-    border: 1px solid var(--thread);
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: var(--ink-muted);
-    background: var(--surface-raised);
+    gap: 6px;
+    min-width: 0;
 }
 
-.tier-row__role--empty {
-    border-style: dashed;
-    font-weight: 500;
+.tier-row__type > span:not(.su-sq) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .tier-row__contact {
-    margin: 0;
+    margin: 2px 0 0;
     display: flex;
     flex-wrap: wrap;
     gap: 4px 12px;
-    font-size: 0.76rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .tier-row__contact-item {
@@ -359,24 +290,22 @@ const tap = useRowTap(
 }
 
 .tier-row__contact-item:hover {
-    color: rgb(var(--v-theme-primary));
+    color: var(--blue-ink);
     text-decoration: underline;
 }
 
 .tier-row__actions {
     display: flex;
     flex: none;
-    align-items: flex-start;
+    align-items: center;
     justify-content: flex-end;
-    gap: 4px;
-    padding: 2px;
-    margin: -2px;
+    gap: 2px;
 }
 
 .tier-row__orbs {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
 }
 
 .tier-row__more {
@@ -387,61 +316,17 @@ const tap = useRowTap(
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: min(176px, calc(100vw - 32px));
-    padding: 12px !important;
+    width: min(200px, calc(100vw - 32px));
 }
 
 .tier-actions-menu .su-btn {
     width: 100%;
-}
-
-.tier-actions-menu__delete {
-    appearance: none;
-    display: block;
-    width: 100%;
-    margin: 2px 0 0;
-    padding: 6px 4px;
-    border: 0;
-    background: transparent;
-    color: #e11d48;
-    font: inherit;
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1.3;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.18s var(--ease, ease);
-}
-
-.tier-actions-menu__delete:disabled {
-    opacity: 0.45;
-    cursor: default;
-}
-
-.tier-actions-menu__delete:hover:not(:disabled) {
-    color: #be123c;
-    transform: scale(1.06);
+    justify-content: flex-start;
 }
 
 @media (max-width: 767px) {
     .tier-row {
-        gap: 8px;
-        padding: 8px 2px 9px;
-        border-radius: 12px;
-    }
-
-    .tier-row__icon {
-        width: 32px;
-        height: 32px;
-    }
-
-    .tier-row__meta {
-        gap: 2px;
-    }
-
-    .tier-row::after {
-        left: 42px;
-        right: 2px;
+        padding: 12px 0;
     }
 
     .tier-row__orbs {

@@ -141,20 +141,16 @@ function openPaymentMethodCreate(name: string) {
 <template>
     <div class="recurring-form">
         <p v-if="showTemplate && archivedHint" class="text-caption text-warning mb-2">{{ archivedHint }}</p>
-        <v-row v-if="showTemplate" class="align-center" no-gutters>
-            <v-col cols="auto" sm="3" class="pr-3">
-                <label class="v-label font-weight-medium" for="rec-form-active">{{ t('recurrencesPage.form.fields.isActive') }}</label>
-            </v-col>
-            <v-col cols="auto" sm="9">
+        <div v-if="showTemplate" class="recurring-form__row">
+            <label class="recurring-form__label" for="rec-form-active">{{ t('recurrencesPage.form.fields.isActive') }}</label>
+            <div class="recurring-form__field">
                 <AppSwitch id="rec-form-active" v-model="form.isActive" />
                 <p v-if="pauseHint && !form.isActive" class="text-caption text-medium-emphasis mb-0 mt-1">{{ pauseHint }}</p>
-            </v-col>
-        </v-row>
-        <v-row v-if="showTemplate" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="rec-form-account">{{ t('recurrencesPage.form.fields.account') }} *</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showTemplate" class="recurring-form__row">
+            <label class="recurring-form__label" for="rec-form-account">{{ t('recurrencesPage.form.fields.account') }} *</label>
+            <div class="recurring-form__field">
                 <AppSelect
                     id="rec-form-account"
                     v-model="form.accountPublicId"
@@ -165,13 +161,11 @@ function openPaymentMethodCreate(name: string) {
                     :error="!!fieldErrors.accountPublicId"
                     :error-messages="fieldErrors.accountPublicId || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showTemplate" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="rec-form-name">{{ t('recurrencesPage.form.fields.name') }} *</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showTemplate" class="recurring-form__row">
+            <label class="recurring-form__label" for="rec-form-name">{{ t('recurrencesPage.form.fields.name') }} *</label>
+            <div class="recurring-form__field">
                 <v-text-field
                     id="rec-form-name"
                     v-model="form.name"
@@ -182,15 +176,11 @@ function openPaymentMethodCreate(name: string) {
                     :error="!!fieldErrors.name"
                     :error-messages="fieldErrors.name || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showTemplate && isExpense" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="rec-form-expense-type"
-                    >{{ t('recurrencesPage.form.fields.expenseType') }} *</label
-                >
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showTemplate && isExpense" class="recurring-form__row">
+            <label class="recurring-form__label" for="rec-form-expense-type">{{ t('recurrencesPage.form.fields.expenseType') }} *</label>
+            <div class="recurring-form__field">
                 <AppSelect
                     id="rec-form-expense-type"
                     v-model="form.expenseType"
@@ -200,15 +190,11 @@ function openPaymentMethodCreate(name: string) {
                     :error="!!fieldErrors.expenseType"
                     :error-messages="fieldErrors.expenseType || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showTemplate && !isExpense" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="rec-form-income-type"
-                    >{{ t('recurrencesPage.form.fields.incomeType') }} *</label
-                >
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showTemplate && !isExpense" class="recurring-form__row">
+            <label class="recurring-form__label" for="rec-form-income-type">{{ t('recurrencesPage.form.fields.incomeType') }} *</label>
+            <div class="recurring-form__field">
                 <AppSelect
                     id="rec-form-income-type"
                     v-model="form.incomeType"
@@ -218,15 +204,11 @@ function openPaymentMethodCreate(name: string) {
                     :error="!!fieldErrors.incomeType"
                     :error-messages="fieldErrors.incomeType || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showTemplate" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="rec-form-frequency"
-                    >{{ t('recurrencesPage.form.fields.frequency') }} *</label
-                >
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showTemplate" class="recurring-form__row">
+            <label class="recurring-form__label" for="rec-form-frequency">{{ t('recurrencesPage.form.fields.frequency') }} *</label>
+            <div class="recurring-form__field">
                 <AppSelect
                     v-if="isExpense"
                     id="rec-form-frequency"
@@ -247,15 +229,11 @@ function openPaymentMethodCreate(name: string) {
                     :error="!!fieldErrors.incomeFrequency"
                     :error-messages="fieldErrors.incomeFrequency || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showTemplate && showPaymentDay" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="rec-form-payment-day">{{
-                    t('recurrencesPage.form.fields.paymentDay')
-                }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showTemplate && showPaymentDay" class="recurring-form__row">
+            <label class="recurring-form__label" for="rec-form-payment-day">{{ t('recurrencesPage.form.fields.paymentDay') }}</label>
+            <div class="recurring-form__field">
                 <v-text-field
                     id="rec-form-payment-day"
                     :model-value="form.paymentDay"
@@ -268,15 +246,11 @@ function openPaymentMethodCreate(name: string) {
                     :error-messages="fieldErrors.paymentDay || undefined"
                     @update:model-value="onPaymentDayInput"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showTemplate" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="rec-form-amount"
-                    >{{ t('recurrencesPage.form.fields.plannedAmount') }} *</label
-                >
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showTemplate" class="recurring-form__row">
+            <label class="recurring-form__label" for="rec-form-amount">{{ t('recurrencesPage.form.fields.plannedAmount') }} *</label>
+            <div class="recurring-form__field">
                 <v-text-field
                     id="rec-form-amount"
                     :model-value="form.plannedAmount"
@@ -288,26 +262,22 @@ function openPaymentMethodCreate(name: string) {
                     :error-messages="fieldErrors.plannedAmount || undefined"
                     @update:model-value="onAmountInput"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showTemplate" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('recurrencesPage.form.fields.startDate') }} *</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showTemplate" class="recurring-form__row">
+            <label class="recurring-form__label">{{ t('recurrencesPage.form.fields.startDate') }} *</label>
+            <div class="recurring-form__field">
                 <AppDatePicker
                     v-model="startDateModel"
                     :label="t('recurrencesPage.form.fields.startDate')"
                     :error="!!fieldErrors.startDate"
                     :error-messages="fieldErrors.startDate || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showTemplate" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('recurrencesPage.form.fields.endDate') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showTemplate" class="recurring-form__row">
+            <label class="recurring-form__label">{{ t('recurrencesPage.form.fields.endDate') }}</label>
+            <div class="recurring-form__field">
                 <AppDatePicker
                     v-model="endDateModel"
                     clearable
@@ -316,13 +286,11 @@ function openPaymentMethodCreate(name: string) {
                     :error="!!fieldErrors.endDate"
                     :error-messages="fieldErrors.endDate || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showClassification" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('recurrencesPage.form.fields.paymentMethod') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showClassification" class="recurring-form__row">
+            <label class="recurring-form__label">{{ t('recurrencesPage.form.fields.paymentMethod') }}</label>
+            <div class="recurring-form__field">
                 <AppSelect
                     v-model="form.paymentMethodPublicId"
                     :items="paymentMethodItems"
@@ -335,13 +303,11 @@ function openPaymentMethodCreate(name: string) {
                     "
                     @create="openPaymentMethodCreate"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showClassification" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('recurrencesPage.form.fields.category') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showClassification" class="recurring-form__row">
+            <label class="recurring-form__label">{{ t('recurrencesPage.form.fields.category') }}</label>
+            <div class="recurring-form__field">
                 <AppSelect
                     v-model="form.categoryPublicId"
                     :items="categoryItems"
@@ -352,29 +318,23 @@ function openPaymentMethodCreate(name: string) {
                     :create-named-label="t('transactionsPage.form.categoryCreate', { name: '{name}' })"
                     @create="openCategoryCreate"
                 />
-            </v-col>
-        </v-row>
-        <v-row v-if="showClassification && isExpense" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('recurrencesPage.form.fields.tags') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showClassification && isExpense" class="recurring-form__row">
+            <label class="recurring-form__label">{{ t('recurrencesPage.form.fields.tags') }}</label>
+            <div class="recurring-form__field">
                 <TagPicker v-model="form.tagPublicIds" />
-            </v-col>
-        </v-row>
-        <v-row v-if="showClassification" class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('recurrencesPage.form.fields.tier') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showClassification" class="recurring-form__row">
+            <label class="recurring-form__label">{{ t('recurrencesPage.form.fields.tier') }}</label>
+            <div class="recurring-form__field">
                 <TierPicker v-model="form.tierPublicId" />
-            </v-col>
-        </v-row>
-        <v-row v-if="showClassification" class="align-start" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="rec-form-notes">{{ t('recurrencesPage.form.fields.notes') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+        <div v-if="showClassification" class="recurring-form__row">
+            <label class="recurring-form__label" for="rec-form-notes">{{ t('recurrencesPage.form.fields.notes') }}</label>
+            <div class="recurring-form__field">
                 <v-textarea
                     id="rec-form-notes"
                     v-model="form.notes"
@@ -386,8 +346,8 @@ function openPaymentMethodCreate(name: string) {
                     :error="!!fieldErrors.notes"
                     :error-messages="fieldErrors.notes || undefined"
                 />
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
         <CategoryFormModal
             v-if="showClassification"
@@ -408,28 +368,59 @@ function openPaymentMethodCreate(name: string) {
 </template>
 
 <style scoped>
+/* Formulaire de fenêtre modale (maquette 04) : libellé à gauche sur 170 px | champ carré. */
 .recurring-form {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 14px;
 }
 
-.recurring-form > .v-row {
-    flex: 0 0 auto;
-    width: 100%;
+.recurring-form__row {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 16px;
 }
 
-.recurring-form .v-row:has(.app-switch) .v-label {
-    margin-bottom: 0 !important;
+.recurring-form__label {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.3;
+}
+
+.recurring-form__field {
+    min-width: 0;
+}
+
+/* champ texte Vuetify : 42 px, carré (bordure et focus gérés par le kit) */
+.recurring-form__field :deep(.v-field) {
+    --v-input-control-height: 42px;
+}
+
+.recurring-form__field :deep(.v-input--density-default .v-field--variant-outlined) {
+    --v-input-control-height: 42px;
+}
+
+.recurring-form__field :deep(.v-text-field input) {
+    min-height: 42px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.recurring-form__field .text-caption {
+    color: var(--gray) !important;
+    font-size: 13px !important;
+}
+
+.recurring-form__field .text-error {
+    color: var(--danger) !important;
 }
 
 @media (max-width: 599.98px) {
-    .recurring-form {
-        gap: 12px;
-    }
-
-    .recurring-form :deep(.v-label) {
-        margin-bottom: 4px;
+    .recurring-form__row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
     }
 }
 </style>

@@ -140,13 +140,29 @@ async function enable(submittedCode?: string) {
         </div>
 
         <template v-else-if="step === 'setup' && setup">
-            <div class="text-center mb-6">
-                <img v-if="qrDataUrl" :src="qrDataUrl" :alt="t('security.setupDialog.qrAlt')" width="220" height="220" class="rounded-md" />
+            <!-- Code QR dans un carré à cadre 1 px noir. -->
+            <div class="two-factor-setup__qr-wrap">
+                <img
+                    v-if="qrDataUrl"
+                    :src="qrDataUrl"
+                    :alt="t('security.setupDialog.qrAlt')"
+                    width="220"
+                    height="220"
+                    class="two-factor-setup__qr"
+                />
             </div>
 
-            <v-label class="mb-2 font-weight-medium">{{ t('security.setupDialog.secretLabel') }}</v-label>
-            <div class="d-flex align-center ga-2 mb-6">
-                <v-text-field :model-value="setup.secret" variant="outlined" readonly hide-details density="comfortable" />
+            <label class="two-factor-setup__label" for="two-factor-secret">{{ t('security.setupDialog.secretLabel') }}</label>
+            <div class="two-factor-setup__secret">
+                <v-text-field
+                    id="two-factor-secret"
+                    :model-value="setup.secret"
+                    variant="outlined"
+                    readonly
+                    hide-details
+                    density="comfortable"
+                    class="two-factor-setup__secret-field"
+                />
                 <button type="button" class="su-btn su-btn--ink" @click="copyText(setup.secret, 'secret')">
                     {{ copiedSecret ? t('security.setupDialog.copied') : t('security.setupDialog.copy') }}
                 </button>
@@ -156,27 +172,25 @@ async function enable(submittedCode?: string) {
                 {{ t('security.setupDialog.recoveryWarning') }}
             </AppAlert>
 
-            <v-sheet border rounded="md" class="pa-4 mb-4">
-                <div class="d-flex flex-wrap ga-2">
-                    <v-chip v-for="recovery in setup.recoveryCodes" :key="recovery" variant="tonal" color="primary">
-                        {{ recovery }}
-                    </v-chip>
-                </div>
+            <!-- Codes de secours : grille mono dans un encadré 1 px, bouton de copie pleine largeur. -->
+            <div class="two-factor-setup__codes">
+                <ul class="two-factor-setup__code-list">
+                    <li v-for="recovery in setup.recoveryCodes" :key="recovery">{{ recovery }}</li>
+                </ul>
                 <button
                     type="button"
-                    class="su-btn su-btn--ink mt-4"
-                    style="width: 100%"
+                    class="su-btn su-btn--ink two-factor-setup__copy-codes"
                     @click="copyText(setup.recoveryCodes.join('\n'), 'codes')"
                 >
                     {{ copiedCodes ? t('security.setupDialog.codesCopied') : t('security.setupDialog.copyCodes') }}
                 </button>
-            </v-sheet>
+            </div>
 
             <AppCheckbox v-model="codesAcknowledged" :label="t('security.setupDialog.acknowledge')" />
         </template>
 
         <template v-else-if="step === 'verify'">
-            <v-label class="text-subtitle-1 font-weight-semibold pb-2">{{ t('security.setupDialog.otpLabel') }}</v-label>
+            <p class="two-factor-setup__label">{{ t('security.setupDialog.otpLabel') }}</p>
             <OtpDigitsInput v-model="code" field-class="two-factor-enable-otp" @complete="enable" />
         </template>
 
@@ -201,3 +215,68 @@ async function enable(submittedCode?: string) {
         </template>
     </AppModalBase>
 </template>
+
+<style scoped>
+.two-factor-setup__qr-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 0 0 24px;
+}
+
+.two-factor-setup__qr {
+    display: block;
+    width: 220px;
+    height: 220px;
+    padding: 8px;
+    border: 1px solid var(--ink);
+    /* le QR reste sur blanc pour rester lisible par la caméra, y compris en mode sombre */
+    background: #fff;
+}
+
+.two-factor-setup__label {
+    display: block;
+    margin: 0 0 8px;
+    color: var(--ink);
+    font-size: 13px;
+}
+
+.two-factor-setup__secret {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 24px;
+}
+
+.two-factor-setup__secret-field {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.two-factor-setup__secret-field :deep(input) {
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+}
+
+.two-factor-setup__codes {
+    margin: 0 0 16px;
+    padding: 16px;
+    border: 1px solid var(--line);
+}
+
+.two-factor-setup__code-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.two-factor-setup__copy-codes {
+    width: 100%;
+    margin-top: 16px;
+}
+</style>

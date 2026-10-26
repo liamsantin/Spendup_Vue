@@ -125,11 +125,12 @@ watch(tab, (value) => {
         :title="t('friendsPage.title')"
         :subtitle="discoverSearching ? undefined : t('friendsPage.subtitle')"
         hide-actions
+        class="friends-page-shell"
         :class="{ 'su-page--discover-idle': tab === 'Discover' && !discoverSearching }"
         :hero-class="{ 'su-hero--searching': discoverSearching }"
     >
         <template v-if="tab === 'Discover'" #toolbar>
-            <div class="su-search su-search--discover">
+            <div class="su-search su-search--center friends-discover-search">
                 <button
                     class="su-search__orb"
                     type="button"
@@ -170,3 +171,15 @@ watch(tab, (value) => {
 
     <FriendQrModal v-model="qrOpen" @scanned="onQrScanned" />
 </template>
+
+<style scoped>
+/* recherche Découverte : simple ligne noire, centrée sous le sous-titre */
+.friends-page-shell :deep(.su-toolbar:has(.friends-discover-search)) {
+    justify-content: center;
+}
+
+.friends-page-shell :deep(.su-toolbar .friends-discover-search) {
+    flex: 0 1 520px;
+    width: min(520px, 100%);
+}
+</style>

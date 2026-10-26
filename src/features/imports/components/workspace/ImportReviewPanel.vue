@@ -432,13 +432,13 @@ function confirmBulk() {
 
 .import-review__banner {
     flex: none;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .import-review__link {
     margin-left: 6px;
     color: inherit;
-    font-weight: 620;
+    font-weight: 700;
 }
 
 .import-review__scroll {
@@ -454,13 +454,14 @@ function confirmBulk() {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    padding: 4px 16px 10px;
+    padding: 0 0 10px;
 }
 
+/* mobile : lignes à filet fin, la première fermée par un filet 2 px */
 .import-review__list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    border-top: 1px solid var(--line);
 }
 
 .import-review__table {
@@ -489,16 +490,17 @@ function confirmBulk() {
 
     .import-review__directory {
         display: block;
-        padding: 0 4px 4px;
+        padding: 0 0 4px;
     }
 }
 </style>
 
 <style>
+/* Menu des actions groupées : items texte carrés, survol gris, note grise en bas. */
 .import-review__bulk-menu.su-menu {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0;
     width: min(320px, calc(100vw - 24px));
     padding: 8px !important;
 }
@@ -506,19 +508,23 @@ function confirmBulk() {
 .import-review__bulk-item {
     appearance: none;
     width: 100%;
+    min-height: 44px;
     padding: 10px 12px;
     border: 0;
-    border-radius: 12px;
+    border-radius: 0;
     background: transparent;
-    color: inherit;
+    color: var(--ink);
     font: inherit;
-    font-size: 0.88rem;
+    font-size: 14px;
+    font-weight: 700;
     text-align: left;
     cursor: pointer;
 }
 
-.import-review__bulk-item:hover:not(:disabled) {
-    background: var(--surface-hover);
+.import-review__bulk-item:hover:not(:disabled),
+.import-review__bulk-item:focus-visible {
+    background: var(--soft);
+    outline: none;
 }
 
 .import-review__bulk-item:disabled {
@@ -527,8 +533,8 @@ function confirmBulk() {
 }
 
 .import-review__bulk-hint {
-    margin: 4px 12px 2px;
-    font-size: 0.74rem;
-    color: var(--ink-muted);
+    margin: 6px 12px 2px;
+    font-size: 13px;
+    color: var(--gray);
 }
 </style>

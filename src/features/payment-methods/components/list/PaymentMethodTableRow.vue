@@ -43,7 +43,7 @@ function onDoubleClick(event: MouseEvent) {
         <td>
             <div class="app-data-table__name">
                 <span class="app-data-table__avatar">
-                    <CreditCardIcon size="16" stroke-width="1.8" />
+                    <CreditCardIcon :size="18" stroke-width="1.7" />
                 </span>
                 <span class="app-data-table__identity">
                     <span class="app-data-table__title">{{ method.label }}</span>
@@ -54,7 +54,7 @@ function onDoubleClick(event: MouseEvent) {
         <td>{{ t(`paymentMethodsPage.types.${method.type}`) }}</td>
         <td>{{ accountName }}</td>
         <td>
-            <span v-if="lastFour">{{ lastFour }}</span>
+            <span v-if="lastFour" class="payment-table__mono">{{ lastFour }}</span>
             <span v-else class="app-data-table__muted">—</span>
         </td>
         <td>
@@ -92,15 +92,22 @@ function onDoubleClick(event: MouseEvent) {
 </template>
 
 <style scoped>
+/* Statut : petit carré bleu (actif) ou gris (inactif) + texte gris ; expiration dépassée en rouge. */
 .payment-table__status {
-    --tint: rgb(var(--v-theme-success));
+    --tint: var(--blue);
 }
 
 .payment-table__status.is-inactive {
-    --tint: rgb(var(--v-theme-warning));
+    --tint: var(--gray);
 }
 
 .payment-table__expired {
-    color: rgb(var(--v-theme-error));
+    color: var(--danger);
+}
+
+.payment-table__mono {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--gray);
 }
 </style>

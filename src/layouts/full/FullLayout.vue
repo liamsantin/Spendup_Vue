@@ -10,7 +10,7 @@ import { useShellNav } from '@/layouts/shell/composables/useShellNav';
 const appSettings = useAppSettingsStore();
 useIdleLogout();
 
-const { open, openId, activeId, primaryNav, secondaryNav, unreadCount, title } = useShellNav();
+const { open, openId, activeId, primaryNav, secondaryNav, headerLinks, headerMenus, unreadCount, title } = useShellNav();
 </script>
 
 <template>
@@ -27,6 +27,8 @@ const { open, openId, activeId, primaryNav, secondaryNav, unreadCount, title } =
                 :items="primaryNav"
                 :bottom-items="secondaryNav"
                 :notifications="unreadCount"
+                :header-links="headerLinks"
+                :header-menus="headerMenus"
                 :title="title"
             >
                 <div class="page-content" :class="appSettings.boxed ? 'maxWidth' : ''">

@@ -123,6 +123,8 @@ export function useDashboardOverview() {
         ),
         overdueSavingsGoalCount: computed(() => savingsGoals.items.filter((item) => item.status === 'active' && item.isOverdue).length),
         defaultDashboardView: computed(() => settings.current.defaultDashboardView),
-        categoryById: (publicId: string) => categories.findByPublicId(publicId)
+        categoryById: (publicId: string) => categories.findByPublicId(publicId),
+        /** Compte par identifiant public (sous-ligne « date · compte » des dernières transactions). */
+        accountById: (publicId: string) => accounts.accounts.find((account) => account.publicId === publicId) ?? null
     };
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Showcase du kit verre Spend.Up (dev only, /components).
+ * Showcase du kit Swiss Spend.Up (dev only, /components).
  */
 defineOptions({ name: 'ComponentsShowcasePage' });
 
@@ -113,7 +113,7 @@ const accordionOpen = ref(false);
             v-model="tab"
             :tabs="tabs"
             title="Composants"
-            subtitle="Kit verre de l’application — page interne (VITE_APP_ENV=development)."
+            subtitle="Kit Swiss de l’application — page interne (VITE_APP_ENV=development)."
             hide-actions
             embedded
         >
@@ -174,7 +174,7 @@ const accordionOpen = ref(false);
             </div>
 
             <div v-else-if="tab === 'surfaces'" class="su-showcase__grid">
-                <AppGlassCard title="Carte verre" subtitle="AppGlassCard — surface, icône, actions.">
+                <AppGlassCard title="Section à filet" subtitle="AppGlassCard — filet 2 px, titre, actions.">
                     <template #icon>
                         <UserCircleIcon :size="20" stroke-width="1.5" />
                     </template>
@@ -271,7 +271,7 @@ const accordionOpen = ref(false);
                     </AppDropdownFilter>
                 </AppGlassCard>
 
-                <AppGlassCard title="Accordion" subtitle="AppAccordion — panneau verre repliable.">
+                <AppGlassCard title="Accordion" subtitle="AppAccordion — rangée repliable sur filets.">
                     <AppAccordion v-model="accordionOpen" title="Synthèse" subtitle="Dernier solde et écart détecté.">
                         <template #extra>
                             <span class="su-chip">À jour</span>
@@ -320,7 +320,7 @@ const accordionOpen = ref(false);
                 <AppModalBase
                     v-model="modalBaseOpen"
                     title="Modale base"
-                    subtitle="Header, body, footer verre."
+                    subtitle="Header, corps, pied : filets et bordure noire."
                     :max-width="480"
                     :height="420"
                 >

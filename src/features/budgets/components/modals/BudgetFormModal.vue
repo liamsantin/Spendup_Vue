@@ -205,7 +205,7 @@ async function seeRelatedTransactions() {
                 <EyeIcon :size="16" stroke-width="1.6" />
                 {{ t('budgetsPage.detail.seeTransactions') }}
             </button>
-            <button type="button" :class="isEdit ? 'su-btn' : 'su-btn su-btn--ghost'" :disabled="store.acting" @click="close">
+            <button type="button" class="su-btn" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
             <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">

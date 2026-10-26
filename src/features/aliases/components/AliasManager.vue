@@ -243,7 +243,7 @@ watch(
 <template>
     <section class="alias-manager">
         <div class="alias-manager__head">
-            <p class="alias-manager__section">{{ t('aliases.title') }}</p>
+            <h2 class="alias-manager__section">{{ t('aliases.title') }}</h2>
             <InfoCircleIcon
                 class="alias-manager__info"
                 :size="15"
@@ -259,6 +259,7 @@ watch(
 
         <div v-if="loading && !items.length" class="su-loading"><span class="su-spin" /></div>
         <p v-else-if="!items.length" class="alias-manager__empty">{{ t('aliases.empty') }}</p>
+        <!-- alias sur filets fins : valeur 700 + méta grise | interrupteur + actions -->
         <ul v-else class="alias-manager__list">
             <li
                 v-for="alias in items"
@@ -271,11 +272,11 @@ watch(
                     <span class="alias-manager__meta">
                         <span class="alias-manager__tag">{{ matchTypeLabel(alias) }}</span>
                         <span v-if="alias.createdByImport" class="alias-manager__tag is-auto" :title="t('aliases.autoHint')">
-                            {{ t('aliases.auto') }}
+                            · {{ t('aliases.auto') }}
                         </span>
-                        <span v-if="alias.priority !== 0" class="alias-manager__tag">
-                            {{ t('aliases.priorityShort', { n: alias.priority }) }}
-                        </span>
+                        <span v-if="alias.priority !== 0" class="alias-manager__tag"
+                            >· {{ t('aliases.priorityShort', { n: alias.priority }) }}</span
+                        >
                     </span>
                 </div>
                 <div v-if="!readonly" class="alias-manager__actions">
@@ -288,7 +289,7 @@ watch(
                     />
                     <button
                         type="button"
-                        class="su-btn su-btn--ghost alias-manager__icon"
+                        class="su-orb"
                         :disabled="acting"
                         :aria-label="t('aliases.edit')"
                         :title="t('aliases.edit')"
@@ -298,7 +299,7 @@ watch(
                     </button>
                     <button
                         type="button"
-                        class="su-btn su-btn--ghost alias-manager__icon"
+                        class="su-orb su-orb--danger"
                         :disabled="acting"
                         :aria-label="t('aliases.delete')"
                         :title="t('aliases.delete')"
@@ -355,7 +356,7 @@ watch(
             </div>
 
             <div class="alias-manager__footer">
-                <button v-if="!advanced" type="button" class="alias-manager__link" @click="advanced = true">
+                <button v-if="!advanced" type="button" class="su-link alias-manager__link" @click="advanced = true">
                     {{ t('aliases.advanced') }}
                 </button>
                 <span v-else />
@@ -363,9 +364,9 @@ watch(
                     <button v-if="editing" type="button" class="su-btn su-btn--ghost" :disabled="acting" @click="resetForm">
                         {{ t('common.cancel') }}
                     </button>
-                    <button type="submit" class="su-btn su-btn--tonal" :disabled="acting || !form.value.trim()">
+                    <button type="submit" class="su-btn" :disabled="acting || !form.value.trim()">
                         <span v-if="acting" class="su-spin" />
-                        <PlusIcon v-else-if="!editing" :size="16" stroke-width="1.6" />
+                        <PlusIcon v-else-if="!editing" :size="16" stroke-width="1.8" />
                         {{ editing ? t('aliases.update') : t('aliases.add') }}
                     </button>
                 </div>
@@ -389,7 +390,7 @@ watch(
 .alias-manager {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .alias-manager__head {
@@ -400,17 +401,17 @@ watch(
 
 .alias-manager__info {
     flex: none;
-    color: var(--ink-muted);
+    color: var(--gray);
     cursor: help;
 }
 
+/* titre de section : 16 px 700, casse normale */
 .alias-manager__section {
     margin: 0;
-    font-size: 0.72rem;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
+    letter-spacing: -0.025em;
+    line-height: 1.25;
 }
 
 .alias-manager__help,
@@ -418,8 +419,9 @@ watch(
 .alias-manager__note,
 .alias-manager__empty {
     margin: 0;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.4;
 }
 
 .alias-manager__hint {
@@ -429,30 +431,34 @@ watch(
 .alias-manager__list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 0;
     margin: 0;
     padding: 0;
     list-style: none;
+    border-bottom: 1px solid var(--line);
 }
 
+/* ligne d’alias sur filet fin ; en édition : fond bleu pâle */
 .alias-manager__item {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: center;
     justify-content: space-between;
     min-width: 0;
-    padding: 8px 10px 8px 12px;
-    border-radius: 12px;
-    background: var(--hair, rgba(16, 16, 20, 0.04));
+    min-height: 48px;
+    padding: 8px 4px;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
 }
 
 .alias-manager__item.is-inactive .alias-manager__value {
-    color: var(--ink-muted);
+    color: var(--gray);
     text-decoration: line-through;
 }
 
 .alias-manager__item.is-editing {
-    outline: 1.5px solid rgb(var(--v-theme-primary));
+    background: var(--blue-soft);
 }
 
 .alias-manager__main {
@@ -464,7 +470,7 @@ watch(
 
 .alias-manager__value {
     overflow: hidden;
-    font-weight: 600;
+    font-weight: 700;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -473,22 +479,16 @@ watch(
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .alias-manager__tag {
-    --tint: var(--ink-muted);
-    padding: 1px 7px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--tint) 12%, transparent);
-    color: var(--tint);
-    font-size: 0.68rem;
-    font-weight: 600;
-    line-height: 1.5;
     white-space: nowrap;
 }
 
 .alias-manager__tag.is-auto {
-    --tint: rgb(var(--v-theme-primary));
+    color: var(--blue-ink);
 }
 
 .alias-manager__actions {
@@ -498,14 +498,11 @@ watch(
     align-items: center;
 }
 
-.alias-manager__icon {
-    padding-inline: 8px;
-}
-
 .alias-manager__form {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    padding-top: 8px;
 }
 
 .alias-manager__row {
@@ -541,13 +538,15 @@ watch(
     gap: 8px;
 }
 
+/* lien « Options avancées → » : bouton nu au style su-link */
 .alias-manager__link {
+    appearance: none;
     padding: 0;
     border: 0;
     background: none;
-    color: rgb(var(--v-theme-primary));
-    font-size: 0.8rem;
-    font-weight: 600;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
     cursor: pointer;
 }
 

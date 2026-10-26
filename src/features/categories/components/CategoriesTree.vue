@@ -227,43 +227,41 @@ defineExpose({ openCreate });
                 {{ t('categoriesPage.actions.create') }}
             </button>
         </div>
-        <div v-else class="su-stack">
-            <section class="su-surface categories-tree">
-                <div
-                    v-for="root in store.items"
-                    :key="root.publicId"
-                    class="categories-tree__group"
-                    :class="{ 'is-expanded': expandedIds.has(root.publicId) && (root.children?.length ?? 0) > 0 }"
-                >
-                    <CategoryListItem
-                        :category="root"
-                        :expanded="expandedIds.has(root.publicId)"
-                        :acting="store.acting"
-                        @edit="editTarget = $event"
-                        @delete="requestDelete"
-                        @add-child="openCreate"
-                        @toggle="toggleExpanded"
-                    />
-                    <div v-if="root.children?.length" class="categories-tree__panel" :inert="!expandedIds.has(root.publicId)">
-                        <div class="categories-tree__panel-inner">
-                            <div class="categories-tree__children">
-                                <CategoryListItem
-                                    v-for="(child, index) in root.children"
-                                    :key="child.publicId"
-                                    class="categories-tree__child"
-                                    :style="{ '--i': index }"
-                                    :category="child"
-                                    nested
-                                    :acting="store.acting"
-                                    @edit="editTarget = $event"
-                                    @delete="requestDelete"
-                                />
-                            </div>
+        <!-- arbre à plat : lignes sur filets fins, enfants repliables sous leur parent -->
+        <section v-else class="categories-tree">
+            <div
+                v-for="root in store.items"
+                :key="root.publicId"
+                class="categories-tree__group"
+                :class="{ 'is-expanded': expandedIds.has(root.publicId) && (root.children?.length ?? 0) > 0 }"
+            >
+                <CategoryListItem
+                    :category="root"
+                    :expanded="expandedIds.has(root.publicId)"
+                    :acting="store.acting"
+                    @edit="editTarget = $event"
+                    @delete="requestDelete"
+                    @add-child="openCreate"
+                    @toggle="toggleExpanded"
+                />
+                <div v-if="root.children?.length" class="categories-tree__panel" :inert="!expandedIds.has(root.publicId)">
+                    <div class="categories-tree__panel-inner">
+                        <div class="categories-tree__children">
+                            <CategoryListItem
+                                v-for="child in root.children"
+                                :key="child.publicId"
+                                class="categories-tree__child"
+                                :category="child"
+                                nested
+                                :acting="store.acting"
+                                @edit="editTarget = $event"
+                                @delete="requestDelete"
+                            />
                         </div>
                     </div>
                 </div>
-            </section>
-        </div>
+            </div>
+        </section>
 
         <CategoryFormModal v-model="createOpen" :default-parent-public-id="createParentId" :default-type="createType" />
         <CategoryFormModal v-model="editOpen" :category="editTarget" />
@@ -284,29 +282,18 @@ defineExpose({ openCreate });
 .categories-tree {
     overflow-x: hidden;
     min-width: 0;
+    border-bottom: 1px solid var(--line);
 }
 
 .categories-tree__group {
     min-width: 0;
-    border-radius: 14px;
-    transition:
-        background 0.35s var(--ease, ease),
-        padding-bottom 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.categories-tree__group + .categories-tree__group {
-    margin-top: 2px;
-}
-
-.categories-tree__group.is-expanded {
-    background: rgba(var(--v-theme-on-surface), 0.025);
-    padding-bottom: 4px;
-}
-
+/* dépliage : hauteur animée, sans fond ni flou */
 .categories-tree__panel {
     display: grid;
     grid-template-rows: 0fr;
-    transition: grid-template-rows 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: grid-template-rows 0.32s var(--ease);
 }
 
 .categories-tree__group.is-expanded .categories-tree__panel {
@@ -320,71 +307,21 @@ defineExpose({ openCreate });
 
 .categories-tree__children {
     min-width: 0;
-    margin: 0 8px 0 38px;
-    padding: 0 0 2px 12px;
-    border-left: 1px solid transparent;
     display: flex;
     flex-direction: column;
-    gap: 1px;
     opacity: 0;
-    transform: translateY(-8px);
-    filter: blur(1.5px);
-    transition:
-        opacity 0.22s ease,
-        transform 0.28s cubic-bezier(0.4, 0, 1, 1),
-        filter 0.22s ease,
-        border-color 0.3s ease,
-        margin 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-        padding 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: opacity 0.2s var(--ease);
 }
 
 .categories-tree__group.is-expanded .categories-tree__children {
-    border-left-color: var(--stroke);
     opacity: 1;
-    transform: translateY(0);
-    filter: blur(0);
-    transition:
-        opacity 0.38s ease 0.06s,
-        transform 0.48s cubic-bezier(0.22, 1, 0.36, 1) 0.04s,
-        filter 0.35s ease 0.05s,
-        border-color 0.35s ease 0.05s,
-        margin 0.48s cubic-bezier(0.22, 1, 0.36, 1),
-        padding 0.48s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.categories-tree__child {
-    opacity: 0;
-    transform: translateY(-6px);
-    transition:
-        opacity 0.28s ease,
-        transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.categories-tree__group.is-expanded .categories-tree__child {
-    opacity: 1;
-    transform: translateY(0);
-    transition-delay: calc(0.06s + var(--i, 0) * 45ms);
-}
-
-@media (max-width: 600px) {
-    .categories-tree__children {
-        margin-left: 24px;
-    }
+    transition: opacity 0.25s var(--ease) 0.08s;
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .categories-tree__group,
     .categories-tree__panel,
-    .categories-tree__children,
-    .categories-tree__child {
+    .categories-tree__children {
         transition: none !important;
-        filter: none !important;
-        transform: none !important;
-    }
-
-    .categories-tree__children,
-    .categories-tree__child {
-        opacity: 1;
     }
 }
 </style>

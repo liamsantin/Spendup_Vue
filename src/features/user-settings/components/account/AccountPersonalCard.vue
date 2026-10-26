@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { UserIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
-import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import type { Country } from '@/features/countries';
 
@@ -40,70 +38,124 @@ const birthDateModel = computed({
 </script>
 
 <template>
-    <AppGlassCard :title="t('accounts.personal.title')" :subtitle="t('accounts.personal.hint')">
-        <template #icon>
-            <UserIcon :size="20" stroke-width="1.5" />
-        </template>
-        <template v-if="publicId !== '—'" #actions>
-            <button type="button" class="su-btn su-btn--ghost account-public-id" @click="emit('copyPublicId')">#{{ publicId }}</button>
-        </template>
-        <AppAlert v-if="error" type="error" class="su-alert" closable @dismiss="emit('dismissError')">
-            {{ error }}
-        </AppAlert>
-        <div>
-            <v-row>
-                <v-col cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('accounts.personal.fields.firstName') }}</v-label>
-                    <v-text-field v-model="firstName" color="primary" variant="outlined" hide-details :disabled="loading" />
-                </v-col>
-                <v-col cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('accounts.personal.fields.name') }}</v-label>
-                    <v-text-field v-model="name" color="primary" variant="outlined" hide-details :disabled="loading" />
-                </v-col>
-                <v-col cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('accounts.personal.fields.phone') }}</v-label>
-                    <v-text-field v-model="phone" color="primary" variant="outlined" type="tel" hide-details :disabled="loading" />
-                </v-col>
-                <v-col cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('accounts.personal.fields.birthDate') }}</v-label>
-                    <AppDatePicker v-model="birthDateModel" :max="birthDateMax" color="primary" hide-details :disabled="loading" />
-                </v-col>
-                <v-col cols="12" md="5">
-                    <v-label class="mb-2 font-weight-medium">{{ t('accounts.personal.fields.street') }}</v-label>
-                    <v-text-field v-model="street" color="primary" variant="outlined" hide-details :disabled="loading" />
-                </v-col>
-                <v-col cols="12" md="2">
-                    <v-label class="mb-2 font-weight-medium">{{ t('accounts.personal.fields.streetNumber') }}</v-label>
-                    <v-text-field v-model="streetNumber" color="primary" variant="outlined" hide-details :disabled="loading" />
-                </v-col>
-                <v-col cols="12" md="5">
-                    <v-label class="mb-2 font-weight-medium">{{ t('accounts.personal.fields.country') }}</v-label>
-                    <AppAlert v-if="countriesError" type="error" class="mb-2">
-                        {{ countriesError }}
-                    </AppAlert>
-                    <v-autocomplete
-                        v-model="countryId"
-                        :items="countries"
-                        item-title="name"
-                        item-value="id"
-                        color="primary"
-                        variant="outlined"
-                        hide-details
-                        clearable
-                        auto-select-first
-                        :loading="countriesLoading"
-                        :disabled="loading || (countriesLoading && !countries.length)"
-                        :no-data-text="countriesError ? t('accounts.personal.countriesLoadFailed') : t('accounts.personal.noCountries')"
-                    />
-                </v-col>
-            </v-row>
+    <section class="su-settings account-personal">
+        <div class="su-settings__lead">
+            <h2>{{ t('accounts.personal.title') }}</h2>
+            <p>{{ t('accounts.personal.hint') }}</p>
+            <!-- Identifiant public en mono, copie au clic. -->
+            <button
+                v-if="publicId !== '—'"
+                type="button"
+                class="account-personal__id"
+                :title="t('common.copy')"
+                @click="emit('copyPublicId')"
+            >
+                ID #{{ publicId }}
+            </button>
         </div>
-    </AppGlassCard>
+        <div class="su-settings__fields">
+            <AppAlert v-if="error" type="error" class="is-full su-alert" closable @dismiss="emit('dismissError')">
+                {{ error }}
+            </AppAlert>
+            <div class="su-field">
+                <label class="su-field__label" for="account-first-name">{{ t('accounts.personal.fields.firstName') }}</label>
+                <v-text-field
+                    id="account-first-name"
+                    v-model="firstName"
+                    color="primary"
+                    variant="outlined"
+                    hide-details
+                    :disabled="loading"
+                />
+            </div>
+            <div class="su-field">
+                <label class="su-field__label" for="account-name">{{ t('accounts.personal.fields.name') }}</label>
+                <v-text-field id="account-name" v-model="name" color="primary" variant="outlined" hide-details :disabled="loading" />
+            </div>
+            <div class="su-field">
+                <label class="su-field__label" for="account-phone">{{ t('accounts.personal.fields.phone') }}</label>
+                <v-text-field
+                    id="account-phone"
+                    v-model="phone"
+                    color="primary"
+                    variant="outlined"
+                    type="tel"
+                    hide-details
+                    :disabled="loading"
+                />
+            </div>
+            <div class="su-field">
+                <label class="su-field__label" for="account-birth-date">{{ t('accounts.personal.fields.birthDate') }}</label>
+                <AppDatePicker
+                    id="account-birth-date"
+                    v-model="birthDateModel"
+                    :max="birthDateMax"
+                    color="primary"
+                    hide-details
+                    :disabled="loading"
+                />
+            </div>
+            <div class="su-field">
+                <label class="su-field__label" for="account-street">{{ t('accounts.personal.fields.street') }}</label>
+                <v-text-field id="account-street" v-model="street" color="primary" variant="outlined" hide-details :disabled="loading" />
+            </div>
+            <div class="su-field">
+                <label class="su-field__label" for="account-street-number">{{ t('accounts.personal.fields.streetNumber') }}</label>
+                <v-text-field
+                    id="account-street-number"
+                    v-model="streetNumber"
+                    color="primary"
+                    variant="outlined"
+                    hide-details
+                    :disabled="loading"
+                />
+            </div>
+            <div class="su-field">
+                <label class="su-field__label" for="account-country">{{ t('accounts.personal.fields.country') }}</label>
+                <AppAlert v-if="countriesError" type="error" class="mb-2">
+                    {{ countriesError }}
+                </AppAlert>
+                <v-autocomplete
+                    id="account-country"
+                    v-model="countryId"
+                    :items="countries"
+                    item-title="name"
+                    item-value="id"
+                    color="primary"
+                    variant="outlined"
+                    hide-details
+                    clearable
+                    auto-select-first
+                    :loading="countriesLoading"
+                    :disabled="loading || (countriesLoading && !countries.length)"
+                    :no-data-text="countriesError ? t('accounts.personal.countriesLoadFailed') : t('accounts.personal.noCountries')"
+                />
+            </div>
+        </div>
+    </section>
 </template>
 
 <style scoped>
-.account-public-id {
+.account-personal__id {
+    appearance: none;
+    display: inline-block;
+    margin: 12px 0 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--gray);
+    font-family: var(--font-mono);
+    font-size: 13px;
     cursor: pointer;
     user-select: none;
+}
+
+.account-personal__id:hover {
+    color: var(--ink);
+}
+
+.account-personal__id:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
 }
 </style>

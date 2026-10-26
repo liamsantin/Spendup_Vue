@@ -62,19 +62,13 @@ defineExpose({
 
 <template>
     <div class="notifications-tab">
-        <v-row class="justify-center py-1" no-gutters>
-            <v-col cols="12" md="9" class="pb-2">
-                <AppAlert v-if="localError" type="error" class="mb-4" closable @dismiss="localError = null">
-                    {{ localError }}
-                </AppAlert>
-            </v-col>
-            <v-col cols="12" md="9">
-                <div v-if="loading" class="d-flex justify-center py-6">
-                    <span class="su-spin" />
-                </div>
-                <PreferencesNotificationsCard v-else v-model="draft" />
-            </v-col>
-        </v-row>
+        <AppAlert v-if="localError" type="error" class="su-alert" closable @dismiss="localError = null">
+            {{ localError }}
+        </AppAlert>
+        <div v-if="loading" class="d-flex justify-center py-6">
+            <span class="su-spin" />
+        </div>
+        <PreferencesNotificationsCard v-else v-model="draft" />
     </div>
 </template>
 

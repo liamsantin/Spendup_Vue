@@ -2,30 +2,30 @@ import type { ThemeTypes } from '@/types/themeTypes/ThemeType';
 
 const lightBase = {
     variables: {
-        'border-color': '#e5eaef',
+        'border-color': '#ebecef',
         'border-opacity': 1
     },
     colors: {
-        info: '#539BFF',
-        success: '#13DEB9',
-        accent: '#FFAB91',
-        warning: '#FFAE1F',
-        error: '#FA896B',
-        lightsuccess: '#E6FFFA',
-        lighterror: '#FDEDE8',
-        lightinfo: '#EBF3FE',
-        lightwarning: '#FEF5E5',
-        textPrimary: '#2A3547',
-        textSecondary: '#2A3547',
-        borderColor: '#e5eaef',
-        inputBorder: '#DFE5EF',
+        info: '#5D87FF',
+        success: '#2F5BD9',
+        accent: '#775CFF',
+        warning: '#7F6125',
+        error: '#C0352B',
+        lightsuccess: '#EDF1FC',
+        lighterror: '#FBEEEC',
+        lightinfo: '#EDF1FC',
+        lightwarning: '#F5F0E6',
+        textPrimary: '#0B0C10',
+        textSecondary: '#686B75',
+        borderColor: '#ebecef',
+        inputBorder: '#ebecef',
         containerBg: '#ffffff',
         background: '#ffffff',
-        hoverColor: '#f6f9fc',
+        hoverColor: '#f4f5f8',
         surface: '#fff',
         'on-surface-variant': '#fff',
-        grey100: '#F2F6FA',
-        grey200: '#EAEFF4'
+        grey100: '#F4F5F8',
+        grey200: '#EBECEF'
     }
 } as const;
 
@@ -36,9 +36,9 @@ const BLUE_THEME: ThemeTypes = {
     colors: {
         ...lightBase.colors,
         primary: '#5D87FF',
-        secondary: '#49BEFF',
-        lightprimary: '#ECF2FF',
-        lightsecondary: '#E8F7FF'
+        secondary: '#775CFF',
+        lightprimary: '#EDF1FC',
+        lightsecondary: '#F0EDFB'
     }
 };
 

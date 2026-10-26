@@ -161,7 +161,7 @@ useCreateFromQuery(onCreate, () => !store.acting);
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
-    padding: 8px 10px 12px;
+    padding: 0 0 24px;
     -webkit-overflow-scrolling: touch;
 }
 

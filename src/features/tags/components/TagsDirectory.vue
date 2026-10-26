@@ -162,10 +162,12 @@ defineExpose({ openCreate });
 </template>
 
 <style scoped>
+/* liste à plat : lignes sur filets fins, filet de clôture en bas */
 .tags-directory__list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 0;
     width: 100%;
+    border-bottom: 1px solid var(--line);
 }
 </style>

@@ -91,67 +91,59 @@ defineExpose({
             <span class="su-spin" />
         </div>
 
-        <v-row v-else class="justify-center py-1" no-gutters>
-            <v-col cols="12" md="9" class="pb-4">
-                <AccountPictureCard
-                    :avatar-src="avatar.avatarSrc"
-                    :profile-picture="profilePicture"
-                    :saving="avatar.pictureSaving"
-                    :error="avatar.pictureError"
-                    @upload="avatar.onPictureSelected"
-                    @choose-avatar="avatar.openAvatarPicker"
-                    @reset="avatar.resetPicture"
-                    @open-lightbox="avatar.openPictureLightbox"
-                    @dismiss-error="avatar.pictureError = null"
-                />
-            </v-col>
+        <div v-else class="account-tab__sections">
+            <AccountPictureCard
+                :avatar-src="avatar.avatarSrc"
+                :profile-picture="profilePicture"
+                :saving="avatar.pictureSaving"
+                :error="avatar.pictureError"
+                @upload="avatar.onPictureSelected"
+                @choose-avatar="avatar.openAvatarPicker"
+                @reset="avatar.resetPicture"
+                @open-lightbox="avatar.openPictureLightbox"
+                @dismiss-error="avatar.pictureError = null"
+            />
 
-            <v-col cols="12" md="9" class="pb-4">
-                <AccountPersonalCard
-                    v-model:first-name="firstName"
-                    v-model:name="name"
-                    v-model:phone="phone"
-                    v-model:birth-date="birthDate"
-                    v-model:street="street"
-                    v-model:street-number="streetNumber"
-                    v-model:country-id="countryId"
-                    :loading="profile.loading"
-                    :countries="countries.items"
-                    :countries-loading="countries.loading"
-                    :countries-error="countries.error"
-                    :public-id="profile.displayPublicId"
-                    :error="profile.profileError"
-                    :birth-date-max="profile.birthDateMax"
-                    @copy-public-id="profile.copyPublicId"
-                    @dismiss-error="profile.profileError = null"
-                />
-            </v-col>
+            <AccountPersonalCard
+                v-model:first-name="firstName"
+                v-model:name="name"
+                v-model:phone="phone"
+                v-model:birth-date="birthDate"
+                v-model:street="street"
+                v-model:street-number="streetNumber"
+                v-model:country-id="countryId"
+                :loading="profile.loading"
+                :countries="countries.items"
+                :countries-loading="countries.loading"
+                :countries-error="countries.error"
+                :public-id="profile.displayPublicId"
+                :error="profile.profileError"
+                :birth-date-max="profile.birthDateMax"
+                @copy-public-id="profile.copyPublicId"
+                @dismiss-error="profile.profileError = null"
+            />
 
-            <v-col cols="12" md="9" class="pb-4">
-                <AccountCredentialsCard
-                    :username="displayUsername"
-                    :email="displayEmail"
-                    :pending-email="emailChange.pendingEmail"
-                    :show-password-field="showAccountPasswordField"
-                    :can-unlink-google="canUnlinkGoogle"
-                    :success="accountSuccess"
-                    :error="accountError"
-                    @edit-username="usernameChange.openUsernameModal"
-                    @edit-email="emailChange.openEmailModal"
-                    @edit-password="passwordChange.openPasswordModal"
-                    @unlink-google="unlinkGoogle.openUnlinkGoogleModal"
-                    @confirm-pending-email="
-                        router.push({ path: '/auth/confirm-email-change', query: { email: emailChange.pendingEmail, from: 'app' } })
-                    "
-                    @dismiss-success="accountSuccess = null"
-                    @dismiss-error="accountError = null"
-                />
-            </v-col>
+            <AccountCredentialsCard
+                :username="displayUsername"
+                :email="displayEmail"
+                :pending-email="emailChange.pendingEmail"
+                :show-password-field="showAccountPasswordField"
+                :can-unlink-google="canUnlinkGoogle"
+                :success="accountSuccess"
+                :error="accountError"
+                @edit-username="usernameChange.openUsernameModal"
+                @edit-email="emailChange.openEmailModal"
+                @edit-password="passwordChange.openPasswordModal"
+                @unlink-google="unlinkGoogle.openUnlinkGoogleModal"
+                @confirm-pending-email="
+                    router.push({ path: '/auth/confirm-email-change', query: { email: emailChange.pendingEmail, from: 'app' } })
+                "
+                @dismiss-success="accountSuccess = null"
+                @dismiss-error="accountError = null"
+            />
 
-            <v-col cols="12" md="9">
-                <AccountDangerCard @delete="deletion.openDeleteModal" />
-            </v-col>
-        </v-row>
+            <AccountDangerCard @delete="deletion.openDeleteModal" />
+        </div>
 
         <AvatarCatalogModal
             v-model:lightbox-open="avatar.pictureLightboxOpen"
@@ -250,8 +242,9 @@ defineExpose({
     overflow-x: hidden;
 }
 
-.account-tab :deep(.v-label) {
-    display: block;
-    margin-bottom: 16px;
+/* Les sections s’enchaînent sur leurs filets 2 px ; pas de grille Vuetify. */
+.account-tab__sections {
+    display: flex;
+    flex-direction: column;
 }
 </style>

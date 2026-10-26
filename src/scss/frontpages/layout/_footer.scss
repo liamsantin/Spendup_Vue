@@ -1,344 +1,261 @@
 /*
- * Footer des landing pages : marque + hébergement suisse, colonnes de liens,
- * bloc application, ligne légale et grand logotype en filigrane.
+ * Footer des landing pages — style suisse : grille de 12 colonnes, filets fins,
+ * marque + hébergement, colonnes de liens, bloc application et grand logotype.
  */
+
+$ink: #111111;
+$grey: #6f6f6f;
+$hairline: #dedede;
+$white: #ffffff;
+$red: #e4002b;
 
 .landing-footer {
     position: relative;
     overflow: hidden;
-    color: rgba(255, 255, 255, 0.68);
-    background:
-        radial-gradient(900px 420px at 85% 0%, rgba(var(--v-theme-primary), 0.16), transparent 60%),
-        radial-gradient(700px 420px at 0% 100%, rgba(var(--v-theme-secondary), 0.1), transparent 60%), #141528;
-}
-
-.landing-footer__glow {
-    position: absolute;
-    width: 420px;
-    height: 420px;
-    border-radius: 50%;
-    pointer-events: none;
-    filter: blur(5px);
-}
-
-.landing-footer__glow--left {
-    bottom: -320px;
-    left: -130px;
-    background: rgba(var(--v-theme-secondary), 0.1);
-    box-shadow: 0 0 0 70px rgba(var(--v-theme-secondary), 0.016);
-}
-
-.landing-footer__glow--right {
-    top: -330px;
-    right: -90px;
-    background: rgba(var(--v-theme-primary), 0.13);
-    box-shadow: 0 0 0 75px rgba(var(--v-theme-primary), 0.02);
+    background: $white;
+    color: $ink;
 }
 
 .landing-footer__content {
-    position: relative;
-    z-index: 1;
+    padding-top: clamp(72px, 9vw, 120px);
+    padding-bottom: 28px;
 }
-
-/* ---------- Grille principale ---------- */
 
 .footer-main {
     display: grid;
-    grid-template-columns: minmax(280px, 1.5fr) repeat(3, minmax(0, 0.7fr)) minmax(220px, 1fr);
-    gap: 44px;
-    padding: 80px 0 56px;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: clamp(16px, 2vw, 32px);
+    row-gap: 48px;
+    padding-top: 20px;
+    border-top: 1px solid $ink;
 }
 
-.footer-brand :deep(.spendup-logo) {
-    overflow: visible;
-    padding-block: 3px;
+.footer-brand {
+    grid-column: 1 / span 4;
+    display: grid;
+    align-content: start;
+    gap: 24px;
+
+    p {
+        max-width: 340px;
+        margin: 0;
+        color: $grey;
+        font-size: 15px;
+        line-height: 1.6;
+    }
 }
 
-.footer-brand :deep(.spendup-logo__text) {
-    color: white !important;
-    line-height: 1.15;
-}
-
-.footer-brand :deep(.spendup-logo__icon) {
-    box-sizing: border-box;
-    padding: 2px;
-    border-radius: 8px;
-}
-
-.footer-brand p {
-    max-width: 340px;
-    margin: 20px 0 22px;
-    font-size: 0.86rem;
-    line-height: 1.7;
-}
-
-/* carte hébergement : drapeau + logo Infomaniak */
 .footer-hosting {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 13px;
-    padding: 12px 16px 12px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
+    gap: 12px;
+    color: $ink;
     text-decoration: none;
-    background: rgba(255, 255, 255, 0.04);
-    transition:
-        border-color 0.25s ease,
-        background 0.25s ease;
-}
 
-.footer-hosting:hover {
-    border-color: rgba(0, 152, 255, 0.45);
-    background: rgba(0, 152, 255, 0.07);
-}
+    svg {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+    }
 
-.footer-hosting > svg {
-    width: 32px;
-    height: 32px;
-    flex: none;
-}
+    span {
+        display: grid;
+        gap: 6px;
+    }
 
-.footer-hosting small {
-    display: block;
-    margin-bottom: 5px;
-    color: rgba(255, 255, 255, 0.55);
-    font-size: 0.68rem;
-    font-weight: 560;
-}
+    small {
+        color: $grey;
+        font-size: 12.5px;
+    }
 
-.footer-hosting img {
-    display: block;
-    width: 116px;
-    height: auto;
+    img {
+        width: 140px;
+        height: auto;
+    }
+
+    &:hover small {
+        color: $red;
+    }
 }
 
 .footer-trust {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 18px;
-}
+    gap: 6px 20px;
 
-.footer-trust span {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 11px;
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 999px;
-    color: rgba(255, 255, 255, 0.62);
-    font-size: 0.7rem;
-    font-weight: 560;
-    background: rgba(255, 255, 255, 0.03);
-}
-
-.footer-trust svg {
-    color: rgb(var(--v-theme-primary));
+    span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 500;
+    }
 }
 
 .footer-column,
 .footer-app {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
     gap: 12px;
+
+    h3 {
+        margin: 0 0 8px;
+        color: $grey !important;
+        font-size: 13px;
+        font-weight: 500;
+    }
 }
 
-.footer-column h3,
-.footer-app h3 {
-    margin: 4px 0 8px;
-    color: white;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
+.footer-column {
+    grid-column: span 2;
+
+    a {
+        align-self: flex-start;
+        color: $ink;
+        font-size: 15px;
+        text-decoration: none;
+
+        &:hover {
+            color: $red;
+        }
+    }
 }
 
-.footer-column a {
-    color: rgba(255, 255, 255, 0.58);
-    font-size: 0.82rem;
-    line-height: 1.45;
-    text-decoration: none;
-    transition:
-        color 0.2s ease,
-        transform 0.2s ease;
-}
+.footer-app {
+    grid-column: span 2;
 
-.footer-column a:hover {
-    color: white;
-    transform: translateX(2px);
-}
+    p {
+        margin: 0;
+        color: $grey;
+        font-size: 14px;
+        line-height: 1.5;
+    }
 
-.footer-app p {
-    margin: 0 0 4px;
-    color: rgba(255, 255, 255, 0.55);
-    font-size: 0.8rem;
-    line-height: 1.6;
-}
+    &__download {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border: 1px solid $ink;
+        background: $ink;
+        color: $white;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background-color 0.15s ease;
 
-.footer-app__download {
-    display: inline-flex;
-    align-items: center;
-    gap: 11px;
-    padding: 10px 16px 10px 13px;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    border-radius: 14px;
-    color: #fff;
-    font-size: 0.86rem;
-    font-weight: 650;
-    text-decoration: none;
-    background: rgba(255, 255, 255, 0.06);
-    transition:
-        border-color 0.25s ease,
-        background 0.25s ease;
-}
+        &:hover {
+            border-color: $red;
+            background: $red;
+        }
 
-.footer-app__download:hover {
-    border-color: rgba(var(--v-theme-primary), 0.6);
-    background: rgba(var(--v-theme-primary), 0.14);
-}
+        span {
+            display: grid;
+            line-height: 1.25;
+        }
 
-.footer-app__download small {
-    display: block;
-    color: rgba(255, 255, 255, 0.55);
-    font-size: 0.66rem;
-    font-weight: 560;
-}
+        small {
+            opacity: 0.7;
+            font-size: 11.5px;
+        }
+    }
 
-.footer-app__web {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: rgb(var(--v-theme-primary));
-    font-size: 0.82rem;
-    font-weight: 650;
-    text-decoration: none;
-}
+    &__web {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: $ink;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
 
-.footer-app__web:hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
+        &:hover {
+            color: $red;
+        }
+    }
 }
-
-/* ---------- Ligne légale ---------- */
 
 .footer-bottom {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
-    padding: 24px 0 30px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
+    gap: 14px;
+    margin-top: clamp(64px, 8vw, 104px);
+    padding-top: 16px;
+    border-top: 1px solid $hairline;
+    color: $grey;
+    font-size: 13px;
 
-.footer-bottom p {
-    margin: 0;
-    color: rgba(255, 255, 255, 0.42);
-    font-size: 0.74rem;
-}
+    p {
+        margin: 0;
+    }
 
-.footer-bottom__made {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
+    &__made {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
 
-.footer-bottom__made svg {
-    width: 16px;
-    height: 16px;
+        svg {
+            width: 14px;
+            height: 14px;
+        }
+    }
 }
 
 .footer-top {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 7px 13px;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-radius: 999px;
-    color: rgba(255, 255, 255, 0.72);
-    font: inherit;
-    font-size: 0.74rem;
-    font-weight: 600;
+    border: 0;
     background: transparent;
+    color: $ink;
+    font: inherit;
+    font-weight: 500;
     cursor: pointer;
-    transition:
-        color 0.2s ease,
-        border-color 0.2s ease;
+
+    &:hover {
+        color: $red;
+    }
 }
 
-.footer-top:hover {
-    border-color: rgba(255, 255, 255, 0.4);
-    color: #fff;
-}
-
-/* grand logotype en filigrane, coupé par le bas du footer */
 .footer-wordmark {
-    position: relative;
-    margin: -10px 0 -0.24em;
-    color: transparent;
-    font-size: clamp(5rem, 19vw, 17rem);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.06em;
-    text-align: center;
+    // Aligné sur la marge gauche du contenu (gabarit de 1320 px)
+    padding: 0 max(clamp(20px, 4vw, 48px), calc((100% - 1320px) / 2 + 48px));
+    margin-left: -0.05em;
+    color: $ink;
+    font-size: clamp(64px, 13vw, 200px);
+    font-weight: 700;
+    letter-spacing: -0.065em;
+    line-height: 0.8;
     white-space: nowrap;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0));
-    -webkit-background-clip: text;
-    background-clip: text;
-    pointer-events: none;
     user-select: none;
+    transform: translateY(12%);
 }
 
-/* ---------- Responsive ---------- */
+@media (max-width: 1279px) {
+    .footer-brand {
+        grid-column: 1 / -1;
+    }
 
-@media (max-width: 1263px) {
-    .footer-main {
-        grid-template-columns: 1.4fr repeat(3, 1fr);
+    .footer-column,
+    .footer-app {
+        grid-column: span 3;
+    }
+}
+
+@media (max-width: 599px) {
+    .footer-column,
+    .footer-app {
+        grid-column: span 6;
     }
 
     .footer-app {
         grid-column: 1 / -1;
     }
 
-    .footer-app p {
-        max-width: 460px;
-    }
-}
-
-@media (max-width: 959px) {
-    .footer-main {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 42px 30px;
-    }
-
-    .footer-brand {
-        grid-column: 1 / -1;
-    }
-
-    .footer-brand p {
-        max-width: 520px;
-    }
-}
-
-@media (max-width: 599px) {
-    .footer-main {
-        grid-template-columns: 1fr 1fr;
-        gap: 38px 24px;
-        padding: 48px 0 40px;
-    }
-
-    .footer-column:nth-of-type(3) {
-        grid-column: 1 / -1;
-    }
-
     .footer-bottom {
         flex-direction: column;
         align-items: flex-start;
-        gap: 10px;
-    }
-
-    /* la règle mobile globale des landings centre tout le texte : le footer reste aligné à gauche */
-    .footer-main :is(p, h3, a, span, small),
-    .footer-bottom p {
-        text-align: left !important;
     }
 }

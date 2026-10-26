@@ -5,12 +5,12 @@ html {
     background-color: #ffffff;
 
     &:has([class*='DARK_']) {
-        background-color: #171c23;
+        background-color: #1d1f25;
     }
 
     &:has(.DARK_BLUE_THEME),
     &:has(.v-theme--DARK_BLUE_THEME) {
-        background-color: #2a3447;
+        background-color: #1d1f25;
     }
 
     .bg-success {

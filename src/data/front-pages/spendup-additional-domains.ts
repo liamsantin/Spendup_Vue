@@ -14,16 +14,6 @@ import {
     FileInvoiceIcon,
     BriefcaseIcon
 } from 'vue-tabler-icons';
-import AlertsScene from '@/components/frontpages/mockups/scenes/AlertsScene.vue';
-import AnomaliesScene from '@/components/frontpages/mockups/scenes/AnomaliesScene.vue';
-import CalendarScene from '@/components/frontpages/mockups/scenes/CalendarScene.vue';
-import CategorisationScene from '@/components/frontpages/mockups/scenes/CategorisationScene.vue';
-import EmployerScene from '@/components/frontpages/mockups/scenes/EmployerScene.vue';
-import InvestScene from '@/components/frontpages/mockups/scenes/InvestScene.vue';
-import NetworkScene from '@/components/frontpages/mockups/scenes/NetworkScene.vue';
-import RecurringIncomeScene from '@/components/frontpages/mockups/scenes/RecurringIncomeScene.vue';
-import SecurityScene from '@/components/frontpages/mockups/scenes/SecurityScene.vue';
-import SubscriptionsScene from '@/components/frontpages/mockups/scenes/SubscriptionsScene.vue';
 
 export type DomainCard = {
     title: string;
@@ -46,9 +36,19 @@ export type SpendupAdditionalDomain = {
     cards?: DomainCard[];
     /** Groupe de la grille « Dans le détail » de la page Fonctionnalités. */
     group: SpendupDomainGroupId;
-    /** Maquette produit codée qui illustre le domaine. */
-    scene: Component;
+    /** Capture réelle de l'application illustrant le domaine (absente si l'écran n'existe pas encore). */
+    image?: AppScreenshot;
 };
+
+export type AppScreenshot = {
+    src: string;
+    alt: string;
+};
+
+/** Captures réelles de l'application, prises sur un compte de démonstration. */
+export const APP_SCREENSHOTS_PATH = '/assets/images/front-pages/app';
+
+export const appScreenshot = (file: string, alt: string): AppScreenshot => ({ src: `${APP_SCREENSHOTS_PATH}/${file}`, alt });
 
 export type SpendupDomainGroupId = 'organiser' | 'revenus' | 'proteger';
 
@@ -114,7 +114,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'categorisation',
         group: 'organiser',
-        scene: CategorisationScene,
+        image: appScreenshot('categories.jpg', 'Arbre des catégories Spend.Up : alimentation, logement, loisirs, salaire, santé'),
         kicker: 'Organiser',
         icon: TagsIcon,
         title: 'Catégorisation & organisation',
@@ -136,7 +136,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'revenus-recurrents',
         group: 'revenus',
-        scene: RecurringIncomeScene,
+        image: appScreenshot('recurring.jpg', 'Récurrences Spend.Up : salaire, loyer, Netflix, pension AVS et abonnement mobile'),
         kicker: 'Anticiper',
         icon: TrendingUpIcon,
         title: 'Revenus récurrents',
@@ -158,7 +158,6 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'employeurs-salaires',
         group: 'revenus',
-        scene: EmployerScene,
         kicker: 'Carrière',
         icon: BriefcaseIcon,
         title: 'Employeurs, contrats & salaires',
@@ -184,7 +183,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'tiers-paiements',
         group: 'organiser',
-        scene: NetworkScene,
+        image: appScreenshot('counterparties.jpg', 'Liste des tiers Spend.Up : employeur, administrations, fournisseurs et contacts'),
         kicker: 'Réseau',
         icon: UsersIcon,
         title: 'Réseau, tiers & moyens de paiement',
@@ -205,7 +204,6 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'anomalies',
         group: 'organiser',
-        scene: AnomaliesScene,
         kicker: 'Contrôler',
         icon: AlertTriangleIcon,
         title: 'Anomalies & qualité des données',
@@ -226,7 +224,6 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'investissements-crypto',
         group: 'proteger',
-        scene: InvestScene,
         kicker: 'Investir',
         icon: ChartLineIcon,
         title: 'Investissements & crypto',
@@ -248,7 +245,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'depenses-abonnements',
         group: 'revenus',
-        scene: SubscriptionsScene,
+        image: appScreenshot('due-dates.jpg', 'Échéances à venir dans Spend.Up : salaire, loyer, abonnements et pension'),
         kicker: 'Récurrent',
         icon: RepeatIcon,
         title: 'Dépenses récurrentes & abonnements',
@@ -274,7 +271,6 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'alertes-notifications',
         group: 'proteger',
-        scene: AlertsScene,
         kicker: 'Alerter',
         icon: BellIcon,
         title: 'Alertes & notifications',
@@ -295,7 +291,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'calendrier',
         group: 'revenus',
-        scene: CalendarScene,
+        image: appScreenshot('calendar.jpg', 'Calendrier financier Spend.Up du mois avec revenus, charges et échéances'),
         kicker: 'Planifier',
         icon: CalendarIcon,
         title: 'Calendrier & échéances',
@@ -317,7 +313,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'securite-devises',
         group: 'proteger',
-        scene: SecurityScene,
+        image: appScreenshot('security.jpg', 'Paramètres de sécurité Spend.Up : authentification à deux facteurs et appareils connectés'),
         kicker: 'Protéger',
         icon: ShieldLockIcon,
         title: 'Sécurité, conformité & multi-devises',

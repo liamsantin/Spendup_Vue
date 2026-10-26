@@ -92,7 +92,7 @@ function onOpenChange(value: boolean) {
         <div v-if="needsGoogle" class="mb-2">
             <div class="text-subtitle-1 text-medium-emphasis mb-3">{{ t('auth.stepUp.fields.google') }}</div>
             <GoogleSignInButton :label="t('auth.stepUp.googleConfirm')" @credential="onGoogleCredential" />
-            <div v-if="googleIdToken" class="text-subtitle-2 text-success mt-2">{{ t('auth.stepUp.googleReady') }}</div>
+            <div v-if="googleIdToken" class="step-up__ready">{{ t('auth.stepUp.googleReady') }}</div>
         </div>
 
         <template #footer="{ close }">
@@ -101,3 +101,13 @@ function onOpenChange(value: boolean) {
         </template>
     </AppModalBase>
 </template>
+
+<style scoped>
+/* confirmation = bleu lisible, jamais de vert */
+.step-up__ready {
+    margin-top: 8px;
+    color: var(--blue-ink);
+    font-size: 13px;
+    font-weight: 700;
+}
+</style>

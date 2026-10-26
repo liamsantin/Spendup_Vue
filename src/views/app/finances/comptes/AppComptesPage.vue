@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { BuildingBankIcon, BellPlusIcon } from 'vue-tabler-icons';
+import { BuildingBankIcon, BellPlusIcon, PlusIcon } from 'vue-tabler-icons';
 import AppTabsShell from '@/components/shared/tabs/AppTabsShell.vue';
 import { AccountsTab, InvitationsTab, useAccountsStore } from '@/features/accounts';
 
@@ -16,6 +16,8 @@ const store = useAccountsStore();
 
 const FOCUS_CLEAR_MS = 2800;
 let focusClearTimer: ReturnType<typeof setTimeout> | null = null;
+
+const accountsTabRef = ref<{ openCreate: () => void } | null>(null);
 
 function tabFromQuery(): AccountTab {
     const raw = route.query.tab;
@@ -54,6 +56,18 @@ const tabs = computed(() => [
         chip: store.incomingCount > 0 ? store.incomingCount : undefined
     }
 ]);
+
+/** Sous-titre « N comptes · N banques » (comptes actifs ; banques distinctes), sinon le sous-titre générique. */
+const subtitle = computed(() => {
+    if (!store.initialized) return t('comptesPage.subtitle');
+    const active = store.accounts.filter((account) => account.isActive);
+    const banks = new Set(
+        active.map((account) => account.bank?.tierPublicId ?? account.institutionName?.trim().toLowerCase() ?? '').filter(Boolean)
+    );
+    const accountsLabel = t('comptesPage.hero.accounts', { count: active.length }, active.length);
+    const banksLabel = t('comptesPage.hero.banks', { count: banks.size }, banks.size);
+    return `${accountsLabel} · ${banksLabel}`;
+});
 
 function clearFocusClearTimer() {
     if (focusClearTimer) {
@@ -187,10 +201,25 @@ watch(tab, (value) => {
 </script>
 
 <template>
-    <AppTabsShell v-model="tab" :tabs="tabs" :title="t('comptesPage.title')" :subtitle="t('comptesPage.subtitle')" hide-actions>
+    <AppTabsShell v-model="tab" :tabs="tabs" :title="t('comptesPage.title')" :subtitle="subtitle" hide-actions class="comptes-page">
+        <template v-if="tab === 'Accounts'" #actions>
+            <button type="button" class="su-btn su-btn--ink comptes-page__create" @click="accountsTabRef?.openCreate()">
+                <PlusIcon :size="16" stroke-width="1.6" />
+                {{ t('comptesPage.actions.create') }}
+            </button>
+        </template>
+
         <Transition name="su-pane" mode="out-in">
-            <AccountsTab v-if="tab === 'Accounts'" key="Accounts" />
+            <AccountsTab v-if="tab === 'Accounts'" key="Accounts" ref="accountsTabRef" />
             <InvitationsTab v-else key="Invitations" />
         </Transition>
     </AppTabsShell>
 </template>
+
+<style scoped>
+@media (max-width: 767px) {
+    .comptes-page__create {
+        width: 100%;
+    }
+}
+</style>

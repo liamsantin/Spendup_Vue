@@ -45,7 +45,8 @@
             "wealth": "Patrimoine",
             "analytics": "Analyses",
             "network": "Réseau",
-            "settings": "Paramètres"
+            "settings": "Paramètres",
+            "upcoming": "À venir"
         },
         "items": {
             "dashboard": "Tableau de bord",
@@ -85,6 +86,7 @@
             "subscription": "Abonnement",
             "account": "Compte"
         },
+        "shortcuts": "Raccourcis",
         "subCaptions": {
             "soon": "Bientôt"
         },
@@ -297,7 +299,9 @@
             "subtitle": "Période en cours.",
             "empty": "Aucun budget actif pour l’instant.",
             "used": "{percent} utilisé",
-            "overspent": "Limite dépassée"
+            "overspent": "Limite dépassée",
+            "monthLabel": "Budget en cours · {month}",
+            "summary": "{spent} dépensé sur {limit} · reste {remaining}"
         },
         "savingsGoals": {
             "title": "Objectifs d’épargne",
@@ -347,6 +351,11 @@
     "comptesPage": {
         "title": "Comptes",
         "subtitle": "Banques, épargne et moyens de paiement",
+        "hero": {
+            "accounts": "{count} compte | {count} comptes",
+            "banks": "{count} banque | {count} banques",
+            "netWorth": "Valeur nette"
+        },
         "tabs": {
             "accounts": "Comptes",
             "invitations": "Invitations"
@@ -694,6 +703,33 @@
     "recurrencesPage": {
         "title": "Récurrences",
         "subtitle": "Charges et revenus prévus. Une échéance ne devient une transaction qu’après confirmation.",
+        "hero": {
+            "active": "{count} récurrence active | {count} récurrence active | {count} récurrences actives",
+            "duesInMonth": "{count} échéance en {month} | {count} échéance en {month} | {count} échéances en {month}"
+        },
+        "figs": {
+            "fixedPerMonth": "Charges fixes / mois",
+            "subscriptionsPerMonth": "Abonnements / mois",
+            "incomesPerMonth": "Revenus récurrents / mois",
+            "note": "Équivalent mensuel des récurrences actives"
+        },
+        "calendar": {
+            "legend": "Légende",
+            "savings": "Épargne"
+        },
+        "groups": {
+            "incomes": "Revenus",
+            "fixed": "Charges fixes",
+            "subscriptions": "Abonnements",
+            "savings": "Épargne programmée"
+        },
+        "row": {
+            "onDay": "le {day}",
+            "next": "Prochaine {date}"
+        },
+        "timeline": {
+            "dues": "{count} échéance | {count} échéance | {count} échéances"
+        },
         "loadMore": "Charger plus",
         "unknownAccount": "Compte",
         "tabs": {
@@ -977,11 +1013,32 @@
             "nameDesc": "Z → A",
             "amountDesc": "Élevé",
             "amountAsc": "Faible"
-        }
+        },
+        "aside": {
+            "figsTitle": "Par mois",
+            "nextTitle": "Prochaines échéances",
+            "allDues": "Toutes les échéances",
+            "none": "Aucune échéance à venir."
+        },
+        "subnav": "Vues des récurrences"
     },
     "budgetsPage": {
         "title": "Budgets",
         "subtitle": "Enveloppes récurrentes, suivi de la période en cours et alertes.",
+        "hero": {
+            "monthBudget": "Budget {month}",
+            "daysLeft": "{count} jour restant | {count} jour restant | {count} jours restants"
+        },
+        "overview": {
+            "spent": "Dépensé",
+            "budget": "Budget",
+            "remaining": "Reste",
+            "overBy": "Dépassé de",
+            "perDay": "Disponible par jour",
+            "byCategory": "Par catégorie",
+            "reached": "Atteint",
+            "aggregateNote": "Total des budgets en cours"
+        },
         "searchPlaceholder": "Rechercher un budget",
         "count": "{count} budget | {count} budget | {count} budgets",
         "tabs": {
@@ -1117,6 +1174,11 @@
     "savingsGoalsPage": {
         "title": "Objectifs d’épargne",
         "subtitle": "Le montant suivi = ouverture + transactions explicitement liées.",
+        "card": {
+            "saved": "Épargné",
+            "target": "Objectif",
+            "dueDate": "Échéance"
+        },
         "searchPlaceholder": "Rechercher un objectif",
         "count": "{count} objectif | {count} objectif | {count} objectifs",
         "tabs": {
@@ -1568,6 +1630,14 @@
             "organization": "Association, fondation, club",
             "administration": "Commune, impôts, caisse",
             "unknown": "Le type n’est pas encore clair"
+        },
+        "naturesPlural": {
+            "all": "Tiers",
+            "person": "Personnes",
+            "company": "Entreprises",
+            "organization": "Organisations",
+            "administration": "Administrations",
+            "unknown": "Non précisés"
         },
         "natures": {
             "person": "Personne",
@@ -2031,6 +2101,19 @@
             }
         },
         "count": "{count} transaction | {count} transactions",
+        "operations": "{count} opération | {count} opération | {count} opérations",
+        "shownOf": "{shown} transactions affichées sur {total}",
+        "typeTabs": {
+            "all": "Toutes",
+            "revenu": "Revenus",
+            "depense": "Achats",
+            "transfert": "Virements"
+        },
+        "figures": {
+            "inflow": "Revenus",
+            "outflow": "Achats",
+            "net": "Solde net"
+        },
         "sortDir": {
             "asc": "Croissant",
             "desc": "Décroissant"

@@ -10,7 +10,6 @@ import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import {
     AccountNavIcon,
     AccountsNavIcon,
-    AnalyticsNavIcon,
     AssetsNavIcon,
     BudgetsNavIcon,
     CalendarNavIcon,
@@ -28,7 +27,6 @@ import {
     HouseholdNavIcon,
     ImportNavIcon,
     InvestmentsNavIcon,
-    NetworkNavIcon,
     NotificationsNavIcon,
     BanksNavIcon,
     PaymentMethodsNavIcon,
@@ -39,7 +37,6 @@ import {
     RealEstateNavIcon,
     RecurrencesExpensesNavIcon,
     RecurrencesIncomesNavIcon,
-    RecurrencesNavIcon,
     RecurrencesOverviewNavIcon,
     RecurrencesUpcomingNavIcon,
     SecurityNavIcon,
@@ -48,7 +45,7 @@ import {
     TaxNavIcon,
     TiersNavIcon,
     TransactionsNavIcon,
-    WealthNavIcon,
+    UpcomingNavIcon,
     WealthOverviewNavIcon
 } from '../solarNavIcons';
 import type { NavIcon, NavItem, NavLeaf } from '../types/navigation';
@@ -95,7 +92,8 @@ export const SHELL_NAV_IDS = {
     privacy: 'privacy',
     security: 'security',
     subscription: 'subscription',
-    account: 'account'
+    account: 'account',
+    upcoming: 'upcoming'
 } as const;
 
 function pathIs(path: string, prefix: string): boolean {
@@ -110,16 +108,16 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
         return { openId: SHELL_NAV_IDS.calendar, activeId: SHELL_NAV_IDS.calendar };
     }
     if (pathIs(path, RECURRENCES_PATHS.charges)) {
-        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesExpenses };
+        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.recurrencesExpenses };
     }
     if (pathIs(path, RECURRENCES_PATHS.revenus)) {
-        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesIncomes };
+        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.recurrencesIncomes };
     }
     if (pathIs(path, RECURRENCES_PATHS.echeances)) {
-        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesUpcoming };
+        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.recurrencesUpcoming };
     }
     if (pathIs(path, RECURRENCES_PATHS.overview)) {
-        return { openId: SHELL_NAV_IDS.recurrences, activeId: SHELL_NAV_IDS.recurrencesOverview };
+        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.recurrencesOverview };
     }
     if (pathIs(path, '/app/finances/transactions')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.transactions };
@@ -190,20 +188,21 @@ export function useShellNav() {
     const unreadCount = computed(() => notifications.unreadCount);
     const soon = computed(() => t('nav.subCaptions.soon'));
 
-    function live(id: string, label: string, icon: NavIcon, to: string): NavLeaf {
-        return { id, label, icon, to };
+    function live(id: string, label: string, icon: NavIcon, to: string, group?: string): NavLeaf {
+        return { id, label, icon, to, group };
     }
 
-    function upcoming(id: string, label: string, icon: NavIcon): NavLeaf {
-        return { id, label, icon, disabled: true, caption: soon.value };
+    function upcoming(id: string, label: string, icon: NavIcon, group?: string): NavLeaf {
+        return { id, label, icon, disabled: true, caption: soon.value, group };
     }
 
-    function section(id: string, label: string, icon: NavIcon, children: NavLeaf[]): NavItem {
+    function section(id: string, label: string, icon: NavIcon, children: NavLeaf[], muted = false): NavItem {
         return {
             id,
             label,
             icon,
             children,
+            muted: muted || undefined,
             detail: [{ id: `${id}-pages`, title: label, items: children }]
         };
     }
@@ -213,14 +212,35 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.banks, t('nav.items.banks'), BanksNavIcon, '/app/finances/banques'),
         live(SHELL_NAV_IDS.paymentMethods, t('nav.items.paymentMethods'), PaymentMethodsNavIcon, '/app/finances/moyens-de-paiement'),
         live(SHELL_NAV_IDS.transactions, t('nav.items.transactions'), TransactionsNavIcon, '/app/finances/transactions'),
-        live(SHELL_NAV_IDS.import, t('nav.items.import'), ImportNavIcon, IMPORTS_PATHS.list)
-    ]);
-
-    const recurrencesLeaves = computed<NavLeaf[]>(() => [
-        live(SHELL_NAV_IDS.recurrencesOverview, t('nav.items.recurrencesOverview'), RecurrencesOverviewNavIcon, RECURRENCES_PATHS.overview),
-        live(SHELL_NAV_IDS.recurrencesExpenses, t('nav.items.recurrencesExpenses'), RecurrencesExpensesNavIcon, RECURRENCES_PATHS.charges),
-        live(SHELL_NAV_IDS.recurrencesIncomes, t('nav.items.recurrencesIncomes'), RecurrencesIncomesNavIcon, RECURRENCES_PATHS.revenus),
-        live(SHELL_NAV_IDS.recurrencesUpcoming, t('nav.items.recurrencesUpcoming'), RecurrencesUpcomingNavIcon, RECURRENCES_PATHS.echeances)
+        live(SHELL_NAV_IDS.import, t('nav.items.import'), ImportNavIcon, IMPORTS_PATHS.list),
+        live(
+            SHELL_NAV_IDS.recurrencesOverview,
+            t('nav.items.recurrencesOverview'),
+            RecurrencesOverviewNavIcon,
+            RECURRENCES_PATHS.overview,
+            t('nav.headers.recurrences')
+        ),
+        live(
+            SHELL_NAV_IDS.recurrencesExpenses,
+            t('nav.items.recurrencesExpenses'),
+            RecurrencesExpensesNavIcon,
+            RECURRENCES_PATHS.charges,
+            t('nav.headers.recurrences')
+        ),
+        live(
+            SHELL_NAV_IDS.recurrencesIncomes,
+            t('nav.items.recurrencesIncomes'),
+            RecurrencesIncomesNavIcon,
+            RECURRENCES_PATHS.revenus,
+            t('nav.headers.recurrences')
+        ),
+        live(
+            SHELL_NAV_IDS.recurrencesUpcoming,
+            t('nav.items.recurrencesUpcoming'),
+            RecurrencesUpcomingNavIcon,
+            RECURRENCES_PATHS.echeances,
+            t('nav.headers.recurrences')
+        )
     ]);
 
     const gestionLeaves = computed<NavLeaf[]>(() => [
@@ -236,22 +256,15 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.goals, t('nav.items.goals'), GoalsNavIcon, SAVINGS_GOALS_PATHS.list)
     ]);
 
-    const wealthLeaves = computed<NavLeaf[]>(() => [
-        upcoming(SHELL_NAV_IDS.wealthOverview, t('nav.items.wealthOverview'), WealthOverviewNavIcon),
-        upcoming(SHELL_NAV_IDS.assets, t('nav.items.assets'), AssetsNavIcon),
-        upcoming(SHELL_NAV_IDS.investments, t('nav.items.investments'), InvestmentsNavIcon),
-        upcoming(SHELL_NAV_IDS.realEstate, t('nav.items.realEstate'), RealEstateNavIcon),
-        upcoming(SHELL_NAV_IDS.debts, t('nav.items.debts'), DebtsNavIcon)
-    ]);
-
-    const analyticsLeaves = computed<NavLeaf[]>(() => [
-        upcoming(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), ForecastsNavIcon),
-        upcoming(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon)
-    ]);
-
-    const networkLeaves = computed<NavLeaf[]>(() => [
-        live(SHELL_NAV_IDS.friends, t('nav.items.friends'), FriendsNavIcon, '/app/friends'),
-        upcoming(SHELL_NAV_IDS.household, t('nav.items.household'), HouseholdNavIcon)
+    const upcomingLeaves = computed<NavLeaf[]>(() => [
+        upcoming(SHELL_NAV_IDS.wealthOverview, t('nav.items.wealthOverview'), WealthOverviewNavIcon, t('nav.headers.wealth')),
+        upcoming(SHELL_NAV_IDS.assets, t('nav.items.assets'), AssetsNavIcon, t('nav.headers.wealth')),
+        upcoming(SHELL_NAV_IDS.investments, t('nav.items.investments'), InvestmentsNavIcon, t('nav.headers.wealth')),
+        upcoming(SHELL_NAV_IDS.realEstate, t('nav.items.realEstate'), RealEstateNavIcon, t('nav.headers.wealth')),
+        upcoming(SHELL_NAV_IDS.debts, t('nav.items.debts'), DebtsNavIcon, t('nav.headers.wealth')),
+        upcoming(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), ForecastsNavIcon, t('nav.headers.analytics')),
+        upcoming(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon, t('nav.headers.analytics')),
+        upcoming(SHELL_NAV_IDS.household, t('nav.items.household'), HouseholdNavIcon, t('nav.headers.network'))
     ]);
 
     const settingsLeaves = computed<NavLeaf[]>(() => [
@@ -266,18 +279,22 @@ export function useShellNav() {
 
     const primaryNav = computed<NavItem[]>(() => [
         live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardNavIcon, '/app'),
-        live(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarNavIcon, '/app/calendrier'),
         section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesNavIcon, financeLeaves.value),
-        section(SHELL_NAV_IDS.recurrences, t('nav.headers.recurrences'), RecurrencesNavIcon, recurrencesLeaves.value),
-        section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionNavIcon, gestionLeaves.value),
         section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), PlanningNavIcon, planningLeaves.value),
-        section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), WealthNavIcon, wealthLeaves.value),
-        section(SHELL_NAV_IDS.analytics, t('nav.headers.analytics'), AnalyticsNavIcon, analyticsLeaves.value),
-        section(SHELL_NAV_IDS.network, t('nav.headers.network'), NetworkNavIcon, networkLeaves.value)
+        section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionNavIcon, gestionLeaves.value),
+        section(SHELL_NAV_IDS.upcoming, t('nav.headers.upcoming'), UpcomingNavIcon, upcomingLeaves.value, true)
     ]);
 
+    const headerLinks = computed<NavLeaf[]>(() => [
+        live(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarNavIcon, '/app/calendrier'),
+        live(SHELL_NAV_IDS.friends, t('nav.items.friends'), FriendsNavIcon, '/app/friends')
+    ]);
+
+    /* Paramètres vit en bas de la sidebar, sous le filet 2 px (header : raccourcis seuls). */
+    const headerMenus = computed<NavItem[]>(() => []);
+
     const secondaryNav = computed<NavItem[]>(() => [
-        section(SHELL_NAV_IDS.settings, t('nav.headers.settings'), SettingsNavIcon, settingsLeaves.value)
+        section(SHELL_NAV_IDS.settings, t('nav.headers.settings'), SettingsNavIcon, settingsLeaves.value, true)
     ]);
 
     watch(
@@ -296,6 +313,8 @@ export function useShellNav() {
         activeId,
         primaryNav,
         secondaryNav,
+        headerLinks,
+        headerMenus,
         unreadCount,
         title: computed(() => t('nav.menu'))
     };

@@ -53,37 +53,41 @@ const emit = defineEmits<{
     gap: 10px;
     width: 100%;
     margin: 0;
-    padding: 9px 12px;
+    min-height: 40px;
+    padding: 8px 10px;
     border: 0;
-    border-radius: 14px;
+    border-radius: 0;
     background: transparent;
     color: inherit;
     font: inherit;
     text-align: left;
     cursor: pointer;
-    transition: background 0.2s var(--ease, ease);
+    transition: background 0.15s var(--ease, ease);
 }
 
 .app-choice-list__item:hover,
 .app-choice-list__item:focus-visible {
-    background: rgba(var(--v-theme-primary), 0.08);
+    background: var(--soft);
     outline: none;
 }
 
 .app-choice-list__item.is-active {
-    background: rgba(var(--v-theme-primary), 0.12);
+    background: var(--blue-soft);
 }
 
 .app-choice-list__name {
     flex: 1 1 auto;
     min-width: 0;
-    font-size: 0.88rem;
-    font-weight: 580;
-    letter-spacing: -0.01em;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.app-choice-list__item.is-active .app-choice-list__name {
+    font-weight: 700;
 }
 
 .app-choice-list__check {
     flex: none;
-    color: rgb(var(--v-theme-primary));
+    color: var(--blue-ink);
 }
 </style>

@@ -38,7 +38,8 @@ async function confirmClearAll() {
 <template>
     <AppPageShell :title="t('notificationsPage.title')" :subtitle="t('notificationsPage.subtitle')">
         <template #actions>
-            <span v-if="store.hasUnread" class="su-chip">{{ unreadLabel }}</span>
+            <!-- compteur non lues : petit carré bleu + texte gris -->
+            <span v-if="store.hasUnread" class="su-chip notifications-unread" style="--chip-color: var(--blue)">{{ unreadLabel }}</span>
             <button
                 type="button"
                 class="su-btn"
@@ -65,3 +66,11 @@ async function confirmClearAll() {
         />
     </AppPageShell>
 </template>
+
+<style scoped>
+.notifications-unread {
+    align-self: center;
+    height: 40px;
+    margin-right: 8px;
+}
+</style>

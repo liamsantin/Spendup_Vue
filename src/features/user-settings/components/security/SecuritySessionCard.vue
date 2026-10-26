@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ClockHour4Icon } from 'vue-tabler-icons';
-import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import {
     IDLE_LOGOUT_MINUTES_DEFAULT,
@@ -58,54 +56,67 @@ function onTrustedDaysBlur() {
 </script>
 
 <template>
-    <AppGlassCard :title="t('security.session.title')" :subtitle="t('security.session.subtitle')">
-        <template #icon>
-            <ClockHour4Icon :size="20" stroke-width="1.5" />
-        </template>
-        <v-row>
-            <v-col cols="12">
-                <AppSwitch :model-value="idleEnabled" :label="t('security.session.idleLogoutEnabled')" @update:model-value="onIdleToggle" />
-                <div class="text-subtitle-2 text-medium-emphasis mt-1">
-                    {{ t('security.session.idleLogoutHint') }}
+    <section class="su-settings">
+        <div class="su-settings__lead">
+            <h2>{{ t('security.session.title') }}</h2>
+            <p>{{ t('security.session.subtitle') }}</p>
+        </div>
+        <div class="su-settings__fields">
+            <div class="is-full">
+                <div class="su-switch-row">
+                    <div class="su-switch-row__text">
+                        <label class="su-switch-row__label" for="security-idle-enabled">{{
+                            t('security.session.idleLogoutEnabled')
+                        }}</label>
+                        <p class="su-switch-row__hint">{{ t('security.session.idleLogoutHint') }}</p>
+                    </div>
+                    <AppSwitch id="security-idle-enabled" :model-value="idleEnabled" @update:model-value="onIdleToggle" />
                 </div>
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-label class="mb-2 font-weight-medium">{{ t('security.session.idleLogoutMinutes') }}</v-label>
+            </div>
+            <div class="su-field">
+                <label class="su-field__label" for="security-idle-minutes">{{ t('security.session.idleLogoutMinutes') }}</label>
                 <v-text-field
+                    id="security-idle-minutes"
                     v-model.number="draft.idleLogoutMinutes"
                     type="number"
                     :min="IDLE_LOGOUT_MINUTES_MIN"
                     :max="IDLE_LOGOUT_MINUTES_MAX"
                     variant="outlined"
-                    :hint="t('security.session.idleLogoutRange', { min: IDLE_LOGOUT_MINUTES_MIN, max: IDLE_LOGOUT_MINUTES_MAX })"
-                    persistent-hint
+                    hide-details
                     :disabled="!idleEnabled"
                     @blur="onIdleMinutesBlur"
                 />
-            </v-col>
-            <v-col cols="12" md="6">
-                <v-label class="mb-2 font-weight-medium">{{ t('security.session.trustedDeviceDurationDays') }}</v-label>
+                <p class="su-field__hint">
+                    {{ t('security.session.idleLogoutRange', { min: IDLE_LOGOUT_MINUTES_MIN, max: IDLE_LOGOUT_MINUTES_MAX }) }}
+                </p>
+            </div>
+            <div class="su-field">
+                <label class="su-field__label" for="security-trusted-days">{{ t('security.session.trustedDeviceDurationDays') }}</label>
                 <v-text-field
+                    id="security-trusted-days"
                     v-model.number="draft.trustedDeviceDurationDays"
                     type="number"
                     :min="TRUSTED_DEVICE_DAYS_MIN"
                     :max="TRUSTED_DEVICE_DAYS_MAX"
                     variant="outlined"
-                    :hint="t('security.session.trustedDeviceHint')"
-                    persistent-hint
+                    hide-details
                     @blur="onTrustedDaysBlur"
                 />
-            </v-col>
-            <v-col cols="12">
-                <AppSwitch
-                    v-model="draft.require2faForSensitiveActions"
-                    :disabled="require2faDisabled"
-                    :label="t('security.session.require2faForSensitiveActions')"
-                />
-                <div class="text-subtitle-2 text-medium-emphasis mt-1">
-                    {{ require2faDisabled ? t('security.session.require2faNeedsTwoFactor') : t('security.session.require2faHint') }}
+                <p class="su-field__hint">{{ t('security.session.trustedDeviceHint') }}</p>
+            </div>
+            <div class="is-full">
+                <div class="su-switch-row">
+                    <div class="su-switch-row__text">
+                        <label class="su-switch-row__label" for="security-require-2fa">{{
+                            t('security.session.require2faForSensitiveActions')
+                        }}</label>
+                        <p class="su-switch-row__hint">
+                            {{ require2faDisabled ? t('security.session.require2faNeedsTwoFactor') : t('security.session.require2faHint') }}
+                        </p>
+                    </div>
+                    <AppSwitch id="security-require-2fa" v-model="draft.require2faForSensitiveActions" :disabled="require2faDisabled" />
                 </div>
-            </v-col>
-        </v-row>
-    </AppGlassCard>
+            </div>
+        </div>
+    </section>
 </template>

@@ -167,3 +167,80 @@ export function upcomingDues(
         .sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name))
         .slice(0, limit);
 }
+
+/* ── affichage éditorial (D.A. Swiss) ───────────────────────────────────── */
+
+export type HeroAmountParts = {
+    /** Code ou symbole de devise détaché du nombre (`null` si absent, ex. montant masqué). */
+    currency: string | null;
+    /** Partie entière formatée (séparateurs de milliers conservés). */
+    main: string;
+    /** Séparateur + décimales (« ,55 » / « .55 »), `null` si le montant n’en a pas. */
+    decimals: string | null;
+};
+
+/**
+ * Découpe un montant déjà formaté (`Intl`) pour le chiffre héros : la partie entière en grand,
+ * les décimales et la devise en petit gris. Aucun reformatage : on ne fait que séparer la chaîne.
+ */
+export function splitHeroAmount(text: string): HeroAmountParts {
+    let rest = text.trim();
+    let currency: string | null = null;
+    const lead = /^(\p{Sc}|[A-Z]{3})\s*/u.exec(rest);
+    if (lead) {
+        currency = lead[1];
+        rest = rest.slice(lead[0].length);
+    } else {
+        const trail = /\s*(\p{Sc}|[A-Z]{3})$/u.exec(rest);
+        if (trail) {
+            currency = trail[1];
+            rest = rest.slice(0, rest.length - trail[0].length);
+        }
+    }
+    const decimals = /^(.*\d)([.,]\d{1,2})$/.exec(rest);
+    if (decimals) return { currency, main: decimals[1], decimals: decimals[2] };
+    return { currency, main: rest, decimals: null };
+}
+
+/** Date courte à la suisse : `yyyy-MM-dd` → « 23.10 ». */
+export function formatShortDayMonth(ymdValue: string): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(ymdValue.trim());
+    if (!match) return ymdValue;
+    return `${match[3]}.${match[2]}`;
+}
+
+export const BUDGET_GAUGE_SEGMENTS = 20;
+
+type BudgetLike = { isActive: boolean; isCurrent: boolean; currency: string; spentAmount: number; limitAmount: number };
+
+export type BudgetsSummary = {
+    currency: string;
+    spent: number;
+    limit: number;
+    remaining: number;
+    /** Pourcentage arrondi, non plafonné (> 100 = dépassement). */
+    percent: number;
+    /** Nombre de carrés pleins de la jauge segmentée (0 à `BUDGET_GAUGE_SEGMENTS`). */
+    segments: number;
+};
+
+/**
+ * Budget global de la période en cours : somme des budgets actifs et courants, dans la devise
+ * la plus représentée (par plafond). `null` s’il n’y a rien à additionner.
+ */
+export function summarizeBudgets(budgets: readonly BudgetLike[]): BudgetsSummary | null {
+    const byCurrency = new Map<string, { spent: number; limit: number }>();
+    for (const budget of budgets) {
+        if (!budget.isActive || !budget.isCurrent) continue;
+        const row = byCurrency.get(budget.currency) ?? { spent: 0, limit: 0 };
+        row.spent += Math.max(0, budget.spentAmount);
+        row.limit += Math.max(0, budget.limitAmount);
+        byCurrency.set(budget.currency, row);
+    }
+    const best = [...byCurrency.entries()].sort((a, b) => b[1].limit - a[1].limit || a[0].localeCompare(b[0]))[0];
+    if (!best) return null;
+    const [currency, { spent, limit }] = best;
+    const percent = limit > 0 ? Math.round((spent / limit) * 100) : 0;
+    const segments = Math.min(BUDGET_GAUGE_SEGMENTS, Math.max(0, Math.round((percent / 100) * BUDGET_GAUGE_SEGMENTS)));
+    return { currency, spent, limit, remaining: limit - spent, percent, segments };
+}

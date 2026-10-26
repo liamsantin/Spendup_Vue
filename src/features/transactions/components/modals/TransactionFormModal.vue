@@ -601,6 +601,7 @@ function onOpenAttachment(file: TransactionFile) {
     <AppModalTabs
         v-model="open"
         v-model:tab="activeTab"
+        class="tx-form-modal"
         :title="isEdit ? t('transactionsPage.form.editTitle') : t('transactionsPage.form.createTitle')"
         :subtitle="t('transactionsPage.form.subtitle')"
         :tabs="formTabs"
@@ -633,7 +634,7 @@ function onOpenAttachment(file: TransactionFile) {
                 <button
                     v-if="showUnlinkFromBudget"
                     type="button"
-                    class="tx-form-modal__unlink"
+                    class="su-btn su-btn--danger su-btn--sm tx-form-modal__unlink"
                     :disabled="store.acting"
                     @click="emit('unlink')"
                 >
@@ -665,7 +666,7 @@ function onOpenAttachment(file: TransactionFile) {
                 <button
                     v-if="showUnlinkFromBudget"
                     type="button"
-                    class="tx-form-modal__unlink"
+                    class="su-btn su-btn--danger su-btn--sm tx-form-modal__unlink"
                     :disabled="store.acting"
                     @click="emit('unlink')"
                 >
@@ -692,7 +693,7 @@ function onOpenAttachment(file: TransactionFile) {
         </template>
 
         <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
+            <button type="button" class="su-btn" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
             <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
@@ -705,31 +706,60 @@ function onOpenAttachment(file: TransactionFile) {
 </template>
 
 <style scoped>
+/* « Délier la transaction » : bouton danger discret, aligné à gauche sous les champs */
 .tx-form-modal__unlink {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    margin: 20px 0 4px;
-    padding: 8px;
-    border: 0;
+    margin: 24px 0 4px;
+}
+</style>
+
+<!-- Non scopé : la fenêtre est téléportée ; onglets de la modale en texte souligné (kit Swiss). -->
+<style>
+.tx-form-modal .app-modal-tabs__toolbar {
+    padding: 0 24px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.tx-form-modal .app-modal-tabs__nav {
+    gap: 22px;
+}
+
+.tx-form-modal .app-modal-tabs__tab {
+    height: 40px;
+    padding: 0;
+    border-radius: 0;
     background: transparent;
-    color: rgba(159, 45, 35, 0.72);
-    font: inherit;
-    font-size: 13.5px;
-    font-weight: 520;
-    letter-spacing: -0.01em;
-    text-align: center;
-    cursor: pointer;
+    color: var(--gray);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0;
 }
 
-.tx-form-modal__unlink:hover:not(:disabled) {
-    color: #9f2d23;
+.tx-form-modal .app-modal-tabs__tab:hover:not(:disabled):not(.is-active) {
+    background: transparent;
+    color: var(--ink);
 }
 
-.tx-form-modal__unlink:disabled {
-    opacity: 0.45;
-    cursor: default;
+.tx-form-modal .app-modal-tabs__tab.is-active {
+    background: transparent;
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: inset 0 -2px 0 var(--ink);
+}
+
+.tx-form-modal .app-modal-tabs__tab svg {
+    display: none;
+}
+
+.tx-form-modal .app-modal-tabs__chip,
+.tx-form-modal .app-modal-tabs__tab.is-active .app-modal-tabs__chip {
+    border-radius: 0;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 700;
+}
+
+/* la toolbar porte déjà le filet 2 px : pas de second filet sous l'en-tête */
+.tx-form-modal .app-modal-base__header + .v-divider {
+    display: none;
 }
 </style>

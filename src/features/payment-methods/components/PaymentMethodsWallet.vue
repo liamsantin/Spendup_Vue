@@ -275,7 +275,7 @@ async function confirmDelete() {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    padding: 4px 16px 10px;
+    padding: 0 0 10px;
 }
 
 .wallet-directory__list {
@@ -309,7 +309,7 @@ async function confirmDelete() {
 
     .wallet-directory {
         display: block;
-        padding: 0 4px 4px;
+        padding: 0 0 4px;
     }
 }
 </style>

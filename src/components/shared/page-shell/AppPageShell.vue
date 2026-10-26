@@ -54,7 +54,7 @@ const emit = defineEmits<{
                 <div v-if="$slots.actions || !hideActions" class="su-hero__actions">
                     <slot name="actions" />
                     <template v-if="!hideActions">
-                        <button type="button" class="su-btn su-btn--ghost" :disabled="cancelDisabled" @click="emit('cancel')">
+                        <button type="button" class="su-btn" :disabled="cancelDisabled" @click="emit('cancel')">
                             {{ t('shell.cancel') }}
                         </button>
                         <button type="button" class="su-btn su-btn--ink" :disabled="saveDisabled || saveLoading" @click="emit('save')">

@@ -85,7 +85,7 @@ async function onScan() {
         <RecurringSuggestionsPanel v-if="open" :account-public-id="selectedAccountId || null" />
 
         <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ghost" @click="close">{{ t('common.close') }}</button>
+            <button type="button" class="su-btn" @click="close">{{ t('common.close') }}</button>
         </template>
     </AppModalBase>
 </template>
@@ -94,8 +94,8 @@ async function onScan() {
 .recurring-suggestions-modal__bar {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 14px;
+    gap: 12px;
+    margin-bottom: 20px;
 }
 
 .recurring-suggestions-modal__account {
