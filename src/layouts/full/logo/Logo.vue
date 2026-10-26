@@ -17,8 +17,10 @@ const props = withDefaults(
         iconOnly?: boolean;
         /** Taille du pictogramme en px. */
         size?: number;
+        /** Sans lien : simple marque, le parent porte l'action (ex. bascule de la sidebar). */
+        plain?: boolean;
     }>(),
-    { homeTo: undefined, iconOnly: false, size: 28 }
+    { homeTo: undefined, iconOnly: false, size: 28, plain: false }
 );
 
 const route = useRoute();
@@ -30,7 +32,13 @@ const logoTo = computed(() => (route.path.startsWith('/app') ? APP_HOME_ROUTE : 
 
 <template>
     <div class="logo">
-        <RouterLink :to="logoTo" class="spendup-logo" :class="{ 'spendup-logo--icon': iconOnly }" aria-label="Spend.Up">
+        <component
+            :is="plain ? 'span' : RouterLink"
+            :to="plain ? undefined : logoTo"
+            class="spendup-logo"
+            :class="{ 'spendup-logo--icon': iconOnly }"
+            :aria-label="plain ? undefined : 'Spend.Up'"
+        >
             <svg
                 class="spendup-logo__icon"
                 :width="size"
@@ -48,7 +56,7 @@ const logoTo = computed(() => (route.path.startsWith('/app') ? APP_HOME_ROUTE : 
                 <rect x="350.4" y="573" width="168" height="26.1" class="spendup-logo__card-detail" />
             </svg>
             <span v-if="!iconOnly" class="spendup-logo__text">Spend<span class="spendup-logo__dot">.</span>Up</span>
-        </RouterLink>
+        </component>
     </div>
 </template>
 

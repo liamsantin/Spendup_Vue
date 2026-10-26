@@ -10,6 +10,8 @@ const props = defineProps<{
     wide?: boolean;
     /** Entrée imbriquée sous un sous-groupe : légèrement en retrait. */
     nested?: boolean;
+    /** Rail replié : icône seule, centrée, le libellé passe en info-bulle. */
+    compact?: boolean;
 }>();
 
 const emit = defineEmits<{ select: [leaf: NavLeaf] }>();
@@ -27,16 +29,18 @@ function onSelect() {
         :is="tag"
         v-bind="attrs"
         class="leaf"
-        :class="{ 'is-active': active, 'is-disabled': leaf.disabled, 'leaf--nested': nested }"
+        :class="{ 'is-active': active, 'is-disabled': leaf.disabled, 'leaf--nested': nested, 'leaf--compact': compact }"
+        :title="compact ? leaf.label : undefined"
+        :aria-label="compact ? leaf.label : undefined"
         :aria-current="active && !leaf.disabled ? 'page' : undefined"
         :aria-disabled="leaf.disabled ? 'true' : undefined"
         :disabled="leaf.disabled || undefined"
         @click="onSelect"
     >
         <span class="leaf__icon"><ShellNavIcon :icon="leaf.icon" :size="16" /></span>
-        <span class="leaf__label">{{ leaf.label }}</span>
-        <span v-if="leaf.caption" class="leaf__caption">{{ leaf.caption }}</span>
-        <span v-else-if="active" class="leaf__mark" aria-hidden="true" />
+        <span v-if="!compact" class="leaf__label">{{ leaf.label }}</span>
+        <span v-if="!compact && leaf.caption" class="leaf__caption">{{ leaf.caption }}</span>
+        <span v-else-if="!compact && active" class="leaf__mark" aria-hidden="true" />
     </component>
 </template>
 
@@ -134,6 +138,17 @@ function onSelect() {
     width: 6px;
     height: 6px;
     background: var(--blue);
+}
+
+/* rail replié : l'entrée devient un carré de 40 px, icône centrée ; actif = icône bleue */
+.leaf--compact {
+    justify-content: center;
+    gap: 0;
+    padding: 0;
+}
+
+.leaf--compact.leaf--nested {
+    padding-left: 0;
 }
 
 @media (max-width: 767px) {

@@ -68,6 +68,11 @@
 
     /* ombre décalée nette, réservée aux menus et fenêtres modales */
     --shadow-offset: 8px 8px 0 rgba(15, 20, 40, 0.08);
+    /* ombre très légère des cartes du chrome (sidebar, header) */
+    --shadow-card: 0 1px 2px rgba(11, 12, 16, 0.04), 0 6px 20px rgba(11, 12, 16, 0.05);
+    /* fond du cadre sur lequel flottent les cartes du chrome, et leur marge */
+    --shell-bg: #f4f5f8;
+    --shell-pad: 16px;
     --shadow-rest: none;
     --shadow-lifted: none;
     --shadow-overlay: var(--shadow-offset);
@@ -81,6 +86,8 @@
     --gutter: 24px;
     --slot: 40px;
     --sidebar-w: 272px;
+    /* rail replié : icônes seules (gouttière 20 + entrée 40 + gouttière 20) */
+    --sidebar-collapsed-w: 80px;
     --rail-w: 272px;
     --rail-open-w: 272px;
     --detail-w: 0px;
@@ -138,6 +145,8 @@
     --amount-debit: 238, 240, 244;
     --amount-credit: 157, 182, 255;
     --shadow-offset: 8px 8px 0 rgba(0, 0, 0, 0.28);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.22);
+    --shell-bg: #17181d;
 
     --t-blue-bg: rgba(93, 135, 255, 0.12);
     --t-blue-ink: #a9bcf0;

@@ -76,10 +76,16 @@ const { t } = useI18n();
     flex: none;
     height: var(--header-h);
     padding: 0 var(--content-pad-x);
+    /* carte posée sur le cadre gris : l'ombre légère remplace le filet noir */
     background: var(--bg);
-    border-bottom: 1px solid var(--ink);
+    box-shadow: var(--shadow-card);
     color: var(--ink);
     font-family: var(--font-ui);
+}
+
+/* en sombre l'ombre se voit à peine : un filet fin délimite la carte */
+[class*='v-theme--DARK_'] .bar {
+    border: 1px solid var(--line);
 }
 
 .bar__burger {

@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import BaseIcon from './BaseIcon.vue';
+import BurgerButton from './BurgerButton.vue';
 import NavRow from './NavRow.vue';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import { useIsMobile } from '../composables/useBreakpoint';
@@ -11,7 +12,8 @@ import type { NavItem, NavLeaf as NavLeafType } from '../types/navigation';
 /**
  * Sidebar Swiss : logo, puis navigation en groupes (libellé 12 px gris, entrées
  * de 40 px séparées par un filet fin). En bas, filet 2 px noir puis « Paramètres ».
- * Sur desktop elle est toujours visible ; sur mobile elle devient un volet.
+ * Sur desktop elle se replie en rail d'icônes (burger ou clic sur le logo) ; sur
+ * mobile elle devient un volet.
  */
 const props = withDefaults(
     defineProps<{
@@ -23,7 +25,7 @@ const props = withDefaults(
     { items: () => [], bottomItems: () => [], title: 'Menu' }
 );
 
-/** Volet mobile déployé. */
+/** Desktop : colonne déployée (sinon rail d'icônes) ; mobile : volet ouvert. */
 const open = defineModel<boolean>('open', { default: false });
 /** Conservé pour l'API du shell : groupe « courant » (dérivé de la route). */
 const openId = defineModel<string | null>('openId', { default: null });
@@ -35,6 +37,13 @@ const emit = defineEmits<{ select: [leaf: NavLeafType] }>();
 const { t } = useI18n();
 const isMobile = useIsMobile();
 const surface = ref<HTMLElement | null>(null);
+
+/** Sur mobile le volet est toujours déployé : seul le desktop connaît le rail replié. */
+const expandedRail = computed(() => open.value || isMobile.value);
+
+function toggle() {
+    open.value = !open.value;
+}
 
 /* groupes repliables (annoncés) : fermés par défaut, ouverts à la demande ou quand ils portent la page courante */
 const expanded = ref<Set<string>>(new Set());
@@ -103,7 +112,19 @@ void props;
         >
             <nav class="rail" :aria-label="title">
                 <header class="head">
-                    <Logo />
+                    <BurgerButton class="head__burger" :open="open" :label="t('nav.toggleMenu')" @click="toggle" />
+                    <!-- desktop : le logo replie / déploie la colonne ; mobile : il reste un lien -->
+                    <button
+                        v-if="!isMobile"
+                        type="button"
+                        class="head__brand"
+                        :aria-expanded="open"
+                        :aria-label="t('nav.toggleMenu')"
+                        @click="toggle"
+                    >
+                        <Logo plain />
+                    </button>
+                    <Logo v-else />
                     <button class="head__close" type="button" :aria-label="t('nav.closeMenu')" @click="open = false">
                         <BaseIcon name="close" :size="18" />
                     </button>
@@ -117,7 +138,7 @@ void props;
                             :item="item"
                             :open="isGroupOpen(item)"
                             :active-id="activeId"
-                            :expanded="true"
+                            :expanded="expandedRail"
                             :index="i"
                             :group-label="generalLabel"
                             @toggle="toggleItem"
@@ -134,7 +155,7 @@ void props;
                             :item="item"
                             :open="isGroupOpen(item)"
                             :active-id="activeId"
-                            :expanded="true"
+                            :expanded="expandedRail"
                             :index="i + items.length"
                             row-toggle
                             @toggle="toggleItem"
@@ -185,13 +206,55 @@ void props;
 .head {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    height: 24px;
-    margin-bottom: 28px;
+    gap: 8px;
+    height: 40px;
+    margin-bottom: 20px;
+}
+
+/* les barres du burger s'alignent sur la gouttière, comme les icônes des entrées */
+.head__burger {
+    --burger-size: 40px;
+    margin-left: -11px;
+}
+
+.head__brand {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.head__brand:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
 }
 
 .head__close {
+    display: none;
+}
+
+/* ── rail replié (desktop) : gouttière réduite, burger seul en tête ── */
+.sidebar:not(.is-expanded) .rail {
+    padding-inline: 20px;
+}
+
+.sidebar:not(.is-expanded) .head {
+    justify-content: center;
+}
+
+.sidebar:not(.is-expanded) .head__burger {
+    margin-left: 0;
+}
+
+.sidebar:not(.is-expanded) .head__brand {
     display: none;
 }
 
@@ -259,13 +322,21 @@ void props;
         pointer-events: auto;
     }
 
-    .rail {
+    .rail,
+    .sidebar:not(.is-expanded) .rail {
         padding: 16px 20px 20px;
     }
 
-    .head {
+    .head,
+    .sidebar:not(.is-expanded) .head {
+        justify-content: space-between;
         height: 40px;
         margin-bottom: 20px;
+    }
+
+    /* le burger vit dans le header sur mobile : ici une croix suffit */
+    .head__burger {
+        display: none;
     }
 
     .head__close {

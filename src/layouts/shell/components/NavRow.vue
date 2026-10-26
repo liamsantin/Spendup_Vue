@@ -18,7 +18,7 @@ const props = defineProps<{
     open?: boolean;
     /** Feuille sélectionnée. */
     activeId?: string | null;
-    /** Conservé pour compatibilité : la colonne est toujours déployée. */
+    /** Colonne déployée ; repliée, seules les icônes restent (libellés en info-bulle). */
     expanded?: boolean;
     index?: number;
     /** Libellé affiché au-dessus d'une entrée sans enfants. */
@@ -33,6 +33,7 @@ const emit = defineEmits<{
 }>();
 
 const subId = useId();
+const compact = computed(() => props.expanded === false);
 const hasChildren = computed(() => !!props.item.children?.length);
 const collapsible = computed(() => hasChildren.value && !!props.item.muted);
 const isOpen = computed(() => !collapsible.value || !!props.open);
@@ -47,23 +48,28 @@ function subLabel(index: number): string | null {
 </script>
 
 <template>
-    <li class="group" :class="{ 'is-muted': item.muted, 'is-open': isOpen, 'group--row': rowToggle }">
-        <!-- libellé de groupe : texte simple, ou bouton quand le groupe est repliable -->
+    <li class="group" :class="{ 'is-muted': item.muted, 'is-open': isOpen, 'group--row': rowToggle, 'group--compact': compact }">
+        <!-- libellé de groupe : texte simple, ou bouton quand le groupe est repliable.
+             Rail replié : le bouton ne garde que son icône, le texte simple disparaît. -->
         <button
             v-if="collapsible"
             type="button"
             class="group__label group__label--toggle"
             :class="{ 'is-current': childActive }"
+            :title="compact ? item.label : undefined"
+            :aria-label="compact ? item.label : undefined"
             :aria-expanded="isOpen"
             :aria-controls="subId"
             @click="emit('toggle', item)"
         >
-            <span v-if="rowToggle" class="group__icon"><ShellNavIcon :icon="item.icon" :size="16" /></span>
-            <span class="group__text">{{ item.label }}</span>
-            <span v-if="item.badge" class="group__badge">{{ item.badge }}</span>
-            <BaseIcon name="chevron-right" :size="14" class="group__chev" />
+            <span v-if="rowToggle || compact" class="group__icon"><ShellNavIcon :icon="item.icon" :size="16" /></span>
+            <template v-if="!compact">
+                <span class="group__text">{{ item.label }}</span>
+                <span v-if="item.badge" class="group__badge">{{ item.badge }}</span>
+                <BaseIcon name="chevron-right" :size="14" class="group__chev" />
+            </template>
         </button>
-        <p v-else class="group__label">
+        <p v-else-if="!compact" class="group__label">
             <span class="group__text">{{ hasChildren ? item.label : (groupLabel ?? item.label) }}</span>
             <span v-if="item.badge" class="group__badge">{{ item.badge }}</span>
         </p>
@@ -72,15 +78,21 @@ function subLabel(index: number): string | null {
         <div :id="subId" class="group__fold" :inert="!isOpen || undefined" :aria-hidden="!isOpen || undefined">
             <ul v-if="hasChildren" class="group__list">
                 <template v-for="(child, ci) in item.children" :key="child.id">
-                    <li v-if="subLabel(ci)" class="group__sublabel">{{ subLabel(ci) }}</li>
+                    <li v-if="subLabel(ci) && !compact" class="group__sublabel">{{ subLabel(ci) }}</li>
                     <li>
-                        <NavLeaf :leaf="child" :active="activeId === child.id" :nested="!!child.group" @select="emit('select', $event)" />
+                        <NavLeaf
+                            :leaf="child"
+                            :active="activeId === child.id"
+                            :nested="!!child.group"
+                            :compact="compact"
+                            @select="emit('select', $event)"
+                        />
                     </li>
                 </template>
             </ul>
             <ul v-else class="group__list">
                 <li>
-                    <NavLeaf :leaf="item" :active="activeId === item.id" @select="emit('select', $event)" />
+                    <NavLeaf :leaf="item" :active="activeId === item.id" :compact="compact" @select="emit('select', $event)" />
                 </li>
             </ul>
         </div>
@@ -235,5 +247,26 @@ function subLabel(index: number): string | null {
 
 .group__sublabel + li :deep(.leaf) {
     border-top: 0;
+}
+
+/* ── rail replié : groupes séparés par l'espace, déclencheurs en carré de 40 px ── */
+.group--compact + .group--compact {
+    margin-top: 12px;
+}
+
+.group--compact .group__label--toggle {
+    justify-content: center;
+    gap: 0;
+    min-height: 40px;
+    margin: 0;
+    color: var(--ink);
+}
+
+.group--compact .group__label--toggle:hover {
+    background: var(--soft);
+}
+
+.group--compact .group__label--toggle.is-current .group__icon {
+    color: var(--blue);
 }
 </style>
