@@ -301,6 +301,7 @@ export function useShellNav() {
 
     const headerLinks = computed<NavLeaf[]>(() => [
         live(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarNavIcon, '/app/calendrier'),
+        live(SHELL_NAV_IDS.files, t('nav.items.files'), FilesNavIcon, '/app/gestion/files'),
         live(SHELL_NAV_IDS.friends, t('nav.items.friends'), FriendsNavIcon, '/app/friends')
     ]);
 

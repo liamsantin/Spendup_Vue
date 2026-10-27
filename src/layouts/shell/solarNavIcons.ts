@@ -28,7 +28,7 @@ export { RestartIcon as RecurrencesOverviewNavIcon } from '@solar-icons/vue/line
 export { BillListIcon as RecurrencesExpensesNavIcon } from '@solar-icons/vue/line-duotone/bill-list';
 export { GraphUpIcon as RecurrencesIncomesNavIcon } from '@solar-icons/vue/line-duotone/graph-up';
 export { CalendarMarkIcon as RecurrencesUpcomingNavIcon } from '@solar-icons/vue/line-duotone/calendar-mark';
-export { DocumentsIcon as FilesNavIcon } from '@solar-icons/vue/line-duotone/documents';
+export { FileTextIcon as FilesNavIcon } from '@solar-icons/vue/line-duotone/file-text';
 export { UserIdIcon as TiersNavIcon } from '@solar-icons/vue/line-duotone/user-id';
 export { TagIcon as CategoriesNavIcon } from '@solar-icons/vue/line-duotone/tag';
 export { HashtagCircleIcon as TagsNavIcon } from '@solar-icons/vue/line-duotone/hashtag-circle';
