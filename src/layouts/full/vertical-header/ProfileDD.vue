@@ -97,8 +97,6 @@ async function onLogout() {
 
 <style scoped>
 .profile-dd__trigger {
-    width: 48px;
-    height: 48px;
     overflow: hidden;
 }
 
@@ -110,8 +108,8 @@ async function onLogout() {
 }
 
 .profile-dd__orb-photo {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
 }
 
 .profile-dd__identity {
