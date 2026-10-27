@@ -134,6 +134,23 @@
     outline-offset: 2px;
 }
 
+/* Libellé d'onglet : une copie invisible en 700 (via `data-label`) réserve la largeur du gras,
+   pour que l'onglet actif ne s'élargisse pas et ne pousse pas ses voisins. */
+.su-tab__label {
+    display: inline-grid;
+}
+
+.su-tab__label::after {
+    content: attr(data-label);
+    content: attr(data-label) / '';
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+    pointer-events: none;
+    user-select: none;
+}
+
 .su-tab > svg {
     display: none;
 }

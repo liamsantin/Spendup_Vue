@@ -100,7 +100,7 @@ function onDeleted() {
                     :class="{ 'is-active': lineStatus === tab.value }"
                     @click="selectLineStatus(tab.value)"
                 >
-                    {{ tab.label }}
+                    <span class="su-tab__label" :data-label="tab.label">{{ tab.label }}</span>
                     <span v-if="tab.count" class="su-tab__chip">{{ tab.count }}</span>
                 </button>
             </nav>

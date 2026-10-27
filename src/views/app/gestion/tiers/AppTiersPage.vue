@@ -144,7 +144,7 @@ function onCreate(nature?: TierNature) {
                     :aria-pressed="!filterNature"
                     @click="selectNature('')"
                 >
-                    {{ t('tiersPage.tabs.all') }}
+                    <span class="su-tab__label" :data-label="t('tiersPage.tabs.all')">{{ t('tiersPage.tabs.all') }}</span>
                 </button>
                 <button
                     v-for="nature in TIER_NATURES"
@@ -155,7 +155,9 @@ function onCreate(nature?: TierNature) {
                     :aria-pressed="filterNature === nature"
                     @click="selectNature(nature)"
                 >
-                    {{ t(`tiersPage.naturesPlural.${nature}`) }}
+                    <span class="su-tab__label" :data-label="t(`tiersPage.naturesPlural.${nature}`)">{{
+                        t(`tiersPage.naturesPlural.${nature}`)
+                    }}</span>
                 </button>
             </nav>
         </template>

@@ -139,7 +139,7 @@ watch(searchOpen, (open) => {
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('assetsPage.tabs.label')">
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterType }" @click="filterType = ''">
-                    {{ t('assetsPage.tabs.all') }}
+                    <span class="su-tab__label" :data-label="t('assetsPage.tabs.all')">{{ t('assetsPage.tabs.all') }}</span>
                 </button>
                 <button
                     v-for="type in TAB_TYPES"
@@ -149,7 +149,7 @@ watch(searchOpen, (open) => {
                     :class="{ 'is-active': filterType === type }"
                     @click="filterType = type"
                 >
-                    {{ t(`assetsPage.tabs.${type}`) }}
+                    <span class="su-tab__label" :data-label="t(`assetsPage.tabs.${type}`)">{{ t(`assetsPage.tabs.${type}`) }}</span>
                 </button>
             </nav>
         </template>

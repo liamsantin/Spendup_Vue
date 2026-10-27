@@ -134,13 +134,17 @@ if (!accountsStore.initialized) {
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('savingsGoalsPage.tabs.label')">
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterStatus }" @click="filterStatus = ''">
-                    {{ t('savingsGoalsPage.tabs.all') }}
+                    <span class="su-tab__label" :data-label="t('savingsGoalsPage.tabs.all')">{{ t('savingsGoalsPage.tabs.all') }}</span>
                 </button>
                 <button type="button" class="su-tab" :class="{ 'is-active': filterStatus === 'active' }" @click="filterStatus = 'active'">
-                    {{ t('savingsGoalsPage.tabs.active') }}
+                    <span class="su-tab__label" :data-label="t('savingsGoalsPage.tabs.active')">{{
+                        t('savingsGoalsPage.tabs.active')
+                    }}</span>
                 </button>
                 <button type="button" class="su-tab" :class="{ 'is-active': filterStatus === 'atteint' }" @click="filterStatus = 'atteint'">
-                    {{ t('savingsGoalsPage.tabs.atteint') }}
+                    <span class="su-tab__label" :data-label="t('savingsGoalsPage.tabs.atteint')">{{
+                        t('savingsGoalsPage.tabs.atteint')
+                    }}</span>
                 </button>
                 <button
                     type="button"
@@ -148,7 +152,9 @@ if (!accountsStore.initialized) {
                     :class="{ 'is-active': filterStatus === 'abandonne' }"
                     @click="filterStatus = 'abandonne'"
                 >
-                    {{ t('savingsGoalsPage.tabs.abandonne') }}
+                    <span class="su-tab__label" :data-label="t('savingsGoalsPage.tabs.abandonne')">{{
+                        t('savingsGoalsPage.tabs.abandonne')
+                    }}</span>
                 </button>
             </nav>
         </template>

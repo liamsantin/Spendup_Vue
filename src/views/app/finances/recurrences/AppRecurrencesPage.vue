@@ -353,7 +353,7 @@ const activeFilterTotal = computed(() =>
                     :class="{ 'is-active': tab === view.tab }"
                     :aria-current="tab === view.tab ? 'page' : undefined"
                 >
-                    {{ view.label }}
+                    <span class="su-tab__label" :data-label="view.label">{{ view.label }}</span>
                 </RouterLink>
             </nav>
         </template>

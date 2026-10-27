@@ -59,7 +59,9 @@ const windowLabel = computed(() =>
                 :aria-selected="scope === 'in'"
                 @click="emit('update:scope', 'in')"
             >
-                {{ t('transactionsPage.envelope.scopeIn') }}
+                <span class="su-tab__label" :data-label="t('transactionsPage.envelope.scopeIn')">{{
+                    t('transactionsPage.envelope.scopeIn')
+                }}</span>
             </button>
             <button
                 type="button"
@@ -69,7 +71,9 @@ const windowLabel = computed(() =>
                 :aria-selected="scope === 'out'"
                 @click="emit('update:scope', 'out')"
             >
-                {{ t('transactionsPage.envelope.scopeOut') }}
+                <span class="su-tab__label" :data-label="t('transactionsPage.envelope.scopeOut')">{{
+                    t('transactionsPage.envelope.scopeOut')
+                }}</span>
             </button>
         </div>
     </section>

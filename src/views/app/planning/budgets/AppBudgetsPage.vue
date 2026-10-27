@@ -156,13 +156,13 @@ if (!categoriesStore.initialized) {
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('budgetsPage.tabs.label')">
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterStatus }" @click="filterStatus = ''">
-                    {{ t('budgetsPage.tabs.all') }}
+                    <span class="su-tab__label" :data-label="t('budgetsPage.tabs.all')">{{ t('budgetsPage.tabs.all') }}</span>
                 </button>
                 <button type="button" class="su-tab" :class="{ 'is-active': filterStatus === 'active' }" @click="filterStatus = 'active'">
-                    {{ t('budgetsPage.tabs.active') }}
+                    <span class="su-tab__label" :data-label="t('budgetsPage.tabs.active')">{{ t('budgetsPage.tabs.active') }}</span>
                 </button>
                 <button type="button" class="su-tab" :class="{ 'is-active': filterStatus === 'paused' }" @click="filterStatus = 'paused'">
-                    {{ t('budgetsPage.tabs.paused') }}
+                    <span class="su-tab__label" :data-label="t('budgetsPage.tabs.paused')">{{ t('budgetsPage.tabs.paused') }}</span>
                 </button>
             </nav>
         </template>

@@ -136,10 +136,10 @@ onUnmounted(() => {
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('realEstatePage.tabs.label')">
                 <button type="button" class="su-tab" :class="{ 'is-active': stateFilter === 'active' }" @click="setState('active')">
-                    {{ t('realEstatePage.tabs.active') }}
+                    <span class="su-tab__label" :data-label="t('realEstatePage.tabs.active')">{{ t('realEstatePage.tabs.active') }}</span>
                 </button>
                 <button type="button" class="su-tab" :class="{ 'is-active': stateFilter === 'sold' }" @click="setState('sold')">
-                    {{ t('realEstatePage.tabs.sold') }}
+                    <span class="su-tab__label" :data-label="t('realEstatePage.tabs.sold')">{{ t('realEstatePage.tabs.sold') }}</span>
                 </button>
             </nav>
         </template>

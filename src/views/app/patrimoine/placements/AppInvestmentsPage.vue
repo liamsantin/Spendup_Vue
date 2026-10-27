@@ -94,7 +94,7 @@ function onCreateInstrument() {
                     :class="{ 'is-active': account.publicId === currentAccount?.publicId }"
                     :aria-current="account.publicId === currentAccount?.publicId ? 'page' : undefined"
                 >
-                    {{ account.name }}
+                    <span class="su-tab__label" :data-label="account.name">{{ account.name }}</span>
                 </RouterLink>
             </nav>
         </template>

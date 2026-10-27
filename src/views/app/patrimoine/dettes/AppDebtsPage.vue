@@ -242,7 +242,7 @@ onUnmounted(() => {
                     :class="{ 'is-active': tab === item.tab }"
                     :aria-current="tab === item.tab ? 'page' : undefined"
                 >
-                    {{ item.label }}
+                    <span class="su-tab__label" :data-label="item.label">{{ item.label }}</span>
                 </RouterLink>
             </nav>
         </template>

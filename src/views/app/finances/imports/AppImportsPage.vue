@@ -96,10 +96,10 @@ useCreateFromQuery(onCreate, () => !store.acting);
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('importsPage.tabs.label')">
                 <RouterLink :to="IMPORTS_PATHS.list" class="su-tab" :class="{ 'is-active': tab === 'history' }">
-                    {{ t('importsPage.tabs.history') }}
+                    <span class="su-tab__label" :data-label="t('importsPage.tabs.history')">{{ t('importsPage.tabs.history') }}</span>
                 </RouterLink>
                 <RouterLink :to="IMPORTS_PATHS.templates" class="su-tab" :class="{ 'is-active': tab === 'templates' }">
-                    {{ t('importsPage.tabs.templates') }}
+                    <span class="su-tab__label" :data-label="t('importsPage.tabs.templates')">{{ t('importsPage.tabs.templates') }}</span>
                 </RouterLink>
             </nav>
         </template>

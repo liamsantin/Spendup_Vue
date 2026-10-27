@@ -326,7 +326,7 @@ watch(
                 :class="{ 'is-active': activeRole === tab.role }"
                 :aria-current="activeRole === tab.role ? 'page' : undefined"
             >
-                {{ tab.label }}
+                <span class="su-tab__label" :data-label="tab.label">{{ tab.label }}</span>
             </RouterLink>
         </nav>
 

@@ -129,7 +129,7 @@ const accordionOpen = ref(false);
                             @click="pageTab = item.value"
                         >
                             <component :is="item.icon" :size="18" stroke-width="1.6" />
-                            {{ item.label }}
+                            <span class="su-tab__label" :data-label="item.label">{{ item.label }}</span>
                             <span v-if="item.chip" class="su-tab__chip">{{ item.chip }}</span>
                         </button>
                     </nav>

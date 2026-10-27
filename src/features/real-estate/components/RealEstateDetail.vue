@@ -293,7 +293,7 @@ defineExpose({ openEdit, reload: loadAsset });
                     :aria-current="activeTab === tab.value ? 'page' : undefined"
                     @click="selectTab(tab.value)"
                 >
-                    {{ tab.label }}
+                    <span class="su-tab__label" :data-label="tab.label">{{ tab.label }}</span>
                     <span v-if="tab.count != null" class="re-detail__tab-count">{{ tab.count }}</span>
                 </button>
             </nav>

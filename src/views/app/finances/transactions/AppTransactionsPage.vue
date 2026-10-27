@@ -590,7 +590,7 @@ watch(
                     :aria-pressed="filterType === tab.value"
                     @click="filterType = tab.value"
                 >
-                    {{ tab.label }}
+                    <span class="su-tab__label" :data-label="tab.label">{{ tab.label }}</span>
                 </button>
             </nav>
         </template>

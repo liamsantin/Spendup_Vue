@@ -118,7 +118,9 @@ const currentTab = computed({
                         @click="currentTab = item.value"
                     >
                         <component :is="item.icon" v-if="item.icon" :size="16" stroke-width="1.6" />
-                        <span class="app-modal-tabs__label">{{ item.label }}</span>
+                        <span class="app-modal-tabs__label" :data-label="item.label">
+                            <span class="app-modal-tabs__text">{{ item.label }}</span>
+                        </span>
                         <span v-if="item.chip" class="app-modal-tabs__chip">{{ item.chip }}</span>
                     </button>
                 </nav>
@@ -224,7 +226,27 @@ const currentTab = computed({
     display: none;
 }
 
+/* Libellé : une copie invisible en 700 réserve la largeur du gras (l'onglet actif ne pousse plus ses voisins).
+   La colonne peut encore se réduire : le texte visible garde son ellipse quand la place manque. */
 .app-modal-tabs__label {
+    display: inline-grid;
+    grid-template-columns: minmax(0, max-content);
+    min-width: 0;
+}
+
+.app-modal-tabs__label::after {
+    content: attr(data-label);
+    content: attr(data-label) / '';
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    font-weight: 700;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+}
+
+.app-modal-tabs__text {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
