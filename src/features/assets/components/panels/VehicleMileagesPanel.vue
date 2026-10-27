@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * Relevés kilométriques d’un véhicule (clé = date, un par jour) : saisie en ligne (ajout ou
- * remplacement de la date), tableau éditorial, suppression confirmée. Le kilométrage actuel de
+ * Relevés kilométriques d’un véhicule (clé = date, un par jour) : ajout via modale (remplace le
+ * relevé du jour choisi), tableau éditorial, suppression confirmée. Le kilométrage actuel de
  * l’actif est le relevé le plus récent (refetch de l’actif par le store après chaque écriture).
  */
 defineOptions({ name: 'VehicleMileagesPanel' });
@@ -12,6 +12,7 @@ import { PlusIcon, TrashIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { todayYmdInTimeZone } from '@/features/accounts/format';
 import { useUserSettingsStore } from '@/features/user-settings';
@@ -19,6 +20,7 @@ import { formatAssetInteger, formatCalendarDate } from '@/features/assets/format
 import { buildSaveMileagePayload, emptyVehicleMileageFormFields, type AssetPayloadErrorCode } from '@/features/assets/payload';
 import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import type { Asset, VehicleMileage } from '@/features/assets/types';
+import AssetFormRow from '@/features/assets/components/forms/AssetFormRow.vue';
 
 const props = defineProps<{
     asset: Asset;
@@ -31,6 +33,7 @@ const settings = useUserSettingsStore();
 const form = reactive(emptyVehicleMileageFormFields());
 const fieldErrors = reactive<{ statementDate: string | null; kilometrage: string | null }>({ statementDate: null, kilometrage: null });
 const localError = ref<string | null>(null);
+const createOpen = ref(false);
 const deleteTarget = ref<VehicleMileage | null>(null);
 
 const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
@@ -61,11 +64,18 @@ async function load(force = false) {
 watch(
     () => props.asset.publicId,
     () => {
+        createOpen.value = false;
         resetForm();
         void load();
     },
     { immediate: true }
 );
+
+function openCreate() {
+    resetForm();
+    localError.value = null;
+    createOpen.value = true;
+}
 
 function errorText(code: AssetPayloadErrorCode): string {
     return t(`assetsPage.form.errors.${code}`);
@@ -84,6 +94,7 @@ async function onAdd() {
     }
     try {
         await store.saveMileage(props.asset.publicId, form, { today: today.value });
+        createOpen.value = false;
         resetForm();
     } catch (e: unknown) {
         localError.value = getErrorMessage(e);
@@ -113,37 +124,17 @@ function sourceLabel(item: VehicleMileage): string {
 
 <template>
     <div class="asset-subpanel">
-        <AppAlert v-if="localError" type="error" class="mb-4" closable @dismiss="localError = null">
+        <AppAlert v-if="localError && !createOpen" type="error" class="mb-4" closable @dismiss="localError = null">
             {{ localError }}
         </AppAlert>
 
-        <p class="asset-subpanel__hint">{{ t('assetsPage.mileages.hint') }}</p>
-
-        <form class="asset-subpanel__add" @submit.prevent="onAdd">
-            <div class="asset-subpanel__cell">
-                <AppDatePicker v-model="form.statementDate" :label="t('assetsPage.mileages.date')" :max="today" :clearable="false" />
-                <p v-if="fieldErrors.statementDate" class="asset-subpanel__error">{{ fieldErrors.statementDate }}</p>
-            </div>
-            <div class="asset-subpanel__cell">
-                <v-text-field
-                    v-model="form.kilometrage"
-                    type="number"
-                    step="1"
-                    min="0"
-                    :label="t('assetsPage.mileages.kilometrage')"
-                    suffix="km"
-                    color="primary"
-                    variant="outlined"
-                    hide-details="auto"
-                    :error="!!fieldErrors.kilometrage"
-                    :error-messages="fieldErrors.kilometrage || undefined"
-                />
-            </div>
-            <button type="submit" class="su-btn su-btn--ink asset-subpanel__submit" :disabled="store.acting">
+        <div class="asset-subpanel__head">
+            <p class="asset-subpanel__hint">{{ t('assetsPage.mileages.hint') }}</p>
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="openCreate">
                 <PlusIcon :size="16" stroke-width="1.6" />
                 {{ t('assetsPage.actions.add') }}
             </button>
-        </form>
+        </div>
 
         <div v-if="store.loadingVehicle && !items.length" class="su-loading">
             <span class="su-spin" />
@@ -180,6 +171,46 @@ function sourceLabel(item: VehicleMileage): string {
             </table>
         </div>
 
+        <AppModalBase
+            v-model="createOpen"
+            :title="t('assetsPage.mileages.createTitle')"
+            :subtitle="t('assetsPage.mileages.hint')"
+            :max-width="560"
+            :scrollable="false"
+        >
+            <AppAlert v-if="localError" type="error" class="mb-4" closable @dismiss="localError = null">
+                {{ localError }}
+            </AppAlert>
+            <div class="asset-subpanel__form">
+                <AssetFormRow :label="t('assetsPage.mileages.date')" required :error="fieldErrors.statementDate">
+                    <AppDatePicker v-model="form.statementDate" :label="t('assetsPage.mileages.date')" :max="today" :clearable="false" />
+                </AssetFormRow>
+                <AssetFormRow :label="t('assetsPage.mileages.kilometrage')" for-id="mileage-km" required>
+                    <v-text-field
+                        id="mileage-km"
+                        v-model="form.kilometrage"
+                        type="number"
+                        step="1"
+                        min="0"
+                        suffix="km"
+                        color="primary"
+                        variant="outlined"
+                        hide-details="auto"
+                        :error="!!fieldErrors.kilometrage"
+                        :error-messages="fieldErrors.kilometrage || undefined"
+                    />
+                </AssetFormRow>
+            </div>
+            <template #footer="{ close }">
+                <button type="button" class="su-btn" :disabled="store.acting" @click="close">
+                    {{ t('common.cancel') }}
+                </button>
+                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onAdd">
+                    {{ t('common.save') }}
+                </button>
+            </template>
+        </AppModalBase>
+
         <AppConfirmationModal
             v-model="deleteOpen"
             :title="t('assetsPage.mileages.deleteTitle')"
@@ -201,37 +232,24 @@ function sourceLabel(item: VehicleMileage): string {
     min-height: 100%;
 }
 
+.asset-subpanel__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
 .asset-subpanel__hint {
-    margin: 0 0 12px;
+    margin: 0;
     color: var(--gray);
     font-size: 13px;
 }
 
-/* saisie en ligne : date | valeur | bouton */
-.asset-subpanel__add {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-    align-items: start;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.asset-subpanel__cell {
-    min-width: 0;
-}
-
-.asset-subpanel__cell :deep(.v-field) {
-    --v-input-control-height: 42px;
-}
-
-.asset-subpanel__submit {
-    min-height: 42px;
-}
-
-.asset-subpanel__error {
-    margin: 4px 0 0;
-    color: var(--danger);
-    font-size: 13px;
+.asset-subpanel__form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
 .asset-subpanel__empty {
@@ -266,8 +284,8 @@ function sourceLabel(item: VehicleMileage): string {
 }
 
 @media (max-width: 599.98px) {
-    .asset-subpanel__add {
-        grid-template-columns: minmax(0, 1fr);
+    .asset-subpanel__head {
+        flex-direction: column;
     }
 }
 </style>

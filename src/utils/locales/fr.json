@@ -3581,6 +3581,7 @@
             }
         },
         "valuations": {
+            "createTitle": "Nouvelle valorisation",
             "hint": "Une valorisation par jour. La valeur affichée est la plus récente par date.",
             "date": "Date",
             "value": "Valeur",
@@ -3591,6 +3592,7 @@
             "deleteBody": "La valorisation du {date} sera supprimée définitivement."
         },
         "mileages": {
+            "createTitle": "Nouveau relevé",
             "hint": "Un relevé par jour. Le kilométrage actuel est le relevé le plus récent.",
             "date": "Date",
             "kilometrage": "Kilométrage",

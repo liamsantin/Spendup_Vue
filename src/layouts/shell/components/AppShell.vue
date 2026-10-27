@@ -181,11 +181,13 @@ watch(isMobile, (mobile) => {
     border: 1px solid var(--line);
 }
 
+/* pleine colonne : le bord droit reste celui de la carte, sidebar ouverte ou repliée */
 .shell__content > :deep(.page-content) {
     flex: 1 1 auto;
+    align-self: stretch;
     min-height: 0;
     width: 100%;
-    max-width: calc(var(--content-max) + 2 * var(--content-pad-x));
+    max-width: none;
     margin: 0;
     overflow: hidden;
     padding: var(--content-pad-y) var(--content-pad-x) 0;

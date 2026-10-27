@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * Historique des valorisations d’un actif (clé = date, une par jour) : saisie en ligne d’une
- * valorisation (ajout ou remplacement de la date), tableau éditorial, suppression confirmée.
+ * Historique des valorisations d’un actif (clé = date, une par jour) : ajout via modale
+ * (remplace la valorisation du jour choisi), tableau éditorial, suppression confirmée.
  * La dernière valorisation restante ne peut pas être supprimée (400 côté API, bouton désactivé ici).
  */
 defineOptions({ name: 'AssetValuationsPanel' });
@@ -12,6 +12,7 @@ import { PlusIcon, TrashIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { todayYmdInTimeZone } from '@/features/accounts/format';
 import { useUserSettingsStore } from '@/features/user-settings';
@@ -19,6 +20,7 @@ import { formatAssetAmount, formatCalendarDate } from '@/features/assets/format'
 import { buildSaveValuationPayload, emptyAssetValuationFormFields, type AssetPayloadErrorCode } from '@/features/assets/payload';
 import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import type { Asset, AssetValuation } from '@/features/assets/types';
+import AssetFormRow from '@/features/assets/components/forms/AssetFormRow.vue';
 
 const props = defineProps<{
     asset: Asset;
@@ -31,6 +33,7 @@ const settings = useUserSettingsStore();
 const form = reactive(emptyAssetValuationFormFields());
 const fieldErrors = reactive<{ valuationDate: string | null; value: string | null }>({ valuationDate: null, value: null });
 const localError = ref<string | null>(null);
+const createOpen = ref(false);
 const deleteTarget = ref<AssetValuation | null>(null);
 
 const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
@@ -62,11 +65,18 @@ async function load(force = false) {
 watch(
     () => props.asset.publicId,
     () => {
+        createOpen.value = false;
         resetForm();
         void load();
     },
     { immediate: true }
 );
+
+function openCreate() {
+    resetForm();
+    localError.value = null;
+    createOpen.value = true;
+}
 
 function errorText(code: AssetPayloadErrorCode): string {
     return t(`assetsPage.form.errors.${code}`);
@@ -85,6 +95,7 @@ async function onAdd() {
     }
     try {
         await store.saveValuation(props.asset.publicId, form, { today: today.value });
+        createOpen.value = false;
         resetForm();
     } catch (e: unknown) {
         localError.value = getErrorMessage(e);
@@ -111,37 +122,17 @@ function sourceLabel(item: AssetValuation): string {
 
 <template>
     <div class="asset-subpanel">
-        <AppAlert v-if="localError" type="error" class="mb-4" closable @dismiss="localError = null">
+        <AppAlert v-if="localError && !createOpen" type="error" class="mb-4" closable @dismiss="localError = null">
             {{ localError }}
         </AppAlert>
 
-        <p class="asset-subpanel__hint">{{ t('assetsPage.valuations.hint') }}</p>
-
-        <form class="asset-subpanel__add" @submit.prevent="onAdd">
-            <div class="asset-subpanel__cell">
-                <AppDatePicker v-model="form.valuationDate" :label="t('assetsPage.valuations.date')" :max="today" :clearable="false" />
-                <p v-if="fieldErrors.valuationDate" class="asset-subpanel__error">{{ fieldErrors.valuationDate }}</p>
-            </div>
-            <div class="asset-subpanel__cell">
-                <v-text-field
-                    v-model="form.value"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    :label="t('assetsPage.valuations.value')"
-                    :suffix="asset.currency"
-                    color="primary"
-                    variant="outlined"
-                    hide-details="auto"
-                    :error="!!fieldErrors.value"
-                    :error-messages="fieldErrors.value || undefined"
-                />
-            </div>
-            <button type="submit" class="su-btn su-btn--ink asset-subpanel__submit" :disabled="store.acting">
+        <div class="asset-subpanel__head">
+            <p class="asset-subpanel__hint">{{ t('assetsPage.valuations.hint') }}</p>
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="openCreate">
                 <PlusIcon :size="16" stroke-width="1.6" />
                 {{ t('assetsPage.actions.add') }}
             </button>
-        </form>
+        </div>
 
         <div v-if="store.loadingValuations && !items.length" class="su-loading">
             <span class="su-spin" />
@@ -181,6 +172,46 @@ function sourceLabel(item: AssetValuation): string {
             </table>
         </div>
 
+        <AppModalBase
+            v-model="createOpen"
+            :title="t('assetsPage.valuations.createTitle')"
+            :subtitle="t('assetsPage.valuations.hint')"
+            :max-width="560"
+            :scrollable="false"
+        >
+            <AppAlert v-if="localError" type="error" class="mb-4" closable @dismiss="localError = null">
+                {{ localError }}
+            </AppAlert>
+            <div class="asset-subpanel__form">
+                <AssetFormRow :label="t('assetsPage.valuations.date')" required :error="fieldErrors.valuationDate">
+                    <AppDatePicker v-model="form.valuationDate" :label="t('assetsPage.valuations.date')" :max="today" :clearable="false" />
+                </AssetFormRow>
+                <AssetFormRow :label="t('assetsPage.valuations.value')" for-id="valuation-value" required>
+                    <v-text-field
+                        id="valuation-value"
+                        v-model="form.value"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        :suffix="asset.currency"
+                        color="primary"
+                        variant="outlined"
+                        hide-details="auto"
+                        :error="!!fieldErrors.value"
+                        :error-messages="fieldErrors.value || undefined"
+                    />
+                </AssetFormRow>
+            </div>
+            <template #footer="{ close }">
+                <button type="button" class="su-btn" :disabled="store.acting" @click="close">
+                    {{ t('common.cancel') }}
+                </button>
+                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onAdd">
+                    {{ t('common.save') }}
+                </button>
+            </template>
+        </AppModalBase>
+
         <AppConfirmationModal
             v-model="deleteOpen"
             :title="t('assetsPage.valuations.deleteTitle')"
@@ -202,37 +233,24 @@ function sourceLabel(item: AssetValuation): string {
     min-height: 100%;
 }
 
+.asset-subpanel__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
 .asset-subpanel__hint {
-    margin: 0 0 12px;
+    margin: 0;
     color: var(--gray);
     font-size: 13px;
 }
 
-/* saisie en ligne : date | valeur | bouton */
-.asset-subpanel__add {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-    align-items: start;
-    gap: 12px;
-    margin-bottom: 20px;
-}
-
-.asset-subpanel__cell {
-    min-width: 0;
-}
-
-.asset-subpanel__cell :deep(.v-field) {
-    --v-input-control-height: 42px;
-}
-
-.asset-subpanel__submit {
-    min-height: 42px;
-}
-
-.asset-subpanel__error {
-    margin: 4px 0 0;
-    color: var(--danger);
-    font-size: 13px;
+.asset-subpanel__form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
 .asset-subpanel__empty {
@@ -267,8 +285,8 @@ function sourceLabel(item: AssetValuation): string {
 }
 
 @media (max-width: 599.98px) {
-    .asset-subpanel__add {
-        grid-template-columns: minmax(0, 1fr);
+    .asset-subpanel__head {
+        flex-direction: column;
     }
 }
 </style>

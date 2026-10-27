@@ -3581,6 +3581,7 @@
             }
         },
         "valuations": {
+            "createTitle": "New valuation",
             "hint": "One valuation per day. The displayed value is the most recent by date.",
             "date": "Date",
             "value": "Value",
@@ -3591,6 +3592,7 @@
             "deleteBody": "The valuation of {date} will be permanently deleted."
         },
         "mileages": {
+            "createTitle": "New reading",
             "hint": "One reading per day. Current mileage is the most recent reading.",
             "date": "Date",
             "kilometrage": "Mileage",

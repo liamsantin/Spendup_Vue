@@ -81,6 +81,15 @@ const emit = defineEmits<{
     </div>
 </template>
 <style scoped>
+.su-hero {
+    border-bottom-color: color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+/* le corps laisse 48 px sous le filet du titre : on resserre cet espace */
+.su-page :deep(.su-body) {
+    padding-top: 16px;
+}
+
 .su-hero__top--with-tabs > .su-hero__actions {
     margin-left: auto;
 }

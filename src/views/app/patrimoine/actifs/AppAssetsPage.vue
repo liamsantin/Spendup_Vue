@@ -347,7 +347,7 @@ watch(searchOpen, (open) => {
     max-width: 100%;
     margin-top: 16px;
     margin-left: 0;
-    justify-content: flex-end;
+    justify-content: flex-start;
     flex-wrap: wrap;
 }
 

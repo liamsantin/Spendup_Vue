@@ -81,7 +81,10 @@ const figures = computed(() => {
 
 type AssetFact = { id: string; label: string; value: string };
 
-/** Caractéristiques en lignes libellé / valeur, selon le type, puis l’acquisition. */
+/** Chiffres qui tiennent dans la rangée du haut. Le reste va dans la fiche. */
+const HIGHLIGHT_IDS = new Set(['mileage', 'quantity', 'averagePrice', 'insuredValue', 'interest', 'acquisitionPrice']);
+
+/** Caractéristiques selon le type, puis l’acquisition. */
 const facts = computed<AssetFact[]>(() => {
     const current = asset.value;
     if (!current) return [];
@@ -147,6 +150,9 @@ const facts = computed<AssetFact[]>(() => {
     if (current.acquisitionPrice != null) add('acquisitionPrice', field('acquisitionPrice'), money(current.acquisitionPrice));
     return list;
 });
+
+const highlights = computed(() => facts.value.filter((fact) => HIGHLIGHT_IDS.has(fact.id)));
+const details = computed(() => facts.value.filter((fact) => !HIGHLIGHT_IDS.has(fact.id)));
 
 async function loadAsset() {
     const id = props.assetPublicId.trim();
@@ -237,20 +243,10 @@ defineExpose({ openEdit, reload: loadAsset });
 
         <template v-else-if="asset">
             <div v-if="activeTab === 'informations'" class="asset-detail__info">
-                <div class="asset-detail__head">
-                    <p v-if="!asset.isActive" class="asset-detail__sold">
-                        <span class="su-sq" aria-hidden="true" />
-                        {{ t('assetsPage.detail.sold') }}
-                    </p>
-                    <dl v-if="facts.length" class="asset-detail__facts">
-                        <div v-for="fact in facts" :key="fact.id" class="su-kv">
-                            <dt>{{ fact.label }}</dt>
-                            <dd>{{ fact.value }}</dd>
-                        </div>
-                    </dl>
-                    <p v-if="asset.description" class="asset-detail__text">{{ asset.description }}</p>
-                    <p v-if="asset.notes" class="asset-detail__text asset-detail__text--soft">{{ asset.notes }}</p>
-                </div>
+                <p v-if="!asset.isActive" class="asset-detail__sold">
+                    <span class="su-sq" aria-hidden="true" />
+                    {{ t('assetsPage.detail.sold') }}
+                </p>
 
                 <div class="su-figs asset-detail__figs" role="group" :aria-label="t('assetsPage.detail.figs.label')">
                     <div v-for="fig in figures" :key="fig.id" class="su-fig">
@@ -258,7 +254,21 @@ defineExpose({ openEdit, reload: loadAsset });
                         <p class="su-fig__num" :class="{ 'is-loading': loading }">{{ fig.value }}</p>
                         <p v-if="fig.note" class="su-fig__note">{{ fig.note }}</p>
                     </div>
+                    <div v-for="fact in highlights" :key="fact.id" class="su-fig">
+                        <p class="su-fig__label">{{ fact.label }}</p>
+                        <p class="su-fig__num">{{ fact.value }}</p>
+                    </div>
                 </div>
+
+                <div v-if="details.length" class="asset-detail__sheet">
+                    <div v-for="fact in details" :key="fact.id" class="su-kv">
+                        <span>{{ fact.label }}</span>
+                        <span>{{ fact.value }}</span>
+                    </div>
+                </div>
+
+                <p v-if="asset.description" class="asset-detail__text">{{ asset.description }}</p>
+                <p v-if="asset.notes" class="asset-detail__text asset-detail__text--soft">{{ asset.notes }}</p>
             </div>
 
             <div v-else-if="activeTab" class="asset-detail__panel">
@@ -288,21 +298,30 @@ defineExpose({ openEdit, reload: loadAsset });
     min-width: 0;
 }
 
-.asset-detail__head {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+/* une seule rangée de chiffres, comme le tableau de bord */
+.asset-detail__figs {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-.asset-detail__facts {
+.asset-detail__figs .su-fig__num {
+    font-size: 26px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.asset-detail__figs .su-fig__num.is-loading {
+    opacity: 0.35;
+}
+
+.asset-detail__sheet {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0 48px;
-    margin: 0;
+    column-gap: 64px;
 }
 
-.asset-detail__facts dd {
-    margin: 0;
+.asset-detail__sheet .su-kv:nth-child(-n + 2) {
+    border-top: 0;
+    padding-top: 0;
 }
 
 .asset-detail__text {
@@ -328,20 +347,6 @@ defineExpose({ openEdit, reload: loadAsset });
     --sq-color: var(--violet);
 }
 
-.asset-detail__figs {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-}
-
-.asset-detail__figs .su-fig__num {
-    font-size: 26px;
-    white-space: normal;
-    overflow-wrap: anywhere;
-}
-
-.asset-detail__figs .su-fig__num.is-loading {
-    opacity: 0.35;
-}
-
 .asset-detail__panel {
     min-width: 0;
 }
@@ -360,15 +365,18 @@ defineExpose({ openEdit, reload: loadAsset });
         padding: 0 0 16px;
     }
 
-    .asset-detail__facts {
+    .asset-detail__figs,
+    .asset-detail__sheet {
         grid-template-columns: minmax(0, 1fr);
-        gap: 0;
+    }
+
+    .asset-detail__sheet .su-kv:nth-child(2) {
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
     }
 
     .asset-detail__figs .su-fig__num {
-        font-size: 18px;
-        overflow: visible;
-        white-space: normal;
+        font-size: 22px;
     }
 }
 </style>
