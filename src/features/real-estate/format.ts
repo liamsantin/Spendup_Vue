@@ -194,6 +194,22 @@ export function formatRealEstatePeriod(start: string | null | undefined, end: st
     return '';
 }
 
+/** Onglets de la fiche. `informations` est le défaut (query `tab` absente). */
+export const REAL_ESTATE_DETAIL_TABS = ['informations', 'lots', 'charges', 'travaux', 'documents', 'baux'] as const;
+
+export type RealEstateDetailTab = (typeof REAL_ESTATE_DETAIL_TABS)[number];
+
+export function realEstateDetailTabs(): RealEstateDetailTab[] {
+    return [...REAL_ESTATE_DETAIL_TABS];
+}
+
+/** Onglet d’URL, ou Informations. */
+export function activeRealEstateDetailTab(value: unknown): RealEstateDetailTab {
+    return typeof value === 'string' && REAL_ESTATE_DETAIL_TABS.includes(value as RealEstateDetailTab)
+        ? (value as RealEstateDetailTab)
+        : 'informations';
+}
+
 /** Nom d’un lot par `publicId` (`null` si inconnu ou absent). */
 export function unitNameOf(units: readonly { publicId: string; name: string }[], unitPublicId: string | null | undefined): string | null {
     if (!unitPublicId) return null;

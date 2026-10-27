@@ -6,7 +6,7 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
+import { ArrowLeftIcon, PencilIcon, PlusIcon, ProgressCheckIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
 import { useCreateFromQuery } from '@/components/shared/board/useCreateFromQuery';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
@@ -17,11 +17,15 @@ import {
     LIABILITY_STATUS_ALL,
     LIABILITY_TYPES,
     LiabilitiesDirectory,
+    LiabilityDetail,
     debtsPathForTab,
     debtsTabFromPath,
     isLiabilityStatus,
     isLiabilityType,
+    liabilityPublicIdFromPath,
     matchesLiabilitySearch,
+    personalLoanPublicIdFromPath,
+    sharedDebtPublicIdFromPath,
     useLiabilitiesStore,
     type DebtsTab
 } from '@/features/liabilities';
@@ -29,14 +33,24 @@ import {
     LOAN_DIRECTIONS,
     LOAN_STATUSES,
     LOAN_STATUS_ALL,
+    PersonalLoanDetail,
     PersonalLoansDirectory,
     isLoanDirection,
     isLoanStatus,
     matchesPersonalLoanSearch,
     usePersonalLoansStore
 } from '@/features/personal-loans';
+import SharedDebtDetail from '@/features/shared-debts/components/SharedDebtDetail.vue';
 import SharedDebtsPanel from '@/features/shared-debts/components/SharedDebtsPanel.vue';
-import { SHARED_DEBT_STATUSES, isSharedDebtStatus } from '@/features/shared-debts';
+import {
+    SHARED_DEBT_STATUSES,
+    canCancelSharedDebt,
+    canDeleteSharedDebt,
+    canEditSharedDebt,
+    canSettleSharedDebt,
+    isSharedDebtStatus,
+    useSharedDebtsStore
+} from '@/features/shared-debts';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const SEARCH_MAX = LIABILITY_NAME_MAX;
@@ -48,7 +62,54 @@ const route = useRoute();
 const router = useRouter();
 const liabilitiesStore = useLiabilitiesStore();
 const loansStore = usePersonalLoansStore();
+const sharedStore = useSharedDebtsStore();
 const panelRef = ref<{ openCreate: () => void } | null>(null);
+const detailRef = ref<{
+    openEdit: () => void;
+    openRemaining?: () => void;
+    openSettle?: () => void;
+    openCancel?: () => void;
+    openDelete?: () => void;
+} | null>(null);
+const notFound = ref(false);
+
+const liabilityId = computed(() => liabilityPublicIdFromPath(route.path));
+const loanId = computed(() => personalLoanPublicIdFromPath(route.path));
+const sharedId = computed(() => sharedDebtPublicIdFromPath(route.path));
+const detailKind = computed<DebtsTab | null>(() => {
+    if (liabilityId.value) return 'liabilities';
+    if (loanId.value) return 'loans';
+    if (sharedId.value) return 'shared';
+    return null;
+});
+const detailLiability = computed(() => (liabilityId.value ? liabilitiesStore.findByPublicId(liabilityId.value) : null));
+const detailLoan = computed(() => (loanId.value ? loansStore.findByPublicId(loanId.value) : null));
+const detailShared = computed(() => (sharedId.value ? sharedStore.findByPublicId(sharedId.value) : null));
+
+const detailTitle = computed(() => {
+    if (notFound.value || !detailKind.value) return t('debtsPage.title');
+    if (detailKind.value === 'liabilities') {
+        return detailLiability.value ? t('debtsPage.detailTitle.liabilities', { name: detailLiability.value.name }) : t('debtsPage.title');
+    }
+    if (detailKind.value === 'loans') {
+        const name = detailLoan.value?.label?.trim() || detailLoan.value?.counterpartName?.trim();
+        return name ? t('debtsPage.detailTitle.loans', { name }) : t('debtsPage.title');
+    }
+    return detailShared.value ? t('debtsPage.detailTitle.shared', { name: detailShared.value.label }) : t('debtsPage.title');
+});
+
+const detailNotFound = computed(() => {
+    if (detailKind.value === 'loans') return t('personalLoansPage.errors.notFound');
+    if (detailKind.value === 'shared') return t('sharedDebtsPage.errors.notFound');
+    return t('liabilitiesPage.errors.notFound');
+});
+
+const showEdit = computed(() => {
+    if (notFound.value) return false;
+    if (detailKind.value === 'liabilities') return !!detailLiability.value;
+    if (detailKind.value === 'loans') return !!detailLoan.value;
+    return !!detailShared.value && canEditSharedDebt(detailShared.value);
+});
 
 const tab = computed(() => debtsTabFromPath(route.path));
 
@@ -219,11 +280,29 @@ const acting = computed(() => (tab.value === 'liabilities' ? liabilitiesStore.ac
 const createLabel = computed(() => (tab.value === 'shared' ? t('sharedDebtsPage.createButton') : t('debtsPage.actions.create')));
 
 function onCreate() {
-    if (acting.value) return;
+    if (acting.value || detailKind.value) return;
     panelRef.value?.openCreate();
 }
 
-useCreateFromQuery(onCreate, () => !acting.value && !!panelRef.value);
+function listQuery(): Record<string, string> {
+    const next: Record<string, string> = {};
+    for (const key of ['q', 'status', 'type', 'direction', 'role'] as const) {
+        const value = queryString(key);
+        if (value) next[key] = key === 'q' ? value.slice(0, SEARCH_MAX) : value;
+    }
+    return next;
+}
+
+function backToList() {
+    const kind = detailKind.value ?? 'liabilities';
+    void router.push({ path: debtsPathForTab(kind), query: listQuery() });
+}
+
+useCreateFromQuery(onCreate, () => !acting.value && !detailKind.value && !!panelRef.value);
+
+watch(detailKind, () => {
+    notFound.value = false;
+});
 
 onUnmounted(() => {
     if (searchTimer) clearTimeout(searchTimer);
@@ -231,7 +310,88 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <AppPageShell :title="t('debtsPage.title')" :subtitle="subtitle">
+    <AppPageShell v-if="detailKind" :key="`detail-${detailKind}-${liabilityId || loanId || sharedId}`" :title="detailTitle">
+        <template #actions>
+            <button type="button" class="su-btn" @click="backToList">
+                <ArrowLeftIcon :size="16" stroke-width="1.6" />
+                {{ t('debtsPage.actions.back') }}
+            </button>
+            <button
+                v-if="detailShared && canDeleteSharedDebt(detailShared)"
+                type="button"
+                class="su-btn su-btn--danger"
+                :disabled="sharedStore.acting"
+                @click="detailRef?.openDelete?.()"
+            >
+                {{ t('sharedDebtsPage.actions.delete') }}
+            </button>
+            <button
+                v-if="detailShared && canCancelSharedDebt(detailShared)"
+                type="button"
+                class="su-btn su-btn--warn"
+                :disabled="sharedStore.acting"
+                @click="detailRef?.openCancel?.()"
+            >
+                {{ t('sharedDebtsPage.actions.cancel') }}
+            </button>
+            <button
+                v-if="detailLiability && detailLiability.status !== 'annule'"
+                type="button"
+                class="su-btn"
+                :disabled="liabilitiesStore.acting"
+                @click="detailRef?.openRemaining?.()"
+            >
+                <ProgressCheckIcon :size="16" stroke-width="1.6" />
+                {{ t('liabilitiesPage.actions.updateRemaining') }}
+            </button>
+            <button
+                v-if="showEdit"
+                type="button"
+                class="su-btn"
+                :class="{ 'su-btn--ink': !detailShared || !canSettleSharedDebt(detailShared) }"
+                :disabled="acting || sharedStore.acting"
+                @click="detailRef?.openEdit()"
+            >
+                <PencilIcon :size="16" stroke-width="1.6" />
+                {{ t('debtsPage.actions.edit') }}
+            </button>
+            <button
+                v-if="detailShared && canSettleSharedDebt(detailShared)"
+                type="button"
+                class="su-btn su-btn--ink"
+                :disabled="sharedStore.acting"
+                @click="detailRef?.openSettle?.()"
+            >
+                {{ t('sharedDebtsPage.actions.settle') }}
+            </button>
+        </template>
+
+        <template #hero-extra>
+            <nav v-if="!notFound" class="su-tabs su-tabs--links debts-page__detail-tabs" :aria-label="t('debtsPage.detail.tabs.label')">
+                <button type="button" class="su-tab is-active" aria-current="page">
+                    <span class="su-tab__label" :data-label="t('debtsPage.detail.tabs.informations')">{{
+                        t('debtsPage.detail.tabs.informations')
+                    }}</span>
+                </button>
+            </nav>
+        </template>
+
+        <div v-if="notFound" class="su-empty debts-page__not-found">
+            <p>{{ detailNotFound }}</p>
+            <button type="button" class="su-link debts-page__back" @click="backToList">{{ t('debtsPage.actions.backToList') }}</button>
+        </div>
+        <LiabilityDetail v-else-if="liabilityId" ref="detailRef" :liability-public-id="liabilityId" @not-found="notFound = true" />
+        <PersonalLoanDetail v-else-if="loanId" ref="detailRef" :loan-public-id="loanId" @not-found="notFound = true" />
+        <SharedDebtDetail
+            v-else-if="sharedId"
+            ref="detailRef"
+            :shared-debt-public-id="sharedId"
+            @not-found="notFound = true"
+            @deleted="backToList"
+        />
+    </AppPageShell>
+
+    <AppPageShell v-else :title="t('debtsPage.title')" :subtitle="subtitle">
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('debtsPage.tabs.label')">
                 <RouterLink
@@ -348,6 +508,29 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.debts-page__detail-tabs {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 16px;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.debts-page__not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.debts-page__back {
+    border: 0;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+}
+
 /* onglets en liens (RouterLink) : pas de soulignement natif, seul l'onglet actif est souligné par le kit */
 .su-tabs--links .su-tab {
     text-decoration: none;

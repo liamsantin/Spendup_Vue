@@ -9,6 +9,9 @@ export {
     formatRealEstatePeriod,
     formatShortNumber,
     formatRealEstateAddress,
+    REAL_ESTATE_DETAIL_TABS,
+    realEstateDetailTabs,
+    activeRealEstateDetailTab,
     realEstateDetailsOf,
     realEstateSearchHaystack,
     matchesRealEstateSearch,
@@ -28,6 +31,7 @@ export {
     isRentalStatus,
     isRentalStoredStatus
 } from '@/features/real-estate/format';
+export type { RealEstateDetailTab } from '@/features/real-estate/format';
 export {
     emptyUnitFormFields,
     unitToFormFields,

@@ -1,20 +1,23 @@
 <script setup lang="ts">
 /**
- * Fiche d’un bien immobilier : caractéristiques, synthèse (`realEstate.summary`) en chiffres clés,
- * onglets Lots · Charges · Travaux · Documents · Baux (query `tab`) avec compteurs.
+ * Fiche d’un bien immobilier. L’onglet Informations (défaut) porte la synthèse et les
+ * caractéristiques. Lots · Charges · Travaux · Documents · Baux sont les autres valeurs de `tab`.
+ * La barre d’onglets est rendue par la page, sous le titre.
  */
 defineOptions({ name: 'RealEstateDetail' });
 
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import AssetFormModal from '@/features/assets/components/modals/AssetFormModal.vue';
 import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import type { Asset } from '@/features/assets/types';
 import {
+    activeRealEstateDetailTab,
     formatCalendarDate,
+    formatRealEstateAddress,
     formatRealEstateAmount,
     formatShortNumber,
     formatSignedRealEstateAmount,
@@ -27,11 +30,6 @@ import RealEstateMaintenancePanel from '@/features/real-estate/components/panels
 import RealEstateRentalsPanel from '@/features/real-estate/components/panels/RealEstateRentalsPanel.vue';
 import RealEstateUnitsPanel from '@/features/real-estate/components/panels/RealEstateUnitsPanel.vue';
 
-/** Onglets de la fiche ; la valeur est aussi celle de la query `tab`. */
-export type RealEstateDetailTab = 'lots' | 'charges' | 'travaux' | 'documents' | 'baux';
-
-const TABS: RealEstateDetailTab[] = ['lots', 'charges', 'travaux', 'documents', 'baux'];
-
 const props = defineProps<{
     assetPublicId: string;
 }>();
@@ -43,7 +41,6 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n();
 const route = useRoute();
-const router = useRouter();
 const assetsStore = useAssetsStore();
 const store = useRealEstateStore();
 
@@ -57,29 +54,7 @@ const summary = computed(() => asset.value?.realEstate?.summary ?? null);
 const currency = computed(() => asset.value?.currency ?? '');
 const empty = computed(() => t('common.emptyValue'));
 
-const activeTab = computed<RealEstateDetailTab>(() => {
-    const raw = route.query.tab;
-    return typeof raw === 'string' && TABS.includes(raw as RealEstateDetailTab) ? (raw as RealEstateDetailTab) : 'lots';
-});
-
-function selectTab(tab: RealEstateDetailTab) {
-    if (tab === activeTab.value) return;
-    const query = { ...route.query };
-    if (tab === 'lots') delete query.tab;
-    else query.tab = tab;
-    void router.replace({ path: route.path, query });
-}
-
-const tabs = computed(() => {
-    const s = summary.value;
-    return [
-        { value: 'lots' as const, label: t('realEstatePage.detail.tabs.units'), count: s?.unitsCount },
-        { value: 'charges' as const, label: t('realEstatePage.detail.tabs.charges'), count: s?.chargesCount },
-        { value: 'travaux' as const, label: t('realEstatePage.detail.tabs.maintenance'), count: s?.maintenanceCount },
-        { value: 'documents' as const, label: t('realEstatePage.detail.tabs.documents'), count: s?.documentsCount },
-        { value: 'baux' as const, label: t('realEstatePage.detail.tabs.rentals'), count: s?.rentalsCount }
-    ];
-});
+const activeTab = computed(() => activeRealEstateDetailTab(route.query.tab));
 
 const money = (amount: number) => formatRealEstateAmount(amount, currency.value, locale.value);
 
@@ -140,41 +115,44 @@ const valueNote = computed(() => {
     return date ? t('realEstatePage.detail.figs.valuedOn', { date: formatCalendarDate(date, locale.value) }) : null;
 });
 
-/** Ligne de caractéristiques : type · surface · pièces · construction · achat. */
-const characteristics = computed(() => {
-    const d = details.value;
-    const a = asset.value;
-    if (!d || !a) return [];
-    const parts: string[] = [t(`assetsPage.propertyTypes.${d.propertyType}`)];
-    const living = formatShortNumber(d.livingAreaM2, locale.value);
-    if (living) parts.push(t('realEstatePage.detail.livingArea', { value: living }));
-    const land = formatShortNumber(d.landAreaM2, locale.value);
-    if (land) parts.push(t('realEstatePage.detail.landArea', { value: land }));
-    const rooms = formatShortNumber(d.rooms, locale.value);
-    if (rooms) parts.push(t('realEstatePage.detail.rooms', { value: rooms }));
-    if (d.constructionYear) parts.push(t('realEstatePage.detail.builtIn', { year: d.constructionYear }));
-    if (d.renovationYear) parts.push(t('realEstatePage.detail.renovatedIn', { year: d.renovationYear }));
-    if (a.acquisitionDate) {
-        parts.push(
-            a.acquisitionPrice != null
-                ? t('realEstatePage.detail.boughtFor', {
-                      date: formatCalendarDate(a.acquisitionDate, locale.value),
-                      amount: money(a.acquisitionPrice)
-                  })
-                : t('realEstatePage.detail.boughtOn', { date: formatCalendarDate(a.acquisitionDate, locale.value) })
-        );
-    }
-    return parts;
-});
+type PropertyFact = { id: string; label: string; value: string };
 
-const amenities = computed(() => {
+/** Caractéristiques en lignes libellé / valeur. Les chiffres de synthèse restent dans `figures`. */
+const facts = computed<PropertyFact[]>(() => {
     const d = details.value;
-    if (!d) return [];
-    const list: string[] = [];
-    if (d.hasElevator) list.push(t('realEstatePage.detail.amenities.elevator'));
-    if (d.hasBalcony) list.push(t('realEstatePage.detail.amenities.balcony'));
-    if (d.hasCellar) list.push(t('realEstatePage.detail.amenities.cellar'));
-    if (d.hasGarage) list.push(t('realEstatePage.detail.amenities.garage'));
+    const current = asset.value;
+    if (!d || !current) return [];
+    const list: PropertyFact[] = [];
+    const add = (id: string, label: string, value: string | number | null | undefined) => {
+        if (value == null) return;
+        const text = String(value).trim();
+        if (!text) return;
+        list.push({ id, label, value: text });
+    };
+    const field = (key: string) => t(`assetsPage.form.fields.${key}`);
+    const num = (value: number | null) => formatShortNumber(value, locale.value);
+
+    add('propertyType', field('propertyType'), t(`assetsPage.propertyTypes.${d.propertyType}`));
+    add('address', field('addressLine1'), formatRealEstateAddress(d));
+    add('addressLine2', field('addressLine2'), d.addressLine2);
+    add('country', field('country'), d.country);
+    add('livingArea', field('livingAreaM2'), num(d.livingAreaM2));
+    add('landArea', field('landAreaM2'), num(d.landAreaM2));
+    add('rooms', field('rooms'), num(d.rooms));
+    add('bedrooms', field('bedrooms'), num(d.bedrooms));
+    add('bathrooms', field('bathrooms'), num(d.bathrooms));
+    add('floor', field('floor'), num(d.floor));
+    add('constructionYear', field('constructionYear'), d.constructionYear);
+    add('renovationYear', field('renovationYear'), d.renovationYear);
+    if (d.hasElevator) add('elevator', field('hasElevator'), t('common.yes'));
+    if (d.hasBalcony) add('balcony', field('hasBalcony'), t('common.yes'));
+    if (d.hasCellar) add('cellar', field('hasCellar'), t('common.yes'));
+    if (d.hasGarage) add('garage', field('hasGarage'), t('common.yes'));
+    if (current.acquisitionDate) {
+        add('acquisitionDate', field('acquisitionDate'), formatCalendarDate(current.acquisitionDate, locale.value));
+    }
+    if (current.acquisitionPrice != null) add('acquisitionPrice', field('acquisitionPrice'), money(current.acquisitionPrice));
+    if (d.taxValue != null) add('taxValue', field('taxValue'), money(d.taxValue));
     return list;
 });
 
@@ -256,49 +234,36 @@ defineExpose({ openEdit, reload: loadAsset });
         </div>
 
         <template v-else-if="asset">
-            <!-- ── caractéristiques ── -->
-            <div class="re-detail__head">
+            <div v-if="activeTab === 'informations'" class="re-detail__info">
                 <p v-if="!asset.isActive" class="re-detail__sold">
                     <span class="su-sq" aria-hidden="true" />
                     {{ t('realEstatePage.detail.sold') }}
                 </p>
-                <p v-if="characteristics.length" class="re-detail__meta">{{ characteristics.join(' · ') }}</p>
-                <p v-if="amenities.length" class="re-detail__meta re-detail__meta--soft">{{ amenities.join(' · ') }}</p>
-                <p v-if="details?.taxValue != null" class="re-detail__meta re-detail__meta--soft">
-                    {{ t('realEstatePage.detail.taxValue', { amount: money(details.taxValue) }) }}
-                </p>
+
+                <div class="su-figs re-detail__figs" role="group" :aria-label="t('realEstatePage.detail.figs.label')">
+                    <div v-for="fig in figures" :key="fig.id" class="su-fig">
+                        <p class="su-fig__label">{{ fig.label }}</p>
+                        <p class="su-fig__num" :class="[fig.tone, { 'is-loading': loading }]">{{ fig.value }}</p>
+                        <p v-if="fig.note" class="su-fig__note">{{ fig.note }}</p>
+                    </div>
+                    <div v-if="!summary" class="su-fig">
+                        <p class="su-fig__label">{{ t('realEstatePage.detail.figs.summary') }}</p>
+                        <p class="su-fig__num is-loading">{{ empty }}</p>
+                    </div>
+                </div>
+
+                <div v-if="facts.length" class="re-detail__sheet">
+                    <div v-for="fact in facts" :key="fact.id" class="su-kv">
+                        <span>{{ fact.label }}</span>
+                        <span>{{ fact.value }}</span>
+                    </div>
+                </div>
+
+                <p v-if="asset.description" class="re-detail__text">{{ asset.description }}</p>
+                <p v-if="asset.notes" class="re-detail__text re-detail__text--soft">{{ asset.notes }}</p>
             </div>
 
-            <!-- ── chiffres clés ── -->
-            <div class="su-figs re-detail__figs" role="group" :aria-label="t('realEstatePage.detail.figs.label')">
-                <div v-for="fig in figures" :key="fig.id" class="su-fig">
-                    <p class="su-fig__label">{{ fig.label }}</p>
-                    <p class="su-fig__num" :class="[fig.tone, { 'is-loading': loading }]">{{ fig.value }}</p>
-                    <p v-if="fig.note" class="su-fig__note">{{ fig.note }}</p>
-                </div>
-                <div v-if="!summary" class="su-fig">
-                    <p class="su-fig__label">{{ t('realEstatePage.detail.figs.summary') }}</p>
-                    <p class="su-fig__num is-loading">{{ empty }}</p>
-                </div>
-            </div>
-
-            <!-- ── onglets ── -->
-            <nav class="su-tabs su-tabs--links re-detail__tabs" :aria-label="t('realEstatePage.detail.tabs.label')">
-                <button
-                    v-for="tab in tabs"
-                    :key="tab.value"
-                    type="button"
-                    class="su-tab"
-                    :class="{ 'is-active': activeTab === tab.value }"
-                    :aria-current="activeTab === tab.value ? 'page' : undefined"
-                    @click="selectTab(tab.value)"
-                >
-                    <span class="su-tab__label" :data-label="tab.label">{{ tab.label }}</span>
-                    <span v-if="tab.count != null" class="re-detail__tab-count">{{ tab.count }}</span>
-                </button>
-            </nav>
-
-            <div class="re-detail__panel">
+            <div v-else class="re-detail__panel">
                 <RealEstateUnitsPanel v-if="activeTab === 'lots'" :asset-public-id="assetPublicId" />
                 <RealEstateChargesPanel v-else-if="activeTab === 'charges'" :asset-public-id="assetPublicId" :currency="currency" />
                 <RealEstateMaintenancePanel v-else-if="activeTab === 'travaux'" :asset-public-id="assetPublicId" :currency="currency" />
@@ -320,20 +285,32 @@ defineExpose({ openEdit, reload: loadAsset });
     padding: 8px 0 24px;
 }
 
-.re-detail__head {
+.re-detail__info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 32px;
+    min-width: 0;
 }
 
-.re-detail__meta {
-    margin: 0;
+.re-detail__sheet {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 64px;
+}
+
+.re-detail__sheet .su-kv:nth-child(-n + 2) {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.re-detail__text {
+    margin: 8px 0 0;
     color: var(--ink);
     font-size: 14px;
-    font-variant-numeric: tabular-nums;
+    white-space: pre-wrap;
 }
 
-.re-detail__meta--soft {
+.re-detail__text--soft {
     color: var(--gray);
     font-size: 13px;
 }
@@ -366,21 +343,8 @@ defineExpose({ openEdit, reload: loadAsset });
     opacity: 0.35;
 }
 
-.re-detail__tabs {
-    border-bottom: 2px solid var(--ink);
-    flex-wrap: wrap;
-}
-
-.re-detail__tab-count {
-    margin-left: 4px;
-    color: var(--gray);
-    font-weight: 400;
-    font-variant-numeric: tabular-nums;
-}
-
 .re-detail__panel {
     min-width: 0;
-    margin-top: -8px;
 }
 
 .re-detail__retry {
@@ -397,15 +361,19 @@ defineExpose({ openEdit, reload: loadAsset });
         padding: 0 0 16px;
     }
 
+    .re-detail__sheet {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .re-detail__sheet .su-kv:nth-child(2) {
+        border-top: 1px solid var(--line);
+        padding-top: 12px;
+    }
+
     .re-detail__figs .su-fig__num {
         font-size: 18px;
         overflow: visible;
         white-space: normal;
-    }
-
-    .re-detail__tabs {
-        overflow-x: auto;
-        flex-wrap: nowrap;
     }
 }
 </style>

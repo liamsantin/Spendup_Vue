@@ -2,8 +2,9 @@
 /**
  * Panneau « Dettes entre amis » de la page Dettes (`/app/patrimoine/dettes/amis`).
  * Chiffres clés (on me doit / je dois), sous-onglets créancier · débiteur (query `role`),
- * liste `su-person`, modales de création, d’édition, de remboursement et de détail.
- * Route lue : `:publicId` (détail ouvert), query `role`, `status`, `q`.
+ * liste `su-person`, modales de création, d’édition, de remboursement, d’annulation et de suppression.
+ * Un clic ouvre la fiche ; « Modifier » ouvre cette fiche avec la modale de formulaire.
+ * Query lue : `role`, `status`, `q`.
  * Le parent appelle `openCreate()` via `defineExpose`.
  */
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
@@ -14,7 +15,7 @@ import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { todayYmdInTimeZone } from '@/features/accounts/format';
 import { useFriendNicknameLabels } from '@/features/friends';
-import { DEBTS_PATHS, sharedDebtDetailPath, sharedDebtPublicIdFromPath } from '@/features/liabilities/paths';
+import { DEBTS_PATHS, sharedDebtDetailPath } from '@/features/liabilities/paths';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { formatSharedDebtAmount, isSharedDebtRole, isSharedDebtStatus, matchesSharedDebtSearch } from '@/features/shared-debts/format';
 import { useSharedDebtsStore } from '@/features/shared-debts/stores/shared-debts-store';
@@ -26,7 +27,6 @@ import {
     type SharedDebtStatus
 } from '@/features/shared-debts/types';
 import SharedDebtListItem from '@/features/shared-debts/components/list/SharedDebtListItem.vue';
-import SharedDebtDetailModal from '@/features/shared-debts/components/modals/SharedDebtDetailModal.vue';
 import SharedDebtFormModal from '@/features/shared-debts/components/modals/SharedDebtFormModal.vue';
 import SharedDebtSettleModal from '@/features/shared-debts/components/modals/SharedDebtSettleModal.vue';
 
@@ -38,9 +38,7 @@ const settings = useUserSettingsStore();
 const { ensureLoaded: ensureNicknames, nicknameByUserId } = useFriendNicknameLabels();
 
 const createOpen = ref(false);
-const editTarget = ref<SharedDebt | null>(null);
 const settleTarget = ref<SharedDebt | null>(null);
-const detailTarget = ref<SharedDebt | null>(null);
 const cancelTarget = ref<SharedDebt | null>(null);
 const deleteTarget = ref<SharedDebt | null>(null);
 const localError = ref<string | null>(null);
@@ -48,7 +46,7 @@ const localError = ref<string | null>(null);
 const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
 
 /** v-model booléen dérivé d’une cible : fermer = vider la cible. */
-function targetModel(target: typeof editTarget, onClose?: () => void) {
+function targetModel(target: typeof settleTarget, onClose?: () => void) {
     return computed({
         get: () => !!target.value,
         set: (value: boolean) => {
@@ -59,9 +57,7 @@ function targetModel(target: typeof editTarget, onClose?: () => void) {
     });
 }
 
-const editOpen = targetModel(editTarget);
 const settleOpen = targetModel(settleTarget);
-const detailOpen = targetModel(detailTarget, clearDetailPath);
 const cancelOpen = targetModel(cancelTarget);
 const deleteOpen = targetModel(deleteTarget);
 
@@ -141,47 +137,25 @@ function onVisibilityChange() {
     void loadPanel(true);
 }
 
-function clearDetailPath() {
-    if (!sharedDebtPublicIdFromPath(route.path)) return;
-    void router.replace({ path: DEBTS_PATHS.shared, query: route.query });
+function listQuery(): Record<string, string> {
+    const next: Record<string, string> = {};
+    const q = queryString('q');
+    const status = queryString('status');
+    const role = queryString('role');
+    if (q) next.q = q.slice(0, SHARED_DEBT_LABEL_MAX);
+    if (status) next.status = status;
+    if (role) next.role = role;
+    return next;
 }
 
-async function openDetail(debt: SharedDebt) {
-    detailTarget.value = debt;
-    if (sharedDebtPublicIdFromPath(route.path) !== debt.publicId) {
-        await router.replace({ path: sharedDebtDetailPath(debt.publicId), query: route.query });
-    }
-    try {
-        const fresh = await store.fetchSharedDebt(debt.publicId, true);
-        if (fresh && detailTarget.value?.publicId === fresh.publicId) detailTarget.value = fresh;
-    } catch {
-        // la fiche garde la version de la liste ; un 404 est géré par la synchro de route
-    }
+function openDetail(debt: SharedDebt, edit = false) {
+    const query = listQuery();
+    if (edit) query.edit = '1';
+    void router.push({ path: sharedDebtDetailPath(debt.publicId), query });
 }
 
-async function syncDetailFromRoute() {
-    const id = sharedDebtPublicIdFromPath(route.path);
-    if (!id) {
-        detailTarget.value = null;
-        return;
-    }
-    if (detailTarget.value?.publicId === id) return;
-    try {
-        const debt = await store.fetchSharedDebt(id, true);
-        if (debt) detailTarget.value = debt;
-    } catch (e: unknown) {
-        const err = AppError.fromUnknown(e);
-        localError.value = err.status === 404 ? t('sharedDebtsPage.errors.notFound') : getErrorMessage(e);
-        clearDetailPath();
-    }
-}
-
-/** Ferme la fiche (et son chemin) avant d’ouvrir une modale d’action. */
-function fromDetail(action: (debt: SharedDebt) => void) {
-    return (debt: SharedDebt) => {
-        detailOpen.value = false;
-        action(debt);
-    };
+function onCreated(debt: SharedDebt) {
+    if (debt?.publicId) openDetail(debt);
 }
 
 function requestSettle(debt: SharedDebt) {
@@ -189,7 +163,7 @@ function requestSettle(debt: SharedDebt) {
 }
 
 function requestEdit(debt: SharedDebt) {
-    editTarget.value = debt;
+    openDetail(debt, true);
 }
 
 function requestCancel(debt: SharedDebt) {
@@ -199,11 +173,6 @@ function requestCancel(debt: SharedDebt) {
 function requestDelete(debt: SharedDebt) {
     deleteTarget.value = debt;
 }
-
-const onDetailSettle = fromDetail(requestSettle);
-const onDetailEdit = fromDetail(requestEdit);
-const onDetailCancel = fromDetail(requestCancel);
-const onDetailDelete = fromDetail(requestDelete);
 
 function handleActionError(e: unknown) {
     const err = AppError.fromUnknown(e);
@@ -254,12 +223,10 @@ onMounted(() => {
     void ensureNicknames().catch(() => undefined);
     // dette supprimée ailleurs (realtime, autre onglet) : on referme ce qui la visait
     unsubscribeDeleted = store.subscribeToDeleted((publicId) => {
-        if (detailTarget.value?.publicId === publicId) detailOpen.value = false;
-        if (editTarget.value?.publicId === publicId) editTarget.value = null;
         if (settleTarget.value?.publicId === publicId) settleTarget.value = null;
         if (cancelTarget.value?.publicId === publicId) cancelTarget.value = null;
     });
-    void loadPanel().then(() => syncDetailFromRoute());
+    void loadPanel();
 });
 
 onUnmounted(() => {
@@ -279,13 +246,6 @@ watch(filterSearch, (search, previousSearch) => {
     if (search) hasSearched.value = true;
     if (search !== previousSearch && (search || previousSearch)) searchRevealKey.value += 1;
 });
-
-watch(
-    () => route.path,
-    () => {
-        void syncDetailFromRoute();
-    }
-);
 </script>
 
 <template>
@@ -358,18 +318,8 @@ watch(
             />
         </div>
 
-        <SharedDebtFormModal v-model="createOpen" />
-        <SharedDebtFormModal v-model="editOpen" :shared-debt="editTarget" />
+        <SharedDebtFormModal v-model="createOpen" @saved="onCreated" />
         <SharedDebtSettleModal v-model="settleOpen" :shared-debt="settleTarget" />
-        <SharedDebtDetailModal
-            v-model="detailOpen"
-            :shared-debt="detailTarget"
-            :nickname-map="nicknameByUserId"
-            @settle="onDetailSettle"
-            @edit="onDetailEdit"
-            @cancel="onDetailCancel"
-            @delete="onDetailDelete"
-        />
 
         <AppConfirmationModal
             v-model="cancelOpen"

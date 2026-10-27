@@ -15,6 +15,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+    open: [loan: PersonalLoan];
     edit: [loan: PersonalLoan];
     delete: [loan: PersonalLoan];
 }>();
@@ -46,7 +47,7 @@ const status = computed(() => {
 function onActivate(event: MouseEvent) {
     if (props.acting) return;
     if (event.target instanceof Element && event.target.closest('button')) return;
-    emit('edit', props.loan);
+    emit('open', props.loan);
 }
 </script>
 
@@ -58,7 +59,7 @@ function onActivate(event: MouseEvent) {
         role="button"
         tabindex="0"
         @click="onActivate"
-        @keydown.enter.prevent="emit('edit', loan)"
+        @keydown.enter.prevent="emit('open', loan)"
     >
         <div class="loan-card__head">
             <p class="loan-card__direction" :class="{ 'is-lent': loan.direction === 'pret' }">

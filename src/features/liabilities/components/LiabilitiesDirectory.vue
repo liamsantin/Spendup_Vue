@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
- * Onglet « Passifs » : grille de blocs, filtres lus dans la query (`status` défaut `active`, `type`, `q`),
- * détail `/app/patrimoine/dettes/:publicId`. `openCreate()` exposé pour le bouton Ajouter de la page.
+ * Onglet « Passifs » : grille de blocs, filtres lus dans la query (`status` défaut `active`, `type`, `q`).
+ * Un clic ouvre la fiche ; « Modifier » ouvre cette fiche avec la modale de formulaire.
+ * `openCreate()` exposé pour le bouton Ajouter de la page.
  */
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -10,7 +11,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAssetsStore } from '@/features/assets';
-import { DEBTS_PATHS, liabilityDetailPath, liabilityPublicIdFromPath } from '@/features/liabilities/paths';
+import { liabilityDetailPath } from '@/features/liabilities/paths';
 import { LIABILITY_STATUS_ALL, isLiabilityStatus, isLiabilityType, matchesLiabilitySearch } from '@/features/liabilities/format';
 import { useLiabilitiesStore } from '@/features/liabilities/stores/liabilities-store';
 import { LIABILITY_NAME_MAX, type Liability, type LiabilityStatus, type LiabilityType } from '@/features/liabilities/types';
@@ -25,20 +26,9 @@ const store = useLiabilitiesStore();
 const assetsStore = useAssetsStore();
 
 const createOpen = ref(false);
-const editTarget = ref<Liability | null>(null);
 const remainingTarget = ref<Liability | null>(null);
 const deleteTarget = ref<Liability | null>(null);
 const localError = ref<string | null>(null);
-
-const editOpen = computed({
-    get: () => !!editTarget.value,
-    set: (value: boolean) => {
-        if (!value) {
-            editTarget.value = null;
-            clearDetailPath();
-        }
-    }
-});
 
 const remainingOpen = computed({
     get: () => !!remainingTarget.value,
@@ -112,35 +102,25 @@ function onVisibilityChange() {
     void loadDirectory(true).catch(() => undefined);
 }
 
-function clearDetailPath() {
-    if (!liabilityPublicIdFromPath(route.path)) return;
-    void router.replace({ path: DEBTS_PATHS.liabilities, query: route.query });
+function listQuery(): Record<string, string> {
+    const next: Record<string, string> = {};
+    const q = queryString('q');
+    const status = queryString('status');
+    const type = queryString('type');
+    if (q) next.q = q.slice(0, LIABILITY_NAME_MAX);
+    if (status) next.status = status;
+    if (type) next.type = type;
+    return next;
 }
 
-async function openDetail(liability: Liability, pushPath = true) {
-    try {
-        const fresh = await store.fetchLiability(liability.publicId, true);
-        editTarget.value = fresh ?? liability;
-    } catch {
-        editTarget.value = liability;
-    }
-    if (!pushPath) return;
-    if (liabilityPublicIdFromPath(route.path) === liability.publicId) return;
-    await router.replace({ path: liabilityDetailPath(liability.publicId), query: route.query });
+function openDetail(liability: Liability, edit = false) {
+    const query = listQuery();
+    if (edit) query.edit = '1';
+    void router.push({ path: liabilityDetailPath(liability.publicId), query });
 }
 
-async function syncDetailFromRoute() {
-    const id = liabilityPublicIdFromPath(route.path);
-    if (!id) return;
-    if (editTarget.value?.publicId === id) return;
-    try {
-        const liability = await store.fetchLiability(id, true);
-        if (liability) editTarget.value = liability;
-    } catch (e: unknown) {
-        const err = AppError.fromUnknown(e);
-        localError.value = err.status === 404 ? t('liabilitiesPage.errors.notFound') : getErrorMessage(e);
-        clearDetailPath();
-    }
+function onCreated(liability: Liability) {
+    if (liability?.publicId) openDetail(liability);
 }
 
 onMounted(() => {
@@ -148,9 +128,7 @@ onMounted(() => {
     if (!assetsStore.initialized) {
         void assetsStore.loadList({ active: true }).catch(() => undefined);
     }
-    void loadDirectory()
-        .then(() => syncDetailFromRoute())
-        .catch(() => undefined);
+    void loadDirectory().catch(() => undefined);
 });
 
 onUnmounted(() => {
@@ -168,13 +146,6 @@ watch(filterSearch, (search, previousSearch) => {
     if (search) hasSearched.value = true;
     if (search !== previousSearch && (search || previousSearch)) searchRevealKey.value += 1;
 });
-
-watch(
-    () => route.path,
-    () => {
-        void syncDetailFromRoute();
-    }
-);
 
 function openCreate() {
     createOpen.value = true;
@@ -244,15 +215,15 @@ async function confirmDelete() {
                     :acting="store.acting"
                     :asset-name="assetName(liability.assetPublicId)"
                     :style="{ '--i': index }"
-                    @edit="openDetail"
+                    @open="openDetail"
+                    @edit="openDetail($event, true)"
                     @remaining="requestRemaining"
                     @delete="requestDelete"
                 />
             </div>
         </div>
 
-        <LiabilityFormModal v-model="createOpen" />
-        <LiabilityFormModal v-model="editOpen" :liability="editTarget" />
+        <LiabilityFormModal v-model="createOpen" @saved="onCreated" />
         <LiabilityRemainingAmountModal v-model="remainingOpen" :liability="remainingTarget" />
 
         <AppConfirmationModal

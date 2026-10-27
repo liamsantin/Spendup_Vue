@@ -3666,11 +3666,33 @@
             "status": "Status",
             "allStatuses": "All statuses"
         },
+        "loading": "Loading…",
+        "detailTitle": {
+            "liabilities": "Debt: {name}",
+            "loans": "Loan: {name}",
+            "shared": "Debt: {name}"
+        },
         "actions": {
             "create": "Add",
             "search": "Search",
             "clearSearch": "Clear search",
-            "filter": "Filters"
+            "filter": "Filters",
+            "back": "Debts",
+            "backToList": "Back to debts",
+            "edit": "Edit"
+        },
+        "detail": {
+            "tabs": {
+                "label": "Debt sections",
+                "informations": "Information"
+            },
+            "figs": {
+                "label": "Amounts",
+                "remaining": "Outstanding",
+                "initial": "Original amount",
+                "repaid": "Already repaid",
+                "amount": "Amount"
+            }
         }
     },
     "investmentsPage": {
@@ -4125,6 +4147,7 @@
     },
     "realEstatePage": {
         "title": "Real estate",
+        "detailTitle": "Property: {name}",
         "loading": "Loading…",
         "searchPlaceholder": "Search a property, a town, an address",
         "tabs": {
@@ -4192,6 +4215,7 @@
             },
             "tabs": {
                 "label": "Property sections",
+                "informations": "Information",
                 "units": "Units",
                 "charges": "Charges",
                 "maintenance": "Works",

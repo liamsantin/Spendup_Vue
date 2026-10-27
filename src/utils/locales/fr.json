@@ -3666,11 +3666,33 @@
             "status": "Statut",
             "allStatuses": "Tous les statuts"
         },
+        "loading": "Chargement…",
+        "detailTitle": {
+            "liabilities": "Dette : {name}",
+            "loans": "Prêt : {name}",
+            "shared": "Dette : {name}"
+        },
         "actions": {
             "create": "Ajouter",
             "search": "Rechercher",
             "clearSearch": "Effacer la recherche",
-            "filter": "Filtres"
+            "filter": "Filtres",
+            "back": "Dettes",
+            "backToList": "Retour aux dettes",
+            "edit": "Modifier"
+        },
+        "detail": {
+            "tabs": {
+                "label": "Sections de la dette",
+                "informations": "Informations"
+            },
+            "figs": {
+                "label": "Montants",
+                "remaining": "Restant dû",
+                "initial": "Montant initial",
+                "repaid": "Déjà remboursé",
+                "amount": "Montant"
+            }
         }
     },
     "investmentsPage": {
@@ -4125,6 +4147,7 @@
     },
     "realEstatePage": {
         "title": "Immobilier",
+        "detailTitle": "Immobilier : {name}",
         "loading": "Chargement…",
         "searchPlaceholder": "Rechercher un bien, une ville, une adresse",
         "tabs": {
@@ -4192,6 +4215,7 @@
             },
             "tabs": {
                 "label": "Sections du bien",
+                "informations": "Informations",
                 "units": "Lots",
                 "charges": "Charges",
                 "maintenance": "Travaux",

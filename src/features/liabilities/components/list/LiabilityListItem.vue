@@ -23,6 +23,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+    open: [liability: Liability];
     edit: [liability: Liability];
     remaining: [liability: Liability];
     delete: [liability: Liability];
@@ -65,7 +66,7 @@ const status = computed(() => {
 function onActivate(event: MouseEvent) {
     if (props.acting) return;
     if (event.target instanceof Element && event.target.closest('button')) return;
-    emit('edit', props.liability);
+    emit('open', props.liability);
 }
 </script>
 
@@ -77,7 +78,7 @@ function onActivate(event: MouseEvent) {
         role="button"
         tabindex="0"
         @click="onActivate"
-        @keydown.enter.prevent="emit('edit', liability)"
+        @keydown.enter.prevent="emit('open', liability)"
     >
         <div class="liability-card__head">
             <p class="liability-card__percent">{{ t('liabilitiesPage.list.repaidPercent', { percent: percentText }) }}</p>

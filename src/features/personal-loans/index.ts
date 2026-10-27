@@ -44,5 +44,6 @@ export {
 } from '@/features/personal-loans/types';
 export { personalLoanDetailPath, personalLoanPublicIdFromPath } from '@/features/liabilities/paths';
 export { default as PersonalLoansDirectory } from '@/features/personal-loans/components/PersonalLoansDirectory.vue';
+export { default as PersonalLoanDetail } from '@/features/personal-loans/components/PersonalLoanDetail.vue';
 export { default as PersonalLoanListItem } from '@/features/personal-loans/components/list/PersonalLoanListItem.vue';
 export { default as PersonalLoanFormModal } from '@/features/personal-loans/components/modals/PersonalLoanFormModal.vue';

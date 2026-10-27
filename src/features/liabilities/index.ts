@@ -52,6 +52,7 @@ export {
 } from '@/features/liabilities/types';
 export * from '@/features/liabilities/paths';
 export { default as LiabilitiesDirectory } from '@/features/liabilities/components/LiabilitiesDirectory.vue';
+export { default as LiabilityDetail } from '@/features/liabilities/components/LiabilityDetail.vue';
 export { default as LiabilityListItem } from '@/features/liabilities/components/list/LiabilityListItem.vue';
 export { default as LiabilityFormModal } from '@/features/liabilities/components/modals/LiabilityFormModal.vue';
 export { default as LiabilityRemainingAmountModal } from '@/features/liabilities/components/modals/LiabilityRemainingAmountModal.vue';

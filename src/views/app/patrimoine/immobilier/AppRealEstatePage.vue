@@ -15,9 +15,10 @@ import {
     REAL_ESTATE_PATHS,
     RealEstateDetail,
     RealEstateDirectory,
-    formatRealEstateAddress,
-    realEstateDetailsOf,
-    realEstatePublicIdFromPath
+    activeRealEstateDetailTab,
+    realEstateDetailTabs,
+    realEstatePublicIdFromPath,
+    type RealEstateDetailTab
 } from '@/features/real-estate';
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -33,10 +34,39 @@ const notFound = ref(false);
 
 const detailId = computed(() => realEstatePublicIdFromPath(route.path));
 const detailAsset = computed(() => (detailId.value ? assetsStore.findByPublicId(detailId.value) : null));
-const detailTitle = computed(() => (notFound.value ? t('realEstatePage.title') : detailAsset.value?.name || t('realEstatePage.title')));
-const detailSubtitle = computed(() =>
-    notFound.value ? undefined : formatRealEstateAddress(realEstateDetailsOf(detailAsset.value)) || undefined
-);
+const detailTitle = computed(() => {
+    if (notFound.value || !detailAsset.value) return t('realEstatePage.title');
+    return t('realEstatePage.detailTitle', { name: detailAsset.value.name });
+});
+const detailTabs = computed(() => (notFound.value ? [] : realEstateDetailTabs()));
+const activeDetailTab = computed(() => activeRealEstateDetailTab(route.query.tab));
+
+const TAB_LABEL: Record<RealEstateDetailTab, string> = {
+    informations: 'informations',
+    lots: 'units',
+    charges: 'charges',
+    travaux: 'maintenance',
+    documents: 'documents',
+    baux: 'rentals'
+};
+
+function tabCount(tab: RealEstateDetailTab): number | null {
+    const summary = detailAsset.value?.realEstate?.summary;
+    if (!summary || tab === 'informations') return null;
+    if (tab === 'lots') return summary.unitsCount;
+    if (tab === 'charges') return summary.chargesCount;
+    if (tab === 'travaux') return summary.maintenanceCount;
+    if (tab === 'documents') return summary.documentsCount;
+    return summary.rentalsCount;
+}
+
+function selectDetailTab(tab: RealEstateDetailTab) {
+    if (tab === activeDetailTab.value) return;
+    const query = { ...route.query };
+    if (tab === detailTabs.value[0]) delete query.tab;
+    else query.tab = tab;
+    void router.replace({ path: route.path, query });
+}
 
 function queryString(name: string): string {
     const raw = route.query[name];
@@ -86,6 +116,10 @@ function onEdit() {
     detailRef.value?.openEdit();
 }
 
+function tabLabel(tab: RealEstateDetailTab) {
+    return t(`realEstatePage.detail.tabs.${TAB_LABEL[tab]}`);
+}
+
 function backToList() {
     void router.push({ path: REAL_ESTATE_PATHS.list });
 }
@@ -112,7 +146,7 @@ onUnmounted(() => {
 
 <template>
     <!-- ── fiche d’un bien ── -->
-    <AppPageShell v-if="detailId" :key="`detail-${detailId}`" :title="detailTitle" :subtitle="detailSubtitle">
+    <AppPageShell v-if="detailId" :key="`detail-${detailId}`" :title="detailTitle">
         <template #actions>
             <button type="button" class="su-btn" @click="backToList">
                 <ArrowLeftIcon :size="16" stroke-width="1.6" />
@@ -122,6 +156,27 @@ onUnmounted(() => {
                 <PencilIcon :size="16" stroke-width="1.6" />
                 {{ t('realEstatePage.actions.edit') }}
             </button>
+        </template>
+
+        <template #hero-extra>
+            <nav
+                v-if="detailTabs.length"
+                class="su-tabs su-tabs--links re-page__detail-tabs"
+                :aria-label="t('realEstatePage.detail.tabs.label')"
+            >
+                <button
+                    v-for="tab in detailTabs"
+                    :key="tab"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': activeDetailTab === tab }"
+                    :aria-current="activeDetailTab === tab ? 'page' : undefined"
+                    @click="selectDetailTab(tab)"
+                >
+                    <span class="su-tab__label" :data-label="tabLabel(tab)">{{ tabLabel(tab) }}</span>
+                    <span v-if="tabCount(tab) != null" class="re-page__tab-count">{{ tabCount(tab) }}</span>
+                </button>
+            </nav>
         </template>
 
         <div v-if="notFound" class="su-empty re-page__not-found">
@@ -180,6 +235,22 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.re-page__detail-tabs {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 16px;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.re-page__tab-count {
+    margin-left: 4px;
+    color: var(--gray);
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+}
+
 .re-page__not-found {
     display: flex;
     flex-direction: column;

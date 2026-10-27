@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
  * Onglet « Prêts » de la page Dettes : chiffres clés (je prête / j’emprunte), grille de blocs,
- * filtres lus dans la query (`status` défaut `active`, `direction`, `q`), détail `/app/patrimoine/dettes/prets/:publicId`.
+ * filtres lus dans la query (`status` défaut `active`, `direction`, `q`).
+ * Un clic ouvre la fiche ; « Modifier » ouvre cette fiche avec la modale de formulaire.
  * `openCreate()` exposé pour le bouton Ajouter de la page.
  */
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
@@ -10,7 +11,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { DEBTS_PATHS, personalLoanDetailPath, personalLoanPublicIdFromPath } from '@/features/liabilities/paths';
+import { personalLoanDetailPath } from '@/features/liabilities/paths';
 import {
     LOAN_STATUS_ALL,
     formatPersonalLoanAmount,
@@ -31,19 +32,8 @@ const store = usePersonalLoansStore();
 const settings = useUserSettingsStore();
 
 const createOpen = ref(false);
-const editTarget = ref<PersonalLoan | null>(null);
 const deleteTarget = ref<PersonalLoan | null>(null);
 const localError = ref<string | null>(null);
-
-const editOpen = computed({
-    get: () => !!editTarget.value,
-    set: (value: boolean) => {
-        if (!value) {
-            editTarget.value = null;
-            clearDetailPath();
-        }
-    }
-});
 
 const deleteOpen = computed({
     get: () => !!deleteTarget.value,
@@ -121,42 +111,30 @@ function onVisibilityChange() {
     void loadDirectory(true).catch(() => undefined);
 }
 
-function clearDetailPath() {
-    if (!personalLoanPublicIdFromPath(route.path)) return;
-    void router.replace({ path: DEBTS_PATHS.loans, query: route.query });
+function listQuery(): Record<string, string> {
+    const next: Record<string, string> = {};
+    const q = queryString('q');
+    const status = queryString('status');
+    const direction = queryString('direction');
+    if (q) next.q = q.slice(0, PERSONAL_LOAN_LABEL_MAX);
+    if (status) next.status = status;
+    if (direction) next.direction = direction;
+    return next;
 }
 
-async function openDetail(loan: PersonalLoan, pushPath = true) {
-    try {
-        const fresh = await store.fetchPersonalLoan(loan.publicId, true);
-        editTarget.value = fresh ?? loan;
-    } catch {
-        editTarget.value = loan;
-    }
-    if (!pushPath) return;
-    if (personalLoanPublicIdFromPath(route.path) === loan.publicId) return;
-    await router.replace({ path: personalLoanDetailPath(loan.publicId), query: route.query });
+function openDetail(loan: PersonalLoan, edit = false) {
+    const query = listQuery();
+    if (edit) query.edit = '1';
+    void router.push({ path: personalLoanDetailPath(loan.publicId), query });
 }
 
-async function syncDetailFromRoute() {
-    const id = personalLoanPublicIdFromPath(route.path);
-    if (!id) return;
-    if (editTarget.value?.publicId === id) return;
-    try {
-        const loan = await store.fetchPersonalLoan(id, true);
-        if (loan) editTarget.value = loan;
-    } catch (e: unknown) {
-        const err = AppError.fromUnknown(e);
-        localError.value = err.status === 404 ? t('personalLoansPage.errors.notFound') : getErrorMessage(e);
-        clearDetailPath();
-    }
+function onCreated(loan: PersonalLoan) {
+    if (loan?.publicId) openDetail(loan);
 }
 
 onMounted(() => {
     document.addEventListener('visibilitychange', onVisibilityChange);
-    void loadDirectory()
-        .then(() => syncDetailFromRoute())
-        .catch(() => undefined);
+    void loadDirectory().catch(() => undefined);
 });
 
 onUnmounted(() => {
@@ -174,13 +152,6 @@ watch(filterSearch, (search, previousSearch) => {
     if (search) hasSearched.value = true;
     if (search !== previousSearch && (search || previousSearch)) searchRevealKey.value += 1;
 });
-
-watch(
-    () => route.path,
-    () => {
-        void syncDetailFromRoute();
-    }
-);
 
 function openCreate() {
     createOpen.value = true;
@@ -253,14 +224,14 @@ async function confirmDelete() {
                     :loan="loan"
                     :acting="store.acting"
                     :style="{ '--i': index }"
-                    @edit="openDetail"
+                    @open="openDetail"
+                    @edit="openDetail($event, true)"
                     @delete="requestDelete"
                 />
             </div>
         </div>
 
-        <PersonalLoanFormModal v-model="createOpen" :default-direction="filterDirection" />
-        <PersonalLoanFormModal v-model="editOpen" :loan="editTarget" />
+        <PersonalLoanFormModal v-model="createOpen" :default-direction="filterDirection" @saved="onCreated" />
 
         <AppConfirmationModal
             v-model="deleteOpen"

@@ -1,8 +1,11 @@
 <script setup lang="ts">
+/**
+ * Menu du profil : photo, nom, identifiant, pseudo, e-mail et téléphone, puis les raccourcis.
+ */
 import { computed, ref } from 'vue';
-import { AtIcon, HashIcon, MailIcon, PhoneIcon } from 'vue-tabler-icons';
+import { AtIcon, HashIcon, LogoutIcon, MailIcon, PhoneIcon, SettingsIcon, UsersIcon } from 'vue-tabler-icons';
 import { useI18n } from 'vue-i18n';
-import { profileDD } from '@/data/admin/headerData';
+import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import { useAuthStore, useProfileAvatarUrl } from '@/features/auth';
 import { useHeaderMenuOverlay } from './useHeaderMenuOverlay';
 
@@ -17,23 +20,34 @@ const displayName = computed(() => authStore.displayName || t('header.profile.fa
 const profileDetails = computed(() => {
     const user = authStore.user;
     if (!user) return [];
-
     const entries: { key: string; value: string; icon: typeof HashIcon }[] = [];
-
     const publicId = user.userPublicId?.trim();
     if (publicId) entries.push({ key: 'id', value: publicId.replace(/^#/, ''), icon: HashIcon });
-
     const username = user.username?.trim();
     if (username) entries.push({ key: 'username', value: username, icon: AtIcon });
-
     const email = user.email?.trim();
     if (email) entries.push({ key: 'email', value: email, icon: MailIcon });
-
     const phone = user.phone?.trim();
     if (phone) entries.push({ key: 'phone', value: phone, icon: PhoneIcon });
-
     return entries;
 });
+
+const links = computed(() => [
+    {
+        key: 'account',
+        title: t('header.profile.menu.preferences.title'),
+        subtitle: t('header.profile.menu.preferences.subtitle'),
+        href: SETTINGS_PATHS.account,
+        icon: SettingsIcon
+    },
+    {
+        key: 'friends',
+        title: t('header.profile.menu.friends.title'),
+        subtitle: t('header.profile.menu.friends.subtitle'),
+        href: '/app/friends',
+        icon: UsersIcon
+    }
+]);
 
 function closeMenu() {
     menuOpen.value = false;
@@ -46,62 +60,119 @@ async function onLogout() {
 </script>
 
 <template>
-    <v-menu v-model="menuOpen" :close-on-content-click="false" :scrim="scrim" :opacity="opacity">
-        <template v-slot:activator="{ props }">
-            <button type="button" class="su-orb" v-bind="props" :aria-label="t('header.profile.title')">
-                <img :src="avatarSrc" width="40" height="40" alt="" class="obj-cover profile-dd__orb-photo" />
+    <v-menu v-model="menuOpen" location="bottom end" :offset="12" :close-on-content-click="false" :scrim="scrim" :opacity="opacity">
+        <template #activator="{ props }">
+            <button type="button" class="su-orb profile-dd__trigger" v-bind="props" :aria-label="t('header.profile.title')">
+                <img :src="avatarSrc" width="40" height="40" alt="" class="profile-dd__orb-photo" />
             </button>
         </template>
-        <v-sheet rounded="0" width="360" elevation="0" class="su-menu">
-            <div class="px-8 pt-6">
-                <h6 class="text-h5 font-weight-medium">{{ t('header.profile.title') }}</h6>
-                <div class="d-flex align-center mt-4 pb-6">
-                    <img :src="avatarSrc" width="80" height="80" alt="" class="obj-cover profile-dd__photo" />
-                    <div class="ml-3 min-w-0">
-                        <h6 class="text-h6 mb-n1">{{ displayName }}</h6>
-                        <div v-for="detail in profileDetails" :key="detail.key" class="d-flex align-center mt-1">
-                            <component :is="detail.icon" size="18" stroke-width="1.5" class="flex-shrink-0" />
-                            <span class="text-subtitle-1 font-weight-regular textSecondary ml-2 text-truncate">{{ detail.value }}</span>
-                        </div>
-                    </div>
+
+        <v-sheet rounded="0" width="340" elevation="0" class="su-menu profile-dd">
+            <div class="profile-dd__identity">
+                <img :src="avatarSrc" width="64" height="64" alt="" class="profile-dd__photo" />
+                <div class="profile-dd__who">
+                    <p class="profile-dd__name">{{ displayName }}</p>
+                    <p v-for="detail in profileDetails" :key="detail.key" class="profile-dd__line">
+                        <component :is="detail.icon" :size="16" stroke-width="1.6" />
+                        <span>{{ detail.value }}</span>
+                    </p>
                 </div>
-                <v-divider></v-divider>
             </div>
-            <div class="px-2 py-2">
-                <router-link v-for="item in profileDD" :key="item.titleKey" class="su-person" :to="item.href" @click="closeMenu">
-                    <span class="su-person__avatar profile-dd__icon">
-                        <img :src="item.avatar" width="24" height="24" :alt="t(item.titleKey)" />
-                    </span>
-                    <div class="su-person__meta">
-                        <p class="su-person__name">{{ t(item.titleKey) }}</p>
-                        <p class="su-person__sub">{{ t(item.subtitleKey) }}</p>
-                    </div>
-                </router-link>
-            </div>
-            <div class="pt-4 pb-6 px-8 text-center">
-                <button type="button" class="su-btn su-btn--ink" style="width: 100%" @click="onLogout">
-                    {{ t('header.profile.logout') }}
-                </button>
-            </div>
+
+            <router-link v-for="item in links" :key="item.key" class="su-menu-item" :to="item.href" @click="closeMenu">
+                <span class="su-menu-item__icon"><component :is="item.icon" :size="18" stroke-width="1.6" /></span>
+                <span class="profile-dd__meta">
+                    <p class="su-menu-item__title">{{ item.title }}</p>
+                    <p class="su-menu-item__desc">{{ item.subtitle }}</p>
+                </span>
+            </router-link>
+
+            <button type="button" class="su-menu-item profile-dd__logout" @click="onLogout">
+                <span class="su-menu-item__icon"><LogoutIcon :size="18" stroke-width="1.6" /></span>
+                <span class="su-menu-item__title">{{ t('header.profile.logout') }}</span>
+            </button>
         </v-sheet>
     </v-menu>
 </template>
 
 <style scoped>
+.profile-dd__trigger {
+    width: 48px;
+    height: 48px;
+    overflow: hidden;
+}
+
 .profile-dd__orb-photo,
 .profile-dd__photo {
     display: block;
+    object-fit: cover;
     border-radius: 50%;
 }
 
-.profile-dd__icon {
-    display: grid;
-    place-items: center;
-    background: var(--t-blue-bg);
+.profile-dd__orb-photo {
+    width: 48px;
+    height: 48px;
 }
 
-.profile-dd__orb-photo {
-    width: 40px;
-    height: 40px;
+.profile-dd__identity {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 10px 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line);
+}
+
+.profile-dd__photo {
+    flex: none;
+    width: 64px;
+    height: 64px;
+}
+
+.profile-dd__who {
+    min-width: 0;
+}
+
+.profile-dd__name {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-dd__line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 4px 0 0;
+    color: var(--gray);
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.profile-dd__line svg {
+    flex: none;
+}
+
+.profile-dd__line span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.profile-dd__meta {
+    min-width: 0;
+}
+
+.profile-dd__logout {
+    color: var(--danger);
+}
+
+.profile-dd__logout .su-menu-item__icon {
+    background: var(--danger-soft);
+    color: var(--danger);
 }
 </style>
