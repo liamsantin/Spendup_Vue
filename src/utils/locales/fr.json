@@ -189,11 +189,15 @@
             "menu": {
                 "preferences": {
                     "title": "Mon compte",
-                    "subtitle": "Compte, préférences & sécurité"
+                    "subtitle": "Compte et préférences"
                 },
                 "friends": {
                     "title": "Mes amis",
                     "subtitle": "Liste, demandes & découverte"
+                },
+                "security": {
+                    "title": "Sécurité",
+                    "subtitle": "Mot de passe et connexion"
                 }
             }
         },

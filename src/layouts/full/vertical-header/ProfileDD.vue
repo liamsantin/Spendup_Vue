@@ -2,8 +2,19 @@
 /**
  * Menu du profil : photo, nom, identifiant, pseudo, e-mail et téléphone, puis les raccourcis.
  */
-import { computed, ref } from 'vue';
-import { AtIcon, HashIcon, LogoutIcon, MailIcon, PhoneIcon, SettingsIcon, UsersIcon } from 'vue-tabler-icons';
+import { computed, onUnmounted, ref } from 'vue';
+import {
+    AtIcon,
+    CheckIcon,
+    CopyIcon,
+    HashIcon,
+    LogoutIcon,
+    MailIcon,
+    PhoneIcon,
+    SettingsIcon,
+    ShieldLockIcon,
+    UsersIcon
+} from 'vue-tabler-icons';
 import { useI18n } from 'vue-i18n';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import { useAuthStore, useProfileAvatarUrl } from '@/features/auth';
@@ -14,6 +25,8 @@ const authStore = useAuthStore();
 const { avatarSrc } = useProfileAvatarUrl();
 const { scrim, opacity } = useHeaderMenuOverlay();
 const menuOpen = ref(false);
+const idCopied = ref(false);
+let copyTimer: ReturnType<typeof setTimeout> | null = null;
 
 const displayName = computed(() => authStore.displayName || t('header.profile.fallbackName'));
 
@@ -46,12 +59,37 @@ const links = computed(() => [
         subtitle: t('header.profile.menu.friends.subtitle'),
         href: '/app/friends',
         icon: UsersIcon
+    },
+    {
+        key: 'security',
+        title: t('header.profile.menu.security.title'),
+        subtitle: t('header.profile.menu.security.subtitle'),
+        href: SETTINGS_PATHS.security,
+        icon: ShieldLockIcon
     }
 ]);
 
 function closeMenu() {
     menuOpen.value = false;
 }
+
+async function copyPublicId(value: string) {
+    try {
+        await navigator.clipboard.writeText(value);
+        idCopied.value = true;
+        if (copyTimer) clearTimeout(copyTimer);
+        copyTimer = setTimeout(() => {
+            idCopied.value = false;
+            copyTimer = null;
+        }, 1600);
+    } catch {
+        idCopied.value = false;
+    }
+}
+
+onUnmounted(() => {
+    if (copyTimer) clearTimeout(copyTimer);
+});
 
 async function onLogout() {
     closeMenu();
@@ -75,6 +113,16 @@ async function onLogout() {
                     <p v-for="detail in profileDetails" :key="detail.key" class="profile-dd__line">
                         <component :is="detail.icon" :size="16" stroke-width="1.6" />
                         <span>{{ detail.value }}</span>
+                        <button
+                            v-if="detail.key === 'id'"
+                            type="button"
+                            class="profile-dd__copy"
+                            :aria-label="idCopied ? t('common.copied') : t('common.copy')"
+                            @click="copyPublicId(detail.value)"
+                        >
+                            <CheckIcon v-if="idCopied" :size="14" stroke-width="1.8" />
+                            <CopyIcon v-else :size="14" stroke-width="1.6" />
+                        </button>
                     </p>
                 </div>
             </div>
@@ -159,6 +207,25 @@ async function onLogout() {
 .profile-dd__line span {
     min-width: 0;
     overflow-wrap: anywhere;
+}
+
+.profile-dd__copy {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 22px;
+    height: 22px;
+    margin-left: auto;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--gray);
+    cursor: pointer;
+}
+
+.profile-dd__copy:hover,
+.profile-dd__copy:focus-visible {
+    color: var(--ink);
 }
 
 .profile-dd__meta {
