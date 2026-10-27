@@ -1,8 +1,9 @@
 <script setup lang="ts">
 /**
  * Annuaire des actifs (hors immobilier dans la vue « Tous ») : grille de blocs, filtres d’URL
- * `type`, `state=active|sold` (défaut `active`) et recherche client `q`. La fiche s’ouvre sur
- * `/app/patrimoine/actifs/:publicId`.
+ * `type`, `state=active|sold` (défaut `active`) et recherche client `q`. Un clic ouvre la fiche
+ * (`assetDetailPath`) ; « Modifier » ouvre cette fiche avec la modale de formulaire.
+ * `openCreate` ouvre `AssetFormModal`.
  */
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -10,7 +11,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { ASSETS_PATHS, assetDetailPath, assetPublicIdFromPath } from '@/features/assets/paths';
+import { assetDetailPath } from '@/features/assets/paths';
 import { filterDirectoryAssets, isAssetType, parseAssetStateFilter } from '@/features/assets/format';
 import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import { ASSET_NAME_MAX, type Asset, type AssetType } from '@/features/assets/types';
@@ -23,19 +24,8 @@ const router = useRouter();
 const store = useAssetsStore();
 
 const createOpen = ref(false);
-const editTarget = ref<Asset | null>(null);
 const deleteTarget = ref<Asset | null>(null);
 const localError = ref<string | null>(null);
-
-const editOpen = computed({
-    get: () => !!editTarget.value,
-    set: (value: boolean) => {
-        if (!value) {
-            editTarget.value = null;
-            clearDetailPath();
-        }
-    }
-});
 
 const deleteOpen = computed({
     get: () => !!deleteTarget.value,
@@ -87,55 +77,34 @@ function onVisibilityChange() {
     void loadDirectory(true).catch(() => undefined);
 }
 
-function clearDetailPath() {
-    if (!assetPublicIdFromPath(route.path)) return;
-    void router.replace({ path: ASSETS_PATHS.list, query: route.query });
+function listQuery(): Record<string, string> {
+    const next: Record<string, string> = {};
+    const q = queryString('q');
+    const type = queryString('type');
+    const state = queryString('state');
+    if (q) next.q = q.slice(0, ASSET_NAME_MAX);
+    if (type && isAssetType(type)) next.type = type;
+    if (state === 'sold') next.state = 'sold';
+    return next;
 }
 
-async function openDetail(asset: Asset, pushPath = true) {
-    try {
-        const fresh = await store.fetchAsset(asset.publicId, true);
-        editTarget.value = fresh ?? asset;
-    } catch {
-        editTarget.value = asset;
-    }
-    if (!pushPath) return;
-    if (assetPublicIdFromPath(route.path) === asset.publicId) return;
-    await router.replace({ path: assetDetailPath(asset.publicId), query: route.query });
+function openDetail(asset: Asset, edit = false) {
+    const query = listQuery();
+    if (edit) query.edit = '1';
+    void router.push({ path: assetDetailPath(asset.publicId), query });
 }
 
-async function syncDetailFromRoute() {
-    const id = assetPublicIdFromPath(route.path);
-    if (!id) return;
-    if (editTarget.value?.publicId === id) return;
-    try {
-        const asset = await store.fetchAsset(id, true);
-        if (asset) editTarget.value = asset;
-    } catch (e: unknown) {
-        const err = AppError.fromUnknown(e);
-        localError.value = err.status === 404 ? t('assetsPage.errors.notFound') : getErrorMessage(e);
-        clearDetailPath();
-    }
+function onCreated(asset: Asset) {
+    if (asset?.publicId) openDetail(asset);
 }
-
-// Actif supprimé ailleurs (temps réel) pendant que sa fiche est ouverte : on la ferme.
-const unsubscribeDeleted = store.subscribeToDeleted((publicId) => {
-    if (editTarget.value?.publicId === publicId) {
-        editTarget.value = null;
-        clearDetailPath();
-    }
-});
 
 onMounted(() => {
     document.addEventListener('visibilitychange', onVisibilityChange);
-    void loadDirectory()
-        .then(() => syncDetailFromRoute())
-        .catch(() => undefined);
+    void loadDirectory().catch(() => undefined);
 });
 
 onUnmounted(() => {
     document.removeEventListener('visibilitychange', onVisibilityChange);
-    unsubscribeDeleted();
 });
 
 watch(
@@ -151,13 +120,6 @@ watch(filterSearch, (search, previousSearch) => {
         searchRevealKey.value += 1;
     }
 });
-
-watch(
-    () => route.path,
-    () => {
-        void syncDetailFromRoute();
-    }
-);
 
 function openCreate() {
     createOpen.value = true;
@@ -222,14 +184,14 @@ async function confirmDelete() {
                     :asset="asset"
                     :acting="store.acting"
                     :style="{ '--i': index }"
-                    @edit="openDetail"
+                    @open="openDetail"
+                    @edit="openDetail($event, true)"
                     @delete="requestDelete"
                 />
             </div>
         </div>
 
-        <AssetFormModal v-model="createOpen" :default-type="filterType" />
-        <AssetFormModal v-model="editOpen" :asset="editTarget" />
+        <AssetFormModal v-model="createOpen" :default-type="filterType" @saved="onCreated" />
 
         <AppConfirmationModal
             v-model="deleteOpen"

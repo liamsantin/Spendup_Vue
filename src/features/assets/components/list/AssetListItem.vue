@@ -16,6 +16,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+    open: [asset: Asset];
     edit: [asset: Asset];
     delete: [asset: Asset];
 }>();
@@ -61,7 +62,7 @@ const valuationText = computed(() => {
 function onActivate(event: MouseEvent) {
     if (props.acting) return;
     if (event.target instanceof Element && event.target.closest('button')) return;
-    emit('edit', props.asset);
+    emit('open', props.asset);
 }
 </script>
 
@@ -73,7 +74,7 @@ function onActivate(event: MouseEvent) {
         role="button"
         tabindex="0"
         @click="onActivate"
-        @keydown.enter.prevent="emit('edit', asset)"
+        @keydown.enter.prevent="emit('open', asset)"
     >
         <div class="asset-card__head">
             <span class="su-tile" :class="tileClass" aria-hidden="true">

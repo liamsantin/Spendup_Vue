@@ -2,6 +2,7 @@
 /**
  * Shell de page liste — titre + onglets de vue, barre d’outils optionnelle, corps scrollable.
  * `#tabs` : famille d’objets (à droite du titre).
+ * `#hero-extra` : rangée pleine largeur sous le titre et les actions (onglets d’une fiche).
  * `#toolbar` : recherche / filtre / ajouter (ligne sous le sous-titre).
  * `#actions` : actions du hero (inbox, enregistrer) — pas Filtre/Ajouter des listes.
  */
@@ -64,6 +65,7 @@ const emit = defineEmits<{
                 </div>
                 <slot name="tabs" />
             </div>
+            <slot name="hero-extra" />
             <p v-if="subtitle">{{ subtitle }}</p>
             <div v-if="$slots.toolbar" class="su-toolbar">
                 <slot name="toolbar" />

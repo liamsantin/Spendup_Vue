@@ -1,7 +1,9 @@
 <script setup lang="ts">
 /**
- * Création (`AppModalBase`) ou fiche d’un actif (`AppModalTabs`) : Détails, Valorisations (sauf
- * épargne adossée à un compte), et pour un véhicule Relevés + Entretiens.
+ * Création ou modification d’un actif.
+ * L’édition ouvre par défaut les onglets Détails, Valorisations (sauf épargne adossée à un compte)
+ * et, pour un véhicule, Relevés + Entretiens. `formOnly` limite la modale au formulaire : la fiche
+ * page porte alors ces panneaux.
  */
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -42,8 +44,10 @@ const props = withDefaults(
         lockedType?: AssetType | null;
         /** Type présélectionné à la création (modifiable). */
         defaultType?: AssetType | null;
+        /** Édition limitée au formulaire (valorisations et suivis véhicule restent sur la fiche). */
+        formOnly?: boolean;
     }>(),
-    { asset: null, lockedType: null, defaultType: null }
+    { asset: null, lockedType: null, defaultType: null, formOnly: false }
 );
 
 const emit = defineEmits<{
@@ -65,6 +69,7 @@ const fieldErrors = reactive<AssetFieldErrors>({});
 const form = reactive<AssetFormFields>(emptyAssetFormFields());
 
 const isEdit = computed(() => isEditSession.value || !!props.asset);
+const tabbedEdit = computed(() => isEdit.value && !props.formOnly);
 
 const open = computed({
     get: () => props.modelValue,
@@ -226,7 +231,7 @@ async function onSave() {
 
 <template>
     <AppModalTabs
-        v-if="isEdit"
+        v-if="tabbedEdit"
         v-model="open"
         v-model:tab="activeTab"
         :title="modalTitle"
@@ -303,7 +308,7 @@ async function onSave() {
 
         <AssetForm
             :form="form"
-            :is-edit="false"
+            :is-edit="isEdit"
             :type-locked="typeLocked"
             :allow-real-estate="lockedType === 'immobilier'"
             :value-from-account="valueFromAccount"
@@ -316,7 +321,7 @@ async function onSave() {
             <button type="button" class="su-btn" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
-            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onSave">
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || (isEdit && !canSave)" @click="onSave">
                 {{ t('common.save') }}
             </button>
         </template>

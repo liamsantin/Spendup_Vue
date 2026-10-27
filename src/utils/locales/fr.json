@@ -3317,6 +3317,7 @@
     },
     "assetsPage": {
         "title": "Actifs",
+        "detailTitle": "Actif : {name}",
         "subtitle": "Aucun actif | {count} actif · valeur totale {total} | {count} actifs · valeur totale {total}",
         "searchPlaceholder": "Rechercher un actif",
         "count": "{count} actif | {count} actif | {count} actifs",
@@ -3334,6 +3335,7 @@
             "active": "Actifs",
             "sold": "Cédés"
         },
+        "loading": "Chargement…",
         "actions": {
             "create": "Ajouter",
             "edit": "Modifier",
@@ -3342,7 +3344,9 @@
             "clearSearch": "Effacer la recherche",
             "filter": "Filtrer",
             "add": "Ajouter",
-            "deleteRow": "Supprimer la ligne"
+            "deleteRow": "Supprimer la ligne",
+            "back": "Actifs",
+            "backToList": "Retour à la liste des actifs"
         },
         "empty": {
             "list": "Aucun actif pour l’instant. Ajoutez un véhicule, une crypto, un objet de valeur ou une épargne.",
@@ -3550,7 +3554,26 @@
             }
         },
         "detail": {
+            "sold": "Cédé",
+            "boughtFor": "acheté le {date} pour {amount}",
+            "boughtOn": "acheté le {date}",
+            "averagePrice": "prix moyen {amount}",
+            "insured": "assuré {amount}",
+            "insuredUnknown": "assuré",
+            "notInsured": "non assuré",
+            "interest": "{rate} % d’intérêt",
+            "blocked": "fonds bloqués",
+            "releaseOn": "libération le {date}",
+            "figs": {
+                "label": "Chiffres clés",
+                "value": "Valeur estimée",
+                "valuedOn": "valorisé le {date}",
+                "valueFromAccount": "solde du compte",
+                "noValuation": "pas encore valorisé"
+            },
             "tabs": {
+                "label": "Sections de l’actif",
+                "informations": "Informations",
                 "details": "Détails",
                 "valuations": "Valorisations",
                 "mileages": "Relevés",

@@ -3317,6 +3317,7 @@
     },
     "assetsPage": {
         "title": "Assets",
+        "detailTitle": "Asset: {name}",
         "subtitle": "No assets | {count} asset · total value {total} | {count} assets · total value {total}",
         "searchPlaceholder": "Search an asset",
         "count": "{count} asset | {count} asset | {count} assets",
@@ -3334,6 +3335,7 @@
             "active": "Active",
             "sold": "Sold"
         },
+        "loading": "Loading…",
         "actions": {
             "create": "Add",
             "edit": "Edit",
@@ -3342,7 +3344,9 @@
             "clearSearch": "Clear search",
             "filter": "Filter",
             "add": "Add",
-            "deleteRow": "Delete row"
+            "deleteRow": "Delete row",
+            "back": "Assets",
+            "backToList": "Back to the asset list"
         },
         "empty": {
             "list": "No assets yet. Add a vehicle, a crypto, a valuable item or a savings account.",
@@ -3550,7 +3554,26 @@
             }
         },
         "detail": {
+            "sold": "Sold",
+            "boughtFor": "bought on {date} for {amount}",
+            "boughtOn": "bought on {date}",
+            "averagePrice": "average price {amount}",
+            "insured": "insured {amount}",
+            "insuredUnknown": "insured",
+            "notInsured": "not insured",
+            "interest": "{rate}% interest",
+            "blocked": "locked funds",
+            "releaseOn": "released on {date}",
+            "figs": {
+                "label": "Key figures",
+                "value": "Estimated value",
+                "valuedOn": "valued on {date}",
+                "valueFromAccount": "account balance",
+                "noValuation": "not valued yet"
+            },
             "tabs": {
+                "label": "Asset sections",
+                "informations": "Information",
                 "details": "Details",
                 "valuations": "Valuations",
                 "mileages": "Readings",

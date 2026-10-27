@@ -19,11 +19,13 @@ export {
     queryMatchesAsset,
     normalizeListQuery,
     parseAssetStateFilter,
+    assetDetailTabs,
+    activeAssetDetailTab,
     filterDirectoryAssets,
     sumAssetValuesByCurrency,
     formatAssetTotals
 } from '@/features/assets/format';
-export type { AssetTileTone, AssetStateFilter, AssetCurrencyTotal } from '@/features/assets/format';
+export type { AssetTileTone, AssetStateFilter, AssetDetailTab, AssetCurrencyTotal } from '@/features/assets/format';
 export {
     emptyAssetFormFields,
     assetToFormFields,
@@ -113,6 +115,7 @@ export {
 } from '@/features/assets/types';
 export { ASSETS_BASE, ASSETS_PATHS, assetDetailPath, assetPublicIdFromPath } from '@/features/assets/paths';
 export { default as AssetsDirectory } from '@/features/assets/components/AssetsDirectory.vue';
+export { default as AssetDetail } from '@/features/assets/components/AssetDetail.vue';
 export { default as AssetListItem } from '@/features/assets/components/list/AssetListItem.vue';
 export { default as AssetFormModal } from '@/features/assets/components/modals/AssetFormModal.vue';
 export { default as AssetValuationsPanel } from '@/features/assets/components/panels/AssetValuationsPanel.vue';

@@ -178,6 +178,24 @@ export function normalizeListQuery(query: ListAssetsQuery = {}): { type: AssetTy
 
 export type AssetStateFilter = 'active' | 'sold';
 
+export const ASSET_DETAIL_TABS = ['informations', 'valuations', 'mileages', 'maintenances'] as const;
+
+export type AssetDetailTab = (typeof ASSET_DETAIL_TABS)[number];
+
+/** Onglets de la fiche : Informations, puis Valorisations (sauf solde de compte), puis véhicule. */
+export function assetDetailTabs(asset: Pick<Asset, 'type' | 'isValueFromAccount'>): AssetDetailTab[] {
+    const tabs: AssetDetailTab[] = ['informations'];
+    if (!asset.isValueFromAccount) tabs.push('valuations');
+    if (asset.type === 'vehicule') tabs.push('mileages', 'maintenances');
+    return tabs;
+}
+
+/** Onglet d’URL, ou le premier disponible. */
+export function activeAssetDetailTab(value: unknown, tabs: readonly AssetDetailTab[]): AssetDetailTab | null {
+    if (!tabs.length) return null;
+    return typeof value === 'string' && tabs.includes(value as AssetDetailTab) ? (value as AssetDetailTab) : tabs[0];
+}
+
 /** `state` d’URL : `active` (défaut) ou `sold`. */
 export function parseAssetStateFilter(value: unknown): AssetStateFilter {
     return value === 'sold' ? 'sold' : 'active';
