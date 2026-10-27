@@ -29,6 +29,14 @@ import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/
 import { useRecurringSuggestionsStore } from '@/features/recurring-payments/stores/recurring-suggestions-store';
 import { useFilesStore } from '@/features/files/stores/files-store';
 import { useSubscriptionStore } from '@/features/subscription/stores/subscription-store';
+import { useAssetsStore } from '@/features/assets/stores/assets-store';
+import { useRealEstateStore } from '@/features/real-estate/stores/real-estate-store';
+import { useInvestmentsStore } from '@/features/investments/stores/investments-store';
+import { useInstrumentsStore } from '@/features/investments/stores/instruments-store';
+import { useLiabilitiesStore } from '@/features/liabilities/stores/liabilities-store';
+import { usePersonalLoansStore } from '@/features/personal-loans/stores/personal-loans-store';
+import { useSharedDebtsStore } from '@/features/shared-debts/stores/shared-debts-store';
+import { useNetWorthStore } from '@/features/net-worth/stores/net-worth-store';
 import { useSidebarNavStore } from '@/layouts/full/vertical-sidebar/sidebar-nav-store';
 import { isIdleSessionError } from '@/features/auth/idle-session';
 import { clearCsrfToken, rememberCsrfToken } from '@/features/auth/csrf';
@@ -181,6 +189,14 @@ export function createAuthSession() {
         useSavingsGoalsStore().reset();
         useFilesStore().reset();
         useSubscriptionStore().reset();
+        useAssetsStore().reset();
+        useRealEstateStore().reset();
+        useInvestmentsStore().reset();
+        useInstrumentsStore().reset();
+        useLiabilitiesStore().reset();
+        usePersonalLoansStore().reset();
+        useSharedDebtsStore().reset();
+        useNetWorthStore().reset();
         useSidebarNavStore().reset();
     }
 

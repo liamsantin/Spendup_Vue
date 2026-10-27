@@ -7,7 +7,8 @@ export {
     isFriendNotificationType,
     isAccountShareNotificationType,
     isBudgetAlertNotificationType,
-    isSavingsGoalReachedNotificationType
+    isSavingsGoalReachedNotificationType,
+    isSharedDebtNotificationType
 } from '@/features/notifications/link';
 export { friendLiveChipColor, isAccountShareLiveChipType, isFriendLiveChipType, isLiveChipType } from '@/features/notifications/friendChip';
 export {
@@ -26,9 +27,15 @@ export {
     parseSavingsGoalChangedPayload,
     parseImportChangedPayload,
     parseImportTemplateChangedPayload,
+    parseAssetChangedPayload,
+    parseLiabilityChangedPayload,
+    parsePersonalLoanChangedPayload,
+    parseSharedDebtChangedPayload,
     isTransactionAccountChange,
+    isInvestmentAccountChange,
     getBudgetPublicId,
-    getSavingsGoalPublicId
+    getSavingsGoalPublicId,
+    getSharedDebtPublicId
 } from '@/features/notifications/normalize';
 export {
     ensureNativeNotificationPermission,
@@ -68,6 +75,14 @@ export type {
     ImportChangedPayload,
     ImportTemplateChange,
     ImportTemplateChangedPayload,
+    AssetChange,
+    AssetChangedPayload,
+    LiabilityChange,
+    LiabilityChangedPayload,
+    PersonalLoanChange,
+    PersonalLoanChangedPayload,
+    SharedDebtChange,
+    SharedDebtChangedPayload,
     InboxClearedPayload,
     SessionEndedPayload,
     NotificationsListQuery

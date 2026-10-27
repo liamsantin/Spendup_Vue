@@ -20,7 +20,11 @@ import {
     parseBudgetChangedPayload,
     parseSavingsGoalChangedPayload,
     parseImportChangedPayload,
-    parseImportTemplateChangedPayload
+    parseImportTemplateChangedPayload,
+    parseAssetChangedPayload,
+    parseLiabilityChangedPayload,
+    parsePersonalLoanChangedPayload,
+    parseSharedDebtChangedPayload
 } from '@/features/notifications/normalize';
 import type {
     AppNotification,
@@ -37,7 +41,11 @@ import type {
     BudgetChangedPayload,
     SavingsGoalChangedPayload,
     ImportChangedPayload,
-    ImportTemplateChangedPayload
+    ImportTemplateChangedPayload,
+    AssetChangedPayload,
+    LiabilityChangedPayload,
+    PersonalLoanChangedPayload,
+    SharedDebtChangedPayload
 } from '@/features/notifications/types';
 import type { NotificationsState } from '@/features/notifications/stores/internal/notifications-state';
 import type { NotificationsNative } from '@/features/notifications/stores/internal/notifications-native';
@@ -74,6 +82,10 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         savingsGoalChangeListeners,
         importChangeListeners,
         importTemplateChangeListeners,
+        assetChangeListeners,
+        liabilityChangeListeners,
+        personalLoanChangeListeners,
+        sharedDebtChangeListeners,
         applyUnreadCount,
         upsertItem
     } = state;
@@ -177,6 +189,34 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         const parsed = parseImportTemplateChangedPayload(payload);
         if (!parsed) return;
         importTemplateChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /** Live sans inbox : actifs patrimoniaux perso (acteur inclus). */
+    function onAssetChanged(payload: AssetChangedPayload) {
+        const parsed = parseAssetChangedPayload(payload);
+        if (!parsed) return;
+        assetChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /** Live sans inbox : passifs perso (acteur inclus). */
+    function onLiabilityChanged(payload: LiabilityChangedPayload) {
+        const parsed = parseLiabilityChangedPayload(payload);
+        if (!parsed) return;
+        liabilityChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /** Live sans inbox : prêts entre personnes perso (acteur inclus). */
+    function onPersonalLoanChanged(payload: PersonalLoanChangedPayload) {
+        const parsed = parsePersonalLoanChangedPayload(payload);
+        if (!parsed) return;
+        personalLoanChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /** Live : dettes entre amis (créancier et débiteur ; l’inbox du débiteur arrive à part). */
+    function onSharedDebtChanged(payload: SharedDebtChangedPayload) {
+        const parsed = parseSharedDebtChangedPayload(payload);
+        if (!parsed) return;
+        sharedDebtChangeListeners.forEach((listener) => listener(parsed));
     }
 
     /**
@@ -364,6 +404,34 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         };
     }
 
+    function subscribeToAssetChanged(listener: (payload: AssetChangedPayload) => void) {
+        assetChangeListeners.add(listener);
+        return () => {
+            assetChangeListeners.delete(listener);
+        };
+    }
+
+    function subscribeToLiabilityChanged(listener: (payload: LiabilityChangedPayload) => void) {
+        liabilityChangeListeners.add(listener);
+        return () => {
+            liabilityChangeListeners.delete(listener);
+        };
+    }
+
+    function subscribeToPersonalLoanChanged(listener: (payload: PersonalLoanChangedPayload) => void) {
+        personalLoanChangeListeners.add(listener);
+        return () => {
+            personalLoanChangeListeners.delete(listener);
+        };
+    }
+
+    function subscribeToSharedDebtChanged(listener: (payload: SharedDebtChangedPayload) => void) {
+        sharedDebtChangeListeners.add(listener);
+        return () => {
+            sharedDebtChangeListeners.delete(listener);
+        };
+    }
+
     /** Branche les handlers SignalR sur le hub partagé. */
     function wireHubHandlers() {
         setNotificationsHubHandlers({
@@ -382,6 +450,10 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
             onSavingsGoalChanged,
             onImportChanged,
             onImportTemplateChanged,
+            onAssetChanged,
+            onLiabilityChanged,
+            onPersonalLoanChanged,
+            onSharedDebtChanged,
             onInboxCleared,
             onSessionEnded: (payload) => onSessionEnded(payload),
             onReconnected
@@ -424,6 +496,10 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         subscribeToSavingsGoalChanged,
         subscribeToImportChanged,
         subscribeToImportTemplateChanged,
+        subscribeToAssetChanged,
+        subscribeToLiabilityChanged,
+        subscribeToPersonalLoanChanged,
+        subscribeToSharedDebtChanged,
         dispatchLocalAccountChanged
     };
 }

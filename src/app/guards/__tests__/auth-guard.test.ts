@@ -93,6 +93,54 @@ vi.mock('@/features/savings-goals/stores/savings-goals-store', () => ({
     })
 }));
 
+vi.mock('@/features/assets/stores/assets-store', () => ({
+    useAssetsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/real-estate/stores/real-estate-store', () => ({
+    useRealEstateStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/investments/stores/investments-store', () => ({
+    useInvestmentsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/investments/stores/instruments-store', () => ({
+    useInstrumentsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/liabilities/stores/liabilities-store', () => ({
+    useLiabilitiesStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/personal-loans/stores/personal-loans-store', () => ({
+    usePersonalLoansStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/shared-debts/stores/shared-debts-store', () => ({
+    useSharedDebtsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/net-worth/stores/net-worth-store', () => ({
+    useNetWorthStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
 vi.mock('@/features/user-settings', () => ({
     useUserSettingsStore: () => ({
         ensureLoaded: vi.fn().mockResolvedValue(undefined),

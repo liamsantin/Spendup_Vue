@@ -3314,5 +3314,1266 @@
             "due": "Due",
             "goal": "Goal"
         }
+    },
+    "assetsPage": {
+        "title": "Assets",
+        "subtitle": "No assets | {count} asset · total value {total} | {count} assets · total value {total}",
+        "searchPlaceholder": "Search an asset",
+        "count": "{count} asset | {count} asset | {count} assets",
+        "tabs": {
+            "label": "Asset types",
+            "all": "All",
+            "vehicule": "Vehicles",
+            "crypto": "Crypto",
+            "objetValeur": "Valuables",
+            "compteEpargne": "Savings",
+            "other": "Other"
+        },
+        "filters": {
+            "state": "State",
+            "active": "Active",
+            "sold": "Sold"
+        },
+        "actions": {
+            "create": "Add",
+            "edit": "Edit",
+            "delete": "Delete",
+            "search": "Search",
+            "clearSearch": "Clear search",
+            "filter": "Filter",
+            "add": "Add",
+            "deleteRow": "Delete row"
+        },
+        "empty": {
+            "list": "No assets yet. Add a vehicle, a crypto, a valuable item or a savings account.",
+            "filtered": "No asset matches your search.",
+            "sold": "No sold assets.",
+            "type": "No assets of this type."
+        },
+        "list": {
+            "sold": "sold",
+            "lastValuation": "valued on {date}",
+            "noValuation": "not valued yet",
+            "valueFromAccount": "account balance",
+            "quantity": "{quantity} {symbol}"
+        },
+        "types": {
+            "vehicule": "Vehicle",
+            "immobilier": "Real estate",
+            "crypto": "Crypto",
+            "objetValeur": "Valuable item",
+            "compteEpargne": "Savings",
+            "other": "Other"
+        },
+        "propertyTypes": {
+            "appartement": "Apartment",
+            "maison": "House",
+            "immeuble": "Building",
+            "terrain": "Land",
+            "garage": "Garage",
+            "placeParking": "Parking space",
+            "localCommercial": "Commercial space",
+            "other": "Other"
+        },
+        "vehicleTypes": {
+            "voiture": "Car",
+            "moto": "Motorcycle",
+            "scooter": "Scooter",
+            "velo": "Bicycle",
+            "veloElectrique": "E-bike",
+            "campingCar": "Camper van",
+            "bateau": "Boat",
+            "other": "Other"
+        },
+        "fuels": {
+            "essence": "Petrol",
+            "diesel": "Diesel",
+            "hybride": "Hybrid",
+            "hybrideRechargeable": "Plug-in hybrid",
+            "electrique": "Electric",
+            "gpl": "LPG",
+            "other": "Other"
+        },
+        "valuableItemTypes": {
+            "montre": "Watch",
+            "bijou": "Jewellery",
+            "oeuvreArt": "Artwork",
+            "collection": "Collection",
+            "electronique": "Electronics",
+            "meuble": "Furniture",
+            "instrumentMusique": "Musical instrument",
+            "other": "Other"
+        },
+        "savingsTypes": {
+            "epargneClassique": "Standard savings",
+            "pilier3a": "Pillar 3a",
+            "pilier3b": "Pillar 3b",
+            "compteJeune": "Youth account",
+            "compteProjet": "Project account",
+            "other": "Other"
+        },
+        "maintenanceTypes": {
+            "vidange": "Oil change",
+            "pneus": "Tyres",
+            "freins": "Brakes",
+            "batterie": "Battery",
+            "controleTechnique": "Inspection",
+            "revision": "Service",
+            "reparation": "Repair",
+            "lavage": "Cleaning",
+            "other": "Other"
+        },
+        "valuationSources": {
+            "manuelle": "Manual",
+            "systeme": "Automatic",
+            "import": "Import"
+        },
+        "mileageSources": {
+            "manuelle": "Manual",
+            "entretien": "Maintenance"
+        },
+        "form": {
+            "createTitle": "New asset",
+            "editTitle": "Asset",
+            "subtitle": "Estimated value, acquisition and details by type.",
+            "fields": {
+                "name": "Name",
+                "type": "Type",
+                "estimatedValue": "Estimated value",
+                "currency": "Currency",
+                "acquisitionDate": "Acquisition date",
+                "acquisitionPrice": "Acquisition price",
+                "description": "Description",
+                "notes": "Notes",
+                "sold": "Sold or disposed of",
+                "brand": "Brand",
+                "model": "Model",
+                "vehicleType": "Vehicle type",
+                "fuel": "Fuel",
+                "firstRegistrationYear": "First registration",
+                "plate": "Plate",
+                "currentMileage": "Current mileage",
+                "cryptoName": "Cryptocurrency",
+                "symbol": "Symbol",
+                "quantity": "Quantity",
+                "averagePurchasePrice": "Average purchase price",
+                "platform": "Platform",
+                "itemType": "Item type",
+                "isInsured": "Insured",
+                "insuredValue": "Insured value",
+                "savingsType": "Savings type",
+                "account": "Linked account",
+                "interestRate": "Interest rate (%)",
+                "isBlocked": "Locked funds",
+                "releaseDate": "Release date",
+                "customType": "Custom type",
+                "propertyType": "Property type",
+                "addressLine1": "Address",
+                "addressLine2": "Address line 2",
+                "postalCode": "Postcode",
+                "city": "City",
+                "country": "Country",
+                "livingAreaM2": "Living area (m²)",
+                "landAreaM2": "Land area (m²)",
+                "rooms": "Rooms",
+                "bedrooms": "Bedrooms",
+                "bathrooms": "Bathrooms",
+                "floor": "Floor",
+                "hasElevator": "Lift",
+                "hasBalcony": "Balcony",
+                "hasCellar": "Cellar",
+                "hasGarage": "Garage",
+                "constructionYear": "Year built",
+                "renovationYear": "Year renovated",
+                "taxValue": "Tax value"
+            },
+            "noFuel": "Not specified",
+            "noAccount": "No account",
+            "valueFromAccountHint": "The value follows the linked account balance and cannot be entered.",
+            "estimatedValueHint": "A valuation dated today is recorded with this value.",
+            "currencyDefaultHint": "Default: {currency}. The currency cannot be changed later.",
+            "currencyLockedHint": "An asset’s currency cannot be changed.",
+            "typeLockedHint": "An asset’s type cannot be changed.",
+            "soldHint": "A sold asset stays in the “Sold” list but leaves your net worth.",
+            "accountHint": "Active accounts you own. The asset value will follow their balance.",
+            "mileageHint": "Also records today’s mileage reading.",
+            "customTypeHint": "If left empty, the asset name is used as its type.",
+            "countryHint": "Two-letter country code (e.g. CH).",
+            "taxValueHint": "For information only, never counted in net worth.",
+            "errors": {
+                "nameRequired": "Name is required.",
+                "nameTooLong": "Name exceeds 150 characters.",
+                "typeInvalid": "Choose an asset type.",
+                "estimatedValueInvalid": "Enter a valid amount.",
+                "estimatedValueNegative": "The estimated value cannot be negative.",
+                "acquisitionPriceInvalid": "Enter a valid amount.",
+                "acquisitionPriceNegative": "The acquisition price cannot be negative.",
+                "acquisitionDateInvalid": "The acquisition date is invalid.",
+                "descriptionTooLong": "Description exceeds 500 characters.",
+                "notesTooLong": "Notes exceed 2000 characters.",
+                "currencyInvalid": "Unsupported currency (CHF, EUR, USD, GBP).",
+                "currencyLocked": "An asset’s currency cannot be changed.",
+                "vehicleBrandRequired": "Brand is required.",
+                "vehicleModelRequired": "Model is required.",
+                "vehicleTypeInvalid": "Choose a vehicle type.",
+                "vehicleFuelInvalid": "Invalid fuel.",
+                "vehicleYearInvalid": "Enter a valid year.",
+                "vehicleMileageInvalid": "Enter a positive whole mileage.",
+                "cryptoNameRequired": "Cryptocurrency name is required.",
+                "cryptoSymbolRequired": "Symbol is required.",
+                "cryptoQuantityInvalid": "Enter a quantity of zero or more.",
+                "cryptoAveragePriceInvalid": "Enter a price of zero or more.",
+                "valuableItemTypeInvalid": "Choose an item type.",
+                "insuredValueInvalid": "Enter an insured value of zero or more.",
+                "savingsTypeInvalid": "Choose a savings type.",
+                "accountInvalid": "The linked account must be an active account you own.",
+                "interestRateInvalid": "Enter a rate between 0 and 100.",
+                "releaseDateInvalid": "The release date is invalid.",
+                "propertyTypeInvalid": "Choose a property type.",
+                "countryInvalid": "Country must be a two-letter code.",
+                "realEstateNumberInvalid": "Enter a valid number.",
+                "valuationDateInvalid": "Choose a valid date.",
+                "valuationDateFuture": "The date cannot be in the future.",
+                "valuationValueInvalid": "Enter a valid amount.",
+                "valuationValueNegative": "The value cannot be negative.",
+                "mileageDateInvalid": "Choose a valid date.",
+                "mileageDateFuture": "The date cannot be in the future.",
+                "kilometrageInvalid": "Enter a positive whole mileage.",
+                "maintenanceTypeInvalid": "Choose a maintenance type.",
+                "maintenanceDateInvalid": "Choose a valid date.",
+                "maintenanceDateFuture": "The date cannot be in the future.",
+                "costInvalid": "Enter a cost of zero or more.",
+                "nextMaintenanceDateInvalid": "The next maintenance date is invalid.",
+                "nextMaintenanceBeforeDate": "The next maintenance must be after this one.",
+                "nextMaintenanceKmInvalid": "Enter a positive whole mileage.",
+                "maintenanceDescriptionTooLong": "Description exceeds 500 characters."
+            }
+        },
+        "detail": {
+            "tabs": {
+                "details": "Details",
+                "valuations": "Valuations",
+                "mileages": "Readings",
+                "maintenances": "Maintenance"
+            }
+        },
+        "valuations": {
+            "hint": "One valuation per day. The displayed value is the most recent by date.",
+            "date": "Date",
+            "value": "Value",
+            "source": "Source",
+            "empty": "No valuations.",
+            "lastHint": "The last valuation cannot be deleted.",
+            "deleteTitle": "Delete this valuation?",
+            "deleteBody": "The valuation of {date} will be permanently deleted."
+        },
+        "mileages": {
+            "hint": "One reading per day. Current mileage is the most recent reading.",
+            "date": "Date",
+            "kilometrage": "Mileage",
+            "source": "Source",
+            "empty": "No mileage readings.",
+            "km": "{value} km",
+            "deleteTitle": "Delete this reading?",
+            "deleteBody": "The reading of {date} will be permanently deleted."
+        },
+        "maintenances": {
+            "hint": "A maintenance with mileage also records the reading for its date.",
+            "empty": "No maintenance.",
+            "date": "Date",
+            "type": "Type",
+            "kilometrage": "Mileage",
+            "garage": "Garage",
+            "cost": "Cost",
+            "next": "Next",
+            "nextKm": "at {value} km",
+            "createTitle": "New maintenance",
+            "editTitle": "Maintenance",
+            "subtitle": "Date, type, garage and cost of the maintenance.",
+            "fields": {
+                "maintenanceDate": "Date",
+                "maintenanceType": "Type",
+                "kilometrage": "Mileage",
+                "garage": "Garage",
+                "cost": "Cost ({currency})",
+                "description": "Description",
+                "nextMaintenanceDate": "Next maintenance",
+                "nextMaintenanceKm": "Next at (km)"
+            },
+            "noGarage": "No garage",
+            "transactionHint": "Linked to an expense transaction: the link is kept.",
+            "deleteTitle": "Delete this maintenance?",
+            "deleteBody": "The maintenance of {date} will be deleted."
+        },
+        "deleteModal": {
+            "title": "Delete this asset?",
+            "body": "“{name}” and its history will no longer be visible. To keep it out of your net worth, mark it as sold instead."
+        },
+        "errors": {
+            "notFound": "Asset not found."
+        }
+    },
+    "debtsPage": {
+        "title": "Debts",
+        "tabs": {
+            "label": "Kinds of debts",
+            "liabilities": "Liabilities",
+            "loans": "Loans",
+            "shared": "Between friends"
+        },
+        "subtitles": {
+            "liabilities": "Loans, mortgages and cards: only ongoing liabilities count toward net worth.",
+            "loans": "Money lent to or borrowed from someone outside Spend.Up."
+        },
+        "searchPlaceholder": {
+            "liabilities": "Search a liability or lender",
+            "loans": "Search a person or label"
+        },
+        "count": {
+            "liabilities": "{count} liability | {count} liability | {count} liabilities",
+            "loans": "{count} loan | {count} loan | {count} loans"
+        },
+        "filters": {
+            "type": "Type",
+            "allTypes": "All types",
+            "direction": "Direction",
+            "allDirections": "All directions",
+            "status": "Status",
+            "allStatuses": "All statuses"
+        },
+        "actions": {
+            "create": "Add",
+            "search": "Search",
+            "clearSearch": "Clear search",
+            "filter": "Filters"
+        }
+    },
+    "investmentsPage": {
+        "title": "Investments",
+        "tabs": {
+            "label": "Investment accounts"
+        },
+        "accountPicker": {
+            "label": "Investment account",
+            "search": "Search an account"
+        },
+        "actions": {
+            "createOperation": "New operation",
+            "createInstrument": "New instrument",
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "empty": {
+            "noAccount": "No investment account yet. Create an investment or crypto account to track your positions.",
+            "goToAccounts": "Manage accounts"
+        },
+        "readOnly": "Shared account: read only, only the owner records operations and prices.",
+        "instrumentTypes": {
+            "action": "Stock",
+            "etf": "ETF",
+            "obligation": "Bond",
+            "fonds": "Fund",
+            "crypto": "Crypto",
+            "other": "Other"
+        },
+        "operationTypes": {
+            "achat": "Buy",
+            "vente": "Sell",
+            "depot": "Securities deposit",
+            "retrait": "Securities withdrawal",
+            "dividende": "Dividend",
+            "frais": "Fees"
+        },
+        "positions": {
+            "title": "Positions",
+            "showClosed": "Closed positions",
+            "figsLabel": "Position totals",
+            "costBasis": "Total cost",
+            "marketValue": "Market value",
+            "unrealizedGain": "Unrealised gain",
+            "mixedCurrencies": "Mixed currencies: totals unavailable.",
+            "empty": "No open position on this account.",
+            "emptyAll": "No position on this account.",
+            "noQuote": "No price, valued at cost",
+            "updatePrice": "Update the price of {symbol}",
+            "editInstrument": "Edit instrument {symbol}",
+            "columns": {
+                "instrument": "Instrument",
+                "quantity": "Quantity",
+                "averagePrice": "Avg. cost",
+                "lastPrice": "Last price",
+                "marketValue": "Value",
+                "gain": "Gain / loss",
+                "actions": "Actions"
+            }
+        },
+        "operations": {
+            "title": "Operations log",
+            "count": "no operation | {count} operation | {count} operations",
+            "empty": "No operation recorded on this account.",
+            "emptyFiltered": "No operation matches the filters.",
+            "loadMore": "Load more",
+            "menu": "Actions for operation {symbol}",
+            "filters": {
+                "allInstruments": "All instruments",
+                "allTypes": "All types",
+                "instrument": "Instrument",
+                "type": "Type",
+                "period": "Period",
+                "periodRange": "{from} to {to}",
+                "periodFrom": "Since {date}",
+                "periodTo": "Until {date}",
+                "from": "From",
+                "to": "To",
+                "reset": "Clear filters"
+            },
+            "columns": {
+                "date": "Date",
+                "instrument": "Instrument",
+                "type": "Type",
+                "quantity": "Quantity",
+                "unitPrice": "Unit price",
+                "amount": "Amount",
+                "actions": "Actions"
+            }
+        },
+        "instrumentPicker": {
+            "placeholder": "Choose an instrument",
+            "search": "Symbol, name or ISIN",
+            "noResults": "No instrument found",
+            "emptyCatalog": "Your instrument catalogue is empty",
+            "createNamed": "Create “{name}”",
+            "create": "New instrument"
+        },
+        "instrumentForm": {
+            "createTitle": "New instrument",
+            "editTitle": "Edit instrument",
+            "subtitle": "Personal catalogue of securities, funds and cryptos",
+            "lockedHint": "Symbol, type and currency can no longer be changed once an operation exists.",
+            "lastPriceHint": "Optional: initial manual price.",
+            "lastPriceDateHint": "Empty = today.",
+            "fields": {
+                "symbol": "Symbol",
+                "name": "Name",
+                "type": "Type",
+                "currency": "Currency",
+                "isin": "ISIN",
+                "lastPrice": "Initial price",
+                "lastPriceDate": "Price date"
+            }
+        },
+        "priceForm": {
+            "title": "Price of {symbol}",
+            "subtitle": "Manual price update",
+            "noQuote": "No price recorded yet: the position is valued at cost.",
+            "currentQuote": "Last price: {price} on {date}",
+            "dateHint": "No future date.",
+            "fields": {
+                "price": "Price",
+                "date": "Date"
+            }
+        },
+        "operationForm": {
+            "createTitle": "New operation",
+            "editTitle": "Edit operation",
+            "subtitle": "Positions are recalculated from every operation",
+            "totalHint": "Calculated automatically (quantity × price), editable to include fees.",
+            "transactionHint": "Linking to an account transaction (cash leg) is not available here yet.",
+            "transactionLinked": "This operation is linked to an account transaction; the link is kept.",
+            "typeHints": {
+                "achat": "Securities bought: quantity and unit price.",
+                "vente": "Securities sold: the average cost stays the same.",
+                "depot": "Securities received from another custody account, no cash movement.",
+                "retrait": "Securities transferred to another custody account, no cash movement.",
+                "dividende": "Amount received, no quantity or price.",
+                "frais": "Fees paid, no quantity or price."
+            },
+            "fields": {
+                "instrument": "Instrument",
+                "type": "Type",
+                "date": "Date",
+                "quantity": "Quantity",
+                "unitPrice": "Unit price",
+                "totalAmount": "Total amount",
+                "notes": "Notes"
+            }
+        },
+        "deleteModal": {
+            "title": "Delete this operation?",
+            "body": "{type} of {symbol} on {date}. The position will be recalculated."
+        },
+        "errors": {
+            "symbolRequired": "Symbol is required.",
+            "symbolTooLong": "Symbol is 20 characters at most.",
+            "nameRequired": "Name is required.",
+            "nameTooLong": "Name is 150 characters at most.",
+            "typeInvalid": "Choose a type.",
+            "currencyInvalid": "Choose a currency (CHF, EUR, USD, GBP).",
+            "isinInvalid": "Invalid ISIN: 12 characters, a 2-letter country code and a check digit.",
+            "priceInvalid": "Price must be a positive number or zero.",
+            "priceNegative": "Price cannot be negative.",
+            "priceDateInvalid": "Price date is invalid.",
+            "priceDateFuture": "Price date cannot be in the future.",
+            "priceRequired": "Price is required.",
+            "instrumentRequired": "Choose an instrument.",
+            "operationTypeInvalid": "Choose an operation type.",
+            "operationDateInvalid": "Date is invalid.",
+            "operationDateFuture": "Date cannot be in the future.",
+            "quantityInvalid": "Invalid quantity (8 decimals at most).",
+            "quantityNotPositive": "Quantity must be greater than zero.",
+            "unitPriceInvalid": "Unit price must be a positive number or zero.",
+            "unitPriceNegative": "Unit price cannot be negative.",
+            "totalAmountInvalid": "Total amount is invalid.",
+            "totalAmountNotPositive": "Total amount must be greater than zero.",
+            "transactionNotAllowed": "A securities deposit or withdrawal cannot be linked to a transaction.",
+            "notesTooLong": "Notes are 500 characters at most.",
+            "instrumentNotFound": "Instrument not found.",
+            "operationNotFound": "Operation not found.",
+            "accountNotFound": "Investment account not found."
+        }
+    },
+    "liabilitiesPage": {
+        "title": "Liabilities",
+        "types": {
+            "credit": "Loan",
+            "hypotheque": "Mortgage",
+            "dettePersonnelle": "Personal debt",
+            "carteCredit": "Credit card",
+            "other": "Other"
+        },
+        "statuses": {
+            "active": "Ongoing",
+            "rembourse": "Repaid",
+            "annule": "Canceled"
+        },
+        "badges": {
+            "rembourse": "Repaid",
+            "annule": "Canceled"
+        },
+        "card": {
+            "remaining": "Remaining",
+            "initial": "Initial amount",
+            "interestRate": "Rate",
+            "plannedEndDate": "Planned end"
+        },
+        "list": {
+            "repaidPercent": "{percent} repaid",
+            "noDate": "No end date",
+            "financedAsset": "Finances {name}",
+            "unknownAsset": "an asset"
+        },
+        "empty": {
+            "list": "No liabilities yet. Add a loan, a mortgage or a card.",
+            "active": "No ongoing liabilities.",
+            "rembourse": "No repaid liabilities.",
+            "annule": "No canceled liabilities.",
+            "filtered": "No liability matches these filters."
+        },
+        "actions": {
+            "edit": "Edit",
+            "updateRemaining": "Update remaining amount",
+            "delete": "Delete"
+        },
+        "deleteModal": {
+            "title": "Delete this liability?",
+            "body": "It will disappear from your debts and from your net worth."
+        },
+        "remainingModal": {
+            "title": "Remaining amount",
+            "subtitle": "Update the remaining amount",
+            "hint": "Between 0 and {initial}. At zero, the liability is marked repaid."
+        },
+        "errors": {
+            "notFound": "Liability not found."
+        },
+        "form": {
+            "createTitle": "New liability",
+            "editTitle": "Liability",
+            "subtitle": "Loan, mortgage, card or debt owed to a lender",
+            "fields": {
+                "name": "Name",
+                "type": "Type",
+                "lender": "Lender",
+                "initialAmount": "Initial amount",
+                "remainingAmount": "Remaining",
+                "interestRate": "Annual rate",
+                "startDate": "Start",
+                "plannedEndDate": "Planned end",
+                "asset": "Financed asset",
+                "currency": "Currency",
+                "cancel": "Canceled"
+            },
+            "noLender": "No lender",
+            "lenderHint": "Bank or lender, from your payees.",
+            "noAsset": "No asset",
+            "assetHint": "The property or vehicle financed, for its summary.",
+            "remainingCreateHint": "Empty = the initial amount.",
+            "remainingEditHint": "Already repaid: {repaid}.",
+            "currencyDefaultHint": "Defaults to {currency}. Locked after creation.",
+            "currencyLockedHint": "The currency is locked after creation.",
+            "cancelHint": "A canceled liability leaves your net worth for good.",
+            "errors": {
+                "nameRequired": "Name is required.",
+                "nameTooLong": "150 characters maximum.",
+                "typeInvalid": "Pick a type.",
+                "initialAmountInvalid": "Invalid amount.",
+                "initialAmountNotPositive": "The initial amount must be greater than zero.",
+                "remainingAmountInvalid": "Invalid amount.",
+                "remainingAmountOutOfRange": "Between 0 and the initial amount.",
+                "interestRateInvalid": "Invalid rate.",
+                "interestRateOutOfRange": "Between 0 and 100 %.",
+                "startDateInvalid": "Invalid date.",
+                "plannedEndDateInvalid": "Invalid date.",
+                "plannedEndDateBeforeStart": "The planned end is before the start.",
+                "currencyInvalid": "Unsupported currency.",
+                "currencyLocked": "The currency can’t change after creation."
+            }
+        }
+    },
+    "netWorthPage": {
+        "title": "Wealth",
+        "subtitle": "Accounts, assets, investments and liabilities in one figure",
+        "hero": {
+            "label": "Net worth",
+            "asOf": "as of {date}",
+            "since": "{delta} since {date}",
+            "noSnapshot": "No snapshot to compare with yet"
+        },
+        "figs": {
+            "label": "Wealth key figures",
+            "accounts": "Accounts",
+            "assets": "Assets",
+            "liabilities": "Liabilities",
+            "investments": "Investments",
+            "withoutQuote": "none without a quote | including {count} without a quote (at cost) | including {count} without a quote (at cost)"
+        },
+        "excluded": {
+            "message": "Items in another currency are not counted: {list}.",
+            "accounts": "no account | {count} account | {count} accounts",
+            "assets": "no asset | {count} asset | {count} assets",
+            "liabilities": "no liability | {count} liability | {count} liabilities"
+        },
+        "breakdown": {
+            "title": "Breakdown",
+            "subtitle": "Accounts, assets, investments and liabilities",
+            "barLabel": "Wealth breakdown",
+            "empty": "Nothing to break down yet",
+            "none": "No item",
+            "assetsTitle": "Assets by type",
+            "liabilitiesTitle": "Liabilities by type",
+            "accountsTitle": "Accounts by type",
+            "seeAssets": "All assets",
+            "seeRealEstate": "Real estate",
+            "seeLiabilities": "All liabilities",
+            "seeAccounts": "All accounts",
+            "seeInvestments": "Investments",
+            "pretAccorde": "Loans granted",
+            "dettePartagee": "Debts between friends",
+            "compteCredit": "Credit accounts",
+            "emprunt": "Borrowings"
+        },
+        "friends": {
+            "title": "Between friends",
+            "seeAll": "See all",
+            "receivable": "Owed to me",
+            "payable": "I owe"
+        },
+        "evolution": {
+            "title": "Evolution",
+            "chartLabel": "Net worth evolution chart",
+            "today": "today",
+            "empty": "No snapshot yet",
+            "note": "A snapshot is recomputed every day for the current month."
+        },
+        "snapshot": {
+            "title": "Latest snapshot",
+            "period": "Month of {date}",
+            "income": "Monthly income",
+            "expenses": "Monthly expenses",
+            "savingsRate": "Savings rate"
+        },
+        "actions": {
+            "refresh": "Refresh",
+            "takeSnapshot": "Take a snapshot now"
+        },
+        "errors": {
+            "load": "Unable to load your wealth.",
+            "snapshot": "Unable to save the snapshot."
+        }
+    },
+    "personalLoansPage": {
+        "title": "Loans",
+        "directions": {
+            "pret": "I lend",
+            "emprunt": "I borrow"
+        },
+        "statuses": {
+            "active": "Ongoing",
+            "rembourse": "Repaid",
+            "annule": "Canceled"
+        },
+        "badges": {
+            "rembourse": "Repaid",
+            "annule": "Canceled",
+            "overdue": "Overdue"
+        },
+        "figs": {
+            "label": "Ongoing loan totals",
+            "lent": "I lend",
+            "borrowed": "I borrow",
+            "note": "Remaining on ongoing loans"
+        },
+        "card": {
+            "remaining": "Remaining",
+            "initial": "Initial amount",
+            "plannedEndDate": "Due date"
+        },
+        "list": {
+            "repaidPercent": "{percent} repaid",
+            "noDate": "No due date",
+            "noLabel": "No label",
+            "unknownCounterpart": "Unknown counterpart"
+        },
+        "empty": {
+            "list": "No loans yet. Keep track of money lent to or borrowed from someone.",
+            "active": "No ongoing loans.",
+            "rembourse": "No repaid loans.",
+            "annule": "No canceled loans.",
+            "filtered": "No loan matches these filters."
+        },
+        "actions": {
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "deleteModal": {
+            "title": "Delete this loan?",
+            "body": "It will disappear from your debts and totals."
+        },
+        "errors": {
+            "notFound": "Loan not found."
+        },
+        "form": {
+            "createTitle": "New loan",
+            "editTitle": "Loan",
+            "subtitle": "Money lent to or borrowed from someone outside Spend.Up",
+            "fields": {
+                "direction": "Direction",
+                "counterpart": "Counterpart",
+                "label": "Label",
+                "initialAmount": "Initial amount",
+                "remainingAmount": "Remaining",
+                "startDate": "Start",
+                "plannedEndDate": "Due date",
+                "currency": "Currency",
+                "notes": "Notes",
+                "cancel": "Canceled"
+            },
+            "placeholders": {
+                "label": "E.g. Marc’s car"
+            },
+            "counterpartHint": "Someone from your payees. For a Spend.Up friend, use the friends tab.",
+            "identityLockedHint": "Direction and counterpart only change on an ongoing loan.",
+            "remainingCreateHint": "Empty = the initial amount.",
+            "remainingEditHint": "Already repaid: {repaid}.",
+            "currencyDefaultHint": "Defaults to {currency}. Locked after creation.",
+            "currencyLockedHint": "The currency is locked after creation.",
+            "cancelHint": "A canceled loan leaves the totals for good.",
+            "errors": {
+                "directionInvalid": "Pick a direction.",
+                "directionLocked": "The direction can only change on an ongoing loan.",
+                "counterpartRequired": "Pick a counterpart.",
+                "counterpartLocked": "The counterpart can only change on an ongoing loan.",
+                "labelTooLong": "150 characters maximum.",
+                "initialAmountInvalid": "Invalid amount.",
+                "initialAmountNotPositive": "The initial amount must be greater than zero.",
+                "remainingAmountInvalid": "Invalid amount.",
+                "remainingAmountOutOfRange": "Between 0 and the initial amount.",
+                "startDateRequired": "The start date is required.",
+                "startDateInvalid": "Invalid date.",
+                "plannedEndDateInvalid": "Invalid date.",
+                "plannedEndDateBeforeStart": "The due date is before the start.",
+                "notesTooLong": "Notes are too long.",
+                "currencyInvalid": "Unsupported currency.",
+                "currencyLocked": "The currency can’t change after creation."
+            }
+        }
+    },
+    "realEstatePage": {
+        "title": "Real estate",
+        "loading": "Loading…",
+        "searchPlaceholder": "Search a property, a town, an address",
+        "tabs": {
+            "label": "Property status",
+            "active": "Owned",
+            "sold": "Sold"
+        },
+        "actions": {
+            "create": "Add a property",
+            "search": "Search",
+            "clearSearch": "Clear search",
+            "edit": "Edit",
+            "delete": "Delete",
+            "back": "Real estate",
+            "backToList": "Back to the property list"
+        },
+        "empty": {
+            "active": "No property yet.",
+            "sold": "No sold property.",
+            "filtered": "No property matches this search."
+        },
+        "errors": {
+            "notFound": "Property not found.",
+            "unitNotFound": "Unit not found.",
+            "chargeNotFound": "Charge not found.",
+            "maintenanceNotFound": "Works not found.",
+            "documentNotFound": "Document not found.",
+            "rentalNotFound": "Lease not found."
+        },
+        "card": {
+            "noAddress": "No address"
+        },
+        "detail": {
+            "sold": "Sold, excluded from net worth",
+            "livingArea": "{value} m² living space",
+            "landArea": "land {value} m²",
+            "rooms": "{value} rooms",
+            "builtIn": "built in {year}",
+            "renovatedIn": "renovated in {year}",
+            "boughtOn": "bought on {date}",
+            "boughtFor": "bought on {date} for {amount}",
+            "taxValue": "Tax value {amount} (for information)",
+            "amenities": {
+                "elevator": "lift",
+                "balcony": "balcony",
+                "cellar": "cellar",
+                "garage": "garage"
+            },
+            "figs": {
+                "label": "Property summary",
+                "summary": "Summary",
+                "value": "Estimated value",
+                "valuedOn": "estimated on {date}",
+                "mortgage": "Remaining mortgage",
+                "noMortgage": "no linked liability",
+                "mortgageExcluded": "{count} liability in another currency, not counted | {count} liabilities in another currency, not counted",
+                "equity": "Equity",
+                "rent": "Monthly rent",
+                "rentCharges": "+ {amount} of rental charges",
+                "activeRentals": "{count} active lease | {count} active leases",
+                "charges": "Monthly charges",
+                "perMonth": "current charges, per month",
+                "maintenance": "Total works",
+                "maintenanceCount": "no works | {count} job | {count} jobs"
+            },
+            "tabs": {
+                "label": "Property sections",
+                "units": "Units",
+                "charges": "Charges",
+                "maintenance": "Works",
+                "documents": "Documents",
+                "rentals": "Leases"
+            }
+        },
+        "units": {
+            "add": "Add a unit",
+            "count": "{count} unit | {count} units",
+            "empty": "No unit. Split the property into units to rent out only part of it.",
+            "occupied": "occupied",
+            "vacant": "vacant",
+            "notRentable": "not rentable",
+            "deleteTitle": "Delete this unit?",
+            "deleteBody": "A unit still covered by a lease cannot be deleted.",
+            "columns": {
+                "name": "Unit",
+                "type": "Type",
+                "surface": "Area",
+                "rooms": "Rooms",
+                "floor": "Floor",
+                "occupancy": "Occupancy"
+            }
+        },
+        "charges": {
+            "add": "Add a charge",
+            "count": "{count} charge | {count} charges",
+            "empty": "No charge recorded.",
+            "current": "current",
+            "notCurrent": "out of period",
+            "monthlyTotal": "Current charges, per month",
+            "deleteTitle": "Delete this charge?",
+            "deleteBody": "The charge is removed from the property summary.",
+            "columns": {
+                "name": "Charge",
+                "type": "Type",
+                "amount": "Amount",
+                "monthly": "Per month",
+                "period": "Period",
+                "unit": "Unit",
+                "tier": "Supplier",
+                "state": "State"
+            }
+        },
+        "maintenance": {
+            "add": "Add works",
+            "count": "{count} job | {count} jobs",
+            "empty": "No works recorded.",
+            "overdue": "due date passed",
+            "total": "Total works",
+            "deleteTitle": "Delete these works?",
+            "deleteBody": "The cost is removed from the property's works total.",
+            "columns": {
+                "date": "Date",
+                "type": "Type",
+                "description": "Description",
+                "unit": "Unit",
+                "provider": "Contractor",
+                "cost": "Cost",
+                "next": "Next due"
+            }
+        },
+        "documents": {
+            "add": "Add a document",
+            "count": "{count} document | {count} documents",
+            "empty": "No document linked to this property.",
+            "open": "Open {name}",
+            "unlink": "Unlink",
+            "deleteTitle": "Unlink this document?",
+            "deleteBody": "The document is removed from the property. The PDF file stays in your files.",
+            "columns": {
+                "name": "Document",
+                "type": "Type",
+                "date": "Date",
+                "unit": "Unit",
+                "size": "Size"
+            }
+        },
+        "rentals": {
+            "add": "Add a lease",
+            "count": "{count} lease | {count} leases",
+            "empty": "No lease for this property.",
+            "emptyFiltered": "No lease with this status.",
+            "statusFilter": "Status",
+            "allStatuses": "All statuses",
+            "incomeLinked": "recurring income linked",
+            "deleteTitle": "Delete this lease?",
+            "deleteBody": "The lease is deleted. Its linked recurring income, if any, is left unchanged.",
+            "columns": {
+                "tenant": "Tenant",
+                "unit": "Unit",
+                "period": "Period",
+                "rent": "Rent",
+                "charges": "Charges",
+                "deposit": "Deposit",
+                "status": "Status"
+            }
+        },
+        "unitTypes": {
+            "appartement": "Flat",
+            "chambre": "Room",
+            "localCommercial": "Commercial space",
+            "bureau": "Office",
+            "garage": "Garage",
+            "placeParking": "Parking space",
+            "cave": "Cellar",
+            "grenier": "Attic",
+            "terrain": "Land",
+            "other": "Other"
+        },
+        "chargeTypes": {
+            "ppe": "Condominium fees",
+            "syndic": "Property management",
+            "eau": "Water",
+            "electricite": "Electricity",
+            "chauffage": "Heating",
+            "assuranceBatiment": "Building insurance",
+            "taxeFonciere": "Property tax",
+            "impotImmobilier": "Real estate tax",
+            "entretien": "Upkeep",
+            "fondsRenovation": "Renovation fund",
+            "ordures": "Waste",
+            "other": "Other"
+        },
+        "periodicities": {
+            "ponctuelle": "One-off",
+            "mensuelle": "Monthly",
+            "trimestrielle": "Quarterly",
+            "semestrielle": "Half-yearly",
+            "annuelle": "Yearly"
+        },
+        "maintenanceTypes": {
+            "peinture": "Painting",
+            "plomberie": "Plumbing",
+            "electricite": "Electrical",
+            "chauffage": "Heating",
+            "toiture": "Roofing",
+            "facade": "Facade",
+            "sols": "Flooring",
+            "fenetres": "Windows",
+            "cuisine": "Kitchen",
+            "salleBain": "Bathroom",
+            "renovation": "Renovation",
+            "reparation": "Repair",
+            "controle": "Inspection",
+            "other": "Other"
+        },
+        "documentTypes": {
+            "acteVente": "Deed of sale",
+            "contratBail": "Lease agreement",
+            "hypotheque": "Mortgage",
+            "assurance": "Insurance",
+            "factureTravaux": "Works invoice",
+            "diagnostic": "Survey",
+            "photo": "Photo",
+            "plan": "Floor plan",
+            "impot": "Tax",
+            "other": "Other"
+        },
+        "rentalStatuses": {
+            "active": "Active",
+            "aVenir": "Upcoming",
+            "suspendue": "Suspended",
+            "terminee": "Ended"
+        },
+        "form": {
+            "wholeProperty": "Whole property",
+            "noTier": "None",
+            "fields": {
+                "name": "Name",
+                "unitType": "Unit type",
+                "surfaceM2": "Area",
+                "rooms": "Rooms",
+                "floor": "Floor",
+                "isRentable": "Rentable",
+                "notes": "Notes",
+                "chargeType": "Charge type",
+                "amount": "Amount",
+                "periodicity": "Frequency",
+                "startDate": "Start",
+                "endDate": "End",
+                "unit": "Unit",
+                "chargeTier": "Supplier",
+                "maintenanceDate": "Date",
+                "maintenanceType": "Type of works",
+                "description": "Description",
+                "cost": "Cost",
+                "nextMaintenanceDate": "Next due",
+                "provider": "Contractor",
+                "file": "PDF file",
+                "documentType": "Document type",
+                "documentName": "Display name",
+                "documentDate": "Document date",
+                "tenant": "Tenant",
+                "monthlyRent": "Monthly rent",
+                "monthlyCharges": "Monthly charges",
+                "deposit": "Security deposit",
+                "recurringIncome": "Recurring income",
+                "status": "Status"
+            },
+            "unit": {
+                "createTitle": "New unit",
+                "editTitle": "Edit unit",
+                "subtitle": "Part of the property: flat, room, parking space…",
+                "rentableHint": "Only a rentable unit can be leased."
+            },
+            "charge": {
+                "createTitle": "New charge",
+                "editTitle": "Edit charge",
+                "subtitle": "Amount in the property currency, brought back to a monthly figure in the summary.",
+                "periodHint": "Without dates, the charge counts as current."
+            },
+            "maintenance": {
+                "createTitle": "New works",
+                "editTitle": "Edit works",
+                "subtitle": "Past job on the property or on a unit."
+            },
+            "document": {
+                "createTitle": "New document",
+                "editTitle": "Edit document",
+                "subtitle": "A PDF from your files, filed with the property.",
+                "noFile": "Choose a file",
+                "upload": "Upload a PDF",
+                "uploading": "Uploading… {percent}%",
+                "fileHint": "Pick an existing PDF or upload one (10 MB max).",
+                "fileLockedHint": "To change the file, unlink this document and add a new one.",
+                "nameHint": "Empty: file name.",
+                "dateHint": "Empty: file date."
+            },
+            "rental": {
+                "createTitle": "New lease",
+                "editTitle": "Edit lease",
+                "subtitle": "Rental of the whole property or of a rentable unit.",
+                "noTenant": "Choose a tenant",
+                "tenantHint": "The tenant role is added to the contact automatically.",
+                "unitHint": "Without a unit, the lease covers the whole property.",
+                "noIncome": "None",
+                "incomeHint": "The recurring income that collects this rent, to be created first under Recurring.",
+                "statusAuto": "From the dates",
+                "statusHint": "Ended without an end date: the end is set to today."
+            },
+            "errors": {
+                "nameRequired": "The name is required.",
+                "nameTooLong": "The name exceeds 150 characters.",
+                "notesTooLong": "The notes exceed 2000 characters.",
+                "descriptionTooLong": "The description exceeds 500 characters.",
+                "unitTypeInvalid": "Choose a unit type.",
+                "surfaceInvalid": "Invalid area.",
+                "roomsInvalid": "Invalid number of rooms.",
+                "floorInvalid": "The floor must be a whole number.",
+                "chargeTypeInvalid": "Choose a charge type.",
+                "periodicityInvalid": "Choose a frequency.",
+                "amountInvalid": "Invalid amount.",
+                "amountNegative": "The amount cannot be negative.",
+                "startDateInvalid": "Invalid start date.",
+                "endDateInvalid": "Invalid end date.",
+                "endDateBeforeStart": "The end must come after the start.",
+                "unitInvalid": "This unit no longer exists.",
+                "unitNotRentable": "This unit is not rentable.",
+                "maintenanceTypeInvalid": "Choose a type of works.",
+                "maintenanceDateRequired": "The date is required.",
+                "maintenanceDateInvalid": "Invalid date.",
+                "maintenanceDateFuture": "The date cannot be in the future.",
+                "nextDateInvalid": "Invalid due date.",
+                "nextDateBeforeDate": "The due date must come after the works date.",
+                "costInvalid": "Invalid cost.",
+                "costNegative": "The cost cannot be negative.",
+                "documentTypeInvalid": "Choose a document type.",
+                "fileRequired": "Pick or upload a PDF.",
+                "documentDateInvalid": "Invalid document date.",
+                "tenantRequired": "The tenant is required.",
+                "rentInvalid": "Invalid rent.",
+                "rentNegative": "The rent cannot be negative.",
+                "chargesInvalid": "Invalid charges.",
+                "chargesNegative": "Charges cannot be negative.",
+                "depositInvalid": "Invalid deposit.",
+                "depositNegative": "The deposit cannot be negative.",
+                "statusInvalid": "Unsupported status."
+            }
+        }
+    },
+    "sharedDebtsPage": {
+        "title": "Debts between friends",
+        "subtitle": "What your friends owe you, and what you owe them.",
+        "createButton": "New debt",
+        "searchPlaceholder": "Search a friend or a label",
+        "figures": {
+            "owedToMe": "Owed to me",
+            "owedToMeNote": "still to be repaid by your friends",
+            "iOwe": "I owe",
+            "iOweNote": "still to be repaid to your friends"
+        },
+        "tabs": {
+            "label": "Point of view",
+            "creditor": "I'm the creditor",
+            "debtor": "I'm the debtor"
+        },
+        "roles": {
+            "creditor": "Creditor",
+            "debtor": "Debtor"
+        },
+        "statuses": {
+            "aRembourser": "To be repaid",
+            "partiellementRemboursee": "Partially repaid",
+            "remboursee": "Repaid",
+            "canceled": "Canceled",
+            "overdue": "Overdue"
+        },
+        "filters": {
+            "status": "Status",
+            "allStatuses": "All statuses"
+        },
+        "list": {
+            "dueOn": "due {date}",
+            "noDueDate": "No due date"
+        },
+        "empty": {
+            "creditor": "Nobody owes you money right now.",
+            "debtor": "You don't owe your friends anything.",
+            "status": "No debt with this status.",
+            "filtered": "No debt matches this search."
+        },
+        "actions": {
+            "settle": "Record repayment",
+            "edit": "Edit",
+            "cancel": "Cancel debt",
+            "delete": "Delete"
+        },
+        "form": {
+            "createTitle": "New debt",
+            "createSubtitle": "You paid for a friend: they owe you this amount.",
+            "editTitle": "Edit debt",
+            "editSubtitle": "Editable as long as nothing has been repaid.",
+            "fields": {
+                "friend": "Friend",
+                "transaction": "Linked expense",
+                "amount": "Amount",
+                "label": "Label",
+                "currency": "Currency",
+                "dueDate": "Due date"
+            },
+            "friendSearch": "Search a friend",
+            "friendNoResults": "No friend found",
+            "noFriends": "Add a friend first to assign them a debt.",
+            "noTransaction": "None",
+            "transactionSearch": "Search an expense",
+            "transactionNoResults": "No expense found",
+            "transactionHint": "Optional: currency and label are taken from the expense.",
+            "currencyLockedHint": "The currency can no longer be changed.",
+            "currencyFromTransactionHint": "Currency of the linked expense.",
+            "currencyDefaultHint": "Default: {currency}.",
+            "errors": {
+                "friendRequired": "Choose the friend who owes you this amount.",
+                "labelRequired": "A label is required without a linked expense.",
+                "labelTooLong": "The label exceeds 150 characters.",
+                "amountInvalid": "Invalid amount.",
+                "amountNotPositive": "The amount must be greater than zero.",
+                "dueDateInvalid": "The due date is invalid.",
+                "currencyInvalid": "Unsupported currency.",
+                "settleAmountInvalid": "Invalid amount.",
+                "settleAmountNotPositive": "The repaid amount must be greater than zero.",
+                "settleAmountAboveRemaining": "The repaid amount exceeds what is still owed.",
+                "settleDateInvalid": "The repayment date is invalid.",
+                "settleDateFuture": "The repayment date cannot be in the future."
+            }
+        },
+        "settle": {
+            "title": "Record a repayment",
+            "subtitle": "{label} · {remaining} still owed",
+            "fields": {
+                "amount": "Amount repaid",
+                "date": "Date"
+            },
+            "amountHint": "At most {remaining}. Leave empty to settle the whole debt.",
+            "confirm": "Save"
+        },
+        "detail": {
+            "title": "Debt",
+            "subtitle": {
+                "creditor": "{name} owes you",
+                "debtor": "You owe {name}"
+            },
+            "role": "My role",
+            "label": "Label",
+            "amount": "Initial amount",
+            "repaid": "Already repaid",
+            "remaining": "Still owed",
+            "status": "Status",
+            "dueDate": "Due date",
+            "createdAt": "Created on",
+            "updatedAt": "Updated on",
+            "settledAt": "Closed on",
+            "transaction": "Linked expense",
+            "noTransaction": "None",
+            "linkedTransaction": "Linked expense"
+        },
+        "cancelModal": {
+            "title": "Cancel this debt?",
+            "body": "Your friend will no longer owe you anything for this debt. It will stay visible as canceled."
+        },
+        "deleteModal": {
+            "title": "Delete this debt?",
+            "body": "The debt will disappear for you and your friend. This cannot be undone."
+        },
+        "errors": {
+            "notFound": "Debt not found."
+        }
     }
 }

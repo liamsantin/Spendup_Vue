@@ -20,6 +20,9 @@ export type NotificationType =
     | 'accountShareRoleChanged'
     | 'budgetAlert'
     | 'savingsGoalReached'
+    | 'sharedDebtCreated'
+    | 'sharedDebtSettled'
+    | 'sharedDebtCanceled'
     | 'other'
     | (string & {});
 
@@ -112,7 +115,11 @@ export type AccountChange =
     | 'transactionUpdated'
     | 'transactionDeleted'
     | 'transactionsImported'
-    | 'transactionsReverted';
+    | 'transactionsReverted'
+    | 'investmentOperationCreated'
+    | 'investmentOperationUpdated'
+    | 'investmentOperationDeleted'
+    | 'investmentPriceUpdated';
 
 export type AccountChangedPayload = {
     change: AccountChange;
@@ -189,6 +196,38 @@ export type ImportTemplateChange = 'importTemplateCreated' | 'importTemplateUpda
 export type ImportTemplateChangedPayload = {
     change: ImportTemplateChange;
     templatePublicId: string;
+};
+
+/** Payload SignalR `assetChanged` — actifs patrimoniaux perso (acteur inclus, pas d’inbox). */
+export type AssetChange = 'assetCreated' | 'assetUpdated' | 'assetDeleted' | 'assetRealEstateChanged';
+
+export type AssetChangedPayload = {
+    change: AssetChange;
+    assetPublicId: string;
+};
+
+/** Payload SignalR `liabilityChanged` — passifs perso (acteur inclus, pas d’inbox). */
+export type LiabilityChange = 'liabilityCreated' | 'liabilityUpdated' | 'liabilityDeleted';
+
+export type LiabilityChangedPayload = {
+    change: LiabilityChange;
+    liabilityPublicId: string;
+};
+
+/** Payload SignalR `personalLoanChanged` — prêts entre personnes perso (acteur inclus, pas d’inbox). */
+export type PersonalLoanChange = 'personalLoanCreated' | 'personalLoanUpdated' | 'personalLoanDeleted';
+
+export type PersonalLoanChangedPayload = {
+    change: PersonalLoanChange;
+    personalLoanPublicId: string;
+};
+
+/** Payload SignalR `sharedDebtChanged` — dettes entre amis (créancier **et** débiteur). */
+export type SharedDebtChange = 'sharedDebtCreated' | 'sharedDebtUpdated' | 'sharedDebtSettled' | 'sharedDebtCanceled' | 'sharedDebtDeleted';
+
+export type SharedDebtChangedPayload = {
+    change: SharedDebtChange;
+    sharedDebtPublicId: string;
 };
 
 export type NotificationsListQuery = {

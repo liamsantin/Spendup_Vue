@@ -5,10 +5,12 @@ import {
     getBudgetPublicId,
     getFriendshipPublicId,
     getSavingsGoalPublicId,
+    getSharedDebtPublicId,
     normalizePublicId
 } from '@/features/notifications/normalize';
 import type { AppNotification, NotificationType } from '@/features/notifications/types';
 import { SAVINGS_GOALS_PATHS, savingsGoalDetailPath } from '@/features/savings-goals/paths';
+import { DEBTS_PATHS, sharedDebtDetailPath } from '@/features/liabilities/paths';
 import { rewriteLegacySettingsLink } from '@/features/user-settings/settings-paths';
 
 /**
@@ -42,6 +44,9 @@ export function resolveNotificationLink(
     const savingsGoalsDeepLink = resolveSavingsGoalsDeepLink(notification);
     if (savingsGoalsDeepLink) return savingsGoalsDeepLink;
 
+    const sharedDebtsDeepLink = resolveSharedDebtsDeepLink(notification);
+    if (sharedDebtsDeepLink) return sharedDebtsDeepLink;
+
     if (!link) return null;
     const trimmed = link.trim();
     if (!trimmed.startsWith('/')) return null;
@@ -67,6 +72,9 @@ export function resolveNotificationLink(
     }
     if (trimmed === '/savings-goals' || trimmed.startsWith('/savings-goals/')) {
         return mapSavingsGoalsApiLink(trimmed);
+    }
+    if (trimmed === '/shared-debts' || trimmed.startsWith('/shared-debts/')) {
+        return mapSharedDebtsApiLink(trimmed);
     }
     return null;
 }
@@ -116,6 +124,11 @@ export function isBudgetAlertNotificationType(type: string): boolean {
 /** Types alerte objectif d’épargne produits en inbox. */
 export function isSavingsGoalReachedNotificationType(type: string): boolean {
     return type === 'savingsGoalReached';
+}
+
+/** Types dette entre amis produits en inbox (côté débiteur). */
+export function isSharedDebtNotificationType(type: string): boolean {
+    return type === 'sharedDebtCreated' || type === 'sharedDebtSettled' || type === 'sharedDebtCanceled';
 }
 
 /** Types partage de comptes produits en inbox. */
@@ -207,4 +220,20 @@ function resolveSavingsGoalsDeepLink(notification?: Pick<AppNotification, 'type'
         if (mapped) return mapped;
     }
     return SAVINGS_GOALS_PATHS.list;
+}
+
+function mapSharedDebtsApiLink(link: string): string {
+    const rest = link.slice('/shared-debts'.length);
+    if (rest.startsWith('/')) {
+        const id = normalizePublicId(safeDecodeSegment(rest.slice(1).split(/[?#]/)[0] ?? ''));
+        if (id) return sharedDebtDetailPath(id);
+    }
+    return DEBTS_PATHS.shared;
+}
+
+function resolveSharedDebtsDeepLink(notification?: Pick<AppNotification, 'type' | 'metadata'> | null): string | null {
+    if (!notification || !isSharedDebtNotificationType(String(notification.type))) return null;
+    const id = getSharedDebtPublicId(notification.metadata);
+    if (id) return sharedDebtDetailPath(id);
+    return DEBTS_PATHS.shared;
 }

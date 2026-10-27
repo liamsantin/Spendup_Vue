@@ -5,6 +5,11 @@ import { useNotificationsStore } from '@/features/notifications';
 import { BUDGETS_PATHS } from '@/features/budgets/paths';
 import { IMPORTS_PATHS } from '@/features/imports/paths';
 import { SAVINGS_GOALS_PATHS } from '@/features/savings-goals/paths';
+import { NET_WORTH_PATHS } from '@/features/net-worth/paths';
+import { ASSETS_PATHS } from '@/features/assets/paths';
+import { REAL_ESTATE_PATHS } from '@/features/real-estate/paths';
+import { INVESTMENTS_PATHS } from '@/features/investments/paths';
+import { DEBTS_PATHS } from '@/features/liabilities/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
 import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import {
@@ -155,6 +160,21 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, BUDGETS_PATHS.list) || pathIs(path, '/app/planning')) {
         return { openId: SHELL_NAV_IDS.planning, activeId: SHELL_NAV_IDS.budgets };
     }
+    if (pathIs(path, ASSETS_PATHS.list)) {
+        return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.assets };
+    }
+    if (pathIs(path, REAL_ESTATE_PATHS.list)) {
+        return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.realEstate };
+    }
+    if (pathIs(path, INVESTMENTS_PATHS.list)) {
+        return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.investments };
+    }
+    if (pathIs(path, DEBTS_PATHS.liabilities)) {
+        return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.debts };
+    }
+    if (pathIs(path, NET_WORTH_PATHS.overview)) {
+        return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.wealthOverview };
+    }
     if (pathIs(path, '/app/friends')) {
         return { openId: SHELL_NAV_IDS.network, activeId: SHELL_NAV_IDS.friends };
     }
@@ -239,11 +259,11 @@ export function useShellNav() {
     ]);
 
     const wealthLeaves = computed<NavLeaf[]>(() => [
-        upcoming(SHELL_NAV_IDS.wealthOverview, t('nav.items.wealthOverview'), WealthOverviewNavIcon),
-        upcoming(SHELL_NAV_IDS.assets, t('nav.items.assets'), AssetsNavIcon),
-        upcoming(SHELL_NAV_IDS.investments, t('nav.items.investments'), InvestmentsNavIcon),
-        upcoming(SHELL_NAV_IDS.realEstate, t('nav.items.realEstate'), RealEstateNavIcon),
-        upcoming(SHELL_NAV_IDS.debts, t('nav.items.debts'), DebtsNavIcon)
+        live(SHELL_NAV_IDS.wealthOverview, t('nav.items.wealthOverview'), WealthOverviewNavIcon, NET_WORTH_PATHS.overview),
+        live(SHELL_NAV_IDS.assets, t('nav.items.assets'), AssetsNavIcon, ASSETS_PATHS.list),
+        live(SHELL_NAV_IDS.investments, t('nav.items.investments'), InvestmentsNavIcon, INVESTMENTS_PATHS.list),
+        live(SHELL_NAV_IDS.realEstate, t('nav.items.realEstate'), RealEstateNavIcon, REAL_ESTATE_PATHS.list),
+        live(SHELL_NAV_IDS.debts, t('nav.items.debts'), DebtsNavIcon, DEBTS_PATHS.liabilities)
     ]);
 
     const analyticsLeaves = computed<NavLeaf[]>(() => [
@@ -267,14 +287,14 @@ export function useShellNav() {
     ]);
 
     /* Une rangée par section, comme l'ancienne colonne : un clic déplie ses pages (accordéon).
-       Patrimoine et Analyses sont annoncées (`muted`) : toutes leurs pages sont à venir. */
+       Analyses est annoncée (`muted`) : toutes ses pages sont à venir. */
     const primaryNav = computed<NavItem[]>(() => [
         live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardNavIcon, '/app'),
         section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesNavIcon, financeLeaves.value),
         section(SHELL_NAV_IDS.recurrences, t('nav.headers.recurrences'), RecurrencesNavIcon, recurrencesLeaves.value),
         section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionNavIcon, gestionLeaves.value),
         section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), PlanningNavIcon, planningLeaves.value),
-        section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), WealthNavIcon, wealthLeaves.value, true),
+        section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), WealthNavIcon, wealthLeaves.value),
         section(SHELL_NAV_IDS.analytics, t('nav.headers.analytics'), AnalyticsNavIcon, analyticsLeaves.value, true),
         section(SHELL_NAV_IDS.network, t('nav.headers.network'), NetworkNavIcon, networkLeaves.value)
     ]);

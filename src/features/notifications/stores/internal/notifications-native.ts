@@ -5,7 +5,8 @@ import {
     isBudgetAlertNotificationType,
     isFriendNotificationType,
     isSavingsGoalReachedNotificationType,
-    isSecurityNotificationType
+    isSecurityNotificationType,
+    isSharedDebtNotificationType
 } from '@/features/notifications/link';
 import { showNativeNotification } from '@/features/notifications/native-notify';
 import type { AppNotification } from '@/features/notifications/types';
@@ -34,6 +35,7 @@ export function createNotificationsNative(state: NotificationsState) {
         if (isAccountShareNotificationType(type) && !settings.pushFinancialAlerts) return false;
         if (isBudgetAlertNotificationType(type) && !settings.pushFinancialAlerts) return false;
         if (isSavingsGoalReachedNotificationType(type) && !settings.pushFinancialAlerts) return false;
+        if (isSharedDebtNotificationType(type) && !settings.pushFinancialAlerts) return false;
         // Types finance futurs — coupe le chip / OS notify si désactivé.
         if (type.toLowerCase().includes('financial') && !settings.pushFinancialAlerts) return false;
         return true;

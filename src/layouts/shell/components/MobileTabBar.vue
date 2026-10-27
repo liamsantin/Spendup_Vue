@@ -79,7 +79,7 @@ const tabs = computed<{ left: SectionTab[]; right: SectionTab[] }>(() => ({
             id: 'planning',
             label: t('nav.tabBar.planning'),
             icon: PlanningNavIcon,
-            sections: [SHELL_NAV_IDS.planning],
+            sections: [SHELL_NAV_IDS.planning, SHELL_NAV_IDS.wealth],
             root: BUDGETS_PATHS.list
         }
     ]

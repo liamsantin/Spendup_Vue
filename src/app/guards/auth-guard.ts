@@ -13,6 +13,14 @@ import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
+import { useAssetsStore } from '@/features/assets/stores/assets-store';
+import { useRealEstateStore } from '@/features/real-estate/stores/real-estate-store';
+import { useInvestmentsStore } from '@/features/investments/stores/investments-store';
+import { useInstrumentsStore } from '@/features/investments/stores/instruments-store';
+import { useLiabilitiesStore } from '@/features/liabilities/stores/liabilities-store';
+import { usePersonalLoansStore } from '@/features/personal-loans/stores/personal-loans-store';
+import { useSharedDebtsStore } from '@/features/shared-debts/stores/shared-debts-store';
+import { useNetWorthStore } from '@/features/net-worth/stores/net-worth-store';
 import { useNotificationsStore } from '@/features/notifications';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isDevAppEnv } from '@/utils/helpers/env-helpers';
@@ -70,6 +78,14 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
         useRecurringPaymentsStore().onAuthenticatedSession();
         useBudgetsStore().onAuthenticatedSession();
         useSavingsGoalsStore().onAuthenticatedSession();
+        useAssetsStore().onAuthenticatedSession();
+        useRealEstateStore().onAuthenticatedSession();
+        useInvestmentsStore().onAuthenticatedSession();
+        useInstrumentsStore().onAuthenticatedSession();
+        useLiabilitiesStore().onAuthenticatedSession();
+        usePersonalLoansStore().onAuthenticatedSession();
+        useSharedDebtsStore().onAuthenticatedSession();
+        useNetWorthStore().onAuthenticatedSession();
         return next();
     }
 

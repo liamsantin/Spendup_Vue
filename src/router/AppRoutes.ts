@@ -6,6 +6,7 @@
  *   dashboard / notifications → views/app/<page>/
  *   Paramètres               → views/app/parametres/
  *   Finances                 → views/app/finances/
+ *   Patrimoine               → views/app/patrimoine/
  */
 import type { RouteRecordRaw } from 'vue-router';
 import { SETTINGS_PATHS, resolveLegacySettingsRedirect } from '@/features/user-settings/settings-paths';
@@ -122,6 +123,41 @@ const AppRoutes: RouteRecordRaw = {
             name: 'AppSavingsGoals',
             path: 'planning/objectifs/:publicId?',
             component: () => import('@/views/app/planning/objectifs/AppSavingsGoalsPage.vue')
+        },
+        {
+            name: 'AppWealthOverview',
+            path: 'patrimoine',
+            component: () => import('@/views/app/patrimoine/AppWealthOverviewPage.vue')
+        },
+        {
+            name: 'AppAssets',
+            path: 'patrimoine/actifs/:publicId?',
+            component: () => import('@/views/app/patrimoine/actifs/AppAssetsPage.vue')
+        },
+        {
+            name: 'AppRealEstate',
+            path: 'patrimoine/immobilier/:publicId?',
+            component: () => import('@/views/app/patrimoine/immobilier/AppRealEstatePage.vue')
+        },
+        {
+            name: 'AppInvestments',
+            path: 'patrimoine/placements/:accountPublicId?',
+            component: () => import('@/views/app/patrimoine/placements/AppInvestmentsPage.vue')
+        },
+        {
+            name: 'AppPersonalLoans',
+            path: 'patrimoine/dettes/prets/:publicId?',
+            component: () => import('@/views/app/patrimoine/dettes/AppDebtsPage.vue')
+        },
+        {
+            name: 'AppSharedDebts',
+            path: 'patrimoine/dettes/amis/:publicId?',
+            component: () => import('@/views/app/patrimoine/dettes/AppDebtsPage.vue')
+        },
+        {
+            name: 'AppLiabilities',
+            path: 'patrimoine/dettes/:publicId?',
+            component: () => import('@/views/app/patrimoine/dettes/AppDebtsPage.vue')
         },
         {
             path: 'parametres',

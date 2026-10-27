@@ -16,7 +16,11 @@ import type {
     BudgetChangedPayload,
     SavingsGoalChangedPayload,
     ImportChangedPayload,
-    ImportTemplateChangedPayload
+    ImportTemplateChangedPayload,
+    AssetChangedPayload,
+    LiabilityChangedPayload,
+    PersonalLoanChangedPayload,
+    SharedDebtChangedPayload
 } from '@/features/notifications/types';
 
 export type NotificationsHubHandlers = {
@@ -33,6 +37,10 @@ export type NotificationsHubHandlers = {
     onSavingsGoalChanged?: (payload: SavingsGoalChangedPayload) => void;
     onImportChanged?: (payload: ImportChangedPayload) => void;
     onImportTemplateChanged?: (payload: ImportTemplateChangedPayload) => void;
+    onAssetChanged?: (payload: AssetChangedPayload) => void;
+    onLiabilityChanged?: (payload: LiabilityChangedPayload) => void;
+    onPersonalLoanChanged?: (payload: PersonalLoanChangedPayload) => void;
+    onSharedDebtChanged?: (payload: SharedDebtChangedPayload) => void;
     onInboxCleared?: (payload: InboxClearedPayload) => void;
     onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
     /** Après reconnexion auto : resynchroniser ce qui a pu être poussé pendant la coupure. */
@@ -83,6 +91,10 @@ function attachHandlers(conn: HubConnection) {
     conn.off('savingsGoalChanged');
     conn.off('importChanged');
     conn.off('importTemplateChanged');
+    conn.off('assetChanged');
+    conn.off('liabilityChanged');
+    conn.off('personalLoanChanged');
+    conn.off('sharedDebtChanged');
     conn.off('inboxCleared');
     conn.off('sessionEnded');
 
@@ -136,6 +148,22 @@ function attachHandlers(conn: HubConnection) {
 
     conn.on('importTemplateChanged', (payload: ImportTemplateChangedPayload) => {
         handlers.onImportTemplateChanged?.(payload);
+    });
+
+    conn.on('assetChanged', (payload: AssetChangedPayload) => {
+        handlers.onAssetChanged?.(payload);
+    });
+
+    conn.on('liabilityChanged', (payload: LiabilityChangedPayload) => {
+        handlers.onLiabilityChanged?.(payload);
+    });
+
+    conn.on('personalLoanChanged', (payload: PersonalLoanChangedPayload) => {
+        handlers.onPersonalLoanChanged?.(payload);
+    });
+
+    conn.on('sharedDebtChanged', (payload: SharedDebtChangedPayload) => {
+        handlers.onSharedDebtChanged?.(payload);
     });
 
     conn.on('inboxCleared', (payload: InboxClearedPayload) => {
