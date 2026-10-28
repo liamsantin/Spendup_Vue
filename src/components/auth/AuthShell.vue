@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ShieldCheckIcon, SparklesIcon } from 'vue-tabler-icons';
+/**
+ * Cadre des pages d’authentification, aligné sur les landings : en-tête, grille, panneau à filet.
+ */
 import { useI18n } from 'vue-i18n';
-import Logo from '@/layouts/full/logo/Logo.vue';
+import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
+import Header from '@/components/frontpages/layout/Header.vue';
 
 defineOptions({ name: 'AuthShell' });
 
@@ -20,59 +23,45 @@ const { t } = useI18n();
 </script>
 
 <template>
-    <div class="auth-shell">
-        <!-- Décor découpé dans son propre calque : il ne doit jamais agrandir la zone qui défile. -->
-        <div class="auth-shell__decor" aria-hidden="true">
-            <div class="auth-shell__glow auth-shell__glow--north" />
-            <div class="auth-shell__glow auth-shell__glow--east" />
-            <div class="auth-shell__ring" />
-        </div>
+    <div class="front-wraper auth-shell">
+        <AnnounceBar />
+        <Header />
 
-        <div class="auth-shell__layout">
-            <aside class="auth-shell__brand su-hero-in">
-                <Logo home-to="/" />
-                <div class="auth-shell__eyebrow">
-                    <SparklesIcon :size="15" stroke-width="1.8" />
-                    {{ t('auth.pages.brandEyebrow') }}
+        <main class="auth-page">
+            <div class="s-container">
+                <div class="s-grid auth-page__layout">
+                    <aside class="auth-page__copy">
+                        <span class="s-kicker"><b>01</b> {{ t('auth.pages.brandEyebrow') }}</span>
+                        <i18n-t keypath="auth.pages.welcomeSubtitle" tag="h1" class="s-display">
+                            <template #accent>
+                                <span class="s-primary">{{ t('auth.pages.welcomeSubtitleAccent') }}</span>
+                            </template>
+                        </i18n-t>
+                        <p class="auth-page__note">{{ t('auth.pages.assurance') }}</p>
+                    </aside>
+
+                    <section class="auth-page__panel">
+                        <slot name="tabs" />
+
+                        <header v-if="title || subtitle || $slots.header" class="auth-shell__head">
+                            <slot name="header">
+                                <h2 v-if="title">{{ title }}</h2>
+                                <p v-if="subtitle">{{ subtitle }}</p>
+                            </slot>
+                        </header>
+
+                        <div class="auth-shell__body">
+                            <slot />
+                        </div>
+
+                        <footer v-if="$slots.footer" class="auth-shell__foot">
+                            <slot name="footer" />
+                        </footer>
+
+                        <slot name="overlay" />
+                    </section>
                 </div>
-                <i18n-t keypath="auth.pages.welcomeSubtitle" tag="h1" class="auth-shell__headline">
-                    <template #accent>
-                        <span>{{ t('auth.pages.welcomeSubtitleAccent') }}</span>
-                    </template>
-                </i18n-t>
-
-                <p class="auth-shell__assurance">
-                    <ShieldCheckIcon :size="16" stroke-width="1.8" />
-                    {{ t('auth.pages.assurance') }}
-                </p>
-            </aside>
-
-            <div class="auth-shell__stage su-hero-visual-in">
-                <div class="auth-shell__mobile-logo">
-                    <Logo home-to="/" />
-                </div>
-
-                <section class="auth-shell__card su-surface">
-                    <slot name="tabs" />
-
-                    <header v-if="title || subtitle || $slots.header" class="auth-shell__head">
-                        <slot name="header">
-                            <h2 v-if="title">{{ title }}</h2>
-                            <p v-if="subtitle">{{ subtitle }}</p>
-                        </slot>
-                    </header>
-
-                    <div class="auth-shell__body">
-                        <slot />
-                    </div>
-
-                    <footer v-if="$slots.footer" class="auth-shell__foot">
-                        <slot name="footer" />
-                    </footer>
-
-                    <slot name="overlay" />
-                </section>
             </div>
-        </div>
+        </main>
     </div>
 </template>
