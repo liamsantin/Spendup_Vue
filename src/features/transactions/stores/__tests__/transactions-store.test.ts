@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTestPinia } from '@/test/pinia';
 import { AppError } from '@/utils/errors/app-error';
 import type { Account } from '@/features/accounts/types';
+import { ASSET_NOT_FOUND_MESSAGE } from '@/features/assets/types';
 import type { Transaction } from '@/features/transactions/types';
 import type { TransactionFormFields } from '@/features/transactions/payload';
 
@@ -114,6 +115,7 @@ const expense: Transaction = {
     movements: [{ accountPublicId: 'acc-1', amount: 42.5, sens: 'debit' }],
     files: [],
     savingsGoalPublicId: null,
+    assetPublicId: null,
     tagPublicIds: []
 };
 
@@ -131,6 +133,7 @@ function form(partial: Partial<TransactionFormFields> = {}): TransactionFormFiel
         tierPublicId: '',
         recurrencePublicId: '',
         savingsGoalPublicId: '',
+        assetPublicId: '',
         tagPublicIds: [],
         ...partial
     };
@@ -159,15 +162,17 @@ describe('useTransactionsStore', () => {
             tierPublicId: undefined,
             recurringExpensePublicId: undefined,
             recurringIncomePublicId: undefined,
+            assetPublicId: undefined,
             from: undefined,
             to: undefined,
+            search: undefined,
             page: 1,
             pageSize: 50
         });
         expect(store.items).toHaveLength(1);
 
         api.list.mockResolvedValue({ items: [expense], page: 1, pageSize: 50, totalCount: 1 });
-        await store.loadList({ accountPublicId: 'acc-1', from: '2026-09-01', to: '2026-09-30', force: true });
+        await store.loadList({ accountPublicId: 'acc-1', from: '2026-09-01', to: '2026-09-30', assetPublicId: 'asset-1', force: true });
         expect(api.list).toHaveBeenLastCalledWith({
             accountPublicId: 'acc-1',
             categoryPublicId: undefined,
@@ -175,8 +180,10 @@ describe('useTransactionsStore', () => {
             tierPublicId: undefined,
             recurringExpensePublicId: undefined,
             recurringIncomePublicId: undefined,
+            assetPublicId: 'asset-1',
             from: '2026-09-01',
             to: '2026-09-30',
+            search: undefined,
             page: 1,
             pageSize: 50
         });
@@ -262,6 +269,16 @@ describe('useTransactionsStore', () => {
         const store = useTransactionsStore();
         await expect(store.updateTransaction('tx-missing', form())).rejects.toMatchObject({ status: 404 });
         expect(store.error).toBe('Cette transaction n’est plus disponible.');
+    });
+
+    it('un 404 d’actif inconnu ne retire pas la transaction', async () => {
+        api.list.mockResolvedValue({ items: [expense], page: 1, pageSize: 50, totalCount: 1 });
+        api.update.mockRejectedValue(new AppError(ASSET_NOT_FOUND_MESSAGE, 404));
+        const store = useTransactionsStore();
+        await store.loadList();
+        await expect(store.updateTransaction('tx-1', form({ assetPublicId: 'missing' }))).rejects.toMatchObject({ status: 404 });
+        expect(store.error).toBe(ASSET_NOT_FOUND_MESSAGE);
+        expect(store.items).toHaveLength(1);
     });
 
     it('refetch sur transactionCreated et déduplique un transfert (deux events)', async () => {

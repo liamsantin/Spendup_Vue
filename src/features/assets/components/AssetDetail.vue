@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * Fiche d’un actif (hors immobilier). Onglets : Informations (caractéristiques), Valorisations
- * (sauf épargne adossée à un compte) et, pour un véhicule, Relevés · Entretiens.
+ * (sauf épargne adossée à un compte), pour un véhicule Relevés · Entretiens, puis Transactions.
  * La modification du formulaire reste dans `AssetFormModal` (`formOnly`).
  */
 defineOptions({ name: 'AssetDetail' });
@@ -16,6 +16,7 @@ import AssetFormModal from '@/features/assets/components/modals/AssetFormModal.v
 import AssetValuationsPanel from '@/features/assets/components/panels/AssetValuationsPanel.vue';
 import VehicleMaintenancesPanel from '@/features/assets/components/panels/VehicleMaintenancesPanel.vue';
 import VehicleMileagesPanel from '@/features/assets/components/panels/VehicleMileagesPanel.vue';
+import AssetTransactionsPanel from '@/features/transactions/components/AssetTransactionsPanel.vue';
 import {
     activeAssetDetailTab,
     assetDetailTabs,
@@ -274,7 +275,8 @@ defineExpose({ openEdit, reload: loadAsset });
             <div v-else-if="activeTab" class="asset-detail__panel">
                 <AssetValuationsPanel v-if="activeTab === 'valuations'" :asset="asset" />
                 <VehicleMileagesPanel v-else-if="activeTab === 'mileages'" :asset="asset" />
-                <VehicleMaintenancesPanel v-else :asset="asset" />
+                <VehicleMaintenancesPanel v-else-if="activeTab === 'maintenances'" :asset="asset" />
+                <AssetTransactionsPanel v-else-if="activeTab === 'transactions'" :asset-public-id="asset.publicId" />
             </div>
 
             <AssetFormModal v-model="editOpen" :asset="asset" form-only @saved="loadAsset" />

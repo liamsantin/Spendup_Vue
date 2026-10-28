@@ -1925,7 +1925,8 @@
             "budget": "Aucune transaction pour ce budget.",
             "budgetOut": "Aucune dépense à ajouter à cette enveloppe pour cette période.",
             "byType": "Aucune transaction de type « {type} ».",
-            "filtered": "Aucune transaction ne correspond à cette recherche."
+            "filtered": "Aucune transaction ne correspond à cette recherche.",
+            "asset": "Aucune transaction liée à cet actif."
         },
         "searchPlaceholder": "Rechercher…",
         "actions": {
@@ -1996,6 +1997,7 @@
             "createdByUnknown": "Saisi par un utilisateur",
             "myCategory": "Ma catégorie : {name}",
             "myTier": "Ma contrepartie : {name}",
+            "asset": "Actif : {name}",
             "hasAttachments": "{count} justificatif | {count} justificatif | {count} justificatifs",
             "sourceRecurrence": "Récurrence",
             "recurrenceDelta": "{delta} par rapport au prévu ({planned})",
@@ -2025,6 +2027,10 @@
             "noCategory": "Aucune",
             "noRecurrence": "Aucune",
             "noSavingsGoal": "Aucun",
+            "noAsset": "Aucun",
+            "assetSearchPlaceholder": "Rechercher un actif…",
+            "assetNoResults": "Aucun actif ne correspond.",
+            "assetHint": "Optionnel. La devise de la transaction peut différer de celle de l’actif. Sur un compte partagé, seul le propriétaire de l’actif voit ce lien.",
             "savingsGoalSearchPlaceholder": "Rechercher un objectif…",
             "savingsGoalNoResults": "Aucun objectif ne correspond.",
             "savingsGoalHint": "La transaction doit toucher le compte de l’objectif, dans la même devise. Cas typique : un transfert vers le compte d’épargne.",
@@ -2068,6 +2074,7 @@
                 "tags": "Mes tags",
                 "tier": "Ma contrepartie",
                 "savingsGoal": "Objectif d’épargne",
+                "asset": "Actif",
                 "attachments": "Justificatifs PDF"
             },
             "attachments": {
@@ -2101,7 +2108,8 @@
                 "savingsGoalInvalid": "Objectif d’épargne introuvable.",
                 "savingsGoalNoAccount": "Liez un compte à l’objectif avant d’y rattacher une transaction.",
                 "savingsGoalCurrencyMismatch": "La devise de la transaction doit être celle de l’objectif.",
-                "savingsGoalAccountMismatch": "La transaction doit toucher le compte rattaché à l’objectif."
+                "savingsGoalAccountMismatch": "La transaction doit toucher le compte rattaché à l’objectif.",
+                "assetAlreadyLinked": "Cette transaction est déjà liée à un autre actif."
             }
         },
         "count": "{count} transaction | {count} transactions",
@@ -3581,7 +3589,8 @@
                 "details": "Détails",
                 "valuations": "Valorisations",
                 "mileages": "Relevés",
-                "maintenances": "Entretiens"
+                "maintenances": "Entretiens",
+                "transactions": "Transactions"
             }
         },
         "valuations": {
@@ -4224,7 +4233,8 @@
                 "charges": "Charges",
                 "maintenance": "Travaux",
                 "documents": "Documents",
-                "rentals": "Baux"
+                "rentals": "Baux",
+                "transactions": "Transactions"
             }
         },
         "units": {

@@ -56,6 +56,8 @@ export type TransactionFormFields = {
     recurrencePublicId: string;
     /** Objectif d’épargne lié. Vide = détaché. */
     savingsGoalPublicId: string;
+    /** Actif du patrimoine. Vide = détaché. La devise peut différer de celle de la transaction. */
+    assetPublicId: string;
     tagPublicIds: string[];
 };
 
@@ -245,6 +247,8 @@ export function buildCreateTransactionPayload(
     if (goalError) return goalError;
     const savingsGoalPublicId = emptyToNull(fields.savingsGoalPublicId);
     if (savingsGoalPublicId) payload.savingsGoalPublicId = savingsGoalPublicId;
+    const assetPublicId = emptyToNull(fields.assetPublicId);
+    if (assetPublicId) payload.assetPublicId = assetPublicId;
     const tagPublicIds = sanitizeTagPublicIds(fields.tagPublicIds);
     if (tagPublicIds.length) payload.tagPublicIds = tagPublicIds;
 
@@ -286,6 +290,7 @@ export function buildUpdateTransactionPayload(
         recurringExpensePublicId: recurrence.recurringExpensePublicId,
         recurringIncomePublicId: recurrence.recurringIncomePublicId,
         savingsGoalPublicId: emptyToNull(fields.savingsGoalPublicId),
+        assetPublicId: emptyToNull(fields.assetPublicId),
         tagPublicIds: sanitizeTagPublicIds(fields.tagPublicIds)
     };
     return { ok: true, payload };
@@ -305,6 +310,7 @@ export function isTransactionFormDirty(
     if (emptyToNull(fields.tierPublicId) !== emptyToNull(transaction.tierPublicId ?? null)) return true;
     if (emptyToNull(fields.recurrencePublicId) !== emptyToNull(recurrencePublicIdFromTransaction(transaction))) return true;
     if (emptyToNull(fields.savingsGoalPublicId) !== emptyToNull(transaction.savingsGoalPublicId ?? null)) return true;
+    if (emptyToNull(fields.assetPublicId) !== emptyToNull(transaction.assetPublicId ?? null)) return true;
     if (!sameTagPublicIds(fields.tagPublicIds, transaction.tagPublicIds)) return true;
     return false;
 }
@@ -326,6 +332,7 @@ export function transactionToFormFields(transaction: Transaction): TransactionFo
         tierPublicId: transaction.tierPublicId ?? '',
         recurrencePublicId: recurrencePublicIdFromTransaction(transaction),
         savingsGoalPublicId: transaction.savingsGoalPublicId ?? '',
+        assetPublicId: transaction.assetPublicId ?? '',
         tagPublicIds: sanitizeTagPublicIds(transaction.tagPublicIds)
     };
 }
@@ -342,5 +349,6 @@ type TransactionFormDirtySource = {
     recurringExpensePublicId: string | null;
     recurringIncomePublicId: string | null;
     savingsGoalPublicId?: string | null;
+    assetPublicId?: string | null;
     tagPublicIds?: string[] | null;
 };

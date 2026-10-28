@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * Fiche d’un bien immobilier. L’onglet Informations (défaut) porte la synthèse et les
- * caractéristiques. Lots · Charges · Travaux · Documents · Baux sont les autres valeurs de `tab`.
+ * caractéristiques. Lots · Charges · Travaux · Documents · Baux · Transactions sont les autres valeurs de `tab`.
  * La barre d’onglets est rendue par la page, sous le titre.
  */
 defineOptions({ name: 'RealEstateDetail' });
@@ -28,6 +28,7 @@ import RealEstateChargesPanel from '@/features/real-estate/components/panels/Rea
 import RealEstateDocumentsPanel from '@/features/real-estate/components/panels/RealEstateDocumentsPanel.vue';
 import RealEstateMaintenancePanel from '@/features/real-estate/components/panels/RealEstateMaintenancePanel.vue';
 import RealEstateRentalsPanel from '@/features/real-estate/components/panels/RealEstateRentalsPanel.vue';
+import AssetTransactionsPanel from '@/features/transactions/components/AssetTransactionsPanel.vue';
 import RealEstateUnitsPanel from '@/features/real-estate/components/panels/RealEstateUnitsPanel.vue';
 
 const props = defineProps<{
@@ -268,7 +269,8 @@ defineExpose({ openEdit, reload: loadAsset });
                 <RealEstateChargesPanel v-else-if="activeTab === 'charges'" :asset-public-id="assetPublicId" :currency="currency" />
                 <RealEstateMaintenancePanel v-else-if="activeTab === 'travaux'" :asset-public-id="assetPublicId" :currency="currency" />
                 <RealEstateDocumentsPanel v-else-if="activeTab === 'documents'" :asset-public-id="assetPublicId" />
-                <RealEstateRentalsPanel v-else :asset-public-id="assetPublicId" :currency="currency" />
+                <RealEstateRentalsPanel v-else-if="activeTab === 'baux'" :asset-public-id="assetPublicId" :currency="currency" />
+                <AssetTransactionsPanel v-else-if="activeTab === 'transactions'" :asset-public-id="assetPublicId" />
             </div>
 
             <AssetFormModal v-model="editOpen" :asset="asset" locked-type="immobilier" @saved="loadAsset" />

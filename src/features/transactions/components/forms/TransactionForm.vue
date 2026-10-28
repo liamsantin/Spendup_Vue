@@ -40,6 +40,7 @@ export type TransactionFormFieldErrors = {
     tierPublicId?: string | null;
     recurrencePublicId?: string | null;
     savingsGoalPublicId?: string | null;
+    assetPublicId?: string | null;
 };
 
 const props = withDefaults(
@@ -53,12 +54,14 @@ const props = withDefaults(
         categoryItems: { title: string; value: string; indent?: number }[];
         recurrenceItems?: { title: string; value: string }[];
         savingsGoalItems?: { title: string; value: string }[];
+        assetItems?: { title: string; value: string }[];
         fieldErrors?: TransactionFormFieldErrors;
         archivedHint?: string | null;
         counterpartyHint?: string | null;
         categoryHint?: string | null;
         tierHint?: string | null;
         savingsGoalHint?: string | null;
+        assetHint?: string | null;
         tagsHint?: string | null;
         recurrencePlannedAmount?: number | null;
         section?: 'operation' | 'classification' | 'all';
@@ -66,12 +69,14 @@ const props = withDefaults(
     {
         recurrenceItems: () => [],
         savingsGoalItems: () => [],
+        assetItems: () => [],
         fieldErrors: () => ({}),
         archivedHint: null,
         counterpartyHint: null,
         categoryHint: null,
         tierHint: null,
         savingsGoalHint: null,
+        assetHint: null,
         tagsHint: null,
         recurrencePlannedAmount: null,
         section: 'all'
@@ -401,6 +406,27 @@ function openPaymentMethodCreate(name: string) {
                     searchable
                     :search-placeholder="t('transactionsPage.form.savingsGoalSearchPlaceholder')"
                     :no-results-label="t('transactionsPage.form.savingsGoalNoResults')"
+                />
+            </div>
+        </div>
+        <div v-if="showClassification" class="tx-form__row">
+            <label class="tx-form__label" for="tx-form-asset">
+                {{ t('transactionsPage.form.fields.asset') }}
+            </label>
+            <div class="tx-form__field">
+                <AppSelect
+                    id="tx-form-asset"
+                    v-model="form.assetPublicId"
+                    :items="assetItems"
+                    :label="t('transactionsPage.form.fields.asset')"
+                    hide-details="auto"
+                    :error="!!fieldErrors.assetPublicId"
+                    :error-messages="fieldErrors.assetPublicId || undefined"
+                    :hint="assetHint || undefined"
+                    :persistent-hint="!!assetHint"
+                    searchable
+                    :search-placeholder="t('transactionsPage.form.assetSearchPlaceholder')"
+                    :no-results-label="t('transactionsPage.form.assetNoResults')"
                 />
             </div>
         </div>

@@ -16,6 +16,8 @@ import { sanitizeTagPublicIds } from '@/features/tags/format';
 import { useTagsStore } from '@/features/tags/stores/tags-store';
 import { isSavingsGoalCompatibleWithTransactionForm } from '@/features/savings-goals/link-transactions';
 import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
+import { useAssetsStore } from '@/features/assets/stores/assets-store';
+import { ASSET_NOT_FOUND_MESSAGE } from '@/features/assets/types';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import { sourceAccountPublicId, targetAccountPublicId, todayUtcYmd } from '@/features/transactions/format';
 import { plannedAmountForRecurrenceTransaction } from '@/features/transactions/recurrence-planned';
@@ -30,6 +32,7 @@ import {
 } from '@/features/transactions/payload';
 import {
     FILE_ALREADY_LINKED_MESSAGE,
+    TRANSACTION_ASSET_ALREADY_LINKED_MESSAGE,
     TRANSACTION_FILES_MAX,
     TRANSACTION_MAX_FILES_MESSAGE,
     TRANSACTION_TYPES,
@@ -50,6 +53,8 @@ const props = defineProps<{
     transaction?: Transaction | null;
     defaultAccountPublicId?: string | null;
     defaultType?: TransactionType | null;
+    /** Préremplit l’actif (fiche patrimoine). */
+    defaultAssetPublicId?: string | null;
     /** Liste budget : afficher « Délier la transaction ». */
     showUnlinkFromBudget?: boolean;
 }>();
@@ -60,7 +65,7 @@ const emit = defineEmits<{
     unlink: [];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const accountsStore = useAccountsStore();
 const paymentMethodsStore = usePaymentMethodsStore();
 const categoriesStore = useCategoriesStore();
@@ -70,6 +75,7 @@ const recurringStore = useRecurringPaymentsStore();
 const store = useTransactionsStore();
 const filesStore = useFilesStore();
 const savingsGoalsStore = useSavingsGoalsStore();
+const assetsStore = useAssetsStore();
 
 const isEdit = ref(false);
 const editTransaction = ref<Transaction | null>(null);
@@ -91,9 +97,15 @@ const unsubscribeTagDeleted = tagsStore.subscribeToDeleted((publicId) => {
     form.tagPublicIds = form.tagPublicIds.filter((id) => id !== publicId);
 });
 
+const unsubscribeAssetDeleted = assetsStore.subscribeToDeleted((publicId) => {
+    if (form.assetPublicId !== publicId) return;
+    form.assetPublicId = '';
+});
+
 onUnmounted(() => {
     unsubscribeTierDeleted();
     unsubscribeTagDeleted();
+    unsubscribeAssetDeleted();
 });
 
 const writableAccounts = computed(() => accountsStore.accounts.filter((a) => canWriteTransactions(a)));
@@ -188,6 +200,28 @@ const savingsGoalHint = computed(() => {
     return t('transactionsPage.form.savingsGoalHint');
 });
 
+const assetItems = computed(() => {
+    const none = [{ title: t('transactionsPage.form.noAsset'), value: '' }];
+    const assets = assetsStore
+        .allKnownItems()
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name, locale.value));
+    const selected = form.assetPublicId.trim();
+    if (selected && !assets.some((asset) => asset.publicId === selected)) {
+        const extra = assetsStore.findByPublicId(selected);
+        if (extra) assets.unshift(extra);
+    }
+    return [
+        ...none,
+        ...assets.map((asset) => ({
+            title: `${asset.name} · ${t(`assetsPage.types.${asset.type}`)}`,
+            value: asset.publicId
+        }))
+    ];
+});
+
+const assetHint = computed(() => t('transactionsPage.form.assetHint'));
+
 const isSharedAccount = computed(() => {
     const account = sourceAccount.value;
     return !!account && !account.isOwned;
@@ -229,7 +263,8 @@ const CLASSIFICATION_FIELDS = new Set([
     'categoryPublicId',
     'tierPublicId',
     'recurrencePublicId',
-    'savingsGoalPublicId'
+    'savingsGoalPublicId',
+    'assetPublicId'
 ]);
 
 const form = reactive<TransactionFormFields>({
@@ -245,6 +280,7 @@ const form = reactive<TransactionFormFields>({
     tierPublicId: '',
     recurrencePublicId: '',
     savingsGoalPublicId: '',
+    assetPublicId: '',
     tagPublicIds: []
 });
 
@@ -319,6 +355,7 @@ function clearFieldErrors() {
     fieldErrors.tierPublicId = null;
     fieldErrors.recurrencePublicId = null;
     fieldErrors.savingsGoalPublicId = null;
+    fieldErrors.assetPublicId = null;
 }
 
 function payloadErrorText(code: TransactionPayloadErrorCode): string {
@@ -361,6 +398,7 @@ function resetForm() {
         form.tierPublicId = transaction.tierPublicId ?? '';
         form.recurrencePublicId = recurrencePublicIdFromTransaction(transaction);
         form.savingsGoalPublicId = transaction.savingsGoalPublicId ?? '';
+        form.assetPublicId = transaction.assetPublicId ?? '';
         form.tagPublicIds = sanitizeTagPublicIds(transaction.tagPublicIds);
         return;
     }
@@ -376,6 +414,7 @@ function resetForm() {
     form.tierPublicId = '';
     form.recurrencePublicId = '';
     form.savingsGoalPublicId = '';
+    form.assetPublicId = props.defaultAssetPublicId?.trim() || '';
     form.tagPublicIds = [];
 }
 
@@ -431,6 +470,7 @@ watch(
             filesStore.loadList().catch(() => undefined),
             filesStore.loadUsage(),
             savingsGoalsStore.loadList().catch(() => undefined),
+            assetsStore.loadList().catch(() => undefined),
             tagsStore.loadList().catch(() => undefined)
         ]);
     }
@@ -505,6 +545,18 @@ async function onSave() {
         open.value = false;
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
+        if (err.status === 404 && err.message === ASSET_NOT_FOUND_MESSAGE) {
+            fieldErrors.assetPublicId = t('assetsPage.errors.notFound');
+            activeTab.value = 'classification';
+            localError.message = t('assetsPage.errors.notFound');
+            return;
+        }
+        if (err.message === TRANSACTION_ASSET_ALREADY_LINKED_MESSAGE) {
+            fieldErrors.assetPublicId = t('transactionsPage.form.errors.assetAlreadyLinked');
+            activeTab.value = 'classification';
+            localError.message = t('transactionsPage.form.errors.assetAlreadyLinked');
+            return;
+        }
         if (err.status === 404) {
             localError.message = t('transactionsPage.errors.notFound');
             return;
@@ -625,6 +677,7 @@ function onOpenAttachment(file: TransactionFile) {
                     :category-items="categoryItems"
                     :recurrence-items="recurrenceItems"
                     :savings-goal-items="savingsGoalItems"
+                    :asset-items="assetItems"
                     :field-errors="fieldErrors"
                     :archived-hint="archivedHint"
                     :counterparty-hint="counterpartyHint"
@@ -657,11 +710,13 @@ function onOpenAttachment(file: TransactionFile) {
                     :category-items="categoryItems"
                     :recurrence-items="recurrenceItems"
                     :savings-goal-items="savingsGoalItems"
+                    :asset-items="assetItems"
                     :field-errors="fieldErrors"
                     :category-hint="isSharedAccount ? t('transactionsPage.form.categoryPersonalHint') : null"
                     :tags-hint="isSharedAccount ? t('transactionsPage.form.tagsPersonalHint') : null"
                     :tier-hint="tierHint"
                     :savings-goal-hint="savingsGoalHint"
+                    :asset-hint="assetHint"
                 />
                 <button
                     v-if="showUnlinkFromBudget"

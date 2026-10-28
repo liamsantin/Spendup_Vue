@@ -18,6 +18,7 @@ export type TransactionsListQuery = {
     tierPublicId: string | null;
     recurringExpensePublicId: string | null;
     recurringIncomePublicId: string | null;
+    assetPublicId: string | null;
     from: string | null;
     to: string | null;
     /** Recherche serveur normalisée (trim, tronquée à 100). */
@@ -31,6 +32,7 @@ export const EMPTY_LIST_QUERY: TransactionsListQuery = {
     tierPublicId: null,
     recurringExpensePublicId: null,
     recurringIncomePublicId: null,
+    assetPublicId: null,
     from: null,
     to: null,
     search: null
@@ -44,6 +46,7 @@ export function normalizeListQuery(query: ListTransactionsQuery = {}): Transacti
         tierPublicId: query.tierPublicId?.trim() || null,
         recurringExpensePublicId: query.recurringExpensePublicId?.trim() || null,
         recurringIncomePublicId: query.recurringIncomePublicId?.trim() || null,
+        assetPublicId: query.assetPublicId?.trim() || null,
         from: query.from?.trim() || null,
         to: query.to?.trim() || null,
         search: query.search?.trim().slice(0, TRANSACTION_SEARCH_MAX) || null
@@ -59,8 +62,9 @@ export function listCacheKey(query: TransactionsListQuery): string {
     const tier = query.tierPublicId || 'all';
     const recExp = query.recurringExpensePublicId || 'all';
     const recInc = query.recurringIncomePublicId || 'all';
+    const asset = query.assetPublicId || 'all';
     // `search` en dernier : il peut contenir des « : » (reconstitué par `parseListCacheKey`).
-    return `list:${account}:${from}:${to}:${category}:${tag}:${tier}:${recExp}:${recInc}:${query.search ?? ''}`;
+    return `list:${account}:${from}:${to}:${category}:${tag}:${tier}:${recExp}:${recInc}:${asset}:${query.search ?? ''}`;
 }
 
 export function parseListCacheKey(key: string): TransactionsListQuery {
@@ -74,7 +78,8 @@ export function parseListCacheKey(key: string): TransactionsListQuery {
         tierPublicId: !parts[6] || parts[6] === 'all' ? null : parts[6],
         recurringExpensePublicId: !parts[7] || parts[7] === 'all' ? null : parts[7],
         recurringIncomePublicId: !parts[8] || parts[8] === 'all' ? null : parts[8],
-        search: parts.slice(9).join(':') || null
+        assetPublicId: !parts[9] || parts[9] === 'all' ? null : parts[9],
+        search: parts.slice(10).join(':') || null
     };
 }
 
@@ -95,6 +100,7 @@ function queryMatchesTransaction(query: TransactionsListQuery, tx: Transaction):
     if (query.tierPublicId && tx.tierPublicId !== query.tierPublicId) return false;
     if (query.recurringExpensePublicId && tx.recurringExpensePublicId !== query.recurringExpensePublicId) return false;
     if (query.recurringIncomePublicId && tx.recurringIncomePublicId !== query.recurringIncomePublicId) return false;
+    if (query.assetPublicId && tx.assetPublicId !== query.assetPublicId) return false;
     // `search` n’est pas vérifié ici : le serveur cherche aussi dans les noms liés (tiers, catégorie, tags…),
     // qu’on ne connaît pas toujours localement. Voir `upsertItem`.
     return true;
@@ -236,6 +242,28 @@ export function createTransactionsState() {
         }
     }
 
+    /** Suppression d’un actif : l’API détache ses transactions (`assetPublicId` redevient `null`). */
+    function stripAsset(publicId: string) {
+        const id = publicId.trim();
+        if (!id) return;
+        for (const key of [...itemsByListKey.keys()]) {
+            const prev = itemsByListKey.get(key);
+            if (!prev) continue;
+            const query = parseListCacheKey(key);
+            let changed = false;
+            const nextItems = prev.items
+                .map((item) => {
+                    if (item.assetPublicId !== id) return item;
+                    changed = true;
+                    return { ...item, assetPublicId: null };
+                })
+                .filter((item) => queryMatchesTransaction(query, item));
+            if (!changed && nextItems.length === prev.items.length) continue;
+            const removed = prev.items.length - nextItems.length;
+            setList(key, nextItems, { totalCount: Math.max(0, prev.totalCount - removed) });
+        }
+    }
+
     function removeByAccount(accountPublicId: string) {
         for (const key of [...itemsByListKey.keys()]) {
             const prev = itemsByListKey.get(key);
@@ -288,6 +316,7 @@ export function createTransactionsState() {
         upsertItem,
         removeItemLocal,
         stripTag,
+        stripAsset,
         removeByAccount,
         invalidateAllLists,
         allKnownItems

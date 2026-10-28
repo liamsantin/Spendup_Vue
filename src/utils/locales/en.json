@@ -1925,7 +1925,8 @@
             "budget": "No transactions for this budget.",
             "budgetOut": "No expenses to add to this envelope for this period.",
             "byType": "No “{type}” transactions.",
-            "filtered": "No transaction matches this search."
+            "filtered": "No transaction matches this search.",
+            "asset": "No transactions linked to this asset."
         },
         "searchPlaceholder": "Search…",
         "actions": {
@@ -1996,6 +1997,7 @@
             "createdByUnknown": "Entered by a user",
             "myCategory": "My category: {name}",
             "myTier": "My counterparty: {name}",
+            "asset": "Asset: {name}",
             "hasAttachments": "{count} receipt | {count} receipt | {count} receipts",
             "sourceRecurrence": "Recurring",
             "recurrenceDelta": "{delta} vs planned ({planned})",
@@ -2025,6 +2027,10 @@
             "noCategory": "None",
             "noRecurrence": "None",
             "noSavingsGoal": "None",
+            "noAsset": "None",
+            "assetSearchPlaceholder": "Search an asset…",
+            "assetNoResults": "No asset matches.",
+            "assetHint": "Optional. The transaction currency can differ from the asset’s. On a shared account, only the asset owner sees this link.",
             "savingsGoalSearchPlaceholder": "Search a goal…",
             "savingsGoalNoResults": "No goal matches.",
             "savingsGoalHint": "The transaction must touch the goal’s account, in the same currency. Typical case: a transfer into the savings account.",
@@ -2068,6 +2074,7 @@
                 "tags": "My tags",
                 "tier": "My counterparty",
                 "savingsGoal": "Savings goal",
+                "asset": "Asset",
                 "attachments": "PDF receipts"
             },
             "attachments": {
@@ -2101,7 +2108,8 @@
                 "savingsGoalInvalid": "Savings goal not found.",
                 "savingsGoalNoAccount": "Link an account to the goal before attaching a transaction.",
                 "savingsGoalCurrencyMismatch": "The transaction currency must match the goal.",
-                "savingsGoalAccountMismatch": "The transaction must touch the account linked to the goal."
+                "savingsGoalAccountMismatch": "The transaction must touch the account linked to the goal.",
+                "assetAlreadyLinked": "This transaction is already linked to another asset."
             }
         },
         "count": "{count} transaction | {count} transactions",
@@ -3581,7 +3589,8 @@
                 "details": "Details",
                 "valuations": "Valuations",
                 "mileages": "Readings",
-                "maintenances": "Maintenance"
+                "maintenances": "Maintenance",
+                "transactions": "Transactions"
             }
         },
         "valuations": {
@@ -4224,7 +4233,8 @@
                 "charges": "Charges",
                 "maintenance": "Works",
                 "documents": "Documents",
-                "rentals": "Leases"
+                "rentals": "Leases",
+                "transactions": "Transactions"
             }
         },
         "units": {

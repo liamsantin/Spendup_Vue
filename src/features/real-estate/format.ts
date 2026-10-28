@@ -195,7 +195,7 @@ export function formatRealEstatePeriod(start: string | null | undefined, end: st
 }
 
 /** Onglets de la fiche. `informations` est le défaut (query `tab` absente). */
-export const REAL_ESTATE_DETAIL_TABS = ['informations', 'lots', 'charges', 'travaux', 'documents', 'baux'] as const;
+export const REAL_ESTATE_DETAIL_TABS = ['informations', 'lots', 'charges', 'travaux', 'documents', 'baux', 'transactions'] as const;
 
 export type RealEstateDetailTab = (typeof REAL_ESTATE_DETAIL_TABS)[number];
 

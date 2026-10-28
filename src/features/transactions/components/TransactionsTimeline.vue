@@ -7,6 +7,7 @@ import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { amountInFilterRange, parseAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { parseBudgetTransactionScope } from '@/features/budgets/paths';
 import {
@@ -50,6 +51,8 @@ import TransactionFormModal from '@/features/transactions/components/modals/Tran
 const props = defineProps<{
     /** Si défini, force le filtre compte (fiche compte) et ignore la query. */
     lockedAccountPublicId?: string | null;
+    /** Si défini, charge `GET /api/transactions?assetPublicId=` (fiche d’actif) et ignore la query. */
+    lockedAssetPublicId?: string | null;
 }>();
 
 /** Agrégats calculés sur la liste chargée (le store n'expose pas de totaux). */
@@ -69,6 +72,7 @@ const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const accountsStore = useAccountsStore();
+const assetsStore = useAssetsStore();
 const budgetsStore = useBudgetsStore();
 const categoriesStore = useCategoriesStore();
 const tagsStore = useTagsStore();
@@ -111,28 +115,31 @@ function queryString(name: string): string | null {
     return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
 }
 
-const filterAccountId = computed(() => props.lockedAccountPublicId?.trim() || queryString('account'));
-const filterFrom = computed(() => (props.lockedAccountPublicId ? null : queryString('from')));
-const filterTo = computed(() => (props.lockedAccountPublicId ? null : queryString('to')));
-const filterCategoryId = computed(() => (props.lockedAccountPublicId ? null : queryString('category')));
-const filterTagId = computed(() => (props.lockedAccountPublicId ? null : queryString('tag')));
-const filterTierId = computed(() => (props.lockedAccountPublicId ? null : queryString('tier')));
-const filterPaymentMethodId = computed(() => (props.lockedAccountPublicId ? null : queryString('paymentMethod')));
-const filterRecurringExpenseId = computed(() => (props.lockedAccountPublicId ? null : queryString('recurringExpensePublicId')));
-const filterRecurringIncomeId = computed(() => (props.lockedAccountPublicId ? null : queryString('recurringIncomePublicId')));
+/** Fiche compte ou fiche d’actif : la query de la page (onglet, recherche d’annuaire) ne filtre pas les transactions. */
+const isolateFilters = computed(() => !!(props.lockedAccountPublicId?.trim() || props.lockedAssetPublicId?.trim()));
+const filterAccountId = computed(() => props.lockedAccountPublicId?.trim() || (isolateFilters.value ? null : queryString('account')));
+const filterAssetId = computed(() => props.lockedAssetPublicId?.trim() || null);
+const filterFrom = computed(() => (isolateFilters.value ? null : queryString('from')));
+const filterTo = computed(() => (isolateFilters.value ? null : queryString('to')));
+const filterCategoryId = computed(() => (isolateFilters.value ? null : queryString('category')));
+const filterTagId = computed(() => (isolateFilters.value ? null : queryString('tag')));
+const filterTierId = computed(() => (isolateFilters.value ? null : queryString('tier')));
+const filterPaymentMethodId = computed(() => (isolateFilters.value ? null : queryString('paymentMethod')));
+const filterRecurringExpenseId = computed(() => (isolateFilters.value ? null : queryString('recurringExpensePublicId')));
+const filterRecurringIncomeId = computed(() => (isolateFilters.value ? null : queryString('recurringIncomePublicId')));
 const filterSearch = computed(() => {
-    if (props.lockedAccountPublicId) return null;
+    if (isolateFilters.value) return null;
     return queryString('q')?.slice(0, TRANSACTION_SEARCH_MAX) ?? null;
 });
 const filterType = computed<TransactionType | null>(() => {
-    if (props.lockedAccountPublicId) return null;
+    if (isolateFilters.value) return null;
     const raw = queryString('type');
     return raw && TRANSACTION_TYPES.includes(raw as TransactionType) ? (raw as TransactionType) : null;
 });
-const listSort = computed(() => parseTransactionSort(queryString('sort')));
-const filterMinAmount = computed(() => (props.lockedAccountPublicId ? null : parseAmountFilter(queryString('minAmount'))));
-const filterMaxAmount = computed(() => (props.lockedAccountPublicId ? null : parseAmountFilter(queryString('maxAmount'))));
-const filterBudgetId = computed(() => (props.lockedAccountPublicId ? null : queryString('budget')));
+const listSort = computed(() => (isolateFilters.value ? TRANSACTION_SORT_DEFAULT : parseTransactionSort(queryString('sort'))));
+const filterMinAmount = computed(() => (isolateFilters.value ? null : parseAmountFilter(queryString('minAmount'))));
+const filterMaxAmount = computed(() => (isolateFilters.value ? null : parseAmountFilter(queryString('maxAmount'))));
+const filterBudgetId = computed(() => (isolateFilters.value ? null : queryString('budget')));
 const envelopeBudget = computed(() => {
     const id = filterBudgetId.value;
     if (!id) return null;
@@ -196,6 +203,7 @@ const emptyCopy = computed(() => {
     if (queryString('budget')) {
         return envelopeScope.value === 'out' ? t('transactionsPage.empty.budgetOut') : t('transactionsPage.empty.budget');
     }
+    if (filterAssetId.value) return t('transactionsPage.empty.asset');
     if (filterAccountId.value) return t('transactionsPage.empty.account');
     return t('transactionsPage.empty.timeline');
 });
@@ -415,6 +423,7 @@ async function loadTimeline(force = false) {
                 tierPublicId: filterTierId.value ?? undefined,
                 recurringExpensePublicId: filterRecurringExpenseId.value ?? undefined,
                 recurringIncomePublicId: filterRecurringIncomeId.value ?? undefined,
+                assetPublicId: filterAssetId.value ?? undefined,
                 from: filterFrom.value ?? undefined,
                 to: filterTo.value ?? undefined,
                 search: filterSearch.value ?? undefined,
@@ -424,7 +433,8 @@ async function loadTimeline(force = false) {
             categoriesStore.loadList({ force }).catch(() => undefined),
             tagsStore.loadList({ force }).catch(() => undefined),
             tiersStore.loadList({ pageSize: TIER_PAGE_SIZE_MAX, force }).catch(() => undefined),
-            paymentMethodsStore.loadList({ force }).catch(() => undefined)
+            paymentMethodsStore.loadList({ force }).catch(() => undefined),
+            assetsStore.loadList().catch(() => undefined)
         ]);
         if (needsClientFullScan.value) {
             let guard = 0;
@@ -438,7 +448,7 @@ async function loadTimeline(force = false) {
             localError.value = t('transactionsPage.errors.notFound');
             // 404 : compte inconnu, tag/tier/récurrence filtrés qui n’appartiennent pas (plus) à l’utilisateur → on retire le filtre fautif.
             if (
-                !props.lockedAccountPublicId &&
+                !isolateFilters.value &&
                 (filterAccountId.value ||
                     filterTagId.value ||
                     filterTierId.value ||
@@ -537,6 +547,7 @@ watch(
     () =>
         [
             filterAccountId.value,
+            filterAssetId.value,
             filterFrom.value,
             filterTo.value,
             filterCategoryId.value,
@@ -639,7 +650,12 @@ async function confirmDelete() {
             </button>
         </footer>
 
-        <TransactionFormModal v-model="createOpen" :default-account-public-id="filterAccountId" :default-type="filterType" />
+        <TransactionFormModal
+            v-model="createOpen"
+            :default-account-public-id="filterAccountId"
+            :default-type="filterType"
+            :default-asset-public-id="filterAssetId"
+        />
         <TransactionFormModal
             v-model="editOpen"
             :transaction="editTarget"

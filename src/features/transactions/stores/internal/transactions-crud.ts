@@ -1,4 +1,5 @@
 import { AppError } from '@/utils/errors/app-error';
+import { ASSET_NOT_FOUND_MESSAGE } from '@/features/assets/types';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { involvedAccountPublicIds, normalizeTransaction, sanitizeFilePublicIds } from '@/features/transactions/format';
 import { transactionsApi } from '@/features/transactions/api';
@@ -18,6 +19,10 @@ export const TRANSACTION_NOT_FOUND_CODE = 'transaction_not_found';
 export const TRANSACTION_NOT_FOUND_MESSAGE = 'Cette transaction n’est plus disponible.';
 export const TRANSACTION_FORBIDDEN_CODE = 'transaction_forbidden';
 export const TRANSACTION_FORBIDDEN_MESSAGE = 'Action non autorisée sur cette transaction.';
+
+function isAssetNotFound(err: AppError): boolean {
+    return err.status === 404 && err.message === ASSET_NOT_FOUND_MESSAGE;
+}
 
 function payloadErrorMessage(code: string): string {
     switch (code) {
@@ -163,6 +168,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                             tierPublicId: normalized.tierPublicId ?? undefined,
                             recurringExpensePublicId: normalized.recurringExpensePublicId ?? undefined,
                             recurringIncomePublicId: normalized.recurringIncomePublicId ?? undefined,
+                            assetPublicId: normalized.assetPublicId ?? undefined,
                             from: normalized.from ?? undefined,
                             to: normalized.to ?? undefined,
                             search: normalized.search ?? undefined,
@@ -180,7 +186,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                     } catch (e: unknown) {
                         if (requestId === listRequestSeq) {
                             const err = AppError.fromUnknown(e);
-                            error.value = err.status === 404 ? TRANSACTION_NOT_FOUND_MESSAGE : err.message;
+                            error.value = err.status === 404 && !isAssetNotFound(err) ? TRANSACTION_NOT_FOUND_MESSAGE : err.message;
                         }
                         throw e;
                     }
@@ -234,6 +240,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                 tierPublicId: query.tierPublicId ?? undefined,
                 recurringExpensePublicId: query.recurringExpensePublicId ?? undefined,
                 recurringIncomePublicId: query.recurringIncomePublicId ?? undefined,
+                assetPublicId: query.assetPublicId ?? undefined,
                 from: query.from ?? undefined,
                 to: query.to ?? undefined,
                 search: query.search ?? undefined,
@@ -295,7 +302,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             return created;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
-            error.value = err.status === 404 ? TRANSACTION_NOT_FOUND_MESSAGE : err.message;
+            error.value = err.status === 404 && !isAssetNotFound(err) ? TRANSACTION_NOT_FOUND_MESSAGE : err.message;
             throw err;
         } finally {
             endActing();
@@ -326,7 +333,9 @@ export function createTransactionsCrud(state: TransactionsState) {
             return updated;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
-            if (err.status === 404) {
+            if (isAssetNotFound(err)) {
+                error.value = err.message;
+            } else if (err.status === 404) {
                 rememberNotFound();
                 removeItemLocal(publicId);
             } else {
@@ -443,6 +452,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                 tierPublicId: current.tierPublicId ?? undefined,
                 recurringExpensePublicId: current.recurringExpensePublicId ?? undefined,
                 recurringIncomePublicId: current.recurringIncomePublicId ?? undefined,
+                assetPublicId: current.assetPublicId ?? undefined,
                 from: current.from ?? undefined,
                 to: current.to ?? undefined,
                 search: current.search ?? undefined,
@@ -480,6 +490,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             tierPublicId: current.tierPublicId ?? undefined,
             recurringExpensePublicId: current.recurringExpensePublicId ?? undefined,
             recurringIncomePublicId: current.recurringIncomePublicId ?? undefined,
+            assetPublicId: current.assetPublicId ?? undefined,
             from: current.from ?? undefined,
             to: current.to ?? undefined,
             search: current.search ?? undefined,

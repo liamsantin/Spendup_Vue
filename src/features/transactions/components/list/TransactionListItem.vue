@@ -7,6 +7,7 @@ import { computed, toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { DotsVerticalIcon, MinusIcon, PaperclipIcon, PencilIcon, PlusIcon, TrashIcon } from 'vue-tabler-icons';
 import { useRowTap } from '@/components/shared/board/useRowTap';
+import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import { useTransactionRowDisplay } from '@/features/transactions/composables/useTransactionRowDisplay';
 import { formatOperationDate } from '@/features/transactions/format';
 import type { Transaction } from '@/features/transactions/types';
@@ -30,6 +31,15 @@ const emit = defineEmits<{
 }>();
 
 const { t, locale } = useI18n();
+const assetsStore = useAssetsStore();
+
+const assetLabel = computed(() => {
+    const id = props.transaction.assetPublicId?.trim();
+    if (!id) return null;
+    const asset = assetsStore.findByPublicId(id);
+    if (!asset) return null;
+    return t('transactionsPage.list.asset', { name: asset.name });
+});
 
 const {
     tileIcon,
@@ -55,6 +65,7 @@ const subLine = computed(() => {
     if (props.transaction.source === 'recurrence') parts.push(t('transactionsPage.list.sourceRecurrence'));
     else if (props.transaction.source === 'import') parts.push(t('transactionsPage.list.sourceImport'));
     if (tierLabel.value) parts.push(tierLabel.value);
+    if (assetLabel.value) parts.push(assetLabel.value);
     if (!isMine.value) parts.push(authorLabel.value);
     return parts.join(' · ');
 });

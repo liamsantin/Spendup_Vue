@@ -47,12 +47,13 @@ const TAB_LABEL: Record<RealEstateDetailTab, string> = {
     charges: 'charges',
     travaux: 'maintenance',
     documents: 'documents',
-    baux: 'rentals'
+    baux: 'rentals',
+    transactions: 'transactions'
 };
 
 function tabCount(tab: RealEstateDetailTab): number | null {
     const summary = detailAsset.value?.realEstate?.summary;
-    if (!summary || tab === 'informations') return null;
+    if (!summary || tab === 'informations' || tab === 'transactions') return null;
     if (tab === 'lots') return summary.unitsCount;
     if (tab === 'charges') return summary.chargesCount;
     if (tab === 'travaux') return summary.maintenanceCount;

@@ -178,15 +178,16 @@ export function normalizeListQuery(query: ListAssetsQuery = {}): { type: AssetTy
 
 export type AssetStateFilter = 'active' | 'sold';
 
-export const ASSET_DETAIL_TABS = ['informations', 'valuations', 'mileages', 'maintenances'] as const;
+export const ASSET_DETAIL_TABS = ['informations', 'valuations', 'mileages', 'maintenances', 'transactions'] as const;
 
 export type AssetDetailTab = (typeof ASSET_DETAIL_TABS)[number];
 
-/** Onglets de la fiche : Informations, puis Valorisations (sauf solde de compte), puis véhicule. */
+/** Onglets de la fiche : Informations, puis Valorisations (sauf solde de compte), puis véhicule, puis transactions. */
 export function assetDetailTabs(asset: Pick<Asset, 'type' | 'isValueFromAccount'>): AssetDetailTab[] {
     const tabs: AssetDetailTab[] = ['informations'];
     if (!asset.isValueFromAccount) tabs.push('valuations');
     if (asset.type === 'vehicule') tabs.push('mileages', 'maintenances');
+    tabs.push('transactions');
     return tabs;
 }
 

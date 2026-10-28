@@ -82,5 +82,8 @@ describe('transactions : recherche serveur', () => {
         expect(query.search).toBe('coop: 4521');
         expect(parseListCacheKey(listCacheKey(query))).toEqual(query);
         expect(listCacheKey(normalizeListQuery({}))).not.toBe(listCacheKey(normalizeListQuery({ search: 'migros' })));
+        const withAsset = normalizeListQuery({ assetPublicId: ' asset-1 ', search: 'loyer' });
+        expect(withAsset.assetPublicId).toBe('asset-1');
+        expect(parseListCacheKey(listCacheKey(withAsset))).toEqual(withAsset);
     });
 });

@@ -46,6 +46,7 @@ function fields(partial: Partial<TransactionFormFields> = {}): TransactionFormFi
         tierPublicId: '',
         recurrencePublicId: '',
         savingsGoalPublicId: '',
+        assetPublicId: '',
         tagPublicIds: [],
         ...partial
     };
@@ -150,6 +151,7 @@ describe('transaction payload', () => {
                 recurringExpensePublicId: null,
                 recurringIncomePublicId: null,
                 savingsGoalPublicId: null,
+                assetPublicId: null,
                 tagPublicIds: []
             });
             expect(result.payload).not.toHaveProperty('files');
@@ -231,6 +233,24 @@ describe('transaction payload', () => {
                 savingsGoals: [{ publicId: 'g-1', accountPublicId: 'acc-2', currency: 'CHF' }]
             })
         ).toMatchObject({ ok: false, code: 'savingsGoalAccountMismatch' });
+    });
+
+    it('POST omet assetPublicId si vide, PUT l’envoie toujours (null détache)', () => {
+        const created = buildCreateTransactionPayload(fields(), { accounts, now });
+        expect(created.ok).toBe(true);
+        if (created.ok) expect(created.payload).not.toHaveProperty('assetPublicId');
+
+        const linked = buildCreateTransactionPayload(fields({ assetPublicId: ' asset-1 ' }), { accounts, now });
+        expect(linked.ok).toBe(true);
+        if (linked.ok) expect(linked.payload.assetPublicId).toBe('asset-1');
+
+        const updated = buildUpdateTransactionPayload(fields(), { accounts, now });
+        expect(updated.ok).toBe(true);
+        if (updated.ok) expect(updated.payload.assetPublicId).toBeNull();
+
+        const kept = buildUpdateTransactionPayload(fields({ assetPublicId: 'asset-1' }), { accounts, now });
+        expect(kept.ok).toBe(true);
+        if (kept.ok) expect(kept.payload.assetPublicId).toBe('asset-1');
     });
 
     it('POST omet tagPublicIds si vide, PUT l’envoie toujours ([] détache tes tags)', () => {
