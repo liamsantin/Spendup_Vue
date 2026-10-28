@@ -1935,6 +1935,7 @@
             "create": "Add",
             "edit": "Edit",
             "delete": "Delete",
+            "unlink": "Unlink",
             "search": "Search",
             "clearSearch": "Clear search",
             "export": "Export"
@@ -2007,8 +2008,37 @@
             "title": "Delete this transaction?",
             "body": "Linked movements will be reversed and the account balance will be recalculated."
         },
+        "unlinkModal": {
+            "title": "Unlink {count} transaction? | Unlink {count} transaction? | Unlink {count} transactions?",
+            "body": "It stays on the account. Only the link to this asset is removed. | They stay on the account. Only the link to this asset is removed. | They stay on the account. Only the link to this asset is removed."
+        },
         "errors": {
             "notFound": "This transaction is no longer available."
+        },
+        "linkTransactions": {
+            "action": "Link",
+            "title": "Link transactions",
+            "subtitle": "Entries not yet attached to an asset. The currency can differ from the asset’s.",
+            "searchPlaceholder": "Search a transaction",
+            "empty": "No transaction to link.",
+            "emptyFiltered": "No transaction matches this search.",
+            "selected": "{count} selected | {count} selected | {count} selected",
+            "selectAll": "Select all",
+            "selectNone": "Clear selection",
+            "confirm": "Link {count} transaction | Link {count} transaction | Link {count} transactions"
+        },
+        "unlinkTransactions": {
+            "action": "Unlink",
+            "select": "Select {name}",
+            "title": "Unlink transactions",
+            "subtitle": "Entries already attached to this asset. They stay on the account.",
+            "searchPlaceholder": "Search a transaction",
+            "empty": "No transaction to unlink.",
+            "emptyFiltered": "No transaction matches this search.",
+            "selected": "{count} selected | {count} selected | {count} selected",
+            "selectAll": "Select all",
+            "selectNone": "Clear selection",
+            "confirm": "Unlink {count} transaction | Unlink {count} transaction | Unlink {count} transactions"
         },
         "form": {
             "createTitle": "New transaction",

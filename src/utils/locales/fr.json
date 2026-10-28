@@ -1935,6 +1935,7 @@
             "create": "Ajouter",
             "edit": "Modifier",
             "delete": "Supprimer",
+            "unlink": "Délier",
             "search": "Rechercher",
             "clearSearch": "Effacer la recherche",
             "export": "Exporter"
@@ -2007,8 +2008,37 @@
             "title": "Supprimer cette transaction ?",
             "body": "Les mouvements liés seront annulés et le solde du compte sera recalculé."
         },
+        "unlinkModal": {
+            "title": "Délier {count} transaction ? | Délier {count} transaction ? | Délier {count} transactions ?",
+            "body": "Elle reste sur le compte. Seul le lien avec cet actif est retiré. | Elles restent sur le compte. Seul le lien avec cet actif est retiré. | Elles restent sur le compte. Seul le lien avec cet actif est retiré."
+        },
         "errors": {
             "notFound": "Cette transaction n’est plus disponible."
+        },
+        "linkTransactions": {
+            "action": "Lier",
+            "title": "Lier des transactions",
+            "subtitle": "Écritures qui ne sont pas encore rattachées à un actif. La devise peut différer de celle de l’actif.",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune transaction à lier.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "confirm": "Lier {count} transaction | Lier {count} transaction | Lier {count} transactions"
+        },
+        "unlinkTransactions": {
+            "action": "Délier",
+            "select": "Sélectionner {name}",
+            "title": "Délier des transactions",
+            "subtitle": "Écritures déjà rattachées à cet actif. Elles restent sur le compte.",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune transaction à délier.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "confirm": "Délier {count} transaction | Délier {count} transaction | Délier {count} transactions"
         },
         "form": {
             "createTitle": "Nouvelle transaction",

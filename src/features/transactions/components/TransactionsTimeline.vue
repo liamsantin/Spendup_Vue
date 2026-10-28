@@ -83,6 +83,7 @@ const store = useTransactionsStore();
 const createOpen = ref(false);
 const editTarget = ref<Transaction | null>(null);
 const deleteTarget = ref<Transaction | null>(null);
+const selectedIds = defineModel<string[]>('selectedIds', { default: () => [] });
 const unlinkTarget = ref<Transaction | null>(null);
 const addUndo = ref<{ publicId: string; previousCategoryPublicId: string; label: string } | null>(null);
 const localError = ref<string | null>(null);
@@ -567,11 +568,26 @@ watch(
 );
 
 // La query `q` est déjà écrite après un délai (`useBoardSearch`) : chaque valeur recharge la liste côté serveur.
+watch(visibleItems, (items) => {
+    if (!filterAssetId.value || !selectedIds.value.length) return;
+    const allowed = new Set(items.filter((item) => canWriteItem(item)).map((item) => item.publicId));
+    const next = selectedIds.value.filter((id) => allowed.has(id));
+    if (next.length !== selectedIds.value.length) selectedIds.value = next;
+});
+
 watch(filterSearch, (query, previous) => {
     if (query) hasSearched.value = true;
     if (query || previous) searchRevealKey.value += 1;
     if ((query ?? '') !== (previous ?? '')) void loadTimeline().catch(() => undefined);
 });
+
+function toggleSelected(publicId: string, value: boolean) {
+    if (value) {
+        if (!selectedIds.value.includes(publicId)) selectedIds.value = [...selectedIds.value, publicId];
+        return;
+    }
+    selectedIds.value = selectedIds.value.filter((id) => id !== publicId);
+}
 
 async function confirmDelete() {
     if (!deleteTarget.value) return;
@@ -634,9 +650,13 @@ async function confirmDelete() {
                         :statement-account-public-id="filterAccountId"
                         :envelope-action="envelopeActionFor(transaction)"
                         :show-date="!groupByDate"
+                        :end-action="filterAssetId ? 'none' : 'delete'"
+                        :selectable="!!filterAssetId"
+                        :selected="selectedIds.includes(transaction.publicId)"
                         :style="{ '--i': searchAppearIndex.get(transaction.publicId) ?? 0 }"
                         @edit="editTarget = $event"
                         @delete="deleteTarget = $event"
+                        @update:selected="toggleSelected(transaction.publicId, $event)"
                         @envelope="onEnvelopeAction"
                     />
                 </div>

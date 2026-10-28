@@ -5,8 +5,9 @@
  */
 import { computed, toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { DotsVerticalIcon, MinusIcon, PaperclipIcon, PencilIcon, PlusIcon, TrashIcon } from 'vue-tabler-icons';
+import { DotsVerticalIcon, MinusIcon, PaperclipIcon, PencilIcon, PlusIcon, TrashIcon, UnlinkIcon } from 'vue-tabler-icons';
 import { useRowTap } from '@/components/shared/board/useRowTap';
+import AppCheckbox from '@/components/shared/checkbox/AppCheckbox.vue';
 import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import { useTransactionRowDisplay } from '@/features/transactions/composables/useTransactionRowDisplay';
 import { formatOperationDate } from '@/features/transactions/format';
@@ -22,12 +23,19 @@ const props = defineProps<{
     envelopeAction?: 'add' | 'remove' | null;
     /** Liste non groupée par jour : la date passe dans la sous-ligne. */
     showDate?: boolean;
+    /** Fiche patrimoine : `none` masque supprimer ; la sélection se fait par case. */
+    endAction?: 'delete' | 'unlink' | 'none';
+    /** Case à gauche (détachement depuis la fiche d’un actif). */
+    selectable?: boolean;
+    selected?: boolean;
 }>();
 
 const emit = defineEmits<{
     edit: [transaction: Transaction];
     delete: [transaction: Transaction];
+    unlink: [transaction: Transaction];
     envelope: [transaction: Transaction];
+    'update:selected': [value: boolean];
 }>();
 
 const { t, locale } = useI18n();
@@ -75,6 +83,9 @@ const hasSide = computed(() => !!categoryLabel.value || (props.canWrite && !prop
 const envelopeLabel = computed(() =>
     props.envelopeAction === 'add' ? t('transactionsPage.envelope.add') : t('transactionsPage.envelope.remove')
 );
+const unlinkInstead = computed(() => props.endAction === 'unlink');
+const showEndAction = computed(() => props.endAction !== 'none');
+const endActionLabel = computed(() => (unlinkInstead.value ? t('transactionsPage.actions.unlink') : t('transactionsPage.actions.delete')));
 
 const tap = useRowTap(
     () => emit('edit', props.transaction),
@@ -98,7 +109,7 @@ function onActivate(event: MouseEvent) {
 <template>
     <div
         class="transaction-list-item tx-row"
-        :class="{ 'is-editable': canWrite && !acting }"
+        :class="{ 'is-editable': canWrite && !acting, 'is-selectable': selectable }"
         :data-transaction-id="transaction.publicId"
         @click="onActivate"
         @dblclick="onDoubleClick"
@@ -106,6 +117,15 @@ function onActivate(event: MouseEvent) {
         @touchend="tap.onTouchend"
         @touchcancel="tap.onTouchcancel"
     >
+        <span v-if="selectable" class="tx-row__check" @click.stop>
+            <AppCheckbox
+                :model-value="selected"
+                density="compact"
+                :disabled="acting || !canWrite"
+                :aria-label="t('transactionsPage.unlinkTransactions.select', { name: transaction.label })"
+                @update:model-value="(value) => emit('update:selected', !!value)"
+            />
+        </span>
         <span class="su-tile tx-row__tile" :class="[`su-tile--${tileTint}`]" :style="tileStyle" aria-hidden="true">
             <component :is="tileIcon" :size="18" stroke-width="1.7" />
         </span>
@@ -153,14 +173,17 @@ function onActivate(event: MouseEvent) {
                     <PencilIcon :size="16" stroke-width="1.6" />
                 </button>
                 <button
+                    v-if="showEndAction"
                     type="button"
-                    class="su-orb su-orb--danger"
+                    class="su-orb"
+                    :class="{ 'su-orb--danger': !unlinkInstead }"
                     :disabled="acting"
-                    :aria-label="t('transactionsPage.actions.delete')"
-                    :title="t('transactionsPage.actions.delete')"
-                    @click.stop="emit('delete', transaction)"
+                    :aria-label="endActionLabel"
+                    :title="endActionLabel"
+                    @click.stop="unlinkInstead ? emit('unlink', transaction) : emit('delete', transaction)"
                 >
-                    <TrashIcon :size="16" stroke-width="1.6" />
+                    <UnlinkIcon v-if="unlinkInstead" :size="16" stroke-width="1.6" />
+                    <TrashIcon v-else :size="16" stroke-width="1.6" />
                 </button>
             </div>
             <span v-if="categoryLabel" class="su-chip tx-row__category" :style="{ '--chip-color': categoryColor ?? 'var(--gray)' }">
@@ -203,9 +226,17 @@ function onActivate(event: MouseEvent) {
                         <PencilIcon :size="16" stroke-width="1.6" />
                         {{ t('transactionsPage.actions.edit') }}
                     </button>
-                    <button type="button" class="tx-row-menu__item is-danger" :disabled="acting" @click="emit('delete', transaction)">
-                        <TrashIcon :size="16" stroke-width="1.6" />
-                        {{ t('transactionsPage.actions.delete') }}
+                    <button
+                        v-if="showEndAction"
+                        type="button"
+                        class="tx-row-menu__item"
+                        :class="{ 'is-danger': !unlinkInstead }"
+                        :disabled="acting"
+                        @click="unlinkInstead ? emit('unlink', transaction) : emit('delete', transaction)"
+                    >
+                        <UnlinkIcon v-if="unlinkInstead" :size="16" stroke-width="1.6" />
+                        <TrashIcon v-else :size="16" stroke-width="1.6" />
+                        {{ endActionLabel }}
                     </button>
                 </v-sheet>
             </v-menu>
@@ -244,6 +275,17 @@ function onActivate(event: MouseEvent) {
     .tx-row:hover {
         background: var(--soft);
     }
+}
+
+.tx-row.is-selectable {
+    grid-template-columns: 28px 36px minmax(0, 1fr) auto 120px;
+    grid-template-areas: 'check tile meta side amount';
+}
+
+.tx-row__check {
+    grid-area: check;
+    display: flex;
+    align-items: center;
 }
 
 .tx-row__tile {
@@ -443,6 +485,13 @@ function onActivate(event: MouseEvent) {
             'tile side side side';
         gap: 6px 12px;
         padding: 12px 0;
+    }
+
+    .tx-row.is-selectable {
+        grid-template-columns: 28px 36px minmax(0, 1fr) auto 40px;
+        grid-template-areas:
+            'check tile meta amount more'
+            'check tile side side side';
     }
 
     .tx-row__orbs {
