@@ -9,3 +9,4 @@ export * from '@/features/user-settings/composables/useAccountUsernameChange';
 export * from '@/features/user-settings/composables/useDirtyPageGuard';
 export * from '@/features/user-settings/composables/useSecurityDevices';
 export * from '@/features/user-settings/composables/useSettingsFormPage';
+export * from '@/features/user-settings/composables/useSupportCode';

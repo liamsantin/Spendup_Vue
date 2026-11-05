@@ -99,6 +99,19 @@ export type TwoFactorSetup = {
     recoveryCodes: string[];
 };
 
+/** Code d’assistance généré — POST /api/auth/security/support-code (montré une seule fois). */
+export type SupportCode = {
+    code: string;
+    expiresAt: string;
+};
+
+/** État du code d’assistance courant — GET /api/auth/security/support-code (sans le code). */
+export type SupportCodeStatus = {
+    hasActiveCode: boolean;
+    expiresAt: string | null;
+    usedAt: string | null;
+};
+
 export type DeviceInfo = {
     deviceIdentifier: string;
     deviceName: string;

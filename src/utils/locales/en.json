@@ -2966,6 +2966,26 @@
                 "allRevoked": "All sessions were signed out. Please sign in again."
             }
         },
+        "supportCode": {
+            "title": "Support code",
+            "subtitle": "Let support view your account, only when you ask for it.",
+            "description": "This code lets support view your account in read-only mode for 30 minutes. You will be notified by e-mail when the review starts and ends. Only share it for a request you made yourself.",
+            "status": {
+                "active": "A code is active until {date}",
+                "used": "Your last code was used on {date}",
+                "none": "No active code"
+            },
+            "generate": "Generate a code",
+            "regenerate": "Generate a new code",
+            "codeLabel": "Your support code",
+            "expiresAt": "Valid until {date}",
+            "oneTimeWarning": "This code will not be shown again: write it down or copy it now.",
+            "copy": "Copy",
+            "copied": "Copied",
+            "errors": {
+                "copyFailed": "Could not copy to the clipboard."
+            }
+        },
         "session": {
             "title": "Session",
             "subtitle": "Idle logout, trusted devices and 2FA for sensitive actions.",

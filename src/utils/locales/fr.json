@@ -2966,6 +2966,26 @@
                 "allRevoked": "Toutes les sessions ont été déconnectées. Veuillez vous reconnecter."
             }
         },
+        "supportCode": {
+            "title": "Code d’assistance",
+            "subtitle": "Autorisez le support à consulter votre compte, uniquement à votre demande.",
+            "description": "Ce code permet au support de consulter votre compte en lecture seule pendant 30 minutes. Vous serez prévenu par e-mail à l’ouverture et à la fin de la consultation. Ne le donnez que pour une demande que vous avez faite vous-même.",
+            "status": {
+                "active": "Un code est actif jusqu’au {date}",
+                "used": "Votre dernier code a été utilisé le {date}",
+                "none": "Aucun code actif"
+            },
+            "generate": "Générer un code",
+            "regenerate": "Générer un nouveau code",
+            "codeLabel": "Votre code d’assistance",
+            "expiresAt": "Valable jusqu’au {date}",
+            "oneTimeWarning": "Ce code ne sera plus affiché ensuite : notez-le ou copiez-le maintenant.",
+            "copy": "Copier",
+            "copied": "Copié",
+            "errors": {
+                "copyFailed": "Impossible de copier dans le presse-papiers."
+            }
+        },
         "session": {
             "title": "Session",
             "subtitle": "Déconnexion après inactivité, appareils de confiance et 2FA sensible.",

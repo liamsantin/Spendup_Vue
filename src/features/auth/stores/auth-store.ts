@@ -59,6 +59,8 @@ export const useAuthStore = defineStore('auth', () => {
         setupTwoFactor: actions.setupTwoFactor,
         enableTwoFactor: actions.enableTwoFactor,
         disableTwoFactor: actions.disableTwoFactor,
+        getSupportCodeStatus: actions.getSupportCodeStatus,
+        generateSupportCode: actions.generateSupportCode,
         listDevices: actions.listDevices,
         revokeDevice: actions.revokeDevice,
         setDeviceTrust: actions.setDeviceTrust,
