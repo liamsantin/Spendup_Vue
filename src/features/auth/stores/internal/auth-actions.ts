@@ -263,6 +263,18 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         await fetchMe();
     }
 
+    /** État du code d’assistance courant (actif, expiration, utilisé). */
+    async function getSupportCodeStatus() {
+        const token = await requireAccessToken();
+        return authApi.getSupportCodeStatus(token);
+    }
+
+    /** Génère un code d’assistance (montré une seule fois, remplace le précédent). */
+    async function generateSupportCode() {
+        const token = await requireAccessToken();
+        return authApi.generateSupportCode(token);
+    }
+
     /** Liste les appareils / sessions connus. */
     async function listDevices() {
         const token = await requireAccessToken();
@@ -313,6 +325,8 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         setupTwoFactor,
         enableTwoFactor,
         disableTwoFactor,
+        getSupportCodeStatus,
+        generateSupportCode,
         listDevices,
         revokeDevice,
         setDeviceTrust,

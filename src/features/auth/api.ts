@@ -9,6 +9,8 @@ import type {
     Me,
     RegisterResult,
     StepUpProof,
+    SupportCode,
+    SupportCodeStatus,
     TwoFactorSetup,
     UpdateProfilePayload,
     UploadAvatarResult
@@ -365,6 +367,16 @@ export const authApi = {
 
     disable2fa(accessToken: string | null | undefined, code: string) {
         return authHttp.post<null>('/api/auth/2fa/disable', { code }, accessToken);
+    },
+
+    /** État du code d’assistance courant (sans le code). */
+    getSupportCodeStatus(accessToken: string | null | undefined) {
+        return authHttp.get<SupportCodeStatus>('/api/auth/security/support-code', accessToken);
+    },
+
+    /** Génère un nouveau code d’assistance (remplace le précédent, 24 h, usage unique). */
+    generateSupportCode(accessToken: string | null | undefined) {
+        return authHttp.post<SupportCode>('/api/auth/security/support-code', undefined, accessToken);
     },
 
     async listDevices(accessToken: string | null | undefined) {

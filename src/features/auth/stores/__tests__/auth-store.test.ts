@@ -25,6 +25,8 @@ const authApiMock = vi.hoisted(() => ({
     setup2fa: vi.fn(),
     enable2fa: vi.fn(),
     disable2fa: vi.fn(),
+    getSupportCodeStatus: vi.fn(),
+    generateSupportCode: vi.fn(),
     listDevices: vi.fn(),
     revokeDevice: vi.fn(),
     setDeviceTrust: vi.fn(),
@@ -353,6 +355,21 @@ describe('useAuthStore', () => {
 
             expect(authApiMock.listDevices).toHaveBeenCalledWith('tok-devices');
             expect(list).toEqual([{ deviceIdentifier: 'd1' }]);
+        });
+
+        it('getSupportCodeStatus et generateSupportCode passent le access token', async () => {
+            const auth = useAuthStore();
+            auth.setTokens(tokens({ accessToken: 'tok-support' }));
+            authApiMock.getSupportCodeStatus.mockResolvedValue({ hasActiveCode: false, expiresAt: null, usedAt: null });
+            authApiMock.generateSupportCode.mockResolvedValue({ code: 'ABCD-EFGH', expiresAt: '2026-11-06T10:30:00Z' });
+
+            const status = await auth.getSupportCodeStatus();
+            const code = await auth.generateSupportCode();
+
+            expect(authApiMock.getSupportCodeStatus).toHaveBeenCalledWith('tok-support');
+            expect(authApiMock.generateSupportCode).toHaveBeenCalledWith('tok-support');
+            expect(status.hasActiveCode).toBe(false);
+            expect(code.code).toBe('ABCD-EFGH');
         });
 
         it('revokeDevice propage la preuve step-up', async () => {
