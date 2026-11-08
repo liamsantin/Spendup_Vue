@@ -275,6 +275,18 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         return authApi.generateSupportCode(token);
     }
 
+    /** Accès techniques subis par l’utilisateur (page 1 = la plus récente). */
+    async function getAccessLog(page: number, pageSize: number) {
+        const token = await requireAccessToken();
+        return authApi.getAccessLog(page, pageSize, token);
+    }
+
+    /** Registre de transparence de l’opérateur. */
+    async function getTransparency() {
+        const token = await requireAccessToken();
+        return authApi.getTransparency(token);
+    }
+
     /** Liste les appareils / sessions connus. */
     async function listDevices() {
         const token = await requireAccessToken();
@@ -327,6 +339,8 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         disableTwoFactor,
         getSupportCodeStatus,
         generateSupportCode,
+        getAccessLog,
+        getTransparency,
         listDevices,
         revokeDevice,
         setDeviceTrust,

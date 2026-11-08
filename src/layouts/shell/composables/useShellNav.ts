@@ -11,7 +11,7 @@ import { REAL_ESTATE_PATHS } from '@/features/real-estate/paths';
 import { INVESTMENTS_PATHS } from '@/features/investments/paths';
 import { DEBTS_PATHS } from '@/features/liabilities/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
-import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
+import { SECURITY_PATHS, SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import {
     AccountNavIcon,
     AccountsNavIcon,
@@ -53,6 +53,7 @@ import {
     TaxNavIcon,
     TiersNavIcon,
     TransactionsNavIcon,
+    TransparencyNavIcon,
     WealthNavIcon,
     WealthOverviewNavIcon
 } from '../solarNavIcons';
@@ -99,6 +100,7 @@ export const SHELL_NAV_IDS = {
     notificationSettings: 'notification-settings',
     privacy: 'privacy',
     security: 'security',
+    transparency: 'transparency',
     subscription: 'subscription',
     account: 'account',
     upcoming: 'upcoming'
@@ -186,6 +188,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     }
     if (pathIs(path, SETTINGS_PATHS.privacy)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.privacy };
+    }
+    if (pathIs(path, SECURITY_PATHS.transparency)) {
+        return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.transparency };
     }
     if (pathIs(path, SETTINGS_PATHS.security)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.security };
@@ -282,6 +287,7 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.notificationSettings, t('nav.items.notificationSettings'), NotificationsNavIcon, SETTINGS_PATHS.notifications),
         live(SHELL_NAV_IDS.privacy, t('nav.items.privacy'), PrivacyNavIcon, SETTINGS_PATHS.privacy),
         live(SHELL_NAV_IDS.security, t('nav.items.security'), SecurityNavIcon, SETTINGS_PATHS.security),
+        live(SHELL_NAV_IDS.transparency, t('nav.items.transparency'), TransparencyNavIcon, SECURITY_PATHS.transparency),
         upcoming(SHELL_NAV_IDS.subscription, t('nav.items.subscription'), SubscriptionNavIcon),
         live(SHELL_NAV_IDS.account, t('nav.items.account'), AccountNavIcon, SETTINGS_PATHS.account)
     ]);

@@ -11,7 +11,7 @@ import {
 import type { AppNotification, NotificationType } from '@/features/notifications/types';
 import { SAVINGS_GOALS_PATHS, savingsGoalDetailPath } from '@/features/savings-goals/paths';
 import { DEBTS_PATHS, sharedDebtDetailPath } from '@/features/liabilities/paths';
-import { rewriteLegacySettingsLink } from '@/features/user-settings/settings-paths';
+import { SECURITY_PATHS, rewriteLegacySettingsLink } from '@/features/user-settings/settings-paths';
 
 /**
  * Chemins `/app…` navigables (bloque `//evil`, `/\\…`, `/application`, `..`).
@@ -24,6 +24,7 @@ export function isSafeAppNotificationPath(path: string | null | undefined): bool
 /**
  * Mappe les `link` API (chemins logiques) vers les routes front réelles.
  * Ex. `/security/devices` → `/app/parametres/securite` ;
+ * `/security/access-log` → page Accès techniques ;
  * `/app/comptes?tab=Security` → `/app/parametres/securite`.
  * Avec une notif ami + metadata, ajoute `?tab=` / `?friendship=`.
  * Ne renvoie jamais de chemin hors `/app…` (open-redirect).
@@ -55,6 +56,12 @@ export function resolveNotificationLink(
     if (legacySettings) return legacySettings;
 
     if (isSafeAppPath(trimmed)) return trimmed;
+    if (trimmed === SECURITY_PATHS.accessLogAlias || trimmed.startsWith(`${SECURITY_PATHS.accessLogAlias}?`)) {
+        return SECURITY_PATHS.accessLog;
+    }
+    if (trimmed === SECURITY_PATHS.transparencyAlias || trimmed.startsWith(`${SECURITY_PATHS.transparencyAlias}?`)) {
+        return SECURITY_PATHS.transparency;
+    }
     if (trimmed === '/security' || trimmed.startsWith('/security/')) {
         return '/app/parametres/securite';
     }

@@ -84,7 +84,8 @@
             "privacy": "Confidentialité",
             "security": "Sécurité",
             "subscription": "Abonnement",
-            "account": "Compte"
+            "account": "Compte",
+            "transparency": "Transparence"
         },
         "shortcuts": "Raccourcis",
         "subCaptions": {
@@ -2999,6 +3000,117 @@
             "require2faForSensitiveActions": "Exiger la 2FA pour les actions sensibles",
             "require2faHint": "Si activé, un code OTP est exigé en plus du mot de passe pour les actions sensibles.",
             "require2faNeedsTwoFactor": "Activez d’abord la double authentification pour utiliser cette option."
+        },
+        "common": {
+            "backToSecurity": "Réglages de sécurité",
+            "duration": {
+                "minutes": "{n} min",
+                "hours": "{h} h {m}"
+            }
+        },
+        "categories": {
+            "incident": "Incident",
+            "demande_utilisateur": "Demande de l’utilisateur",
+            "restauration": "Restauration",
+            "rgpd": "RGPD",
+            "securite": "Sécurité"
+        },
+        "links": {
+            "title": "Accès à vos données",
+            "subtitle": "Qui a consulté vos données, et ce que fait l’opérateur sur le serveur.",
+            "accessLog": "Accès techniques",
+            "accessLogHint": "Chaque consultation de vos données par le support, avec sa raison et les écrans ouverts.",
+            "transparency": "Transparence",
+            "transparencyHint": "Le registre d’activité de l’opérateur, identique pour tous les utilisateurs.",
+            "open": "Ouvrir"
+        },
+        "accessLog": {
+            "title": "Accès techniques",
+            "subtitle": "Les consultations de vos données par le support.",
+            "intro": "Un accès technique est une consultation de vos données, en lecture seule, par le support de Spend.Up : pour un incident, une demande que vous avez faite, une restauration, une obligation légale ou une vérification de sécurité. Il est toujours annoncé par e-mail au moment où il s’ouvre, et chaque écran ouvert est journalisé. Le nom de l’opérateur n’apparaît pas : vous savez que le support a consulté, pas qui.",
+            "empty": "Personne n’a consulté vos données.",
+            "fields": {
+                "reason": "Raison",
+                "views": "Écrans consultés",
+                "email": "E-mail d’information",
+                "code": "Code d’assistance"
+            },
+            "viewsNone": "Aucun écran affiché",
+            "viewCount": "{resource} ×{count}",
+            "emailNotSent": "Non envoyé",
+            "codeUsed": "Code d’assistance utilisé",
+            "status": {
+                "active": "En cours",
+                "terminated": "Terminée",
+                "expired": "Expirée",
+                "email_failed": "Annulée : e-mail non envoyé, rien n’a été affiché"
+            },
+            "resources": {
+                "accounts": "comptes",
+                "transactions": "transactions",
+                "budgets": "budgets",
+                "recurring_expenses": "charges récurrentes",
+                "recurring_incomes": "revenus récurrents",
+                "imports": "imports",
+                "files": "fichiers"
+            },
+            "pagination": {
+                "label": "Pagination des accès techniques",
+                "summary": "Page {page} sur {pages} · {count} accès",
+                "previous": "Précédent",
+                "next": "Suivant"
+            }
+        },
+        "transparency": {
+            "title": "Transparence",
+            "subtitle": "Ce que fait l’opérateur sur le serveur et sur les données.",
+            "intro": "Ce registre est le même pour tous les utilisateurs de Spend.Up. Il montre l’activité de l’opérateur sur les derniers mois sans désigner personne : il ne contient ni nom, ni adresse, ni raison, ni heure précise. Les consultations annulées avant tout affichage n’y figurent pas.",
+            "window": "Du {from} au {to} · {months}",
+            "monthsShown": "{n} mois",
+            "generatedAt": "Généré le {date}",
+            "months": {
+                "title": "Résumé par mois",
+                "month": "Mois",
+                "consoleVisits": "Visites de la console",
+                "consultations": "Consultations",
+                "usersConsulted": "Utilisateurs concernés",
+                "loginsRefused": "Connexions refusées",
+                "empty": "Aucune activité sur la période."
+            },
+            "consultations": {
+                "title": "Consultations de données",
+                "day": "Jour",
+                "category": "Catégorie",
+                "duration": "Durée",
+                "code": "Code d’assistance",
+                "codeYes": "Code utilisé",
+                "codeNo": "Sans code",
+                "empty": "Aucune consultation sur la période."
+            },
+            "visits": {
+                "title": "Visites de la console d’administration",
+                "day": "Jour",
+                "duration": "Durée",
+                "kind": "Nature",
+                "kinds": {
+                    "consultation": "Consultation ouverte",
+                    "statistics": "Statistiques seulement",
+                    "none": "Rien ouvert"
+                },
+                "empty": "Aucune visite sur la période."
+            },
+            "byCategory": {
+                "title": "Répartition par catégorie",
+                "total": "{n} consultation | {n} consultation | {n} consultations"
+            },
+            "counter": {
+                "title": "Interventions humaines",
+                "label": "interventions humaines sur le serveur, toutes raisons confondues",
+                "unavailable": "indisponible",
+                "updatedAt": "Mis à jour le {date}",
+                "noUpdate": "Le compteur ne peut pas être lu en ce moment.",
+                "note": "Compteur cumulé des sessions ouvertes par une personne sur le serveur (SSH, commandes d’administration, accès manuel à la base), y compris la maintenance ordinaire de l’opérateur."
+            }
         }
     },
     "userSettings": {

@@ -17,6 +17,13 @@ describe('resolveNotificationLink', () => {
         expect(resolveNotificationLink('/security/devices')).toBe('/app/parametres/securite');
     });
 
+    it('mappe /security/access-log et /security/transparency vers leurs pages', () => {
+        expect(resolveNotificationLink('/security/access-log')).toBe('/app/parametres/securite/acces-techniques');
+        expect(resolveNotificationLink('/security/access-log?page=2')).toBe('/app/parametres/securite/acces-techniques');
+        expect(resolveNotificationLink('/security/transparency')).toBe('/app/parametres/securite/transparence');
+        expect(resolveNotificationLink('/security/access-logs')).toBe('/app/parametres/securite');
+    });
+
     it('réécrit /app/comptes?tab= vers les pages paramètres', () => {
         expect(resolveNotificationLink('/app/comptes')).toBe('/app/parametres/compte');
         expect(resolveNotificationLink('/app/comptes?tab=Preferences')).toBe('/app/parametres/preferences');

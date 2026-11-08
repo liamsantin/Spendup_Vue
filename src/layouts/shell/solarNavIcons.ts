@@ -49,6 +49,7 @@ export { Tuning2Icon as PreferencesNavIcon } from '@solar-icons/vue/line-duotone
 export { BellIcon as NotificationsNavIcon } from '@solar-icons/vue/line-duotone/bell';
 export { EyeClosedIcon as PrivacyNavIcon } from '@solar-icons/vue/line-duotone/eye-closed';
 export { LockKeyholeIcon as SecurityNavIcon } from '@solar-icons/vue/line-duotone/lock-keyhole';
+export { EyeIcon as TransparencyNavIcon } from '@solar-icons/vue/line-duotone/eye';
 export { CrownIcon as SubscriptionNavIcon } from '@solar-icons/vue/line-duotone/crown';
 export { DatabaseIcon as AccountNavIcon } from '@solar-icons/vue/line-duotone/database';
 export { HamburgerMenuIcon as MenuNavIcon } from '@solar-icons/vue/line-duotone/hamburger-menu';
