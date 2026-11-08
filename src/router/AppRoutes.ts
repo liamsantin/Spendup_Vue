@@ -189,6 +189,16 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/parametres/securite/AppSettingsSecurityPage.vue')
         },
         {
+            name: 'AppSecurityAccessLog',
+            path: 'parametres/securite/acces-techniques',
+            component: () => import('@/views/app/parametres/securite/AppSecurityAccessLogPage.vue')
+        },
+        {
+            name: 'AppSecurityTransparency',
+            path: 'parametres/securite/transparence',
+            component: () => import('@/views/app/parametres/securite/AppSecurityTransparencyPage.vue')
+        },
+        {
             name: 'AppSettingsSubscription',
             path: 'parametres/abonnement',
             component: () => import('@/views/app/parametres/abonnement/AppSettingsSubscriptionPage.vue')

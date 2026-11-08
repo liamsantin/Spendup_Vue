@@ -3,6 +3,7 @@ import { authAxios, shouldSendBearerAuth } from '@/utils/helpers/axios-helpers';
 import { getDeviceInfo } from '@/features/auth/device';
 import { normalizeAuthDevices } from '@/features/auth/normalizeDevices';
 import type {
+    AccessLogPage,
     ApiResponse,
     AuthSession,
     AuthTokens,
@@ -11,6 +12,7 @@ import type {
     StepUpProof,
     SupportCode,
     SupportCodeStatus,
+    TransparencyReport,
     TwoFactorSetup,
     UpdateProfilePayload,
     UploadAvatarResult
@@ -377,6 +379,17 @@ export const authApi = {
     /** Génère un nouveau code d’assistance (remplace le précédent, 24 h, usage unique). */
     generateSupportCode(accessToken: string | null | undefined) {
         return authHttp.post<SupportCode>('/api/auth/security/support-code', undefined, accessToken);
+    },
+
+    /** Accès techniques subis par l’utilisateur courant, paginés (du plus récent au plus ancien). */
+    getAccessLog(page: number, pageSize: number, accessToken: string | null | undefined) {
+        const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+        return authHttp.get<AccessLogPage>(`/api/auth/security/access-log?${query.toString()}`, accessToken);
+    },
+
+    /** Registre de transparence (identique pour tous les utilisateurs connectés). */
+    getTransparency(accessToken: string | null | undefined) {
+        return authHttp.get<TransparencyReport>('/api/auth/security/transparency', accessToken);
     },
 
     async listDevices(accessToken: string | null | undefined) {

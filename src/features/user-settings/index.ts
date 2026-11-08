@@ -1,6 +1,7 @@
 export { userSettingsApi } from '@/features/user-settings/api';
 export { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
 export {
+    SECURITY_PATHS,
     SETTINGS_PATHS,
     isLegacySettingsPath,
     rewriteLegacySettingsLink,

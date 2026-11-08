@@ -10,6 +10,18 @@ export const SETTINGS_PATHS = {
     subscription: '/app/parametres/abonnement'
 } as const;
 
+/**
+ * Pages Sécurité → Accès techniques / Transparence (étape 4 du chantier confidentialité).
+ * Les alias `/security/…` sont les chemins logiques ciblés par l’API (e-mail et notification
+ * envoyés à l’ouverture d’une consultation) : le routeur les redirige vers les pages `/app`.
+ */
+export const SECURITY_PATHS = {
+    accessLog: '/app/parametres/securite/acces-techniques',
+    transparency: '/app/parametres/securite/transparence',
+    accessLogAlias: '/security/access-log',
+    transparencyAlias: '/security/transparency'
+} as const;
+
 const LEGACY_TAB_TO_PATH: Record<string, string> = {
     Account: SETTINGS_PATHS.account,
     Preferences: SETTINGS_PATHS.preferences,

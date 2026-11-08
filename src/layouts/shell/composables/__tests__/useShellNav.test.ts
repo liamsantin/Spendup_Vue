@@ -141,6 +141,14 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.settings,
             activeId: SHELL_NAV_IDS.security
         });
+        expect(idsFromPath('/app/parametres/securite/acces-techniques')).toEqual({
+            openId: SHELL_NAV_IDS.settings,
+            activeId: SHELL_NAV_IDS.security
+        });
+        expect(idsFromPath('/app/parametres/securite/transparence')).toEqual({
+            openId: SHELL_NAV_IDS.settings,
+            activeId: SHELL_NAV_IDS.transparency
+        });
         expect(idsFromPath(SETTINGS_PATHS.subscription)).toEqual({
             openId: SHELL_NAV_IDS.settings,
             activeId: SHELL_NAV_IDS.subscription

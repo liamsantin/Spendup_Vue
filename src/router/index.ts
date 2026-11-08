@@ -4,11 +4,21 @@ import AuthRoutes from './AuthRoutes';
 import FrontPagesRoutes from './FrontPagesRoutes';
 import { authGuard } from '@/app/guards/auth-guard';
 import { isTauri } from '@/utils/helpers/platform-helpers';
+import { SECURITY_PATHS } from '@/features/user-settings/settings-paths';
 
 const tauriHomeRedirect: RouteRecordRaw = {
     path: '/',
     redirect: '/auth'
 };
+
+/**
+ * Chemins logiques `/security/…` envoyés par l’API (e-mail et notification à l’ouverture d’un
+ * accès technique) : redirigés vers les pages `/app` correspondantes, qui portent le guard auth.
+ */
+const securityAliasRoutes: RouteRecordRaw[] = [
+    { path: SECURITY_PATHS.accessLogAlias, redirect: SECURITY_PATHS.accessLog },
+    { path: SECURITY_PATHS.transparencyAlias, redirect: SECURITY_PATHS.transparency }
+];
 
 export const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,6 +33,7 @@ export const router = createRouter({
         ...(isTauri() ? [tauriHomeRedirect] : [FrontPagesRoutes]),
         AppRoutes,
         AuthRoutes,
+        ...securityAliasRoutes,
         {
             path: '/:pathMatch(.*)*',
             component: () => import('@/views/authentication/Error.vue')

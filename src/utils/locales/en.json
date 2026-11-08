@@ -84,7 +84,8 @@
             "privacy": "Privacy",
             "security": "Security",
             "subscription": "Subscription",
-            "account": "Account"
+            "account": "Account",
+            "transparency": "Transparency"
         },
         "shortcuts": "Shortcuts",
         "subCaptions": {
@@ -2999,6 +3000,117 @@
             "require2faForSensitiveActions": "Require 2FA for sensitive actions",
             "require2faHint": "When enabled, an OTP code is required in addition to your password for sensitive actions.",
             "require2faNeedsTwoFactor": "Enable two-factor authentication first to use this option."
+        },
+        "common": {
+            "backToSecurity": "Security settings",
+            "duration": {
+                "minutes": "{n} min",
+                "hours": "{h} h {m}"
+            }
+        },
+        "categories": {
+            "incident": "Incident",
+            "demande_utilisateur": "User request",
+            "restauration": "Restore",
+            "rgpd": "GDPR",
+            "securite": "Security"
+        },
+        "links": {
+            "title": "Access to your data",
+            "subtitle": "Who viewed your data, and what the operator does on the server.",
+            "accessLog": "Technical access",
+            "accessLogHint": "Every time support viewed your data, with the reason and the screens opened.",
+            "transparency": "Transparency",
+            "transparencyHint": "The operator’s activity register, identical for every user.",
+            "open": "Open"
+        },
+        "accessLog": {
+            "title": "Technical access",
+            "subtitle": "Support reviews of your data.",
+            "intro": "A technical access is a read-only review of your data by Spend.Up support: for an incident, a request you made, a restore, a legal obligation or a security check. It is always announced by e-mail the moment it opens, and every screen opened is logged. The operator’s name is never shown: you know that support looked, not who.",
+            "empty": "Nobody has viewed your data.",
+            "fields": {
+                "reason": "Reason",
+                "views": "Screens viewed",
+                "email": "Notification e-mail",
+                "code": "Support code"
+            },
+            "viewsNone": "No screen displayed",
+            "viewCount": "{resource} ×{count}",
+            "emailNotSent": "Not sent",
+            "codeUsed": "Support code used",
+            "status": {
+                "active": "In progress",
+                "terminated": "Ended",
+                "expired": "Expired",
+                "email_failed": "Cancelled: e-mail not sent, nothing was displayed"
+            },
+            "resources": {
+                "accounts": "accounts",
+                "transactions": "transactions",
+                "budgets": "budgets",
+                "recurring_expenses": "recurring expenses",
+                "recurring_incomes": "recurring income",
+                "imports": "imports",
+                "files": "files"
+            },
+            "pagination": {
+                "label": "Technical access pagination",
+                "summary": "Page {page} of {pages} · {count} access | Page {page} of {pages} · {count} access | Page {page} of {pages} · {count} accesses",
+                "previous": "Previous",
+                "next": "Next"
+            }
+        },
+        "transparency": {
+            "title": "Transparency",
+            "subtitle": "What the operator does on the server and on the data.",
+            "intro": "This register is the same for every Spend.Up user. It shows the operator’s activity over the last months without naming anyone: it contains no name, no address, no reason and no precise time. Reviews cancelled before anything was displayed are not listed.",
+            "window": "From {from} to {to} · {months}",
+            "monthsShown": "{n} month | {n} month | {n} months",
+            "generatedAt": "Generated on {date}",
+            "months": {
+                "title": "Monthly summary",
+                "month": "Month",
+                "consoleVisits": "Console visits",
+                "consultations": "Data reviews",
+                "usersConsulted": "Users affected",
+                "loginsRefused": "Logins refused",
+                "empty": "No activity over the period."
+            },
+            "consultations": {
+                "title": "Data reviews",
+                "day": "Day",
+                "category": "Category",
+                "duration": "Duration",
+                "code": "Support code",
+                "codeYes": "Code used",
+                "codeNo": "No code",
+                "empty": "No data review over the period."
+            },
+            "visits": {
+                "title": "Admin console visits",
+                "day": "Day",
+                "duration": "Duration",
+                "kind": "Kind",
+                "kinds": {
+                    "consultation": "Review opened",
+                    "statistics": "Statistics only",
+                    "none": "Nothing opened"
+                },
+                "empty": "No visit over the period."
+            },
+            "byCategory": {
+                "title": "Breakdown by category",
+                "total": "{n} review | {n} review | {n} reviews"
+            },
+            "counter": {
+                "title": "Human interventions",
+                "label": "human interventions on the server, all reasons combined",
+                "unavailable": "unavailable",
+                "updatedAt": "Updated on {date}",
+                "noUpdate": "The counter cannot be read right now.",
+                "note": "Cumulative count of sessions opened by a person on the server (SSH, administrative commands, manual database access), including the operator’s routine maintenance."
+            }
         }
     },
     "userSettings": {

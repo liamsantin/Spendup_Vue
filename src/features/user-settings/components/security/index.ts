@@ -4,3 +4,6 @@ export { default as SecuritySupportCodeCard } from '@/features/user-settings/com
 export { default as SecurityTwoFactorCard } from '@/features/user-settings/components/security/SecurityTwoFactorCard.vue';
 export { default as TwoFactorDisableDialog } from '@/features/user-settings/components/security/TwoFactorDisableDialog.vue';
 export { default as TwoFactorSetupDialog } from '@/features/user-settings/components/security/TwoFactorSetupDialog.vue';
+export { default as SecurityAccessLogList } from '@/features/user-settings/components/security/SecurityAccessLogList.vue';
+export { default as SecurityTransparencyLinksCard } from '@/features/user-settings/components/security/SecurityTransparencyLinksCard.vue';
+export { default as SecurityTransparencyReport } from '@/features/user-settings/components/security/SecurityTransparencyReport.vue';

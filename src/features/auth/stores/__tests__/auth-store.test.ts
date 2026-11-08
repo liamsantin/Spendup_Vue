@@ -27,6 +27,8 @@ const authApiMock = vi.hoisted(() => ({
     disable2fa: vi.fn(),
     getSupportCodeStatus: vi.fn(),
     generateSupportCode: vi.fn(),
+    getAccessLog: vi.fn(),
+    getTransparency: vi.fn(),
     listDevices: vi.fn(),
     revokeDevice: vi.fn(),
     setDeviceTrust: vi.fn(),
@@ -355,6 +357,21 @@ describe('useAuthStore', () => {
 
             expect(authApiMock.listDevices).toHaveBeenCalledWith('tok-devices');
             expect(list).toEqual([{ deviceIdentifier: 'd1' }]);
+        });
+
+        it('getAccessLog et getTransparency passent la pagination et le access token', async () => {
+            const auth = useAuthStore();
+            auth.setTokens(tokens({ accessToken: 'tok-transparency' }));
+            authApiMock.getAccessLog.mockResolvedValue({ items: [], page: 2, pageSize: 20, totalCount: 0 });
+            authApiMock.getTransparency.mockResolvedValue({ monthsShown: 3 });
+
+            const log = await auth.getAccessLog(2, 20);
+            const report = await auth.getTransparency();
+
+            expect(authApiMock.getAccessLog).toHaveBeenCalledWith(2, 20, 'tok-transparency');
+            expect(authApiMock.getTransparency).toHaveBeenCalledWith('tok-transparency');
+            expect(log.page).toBe(2);
+            expect(report.monthsShown).toBe(3);
         });
 
         it('getSupportCodeStatus et generateSupportCode passent le access token', async () => {
