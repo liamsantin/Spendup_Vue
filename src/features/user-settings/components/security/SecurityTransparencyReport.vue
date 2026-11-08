@@ -253,6 +253,7 @@ function visitKindColor(kind: string): string {
 
 .transparency__cell-strong {
     font-weight: 700;
+    white-space: nowrap;
 }
 
 .transparency__empty {
