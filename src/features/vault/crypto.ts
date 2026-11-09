@@ -8,6 +8,7 @@
  * - Empreinte d’IBAN : HMAC-SHA-256 avec une clé dérivée de la DEK par HKDF (info `blind-index`), `h:` + base64url.
  */
 import { fromBase64Url, isBase64Url, toBase64Url } from '@/features/vault/base64url';
+import { vaultAad } from '@/features/vault/catalog';
 import {
     VAULT_FINGERPRINT_PREFIX,
     VAULT_KDF_ITERATIONS,
@@ -72,9 +73,9 @@ function concat(...parts: Uint8Array[]): Uint8Array<ArrayBuffer> {
     return out;
 }
 
-/** AAD d’un champ : `table:colonne:publicId`. */
+/** AAD d’un champ : `table:colonne:publicId` (voir `catalog.ts`). */
 export function fieldAad(table: string, column: string, publicId: string): string {
-    return `${table}:${column}:${publicId}`;
+    return vaultAad(table, column, publicId);
 }
 
 /** Vrai si la valeur porte le préfixe d’un champ chiffré. */
@@ -225,6 +226,71 @@ export async function unwrapDekWithSecret(secret: string, params: VaultKdfParams
     }
     const kek = await deriveKek(secret, fromBase64Url(params.salt), params.iterations);
     return unwrapDek(wrapped, kek);
+}
+
+/** Paramètres de la dérivation par code de récupération (`recoverySalt` remplace `salt`). */
+export type VaultRecoveryParams = {
+    kdf: VaultKdf | string | null;
+    iterations: number | null;
+    recoverySalt: string | null;
+    dekWrappedRecovery: string | null;
+};
+
+/**
+ * Déballe la DEK avec un code de récupération (normalisé : majuscules, sans espaces ni tirets).
+ * @param code Code saisi par l’utilisateur.
+ * @param params `kdf`, `iterations`, `recoverySalt`, `dekWrappedRecovery` du Coffre.
+ * @returns Les octets de la DEK (à importer ou ré-emballer, puis effacer).
+ * @throws VaultCryptoError `wrong_password` si le code ne déballe pas la DEK, `invalid_format` sans emballage.
+ */
+export async function unwrapDekWithRecoveryCode(code: string, params: VaultRecoveryParams): Promise<Uint8Array<ArrayBuffer>> {
+    if (!params.dekWrappedRecovery || !params.recoverySalt) {
+        throw new VaultCryptoError('invalid_format', 'Aucun code de récupération enregistré pour ce Coffre.');
+    }
+    const normalized = code.toUpperCase().replace(/[\s-]+/g, '');
+    return unwrapDekWithSecret(
+        normalized,
+        { kdf: params.kdf, iterations: params.iterations, salt: params.recoverySalt },
+        params.dekWrappedRecovery
+    );
+}
+
+/**
+ * Emballe des octets de DEK avec un nouveau secret et les paramètres du Coffre (même sel, mêmes itérations).
+ * @param dekBytes Octets de la DEK (non modifiés ; à effacer par l’appelant).
+ * @param secret Nouveau mot de passe ou phrase.
+ * @param params `kdf`, `iterations`, `salt` du Coffre.
+ */
+export async function rewrapDek(dekBytes: Uint8Array, secret: string, params: VaultKdfParams): Promise<string> {
+    if (params.kdf !== 'pbkdf2') {
+        throw new VaultCryptoError('unsupported_kdf', `Dérivation non prise en charge : ${String(params.kdf)}.`);
+    }
+    if (!params.salt || !params.iterations) {
+        throw new VaultCryptoError('invalid_format', 'Paramètres du Coffre incomplets.');
+    }
+    const kek = await deriveKek(secret, fromBase64Url(params.salt), params.iterations);
+    return wrapDek(dekBytes, kek);
+}
+
+/**
+ * Mot de passe oublié : déballe la DEK par le code de récupération puis la ré-emballe avec le nouveau
+ * mot de passe (même sel, mêmes paramètres). Les octets de la DEK sont effacés ensuite.
+ * @param code Code de récupération saisi.
+ * @param params Paramètres renvoyés par `GET /api/auth/reset-password/vault` (ou `GET /api/vault`).
+ * @param newPassword Nouveau mot de passe.
+ * @returns `dekWrappedPassword` à envoyer dans `vaultWrap`.
+ */
+export async function rewrapWithRecoveryCode(
+    code: string,
+    params: VaultKdfParams & VaultRecoveryParams,
+    newPassword: string
+): Promise<string> {
+    const dekBytes = await unwrapDekWithRecoveryCode(code, params);
+    try {
+        return await rewrapDek(dekBytes, newPassword, params);
+    } finally {
+        dekBytes.fill(0);
+    }
 }
 
 /**

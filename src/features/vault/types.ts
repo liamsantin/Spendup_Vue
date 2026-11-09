@@ -55,8 +55,11 @@ export type VaultMigrateItem = {
     scope: VaultScope;
     action: 'encrypt' | 'decrypt';
     value: string;
-    /** Version de ligne, opaque : à renvoyer telle quelle. */
-    version: number;
+    /**
+     * Version de ligne, opaque, à renvoyer telle quelle. Le serveur l’envoie comme un entier 64 bits
+     * (ticks) : au-delà de 2^53, `JSON.parse` la fausserait, elle est donc gardée en chaîne décimale.
+     */
+    version: string;
 };
 
 export type VaultMigrateBatch = {
@@ -70,7 +73,8 @@ export type VaultMigrateWriteItem = {
     publicId: string;
     field: string;
     value: string | null;
-    version: number;
+    /** Version lue, renvoyée telle quelle (chaîne décimale, envoyée au serveur comme un entier). */
+    version: string;
     /** Empreinte `h:…`, obligatoire pour `account.iban` chiffré. */
     fingerprint?: string | null;
 };
@@ -86,13 +90,40 @@ export type VaultMigrateConflict = {
     index: number;
     table: string;
     publicId: string;
-    currentVersion: number;
+    currentVersion: string;
 };
 
 /** Emballage par le code de récupération — `POST /api/vault/recovery`. */
 export type VaultRecoveryRequest = {
     recoverySalt: string;
     dekWrappedRecovery: string;
+};
+
+/** Ré-emballage hors changement de mot de passe — `PUT /api/vault/password-wrap` (step-up). */
+export type VaultPasswordWrapRequest = {
+    dekWrappedPassword: string;
+    /** Nouveau sel et paramètres si la dérivation change (sinon omis : ceux du Coffre restent). */
+    salt?: string | null;
+    kdf?: VaultKdf | null;
+    iterations?: number | null;
+    memoryKiB?: number | null;
+    parallelism?: number | null;
+};
+
+/**
+ * Paramètres du Coffre lisibles avec un jeton de réinitialisation valide —
+ * `GET /api/auth/reset-password/vault?token=`. `exists` faux : aucun Coffre à ré-emballer.
+ */
+export type VaultResetParams = {
+    exists: boolean;
+    hasRecovery: boolean;
+    kdf: VaultKdf | null;
+    iterations: number | null;
+    memoryKiB: number | null;
+    parallelism: number | null;
+    salt: string | null;
+    recoverySalt: string | null;
+    dekWrappedRecovery: string | null;
 };
 
 /** Résultat d’un déchiffrement : jamais d’exception vers l’UI. */

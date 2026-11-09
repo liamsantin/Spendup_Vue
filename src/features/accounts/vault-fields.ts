@@ -49,10 +49,10 @@ export async function isVaultActiveForWrites(): Promise<boolean> {
  */
 export async function encryptAccountPayload<
     T extends Pick<UpdateAccountPayload, 'iban' | 'accountNumber'> & { ibanFingerprint?: string | null }
->(publicId: string, payload: T): Promise<T> {
+>(publicId: string, payload: T): Promise<T & { ibanFingerprint?: string | null }> {
     const vault = useVaultStore();
     if (!(await vault.ensureReady())) return payload;
-    const next: T = { ...payload };
+    const next: T & { ibanFingerprint?: string | null } = { ...payload };
     if (typeof payload.iban === 'string' && payload.iban && !isCipher(payload.iban)) {
         next.ibanFingerprint = await vault.fingerprint(payload.iban);
         next.iban = await vault.encrypt(ACCOUNT_VAULT_TABLE, ACCOUNT_VAULT_COLUMNS.iban, publicId, payload.iban);

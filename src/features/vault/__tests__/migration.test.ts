@@ -14,7 +14,7 @@ vi.mock('@/features/vault/api', () => ({ vaultApi: apiMock }));
 import { runVaultMigration } from '@/features/vault/migration';
 
 function item(partial: Partial<VaultMigrateItem> & Pick<VaultMigrateItem, 'table' | 'field' | 'value'>): VaultMigrateItem {
-    return { publicId: 'row-1', scope: 'core', action: 'encrypt', version: 1, ...partial };
+    return { publicId: 'row-1', scope: 'core', action: 'encrypt', version: '1', ...partial };
 }
 
 describe('runVaultMigration', () => {
@@ -51,7 +51,7 @@ describe('runVaultMigration', () => {
         expect(writes[0].fingerprint).toMatch(/^h:[A-Za-z0-9_-]{43}$/);
         expect(writes[1].fingerprint).toBeNull();
         expect(writes[2].fingerprint).toBeNull();
-        expect(writes[2].version).toBe(1);
+        expect(writes[2].version).toBe('1');
         // Chiffré avec l’AAD attendu table:colonne:publicId.
         expect(await decryptField(keys.dek, 'vehicle_asset', 'immatriculation', 'as-1', writes[2].value as string)).toEqual({
             ok: true,
@@ -78,14 +78,14 @@ describe('runVaultMigration', () => {
 
         expect(outcome).toMatchObject({ applied: 1, skipped: 1, completed: false });
         const writes = apiMock.migrateWrite.mock.calls[0][0] as VaultMigrateWriteItem[];
-        expect(writes).toEqual([{ table: 'asset', publicId: 'as-9', field: 'notes', value: 'secret', version: 1 }]);
+        expect(writes).toEqual([{ table: 'asset', publicId: 'as-9', field: 'notes', value: 'secret', version: '1' }]);
         expect(apiMock.complete).not.toHaveBeenCalled();
     });
 
     it('relit le lot après un 409 CONFLICT', async () => {
         apiMock.migrateBatch
-            .mockResolvedValueOnce({ items: [item({ table: 'account', field: 'account_number', value: '1', version: 1 })], remaining: 1 })
-            .mockResolvedValueOnce({ items: [item({ table: 'account', field: 'account_number', value: '1', version: 2 })], remaining: 1 })
+            .mockResolvedValueOnce({ items: [item({ table: 'account', field: 'account_number', value: '1', version: '1' })], remaining: 1 })
+            .mockResolvedValueOnce({ items: [item({ table: 'account', field: 'account_number', value: '1', version: '2' })], remaining: 1 })
             .mockResolvedValue({ items: [], remaining: 0 });
         apiMock.migrateWrite
             .mockRejectedValueOnce(new AppError('Conflit', 409, 'CONFLICT', { index: 0 }))
@@ -94,7 +94,7 @@ describe('runVaultMigration', () => {
         const outcome = await runVaultMigration(keys, 'active');
 
         expect(apiMock.migrateWrite).toHaveBeenCalledTimes(2);
-        expect((apiMock.migrateWrite.mock.calls[1][0] as VaultMigrateWriteItem[])[0].version).toBe(2);
+        expect((apiMock.migrateWrite.mock.calls[1][0] as VaultMigrateWriteItem[])[0].version).toBe('2');
         expect(outcome).toMatchObject({ applied: 1, state: 'active', completed: false });
         expect(apiMock.complete).not.toHaveBeenCalled();
     });

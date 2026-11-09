@@ -18,6 +18,11 @@ export type FetchFormOptions = {
 type SendOptions = AxiosRequestConfig & {
     /** Réponse brute (PDF, image) — pas d’enveloppe JSON. */
     binary?: boolean;
+    /**
+     * Relit le JSON de la réponse avec ce parseur au lieu de `JSON.parse` (entiers au-delà de 2^53 à garder
+     * en chaînes, par exemple). L’enveloppe `{ success, result }` est ensuite traitée comme d’habitude.
+     */
+    parseJson?: (text: string) => unknown;
 };
 
 export const fetchWrapper = {
@@ -38,6 +43,20 @@ export const fetchWrapper = {
     /** GET binaire authentifié (`/content`, avatar uploadé). 401/404 restent du JSON enveloppé. */
     getBlob(url: string) {
         return send('GET', url, undefined, { binary: true }) as Promise<Blob>;
+    },
+    /**
+     * GET dont le JSON est relu par `parseJson` (au lieu de `JSON.parse`) : pour préserver des entiers
+     * au-delà de 2^53 que le serveur renvoie en nombres.
+     */
+    getWithParser(url: string, parseJson: (text: string) => unknown) {
+        return send('GET', url, undefined, { parseJson });
+    },
+    /**
+     * POST d’un corps JSON déjà sérialisé (texte), réponse relue par `parseJson`. Permet d’envoyer des
+     * entiers au-delà de 2^53 tels quels.
+     */
+    postJsonText(url: string, bodyText: string, parseJson: (text: string) => unknown) {
+        return send('POST', url, bodyText, { parseJson, headers: { 'Content-Type': 'application/json' } });
     }
 };
 
@@ -46,7 +65,7 @@ function request(method: Method) {
 }
 
 async function send(method: Method, url: string, body?: unknown, extra: SendOptions = {}): Promise<unknown> {
-    const { binary = false, ...axiosExtra } = extra;
+    const { binary = false, parseJson, headers: extraHeaders, ...axiosExtra } = extra;
     const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
 
     const doRequest = async (retried: boolean): Promise<unknown> => {
@@ -54,12 +73,17 @@ async function send(method: Method, url: string, body?: unknown, extra: SendOpti
             url: toRequestUrl(url),
             method,
             data: body,
-            headers: await authHeader(url),
+            headers: { ...(await authHeader(url)), ...((extraHeaders as Record<string, string> | undefined) ?? {}) },
             validateStatus: () => true,
             ...axiosExtra
         };
         if (binary) {
             config.responseType = 'blob';
+        }
+        if (parseJson) {
+            // Texte brut puis parseur maison : Axios ne doit pas passer par JSON.parse (précision des entiers).
+            config.responseType = 'text';
+            config.transformResponse = [(data: unknown) => (typeof data === 'string' && data ? safeParse(data, parseJson) : data)];
         }
         if (isForm) {
             config.transformRequest = [
@@ -92,6 +116,15 @@ async function send(method: Method, url: string, body?: unknown, extra: SendOpti
     };
 
     return doRequest(false);
+}
+
+/** Parse un corps texte ; un JSON invalide est rendu tel quel (l’enveloppe d’erreur le signalera). */
+function safeParse(text: string, parseJson: (text: string) => unknown): unknown {
+    try {
+        return parseJson(text);
+    } catch {
+        return text;
+    }
 }
 
 function stripJsonContentType(headers: AxiosRequestConfig['headers']) {

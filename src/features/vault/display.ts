@@ -19,3 +19,14 @@ export function resolveSensitiveFieldDisplay(value: string | null | undefined, o
     if (isCipher(value)) return ownedByMe ? { kind: 'unreadable' } : { kind: 'foreign' };
     return { kind: 'plain', value };
 }
+
+/**
+ * Valeur d’un champ pour un export (CSV…) : le clair quand le Coffre l’a déchiffré, sinon le marqueur
+ * « chiffré » à la place d’un `enc:v1:` illisible.
+ * @param value Valeur du champ telle qu’elle est dans le store.
+ * @param encryptedLabel Marqueur traduit (`vault.encrypted`).
+ */
+export function sensitiveExportValue(value: string | null | undefined, encryptedLabel: string): string | null {
+    if (value == null || value === '') return value ?? null;
+    return isCipher(value) ? encryptedLabel : value;
+}
