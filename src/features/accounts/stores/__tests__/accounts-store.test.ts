@@ -344,8 +344,10 @@ describe('useAccountsStore', () => {
             expect(api.list).toHaveBeenCalled();
             expect(api.get).toHaveBeenCalledWith('acc-shared');
         });
-        expect(store.accounts.find((a) => a.publicId === 'acc-shared')?.hiddenFields).toEqual([]);
-        expect(store.selectedAccount?.currentBalance).toBe(120);
+        await vi.waitFor(() => {
+            expect(store.accounts.find((a) => a.publicId === 'acc-shared')?.hiddenFields).toEqual([]);
+            expect(store.selectedAccount?.currentBalance).toBe(120);
+        });
     });
 
     it('tierChanged tierUpdated refetch la liste pour rafraîchir institutionName', async () => {
@@ -376,7 +378,9 @@ describe('useAccountsStore', () => {
         await vi.waitFor(() => {
             expect(api.list).toHaveBeenCalled();
         });
-        expect(store.accounts[0]?.institutionName).toBe('UBS SA');
+        await vi.waitFor(() => {
+            expect(store.accounts[0]?.institutionName).toBe('UBS SA');
+        });
     });
 
     it('accountChanged balanceSnapshotCreated refetch les relevés si le compte est ouvert', async () => {
@@ -524,8 +528,10 @@ describe('useAccountsStore', () => {
             expect(api.list).toHaveBeenCalled();
             expect(api.get).toHaveBeenCalledWith('acc-1');
         });
-        expect(store.selectedAccount?.name).toBe('Courant renommé');
-        expect(store.accounts.find((a) => a.publicId === 'acc-1')?.name).toBe('Courant renommé');
+        await vi.waitFor(() => {
+            expect(store.selectedAccount?.name).toBe('Courant renommé');
+            expect(store.accounts.find((a) => a.publicId === 'acc-1')?.name).toBe('Courant renommé');
+        });
     });
 
     it('accountChanged revoked retire le compte immédiatement et vide la sélection', async () => {
@@ -598,8 +604,10 @@ describe('useAccountsStore', () => {
             expect(api.list).toHaveBeenCalled();
             expect(api.get).toHaveBeenCalledWith('acc-shared');
         });
-        expect(store.accounts.find((a) => a.publicId === 'acc-shared')?.myRole).toBe('viewer');
-        expect(store.selectedAccount?.myRole).toBe('viewer');
+        await vi.waitFor(() => {
+            expect(store.accounts.find((a) => a.publicId === 'acc-shared')?.myRole).toBe('viewer');
+            expect(store.selectedAccount?.myRole).toBe('viewer');
+        });
     });
 
     it('crée un compte par upsert sans relister', async () => {

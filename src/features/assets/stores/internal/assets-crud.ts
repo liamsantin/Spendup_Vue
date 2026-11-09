@@ -9,6 +9,13 @@ import {
 } from '@/features/assets/payload';
 import { ASSET_NOT_FOUND_MESSAGE, type Asset, type ListAssetsQuery } from '@/features/assets/types';
 import { listCacheKey, type AssetsState } from '@/features/assets/stores/internal/assets-state';
+import {
+    decryptAssetFields,
+    encryptAssetPayload,
+    hasSensitiveAssetFields,
+    stripSensitiveAssetFields
+} from '@/features/assets/vault-fields';
+import { useVaultStore } from '@/features/vault/stores/vault-store';
 
 export const ASSET_NOT_FOUND_CODE = 'asset_not_found';
 export const ASSET_SUB_RESOURCE_NOT_FOUND_MESSAGE = 'Élément introuvable.';
@@ -55,6 +62,11 @@ export function assetPayloadErrorMessage(code: string): string {
         default:
             return 'Données invalides.';
     }
+}
+
+/** Normalise puis déchiffre les champs du socle (plaque) quand le Coffre est ouvert. */
+async function prepareAsset(asset: Asset): Promise<Asset> {
+    return decryptAssetFields(normalizeAsset(asset));
 }
 
 export function createAssetsCrud(state: AssetsState) {
@@ -138,7 +150,7 @@ export function createAssetsCrud(state: AssetsState) {
                             active: normalized.active ?? undefined
                         });
                         if (requestId !== listRequestSeq) return;
-                        const nextItems = (Array.isArray(result?.items) ? result.items : []).map(normalizeAsset);
+                        const nextItems = await Promise.all((Array.isArray(result?.items) ? result.items : []).map(prepareAsset));
                         setList(key, nextItems, { totalCount: result?.totalCount ?? nextItems.length });
                         applied = true;
                     } catch (e: unknown) {
@@ -194,11 +206,39 @@ export function createAssetsCrud(state: AssetsState) {
             if (known) return known;
         }
         try {
-            const asset = normalizeAsset(await assetsApi.get(id));
+            const asset = await prepareAsset(await assetsApi.get(id));
             upsertItem(asset, { replaceSummary: true });
             return asset;
         } catch (e: unknown) {
             throw rememberError(e, id);
+        }
+    }
+
+    /**
+     * POST sans la plaque puis PUT avec la plaque chiffrée (l’AAD a besoin du `publicId`). Si le PUT
+     * échoue, l’actif tout juste créé est supprimé.
+     */
+    async function createAssetWithVault(payload: Parameters<typeof assetsApi.create>[0]): Promise<Asset> {
+        if (!hasSensitiveAssetFields(payload) || !(await useVaultStore().ensureReady())) {
+            return prepareAsset(await assetsApi.create(payload));
+        }
+        const created = normalizeAsset(await assetsApi.create(stripSensitiveAssetFields(payload)));
+        try {
+            const body = await encryptAssetPayload(created.publicId, {
+                name: created.name,
+                estimatedValue: created.estimatedValue,
+                currency: created.currency,
+                acquisitionDate: created.acquisitionDate,
+                acquisitionPrice: created.acquisitionPrice,
+                description: created.description,
+                notes: created.notes,
+                isActive: created.isActive,
+                vehicle: payload.vehicle ?? null
+            });
+            return await prepareAsset(await assetsApi.update(created.publicId, body));
+        } catch (e: unknown) {
+            await assetsApi.remove(created.publicId).catch(() => undefined);
+            throw e;
         }
     }
 
@@ -210,7 +250,7 @@ export function createAssetsCrud(state: AssetsState) {
             if (!built.ok) {
                 throw new AppError(assetPayloadErrorMessage(built.code), 400, built.code);
             }
-            const created = normalizeAsset(await assetsApi.create(built.payload));
+            const created = await createAssetWithVault(built.payload);
             upsertItem(created, { replaceSummary: true });
             touchHydratedListCaches();
             rememberLocalMutation(created.publicId);
@@ -237,7 +277,7 @@ export function createAssetsCrud(state: AssetsState) {
             if (!built.ok) {
                 throw new AppError(assetPayloadErrorMessage(built.code), 400, built.code);
             }
-            const updated = normalizeAsset(await assetsApi.update(publicId, built.payload));
+            const updated = await prepareAsset(await assetsApi.update(publicId, await encryptAssetPayload(publicId, built.payload)));
             upsertItem(updated, { replaceSummary: true });
             touchHydratedListCaches();
             rememberLocalMutation(updated.publicId);

@@ -423,6 +423,8 @@
             "currentBalance": "Solde actuel",
             "initialBalance": "Solde initial",
             "fieldHidden": "Caché",
+            "fieldUnreadable": "Illisible",
+            "fieldForeign": "Chiffré par le propriétaire",
             "tabs": {
                 "details": "Détails",
                 "snapshots": "Relevé",
@@ -455,6 +457,7 @@
                 "nameRequired": "Le nom est obligatoire.",
                 "balanceInvalid": "Saisissez un solde valide.",
                 "ibanInvalid": "IBAN invalide.",
+                "ibanUnreadable": "Cet IBAN est chiffré et illisible sur cet appareil : effacez-le ou saisissez-le à nouveau.",
                 "colorInvalid": "Couleur invalide. Utilisez #RGB, #RRGGBB ou #RRGGBBAA.",
                 "bankRequired": "Une banque est obligatoire pour un compte courant ou d’épargne : choisissez-la, ou saisissez un IBAN suisse."
             },
@@ -2810,6 +2813,7 @@
             },
             "errors": {
                 "currentRequired": "Saisissez votre mot de passe actuel.",
+                "currentIncorrect": "Mot de passe actuel incorrect.",
                 "invalidNew": "Le nouveau mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.",
                 "mismatch": "La confirmation ne correspond pas au nouveau mot de passe."
             }
@@ -2855,6 +2859,14 @@
         },
         "leaveConfirm": "Vous avez des modifications non enregistrées. Voulez-vous vraiment quitter cette page ?",
         "googleSignIn": "Se connecter avec Google"
+    },
+    "vault": {
+        "unreadable": "Illisible",
+        "foreign": "Chiffré par le propriétaire",
+        "migration": {
+            "progress": "Chiffrement de vos données en cours : {done} sur {total}",
+            "error": "Le chiffrement de vos données reprendra à la prochaine connexion."
+        }
     },
     "security": {
         "twoFactor": {
@@ -2985,6 +2997,54 @@
             "copied": "Copié",
             "errors": {
                 "copyFailed": "Impossible de copier dans le presse-papiers."
+            }
+        },
+        "vault": {
+            "title": "Coffre",
+            "subtitle": "Vos IBAN, numéros de compte, plaques et numéros de série sont chiffrés dans votre navigateur.",
+            "description": "Le serveur ne conserve ces champs que chiffrés, avec une clé qu’il ne possède pas : même l’opérateur ne peut pas les lire. Votre mot de passe ouvre le Coffre à chaque connexion ; rien d’autre à faire.",
+            "status": {
+                "active": "Coffre actif",
+                "migrating": "Chiffrement en cours · {count} élément(s) restant(s)",
+                "disabling": "Retrait du Coffre en cours",
+                "absent": "Aucun Coffre sur ce compte",
+                "locked": "Coffre fermé sur cet appareil",
+                "lost": "Clé du Coffre perdue : ces champs sont irrécupérables"
+            },
+            "absentHint": "Les comptes connectés avec Google seulement n’ont pas encore de Coffre.",
+            "lockedHint": "Reconnectez-vous avec votre mot de passe pour rouvrir le Coffre sur cet appareil.",
+            "scope": {
+                "label": "Périmètre couvert",
+                "core": "Socle : IBAN, numéros de compte, plaques, numéros de série, adresses de portefeuille.",
+                "extended": "Étendu : le socle, plus les notes, les tiers, les adresses et les justificatifs."
+            },
+            "recovery": {
+                "reminder": "Générez votre code de récupération",
+                "reminderText": "Sans mot de passe ni code de récupération, les champs du Coffre sont perdus : un mot de passe oublié ne pourra pas les restituer. Le code est montré une seule fois.",
+                "done": "Code de récupération enregistré le {date}",
+                "doneText": "Si vous oubliez votre mot de passe, ce code permettra de retrouver les champs du Coffre.",
+                "generate": "Générer le code",
+                "renew": "Renouveler le code",
+                "renewHint": "Un nouveau code rend l’ancien inutilisable."
+            },
+            "dialog": {
+                "title": "Code de récupération",
+                "subtitle": "Votre mot de passe actuel est nécessaire pour protéger la clé du Coffre avec ce code.",
+                "passwordLabel": "Mot de passe actuel",
+                "generate": "Générer le code",
+                "codeLabel": "Votre code de récupération",
+                "oneTimeWarning": "Ce code ne sera plus affiché ensuite : notez-le dans un endroit sûr, hors de cet appareil.",
+                "confirmLabel": "Pour confirmer que vous l’avez noté, saisissez les 4 premiers caractères du code",
+                "confirmPlaceholder": "XXXX",
+                "close": "J’ai noté mon code",
+                "copy": "Copier",
+                "copied": "Copié",
+                "errors": {
+                    "passwordRequired": "Saisissez votre mot de passe.",
+                    "wrongPassword": "Mot de passe incorrect.",
+                    "confirmMismatch": "Les caractères saisis ne correspondent pas au début du code.",
+                    "copyFailed": "Impossible de copier dans le presse-papiers."
+                }
             }
         },
         "session": {

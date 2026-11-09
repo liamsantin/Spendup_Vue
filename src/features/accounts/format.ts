@@ -1,3 +1,4 @@
+import { isCipher } from '@/features/vault/crypto';
 import type { Account, Currency, HiddenAccountField } from '@/features/accounts/types';
 
 /** Signe moins typographique (U+2212), jamais le trait d'union. */
@@ -56,12 +57,16 @@ export function isBalanceHidden(account: Pick<Account, 'hiddenFields'> | { hidde
  */
 export function formatAccountNumberLine(
     account: Pick<Account, 'accountNumber' | 'hiddenFields'>,
-    labels: { hidden: string; visible: (number: string) => string }
+    labels: { hidden: string; visible: (number: string) => string; unreadable?: string }
 ): string {
     if (isAccountFieldHidden(account, 'accountNumber')) {
         return ` · ${labels.hidden}`;
     }
     if (account.accountNumber) {
+        // Chiffré resté tel quel après `decrypt` (Coffre) : jamais affiché brut.
+        if (isCipher(account.accountNumber)) {
+            return ` · ${labels.unreadable ?? labels.hidden}`;
+        }
         return ` · ${labels.visible(account.accountNumber)}`;
     }
     return '';

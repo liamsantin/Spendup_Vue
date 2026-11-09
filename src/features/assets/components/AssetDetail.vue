@@ -26,6 +26,7 @@ import {
     formatCryptoQuantity
 } from '@/features/assets/format';
 import { useAssetsStore } from '@/features/assets/stores/assets-store';
+import { isCipher } from '@/features/vault/crypto';
 
 const props = defineProps<{
     assetPublicId: string;
@@ -105,7 +106,7 @@ const facts = computed<AssetFact[]>(() => {
         add('model', field('model'), vehicle.model);
         if (vehicle.fuel) add('fuel', field('fuel'), t(`assetsPage.fuels.${vehicle.fuel}`));
         add('year', field('firstRegistrationYear'), vehicle.firstRegistrationYear);
-        add('plate', field('plate'), vehicle.plate);
+        add('plate', field('plate'), isCipher(vehicle.plate) ? t('vault.unreadable') : vehicle.plate);
         if (vehicle.currentMileage != null) {
             add(
                 'mileage',

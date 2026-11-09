@@ -6,6 +6,7 @@ import { isAccountFieldHidden, resolveAccountBalanceDisplay, safeAccountColor, f
 import { canEditAccount } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { Account } from '@/features/accounts/types';
+import { resolveSensitiveFieldDisplay } from '@/features/vault/display';
 
 const props = defineProps<{
     account: Account;
@@ -36,11 +37,15 @@ const promoted = computed(() => store.isPromotedAccount(props.account.publicId))
 const color = computed(() => safeAccountColor(props.account.color));
 const editable = computed(() => canEditAccount(props.account));
 const ibanHidden = computed(() => isAccountFieldHidden(props.account, 'iban'));
+/** IBAN lisible, ou chiffré resté tel quel (illisible / chiffré par le propriétaire). */
+const ibanDisplay = computed(() => resolveSensitiveFieldDisplay(props.account.iban, props.account.isOwned));
+const cipherLabel = computed(() => t(props.account.isOwned ? 'comptesPage.detail.fieldUnreadable' : 'comptesPage.detail.fieldForeign'));
 
 const accountNumberLine = computed(() =>
     formatAccountNumberLine(props.account, {
         hidden: t('comptesPage.list.accountNumberHidden'),
-        visible: (number) => t('comptesPage.list.accountNumber', { number })
+        visible: (number) => t('comptesPage.list.accountNumber', { number }),
+        unreadable: cipherLabel.value
     })
 );
 
@@ -86,7 +91,11 @@ function onEdit() {
             <LockIcon :size="12" stroke-width="1.5" aria-hidden="true" />
             {{ t('comptesPage.detail.fieldHidden') }}
         </p>
-        <p v-else-if="account.iban" class="account-block__iban">{{ account.iban }}</p>
+        <p v-else-if="ibanDisplay.kind === 'plain'" class="account-block__iban">{{ ibanDisplay.value }}</p>
+        <p v-else-if="ibanDisplay.kind !== 'empty'" class="account-block__iban" data-test="account-iban-cipher">
+            <LockIcon :size="12" stroke-width="1.5" aria-hidden="true" />
+            {{ cipherLabel }}
+        </p>
 
         <p v-if="account.isPrimary || !account.isActive || !account.isOwned" class="account-block__tags">
             <span v-if="account.isPrimary" class="su-chip" style="--chip-color: var(--blue)">{{ t('comptesPage.badges.primary') }}</span>

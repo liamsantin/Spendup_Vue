@@ -423,6 +423,8 @@
             "currentBalance": "Current balance",
             "initialBalance": "Initial balance",
             "fieldHidden": "Hidden",
+            "fieldUnreadable": "Unreadable",
+            "fieldForeign": "Encrypted by the owner",
             "tabs": {
                 "details": "Details",
                 "snapshots": "Snapshot",
@@ -455,6 +457,7 @@
                 "nameRequired": "Name is required.",
                 "balanceInvalid": "Enter a valid balance.",
                 "ibanInvalid": "Invalid IBAN.",
+                "ibanUnreadable": "This IBAN is encrypted and unreadable on this device: clear it or enter it again.",
                 "colorInvalid": "Invalid color. Use #RGB, #RRGGBB, or #RRGGBBAA.",
                 "bankRequired": "A bank is required for a current or savings account: choose one, or enter a Swiss IBAN."
             },
@@ -2810,6 +2813,7 @@
             },
             "errors": {
                 "currentRequired": "Enter your current password.",
+                "currentIncorrect": "Current password is incorrect.",
                 "invalidNew": "New password must be at least 8 characters and include a letter and a digit.",
                 "mismatch": "Confirmation does not match the new password."
             }
@@ -2855,6 +2859,14 @@
         },
         "leaveConfirm": "You have unsaved changes. Do you really want to leave this page?",
         "googleSignIn": "Sign in with Google"
+    },
+    "vault": {
+        "unreadable": "Unreadable",
+        "foreign": "Encrypted by the owner",
+        "migration": {
+            "progress": "Encrypting your data: {done} of {total}",
+            "error": "Encryption of your data will resume at your next sign-in."
+        }
     },
     "security": {
         "twoFactor": {
@@ -2985,6 +2997,54 @@
             "copied": "Copied",
             "errors": {
                 "copyFailed": "Could not copy to the clipboard."
+            }
+        },
+        "vault": {
+            "title": "Vault",
+            "subtitle": "Your IBANs, account numbers, plates and serial numbers are encrypted in your browser.",
+            "description": "The server only stores these fields encrypted, with a key it does not have: even the operator cannot read them. Your password opens the vault at each sign-in; nothing else to do.",
+            "status": {
+                "active": "Vault active",
+                "migrating": "Encryption in progress · {count} item(s) left",
+                "disabling": "Vault removal in progress",
+                "absent": "No vault on this account",
+                "locked": "Vault closed on this device",
+                "lost": "Vault key lost: these fields cannot be recovered"
+            },
+            "absentHint": "Accounts that sign in with Google only do not have a vault yet.",
+            "lockedHint": "Sign in again with your password to reopen the vault on this device.",
+            "scope": {
+                "label": "Covered scope",
+                "core": "Core: IBANs, account numbers, plates, serial numbers, wallet addresses.",
+                "extended": "Extended: the core, plus notes, contacts, addresses and receipts."
+            },
+            "recovery": {
+                "reminder": "Generate your recovery code",
+                "reminderText": "Without your password or a recovery code, the vault fields are lost: a forgotten password cannot bring them back. The code is shown only once.",
+                "done": "Recovery code saved on {date}",
+                "doneText": "If you forget your password, this code will restore the vault fields.",
+                "generate": "Generate the code",
+                "renew": "Renew the code",
+                "renewHint": "A new code makes the previous one unusable."
+            },
+            "dialog": {
+                "title": "Recovery code",
+                "subtitle": "Your current password is needed to protect the vault key with this code.",
+                "passwordLabel": "Current password",
+                "generate": "Generate the code",
+                "codeLabel": "Your recovery code",
+                "oneTimeWarning": "This code will not be shown again: write it down somewhere safe, away from this device.",
+                "confirmLabel": "To confirm you wrote it down, enter the first 4 characters of the code",
+                "confirmPlaceholder": "XXXX",
+                "close": "I saved my code",
+                "copy": "Copy",
+                "copied": "Copied",
+                "errors": {
+                    "passwordRequired": "Enter your password.",
+                    "wrongPassword": "Incorrect password.",
+                    "confirmMismatch": "The characters entered do not match the start of the code.",
+                    "copyFailed": "Could not copy to the clipboard."
+                }
             }
         },
         "session": {

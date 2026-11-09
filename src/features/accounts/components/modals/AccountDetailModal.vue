@@ -10,6 +10,7 @@ import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.v
 import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { isAccountFieldHidden, isBalanceHidden, resolveAccountBalanceDisplay } from '@/features/accounts/format';
+import { isCipher } from '@/features/vault/crypto';
 import {
     canArchiveAccount,
     canDeleteAccount,
@@ -94,6 +95,11 @@ const showIban = computed(() => {
     if (isAccountFieldHidden(account.value, 'iban')) return true;
     return !!account.value.iban;
 });
+
+/** Chiffré resté tel quel après `decrypt` : illisible (ma clé) ou chiffré par le propriétaire (partage). */
+const cipherLabel = computed(() =>
+    t(account.value?.isOwned === false ? 'comptesPage.detail.fieldForeign' : 'comptesPage.detail.fieldUnreadable')
+);
 
 const showAccountNumber = computed(() => {
     if (!account.value) return false;
@@ -397,6 +403,10 @@ function seeAllTransactions() {
                             <LockIcon :size="14" stroke-width="1.5" aria-hidden="true" />
                             <span>{{ t('comptesPage.detail.fieldHidden') }}</span>
                         </dd>
+                        <dd v-else-if="isCipher(account.iban)" class="account-detail__hidden" data-test="account-detail-iban-cipher">
+                            <LockIcon :size="14" stroke-width="1.5" aria-hidden="true" />
+                            <span>{{ cipherLabel }}</span>
+                        </dd>
                         <dd v-else class="account-detail__mono">{{ account.iban }}</dd>
                     </div>
                     <div v-if="showAccountNumber" class="su-kv">
@@ -404,6 +414,10 @@ function seeAllTransactions() {
                         <dd v-if="isAccountFieldHidden(account, 'accountNumber')" class="account-detail__hidden">
                             <LockIcon :size="14" stroke-width="1.5" aria-hidden="true" />
                             <span>{{ t('comptesPage.detail.fieldHidden') }}</span>
+                        </dd>
+                        <dd v-else-if="isCipher(account.accountNumber)" class="account-detail__hidden">
+                            <LockIcon :size="14" stroke-width="1.5" aria-hidden="true" />
+                            <span>{{ cipherLabel }}</span>
                         </dd>
                         <dd v-else class="account-detail__mono">{{ account.accountNumber }}</dd>
                     </div>
