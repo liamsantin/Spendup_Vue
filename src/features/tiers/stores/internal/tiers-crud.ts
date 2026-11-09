@@ -10,7 +10,8 @@ import {
     parseListCacheKey,
     type TiersState
 } from '@/features/tiers/stores/internal/tiers-state';
-import { decryptTierFields, encryptTierPayload, needsTierVaultWrite, stripSensitiveTierFields } from '@/features/tiers/vault-fields';
+import { decryptTierFields, encryptTierPayload, needsTierVaultWrite } from '@/features/tiers/vault-fields';
+import { withFreshPublicId } from '@/features/vault/public-id';
 
 export const TIER_NOT_FOUND_CODE = 'tier_not_found';
 export const TIER_NOT_FOUND_MESSAGE = 'Ce tiers n’est plus disponible.';
@@ -284,20 +285,17 @@ export function createTiersCrud(state: TiersState) {
     }
 
     /**
-     * POST sans les champs du périmètre étendu puis PUT avec ces champs chiffrés (l’AAD a besoin du
-     * `publicId`). Si le PUT échoue, le tiers tout juste créé est supprimé.
+     * Coffre ouvert et champ du périmètre étendu saisi : le client choisit le `publicId`, chiffre avec cet
+     * AAD et envoie tout en un seul `POST` (409 `CONFLICT` sur l’identifiant → nouvel identifiant).
      */
     async function createTierWithVault(payload: Parameters<typeof tiersApi.create>[0]): Promise<Tier> {
         if (!(await needsTierVaultWrite(payload))) {
             return decryptTierFields(await tiersApi.create(payload));
         }
-        const created = await tiersApi.create(stripSensitiveTierFields(payload));
-        try {
-            return await decryptTierFields(await tiersApi.update(created.publicId, await encryptTierPayload(created.publicId, payload)));
-        } catch (e: unknown) {
-            await tiersApi.remove(created.publicId).catch(() => undefined);
-            throw e;
-        }
+        const created = await withFreshPublicId(async (publicId) =>
+            tiersApi.create(await encryptTierPayload(publicId, { ...payload, publicId }))
+        );
+        return decryptTierFields(created);
     }
 
     async function createTier(fields: TierFormFields) {

@@ -5,7 +5,7 @@
  */
 import { useVaultStore } from '@/features/vault/stores/vault-store';
 import { isCipher } from '@/features/vault/crypto';
-import type { Account, CreateAccountPayload, UpdateAccountPayload } from '@/features/accounts/types';
+import type { Account, CreateAccountPayload } from '@/features/accounts/types';
 
 export const ACCOUNT_VAULT_TABLE = 'account';
 export const ACCOUNT_VAULT_COLUMNS = { iban: 'iban', accountNumber: 'account_number' } as const;
@@ -48,7 +48,7 @@ export async function isVaultActiveForWrites(): Promise<boolean> {
  * @param payload Payload en clair.
  */
 export async function encryptAccountPayload<
-    T extends Pick<UpdateAccountPayload, 'iban' | 'accountNumber'> & { ibanFingerprint?: string | null }
+    T extends { iban?: string | null; accountNumber?: string | null; ibanFingerprint?: string | null }
 >(publicId: string, payload: T): Promise<T & { ibanFingerprint?: string | null }> {
     const vault = useVaultStore();
     if (!(await vault.ensureReady())) return payload;
@@ -66,24 +66,4 @@ export async function encryptAccountPayload<
 /** Vrai si le payload de création porte une valeur du socle à chiffrer. */
 export function hasSensitiveCreateFields(payload: CreateAccountPayload): boolean {
     return !!(payload.iban && !isCipher(payload.iban)) || !!(payload.accountNumber && !isCipher(payload.accountNumber));
-}
-
-/**
- * Payload PUT « état complet » reconstruit depuis le compte créé, pour poser les champs chiffrés juste
- * après un POST (l’AAD a besoin du `publicId`, que seul le serveur attribue).
- * @param created Compte renvoyé par le POST.
- * @param payload Payload de création en clair.
- */
-export function buildPostCreateUpdatePayload(created: Account, payload: CreateAccountPayload): UpdateAccountPayload {
-    return {
-        name: created.name,
-        type: created.type,
-        currency: created.currency,
-        initialBalance: created.initialBalance ?? payload.initialBalance,
-        iban: payload.iban ?? null,
-        accountNumber: payload.accountNumber ?? null,
-        color: created.color,
-        isPrimary: created.isPrimary,
-        ...(created.bank?.tierPublicId ? { institutionTierPublicId: created.bank.tierPublicId } : { institutionTierPublicId: null })
-    };
 }

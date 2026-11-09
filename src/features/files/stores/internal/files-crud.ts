@@ -4,8 +4,9 @@ import { isQuotaExceededMessage } from '@/features/files/format';
 import { buildUpdateFileRequest, type FileFormFields } from '@/features/files/payload';
 import { FILE_PAGE_SIZE_DEFAULT, type FileDto, type ListFilesQuery } from '@/features/files/types';
 import { FILES_LIST_CACHE_KEY, nextPageFromLoaded, type FilesState } from '@/features/files/stores/internal/files-state';
-import { buildEncryptedNamePatch, decryptFileFields, encryptFileUpdate } from '@/features/files/vault-fields';
+import { decryptFileFields, encryptFileUpdate } from '@/features/files/vault-fields';
 import { useVaultStore } from '@/features/vault/stores/vault-store';
+import { generatePublicId, isConflictError } from '@/features/vault/public-id';
 
 /** Déchiffre nom et description (Coffre ouvert) d’une liste de fichiers. */
 function prepareFiles(files: FileDto[]): Promise<FileDto[]> {
@@ -188,10 +189,13 @@ export function createFilesCrud(state: FilesState) {
         }
     }
 
+    /** Nouveaux identifiants tirés après un 409 avant d’abandonner. */
+    const UPLOAD_ID_RETRIES = 3;
+
     /**
-     * Périmètre étendu ouvert : le PDF est chiffré dans le navigateur, envoyé sous un nom neutre avec
-     * `encrypted=true`, puis le nom réel est posé chiffré par PATCH (l’AAD a besoin du `publicId`).
-     * Si le PATCH échoue, le fichier tout juste créé est supprimé. Sinon : upload en clair comme avant.
+     * Périmètre étendu ouvert : le client choisit le `publicId`, chiffre le PDF (AAD `file:content:<publicId>`)
+     * et son nom (`file:name_original:<publicId>`), puis envoie tout en un seul `POST` avec `encrypted=true`.
+     * Un 409 `CONFLICT` sur l’identifiant fait retirer un identifiant et rechiffrer. Sinon : upload en clair.
      */
     async function uploadWithVault(file: File, onProgress?: (percent: number) => void): Promise<FileDto> {
         const progress = {
@@ -200,18 +204,18 @@ export function createFilesCrud(state: FilesState) {
                 onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
             }
         };
-        const sealed = await useVaultStore().encryptPdf(file);
-        if (!sealed) {
-            return decryptFileFields(await filesApi.upload(file, progress));
-        }
-        const created = await filesApi.upload(sealed, progress, true);
-        try {
-            return await decryptFileFields(
-                await filesApi.update(created.publicId, await buildEncryptedNamePatch(created.publicId, file.name))
-            );
-        } catch (e: unknown) {
-            await filesApi.remove(created.publicId).catch(() => undefined);
-            throw e;
+        const vault = useVaultStore();
+        for (let attempt = 0; ; attempt += 1) {
+            const publicId = generatePublicId();
+            const sealed = await vault.encryptPdf(file, publicId);
+            if (!sealed) {
+                return decryptFileFields(await filesApi.upload(file, progress));
+            }
+            try {
+                return await decryptFileFields(await filesApi.upload(sealed, progress, { encrypted: true, publicId }));
+            } catch (e: unknown) {
+                if (!isConflictError(e) || attempt >= UPLOAD_ID_RETRIES) throw e;
+            }
         }
     }
 

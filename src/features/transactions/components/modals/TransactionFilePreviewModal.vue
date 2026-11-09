@@ -5,6 +5,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import FilePreview from '@/features/files/components/FilePreview.vue';
+import { displayFileName } from '@/features/files/file-name-display';
 import type { TransactionFile } from '@/features/transactions/types';
 
 const props = defineProps<{
@@ -27,7 +28,7 @@ const open = computed({
 <template>
     <AppModalBase
         v-model="open"
-        :title="file?.nameOriginal || t('filesPage.preview.title')"
+        :title="(file && displayFileName(file.publicId, file.nameOriginal, t('vault.unreadable'))) || t('filesPage.preview.title')"
         :max-width="920"
         :height="780"
         scrollable
@@ -35,7 +36,11 @@ const open = computed({
         :show-footer="false"
     >
         <div class="tx-file-preview">
-            <FilePreview v-if="file" :public-id="file.publicId" :name-original="file.nameOriginal" />
+            <FilePreview
+                v-if="file"
+                :public-id="file.publicId"
+                :name-original="displayFileName(file.publicId, file.nameOriginal, t('vault.unreadable'))"
+            />
         </div>
     </AppModalBase>
 </template>

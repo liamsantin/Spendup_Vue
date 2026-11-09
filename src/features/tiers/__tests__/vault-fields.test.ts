@@ -10,7 +10,7 @@ const apiMock = vi.hoisted(() => ({ status: vi.fn() }));
 vi.mock('@/features/auth/stores/auth-store', () => ({ useAuthStore: () => authMock }));
 vi.mock('@/features/vault/api', () => ({ vaultApi: apiMock }));
 
-import { decryptTierFields, encryptTierPayload, needsTierVaultWrite, stripSensitiveTierFields } from '@/features/tiers/vault-fields';
+import { decryptTierFields, encryptTierPayload, needsTierVaultWrite } from '@/features/tiers/vault-fields';
 
 function payload(overrides: Partial<TierWritePayload> = {}): TierWritePayload {
     return {
@@ -105,6 +105,9 @@ describe('champs étendus des tiers', () => {
         expect(read.email).toBe('martin@exemple.ch');
         expect(read.company?.vatNumber).toBe('CHE-123.456.789');
 
+        // Le publicId choisi par le client traverse le chiffrement inchangé (un seul POST).
+        const withId = await encryptTierPayload('TIER-2', { ...payload(), publicId: 'TIER-2' });
+        expect(withId.publicId).toBe('TIER-2');
         const person = await encryptTierPayload('TIER-2', payload());
         expect(isCipher(person.person?.firstName)).toBe(true);
         expect(isCipher(person.person?.lastName)).toBe(true);
@@ -122,10 +125,4 @@ describe('champs étendus des tiers', () => {
         expect(await needsTierVaultWrite(source)).toBe(false);
         expect(await encryptTierPayload('TIER-1', source)).toEqual(source);
     }, 20_000);
-
-    it('stripSensitiveTierFields retire les champs chiffrables du POST et garde le reste', () => {
-        const stripped = stripSensitiveTierFields(payload());
-        expect(stripped).toMatchObject({ name: 'Dr Martin', email: null, phone: null, website: null, notes: null, roles: ['medecin'] });
-        expect(stripped.person).toEqual({ firstName: null, lastName: null, birthDate: null });
-    });
 });

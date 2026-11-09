@@ -46,13 +46,3 @@ export async function encryptFileUpdate(publicId: string, request: UpdateFileReq
     }
     return next;
 }
-
-/**
- * PATCH à poser juste après un `POST /api/files` chiffré : le nom réel du fichier, chiffré avec le
- * `publicId` attribué par le serveur (le POST est parti sous un nom neutre).
- * @param publicId Identifiant public du fichier créé.
- * @param nameOriginal Nom réel du fichier choisi par l’utilisateur.
- */
-export async function buildEncryptedNamePatch(publicId: string, nameOriginal: string): Promise<UpdateFileRequest> {
-    return encryptFileUpdate(publicId, { nameOriginal });
-}

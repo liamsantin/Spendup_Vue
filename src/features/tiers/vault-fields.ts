@@ -96,26 +96,13 @@ export async function needsTierVaultWrite(payload: TierWritePayload): Promise<bo
     return false;
 }
 
-/** Payload de création sans les champs chiffrables : ils sont posés par un PUT une fois le `publicId` connu. */
-export function stripSensitiveTierFields(payload: TierWritePayload): TierWritePayload {
-    return {
-        ...payload,
-        email: null,
-        phone: null,
-        website: null,
-        notes: null,
-        person: payload.person ? { ...payload.person, firstName: null, lastName: null } : null,
-        company: payload.company ? { ...payload.company, vatNumber: null, companyRegistrationNumber: null } : null
-    };
-}
-
 /**
  * Chiffre les champs du périmètre étendu d’un payload pour un tiers connu. Un champ hors périmètre,
  * vide ou déjà chiffré est laissé tel quel.
  * @param publicId Identifiant public du tiers (AAD).
  * @param payload Payload en clair.
  */
-export async function encryptTierPayload(publicId: string, payload: TierWritePayload): Promise<TierWritePayload> {
+export async function encryptTierPayload<T extends TierWritePayload>(publicId: string, payload: T): Promise<T> {
     const vault = useVaultStore();
     if (!(await vault.canEncryptScope('extended'))) return payload;
     const seal = (table: string, column: string, value: string | null | undefined) =>
@@ -126,7 +113,7 @@ export async function encryptTierPayload(publicId: string, payload: TierWritePay
         seal(TIER_VAULT_TABLE, TIER_VAULT_COLUMNS.website, payload.website),
         seal(TIER_VAULT_TABLE, TIER_VAULT_COLUMNS.notes, payload.notes)
     ]);
-    const next: TierWritePayload = { ...payload, email, phone, website, notes };
+    const next: T = { ...payload, email, phone, website, notes };
     if (payload.person) {
         const [firstName, lastName] = await Promise.all([
             seal(TIER_PERSON_VAULT_TABLE, TIER_PERSON_VAULT_COLUMNS.firstName, payload.person.firstName),

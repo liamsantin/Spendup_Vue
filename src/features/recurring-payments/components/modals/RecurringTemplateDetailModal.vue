@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { isCipher } from '@/features/vault/crypto';
+import { displayFileName } from '@/features/files/file-name-display';
 import { useRouter } from 'vue-router';
 import { CalendarEventIcon, CheckIcon, ChevronDownIcon, EyeIcon, PaperclipIcon, PlusIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
@@ -490,7 +490,7 @@ function seeRelatedTransactions() {
                                     <button type="button" class="recurring-tx-files__open" @click="openLinkedFile(file)">
                                         <PaperclipIcon :size="16" stroke-width="1.6" />
                                         <span class="recurring-tx-files__name">{{
-                                            isCipher(file.nameOriginal) ? t('vault.unreadable') : file.nameOriginal
+                                            displayFileName(file.publicId, file.nameOriginal, t('vault.unreadable'))
                                         }}</span>
                                         <span class="recurring-tx-files__size">{{ fileSizeLabel(file.sizeBytes) }}</span>
                                     </button>

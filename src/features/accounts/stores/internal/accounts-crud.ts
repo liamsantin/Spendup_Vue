@@ -12,12 +12,12 @@ import { assertAccountAllowed, requireLocalAccount } from '@/features/accounts/s
 import { ACCOUNTS_DETAIL_MAX_AGE_MS, KEY_ACCOUNTS, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import { AppError } from '@/utils/errors/app-error';
 import {
-    buildPostCreateUpdatePayload,
     decryptAccountFields,
     encryptAccountPayload,
     hasSensitiveCreateFields,
     isVaultActiveForWrites
 } from '@/features/accounts/vault-fields';
+import { withFreshPublicId } from '@/features/vault/public-id';
 
 function normalizeAccount(account: Account): Account {
     return {
@@ -212,9 +212,8 @@ export function createAccountsCrud(state: AccountsState) {
     }
 
     /**
-     * POST puis, si le Coffre est ouvert et que des champs du socle sont saisis, PUT avec ces champs
-     * chiffrés : l’AAD a besoin du `publicId` que seul le serveur attribue. Si le PUT échoue, le compte
-     * tout juste créé est supprimé pour ne pas laisser un compte sans IBAN.
+     * Coffre ouvert et champs du socle saisis : le client choisit le `publicId`, chiffre avec cet AAD et
+     * envoie tout en un seul `POST` (409 `CONFLICT` sur l’identifiant → nouvel identifiant). Sinon, POST en clair.
      * @param payload Payload de création en clair.
      * @returns Le compte créé, champs déchiffrés.
      */
@@ -222,14 +221,11 @@ export function createAccountsCrud(state: AccountsState) {
         if (!hasSensitiveCreateFields(payload) || !(await isVaultActiveForWrites())) {
             return prepareAccount(await accountsApi.create(payload));
         }
-        const created = await accountsApi.create({ ...payload, iban: null, accountNumber: null });
-        try {
-            const body = await encryptAccountPayload(created.publicId, buildPostCreateUpdatePayload(created, payload));
-            return await prepareAccount(await accountsApi.update(created.publicId, body));
-        } catch (e: unknown) {
-            await accountsApi.remove(created.publicId).catch(() => undefined);
-            throw e;
-        }
+        const created = await withFreshPublicId(async (publicId) => {
+            const body: CreateAccountPayload = { ...payload, publicId };
+            return accountsApi.create(await encryptAccountPayload(publicId, body));
+        });
+        return prepareAccount(created);
     }
 
     /**

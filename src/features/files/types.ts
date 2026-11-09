@@ -60,5 +60,7 @@ export const FILE_MAX_BYTES = 10_485_760;
 export const FILE_UPLOAD_FIELD = 'file';
 /** Champ de formulaire `POST /api/files` : contenu déjà chiffré par le navigateur. */
 export const FILE_UPLOAD_ENCRYPTED_FIELD = 'encrypted';
+/** Champ de formulaire `POST /api/files` : identifiant public choisi par le client (désactive la déduplication). */
+export const FILE_UPLOAD_PUBLIC_ID_FIELD = 'publicId';
 export const FILE_PDF_MIME = 'application/pdf';
 export const FILE_PDF_EXTENSION = 'pdf';

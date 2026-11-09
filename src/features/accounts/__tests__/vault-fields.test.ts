@@ -8,8 +8,8 @@ const authMock = vi.hoisted(() => ({ user: { userPublicId: 'U1' } }));
 vi.mock('@/features/auth/stores/auth-store', () => ({ useAuthStore: () => authMock }));
 vi.mock('@/features/vault/api', () => ({ vaultApi: { status: vi.fn() } }));
 
-import { buildPostCreateUpdatePayload, decryptAccountFields, encryptAccountPayload } from '@/features/accounts/vault-fields';
-import { decryptAssetFields, encryptAssetPayload, stripSensitiveAssetFields } from '@/features/assets/vault-fields';
+import { decryptAccountFields, encryptAccountPayload } from '@/features/accounts/vault-fields';
+import { decryptAssetFields, encryptAssetPayload } from '@/features/assets/vault-fields';
 import type { Asset } from '@/features/assets/types';
 
 function account(overrides: Partial<Account> = {}): Account {
@@ -74,34 +74,7 @@ describe('champs du socle des comptes et des actifs', () => {
         expect(cipher.ibanFingerprint).toBeUndefined();
     });
 
-    it('buildPostCreateUpdatePayload reconstruit l’état complet à partir du compte créé', () => {
-        const created = account({
-            publicId: 'acc-9',
-            color: '#112233',
-            bank: { tierPublicId: 'tier-1', name: 'UBS', bankPublicId: 'bank-00230', bankName: 'UBS', bic: null, iid: null }
-        });
-        const body = buildPostCreateUpdatePayload(created, {
-            name: 'Courant',
-            type: 'courant',
-            initialBalance: 10,
-            iban: 'CH93',
-            accountNumber: '1',
-            bankPublicId: 'bank-00230'
-        });
-        expect(body).toEqual({
-            name: 'Courant',
-            type: 'courant',
-            currency: 'CHF',
-            initialBalance: 0,
-            iban: 'CH93',
-            accountNumber: '1',
-            color: '#112233',
-            isPrimary: true,
-            institutionTierPublicId: 'tier-1'
-        });
-    });
-
-    it('plaque de véhicule : chiffrée sur le publicId de l’actif, relue, retirée du POST', async () => {
+    it('plaque et châssis : chiffrés sur le publicId de l’actif, relus ; illisibles sur un autre actif', async () => {
         const vehicle = {
             brand: 'VW',
             model: 'Golf',
@@ -109,17 +82,21 @@ describe('champs du socle des comptes et des actifs', () => {
             fuel: null,
             firstRegistrationYear: null,
             plate: 'VD 12345',
-            currentMileage: null
+            currentMileage: null,
+            chassisNumber: 'WVWZZZ1JZXW000001'
         };
         const payload = { name: 'Golf', type: 'vehicule' as Asset['type'], estimatedValue: 1, vehicle };
-        const stripped = stripSensitiveAssetFields(payload);
-        expect(stripped.vehicle?.plate).toBeNull();
-
         const body = await encryptAssetPayload('as-1', payload);
         expect(isCipher(body.vehicle?.plate)).toBe(true);
+        expect(isCipher(body.vehicle?.chassisNumber)).toBe(true);
 
-        const asset = { publicId: 'as-1', vehicle: { ...vehicle, plate: body.vehicle!.plate } } as unknown as Asset;
-        expect((await decryptAssetFields(asset)).vehicle?.plate).toBe('VD 12345');
+        const asset = {
+            publicId: 'as-1',
+            vehicle: { ...vehicle, plate: body.vehicle!.plate, chassisNumber: body.vehicle!.chassisNumber }
+        } as unknown as Asset;
+        const read = await decryptAssetFields(asset);
+        expect(read.vehicle?.plate).toBe('VD 12345');
+        expect(read.vehicle?.chassisNumber).toBe('WVWZZZ1JZXW000001');
         const other = { publicId: 'as-2', vehicle: { ...vehicle, plate: body.vehicle!.plate } } as unknown as Asset;
         expect((await decryptAssetFields(other)).vehicle?.plate).toBe(body.vehicle!.plate);
     });

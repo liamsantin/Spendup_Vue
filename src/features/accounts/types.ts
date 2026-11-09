@@ -111,6 +111,8 @@ export type CreateAccountPayload = {
     bankPublicId?: string | null;
     /** Empreinte `h:…` d’un IBAN chiffré (Coffre) : unicité sans voir l’IBAN. */
     ibanFingerprint?: string | null;
+    /** Identifiant public choisi par le client (GUID minuscule) pour chiffrer avant l’envoi ; absent : le serveur le génère. */
+    publicId?: string;
 };
 
 /**

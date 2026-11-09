@@ -4,6 +4,7 @@ import {
     FILE_PAGE_SIZE_MAX,
     FILE_UPLOAD_ENCRYPTED_FIELD,
     FILE_UPLOAD_FIELD,
+    FILE_UPLOAD_PUBLIC_ID_FIELD,
     type FileDto,
     type FileListDto,
     type FileUsage,
@@ -46,12 +47,14 @@ export const filesApi = {
 
     /**
      * Upload multipart. `encrypted` : le contenu a été chiffré dans le navigateur (pas de contrôle `%PDF`,
-     * pas de déduplication côté serveur).
+     * pas de déduplication). `publicId` : identifiant choisi par le client (GUID minuscule) ; le nom du
+     * fichier multipart peut alors déjà être chiffré (`enc:v1:`).
      */
-    upload(file: File, options: FetchFormOptions = {}, encrypted = false) {
+    upload(file: File, options: FetchFormOptions = {}, vault: { encrypted?: boolean; publicId?: string } = {}) {
         const form = new FormData();
         form.append(FILE_UPLOAD_FIELD, file);
-        if (encrypted) form.append(FILE_UPLOAD_ENCRYPTED_FIELD, 'true');
+        if (vault.encrypted) form.append(FILE_UPLOAD_ENCRYPTED_FIELD, 'true');
+        if (vault.publicId) form.append(FILE_UPLOAD_PUBLIC_ID_FIELD, vault.publicId);
         return fetchWrapper.postForm('/api/files', form, options) as Promise<FileDto>;
     },
 

@@ -19,7 +19,7 @@ export class FileContentLockedError extends Error {
  */
 export async function loadReadablePdf(publicId: string): Promise<Blob> {
     const raw = await filesApi.getContent(publicId);
-    const readable = await useVaultStore().decryptPdf(raw);
+    const readable = await useVaultStore().decryptPdf(raw, publicId);
     if (!readable) throw new FileContentLockedError();
     return asPdfBlob(readable);
 }

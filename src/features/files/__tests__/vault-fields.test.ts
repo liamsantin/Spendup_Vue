@@ -10,7 +10,8 @@ const apiMock = vi.hoisted(() => ({ status: vi.fn() }));
 vi.mock('@/features/auth/stores/auth-store', () => ({ useAuthStore: () => authMock }));
 vi.mock('@/features/vault/api', () => ({ vaultApi: apiMock }));
 
-import { buildEncryptedNamePatch, decryptFileFields, encryptFileUpdate } from '@/features/files/vault-fields';
+import { decryptFileFields, encryptFileUpdate } from '@/features/files/vault-fields';
+import { decryptField } from '@/features/vault/crypto';
 
 function file(overrides: Partial<FileDto> = {}): FileDto {
     return {
@@ -63,11 +64,11 @@ describe('nom et description des fichiers (périmètre étendu)', () => {
         await vault.commitRegistration();
     }, 20_000);
 
-    it('offre plus : PATCH chiffré sur le publicId du fichier, relu en clair ; le PDF part chiffré', async () => {
+    it('offre plus : PATCH chiffré sur le publicId du fichier, relu en clair ; le PDF part chiffré avec son nom', async () => {
         apiMock.status.mockResolvedValue(await status('extended'));
         const vault = useVaultStore();
 
-        const patch = await buildEncryptedNamePatch('FILE-1', 'facture-dentiste.pdf');
+        const patch = await encryptFileUpdate('FILE-1', { nameOriginal: 'facture-dentiste.pdf' });
         expect(isCipher(patch.nameOriginal)).toBe(true);
         const update = await encryptFileUpdate('FILE-1', { description: 'Bail 2026', clearDocumentDate: true });
         expect(isCipher(update.description)).toBe(true);
@@ -80,10 +81,18 @@ describe('nom et description des fichiers (périmètre étendu)', () => {
         const other = await decryptFileFields(file({ publicId: 'FILE-2', nameOriginal: patch.nameOriginal as string }));
         expect(isCipher(other.nameOriginal)).toBe(true);
 
-        const sealed = await vault.encryptPdf(new File([new TextEncoder().encode('%PDF-1.4 test')], 'x.pdf', { type: 'application/pdf' }));
-        expect(sealed?.name).toBe('document.pdf');
-        const back = await vault.decryptPdf(sealed as File);
+        // Upload : le client choisit l’identifiant, le nom part chiffré dans le multipart, le contenu lié à cet identifiant.
+        const publicId = '0f8fad5b-d9cb-469f-a165-70867728950e';
+        const sealed = await vault.encryptPdf(
+            new File([new TextEncoder().encode('%PDF-1.4 test')], 'x.pdf', { type: 'application/pdf' }),
+            publicId
+        );
+        expect(isCipher(sealed?.name)).toBe(true);
+        const keys = await vault.ensureReady();
+        expect(await decryptField(keys!.dek, 'file', 'name_original', publicId, sealed!.name)).toEqual({ ok: true, value: 'x.pdf' });
+        const back = await vault.decryptPdf(sealed as File, publicId);
         expect(back?.type).toBe('application/pdf');
+        expect(await vault.decryptPdf(sealed as File, 'autre-id')).toBeNull();
     }, 20_000);
 
     it('offre free : nom, description et contenu restent en clair', async () => {
@@ -93,8 +102,8 @@ describe('nom et description des fichiers (périmètre étendu)', () => {
             nameOriginal: 'contrat.pdf',
             description: 'Bail'
         });
-        expect(await vault.encryptPdf(new File(['%PDF-1.4'], 'x.pdf'))).toBeNull();
+        expect(await vault.encryptPdf(new File(['%PDF-1.4'], 'x.pdf'), '0f8fad5b-d9cb-469f-a165-70867728950e')).toBeNull();
         const plain = new Blob([new TextEncoder().encode('%PDF-1.4 clair')], { type: 'application/pdf' });
-        expect(await vault.decryptPdf(plain)).toBe(plain);
+        expect(await vault.decryptPdf(plain, 'FILE-1')).toBe(plain);
     }, 20_000);
 });

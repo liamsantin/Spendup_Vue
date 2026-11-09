@@ -4,7 +4,7 @@ defineOptions({ name: 'RealEstateDocumentsPanel' });
 
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { isCipher } from '@/features/vault/crypto';
+import { displayFileName } from '@/features/files/file-name-display';
 import { FileTextIcon } from 'vue-tabler-icons';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
@@ -99,7 +99,7 @@ watch(
                             <span class="re-doc-open__name">{{ doc.name }}</span>
                         </button>
                         <span v-if="doc.name !== doc.file.nameOriginal" class="is-sub">{{
-                            isCipher(doc.file.nameOriginal) ? t('vault.unreadable') : doc.file.nameOriginal
+                            displayFileName(doc.file.publicId, doc.file.nameOriginal, t('vault.unreadable'))
                         }}</span>
                     </td>
                     <td>{{ t(`realEstatePage.documentTypes.${doc.documentType}`) }}</td>
@@ -132,7 +132,11 @@ watch(
         :show-footer="false"
     >
         <div class="re-doc-preview">
-            <FilePreview v-if="previewTarget" :public-id="previewTarget.file.publicId" :name-original="previewTarget.file.nameOriginal" />
+            <FilePreview
+                v-if="previewTarget"
+                :public-id="previewTarget.file.publicId"
+                :name-original="displayFileName(previewTarget.file.publicId, previewTarget.file.nameOriginal, t('vault.unreadable'))"
+            />
         </div>
     </AppModalBase>
 
