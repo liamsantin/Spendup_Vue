@@ -8,6 +8,7 @@ import { DownloadIcon, EyeIcon, PdfIcon, PencilIcon, TrashIcon } from 'vue-table
 import { useRowTap } from '@/components/shared/board/useRowTap';
 import { fileSizeParts, formatDocumentDate, formatInstant } from '@/features/files/format';
 import type { FileDto } from '@/features/files/types';
+import { isCipher } from '@/features/vault/crypto';
 
 const props = defineProps<{
     file: FileDto;
@@ -68,9 +69,9 @@ const tap = useRowTap(
         </span>
 
         <div class="file-row__meta">
-            <p class="file-row__name">{{ file.nameOriginal }}</p>
+            <p class="file-row__name">{{ isCipher(file.nameOriginal) ? t('vault.unreadable') : file.nameOriginal }}</p>
             <p class="file-row__sub">{{ subLine }}</p>
-            <p v-if="file.description" class="file-row__sub">{{ file.description }}</p>
+            <p v-if="file.description" class="file-row__sub">{{ isCipher(file.description) ? t('vault.unreadable') : file.description }}</p>
         </div>
 
         <div class="file-row__actions">

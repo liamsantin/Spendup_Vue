@@ -14,6 +14,7 @@ import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import AssetFormModal from '@/features/assets/components/modals/AssetFormModal.vue';
 import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import type { Asset } from '@/features/assets/types';
+import { isCipher } from '@/features/vault/crypto';
 import {
     activeRealEstateDetailTab,
     formatCalendarDate,
@@ -134,8 +135,10 @@ const facts = computed<PropertyFact[]>(() => {
     const num = (value: number | null) => formatShortNumber(value, locale.value);
 
     add('propertyType', field('propertyType'), t(`assetsPage.propertyTypes.${d.propertyType}`));
-    add('address', field('addressLine1'), formatRealEstateAddress(d));
-    add('addressLine2', field('addressLine2'), d.addressLine2);
+    // Adresse chiffrée par le Coffre et illisible ici : un seul marqueur, pas de bribes.
+    const addressUnreadable = isCipher(d.addressLine1) || isCipher(d.postalCode) || isCipher(d.city);
+    add('address', field('addressLine1'), addressUnreadable ? t('vault.unreadable') : formatRealEstateAddress(d));
+    add('addressLine2', field('addressLine2'), isCipher(d.addressLine2) ? t('vault.unreadable') : d.addressLine2);
     add('country', field('country'), d.country);
     add('livingArea', field('livingAreaM2'), num(d.livingAreaM2));
     add('landArea', field('landAreaM2'), num(d.landAreaM2));

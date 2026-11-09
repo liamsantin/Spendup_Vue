@@ -4,6 +4,13 @@ import { isQuotaExceededMessage } from '@/features/files/format';
 import { buildUpdateFileRequest, type FileFormFields } from '@/features/files/payload';
 import { FILE_PAGE_SIZE_DEFAULT, type FileDto, type ListFilesQuery } from '@/features/files/types';
 import { FILES_LIST_CACHE_KEY, nextPageFromLoaded, type FilesState } from '@/features/files/stores/internal/files-state';
+import { buildEncryptedNamePatch, decryptFileFields, encryptFileUpdate } from '@/features/files/vault-fields';
+import { useVaultStore } from '@/features/vault/stores/vault-store';
+
+/** Déchiffre nom et description (Coffre ouvert) d’une liste de fichiers. */
+function prepareFiles(files: FileDto[]): Promise<FileDto[]> {
+    return Promise.all(files.map(decryptFileFields));
+}
 
 export const FILE_NOT_FOUND_MESSAGE = 'Ce fichier n’est plus disponible.';
 
@@ -73,7 +80,8 @@ export function createFilesCrud(state: FilesState) {
                             pageSize: query.pageSize ?? FILE_PAGE_SIZE_DEFAULT
                         });
                         if (requestId !== listRequestSeq) return;
-                        const nextItems = Array.isArray(result?.items) ? result.items : [];
+                        const nextItems = await prepareFiles(Array.isArray(result?.items) ? result.items : []);
+                        if (requestId !== listRequestSeq) return;
                         setList(key, nextItems, {
                             page: result?.page ?? 1,
                             pageSize: result?.pageSize ?? query.pageSize ?? FILE_PAGE_SIZE_DEFAULT,
@@ -132,7 +140,8 @@ export function createFilesCrud(state: FilesState) {
                 pageSize: size
             });
             if (requestId !== listRequestSeq) return;
-            const incoming = Array.isArray(result?.items) ? result.items : [];
+            const incoming = await prepareFiles(Array.isArray(result?.items) ? result.items : []);
+            if (requestId !== listRequestSeq) return;
             const byId = new Map<string, FileDto>();
             for (const item of prev) byId.set(item.publicId, item);
             for (const item of incoming) byId.set(item.publicId, item);
@@ -166,7 +175,7 @@ export function createFilesCrud(state: FilesState) {
 
     async function fetchFile(publicId: string): Promise<FileDto | null> {
         try {
-            const file = await filesApi.get(publicId);
+            const file = await decryptFileFields(await filesApi.get(publicId));
             upsertItem(file);
             return file;
         } catch (e: unknown) {
@@ -179,17 +188,39 @@ export function createFilesCrud(state: FilesState) {
         }
     }
 
+    /**
+     * Périmètre étendu ouvert : le PDF est chiffré dans le navigateur, envoyé sous un nom neutre avec
+     * `encrypted=true`, puis le nom réel est posé chiffré par PATCH (l’AAD a besoin du `publicId`).
+     * Si le PATCH échoue, le fichier tout juste créé est supprimé. Sinon : upload en clair comme avant.
+     */
+    async function uploadWithVault(file: File, onProgress?: (percent: number) => void): Promise<FileDto> {
+        const progress = {
+            onUploadProgress: (event: { loaded: number; total?: number }) => {
+                if (!onProgress || !event.total) return;
+                onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
+            }
+        };
+        const sealed = await useVaultStore().encryptPdf(file);
+        if (!sealed) {
+            return decryptFileFields(await filesApi.upload(file, progress));
+        }
+        const created = await filesApi.upload(sealed, progress, true);
+        try {
+            return await decryptFileFields(
+                await filesApi.update(created.publicId, await buildEncryptedNamePatch(created.publicId, file.name))
+            );
+        } catch (e: unknown) {
+            await filesApi.remove(created.publicId).catch(() => undefined);
+            throw e;
+        }
+    }
+
     async function uploadFile(file: File, onProgress?: (percent: number) => void) {
         beginActing();
         clearError();
         let refreshUsage = false;
         try {
-            const created = await filesApi.upload(file, {
-                onUploadProgress: (event) => {
-                    if (!onProgress || !event.total) return;
-                    onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
-                }
-            });
+            const created = await uploadWithVault(file, onProgress);
             upsertItem(created);
             touchHydratedListCaches();
             refreshUsage = true;
@@ -222,7 +253,7 @@ export function createFilesCrud(state: FilesState) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
             if (!built.hasChanges) return current;
-            const updated = await filesApi.update(publicId, built.request);
+            const updated = await decryptFileFields(await filesApi.update(publicId, await encryptFileUpdate(publicId, built.request)));
             upsertItem(updated);
             touchHydratedListCaches();
             return updated;

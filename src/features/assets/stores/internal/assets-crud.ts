@@ -9,13 +9,7 @@ import {
 } from '@/features/assets/payload';
 import { ASSET_NOT_FOUND_MESSAGE, type Asset, type ListAssetsQuery } from '@/features/assets/types';
 import { listCacheKey, type AssetsState } from '@/features/assets/stores/internal/assets-state';
-import {
-    decryptAssetFields,
-    encryptAssetPayload,
-    hasSensitiveAssetFields,
-    stripSensitiveAssetFields
-} from '@/features/assets/vault-fields';
-import { useVaultStore } from '@/features/vault/stores/vault-store';
+import { decryptAssetFields, encryptAssetPayload, needsAssetVaultWrite, stripSensitiveAssetFields } from '@/features/assets/vault-fields';
 
 export const ASSET_NOT_FOUND_CODE = 'asset_not_found';
 export const ASSET_SUB_RESOURCE_NOT_FOUND_MESSAGE = 'Élément introuvable.';
@@ -64,7 +58,7 @@ export function assetPayloadErrorMessage(code: string): string {
     }
 }
 
-/** Normalise puis déchiffre les champs du socle (plaque) quand le Coffre est ouvert. */
+/** Normalise puis déchiffre les champs chiffrés (plaque, notes, adresse) quand le Coffre est ouvert. */
 async function prepareAsset(asset: Asset): Promise<Asset> {
     return decryptAssetFields(normalizeAsset(asset));
 }
@@ -215,11 +209,11 @@ export function createAssetsCrud(state: AssetsState) {
     }
 
     /**
-     * POST sans la plaque puis PUT avec la plaque chiffrée (l’AAD a besoin du `publicId`). Si le PUT
-     * échoue, l’actif tout juste créé est supprimé.
+     * POST sans les champs chiffrables (plaque, notes, adresse) puis PUT avec ces champs chiffrés (l’AAD a
+     * besoin du `publicId`). Si le PUT échoue, l’actif tout juste créé est supprimé.
      */
     async function createAssetWithVault(payload: Parameters<typeof assetsApi.create>[0]): Promise<Asset> {
-        if (!hasSensitiveAssetFields(payload) || !(await useVaultStore().ensureReady())) {
+        if (!(await needsAssetVaultWrite(payload))) {
             return prepareAsset(await assetsApi.create(payload));
         }
         const created = normalizeAsset(await assetsApi.create(stripSensitiveAssetFields(payload)));
@@ -231,9 +225,14 @@ export function createAssetsCrud(state: AssetsState) {
                 acquisitionDate: created.acquisitionDate,
                 acquisitionPrice: created.acquisitionPrice,
                 description: created.description,
-                notes: created.notes,
+                notes: payload.notes ?? null,
                 isActive: created.isActive,
-                vehicle: payload.vehicle ?? null
+                ...(payload.vehicle ? { vehicle: payload.vehicle } : {}),
+                ...(payload.realEstate ? { realEstate: payload.realEstate } : {}),
+                ...(payload.crypto ? { crypto: payload.crypto } : {}),
+                ...(payload.valuableItem ? { valuableItem: payload.valuableItem } : {}),
+                ...(payload.savingsAccount ? { savingsAccount: payload.savingsAccount } : {}),
+                ...(payload.other ? { other: payload.other } : {})
             });
             return await prepareAsset(await assetsApi.update(created.publicId, body));
         } catch (e: unknown) {

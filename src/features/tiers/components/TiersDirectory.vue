@@ -6,6 +6,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { downloadCsv } from '@/utils/helpers/csv';
+import { sensitiveExportValue } from '@/features/vault/display';
 import { isTierNature, isTierRole, matchesTierSearch, parseTierSort, sortTiers, type TierSort } from '@/features/tiers/format';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { TIER_PAGE_SIZE_MAX, TIER_SEARCH_MAX, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
@@ -152,13 +153,15 @@ watch(createOpen, (value) => {
 
 function exportCsv() {
     const header = (['name', 'nature', 'roles', 'email', 'phone', 'website'] as const).map((key) => t(`tiersPage.columns.${key}`));
+    // Coffre ouvert : valeurs en clair ; sinon un chiffré sort marqué « chiffré », jamais tel quel.
+    const encrypted = t('vault.encrypted');
     const rows = visibleItems.value.map((tier) => [
         tier.name,
         t(`tiersPage.natures.${tier.nature}`),
         tier.roles.map((role) => t(`tiersPage.roles.${role}`)).join(', '),
-        tier.email,
-        tier.phone,
-        tier.website
+        sensitiveExportValue(tier.email, encrypted),
+        sensitiveExportValue(tier.phone, encrypted),
+        sensitiveExportValue(tier.website, encrypted)
     ]);
     downloadCsv(props.exportName ?? 'tiers', header, rows);
 }

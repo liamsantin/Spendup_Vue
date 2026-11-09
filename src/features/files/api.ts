@@ -1,8 +1,8 @@
 import { fetchWrapper, type FetchFormOptions } from '@/utils/helpers/fetch-helpers';
-import { asPdfBlob } from '@/features/files/content';
 import {
     FILE_PAGE_SIZE_DEFAULT,
     FILE_PAGE_SIZE_MAX,
+    FILE_UPLOAD_ENCRYPTED_FIELD,
     FILE_UPLOAD_FIELD,
     type FileDto,
     type FileListDto,
@@ -36,14 +36,22 @@ export const filesApi = {
         return fetchWrapper.get('/api/files/usage') as Promise<FileUsage>;
     },
 
-    /** PDF brut — pas d’enveloppe. Toujours via fetch authentifié, jamais en `src` iframe. */
+    /**
+     * Contenu brut — pas d’enveloppe. Toujours via fetch authentifié, jamais en `src` iframe.
+     * Un fichier chiffré par le Coffre arrive tel quel (octets opaques) : `vault.decryptPdf` le rend lisible.
+     */
     getContent(publicId: string) {
-        return fetchWrapper.getBlob(`/api/files/${encodeURIComponent(publicId)}/content`).then(asPdfBlob);
+        return fetchWrapper.getBlob(`/api/files/${encodeURIComponent(publicId)}/content`);
     },
 
-    upload(file: File, options: FetchFormOptions = {}) {
+    /**
+     * Upload multipart. `encrypted` : le contenu a été chiffré dans le navigateur (pas de contrôle `%PDF`,
+     * pas de déduplication côté serveur).
+     */
+    upload(file: File, options: FetchFormOptions = {}, encrypted = false) {
         const form = new FormData();
         form.append(FILE_UPLOAD_FIELD, file);
+        if (encrypted) form.append(FILE_UPLOAD_ENCRYPTED_FIELD, 'true');
         return fetchWrapper.postForm('/api/files', form, options) as Promise<FileDto>;
     },
 

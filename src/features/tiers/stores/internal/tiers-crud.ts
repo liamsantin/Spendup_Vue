@@ -10,6 +10,7 @@ import {
     parseListCacheKey,
     type TiersState
 } from '@/features/tiers/stores/internal/tiers-state';
+import { decryptTierFields, encryptTierPayload, needsTierVaultWrite, stripSensitiveTierFields } from '@/features/tiers/vault-fields';
 
 export const TIER_NOT_FOUND_CODE = 'tier_not_found';
 export const TIER_NOT_FOUND_MESSAGE = 'Ce tiers n’est plus disponible.';
@@ -65,6 +66,11 @@ function payloadErrorMessage(code: string): string {
         default:
             return 'Données invalides.';
     }
+}
+
+/** Déchiffre les champs du périmètre étendu (Coffre ouvert) d’une liste de tiers. */
+function prepareTiers(tiers: Tier[]): Promise<Tier[]> {
+    return Promise.all(tiers.map(decryptTierFields));
 }
 
 /**
@@ -134,7 +140,8 @@ export function createTiersCrud(state: TiersState) {
                             pageSize: query.pageSize ?? TIER_PAGE_SIZE_DEFAULT
                         });
                         if (requestId !== listRequestSeq) return;
-                        const nextItems = Array.isArray(result?.items) ? result.items : [];
+                        const nextItems = await prepareTiers(Array.isArray(result?.items) ? result.items : []);
+                        if (requestId !== listRequestSeq) return;
                         setList(key, nextItems, {
                             page: result?.page ?? 1,
                             pageSize: result?.pageSize ?? TIER_PAGE_SIZE_DEFAULT,
@@ -196,7 +203,8 @@ export function createTiersCrud(state: TiersState) {
                 pageSize: pageSize.value || TIER_PAGE_SIZE_DEFAULT
             });
             if (requestId !== listRequestSeq) return;
-            const incoming = Array.isArray(result?.items) ? result.items : [];
+            const incoming = await prepareTiers(Array.isArray(result?.items) ? result.items : []);
+            if (requestId !== listRequestSeq) return;
             const prev = itemsByListKey.get(key)?.items ?? [];
             const byId = new Map<string, Tier>();
             for (const item of prev) byId.set(item.publicId, item);
@@ -228,7 +236,7 @@ export function createTiersCrud(state: TiersState) {
         // Filtre côté serveur : sans `search`, les tiers au-delà des 200 premiers restent introuvables.
         const promise = tiersApi
             .list({ role: options.role, isBank: options.isBank, search: term || undefined, page: 1, pageSize: TIER_PAGE_SIZE_MAX })
-            .then((result) => (Array.isArray(result?.items) ? result.items : []));
+            .then((result) => prepareTiers(Array.isArray(result?.items) ? result.items : []));
         const entry = { at: now, promise };
         state.pickerCache.set(key, entry);
         promise.catch(() => {
@@ -262,7 +270,7 @@ export function createTiersCrud(state: TiersState) {
     /** Charge un tier (détail) et l’indexe ; `null` si 404. */
     async function fetchTier(publicId: string): Promise<Tier | null> {
         try {
-            const tier = await tiersApi.get(publicId);
+            const tier = await decryptTierFields(await tiersApi.get(publicId));
             upsertItem(tier);
             return tier;
         } catch (e: unknown) {
@@ -275,6 +283,23 @@ export function createTiersCrud(state: TiersState) {
         }
     }
 
+    /**
+     * POST sans les champs du périmètre étendu puis PUT avec ces champs chiffrés (l’AAD a besoin du
+     * `publicId`). Si le PUT échoue, le tiers tout juste créé est supprimé.
+     */
+    async function createTierWithVault(payload: Parameters<typeof tiersApi.create>[0]): Promise<Tier> {
+        if (!(await needsTierVaultWrite(payload))) {
+            return decryptTierFields(await tiersApi.create(payload));
+        }
+        const created = await tiersApi.create(stripSensitiveTierFields(payload));
+        try {
+            return await decryptTierFields(await tiersApi.update(created.publicId, await encryptTierPayload(created.publicId, payload)));
+        } catch (e: unknown) {
+            await tiersApi.remove(created.publicId).catch(() => undefined);
+            throw e;
+        }
+    }
+
     async function createTier(fields: TierFormFields) {
         beginActing();
         clearError();
@@ -283,7 +308,7 @@ export function createTiersCrud(state: TiersState) {
             if (!built.ok) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
-            const created = await tiersApi.create(built.payload);
+            const created = await createTierWithVault(built.payload);
             upsertItem(created);
             touchHydratedListCaches();
             rememberLocalMutation(created.publicId);
@@ -305,7 +330,7 @@ export function createTiersCrud(state: TiersState) {
             if (!built.ok) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
-            const updated = await tiersApi.update(publicId, built.payload);
+            const updated = await decryptTierFields(await tiersApi.update(publicId, await encryptTierPayload(publicId, built.payload)));
             upsertItem(updated);
             touchHydratedListCaches();
             rememberLocalMutation(updated.publicId);

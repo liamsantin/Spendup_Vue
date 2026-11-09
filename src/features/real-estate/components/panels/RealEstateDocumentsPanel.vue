@@ -4,6 +4,7 @@ defineOptions({ name: 'RealEstateDocumentsPanel' });
 
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { isCipher } from '@/features/vault/crypto';
 import { FileTextIcon } from 'vue-tabler-icons';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
@@ -97,7 +98,9 @@ watch(
                             <FileTextIcon :size="16" stroke-width="1.6" />
                             <span class="re-doc-open__name">{{ doc.name }}</span>
                         </button>
-                        <span v-if="doc.name !== doc.file.nameOriginal" class="is-sub">{{ doc.file.nameOriginal }}</span>
+                        <span v-if="doc.name !== doc.file.nameOriginal" class="is-sub">{{
+                            isCipher(doc.file.nameOriginal) ? t('vault.unreadable') : doc.file.nameOriginal
+                        }}</span>
                     </td>
                     <td>{{ t(`realEstatePage.documentTypes.${doc.documentType}`) }}</td>
                     <td>{{ doc.documentDate ? formatCalendarDate(doc.documentDate, locale) : empty }}</td>

@@ -8,6 +8,7 @@ import { MailIcon, PencilIcon, PhoneIcon, TrashIcon, WorldIcon, DotsVerticalIcon
 import { useRowTap } from '@/components/shared/board/useRowTap';
 import { TIER_NATURE_ICONS, tierNatureTileClass } from '@/features/tiers/natureUi';
 import type { Tier } from '@/features/tiers/types';
+import { isCipher } from '@/features/vault/crypto';
 
 const props = defineProps<{
     tier: Tier;
@@ -42,9 +43,15 @@ const detailLine = computed(() => {
     return null;
 });
 
+/** Chiffrés que le Coffre n’a pas pu ouvrir : affichés « illisible », sans lien. */
+const emailUnreadable = computed(() => isCipher(props.tier.email));
+const phoneUnreadable = computed(() => isCipher(props.tier.phone));
+const websiteUnreadable = computed(() => isCipher(props.tier.website));
+
 const websiteLabel = computed(() => {
     const raw = props.tier.website;
     if (!raw) return null;
+    if (isCipher(raw)) return t('vault.unreadable');
     try {
         const url = new URL(raw);
         return url.hostname.replace(/^www\./, '');
@@ -97,16 +104,28 @@ const tap = useRowTap(
                 <span v-else>· {{ t('tiersPage.list.noRoles') }}</span>
             </p>
             <p v-if="tier.email || tier.phone || websiteLabel" class="tier-row__contact">
-                <a v-if="tier.email" :href="`mailto:${tier.email}`" class="tier-row__contact-item" @click.stop>
+                <span v-if="emailUnreadable" class="tier-row__contact-item">
+                    <MailIcon :size="13" stroke-width="1.8" />
+                    <span class="text-truncate">{{ t('vault.unreadable') }}</span>
+                </span>
+                <a v-else-if="tier.email" :href="`mailto:${tier.email}`" class="tier-row__contact-item" @click.stop>
                     <MailIcon :size="13" stroke-width="1.8" />
                     <span class="text-truncate">{{ tier.email }}</span>
                 </a>
-                <a v-if="tier.phone" :href="`tel:${tier.phone.replace(/[^\d+]/g, '')}`" class="tier-row__contact-item" @click.stop>
+                <span v-if="phoneUnreadable" class="tier-row__contact-item">
+                    <PhoneIcon :size="13" stroke-width="1.8" />
+                    <span class="text-truncate">{{ t('vault.unreadable') }}</span>
+                </span>
+                <a v-else-if="tier.phone" :href="`tel:${tier.phone.replace(/[^\d+]/g, '')}`" class="tier-row__contact-item" @click.stop>
                     <PhoneIcon :size="13" stroke-width="1.8" />
                     <span class="text-truncate">{{ tier.phone }}</span>
                 </a>
+                <span v-if="websiteUnreadable" class="tier-row__contact-item">
+                    <WorldIcon :size="13" stroke-width="1.8" />
+                    <span class="text-truncate">{{ t('vault.unreadable') }}</span>
+                </span>
                 <a
-                    v-if="tier.website && websiteLabel"
+                    v-else-if="tier.website && websiteLabel"
                     :href="tier.website"
                     target="_blank"
                     rel="noopener noreferrer"

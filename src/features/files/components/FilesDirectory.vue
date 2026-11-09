@@ -25,6 +25,7 @@ import FileTable from '@/features/files/components/list/FileTable.vue';
 import FileEditModal from '@/features/files/components/modals/FileEditModal.vue';
 import FileUsageMeter from '@/features/files/components/FileUsageMeter.vue';
 import { downloadCsv } from '@/utils/helpers/csv';
+import { sensitiveExportValue } from '@/features/vault/display';
 
 const FILES_PATH = '/app/gestion/files';
 
@@ -149,14 +150,16 @@ watch(previewId, async (id) => {
 
 function exportCsv() {
     const header = (['name', 'documentDate', 'size', 'added', 'description'] as const).map((key) => t(`filesPage.columns.${key}`));
+    // Coffre ouvert : valeurs en clair ; sinon un chiffré sort marqué « chiffré », jamais tel quel.
+    const encrypted = t('vault.encrypted');
     const rows = visibleItems.value.map((file) => {
         const parts = fileSizeParts(file.sizeBytes);
         return [
-            file.nameOriginal,
+            sensitiveExportValue(file.nameOriginal, encrypted) ?? '',
             file.documentDate ?? '',
             t(`filesPage.size.${parts.unit}`, { n: parts.n }),
             file.createdAt,
-            file.description ?? ''
+            sensitiveExportValue(file.description, encrypted) ?? ''
         ];
     });
     downloadCsv('fichiers', header, rows);

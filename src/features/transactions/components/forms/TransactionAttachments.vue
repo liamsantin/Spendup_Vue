@@ -3,6 +3,7 @@ defineOptions({ name: 'TransactionAttachments' });
 
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { isCipher } from '@/features/vault/crypto';
 import { FilePlusIcon, PaperclipIcon, UploadIcon, XIcon } from 'vue-tabler-icons';
 import { fileSizeParts } from '@/features/files/format';
 import { FILE_PDF_MIME, type FileDto } from '@/features/files/types';
@@ -65,7 +66,7 @@ function pick(file: FileDto) {
             <li v-for="file in files" :key="file.publicId" class="tx-files__chip">
                 <button type="button" class="tx-files__open" :disabled="busy" @click="emit('open', file)">
                     <PaperclipIcon :size="16" stroke-width="1.6" />
-                    <span class="tx-files__name">{{ file.nameOriginal }}</span>
+                    <span class="tx-files__name">{{ isCipher(file.nameOriginal) ? t('vault.unreadable') : file.nameOriginal }}</span>
                     <span class="tx-files__size">{{ sizeLabel(file.sizeBytes) }}</span>
                 </button>
                 <button
@@ -95,7 +96,7 @@ function pick(file: FileDto) {
                 </button>
                 <div v-if="pickerOpen" class="tx-files__menu" role="listbox">
                     <button v-for="file in pickable" :key="file.publicId" type="button" class="tx-files__option" @click="pick(file)">
-                        <span>{{ file.nameOriginal }}</span>
+                        <span>{{ isCipher(file.nameOriginal) ? t('vault.unreadable') : file.nameOriginal }}</span>
                         <span>{{ sizeLabel(file.sizeBytes) }}</span>
                     </button>
                 </div>

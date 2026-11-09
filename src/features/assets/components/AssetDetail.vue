@@ -270,7 +270,9 @@ defineExpose({ openEdit, reload: loadAsset });
                 </div>
 
                 <p v-if="asset.description" class="asset-detail__text">{{ asset.description }}</p>
-                <p v-if="asset.notes" class="asset-detail__text asset-detail__text--soft">{{ asset.notes }}</p>
+                <p v-if="asset.notes" class="asset-detail__text asset-detail__text--soft">
+                    {{ isCipher(asset.notes) ? t('vault.unreadable') : asset.notes }}
+                </p>
             </div>
 
             <div v-else-if="activeTab" class="asset-detail__panel">

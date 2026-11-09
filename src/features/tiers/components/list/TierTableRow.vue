@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { PencilIcon, TrashIcon } from 'vue-tabler-icons';
 import { TIER_NATURE_ICONS, tierNatureTileClass } from '@/features/tiers/natureUi';
 import type { Tier } from '@/features/tiers/types';
+import { isCipher } from '@/features/vault/crypto';
 
 const props = defineProps<{
     tier: Tier;
@@ -37,6 +38,11 @@ const detailLine = computed(() => {
     }
     return null;
 });
+
+/** Chiffrés que le Coffre n’a pas pu ouvrir : affichés « illisible », sans lien. */
+const emailUnreadable = computed(() => isCipher(props.tier.email));
+const phoneUnreadable = computed(() => isCipher(props.tier.phone));
+const websiteUnreadable = computed(() => isCipher(props.tier.website));
 
 const websiteLabel = computed(() => {
     const raw = props.tier.website;
@@ -78,18 +84,21 @@ function onDoubleClick(event: MouseEvent) {
             <span v-else class="app-data-table__muted">{{ t('tiersPage.list.noRoles') }}</span>
         </td>
         <td>
-            <a v-if="tier.email" :href="`mailto:${tier.email}`" class="tier-table__link" @click.stop>{{ tier.email }}</a>
+            <span v-if="emailUnreadable" class="app-data-table__muted">{{ t('vault.unreadable') }}</span>
+            <a v-else-if="tier.email" :href="`mailto:${tier.email}`" class="tier-table__link" @click.stop>{{ tier.email }}</a>
             <span v-else class="app-data-table__muted">—</span>
         </td>
         <td>
-            <a v-if="tier.phone" :href="`tel:${tier.phone.replace(/[^\d+]/g, '')}`" class="tier-table__link" @click.stop>{{
+            <span v-if="phoneUnreadable" class="app-data-table__muted">{{ t('vault.unreadable') }}</span>
+            <a v-else-if="tier.phone" :href="`tel:${tier.phone.replace(/[^\d+]/g, '')}`" class="tier-table__link" @click.stop>{{
                 tier.phone
             }}</a>
             <span v-else class="app-data-table__muted">—</span>
         </td>
         <td>
+            <span v-if="websiteUnreadable" class="app-data-table__muted">{{ t('vault.unreadable') }}</span>
             <a
-                v-if="tier.website && websiteLabel"
+                v-else-if="tier.website && websiteLabel"
                 :href="tier.website"
                 target="_blank"
                 rel="noopener noreferrer"

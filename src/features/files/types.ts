@@ -13,6 +13,8 @@ export type FileDto = {
     status: FileStatus;
     documentDate: string | null;
     description: string | null;
+    /** Contenu chiffré dans le navigateur (Coffre, périmètre étendu) : `GET …/content` renvoie des octets opaques. */
+    encrypted?: boolean;
     createdAt: string;
     updatedAt: string | null;
 };
@@ -56,5 +58,7 @@ export const FILE_SEARCH_MAX = 100;
 /** 10 Mo. */
 export const FILE_MAX_BYTES = 10_485_760;
 export const FILE_UPLOAD_FIELD = 'file';
+/** Champ de formulaire `POST /api/files` : contenu déjà chiffré par le navigateur. */
+export const FILE_UPLOAD_ENCRYPTED_FIELD = 'encrypted';
 export const FILE_PDF_MIME = 'application/pdf';
 export const FILE_PDF_EXTENSION = 'pdf';

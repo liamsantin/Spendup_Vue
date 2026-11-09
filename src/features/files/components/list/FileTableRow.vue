@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { DownloadIcon, EyeIcon, PdfIcon, PencilIcon, TrashIcon } from 'vue-tabler-icons';
 import { fileSizeParts, formatDocumentDate, formatInstant } from '@/features/files/format';
 import type { FileDto } from '@/features/files/types';
+import { isCipher } from '@/features/vault/crypto';
 
 const props = defineProps<{
     file: FileDto;
@@ -34,6 +35,12 @@ const documentDateLabel = computed(() => (props.file.documentDate ? formatDocume
 
 const addedLabel = computed(() => formatInstant(props.file.createdAt, locale.value));
 
+/** Nom et description : « illisible » à la place d’un chiffré que le Coffre n’a pas pu ouvrir. */
+const nameLabel = computed(() => (isCipher(props.file.nameOriginal) ? t('vault.unreadable') : props.file.nameOriginal));
+const descriptionLabel = computed(() =>
+    props.file.description ? (isCipher(props.file.description) ? t('vault.unreadable') : props.file.description) : null
+);
+
 function onDoubleClick(event: MouseEvent) {
     if (props.acting) return;
     if (event.target instanceof Element && event.target.closest('button, a')) return;
@@ -49,8 +56,8 @@ function onDoubleClick(event: MouseEvent) {
                     <PdfIcon :size="18" stroke-width="1.7" />
                 </span>
                 <span class="app-data-table__identity">
-                    <span class="app-data-table__title">{{ file.nameOriginal }}</span>
-                    <span class="app-data-table__muted">{{ file.description ? `${subLine} · ${file.description}` : subLine }}</span>
+                    <span class="app-data-table__title">{{ nameLabel }}</span>
+                    <span class="app-data-table__muted">{{ descriptionLabel ? `${subLine} · ${descriptionLabel}` : subLine }}</span>
                 </span>
             </div>
         </td>

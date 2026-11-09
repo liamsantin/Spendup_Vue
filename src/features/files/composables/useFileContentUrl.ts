@@ -1,9 +1,9 @@
 import { onUnmounted, ref } from 'vue';
-import { filesApi } from '@/features/files/api';
+import { loadReadablePdf } from '@/features/files/content';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
 /**
- * Charge un PDF via `GET /content` (Bearer) et expose une blob URL.
+ * Charge un PDF via `GET /content` (Bearer), le déchiffre si le Coffre l’a chiffré, et expose une blob URL.
  * Révoque l’URL au unmount — ne pas persister.
  */
 export function useFileContentUrl() {
@@ -25,7 +25,7 @@ export function useFileContentUrl() {
         loading.value = true;
         revoke();
         try {
-            const blob = await filesApi.getContent(publicId);
+            const blob = await loadReadablePdf(publicId);
             if (id !== requestId) return;
             objectUrl.value = URL.createObjectURL(blob);
         } catch (e: unknown) {
@@ -52,7 +52,7 @@ export function useFileContentUrl() {
 }
 
 export async function downloadFileBlob(publicId: string, nameOriginal: string) {
-    const blob = await filesApi.getContent(publicId);
+    const blob = await loadReadablePdf(publicId);
     const url = URL.createObjectURL(blob);
     try {
         const link = document.createElement('a');
