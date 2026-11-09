@@ -41,6 +41,7 @@ import { useSidebarNavStore } from '@/layouts/full/vertical-sidebar/sidebar-nav-
 import { isIdleSessionError } from '@/features/auth/idle-session';
 import { clearCsrfToken, rememberCsrfToken } from '@/features/auth/csrf';
 import { isAuthCookieMode } from '@/utils/helpers/axios-helpers';
+import { useVaultStore } from '@/features/vault/stores/vault-store';
 
 export const APP_HOME_ROUTE = '/app';
 export const AUTH_ROUTE = '/auth';
@@ -198,6 +199,7 @@ export function createAuthSession() {
         useSharedDebtsStore().reset();
         useNetWorthStore().reset();
         useSidebarNavStore().reset();
+        useVaultStore().lock();
     }
 
     /**

@@ -17,6 +17,7 @@ import type {
     UpdateProfilePayload,
     UploadAvatarResult
 } from '@/features/auth/types';
+import type { VaultSetupRequest, VaultWrapRequest } from '@/features/vault/types';
 
 function bearerHeaders(accessToken: string | null | undefined): Record<string, string> | undefined {
     if (!shouldSendBearerAuth() || !accessToken) return undefined;
@@ -138,6 +139,8 @@ export const authApi = {
         password: string;
         firstName?: string | null;
         name?: string | null;
+        /** Coffre silencieux : DEK emballée par le mot de passe, générée dans le navigateur. */
+        vault?: VaultSetupRequest | null;
     }) {
         return authHttp.post<RegisterResult>('/api/auth/register', payload);
     },
@@ -309,13 +312,26 @@ export const authApi = {
         return authHttp.post<null>('/api/auth/reset-password', { token, newPassword });
     },
 
-    changePassword(accessToken: string | null | undefined, currentPassword: string | null, newPassword: string, stepUp?: StepUpProof) {
+    /**
+     * Changement de mot de passe. `vaultWrap` : DEK ré-emballée par le nouveau mot de passe (obligatoire
+     * quand un Coffre existe, 400 sinon) ; `vault` : création silencieuse pour un premier mot de passe.
+     */
+    changePassword(
+        accessToken: string | null | undefined,
+        currentPassword: string | null,
+        newPassword: string,
+        stepUp?: StepUpProof,
+        vaultWrap?: VaultWrapRequest | null,
+        vault?: VaultSetupRequest | null
+    ) {
         return authHttp.post<null>(
             '/api/auth/password/change',
             {
                 currentPassword: currentPassword ?? null,
                 newPassword,
-                ...(stepUp ? { stepUp } : {})
+                ...(stepUp ? { stepUp } : {}),
+                ...(vaultWrap ? { vaultWrap } : {}),
+                ...(vault ? { vault } : {})
             },
             accessToken
         );

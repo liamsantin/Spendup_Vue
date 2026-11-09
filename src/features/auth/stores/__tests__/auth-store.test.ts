@@ -59,6 +59,18 @@ vi.mock('@/features/auth/api', async () => {
 
 const cookieMode = vi.hoisted(() => ({ enabled: false }));
 
+/** Routes `/api/vault` : jamais de réseau dans ces tests. */
+const vaultApiMock = vi.hoisted(() => ({
+    status: vi.fn(),
+    migrateBatch: vi.fn(),
+    migrateWrite: vi.fn(),
+    complete: vi.fn(),
+    setRecovery: vi.fn(),
+    setPasswordWrap: vi.fn()
+}));
+
+vi.mock('@/features/vault/api', () => ({ vaultApi: vaultApiMock }));
+
 vi.mock('@/utils/helpers/axios-helpers', async () => {
     const actual = await vi.importActual<typeof import('@/utils/helpers/axios-helpers')>('@/utils/helpers/axios-helpers');
     return {
@@ -111,6 +123,8 @@ describe('useAuthStore', () => {
         routerPush.mockReset();
         routerReplace.mockReset();
         Object.values(authApiMock).forEach((fn) => fn.mockReset());
+        Object.values(vaultApiMock).forEach((fn) => fn.mockReset());
+        vaultApiMock.status.mockResolvedValue({ exists: false, pendingCount: 0 });
     });
 
     it('ne stocke pas le mot de passe pending en sessionStorage', async () => {
@@ -129,6 +143,47 @@ describe('useAuthStore', () => {
         expect(sessionStorage.getItem('spendup_pending_password')).toBeNull();
         expect(sessionStorage.getItem('spendup_pending_email')).toBe('new@spendup.test');
     });
+
+    it('register envoie un Coffre silencieux (pbkdf2, 600 000 itérations, sel et DEK emballée)', async () => {
+        const auth = useAuthStore();
+        authApiMock.register.mockResolvedValue({ email: 'new@spendup.test', username: null });
+
+        await auth.register({ email: 'new@spendup.test', username: null, password: 'Secret123', firstName: null, name: null });
+
+        const payload = authApiMock.register.mock.calls[0][0] as { vault?: Record<string, unknown> };
+        expect(payload.vault).toMatchObject({ kdf: 'pbkdf2', iterations: 600_000, memoryKiB: null, parallelism: null });
+        expect(payload.vault?.salt).toMatch(/^[A-Za-z0-9_-]{22}$/);
+        expect(payload.vault?.dekWrappedPassword).toMatch(/^[A-Za-z0-9_-]{80}$/);
+    }, 20_000);
+
+    it('login ouvre le Coffre avec le mot de passe quand GET /api/vault dit exists', async () => {
+        const auth = useAuthStore();
+        const { createVaultSetup } = await import('@/features/vault/crypto');
+        const { useVaultStore } = await import('@/features/vault/stores/vault-store');
+        const { setup } = await createVaultSetup('Secret123');
+        vaultApiMock.status.mockResolvedValue({
+            exists: true,
+            state: 'active',
+            pendingCount: 0,
+            hasRecovery: false,
+            allowedScope: 'core',
+            ...setup
+        });
+        authApiMock.login.mockResolvedValue({ requiresTwoFactor: false, twoFactorToken: null, ...tokens() });
+        authApiMock.me.mockResolvedValue(meUser());
+
+        await auth.login('alice', 'Secret123');
+
+        const vault = useVaultStore();
+        expect(vault.locked).toBe(false);
+        expect(vault.exists).toBe(true);
+        expect(routerPush).toHaveBeenCalledWith('/app');
+
+        // La déconnexion efface les clés.
+        authApiMock.logout.mockResolvedValue(undefined);
+        await auth.logout();
+        expect(vault.locked).toBe(true);
+    }, 30_000);
 
     it('ensureAccessToken rafraîchit si expiresAt est passé', async () => {
         const auth = useAuthStore();
@@ -409,9 +464,29 @@ describe('useAuthStore', () => {
             const stepUp = { otp: '123456' };
             await auth.changePassword('old-pass', 'NewPass12', undefined, stepUp);
 
-            expect(authApiMock.changePassword).toHaveBeenCalledWith('access-1', 'old-pass', 'NewPass12', stepUp);
+            expect(authApiMock.changePassword).toHaveBeenCalledWith('access-1', 'old-pass', 'NewPass12', stepUp, null, null);
             expect(routerPush).toHaveBeenCalledWith('/auth');
             expect(auth.accessToken).toBeNull();
         });
+
+        it('changePassword ré-emballe la DEK quand un Coffre existe (vaultWrap dans la même requête)', async () => {
+            const auth = useAuthStore();
+            auth.setTokens(tokens());
+            const { createVaultSetup, unwrapDekWithSecret } = await import('@/features/vault/crypto');
+            const { setup } = await createVaultSetup('old-pass');
+            vaultApiMock.status.mockResolvedValue({ exists: true, state: 'active', pendingCount: 0, ...setup });
+            authApiMock.changePassword.mockResolvedValue(undefined);
+            authApiMock.logout.mockResolvedValue(undefined);
+
+            await auth.changePassword('old-pass', 'NewPass12');
+
+            const call = authApiMock.changePassword.mock.calls[0];
+            const vaultWrap = call[4] as { dekWrappedPassword: string };
+            expect(vaultWrap.dekWrappedPassword).toMatch(/^[A-Za-z0-9_-]{80}$/);
+            expect(vaultWrap.dekWrappedPassword).not.toBe(setup.dekWrappedPassword);
+            // Le nouvel emballage s’ouvre avec le nouveau mot de passe et le sel inchangé.
+            await expect(unwrapDekWithSecret('NewPass12', setup, vaultWrap.dekWrappedPassword)).resolves.toHaveLength(32);
+            expect(call[5]).toBeNull();
+        }, 30_000);
     });
 });

@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
 import { withStepUpRetry } from '@/features/auth/step-up';
 import { getErrorMessage } from '@/utils/errors/app-error';
+import { VaultCryptoError } from '@/features/vault/crypto';
 import { isValidAccountPassword } from '@/features/user-settings/account-profile';
 
 /**
@@ -58,7 +59,11 @@ export function useAccountPasswordChange(options: { accountSuccess: Ref<string |
                 auth.changePassword(requiresCurrentPassword.value ? currentPassword.value : null, newPassword.value, undefined, stepUp)
             );
         } catch (e: unknown) {
-            passwordError.value = getErrorMessage(e);
+            // Le Coffre ne s’ouvre pas avec le mot de passe actuel : rien n’a été envoyé au serveur.
+            passwordError.value =
+                e instanceof VaultCryptoError && e.code === 'wrong_password'
+                    ? t('accounts.passwordModal.errors.currentIncorrect')
+                    : getErrorMessage(e);
             passwordSaving.value = false;
         }
     }
