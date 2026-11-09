@@ -34,6 +34,7 @@
 | Imports        | [`features/imports/contract.md`](features/imports/contract.md)               |
 | Subscription   | [`features/subscription/contract.md`](features/subscription/contract.md)     |
 | User settings  | [`features/user-settings/contract.md`](features/user-settings/contract.md)   |
+| Vault (Coffre) | [`features/vault/contract.md`](features/vault/contract.md)                   |
 | Countries      | [`features/countries/contract.md`](features/countries/contract.md)           |
 | Dashboard      | [`features/dashboard/contract.md`](features/dashboard/contract.md)           |
 | Savings goals  | [`features/savings-goals/contract.md`](features/savings-goals/contract.md)   |

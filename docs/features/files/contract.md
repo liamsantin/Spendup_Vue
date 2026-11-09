@@ -42,6 +42,8 @@ Le même PDF uploadé deux fois = **deux lignes** (`publicId` différents, même
 
 Pas d’URL S3 dans le JSON.
 
+**Coffre (périmètre étendu, offre `plus`)** — voir `features/vault/contract.md` : le PDF est chiffré dans le navigateur avant le `POST` (`encrypted=true`, nom neutre), `nameOriginal` / `description` partent chiffrés (`enc:v1:`) par `PATCH`, `FileDto.encrypted` signale un contenu à déchiffrer à la lecture (`loadReadablePdf`). Un fichier chiffré n’est pas dédupliqué par le serveur.
+
 `GET /api/files/usage` → `FileUsage` : `usedBytes`, `quotaBytes`, `remainingBytes`, `isUnlimited`, `fileCount`, `uniqueBlobCount`. Plafond config `FileStorage:DefaultQuotaBytes` (**100 Mo** par défaut). `quotaBytes: 0` + `isUnlimited: true` = pas de plafond.
 
 ## Validation UI (avant envoi)
