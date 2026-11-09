@@ -103,6 +103,7 @@ export type VehicleFormFields = {
     firstRegistrationYear: string;
     plate: string;
     currentMileage: string;
+    chassisNumber: string;
 };
 
 export type CryptoFormFields = {
@@ -111,6 +112,7 @@ export type CryptoFormFields = {
     quantity: string;
     averagePurchasePrice: string;
     platform: string;
+    walletAddress: string;
 };
 
 export type ValuableItemFormFields = {
@@ -119,6 +121,8 @@ export type ValuableItemFormFields = {
     model: string;
     isInsured: boolean;
     insuredValue: string;
+    serialNumber: string;
+    storageLocation: string;
 };
 
 export type SavingsAccountFormFields = {
@@ -196,15 +200,24 @@ function numberString(value: number | null | undefined): string {
 }
 
 export function emptyVehicleFormFields(): VehicleFormFields {
-    return { brand: '', model: '', vehicleType: 'voiture', fuel: '', firstRegistrationYear: '', plate: '', currentMileage: '' };
+    return {
+        brand: '',
+        model: '',
+        vehicleType: 'voiture',
+        fuel: '',
+        firstRegistrationYear: '',
+        plate: '',
+        currentMileage: '',
+        chassisNumber: ''
+    };
 }
 
 export function emptyCryptoFormFields(): CryptoFormFields {
-    return { name: '', symbol: '', quantity: '', averagePurchasePrice: '', platform: '' };
+    return { name: '', symbol: '', quantity: '', averagePurchasePrice: '', platform: '', walletAddress: '' };
 }
 
 export function emptyValuableItemFormFields(): ValuableItemFormFields {
-    return { itemType: 'montre', brand: '', model: '', isInsured: false, insuredValue: '' };
+    return { itemType: 'montre', brand: '', model: '', isInsured: false, insuredValue: '', serialNumber: '', storageLocation: '' };
 }
 
 export function emptySavingsAccountFormFields(): SavingsAccountFormFields {
@@ -276,7 +289,8 @@ export function assetToFormFields(asset: Asset): AssetFormFields {
             fuel: asset.vehicle.fuel ?? '',
             firstRegistrationYear: numberString(asset.vehicle.firstRegistrationYear),
             plate: asset.vehicle.plate ?? '',
-            currentMileage: numberString(asset.vehicle.currentMileage)
+            currentMileage: numberString(asset.vehicle.currentMileage),
+            chassisNumber: asset.vehicle.chassisNumber ?? ''
         };
     }
     if (asset.crypto) {
@@ -285,7 +299,8 @@ export function assetToFormFields(asset: Asset): AssetFormFields {
             symbol: asset.crypto.symbol,
             quantity: String(asset.crypto.quantity),
             averagePurchasePrice: numberString(asset.crypto.averagePurchasePrice),
-            platform: asset.crypto.platform ?? ''
+            platform: asset.crypto.platform ?? '',
+            walletAddress: asset.crypto.walletAddress ?? ''
         };
     }
     if (asset.valuableItem) {
@@ -294,7 +309,9 @@ export function assetToFormFields(asset: Asset): AssetFormFields {
             brand: asset.valuableItem.brand ?? '',
             model: asset.valuableItem.model ?? '',
             isInsured: asset.valuableItem.isInsured,
-            insuredValue: numberString(asset.valuableItem.insuredValue)
+            insuredValue: numberString(asset.valuableItem.insuredValue),
+            serialNumber: asset.valuableItem.serialNumber ?? '',
+            storageLocation: asset.valuableItem.storageLocation ?? ''
         };
     }
     if (asset.savingsAccount) {
@@ -404,7 +421,8 @@ function buildVehicle(f: VehicleFormFields): Parsed<VehicleDetails> {
             fuel: (fuelRaw as VehicleFuel | null) ?? null,
             firstRegistrationYear: year.value,
             plate: emptyToNull(f.plate),
-            currentMileage: mileage.value
+            currentMileage: mileage.value,
+            chassisNumber: emptyToNull(f.chassisNumber)
         }
     };
 }
@@ -421,7 +439,14 @@ function buildCrypto(f: CryptoFormFields): Parsed<CryptoDetails> {
     if (!average.ok) return average;
     return {
         ok: true,
-        value: { name, symbol, quantity: quantity.value, averagePurchasePrice: average.value, platform: emptyToNull(f.platform) }
+        value: {
+            name,
+            symbol,
+            quantity: quantity.value,
+            averagePurchasePrice: average.value,
+            platform: emptyToNull(f.platform),
+            walletAddress: emptyToNull(f.walletAddress)
+        }
     };
 }
 
@@ -436,7 +461,9 @@ function buildValuableItem(f: ValuableItemFormFields): Parsed<ValuableItemDetail
             brand: emptyToNull(f.brand),
             model: emptyToNull(f.model),
             isInsured: !!f.isInsured,
-            insuredValue: f.isInsured ? insured.value : null
+            insuredValue: f.isInsured ? insured.value : null,
+            serialNumber: emptyToNull(f.serialNumber),
+            storageLocation: emptyToNull(f.storageLocation)
         }
     };
 }

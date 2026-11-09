@@ -4,6 +4,7 @@ export {
     VAULT_FILE_CONTENT_AAD,
     VAULT_TABLES,
     canEncryptField,
+    fileContentAad,
     isVaultField,
     scopeAllows,
     vaultAad,
@@ -12,6 +13,7 @@ export {
 } from '@/features/vault/catalog';
 export type { VaultFieldSpec, VaultTableName } from '@/features/vault/catalog';
 export { decryptFileBytes, decryptPdfBlob, encryptFileBytes, encryptPdfFile, looksLikePdf } from '@/features/vault/file-content';
+export { generatePublicId, isConflictError, isValidPublicId, withFreshPublicId } from '@/features/vault/public-id';
 export { useVaultSecret } from '@/features/vault/composables/useVaultSecret';
 export type { VaultSecretKind } from '@/features/vault/composables/useVaultSecret';
 export { toBase64Url, fromBase64Url, isBase64Url } from '@/features/vault/base64url';

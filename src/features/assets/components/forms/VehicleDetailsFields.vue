@@ -95,6 +95,9 @@ const err = (key: string) => props.errors[`vehicle.${key}`] || undefined;
     <AssetFormRow :label="t('assetsPage.form.fields.plate')" for-id="asset-vehicle-plate">
         <v-text-field id="asset-vehicle-plate" v-model="fields.plate" color="primary" variant="outlined" hide-details="auto" />
     </AssetFormRow>
+    <AssetFormRow :label="t('assetsPage.form.fields.chassisNumber')" for-id="asset-vehicle-chassis">
+        <v-text-field id="asset-vehicle-chassis" v-model="fields.chassisNumber" color="primary" variant="outlined" hide-details="auto" />
+    </AssetFormRow>
     <AssetFormRow
         :label="t('assetsPage.form.fields.currentMileage')"
         for-id="asset-vehicle-mileage"

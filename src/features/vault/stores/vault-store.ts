@@ -313,22 +313,28 @@ export const useVaultStore = defineStore('vault', () => {
 
     /**
      * Chiffre un PDF avant `POST /api/files` si le périmètre étendu est ouvert, sinon `null` (envoi en clair).
+     * Le fichier renvoyé porte le nom réel déjà chiffré (`enc:v1:`, AAD `file:name_original:<publicId>`)
+     * et un contenu lié à `file:content:<publicId>`.
      * @param file PDF choisi par l’utilisateur.
+     * @param publicId Identifiant public choisi par le client pour ce fichier.
      */
-    async function encryptPdf(file: File): Promise<File | null> {
+    async function encryptPdf(file: File, publicId: string): Promise<File | null> {
         if (!(await canEncrypt('file', 'name_original'))) return null;
         const current = keys.value;
         if (!current) return null;
-        return encryptPdfFile(current.dek, file);
+        const sentName = await encryptField(current.dek, 'file', 'name_original', publicId, file.name);
+        return encryptPdfFile(current.dek, file, publicId, sentName);
     }
 
     /**
      * Déchiffre un contenu téléchargé si nécessaire ; un PDF en clair est renvoyé tel quel.
+     * @param blob Contenu renvoyé par l’API.
+     * @param publicId Identifiant public du fichier (AAD du contenu, avec repli sur l’AAD historique).
      * @returns Le PDF lisible, ou `null` si chiffré et indéchiffrable sur cet appareil.
      */
-    async function decryptPdf(blob: Blob): Promise<Blob | null> {
+    async function decryptPdf(blob: Blob, publicId: string): Promise<Blob | null> {
         const current = await ensureReady();
-        return decryptPdfBlob(current?.dek ?? null, blob);
+        return decryptPdfBlob(current?.dek ?? null, blob, publicId);
     }
 
     /**

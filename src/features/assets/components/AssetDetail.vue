@@ -107,6 +107,7 @@ const facts = computed<AssetFact[]>(() => {
         if (vehicle.fuel) add('fuel', field('fuel'), t(`assetsPage.fuels.${vehicle.fuel}`));
         add('year', field('firstRegistrationYear'), vehicle.firstRegistrationYear);
         add('plate', field('plate'), isCipher(vehicle.plate) ? t('vault.unreadable') : vehicle.plate);
+        add('chassisNumber', field('chassisNumber'), isCipher(vehicle.chassisNumber) ? t('vault.unreadable') : vehicle.chassisNumber);
         if (vehicle.currentMileage != null) {
             add(
                 'mileage',
@@ -121,6 +122,7 @@ const facts = computed<AssetFact[]>(() => {
         add('symbol', field('symbol'), crypto.symbol);
         add('quantity', field('quantity'), formatCryptoQuantity(crypto.quantity, locale.value));
         add('platform', field('platform'), crypto.platform);
+        add('walletAddress', field('walletAddress'), isCipher(crypto.walletAddress) ? t('vault.unreadable') : crypto.walletAddress);
         if (crypto.averagePurchasePrice != null) add('averagePrice', field('averagePurchasePrice'), money(crypto.averagePurchasePrice));
     }
     const item = current.valuableItem;
@@ -128,6 +130,8 @@ const facts = computed<AssetFact[]>(() => {
         add('itemType', field('itemType'), t(`assetsPage.valuableItemTypes.${item.itemType}`));
         add('brand', field('brand'), item.brand);
         add('model', field('model'), item.model);
+        add('serialNumber', field('serialNumber'), isCipher(item.serialNumber) ? t('vault.unreadable') : item.serialNumber);
+        add('storageLocation', field('storageLocation'), isCipher(item.storageLocation) ? t('vault.unreadable') : item.storageLocation);
         add('insured', field('isInsured'), item.isInsured ? t('common.yes') : t('common.no'));
         if (item.insuredValue != null) add('insuredValue', field('insuredValue'), money(item.insuredValue));
     }

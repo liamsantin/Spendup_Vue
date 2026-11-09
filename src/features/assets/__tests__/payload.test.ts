@@ -89,7 +89,14 @@ describe('assets payload — racine', () => {
     it('valide crypto, épargne et immobilier', () => {
         const crypto = emptyAssetFormFields({ type: 'crypto' });
         crypto.name = 'BTC';
-        crypto.crypto = { name: 'Bitcoin', symbol: 'btc', quantity: '0.000000000001', averagePurchasePrice: '', platform: '' };
+        crypto.crypto = {
+            name: 'Bitcoin',
+            symbol: 'btc',
+            quantity: '0.000000000001',
+            averagePurchasePrice: '',
+            platform: '',
+            walletAddress: ''
+        };
         const builtCrypto = buildCreateAssetPayload(crypto);
         expect(builtCrypto.ok && builtCrypto.payload.crypto).toMatchObject({ symbol: 'BTC', quantity: 0.000000000001 });
         crypto.crypto.quantity = '';

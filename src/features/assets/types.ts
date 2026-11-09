@@ -43,6 +43,8 @@ export type VehicleDetails = {
     plate: string | null;
     /** Lecture : relevé le plus récent par date. Écriture : écrit aussi le relevé du jour. */
     currentMileage: number | null;
+    /** Numéro de châssis (VIN) — socle du Coffre (`vehicle_asset.chassis_number`). */
+    chassisNumber?: string | null;
 };
 
 export type CryptoDetails = {
@@ -53,6 +55,8 @@ export type CryptoDetails = {
     quantity: number;
     averagePurchasePrice: number | null;
     platform: string | null;
+    /** Adresse du portefeuille — socle du Coffre (`crypto_asset.wallet_address`). */
+    walletAddress?: string | null;
 };
 
 export type ValuableItemDetails = {
@@ -61,6 +65,10 @@ export type ValuableItemDetails = {
     model: string | null;
     isInsured: boolean;
     insuredValue: number | null;
+    /** Numéro de série — socle du Coffre (`valuable_item_asset.serial_number`). */
+    serialNumber?: string | null;
+    /** Lieu de conservation — périmètre étendu (`valuable_item_asset.storage_location`). */
+    storageLocation?: string | null;
 };
 
 export type SavingsAccountDetails = {
@@ -178,6 +186,8 @@ export type AssetDetailsPayload = {
 };
 
 export type CreateAssetPayload = AssetDetailsPayload & {
+    /** Identifiant public choisi par le client (GUID minuscule) pour chiffrer avant l’envoi ; absent : le serveur le génère. */
+    publicId?: string;
     name: string;
     type: AssetType;
     estimatedValue: number;

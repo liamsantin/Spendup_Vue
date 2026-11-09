@@ -55,10 +55,7 @@ export type VaultMigrateItem = {
     scope: VaultScope;
     action: 'encrypt' | 'decrypt';
     value: string;
-    /**
-     * Version de ligne, opaque, à renvoyer telle quelle. Le serveur l’envoie comme un entier 64 bits
-     * (ticks) : au-delà de 2^53, `JSON.parse` la fausserait, elle est donc gardée en chaîne décimale.
-     */
+    /** Version de ligne, chaîne opaque (ticks en décimal) : à renvoyer telle quelle. */
     version: string;
 };
 
@@ -73,7 +70,7 @@ export type VaultMigrateWriteItem = {
     publicId: string;
     field: string;
     value: string | null;
-    /** Version lue, renvoyée telle quelle (chaîne décimale, envoyée au serveur comme un entier). */
+    /** Version lue, renvoyée telle quelle. */
     version: string;
     /** Empreinte `h:…`, obligatoire pour `account.iban` chiffré. */
     fingerprint?: string | null;

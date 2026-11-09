@@ -49,6 +49,12 @@ const err = (key: string) => props.errors[`valuableItem.${key}`] || undefined;
     <AssetFormRow :label="t('assetsPage.form.fields.model')" for-id="asset-valuable-model">
         <v-text-field id="asset-valuable-model" v-model="fields.model" color="primary" variant="outlined" hide-details="auto" />
     </AssetFormRow>
+    <AssetFormRow :label="t('assetsPage.form.fields.serialNumber')" for-id="asset-valuable-serial">
+        <v-text-field id="asset-valuable-serial" v-model="fields.serialNumber" color="primary" variant="outlined" hide-details="auto" />
+    </AssetFormRow>
+    <AssetFormRow :label="t('assetsPage.form.fields.storageLocation')" for-id="asset-valuable-storage">
+        <v-text-field id="asset-valuable-storage" v-model="fields.storageLocation" color="primary" variant="outlined" hide-details="auto" />
+    </AssetFormRow>
     <AssetFormRow :label="t('assetsPage.form.fields.isInsured')" for-id="asset-valuable-insured">
         <AppSwitch id="asset-valuable-insured" v-model="fields.isInsured" />
     </AssetFormRow>

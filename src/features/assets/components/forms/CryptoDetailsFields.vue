@@ -84,4 +84,7 @@ function onSymbolInput(value: string) {
     <AssetFormRow :label="t('assetsPage.form.fields.platform')" for-id="asset-crypto-platform">
         <v-text-field id="asset-crypto-platform" v-model="fields.platform" color="primary" variant="outlined" hide-details="auto" />
     </AssetFormRow>
+    <AssetFormRow :label="t('assetsPage.form.fields.walletAddress')" for-id="asset-crypto-wallet">
+        <v-text-field id="asset-crypto-wallet" v-model="fields.walletAddress" color="primary" variant="outlined" hide-details="auto" />
+    </AssetFormRow>
 </template>

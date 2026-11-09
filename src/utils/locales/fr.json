@@ -3842,7 +3842,11 @@
                 "hasGarage": "Garage",
                 "constructionYear": "Année de construction",
                 "renovationYear": "Année de rénovation",
-                "taxValue": "Valeur fiscale"
+                "taxValue": "Valeur fiscale",
+                "chassisNumber": "Numéro de châssis",
+                "walletAddress": "Adresse du portefeuille",
+                "serialNumber": "Numéro de série",
+                "storageLocation": "Lieu de conservation"
             },
             "noFuel": "Non précisé",
             "noAccount": "Aucun compte",

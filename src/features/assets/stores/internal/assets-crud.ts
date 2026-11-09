@@ -9,7 +9,8 @@ import {
 } from '@/features/assets/payload';
 import { ASSET_NOT_FOUND_MESSAGE, type Asset, type ListAssetsQuery } from '@/features/assets/types';
 import { listCacheKey, type AssetsState } from '@/features/assets/stores/internal/assets-state';
-import { decryptAssetFields, encryptAssetPayload, needsAssetVaultWrite, stripSensitiveAssetFields } from '@/features/assets/vault-fields';
+import { decryptAssetFields, encryptAssetPayload, needsAssetVaultWrite } from '@/features/assets/vault-fields';
+import { withFreshPublicId } from '@/features/vault/public-id';
 
 export const ASSET_NOT_FOUND_CODE = 'asset_not_found';
 export const ASSET_SUB_RESOURCE_NOT_FOUND_MESSAGE = 'Élément introuvable.';
@@ -209,36 +210,17 @@ export function createAssetsCrud(state: AssetsState) {
     }
 
     /**
-     * POST sans les champs chiffrables (plaque, notes, adresse) puis PUT avec ces champs chiffrés (l’AAD a
-     * besoin du `publicId`). Si le PUT échoue, l’actif tout juste créé est supprimé.
+     * Coffre ouvert et champ chiffrable saisi : le client choisit le `publicId`, chiffre avec cet AAD et
+     * envoie tout en un seul `POST` (409 `CONFLICT` sur l’identifiant → nouvel identifiant). Sinon, POST en clair.
      */
     async function createAssetWithVault(payload: Parameters<typeof assetsApi.create>[0]): Promise<Asset> {
         if (!(await needsAssetVaultWrite(payload))) {
             return prepareAsset(await assetsApi.create(payload));
         }
-        const created = normalizeAsset(await assetsApi.create(stripSensitiveAssetFields(payload)));
-        try {
-            const body = await encryptAssetPayload(created.publicId, {
-                name: created.name,
-                estimatedValue: created.estimatedValue,
-                currency: created.currency,
-                acquisitionDate: created.acquisitionDate,
-                acquisitionPrice: created.acquisitionPrice,
-                description: created.description,
-                notes: payload.notes ?? null,
-                isActive: created.isActive,
-                ...(payload.vehicle ? { vehicle: payload.vehicle } : {}),
-                ...(payload.realEstate ? { realEstate: payload.realEstate } : {}),
-                ...(payload.crypto ? { crypto: payload.crypto } : {}),
-                ...(payload.valuableItem ? { valuableItem: payload.valuableItem } : {}),
-                ...(payload.savingsAccount ? { savingsAccount: payload.savingsAccount } : {}),
-                ...(payload.other ? { other: payload.other } : {})
-            });
-            return await prepareAsset(await assetsApi.update(created.publicId, body));
-        } catch (e: unknown) {
-            await assetsApi.remove(created.publicId).catch(() => undefined);
-            throw e;
-        }
+        const created = await withFreshPublicId(async (publicId) =>
+            assetsApi.create(await encryptAssetPayload(publicId, { ...payload, publicId }))
+        );
+        return prepareAsset(created);
     }
 
     async function createAsset(fields: AssetFormFields, extra?: AssetPayloadContext) {

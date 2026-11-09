@@ -50,10 +50,18 @@ export const VAULT_CATALOG: Readonly<Record<VaultTableName, readonly VaultFieldS
 export const VAULT_TABLES = Object.keys(VAULT_CATALOG) as VaultTableName[];
 
 /**
- * AAD du contenu d’un PDF chiffré : le `publicId` n’est connu qu’après `POST /api/files`, le contenu
- * est donc lié à la table et à la colonne seulement (voir `file-content.ts`).
+ * AAD historique du contenu d’un PDF chiffré (avant que le client choisisse le `publicId`) : encore
+ * acceptée en lecture, plus jamais produite (voir `fileContentAad`).
  */
 export const VAULT_FILE_CONTENT_AAD = 'file:content';
+
+/**
+ * AAD du contenu d’un PDF : `file:content:<publicId>` (le client choisit l’identifiant avant l’upload).
+ * @param publicId Identifiant public du fichier.
+ */
+export function fileContentAad(publicId: string): string {
+    return `${VAULT_FILE_CONTENT_AAD}:${publicId}`;
+}
 
 /**
  * Spécification d’un champ du catalogue, ou `null` s’il n’en fait pas partie.
