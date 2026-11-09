@@ -12,3 +12,4 @@ export * from '@/features/user-settings/composables/useSettingsFormPage';
 export * from '@/features/user-settings/composables/useSupportCode';
 export * from '@/features/user-settings/composables/useAccessLog';
 export * from '@/features/user-settings/composables/useTransparency';
+export * from '@/features/user-settings/composables/useVaultSecurity';

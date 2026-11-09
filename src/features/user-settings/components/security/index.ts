@@ -1,6 +1,8 @@
 export { default as SecurityDevicesCard } from '@/features/user-settings/components/security/SecurityDevicesCard.vue';
 export { default as SecuritySessionCard } from '@/features/user-settings/components/security/SecuritySessionCard.vue';
 export { default as SecuritySupportCodeCard } from '@/features/user-settings/components/security/SecuritySupportCodeCard.vue';
+export { default as SecurityVaultCard } from '@/features/user-settings/components/security/SecurityVaultCard.vue';
+export { default as VaultRecoveryDialog } from '@/features/user-settings/components/security/VaultRecoveryDialog.vue';
 export { default as SecurityTwoFactorCard } from '@/features/user-settings/components/security/SecurityTwoFactorCard.vue';
 export { default as TwoFactorDisableDialog } from '@/features/user-settings/components/security/TwoFactorDisableDialog.vue';
 export { default as TwoFactorSetupDialog } from '@/features/user-settings/components/security/TwoFactorSetupDialog.vue';
