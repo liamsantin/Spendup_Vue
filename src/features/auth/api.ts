@@ -17,7 +17,7 @@ import type {
     UpdateProfilePayload,
     UploadAvatarResult
 } from '@/features/auth/types';
-import type { VaultSetupRequest, VaultWrapRequest } from '@/features/vault/types';
+import type { VaultResetParams, VaultSetupRequest, VaultWrapRequest } from '@/features/vault/types';
 
 function bearerHeaders(accessToken: string | null | undefined): Record<string, string> | undefined {
     if (!shouldSendBearerAuth() || !accessToken) return undefined;
@@ -308,8 +308,18 @@ export const authApi = {
         return authHttp.post<null>('/api/auth/forgot-password', { email });
     },
 
-    resetPassword(token: string, newPassword: string) {
-        return authHttp.post<null>('/api/auth/reset-password', { token, newPassword });
+    /**
+     * Réinitialisation par jeton e-mail. `vaultWrap` : DEK ré-emballée par le nouveau mot de passe grâce au
+     * code de récupération ; sans lui, l’API efface l’emballage et les champs du Coffre deviennent irrécupérables.
+     */
+    resetPassword(token: string, newPassword: string, vaultWrap?: VaultWrapRequest | null) {
+        return authHttp.post<null>('/api/auth/reset-password', { token, newPassword, ...(vaultWrap ? { vaultWrap } : {}) });
+    },
+
+    /** Paramètres du Coffre lisibles avec un jeton de réinitialisation valide (avant connexion). */
+    resetPasswordVaultParams(token: string) {
+        const params = new URLSearchParams({ token });
+        return authHttp.get<VaultResetParams>(`/api/auth/reset-password/vault?${params}`);
     },
 
     /**

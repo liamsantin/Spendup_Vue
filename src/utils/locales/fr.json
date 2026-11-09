@@ -2809,14 +2809,18 @@
             "fields": {
                 "currentPassword": "Mot de passe actuel",
                 "newPassword": "Nouveau mot de passe",
-                "confirmPassword": "Confirmer le mot de passe"
+                "confirmPassword": "Confirmer le mot de passe",
+                "vaultPhrase": "Phrase de Coffre"
             },
             "errors": {
                 "currentRequired": "Saisissez votre mot de passe actuel.",
                 "currentIncorrect": "Mot de passe actuel incorrect.",
                 "invalidNew": "Le nouveau mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.",
-                "mismatch": "La confirmation ne correspond pas au nouveau mot de passe."
-            }
+                "mismatch": "La confirmation ne correspond pas au nouveau mot de passe.",
+                "vaultPhraseRequired": "Saisissez votre phrase de Coffre.",
+                "vaultPhraseIncorrect": "Phrase de Coffre incorrecte."
+            },
+            "vaultPhraseHint": "Votre Coffre est protégé par une phrase : elle est nécessaire pour que votre nouveau mot de passe ouvre aussi le Coffre."
         },
         "unlinkGoogleModal": {
             "title": "Dissocier le compte Google",
@@ -2866,6 +2870,84 @@
         "migration": {
             "progress": "Chiffrement de vos données en cours : {done} sur {total}",
             "error": "Le chiffrement de vos données reprendra à la prochaine connexion."
+        },
+        "encrypted": "Chiffré",
+        "secret": {
+            "password": "Mot de passe",
+            "phrase": "Phrase de Coffre"
+        },
+        "locked": {
+            "title": "Coffre verrouillé",
+            "textRecoverable": "Votre mot de passe a été réinitialisé sans code de récupération : la clé du Coffre n’est plus ouverte par votre mot de passe. Restaurez-la avec votre code, ou remettez le Coffre à zéro.",
+            "textLost": "Votre mot de passe a été réinitialisé sans code de récupération : les champs chiffrés (IBAN, numéros, notes…) sont irrécupérables. Remettez le Coffre à zéro pour repartir avec une clé neuve.",
+            "restore": "Restaurer avec le code",
+            "reset": "Remettre à zéro"
+        },
+        "restore": {
+            "title": "Restaurer le Coffre",
+            "subtitle": "Le code de récupération ouvre la clé du Coffre ; votre mot de passe la protège à nouveau.",
+            "codeLabel": "Code de récupération",
+            "codePlaceholder": "XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX",
+            "secretHint": "Votre {label} sert à protéger à nouveau la clé du Coffre sur le serveur ; il ne quitte jamais cet appareil en clair.",
+            "submit": "Restaurer",
+            "errors": {
+                "codeInvalid": "Le code doit comporter 32 caractères (8 groupes de 4).",
+                "wrongCode": "Ce code ne correspond pas au Coffre.",
+                "secretRequired": "Saisissez votre {label}."
+            }
+        },
+        "reset": {
+            "title": "Remettre le Coffre à zéro",
+            "warning": "Les valeurs encore chiffrées (IBAN, numéros de compte, plaques, notes, adresses, noms de fichiers…) seront effacées définitivement. Un Coffre neuf sera créé avec le secret saisi ci-dessous.",
+            "confirmLabel": "Je comprends que ces données sont perdues et je veux repartir avec un Coffre neuf.",
+            "submit": "Remettre à zéro",
+            "errors": {
+                "confirmRequired": "Cochez la case pour confirmer la remise à zéro.",
+                "secretRequired": "Saisissez votre {label}."
+            }
+        },
+        "unlock": {
+            "title": "Ouvrir le Coffre",
+            "subtitle": "Cet appareil n’a pas encore la clé de votre Coffre : saisissez votre phrase de Coffre pour lire vos champs chiffrés.",
+            "submit": "Ouvrir",
+            "later": "Plus tard",
+            "errors": {
+                "required": "Saisissez votre phrase de Coffre.",
+                "wrongPhrase": "Phrase de Coffre incorrecte.",
+                "unavailable": "Le Coffre ne peut pas être ouvert pour le moment."
+            }
+        },
+        "setup": {
+            "titlePhrase": "Définir une phrase de Coffre",
+            "titlePassword": "Activer le Coffre",
+            "subtitlePhrase": "Votre compte se connecte avec Google : une phrase, connue de vous seul, protégera la clé qui chiffre vos champs sensibles dans le navigateur.",
+            "subtitlePassword": "Votre mot de passe protégera la clé qui chiffre vos champs sensibles dans le navigateur, comme pour les nouveaux comptes.",
+            "confirmLabel": "Confirmer la phrase",
+            "phraseHint": "Au moins {min} caractères. Sans cette phrase ni code de récupération, les champs du Coffre seront perdus : notez-la.",
+            "submit": "Créer le Coffre",
+            "hintText": "Votre compte se connecte avec Google : définissez une phrase de Coffre pour chiffrer vos IBAN, numéros et notes dans le navigateur.",
+            "hintAction": "Définir une phrase",
+            "hintLater": "Plus tard",
+            "errors": {
+                "required": "Saisissez votre {label}.",
+                "tooShort": "La phrase doit comporter au moins {min} caractères.",
+                "mismatch": "Les deux phrases ne correspondent pas."
+            }
+        },
+        "disable": {
+            "title": "Désactiver le Coffre",
+            "warning": "Toutes les valeurs chiffrées seront remises en clair sur le serveur, puis le Coffre sera supprimé. L’opérateur pourra de nouveau les lire. Votre mot de passe reste inchangé.",
+            "confirmLabel": "Je comprends que mes champs sensibles ne seront plus chiffrés.",
+            "submit": "Désactiver",
+            "progress": {
+                "disabling": "Passage du Coffre en retrait…",
+                "decrypting": "Déchiffrement : {done} sur {total}",
+                "deleting": "Suppression du Coffre…"
+            },
+            "errors": {
+                "confirmRequired": "Cochez la case pour confirmer la désactivation.",
+                "secretRequired": "Saisissez votre mot de passe."
+            }
         }
     },
     "security": {
@@ -3009,7 +3091,8 @@
                 "disabling": "Retrait du Coffre en cours",
                 "absent": "Aucun Coffre sur ce compte",
                 "locked": "Coffre fermé sur cet appareil",
-                "lost": "Clé du Coffre perdue : ces champs sont irrécupérables"
+                "lost": "Clé du Coffre perdue : ces champs sont irrécupérables",
+                "wrapLost": "Coffre verrouillé : votre mot de passe n’ouvre plus la clé"
             },
             "absentHint": "Les comptes connectés avec Google seulement n’ont pas encore de Coffre.",
             "lockedHint": "Reconnectez-vous avec votre mot de passe pour rouvrir le Coffre sur cet appareil.",
@@ -3045,6 +3128,29 @@
                     "confirmMismatch": "Les caractères saisis ne correspondent pas au début du code.",
                     "copyFailed": "Impossible de copier dans le presse-papiers."
                 }
+            },
+            "absentHintPassword": "Ce compte a été créé avant le Coffre : activez-le avec votre mot de passe.",
+            "wrapLostHint": "Votre mot de passe a été réinitialisé sans code de récupération : les champs chiffrés sont irrécupérables, remettez le Coffre à zéro.",
+            "wrapLostHintRecoverable": "Votre mot de passe a été réinitialisé sans code : restaurez la clé avec votre code de récupération, ou remettez le Coffre à zéro.",
+            "actions": {
+                "setPhrase": "Définir une phrase de Coffre",
+                "activate": "Activer le Coffre",
+                "restore": "Restaurer avec le code",
+                "reset": "Remettre à zéro",
+                "disable": "Désactiver le Coffre",
+                "resumeDisable": "Reprendre la désactivation"
+            },
+            "disable": {
+                "title": "Désactiver le Coffre",
+                "text": "Vos champs sensibles seront remis en clair sur le serveur, puis le Coffre sera supprimé.",
+                "resumeText": "Le retrait du Coffre a été interrompu : des valeurs restent à déchiffrer avant la suppression."
+            },
+            "success": {
+                "created": "Coffre activé. Vos champs sensibles sont chiffrés dans le navigateur.",
+                "createdPhrase": "Phrase de Coffre définie. Vos champs sensibles sont chiffrés dans le navigateur.",
+                "disabled": "Coffre désactivé : vos champs sont de nouveau en clair sur le serveur.",
+                "restored": "Coffre restauré : votre mot de passe ouvre à nouveau la clé.",
+                "reset": "Coffre remis à zéro avec une clé neuve."
             }
         },
         "session": {
@@ -3419,6 +3525,19 @@
                 "letter": "Au moins une lettre.",
                 "digit": "Au moins un chiffre.",
                 "mismatch": "Les mots de passe ne correspondent pas."
+            },
+            "vault": {
+                "codeLabel": "Code de récupération du Coffre (facultatif)",
+                "codePlaceholder": "XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX",
+                "codeHint": "Vos IBAN, numéros et notes sont chiffrés avec une clé que seul votre ancien mot de passe ouvrait. Le code de récupération permet de la conserver.",
+                "lossWarningNoCode": "Sans code de récupération, les champs chiffrés de votre Coffre (IBAN, numéros de compte, plaques, notes…) seront définitivement perdus. Le compte lui-même est récupéré.",
+                "lossWarningNoRecovery": "Aucun code de récupération n’a été généré pour ce compte : les champs chiffrés de votre Coffre (IBAN, numéros de compte, plaques, notes…) seront définitivement perdus. Le compte lui-même est récupéré.",
+                "acceptLoss": "Je comprends que les champs du Coffre seront perdus.",
+                "errors": {
+                    "codeInvalid": "Le code doit comporter 32 caractères (8 groupes de 4).",
+                    "wrongCode": "Ce code ne correspond pas au Coffre de ce compte.",
+                    "confirmLoss": "Cochez la case pour confirmer la perte des champs du Coffre, ou saisissez votre code."
+                }
             }
         },
         "stepUp": {

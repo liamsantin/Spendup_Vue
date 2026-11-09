@@ -184,8 +184,10 @@ defineExpose({
             v-model:current-password="passwordChange.currentPassword"
             v-model:new-password="passwordChange.newPassword"
             v-model:confirm-password="passwordChange.confirmPassword"
+            v-model:vault-phrase="passwordChange.vaultPhrase"
             v-model:error="passwordChange.passwordError"
             :requires-current-password="passwordChange.requiresCurrentPassword"
+            :requires-vault-phrase="passwordChange.requiresVaultPhrase"
             :saving="passwordChange.passwordSaving"
             @submit="passwordChange.submitPasswordChange"
         />

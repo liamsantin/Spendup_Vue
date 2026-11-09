@@ -3,7 +3,7 @@ import { RouterView } from 'vue-router';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { useIdleLogout } from '@/features/auth/composables/useIdleLogout';
 import StepUpDialog from '@/features/auth/components/StepUpDialog.vue';
-import VaultMigrationBanner from '@/features/vault/components/VaultMigrationBanner.vue';
+import VaultHost from '@/features/vault/components/VaultHost.vue';
 import PlanSelectorHost from '@/features/subscription/components/PlanSelectorHost.vue';
 import AppShell from '@/layouts/shell/components/AppShell.vue';
 import { useShellNav } from '@/layouts/shell/composables/useShellNav';
@@ -39,7 +39,7 @@ const { open, openId, activeId, primaryNav, secondaryNav, headerLinks, headerMen
 
             <StepUpDialog />
             <PlanSelectorHost />
-            <VaultMigrationBanner />
+            <VaultHost />
         </v-app>
     </v-locale-provider>
 </template>

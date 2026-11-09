@@ -146,13 +146,22 @@ export function createAuthProfile(session: AuthSessionState, deps: ProfileDeps) 
      * @param reLoginMessage Notice affichée au re-login.
      * @param stepUp Preuve step-up optionnelle.
      */
-    async function changePassword(currentPassword: string | null, newPassword: string, reLoginMessage?: string, stepUp?: StepUpProof) {
+    async function changePassword(
+        currentPassword: string | null,
+        newPassword: string,
+        reLoginMessage?: string,
+        stepUp?: StepUpProof,
+        vaultPhrase?: string | null
+    ) {
         const token = await requireAccessToken();
         const vault = useVaultStore();
         // Coffre : la DEK est ré-emballée avec le nouveau mot de passe dans la même requête (même transaction côté API).
-        const vaultWrap = currentPassword ? await vault.rewrapForPassword(currentPassword, newPassword) : null;
-        // Premier mot de passe d’un compte Google : création silencieuse du Coffre.
-        const vaultSetup = !currentPassword && !vaultWrap ? await vault.prepareRegistration(newPassword) : null;
+        // Compte Google avec phrase de Coffre qui pose son premier mot de passe : la phrase déballe la DEK.
+        const secret = currentPassword || vaultPhrase || null;
+        const vaultWrap = secret ? await vault.rewrapForPassword(secret, newPassword) : null;
+        // Premier mot de passe d’un compte sans Coffre : création silencieuse du Coffre.
+        const vaultSetup =
+            !currentPassword && !vaultWrap && !(await vault.loadStatus())?.exists ? await vault.prepareRegistration(newPassword) : null;
         try {
             await authApi.changePassword(token, currentPassword, newPassword, stepUp, vaultWrap, vaultSetup);
         } catch (e: unknown) {

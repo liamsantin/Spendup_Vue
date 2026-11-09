@@ -9,6 +9,7 @@ import { APP_HOME_ROUTE, type AuthSessionState } from '@/features/auth/stores/in
 import type { AuthLogout } from '@/features/auth/stores/internal/auth-logout';
 import type { AuthProfile } from '@/features/auth/stores/internal/auth-profile';
 import { useVaultStore } from '@/features/vault/stores/vault-store';
+import type { VaultWrapRequest } from '@/features/vault/types';
 
 function t(key: string) {
     return i18n.global.t(key);
@@ -136,8 +137,10 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
             await router.push('/auth/two-step');
             return;
         }
-        // Pas de mot de passe : seules des clés déjà sur l’appareil peuvent ouvrir le Coffre.
-        useVaultStore().startBackgroundMigration();
+        // Pas de mot de passe : clés déjà sur l’appareil, sinon la phrase de Coffre est demandée (hôte `/app`).
+        const vault = useVaultStore();
+        vault.startBackgroundMigration();
+        vault.requestPhraseUnlock();
         await navigateAfterLogin();
     }
 
@@ -237,8 +240,8 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
      * @param token Token de reset.
      * @param newPassword Nouveau mot de passe.
      */
-    async function resetPassword(token: string, newPassword: string) {
-        await authApi.resetPassword(token, newPassword);
+    async function resetPassword(token: string, newPassword: string, vaultWrap?: VaultWrapRequest | null) {
+        await authApi.resetPassword(token, newPassword, vaultWrap);
         await goToLogin(t('auth.notices.passwordUpdated'));
     }
 

@@ -2809,14 +2809,18 @@
             "fields": {
                 "currentPassword": "Current password",
                 "newPassword": "New password",
-                "confirmPassword": "Confirm password"
+                "confirmPassword": "Confirm password",
+                "vaultPhrase": "Vault phrase"
             },
             "errors": {
                 "currentRequired": "Enter your current password.",
                 "currentIncorrect": "Current password is incorrect.",
                 "invalidNew": "New password must be at least 8 characters and include a letter and a digit.",
-                "mismatch": "Confirmation does not match the new password."
-            }
+                "mismatch": "Confirmation does not match the new password.",
+                "vaultPhraseRequired": "Enter your vault phrase.",
+                "vaultPhraseIncorrect": "Incorrect vault phrase."
+            },
+            "vaultPhraseHint": "Your vault is protected by a phrase: it is needed so that your new password also opens the vault."
         },
         "unlinkGoogleModal": {
             "title": "Unlink Google account",
@@ -2866,6 +2870,84 @@
         "migration": {
             "progress": "Encrypting your data: {done} of {total}",
             "error": "Encryption of your data will resume at your next sign-in."
+        },
+        "encrypted": "Encrypted",
+        "secret": {
+            "password": "Password",
+            "phrase": "Vault phrase"
+        },
+        "locked": {
+            "title": "Vault locked",
+            "textRecoverable": "Your password was reset without a recovery code: your password no longer opens the vault key. Restore it with your code, or reset the vault.",
+            "textLost": "Your password was reset without a recovery code: the encrypted fields (IBANs, numbers, notes…) cannot be recovered. Reset the vault to start again with a new key.",
+            "restore": "Restore with the code",
+            "reset": "Reset"
+        },
+        "restore": {
+            "title": "Restore the vault",
+            "subtitle": "The recovery code opens the vault key; your password protects it again.",
+            "codeLabel": "Recovery code",
+            "codePlaceholder": "XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX",
+            "secretHint": "Your {label} protects the vault key on the server again; it never leaves this device in clear.",
+            "submit": "Restore",
+            "errors": {
+                "codeInvalid": "The code must have 32 characters (8 groups of 4).",
+                "wrongCode": "This code does not match the vault.",
+                "secretRequired": "Enter your {label}."
+            }
+        },
+        "reset": {
+            "title": "Reset the vault",
+            "warning": "Values still encrypted (IBANs, account numbers, plates, notes, addresses, file names…) will be erased permanently. A new vault will be created with the secret below.",
+            "confirmLabel": "I understand this data is lost and I want to start with a new vault.",
+            "submit": "Reset",
+            "errors": {
+                "confirmRequired": "Tick the box to confirm the reset.",
+                "secretRequired": "Enter your {label}."
+            }
+        },
+        "unlock": {
+            "title": "Open the vault",
+            "subtitle": "This device does not have your vault key yet: enter your vault phrase to read your encrypted fields.",
+            "submit": "Open",
+            "later": "Later",
+            "errors": {
+                "required": "Enter your vault phrase.",
+                "wrongPhrase": "Incorrect vault phrase.",
+                "unavailable": "The vault cannot be opened right now."
+            }
+        },
+        "setup": {
+            "titlePhrase": "Set a vault phrase",
+            "titlePassword": "Enable the vault",
+            "subtitlePhrase": "Your account signs in with Google: a phrase known only to you will protect the key that encrypts your sensitive fields in the browser.",
+            "subtitlePassword": "Your password will protect the key that encrypts your sensitive fields in the browser, as for new accounts.",
+            "confirmLabel": "Confirm the phrase",
+            "phraseHint": "At least {min} characters. Without this phrase or a recovery code, the vault fields are lost: write it down.",
+            "submit": "Create the vault",
+            "hintText": "Your account signs in with Google: set a vault phrase to encrypt your IBANs, numbers and notes in the browser.",
+            "hintAction": "Set a phrase",
+            "hintLater": "Later",
+            "errors": {
+                "required": "Enter your {label}.",
+                "tooShort": "The phrase must have at least {min} characters.",
+                "mismatch": "The two phrases do not match."
+            }
+        },
+        "disable": {
+            "title": "Disable the vault",
+            "warning": "All encrypted values will be stored in clear on the server again, then the vault will be deleted. The operator will be able to read them again. Your password is unchanged.",
+            "confirmLabel": "I understand my sensitive fields will no longer be encrypted.",
+            "submit": "Disable",
+            "progress": {
+                "disabling": "Switching the vault to removal…",
+                "decrypting": "Decrypting: {done} of {total}",
+                "deleting": "Deleting the vault…"
+            },
+            "errors": {
+                "confirmRequired": "Tick the box to confirm.",
+                "secretRequired": "Enter your password."
+            }
         }
     },
     "security": {
@@ -3009,7 +3091,8 @@
                 "disabling": "Vault removal in progress",
                 "absent": "No vault on this account",
                 "locked": "Vault closed on this device",
-                "lost": "Vault key lost: these fields cannot be recovered"
+                "lost": "Vault key lost: these fields cannot be recovered",
+                "wrapLost": "Vault locked: your password no longer opens the key"
             },
             "absentHint": "Accounts that sign in with Google only do not have a vault yet.",
             "lockedHint": "Sign in again with your password to reopen the vault on this device.",
@@ -3045,6 +3128,29 @@
                     "confirmMismatch": "The characters entered do not match the start of the code.",
                     "copyFailed": "Could not copy to the clipboard."
                 }
+            },
+            "absentHintPassword": "This account predates the vault: enable it with your password.",
+            "wrapLostHint": "Your password was reset without a recovery code: the encrypted fields cannot be recovered, reset the vault.",
+            "wrapLostHintRecoverable": "Your password was reset without a code: restore the key with your recovery code, or reset the vault.",
+            "actions": {
+                "setPhrase": "Set a vault phrase",
+                "activate": "Enable the vault",
+                "restore": "Restore with the code",
+                "reset": "Reset",
+                "disable": "Disable the vault",
+                "resumeDisable": "Resume disabling"
+            },
+            "disable": {
+                "title": "Disable the vault",
+                "text": "Your sensitive fields will be stored in clear on the server again, then the vault will be deleted.",
+                "resumeText": "Vault removal was interrupted: some values still need decrypting before deletion."
+            },
+            "success": {
+                "created": "Vault enabled. Your sensitive fields are encrypted in the browser.",
+                "createdPhrase": "Vault phrase set. Your sensitive fields are encrypted in the browser.",
+                "disabled": "Vault disabled: your fields are stored in clear on the server again.",
+                "restored": "Vault restored: your password opens the key again.",
+                "reset": "Vault reset with a new key."
             }
         },
         "session": {
@@ -3419,6 +3525,19 @@
                 "letter": "At least one letter.",
                 "digit": "At least one digit.",
                 "mismatch": "Passwords do not match."
+            },
+            "vault": {
+                "codeLabel": "Vault recovery code (optional)",
+                "codePlaceholder": "XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX",
+                "codeHint": "Your IBANs, numbers and notes are encrypted with a key only your previous password opened. The recovery code lets you keep it.",
+                "lossWarningNoCode": "Without a recovery code, the encrypted fields of your vault (IBANs, account numbers, plates, notes…) will be permanently lost. The account itself is recovered.",
+                "lossWarningNoRecovery": "No recovery code was generated for this account: the encrypted fields of your vault (IBANs, account numbers, plates, notes…) will be permanently lost. The account itself is recovered.",
+                "acceptLoss": "I understand the vault fields will be lost.",
+                "errors": {
+                    "codeInvalid": "The code must have 32 characters (8 groups of 4).",
+                    "wrongCode": "This code does not match this account’s vault.",
+                    "confirmLoss": "Tick the box to confirm the loss of the vault fields, or enter your code."
+                }
             }
         },
         "stepUp": {
