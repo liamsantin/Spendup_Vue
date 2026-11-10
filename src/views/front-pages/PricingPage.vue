@@ -1,6 +1,11 @@
 <script setup lang="ts">
+/**
+ * Page Tarifs : même gabarit que Fonctionnalités et À propos (scss/frontpages/_page-blocks.scss).
+ * Hero → 01 offres → 02 comparatif → 03 inclus pour tous → 04 questions → appel final.
+ * Prix et quotas : catalogue décidé côté produit (le paiement n'est pas encore branché).
+ */
 import { ref } from 'vue';
-import { ArrowRightIcon, CheckIcon, DatabaseExportIcon, LockIcon, ShieldCheckIcon } from 'vue-tabler-icons';
+import { ArrowRightIcon, CheckIcon } from 'vue-tabler-icons';
 import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
 import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
@@ -26,76 +31,75 @@ const billingPeriod = ref<BillingPeriod>('yearly');
 
 const subscriptionShot = `${APP_SCREENSHOTS_PATH}/subscription.webp`;
 
+const sectionIndex = [
+    { id: 'offres', number: '01', label: 'Les offres' },
+    { id: 'comparer', number: '02', label: 'Comparer' },
+    { id: 'inclus', number: '03', label: 'Inclus pour tous' },
+    { id: 'questions', number: '04', label: 'Questions' }
+];
+
 const plans: PricingPlan[] = [
     {
         code: 'free',
         name: 'Gratuit',
-        description: 'Pour découvrir Spend.Up et gérer ses finances au quotidien.',
+        description: 'Pour découvrir Spend.Up et suivre ses finances au quotidien.',
         priceMonthly: 0,
         priceYearly: 0,
         features: [
             'Jusqu’à 3 comptes',
-            'Saisie des transactions, catégories et tiers',
+            'Transactions, catégories et tiers',
             'Justificatifs PDF (30 Mo)',
             'Partage d’un compte entre amis',
-            'Budgets et récurrents limités (1 budget, 3 récurrences)',
-            'Authentification sécurisée, 2FA et appareils',
-            'Export et suppression des données'
+            '1 budget et 3 récurrences'
         ],
         cta: 'Commencer gratuitement'
     },
     {
         code: 'student',
         name: 'Étudiant',
-        description: 'Même produit que Solo, au tarif réduit. Justificatif étudiant annuel requis.',
+        description: 'Tout Solo, à tarif réduit. Justificatif étudiant demandé chaque année.',
         priceMonthly: 3.9,
         priceYearly: 35.1,
-        lead: 'Tout Solo, à tarif réduit.',
+        lead: 'Tout Solo, à tarif réduit :',
         features: [
             'Jusqu’à 20 comptes',
-            '300 Mo de justificatifs PDF',
-            'Budgets et récurrents',
+            'Justificatifs PDF (300 Mo)',
+            'Budgets et récurrences',
             'Imports de relevés CSV et Excel',
-            'Multi-devises et taux',
-            'Partage de comptes entre amis',
-            'Justificatif annuel (carte, certificat ou e-mail institutionnel)'
+            'Plusieurs devises'
         ],
         cta: 'Choisir Étudiant'
     },
     {
         code: 'solo',
         name: 'Solo',
-        description: 'Pour une personne, un usage quotidien.',
+        description: 'Pour une personne, au quotidien.',
         priceMonthly: 6.9,
         priceYearly: 62.1,
         lead: 'Tout Gratuit, plus :',
         features: [
             'Jusqu’à 20 comptes',
-            '300 Mo de justificatifs PDF',
-            'Budgets et récurrents',
+            'Justificatifs PDF (300 Mo)',
+            'Budgets et récurrences',
             'Imports de relevés CSV et Excel',
-            'Multi-devises et taux',
-            'Partage de comptes entre amis',
-            'Rejoindre un foyer Famille, sans le créer'
+            'Plusieurs devises'
         ],
         cta: 'Choisir Solo',
         popular: true
     },
     {
         code: 'family',
-        name: 'Famille (5)',
-        description: 'Un payeur et un foyer jusqu’à 5 personnes (propriétaire inclus).',
+        name: 'Famille',
+        description: 'Un payeur et un foyer jusqu’à 5 personnes, propriétaire compris.',
         priceMonthly: 15.9,
         priceYearly: 143.1,
         lead: 'Tout Solo, plus :',
         features: [
-            'Créer un foyer et y inviter',
-            'Jusqu’à 5 membres (1 propriétaire + 4)',
-            'Les membres héritent du plan du payeur',
+            'Un foyer jusqu’à 5 membres',
+            'Les membres profitent du plan, sans payer',
             'Jusqu’à 50 comptes',
-            '10 Go de justificatifs PDF',
-            'Espaces personnels conservés séparément',
-            'Un compte de foyer n’est pas partageable entre amis'
+            'Justificatifs PDF (10 Go)',
+            'Les espaces personnels restent séparés'
         ],
         cta: 'Choisir Famille'
     }
@@ -105,74 +109,47 @@ type PlanCode = PricingPlan['code'];
 type CompareValue = boolean | 'limited';
 
 const comparisonRows: { label: string; values: Record<PlanCode, CompareValue> }[] = [
-    {
-        label: 'Comptes, transactions, catégories, tiers',
-        values: { free: true, student: true, solo: true, family: true }
-    },
-    {
-        label: 'Justificatifs PDF',
-        values: { free: true, student: true, solo: true, family: true }
-    },
-    {
-        label: 'Partage de compte entre amis',
-        values: { free: true, student: true, solo: true, family: true }
-    },
-    {
-        label: 'Budgets et récurrents',
-        values: { free: 'limited', student: true, solo: true, family: true }
-    },
-    {
-        label: 'Imports de relevés (CSV, Excel)',
-        values: { free: false, student: true, solo: true, family: true }
-    },
-    {
-        label: 'Multi-devises et taux',
-        values: { free: false, student: true, solo: true, family: true }
-    },
-    {
-        label: 'Créer un foyer et y inviter',
-        values: { free: false, student: false, solo: false, family: true }
-    },
-    {
-        label: 'Rejoindre un foyer (hériter du plan)',
-        values: { free: true, student: true, solo: true, family: true }
-    }
+    { label: 'Comptes, transactions, catégories, tiers', values: { free: true, student: true, solo: true, family: true } },
+    { label: 'Justificatifs PDF', values: { free: true, student: true, solo: true, family: true } },
+    { label: 'Partage d’un compte entre amis', values: { free: true, student: true, solo: true, family: true } },
+    { label: 'IBAN et numéros chiffrés (Coffre)', values: { free: true, student: true, solo: true, family: true } },
+    { label: 'Budgets et récurrences', values: { free: 'limited', student: true, solo: true, family: true } },
+    { label: 'Imports de relevés (CSV, Excel)', values: { free: false, student: true, solo: true, family: true } },
+    { label: 'Plusieurs devises', values: { free: false, student: true, solo: true, family: true } },
+    { label: 'Créer un foyer et y inviter', values: { free: false, student: false, solo: false, family: true } },
+    { label: 'Rejoindre un foyer', values: { free: true, student: true, solo: true, family: true } }
 ];
 
 const quotaRows: { label: string; values: Record<PlanCode, string> }[] = [
-    {
-        label: 'Membres de foyer (propriétaire inclus)',
-        values: { free: '0', student: '0', solo: '0', family: '5' }
-    },
-    {
-        label: 'Stockage PDF (hors avatar)',
-        values: { free: '30 Mo', student: '300 Mo', solo: '300 Mo', family: '10 Go' }
-    },
-    {
-        label: 'Comptes',
-        values: { free: '3', student: '20', solo: '20', family: '50' }
-    },
-    {
-        label: 'Fichiers uploadés / heure',
-        values: { free: '30', student: '60', solo: '60', family: '120' }
-    }
+    { label: 'Comptes', values: { free: '3', student: '20', solo: '20', family: '50' } },
+    { label: 'Stockage des justificatifs', values: { free: '30 Mo', student: '300 Mo', solo: '300 Mo', family: '10 Go' } },
+    { label: 'Membres du foyer', values: { free: '–', student: '–', solo: '–', family: '5' } },
+    { label: 'Fichiers envoyés par heure', values: { free: '30', student: '60', solo: '60', family: '120' } }
 ];
 
-const assurances = [
+const included = [
+    { title: 'Sans engagement', text: 'Vous changez d’offre ou résiliez quand vous le souhaitez.' },
+    { title: 'Sécurité complète', text: 'Double authentification et gestion des appareils, dès le Gratuit.' },
+    { title: 'Chiffré dans votre navigateur', text: 'Vos IBAN et numéros de compte sont illisibles pour tout le monde, même pour nous.' },
+    { title: 'Hébergé en Suisse', text: 'Toutes les offres, chez Infomaniak, sous la loi suisse sur la protection des données.' }
+];
+
+const questions = [
     {
-        icon: ShieldCheckIcon,
-        title: 'Sans engagement',
-        text: 'Résiliez simplement, à tout moment.'
+        title: 'Qui paie dans un foyer ?',
+        text: 'Seul le propriétaire du foyer a besoin de l’offre Famille. Les membres le rejoignent avec leur propre compte, même gratuit, et profitent de son plan sur les ressources du foyer.'
     },
     {
-        icon: LockIcon,
-        title: 'Sécurité incluse',
-        text: '2FA et gestion des appareils sur toutes les offres.'
+        title: 'Comment fonctionne l’offre Étudiant ?',
+        text: 'Elle donne exactement les mêmes droits que Solo, à prix réduit. Un justificatif est demandé chaque année : carte étudiante, certificat de scolarité ou adresse e-mail de votre école. À son expiration, l’abonnement passe au tarif Solo.'
     },
     {
-        icon: DatabaseExportIcon,
-        title: 'Vos données vous appartiennent',
-        text: 'Exportez ou supprimez vos données quand vous le souhaitez.'
+        title: 'Le partage entre amis est-il payant ?',
+        text: 'Non. Partager un compte avec un ami est inclus dès l’offre Gratuit. L’offre Famille sert à réunir un foyer entier sous un même plan.'
+    },
+    {
+        title: 'Que se passe-t-il si je résilie ?',
+        text: 'Vos données restent consultables. Les fonctionnalités des offres payantes passent simplement en lecture seule.'
     }
 ];
 
@@ -192,34 +169,65 @@ function yearlyTotal(plan: PricingPlan): string {
 </script>
 
 <template>
-    <div class="front-wraper pricing-page">
+    <div class="front-wraper page pricing-page">
         <AnnounceBar />
         <Header />
 
         <main>
-            <section class="pricing-hero">
+            <section class="page-hero">
                 <div class="s-container">
-                    <div class="s-grid pricing-hero__grid">
-                        <div class="pricing-hero__content">
-                            <v-chip class="su-hero-in">Quatre offres, zéro surprise</v-chip>
-                            <h1 class="s-display su-hero-in" style="--su-in-delay: 80ms">
-                                Un plan pour vous. <span class="s-primary">Un foyer, si vous le voulez.</span>
+                    <div class="s-grid page-hero__grid">
+                        <div class="page-hero__copy">
+                            <h1 class="s-display su-hero-in">
+                                Commencez gratuitement. <span class="s-primary">Évoluez à votre rythme.</span>
                             </h1>
-                            <p class="pricing-subtitle su-hero-in" style="--su-in-delay: 140ms">
-                                Commencez gratuitement. Étudiant au tarif réduit (justificatif annuel). Solo pour le quotidien. Famille pour
-                                un payeur et jusqu’à quatre membres. Toutes les offres sont sans engagement.
+                            <p class="s-lead su-hero-in" style="--su-in-delay: 120ms">
+                                Quatre offres simples, en francs suisses et sans engagement. La sécurité et l’hébergement en Suisse sont
+                                inclus dans chacune.
                             </p>
+                            <div class="s-actions su-hero-in" style="--su-in-delay: 180ms">
+                                <v-btn color="primary" size="x-large" flat class="text-none" to="/auth?tab=register">
+                                    Commencer gratuitement
+                                    <ArrowRightIcon size="18" class="ms-3" />
+                                </v-btn>
+                            </div>
+                            <ol class="page-hero__index su-hero-in" style="--su-in-delay: 240ms" aria-label="Sections de la page">
+                                <li v-for="item in sectionIndex" :key="item.id">
+                                    <a :href="`#${item.id}`"
+                                        ><b>{{ item.number }}</b> {{ item.label }}</a
+                                    >
+                                </li>
+                            </ol>
+                        </div>
 
-                            <div
-                                class="billing-switch su-hero-in"
-                                style="--su-in-delay: 200ms"
-                                role="group"
-                                aria-label="Période de facturation"
-                            >
+                        <figure class="s-figure page-hero__visual su-hero-visual-in" style="--su-in-delay: 160ms">
+                            <img
+                                :src="subscriptionShot"
+                                alt="Page Abonnement de Spend.Up : plan courant, fonctionnalités incluses et quotas"
+                                width="2160"
+                                height="1350"
+                                fetchpriority="high"
+                            />
+                            <figcaption>Votre offre, ses fonctionnalités et vos quotas, toujours visibles dans l’application.</figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 01 : les offres, sur toute la largeur -->
+            <section id="offres" class="s-section page-block page-block--tint page-block--wide">
+                <div class="s-container">
+                    <div class="s-grid page-block__grid">
+                        <div v-reveal class="page-block__intro">
+                            <span class="s-kicker"><b>01</b> Les offres</span>
+                            <h2 class="s-h2">Quatre offres, sans engagement.</h2>
+                            <p>Payez au mois, ou à l’année avec trois mois offerts. Les prix s’entendent TTC.</p>
+                            <div class="billing-switch" role="group" aria-label="Période de facturation">
                                 <button
                                     type="button"
                                     class="billing-switch__option"
                                     :class="{ 'billing-switch__option--active': billingPeriod === 'monthly' }"
+                                    :aria-pressed="billingPeriod === 'monthly'"
                                     @click="billingPeriod = 'monthly'"
                                 >
                                     Mensuel
@@ -228,6 +236,7 @@ function yearlyTotal(plan: PricingPlan): string {
                                     type="button"
                                     class="billing-switch__option"
                                     :class="{ 'billing-switch__option--active': billingPeriod === 'yearly' }"
+                                    :aria-pressed="billingPeriod === 'yearly'"
                                     @click="billingPeriod = 'yearly'"
                                 >
                                     Annuel
@@ -236,187 +245,201 @@ function yearlyTotal(plan: PricingPlan): string {
                             </div>
                         </div>
 
-                        <figure class="s-figure pricing-hero__figure su-hero-visual-in" style="--su-in-delay: 160ms">
-                            <img
-                                :src="subscriptionShot"
-                                alt="Page Abonnement de Spend.Up : plan courant, fonctionnalités incluses et quotas"
-                                width="2160"
-                                height="1350"
-                                fetchpriority="high"
-                            />
-                            <figcaption>Votre plan, ses fonctionnalités et vos quotas, toujours visibles depuis l’application.</figcaption>
-                        </figure>
+                        <div v-reveal class="page-block__body">
+                            <ul class="plan-grid">
+                                <li
+                                    v-for="plan in plans"
+                                    :key="plan.code"
+                                    class="plan-card"
+                                    :class="{ 'plan-card--popular': plan.popular }"
+                                >
+                                    <div class="plan-card__header">
+                                        <h3 class="plan-card__name">{{ plan.name }}</h3>
+                                        <span v-if="plan.popular" class="plan-card__badge">Le plus choisi</span>
+                                    </div>
+                                    <p class="plan-card__description">{{ plan.description }}</p>
+
+                                    <div class="plan-card__price">
+                                        <template v-if="plan.priceMonthly === 0">
+                                            <span class="plan-card__amount">Gratuit</span>
+                                            <span class="plan-card__price-note">pour toujours</span>
+                                        </template>
+                                        <template v-else>
+                                            <div>
+                                                <span class="plan-card__currency">Fr.</span>
+                                                <span class="plan-card__amount">{{ displayedPrice(plan) }}</span>
+                                                <span class="plan-card__period">/mois</span>
+                                            </div>
+                                            <span class="plan-card__price-note">
+                                                {{
+                                                    billingPeriod === 'yearly'
+                                                        ? `Facturé ${yearlyTotal(plan)} Fr. par an`
+                                                        : 'Facturé chaque mois'
+                                                }}
+                                            </span>
+                                        </template>
+                                    </div>
+
+                                    <v-btn
+                                        :color="plan.popular ? 'primary' : undefined"
+                                        :variant="plan.popular ? 'flat' : 'outlined'"
+                                        block
+                                        class="plan-card__cta text-none"
+                                        to="/auth?tab=register"
+                                    >
+                                        {{ plan.cta }}
+                                    </v-btn>
+
+                                    <div class="plan-card__features">
+                                        <p v-if="plan.lead" class="plan-card__lead">{{ plan.lead }}</p>
+                                        <ul>
+                                            <li v-for="feature in plan.features" :key="feature">
+                                                <CheckIcon size="15" stroke-width="2.5" class="plan-card__check" />
+                                                <span>{{ feature }}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <section class="pricing-plans">
-                <v-container class="max-width-1218">
-                    <v-row v-reveal align="stretch" class="pricing-grid" data-reveal-stagger="90">
-                        <v-col v-for="plan in plans" :key="plan.code" cols="12" sm="6" lg="3">
-                            <article class="plan-card" :class="{ 'plan-card--popular': plan.popular }">
-                                <div v-if="plan.popular" class="plan-card__badge">Le plus populaire</div>
+            <!-- 02 : comparatif détaillé -->
+            <section id="comparer" class="s-section page-block">
+                <div class="s-container">
+                    <div class="s-grid page-block__grid">
+                        <div v-reveal class="page-block__intro">
+                            <span class="s-kicker"><b>02</b> Comparer</span>
+                            <h2 class="s-h2">Fonctionnalités et quotas, offre par offre.</h2>
+                            <p>Étudiant et Solo donnent exactement les mêmes droits : seul le prix change.</p>
+                        </div>
 
-                                <div class="plan-card__header">
-                                    <h2 class="plan-card__name textPrimary">{{ plan.name }}</h2>
-                                    <p class="plan-card__description text-medium-emphasis">{{ plan.description }}</p>
-                                </div>
+                        <div v-reveal class="page-block__body">
+                            <div class="compare-scroll">
+                                <table class="compare-table">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="compare-table__feature-col">
+                                                <span class="sr-only">Fonctionnalité</span>
+                                            </th>
+                                            <th
+                                                v-for="plan in plans"
+                                                :key="plan.code"
+                                                scope="col"
+                                                :class="{ 'compare-table__plan--popular': plan.popular }"
+                                            >
+                                                {{ plan.name }}
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="compare-table__group">
+                                            <th scope="colgroup" :colspan="plans.length + 1">Fonctionnalités</th>
+                                        </tr>
+                                        <tr v-for="row in comparisonRows" :key="row.label">
+                                            <th scope="row">{{ row.label }}</th>
+                                            <td
+                                                v-for="plan in plans"
+                                                :key="`${row.label}-${plan.code}`"
+                                                :class="{ 'compare-table__plan--popular': plan.popular }"
+                                            >
+                                                <template v-if="row.values[plan.code] === true">
+                                                    <CheckIcon size="17" stroke-width="2.6" aria-hidden="true" />
+                                                    <span class="sr-only">Inclus</span>
+                                                </template>
+                                                <span v-else-if="row.values[plan.code] === 'limited'" class="compare-table__limited">
+                                                    Limité
+                                                </span>
+                                                <span v-else class="compare-table__no">–<span class="sr-only"> Non inclus</span></span>
+                                            </td>
+                                        </tr>
+                                        <tr class="compare-table__group">
+                                            <th scope="colgroup" :colspan="plans.length + 1">Quotas</th>
+                                        </tr>
+                                        <tr v-for="row in quotaRows" :key="row.label">
+                                            <th scope="row">{{ row.label }}</th>
+                                            <td
+                                                v-for="plan in plans"
+                                                :key="`${row.label}-${plan.code}`"
+                                                class="compare-table__quota"
+                                                :class="{ 'compare-table__plan--popular': plan.popular }"
+                                            >
+                                                {{ row.values[plan.code] }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
-                                <div class="plan-card__price">
-                                    <template v-if="plan.priceMonthly === 0">
-                                        <span class="plan-card__amount textPrimary">Gratuit</span>
-                                        <span class="plan-card__price-note">pour toujours</span>
-                                    </template>
-                                    <template v-else>
-                                        <div>
-                                            <span class="plan-card__currency">Fr.</span>
-                                            <span class="plan-card__amount textPrimary">{{ displayedPrice(plan) }}</span>
-                                            <span class="plan-card__period">/mois</span>
-                                        </div>
-                                        <span
-                                            class="plan-card__price-note"
-                                            :class="{ 'plan-card__price-note--yearly': billingPeriod === 'yearly' }"
-                                        >
-                                            {{
-                                                billingPeriod === 'yearly'
-                                                    ? `Facturé ${yearlyTotal(plan)} Fr. par an`
-                                                    : 'Facturé mensuellement'
-                                            }}
-                                        </span>
-                                    </template>
-                                </div>
+            <!-- 03 : ce qui ne dépend pas de l'offre -->
+            <section id="inclus" class="s-section page-block page-block--dark">
+                <div class="s-container">
+                    <div class="s-grid page-block__grid">
+                        <div v-reveal class="page-block__intro">
+                            <span class="s-kicker"><b>03</b> Inclus pour tous</span>
+                            <h2 class="s-h2">Simple aujourd’hui. Flexible demain.</h2>
+                            <p>Ce qui protège vos données ne dépend jamais de l’offre choisie.</p>
+                            <RouterLink to="/protection-des-donnees" class="page-block__link">
+                                Protection des données <ArrowRightIcon size="14" />
+                            </RouterLink>
+                        </div>
 
-                                <v-btn
-                                    :color="plan.popular ? 'primary' : undefined"
-                                    :variant="plan.popular ? 'flat' : 'outlined'"
-                                    block
-                                    class="plan-card__cta text-none"
-                                    to="/auth?tab=register"
-                                >
-                                    {{ plan.cta }}
-                                    <ArrowRightIcon size="18" class="ms-2" />
+                        <div v-reveal class="page-block__body">
+                            <ul class="page-block__list">
+                                <li v-for="item in included" :key="item.title">
+                                    <h3>{{ item.title }}</h3>
+                                    <p>{{ item.text }}</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 04 : les questions qui reviennent avant de choisir -->
+            <section id="questions" class="s-section page-block page-block--tint page-block--flip">
+                <div class="s-container">
+                    <div class="s-grid page-block__grid">
+                        <div v-reveal class="page-block__intro">
+                            <span class="s-kicker"><b>04</b> Questions</span>
+                            <h2 class="s-h2">Les réponses avant de choisir.</h2>
+                            <p>Une autre question ? Écrivez-nous, nous répondons rapidement.</p>
+                            <RouterLink to="/contact" class="page-block__link">Nous contacter <ArrowRightIcon size="14" /></RouterLink>
+                        </div>
+
+                        <div v-reveal class="page-block__body">
+                            <ul class="page-block__list page-block__list--single">
+                                <li v-for="question in questions" :key="question.title">
+                                    <h3>{{ question.title }}</h3>
+                                    <p>{{ question.text }}</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="page-final">
+                <div class="s-container">
+                    <div v-reveal class="s-grid page-final__grid">
+                        <h2 class="page-final__title s-display">Votre vision financière <span>commence aujourd’hui.</span></h2>
+                        <div class="page-final__side">
+                            <p>Créez votre espace gratuitement. Aucune carte bancaire demandée.</p>
+                            <div class="s-actions">
+                                <v-btn color="white" size="x-large" flat class="text-none" to="/auth?tab=register">
+                                    Créer mon espace
+                                    <ArrowRightIcon size="18" class="ms-3" />
                                 </v-btn>
-
-                                <div class="plan-card__features">
-                                    <p v-if="plan.lead" class="plan-card__lead textPrimary">{{ plan.lead }}</p>
-                                    <ul>
-                                        <li v-for="feature in plan.features" :key="feature">
-                                            <span class="feature-check"><CheckIcon size="15" stroke-width="2.5" /></span>
-                                            <span>{{ feature }}</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </article>
-                        </v-col>
-                    </v-row>
-                </v-container>
-            </section>
-
-            <section class="pricing-compare" aria-labelledby="pricing-compare-title">
-                <v-container class="max-width-1218">
-                    <div class="pricing-compare__intro">
-                        <span class="pricing-compare__kicker">Comparer</span>
-                        <h2 id="pricing-compare-title" class="textPrimary">Fonctionnalités et quotas, offre par offre</h2>
-                    </div>
-                    <div class="pricing-compare__scroll">
-                        <table class="compare-table">
-                            <thead>
-                                <tr>
-                                    <th scope="col" class="compare-table__feature-col">Offre</th>
-                                    <th
-                                        v-for="plan in plans"
-                                        :key="plan.code"
-                                        scope="col"
-                                        :class="{ 'compare-table__plan--popular': plan.popular }"
-                                    >
-                                        {{ plan.name }}
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="compare-table__group">
-                                    <th scope="colgroup" :colspan="plans.length + 1">Fonctionnalités</th>
-                                </tr>
-                                <tr v-for="row in comparisonRows" :key="row.label">
-                                    <th scope="row">{{ row.label }}</th>
-                                    <td
-                                        v-for="plan in plans"
-                                        :key="`${row.label}-${plan.code}`"
-                                        :class="{ 'compare-table__plan--popular': plan.popular }"
-                                    >
-                                        <span v-if="row.values[plan.code] === true" class="compare-table__yes" title="Inclus">
-                                            <CheckIcon size="18" stroke-width="2.6" aria-hidden="true" />
-                                            <span class="sr-only">Inclus</span>
-                                        </span>
-                                        <span v-else-if="row.values[plan.code] === 'limited'" class="compare-table__limited"> Limité </span>
-                                        <span v-else class="compare-table__no" title="Non inclus">
-                                            -<span class="sr-only"> Non inclus</span>
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr class="compare-table__group">
-                                    <th scope="colgroup" :colspan="plans.length + 1">Quotas</th>
-                                </tr>
-                                <tr v-for="row in quotaRows" :key="row.label">
-                                    <th scope="row">{{ row.label }}</th>
-                                    <td
-                                        v-for="plan in plans"
-                                        :key="`${row.label}-${plan.code}`"
-                                        :class="{ 'compare-table__plan--popular': plan.popular }"
-                                    >
-                                        <span class="compare-table__quota">{{ row.values[plan.code] }}</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p class="pricing-footnote text-medium-emphasis">
-                        L’abonnement est porté par la personne, jamais par le foyer. Le partage d’un compte entre amis est inclus dès le
-                        Gratuit. Seul Famille permet de créer un foyer : les membres n’ont pas besoin d’un plan payant, ils héritent de
-                        celui du propriétaire. L’offre Étudiant a les mêmes droits et quotas que Solo, à un tarif réduit : un justificatif
-                        annuel est requis ; à l’expiration, le compte passe au tarif Solo.
-                    </p>
-                </v-container>
-            </section>
-
-            <section class="pricing-assurances">
-                <v-container class="max-width-1218">
-                    <div v-reveal class="assurance-panel">
-                        <div class="assurance-panel__intro">
-                            <span class="assurance-panel__kicker">Inclus pour tous</span>
-                            <h2 class="textPrimary">Simple aujourd’hui.<br />Flexible demain.</h2>
-                        </div>
-                        <div v-for="item in assurances" :key="item.title" class="assurance-item">
-                            <div class="assurance-item__icon">
-                                <component :is="item.icon" size="24" stroke-width="1.7" />
-                            </div>
-                            <div>
-                                <h3 class="textPrimary">{{ item.title }}</h3>
-                                <p class="text-medium-emphasis">{{ item.text }}</p>
                             </div>
                         </div>
                     </div>
-
-                    <div v-reveal class="cancellation-note">
-                        <ShieldCheckIcon size="24" stroke-width="1.7" />
-                        <p>
-                            <strong>Vous gardez le contrôle, même après résiliation.</strong>
-                            Vos données restent consultables et exportables. Les fonctionnalités des offres payantes passent simplement en
-                            lecture seule.
-                        </p>
-                    </div>
-                </v-container>
-            </section>
-
-            <section class="pricing-final-cta">
-                <v-container class="max-width-1218 text-center">
-                    <h2 class="textPrimary">Commencez à construire votre avenir financier</h2>
-                    <p>Créez votre espace Spend.Up gratuitement. Aucune carte bancaire requise.</p>
-                    <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
-                        Commencer gratuitement
-                        <ArrowRightIcon size="19" class="ms-2" />
-                    </v-btn>
-                </v-container>
+                </div>
             </section>
         </main>
 
@@ -425,6 +448,7 @@ function yearlyTotal(plan: PricingPlan): string {
 </template>
 
 <style scoped lang="scss">
+@use '@/scss/frontpages/page-blocks';
 @use '@/scss/frontpages/pages/pricing';
 
 .plan-card__cta :deep(.v-btn__content) {

@@ -53,10 +53,12 @@ const FrontPagesRoutes = {
             component: () => import('@/views/front-pages/TermsOfUsePage.vue')
         },
         {
-            name: 'PrivacyPolicy',
-            path: 'politique-confidentialite',
-            component: () => import('@/views/front-pages/PrivacyPolicyPage.vue')
-        }
+            name: 'DataProtection',
+            path: 'protection-des-donnees',
+            component: () => import('@/views/front-pages/DataProtectionPage.vue')
+        },
+        // Ancienne adresse, gardée pour les liens déjà diffusés
+        { path: 'politique-confidentialite', redirect: '/protection-des-donnees' }
     ]
 };
 

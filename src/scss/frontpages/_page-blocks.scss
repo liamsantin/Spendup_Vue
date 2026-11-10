@@ -1,0 +1,403 @@
+/*
+ * Gabarit commun des pages publiques Fonctionnalités, Tarifs et À propos — style suisse,
+ * même grammaire que l'accueil :
+ *   .page-hero   texte à gauche, visuel à droite, sommaire des sections ;
+ *   .page-block  section type : intitulé numéroté fixé à gauche, contenu à droite ;
+ *   .page-final  appel final rouge.
+ * Mobile : aucun filet noir, les sections s'empilent et se distinguent par leur fond.
+ * Grille, échelle typographique et utilitaires dans frontpages/_swiss.scss.
+ */
+
+$ink: #111111;
+$grey: #6f6f6f;
+$hairline: #dedede;
+$white: #ffffff;
+$red: #d0021b;
+$tint: #f4f4f2;
+
+.page {
+    h3 {
+        margin: 0;
+        font-size: var(--s-fs-h3);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
+
+    p {
+        margin: 0;
+    }
+}
+
+// Hero ----------------------------------------------------------------------------------
+.page-hero {
+    padding: var(--s-hero-pad-top) 0 clamp(72px, 8vw, 112px);
+
+    &__grid {
+        align-items: center;
+        row-gap: 56px;
+    }
+
+    &__copy {
+        grid-column: 1 / span 6;
+        align-self: start;
+        display: grid;
+        justify-items: start;
+        gap: 32px;
+
+        .s-display {
+            max-width: 14ch;
+            margin-top: var(--s-hero-eyebrow);
+        }
+    }
+
+    &__visual {
+        grid-column: 7 / -1;
+        justify-self: end;
+        width: 100%;
+        max-width: 620px;
+        margin: 0;
+    }
+
+    // Sommaire : les sections de la page, en ligne, sans filet
+    &__index {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 28px;
+        padding: 0;
+        margin: 8px 0 0;
+        list-style: none;
+
+        a {
+            color: $ink;
+            font-size: var(--s-fs-small);
+            font-weight: 500;
+            text-decoration: none;
+
+            b {
+                margin-right: 4px;
+                color: $red;
+                font-weight: 700;
+            }
+
+            &:hover {
+                color: $red;
+            }
+        }
+    }
+}
+
+// Section type --------------------------------------------------------------------------
+.page-block {
+    scroll-margin-top: 72px;
+
+    &--tint {
+        background: $tint;
+    }
+
+    &__grid {
+        align-items: start;
+        row-gap: 40px;
+    }
+
+    &__intro {
+        grid-column: 1 / span 5;
+        display: grid;
+        justify-items: start;
+        gap: 24px;
+
+        .s-kicker {
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        > p {
+            color: $grey;
+            font-size: var(--s-fs-lead);
+            line-height: 1.6;
+        }
+    }
+
+    &__link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding-bottom: 3px;
+        border-bottom: 1px solid $ink;
+        color: $ink;
+        font-size: 16px;
+        font-weight: 500;
+        text-decoration: none;
+
+        &:hover {
+            color: $red;
+            border-color: $red;
+        }
+    }
+
+    &__body {
+        grid-column: 7 / -1;
+        display: grid;
+        gap: 48px;
+    }
+
+    &__figure img {
+        background: $white;
+    }
+
+    // Liste type : titre + texte, en deux colonnes
+    &__list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 40px 32px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+
+        li {
+            display: grid;
+            align-content: start;
+            gap: 8px;
+        }
+
+        p {
+            color: $grey;
+            font-size: var(--s-fs-body);
+            line-height: 1.55;
+        }
+
+        // Une colonne : textes longs (questions, engagements)
+        &--single {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+}
+
+// Variantes de section : même grammaire, compositions différentes (comme sur l'accueil) ---
+//   --wide      intitulé en tête sur toute la largeur, contenu dessous (capture large, colonnes)
+//   --flip      intitulé fixé à droite, contenu à gauche
+//   --dark      fond noir, pour la section qui doit trancher
+//   --numbered  liste à grands numéros rouges (01, 02…)
+.page-block {
+    &--wide {
+        .page-block__intro {
+            grid-column: 1 / span 8;
+        }
+
+        .page-block__body {
+            grid-column: 1 / -1;
+        }
+
+        // Toutes les colonnes sur une ligne en grand écran, deux par ligne en dessous
+        .page-block__list {
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+
+            @media (max-width: 1023px) {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    }
+
+    &--flip {
+        .page-block__intro {
+            grid-column: 8 / -1;
+            grid-row: 1;
+        }
+
+        .page-block__body {
+            grid-column: 1 / span 6;
+            grid-row: 1;
+        }
+    }
+
+    &--dark {
+        background: $ink;
+        color: $white;
+
+        h2,
+        h3 {
+            color: $white !important;
+        }
+
+        // Sur fond noir, le rouge s'éclaircit pour rester lisible
+        .s-kicker b,
+        .page-block__list li::before {
+            color: #ff5a6a;
+        }
+
+        .page-block__intro > p,
+        .page-block__list p {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .page-block__link {
+            border-color: $white;
+            color: $white;
+
+            &:hover {
+                border-color: #ff5a6a;
+                color: #ff5a6a;
+            }
+        }
+
+        .page-block__figure img {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    &--numbered .page-block__list {
+        counter-reset: page-block-item;
+
+        li {
+            counter-increment: page-block-item;
+
+            &::before {
+                content: counter(page-block-item, decimal-leading-zero);
+                margin-bottom: 8px;
+                color: $red;
+                font-size: var(--s-fs-number);
+                font-weight: 700;
+                letter-spacing: -0.06em;
+                line-height: 0.85;
+            }
+        }
+    }
+}
+
+// Appel final ----------------------------------------------------------------------------
+.page-final {
+    padding: clamp(96px, 13vw, 192px) 0;
+    background: $red;
+    color: $white;
+
+    &__grid {
+        row-gap: 48px;
+        align-items: end;
+    }
+
+    &__title {
+        grid-column: 1 / span 8;
+        color: $white !important;
+        font-size: var(--s-fs-cta);
+
+        span {
+            display: block;
+            opacity: 0.75;
+        }
+    }
+
+    &__side {
+        grid-column: 9 / span 4;
+        display: grid;
+        gap: 28px;
+
+        p {
+            font-size: 18px;
+            line-height: 1.5;
+        }
+    }
+
+    &__link {
+        color: $white;
+        font-size: 15px;
+        font-weight: 500;
+        text-decoration: none;
+        border-bottom: 1px solid $white;
+        padding-bottom: 4px;
+    }
+}
+
+// Desktop : l'intitulé reste fixé pendant que la colonne droite défile, filets fins ----------
+@media (min-width: 960px) {
+    .page-block {
+        &__intro {
+            position: sticky;
+            top: 176px;
+
+            .s-kicker {
+                padding-top: 16px;
+                border-top: 1px solid currentColor;
+            }
+        }
+
+        &__list li {
+            padding-top: 20px;
+            border-top: 1px solid $hairline;
+        }
+
+        // Intitulé en tête : rien à fixer, le contenu est dessous
+        &--wide .page-block__intro {
+            position: static;
+        }
+
+        &--dark .page-block__list li {
+            border-top-color: rgba(255, 255, 255, 0.2);
+        }
+    }
+}
+
+// Tablette et mobile : une seule colonne ------------------------------------------------------
+@media (max-width: 959px) {
+    .page-hero__copy,
+    .page-hero__visual,
+    .page-block__intro,
+    .page-block__body,
+    .page-final__title,
+    .page-final__side {
+        grid-column: 1 / -1;
+    }
+
+    .page-hero__visual {
+        justify-self: start;
+    }
+
+    // Colonnes inversées : l'intitulé repasse au-dessus du contenu
+    .page-block--flip .page-block__intro,
+    .page-block--flip .page-block__body {
+        grid-row: auto;
+    }
+
+    .page-block--wide .page-block__intro,
+    .page-block--flip .page-block__intro,
+    .page-block--wide .page-block__body,
+    .page-block--flip .page-block__body {
+        grid-column: 1 / -1;
+    }
+
+    .page-final__grid {
+        align-items: start;
+    }
+}
+
+@media (max-width: 599px) {
+    .page-hero {
+        padding: 112px 0 48px;
+
+        &__copy {
+            gap: 28px;
+        }
+
+        // Visuel trop dense pour cette largeur (illustration à étiquettes) : le texte suffit
+        &__visual--wide {
+            display: none;
+        }
+    }
+
+    .page-block {
+        &__body {
+            gap: 32px;
+        }
+
+        // Capture smartphone : centrée, à une largeur lisible
+        &__figure--phone img {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        &__list,
+        &--wide .page-block__list {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 24px;
+        }
+    }
+}

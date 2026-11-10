@@ -3442,7 +3442,7 @@
             },
             "acceptTerms": "I accept the {terms} and the {privacy}.",
             "termsLink": "terms of use",
-            "privacyLink": "privacy policy"
+            "privacyLink": "data protection page"
         },
         "twoStep": {
             "title": "Two-step verification",

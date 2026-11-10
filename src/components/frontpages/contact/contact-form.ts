@@ -1,9 +1,11 @@
 /**
  * Formulaire de contact des landing pages.
  *
- * Pas d'endpoint de contact côté API : l'envoi ouvre la messagerie de l'utilisateur avec
- * un message pré-rédigé (`mailto:`). L'adresse de destination vient de `VITE_CONTACT_EMAIL`.
+ * L'envoi passe par `POST /api/contact` : l'API transmet le message à la boîte de contact,
+ * avec l'expéditeur en Reply-To. L'adresse affichée sur la page vient de `VITE_CONTACT_EMAIL` ;
+ * le lien `mailto:` pré-rempli reste proposé si l'envoi échoue.
  */
+import { authHttp } from '@/features/auth/api';
 
 export const CONTACT_NAME_MAX = 100;
 export const CONTACT_MESSAGE_MIN = 10;
@@ -50,7 +52,22 @@ export function validateContactForm(values: ContactFormValues): ContactFormError
     return errors;
 }
 
-/** Lien `mailto:` pré-rempli (objet + corps encodés). */
+/**
+ * Envoie le message à l'API. `website` est le champ piège invisible : vide pour un humain.
+ * Lève une `ApiError` (message lisible) en cas de refus ou de quota atteint.
+ */
+export async function sendContactMessage(values: ContactFormValues, website = ''): Promise<void> {
+    await authHttp.post<null>('/api/contact', {
+        name: values.name.trim(),
+        email: values.email.trim(),
+        subject: values.subject,
+        message: values.message.trim(),
+        consent: values.consent,
+        website
+    });
+}
+
+/** Lien `mailto:` pré-rempli (objet + corps encodés), proposé en secours si l'envoi échoue. */
 export function buildContactMailto(to: string, values: ContactFormValues): string {
     const subjectLabel = CONTACT_SUBJECTS.find((item) => item.value === values.subject)?.label ?? 'Contact';
     const subject = `[Spend.Up] ${subjectLabel} — ${values.name.trim()}`;

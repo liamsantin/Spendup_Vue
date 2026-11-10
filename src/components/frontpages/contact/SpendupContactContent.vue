@@ -2,6 +2,8 @@
 import { computed, reactive, ref, type Component } from 'vue';
 import {
     ArrowRightIcon,
+    ArrowUpRightIcon,
+    BrandInstagramIcon,
     CheckIcon,
     CopyIcon,
     DatabaseExportIcon,
@@ -11,9 +13,11 @@ import {
     MapPinIcon,
     SendIcon
 } from 'vue-tabler-icons';
+import { ApiError } from '@/features/auth/api';
 import {
     buildContactMailto,
     contactEmail,
+    sendContactMessage,
     CONTACT_MESSAGE_MAX,
     CONTACT_NAME_MAX,
     CONTACT_SUBJECTS,
@@ -34,8 +38,15 @@ const form = reactive<ContactFormValues>({
 
 const errors = ref<ContactFormErrors>({});
 const submitted = ref(false);
+const sending = ref(false);
 const sent = ref(false);
+const sendError = ref<string | null>(null);
 const copied = ref(false);
+/** Champ piège invisible : un robot le remplit, un humain ne le voit pas. */
+const website = ref('');
+
+/** Lien de secours : le même message, ouvert dans la messagerie du visiteur. */
+const fallbackMailto = computed(() => (email ? buildContactMailto(email, form) : null));
 
 const messageLength = computed(() => form.message.trim().length);
 
@@ -43,12 +54,24 @@ function revalidate() {
     if (submitted.value) errors.value = validateContactForm(form);
 }
 
-function onSubmit() {
+async function onSubmit() {
+    if (sending.value) return;
     submitted.value = true;
+    sendError.value = null;
     errors.value = validateContactForm(form);
-    if (Object.keys(errors.value).length || !email) return;
-    window.location.href = buildContactMailto(email, form);
-    sent.value = true;
+    if (Object.keys(errors.value).length) return;
+    sending.value = true;
+    try {
+        await sendContactMessage(form, website.value);
+        sent.value = true;
+    } catch (e) {
+        sendError.value =
+            e instanceof ApiError && e.status === 400 && e.message
+                ? e.message
+                : 'L’envoi n’a pas abouti. Réessayez dans un instant ou écrivez-nous directement.';
+    } finally {
+        sending.value = false;
+    }
 }
 
 function resetForm() {
@@ -56,6 +79,7 @@ function resetForm() {
     errors.value = {};
     submitted.value = false;
     sent.value = false;
+    sendError.value = null;
 }
 
 async function copyEmail() {
@@ -69,7 +93,11 @@ async function copyEmail() {
     }
 }
 
-type ContactChannel = { icon: Component; title: string; text: string } & ({ action: 'copy' } | { to: string; linkLabel: string });
+type ContactChannel = { icon: Component; title: string; text: string } & (
+    | { action: 'copy' }
+    | { to: string; linkLabel: string }
+    | { href: string; linkLabel: string }
+);
 
 const channels = computed<ContactChannel[]>(() => [
     ...(email
@@ -92,9 +120,16 @@ const channels = computed<ContactChannel[]>(() => [
     {
         icon: DatabaseExportIcon,
         title: 'Vos données personnelles',
-        text: 'Accès, export ou suppression : vos droits au sens de la nLPD, expliqués simplement.',
-        to: '/politique-confidentialite',
-        linkLabel: 'Politique de confidentialité'
+        text: 'Chiffrement, hébergement en Suisse et vos droits au sens de la nLPD, expliqués simplement.',
+        to: '/protection-des-donnees',
+        linkLabel: 'Protection des données'
+    },
+    {
+        icon: BrandInstagramIcon,
+        title: 'Suivez-nous',
+        text: 'Les nouveautés et les coulisses de Spend.Up, sur Instagram.',
+        href: 'https://www.instagram.com/spendupapp/',
+        linkLabel: '@spendupapp'
     }
 ]);
 </script>
@@ -135,6 +170,16 @@ const channels = computed<ContactChannel[]>(() => [
                                         {{ channel.linkLabel }}
                                         <ArrowRightIcon size="16" />
                                     </RouterLink>
+                                    <a
+                                        v-else-if="'href' in channel"
+                                        :href="channel.href"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="contact-channel__link"
+                                    >
+                                        {{ channel.linkLabel }}
+                                        <ArrowUpRightIcon size="16" />
+                                    </a>
                                 </div>
                             </article>
 
@@ -155,12 +200,11 @@ const channels = computed<ContactChannel[]>(() => [
                     <div class="contact-card">
                         <div v-if="sent" class="contact-sent" role="status">
                             <span class="contact-sent__icon"><MailOpenedIcon size="30" stroke-width="1.6" /></span>
-                            <h2 class="textPrimary">Votre messagerie s’est ouverte</h2>
+                            <h2 class="textPrimary">Message envoyé</h2>
                             <p class="text-medium-emphasis">
-                                Votre message est prêt : il ne reste plus qu’à l’envoyer depuis votre application de messagerie. Rien ne
-                                s’est ouvert ? Écrivez-nous directement à
-                                <a :href="`mailto:${email}`">{{ email }}</a
-                                >.
+                                Merci, nous avons bien reçu votre message. Nous vous répondrons à l’adresse
+                                <strong>{{ form.email.trim() }}</strong
+                                >, en général sous deux jours ouvrables.
                             </p>
                             <v-btn color="primary" variant="outlined" size="large" class="text-none" @click="resetForm">
                                 Écrire un autre message
@@ -234,20 +278,40 @@ const channels = computed<ContactChannel[]>(() => [
                                 <template #label>
                                     <span class="contact-consent">
                                         J’accepte que ces informations soient utilisées uniquement pour répondre à ma demande (voir la
-                                        <RouterLink to="/politique-confidentialite" @click.stop>politique de confidentialité</RouterLink>).
+                                        <RouterLink to="/protection-des-donnees" @click.stop>page Protection des données</RouterLink>).
                                     </span>
                                 </template>
                             </v-checkbox>
 
+                            <!-- Champ piège : hors écran, ignoré des lecteurs d'écran et du remplissage automatique -->
+                            <div class="contact-trap" aria-hidden="true">
+                                <label for="contact-website">Site web</label>
+                                <input id="contact-website" v-model="website" type="text" name="website" tabindex="-1" autocomplete="off" />
+                            </div>
+
+                            <p v-if="sendError" class="contact-form__error" role="alert">
+                                {{ sendError }}
+                                <template v-if="fallbackMailto">
+                                    <a :href="fallbackMailto">Ouvrir le message dans ma messagerie</a>
+                                </template>
+                            </p>
+
                             <div class="contact-form__actions">
-                                <v-btn type="submit" color="primary" size="x-large" flat class="text-none px-8" :disabled="!email">
+                                <v-btn
+                                    type="submit"
+                                    color="primary"
+                                    size="x-large"
+                                    flat
+                                    class="text-none px-8"
+                                    :loading="sending"
+                                    :disabled="sending"
+                                >
                                     <SendIcon size="18" class="me-2" />
                                     Envoyer le message
                                 </v-btn>
-                                <span v-if="email" class="contact-form__hint">Ouvre votre messagerie avec le message pré-rempli.</span>
-                                <span v-else class="contact-form__hint contact-form__hint--warn">
-                                    Le formulaire sera disponible prochainement.
-                                </span>
+                                <span class="contact-form__hint"
+                                    >Votre message nous parvient directement, sans ouvrir votre messagerie.</span
+                                >
                             </div>
                         </form>
                     </div>

@@ -10,6 +10,7 @@
  * largeur exactes du h1 : ses retours à la ligne sont identiques.
  */
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import SwissFlag from '@/components/frontpages/shared/SwissFlag.vue';
 
 const STORAGE_KEY = 'su-home-intro-seen';
 const HTML_CLASS = 'su-intro-active';
@@ -226,7 +227,8 @@ onBeforeUnmount(cleanup);
                 <div class="su-intro__title-wrap" :style="titleWrapStyle">
                     <p ref="title" class="su-intro__title" :class="{ 'su-intro__title--left': leaving }" :style="titleStyle">
                         <template v-for="(w, i) in WORDS" :key="i"
-                            ><span class="su-intro__word" :class="{ 'su-intro__accent': w.accent }" :style="{ '--i': i }">{{ w.text }}</span
+                            ><span class="su-intro__word" :class="{ 'su-intro__accent': w.accent }" :style="{ '--i': i }"
+                                >{{ w.text }}<SwissFlag v-if="w.accent" class="su-intro__flag" /></span
                             >{{ i < WORDS.length - 1 ? ' ' : '' }}</template
                         >
                     </p>
@@ -358,6 +360,14 @@ html.su-intro-active {
 
 .su-intro__accent {
     color: #5d87ff;
+}
+
+// Mêmes mesures que .home-hero__flag : le drapeau se pose exactement sur celui du h1
+.su-intro__flag {
+    width: 0.72em;
+    height: 0.72em;
+    margin-left: 0.22em;
+    vertical-align: -0.04em; // pied du drapeau sur la ligne de base des capitales
 }
 
 @keyframes su-intro-mark {

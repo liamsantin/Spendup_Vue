@@ -6,15 +6,16 @@
 
 > Absentes sous **Tauri** (`isTauri`) : `/` redirige vers `/auth/login`. Landings web uniquement.
 
-| Route                        | Vue                                    |
-| ---------------------------- | -------------------------------------- |
-| `/`                          | `PublicHomePage`                       |
-| `/fonctionnalites`           | `FeaturesPage`                         |
-| `/a-propos`                  | `AboutPage`                            |
-| `/tarifs`                    | `PricingPage` (si `VITE_PRICING_PAGE`) |
-| `/conditions-utilisation`    | `TermsOfUsePage`                       |
-| `/politique-confidentialite` | `PrivacyPolicyPage`                    |
-| `/components`                | showcase — `devOnly`                   |
+| Route                        | Vue                                        |
+| ---------------------------- | ------------------------------------------ |
+| `/`                          | `PublicHomePage`                           |
+| `/fonctionnalites`           | `FeaturesPage`                             |
+| `/a-propos`                  | `AboutPage`                                |
+| `/tarifs`                    | `PricingPage` (si `VITE_PRICING_PAGE`)     |
+| `/conditions-utilisation`    | `TermsOfUsePage`                           |
+| `/protection-des-donnees`    | `DataProtectionPage`                       |
+| `/politique-confidentialite` | redirection vers `/protection-des-donnees` |
+| `/components`                | showcase — `devOnly`                       |
 
 ## Auth
 

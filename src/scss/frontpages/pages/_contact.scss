@@ -324,3 +324,29 @@ $gap: clamp(16px, 2vw, 32px);
         border-bottom: 0;
     }
 }
+
+// Champ piège anti-robots : sorti de l'écran sans display:none (certains robots l'ignorent)
+.contact-trap {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+// Erreur d'envoi : texte rouge sur filet, lien de secours vers la messagerie
+.contact-form__error {
+    margin: 0;
+    padding: 12px 0 12px 14px;
+    border-left: 2px solid #d0021b;
+    color: #d0021b;
+    font-size: 14px;
+    line-height: 1.5;
+
+    a {
+        display: block;
+        margin-top: 4px;
+        color: #111111;
+        font-weight: 700;
+    }
+}

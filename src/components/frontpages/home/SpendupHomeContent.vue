@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 import { ArrowRightIcon, BrandWindowsIcon, ExternalLinkIcon, LockIcon } from 'vue-tabler-icons';
+import SwissFlag from '@/components/frontpages/shared/SwissFlag.vue';
 import infomaniakLogo from '@/assets/images/front-pages/infomaniak-logo.svg';
 import { APP_SCREENSHOTS_PATH as SHOTS } from '@/data/front-pages/spendup-additional-domains';
 
@@ -32,9 +33,20 @@ const benefits = [
 ];
 
 const steps = [
-    { title: 'Créez votre espace', text: 'Une adresse e-mail suffit, c’est gratuit.' },
-    { title: 'Importez vos relevés', text: 'Un export CSV ou Excel depuis votre e-banking.' },
-    { title: 'Pilotez', text: 'Budgets, objectifs et échéances, au même endroit.' }
+    {
+        title: 'Créez votre espace',
+        text: showPricing
+            ? 'Une adresse e-mail ou votre compte Google suffit, et l’offre gratuite ne demande aucune carte bancaire. Avec un mot de passe, votre Coffre se crée au passage, sans réglage.'
+            : 'Une adresse e-mail ou votre compte Google suffit. Avec un mot de passe, votre Coffre se crée au passage, sans réglage.'
+    },
+    {
+        title: 'Importez vos relevés',
+        text: 'Exportez un fichier CSV ou Excel depuis votre e-banking et associez ses colonnes une fois, puis gardez-les comme modèle pour les imports suivants. Vous relisez chaque ligne avant de la valider.'
+    },
+    {
+        title: 'Pilotez',
+        text: 'Budgets, objectifs d’épargne, paiements récurrents et patrimoine, au même endroit. Une alerte vous prévient quand un budget approche de sa limite.'
+    }
 ];
 
 /** Ce que recouvre l’hébergement : faits vérifiables, sans répéter le mot « Suisse ». */
@@ -58,17 +70,24 @@ const encryptionLayers = [
     {
         where: 'Sur votre appareil',
         title: 'Données sensibles chiffrées',
-        text: 'IBAN, numéros de compte, immatriculations : chiffrés avant d’être envoyés, avec une clé issue de votre mot de passe.'
+        text: showPricing
+            ? 'IBAN, numéros de compte et immatriculations, puis notes et documents PDF selon votre offre : chiffrés en AES-256 dans votre navigateur, avant tout envoi. La clé est dérivée de votre mot de passe et nos serveurs ne la reçoivent jamais en clair.'
+            : 'IBAN, numéros de compte, immatriculations et autres données sensibles : chiffrés en AES-256 dans votre navigateur, avant tout envoi. La clé est dérivée de votre mot de passe et nos serveurs ne la reçoivent jamais en clair.'
+    },
+    {
+        where: 'Entre vous et nous',
+        title: 'Connexion chiffrée',
+        text: 'Tous les échanges avec nos serveurs passent par une connexion HTTPS chiffrée. Vos données sensibles, déjà chiffrées sur votre appareil, voyagent ainsi sous deux couches de protection.'
     },
     {
         where: 'Sur nos serveurs',
         title: 'Base de données chiffrée',
-        text: 'L’ensemble de la base est chiffré au repos, sur le disque.'
+        text: 'L’ensemble de la base est chiffré au repos, sur le disque, dans les centres de données d’Infomaniak en Suisse. Un disque copié ou dérobé resterait illisible.'
     },
     {
         where: 'Dans les sauvegardes',
         title: 'Sauvegardes chiffrées',
-        text: 'Chaque sauvegarde est chiffrée avant d’être stockée.'
+        text: 'Chaque sauvegarde est chiffrée avant d’être stockée. Vos données sensibles y sont copiées telles quelles, toujours chiffrées avec votre clé.'
     }
 ];
 
@@ -87,7 +106,8 @@ const platforms = [
                 <div class="s-grid home-hero__grid">
                     <div class="home-hero__copy">
                         <h1 class="s-display su-hero-in">
-                            La plateforme de gestion&nbsp;financière <span class="s-primary">100&#8239;%&nbsp;Suisse.</span>
+                            La plateforme de gestion&nbsp;financière
+                            <span class="s-primary">100&#8239;%&nbsp;Suisse.<SwissFlag class="home-hero__flag" /></span>
                         </h1>
                         <p class="s-lead su-hero-in" style="--su-in-delay: 120ms">
                             Spend.Up centralise toute votre vie financière au même endroit : comptes, budgets, objectifs et patrimoine. Sans
@@ -132,11 +152,6 @@ const platforms = [
 
         <!-- 01 : tout est en Suisse — l’argument mis en avant en premier -->
         <section id="hebergement" class="s-section home-swiss">
-            <svg class="home-swiss__flag" viewBox="0 0 32 32" role="img" aria-label="Drapeau suisse">
-                <rect width="32" height="32" fill="#E4002B" />
-                <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
-                <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
-            </svg>
             <div class="s-container">
                 <div v-reveal class="s-grid swiss">
                     <div class="swiss__intro">
@@ -144,6 +159,7 @@ const platforms = [
                         <h2 class="s-h2">Vos données restent en Suisse, <span class="s-primary">chez Infomaniak.</span></h2>
                         <p>Absolument tout, sans exception.</p>
                         <div class="swiss__brand">
+                            <SwissFlag class="swiss__flag" />
                             <img :src="infomaniakLogo" alt="Infomaniak" width="244" height="32" />
                             <a href="https://www.infomaniak.com" target="_blank" rel="noopener noreferrer" class="home-link">
                                 infomaniak.com <ExternalLinkIcon size="14" />
@@ -174,6 +190,9 @@ const platforms = [
                             Vos informations les plus sensibles sont chiffrées dans votre navigateur, avec une clé que nos serveurs ne
                             possèdent pas. Personne d’autre que vous ne peut les lire, pas même un administrateur.
                         </p>
+                        <RouterLink to="/protection-des-donnees" class="home-link">
+                            Tout savoir sur la protection des données <ArrowRightIcon size="14" />
+                        </RouterLink>
                     </div>
 
                     <ol class="encryption__layers">
@@ -210,18 +229,24 @@ const platforms = [
         <!-- 04 : trois étapes, une ligne chacune -->
         <section id="comment-ca-marche" class="s-section home-steps">
             <div class="s-container">
-                <header v-reveal class="home-head">
-                    <span class="s-kicker"><b>04</b> Comment ça marche</span>
-                    <h2 class="s-h2">Prêt en trois étapes.</h2>
-                </header>
+                <div class="s-grid how">
+                    <div v-reveal class="how__intro">
+                        <span class="s-kicker"><b>04</b> Comment ça marche</span>
+                        <h2 class="s-h2">Prêt en trois étapes.</h2>
+                        <p>
+                            Aucune connexion bancaire à configurer, aucun partenariat à attendre : les fichiers de votre e-banking
+                            suffisent.
+                        </p>
+                    </div>
 
-                <ol v-reveal class="steps" data-reveal-stagger="100">
-                    <li v-for="(step, index) in steps" :key="step.title">
-                        <span class="steps__number">{{ index + 1 }}</span>
-                        <h3>{{ step.title }}</h3>
-                        <p>{{ step.text }}</p>
-                    </li>
-                </ol>
+                    <ol v-reveal class="steps" data-reveal-stagger="100">
+                        <li v-for="(step, index) in steps" :key="step.title">
+                            <span class="steps__number">{{ index + 1 }}</span>
+                            <h3>{{ step.title }}</h3>
+                            <p>{{ step.text }}</p>
+                        </li>
+                    </ol>
+                </div>
             </div>
         </section>
 
@@ -276,7 +301,13 @@ const platforms = [
                 <div v-reveal class="s-grid home-final__grid">
                     <h2 class="home-final__title s-display">Commencez simplement. <span>Évoluez à votre rythme.</span></h2>
                     <div class="home-final__side">
-                        <p>Créez votre espace gratuitement, sans engagement.</p>
+                        <p>
+                            {{
+                                showPricing
+                                    ? 'Créez votre espace gratuitement, sans engagement.'
+                                    : 'Créez votre espace : il ne vous faut qu’une adresse e-mail.'
+                            }}
+                        </p>
                         <div class="s-actions">
                             <v-btn color="white" size="x-large" flat class="text-none" to="/auth?tab=register">
                                 Commencer gratuitement
