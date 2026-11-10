@@ -58,7 +58,7 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
 
 // Hero ----------------------------------------------------------------------------------
 .home-hero {
-    padding: clamp(136px, 12vw, 176px) 0 clamp(72px, 8vw, 112px);
+    padding: var(--s-hero-pad-top) 0 clamp(72px, 8vw, 112px);
 
     &__grid {
         align-items: center;
@@ -67,12 +67,14 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
 
     &__copy {
         grid-column: 1 / span 6;
+        align-self: start;
         display: grid;
         justify-items: start;
         gap: 32px;
 
         .s-display {
-            max-width: 13ch;
+            max-width: 16ch;
+            margin-top: var(--s-hero-eyebrow);
         }
 
         .s-lead {

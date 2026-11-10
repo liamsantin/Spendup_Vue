@@ -36,7 +36,7 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
 
 // Hero : texte à gauche, planche de quatre captures à droite ----------------------------
 .features-hero {
-    padding: clamp(136px, 12vw, 176px) 0 clamp(80px, 9vw, 120px);
+    padding: var(--s-hero-pad-top) 0 clamp(80px, 9vw, 120px);
 
     &__grid {
         align-items: center;
@@ -45,12 +45,14 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
 
     &__copy {
         grid-column: 1 / span 8;
+        align-self: start;
         display: grid;
         justify-items: start;
         gap: 32px;
 
         .s-display {
             max-width: 14ch;
+            margin-top: var(--s-hero-eyebrow);
         }
     }
 

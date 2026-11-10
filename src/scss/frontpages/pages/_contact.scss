@@ -31,7 +31,7 @@ $gap: clamp(16px, 2vw, 32px);
         gap: 24px;
 
         h1 {
-            margin: 16px 0 0;
+            margin: calc(var(--s-hero-eyebrow) - 21px - 24px) 0 0; // étiquette 21px + gap 24px
             font-size: var(--s-fs-display);
             font-weight: 700;
             letter-spacing: var(--s-track-display);
@@ -54,7 +54,7 @@ $gap: clamp(16px, 2vw, 32px);
 
 // Formulaire + canaux --------------------------------------------------------------------
 .contact-main {
-    padding: clamp(136px, 12vw, 176px) 0 var(--s-section-y);
+    padding: calc(var(--s-hero-pad-top) - 16px) 0 var(--s-section-y); // - padding du v-container
 }
 
 .contact-layout {
