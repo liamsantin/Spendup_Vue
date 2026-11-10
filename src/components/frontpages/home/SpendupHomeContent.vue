@@ -87,7 +87,7 @@ const platforms = [
                 <div class="s-grid home-hero__grid">
                     <div class="home-hero__copy">
                         <h1 class="s-display su-hero-in">
-                            La plateforme de gestion&nbsp;financière <span class="s-primary">100&#8239;%&nbsp;suisse.</span>
+                            La plateforme de gestion&nbsp;financière <span class="s-primary">100&#8239;%&nbsp;Suisse.</span>
                         </h1>
                         <p class="s-lead su-hero-in" style="--su-in-delay: 120ms">
                             Spend.Up centralise toute votre vie financière au même endroit : comptes, budgets, objectifs et patrimoine. Sans
