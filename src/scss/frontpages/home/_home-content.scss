@@ -636,6 +636,17 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
         border-top: 1px solid currentColor;
     }
 
+    // 02 Chiffrement : l’intitulé reste fixé à gauche pendant que les couches défilent à droite
+    .encryption__intro {
+        position: sticky;
+        top: 112px;
+    }
+
+    // Couches plus espacées : la colonne droite défile nettement plus long que l’intitulé
+    .encryption__layers {
+        gap: clamp(72px, 9vw, 128px);
+    }
+
     // Bénéfices, étapes et faits : filet fin en tête de chaque colonne
     .benefits li,
     .steps li,

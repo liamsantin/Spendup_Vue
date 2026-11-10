@@ -27,7 +27,7 @@ const EASE = 'cubic-bezier(.65, 0, .25, 1)';
 const WORDS = [
     ...['La', 'plateforme', 'de', 'gestion financière'].map((text) => ({ text, accent: false })),
     // un seul bloc : isolé, « 100 % » n'est pas espacé comme dans le h1 (décalage de ~10 px)
-    { text: '100 % suisse.', accent: true }
+    { text: '100 % Suisse.', accent: true }
 ];
 
 const visible = ref(false);
