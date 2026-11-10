@@ -643,3 +643,31 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
         }
     }
 }
+
+// Mobile : un seul niveau de filet par section, sur toutes les landing pages ----------------
+// L’espacement et le rouge remplacent les filets d’ouverture et de liste.
+@media (max-width: 599px) {
+    .front-wraper {
+        --s-section-y: 72px;
+
+        .s-head {
+            padding-top: 0;
+            border-top: 0;
+            margin-bottom: 36px;
+        }
+
+        .s-kicker {
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        .s-rules {
+            border-top: 0;
+
+            li {
+                padding: 8px 0;
+                border-bottom: 0;
+            }
+        }
+    }
+}

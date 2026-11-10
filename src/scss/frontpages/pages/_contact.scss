@@ -310,3 +310,17 @@ $gap: clamp(16px, 2vw, 32px);
         grid-template-columns: minmax(0, 1fr);
     }
 }
+
+// Mobile : formulaire et canaux sans filets superposés -------------------------------------
+@media (max-width: 599px) {
+    .contact-card,
+    .contact-aside {
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .contact-channel {
+        padding: 16px 0;
+        border-bottom: 0;
+    }
+}

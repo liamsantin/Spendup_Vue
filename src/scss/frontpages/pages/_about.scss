@@ -395,3 +395,30 @@ $tint: #f4f4f2;
         gap: 2px;
     }
 }
+
+// Mobile : listes et matrice sans quadrillage, l’espacement suffit ------------------------
+@media (max-width: 599px) {
+    .about-poster figcaption,
+    .story-rows,
+    .about-swiss__facts,
+    .transparency__list,
+    .about-final__grid {
+        border-top: 0;
+    }
+
+    .story-rows li,
+    .about-swiss__facts > div,
+    .transparency__list li {
+        border-bottom: 0;
+    }
+
+    .principles__matrix {
+        border-top: 0;
+        border-left: 0;
+
+        li {
+            border-right: 0;
+            border-bottom: 0;
+        }
+    }
+}

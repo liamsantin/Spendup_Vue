@@ -51,7 +51,7 @@ const journeys: Journey[] = [
         kicker: 'Au quotidien',
         title: 'Comprenez chaque mouvement de votre argent.',
         text: 'Exportez vos relevés depuis votre e-banking et importez-les en CSV ou en Excel : Spend.Up reconnaît les colonnes, vous laisse relire chaque ligne, puis classe et relie tout. Banques, cartes, TWINT et espèces se retrouvent dans une seule vue.',
-        images: [appScreenshot('transactions.jpg', 'Liste des transactions Spend.Up avec compte, catégorie, contrepartie et montant')],
+        images: [appScreenshot('transactions.webp', 'Liste des transactions Spend.Up avec compte, catégorie, contrepartie et montant')],
         features: [
             {
                 icon: FileImportIcon,
@@ -78,8 +78,8 @@ const journeys: Journey[] = [
         title: 'Donnez une direction à votre budget.',
         text: 'Passez du simple suivi à une vraie capacité d’anticipation : des limites claires, des projets chiffrés et un reste à vivre recalculé à chaque import.',
         images: [
-            appScreenshot('budgets.jpg', 'Budgets Spend.Up : alimentation et budget mensuel avec progression'),
-            appScreenshot('goals.jpg', 'Objectifs d’épargne Spend.Up : vacances et fonds d’urgence')
+            appScreenshot('budgets.webp', 'Budgets Spend.Up : alimentation et budget mensuel avec progression'),
+            appScreenshot('goals.webp', 'Objectifs d’épargne Spend.Up : vacances et fonds d’urgence')
         ],
         features: [
             { icon: ChartPieIcon, title: 'Budgets personnalisés', text: 'Limites mensuelles ou annuelles avec suivi par catégorie.' },
@@ -146,10 +146,10 @@ const [dailyJourney, planJourney, ...laterJourneys] = journeys;
 
 /** Planche du hero : un aperçu de l’étendue du produit, en vraies captures. */
 const heroShots = [
-    { ...appScreenshot('budgets.jpg', 'Budgets'), caption: 'Suivez chaque enveloppe et ce qu’il reste à dépenser.' },
-    { ...appScreenshot('categories.jpg', 'Catégories'), caption: 'Classez vos dépenses et revenus dans votre propre arbre.' },
-    { ...appScreenshot('recurring.jpg', 'Récurrences'), caption: 'Loyer, salaire, abonnements : tout ce qui revient, au même endroit.' },
-    { ...appScreenshot('calendar.jpg', 'Calendrier'), caption: 'Le mois en un coup d’œil, avec revenus, charges et échéances.' }
+    { ...appScreenshot('budgets.webp', 'Budgets'), caption: 'Suivez chaque enveloppe et ce qu’il reste à dépenser.' },
+    { ...appScreenshot('categories.webp', 'Catégories'), caption: 'Classez vos dépenses et revenus dans votre propre arbre.' },
+    { ...appScreenshot('recurring.webp', 'Récurrences'), caption: 'Loyer, salaire, abonnements : tout ce qui revient, au même endroit.' },
+    { ...appScreenshot('calendar.webp', 'Calendrier'), caption: 'Le mois en un coup d’œil, avec revenus, charges et échéances.' }
 ];
 
 /** Vitrine : une capture affichée en grand, choisie dans la liste des écrans. */
@@ -405,7 +405,7 @@ const securityItems = [
                 <div v-reveal class="s-grid features-final__grid">
                     <h2 class="features-final__title s-display">Découvrez une autre façon <span>de gérer vos finances.</span></h2>
                     <div class="features-final__side">
-                        <p>Commencez gratuitement, sans carte bancaire et sans engagement.</p>
+                        <p>Commencez gratuitement, sans engagement.</p>
                         <div class="s-actions">
                             <v-btn color="white" size="x-large" flat class="text-none" to="/auth?tab=register">
                                 Créer mon espace

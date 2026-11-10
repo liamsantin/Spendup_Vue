@@ -530,3 +530,30 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
         }
     }
 }
+
+// Mobile : les cartes d’offre gardent leur séparateur, le reste respire sans filet --------
+@media (max-width: 599px) {
+    .plan-card__features {
+        ul {
+            border-top: 0;
+        }
+
+        li {
+            border-bottom: 0;
+        }
+    }
+
+    .pricing-compare__intro,
+    .assurance-panel__intro,
+    .cancellation-note {
+        border-top: 0;
+    }
+
+    .assurance-item {
+        border-bottom: 0;
+
+        &:nth-child(2) {
+            border-top: 0;
+        }
+    }
+}

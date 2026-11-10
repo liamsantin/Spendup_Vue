@@ -165,3 +165,10 @@ $red: #e4002b;
         padding-top: 120px;
     }
 }
+
+// Mobile : filet des articles adouci (gris clair) pour une lecture continue
+@media (max-width: 599px) {
+    .legal-main h2 {
+        border-top-color: #dedede;
+    }
+}

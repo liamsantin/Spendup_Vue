@@ -1,11 +1,10 @@
 /*
- * Footer des landing pages — style suisse : grille de 12 colonnes, filets fins,
- * marque + hébergement, colonnes de liens, bloc application et grand logotype.
+ * Footer des landing pages — style suisse réduit à l’essentiel : une ligne de liens,
+ * les mentions, puis le grand logotype « Spend.Up » posé sur le bas de page.
  */
 
 $ink: #111111;
 $grey: #6f6f6f;
-$hairline: #dedede;
 $white: #ffffff;
 $red: #e4002b;
 
@@ -17,97 +16,33 @@ $red: #e4002b;
 }
 
 .landing-footer__content {
-    padding-top: clamp(72px, 9vw, 120px);
-    padding-bottom: 28px;
-}
-
-.footer-main {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: clamp(16px, 2vw, 32px);
-    row-gap: 48px;
-    padding-top: 20px;
-    border-top: 1px solid $ink;
-}
-
-.footer-brand {
-    grid-column: 1 / span 4;
-    display: grid;
-    align-content: start;
-    gap: 24px;
-
-    p {
-        max-width: 340px;
-        margin: 0;
-        color: $grey;
-        font-size: 15px;
-        line-height: 1.6;
-    }
-}
-
-.footer-hosting {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: $ink;
-    text-decoration: none;
-
-    svg {
-        width: 22px;
-        height: 22px;
-        flex-shrink: 0;
-    }
-
-    span {
-        display: grid;
-        gap: 6px;
-    }
-
-    small {
-        color: $grey;
-        font-size: 12.5px;
-    }
-
-    img {
-        width: 140px;
-        height: auto;
-    }
-
-    &:hover small {
-        color: $red;
-    }
-}
-
-.footer-trust {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px 20px;
-
-    span {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13px;
-        font-weight: 500;
-    }
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 40px 32px;
+    padding-top: clamp(56px, 7vw, 96px);
+    padding-bottom: clamp(32px, 4vw, 48px);
 }
 
-.footer-column,
-.footer-app {
+// Deux colonnes de liens : le site, puis le légal
+.footer-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    gap: 32px clamp(48px, 8vw, 120px);
+}
+
+.footer-column {
     display: flex;
     flex-direction: column;
     gap: 12px;
 
     h3 {
-        margin: 0 0 8px;
+        margin: 0 0 4px;
         color: $grey !important;
         font-size: 13px;
         font-weight: 500;
     }
-}
-
-.footer-column {
-    grid-column: span 2;
 
     a {
         align-self: flex-start;
@@ -121,101 +56,17 @@ $red: #e4002b;
     }
 }
 
-.footer-app {
-    grid-column: span 2;
-
-    p {
-        margin: 0;
-        color: $grey;
-        font-size: 14px;
-        line-height: 1.5;
-    }
-
-    &__download {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 14px;
-        border: 1px solid $ink;
-        background: $ink;
-        color: $white;
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 500;
-        transition: background-color 0.15s ease;
-
-        &:hover {
-            border-color: $red;
-            background: $red;
-        }
-
-        span {
-            display: grid;
-            line-height: 1.25;
-        }
-
-        small {
-            opacity: 0.7;
-            font-size: 11.5px;
-        }
-    }
-
-    &__web {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        color: $ink;
-        font-size: 14px;
-        font-weight: 500;
-        text-decoration: none;
-
-        &:hover {
-            color: $red;
-        }
-    }
-}
-
-.footer-bottom {
-    display: flex;
-    flex-wrap: wrap;
+.footer-meta {
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    margin-top: clamp(64px, 8vw, 104px);
-    padding-top: 16px;
-    border-top: 1px solid $hairline;
+    gap: 8px;
+    margin: 0;
     color: $grey;
     font-size: 13px;
 
-    p {
-        margin: 0;
-    }
-
-    &__made {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-
-        svg {
-            width: 14px;
-            height: 14px;
-        }
-    }
-}
-
-.footer-top {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: 0;
-    background: transparent;
-    color: $ink;
-    font: inherit;
-    font-weight: 500;
-    cursor: pointer;
-
-    &:hover {
-        color: $red;
+    svg {
+        width: 14px;
+        height: 14px;
     }
 }
 
@@ -224,7 +75,7 @@ $red: #e4002b;
     padding: 0 max(clamp(20px, 4vw, 48px), calc((100% - 1320px) / 2 + 48px));
     margin-left: -0.05em;
     color: $ink;
-    font-size: clamp(64px, 13vw, 200px);
+    font-size: clamp(56px, 10vw, 150px);
     font-weight: 700;
     letter-spacing: -0.065em;
     line-height: 0.8;
@@ -237,29 +88,21 @@ $red: #e4002b;
     }
 }
 
-@media (max-width: 1279px) {
-    .footer-brand {
-        grid-column: 1 / -1;
-    }
-
-    .footer-column,
-    .footer-app {
-        grid-column: span 3;
-    }
-}
-
 @media (max-width: 599px) {
-    .footer-column,
-    .footer-app {
-        grid-column: span 6;
-    }
-
-    .footer-app {
-        grid-column: 1 / -1;
-    }
-
-    .footer-bottom {
+    .landing-footer__content {
         flex-direction: column;
         align-items: flex-start;
+        gap: 36px;
+    }
+
+    .footer-columns {
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 24px;
+    }
+
+    // Plein écran : le logotype occupe toute la largeur
+    .footer-wordmark {
+        font-size: 17vw;
     }
 }

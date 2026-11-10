@@ -1,12 +1,12 @@
 // Accueil — style suisse (grille, filets et utilitaires dans frontpages/_swiss.scss).
-// Chaque section a sa propre composition pour éviter un rythme répétitif.
+// Cinq temps : promesse, bénéfices, étapes, confiance, appel final. Une idée par section,
+// le moins de filets possible : l’espacement et le rouge structurent la page.
 
 $ink: #111111;
 $grey: #6f6f6f;
 $hairline: #dedede;
 $white: #ffffff;
 $red: #e4002b;
-$tint: #f4f4f2;
 
 // Distance entre le bord du contenu et le bord de l’écran (pour les visuels « à fond perdu »)
 $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
@@ -25,9 +25,40 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
     }
 }
 
+// Lien texte souligné (alternative discrète au bouton contour)
+.home-link {
+    padding-bottom: 3px;
+    border-bottom: 1px solid $ink;
+    color: $ink;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+
+    &:hover {
+        color: $red;
+        border-color: $red;
+    }
+}
+
+// En-tête de section : intitulé numéroté + titre, sans filet
+.home-head {
+    display: grid;
+    gap: 20px;
+    margin-bottom: clamp(48px, 5vw, 72px);
+
+    .s-kicker {
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .s-h2 {
+        max-width: 20ch;
+    }
+}
+
 // Hero ----------------------------------------------------------------------------------
 .home-hero {
-    padding: clamp(136px, 12vw, 176px) 0 clamp(80px, 9vw, 128px);
+    padding: clamp(136px, 12vw, 176px) 0 clamp(72px, 8vw, 112px);
 
     &__grid {
         align-items: center;
@@ -42,6 +73,15 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
 
         .s-display {
             max-width: 13ch;
+        }
+
+        .s-lead {
+            max-width: 46ch;
+        }
+
+        .s-actions {
+            align-items: center;
+            gap: 28px;
         }
     }
 
@@ -78,189 +118,35 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
     }
 }
 
-// Chiffres clés -----------------------------------------------------------------------
-.home-figures__grid {
-    margin: 0;
-    padding-top: 20px;
-    border-top: 1px solid $ink;
+// 01 100 % en Suisse : l’argument principal, juste après le hero -------------------------
+.home-swiss {
+    position: relative;
+    background: #f4f4f2;
 
-    > div {
-        grid-column: span 3;
-        display: grid;
-        gap: 10px;
-    }
-
-    dt {
-        font-size: var(--s-fs-number);
-        font-weight: 700;
-        letter-spacing: -0.05em;
-        line-height: 1;
-    }
-
-    dd {
-        margin: 0;
-        color: $grey;
-        font-size: 15px;
+    // Drapeau posé dans le coin supérieur droit de la section
+    &__flag {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: clamp(48px, 5vw, 72px);
+        height: clamp(48px, 5vw, 72px);
     }
 }
 
-// 01 Comment ça marche : étapes à gauche, capture fixe à droite --------------------------
-.how {
+.swiss {
     align-items: start;
-    row-gap: 56px;
-
-    &__copy {
-        grid-column: 1 / span 5;
-        display: grid;
-        gap: 48px;
-    }
-
-    &__head {
-        display: grid;
-        gap: 24px;
-
-        > p {
-            color: $grey;
-            font-size: var(--s-fs-lead);
-            line-height: 1.6;
-        }
-    }
-
-    &__steps {
-        padding: 0;
-        margin: 0;
-        list-style: none;
-        border-top: 1px solid $ink;
-
-        li {
-            display: grid;
-            grid-template-columns: 64px minmax(0, 1fr);
-            gap: 16px;
-            padding: 24px 0;
-            border-bottom: 1px solid $hairline;
-        }
-
-        div {
-            display: grid;
-            gap: 10px;
-        }
-
-        p {
-            color: $grey;
-            font-size: var(--s-fs-body);
-            line-height: 1.6;
-        }
-    }
-
-    &__number {
-        color: $red;
-        font-size: var(--s-fs-number);
-        font-weight: 700;
-        letter-spacing: -0.06em;
-        line-height: 0.85;
-    }
-
-    &__figure {
-        position: sticky;
-        top: 112px;
-        grid-column: 7 / -1;
-    }
-}
-
-// 02 Sans connexion bancaire : section sombre ---------------------------------------------
-.home-nobank {
-    background: $ink;
-    color: $white;
-
-    h2,
-    h3 {
-        color: $white !important;
-    }
-}
-
-.nobank {
-    align-items: start;
-    row-gap: 56px;
-
-    &__statement {
-        grid-column: 1 / span 5;
-        display: grid;
-        gap: 24px;
-
-        h2 span {
-            opacity: 0.5;
-        }
-
-        > p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: var(--s-fs-lead);
-            line-height: 1.6;
-        }
-    }
-
-    &__reasons {
-        grid-column: 7 / -1;
-        padding: 0;
-        margin: 0;
-        list-style: none;
-        border-top: 1px solid $white;
-
-        li {
-            display: grid;
-            grid-template-columns: 56px minmax(0, 1fr);
-            gap: 16px;
-            padding: 24px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        div {
-            display: grid;
-            gap: 8px;
-        }
-
-        p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: var(--s-fs-body);
-            line-height: 1.6;
-        }
-    }
-
-    &__index {
-        color: $red;
-        font-size: var(--s-fs-small);
-        font-weight: 500;
-        line-height: 1.7;
-    }
-
-    &__note {
-        grid-column: 7 / -1;
-        padding-left: 16px;
-        border-left: 2px solid $red;
-        color: rgba(255, 255, 255, 0.7);
-        font-size: var(--s-fs-small);
-        line-height: 1.6;
-
-        b {
-            color: $white;
-            font-weight: 500;
-        }
-    }
-}
-
-// 03 Hébergement : introduction et marque à gauche, fiche technique à droite -----------------
-.home-hosting {
-    background: $tint;
-}
-
-.hosting {
-    align-items: start;
-    row-gap: 56px;
+    row-gap: 48px;
 
     &__intro {
         grid-column: 1 / span 5;
         display: grid;
         justify-items: start;
         gap: 24px;
+
+        .s-kicker {
+            padding-top: 0;
+            border-top: 0;
+        }
 
         > p {
             color: $grey;
@@ -274,42 +160,278 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
         flex-wrap: wrap;
         align-items: center;
         gap: 16px 28px;
-        margin-top: 16px;
-    }
+        margin-top: 8px;
 
-    &__logo {
-        width: 200px;
-        max-width: 100%;
-        height: auto;
-    }
-
-    &__link {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding-bottom: 3px;
-        border-bottom: 1px solid $ink;
-        color: $ink;
-        font-size: var(--s-fs-small);
-        font-weight: 500;
-        text-decoration: none;
-
-        &:hover {
-            color: $red;
-            border-color: $red;
+        img {
+            width: 180px;
+            height: auto;
         }
     }
 
-    &__specs {
+    // Six faits, sans marqueur : la typographie suffit
+    &__facts {
         grid-column: 7 / -1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 32px;
+        padding: 0;
         margin: 0;
-        border-top: 1px solid $ink;
+        list-style: none;
 
-        > div {
+        div {
             display: grid;
-            gap: 6px;
-            padding: 20px 0;
-            border-bottom: 1px solid #d6d6d2;
+            gap: 4px;
+        }
+
+        span {
+            color: $grey;
+            font-size: var(--s-fs-meta);
+        }
+
+        strong {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.35;
+        }
+    }
+}
+
+// 02 Chiffrement : affirmation à gauche, trois couches à droite --------------------------
+.encryption {
+    align-items: start;
+    row-gap: 48px;
+
+    &__intro {
+        grid-column: 1 / span 5;
+        display: grid;
+        justify-items: start;
+        gap: 24px;
+
+        .s-kicker {
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        > p {
+            color: $grey;
+            font-size: var(--s-fs-lead);
+            line-height: 1.6;
+        }
+    }
+
+    &__layers {
+        grid-column: 7 / -1;
+        display: grid;
+        gap: 32px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+
+        li {
+            display: grid;
+            grid-template-columns: 36px minmax(0, 1fr);
+            column-gap: 12px;
+            row-gap: 4px;
+
+            > :not(.encryption__icon) {
+                grid-column: 2;
+            }
+        }
+
+        span {
+            color: $grey;
+            font-size: var(--s-fs-meta);
+        }
+
+        p {
+            color: $grey;
+            font-size: var(--s-fs-body);
+            line-height: 1.55;
+        }
+    }
+
+    &__icon {
+        grid-row: span 3;
+        color: $red;
+    }
+}
+
+// 03 Bénéfices : trois smartphones, une ligne chacun --------------------------------------
+
+.benefits {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(24px, 4vw, 64px);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+
+    li {
+        display: grid;
+        align-content: start;
+        gap: 10px;
+    }
+
+    img {
+        display: block;
+        width: 100%;
+        max-width: 300px;
+        height: auto;
+        margin-bottom: 18px;
+        border: 1px solid $ink;
+    }
+
+    p {
+        max-width: 32ch;
+        color: $grey;
+        font-size: var(--s-fs-body);
+        line-height: 1.55;
+    }
+
+    &__index {
+        color: $red;
+        font-size: var(--s-fs-small);
+        font-weight: 500;
+    }
+}
+
+// 02 Étapes : trois colonnes, grand chiffre rouge ------------------------------------------
+.home-steps {
+    padding-top: 0;
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(24px, 4vw, 64px);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+
+    li {
+        display: grid;
+        align-content: start;
+        gap: 10px;
+    }
+
+    p {
+        color: $grey;
+        font-size: var(--s-fs-body);
+        line-height: 1.55;
+    }
+
+    &__number {
+        margin-bottom: 8px;
+        color: $red;
+        font-size: var(--s-fs-number);
+        font-weight: 700;
+        letter-spacing: -0.06em;
+        line-height: 0.85;
+    }
+}
+
+// 03 Confiance : section sombre, affirmation à gauche, quatre faits à droite -----------------
+.home-trust {
+    background: $ink;
+    color: $white;
+
+    h2,
+    h3 {
+        color: $white !important;
+    }
+}
+
+.trust {
+    align-items: start;
+    row-gap: 56px;
+
+    &__statement {
+        grid-column: 1 / span 6;
+        display: grid;
+        justify-items: start;
+        gap: 28px;
+
+        .s-kicker {
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        h2 span {
+            opacity: 0.5;
+        }
+    }
+
+    &__facts {
+        grid-column: 8 / -1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 40px 32px;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+
+        li {
+            display: grid;
+            gap: 8px;
+
+            &::before {
+                content: '';
+                width: 8px;
+                height: 8px;
+                margin-bottom: 6px;
+                background: $red;
+            }
+        }
+
+        h3 {
+            font-size: 18px;
+        }
+
+        p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: var(--s-fs-small);
+            line-height: 1.55;
+        }
+    }
+}
+
+// 05 Disponible partout : texte et téléchargement à gauche, plateformes à droite ----------
+.anywhere {
+    align-items: start;
+    row-gap: 40px;
+
+    &__copy {
+        grid-column: 1 / span 6;
+        display: grid;
+        justify-items: start;
+        gap: 24px;
+
+        .s-kicker {
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        > p {
+            color: $grey;
+            font-size: var(--s-fs-lead);
+            line-height: 1.6;
+        }
+
+        .s-actions {
+            align-items: center;
+            gap: 28px;
+        }
+    }
+
+    &__platforms {
+        grid-column: 8 / -1;
+        display: grid;
+        gap: 24px;
+        margin: 0;
+
+        div {
+            display: grid;
+            gap: 4px;
         }
 
         dt {
@@ -319,97 +441,9 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
 
         dd {
             margin: 0;
-            font-size: var(--s-fs-lead);
+            font-size: 17px;
             font-weight: 500;
-            line-height: 1.45;
         }
-    }
-}
-
-// 04 Disponible partout : appareils à gauche, texte à droite -------------------------------
-.anywhere {
-    align-items: center;
-    row-gap: 56px;
-
-    &__devices {
-        grid-column: 1 / span 6;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: clamp(16px, 2vw, 32px);
-        max-width: 560px;
-
-        .s-figure:last-child {
-            margin-top: 72px;
-        }
-    }
-
-    &__copy {
-        grid-column: 8 / -1;
-        display: grid;
-        justify-items: start;
-        gap: 24px;
-
-        > p {
-            color: $grey;
-            font-size: var(--s-fs-lead);
-            line-height: 1.6;
-        }
-    }
-
-    &__platforms {
-        width: 100%;
-        padding: 0;
-        margin: 0 0 8px;
-        list-style: none;
-        border-top: 1px solid $ink;
-
-        li {
-            display: grid;
-            grid-template-columns: 120px minmax(0, 1fr);
-            gap: 16px;
-            padding: 12px 0;
-            border-bottom: 1px solid $hairline;
-            font-size: var(--s-fs-small);
-        }
-
-        span {
-            color: $grey;
-        }
-    }
-}
-
-// 05 FAQ : titre fixe à gauche, questions à droite ---------------------------------------
-.faq {
-    align-items: start;
-    row-gap: 40px;
-
-    &__aside {
-        position: sticky;
-        top: 112px;
-        grid-column: 1 / span 4;
-        display: grid;
-        gap: 24px;
-
-        > p {
-            color: $grey;
-            font-size: var(--s-fs-small);
-
-            a {
-                color: $ink;
-                font-weight: 500;
-                text-decoration: none;
-                border-bottom: 1px solid $ink;
-
-                &:hover {
-                    color: $red;
-                    border-color: $red;
-                }
-            }
-        }
-    }
-
-    &__list {
-        grid-column: 6 / -1;
     }
 }
 
@@ -440,7 +474,7 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
         display: grid;
         gap: 28px;
 
-        p {
+        > p:first-child {
             font-size: var(--s-fs-lead);
             line-height: 1.5;
         }
@@ -455,11 +489,16 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
         text-decoration: none;
     }
 
-    &__beta {
-        padding-top: 16px;
-        border-top: 1px solid rgba(255, 255, 255, 0.5);
-        font-size: var(--s-fs-meta) !important;
+    &__meta {
+        font-size: var(--s-fs-meta);
+        line-height: 1.6;
         opacity: 0.85;
+
+        a {
+            color: $white;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
     }
 }
 
@@ -475,74 +514,155 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
             max-width: 520px;
         }
     }
-
-    .anywhere__copy {
-        grid-column: 7 / -1;
-    }
 }
 
 @media (max-width: 959px) {
     .home-hero__copy,
     .home-hero__visual,
-    .how__copy,
-    .how__figure,
-    .nobank__statement,
-    .nobank__reasons,
-    .nobank__note,
-    .hosting__intro,
-    .hosting__specs,
-    .anywhere__devices,
+    .trust__statement,
+    .trust__facts,
+    .swiss__intro,
+    .swiss__facts,
+    .encryption__intro,
+    .encryption__layers,
     .anywhere__copy,
-    .faq__aside,
-    .faq__list {
+    .anywhere__platforms {
         grid-column: 1 / -1;
     }
 
     .home-hero__visual {
         margin-left: 48px;
     }
-
-    .how__figure,
-    .faq__aside {
-        position: static;
-    }
-
-    .home-figures__grid {
-        row-gap: 40px;
-
-        > div {
-            grid-column: span 6;
-        }
-    }
 }
 
 @media (max-width: 599px) {
+    .home-page {
+        --s-section-y: 72px;
+    }
+
     .home-hero {
-        padding-top: 112px;
+        padding: 112px 0 48px;
+
+        &__copy {
+            gap: 28px;
+        }
 
         &__visual {
-            margin-left: 28px;
-            padding-bottom: 32px;
+            margin: 0;
+            padding: 0;
+        }
+
+        // Mobile : la capture smartphone (servie par <picture>) remplace le duo desktop + téléphone
+        &__desktop {
+            width: 72%;
+            margin-left: auto;
+            border: 1px solid $ink;
         }
 
         &__phone {
-            left: -28px;
-            width: 32%;
-            box-shadow: 0 0 0 5px $white;
+            display: none;
         }
     }
 
-    .how__steps li,
-    .nobank__reasons li {
-        grid-template-columns: 44px minmax(0, 1fr);
+    .home-head {
+        margin-bottom: 36px;
     }
 
-    .anywhere__devices .s-figure:last-child {
-        margin-top: 40px;
+    // Bénéfices : carrousel horizontal à défilement aimanté, la carte suivante dépasse
+    .benefits {
+        grid-template-columns: none;
+        grid-auto-flow: column;
+        grid-auto-columns: 68%;
+        gap: 20px;
+        margin-right: calc(-1 * var(--s-gutter));
+        padding-right: var(--s-gutter);
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        li {
+            scroll-snap-align: start;
+        }
+
+        img {
+            max-width: none;
+        }
     }
 
-    .anywhere__platforms li {
+    .steps {
         grid-template-columns: minmax(0, 1fr);
-        gap: 2px;
+        gap: 28px;
+
+        li {
+            grid-template-columns: 44px minmax(0, 1fr);
+            column-gap: 12px;
+            row-gap: 6px;
+        }
+
+        &__number {
+            grid-row: span 2;
+            margin: 0;
+        }
+    }
+
+    .trust__facts,
+    .swiss__facts {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 24px;
+    }
+}
+
+// Desktop : la grille suisse et ses filets fins, un niveau par section -----------------------
+// (le mobile reste sans filet, voir plus haut)
+@media (min-width: 960px) {
+    // Filet d'ouverture au-dessus de chaque intitulé de section
+    .home-head .s-kicker,
+    .swiss__intro .s-kicker,
+    .encryption__intro .s-kicker,
+    .trust__statement .s-kicker,
+    .anywhere__copy .s-kicker {
+        padding-top: 16px;
+        border-top: 1px solid currentColor;
+    }
+
+    // Bénéfices, étapes et faits : filet fin en tête de chaque colonne
+    .benefits li,
+    .steps li,
+    .swiss__facts > li,
+    .encryption__layers > li,
+    .anywhere__platforms > div {
+        padding-top: 20px;
+        border-top: 1px solid $hairline;
+    }
+
+    .trust__facts li {
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+
+        &::before {
+            display: none;
+        }
+    }
+
+    // L'intitulé occupe toute la largeur pour que son filet traverse la grille
+    .home-head {
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        column-gap: clamp(16px, 2vw, 32px);
+
+        .s-kicker {
+            grid-column: 1 / -1;
+        }
+
+        .s-h2 {
+            grid-column: 1 / span 7;
+        }
+    }
+
+    .home-steps {
+        padding-top: clamp(24px, 3vw, 48px);
     }
 }

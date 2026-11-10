@@ -687,3 +687,39 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
         object-position: 56% 0;
     }
 }
+
+// Mobile : un seul niveau de filet (le groupe garde le sien, ses domaines non) -------------
+@media (max-width: 599px) {
+    .features-showcase {
+        border-top: 0;
+    }
+
+    .features-nav {
+        border-top: 0;
+        border-bottom-color: $hairline;
+    }
+
+    .journey__list {
+        border-top: 0;
+
+        li {
+            border-bottom: 0;
+        }
+    }
+
+    .journey__columns li,
+    .domain {
+        border-top: 0;
+    }
+
+    .features-security {
+        &__grid,
+        &__list {
+            border-top: 0;
+        }
+
+        &__list li {
+            border-bottom: 0;
+        }
+    }
+}
