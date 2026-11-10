@@ -11,20 +11,24 @@ $red: #d0021b;
 .landing-footer {
     position: relative;
     overflow: hidden;
-    // Filet pleine largeur : le footer est clairement séparé du contenu, sur toutes les tailles
-    border-top: 1px solid $ink;
     background: $white;
     color: $ink;
 }
 
 .landing-footer__content {
+    padding-top: clamp(56px, 7vw, 96px);
+    padding-bottom: clamp(32px, 4vw, 48px);
+}
+
+// Filet au-dessus du contenu du footer, limité à la largeur du contenu (hors gouttières)
+.footer-main {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
     justify-content: space-between;
     gap: 40px 32px;
-    padding-top: clamp(56px, 7vw, 96px);
-    padding-bottom: clamp(32px, 4vw, 48px);
+    padding-top: 24px;
+    border-top: 1px solid $ink;
 }
 
 // Deux colonnes de liens : le site, puis le légal
@@ -91,7 +95,7 @@ $red: #d0021b;
 }
 
 @media (max-width: 599px) {
-    .landing-footer__content {
+    .footer-main {
         flex-direction: column;
         align-items: flex-start;
         gap: 36px;

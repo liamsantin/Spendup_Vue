@@ -28,20 +28,22 @@ const year = new Date().getFullYear();
 <template>
     <footer class="landing-footer">
         <v-container class="max-width-1218 landing-footer__content">
-            <div class="footer-columns">
-                <nav v-for="column in columns" :key="column.title" class="footer-column" :aria-label="column.title">
-                    <h3>{{ column.title }}</h3>
-                    <RouterLink v-for="item in column.links" :key="item.label" :to="item.to">{{ item.label }}</RouterLink>
-                </nav>
+            <div class="footer-main">
+                <div class="footer-columns">
+                    <nav v-for="column in columns" :key="column.title" class="footer-column" :aria-label="column.title">
+                        <h3>{{ column.title }}</h3>
+                        <RouterLink v-for="item in column.links" :key="item.label" :to="item.to">{{ item.label }}</RouterLink>
+                    </nav>
+                </div>
+                <p class="footer-meta">
+                    <svg viewBox="0 0 32 32" aria-hidden="true">
+                        <rect width="32" height="32" fill="#E4002B" />
+                        <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
+                        <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
+                    </svg>
+                    © {{ year }} Spend.Up · Développé en Suisse
+                </p>
             </div>
-            <p class="footer-meta">
-                <svg viewBox="0 0 32 32" aria-hidden="true">
-                    <rect width="32" height="32" fill="#E4002B" />
-                    <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
-                    <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
-                </svg>
-                © {{ year }} Spend.Up · Développé en Suisse
-            </p>
         </v-container>
 
         <div class="footer-wordmark" aria-hidden="true">Spend<span class="footer-wordmark__dot">.</span>Up</div>
