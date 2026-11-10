@@ -195,10 +195,10 @@ const platforms = [
 
                 <ol v-reveal class="benefits" data-reveal-stagger="100">
                     <li v-for="(benefit, index) in benefits" :key="benefit.title">
-                        <img :src="`${SHOTS}/${benefit.shot}`" :alt="benefit.alt" width="780" height="1688" loading="lazy" />
                         <span class="benefits__index">{{ String(index + 1).padStart(2, '0') }}</span>
                         <h3>{{ benefit.title }}</h3>
                         <p>{{ benefit.text }}</p>
+                        <img :src="`${SHOTS}/${benefit.shot}`" :alt="benefit.alt" width="780" height="1688" loading="lazy" />
                     </li>
                 </ol>
             </div>

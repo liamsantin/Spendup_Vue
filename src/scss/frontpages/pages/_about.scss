@@ -8,7 +8,7 @@ $ink: #111111;
 $grey: #6f6f6f;
 $hairline: #dedede;
 $white: #ffffff;
-$red: #e4002b;
+$red: #d0021b;
 $tint: #f4f4f2;
 
 .about-page {
@@ -222,7 +222,6 @@ $tint: #f4f4f2;
         > p {
             font-size: var(--s-fs-lead);
             line-height: 1.6;
-            opacity: 0.9;
         }
     }
 
@@ -241,7 +240,7 @@ $tint: #f4f4f2;
 
         dt {
             font-size: var(--s-fs-small);
-            opacity: 0.8;
+            opacity: 0.92;
         }
 
         dd {

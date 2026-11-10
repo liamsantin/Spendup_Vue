@@ -10,8 +10,8 @@ $s-grey: #6f6f6f;
 $s-rule: #111111;
 $s-hairline: #dedede;
 $s-white: #ffffff;
-$s-red: #e4002b;
-$s-primary: rgb(var(--v-theme-primary));
+$s-red: #d0021b;
+$s-primary: #3d63dd; // bleu de marque assombri : texte et boutons lisibles (≥ 4.5:1)
 $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
 
 .front-wraper {
@@ -28,7 +28,7 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
     --s-fs-lead: clamp(17px, 1.25vw, 19px);
     --s-fs-body: 16px;
     --s-fs-small: 14px;
-    --s-fs-meta: 13px;
+    --s-fs-meta: 14px;
     --s-track-display: -0.032em;
     --s-track-h2: -0.022em;
     --s-section-y: clamp(80px, 9vw, 136px);
@@ -355,8 +355,9 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
     }
 
     // Mots mis en avant dans les titres : couleur primaire de la marque, comme avant
-    .s-primary {
-        color: rgb(var(--v-theme-primary)) !important;
+    .s-primary,
+    a.text-primary {
+        color: $s-primary !important;
     }
 
     .s-grey {
@@ -372,7 +373,7 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
     }
 
     .s-label {
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 500;
         color: $s-grey;
     }
@@ -393,7 +394,7 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
             gap: 16px;
             padding-top: 14px;
             color: $s-grey;
-            font-size: 13px;
+            font-size: 14px;
             line-height: 1.4;
 
             b {
@@ -533,39 +534,61 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
     color: $s-primary !important;
 }
 
-// Menu déroulant mobile (téléporté hors de .front-wraper)
-.front-nav-menu .v-overlay__content {
-    border-radius: 0 !important;
+// Menu mobile : panneau plein écran sous l’en-tête, grands liens alignés à gauche ----------
+.front-mobile-menu {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1005;
+    overflow-y: auto;
+    padding: 24px var(--s-gutter, 20px) 32px;
+    border-top: 1px solid $s-ink;
+    background: $s-white;
+    font-family: $s-font;
 
     .front-nav-dropdown {
-        border: 1px solid $s-ink;
-        border-radius: 0 !important;
-        background: $s-white !important;
-        box-shadow: none !important;
-        font-family: $s-font;
+        display: grid;
+        gap: 40px;
+        max-width: 560px;
+    }
 
-        .v-list-item {
-            border-radius: 0 !important;
-            font-weight: 500;
+    .front-nav-dropdown__links {
+        padding: 0;
+        margin: 0;
+        list-style: none;
 
-            &--active {
-                color: $s-primary !important;
-                background: transparent;
-            }
+        a {
+            display: block;
+            padding: 12px 0;
+            color: $s-ink;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            text-decoration: none;
 
-            .v-list-item__overlay {
-                display: none;
+            &:hover,
+            &.is-active {
+                color: $s-primary;
             }
         }
+    }
+
+    .front-nav-dropdown__actions {
+        display: grid;
+        gap: 12px;
 
         .v-btn {
             border-radius: 0 !important;
             box-shadow: none !important;
             font-family: $s-font;
             font-weight: 500;
+            letter-spacing: 0;
         }
 
-        .v-btn--flat {
+        .v-btn--variant-flat {
+            border: 1px solid $s-ink !important;
             background: $s-ink !important;
             color: $s-white !important;
         }
@@ -577,6 +600,23 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
     }
 }
 
+.front-mobile-menu-enter-active,
+.front-mobile-menu-leave-active {
+    transition: opacity 0.18s ease;
+}
+
+.front-mobile-menu-enter-from,
+.front-mobile-menu-leave-to {
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .front-mobile-menu-enter-active,
+    .front-mobile-menu-leave-active {
+        transition: none;
+    }
+}
+
 // Sommaire des pages légales (composant LegalToc) --------------------------------------
 .front-wraper .legal-toc {
     padding-top: 16px;
@@ -585,7 +625,7 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
     &__title {
         margin: 0 0 12px;
         color: $s-grey;
-        font-size: 13px;
+        font-size: 14px;
     }
 
     ol {
@@ -669,5 +709,17 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
                 border-bottom: 0;
             }
         }
+    }
+}
+
+// Accessibilité : focus clavier toujours visible (liens, boutons, champs) --------------------
+.front-wraper,
+.front-mobile-menu {
+    a:focus-visible,
+    button:focus-visible,
+    .v-btn:focus-visible,
+    [tabindex]:focus-visible {
+        outline: 2px solid $s-primary;
+        outline-offset: 3px;
     }
 }

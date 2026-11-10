@@ -132,7 +132,10 @@ const groups = spendupDomainGroups.map((group: SpendupDomainGroup) => ({
             domain,
             // Numérotation hiérarchique : groupe 05 → 5.1, 5.2…
             number: `${Number(group.number)}.${index + 1}`,
-            points: [...(domain.cards ?? []).flatMap((card) => card.items), ...(domain.items ?? [])].slice(0, 5)
+            points: [...(domain.cards ?? []).flatMap((card) => card.items), ...(domain.items ?? [])]
+                .slice(0, 5)
+                // Les points sont rédigés en minuscules dans les données : majuscule initiale à l’affichage
+                .map((point) => point.charAt(0).toUpperCase() + point.slice(1))
         }))
 }));
 

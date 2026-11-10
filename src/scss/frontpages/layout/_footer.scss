@@ -6,11 +6,13 @@
 $ink: #111111;
 $grey: #6f6f6f;
 $white: #ffffff;
-$red: #e4002b;
+$red: #d0021b;
 
 .landing-footer {
     position: relative;
     overflow: hidden;
+    // Filet pleine largeur : le footer est clairement séparé du contenu, sur toutes les tailles
+    border-top: 1px solid $ink;
     background: $white;
     color: $ink;
 }
@@ -40,7 +42,7 @@ $red: #e4002b;
     h3 {
         margin: 0 0 4px;
         color: $grey !important;
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 500;
     }
 
@@ -62,7 +64,7 @@ $red: #e4002b;
     gap: 8px;
     margin: 0;
     color: $grey;
-    font-size: 13px;
+    font-size: 14px;
 
     svg {
         width: 14px;

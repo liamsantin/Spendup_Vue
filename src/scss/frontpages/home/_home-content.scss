@@ -6,7 +6,7 @@ $ink: #111111;
 $grey: #6f6f6f;
 $hairline: #dedede;
 $white: #ffffff;
-$red: #e4002b;
+$red: #d0021b;
 
 // Distance entre le bord du contenu et le bord de l’écran (pour les visuels « à fond perdu »)
 $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
@@ -275,9 +275,9 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
     img {
         display: block;
         width: 100%;
-        max-width: 300px;
+        max-width: 240px;
         height: auto;
-        margin-bottom: 18px;
+        margin-top: 20px;
         border: 1px solid $ink;
     }
 
@@ -334,6 +334,12 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
 .home-trust {
     background: $ink;
     color: $white;
+
+    // Sur fond noir, le rouge s'éclaircit pour rester lisible (6:1)
+    .s-kicker b,
+    .s-red {
+        color: #ff5a6a;
+    }
 
     h2,
     h3 {
@@ -465,7 +471,7 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
 
         span {
             display: block;
-            opacity: 0.6;
+            opacity: 0.75;
         }
     }
 
@@ -492,7 +498,6 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
     &__meta {
         font-size: var(--s-fs-meta);
         line-height: 1.6;
-        opacity: 0.85;
 
         a {
             color: $white;

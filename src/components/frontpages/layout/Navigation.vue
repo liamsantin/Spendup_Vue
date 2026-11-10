@@ -14,6 +14,8 @@ const props = withDefaults(
     { mobile: false, dropdown: false }
 );
 
+const emit = defineEmits<{ navigate: [] }>();
+
 const route = useRoute();
 
 const navigation = computed(() => {
@@ -44,29 +46,27 @@ const linkClass = (href: string) => [
         </RouterLink>
     </nav>
 
-    <v-list v-else-if="dropdown" class="front-nav-dropdown py-2" density="comfortable" nav>
-        <v-list-item
-            v-for="(item, i) in navigation"
-            :key="i"
-            :to="item.href"
-            :active="isActive(item.href)"
-            rounded="md"
-            color="primary"
-            class="text-15"
-        >
-            <v-list-item-title class="font-weight-medium">{{ item.menu }}</v-list-item-title>
-            <template v-if="item.badge" #append>
-                <v-chip rounded="md" class="font-weight-semibold h-23" color="primary" size="small" label>New</v-chip>
-            </template>
-        </v-list-item>
+    <nav v-else-if="dropdown" class="front-nav-dropdown" aria-label="Menu principal">
+        <ul class="front-nav-dropdown__links">
+            <li v-for="(item, i) in navigation" :key="i">
+                <RouterLink
+                    :to="item.href"
+                    :aria-current="isActive(item.href) ? 'page' : undefined"
+                    :class="{ 'is-active': isActive(item.href) }"
+                    @click="emit('navigate')"
+                >
+                    {{ item.menu }}
+                </RouterLink>
+            </li>
+        </ul>
 
-        <v-divider class="my-2" />
-
-        <div class="front-nav-dropdown__login px-3 pb-2 d-flex flex-column ga-2">
-            <v-btn class="text-none h-43 px-5" color="primary" flat block to="/auth?tab=register">Créer un compte</v-btn>
-            <v-btn class="text-none h-43 px-5" color="primary" variant="outlined" block to="/auth?tab=login">Connexion</v-btn>
+        <div class="front-nav-dropdown__actions">
+            <v-btn class="text-none" size="x-large" flat block to="/auth?tab=register" @click="emit('navigate')">Créer un compte</v-btn>
+            <v-btn class="text-none" size="x-large" variant="outlined" block to="/auth?tab=login" @click="emit('navigate')">
+                Connexion
+            </v-btn>
         </div>
-    </v-list>
+    </nav>
 
     <div v-else class="front-nav front-nav--mobile d-flex flex-column w-100 ga-4 pa-6">
         <div class="mb-2">

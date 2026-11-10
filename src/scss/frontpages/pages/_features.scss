@@ -9,9 +9,9 @@ $ink: #111111;
 $grey: #6f6f6f;
 $hairline: #dedede;
 $white: #ffffff;
-$red: #e4002b;
+$red: #d0021b;
 $tint: #f4f4f2;
-$primary: rgb(var(--v-theme-primary));
+$primary: #3d63dd;
 
 // Distance entre le bord du contenu et le bord de l’écran (pour les visuels « à fond perdu »)
 $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
@@ -395,7 +395,7 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
 
     &__footnote {
         color: $grey !important;
-        font-size: 13.5px !important;
+        font-size: 14px !important;
     }
 
     &--text &__body {
@@ -522,7 +522,7 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
 
         span {
             display: block;
-            opacity: 0.6;
+            opacity: 0.75;
         }
     }
 
@@ -657,7 +657,7 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
         }
 
         &__panel img {
-            aspect-ratio: 4 / 3;
+            aspect-ratio: 1 / 1;
             object-fit: cover;
             object-position: 100% 0;
         }
@@ -721,5 +721,27 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
         &__list li {
             border-bottom: 0;
         }
+    }
+}
+
+// Mobile : captures recadrées sur leur zone utile et domaines résumés à l'essentiel ------------
+@media (max-width: 599px) {
+    // Une capture desktop réduite à 340 px est illisible : on montre la colonne principale en grand
+    .journey-split__figure,
+    .journey-pair .s-figure,
+    .domain__figure {
+        margin-right: 0;
+
+        img {
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            object-position: 56% 0;
+            border-right: 1px solid $hairline;
+        }
+    }
+
+    // Trois points par domaine suffisent pour comprendre ; le détail reste sur desktop
+    .domain .s-rules li:nth-child(n + 4) {
+        display: none;
     }
 }
