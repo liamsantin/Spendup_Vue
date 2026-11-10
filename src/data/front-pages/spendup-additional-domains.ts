@@ -114,7 +114,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'categorisation',
         group: 'organiser',
-        image: appScreenshot('categories.jpg', 'Arbre des catégories Spend.Up : alimentation, logement, loisirs, salaire, santé'),
+        image: appScreenshot('categories.webp', 'Arbre des catégories Spend.Up : alimentation, logement, loisirs, salaire, santé'),
         kicker: 'Organiser',
         icon: TagsIcon,
         title: 'Catégorisation & organisation',
@@ -136,7 +136,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'revenus-recurrents',
         group: 'revenus',
-        image: appScreenshot('recurring.jpg', 'Récurrences Spend.Up : salaire, loyer, Netflix, pension AVS et abonnement mobile'),
+        image: appScreenshot('recurring.webp', 'Récurrences Spend.Up : salaire, loyer, Netflix, pension AVS et abonnement mobile'),
         kicker: 'Anticiper',
         icon: TrendingUpIcon,
         title: 'Revenus récurrents',
@@ -183,7 +183,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'tiers-paiements',
         group: 'organiser',
-        image: appScreenshot('counterparties.jpg', 'Liste des tiers Spend.Up : employeur, administrations, fournisseurs et contacts'),
+        image: appScreenshot('counterparties.webp', 'Liste des tiers Spend.Up : employeur, administrations, fournisseurs et contacts'),
         kicker: 'Réseau',
         icon: UsersIcon,
         title: 'Réseau, tiers & moyens de paiement',
@@ -245,7 +245,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'depenses-abonnements',
         group: 'revenus',
-        image: appScreenshot('due-dates.jpg', 'Échéances à venir dans Spend.Up : salaire, loyer, abonnements et pension'),
+        image: appScreenshot('due-dates.webp', 'Échéances à venir dans Spend.Up : salaire, loyer, abonnements et pension'),
         kicker: 'Récurrent',
         icon: RepeatIcon,
         title: 'Dépenses récurrentes & abonnements',
@@ -291,7 +291,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'calendrier',
         group: 'revenus',
-        image: appScreenshot('calendar.jpg', 'Calendrier financier Spend.Up du mois avec revenus, charges et échéances'),
+        image: appScreenshot('calendar.webp', 'Calendrier financier Spend.Up du mois avec revenus, charges et échéances'),
         kicker: 'Planifier',
         icon: CalendarIcon,
         title: 'Calendrier & échéances',
@@ -313,7 +313,7 @@ export const spendupAdditionalDomains: SpendupAdditionalDomain[] = [
     {
         id: 'securite-devises',
         group: 'proteger',
-        image: appScreenshot('security.jpg', 'Paramètres de sécurité Spend.Up : authentification à deux facteurs et appareils connectés'),
+        image: appScreenshot('security.webp', 'Paramètres de sécurité Spend.Up : authentification à deux facteurs et appareils connectés'),
         kicker: 'Protéger',
         icon: ShieldLockIcon,
         title: 'Sécurité, conformité & multi-devises',

@@ -7,7 +7,7 @@ $ink: #111111;
 $grey: #6f6f6f;
 $hairline: #dedede;
 $white: #ffffff;
-$red: #e4002b;
+$red: #d0021b;
 $gap: clamp(16px, 2vw, 32px);
 
 .contact-page {
@@ -31,7 +31,7 @@ $gap: clamp(16px, 2vw, 32px);
         gap: 24px;
 
         h1 {
-            margin: 16px 0 0;
+            margin: calc(var(--s-hero-eyebrow) - 21px - 24px) 0 0; // étiquette 21px + gap 24px
             font-size: var(--s-fs-display);
             font-weight: 700;
             letter-spacing: var(--s-track-display);
@@ -54,7 +54,7 @@ $gap: clamp(16px, 2vw, 32px);
 
 // Formulaire + canaux --------------------------------------------------------------------
 .contact-main {
-    padding: clamp(136px, 12vw, 176px) 0 var(--s-section-y);
+    padding: calc(var(--s-hero-pad-top) - 16px) 0 var(--s-section-y); // - padding du v-container
 }
 
 .contact-layout {
@@ -308,5 +308,19 @@ $gap: clamp(16px, 2vw, 32px);
 
     .contact-form__row {
         grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+// Mobile : formulaire et canaux sans filets superposés -------------------------------------
+@media (max-width: 599px) {
+    .contact-card,
+    .contact-aside {
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    .contact-channel {
+        padding: 16px 0;
+        border-bottom: 0;
     }
 }

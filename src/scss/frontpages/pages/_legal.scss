@@ -6,7 +6,7 @@
 $ink: #111111;
 $grey: #6f6f6f;
 $hairline: #dedede;
-$red: #e4002b;
+$red: #d0021b;
 
 .legal-page {
     p,
@@ -16,7 +16,7 @@ $red: #e4002b;
 }
 
 .legal-hero {
-    padding: clamp(144px, 14vw, 200px) 0 clamp(48px, 5vw, 72px);
+    padding: calc(var(--s-hero-pad-top) - 16px) 0 clamp(48px, 5vw, 72px); // - padding du v-container
 
     .v-container {
         display: grid;
@@ -30,7 +30,7 @@ $red: #e4002b;
 
     h1 {
         max-width: 20ch;
-        margin: 24px 0 0;
+        margin: calc(var(--s-hero-eyebrow) - 21px - 20px) 0 0; // étiquette 21px + gap 20px
         font-size: var(--s-fs-display);
         font-weight: 700;
         letter-spacing: var(--s-track-display);
@@ -163,5 +163,12 @@ $red: #e4002b;
 @media (max-width: 599px) {
     .legal-hero {
         padding-top: 120px;
+    }
+}
+
+// Mobile : filet des articles adouci (gris clair) pour une lecture continue
+@media (max-width: 599px) {
+    .legal-main h2 {
+        border-top-color: #dedede;
     }
 }

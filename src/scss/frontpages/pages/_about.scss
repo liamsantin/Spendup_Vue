@@ -8,7 +8,7 @@ $ink: #111111;
 $grey: #6f6f6f;
 $hairline: #dedede;
 $white: #ffffff;
-$red: #e4002b;
+$red: #d0021b;
 $tint: #f4f4f2;
 
 .about-page {
@@ -27,7 +27,7 @@ $tint: #f4f4f2;
 
 // Hero : texte à gauche, affiche à droite -------------------------------------------------
 .about-hero {
-    padding: clamp(136px, 12vw, 176px) 0 clamp(80px, 9vw, 120px);
+    padding: var(--s-hero-pad-top) 0 clamp(80px, 9vw, 120px);
 
     &__grid {
         align-items: center;
@@ -36,6 +36,7 @@ $tint: #f4f4f2;
 
     &__copy {
         grid-column: 1 / span 7;
+        align-self: start;
         display: grid;
         justify-items: start;
         gap: 28px;
@@ -222,7 +223,6 @@ $tint: #f4f4f2;
         > p {
             font-size: var(--s-fs-lead);
             line-height: 1.6;
-            opacity: 0.9;
         }
     }
 
@@ -241,7 +241,7 @@ $tint: #f4f4f2;
 
         dt {
             font-size: var(--s-fs-small);
-            opacity: 0.8;
+            opacity: 0.92;
         }
 
         dd {
@@ -393,5 +393,32 @@ $tint: #f4f4f2;
     .about-swiss__facts > div {
         grid-template-columns: minmax(0, 1fr);
         gap: 2px;
+    }
+}
+
+// Mobile : listes et matrice sans quadrillage, l’espacement suffit ------------------------
+@media (max-width: 599px) {
+    .about-poster figcaption,
+    .story-rows,
+    .about-swiss__facts,
+    .transparency__list,
+    .about-final__grid {
+        border-top: 0;
+    }
+
+    .story-rows li,
+    .about-swiss__facts > div,
+    .transparency__list li {
+        border-bottom: 0;
+    }
+
+    .principles__matrix {
+        border-top: 0;
+        border-left: 0;
+
+        li {
+            border-right: 0;
+            border-bottom: 0;
+        }
     }
 }

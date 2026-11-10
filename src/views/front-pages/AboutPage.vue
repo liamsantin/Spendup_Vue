@@ -197,7 +197,7 @@ const commitments = [
                             Construisez une vision plus claire <span class="s-primary">de vos finances.</span>
                         </h2>
                         <div class="about-final__side">
-                            <p>Essayez Spend.Up gratuitement, sans carte bancaire et sans engagement.</p>
+                            <p>Essayez Spend.Up gratuitement, sans engagement.</p>
                             <div class="s-actions">
                                 <v-btn color="primary" size="x-large" flat class="text-none" to="/auth?tab=register">
                                     Commencer gratuitement

@@ -3,12 +3,21 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import Navigations from './Navigation.vue';
-import { ArrowRightIcon, Menu2Icon } from 'vue-tabler-icons';
+import { ArrowRightIcon, Menu2Icon, XIcon } from 'vue-tabler-icons';
 
 const HEADER_HEIGHT = 80;
 
-/** Menu déroulant mobile/tablette */
+/** Menu mobile/tablette : panneau plein écran sous l’en-tête */
 const menuOpen = ref(false);
+
+function onKeydown(event: KeyboardEvent) {
+    if (event.key === 'Escape') menuOpen.value = false;
+}
+
+// Bloque le défilement de la page tant que le menu est ouvert
+watch(menuOpen, (open) => {
+    document.documentElement.style.overflow = open ? 'hidden' : '';
+});
 
 /** Drawer latéral — conservé pour usage futur (désactivé) */
 const appsdrawer = ref(false);
@@ -27,11 +36,14 @@ function syncScrollState() {
 
 onMounted(() => {
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('keydown', onKeydown);
     syncScrollState();
 });
 
 onBeforeUnmount(() => {
     window.removeEventListener('scroll', handleScroll);
+    window.removeEventListener('keydown', onKeydown);
+    document.documentElement.style.overflow = '';
 });
 
 watch(
@@ -49,11 +61,11 @@ watch(
         <v-app-bar
             :height="HEADER_HEIGHT"
             class="front-lp-header"
-            :color="isScrolled ? 'white' : 'transparent'"
+            :color="isScrolled || menuOpen ? 'white' : 'transparent'"
             flat
             fixed
             elevation="0"
-            :class="{ 'front-lp-header--scrolled': isScrolled }"
+            :class="{ 'front-lp-header--scrolled': isScrolled || menuOpen }"
         >
             <v-container class="py-0 max-content">
                 <v-toolbar class="d-flex align-center">
@@ -84,31 +96,19 @@ watch(
                             <ArrowRightIcon size="17" class="ms-2" />
                         </v-btn>
 
-                        <!-- Menu déroulant : visible mobile & tablette (d-lg-none), masqué en PC -->
-                        <div class="d-lg-none">
-                            <v-menu
-                                v-model="menuOpen"
-                                class="front-nav-menu"
-                                location="bottom end"
-                                :close-on-content-click="true"
-                                offset="8"
-                            >
-                                <template #activator="{ props: menuProps }">
-                                    <v-btn
-                                        v-bind="menuProps"
-                                        variant="text"
-                                        class="front-nav-burger flex-shrink-0"
-                                        icon
-                                        aria-label="Ouvrir le menu"
-                                        @click.stop
-                                    >
-                                        <Menu2Icon size="22" stroke-width="1.5" />
-                                    </v-btn>
-                                </template>
-
-                                <Navigations dropdown />
-                            </v-menu>
-                        </div>
+                        <!-- Bouton du menu : visible mobile & tablette (d-lg-none), masqué en PC -->
+                        <v-btn
+                            variant="text"
+                            class="front-nav-burger d-lg-none flex-shrink-0"
+                            icon
+                            :aria-label="menuOpen ? 'Fermer le menu' : 'Ouvrir le menu'"
+                            :aria-expanded="menuOpen"
+                            aria-controls="front-mobile-menu"
+                            @click="menuOpen = !menuOpen"
+                        >
+                            <XIcon v-if="menuOpen" size="24" stroke-width="1.6" />
+                            <Menu2Icon v-else size="24" stroke-width="1.6" />
+                        </v-btn>
 
                         <!-- Bouton drawer legacy (si réactivation de useDrawerNav) -->
                         <v-btn
@@ -125,6 +125,13 @@ watch(
                 </v-toolbar>
             </v-container>
         </v-app-bar>
+
+        <!-- Menu mobile : panneau plein écran, grands liens alignés à gauche -->
+        <Transition name="front-mobile-menu">
+            <div v-if="menuOpen" id="front-mobile-menu" class="front-mobile-menu d-lg-none" :style="{ top: `${HEADER_HEIGHT}px` }">
+                <Navigations dropdown @navigate="menuOpen = false" />
+            </div>
+        </Transition>
 
         <!-- Drawer latéral — conservé pour usage futur -->
         <v-navigation-drawer v-if="useDrawerNav" v-model="appsdrawer" class="lp-drawer" location="left" temporary width="300">

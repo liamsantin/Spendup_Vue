@@ -24,7 +24,7 @@ interface PricingPlan {
 
 const billingPeriod = ref<BillingPeriod>('yearly');
 
-const subscriptionShot = `${APP_SCREENSHOTS_PATH}/subscription.jpg`;
+const subscriptionShot = `${APP_SCREENSHOTS_PATH}/subscription.webp`;
 
 const plans: PricingPlan[] = [
     {
@@ -206,8 +206,8 @@ function yearlyTotal(plan: PricingPlan): string {
                                 Un plan pour vous. <span class="s-primary">Un foyer, si vous le voulez.</span>
                             </h1>
                             <p class="pricing-subtitle su-hero-in" style="--su-in-delay: 140ms">
-                                Commencez gratuitement, sans carte. Étudiant au tarif réduit (justificatif annuel). Solo pour le quotidien.
-                                Famille pour un payeur et jusqu’à quatre membres. Toutes les offres sont sans engagement.
+                                Commencez gratuitement. Étudiant au tarif réduit (justificatif annuel). Solo pour le quotidien. Famille pour
+                                un payeur et jusqu’à quatre membres. Toutes les offres sont sans engagement.
                             </p>
 
                             <div
