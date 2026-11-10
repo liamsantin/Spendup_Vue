@@ -356,8 +356,13 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
         color: $s-red !important;
     }
 
-    // Mots mis en avant dans les titres : couleur primaire de la marque, comme avant
-    .s-primary,
+    // Mots mis en avant dans les gros titres : bleu de la marque (#5D87FF), contraste 3.3:1
+    // sur blanc, suffisant pour du texte large en gras (WCAG AA, seuil 3:1)
+    .s-primary {
+        color: rgb(var(--v-theme-primary)) !important;
+    }
+
+    // Liens en texte courant : bleu assombri, lisible à petite taille (≥ 4.5:1)
     a.text-primary {
         color: $s-primary !important;
     }
