@@ -1,13 +1,13 @@
 <script setup lang="ts">
 /**
  * Intro plein écran de la home publique : l'icône s'ouvre en éventail, « Spend.Up » se déroule,
- * le sous-titre s'écrit mot par mot (centré, réduit), puis le logo rejoint celui du header et le
- * sous-titre grandit et se pose exactement sur le h1 du hero.
+ * le sous-titre s'écrit mot par mot sur une seule ligne, calé à gauche sur le « S » de « Spend »,
+ * puis le logo rejoint celui du header et chaque mot glisse et grandit jusqu'à sa place dans le h1.
  * Garde-fous : une fois par session, défilement bloqué pendant l'intro, ignorée si prefers-reduced-motion.
  *
  * Anti-décalage : on ne touche jamais à l'overflow de la page (la barre de défilement disparaîtrait
- * puis reviendrait, ce qui ferait sauter la mise en page). Le sous-titre reprend la typo et la
- * largeur exactes du h1 : ses retours à la ligne sont identiques.
+ * puis reviendrait, ce qui ferait sauter la mise en page). Le sous-titre reprend la typo exacte du h1 ;
+ * au départ, il reprend aussi sa largeur : ses retours à la ligne sont alors identiques.
  */
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import SwissFlag from '@/components/frontpages/shared/SwissFlag.vue';
@@ -20,13 +20,19 @@ const FLY_AT = 4100;
 const FLY_MS = 1100;
 /** Agrandissement max du logo de l'intro par rapport à celui du header. */
 const LOGO_MAX_SCALE = 7;
-/** Taille du sous-titre pendant l'intro, relative au h1 qu'il va rejoindre. */
-const TITLE_SCALE = 0.6;
+/** Taille max du sous-titre pendant l'intro, relative au h1 ; réduite si la ligne ne tient pas. */
+const TITLE_SCALE = 0.45;
+/** Espace entre le logo et le sous-titre, et marge à droite de l'écran. */
+const TITLE_GAP = 32;
+const SCREEN_GUTTER = 16;
+/** Logo du header : icône 28 px, puis 10 px avant « Spend.Up » (multipliés par l'échelle). */
+const ICON_PX = 28;
+const MARK_GAP_PX = 10;
 const EASE = 'cubic-bezier(.65, 0, .25, 1)';
 
-/** Titre découpé en mots : centré pendant l'intro, chaque mot glisse ensuite vers l'alignement gauche du h1. */
+/** Titre découpé en mots : une ligne pendant l'intro, chaque mot glisse ensuite vers sa place dans le h1. */
 const WORDS = [
-    ...['La', 'plateforme', 'de', 'gestion financière'].map((text) => ({ text, accent: false })),
+    ...['La', 'future', 'plateforme', 'de', 'gestion financière'].map((text) => ({ text, accent: false })),
     // un seul bloc : isolé, « 100 % » n'est pas espacé comme dans le h1 (décalage de ~10 px)
     { text: '100 % Suisse.', accent: true }
 ];
@@ -39,8 +45,13 @@ const mark = ref<HTMLElement | null>(null);
 const title = ref<HTMLElement | null>(null);
 const logoScale = ref(LOGO_MAX_SCALE);
 const markWidth = ref(0);
+/** Typo du h1, partagée par l'intro et l'arrivée. */
 const titleStyle = ref<Record<string, string>>({});
-const titleWrapStyle = ref<Record<string, string>>({});
+/** Position du sous-titre : sur une ligne sous le logo, puis exactement sur le h1. */
+const titleBox = ref<Record<string, string>>({});
+const stageStyle = ref<Record<string, string>>({});
+let titleScale = TITLE_SCALE;
+let heroTextWrap = 'wrap';
 
 const timers: number[] = [];
 let finished = false;
@@ -76,31 +87,58 @@ async function syncLogoWithHeader() {
     if (mark.value) markWidth.value = mark.value.scrollWidth;
 }
 
-/** Copie la typo et la largeur du h1 pour que le texte se coupe aux mêmes endroits. */
+/** Copie la typo du h1 pour que les mots aient exactement sa taille une fois posés. */
 function syncTitleWithHero() {
     const h1 = heroTitle();
     if (!h1) return;
     h1.style.animation = 'none'; // pas d'entrée décalée : la cible doit être immobile
     const cs = getComputedStyle(h1);
-    const rect = h1.getBoundingClientRect();
     titleStyle.value = {
-        width: `${rect.width}px`,
         fontFamily: cs.fontFamily,
         fontSize: cs.fontSize,
         fontWeight: cs.fontWeight,
         letterSpacing: cs.letterSpacing,
         lineHeight: cs.lineHeight,
-        textWrap: cs.getPropertyValue('text-wrap') || 'wrap',
-        color: cs.color,
-        transform: `scale(${TITLE_SCALE})`
+        color: cs.color
     };
-    // Le scale ne réduit pas la boîte : on retire l'espace vide laissé sous le titre
-    titleWrapStyle.value = { marginBottom: `${-(1 - TITLE_SCALE) * rect.height}px` };
+    // Appliqué seulement à l'arrivée : en inline, il annulerait le white-space: nowrap de l'intro
+    heroTextWrap = cs.getPropertyValue('text-wrap') || 'wrap';
 }
 
-function syncAll() {
+/**
+ * Place le sous-titre sur une ligne sous le logo, son bord gauche sur celui de « Spend ».
+ * La position est calculée sur le logo final (« Spend.Up » entièrement déroulé) : le texte
+ * ne bouge pas pendant que le logo s'ouvre. Le tout reste centré verticalement à l'écran.
+ */
+async function placeTitle() {
+    const p = title.value;
+    const el = logo.value;
+    if (!p || !el || leaving.value) return;
+
+    const s = logoScale.value;
+    const logoWidth = (ICON_PX + MARK_GAP_PX) * s + markWidth.value;
+    // Largeur de l’overlay, sans la barre de défilement : c’est elle qui centre le logo
+    const width = overlay.value?.clientWidth || window.innerWidth;
+    const spendLeft = width / 2 - logoWidth / 2 + (ICON_PX + MARK_GAP_PX) * s;
+    const available = width - SCREEN_GUTTER - spendLeft;
+    titleScale = Math.min(TITLE_SCALE, available / Math.max(1, p.scrollWidth));
+    const lineHeight = p.offsetHeight * titleScale;
+
+    // Réserve la hauteur du titre sous le logo : le groupe logo + titre reste centré
+    stageStyle.value = { paddingBottom: `${TITLE_GAP + lineHeight}px` };
+    await nextTick();
+    const logoRect = el.getBoundingClientRect();
+    titleBox.value = {
+        left: `${spendLeft}px`,
+        top: `${logoRect.bottom + TITLE_GAP}px`,
+        transform: `scale(${titleScale})`
+    };
+}
+
+async function syncAll() {
     syncTitleWithHero();
-    syncLogoWithHeader();
+    await syncLogoWithHeader();
+    await placeTitle();
 }
 
 function cleanup() {
@@ -120,21 +158,34 @@ function done() {
     visible.value = false;
 }
 
-/** L'icône vole vers le header, le titre glisse sur le h1, puis le fond s'efface. */
+/** L'icône vole vers le header, chaque mot glisse à sa place dans le h1, puis le fond s'efface. */
 async function fly() {
     if (finished || leaving.value) return;
 
-    // FLIP des mots : position centrée -> bascule à gauche -> on anime l'écart jusqu'à 0
+    // FLIP des mots : une ligne réduite -> le <p> se pose sur le h1 (taille réelle, mêmes retours
+    // à la ligne) -> chaque mot part de son ancienne position et de l'ancienne taille.
     const words = Array.from(title.value?.querySelectorAll<HTMLElement>('.su-intro__word') ?? []);
-    const centered = words.map((w) => w.getBoundingClientRect().left);
+    const before = words.map((w) => w.getBoundingClientRect());
+    const h1 = heroTitle()?.getBoundingClientRect();
     leaving.value = true;
+    if (h1) {
+        titleBox.value = {
+            left: `${h1.left}px`,
+            top: `${h1.top}px`,
+            width: `${h1.width}px`,
+            transform: 'none',
+            textWrap: heroTextWrap
+        };
+    }
     await nextTick();
     words.forEach((w, i) => {
-        // mesures faites à l'échelle réduite : on revient dans le repère du <p>
-        const dx = (centered[i] - w.getBoundingClientRect().left) / TITLE_SCALE;
-        if (dx && w.animate) {
-            w.animate([{ transform: `translateX(${dx}px)` }, { transform: 'none' }], { duration: FLY_MS, easing: EASE });
-        }
+        const after = w.getBoundingClientRect();
+        const dx = before[i].left - after.left;
+        const dy = before[i].top - after.top;
+        w.animate?.([{ transform: `translate(${dx}px, ${dy}px) scale(${titleScale})` }, { transform: 'none' }], {
+            duration: FLY_MS,
+            easing: EASE
+        });
     });
 
     // Logo -> logo du header
@@ -146,21 +197,6 @@ async function fly() {
         const dx = to.left + to.width / 2 - (from.left + from.width / 2);
         const dy = to.top + to.height / 2 - (from.top + from.height / 2);
         el.animate([{ transform: 'none' }, { transform: `translate(${dx}px, ${dy}px) scale(${to.width / from.width})` }], {
-            duration: FLY_MS,
-            easing: EASE,
-            fill: 'forwards'
-        });
-    }
-
-    // Titre : affiché réduit (origine en haut au centre), il grandit jusqu'à la taille du h1
-    const p = title.value;
-    const h1 = heroTitle();
-    if (p?.animate && h1) {
-        const r = p.getBoundingClientRect();
-        const to = h1.getBoundingClientRect();
-        const dx = to.left - (r.left + r.width / 2 - p.offsetWidth / 2);
-        const dy = to.top - r.top;
-        p.animate([{ transform: `translate(0px, 0px) scale(${TITLE_SCALE})` }, { transform: `translate(${dx}px, ${dy}px) scale(1)` }], {
             duration: FLY_MS,
             easing: EASE,
             fill: 'forwards'
@@ -195,6 +231,7 @@ onMounted(async () => {
     syncTitleWithHero();
     visible.value = true;
     await syncLogoWithHeader();
+    await placeTitle();
 
     window.addEventListener('keydown', blockScroll);
     window.addEventListener('wheel', blockScroll, { passive: false });
@@ -210,7 +247,7 @@ onBeforeUnmount(cleanup);
 <template>
     <Teleport to="body">
         <div v-if="visible" ref="overlay" class="su-intro" role="presentation">
-            <div class="su-intro__stage" :style="{ '--s': logoScale, '--mw': `${markWidth}px` }">
+            <div class="su-intro__stage" :style="{ ...stageStyle, '--s': logoScale, '--mw': `${markWidth}px` }">
                 <div ref="logo" class="su-intro__logo">
                     <svg class="su-intro__icon" viewBox="140 196 720 560" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <g class="su-intro__card su-intro__card--1"><rect x="260" y="310" width="420" height="280" fill="#E1E3E8" /></g>
@@ -224,8 +261,13 @@ onBeforeUnmount(cleanup);
                         ><span ref="mark" class="su-intro__mark">Spend<span class="su-intro__dot">.</span>Up</span></span
                     >
                 </div>
-                <div class="su-intro__title-wrap" :style="titleWrapStyle">
-                    <p ref="title" class="su-intro__title" :class="{ 'su-intro__title--left': leaving }" :style="titleStyle">
+                <div class="su-intro__title-wrap">
+                    <p
+                        ref="title"
+                        class="su-intro__title"
+                        :class="{ 'su-intro__title--placed': leaving }"
+                        :style="{ ...titleStyle, ...titleBox }"
+                    >
                         <template v-for="(w, i) in WORDS" :key="i"
                             ><span class="su-intro__word" :class="{ 'su-intro__accent': w.accent }" :style="{ '--i': i }"
                                 >{{ w.text }}<SwissFlag v-if="w.accent" class="su-intro__flag" /></span
@@ -341,14 +383,22 @@ html.su-intro-active {
     color: #5d87ff;
 }
 
+/* Sous-titre hors flux : une seule ligne, positionnée et réduite par le script (origine en haut à gauche) */
 .su-intro__title {
+    position: fixed;
     margin: 0;
-    transform-origin: top center;
-    text-align: center;
+    transform-origin: top left;
+    text-align: left;
+    white-space: nowrap;
     color: #0b0c10;
 
-    &--left {
-        text-align: left;
+    /* Posé sur le h1 : même largeur, mêmes retours à la ligne */
+    &--placed {
+        white-space: normal;
+
+        .su-intro__word {
+            transform-origin: top left;
+        }
     }
 }
 

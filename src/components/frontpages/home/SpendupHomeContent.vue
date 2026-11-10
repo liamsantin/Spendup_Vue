@@ -106,7 +106,7 @@ const platforms = [
                 <div class="s-grid home-hero__grid">
                     <div class="home-hero__copy">
                         <h1 class="s-display su-hero-in">
-                            La plateforme de gestion&nbsp;financière
+                            La future plateforme de gestion&nbsp;financière
                             <span class="s-primary">100&#8239;%&nbsp;Suisse.<SwissFlag class="home-hero__flag" /></span>
                         </h1>
                         <p class="s-lead su-hero-in" style="--su-in-delay: 120ms">
