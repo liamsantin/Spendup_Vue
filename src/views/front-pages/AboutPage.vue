@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 import { ArrowRightIcon } from 'vue-tabler-icons';
 import AnnounceBar from '@/components/frontpages/layout/AnnounceBar.vue';
 import Header from '@/components/frontpages/layout/Header.vue';
 import Footer from '@/components/frontpages/layout/Footer.vue';
 import founderPhoto from '@/assets/images/profile/avatar/user-26.jpg';
+
+const showPricing = isPricingPageEnabled();
 
 const story = [
     {
@@ -203,7 +206,7 @@ const commitments = [
                                     Commencer gratuitement
                                     <ArrowRightIcon size="18" class="ms-3" />
                                 </v-btn>
-                                <RouterLink to="/tarifs" class="about-final__link">Découvrir les offres</RouterLink>
+                                <RouterLink v-if="showPricing" to="/tarifs" class="about-final__link">Découvrir les offres</RouterLink>
                             </div>
                         </div>
                     </div>

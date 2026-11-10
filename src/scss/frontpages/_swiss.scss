@@ -21,7 +21,7 @@ $s-font: 'Helvetica Neue', Helvetica, Arial, 'Nimbus Sans', sans-serif;
 
     // Échelle typographique (ratio ~1.33) : une seule source pour toutes les landings.
     --s-fs-display: clamp(38px, 4.4vw, 62px); // h1 de page
-    --s-hero-pad-top: clamp(184px, 16vw, 240px); // haut des heros de page
+    --s-hero-pad-top: clamp(136px, 12vw, 176px); // haut des heros de page
     --s-hero-eyebrow: 49px; // étiquette (21px) + écart (28px) au-dessus du h1 : réservé même sans étiquette
     --s-fs-h2: clamp(28px, 2.9vw, 42px); // titres de section
     --s-fs-cta: clamp(32px, 3.6vw, 52px); // titres des appels finaux

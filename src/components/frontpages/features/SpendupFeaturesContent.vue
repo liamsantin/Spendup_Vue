@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 import {
     AlertTriangleIcon,
     ArrowRightIcon,
@@ -26,6 +27,8 @@ import {
     type SpendupAdditionalDomain,
     type SpendupDomainGroup
 } from '@/data/front-pages/spendup-additional-domains';
+
+const showPricing = isPricingPageEnabled();
 
 interface JourneyFeature {
     icon: Component;
@@ -187,7 +190,9 @@ const securityItems = [
                                 Commencer gratuitement
                                 <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>
-                            <v-btn size="x-large" variant="outlined" class="text-none" to="/tarifs">Voir les tarifs</v-btn>
+                            <v-btn v-if="showPricing" size="x-large" variant="outlined" class="text-none" to="/tarifs"
+                                >Voir les tarifs</v-btn
+                            >
                         </div>
                         <p class="features-hero__note su-hero-in" style="--su-in-delay: 240ms">
                             Sans connexion bancaire · Données hébergées en Suisse · Web &amp; Windows
@@ -414,7 +419,7 @@ const securityItems = [
                                 Créer mon espace
                                 <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>
-                            <RouterLink to="/tarifs" class="features-final__link">Comparer les offres</RouterLink>
+                            <RouterLink v-if="showPricing" to="/tarifs" class="features-final__link">Comparer les offres</RouterLink>
                         </div>
                     </div>
                 </div>

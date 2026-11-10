@@ -1,7 +1,10 @@
 <script setup lang="ts">
+import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
 import { ArrowRightIcon, BrandWindowsIcon, ExternalLinkIcon, LockIcon } from 'vue-tabler-icons';
 import infomaniakLogo from '@/assets/images/front-pages/infomaniak-logo.svg';
 import { APP_SCREENSHOTS_PATH as SHOTS } from '@/data/front-pages/spendup-additional-domains';
+
+const showPricing = isPricingPageEnabled();
 
 const INSTALLER_PATH = '/downloads/SpendUp-Setup-x64.msi';
 const windowsDownloadUrl = (import.meta.env.VITE_WINDOWS_APP_DOWNLOAD_URL as string | undefined)?.trim() || INSTALLER_PATH;
@@ -279,7 +282,7 @@ const platforms = [
                                 Commencer gratuitement
                                 <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>
-                            <RouterLink to="/tarifs" class="home-final__link">Voir les tarifs</RouterLink>
+                            <RouterLink v-if="showPricing" to="/tarifs" class="home-final__link">Voir les tarifs</RouterLink>
                         </div>
                         <p class="home-final__meta">Version bêta : les données peuvent être réinitialisées pendant cette phase.</p>
                     </div>
