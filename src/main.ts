@@ -13,6 +13,7 @@ import { PerfectScrollbarPlugin } from 'vue3-perfect-scrollbar';
 import { i18n } from '@/plugins/i18n';
 import { SolarIconsPlugin, solarIconsDefaults } from '@/plugins/solar-icons';
 import { registerDesktopDeepLinks } from '@/features/desktop';
+import { startDesktopFileSync } from '@/features/files/sync';
 import { setNativeNotificationNavigate } from '@/features/notifications';
 import { isTauri } from '@/utils/helpers/platform-helpers';
 import { revealDirective } from '@/directives/reveal';
@@ -31,6 +32,7 @@ if (isTauri()) {
     };
     setNativeNotificationNavigate(navigate);
     void registerDesktopDeepLinks(navigate);
+    startDesktopFileSync();
 }
 
 app.use(vuetify).mount('#app');

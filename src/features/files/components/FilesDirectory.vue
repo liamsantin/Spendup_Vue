@@ -24,6 +24,9 @@ import FileListItem from '@/features/files/components/list/FileListItem.vue';
 import FileTable from '@/features/files/components/list/FileTable.vue';
 import FileEditModal from '@/features/files/components/modals/FileEditModal.vue';
 import FileUsageMeter from '@/features/files/components/FileUsageMeter.vue';
+import FileSyncPanel from '@/features/files/components/sync/FileSyncPanel.vue';
+import FileSyncModal from '@/features/files/components/sync/FileSyncModal.vue';
+import { useFileSyncStore } from '@/features/files/sync/sync-store';
 import { downloadCsv } from '@/utils/helpers/csv';
 import { sensitiveExportValue } from '@/features/vault/display';
 
@@ -45,6 +48,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useFilesStore();
+const fileSync = useFileSyncStore();
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const dragging = ref(false);
@@ -53,6 +57,14 @@ const uploadingName = ref<string | null>(null);
 const editTarget = ref<FileDto | null>(null);
 const deleteTarget = ref<FileDto | null>(null);
 const localError = ref<string | null>(null);
+const syncTarget = ref<FileDto | null>(null);
+
+const syncOpen = computed({
+    get: () => !!syncTarget.value,
+    set: (value: boolean) => {
+        if (!value) syncTarget.value = null;
+    }
+});
 
 const editOpen = computed({
     get: () => !!editTarget.value,
@@ -200,12 +212,19 @@ function requestDelete(file: FileDto) {
     deleteTarget.value = file;
 }
 
-async function confirmDelete() {
+/** Fichier en ligne et présent sur ce poste : demander s'il faut aussi le supprimer en ligne. */
+const deleteAsksOnline = computed(() => {
+    const target = deleteTarget.value;
+    if (!target || !fileSync.ready) return false;
+    return (target.contentLocation ?? 'online') === 'online' && fileSync.isHere(target.publicId);
+});
+
+async function confirmDelete(alsoOnline = true) {
     if (!deleteTarget.value) return;
     localError.value = null;
     const id = deleteTarget.value.publicId;
     try {
-        await store.deleteFile(id);
+        await store.deleteFile(id, { alsoOnline });
         deleteTarget.value = null;
         if (previewId.value === id) {
             void router.replace({ path: FILES_PATH, query: route.query });
@@ -336,6 +355,8 @@ function onDrop(event: DragEvent) {
 
         <FileUsageMeter v-if="store.usage" class="files-panel__usage" :usage="store.usage" />
 
+        <FileSyncPanel />
+
         <div class="files-panel__scroll">
             <div v-if="store.loading && !store.items.length" class="su-loading">
                 <span class="su-spin" />
@@ -360,6 +381,7 @@ function onDrop(event: DragEvent) {
                         @download="onDownload"
                         @edit="editTarget = $event"
                         @delete="requestDelete"
+                        @sync="syncTarget = $event"
                     />
                 </div>
                 <FileTable
@@ -371,6 +393,7 @@ function onDrop(event: DragEvent) {
                     @download="onDownload"
                     @edit="editTarget = $event"
                     @delete="requestDelete"
+                    @sync="syncTarget = $event"
                     @sort="emit('sort', $event)"
                 />
             </div>
@@ -387,12 +410,26 @@ function onDrop(event: DragEvent) {
         <AppConfirmationModal
             v-model="deleteOpen"
             :title="t('filesPage.deleteModal.title')"
-            :message="t('filesPage.deleteModal.body')"
+            :message="deleteAsksOnline ? t('filesPage.sync.deleteModal.body') : t('filesPage.deleteModal.body')"
             :confirm-label="t('filesPage.actions.delete')"
             confirm-color="error"
             :loading="store.acting"
-            @confirm="confirmDelete"
-        />
+            @confirm="confirmDelete()"
+        >
+            <template v-if="deleteAsksOnline" #footer="{ close }">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
+                    {{ t('common.cancel') }}
+                </button>
+                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="confirmDelete(false)">
+                    {{ t('filesPage.sync.deleteModal.localOnly') }}
+                </button>
+                <button type="button" class="su-btn su-btn--danger" :disabled="store.acting" @click="confirmDelete(true)">
+                    {{ t('filesPage.sync.deleteModal.everywhere') }}
+                </button>
+            </template>
+        </AppConfirmationModal>
+
+        <FileSyncModal v-model="syncOpen" :file="syncTarget" />
     </div>
 </template>
 

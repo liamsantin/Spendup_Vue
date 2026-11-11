@@ -1867,6 +1867,75 @@
         "upload": {
             "progress": "Envoi de {name}… {percent} %"
         },
+        "sync": {
+            "status": {
+                "synced": "Synchronisé",
+                "cloud": "En ligne",
+                "pending": "En attente d’envoi",
+                "local": "Sur cet ordinateur",
+                "excluded": "Exclu de la synchro",
+                "elsewhere": "Sur {device}",
+                "missing": "Introuvable dans le dossier",
+                "blocked": "Bloque la file (quota)",
+                "neverFits": "Trop gros pour votre offre"
+            },
+            "actions": {
+                "manage": "Synchronisation"
+            },
+            "prompt": {
+                "title": "Synchroniser vos documents en ligne ?",
+                "body": "Vos PDF restent dans un dossier de cet ordinateur, sans limite. La synchro en copie les plus anciens en ligne, dans la limite de votre quota, pour les retrouver sur vos autres appareils.",
+                "enable": "Activer la synchro",
+                "later": "Plus tard"
+            },
+            "vaultAdvice": "Vos PDF ne sont pas chiffrés : ils sont lisibles dans le dossier de cet ordinateur et en ligne. Conseillé : activez le Coffre pour les chiffrer avec votre mot de passe.",
+            "panel": {
+                "disabled": "Synchro en ligne désactivée",
+                "upToDate": "Synchro à jour",
+                "uploading": "Envoi {done} / {total}",
+                "blocked": "Quota atteint : « {name} » attend de la place",
+                "neverFits": "« {name} » ne tiendra jamais dans votre quota : excluez-le pour continuer",
+                "localOnly": "{count} fichier seulement sur cet ordinateur ({size}) | {count} fichier seulement sur cet ordinateur ({size}) | {count} fichiers seulement sur cet ordinateur ({size})",
+                "missing": "{count} fichier introuvable dans le dossier | {count} fichier introuvable dans le dossier | {count} fichiers introuvables dans le dossier"
+            },
+            "pause": {
+                "quota": "Synchro en pause : quota atteint",
+                "rate": "Synchro en pause : trop d’envois cette heure, reprise automatique",
+                "root_unavailable": "Dossier des documents introuvable (disque débranché ?). La synchro reprendra quand il sera de nouveau accessible.",
+                "offline": "Synchro en pause : serveur injoignable"
+            },
+            "deleteModal": {
+                "body": "Ce document est aussi en ligne. Le supprimer partout, ou seulement de cet ordinateur (il restera en ligne) ?",
+                "localOnly": "De cet ordinateur",
+                "everywhere": "Partout"
+            },
+            "modal": {
+                "title": "Synchronisation",
+                "nothing": "Ce document n’est pas sur cet ordinateur.",
+                "neverFits": "Ce fichier est plus grand que votre quota entier : il bloque la synchro des suivants.",
+                "excludeTitle": "Exclure de la synchro ?",
+                "excludeBody": "Le document restera seulement sur cet ordinateur et ne bloquera plus la file d’envoi.",
+                "excludeConfirm": "Exclure",
+                "includeTitle": "Inclure dans la synchro ?",
+                "includeBody": "Le document reprendra sa place dans la file d’envoi, selon sa date d’ajout.",
+                "includeConfirm": "Inclure",
+                "keepHereTitle": "Garder seulement sur cet ordinateur ?",
+                "keepHereBody": "La copie en ligne sera supprimée et votre quota libéré. Le document ne sera plus visible sur vos autres appareils, et il n’existera plus que dans le dossier de cet ordinateur.",
+                "keepHereConfirm": "Garder seulement ici",
+                "restoreTitle": "Retélécharger le document ?",
+                "restoreBody": "Le fichier a disparu du dossier de cet ordinateur. Il est encore en ligne : il sera recopié dans le dossier.",
+                "restoreConfirm": "Retélécharger"
+            },
+            "settings": {
+                "title": "Documents sur cet ordinateur",
+                "subtitle": "Vos PDF sont rangés dans un dossier de cet ordinateur, sans limite de taille. Les documents supprimés depuis un autre appareil sont gardés {days} jours dans le sous-dossier .corbeille.",
+                "folder": "Dossier des documents",
+                "change": "Changer…",
+                "moving": "Déplacement…",
+                "enabled": "Synchroniser en ligne",
+                "enabledHint": "Copie vos documents en ligne, du plus ancien au plus récent, dans la limite de votre quota."
+            }
+        },
         "deleteModal": {
             "title": "Supprimer ce fichier ?",
             "body": "Le document disparaîtra de la liste. Cette action est définitive."

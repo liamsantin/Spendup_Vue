@@ -34,6 +34,7 @@ const emit = defineEmits<{
     download: [file: FileDto];
     edit: [file: FileDto];
     delete: [file: FileDto];
+    sync: [file: FileDto];
     sort: [value: FileSort];
 }>();
 
@@ -83,6 +84,7 @@ function onSort(value: AppDataTableSort) {
             @download="emit('download', $event)"
             @edit="emit('edit', $event)"
             @delete="emit('delete', $event)"
+            @sync="emit('sync', $event)"
         />
     </AppDataTable>
 </template>

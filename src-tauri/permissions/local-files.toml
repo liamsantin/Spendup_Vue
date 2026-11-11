@@ -1,0 +1,17 @@
+[[permission]]
+identifier = "allow-local-files"
+description = "Allow the synced documents folder commands (scoped to <root>/<account>/, PDF names only)"
+commands.allow = [
+    "local_files_get_root",
+    "local_files_pick_root",
+    "local_files_set_root",
+    "local_files_list",
+    "local_files_read",
+    "local_files_write",
+    "local_files_hash",
+    "local_files_rename",
+    "local_files_delete",
+    "local_files_purge_trash",
+    "local_files_read_index",
+    "local_files_write_index",
+]

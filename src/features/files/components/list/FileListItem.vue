@@ -4,7 +4,9 @@
  */
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { DownloadIcon, EyeIcon, PdfIcon, PencilIcon, TrashIcon } from 'vue-tabler-icons';
+import { CloudIcon, DownloadIcon, EyeIcon, PdfIcon, PencilIcon, TrashIcon } from 'vue-tabler-icons';
+import FileSyncBadge from '@/features/files/components/sync/FileSyncBadge.vue';
+import { useFileSyncStore } from '@/features/files/sync/sync-store';
 import { useRowTap } from '@/components/shared/board/useRowTap';
 import { fileSizeParts, formatDocumentDate, formatInstant } from '@/features/files/format';
 import type { FileDto } from '@/features/files/types';
@@ -20,9 +22,13 @@ const emit = defineEmits<{
     download: [file: FileDto];
     edit: [file: FileDto];
     delete: [file: FileDto];
+    sync: [file: FileDto];
 }>();
 
 const { t, locale } = useI18n();
+const sync = useFileSyncStore();
+const elsewhere = computed(() => sync.statusOf(sync.remote.get(props.file.publicId) ?? props.file) === 'elsewhere');
+const syncable = computed(() => sync.ready && !elsewhere.value);
 
 const sizeLabel = computed(() => {
     const parts = fileSizeParts(props.file.sizeBytes);
@@ -43,21 +49,21 @@ const subLine = computed(() => {
 });
 
 function onActivate(event: MouseEvent) {
-    if (props.acting) return;
+    if (props.acting || elsewhere.value) return;
     if (event.target instanceof Element && event.target.closest('button, a')) return;
     emit('preview', props.file);
 }
 
 const tap = useRowTap(
     () => emit('preview', props.file),
-    () => !props.acting
+    () => !props.acting && !elsewhere.value
 );
 </script>
 
 <template>
     <div
         class="file-row"
-        :class="{ 'file-row--editable': !acting }"
+        :class="{ 'file-row--editable': !acting && !elsewhere, 'is-elsewhere': elsewhere }"
         :data-file-id="file.publicId"
         @click="onActivate"
         @touchstart.passive="tap.onTouchstart"
@@ -71,6 +77,7 @@ const tap = useRowTap(
         <div class="file-row__meta">
             <p class="file-row__name">{{ isCipher(file.nameOriginal) ? t('vault.unreadable') : file.nameOriginal }}</p>
             <p class="file-row__sub">{{ subLine }}</p>
+            <FileSyncBadge :file="file" />
             <p v-if="file.description" class="file-row__sub">{{ isCipher(file.description) ? t('vault.unreadable') : file.description }}</p>
         </div>
 
@@ -78,7 +85,7 @@ const tap = useRowTap(
             <button
                 type="button"
                 class="su-orb"
-                :disabled="acting"
+                :disabled="acting || elsewhere"
                 :aria-label="t('filesPage.actions.preview')"
                 @click.stop="emit('preview', file)"
             >
@@ -87,11 +94,22 @@ const tap = useRowTap(
             <button
                 type="button"
                 class="su-orb"
-                :disabled="acting"
+                :disabled="acting || elsewhere"
                 :aria-label="t('filesPage.actions.download')"
                 @click.stop="emit('download', file)"
             >
                 <DownloadIcon :size="16" stroke-width="1.6" />
+            </button>
+            <button
+                v-if="syncable"
+                type="button"
+                class="su-orb"
+                :disabled="acting"
+                :aria-label="t('filesPage.sync.actions.manage')"
+                :title="t('filesPage.sync.actions.manage')"
+                @click.stop="emit('sync', file)"
+            >
+                <CloudIcon :size="16" stroke-width="1.6" />
             </button>
             <button
                 type="button"
@@ -116,6 +134,11 @@ const tap = useRowTap(
 </template>
 
 <style scoped>
+.file-row.is-elsewhere .file-row__tile,
+.file-row.is-elsewhere .file-row__meta {
+    opacity: 0.5;
+}
+
 /* ligne sur filet fin, sans fond ni ombre */
 .file-row {
     display: flex;

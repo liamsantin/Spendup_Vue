@@ -1,3 +1,5 @@
+mod local_files;
+
 use std::io::{Read, Write};
 use std::net::TcpListener;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -292,10 +294,23 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             oauth_loopback_wait,
             oauth_loopback_cancel,
-            google_exchange_code
+            google_exchange_code,
+            local_files::local_files_get_root,
+            local_files::local_files_pick_root,
+            local_files::local_files_set_root,
+            local_files::local_files_list,
+            local_files::local_files_read,
+            local_files::local_files_write,
+            local_files::local_files_hash,
+            local_files::local_files_rename,
+            local_files::local_files_delete,
+            local_files::local_files_purge_trash,
+            local_files::local_files_read_index,
+            local_files::local_files_write_index
         ])
         .setup(|app| {
             #[cfg(any(windows, target_os = "linux"))]

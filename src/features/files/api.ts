@@ -5,10 +5,12 @@ import {
     FILE_UPLOAD_ENCRYPTED_FIELD,
     FILE_UPLOAD_FIELD,
     FILE_UPLOAD_PUBLIC_ID_FIELD,
+    type FileChangesDto,
     type FileDto,
     type FileListDto,
     type FileUsage,
     type ListFilesQuery,
+    type RegisterLocalFileRequest,
     type UpdateFileRequest
 } from '@/features/files/types';
 
@@ -60,6 +62,29 @@ export const filesApi = {
 
     update(publicId: string, body: UpdateFileRequest) {
         return fetchWrapper.patch(`/api/files/${encodeURIComponent(publicId)}`, body) as Promise<FileDto>;
+    },
+
+    /** Changements depuis `since` (le `serverTime` du dernier appel) ; sans `since`, tous les fichiers actifs. */
+    changes(since?: string | null) {
+        const query = since ? `?since=${encodeURIComponent(since)}` : '';
+        return fetchWrapper.get(`/api/files/changes${query}`) as Promise<FileChangesDto>;
+    },
+
+    /** Fichier gardé sur ce poste : métadonnées seules, rattachées à l'appareil de la session. */
+    registerLocal(body: RegisterLocalFileRequest) {
+        return fetchWrapper.post('/api/files/local', body) as Promise<FileDto>;
+    },
+
+    /** Met en ligne le blob d'un fichier gardé en local (empreinte vérifiée par l'API, quota appliqué). */
+    uploadContent(publicId: string, blob: Blob) {
+        const form = new FormData();
+        form.append(FILE_UPLOAD_FIELD, blob, `${publicId}.bin`);
+        return fetchWrapper.putForm(`/api/files/${encodeURIComponent(publicId)}/content`, form) as Promise<FileDto>;
+    },
+
+    /** Retire la copie en ligne : le fichier ne reste que sur ce poste. */
+    removeOnlineContent(publicId: string) {
+        return fetchWrapper.delete(`/api/files/${encodeURIComponent(publicId)}/content`) as Promise<FileDto>;
     },
 
     remove(publicId: string) {

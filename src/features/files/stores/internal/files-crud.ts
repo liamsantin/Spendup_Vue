@@ -7,6 +7,22 @@ import { FILES_LIST_CACHE_KEY, nextPageFromLoaded, type FilesState } from '@/fea
 import { decryptFileFields, encryptFileUpdate } from '@/features/files/vault-fields';
 import { useVaultStore } from '@/features/vault/stores/vault-store';
 import { generatePublicId, isConflictError } from '@/features/vault/public-id';
+import { useFileSyncStore } from '@/features/files/sync/sync-store';
+import { isTauri } from '@/utils/helpers/platform-helpers';
+
+/** Store de synchro, seulement dans l'app de bureau (le navigateur n'a pas de dossier local). */
+function desktopSync() {
+    return isTauri() ? useFileSyncStore() : null;
+}
+
+/** Options de suppression dans l'app de bureau. */
+export type DeleteFileOptions = {
+    /**
+     * Fichier en ligne et présent sur ce poste : `false` retire seulement la copie locale (le fichier reste en ligne).
+     * Par défaut, suppression partout.
+     */
+    alsoOnline?: boolean;
+};
 
 /** Déchiffre nom et description (Coffre ouvert) d’une liste de fichiers. */
 function prepareFiles(files: FileDto[]): Promise<FileDto[]> {
@@ -224,7 +240,8 @@ export function createFilesCrud(state: FilesState) {
         clearError();
         let refreshUsage = false;
         try {
-            const created = await uploadWithVault(file, onProgress);
+            const sync = desktopSync();
+            const created = sync?.ready ? await sync.addFile(file) : await uploadWithVault(file, onProgress);
             upsertItem(created);
             touchHydratedListCaches();
             refreshUsage = true;
@@ -259,6 +276,7 @@ export function createFilesCrud(state: FilesState) {
             if (!built.hasChanges) return current;
             const updated = await decryptFileFields(await filesApi.update(publicId, await encryptFileUpdate(publicId, built.request)));
             upsertItem(updated);
+            desktopSync()?.upsertRemote(updated);
             touchHydratedListCaches();
             return updated;
         } catch (e: unknown) {
@@ -276,12 +294,20 @@ export function createFilesCrud(state: FilesState) {
         }
     }
 
-    async function deleteFile(publicId: string) {
+    async function deleteFile(publicId: string, options: DeleteFileOptions = {}) {
         beginActing();
         clearError();
         let refreshUsage = false;
         try {
+            const sync = desktopSync();
+            const current = state.findByPublicId(publicId);
+            const onlineHere = !!sync && (current?.contentLocation ?? 'online') === 'online' && sync.isHere(publicId);
+            if (sync && onlineHere && options.alsoOnline === false) {
+                await sync.removeLocalCopy(publicId);
+                return;
+            }
             await filesApi.remove(publicId);
+            await sync?.forget(publicId).catch(() => undefined);
             removeItemLocal(publicId);
             touchHydratedListCaches();
             refreshUsage = true;
@@ -303,6 +329,34 @@ export function createFilesCrud(state: FilesState) {
         }
     }
 
+    /**
+     * Inclut ou exclut un fichier de la synchro. Exclure un fichier en ligne avec `removeOnline` le garde seulement
+     * sur ce poste (copie locale vérifiée avant de retirer la copie en ligne) et libère le quota.
+     */
+    async function setSyncExcluded(publicId: string, excluded: boolean, removeOnline = false) {
+        beginActing();
+        clearError();
+        try {
+            const sync = desktopSync();
+            let updated = await decryptFileFields(await filesApi.update(publicId, { syncExcluded: excluded }));
+            if (sync && excluded && removeOnline && (updated.contentLocation ?? 'online') === 'online') {
+                updated = await sync.keepOnlyHere(updated);
+            }
+            upsertItem(updated);
+            sync?.upsertRemote(updated);
+            touchHydratedListCaches();
+            void sync?.run();
+            await loadUsage();
+            return updated;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
     async function refetchActive(force = true) {
         await loadList({ force }).catch(() => undefined);
     }
@@ -316,6 +370,7 @@ export function createFilesCrud(state: FilesState) {
         uploadFile,
         updateFile,
         deleteFile,
+        setSyncExcluded,
         refetchActive
     };
 }

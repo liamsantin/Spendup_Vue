@@ -1867,6 +1867,75 @@
         "upload": {
             "progress": "Uploading {name}… {percent}%"
         },
+        "sync": {
+            "status": {
+                "synced": "Synced",
+                "cloud": "Online",
+                "pending": "Waiting to upload",
+                "local": "On this computer",
+                "excluded": "Excluded from sync",
+                "elsewhere": "On {device}",
+                "missing": "Missing from folder",
+                "blocked": "Blocking the queue (quota)",
+                "neverFits": "Too large for your plan"
+            },
+            "actions": {
+                "manage": "Sync"
+            },
+            "prompt": {
+                "title": "Sync your documents online?",
+                "body": "Your PDFs stay in a folder on this computer, with no limit. Sync copies the oldest ones online, within your quota, so you can reach them from your other devices.",
+                "enable": "Turn on sync",
+                "later": "Later"
+            },
+            "vaultAdvice": "Your PDFs are not encrypted: they are readable in this computer's folder and online. Recommended: turn on the Vault to encrypt them with your password.",
+            "panel": {
+                "disabled": "Online sync is off",
+                "upToDate": "Sync up to date",
+                "uploading": "Uploading {done} / {total}",
+                "blocked": "Quota reached: “{name}” is waiting for space",
+                "neverFits": "“{name}” will never fit in your quota: exclude it to continue",
+                "localOnly": "{count} file only on this computer ({size}) | {count} file only on this computer ({size}) | {count} files only on this computer ({size})",
+                "missing": "{count} file missing from the folder | {count} file missing from the folder | {count} files missing from the folder"
+            },
+            "pause": {
+                "quota": "Sync paused: quota reached",
+                "rate": "Sync paused: too many uploads this hour, resuming automatically",
+                "root_unavailable": "Documents folder not found (drive unplugged?). Sync will resume once it is reachable again.",
+                "offline": "Sync paused: server unreachable"
+            },
+            "deleteModal": {
+                "body": "This document is also online. Delete it everywhere, or only from this computer (it will stay online)?",
+                "localOnly": "From this computer",
+                "everywhere": "Everywhere"
+            },
+            "modal": {
+                "title": "Sync",
+                "nothing": "This document is not on this computer.",
+                "neverFits": "This file is larger than your whole quota: it blocks the next ones.",
+                "excludeTitle": "Exclude from sync?",
+                "excludeBody": "The document will stay only on this computer and will no longer block the upload queue.",
+                "excludeConfirm": "Exclude",
+                "includeTitle": "Include in sync?",
+                "includeBody": "The document goes back into the upload queue, by the date it was added.",
+                "includeConfirm": "Include",
+                "keepHereTitle": "Keep only on this computer?",
+                "keepHereBody": "The online copy will be deleted and your quota freed. The document will no longer be visible on your other devices and will only exist in this computer's folder.",
+                "keepHereConfirm": "Keep only here",
+                "restoreTitle": "Download the document again?",
+                "restoreBody": "The file disappeared from this computer's folder. It is still online: it will be copied back into the folder.",
+                "restoreConfirm": "Download again"
+            },
+            "settings": {
+                "title": "Documents on this computer",
+                "subtitle": "Your PDFs are kept in a folder on this computer, with no size limit. Documents deleted from another device are kept {days} days in the .corbeille subfolder.",
+                "folder": "Documents folder",
+                "change": "Change…",
+                "moving": "Moving…",
+                "enabled": "Sync online",
+                "enabledHint": "Copies your documents online, oldest first, within your quota."
+            }
+        },
         "deleteModal": {
             "title": "Delete this file?",
             "body": "The document will disappear from the list. This cannot be undone."

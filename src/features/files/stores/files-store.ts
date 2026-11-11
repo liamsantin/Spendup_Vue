@@ -39,6 +39,7 @@ export const useFilesStore = defineStore('files', () => {
         uploadFile: crud.uploadFile,
         updateFile: crud.updateFile,
         deleteFile: crud.deleteFile,
+        setSyncExcluded: crud.setSyncExcluded,
         refetchActive: crud.refetchActive,
         bootstrap: lifecycle.bootstrap,
         reset: lifecycle.reset,

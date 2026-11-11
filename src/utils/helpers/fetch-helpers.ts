@@ -35,6 +35,13 @@ export const fetchWrapper = {
             onUploadProgress: options.onUploadProgress
         });
     },
+    /** Comme `postForm`, en `PUT` (contenu d'un fichier existant). */
+    putForm(url: string, body: FormData, options: FetchFormOptions = {}) {
+        return send('PUT', url, body, {
+            timeout: options.timeout ?? 120_000,
+            onUploadProgress: options.onUploadProgress
+        });
+    },
     /** GET binaire authentifié (`/content`, avatar uploadé). 401/404 restent du JSON enveloppé. */
     getBlob(url: string) {
         return send('GET', url, undefined, { binary: true }) as Promise<Blob>;
