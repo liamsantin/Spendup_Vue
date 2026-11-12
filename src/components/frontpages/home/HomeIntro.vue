@@ -1,8 +1,10 @@
 <script setup lang="ts">
 /**
- * Intro plein écran de la home publique : l'icône s'ouvre en éventail, « Spend.Up » se déroule,
- * le sous-titre s'écrit mot par mot sur une seule ligne, calé à gauche sur le « S » de « Spend »,
- * puis le logo rejoint celui du header et chaque mot glisse et grandit jusqu'à sa place dans le h1.
+ * Intro plein écran de la home publique, même chorégraphie que `public/brand/spendup-logo-anime.svg`
+ * (générée par `scripts/build-logo-anime.mjs`) : la carte bleue (porte-monnaie) tombe en premier, les trois
+ * autres cartes y tombent et rebondissent, l'éventail s'ouvre, « Spend » monte lettre par lettre, le point
+ * bleu tombe, « Up » monte ; le sous-titre s'écrit mot par mot sur une seule ligne, calé à gauche sur le « S »
+ * de « Spend », puis le logo rejoint celui du header et chaque mot glisse et grandit jusqu'à sa place dans le h1.
  * Garde-fous : une fois par session, défilement bloqué pendant l'intro, ignorée si prefers-reduced-motion.
  *
  * Anti-décalage : on ne touche jamais à l'overflow de la page (la barre de défilement disparaîtrait
@@ -16,7 +18,7 @@ const STORAGE_KEY = 'su-home-intro-seen';
 const HTML_CLASS = 'su-intro-active';
 const HERO_TITLE = '.su-home h1, .front-wraper h1';
 const HEADER_LOGO = '.front-header .spendup-logo';
-const FLY_AT = 4100;
+const FLY_AT = 4800;
 const FLY_MS = 1100;
 /** Agrandissement max du logo de l'intro par rapport à celui du header. */
 const LOGO_MAX_SCALE = 7;
@@ -29,6 +31,18 @@ const SCREEN_GUTTER = 16;
 const ICON_PX = 28;
 const MARK_GAP_PX = 10;
 const EASE = 'cubic-bezier(.65, 0, .25, 1)';
+
+/** « Spend.Up » lettre par lettre : départ de chaque lettre en ms (mêmes instants que le SVG animé). */
+const MARK = [
+    { ch: 'S', at: 2000 },
+    { ch: 'p', at: 2060 },
+    { ch: 'e', at: 2120 },
+    { ch: 'n', at: 2180 },
+    { ch: 'd', at: 2240 },
+    { ch: '.', at: 2500, dot: true },
+    { ch: 'U', at: 2800 },
+    { ch: 'p', at: 2860 }
+];
 
 /** Titre découpé en mots : une ligne pendant l'intro, chaque mot glisse ensuite vers sa place dans le h1. */
 const WORDS = [
@@ -250,15 +264,44 @@ onBeforeUnmount(cleanup);
             <div class="su-intro__stage" :style="{ ...stageStyle, '--s': logoScale, '--mw': `${markWidth}px` }">
                 <div ref="logo" class="su-intro__logo">
                     <svg class="su-intro__icon" viewBox="140 196 720 560" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <g class="su-intro__card su-intro__card--1"><rect x="260" y="310" width="420" height="280" fill="#E1E3E8" /></g>
-                        <g class="su-intro__card su-intro__card--2"><rect x="272" y="324" width="420" height="280" fill="#E1E3E8" /></g>
-                        <g class="su-intro__card su-intro__card--3"><rect x="284" y="338" width="420" height="280" fill="#0B0C10" /></g>
-                        <rect x="300" y="370" width="420" height="290" fill="#5D87FF" />
-                        <rect class="su-intro__chip" x="350.4" y="422.2" width="79.8" height="63.8" fill="#FFFFFF" />
-                        <rect class="su-intro__bar" x="350.4" y="573" width="168" height="26.1" fill="#FFFFFF" />
+                        <defs>
+                            <!-- Les cartes arrivent par le haut : visibles seulement sous cette ligne -->
+                            <clipPath id="su-intro-clip"><rect x="140" y="0" width="720" height="756" /></clipPath>
+                        </defs>
+                        <g clip-path="url(#su-intro-clip)">
+                            <g class="su-intro__drop su-intro__drop--1">
+                                <g class="su-intro__card su-intro__card--1">
+                                    <rect x="260" y="310" width="420" height="280" fill="#E1E3E8" />
+                                </g>
+                            </g>
+                            <g class="su-intro__drop su-intro__drop--2">
+                                <g class="su-intro__card su-intro__card--2">
+                                    <rect x="272" y="324" width="420" height="280" fill="#E1E3E8" />
+                                </g>
+                            </g>
+                            <g class="su-intro__drop su-intro__drop--3">
+                                <g class="su-intro__card su-intro__card--3">
+                                    <rect x="284" y="338" width="420" height="280" fill="#0B0C10" />
+                                </g>
+                            </g>
+                            <g class="su-intro__wallet">
+                                <rect x="300" y="370" width="420" height="290" fill="#5D87FF" />
+                                <rect class="su-intro__chip" x="350.4" y="422.2" width="79.8" height="63.8" fill="#FFFFFF" />
+                                <rect class="su-intro__bar" x="350.4" y="573" width="168" height="26.1" fill="#FFFFFF" />
+                            </g>
+                        </g>
                     </svg>
                     <span class="su-intro__mark-clip" :class="{ 'su-intro__mark-clip--ready': markWidth > 0 }"
-                        ><span ref="mark" class="su-intro__mark">Spend<span class="su-intro__dot">.</span>Up</span></span
+                        ><span ref="mark" class="su-intro__mark"
+                            ><span
+                                v-for="(l, i) in MARK"
+                                :key="i"
+                                class="su-intro__letter"
+                                :class="{ 'su-intro__dot': l.dot }"
+                                :style="{ '--at': `${l.at}ms` }"
+                                >{{ l.ch }}</span
+                            ></span
+                        ></span
                     >
                 </div>
                 <div class="su-intro__title-wrap">
@@ -320,36 +363,59 @@ html.su-intro-active {
     width: calc(28px * var(--s));
     height: calc(28px * var(--s));
     overflow: visible;
-    transform-origin: center;
-    animation: su-intro-pop 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
+/* Le porte-monnaie (carte bleue) tombe en premier, de moins haut, en fondu, un seul rebond. */
+.su-intro__wallet {
+    animation: su-intro-wallet 700ms linear both;
+}
+
+/* Les trois cartes tombent dedans, deux rebonds secs, à 150 ms d'écart. */
+.su-intro__drop {
+    animation: su-intro-drop 750ms linear both;
+}
+.su-intro__drop--1 {
+    animation-delay: 300ms;
+}
+.su-intro__drop--2 {
+    animation-delay: 450ms;
+}
+.su-intro__drop--3 {
+    animation-delay: 600ms;
+}
+
+/* Éventail, carte noire d'abord, avec un léger dépassement d'angle avant de se poser. */
 .su-intro__card {
     transform-box: view-box;
     transform-origin: 300px 650px;
-    animation: su-intro-fan 900ms cubic-bezier(0.2, 0.8, 0.2, 1) 250ms both;
+    animation: su-intro-fan 500ms linear both;
 }
 .su-intro__card--1 {
     --su-angle: -21deg;
+    animation-delay: 1750ms;
 }
 .su-intro__card--2 {
     --su-angle: -14deg;
+    animation-delay: 1650ms;
 }
 .su-intro__card--3 {
     --su-angle: -7deg;
+    animation-delay: 1550ms;
 }
 
 .su-intro__chip {
-    animation: su-intro-fade 300ms ease-out 800ms both;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: su-intro-grow 300ms cubic-bezier(0.2, 0.8, 0.2, 1) 1700ms both;
 }
 
 .su-intro__bar {
     transform-box: fill-box;
     transform-origin: left center;
-    animation: su-intro-draw 500ms cubic-bezier(0.2, 0.8, 0.2, 1) 950ms both;
+    animation: su-intro-draw 300ms cubic-bezier(0.2, 0.8, 0.2, 1) 1850ms both;
 }
 
-/* « Spend.Up » se déroule à droite de l'icône une fois l'éventail ouvert : l'icône glisse à gauche. */
+/* « Spend.Up » : boîte à sa largeur finale dès le départ (le logo est centré d'un bloc), les lettres y montent. */
 .su-intro__mark-clip {
     display: block;
     overflow: hidden;
@@ -363,8 +429,20 @@ html.su-intro-active {
     margin-right: -0.12em;
     margin-bottom: -0.25em;
 
+    // + padding droit : la boîte est en border-box
     &--ready {
-        animation: su-intro-mark 700ms cubic-bezier(0.65, 0, 0.25, 1) 1250ms both;
+        width: calc(var(--mw) + 0.12em);
+        margin-left: calc(10px * var(--s));
+    }
+}
+
+.su-intro__letter {
+    display: inline-block;
+    animation: su-intro-rise 450ms cubic-bezier(0.2, 0.9, 0.25, 1) var(--at) both;
+
+    // Le point bleu tombe d'en haut avec un rebond
+    &.su-intro__dot {
+        animation: su-intro-dot 450ms linear var(--at) both;
     }
 }
 
@@ -404,8 +482,8 @@ html.su-intro-active {
 
 .su-intro__word {
     display: inline-block;
-    // Écriture mot par mot, après « Spend.Up » (fini vers 3,5 s)
-    animation: su-intro-word 650ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(2300ms + var(--i) * 160ms) both;
+    // Écriture mot par mot, dès que « Up » est monté (3,3 s)
+    animation: su-intro-word 650ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(3100ms + var(--i) * 160ms) both;
 }
 
 .su-intro__accent {
@@ -420,17 +498,30 @@ html.su-intro-active {
     vertical-align: -0.04em; // pied du drapeau sur la ligne de base des capitales
 }
 
-@keyframes su-intro-mark {
+// Lettre qui monte depuis sous la boîte (140 % : au-delà du padding bas de la boîte)
+@keyframes su-intro-rise {
     from {
-        width: 0;
-        margin-left: 0;
-        opacity: 0;
+        transform: translateY(140%);
     }
-    // + padding droit : la boîte est en border-box
     to {
-        width: calc(var(--mw) + 0.12em);
-        margin-left: calc(10px * var(--s));
-        opacity: 1;
+        transform: none;
+    }
+}
+@keyframes su-intro-dot {
+    0% {
+        transform: translateY(-240%);
+        animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    }
+    56% {
+        transform: none;
+        animation-timing-function: cubic-bezier(0.2, 0, 0.6, 1);
+    }
+    78% {
+        transform: translateY(-20%);
+        animation-timing-function: cubic-bezier(0.4, 0, 0.8, 1);
+    }
+    100% {
+        transform: none;
     }
 }
 @keyframes su-intro-word {
@@ -443,30 +534,81 @@ html.su-intro-active {
         transform: none;
     }
 }
-@keyframes su-intro-pop {
-    from {
-        opacity: 0;
-        transform: scale(0.85);
+// Chute d'une carte (unités du viewBox), deux rebonds décroissants
+@keyframes su-intro-drop {
+    0% {
+        transform: translateY(-650px);
+        animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
     }
-    to {
+    37% {
+        transform: none;
+        animation-timing-function: cubic-bezier(0.2, 0, 0.6, 1);
+    }
+    57% {
+        transform: translateY(-65px);
+        animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    }
+    77% {
+        transform: none;
+        animation-timing-function: cubic-bezier(0.2, 0, 0.6, 1);
+    }
+    89% {
+        transform: translateY(-16px);
+        animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    }
+    100% {
+        transform: none;
+    }
+}
+@keyframes su-intro-wallet {
+    0% {
+        opacity: 0;
+        transform: translateY(-380px);
+        animation-timing-function: cubic-bezier(0.45, 0, 1, 1);
+    }
+    21% {
+        opacity: 1;
+    }
+    36% {
+        transform: none;
+        animation-timing-function: cubic-bezier(0.2, 0, 0.6, 1);
+    }
+    57% {
+        transform: translateY(-45px);
+        animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    }
+    79% {
+        transform: none;
+        animation-timing-function: cubic-bezier(0.2, 0, 0.6, 1);
+    }
+    89% {
+        transform: translateY(-10px);
+        animation-timing-function: cubic-bezier(0.4, 0, 1, 1);
+    }
+    100% {
         opacity: 1;
         transform: none;
     }
 }
 @keyframes su-intro-fan {
-    from {
+    0% {
         transform: rotate(0deg);
+        animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
     }
-    to {
+    70% {
+        transform: rotate(calc(var(--su-angle) * 1.25));
+        animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+    }
+    100% {
         transform: rotate(var(--su-angle));
     }
 }
-@keyframes su-intro-fade {
+@keyframes su-intro-grow {
     from {
-        opacity: 0;
+        transform: scaleY(0);
     }
     to {
-        opacity: 1;
+        transform: scaleY(1);
     }
 }
 @keyframes su-intro-draw {
