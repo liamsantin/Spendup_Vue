@@ -30,6 +30,7 @@
         "@tauri-apps/plugin-opener": "^2.5.4",
         "axios": "^1.19.0",
         "html5-qrcode": "^2.3.8",
+        "pdfjs-dist": "^5.7.284",
         "pinia": "^3.0.4",
         "qrcode": "^1.5.4",
         "vee-validate": "^4.15.1",

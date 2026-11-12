@@ -12,6 +12,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+    open: [tier: Tier];
     edit: [tier: Tier];
     delete: [tier: Tier];
 }>();
@@ -57,7 +58,7 @@ const websiteLabel = computed(() => {
 function onDoubleClick(event: MouseEvent) {
     if (props.acting) return;
     if (event.target instanceof Element && event.target.closest('button, a')) return;
-    emit('edit', props.tier);
+    emit('open', props.tier);
 }
 </script>
 

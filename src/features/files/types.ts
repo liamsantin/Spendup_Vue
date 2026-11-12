@@ -85,7 +85,11 @@ export type FileUsage = {
 
 /** Message 400 API quand un nouveau blob ferait dépasser le quota. */
 export const FILE_QUOTA_EXCEEDED_MESSAGE = 'Quota de stockage dépassé.';
-export const FILE_LINKED_TO_TRANSACTIONS_MESSAGE = "Impossible de supprimer un fichier lié à des transactions. Déliez-le d'abord.";
+/** Message 400 API quand le fichier est encore lié (transaction, récurrence ou actif). */
+export const FILE_LINKED_TO_TRANSACTIONS_MESSAGE =
+    "Impossible de supprimer un fichier lié à des transactions, récurrences ou actifs. Déliez-le d'abord.";
+/** Début commun du message, stable quand l'API ajoute un type de lien. */
+export const FILE_LINKED_MESSAGE_PREFIX = 'Impossible de supprimer un fichier lié';
 
 export const FILE_PAGE_SIZE_DEFAULT = 50;
 export const FILE_PAGE_SIZE_MAX = 200;

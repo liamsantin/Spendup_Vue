@@ -1,6 +1,6 @@
 import { matchesSearchTokens } from '@/utils/helpers/text-search';
 import {
-    FILE_LINKED_TO_TRANSACTIONS_MESSAGE,
+    FILE_LINKED_MESSAGE_PREFIX,
     FILE_QUOTA_EXCEEDED_MESSAGE,
     FILE_SEARCH_MAX,
     type FileDto,
@@ -169,6 +169,7 @@ export function isQuotaExceededMessage(message: string | null | undefined): bool
     return message === FILE_QUOTA_EXCEEDED_MESSAGE;
 }
 
+/** Fichier encore lié : comparé sur le début du message, que l'API complète à chaque nouveau type de lien. */
 export function isFileLinkedToTransactionsMessage(message: string | null | undefined): boolean {
-    return message === FILE_LINKED_TO_TRANSACTIONS_MESSAGE;
+    return !!message?.startsWith(FILE_LINKED_MESSAGE_PREFIX);
 }

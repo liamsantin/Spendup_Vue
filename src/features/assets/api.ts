@@ -17,6 +17,10 @@ import {
     type VehicleMileage,
     type VehicleMileagesListResult
 } from '@/features/assets/types';
+import type { TransactionFile } from '@/features/transactions/types';
+
+/** Justificatifs liés directement à un actif. */
+export type AssetFilesListResult = { items: TransactionFile[]; totalCount: number };
 
 function listQueryString(query: ListAssetsQuery = {}): string {
     const params = new URLSearchParams();
@@ -56,6 +60,38 @@ export const assetsApi = {
 
     update(publicId: string, body: UpdateAssetPayload) {
         return fetchWrapper.put(assetUrl(publicId), body) as Promise<Asset>;
+    },
+
+    /* ── justificatifs : /api/assets/{id}/files ── */
+    listFiles(publicId: string) {
+        return fetchWrapper.get(assetUrl(publicId, '/files')) as Promise<AssetFilesListResult>;
+    },
+
+    attachFile(publicId: string, filePublicId: string) {
+        return fetchWrapper.post(assetUrl(publicId, '/files'), { filePublicId }) as Promise<AssetFilesListResult>;
+    },
+
+    detachFile(publicId: string, filePublicId: string) {
+        return fetchWrapper.delete(assetUrl(publicId, `/files/${encodeURIComponent(filePublicId)}`)) as Promise<void>;
+    },
+
+    /* ── justificatifs d’un entretien : /api/assets/{id}/vehicle/maintenances/{id}/files ── */
+    listMaintenanceFiles(publicId: string, maintenancePublicId: string) {
+        return fetchWrapper.get(
+            assetUrl(publicId, `/vehicle/maintenances/${encodeURIComponent(maintenancePublicId)}/files`)
+        ) as Promise<AssetFilesListResult>;
+    },
+
+    attachMaintenanceFile(publicId: string, maintenancePublicId: string, filePublicId: string) {
+        return fetchWrapper.post(assetUrl(publicId, `/vehicle/maintenances/${encodeURIComponent(maintenancePublicId)}/files`), {
+            filePublicId
+        }) as Promise<AssetFilesListResult>;
+    },
+
+    detachMaintenanceFile(publicId: string, maintenancePublicId: string, filePublicId: string) {
+        return fetchWrapper.delete(
+            assetUrl(publicId, `/vehicle/maintenances/${encodeURIComponent(maintenancePublicId)}/files/${encodeURIComponent(filePublicId)}`)
+        ) as Promise<void>;
     },
 
     remove(publicId: string) {

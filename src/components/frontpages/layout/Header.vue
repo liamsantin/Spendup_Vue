@@ -4,6 +4,10 @@ import { useRoute } from 'vue-router';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import Navigations from './Navigation.vue';
 import { ArrowRightIcon, Menu2Icon, XIcon } from 'vue-tabler-icons';
+import { isTauri } from '@/utils/helpers/platform-helpers';
+
+/** App de bureau : en-tête réduit au logo, sans liens du site public */
+const desktop = isTauri();
 
 const HEADER_HEIGHT = 80;
 
@@ -73,11 +77,11 @@ watch(
                         <Logo home-to="/" />
                     </div>
 
-                    <div class="header-nav-center d-lg-flex d-none align-center">
+                    <div v-if="!desktop" class="header-nav-center d-lg-flex d-none align-center">
                         <Navigations :mobile="false" />
                     </div>
 
-                    <div class="header-actions ms-auto d-flex align-center ga-2">
+                    <div v-if="!desktop" class="header-actions ms-auto d-flex align-center ga-2">
                         <v-btn
                             class="header-login d-md-flex d-none text-none h-43 px-4 flex-shrink-0"
                             variant="text"
@@ -127,7 +131,7 @@ watch(
         </v-app-bar>
 
         <!-- Menu mobile : panneau plein écran, grands liens alignés à gauche -->
-        <Transition name="front-mobile-menu">
+        <Transition v-if="!desktop" name="front-mobile-menu">
             <div v-if="menuOpen" id="front-mobile-menu" class="front-mobile-menu d-lg-none" :style="{ top: `${HEADER_HEIGHT}px` }">
                 <Navigations dropdown @navigate="menuOpen = false" />
             </div>

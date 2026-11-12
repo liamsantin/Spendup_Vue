@@ -6,9 +6,10 @@
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeftIcon, PencilIcon, PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
+import { ArrowLeftIcon, HomeIcon, PencilIcon, PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
 import { useCreateFromQuery } from '@/components/shared/board/useCreateFromQuery';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
+import AppTitleTile from '@/components/shared/page-shell/AppTitleTile.vue';
 import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import {
     REAL_ESTATE_NAME_MAX,
@@ -148,6 +149,10 @@ onUnmounted(() => {
 <template>
     <!-- ── fiche d’un bien ── -->
     <AppPageShell v-if="detailId" :key="`detail-${detailId}`" :title="detailTitle">
+        <template v-if="!notFound && detailAsset" #title-icon>
+            <AppTitleTile :icon="HomeIcon" tone="rose" />
+        </template>
+
         <template #actions>
             <button type="button" class="su-btn" @click="backToList">
                 <ArrowLeftIcon :size="16" stroke-width="1.6" />

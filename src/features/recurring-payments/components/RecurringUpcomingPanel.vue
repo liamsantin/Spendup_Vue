@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+import { recurrenceDetailPath } from '@/features/recurring-payments/paths';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
-import RecurringTemplateDetailModal from '@/features/recurring-payments/components/modals/RecurringTemplateDetailModal.vue';
 import {
     addMonthsYmd,
     displayDueStatus,
@@ -41,20 +42,12 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const router = useRouter();
 const accountsStore = useAccountsStore();
 const store = useRecurringPaymentsStore();
 const loading = ref(false);
 const localError = ref<string | null>(null);
 const rows = ref<UpcomingRow[]>([]);
-const detailKind = ref<RecurringKind>('expense');
-const detailId = ref<string | null>(null);
-
-const detailOpen = computed({
-    get: () => !!detailId.value,
-    set: (value: boolean) => {
-        if (!value) detailId.value = null;
-    }
-});
 
 const visibleRows = computed(() => {
     const accountId = props.accountPublicId?.trim() || null;
@@ -161,9 +154,9 @@ function accountName(id: string) {
     return accountsStore.accounts.find((item) => item.publicId === id)?.name ?? t('recurrencesPage.unknownAccount');
 }
 
+/** Ouvre la fiche de la récurrence de l’échéance. */
 function openRow(row: UpcomingRow) {
-    detailKind.value = row.kind;
-    detailId.value = row.templatePublicId;
+    void router.push(recurrenceDetailPath(row.kind, row.templatePublicId));
 }
 
 function exportCsv() {
@@ -202,8 +195,6 @@ defineExpose({ exportCsv, visibleCount });
                 />
             </div>
         </div>
-
-        <RecurringTemplateDetailModal v-model="detailOpen" :kind="detailKind" :public-id="detailId" />
     </div>
 </template>
 

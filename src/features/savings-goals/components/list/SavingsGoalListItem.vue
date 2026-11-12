@@ -16,6 +16,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+    open: [goal: SavingsGoal];
     edit: [goal: SavingsGoal];
     delete: [goal: SavingsGoal];
 }>();
@@ -63,7 +64,7 @@ const fillClass = computed(() => (late.value ? 'su-gauge__fill--over' : 'su-gaug
 function onActivate(event: MouseEvent) {
     if (props.acting) return;
     if (event.target instanceof Element && event.target.closest('button')) return;
-    emit('edit', props.savingsGoal);
+    emit('open', props.savingsGoal);
 }
 </script>
 
@@ -75,7 +76,7 @@ function onActivate(event: MouseEvent) {
         role="button"
         tabindex="0"
         @click="onActivate"
-        @keydown.enter.prevent="emit('edit', savingsGoal)"
+        @keydown.enter.prevent="emit('open', savingsGoal)"
     >
         <div class="goal-card__head">
             <p class="goal-card__percent">{{ percentText }}</p>

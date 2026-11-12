@@ -2,16 +2,19 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
+import { ArrowLeftIcon, PencilIcon, PlusIcon, SearchIcon, WalletIcon, XIcon } from 'vue-tabler-icons';
 import { useCreateFromQuery } from '@/components/shared/board/useCreateFromQuery';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
+import AppTitleTile from '@/components/shared/page-shell/AppTitleTile.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { BUDGETS_PATHS, BudgetsDirectory, isBudgetPeriode, BUDGET_NAME_MAX, BUDGET_PERIODES, useBudgetsStore } from '@/features/budgets';
 import { budgetDaysRemaining, endOfMonthYmd, formatBudgetMonth } from '@/features/budgets/format';
 import { categorySelectItems } from '@/features/categories/payload';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import type { BudgetPeriode } from '@/features/budgets/types';
+import BudgetDetail, { type BudgetDetailTab } from '@/features/budgets/components/BudgetDetail.vue';
+import { budgetPublicIdFromPath } from '@/features/budgets/paths';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -21,6 +24,38 @@ const router = useRouter();
 const store = useBudgetsStore();
 const categoriesStore = useCategoriesStore();
 const directoryRef = ref<{ openCreate: () => void } | null>(null);
+const listTitle = computed(() => t('budgetsPage.title'));
+/* ── fiche : `:publicId` dans le chemin, onglets `?tab=` ── */
+const DETAIL_TABS: BudgetDetailTab[] = ['informations', 'transactions'];
+const detailRef = ref<{ openEdit: () => void } | null>(null);
+const notFound = ref(false);
+
+const detailId = computed(() => budgetPublicIdFromPath(route.path));
+const detailItem = computed(() => (detailId.value ? store.findByPublicId(detailId.value) : null));
+const detailTitle = computed(() => (notFound.value || !detailItem.value ? listTitle.value : detailItem.value.name));
+const activeDetailTab = computed<BudgetDetailTab>(() => (route.query.tab === 'transactions' ? 'transactions' : 'informations'));
+
+function selectDetailTab(tab: BudgetDetailTab) {
+    if (tab === activeDetailTab.value) return;
+    const query = { ...route.query };
+    if (tab === 'informations') delete query.tab;
+    else query.tab = tab;
+    void router.replace({ path: route.path, query });
+}
+
+/** Retour à la liste en gardant ses filtres. */
+function backToList() {
+    const next: Record<string, string> = {};
+    for (const key of ['q', 'status', 'periode', 'category'] as const) {
+        const value = route.query[key];
+        if (typeof value === 'string' && value) next[key] = value;
+    }
+    void router.push({ path: BUDGETS_PATHS.list, query: next });
+}
+
+watch(detailId, () => {
+    notFound.value = false;
+});
 
 function queryString(name: string): string {
     const raw = route.query[name];
@@ -152,7 +187,56 @@ if (!categoriesStore.initialized) {
 </script>
 
 <template>
-    <AppPageShell :title="t('budgetsPage.title')" :subtitle="pageSubtitle">
+    <!-- ── fiche ── -->
+    <AppPageShell v-if="detailId" :key="`detail-${detailId}`" :title="detailTitle" :body-scroll="activeDetailTab !== 'transactions'">
+        <template v-if="!notFound && detailItem" #title-icon>
+            <AppTitleTile :icon="WalletIcon" tone="amber" />
+        </template>
+
+        <template #actions>
+            <button type="button" class="su-btn" @click="backToList">
+                <ArrowLeftIcon :size="16" stroke-width="1.6" />
+                {{ t('common.back') }}
+            </button>
+            <button
+                v-if="!notFound && detailItem"
+                type="button"
+                class="su-btn su-btn--ink"
+                :disabled="store.acting"
+                @click="detailRef?.openEdit()"
+            >
+                <PencilIcon :size="16" stroke-width="1.6" />
+                {{ t('budgetsPage.actions.edit') }}
+            </button>
+        </template>
+
+        <template #hero-extra>
+            <nav v-if="!notFound" class="su-tabs su-tabs--links budgets-page__detail-tabs" :aria-label="t('budgetsPage.detail.tabs.label')">
+                <button
+                    v-for="tab in DETAIL_TABS"
+                    :key="tab"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': activeDetailTab === tab }"
+                    :aria-current="activeDetailTab === tab ? 'page' : undefined"
+                    @click="selectDetailTab(tab)"
+                >
+                    <span class="su-tab__label" :data-label="t(`budgetsPage.detail.tabs.${tab}`)">{{
+                        t(`budgetsPage.detail.tabs.${tab}`)
+                    }}</span>
+                </button>
+            </nav>
+        </template>
+
+        <div v-if="notFound" class="su-empty budgets-page__not-found">
+            <p>{{ t('budgetsPage.errors.notFound') }}</p>
+            <button type="button" class="su-link budgets-page__back" @click="backToList">{{ t('budgetsPage.detail.backToList') }}</button>
+        </div>
+        <BudgetDetail v-else ref="detailRef" :budget-public-id="detailId" :tab="activeDetailTab" @not-found="notFound = true" />
+    </AppPageShell>
+
+    <!-- ── liste ── -->
+    <AppPageShell v-else :title="t('budgetsPage.title')" :subtitle="pageSubtitle">
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('budgetsPage.tabs.label')">
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterStatus }" @click="filterStatus = ''">
@@ -261,6 +345,30 @@ if (!categoriesStore.initialized) {
 </template>
 
 <style scoped>
+/* ── fiche : onglets sous le titre, comme la fiche d’un actif ── */
+.budgets-page__detail-tabs {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 16px;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.budgets-page__not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.budgets-page__back {
+    border: 0;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+}
+
 /* bouton « Rechercher » (mobile) : actif = fond gris doux */
 .budgets-search-btn.is-active {
     background: var(--soft);

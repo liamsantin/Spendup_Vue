@@ -49,7 +49,8 @@ const emit = defineEmits<{
     <div class="su-page">
         <header class="su-hero">
             <div class="su-hero__top" :class="{ 'su-hero__top--with-tabs': $slots.tabs }">
-                <div class="su-hero__heading">
+                <div class="su-hero__heading" :class="{ 'su-hero__heading--icon': $slots['title-icon'] }">
+                    <slot name="title-icon" />
                     <h1>{{ title }}</h1>
                 </div>
                 <div v-if="$slots.actions || !hideActions" class="su-hero__actions">
@@ -81,6 +82,16 @@ const emit = defineEmits<{
     </div>
 </template>
 <style scoped>
+/* pictogramme à gauche du titre (slot `title-icon`) : carré teinté centré sur la ligne du titre */
+.su-hero__heading--icon {
+    align-items: center;
+    gap: 14px;
+}
+
+.su-hero__heading--icon > h1 {
+    min-width: 0;
+}
+
 .su-hero {
     border-bottom-color: color-mix(in srgb, var(--ink) 22%, transparent);
 }

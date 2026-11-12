@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * Fiche d’un actif (hors immobilier). Onglets : Informations (caractéristiques), Valorisations
- * (sauf épargne adossée à un compte), pour un véhicule Relevés · Entretiens, puis Transactions.
+ * (sauf épargne adossée à un compte), pour un véhicule Relevés · Entretiens, puis Transactions et Justificatifs.
  * La modification du formulaire reste dans `AssetFormModal` (`formOnly`).
  */
 defineOptions({ name: 'AssetDetail' });
@@ -13,6 +13,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import AssetFormModal from '@/features/assets/components/modals/AssetFormModal.vue';
+import AssetAttachmentsPanel from '@/features/assets/components/panels/AssetAttachmentsPanel.vue';
 import AssetValuationsPanel from '@/features/assets/components/panels/AssetValuationsPanel.vue';
 import VehicleMaintenancesPanel from '@/features/assets/components/panels/VehicleMaintenancesPanel.vue';
 import VehicleMileagesPanel from '@/features/assets/components/panels/VehicleMileagesPanel.vue';
@@ -237,7 +238,7 @@ defineExpose({ openEdit, reload: loadAsset });
 </script>
 
 <template>
-    <div class="asset-detail">
+    <div class="asset-detail" :class="{ 'su-fill': activeTab === 'transactions' }">
         <AppAlert v-if="localError" type="error" class="su-alert" closable @dismiss="localError = null">
             {{ localError }}
             <button type="button" class="su-link asset-detail__retry" @click="loadAsset">{{ t('common.retry') }}</button>
@@ -279,11 +280,12 @@ defineExpose({ openEdit, reload: loadAsset });
                 </p>
             </div>
 
-            <div v-else-if="activeTab" class="asset-detail__panel">
+            <div v-else-if="activeTab" class="asset-detail__panel" :class="{ 'su-fill__grow': activeTab === 'transactions' }">
                 <AssetValuationsPanel v-if="activeTab === 'valuations'" :asset="asset" />
                 <VehicleMileagesPanel v-else-if="activeTab === 'mileages'" :asset="asset" />
                 <VehicleMaintenancesPanel v-else-if="activeTab === 'maintenances'" :asset="asset" />
                 <AssetTransactionsPanel v-else-if="activeTab === 'transactions'" :asset-public-id="asset.publicId" />
+                <AssetAttachmentsPanel v-else-if="activeTab === 'attachments'" :asset-public-id="asset.publicId" />
             </div>
 
             <AssetFormModal v-model="editOpen" :asset="asset" form-only @saved="loadAsset" />

@@ -8,6 +8,7 @@ import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { downloadCsv } from '@/utils/helpers/csv';
 import { sensitiveExportValue } from '@/features/vault/display';
 import { isTierNature, isTierRole, matchesTierSearch, parseTierSort, sortTiers, type TierSort } from '@/features/tiers/format';
+import { tierDetailPath } from '@/features/tiers/paths';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { TIER_PAGE_SIZE_MAX, TIER_SEARCH_MAX, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
 import TierListItem from '@/features/tiers/components/list/TierListItem.vue';
@@ -58,6 +59,11 @@ const deleteOpen = computed({
         }
     }
 });
+
+/** La fiche d’un tiers est une page (`/app/gestion/tiers/:publicId`), y compris depuis la page Banques. */
+function openDetail(tier: Tier) {
+    void router.push(tierDetailPath(tier.publicId));
+}
 
 function queryString(name: string): string | null {
     const raw = route.query[name];
@@ -244,6 +250,7 @@ async function confirmDelete() {
                         :tier="tier"
                         :acting="store.acting"
                         :style="{ '--i': index }"
+                        @open="openDetail"
                         @edit="editTarget = $event"
                         @delete="requestDelete"
                     />
@@ -254,6 +261,7 @@ async function confirmDelete() {
                     :items="visibleItems"
                     :acting="store.acting"
                     :sort="listSort"
+                    @open="openDetail"
                     @edit="editTarget = $event"
                     @delete="requestDelete"
                     @sort="emit('sort', $event)"

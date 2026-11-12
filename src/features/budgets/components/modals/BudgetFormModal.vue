@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
-import { EyeIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { budgetLinkedTransactionsQuery } from '@/features/budgets/paths';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import {
     budgetToFormFields,
@@ -36,7 +33,6 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const router = useRouter();
 const store = useBudgetsStore();
 const categoriesStore = useCategoriesStore();
 const settings = useUserSettingsStore();
@@ -168,13 +164,6 @@ async function onSave() {
         localError.message = getErrorMessage(e);
     }
 }
-
-async function seeRelatedTransactions() {
-    const budget = editBudget.value;
-    if (!budget) return;
-    await router.push({ path: '/app/finances/transactions', query: budgetLinkedTransactionsQuery(budget) });
-    open.value = false;
-}
 </script>
 
 <template>
@@ -201,10 +190,6 @@ async function seeRelatedTransactions() {
         />
 
         <template #footer="{ close }">
-            <button v-if="isEdit" type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="seeRelatedTransactions">
-                <EyeIcon :size="16" stroke-width="1.6" />
-                {{ t('budgetsPage.detail.seeTransactions') }}
-            </button>
             <button type="button" class="su-btn" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>

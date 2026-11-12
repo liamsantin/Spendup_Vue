@@ -16,6 +16,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+    open: [tier: Tier];
     edit: [tier: Tier];
     delete: [tier: Tier];
 }>();
@@ -63,18 +64,18 @@ const websiteLabel = computed(() => {
 function onDoubleClick(event: MouseEvent) {
     if (props.acting) return;
     if (event.target instanceof Element && event.target.closest('button, a')) return;
-    emit('edit', props.tier);
+    emit('open', props.tier);
 }
 
 function onActivate(event: MouseEvent) {
     if (props.acting) return;
     if (event.target instanceof Element && event.target.closest('button, a')) return;
     if (!window.matchMedia('(max-width: 767px)').matches) return;
-    emit('edit', props.tier);
+    emit('open', props.tier);
 }
 
 const tap = useRowTap(
-    () => emit('edit', props.tier),
+    () => emit('open', props.tier),
     () => !props.acting
 );
 </script>

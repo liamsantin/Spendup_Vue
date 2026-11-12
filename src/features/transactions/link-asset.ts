@@ -34,3 +34,29 @@ export function transactionFormFieldsWithAsset(transaction: Transaction, assetPu
     fields.assetPublicId = assetPublicId.trim();
     return fields;
 }
+
+/** Transaction sans tiers, avec droit d’édition : candidate au rattachement à un tiers. */
+export function isTransactionLinkableToTier(
+    transaction: Transaction,
+    accounts: readonly Pick<Account, 'publicId' | 'myRole' | 'isActive'>[]
+): boolean {
+    if (transaction.tierPublicId) return false;
+    if (transaction.amount == null) return false;
+    return canWriteTransaction(transaction, accounts);
+}
+
+/** Champs de la transaction avec ce tiers (chaîne vide : sans tiers). */
+export function transactionFormFieldsWithTier(transaction: Transaction, tierPublicId: string): TransactionFormFields | null {
+    const fields = transactionToFormFields(transaction);
+    if (!fields) return null;
+    fields.tierPublicId = tierPublicId.trim();
+    return fields;
+}
+
+/** Champs de la transaction détachée de sa récurrence. */
+export function transactionFormFieldsWithoutRecurrence(transaction: Transaction): TransactionFormFields | null {
+    const fields = transactionToFormFields(transaction);
+    if (!fields) return null;
+    fields.recurrencePublicId = '';
+    return fields;
+}

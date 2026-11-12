@@ -6,8 +6,9 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon } from 'vue-tabler-icons';
+import { ChartLineIcon, PlusIcon } from 'vue-tabler-icons';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
+import AppTitleTile from '@/components/shared/page-shell/AppTitleTile.vue';
 import { useAccountsStore } from '@/features/accounts';
 import {
     InvestmentAccountPicker,
@@ -84,6 +85,10 @@ function onCreateInstrument() {
 
 <template>
     <AppPageShell :title="t('investmentsPage.title')" :subtitle="subtitle">
+        <template #title-icon>
+            <AppTitleTile :icon="ChartLineIcon" tone="blue" />
+        </template>
+
         <template v-if="useTabs && investmentAccounts.length" #tabs>
             <nav class="su-tabs su-tabs--links investments-tabs" :aria-label="t('investmentsPage.tabs.label')">
                 <RouterLink

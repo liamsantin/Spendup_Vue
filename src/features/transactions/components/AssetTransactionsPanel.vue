@@ -73,7 +73,7 @@ async function confirmUnlink() {
 </script>
 
 <template>
-    <div class="asset-transactions">
+    <div class="asset-transactions su-fill__grow">
         <AppAlert v-if="localError" type="error" class="su-alert" closable @dismiss="localError = null">
             {{ localError }}
         </AppAlert>
@@ -91,7 +91,9 @@ async function confirmUnlink() {
                 {{ t('transactionsPage.actions.create') }}
             </button>
         </div>
-        <TransactionsTimeline ref="timelineRef" v-model:selected-ids="selectedIds" :locked-asset-public-id="assetPublicId" />
+        <div class="su-fill__scroll">
+            <TransactionsTimeline ref="timelineRef" v-model:selected-ids="selectedIds" :locked-asset-public-id="assetPublicId" />
+        </div>
         <AssetLinkTransactionsModal v-model="linkOpen" :asset-public-id="assetPublicId" />
         <AppConfirmationModal
             v-model="confirmOpen"

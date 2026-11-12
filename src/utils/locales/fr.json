@@ -833,6 +833,8 @@
             "noNextDue": "Pas d’échéance à venir"
         },
         "detail": {
+            "nextDue": "Prochaine échéance",
+            "backToList": "Retour aux récurrences",
             "title": "Récurrence",
             "subtitle": "Échéances générées. Confirmez pour créer une transaction.",
             "duesTitle": "Échéances",
@@ -844,10 +846,12 @@
             "filesOnTransactions": "Sur les transactions",
             "filesOnTransactionsEmpty": "Aucun PDF lié aux transactions de cette récurrence.",
             "tabs": {
+                "label": "Sections de la récurrence",
+                "informations": "Informations",
                 "dues": "Échéances",
-                "attachments": "Justificatifs"
-            },
-            "seeTransactions": "Voir les transactions liées"
+                "attachments": "Justificatifs",
+                "transactions": "Transactions"
+            }
         },
         "linkTransactions": {
             "title": "Lier une transaction",
@@ -1102,7 +1106,13 @@
             "allCategories": "Toutes les catégories"
         },
         "detail": {
-            "seeTransactions": "Voir les transactions liées"
+            "tabs": {
+                "transactions": "Transactions",
+                "label": "Sections du budget",
+                "informations": "Informations"
+            },
+            "window": "Période en cours",
+            "backToList": "Retour aux budgets"
         },
         "linkTransactions": {
             "title": "Ajouter des transactions",
@@ -1239,9 +1249,18 @@
         },
         "detail": {
             "tabs": {
-                "details": "Détails",
-                "transactions": "Transactions liées"
-            }
+                "transactions": "Transactions",
+                "label": "Sections de l’objectif",
+                "informations": "Informations"
+            },
+            "figs": {
+                "saved": "Épargné",
+                "remaining": "Reste",
+                "exceeded": "Dépassé de",
+                "contributed": "Versements rattachés",
+                "projected": "Atteinte estimée"
+            },
+            "backToList": "Retour aux objectifs"
         },
         "linkTransactions": {
             "title": "Lier des transactions",
@@ -1796,6 +1815,25 @@
             "bankRoleLocked": "Ce tiers est une banque (onglet Banque) : le rôle est obligatoire.",
             "bankRoleWithoutPanel": "Pour choisir ce tiers comme banque d’un compte, activez-le dans l’onglet Banque.",
             "bankNotListed": "Votre banque n’est pas dans la liste ?"
+        },
+        "detail": {
+            "title": "Tiers",
+            "tabs": {
+                "label": "Sections du tiers",
+                "informations": "Informations",
+                "attachments": "Justificatifs",
+                "transactions": "Transactions"
+            },
+            "sections": {
+                "contact": "Contact",
+                "identity": "Identité",
+                "bank": "Banque",
+                "notes": "Notes"
+            },
+            "noContact": "Aucune coordonnée renseignée.",
+            "backToList": "Retour aux tiers",
+            "notFound": "Tiers introuvable.",
+            "loading": "Chargement du tiers"
         }
     },
     "filesPage": {
@@ -1862,7 +1900,11 @@
         },
         "preview": {
             "title": "Aperçu",
-            "unavailable": "Impossible d’afficher ce PDF."
+            "unavailable": "Impossible d’afficher ce PDF.",
+            "pageOf": "Page {current} sur {total}",
+            "zoomOut": "Zoom arrière",
+            "zoomIn": "Zoom avant",
+            "fitWidth": "Ajuster à la largeur"
         },
         "upload": {
             "progress": "Envoi de {name}… {percent} %"
@@ -1946,7 +1988,7 @@
             "tooLarge": "Le fichier dépasse 10 Mo.",
             "notPdf": "Seuls les fichiers PDF sont acceptés.",
             "quotaExceeded": "Quota de stockage dépassé.",
-            "linkedToTransactions": "Ce fichier est encore lié à une transaction. Déliez-le d’abord.",
+            "linkedToTransactions": "Ce fichier est encore lié à une transaction, une récurrence ou un actif. Déliez-le d’abord.",
             "nameRequired": "Le nom du fichier est obligatoire.",
             "documentDateInvalid": "La date du document est invalide."
         },
@@ -2083,7 +2125,8 @@
         },
         "unlinkModal": {
             "title": "Délier {count} transaction ? | Délier {count} transaction ? | Délier {count} transactions ?",
-            "body": "Elle reste sur le compte. Seul le lien avec cet actif est retiré. | Elles restent sur le compte. Seul le lien avec cet actif est retiré. | Elles restent sur le compte. Seul le lien avec cet actif est retiré."
+            "body": "Elle reste sur le compte. Seul le lien avec cet actif est retiré. | Elles restent sur le compte. Seul le lien avec cet actif est retiré. | Elles restent sur le compte. Seul le lien avec cet actif est retiré.",
+            "bodyGeneric": "Elle reste sur le compte. Seul le lien est retiré. | Elle reste sur le compte. Seul le lien est retiré. | Elles restent sur le compte. Seul le lien est retiré."
         },
         "errors": {
             "notFound": "Cette transaction n’est plus disponible."
@@ -2098,7 +2141,8 @@
             "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
             "selectAll": "Tout sélectionner",
             "selectNone": "Tout désélectionner",
-            "confirm": "Lier {count} transaction | Lier {count} transaction | Lier {count} transactions"
+            "confirm": "Lier {count} transaction | Lier {count} transaction | Lier {count} transactions",
+            "subtitleTier": "Écritures qui n’ont pas encore de tiers."
         },
         "unlinkTransactions": {
             "action": "Délier",
@@ -2188,7 +2232,16 @@
                 "pick": "Choisir dans Fichiers",
                 "detach": "Détacher",
                 "maxReached": "Une transaction accepte au plus {max} fichiers.",
-                "alreadyLinked": "Fichier déjà lié."
+                "alreadyLinked": "Fichier déjà lié.",
+                "add": "Ajouter",
+                "libraryEmpty": "Aucun fichier dans votre bibliothèque.",
+                "maxFiles": "{max} fichiers au plus.",
+                "choose": "Choisir",
+                "chooseTitle": "Choisir un fichier",
+                "chooseSubtitle": "Tous les PDF de votre bibliothèque. Cochez-en un ou plusieurs.",
+                "chooseNoMatch": "Aucun fichier ne correspond à la recherche.",
+                "chooseSelected": "Aucun fichier sélectionné | {count} fichier sélectionné | {count} fichiers sélectionnés",
+                "chooseConfirm": "Ajouter | Ajouter {count} fichier | Ajouter {count} fichiers"
             },
             "errors": {
                 "typeInvalid": "Type de transaction invalide (depense, revenu, transfert).",
@@ -3980,6 +4033,11 @@
             }
         },
         "detail": {
+            "attachments": {
+                "onAsset": "Sur l’actif",
+                "onTransactions": "Sur les transactions",
+                "empty": "Aucun PDF sur les transactions liées à cet actif."
+            },
             "sold": "Cédé",
             "boughtFor": "acheté le {date} pour {amount}",
             "boughtOn": "acheté le {date}",
@@ -4004,7 +4062,8 @@
                 "valuations": "Valorisations",
                 "mileages": "Relevés",
                 "maintenances": "Entretiens",
-                "transactions": "Transactions"
+                "transactions": "Transactions",
+                "attachments": "Justificatifs"
             }
         },
         "valuations": {
@@ -4111,7 +4170,8 @@
         "detail": {
             "tabs": {
                 "label": "Sections de la dette",
-                "informations": "Informations"
+                "informations": "Informations",
+                "attachments": "Justificatifs"
             },
             "figs": {
                 "label": "Montants",

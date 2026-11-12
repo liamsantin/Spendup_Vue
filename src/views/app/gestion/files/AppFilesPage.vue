@@ -166,59 +166,62 @@ watch(
             </template>
 
             <FilePreview v-if="previewId" ref="previewRef" :public-id="previewId" :name-original="previewFile?.nameOriginal" />
-            <AppBoard v-show="!previewing">
-                <template #filters>
-                    <AppDropdownFilter
-                        :label="t('filesPage.actions.sort')"
-                        :icon="ArrowsSortIcon"
-                        :min-width="340"
-                        close-on-content-click
-                        :count="sortCount"
-                        :reset-disabled="listSort === FILE_SORT_DEFAULT"
-                        @reset="listSort = FILE_SORT_DEFAULT"
-                    >
-                        <AppSortChoices v-model="listSort" :groups="sortGroups" :label="t('filesPage.actions.sort')" />
-                    </AppDropdownFilter>
-                </template>
-                <template #bar>
-                    <AppBoardSearch
-                        :model-value="search.input.value"
-                        :maxlength="FILE_SEARCH_MAX"
-                        :placeholder="t('filesPage.searchPlaceholder')"
-                        :search-label="t('filesPage.actions.search')"
-                        :clear-label="t('filesPage.actions.clearSearch')"
-                        @update:model-value="search.onInput"
-                        @clear="search.clear"
-                    />
-                    <span v-if="visibleCount" class="su-toolbar__count app-board__count">
-                        {{ t('filesPage.count', { count: visibleCount }, visibleCount) }}
-                    </span>
-                </template>
-                <template #actions>
-                    <button
-                        type="button"
-                        class="su-btn su-btn--ink"
-                        :disabled="!visibleCount"
-                        :aria-label="t('filesPage.actions.export')"
-                        @click="directoryRef?.exportCsv()"
-                    >
-                        <FileExportIcon :size="16" stroke-width="1.6" />
-                        <span class="app-board__label">{{ t('filesPage.actions.export') }}</span>
-                    </button>
-                    <button
-                        type="button"
-                        class="su-btn su-btn--ink app-board__primary"
-                        :disabled="store.acting"
-                        :aria-label="t('filesPage.actions.upload')"
-                        @click="onUpload"
-                    >
-                        <UploadIcon :size="16" stroke-width="1.6" />
-                        <span class="app-board__label">{{ t('filesPage.actions.create') }}</span>
-                    </button>
-                </template>
+            <!-- AppBoard a deux racines (tableau + feuille de filtres) : v-show doit porter sur un enveloppant -->
+            <div v-show="!previewing" class="files-page__board">
+                <AppBoard>
+                    <template #filters>
+                        <AppDropdownFilter
+                            :label="t('filesPage.actions.sort')"
+                            :icon="ArrowsSortIcon"
+                            :min-width="340"
+                            close-on-content-click
+                            :count="sortCount"
+                            :reset-disabled="listSort === FILE_SORT_DEFAULT"
+                            @reset="listSort = FILE_SORT_DEFAULT"
+                        >
+                            <AppSortChoices v-model="listSort" :groups="sortGroups" :label="t('filesPage.actions.sort')" />
+                        </AppDropdownFilter>
+                    </template>
+                    <template #bar>
+                        <AppBoardSearch
+                            :model-value="search.input.value"
+                            :maxlength="FILE_SEARCH_MAX"
+                            :placeholder="t('filesPage.searchPlaceholder')"
+                            :search-label="t('filesPage.actions.search')"
+                            :clear-label="t('filesPage.actions.clearSearch')"
+                            @update:model-value="search.onInput"
+                            @clear="search.clear"
+                        />
+                        <span v-if="visibleCount" class="su-toolbar__count app-board__count">
+                            {{ t('filesPage.count', { count: visibleCount }, visibleCount) }}
+                        </span>
+                    </template>
+                    <template #actions>
+                        <button
+                            type="button"
+                            class="su-btn su-btn--ink"
+                            :disabled="!visibleCount"
+                            :aria-label="t('filesPage.actions.export')"
+                            @click="directoryRef?.exportCsv()"
+                        >
+                            <FileExportIcon :size="16" stroke-width="1.6" />
+                            <span class="app-board__label">{{ t('filesPage.actions.export') }}</span>
+                        </button>
+                        <button
+                            type="button"
+                            class="su-btn su-btn--ink app-board__primary"
+                            :disabled="store.acting"
+                            :aria-label="t('filesPage.actions.upload')"
+                            @click="onUpload"
+                        >
+                            <UploadIcon :size="16" stroke-width="1.6" />
+                            <span class="app-board__label">{{ t('filesPage.actions.create') }}</span>
+                        </button>
+                    </template>
 
-                <FilesDirectory ref="directoryRef" :search="queryString('q') || null" :sort="listSort" @sort="listSort = $event" />
-            </AppBoard>
+                    <FilesDirectory ref="directoryRef" :search="queryString('q') || null" :sort="listSort" @sort="listSort = $event" />
+                </AppBoard>
+            </div>
         </AppPageShell>
     </div>
 </template>
@@ -243,5 +246,10 @@ watch(
     flex-direction: column;
     overflow: hidden;
     padding: 24px 0 0;
+}
+
+/* enveloppe neutre : le tableau garde sa mise en page d’origine */
+.files-page__board {
+    display: contents;
 }
 </style>

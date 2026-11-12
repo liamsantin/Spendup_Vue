@@ -22,3 +22,36 @@ export function recurrencesTabFromPath(path: string): RecurrenceTab {
     if (path === RECURRENCES_PATHS.echeances || path.startsWith(`${RECURRENCES_PATHS.echeances}/`)) return 'upcoming';
     return 'all';
 }
+
+/* ── fiche d’une récurrence : /app/finances/recurrences/{charges|revenus}/:publicId ── */
+
+export const RECURRING_DETAIL_TABS = ['informations', 'dues', 'transactions', 'attachments'] as const;
+
+export type RecurringDetailTab = (typeof RECURRING_DETAIL_TABS)[number];
+
+/** Chemin de la fiche : les charges sous `charges/`, les revenus sous `revenus/`. */
+export function recurrenceDetailPath(kind: 'expense' | 'income', publicId: string): string {
+    const base = kind === 'expense' ? RECURRENCES_PATHS.charges : RECURRENCES_PATHS.revenus;
+    return `${base}/${encodeURIComponent(publicId)}`;
+}
+
+/** Récurrence désignée par le chemin, ou `null` sur une liste. */
+export function recurrenceFromPath(path: string): { kind: 'expense' | 'income'; publicId: string } | null {
+    for (const [kind, base] of [
+        ['expense', RECURRENCES_PATHS.charges],
+        ['income', RECURRENCES_PATHS.revenus]
+    ] as const) {
+        if (!path.startsWith(`${base}/`)) continue;
+        const raw = path.slice(base.length + 1).split('/')[0];
+        const publicId = decodeURIComponent(raw).trim();
+        if (publicId) return { kind, publicId };
+    }
+    return null;
+}
+
+/** Onglet d’URL, ou Informations. */
+export function activeRecurringDetailTab(value: unknown): RecurringDetailTab {
+    return typeof value === 'string' && (RECURRING_DETAIL_TABS as readonly string[]).includes(value)
+        ? (value as RecurringDetailTab)
+        : RECURRING_DETAIL_TABS[0];
+}

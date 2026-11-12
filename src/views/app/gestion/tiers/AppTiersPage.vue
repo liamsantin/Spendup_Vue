@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
-import { FileExportIcon, PlusIcon } from 'vue-tabler-icons';
+import { ArrowLeftIcon, FileExportIcon, PencilIcon, PlusIcon } from 'vue-tabler-icons';
 import AppBoard from '@/components/shared/board/AppBoard.vue';
 import AppBoardSearch from '@/components/shared/board/AppBoardSearch.vue';
 import { useBoardSearch } from '@/components/shared/board/useBoardSearch';
 import AppChoiceList from '@/components/shared/dropdown-filter/AppChoiceList.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
+import AppTitleTile from '@/components/shared/page-shell/AppTitleTile.vue';
 import {
     TIER_NATURES,
     TIER_ROLES,
@@ -25,6 +26,9 @@ import {
 } from '@/features/tiers';
 import type { TierNature } from '@/features/tiers/types';
 import TierCreateMenu from '@/features/tiers/components/TierCreateMenu.vue';
+import TierDetail, { type TierDetailTab } from '@/features/tiers/components/TierDetail.vue';
+import { TIER_NATURE_ICONS, TIER_NATURE_TONES } from '@/features/tiers/natureUi';
+import { TIERS_PATH, tierPublicIdFromPath } from '@/features/tiers/paths';
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -32,6 +36,41 @@ const store = useTiersStore();
 const { width: viewportWidth } = useDisplay();
 const compactNotch = computed(() => viewportWidth.value < 768);
 const directoryRef = ref<{ openCreate: (nature?: TierNature | null) => void; exportCsv: () => void } | null>(null);
+
+/* ── fiche d’un tiers : `/app/gestion/tiers/:publicId`, onglets `?tab=` ── */
+const DETAIL_TABS: TierDetailTab[] = ['informations', 'transactions', 'attachments'];
+const detailRef = ref<{ openEdit: () => void } | null>(null);
+const notFound = ref(false);
+
+const detailId = computed(() => tierPublicIdFromPath(route.path));
+const detailTier = computed(() => (detailId.value ? store.findByPublicId(detailId.value) : null));
+const detailTitle = computed(() => (notFound.value || !detailTier.value ? t('tiersPage.detail.title') : detailTier.value.name));
+const activeDetailTab = computed<TierDetailTab>(() => {
+    const raw = route.query.tab;
+    return raw === 'attachments' || raw === 'transactions' ? raw : 'informations';
+});
+
+function selectDetailTab(tab: TierDetailTab) {
+    if (tab === activeDetailTab.value) return;
+    const query = { ...route.query };
+    if (tab === 'informations') delete query.tab;
+    else query.tab = tab;
+    void router.replace({ path: route.path, query });
+}
+
+/** Retour à la liste en gardant ses filtres (recherche, nature, rôle, tri). */
+function backToList() {
+    const next: Record<string, string> = {};
+    for (const key of ['q', 'nature', 'role', 'sort'] as const) {
+        const value = queryString(key);
+        if (value) next[key] = value;
+    }
+    void router.push({ path: TIERS_PATH, query: next });
+}
+
+watch(detailId, () => {
+    notFound.value = false;
+});
 
 const roleItems = computed(() => [
     { title: t('tiersPage.filters.allRoles'), value: '' },
@@ -116,7 +155,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
     if (nature && isTierNature(nature)) next.nature = nature;
     if (role && isTierRole(role)) next.role = role;
     if (sort && isTierSort(sort) && sort !== TIER_SORT_DEFAULT) next.sort = sort;
-    void router.replace({ path: '/app/gestion/tiers', query: next });
+    void router.replace({ path: TIERS_PATH, query: next });
 }
 
 const search = useBoardSearch({
@@ -133,7 +172,56 @@ function onCreate(nature?: TierNature) {
 </script>
 
 <template>
-    <AppPageShell class="tiers-page" :title="t('tiersPage.title')" :subtitle="t('tiersPage.subtitle')" :body-scroll="false">
+    <!-- ── fiche d’un tiers ── -->
+    <AppPageShell v-if="detailId" :key="`detail-${detailId}`" :title="detailTitle" :body-scroll="activeDetailTab !== 'transactions'">
+        <template v-if="!notFound && detailTier" #title-icon>
+            <AppTitleTile :icon="TIER_NATURE_ICONS[detailTier.nature]" :tone="TIER_NATURE_TONES[detailTier.nature]" />
+        </template>
+
+        <template #actions>
+            <button type="button" class="su-btn" @click="backToList">
+                <ArrowLeftIcon :size="16" stroke-width="1.6" />
+                {{ t('common.back') }}
+            </button>
+            <button
+                v-if="!notFound && detailTier"
+                type="button"
+                class="su-btn su-btn--ink"
+                :disabled="store.acting"
+                @click="detailRef?.openEdit()"
+            >
+                <PencilIcon :size="16" stroke-width="1.6" />
+                {{ t('tiersPage.actions.edit') }}
+            </button>
+        </template>
+
+        <template #hero-extra>
+            <nav v-if="!notFound" class="su-tabs su-tabs--links tiers-page__detail-tabs" :aria-label="t('tiersPage.detail.tabs.label')">
+                <button
+                    v-for="tab in DETAIL_TABS"
+                    :key="tab"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': activeDetailTab === tab }"
+                    :aria-current="activeDetailTab === tab ? 'page' : undefined"
+                    @click="selectDetailTab(tab)"
+                >
+                    <span class="su-tab__label" :data-label="t(`tiersPage.detail.tabs.${tab}`)">{{
+                        t(`tiersPage.detail.tabs.${tab}`)
+                    }}</span>
+                </button>
+            </nav>
+        </template>
+
+        <div v-if="notFound" class="su-empty tiers-page__not-found">
+            <p>{{ t('tiersPage.detail.notFound') }}</p>
+            <button type="button" class="su-link tiers-page__back" @click="backToList">{{ t('tiersPage.detail.backToList') }}</button>
+        </div>
+        <TierDetail v-else ref="detailRef" :tier-public-id="detailId" :tab="activeDetailTab" @not-found="notFound = true" />
+    </AppPageShell>
+
+    <!-- ── liste ── -->
+    <AppPageShell v-else class="tiers-page" :title="t('tiersPage.title')" :subtitle="t('tiersPage.subtitle')" :body-scroll="false">
         <!-- onglets par nature en haut à droite du titre -->
         <template #tabs>
             <nav class="su-tabs" :aria-label="t('tiersPage.tabs.label')">
@@ -235,6 +323,30 @@ function onCreate(nature?: TierNature) {
 </template>
 
 <style scoped>
+/* ── fiche : onglets sous le titre, comme la fiche d’un actif ── */
+.tiers-page__detail-tabs {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 16px;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.tiers-page__not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.tiers-page__back {
+    border: 0;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+}
+
 /* ── compteurs : une carte légère, cases séparées par des filets fins ── */
 .tiers-figs {
     flex: none;

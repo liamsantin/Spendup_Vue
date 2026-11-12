@@ -43,15 +43,26 @@ export async function listAllLinkedTransactions(options: {
 }): Promise<Transaction[]> {
     const publicId = options.publicId.trim();
     if (!publicId) return [];
+    const filter: ListTransactionsQuery =
+        options.kind === 'expense' ? { recurringExpensePublicId: publicId } : { recurringIncomePublicId: publicId };
+    return listAllTransactionsMatching({ filter, list: options.list, get: options.get });
+}
 
+/**
+ * Toutes les transactions d’un filtre (récurrence, actif…), page par page, avec leurs pièces.
+ * Une transaction listée sans `files` est rechargée une par une pour les obtenir.
+ */
+export async function listAllTransactionsMatching(options: {
+    filter: ListTransactionsQuery;
+    list: (query: ListTransactionsQuery) => Promise<TransactionList>;
+    get: (publicId: string) => Promise<Transaction>;
+}): Promise<Transaction[]> {
     const items: Transaction[] = [];
     let page = 1;
     const pageSize = TRANSACTION_PAGE_SIZE_MAX;
-    const filter: ListTransactionsQuery =
-        options.kind === 'expense' ? { recurringExpensePublicId: publicId } : { recurringIncomePublicId: publicId };
 
     while (page <= PAGE_GUARD) {
-        const response = await options.list({ ...filter, page, pageSize });
+        const response = await options.list({ ...options.filter, page, pageSize });
         const batch = await Promise.all(response.items.map((item) => hydrateLinkedTransaction(item, options.get)));
         items.push(...batch);
         if (!response.items.length) break;

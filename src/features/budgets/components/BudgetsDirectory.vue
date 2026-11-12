@@ -173,11 +173,9 @@ function clearDetailPath() {
     void router.replace({ path: BUDGETS_PATHS.list, query: route.query });
 }
 
-async function openDetail(budget: Budget, pushPath = true) {
-    editTarget.value = budget;
-    if (!pushPath) return;
-    if (budgetPublicIdFromPath(route.path) === budget.publicId) return;
-    await router.replace({ path: budgetDetailPath(budget.publicId), query: route.query });
+/** La fiche d’un budget est une page (`/app/planning/budgets/:publicId`). */
+function openDetail(budget: Budget) {
+    void router.push({ path: budgetDetailPath(budget.publicId), query: route.query });
 }
 
 async function syncDetailFromRoute() {
@@ -329,7 +327,8 @@ async function toggleActive(budget: Budget) {
                         :budget="budget"
                         :acting="store.acting"
                         :style="{ '--i': index }"
-                        @edit="openDetail"
+                        @open="openDetail"
+                        @edit="editTarget = $event"
                         @delete="requestDelete"
                         @toggle-active="toggleActive"
                     />

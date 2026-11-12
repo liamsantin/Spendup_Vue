@@ -1,4 +1,4 @@
-import { onUnmounted, ref } from 'vue';
+import { onUnmounted, ref, shallowRef } from 'vue';
 import { loadReadablePdf } from '@/features/files/content';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
@@ -8,6 +8,8 @@ import { getErrorMessage } from '@/utils/errors/app-error';
  */
 export function useFileContentUrl() {
     const objectUrl = ref<string | null>(null);
+    /** PDF déchiffré, pour un lecteur qui lit les octets plutôt que l’URL (la CSP bloque fetch sur blob:). */
+    const blob = shallowRef<Blob | null>(null);
     const loading = ref(false);
     const error = ref<string | null>(null);
     let requestId = 0;
@@ -17,6 +19,7 @@ export function useFileContentUrl() {
             URL.revokeObjectURL(objectUrl.value);
             objectUrl.value = null;
         }
+        blob.value = null;
     }
 
     async function load(publicId: string) {
@@ -25,9 +28,10 @@ export function useFileContentUrl() {
         loading.value = true;
         revoke();
         try {
-            const blob = await loadReadablePdf(publicId);
+            const pdf = await loadReadablePdf(publicId);
             if (id !== requestId) return;
-            objectUrl.value = URL.createObjectURL(blob);
+            blob.value = pdf;
+            objectUrl.value = URL.createObjectURL(pdf);
         } catch (e: unknown) {
             if (id !== requestId) return;
             error.value = getErrorMessage(e);
@@ -48,7 +52,7 @@ export function useFileContentUrl() {
         revoke();
     });
 
-    return { objectUrl, loading, error, load, reset, revoke };
+    return { objectUrl, blob, loading, error, load, reset, revoke };
 }
 
 export async function downloadFileBlob(publicId: string, nameOriginal: string) {

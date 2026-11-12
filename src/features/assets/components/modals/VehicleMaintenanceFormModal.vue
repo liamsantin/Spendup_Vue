@@ -2,6 +2,7 @@
 /**
  * Création / édition d’un entretien de véhicule. Garage = `TierPicker` (tier possédé).
  * `transactionPublicId` n’a pas encore de sélecteur : il est conservé tel quel en édition, `null` en création.
+ * Justificatifs : en édition, chaque ajout ou retrait part tout de suite ; en création, ils sont liés juste après l’enregistrement.
  */
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -10,6 +11,14 @@ import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
+import { assetsApi } from '@/features/assets/api';
+import { isQuotaExceededMessage, wouldExceedQuota } from '@/features/files/format';
+import { useFilesStore } from '@/features/files/stores/files-store';
+import type { FileDto } from '@/features/files/types';
+import { validatePdfFile } from '@/features/files/validate-upload';
+import TransactionAttachments from '@/features/transactions/components/forms/TransactionAttachments.vue';
+import TransactionFilePreviewModal from '@/features/transactions/components/modals/TransactionFilePreviewModal.vue';
+import type { TransactionFile } from '@/features/transactions/types';
 import { todayYmdInTimeZone } from '@/features/accounts/format';
 import { TierPicker } from '@/features/tiers';
 import { useUserSettingsStore } from '@/features/user-settings';
@@ -44,6 +53,19 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const store = useAssetsStore();
 const settings = useUserSettingsStore();
+const filesStore = useFilesStore();
+
+/** Justificatifs affichés : ceux de l’entretien en édition, ou ceux à lier après la création. */
+const files = ref<TransactionFile[]>([]);
+const uploading = ref(false);
+const filesActing = ref(false);
+const previewFile = ref<TransactionFile | null>(null);
+const previewOpen = computed({
+    get: () => !!previewFile.value,
+    set: (value: boolean) => {
+        if (!value) previewFile.value = null;
+    }
+});
 
 const editTarget = ref<VehicleMaintenance | null>(null);
 const form = reactive<VehicleMaintenanceFormFields>(emptyVehicleMaintenanceFormFields());
@@ -91,6 +113,10 @@ watch(
             form,
             props.maintenance ? vehicleMaintenanceToFormFields(props.maintenance) : emptyVehicleMaintenanceFormFields({ date: today.value })
         );
+        files.value = [];
+        void filesStore.loadList().catch(() => undefined);
+        void filesStore.loadUsage().catch(() => undefined);
+        if (props.maintenance) void loadFiles(props.maintenance.publicId);
     },
     { immediate: true }
 );
@@ -99,6 +125,77 @@ function applyError(code: AssetPayloadErrorCode, field?: string) {
     const message = t(`assetsPage.form.errors.${code}`);
     if (field) fieldErrors[field] = message;
     else localError.value = message;
+}
+
+async function loadFiles(maintenancePublicId: string) {
+    try {
+        const result = await assetsApi.listMaintenanceFiles(props.asset.publicId, maintenancePublicId);
+        if (editTarget.value?.publicId === maintenancePublicId) files.value = result.items ?? [];
+    } catch (e: unknown) {
+        localError.value = getErrorMessage(e);
+    }
+}
+
+/** Lie un fichier : tout de suite en édition, sinon le garde pour l’après-création. */
+async function addFile(file: TransactionFile) {
+    const target = editTarget.value;
+    if (!target) {
+        if (!files.value.some((item) => item.publicId === file.publicId)) files.value = [...files.value, file];
+        return;
+    }
+    const result = await assetsApi.attachMaintenanceFile(props.asset.publicId, target.publicId, file.publicId);
+    files.value = result.items ?? [];
+}
+
+async function onUpload(file: File) {
+    const valid = await validatePdfFile(file);
+    if (!valid.ok) {
+        localError.value = t(`filesPage.errors.${valid.code}`);
+        return;
+    }
+    if (filesStore.usage && wouldExceedQuota(filesStore.usage, file.size)) {
+        localError.value = t('filesPage.errors.quotaExceeded');
+        return;
+    }
+    uploading.value = true;
+    localError.value = null;
+    try {
+        await addFile(await filesStore.uploadFile(file));
+    } catch (e: unknown) {
+        localError.value = isQuotaExceededMessage(getErrorMessage(e)) ? t('filesPage.errors.quotaExceeded') : getErrorMessage(e);
+    } finally {
+        uploading.value = false;
+    }
+}
+
+async function onPick(file: FileDto) {
+    filesActing.value = true;
+    localError.value = null;
+    try {
+        await addFile(file);
+    } catch (e: unknown) {
+        localError.value = getErrorMessage(e);
+    } finally {
+        filesActing.value = false;
+    }
+}
+
+async function onDetach(file: TransactionFile) {
+    const target = editTarget.value;
+    if (!target) {
+        files.value = files.value.filter((item) => item.publicId !== file.publicId);
+        return;
+    }
+    filesActing.value = true;
+    localError.value = null;
+    try {
+        await assetsApi.detachMaintenanceFile(props.asset.publicId, target.publicId, file.publicId);
+        files.value = files.value.filter((item) => item.publicId !== file.publicId);
+    } catch (e: unknown) {
+        localError.value = getErrorMessage(e);
+    } finally {
+        filesActing.value = false;
+    }
 }
 
 async function onSave() {
@@ -111,10 +208,18 @@ async function onSave() {
         return;
     }
     try {
+        const creating = !editTarget.value;
         const saved = editTarget.value
             ? await store.updateMaintenance(props.asset.publicId, editTarget.value.publicId, form, ctx)
             : await store.createMaintenance(props.asset.publicId, form, ctx);
         emit('saved', saved);
+        if (creating && files.value.length) {
+            // l’entretien existe : la modale passe en édition, un échec de liaison se corrige sans tout ressaisir
+            editTarget.value = saved;
+            const pending = files.value;
+            files.value = [];
+            for (const file of pending) await addFile(file);
+        }
         open.value = false;
     } catch (e: unknown) {
         localError.value = getErrorMessage(e);
@@ -233,17 +338,34 @@ async function onSave() {
                 />
             </AssetFormRow>
             <p v-if="form.transactionPublicId" class="maintenance-form__hint">{{ t('assetsPage.maintenances.transactionHint') }}</p>
+
+            <section class="maintenance-form__files">
+                <h3 class="maintenance-form__files-title">{{ t('assetsPage.detail.tabs.attachments') }}</h3>
+                <TransactionAttachments
+                    :files="files"
+                    :library="filesStore.items"
+                    can-edit
+                    :uploading="uploading"
+                    :acting="filesActing || store.acting"
+                    @upload="onUpload"
+                    @pick="onPick"
+                    @detach="onDetach"
+                    @open="previewFile = $event"
+                />
+            </section>
         </div>
 
         <template #footer="{ close }">
             <button type="button" class="su-btn" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
-            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="onSave">
+            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || uploading || filesActing" @click="onSave">
                 {{ t('common.save') }}
             </button>
         </template>
     </AppModalBase>
+
+    <TransactionFilePreviewModal v-model="previewOpen" :file="previewFile" />
 </template>
 
 <style scoped>
@@ -251,6 +373,19 @@ async function onSave() {
     display: flex;
     flex-direction: column;
     gap: 14px;
+}
+
+.maintenance-form__files {
+    margin-top: 10px;
+}
+
+/* titre de bloc : 700 sur filet fin, comme les justificatifs d’une transaction */
+.maintenance-form__files-title {
+    margin: 0 0 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .maintenance-form__hint {

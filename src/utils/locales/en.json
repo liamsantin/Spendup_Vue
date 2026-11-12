@@ -833,6 +833,8 @@
             "noNextDue": "No upcoming due"
         },
         "detail": {
+            "nextDue": "Next due date",
+            "backToList": "Back to recurrences",
             "title": "Recurring",
             "subtitle": "Generated dues. Confirm to create a transaction.",
             "duesTitle": "Dues",
@@ -844,10 +846,12 @@
             "filesOnTransactions": "On transactions",
             "filesOnTransactionsEmpty": "No PDFs linked to this recurrence’s transactions.",
             "tabs": {
+                "label": "Recurrence sections",
+                "informations": "Information",
                 "dues": "Dues",
-                "attachments": "Attachments"
-            },
-            "seeTransactions": "View linked transactions"
+                "attachments": "Attachments",
+                "transactions": "Transactions"
+            }
         },
         "linkTransactions": {
             "title": "Link a transaction",
@@ -1102,7 +1106,13 @@
             "allCategories": "All categories"
         },
         "detail": {
-            "seeTransactions": "View linked transactions"
+            "tabs": {
+                "transactions": "Transactions",
+                "label": "Budget sections",
+                "informations": "Information"
+            },
+            "window": "Current period",
+            "backToList": "Back to budgets"
         },
         "linkTransactions": {
             "title": "Add transactions",
@@ -1239,9 +1249,18 @@
         },
         "detail": {
             "tabs": {
-                "details": "Details",
-                "transactions": "Linked transactions"
-            }
+                "transactions": "Transactions",
+                "label": "Goal sections",
+                "informations": "Information"
+            },
+            "figs": {
+                "saved": "Saved",
+                "remaining": "Remaining",
+                "exceeded": "Exceeded by",
+                "contributed": "Linked contributions",
+                "projected": "Estimated completion"
+            },
+            "backToList": "Back to goals"
         },
         "linkTransactions": {
             "title": "Link transactions",
@@ -1796,6 +1815,25 @@
             "bankRoleLocked": "This counterparty is a bank (Bank tab): the role is required.",
             "bankRoleWithoutPanel": "To use this counterparty as an account’s bank, enable it in the Bank tab.",
             "bankNotListed": "Bank not in the list?"
+        },
+        "detail": {
+            "title": "Third party",
+            "tabs": {
+                "label": "Third-party sections",
+                "informations": "Information",
+                "attachments": "Receipts",
+                "transactions": "Transactions"
+            },
+            "sections": {
+                "contact": "Contact",
+                "identity": "Identity",
+                "bank": "Bank",
+                "notes": "Notes"
+            },
+            "noContact": "No contact details.",
+            "backToList": "Back to third parties",
+            "notFound": "Third party not found.",
+            "loading": "Loading third party"
         }
     },
     "filesPage": {
@@ -1862,7 +1900,11 @@
         },
         "preview": {
             "title": "Preview",
-            "unavailable": "This PDF cannot be displayed."
+            "unavailable": "This PDF cannot be displayed.",
+            "pageOf": "Page {current} of {total}",
+            "zoomOut": "Zoom out",
+            "zoomIn": "Zoom in",
+            "fitWidth": "Fit to width"
         },
         "upload": {
             "progress": "Uploading {name}… {percent}%"
@@ -1946,7 +1988,7 @@
             "tooLarge": "The file exceeds 10 MB.",
             "notPdf": "Only PDF files are accepted.",
             "quotaExceeded": "Storage quota exceeded.",
-            "linkedToTransactions": "This file is still linked to a transaction. Detach it first.",
+            "linkedToTransactions": "This file is still linked to a transaction, a recurrence or an asset. Detach it first.",
             "nameRequired": "The file name is required.",
             "documentDateInvalid": "The document date is invalid."
         },
@@ -2083,7 +2125,8 @@
         },
         "unlinkModal": {
             "title": "Unlink {count} transaction? | Unlink {count} transaction? | Unlink {count} transactions?",
-            "body": "It stays on the account. Only the link to this asset is removed. | They stay on the account. Only the link to this asset is removed. | They stay on the account. Only the link to this asset is removed."
+            "body": "It stays on the account. Only the link to this asset is removed. | They stay on the account. Only the link to this asset is removed. | They stay on the account. Only the link to this asset is removed.",
+            "bodyGeneric": "It stays on the account. Only the link is removed. | It stays on the account. Only the link is removed. | They stay on the account. Only the link is removed."
         },
         "errors": {
             "notFound": "This transaction is no longer available."
@@ -2098,7 +2141,8 @@
             "selected": "{count} selected | {count} selected | {count} selected",
             "selectAll": "Select all",
             "selectNone": "Clear selection",
-            "confirm": "Link {count} transaction | Link {count} transaction | Link {count} transactions"
+            "confirm": "Link {count} transaction | Link {count} transaction | Link {count} transactions",
+            "subtitleTier": "Entries that have no third party yet."
         },
         "unlinkTransactions": {
             "action": "Unlink",
@@ -2188,7 +2232,16 @@
                 "pick": "Choose from Files",
                 "detach": "Detach",
                 "maxReached": "A transaction accepts at most {max} files.",
-                "alreadyLinked": "File already linked."
+                "alreadyLinked": "File already linked.",
+                "add": "Add",
+                "libraryEmpty": "No file in your library.",
+                "maxFiles": "{max} files at most.",
+                "choose": "Choose",
+                "chooseTitle": "Choose a file",
+                "chooseSubtitle": "All the PDFs in your library. Tick one or more.",
+                "chooseNoMatch": "No file matches the search.",
+                "chooseSelected": "No file selected | {count} file selected | {count} files selected",
+                "chooseConfirm": "Add | Add {count} file | Add {count} files"
             },
             "errors": {
                 "typeInvalid": "Invalid transaction type (expense, income, transfer).",
@@ -3980,6 +4033,11 @@
             }
         },
         "detail": {
+            "attachments": {
+                "onAsset": "On the asset",
+                "onTransactions": "On the transactions",
+                "empty": "No PDF on the transactions linked to this asset."
+            },
             "sold": "Sold",
             "boughtFor": "bought on {date} for {amount}",
             "boughtOn": "bought on {date}",
@@ -4004,7 +4062,8 @@
                 "valuations": "Valuations",
                 "mileages": "Readings",
                 "maintenances": "Maintenance",
-                "transactions": "Transactions"
+                "transactions": "Transactions",
+                "attachments": "Receipts"
             }
         },
         "valuations": {
@@ -4111,7 +4170,8 @@
         "detail": {
             "tabs": {
                 "label": "Debt sections",
-                "informations": "Information"
+                "informations": "Information",
+                "attachments": "Receipts"
             },
             "figs": {
                 "label": "Amounts",

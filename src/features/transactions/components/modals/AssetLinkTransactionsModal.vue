@@ -22,7 +22,12 @@ import {
     resolveTransactionAmountDisplay,
     sourceAccountPublicId
 } from '@/features/transactions/format';
-import { isTransactionLinkableToAsset, transactionFormFieldsWithAsset } from '@/features/transactions/link-asset';
+import {
+    isTransactionLinkableToAsset,
+    isTransactionLinkableToTier,
+    transactionFormFieldsWithAsset,
+    transactionFormFieldsWithTier
+} from '@/features/transactions/link-asset';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import {
     TRANSACTION_ASSET_ALREADY_LINKED_MESSAGE,
@@ -33,7 +38,9 @@ import {
 
 const props = defineProps<{
     modelValue: boolean;
-    assetPublicId: string;
+    assetPublicId?: string;
+    /** Si défini, le sélecteur rattache au tiers (transactions sans tiers) au lieu de l’actif. */
+    tierPublicId?: string;
 }>();
 
 const emit = defineEmits<{
@@ -59,7 +66,16 @@ const loaded = ref<Transaction[]>([]);
 
 const i18nPrefix = 'transactionsPage.linkTransactions';
 
-const candidates = computed(() => loaded.value.filter((item) => isTransactionLinkableToAsset(item, accountsStore.accounts)));
+const tierId = computed(() => props.tierPublicId?.trim() ?? '');
+const targetId = computed(() => tierId.value || props.assetPublicId?.trim() || '');
+
+const candidates = computed(() =>
+    loaded.value.filter((item) =>
+        tierId.value
+            ? isTransactionLinkableToTier(item, accountsStore.accounts)
+            : isTransactionLinkableToAsset(item, accountsStore.accounts)
+    )
+);
 
 const visibleItems = computed(() => {
     const needle = search.value.trim();
@@ -122,8 +138,7 @@ function selectNone() {
 }
 
 async function loadCandidates() {
-    const assetPublicId = props.assetPublicId.trim();
-    if (!assetPublicId) return;
+    if (!targetId.value) return;
     loading.value = true;
     localError.value = null;
     try {
@@ -168,14 +183,14 @@ function linkErrorMessage(err: AppError): string {
 }
 
 async function onConfirm() {
-    const assetPublicId = props.assetPublicId.trim();
-    if (!assetPublicId || !selectedCount.value) return;
+    const target = targetId.value;
+    if (!target || !selectedCount.value) return;
     linking.value = true;
     localError.value = null;
     const chosen = candidates.value.filter((item) => selectedIds.value.includes(item.publicId));
     try {
         for (const item of chosen) {
-            const fields = transactionFormFieldsWithAsset(item, assetPublicId);
+            const fields = tierId.value ? transactionFormFieldsWithTier(item, target) : transactionFormFieldsWithAsset(item, target);
             if (!fields) continue;
             await transactionsStore.updateTransaction(item.publicId, fields);
         }
@@ -194,7 +209,7 @@ async function onConfirm() {
     <AppModalBase
         v-model="open"
         :title="t(`${i18nPrefix}.title`)"
-        :subtitle="t(`${i18nPrefix}.subtitle`)"
+        :subtitle="t(tierId ? `${i18nPrefix}.subtitleTier` : `${i18nPrefix}.subtitle`)"
         :max-width="640"
         :height="720"
         scrollable

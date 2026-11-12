@@ -23,6 +23,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+    open: [tier: Tier];
     edit: [tier: Tier];
     delete: [tier: Tier];
     sort: [value: TierSort];
@@ -86,6 +87,7 @@ function onSort(value: AppDataTableSort) {
             :tier="tier"
             :acting="acting"
             :style="{ '--i': index }"
+            @open="emit('open', $event)"
             @edit="emit('edit', $event)"
             @delete="emit('delete', $event)"
         />

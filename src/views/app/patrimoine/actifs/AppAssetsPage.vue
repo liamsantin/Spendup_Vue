@@ -10,6 +10,7 @@ import { ArrowLeftIcon, PencilIcon, PlusIcon, SearchIcon, XIcon } from 'vue-tabl
 import { useCreateFromQuery } from '@/components/shared/board/useCreateFromQuery';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
+import AppTitleTile from '@/components/shared/page-shell/AppTitleTile.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import {
     ASSETS_PATHS,
@@ -28,6 +29,7 @@ import {
     type AssetStateFilter,
     type AssetType
 } from '@/features/assets';
+import { assetTypeIcon, assetTypeTone } from '@/features/assets/format';
 import { useUserSettingsStore } from '@/features/user-settings';
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -188,7 +190,11 @@ watch(searchOpen, (open) => {
 
 <template>
     <!-- ── fiche d’un actif ── -->
-    <AppPageShell v-if="detailId" :key="`detail-${detailId}`" :title="detailTitle">
+    <AppPageShell v-if="detailId" :key="`detail-${detailId}`" :title="detailTitle" :body-scroll="activeDetailTab !== 'transactions'">
+        <template v-if="!notFound && detailAsset" #title-icon>
+            <AppTitleTile :icon="assetTypeIcon(detailAsset.type)" :tone="assetTypeTone(detailAsset.type)" />
+        </template>
+
         <template #actions>
             <button type="button" class="su-btn" @click="backToList">
                 <ArrowLeftIcon :size="16" stroke-width="1.6" />

@@ -6,10 +6,21 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeftIcon, PencilIcon, PlusIcon, ProgressCheckIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
+import {
+    ArrowLeftIcon,
+    CashIcon,
+    CreditCardIcon,
+    PencilIcon,
+    PlusIcon,
+    ProgressCheckIcon,
+    SearchIcon,
+    UsersIcon,
+    XIcon
+} from 'vue-tabler-icons';
 import { useCreateFromQuery } from '@/components/shared/board/useCreateFromQuery';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
+import AppTitleTile from '@/components/shared/page-shell/AppTitleTile.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import {
     LIABILITY_NAME_MAX,
@@ -41,6 +52,8 @@ import {
     usePersonalLoansStore
 } from '@/features/personal-loans';
 import SharedDebtDetail from '@/features/shared-debts/components/SharedDebtDetail.vue';
+import { entityAttachmentSource } from '@/features/attachments/api';
+import EntityAttachmentsPanel from '@/features/attachments/components/EntityAttachmentsPanel.vue';
 import SharedDebtsPanel from '@/features/shared-debts/components/SharedDebtsPanel.vue';
 import {
     SHARED_DEBT_STATUSES,
@@ -96,6 +109,36 @@ const detailTitle = computed(() => {
         return name ? t('debtsPage.detailTitle.loans', { name }) : t('debtsPage.title');
     }
     return detailShared.value ? t('debtsPage.detailTitle.shared', { name: detailShared.value.label }) : t('debtsPage.title');
+});
+
+/** Onglets d’une fiche de dette : Informations, puis Justificatifs (`?tab=attachments`). */
+const DETAIL_TABS = ['informations', 'attachments'] as const;
+type DetailTab = (typeof DETAIL_TABS)[number];
+
+const activeDetailTab = computed<DetailTab>(() => (route.query.tab === 'attachments' ? 'attachments' : 'informations'));
+
+function selectDetailTab(tab: DetailTab) {
+    if (tab === activeDetailTab.value) return;
+    const query = { ...route.query };
+    if (tab === 'informations') delete query.tab;
+    else query.tab = tab;
+    void router.replace({ path: route.path, query });
+}
+
+/** Justificatifs de la dette ouverte ; sur une dette entre amis, chacun ne voit que les siens. */
+const attachmentSource = computed(() => {
+    if (liabilityId.value) return entityAttachmentSource('liability', liabilityId.value);
+    if (loanId.value) return entityAttachmentSource('personalLoan', loanId.value);
+    if (sharedId.value) return entityAttachmentSource('sharedDebt', sharedId.value);
+    return null;
+});
+
+/** Pictogramme de la fiche selon le type de dette. */
+const detailVisual = computed(() => {
+    if (detailKind.value === 'liabilities') return { icon: CreditCardIcon, tone: 'blue' as const };
+    if (detailKind.value === 'loans') return { icon: CashIcon, tone: 'amber' as const };
+    if (detailKind.value === 'shared') return { icon: UsersIcon, tone: 'teal' as const };
+    return null;
 });
 
 const detailNotFound = computed(() => {
@@ -311,6 +354,10 @@ onUnmounted(() => {
 
 <template>
     <AppPageShell v-if="detailKind" :key="`detail-${detailKind}-${liabilityId || loanId || sharedId}`" :title="detailTitle">
+        <template v-if="!notFound && detailVisual" #title-icon>
+            <AppTitleTile :icon="detailVisual.icon" :tone="detailVisual.tone" />
+        </template>
+
         <template #actions>
             <button type="button" class="su-btn" @click="backToList">
                 <ArrowLeftIcon :size="16" stroke-width="1.6" />
@@ -368,9 +415,17 @@ onUnmounted(() => {
 
         <template #hero-extra>
             <nav v-if="!notFound" class="su-tabs su-tabs--links debts-page__detail-tabs" :aria-label="t('debtsPage.detail.tabs.label')">
-                <button type="button" class="su-tab is-active" aria-current="page">
-                    <span class="su-tab__label" :data-label="t('debtsPage.detail.tabs.informations')">{{
-                        t('debtsPage.detail.tabs.informations')
+                <button
+                    v-for="item in DETAIL_TABS"
+                    :key="item"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': activeDetailTab === item }"
+                    :aria-current="activeDetailTab === item ? 'page' : undefined"
+                    @click="selectDetailTab(item)"
+                >
+                    <span class="su-tab__label" :data-label="t(`debtsPage.detail.tabs.${item}`)">{{
+                        t(`debtsPage.detail.tabs.${item}`)
                     }}</span>
                 </button>
             </nav>
@@ -380,15 +435,25 @@ onUnmounted(() => {
             <p>{{ detailNotFound }}</p>
             <button type="button" class="su-link debts-page__back" @click="backToList">{{ t('debtsPage.actions.backToList') }}</button>
         </div>
-        <LiabilityDetail v-else-if="liabilityId" ref="detailRef" :liability-public-id="liabilityId" @not-found="notFound = true" />
-        <PersonalLoanDetail v-else-if="loanId" ref="detailRef" :loan-public-id="loanId" @not-found="notFound = true" />
-        <SharedDebtDetail
-            v-else-if="sharedId"
-            ref="detailRef"
-            :shared-debt-public-id="sharedId"
-            @not-found="notFound = true"
-            @deleted="backToList"
-        />
+        <template v-else>
+            <!-- la fiche reste montée sous l’onglet Justificatifs : les boutons du haut (Modifier…) pilotent ses modales -->
+            <div v-show="activeDetailTab === 'informations'" class="debts-page__detail">
+                <LiabilityDetail v-if="liabilityId" ref="detailRef" :liability-public-id="liabilityId" @not-found="notFound = true" />
+                <PersonalLoanDetail v-else-if="loanId" ref="detailRef" :loan-public-id="loanId" @not-found="notFound = true" />
+                <SharedDebtDetail
+                    v-else-if="sharedId"
+                    ref="detailRef"
+                    :shared-debt-public-id="sharedId"
+                    @not-found="notFound = true"
+                    @deleted="backToList"
+                />
+            </div>
+            <EntityAttachmentsPanel
+                v-if="activeDetailTab === 'attachments' && attachmentSource"
+                class="debts-page__attachments"
+                :source="attachmentSource"
+            />
+        </template>
     </AppPageShell>
 
     <AppPageShell v-else :title="t('debtsPage.title')" :subtitle="subtitle">
@@ -559,6 +624,10 @@ onUnmounted(() => {
 
 .debts-search--mobile {
     display: none;
+}
+
+.debts-page__attachments {
+    padding: 8px 0 24px;
 }
 </style>
 

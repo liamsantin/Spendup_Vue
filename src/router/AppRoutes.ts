@@ -75,6 +75,16 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/finances/imports/AppImportDetailPage.vue')
         },
         {
+            name: 'AppRecurrenceExpenseDetail',
+            path: 'finances/recurrences/charges/:publicId',
+            component: () => import('@/views/app/finances/recurrences/AppRecurrenceDetailPage.vue')
+        },
+        {
+            name: 'AppRecurrenceIncomeDetail',
+            path: 'finances/recurrences/revenus/:publicId',
+            component: () => import('@/views/app/finances/recurrences/AppRecurrenceDetailPage.vue')
+        },
+        {
             name: 'AppRecurrencesCharges',
             path: 'finances/recurrences/charges',
             component: () => import('@/views/app/finances/recurrences/AppRecurrencesPage.vue')
@@ -111,7 +121,7 @@ const AppRoutes: RouteRecordRaw = {
         },
         {
             name: 'AppTiers',
-            path: 'gestion/tiers',
+            path: 'gestion/tiers/:publicId?',
             component: () => import('@/views/app/gestion/tiers/AppTiersPage.vue')
         },
         {

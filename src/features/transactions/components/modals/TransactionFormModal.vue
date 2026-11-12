@@ -55,6 +55,14 @@ const props = defineProps<{
     defaultType?: TransactionType | null;
     /** Préremplit l’actif (fiche patrimoine). */
     defaultAssetPublicId?: string | null;
+    /** Préremplit le tiers (onglet Transactions d’une fiche de tiers). */
+    defaultTierPublicId?: string | null;
+    /** Préremplit la catégorie (onglet Transactions d’un budget). */
+    defaultCategoryPublicId?: string | null;
+    /** Préremplit la récurrence (onglet Transactions d’une récurrence). */
+    defaultRecurrencePublicId?: string | null;
+    /** Préremplit l’objectif d’épargne (onglet Transactions d’un objectif). */
+    defaultSavingsGoalPublicId?: string | null;
     /** Liste budget : afficher « Délier la transaction ». */
     showUnlinkFromBudget?: boolean;
 }>();
@@ -410,10 +418,10 @@ function resetForm() {
     form.operationDate = todayUtcYmd();
     form.valueDate = null;
     form.paymentMethodPublicId = '';
-    form.categoryPublicId = '';
-    form.tierPublicId = '';
-    form.recurrencePublicId = '';
-    form.savingsGoalPublicId = '';
+    form.categoryPublicId = props.defaultCategoryPublicId?.trim() || '';
+    form.tierPublicId = props.defaultTierPublicId?.trim() || '';
+    form.recurrencePublicId = props.defaultRecurrencePublicId?.trim() || '';
+    form.savingsGoalPublicId = props.defaultSavingsGoalPublicId?.trim() || '';
     form.assetPublicId = props.defaultAssetPublicId?.trim() || '';
     form.tagPublicIds = [];
 }

@@ -96,16 +96,9 @@ function clearDetailPath() {
     void router.replace({ path: SAVINGS_GOALS_PATHS.list, query: route.query });
 }
 
-async function openDetail(goal: SavingsGoal, pushPath = true) {
-    try {
-        const fresh = await store.fetchSavingsGoal(goal.publicId, true);
-        editTarget.value = fresh ?? goal;
-    } catch {
-        editTarget.value = goal;
-    }
-    if (!pushPath) return;
-    if (savingsGoalPublicIdFromPath(route.path) === goal.publicId) return;
-    await router.replace({ path: savingsGoalDetailPath(goal.publicId), query: route.query });
+/** La fiche d’un objectif est une page (`/app/planning/objectifs/:publicId`). */
+function openDetail(goal: SavingsGoal) {
+    void router.push({ path: savingsGoalDetailPath(goal.publicId), query: route.query });
 }
 
 async function syncDetailFromRoute() {
@@ -220,7 +213,8 @@ async function confirmDelete() {
                     :savings-goal="goal"
                     :acting="store.acting"
                     :style="{ '--i': index }"
-                    @edit="openDetail"
+                    @open="openDetail"
+                    @edit="editTarget = $event"
                     @delete="requestDelete"
                 />
             </div>

@@ -8,9 +8,8 @@ import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useTagsStore } from '@/features/tags/stores/tags-store';
 import RecurringMonthCalendar from '@/features/recurring-payments/components/RecurringMonthCalendar.vue';
-import RecurringTemplateDetailModal from '@/features/recurring-payments/components/modals/RecurringTemplateDetailModal.vue';
 import RecurringTemplateFormModal from '@/features/recurring-payments/components/modals/RecurringTemplateFormModal.vue';
-import { RECURRENCES_PATHS, recurrencesPathForTab } from '@/features/recurring-payments/paths';
+import { RECURRENCES_PATHS, recurrenceDetailPath, recurrencesPathForTab } from '@/features/recurring-payments/paths';
 import { canWriteRecurringOnAccount } from '@/features/recurring-payments/rights';
 import RecurringTemplateTable from '@/features/recurring-payments/components/list/RecurringTemplateTable.vue';
 import {
@@ -82,8 +81,6 @@ const createKind = ref<RecurringKind | null>(null);
 const createType = ref<RecurringExpenseType | RecurringIncomeType | null>(null);
 const editTarget = ref<RecurringExpense | RecurringIncome | null>(null);
 const deleteTarget = ref<RecurringExpense | RecurringIncome | null>(null);
-const detailId = ref<string | null>(null);
-const detailKind = ref<RecurringKind | null>(null);
 const localError = ref<string | null>(null);
 
 const editOpen = computed({
@@ -96,12 +93,6 @@ const deleteOpen = computed({
     get: () => !!deleteTarget.value,
     set: (value: boolean) => {
         if (!value) deleteTarget.value = null;
-    }
-});
-const detailOpen = computed({
-    get: () => !!detailId.value,
-    set: (value: boolean) => {
-        if (!value) detailId.value = null;
     }
 });
 
@@ -348,14 +339,13 @@ async function confirmDelete() {
     }
 }
 
+/** La fiche est une page : création puis ouverture directe de la nouvelle récurrence. */
 function onSaved(template: RecurringExpense | RecurringIncome) {
-    detailKind.value = templateKind(template);
-    detailId.value = template.publicId;
+    openDetail(template);
 }
 
 function openDetail(item: RecurringExpense | RecurringIncome) {
-    detailKind.value = templateKind(item);
-    detailId.value = item.publicId;
+    void router.push(recurrenceDetailPath(templateKind(item), item.publicId));
 }
 
 function loadMore() {
@@ -459,16 +449,6 @@ function loadMore() {
             @saved="onSaved"
         />
         <RecurringTemplateFormModal v-model="editOpen" :kind="editKind" :template="editTarget" />
-        <RecurringTemplateDetailModal
-            v-model="detailOpen"
-            :kind="detailKind ?? 'expense'"
-            :public-id="detailId"
-            @edit="
-                editTarget = (
-                    detailKind === 'income' ? store.getDetail('income', detailId || '') : store.getDetail('expense', detailId || '')
-                ) as RecurringExpense | RecurringIncome | null
-            "
-        />
 
         <AppConfirmationModal
             v-model="deleteOpen"

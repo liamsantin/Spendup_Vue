@@ -2,6 +2,7 @@
 import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import PdfViewer from '@/features/files/components/PdfViewer.vue';
 import { useFileContentUrl } from '@/features/files/composables/useFileContentUrl';
 import { getErrorMessage } from '@/utils/errors/app-error';
 
@@ -11,15 +12,10 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const { objectUrl, loading, error, load, reset } = useFileContentUrl();
+const { objectUrl, blob, loading, error, load, reset } = useFileContentUrl();
 
 const title = computed(() => props.nameOriginal || t('filesPage.preview.title'));
-/** Jamais l’URL API : le JWT ne part pas dans une navigation iframe. */
-const frameSrc = computed(() => {
-    const url = objectUrl.value;
-    if (!url?.startsWith('blob:')) return undefined;
-    return `${url}#view=FitH`;
-});
+/** Jamais l’URL API : le JWT ne sort pas, pdf.js lit seulement le PDF déchiffré en mémoire. */
 
 watch(
     () => props.publicId,
@@ -60,7 +56,7 @@ defineExpose({ download });
         <div v-if="loading" class="file-reader__state">
             <span class="su-spin" />
         </div>
-        <iframe v-else-if="frameSrc" class="file-reader__frame" :src="frameSrc" :title="title" />
+        <PdfViewer v-else-if="blob" :file="blob" :title="title" />
         <p v-else class="file-reader__state">{{ t('filesPage.preview.unavailable') }}</p>
     </div>
 </template>
@@ -90,15 +86,5 @@ defineExpose({ download });
     min-height: 240px;
     margin: 0;
     color: var(--gray);
-}
-
-.file-reader__frame {
-    display: block;
-    flex: 1 1 auto;
-    min-height: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-    background: var(--soft);
 }
 </style>

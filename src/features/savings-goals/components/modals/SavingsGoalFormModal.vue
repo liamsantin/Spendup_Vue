@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ArrowsExchangeIcon, FileDescriptionIcon, LinkIcon, UnlinkIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
-import AppModalPanelScroll from '@/components/shared/modal/AppModalPanelScroll.vue';
-import AppModalTabs from '@/components/shared/modal/AppModalTabs.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
-import { canLinkSavingsGoalAccount, formatCalendarDate, formatSavingsGoalAmount } from '@/features/savings-goals/format';
+import { canLinkSavingsGoalAccount, formatSavingsGoalAmount } from '@/features/savings-goals/format';
 import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
 import {
     buildCreateSavingsGoalPayload,
@@ -22,7 +19,6 @@ import {
 import type { SavingsGoal } from '@/features/savings-goals/types';
 import { useUserSettingsStore } from '@/features/user-settings';
 import SavingsGoalForm, { type SavingsGoalFormFieldErrors } from '@/features/savings-goals/components/forms/SavingsGoalForm.vue';
-import SavingsGoalLinkTransactionsModal from '@/features/savings-goals/components/modals/SavingsGoalLinkTransactionsModal.vue';
 
 const props = defineProps<{
     modelValue: boolean;
@@ -41,9 +37,6 @@ const settings = useUserSettingsStore();
 
 const isEditSession = ref(false);
 const editGoal = ref<SavingsGoal | null>(null);
-const activeTab = ref<'details' | 'transactions'>('details');
-const linkMode = ref<'link' | 'unlink'>('link');
-const linkOpen = ref(false);
 
 const isEdit = computed(() => isEditSession.value || !!props.savingsGoal);
 
@@ -106,14 +99,6 @@ const progressHint = computed(() => {
     });
 });
 
-const projectedText = computed(() => {
-    const goal = liveGoal.value;
-    if (!goal?.projectedDate) return null;
-    return t('savingsGoalsPage.form.projectedOn', { date: formatCalendarDate(goal.projectedDate, locale.value) });
-});
-
-const contributions = computed(() => liveGoal.value?.contributions ?? []);
-const canLinkTransactions = computed(() => !!liveGoal.value?.accountPublicId);
 const canSave = computed(() => {
     if (!isEdit.value || !editGoal.value) return true;
     return isSavingsGoalFormDirty(editGoal.value, form);
@@ -123,20 +108,6 @@ const modalTitle = computed(() => {
     if (!isEdit.value) return t('savingsGoalsPage.form.createTitle');
     return liveGoal.value?.name || t('savingsGoalsPage.form.editTitle');
 });
-
-const detailTabs = computed(() => [
-    {
-        value: 'details' as const,
-        label: t('savingsGoalsPage.detail.tabs.details'),
-        icon: FileDescriptionIcon
-    },
-    {
-        value: 'transactions' as const,
-        label: t('savingsGoalsPage.detail.tabs.transactions'),
-        icon: ArrowsExchangeIcon,
-        chip: contributions.value.length || undefined
-    }
-]);
 
 function clearFieldErrors() {
     fieldErrors.name = null;
@@ -182,7 +153,6 @@ watch(
         if (!value) return;
         isEditSession.value = !!props.savingsGoal;
         editGoal.value = props.savingsGoal ?? null;
-        activeTab.value = 'details';
         resetForm();
         if (!accountsStore.initialized) {
             void accountsStore.loadAccounts().catch(() => undefined);
@@ -201,7 +171,6 @@ async function onSave() {
     const built = isEdit.value ? buildUpdateSavingsGoalPayload(form, ctx) : buildCreateSavingsGoalPayload(form, ctx);
     if (!built.ok) {
         applyPayloadErrors(built.code, built.field);
-        if (isEdit.value) activeTab.value = 'details';
         return;
     }
     try {
@@ -223,111 +192,10 @@ async function onSave() {
         localError.message = getErrorMessage(e);
     }
 }
-
-function openLink(mode: 'link' | 'unlink') {
-    if (!canLinkTransactions.value) return;
-    linkMode.value = mode;
-    linkOpen.value = true;
-}
-
-function contributionAmount(amount: number, currency: string): string {
-    return formatSavingsGoalAmount(amount, currency, locale.value);
-}
 </script>
 
 <template>
-    <AppModalTabs
-        v-if="isEdit"
-        v-model="open"
-        v-model:tab="activeTab"
-        :title="modalTitle"
-        :subtitle="t('savingsGoalsPage.form.subtitle')"
-        :tabs="detailTabs"
-        :height="720"
-        :max-width="640"
-    >
-        <AppAlert v-if="localError.message" type="error" class="mb-4" closable @dismiss="localError.message = null">
-            {{ localError.message }}
-        </AppAlert>
-
-        <template #panel-details>
-            <AppModalPanelScroll>
-                <SavingsGoalForm
-                    :form="form"
-                    :is-edit="isEdit"
-                    :account-items="accountItems"
-                    :field-errors="fieldErrors"
-                    :currency-hint="currencyHint"
-                    :account-hint="t('savingsGoalsPage.form.accountHint')"
-                    :account-change-hint="accountChangeHint"
-                    :progress-hint="progressHint"
-                />
-            </AppModalPanelScroll>
-        </template>
-
-        <template #panel-transactions>
-            <AppModalPanelScroll>
-                <div v-if="liveGoal" class="goal-contributions">
-                    <div class="goal-contributions__head">
-                        <p class="goal-contributions__hint">
-                            {{
-                                canLinkTransactions
-                                    ? t('savingsGoalsPage.form.linkedTransactions.hint')
-                                    : t('savingsGoalsPage.form.linkedTransactions.noAccount')
-                            }}
-                        </p>
-                        <p v-if="projectedText" class="goal-contributions__hint">{{ projectedText }}</p>
-                    </div>
-                    <div class="goal-contributions__actions">
-                        <button
-                            type="button"
-                            class="su-btn su-btn--ink"
-                            :disabled="!canLinkTransactions || store.acting"
-                            @click="openLink('link')"
-                        >
-                            <LinkIcon :size="16" stroke-width="1.6" />
-                            {{ t('savingsGoalsPage.form.linkedTransactions.add') }}
-                        </button>
-                        <button
-                            type="button"
-                            class="su-btn"
-                            :disabled="!canLinkTransactions || store.acting || !contributions.length"
-                            @click="openLink('unlink')"
-                        >
-                            <UnlinkIcon :size="16" stroke-width="1.6" />
-                            {{ t('savingsGoalsPage.form.linkedTransactions.remove') }}
-                        </button>
-                    </div>
-                    <p v-if="!contributions.length" class="goal-contributions__empty">
-                        {{ t('savingsGoalsPage.form.linkedTransactions.empty') }}
-                    </p>
-                    <ul v-else class="goal-contributions__list">
-                        <li v-for="item in contributions" :key="item.transactionPublicId" class="goal-contributions__row">
-                            <span class="goal-contributions__meta">
-                                <span class="goal-contributions__name">{{ item.label }}</span>
-                                <span class="goal-contributions__sub">{{ formatCalendarDate(item.operationDate, locale) }}</span>
-                            </span>
-                            <span class="goal-contributions__amount" :class="item.amount < 0 ? 'su-neg' : 'su-pos'">
-                                {{ contributionAmount(item.amount, liveGoal.currency) }}
-                            </span>
-                        </li>
-                    </ul>
-                </div>
-            </AppModalPanelScroll>
-        </template>
-
-        <template #footer="{ close }">
-            <button type="button" class="su-btn" :disabled="store.acting" @click="close">
-                {{ t('common.cancel') }}
-            </button>
-            <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
-                {{ t('common.save') }}
-            </button>
-        </template>
-    </AppModalTabs>
-
     <AppModalBase
-        v-else
         v-model="open"
         :title="modalTitle"
         :subtitle="t('savingsGoalsPage.form.subtitle')"
@@ -360,81 +228,4 @@ function contributionAmount(amount: number, currency: string): string {
             </button>
         </template>
     </AppModalBase>
-
-    <SavingsGoalLinkTransactionsModal v-model="linkOpen" :savings-goal="liveGoal" :mode="linkMode" />
 </template>
-
-<style scoped>
-.goal-contributions {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-}
-
-.goal-contributions__hint {
-    margin: 0 0 8px;
-    font-size: 13px;
-    color: var(--gray);
-}
-
-.goal-contributions__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 16px;
-}
-
-.goal-contributions__empty {
-    margin: 0;
-    color: var(--gray);
-    font-size: 14px;
-}
-
-/* contributions : lignes sur filets fins, montant 700 (+ bleu / − noir) */
-.goal-contributions__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid var(--line);
-}
-
-.goal-contributions__row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 0;
-    border-top: 1px solid var(--line);
-}
-
-.goal-contributions__list > .goal-contributions__row:first-child {
-    border-top: 0;
-}
-
-.goal-contributions__meta {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    flex: 1 1 auto;
-    gap: 2px;
-}
-
-.goal-contributions__name {
-    font-weight: 700;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.goal-contributions__sub {
-    font-size: 13px;
-    color: var(--gray);
-}
-
-.goal-contributions__amount {
-    flex: none;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-}
-</style>

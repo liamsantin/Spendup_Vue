@@ -634,3 +634,44 @@
         padding: 0 12px;
     }
 }
+
+/* ── onglet de fiche à barre fixe : la barre d'actions reste en place, la liste défile dans sa propre zone ──
+   .su-fill      : la fiche occupe toute la hauteur du corps de page (qui, lui, ne défile plus) ;
+   .su-fill__grow: le panneau de l'onglet prend la hauteur restante ;
+   .su-fill__scroll : zone de défilement, qui commence sous la barre. */
+.su-fill {
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: 100%;
+    min-height: 0;
+}
+
+.su-fill__grow {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.su-fill__scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding-right: 12px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    overscroll-behavior: contain;
+}
+
+/* petit écran : la page défile d'un seul bloc, comme le reste du mobile */
+@media (max-width: 767px) {
+    .su-fill {
+        height: auto;
+    }
+
+    .su-fill__scroll {
+        padding-right: 0;
+        overflow: visible;
+    }
+}

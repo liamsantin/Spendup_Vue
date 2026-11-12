@@ -24,6 +24,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+    open: [budget: Budget];
     edit: [budget: Budget];
     delete: [budget: Budget];
     toggleActive: [budget: Budget];
@@ -72,7 +73,7 @@ const fillClass = computed(() => {
 function onActivate(event: MouseEvent) {
     if (props.acting) return;
     if (event.target instanceof Element && event.target.closest('button')) return;
-    emit('edit', props.budget);
+    emit('open', props.budget);
 }
 </script>
 
@@ -84,7 +85,7 @@ function onActivate(event: MouseEvent) {
         role="button"
         tabindex="0"
         @click="onActivate"
-        @keydown.enter.prevent="emit('edit', budget)"
+        @keydown.enter.prevent="emit('open', budget)"
     >
         <div class="budget-row__head">
             <p class="budget-row__name">{{ budget.name }}</p>

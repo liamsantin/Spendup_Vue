@@ -11,7 +11,7 @@
 .auth-page__copy {
     position: sticky;
     top: 80px;
-    grid-column: 1 / span 5;
+    grid-column: 1 / span 6;
     display: grid;
     justify-items: start;
     align-content: start;
@@ -20,7 +20,7 @@
 }
 
 .auth-page__copy .s-display {
-    max-width: 12ch;
+    max-width: 18ch;
 }
 
 .auth-page__note {

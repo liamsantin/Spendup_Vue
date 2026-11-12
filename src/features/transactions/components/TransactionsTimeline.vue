@@ -53,7 +53,39 @@ const props = defineProps<{
     lockedAccountPublicId?: string | null;
     /** Si défini, charge `GET /api/transactions?assetPublicId=` (fiche d’actif) et ignore la query. */
     lockedAssetPublicId?: string | null;
+    /**
+     * Filtres fixes d’un onglet « Transactions » de fiche (récurrence, tiers, budget) : ils remplacent la query de la
+     * page, qui porte l’onglet et non des filtres. Mêmes clés que la query de la page Transactions.
+     */
+    lockedFilters?: TransactionsLockedFilters | null;
+    /** Cases à cocher sur les lignes (bouton « Délier » d’une fiche). Toujours actives sur la fiche d’un actif. */
+    selectable?: boolean;
+    /** Valeurs préremplies du bouton « Ajouter » d’une fiche. */
+    createDefaults?: TransactionsCreateDefaults | null;
 }>();
+
+export type TransactionsLockedFilters = Partial<
+    Record<
+        | 'account'
+        | 'from'
+        | 'to'
+        | 'category'
+        | 'tier'
+        | 'type'
+        | 'budget'
+        | 'savingsGoal'
+        | 'recurringExpensePublicId'
+        | 'recurringIncomePublicId',
+        string
+    >
+>;
+
+export type TransactionsCreateDefaults = {
+    accountPublicId?: string | null;
+    type?: TransactionType | null;
+    recurrencePublicId?: string | null;
+    savingsGoalPublicId?: string | null;
+};
 
 /** Agrégats calculés sur la liste chargée (le store n'expose pas de totaux). */
 export type TransactionsSummary = {
@@ -117,30 +149,38 @@ function queryString(name: string): string | null {
 }
 
 /** Fiche compte ou fiche d’actif : la query de la page (onglet, recherche d’annuaire) ne filtre pas les transactions. */
-const isolateFilters = computed(() => !!(props.lockedAccountPublicId?.trim() || props.lockedAssetPublicId?.trim()));
-const filterAccountId = computed(() => props.lockedAccountPublicId?.trim() || (isolateFilters.value ? null : queryString('account')));
+const isolateFilters = computed(() => !!(props.lockedAccountPublicId?.trim() || props.lockedAssetPublicId?.trim() || props.lockedFilters));
+
+/** Valeur d’un filtre : fixe si la fiche l’impose, sinon lue dans la query (hors fiche). */
+function filterValue(name: keyof TransactionsLockedFilters): string | null {
+    const locked = props.lockedFilters?.[name]?.trim();
+    if (locked) return locked;
+    return isolateFilters.value ? null : queryString(name);
+}
+const filterAccountId = computed(() => props.lockedAccountPublicId?.trim() || filterValue('account'));
+/** Objectif d’épargne imposé par une fiche : filtré côté client, sur les transactions du compte lié. */
+const filterSavingsGoalId = computed(() => props.lockedFilters?.savingsGoal?.trim() || null);
 const filterAssetId = computed(() => props.lockedAssetPublicId?.trim() || null);
-const filterFrom = computed(() => (isolateFilters.value ? null : queryString('from')));
-const filterTo = computed(() => (isolateFilters.value ? null : queryString('to')));
-const filterCategoryId = computed(() => (isolateFilters.value ? null : queryString('category')));
+const filterFrom = computed(() => filterValue('from'));
+const filterTo = computed(() => filterValue('to'));
+const filterCategoryId = computed(() => filterValue('category'));
 const filterTagId = computed(() => (isolateFilters.value ? null : queryString('tag')));
-const filterTierId = computed(() => (isolateFilters.value ? null : queryString('tier')));
+const filterTierId = computed(() => filterValue('tier'));
 const filterPaymentMethodId = computed(() => (isolateFilters.value ? null : queryString('paymentMethod')));
-const filterRecurringExpenseId = computed(() => (isolateFilters.value ? null : queryString('recurringExpensePublicId')));
-const filterRecurringIncomeId = computed(() => (isolateFilters.value ? null : queryString('recurringIncomePublicId')));
+const filterRecurringExpenseId = computed(() => filterValue('recurringExpensePublicId'));
+const filterRecurringIncomeId = computed(() => filterValue('recurringIncomePublicId'));
 const filterSearch = computed(() => {
     if (isolateFilters.value) return null;
     return queryString('q')?.slice(0, TRANSACTION_SEARCH_MAX) ?? null;
 });
 const filterType = computed<TransactionType | null>(() => {
-    if (isolateFilters.value) return null;
-    const raw = queryString('type');
+    const raw = filterValue('type');
     return raw && TRANSACTION_TYPES.includes(raw as TransactionType) ? (raw as TransactionType) : null;
 });
 const listSort = computed(() => (isolateFilters.value ? TRANSACTION_SORT_DEFAULT : parseTransactionSort(queryString('sort'))));
 const filterMinAmount = computed(() => (isolateFilters.value ? null : parseAmountFilter(queryString('minAmount'))));
 const filterMaxAmount = computed(() => (isolateFilters.value ? null : parseAmountFilter(queryString('maxAmount'))));
-const filterBudgetId = computed(() => (isolateFilters.value ? null : queryString('budget')));
+const filterBudgetId = computed(() => filterValue('budget'));
 const envelopeBudget = computed(() => {
     const id = filterBudgetId.value;
     if (!id) return null;
@@ -154,7 +194,12 @@ const envelopeLinkedCategoryIds = computed(() =>
     envelopeBudget.value ? budgetLinkedCategoryIds(envelopeBudget.value, categoriesStore.items) : null
 );
 const needsClientFullScan = computed(
-    () => filterMinAmount.value != null || filterMaxAmount.value != null || !!filterPaymentMethodId.value || !!filterBudgetId.value
+    () =>
+        filterMinAmount.value != null ||
+        filterMaxAmount.value != null ||
+        !!filterPaymentMethodId.value ||
+        !!filterBudgetId.value ||
+        !!filterSavingsGoalId.value
 );
 const groupByDate = computed(() => listSort.value === 'dateDesc' || listSort.value === 'dateAsc');
 
@@ -164,6 +209,7 @@ const visibleItems = computed(() => {
     const needle = filterSearch.value?.trim() ?? '';
     const filtered = store.items.filter((item) => {
         if (type && item.type !== type) return false;
+        if (filterSavingsGoalId.value && item.savingsGoalPublicId !== filterSavingsGoalId.value) return false;
         if (paymentMethodId && item.paymentMethodPublicId !== paymentMethodId) return false;
         if (!amountInFilterRange(item.amount, filterMinAmount.value, filterMaxAmount.value)) return false;
         const budget = envelopeBudget.value;
@@ -568,8 +614,10 @@ watch(
 );
 
 // La query `q` est déjà écrite après un délai (`useBoardSearch`) : chaque valeur recharge la liste côté serveur.
+const selectionEnabled = computed(() => !!filterAssetId.value || !!props.selectable);
+
 watch(visibleItems, (items) => {
-    if (!filterAssetId.value || !selectedIds.value.length) return;
+    if (!selectionEnabled.value || !selectedIds.value.length) return;
     const allowed = new Set(items.filter((item) => canWriteItem(item)).map((item) => item.publicId));
     const next = selectedIds.value.filter((id) => allowed.has(id));
     if (next.length !== selectedIds.value.length) selectedIds.value = next;
@@ -651,7 +699,7 @@ async function confirmDelete() {
                         :envelope-action="envelopeActionFor(transaction)"
                         :show-date="!groupByDate"
                         :end-action="filterAssetId ? 'none' : 'delete'"
-                        :selectable="!!filterAssetId"
+                        :selectable="selectionEnabled"
                         :selected="selectedIds.includes(transaction.publicId)"
                         :style="{ '--i': searchAppearIndex.get(transaction.publicId) ?? 0 }"
                         @edit="editTarget = $event"
@@ -672,9 +720,13 @@ async function confirmDelete() {
 
         <TransactionFormModal
             v-model="createOpen"
-            :default-account-public-id="filterAccountId"
-            :default-type="filterType"
+            :default-account-public-id="createDefaults?.accountPublicId || filterAccountId"
+            :default-type="createDefaults?.type || filterType"
+            :default-recurrence-public-id="createDefaults?.recurrencePublicId"
+            :default-savings-goal-public-id="createDefaults?.savingsGoalPublicId"
             :default-asset-public-id="filterAssetId"
+            :default-tier-public-id="lockedFilters?.tier"
+            :default-category-public-id="lockedFilters?.category"
         />
         <TransactionFormModal
             v-model="editOpen"
