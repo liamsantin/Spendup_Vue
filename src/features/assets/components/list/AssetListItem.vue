@@ -12,6 +12,8 @@ import type { Asset } from '@/features/assets/types';
 
 const props = defineProps<{
     asset: Asset;
+    /** Une dette active finance cet actif (leasing, crédit, hypothèque). */
+    financed?: boolean;
     acting?: boolean;
 }>();
 
@@ -113,11 +115,24 @@ function onActivate(event: MouseEvent) {
         <div class="asset-card__foot">
             <span>{{ valuationText }}</span>
             <span v-if="sold" class="asset-card__sold">{{ t('assetsPage.list.sold') }}</span>
+            <span v-else-if="financed" class="asset-card__financed">
+                <span class="su-sq" aria-hidden="true" />
+                {{ t('assetsPage.list.financed') }}
+            </span>
         </div>
     </article>
 </template>
 
 <style scoped>
+/* mention « Financé » : petit carré violet + texte, jamais la couleur seule */
+.asset-card__financed {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--violet-ink);
+    --sq-color: var(--violet);
+}
+
 /* bloc léger : bordure fine, pas d'ombre ; noircit au survol */
 .asset-card {
     display: flex;

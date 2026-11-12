@@ -1,10 +1,10 @@
 /**
  * Passifs — contrat API `/api/liabilities` (voir `docs/features/liabilities/contract.md`).
- * Un passif = une dette envers un prêteur (tier) : crédit, hypothèque, dette personnelle, carte de crédit…
+ * Un passif = une dette envers un prêteur (tier) : crédit, hypothèque, leasing, dette personnelle, carte de crédit…
  * Le statut est dérivé du restant (`rembourse` à zéro), sauf `annule` posé explicitement et qui colle.
  */
 
-export type LiabilityType = 'credit' | 'hypotheque' | 'dettePersonnelle' | 'carteCredit' | 'other';
+export type LiabilityType = 'credit' | 'hypotheque' | 'leasing' | 'dettePersonnelle' | 'carteCredit' | 'other';
 
 export type LiabilityStatus = 'active' | 'rembourse' | 'annule';
 
@@ -34,6 +34,14 @@ export type Liability = {
     status: LiabilityStatus;
     createdAt: string;
     updatedAt: string | null;
+    /** Leasing : valeur résiduelle en fin de contrat. */
+    residualValue: number | null;
+    /**
+     * Charge récurrente qui rembourse ce passif (sa mensualité). Chaque échéance payée après la dernière
+     * mise à jour du restant le diminue : `remainingAmount` est déjà calculé par l’API.
+     */
+    recurringExpensePublicId: string | null;
+    recurringExpenseName: string | null;
 };
 
 export type LiabilitiesListResult = {
@@ -59,6 +67,8 @@ export type CreateLiabilityPayload = {
     plannedEndDate: string | null;
     lenderTierPublicId: string | null;
     assetPublicId: string | null;
+    residualValue: number | null;
+    recurringExpensePublicId: string | null;
 };
 
 export type UpdateLiabilityPayload = {
@@ -73,6 +83,8 @@ export type UpdateLiabilityPayload = {
     plannedEndDate: string | null;
     lenderTierPublicId: string | null;
     assetPublicId: string | null;
+    residualValue: number | null;
+    recurringExpensePublicId: string | null;
     /** `'annule'` colle ensuite ; `null` = le serveur dérive le statut du restant. */
     status: 'annule' | null;
 };
@@ -81,7 +93,7 @@ export type SetRemainingAmountPayload = {
     remainingAmount: number;
 };
 
-export const LIABILITY_TYPES: LiabilityType[] = ['credit', 'hypotheque', 'dettePersonnelle', 'carteCredit', 'other'];
+export const LIABILITY_TYPES: LiabilityType[] = ['credit', 'hypotheque', 'leasing', 'dettePersonnelle', 'carteCredit', 'other'];
 
 export const LIABILITY_STATUSES: LiabilityStatus[] = ['active', 'rembourse', 'annule'];
 

@@ -20,6 +20,7 @@ export type LiabilityPayloadErrorCode =
     | 'remainingAmountOutOfRange'
     | 'interestRateInvalid'
     | 'interestRateOutOfRange'
+    | 'residualValueInvalid'
     | 'startDateInvalid'
     | 'plannedEndDateInvalid'
     | 'plannedEndDateBeforeStart'
@@ -38,6 +39,10 @@ export type LiabilityFormFields = {
     plannedEndDate: string | null;
     lenderTierPublicId: string;
     assetPublicId: string;
+    /** Leasing : valeur résiduelle, vide = aucune. */
+    residualValue: string;
+    /** Charge récurrente qui rembourse le passif, vide = aucune. */
+    recurringExpensePublicId: string;
     /** Édition : interrupteur « Annulé ». */
     cancel: boolean;
 };
@@ -84,6 +89,8 @@ export function emptyLiabilityFormFields(
         plannedEndDate: null,
         lenderTierPublicId: '',
         assetPublicId: '',
+        residualValue: '',
+        recurringExpensePublicId: '',
         cancel: false
     };
 }
@@ -100,6 +107,8 @@ export function liabilityToFormFields(liability: Liability): LiabilityFormFields
         plannedEndDate: liability.plannedEndDate,
         lenderTierPublicId: liability.lenderTierPublicId ?? '',
         assetPublicId: liability.assetPublicId ?? '',
+        residualValue: liability.residualValue == null ? '' : String(liability.residualValue),
+        recurringExpensePublicId: liability.recurringExpensePublicId ?? '',
         cancel: liability.status === 'annule'
     };
 }
@@ -117,6 +126,8 @@ type CommonFields =
           plannedEndDate: string | null;
           lenderTierPublicId: string | null;
           assetPublicId: string | null;
+          residualValue: number | null;
+          recurringExpensePublicId: string | null;
       };
 
 function parseRemaining(raw: string, initialAmount: number): { ok: true; value: number | null } | BuildLiabilityPayloadFail {
@@ -151,6 +162,15 @@ function commonFields(fields: LiabilityFormFields): CommonFields {
         interestRate = parsed;
     }
 
+    // valeur résiduelle : propre au leasing, ignorée pour les autres types
+    let residualValue: number | null = null;
+    const residualRaw = fields.type === 'leasing' ? fields.residualValue.trim() : '';
+    if (residualRaw) {
+        const parsed = parseAccountAmount(residualRaw);
+        if (parsed == null || parsed < 0) return fail('residualValueInvalid', 'residualValue');
+        residualValue = parsed;
+    }
+
     const startDate = emptyToNull(fields.startDate);
     if (startDate && !isValidYmd(startDate)) return fail('startDateInvalid', 'startDate');
     const plannedEndDate = emptyToNull(fields.plannedEndDate);
@@ -167,7 +187,9 @@ function commonFields(fields: LiabilityFormFields): CommonFields {
         startDate,
         plannedEndDate,
         lenderTierPublicId: emptyToNull(fields.lenderTierPublicId),
-        assetPublicId: emptyToNull(fields.assetPublicId)
+        assetPublicId: emptyToNull(fields.assetPublicId),
+        residualValue,
+        recurringExpensePublicId: emptyToNull(fields.recurringExpensePublicId)
     };
 }
 
@@ -194,7 +216,9 @@ export function buildCreateLiabilityPayload(fields: LiabilityFormFields): BuildL
             startDate: common.startDate,
             plannedEndDate: common.plannedEndDate,
             lenderTierPublicId: common.lenderTierPublicId,
-            assetPublicId: common.assetPublicId
+            assetPublicId: common.assetPublicId,
+            residualValue: common.residualValue,
+            recurringExpensePublicId: common.recurringExpensePublicId
         }
     };
 }
@@ -225,6 +249,8 @@ export function buildUpdateLiabilityPayload(
             plannedEndDate: common.plannedEndDate,
             lenderTierPublicId: common.lenderTierPublicId,
             assetPublicId: common.assetPublicId,
+            residualValue: common.residualValue,
+            recurringExpensePublicId: common.recurringExpensePublicId,
             status: fields.cancel ? 'annule' : null
         }
     };
@@ -257,6 +283,9 @@ export function isLiabilityFormDirty(liability: Liability, fields: LiabilityForm
     if (emptyToNull(fields.plannedEndDate) !== emptyToNull(liability.plannedEndDate)) return true;
     if (emptyToNull(fields.lenderTierPublicId) !== emptyToNull(liability.lenderTierPublicId)) return true;
     if (emptyToNull(fields.assetPublicId) !== emptyToNull(liability.assetPublicId)) return true;
+    if (emptyToNull(fields.recurringExpensePublicId) !== emptyToNull(liability.recurringExpensePublicId)) return true;
+    const residualRaw = fields.type === 'leasing' ? fields.residualValue.trim() : '';
+    if ((residualRaw ? parseAccountAmount(residualRaw) : null) !== liability.residualValue) return true;
     if (fields.cancel !== (liability.status === 'annule')) return true;
     return false;
 }

@@ -16,12 +16,25 @@ import { filterDirectoryAssets, isAssetType, parseAssetStateFilter } from '@/fea
 import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import { ASSET_NAME_MAX, type Asset, type AssetType } from '@/features/assets/types';
 import AssetListItem from '@/features/assets/components/list/AssetListItem.vue';
+import { useLiabilitiesStore } from '@/features/liabilities/stores/liabilities-store';
 import AssetFormModal from '@/features/assets/components/modals/AssetFormModal.vue';
 
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useAssetsStore();
+const liabilitiesStore = useLiabilitiesStore();
+
+/** Actifs financés par une dette active : mention « Financé » sur leur carte. */
+const financedIds = computed(
+    () =>
+        new Set(
+            liabilitiesStore
+                .allKnownItems()
+                .filter((item) => item.assetPublicId && item.status === 'active')
+                .map((item) => item.assetPublicId as string)
+        )
+);
 
 const createOpen = ref(false);
 const deleteTarget = ref<Asset | null>(null);
@@ -101,6 +114,7 @@ function onCreated(asset: Asset) {
 onMounted(() => {
     document.addEventListener('visibilitychange', onVisibilityChange);
     void loadDirectory().catch(() => undefined);
+    if (!liabilitiesStore.initialized) void liabilitiesStore.loadList().catch(() => undefined);
 });
 
 onUnmounted(() => {
@@ -182,6 +196,7 @@ async function confirmDelete() {
                     v-for="(asset, index) in visibleItems"
                     :key="asset.publicId"
                     :asset="asset"
+                    :financed="financedIds.has(asset.publicId)"
                     :acting="store.acting"
                     :style="{ '--i': index }"
                     @open="openDetail"

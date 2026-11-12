@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * Fiche d’un passif. L’onglet Informations (seul, sous le titre de la page) porte les montants
- * et les caractéristiques. Modifier et « restant dû » restent des modales.
+ * Fiche d’un passif. L’onglet Informations porte les montants et les caractéristiques : l’actif financé et la
+ * mensualité (charge récurrente) mènent à leur fiche. Modifier et « restant dû » restent des modales.
  */
 defineOptions({ name: 'LiabilityDetail' });
 
@@ -11,10 +11,14 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAssetsStore } from '@/features/assets';
+import { assetDetailPath } from '@/features/assets/paths';
 import { formatCalendarDate, formatInterestRate, formatLiabilityAmount, formatPercentRepaid } from '@/features/liabilities/format';
 import { useLiabilitiesStore } from '@/features/liabilities/stores/liabilities-store';
 import LiabilityFormModal from '@/features/liabilities/components/modals/LiabilityFormModal.vue';
 import LiabilityRemainingAmountModal from '@/features/liabilities/components/modals/LiabilityRemainingAmountModal.vue';
+import { realEstateDetailPath } from '@/features/real-estate/paths';
+import { recurrenceDetailPath } from '@/features/recurring-payments/paths';
+import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 
 const props = defineProps<{
     liabilityPublicId: string;
@@ -29,6 +33,7 @@ const route = useRoute();
 const router = useRouter();
 const store = useLiabilitiesStore();
 const assetsStore = useAssetsStore();
+const recurringStore = useRecurringPaymentsStore();
 
 const loading = ref(false);
 const localError = ref<string | null>(null);
@@ -39,10 +44,28 @@ const liability = computed(() => store.findByPublicId(props.liabilityPublicId));
 
 const money = (amount: number) => (liability.value ? formatLiabilityAmount(amount, liability.value.currency, locale.value) : '');
 
-const assetName = computed(() => {
+const linkedAsset = computed(() => {
     const id = liability.value?.assetPublicId;
-    if (!id) return null;
-    return assetsStore.findByPublicId(id)?.name ?? t('liabilitiesPage.list.unknownAsset');
+    return id ? assetsStore.findByPublicId(id) : null;
+});
+
+const assetName = computed(() => {
+    if (!liability.value?.assetPublicId) return null;
+    return linkedAsset.value?.name ?? t('liabilitiesPage.list.unknownAsset');
+});
+
+/** Fiche de l’actif financé : un bien immobilier a sa propre page. */
+const assetPath = computed(() => {
+    const asset = linkedAsset.value;
+    if (!asset) return null;
+    return asset.type === 'immobilier' ? realEstateDetailPath(asset.publicId) : assetDetailPath(asset.publicId);
+});
+
+/** Mensualité liée : la charge récurrente, lue dans son store pour la prochaine échéance. */
+const linkedExpense = computed(() => {
+    void recurringStore.detailsEpoch;
+    const id = liability.value?.recurringExpensePublicId;
+    return id ? recurringStore.getDetail('expense', id) : null;
 });
 
 const figures = computed(() => {
@@ -60,15 +83,15 @@ const figures = computed(() => {
     ];
 });
 
-type Fact = { id: string; label: string; value: string };
+type Fact = { id: string; label: string; value: string; to?: string | null };
 
 const facts = computed<Fact[]>(() => {
     const current = liability.value;
     if (!current) return [];
     const list: Fact[] = [];
-    const add = (id: string, label: string, value: string | null | undefined) => {
+    const add = (id: string, label: string, value: string | null | undefined, to?: string | null) => {
         const text = value?.trim();
-        if (text) list.push({ id, label, value: text });
+        if (text) list.push({ id, label, value: text, to });
     };
     const field = (key: string) => t(`liabilitiesPage.form.fields.${key}`);
     add('type', field('type'), t(`liabilitiesPage.types.${current.type}`));
@@ -76,7 +99,18 @@ const facts = computed<Fact[]>(() => {
     if (current.interestRate != null) add('rate', field('interestRate'), formatInterestRate(current.interestRate, locale.value));
     if (current.startDate) add('start', field('startDate'), formatCalendarDate(current.startDate, locale.value));
     if (current.plannedEndDate) add('end', field('plannedEndDate'), formatCalendarDate(current.plannedEndDate, locale.value));
-    add('asset', field('asset'), assetName.value);
+    add('asset', field('asset'), assetName.value, assetPath.value);
+    if (current.residualValue != null) add('residual', field('residualValue'), money(current.residualValue));
+    if (current.recurringExpensePublicId) {
+        add(
+            'expense',
+            field('recurringExpense'),
+            current.recurringExpenseName,
+            recurrenceDetailPath('expense', current.recurringExpensePublicId)
+        );
+        const nextDue = linkedExpense.value?.nextDueDate;
+        if (nextDue) add('nextDue', t('liabilitiesPage.detail.nextDue'), formatCalendarDate(nextDue, locale.value));
+    }
     add('currency', field('currency'), current.currency);
     add(
         'status',
@@ -103,6 +137,9 @@ async function loadLiability() {
         if (!fresh) {
             emit('not-found');
             return;
+        }
+        if (fresh.recurringExpensePublicId) {
+            void recurringStore.getExpense(fresh.recurringExpensePublicId).catch(() => undefined);
         }
         if (fresh.assetPublicId && !assetsStore.initialized) {
             void assetsStore.loadList({ active: true }).catch(() => undefined);
@@ -203,9 +240,12 @@ defineExpose({ openEdit, openRemaining, reload: loadLiability });
                 <div v-if="facts.length" class="debt-detail__sheet">
                     <div v-for="fact in facts" :key="fact.id" class="su-kv">
                         <span>{{ fact.label }}</span>
-                        <span>{{ fact.value }}</span>
+                        <RouterLink v-if="fact.to" :to="fact.to" class="su-link debt-detail__link">{{ fact.value }}</RouterLink>
+                        <span v-else>{{ fact.value }}</span>
                     </div>
                 </div>
+
+                <p v-if="liability.recurringExpensePublicId" class="debt-detail__auto">{{ t('liabilitiesPage.detail.autoRemaining') }}</p>
             </div>
 
             <LiabilityFormModal v-model="editOpen" :liability="liability" @saved="loadLiability" />
@@ -215,6 +255,12 @@ defineExpose({ openEdit, openRemaining, reload: loadLiability });
 </template>
 
 <style scoped>
+.debt-detail__auto {
+    margin: 0;
+    color: var(--gray);
+    font-size: 13px;
+}
+
 .debt-detail {
     display: flex;
     flex-direction: column;

@@ -25,6 +25,8 @@ export type LiabilityFormFieldErrors = {
     currency?: string | null;
     lenderTierPublicId?: string | null;
     assetPublicId?: string | null;
+    residualValue?: string | null;
+    recurringExpensePublicId?: string | null;
 };
 
 const props = withDefaults(
@@ -33,6 +35,8 @@ const props = withDefaults(
         isEdit: boolean;
         /** Actifs actifs du user : « nom · type ». */
         assetItems: { title: string; value: string }[];
+        /** Charges récurrentes du user : « nom · montant ». */
+        expenseItems: { title: string; value: string }[];
         fieldErrors?: LiabilityFormFieldErrors;
         currencyHint?: string | null;
         remainingHint?: string | null;
@@ -214,6 +218,42 @@ const plannedEndDateModel = computed({
                     :error-messages="fieldErrors.assetPublicId || undefined"
                 />
                 <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ t('liabilitiesPage.form.assetHint') }}</p>
+            </div>
+        </div>
+
+        <div v-if="form.type === 'leasing'" class="liability-form__row">
+            <label class="liability-form__label" for="liability-form-residual">{{ t('liabilitiesPage.form.fields.residualValue') }}</label>
+            <div class="liability-form__field">
+                <v-text-field
+                    id="liability-form-residual"
+                    v-model="form.residualValue"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    color="primary"
+                    variant="outlined"
+                    hide-details="auto"
+                    :error="!!fieldErrors.residualValue"
+                    :error-messages="fieldErrors.residualValue || undefined"
+                />
+                <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ t('liabilitiesPage.form.residualHint') }}</p>
+            </div>
+        </div>
+
+        <div class="liability-form__row">
+            <label class="liability-form__label">{{ t('liabilitiesPage.form.fields.recurringExpense') }}</label>
+            <div class="liability-form__field">
+                <AppSelect
+                    id="liability-form-expense"
+                    v-model="form.recurringExpensePublicId"
+                    :items="expenseItems"
+                    :label="t('liabilitiesPage.form.fields.recurringExpense')"
+                    searchable
+                    hide-details="auto"
+                    :error="!!fieldErrors.recurringExpensePublicId"
+                    :error-messages="fieldErrors.recurringExpensePublicId || undefined"
+                />
+                <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ t('liabilitiesPage.form.recurringExpenseHint') }}</p>
             </div>
         </div>
 

@@ -51,7 +51,10 @@ const mortgage: Liability = {
     plannedEndDate: null,
     status: 'active',
     createdAt: '2026-10-01T10:00:00Z',
-    updatedAt: null
+    updatedAt: null,
+    residualValue: null,
+    recurringExpensePublicId: null,
+    recurringExpenseName: null
 };
 
 function form(partial: Partial<LiabilityFormFields> = {}): LiabilityFormFields {

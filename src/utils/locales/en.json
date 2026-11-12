@@ -3834,7 +3834,8 @@
             "lastValuation": "valued on {date}",
             "noValuation": "not valued yet",
             "valueFromAccount": "account balance",
-            "quantity": "{quantity} {symbol}"
+            "quantity": "{quantity} {symbol}",
+            "financed": "Financed"
         },
         "types": {
             "vehicule": "Vehicle",
@@ -4064,6 +4065,14 @@
                 "maintenances": "Maintenance",
                 "transactions": "Transactions",
                 "attachments": "Receipts"
+            },
+            "financing": {
+                "title": "Financing",
+                "remaining": "Remaining",
+                "netValue": "Net value",
+                "netValueNote": "Estimated value minus the remaining amount",
+                "excluded": "Outside the asset currency: {count} debt | Outside the asset currency: {count} debts",
+                "residual": "Residual value {amount}"
             }
         },
         "valuations": {
@@ -4171,7 +4180,8 @@
             "tabs": {
                 "label": "Debt sections",
                 "informations": "Information",
-                "attachments": "Receipts"
+                "attachments": "Receipts",
+                "transactions": "Transactions"
             },
             "figs": {
                 "label": "Amounts",
@@ -4373,7 +4383,8 @@
             "hypotheque": "Mortgage",
             "dettePersonnelle": "Personal debt",
             "carteCredit": "Credit card",
-            "other": "Other"
+            "other": "Other",
+            "leasing": "Leasing"
         },
         "statuses": {
             "active": "Ongoing",
@@ -4423,7 +4434,7 @@
         "form": {
             "createTitle": "New liability",
             "editTitle": "Liability",
-            "subtitle": "Loan, mortgage, card or debt owed to a lender",
+            "subtitle": "Loan, mortgage, leasing, card or debt owed to a lender",
             "fields": {
                 "name": "Name",
                 "type": "Type",
@@ -4435,7 +4446,9 @@
                 "plannedEndDate": "Planned end",
                 "asset": "Financed asset",
                 "currency": "Currency",
-                "cancel": "Canceled"
+                "cancel": "Canceled",
+                "residualValue": "Residual value",
+                "recurringExpense": "Instalment"
             },
             "noLender": "No lender",
             "lenderHint": "Bank or lender, from your payees.",
@@ -4460,8 +4473,19 @@
                 "plannedEndDateInvalid": "Invalid date.",
                 "plannedEndDateBeforeStart": "The planned end is before the start.",
                 "currencyInvalid": "Unsupported currency.",
-                "currencyLocked": "The currency can’t change after creation."
-            }
+                "currencyLocked": "The currency can’t change after creation.",
+                "residualValueInvalid": "The residual value is invalid."
+            },
+            "residualHint": "Amount due at the end of the contract to keep the vehicle.",
+            "noRecurringExpense": "No recurring charge",
+            "recurringExpenseHint": "The recurring charge that repays this liability. Each paid due date lowers the remaining amount."
+        },
+        "detail": {
+            "asset": "Financed asset",
+            "recurringExpense": "Instalment",
+            "nextDue": "Next due date",
+            "residualValue": "Residual value",
+            "autoRemaining": "The remaining amount follows the paid due dates of this instalment."
         }
     },
     "netWorthPage": {

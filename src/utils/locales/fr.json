@@ -3834,7 +3834,8 @@
             "lastValuation": "valorisé le {date}",
             "noValuation": "pas encore valorisé",
             "valueFromAccount": "solde du compte",
-            "quantity": "{quantity} {symbol}"
+            "quantity": "{quantity} {symbol}",
+            "financed": "Financé"
         },
         "types": {
             "vehicule": "Véhicule",
@@ -4064,6 +4065,14 @@
                 "maintenances": "Entretiens",
                 "transactions": "Transactions",
                 "attachments": "Justificatifs"
+            },
+            "financing": {
+                "title": "Financement",
+                "remaining": "Restant dû",
+                "netValue": "Valeur nette",
+                "netValueNote": "Valeur estimée moins le restant dû",
+                "excluded": "Hors devise de l’actif : {count} dette | Hors devise de l’actif : {count} dettes",
+                "residual": "Valeur résiduelle {amount}"
             }
         },
         "valuations": {
@@ -4171,7 +4180,8 @@
             "tabs": {
                 "label": "Sections de la dette",
                 "informations": "Informations",
-                "attachments": "Justificatifs"
+                "attachments": "Justificatifs",
+                "transactions": "Transactions"
             },
             "figs": {
                 "label": "Montants",
@@ -4373,7 +4383,8 @@
             "hypotheque": "Hypothèque",
             "dettePersonnelle": "Dette personnelle",
             "carteCredit": "Carte de crédit",
-            "other": "Autre"
+            "other": "Autre",
+            "leasing": "Leasing"
         },
         "statuses": {
             "active": "En cours",
@@ -4423,7 +4434,7 @@
         "form": {
             "createTitle": "Nouveau passif",
             "editTitle": "Passif",
-            "subtitle": "Crédit, hypothèque, carte ou dette envers un prêteur",
+            "subtitle": "Crédit, hypothèque, leasing, carte ou dette envers un prêteur",
             "fields": {
                 "name": "Nom",
                 "type": "Type",
@@ -4435,7 +4446,9 @@
                 "plannedEndDate": "Fin prévue",
                 "asset": "Actif financé",
                 "currency": "Devise",
-                "cancel": "Annulé"
+                "cancel": "Annulé",
+                "residualValue": "Valeur résiduelle",
+                "recurringExpense": "Mensualité"
             },
             "noLender": "Aucun prêteur",
             "lenderHint": "Banque ou prêteur, parmi vos tiers.",
@@ -4460,8 +4473,19 @@
                 "plannedEndDateInvalid": "Date invalide.",
                 "plannedEndDateBeforeStart": "La fin prévue précède le début.",
                 "currencyInvalid": "Devise non prise en charge.",
-                "currencyLocked": "La devise ne se modifie pas après la création."
-            }
+                "currencyLocked": "La devise ne se modifie pas après la création.",
+                "residualValueInvalid": "La valeur résiduelle est invalide."
+            },
+            "residualHint": "Montant à payer en fin de contrat pour garder le véhicule.",
+            "noRecurringExpense": "Aucune charge récurrente",
+            "recurringExpenseHint": "La charge récurrente qui rembourse ce passif. Chaque échéance payée diminue le restant dû."
+        },
+        "detail": {
+            "asset": "Actif financé",
+            "recurringExpense": "Mensualité",
+            "nextDue": "Prochaine échéance",
+            "residualValue": "Valeur résiduelle",
+            "autoRemaining": "Le restant dû suit les échéances payées de cette mensualité."
         }
     },
     "netWorthPage": {

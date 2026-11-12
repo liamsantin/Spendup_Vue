@@ -31,7 +31,10 @@ const mortgage: Liability = {
     plannedEndDate: '2034-01-01',
     status: 'active',
     createdAt: '2026-10-01T10:00:00Z',
-    updatedAt: null
+    updatedAt: null,
+    residualValue: null,
+    recurringExpensePublicId: null,
+    recurringExpenseName: null
 };
 
 describe('liabilities format', () => {
@@ -42,7 +45,8 @@ describe('liabilities format', () => {
         expect(isValidYmd('2024-02-29')).toBe(true);
         expect(formatCalendarDate(null)).toBe('');
         expect(isLiabilityType('carteCredit')).toBe(true);
-        expect(isLiabilityType('leasing')).toBe(false);
+        expect(isLiabilityType('leasing')).toBe(true);
+        expect(isLiabilityType('pret')).toBe(false);
         expect(isLiabilityStatus('annule')).toBe(true);
         expect(isLiabilityStatus('all')).toBe(false);
         expect(isLiabilityCurrency('GBP')).toBe(true);

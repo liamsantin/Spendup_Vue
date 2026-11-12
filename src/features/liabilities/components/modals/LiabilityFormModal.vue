@@ -11,6 +11,8 @@ import { todayYmdInTimeZone } from '@/features/accounts/format';
 import { useAssetsStore } from '@/features/assets';
 import { formatLiabilityAmount } from '@/features/liabilities/format';
 import { useLiabilitiesStore } from '@/features/liabilities/stores/liabilities-store';
+import { formatPlannedAmount } from '@/features/recurring-payments/format';
+import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
 import {
     buildCreateLiabilityPayload,
     buildUpdateLiabilityPayload,
@@ -37,6 +39,7 @@ const emit = defineEmits<{
 const { t, locale } = useI18n();
 const store = useLiabilitiesStore();
 const assetsStore = useAssetsStore();
+const recurringStore = useRecurringPaymentsStore();
 const settings = useUserSettingsStore();
 
 const isEditSession = ref(false);
@@ -62,10 +65,28 @@ const liveLiability = computed(() => {
 const assetItems = computed(() => {
     const none = [{ title: t('liabilitiesPage.form.noAsset'), value: '' }];
     const currentId = form.assetPublicId;
+    // l’actif logique d’abord : un bien pour une hypothèque, un véhicule pour un leasing
+    const preferred = form.type === 'hypotheque' ? 'immobilier' : form.type === 'leasing' ? 'vehicule' : null;
     const items = assetsStore
         .allKnownItems()
         .filter((asset) => asset.isActive || asset.publicId === currentId)
+        .sort((a, b) => Number(b.type === preferred) - Number(a.type === preferred) || a.name.localeCompare(b.name))
         .map((asset) => ({ title: `${asset.name} · ${t(`assetsPage.types.${asset.type}`)}`, value: asset.publicId }));
+    return [...none, ...items];
+});
+
+/** Charges récurrentes actives (+ celle déjà liée) : celles de type leasing ou crédit d’abord. */
+const expenseItems = computed(() => {
+    const none = [{ title: t('liabilitiesPage.form.noRecurringExpense'), value: '' }];
+    const currentId = form.recurringExpensePublicId;
+    const rank = (type: string) => (type === 'leasing' || type === 'credit' ? 0 : 1);
+    const items = [...recurringStore.expenses]
+        .filter((expense) => expense.isActive || expense.publicId === currentId)
+        .sort((a, b) => rank(a.expenseType) - rank(b.expenseType) || a.name.localeCompare(b.name))
+        .map((expense) => ({
+            title: `${expense.name} · ${formatPlannedAmount(expense.plannedAmount, expense.currency, locale.value)}`,
+            value: expense.publicId
+        }));
     return [...none, ...items];
 });
 
@@ -132,6 +153,9 @@ watch(
         if (!assetsStore.initialized) {
             void assetsStore.loadList({ active: true }).catch(() => undefined);
         }
+        if (!recurringStore.initializedExpenses) {
+            void recurringStore.loadExpenses().catch(() => undefined);
+        }
     }
 );
 
@@ -178,6 +202,7 @@ async function onSave() {
             :form="form"
             :is-edit="isEdit"
             :asset-items="assetItems"
+            :expense-items="expenseItems"
             :field-errors="fieldErrors"
             :currency-hint="currencyHint"
             :remaining-hint="remainingHint"

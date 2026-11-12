@@ -38,7 +38,10 @@ const existing: Liability = {
     plannedEndDate: '2034-01-01',
     status: 'active',
     createdAt: '2026-10-01T10:00:00Z',
-    updatedAt: null
+    updatedAt: null,
+    residualValue: null,
+    recurringExpensePublicId: null,
+    recurringExpenseName: null
 };
 
 describe('liabilities payload', () => {
@@ -55,8 +58,24 @@ describe('liabilities payload', () => {
                 startDate: null,
                 plannedEndDate: null,
                 lenderTierPublicId: null,
-                assetPublicId: null
+                assetPublicId: null,
+                residualValue: null,
+                recurringExpensePublicId: null
             }
+        });
+    });
+
+    it('garde la valeur résiduelle et la mensualité d’un leasing, ignore la résiduelle des autres types', () => {
+        const leasing = buildCreateLiabilityPayload(fields({ type: 'leasing', residualValue: '6000', recurringExpensePublicId: 'rec-1' }));
+        expect(leasing).toMatchObject({ ok: true, payload: { type: 'leasing', residualValue: 6000, recurringExpensePublicId: 'rec-1' } });
+        expect(buildCreateLiabilityPayload(fields({ type: 'credit', residualValue: '6000' }))).toMatchObject({
+            ok: true,
+            payload: { residualValue: null }
+        });
+        expect(buildCreateLiabilityPayload(fields({ type: 'leasing', residualValue: '-5' }))).toMatchObject({
+            ok: false,
+            code: 'residualValueInvalid',
+            field: 'residualValue'
         });
     });
 

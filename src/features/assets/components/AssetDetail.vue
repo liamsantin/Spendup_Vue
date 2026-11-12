@@ -13,6 +13,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import AssetFormModal from '@/features/assets/components/modals/AssetFormModal.vue';
+import AssetFinancingBlock from '@/features/assets/components/panels/AssetFinancingBlock.vue';
 import AssetAttachmentsPanel from '@/features/assets/components/panels/AssetAttachmentsPanel.vue';
 import AssetValuationsPanel from '@/features/assets/components/panels/AssetValuationsPanel.vue';
 import VehicleMaintenancesPanel from '@/features/assets/components/panels/VehicleMaintenancesPanel.vue';
@@ -273,6 +274,8 @@ defineExpose({ openEdit, reload: loadAsset });
                         <span>{{ fact.value }}</span>
                     </div>
                 </div>
+
+                <AssetFinancingBlock :asset="asset" />
 
                 <p v-if="asset.description" class="asset-detail__text">{{ asset.description }}</p>
                 <p v-if="asset.notes" class="asset-detail__text asset-detail__text--soft">

@@ -54,6 +54,8 @@ import {
 import SharedDebtDetail from '@/features/shared-debts/components/SharedDebtDetail.vue';
 import { entityAttachmentSource } from '@/features/attachments/api';
 import EntityAttachmentsPanel from '@/features/attachments/components/EntityAttachmentsPanel.vue';
+import LinkedTransactionsPanel from '@/features/transactions/components/LinkedTransactionsPanel.vue';
+import { transactionFormFieldsWithoutRecurrence } from '@/features/transactions/link-asset';
 import SharedDebtsPanel from '@/features/shared-debts/components/SharedDebtsPanel.vue';
 import {
     SHARED_DEBT_STATUSES,
@@ -83,6 +85,7 @@ const detailRef = ref<{
     openSettle?: () => void;
     openCancel?: () => void;
     openDelete?: () => void;
+    reload?: () => void;
 } | null>(null);
 const notFound = ref(false);
 
@@ -112,10 +115,23 @@ const detailTitle = computed(() => {
 });
 
 /** Onglets d’une fiche de dette : Informations, puis Justificatifs (`?tab=attachments`). */
-const DETAIL_TABS = ['informations', 'attachments'] as const;
-type DetailTab = (typeof DETAIL_TABS)[number];
+type DetailTab = 'informations' | 'transactions' | 'attachments';
 
-const activeDetailTab = computed<DetailTab>(() => (route.query.tab === 'attachments' ? 'attachments' : 'informations'));
+/** Charge récurrente du passif ouvert : ses paiements alimentent l’onglet Transactions. */
+const detailExpenseId = computed(() => detailLiability.value?.recurringExpensePublicId ?? null);
+
+/** Onglets d’une fiche de dette. « Transactions » n’existe que pour un passif relié à sa mensualité. */
+const DETAIL_TABS = computed<DetailTab[]>(() =>
+    detailExpenseId.value ? ['informations', 'transactions', 'attachments'] : ['informations', 'attachments']
+);
+
+const activeDetailTab = computed<DetailTab>(() => {
+    const raw = route.query.tab;
+    return typeof raw === 'string' && (DETAIL_TABS.value as string[]).includes(raw) ? (raw as DetailTab) : 'informations';
+});
+
+/** « Ajouter » : une dépense déjà rattachée à la mensualité du passif. */
+const detailCreateDefaults = computed(() => ({ type: 'depense' as const, recurrencePublicId: detailExpenseId.value }));
 
 function selectDetailTab(tab: DetailTab) {
     if (tab === activeDetailTab.value) return;
@@ -353,7 +369,12 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <AppPageShell v-if="detailKind" :key="`detail-${detailKind}-${liabilityId || loanId || sharedId}`" :title="detailTitle">
+    <AppPageShell
+        v-if="detailKind"
+        :key="`detail-${detailKind}-${liabilityId || loanId || sharedId}`"
+        :title="detailTitle"
+        :body-scroll="activeDetailTab !== 'transactions'"
+    >
         <template v-if="!notFound && detailVisual" #title-icon>
             <AppTitleTile :icon="detailVisual.icon" :tone="detailVisual.tone" />
         </template>
@@ -446,6 +467,15 @@ onUnmounted(() => {
                     :shared-debt-public-id="sharedId"
                     @not-found="notFound = true"
                     @deleted="backToList"
+                />
+            </div>
+            <div v-if="activeDetailTab === 'transactions' && detailExpenseId" class="su-fill debts-page__transactions">
+                <LinkedTransactionsPanel
+                    :locked-filters="{ recurringExpensePublicId: detailExpenseId }"
+                    :create-defaults="detailCreateDefaults"
+                    :unlink-fields="transactionFormFieldsWithoutRecurrence"
+                    :can-link="false"
+                    @changed="detailRef?.reload?.()"
                 />
             </div>
             <EntityAttachmentsPanel
