@@ -170,6 +170,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/patrimoine/dettes/AppDebtsPage.vue')
         },
         {
+            name: 'AppTax',
+            path: 'analyses/impots/:publicId?',
+            component: () => import('@/views/app/analyses/AppTaxPage.vue')
+        },
+        {
             path: 'parametres',
             redirect: SETTINGS_PATHS.account
         },

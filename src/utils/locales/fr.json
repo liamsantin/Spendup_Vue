@@ -5145,5 +5145,74 @@
         "errors": {
             "notFound": "Dette introuvable."
         }
+    },
+    "taxPage": {
+        "title": "Impôts",
+        "subtitle": "Brouillon à recopier dans la déclaration cantonale. Seuls les montants que vous saisissez y entrent.",
+        "new": "Nouvelle déclaration",
+        "actions": {
+            "open": "Ouvrir",
+            "ready": "Marquer prête à recopier",
+            "resume": "Remettre en cours",
+            "archive": "Archiver",
+            "delete": "Supprimer"
+        },
+        "year": "Année",
+        "canton": "Canton",
+        "create": "Créer",
+        "cancel": "Annuler",
+        "empty": "Aucune déclaration. Créez-en une pour l’année en cours.",
+        "filled": "{filled} case remplie sur {total} | {filled} cases remplies sur {total}",
+        "back": "Toutes les déclarations",
+        "status": "Statut",
+        "statuses": {
+            "enCours": "En cours",
+            "preteARecopier": "Prête à recopier",
+            "archivee": "Archivée"
+        },
+        "couple": "Couple (personne 2)",
+        "person": "Personne",
+        "persons": {
+            "1": "Personne 1",
+            "2": "Personne 2",
+            "both": "Les deux"
+        },
+        "identity": "Situation",
+        "steps": "Étapes de la déclaration",
+        "stepDone": "Étape validée",
+        "stepOpen": "Étape à faire",
+        "validate": {
+            "situation": "Valider la situation",
+            "revenus": "Valider les revenus",
+            "deductions": "Valider les déductions",
+            "fortune": "Valider la fortune",
+            "dettes": "Valider les dettes",
+            "aPart": "Valider les montants à part",
+            "fallback": "Valider {name}"
+        },
+        "officialName": "Nom",
+        "firstName": "Prénom",
+        "vn": "N° AVS",
+        "municipality": "Commune",
+        "job": "Profession",
+        "taxpayerNumber": "N° de contribuable",
+        "notes": "Notes",
+        "saveHeader": "Valider la situation",
+        "cantonal": "Canton",
+        "federal": "Confédération",
+        "amount": "Montant",
+        "emptyCell": "Non déclaré",
+        "subtotals": "Sous-totaux des cases remplies",
+        "income": "Revenus",
+        "deductions": "Déductions",
+        "netIncome": "Revenu net",
+        "assets": "Fortune",
+        "liabilities": "Dettes",
+        "netAssets": "Fortune nette",
+        "gaps": "{count} case encore vide | {count} cases encore vides",
+        "delete": "Supprimer",
+        "deleteConfirm": "Supprimer cette déclaration ? Les montants saisis disparaîtront.",
+        "loading": "Chargement…",
+        "saving": "Enregistrement…"
     }
 }

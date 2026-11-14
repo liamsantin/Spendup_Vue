@@ -5145,5 +5145,74 @@
         "errors": {
             "notFound": "Debt not found."
         }
+    },
+    "taxPage": {
+        "title": "Tax",
+        "subtitle": "A draft to copy into the cantonal return. Only amounts you type are stored.",
+        "new": "New return",
+        "actions": {
+            "open": "Open",
+            "ready": "Mark ready to copy",
+            "resume": "Resume",
+            "archive": "Archive",
+            "delete": "Delete"
+        },
+        "year": "Year",
+        "canton": "Canton",
+        "create": "Create",
+        "cancel": "Cancel",
+        "empty": "No return yet. Create one for the current year.",
+        "filled": "{filled} line filled of {total} | {filled} lines filled of {total}",
+        "back": "All returns",
+        "status": "Status",
+        "statuses": {
+            "enCours": "In progress",
+            "preteARecopier": "Ready to copy",
+            "archivee": "Archived"
+        },
+        "couple": "Couple (person 2)",
+        "person": "Person",
+        "persons": {
+            "1": "Person 1",
+            "2": "Person 2",
+            "both": "Both"
+        },
+        "identity": "Situation",
+        "steps": "Return steps",
+        "stepDone": "Step validated",
+        "stepOpen": "Step still open",
+        "validate": {
+            "situation": "Validate the situation",
+            "revenus": "Validate income",
+            "deductions": "Validate deductions",
+            "fortune": "Validate wealth",
+            "dettes": "Validate debts",
+            "aPart": "Validate separately taxed amounts",
+            "fallback": "Validate {name}"
+        },
+        "officialName": "Last name",
+        "firstName": "First name",
+        "vn": "AVS number",
+        "municipality": "Municipality",
+        "job": "Occupation",
+        "taxpayerNumber": "Taxpayer number",
+        "notes": "Notes",
+        "saveHeader": "Save situation",
+        "cantonal": "Canton",
+        "federal": "Confederation",
+        "amount": "Amount",
+        "emptyCell": "Not declared",
+        "subtotals": "Subtotals of filled lines",
+        "income": "Income",
+        "deductions": "Deductions",
+        "netIncome": "Net income",
+        "assets": "Wealth",
+        "liabilities": "Debts",
+        "netAssets": "Net wealth",
+        "gaps": "{count} line still empty | {count} lines still empty",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this return? The amounts you entered will be removed.",
+        "loading": "Loading…",
+        "saving": "Saving…"
     }
 }

@@ -69,6 +69,14 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.network,
             activeId: SHELL_NAV_IDS.friends
         });
+        expect(idsFromPath('/app/analyses/impots')).toEqual({
+            openId: SHELL_NAV_IDS.analytics,
+            activeId: SHELL_NAV_IDS.tax
+        });
+        expect(idsFromPath('/demo/analyses/impots/abc')).toEqual({
+            openId: SHELL_NAV_IDS.analytics,
+            activeId: SHELL_NAV_IDS.tax
+        });
     });
 
     it('mappe la gestion', () => {

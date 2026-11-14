@@ -10,6 +10,7 @@ import { ASSETS_PATHS } from '@/features/assets/paths';
 import { REAL_ESTATE_PATHS } from '@/features/real-estate/paths';
 import { INVESTMENTS_PATHS } from '@/features/investments/paths';
 import { DEBTS_PATHS } from '@/features/liabilities/paths';
+import { TAX_BASE } from '@/features/tax/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
 import { SECURITY_PATHS, SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import {
@@ -177,6 +178,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, DEBTS_PATHS.liabilities)) {
         return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.debts };
     }
+    if (pathIs(path, TAX_BASE)) {
+        return { openId: SHELL_NAV_IDS.analytics, activeId: SHELL_NAV_IDS.tax };
+    }
     if (pathIs(path, NET_WORTH_PATHS.overview)) {
         return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.wealthOverview };
     }
@@ -276,7 +280,7 @@ export function useShellNav() {
 
     const analyticsLeaves = computed<NavLeaf[]>(() => [
         upcoming(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), ForecastsNavIcon),
-        upcoming(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon)
+        live(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon, TAX_BASE)
     ]);
 
     const networkLeaves = computed<NavLeaf[]>(() => [
@@ -304,7 +308,7 @@ export function useShellNav() {
         section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionNavIcon, gestionLeaves.value),
         section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), PlanningNavIcon, planningLeaves.value),
         section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), WealthNavIcon, wealthLeaves.value),
-        section(SHELL_NAV_IDS.analytics, t('nav.headers.analytics'), AnalyticsNavIcon, analyticsLeaves.value, true),
+        section(SHELL_NAV_IDS.analytics, t('nav.headers.analytics'), AnalyticsNavIcon, analyticsLeaves.value),
         section(SHELL_NAV_IDS.network, t('nav.headers.network'), NetworkNavIcon, networkLeaves.value)
     ]);
 
