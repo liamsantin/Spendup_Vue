@@ -32,8 +32,10 @@ import {
     type TaxPerson,
     type TaxReturn,
     type TaxReturnListItem,
-    type TaxStatus
+    type TaxStatus,
+    type TaxSuggestion
 } from '@/features/tax/types';
+import { filesApi } from '@/features/files/api';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 
 const { t, locale } = useI18n();
@@ -59,6 +61,10 @@ const year = ref(new Date().getFullYear());
 const canton = ref('VD');
 const person = ref<TaxPerson>('1');
 const drafts = ref<Record<string, string>>({});
+const suggestions = ref<TaxSuggestion[]>([]);
+const library = ref<{ publicId: string; name: string }[]>([]);
+const attachFileId = ref('');
+const attachLine = ref('');
 
 const cantonItems = TAX_CANTONS.map((code) => ({ title: code, value: code }));
 const statusItems = computed(() => STATUSES.map((value) => ({ title: t(`taxPage.statuses.${value}`), value })));
@@ -219,6 +225,7 @@ async function refresh() {
         loadValidated(publicId.value);
         const detail = await taxApi.get(publicId.value);
         apply(detail);
+        await loadSuggestions(publicId.value);
     } catch (e) {
         error.value = getErrorMessage(AppError.fromUnknown(e));
     } finally {
@@ -374,6 +381,104 @@ async function flushCurrentDrafts(): Promise<boolean> {
         }
     }
     return true;
+}
+
+async function loadSuggestions(id: string) {
+    try {
+        const [suggested, files] = await Promise.all([taxApi.suggestions(id), filesApi.list({ page: 1, pageSize: 100 }).catch(() => null)]);
+        suggestions.value = suggested.items ?? [];
+        library.value = (files?.items ?? []).map((file) => ({ publicId: file.publicId, name: file.nameOriginal }));
+    } catch {
+        suggestions.value = [];
+    }
+}
+
+const stepSuggestions = computed(() => {
+    const codes = new Set(declaration.value?.sections.find((section) => section.code === step.value)?.lines.map((line) => line.code) ?? []);
+    return suggestions.value.filter((item) => codes.has(item.code));
+});
+
+const stepDocuments = computed(() => {
+    const docs = declaration.value?.documents ?? [];
+    if (step.value === SITUATION) return docs.filter((doc) => !doc.lineCode);
+    const codes = new Set(declaration.value?.sections.find((section) => section.code === step.value)?.lines.map((line) => line.code) ?? []);
+    return docs.filter((doc) => doc.lineCode && codes.has(doc.lineCode));
+});
+
+const stepLines = computed(() => declaration.value?.sections.find((section) => section.code === step.value)?.lines ?? []);
+
+async function acceptSuggestion(item: TaxSuggestion) {
+    const current = declaration.value;
+    if (!current) return;
+    saving.value = true;
+    error.value = '';
+    try {
+        apply(
+            await taxApi.acceptSuggestion(current.publicId, {
+                code: item.code,
+                person: item.person,
+                competence: item.competence,
+                amount: item.amount
+            })
+        );
+        suggestions.value = suggestions.value.filter(
+            (candidate) => !(candidate.code === item.code && candidate.competence === item.competence)
+        );
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
+async function attachDocument() {
+    const current = declaration.value;
+    if (!current || !attachFileId.value) return;
+    saving.value = true;
+    error.value = '';
+    try {
+        apply(
+            await taxApi.attachDocument(current.publicId, attachFileId.value, step.value === SITUATION ? null : attachLine.value || null)
+        );
+        attachFileId.value = '';
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
+async function detachDocument(documentPublicId: string) {
+    const current = declaration.value;
+    if (!current) return;
+    saving.value = true;
+    error.value = '';
+    try {
+        apply(await taxApi.detachDocument(current.publicId, documentPublicId));
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
+async function importStatement(event: Event) {
+    const current = declaration.value;
+    const input = event.target;
+    if (!current || !(input instanceof HTMLInputElement) || !input.files?.[0]) return;
+    const xml = await input.files[0].text();
+    input.value = '';
+    saving.value = true;
+    error.value = '';
+    try {
+        const imported = await taxApi.importStatement(current.publicId, xml);
+        const known = new Set(suggestions.value.map((item) => `${item.code}|${item.competence}`));
+        suggestions.value = [...suggestions.value, ...imported.items.filter((item) => !known.has(`${item.code}|${item.competence}`))];
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
 }
 
 async function addFiche(kind: TaxEntryKind) {
@@ -978,6 +1083,57 @@ function money(value: number | null): string {
             {{ t('taxPage.gaps', { count: declaration.gaps.length }, declaration.gaps.length) }}
         </p>
 
+        <section v-if="stepSuggestions.length" class="tax-form">
+            <h2 class="tax-form__legend">{{ t('taxPage.suggestionsTitle') }}</h2>
+            <article v-for="item in stepSuggestions" :key="`${item.code}-${item.competence}`" class="tax-fiche">
+                <div>
+                    <p class="tax-fiche__title">{{ item.label }}</p>
+                    <p class="tax-fiche__detail">{{ item.originLabel }}</p>
+                </div>
+                <p class="tax-fiche__amount">{{ money(item.amount) }}</p>
+                <button type="button" class="su-btn su-btn--ink" :disabled="saving" @click="acceptSuggestion(item)">
+                    {{ t('taxPage.accept') }}
+                </button>
+            </article>
+        </section>
+
+        <section class="tax-form">
+            <h2 class="tax-form__legend">{{ t('taxPage.documentsTitle') }}</h2>
+            <article v-for="doc in stepDocuments" :key="doc.publicId" class="tax-fiche">
+                <p class="tax-fiche__title">{{ doc.fileName }}</p>
+                <button type="button" class="su-btn" :disabled="saving" @click="detachDocument(doc.publicId)">
+                    {{ t('taxPage.fiches.remove') }}
+                </button>
+            </article>
+            <div class="tax-form__row">
+                <label class="tax-form__label">{{ t('taxPage.attach') }}</label>
+                <div class="tax-form__field tax-form__split">
+                    <AppSelect
+                        v-model="attachFileId"
+                        :items="library.map((file) => ({ title: file.name, value: file.publicId }))"
+                        :label="t('taxPage.attach')"
+                        hide-details="auto"
+                    />
+                    <AppSelect
+                        v-if="step !== SITUATION"
+                        v-model="attachLine"
+                        :items="stepLines.map((line) => ({ title: line.label, value: line.code }))"
+                        :label="t('taxPage.line')"
+                        hide-details="auto"
+                    />
+                </div>
+            </div>
+            <div class="tax-form__actions">
+                <button type="button" class="su-btn" :disabled="saving || !attachFileId" @click="attachDocument">
+                    {{ t('taxPage.attach') }}
+                </button>
+                <label v-if="step === 'revenus' || step === 'fortune'" class="su-btn">
+                    {{ t('taxPage.importStatement') }}
+                    <input class="tax-file" type="file" accept=".xml,text/xml" @change="importStatement" />
+                </label>
+            </div>
+        </section>
+
         <div v-if="ficheKinds.length" class="tax-fiches">
             <section v-for="kind in ficheKinds" :key="kind" class="tax-form">
                 <h2 class="tax-form__legend">{{ t(`taxPage.fiches.${kind}`) }}</h2>
@@ -1317,6 +1473,14 @@ function money(value: number | null): string {
     gap: 12px 16px;
     padding: 12px 0;
     border-top: 1px solid var(--line);
+}
+
+.tax-file {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
 }
 
 .tax-fiche__title {

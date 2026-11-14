@@ -5180,6 +5180,12 @@
         },
         "identity": "Situation",
         "steps": "Return steps",
+        "suggestionsTitle": "Suggestions",
+        "accept": "Accept",
+        "documentsTitle": "Documents",
+        "attach": "Attach a file",
+        "line": "Line",
+        "importStatement": "Import an eCH-0196 statement",
         "fiches": {
             "add": "Add a sheet",
             "title": "Title",

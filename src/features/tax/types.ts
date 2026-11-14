@@ -108,6 +108,15 @@ export interface TaxReturn {
     subtotals: TaxSubtotal[];
     gaps: string[];
     entries: TaxEntry[];
+    documents: TaxDocumentLink[];
+}
+
+export interface TaxDocumentLink {
+    publicId: string;
+    filePublicId: string;
+    fileName: string;
+    lineCode: string | null;
+    label: string;
 }
 
 export interface TaxReturnListItem {
@@ -123,6 +132,20 @@ export interface TaxReturnListItem {
 export interface TaxReturnListResult {
     items: TaxReturnListItem[];
     totalCount: number;
+}
+
+export interface TaxSuggestion {
+    code: string;
+    label: string;
+    person: TaxPerson;
+    competence: TaxCompetence;
+    amount: number;
+    currency: string;
+    originLabel: string;
+}
+
+export interface TaxSuggestionList {
+    items: TaxSuggestion[];
 }
 
 export interface TaxReturnCreated {

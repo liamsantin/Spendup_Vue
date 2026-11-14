@@ -5,6 +5,7 @@ import type {
     TaxReturn,
     TaxReturnCreated,
     TaxReturnListResult,
+    TaxSuggestionList,
     UpdateTaxReturnPayload,
     UpsertTaxAmountPayload,
     UpsertTaxEntryPayload
@@ -54,5 +55,30 @@ export const taxApi = {
 
     pdf(publicId: string) {
         return fetchWrapper.getBlob(`/api/tax-returns/${encodeURIComponent(publicId)}/pdf`);
+    },
+
+    suggestions(publicId: string) {
+        return fetchWrapper.get(`/api/tax-returns/${encodeURIComponent(publicId)}/suggestions`) as Promise<TaxSuggestionList>;
+    },
+
+    acceptSuggestion(publicId: string, body: { code: string; person: string; competence: string; amount: number }) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/suggestions/accept`, body) as Promise<TaxReturn>;
+    },
+
+    attachDocument(publicId: string, filePublicId: string, lineCode: string | null) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/documents`, {
+            filePublicId,
+            lineCode
+        }) as Promise<TaxReturn>;
+    },
+
+    detachDocument(publicId: string, documentPublicId: string) {
+        return fetchWrapper.delete(
+            `/api/tax-returns/${encodeURIComponent(publicId)}/documents/${encodeURIComponent(documentPublicId)}`
+        ) as Promise<TaxReturn>;
+    },
+
+    importStatement(publicId: string, xml: string) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/statements`, { xml }) as Promise<TaxSuggestionList>;
     }
 };

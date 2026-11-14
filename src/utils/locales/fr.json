@@ -5180,6 +5180,12 @@
         },
         "identity": "Situation",
         "steps": "Étapes de la déclaration",
+        "suggestionsTitle": "Propositions",
+        "accept": "Accepter",
+        "documentsTitle": "Pièces",
+        "attach": "Joindre un fichier",
+        "line": "Ligne",
+        "importStatement": "Importer un relevé eCH-0196",
         "fiches": {
             "add": "Ajouter une fiche",
             "title": "Intitulé",
