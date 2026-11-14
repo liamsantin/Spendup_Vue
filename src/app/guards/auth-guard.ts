@@ -24,6 +24,7 @@ import { useNetWorthStore } from '@/features/net-worth/stores/net-worth-store';
 import { useNotificationsStore } from '@/features/notifications';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isDevAppEnv } from '@/utils/helpers/env-helpers';
+import { isDemoSession } from '@/features/demo/session';
 
 export const authGuard: NavigationGuard = async (to, _from, next) => {
     const auth = useAuthStore();
@@ -35,7 +36,20 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
     }
 
     // Mode cookie : restaure l’access via refresh HttpOnly avant les checks auth.
+    // La démo restaure une session mémoire, sans refresh.
     await auth.bootstrapSession();
+
+    if (isDemoSession() && (to.path === AUTH_ROUTE || to.path.startsWith(`${AUTH_ROUTE}/`))) {
+        auth.exitDemo();
+        return next();
+    }
+
+    if ((to.path === '/demo' || to.path.startsWith('/demo/')) && !isDemoSession()) {
+        if (auth.isAuthenticated) {
+            return next({ path: `/app${to.path.slice('/demo'.length)}`, query: to.query, hash: to.hash, replace: true });
+        }
+        auth.enterDemo();
+    }
 
     if (requiresAuth) {
         if (!auth.isAuthenticated) {

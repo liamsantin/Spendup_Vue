@@ -8,6 +8,8 @@ import { useI18n } from 'vue-i18n';
 import { ChevronLeftIcon, ChevronRightIcon } from 'vue-tabler-icons';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import { formatAccountBalance } from '@/features/accounts/format';
+import { demoEventsForMonth } from '@/features/demo/calendar';
+import { isDemoSession } from '@/features/demo/session';
 import { mockEventsForMonth, toYmd, type CalendarEvent, type CalendarEventKind } from '@/views/app/calendar/calendar-mock';
 
 const MAX_PILLS = 3;
@@ -22,7 +24,9 @@ const year = ref(today.getFullYear());
 const month = ref(today.getMonth());
 const selected = ref(todayYmd);
 
-const events = computed(() => mockEventsForMonth(year.value, month.value));
+const events = computed(() =>
+    isDemoSession() ? demoEventsForMonth(year.value, month.value) : mockEventsForMonth(year.value, month.value)
+);
 const eventsByDay = computed(() => {
     const map = new Map<string, CalendarEvent[]>();
     for (const event of events.value) {

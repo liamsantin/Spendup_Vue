@@ -44,6 +44,8 @@ export const useAuthStore = defineStore('auth', () => {
         clearPendingRegistration: session.clearPendingRegistration,
         setTokens: session.setTokens,
         clearSession: session.clearSession,
+        enterDemo: session.enterDemo,
+        exitDemo: session.exitDemo,
         applySession: actions.applySession,
         navigateAfterLogin: actions.navigateAfterLogin,
         login: actions.login,

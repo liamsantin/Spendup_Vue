@@ -42,6 +42,9 @@ import { isIdleSessionError } from '@/features/auth/idle-session';
 import { clearCsrfToken, rememberCsrfToken } from '@/features/auth/csrf';
 import { isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 import { useVaultStore } from '@/features/vault/stores/vault-store';
+import { clearDemoSession, isDemoSession, markDemoSession } from '@/features/demo/session';
+import { resetDemoDb } from '@/features/demo/db';
+import { demoMe } from '@/features/demo/user';
 
 export const APP_HOME_ROUTE = '/app';
 export const AUTH_ROUTE = '/auth';
@@ -174,6 +177,8 @@ export function createAuthSession() {
         clearCsrfToken();
         bootstrapDone = false;
         bootstrapInFlight = null;
+        clearDemoSession();
+        resetDemoDb();
         useUserSettingsStore().reset();
         useNotificationsStore().reset();
         useFriendsStore().reset();
@@ -237,7 +242,28 @@ export function createAuthSession() {
      * Mode cookie : tente un refresh silencieux (cookie HttpOnly) si pas d’access utilisable.
      * À appeler depuis le guard avant de décider login /app.
      */
+    /** Session locale « Camille », sans jeton persistant et sans appel réseau. */
+    function enterDemo() {
+        markDemoSession();
+        accessToken.value = 'demo';
+        refreshToken.value = null;
+        expiresAt.value = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString();
+        cookieSessionActive.value = true;
+        user.value = demoMe();
+        bootstrapDone = true;
+    }
+
+    /** Quitte la démo et oublie les données locales. */
+    function exitDemo() {
+        clearDemoSession();
+        clearSession();
+    }
+
     async function bootstrapSession(): Promise<void> {
+        if (isDemoSession()) {
+            enterDemo();
+            return;
+        }
         if (!cookieMode) return;
         // Challenge 2FA en cours : ne pas restaurer une ancienne session via refresh cookie.
         if (twoFactorToken.value) return;
@@ -275,6 +301,10 @@ export function createAuthSession() {
      * @returns Le token, ou `null` si non authentifié.
      */
     async function ensureAccessToken(): Promise<string | null> {
+        if (isDemoSession()) {
+            enterDemo();
+            return accessToken.value;
+        }
         if (cookieMode) {
             const expired = !!expiresAt.value && isAccessExpired(expiresAt.value);
             const needsRefresh = !cookieSessionActive.value || expired;
@@ -338,6 +368,8 @@ export function createAuthSession() {
         clearPendingRegistration,
         setTokens,
         clearSession,
+        enterDemo,
+        exitDemo,
         refreshSession,
         bootstrapSession,
         ensureAccessToken,

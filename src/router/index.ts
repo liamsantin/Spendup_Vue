@@ -1,8 +1,10 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
 import AppRoutes from './AppRoutes';
 import AuthRoutes from './AuthRoutes';
+import DemoRoutes from './DemoRoutes';
 import FrontPagesRoutes from './FrontPagesRoutes';
 import { authGuard } from '@/app/guards/auth-guard';
+import { isDemoSession } from '@/features/demo/session';
 import { isTauri } from '@/utils/helpers/platform-helpers';
 import { SECURITY_PATHS } from '@/features/user-settings/settings-paths';
 
@@ -32,6 +34,7 @@ export const router = createRouter({
     routes: [
         ...(isTauri() ? [tauriHomeRedirect] : [FrontPagesRoutes]),
         AppRoutes,
+        DemoRoutes,
         AuthRoutes,
         ...securityAliasRoutes,
         {
@@ -39,6 +42,17 @@ export const router = createRouter({
             component: () => import('@/views/authentication/Error.vue')
         }
     ]
+});
+
+router.beforeEach((to) => {
+    if (!isDemoSession()) return;
+    if (to.path !== '/app' && !to.path.startsWith('/app/')) return;
+    return {
+        path: `/demo${to.path.slice('/app'.length)}`,
+        query: to.query,
+        hash: to.hash,
+        replace: true
+    };
 });
 
 router.beforeEach(authGuard);

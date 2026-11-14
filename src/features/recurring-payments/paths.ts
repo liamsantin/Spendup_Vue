@@ -1,3 +1,5 @@
+import { asAppPath } from '@/features/demo/session';
+
 export const RECURRENCES_BASE = '/app/finances/recurrences';
 
 export const RECURRENCES_PATHS = {
@@ -17,6 +19,7 @@ export function recurrencesPathForTab(tab: RecurrenceTab): string {
 }
 
 export function recurrencesTabFromPath(path: string): RecurrenceTab {
+    path = asAppPath(path);
     if (path === RECURRENCES_PATHS.charges || path.startsWith(`${RECURRENCES_PATHS.charges}/`)) return 'expenses';
     if (path === RECURRENCES_PATHS.revenus || path.startsWith(`${RECURRENCES_PATHS.revenus}/`)) return 'incomes';
     if (path === RECURRENCES_PATHS.echeances || path.startsWith(`${RECURRENCES_PATHS.echeances}/`)) return 'upcoming';
@@ -37,6 +40,7 @@ export function recurrenceDetailPath(kind: 'expense' | 'income', publicId: strin
 
 /** Récurrence désignée par le chemin, ou `null` sur une liste. */
 export function recurrenceFromPath(path: string): { kind: 'expense' | 'income'; publicId: string } | null {
+    path = asAppPath(path);
     for (const [kind, base] of [
         ['expense', RECURRENCES_PATHS.charges],
         ['income', RECURRENCES_PATHS.revenus]

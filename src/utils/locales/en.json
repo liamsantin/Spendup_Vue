@@ -31,6 +31,15 @@
         "save": "Save",
         "cancel": "Cancel"
     },
+    "demo": {
+        "banner": "Demo — nothing is saved on our servers.",
+        "reset": "Reset",
+        "exit": "Exit",
+        "signup": "Create an account",
+        "lockedTitle": "Available with an account",
+        "lockedText": "This part of Spend.Up is not in the demo. Create an account to use it with your own data.",
+        "back": "Back to the dashboard"
+    },
     "nav": {
         "menu": "Menu",
         "closeMenu": "Close menu",

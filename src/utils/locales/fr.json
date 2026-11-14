@@ -31,6 +31,15 @@
         "save": "Enregistrer",
         "cancel": "Annuler"
     },
+    "demo": {
+        "banner": "Démo — rien n’est enregistré sur nos serveurs.",
+        "reset": "Réinitialiser",
+        "exit": "Quitter",
+        "signup": "Créer un compte",
+        "lockedTitle": "Disponible avec un compte",
+        "lockedText": "Cette partie de Spend.Up n’est pas dans la démo. Créez un compte pour l’utiliser avec vos données.",
+        "back": "Retour au tableau de bord"
+    },
     "nav": {
         "menu": "Menu",
         "closeMenu": "Fermer le menu",

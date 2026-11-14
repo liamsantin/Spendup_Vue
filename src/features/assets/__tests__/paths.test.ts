@@ -9,6 +9,7 @@ describe('assets paths', () => {
         expect(assetPublicIdFromPath('/app/patrimoine/actifs')).toBeNull();
         expect(assetPublicIdFromPath('/app/patrimoine/actifs/')).toBeNull();
         expect(assetPublicIdFromPath('/app/patrimoine/actifs/guid-1')).toBe('guid-1');
+        expect(assetPublicIdFromPath('/demo/patrimoine/actifs/ASTCAR1')).toBe('ASTCAR1');
         expect(assetPublicIdFromPath('/app/patrimoine/actifs/guid-1?x=1')).toBe('guid-1');
         expect(assetPublicIdFromPath('/app/patrimoine/immobilier/guid-1')).toBeNull();
     });

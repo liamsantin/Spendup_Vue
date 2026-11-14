@@ -19,6 +19,14 @@ describe('idsFromPath', () => {
     });
 
     it('mappe les finances', () => {
+        expect(idsFromPath('/demo')).toEqual({
+            openId: SHELL_NAV_IDS.dashboard,
+            activeId: SHELL_NAV_IDS.dashboard
+        });
+        expect(idsFromPath('/demo/finances/comptes')).toEqual({
+            openId: SHELL_NAV_IDS.finances,
+            activeId: SHELL_NAV_IDS.accounts
+        });
         expect(idsFromPath('/app/finances/comptes')).toEqual({
             openId: SHELL_NAV_IDS.finances,
             activeId: SHELL_NAV_IDS.accounts

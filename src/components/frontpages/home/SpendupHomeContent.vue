@@ -118,6 +118,7 @@ const platforms = [
                                 Commencer gratuitement
                                 <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>
+                            <v-btn variant="outlined" size="x-large" flat class="text-none" to="/demo">Essayer la démo</v-btn>
                             <RouterLink to="/fonctionnalites" class="home-link">Voir les fonctionnalités</RouterLink>
                         </div>
                         <p class="home-hero__note su-hero-in" style="--su-in-delay: 240ms">

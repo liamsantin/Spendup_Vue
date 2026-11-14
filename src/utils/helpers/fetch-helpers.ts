@@ -3,6 +3,8 @@ import { useAuthStore } from '@/features/auth';
 import { csrfHeaderRecord } from '@/features/auth/csrf';
 import { createApiAxios, getApiBaseUrl, isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 import { AppError, unwrapSpendupEnvelope } from '@/utils/errors/app-error';
+import { isDemoSession } from '@/features/demo/session';
+import { handleDemoRequest } from '@/features/demo/handle';
 
 /**
  * Client Axios pour les API domaine authentifiées.
@@ -53,6 +55,9 @@ function request(method: Method) {
 }
 
 async function send(method: Method, url: string, body?: unknown, extra: SendOptions = {}): Promise<unknown> {
+    if (isDemoSession()) {
+        return handleDemoRequest(method, url, body);
+    }
     const { binary = false, ...axiosExtra } = extra;
     const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
 

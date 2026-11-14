@@ -7,6 +7,8 @@ import VaultHost from '@/features/vault/components/VaultHost.vue';
 import PlanSelectorHost from '@/features/subscription/components/PlanSelectorHost.vue';
 import AppShell from '@/layouts/shell/components/AppShell.vue';
 import { useShellNav } from '@/layouts/shell/composables/useShellNav';
+import DemoBanner from '@/features/demo/DemoBanner.vue';
+import { demoActive } from '@/features/demo/session';
 
 const appSettings = useAppSettingsStore();
 useIdleLogout();
@@ -33,6 +35,7 @@ const { open, openId, activeId, primaryNav, secondaryNav, headerLinks, headerMen
                 :title="title"
             >
                 <div class="page-content" :class="appSettings.boxed ? 'maxWidth' : ''">
+                    <DemoBanner v-if="demoActive" />
                     <RouterView />
                 </div>
             </AppShell>

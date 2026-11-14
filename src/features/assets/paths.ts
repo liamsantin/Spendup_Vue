@@ -1,3 +1,4 @@
+import { asAppPath } from '@/features/demo/session';
 import { WEALTH_BASE } from '@/features/net-worth/paths';
 
 /** Actifs hors immobilier (véhicules, crypto, objets de valeur, épargne, autres). */
@@ -13,7 +14,7 @@ export function assetDetailPath(publicId: string): string {
 }
 
 export function assetPublicIdFromPath(path: string): string | null {
-    const trimmed = path.trim();
+    const trimmed = asAppPath(path);
     if (trimmed === ASSETS_BASE || trimmed === `${ASSETS_BASE}/`) return null;
     if (!trimmed.startsWith(`${ASSETS_BASE}/`)) return null;
     const rest = trimmed.slice(`${ASSETS_BASE}/`.length).split(/[/?#]/)[0] ?? '';

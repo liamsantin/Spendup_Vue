@@ -111,6 +111,9 @@ function pathIs(path: string, prefix: string): boolean {
 }
 
 export function idsFromPath(path: string): { openId: string | null; activeId: string | null } {
+    if (path === '/demo' || path.startsWith('/demo/')) {
+        path = `/app${path.slice('/demo'.length)}`;
+    }
     if (path === '/app' || path === '/app/') {
         return { openId: SHELL_NAV_IDS.dashboard, activeId: SHELL_NAV_IDS.dashboard };
     }

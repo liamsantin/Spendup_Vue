@@ -1,3 +1,5 @@
+import { asAppPath } from '@/features/demo/session';
+
 export const BUDGETS_BASE = '/app/planning/budgets';
 
 export const BUDGETS_PATHS = {
@@ -10,7 +12,7 @@ export function budgetDetailPath(publicId: string): string {
 }
 
 export function budgetPublicIdFromPath(path: string): string | null {
-    const trimmed = path.trim();
+    const trimmed = asAppPath(path);
     if (trimmed === BUDGETS_BASE || trimmed === `${BUDGETS_BASE}/`) return null;
     if (!trimmed.startsWith(`${BUDGETS_BASE}/`)) return null;
     const rest = trimmed.slice(`${BUDGETS_BASE}/`.length).split(/[/?#]/)[0] ?? '';
