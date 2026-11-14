@@ -9,7 +9,7 @@ describe('handleDemoRequest', () => {
 
     it('sert le foyer de démo et filtre les transactions du mois', () => {
         const accounts = handleDemoRequest('GET', '/api/accounts') as { items: { publicId: string }[] };
-        expect(accounts.items.map((item) => item.publicId)).toEqual(['ACCCOUR', 'ACCSAVE', 'ACCCASH']);
+        expect(accounts.items.map((item) => item.publicId)).toEqual(['ACCCOUR', 'ACCSAVE', 'ACCCASH', 'ACCINV1']);
 
         const november = handleDemoRequest('GET', '/api/transactions?from=2026-11-01&to=2026-11-30&page=1&pageSize=50') as {
             items: { label: string }[];
@@ -106,6 +106,20 @@ describe('handleDemoRequest', () => {
 
         const content = handleDemoRequest('GET', `/api/files/${first.publicId}/content`);
         expect(content).toBeInstanceOf(Blob);
+    });
+
+    it('ouvre le patrimoine : dettes, placements et immobilier', () => {
+        const debts = handleDemoRequest('GET', '/api/liabilities') as { items: { name: string }[] };
+        expect(debts.items.map((item) => item.name)).toEqual(expect.arrayContaining(['Hypothèque Lausanne', 'Leasing Golf']));
+
+        const positions = handleDemoRequest('GET', '/api/accounts/ACCINV1/positions') as { items: { instrument: { symbol: string } }[] };
+        expect(positions.items.map((item) => item.instrument.symbol).sort()).toEqual(['CHSPI', 'NESN']);
+
+        const units = handleDemoRequest('GET', '/api/assets/ASTFLAT/real-estate/units') as { items: { name: string }[] };
+        expect(units.items.map((item) => item.name)).toEqual(['Appartement']);
+
+        const loans = handleDemoRequest('GET', '/api/personal-loans') as { items: { counterpartName: string | null }[] };
+        expect(loans.items[0]?.counterpartName).toBe('Marie Dubois');
     });
 
     it('crée un véhicule et enregistre un relevé', () => {

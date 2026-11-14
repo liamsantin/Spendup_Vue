@@ -96,6 +96,12 @@ const platforms = [
     { label: 'Smartphone', value: 'iPhone et Android, depuis le navigateur' },
     { label: 'Ordinateur', value: 'Application Windows 10/11 · 64 bits' }
 ];
+
+const demoPoints = [
+    { title: 'Un foyer déjà rempli', text: 'Camille a des comptes, des transactions, des amis et un patrimoine.' },
+    { title: 'Vous pouvez modifier', text: 'Ajoutez une dépense, un budget ou un fichier : trois PDF au maximum.' },
+    { title: 'Rien n’est conservé', text: 'Rechargez la page ou réinitialisez pour retrouver l’exemple de départ.' }
+];
 </script>
 
 <template>
@@ -292,6 +298,34 @@ const platforms = [
                             <dd>{{ platform.value }}</dd>
                         </div>
                     </dl>
+                </div>
+            </div>
+        </section>
+
+        <!-- 07 : essayer sans créer de compte -->
+        <section id="essayer-la-demo" class="s-section home-demo">
+            <div class="s-container">
+                <div v-reveal class="s-grid demo">
+                    <div class="demo__copy">
+                        <span class="s-kicker"><b>07</b> Essayer la démo</span>
+                        <h2 class="s-h2">Parcourez Spend.Up avant de créer un compte.</h2>
+                        <p>
+                            Un foyer d’exemple est déjà rempli : comptes, transactions, budgets, récurrences et patrimoine. Rien n’est
+                            enregistré sur nos serveurs.
+                        </p>
+                        <div class="s-actions">
+                            <v-btn color="primary" size="x-large" flat class="text-none" to="/demo">
+                                Essayer la démo
+                                <ArrowRightIcon size="18" class="ms-3" />
+                            </v-btn>
+                        </div>
+                    </div>
+                    <ul class="demo__points">
+                        <li v-for="point in demoPoints" :key="point.title">
+                            <h3>{{ point.title }}</h3>
+                            <p>{{ point.text }}</p>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </section>

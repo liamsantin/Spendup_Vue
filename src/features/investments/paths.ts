@@ -1,3 +1,4 @@
+import { asAppPath } from '@/features/demo/session';
 import { WEALTH_BASE } from '@/features/net-worth/paths';
 
 /** Placements : positions et opérations d’un compte `investissement` / `crypto`. */
@@ -14,7 +15,7 @@ export function investmentsAccountPath(accountPublicId: string): string {
 }
 
 export function investmentsAccountPublicIdFromPath(path: string): string | null {
-    const trimmed = path.trim();
+    const trimmed = asAppPath(path);
     if (trimmed === INVESTMENTS_BASE || trimmed === `${INVESTMENTS_BASE}/`) return null;
     if (!trimmed.startsWith(`${INVESTMENTS_BASE}/`)) return null;
     const rest = trimmed.slice(`${INVESTMENTS_BASE}/`.length).split(/[/?#]/)[0] ?? '';

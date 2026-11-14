@@ -86,6 +86,14 @@ watch(
                             class="header-login d-md-flex d-none text-none h-43 px-4 flex-shrink-0"
                             variant="text"
                             color="textPrimary"
+                            to="/demo"
+                        >
+                            Démo
+                        </v-btn>
+                        <v-btn
+                            class="header-login d-md-flex d-none text-none h-43 px-4 flex-shrink-0"
+                            variant="text"
+                            color="textPrimary"
                             to="/auth?tab=login"
                         >
                             Connexion

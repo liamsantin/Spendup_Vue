@@ -17,6 +17,7 @@ import type { CreateSavingsGoalPayload, UpdateSavingsGoalPayload } from '@/featu
 import type { CreateTransactionPayload, UpdateTransactionPayload } from '@/features/transactions/types';
 import type { UserSettings } from '@/features/user-settings/types';
 import { DEMO_USER_PUBLIC_ID } from '@/features/demo/user';
+import { mortgageRemainingFor, routeWealth } from '@/features/demo/wealth';
 import type { UpdateFileRequest } from '@/features/files/types';
 import {
     demoFileContent,
@@ -138,6 +139,8 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
         return ok({ ...page, unreadCount: db.notifications.filter((item) => !item.isRead).length });
     }
 
+    const wealth = routeWealth(method, path, query, body);
+    if (wealth) return wealth;
     const filesResult = dispatchFiles(method, path, query, body);
     if (filesResult) return filesResult;
     const friends = dispatchFriends(method, path, query, body);
@@ -1553,10 +1556,11 @@ function findAsset(id: string) {
     const item = demoDb().assets.find((row) => row.publicId === id);
     if (!item) notFound('Actif introuvable.');
     if (item.realEstate) {
+        const mortgage = mortgageRemainingFor(item.publicId);
         item.realEstate.summary = {
-            mortgageRemaining: item.publicId === 'ASTFLAT' ? 640000 : 0,
+            mortgageRemaining: mortgage,
             mortgageExcludedCount: 0,
-            equity: item.estimatedValue - (item.publicId === 'ASTFLAT' ? 640000 : 0),
+            equity: item.estimatedValue - mortgage,
             isRented: false,
             monthlyRent: 0,
             monthlyRentalCharges: 0,

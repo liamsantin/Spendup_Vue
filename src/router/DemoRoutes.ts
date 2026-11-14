@@ -22,7 +22,12 @@ const OPEN_DEMO_PATHS = new Set([
     'planning/budgets/:publicId?',
     'planning/objectifs/:publicId?',
     'patrimoine',
-    'patrimoine/actifs/:publicId?'
+    'patrimoine/actifs/:publicId?',
+    'patrimoine/immobilier/:publicId?',
+    'patrimoine/placements/:accountPublicId?',
+    'patrimoine/dettes/prets/:publicId?',
+    'patrimoine/dettes/amis/:publicId?',
+    'patrimoine/dettes/:publicId?'
 ]);
 
 function toDemoChild(child: RouteRecordRaw): RouteRecordRaw {

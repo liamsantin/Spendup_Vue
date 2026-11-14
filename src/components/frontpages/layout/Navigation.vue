@@ -61,6 +61,7 @@ const linkClass = (href: string) => [
         </ul>
 
         <div class="front-nav-dropdown__actions">
+            <v-btn class="text-none" size="x-large" variant="outlined" block to="/demo" @click="emit('navigate')">Démo</v-btn>
             <v-btn class="text-none" size="x-large" flat block to="/auth?tab=register" @click="emit('navigate')">Créer un compte</v-btn>
             <v-btn class="text-none" size="x-large" variant="outlined" block to="/auth?tab=login" @click="emit('navigate')">
                 Connexion

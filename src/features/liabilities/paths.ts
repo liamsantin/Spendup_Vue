@@ -1,3 +1,4 @@
+import { asAppPath } from '@/features/demo/session';
 import { WEALTH_BASE } from '@/features/net-worth/paths';
 
 /**
@@ -21,6 +22,7 @@ export function debtsPathForTab(tab: DebtsTab): string {
 }
 
 export function debtsTabFromPath(path: string): DebtsTab {
+    path = asAppPath(path);
     if (path === DEBTS_PATHS.loans || path.startsWith(`${DEBTS_PATHS.loans}/`)) return 'loans';
     if (path === DEBTS_PATHS.shared || path.startsWith(`${DEBTS_PATHS.shared}/`)) return 'shared';
     return 'liabilities';
@@ -32,7 +34,7 @@ function detailPath(base: string, publicId: string): string {
 }
 
 function publicIdFromPath(base: string, path: string): string | null {
-    const trimmed = path.trim();
+    const trimmed = asAppPath(path);
     if (trimmed === base || trimmed === `${base}/`) return null;
     if (!trimmed.startsWith(`${base}/`)) return null;
     const rest = trimmed.slice(`${base}/`.length).split(/[/?#]/)[0] ?? '';

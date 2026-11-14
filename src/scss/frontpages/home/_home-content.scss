@@ -488,6 +488,52 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
     }
 }
 
+// 07 Essayer la démo : promesse à gauche, ce que l’on peut faire à droite -----------------
+.demo {
+    align-items: start;
+    row-gap: 40px;
+
+    &__copy {
+        grid-column: 1 / span 6;
+        display: grid;
+        justify-items: start;
+        gap: 24px;
+
+        .s-kicker {
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        > p {
+            color: $grey;
+            font-size: var(--s-fs-lead);
+            line-height: 1.6;
+        }
+    }
+
+    &__points {
+        grid-column: 8 / -1;
+        display: grid;
+        gap: 28px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+
+        h3 {
+            margin: 0 0 6px;
+            font-size: 17px;
+            font-weight: 500;
+        }
+
+        p {
+            margin: 0;
+            color: $grey;
+            font-size: var(--s-fs-small);
+            line-height: 1.55;
+        }
+    }
+}
+
 // Appel final -------------------------------------------------------------------------
 .home-final {
     padding: clamp(96px, 12vw, 176px) 0;
@@ -568,7 +614,9 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
     .how__intro,
     .steps,
     .anywhere__copy,
-    .anywhere__platforms {
+    .anywhere__platforms,
+    .demo__copy,
+    .demo__points {
         grid-column: 1 / -1;
     }
 
@@ -673,7 +721,8 @@ $bleed: calc(var(--s-gutter) + max(0px, (100vw - 1320px) / 2));
     .encryption__intro .s-kicker,
     .how__intro .s-kicker,
     .trust__statement .s-kicker,
-    .anywhere__copy .s-kicker {
+    .anywhere__copy .s-kicker,
+    .demo__copy .s-kicker {
         padding-top: 16px;
         border-top: 1px solid currentColor;
     }

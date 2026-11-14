@@ -9,8 +9,14 @@ import type { AppNotification } from '@/features/notifications/types';
 import type { PaymentMethod } from '@/features/payment-methods/types';
 import type { RecurringDue, RecurringExpense, RecurringIncome } from '@/features/recurring-payments/types';
 import type { SavingsGoal, SavingsGoalStatus } from '@/features/savings-goals/types';
+import type { Instrument, InvestmentOperation } from '@/features/investments/types';
+import type { Liability } from '@/features/liabilities/types';
+import type { PersonalLoan } from '@/features/personal-loans/types';
+import type { RealEstateCharge, RealEstateMaintenance, RealEstateUnit } from '@/features/real-estate/types';
+import type { SharedDebt } from '@/features/shared-debts/types';
 import { seedFriends, type DemoFriend } from '@/features/demo/friends';
 import { seedRecurringHousehold } from '@/features/demo/recurring';
+import { seedWealth } from '@/features/demo/wealth';
 import type { Tag } from '@/features/tags/types';
 import type { Tier } from '@/features/tiers/types';
 import type { Transaction, TransactionMovement, TransactionType } from '@/features/transactions/types';
@@ -75,6 +81,14 @@ export type DemoDb = {
     friendsDirectory: DemoFriend[];
     files: FileDto[];
     fileBlobs: Record<string, Blob>;
+    liabilities: Liability[];
+    personalLoans: PersonalLoan[];
+    sharedDebts: SharedDebt[];
+    instruments: Instrument[];
+    operations: InvestmentOperation[];
+    realEstateUnits: Record<string, RealEstateUnit[]>;
+    realEstateCharges: Record<string, RealEstateCharge[]>;
+    realEstateMaintenance: Record<string, RealEstateMaintenance[]>;
     notifications: AppNotification[];
 };
 
@@ -204,6 +218,7 @@ function transaction(input: {
 export function createDemoDb(): DemoDb {
     const recurring = seedRecurringHousehold();
     const friendsDirectory = seedFriends();
+    const wealth = seedWealth();
     const ubs: Account['bank'] = {
         tierPublicId: 'TIERUBS',
         name: 'UBS',
@@ -217,7 +232,8 @@ export function createDemoDb(): DemoDb {
         accounts: [
             account('ACCCOUR', 'Compte courant', 'courant', 4820.4, true, ubs),
             account('ACCSAVE', 'Épargne', 'epargne', 18600, false, ubs),
-            account('ACCCASH', 'Espèces', 'cash', 240, false, null)
+            account('ACCCASH', 'Espèces', 'cash', 240, false, null),
+            account('ACCINV1', 'Compte titres', 'investissement', 3940, false, ubs)
         ],
         categories: [
             tree(category('CATFOOD', 'Courses', 'depense', '#10B981', { icone: 'shopping-cart' }), [
@@ -695,9 +711,6 @@ export function createDemoDb(): DemoDb {
                 updatedAt: null
             }
         ],
-        friendsDirectory,
-        files: [],
-        fileBlobs: {},
         notifications: [
             {
                 id: 1,
@@ -728,6 +741,9 @@ export function createDemoDb(): DemoDb {
         ],
         ...recurring,
         friendsDirectory,
+        ...wealth,
+        files: [],
+        fileBlobs: {},
         aliases: {
             TIERMIG: [
                 {
@@ -956,8 +972,13 @@ export function netWorthOverview(): NetWorthOverview {
     const totalAccounts = roundMoney(accounts.reduce((sum, item) => sum + (item.currentBalance ?? 0), 0));
     const assets = db.assets.filter((item) => item.isActive);
     const totalAssets = roundMoney(assets.reduce((sum, item) => sum + item.estimatedValue, 0));
-    const totalLiabilities = 640000;
-    const by = (type: string, total: number, count: number) => [{ type, count, total }];
+    const activeLiabilities = db.liabilities.filter((item) => item.status === 'active');
+    const totalLiabilities = roundMoney(activeLiabilities.reduce((sum, item) => sum + item.remainingAmount, 0));
+    const investments = roundMoney(
+        accounts
+            .filter((item) => item.type === 'investissement' || item.type === 'crypto')
+            .reduce((sum, item) => sum + (item.currentBalance ?? 0), 0)
+    );
     return {
         currency: 'CHF',
         asOf: new Date().toISOString().slice(0, 10),
@@ -965,7 +986,7 @@ export function netWorthOverview(): NetWorthOverview {
         totalAssets,
         totalLiabilities,
         netWorth: roundMoney(totalAccounts + totalAssets - totalLiabilities),
-        investments: 0,
+        investments,
         investmentsWithoutQuote: 0,
         accountsByType: [
             {
@@ -989,8 +1010,29 @@ export function netWorthOverview(): NetWorthOverview {
             count: assets.filter((asset) => asset.type === type).length,
             total: roundMoney(assets.filter((asset) => asset.type === type).reduce((sum, asset) => sum + asset.estimatedValue, 0))
         })),
-        liabilitiesByType: by('hypotheque', totalLiabilities, 1),
-        friendsBalance: { receivable: 0, payable: 0 },
+        liabilitiesByType: [...new Set(activeLiabilities.map((item) => item.type))].map((type) => ({
+            type,
+            count: activeLiabilities.filter((item) => item.type === type).length,
+            total: roundMoney(activeLiabilities.filter((item) => item.type === type).reduce((sum, item) => sum + item.remainingAmount, 0))
+        })),
+        friendsBalance: {
+            receivable: roundMoney(
+                db.sharedDebts
+                    .filter((item) => item.role === 'creditor' && item.status !== 'canceled')
+                    .reduce((sum, item) => sum + item.remainingAmount, 0) +
+                    db.personalLoans
+                        .filter((item) => item.direction === 'pret' && item.status === 'active')
+                        .reduce((sum, item) => sum + item.remainingAmount, 0)
+            ),
+            payable: roundMoney(
+                db.sharedDebts
+                    .filter((item) => item.role === 'debtor' && item.status !== 'canceled')
+                    .reduce((sum, item) => sum + item.remainingAmount, 0) +
+                    db.personalLoans
+                        .filter((item) => item.direction === 'emprunt' && item.status === 'active')
+                        .reduce((sum, item) => sum + item.remainingAmount, 0)
+            )
+        },
         excluded: [],
         lastSnapshot: { periode: '2026-10-01', netWorth: totalAccounts + totalAssets - totalLiabilities - 1200, delta: 1200 }
     };
