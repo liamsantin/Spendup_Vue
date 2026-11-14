@@ -27,9 +27,6 @@ export function readUploadedFile(body: unknown): File {
     if (typeof FormData !== 'undefined' && body instanceof FormData) {
         const raw = body.get('file');
         if (raw instanceof File) return raw;
-        if (typeof Blob !== 'undefined' && raw instanceof Blob) {
-            return new File([raw], 'document.pdf', { type: raw.type || 'application/pdf' });
-        }
     }
     throw new AppError('Fichier manquant.', 400);
 }

@@ -114,7 +114,7 @@ const roleFilterLabel = computed(() => {
     return `${t('tiersPage.filters.role')} · ${value}`;
 });
 
-/* ── chiffres clés : tiers connus (toutes listes chargées), comptés par nature ── */
+/* ── effectifs des onglets : tiers connus (toutes listes chargées), comptés par nature ── */
 const knownTiers = computed(() => store.allKnownItems());
 
 const natureCounts = computed(() => {
@@ -129,17 +129,6 @@ const tiersTotal = computed(() => {
     if (!filterNature.value && !filterRole.value && !queryString('q') && store.totalCount > known) return store.totalCount;
     return known;
 });
-
-const figures = computed(() => [
-    { key: 'all', label: t('tiersPage.naturesPlural.all'), value: tiersTotal.value },
-    ...TIER_NATURES.filter((nature) => natureCounts.value[nature] > 0).map((nature) => ({
-        key: nature,
-        label: t(`tiersPage.naturesPlural.${nature}`),
-        value: natureCounts.value[nature]
-    }))
-]);
-
-const showFigures = computed(() => store.initialized && tiersTotal.value > 0);
 
 function selectNature(value: TierNature | '') {
     filterNature.value = value;
@@ -221,8 +210,8 @@ function onCreate(nature?: TierNature) {
     </AppPageShell>
 
     <!-- ── liste ── -->
-    <AppPageShell v-else class="tiers-page" :title="t('tiersPage.title')" :subtitle="t('tiersPage.subtitle')" :body-scroll="false">
-        <!-- onglets par nature en haut à droite du titre -->
+    <AppPageShell v-else class="tiers-page" :title="t('tiersPage.title')" :body-scroll="false">
+        <!-- onglets par nature en haut à droite du titre, avec l’effectif -->
         <template #tabs>
             <nav class="su-tabs" :aria-label="t('tiersPage.tabs.label')">
                 <button
@@ -233,6 +222,7 @@ function onCreate(nature?: TierNature) {
                     @click="selectNature('')"
                 >
                     <span class="su-tab__label" :data-label="t('tiersPage.tabs.all')">{{ t('tiersPage.tabs.all') }}</span>
+                    <span v-if="store.initialized" class="tiers-page__tab-count">{{ tiersTotal }}</span>
                 </button>
                 <button
                     v-for="nature in TIER_NATURES"
@@ -246,17 +236,10 @@ function onCreate(nature?: TierNature) {
                     <span class="su-tab__label" :data-label="t(`tiersPage.naturesPlural.${nature}`)">{{
                         t(`tiersPage.naturesPlural.${nature}`)
                     }}</span>
+                    <span v-if="store.initialized" class="tiers-page__tab-count">{{ natureCounts[nature] }}</span>
                 </button>
             </nav>
         </template>
-
-        <!-- chiffres clés : court filet 2 px, libellé 13 px, nombre 30 px 700 -->
-        <div v-if="showFigures" class="tiers-figs" role="list">
-            <div v-for="figure in figures" :key="figure.key" class="su-fig tiers-figs__item" role="listitem">
-                <p class="su-fig__label">{{ figure.label }}</p>
-                <p class="su-fig__num">{{ figure.value }}</p>
-            </div>
-        </div>
 
         <AppBoard>
             <template #bar>
@@ -347,24 +330,20 @@ function onCreate(nature?: TierNature) {
     cursor: pointer;
 }
 
-/* ── compteurs : une carte légère, cases séparées par des filets fins ── */
-.tiers-figs {
-    flex: none;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    margin: 0 0 32px;
-    border: 1px solid var(--line);
+/* la liste occupe tout le corps : le titre et les onglets suffisent au-dessus */
+.tiers-page :deep(.su-body) {
+    padding-bottom: 0;
 }
 
-.tiers-figs__item {
-    border-top: 0;
-    padding: 16px 20px;
-    min-width: 0;
-    box-shadow: -1px 0 0 var(--line);
+.tiers-page__tab-count {
+    font-size: 13px;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    color: var(--gray);
 }
 
-.tiers-figs__item .su-fig__num {
-    font-size: 24px;
+.su-tab.is-active .tiers-page__tab-count {
+    color: var(--ink);
 }
 
 /* filtre « Rôle · Tous » : bouton discret (bordure fine grise, texte gris) */
@@ -394,28 +373,6 @@ function onCreate(nature?: TierNature) {
 }
 
 @media (max-width: 767px) {
-    /* une seule rangée qui défile horizontalement : la liste reste visible sans défiler */
-    .tiers-figs {
-        grid-template-columns: none;
-        grid-auto-flow: column;
-        grid-auto-columns: minmax(96px, max-content);
-        overflow-x: auto;
-        scrollbar-width: none;
-        margin-bottom: 20px;
-    }
-
-    .tiers-figs::-webkit-scrollbar {
-        display: none;
-    }
-
-    .tiers-figs__item {
-        padding: 10px 14px;
-    }
-
-    .tiers-figs__item .su-fig__num {
-        font-size: 18px;
-    }
-
     .tiers-role-filter {
         margin-left: 0;
     }
