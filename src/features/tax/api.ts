@@ -1,10 +1,13 @@
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
 import type {
+    TaxEntryKind,
+    TaxPerson,
     TaxReturn,
     TaxReturnCreated,
     TaxReturnListResult,
     UpdateTaxReturnPayload,
-    UpsertTaxAmountPayload
+    UpsertTaxAmountPayload,
+    UpsertTaxEntryPayload
 } from '@/features/tax/types';
 
 export const taxApi = {
@@ -33,5 +36,23 @@ export const taxApi = {
 
     remove(publicId: string) {
         return fetchWrapper.delete(`/api/tax-returns/${encodeURIComponent(publicId)}`) as Promise<void>;
+    },
+
+    createEntry(publicId: string, body: UpsertTaxEntryPayload) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/entries`, body) as Promise<TaxReturn>;
+    },
+
+    deleteEntry(publicId: string, entryPublicId: string) {
+        return fetchWrapper.delete(
+            `/api/tax-returns/${encodeURIComponent(publicId)}/entries/${encodeURIComponent(entryPublicId)}`
+        ) as Promise<TaxReturn>;
+    },
+
+    reportEntries(publicId: string, kind: TaxEntryKind, person: TaxPerson) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/entries/report`, { kind, person }) as Promise<TaxReturn>;
+    },
+
+    pdf(publicId: string) {
+        return fetchWrapper.getBlob(`/api/tax-returns/${encodeURIComponent(publicId)}/pdf`);
     }
 };

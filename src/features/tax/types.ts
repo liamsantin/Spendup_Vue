@@ -73,6 +73,27 @@ export interface TaxSubtotal {
     netAssets: number | null;
 }
 
+export type TaxEntryKind = 'employment' | 'child' | 'property' | 'debt' | 'institution';
+
+export interface TaxEntry {
+    publicId: string;
+    kind: TaxEntryKind;
+    person: TaxPerson;
+    title: string;
+    detail: string | null;
+    amount: number | null;
+    secondaryAmount: number | null;
+}
+
+export interface UpsertTaxEntryPayload {
+    kind: TaxEntryKind;
+    person: TaxPerson | null;
+    title: string;
+    detail: string | null;
+    amount: number | null;
+    secondaryAmount: number | null;
+}
+
 export interface TaxReturn {
     publicId: string;
     year: number;
@@ -86,6 +107,7 @@ export interface TaxReturn {
     sections: TaxSection[];
     subtotals: TaxSubtotal[];
     gaps: string[];
+    entries: TaxEntry[];
 }
 
 export interface TaxReturnListItem {

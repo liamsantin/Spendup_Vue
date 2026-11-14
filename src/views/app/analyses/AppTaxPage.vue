@@ -11,6 +11,7 @@ import {
     ArrowLeftIcon,
     CheckIcon,
     DotsIcon,
+    FileTextIcon,
     PencilIcon,
     PlayerPlayIcon,
     PlusIcon,
@@ -25,6 +26,7 @@ import { TAX_BASE, taxDetailPath, taxPublicIdFromPath } from '@/features/tax/pat
 import {
     TAX_CANTONS,
     type TaxCompetence,
+    type TaxEntryKind,
     type TaxIdentity,
     type TaxLine,
     type TaxPerson,
@@ -136,6 +138,49 @@ function forgetStep(id: string) {
 }
 
 const currentStep = computed(() => steps.value.find((item) => item.id === step.value) ?? steps.value[0]);
+
+const ficheKinds = computed((): TaxEntryKind[] => {
+    if (step.value === SITUATION) return ['child'];
+    if (step.value === 'revenus') return ['employment'];
+    if (step.value === 'fortune') return ['property', 'institution'];
+    if (step.value === 'dettes') return ['debt'];
+    return [];
+});
+
+const ficheDrafts = ref<Record<string, { title: string; detail: string; amount: string; secondary: string }>>({});
+
+function ficheDraft(kind: string) {
+    if (!ficheDrafts.value[kind]) {
+        ficheDrafts.value[kind] = { title: '', detail: '', amount: '', secondary: '' };
+    }
+    return ficheDrafts.value[kind];
+}
+
+function entriesOf(kind: TaxEntryKind) {
+    return (declaration.value?.entries ?? []).filter((entry) => entry.kind === kind && entry.person === person.value);
+}
+
+function amountLabel(kind: TaxEntryKind): string {
+    if (kind === 'employment') return t('taxPage.fiches.employmentAmount');
+    if (kind === 'property') return t('taxPage.fiches.propertyAmount');
+    if (kind === 'debt') return t('taxPage.fiches.debtAmount');
+    if (kind === 'institution') return t('taxPage.fiches.institutionAmount');
+    return t('taxPage.fiches.amount');
+}
+
+function secondaryLabel(kind: TaxEntryKind): string {
+    if (kind === 'property') return t('taxPage.fiches.propertyIncome');
+    if (kind === 'debt') return t('taxPage.fiches.debtInterest');
+    if (kind === 'institution') return t('taxPage.fiches.institutionIncome');
+    return '';
+}
+
+function parseFicheAmount(raw: string): number | null {
+    const trimmed = raw.trim().replace(/\s/g, '').replace(',', '.');
+    if (!trimmed) return null;
+    const value = Number(trimmed);
+    return Number.isFinite(value) ? value : null;
+}
 
 const validateLabel = computed(() => {
     const id = step.value;
@@ -331,6 +376,61 @@ async function flushCurrentDrafts(): Promise<boolean> {
     return true;
 }
 
+async function addFiche(kind: TaxEntryKind) {
+    const current = declaration.value;
+    if (!current) return;
+    const draft = ficheDraft(kind);
+    saving.value = true;
+    error.value = '';
+    try {
+        const detail = await taxApi.createEntry(current.publicId, {
+            kind,
+            person: person.value,
+            title: draft.title,
+            detail: draft.detail.trim() || null,
+            amount: parseFicheAmount(draft.amount),
+            secondaryAmount: parseFicheAmount(draft.secondary)
+        });
+        draft.title = '';
+        draft.detail = '';
+        draft.amount = '';
+        draft.secondary = '';
+        apply(detail);
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
+async function removeFiche(entryPublicId: string) {
+    const current = declaration.value;
+    if (!current) return;
+    saving.value = true;
+    error.value = '';
+    try {
+        apply(await taxApi.deleteEntry(current.publicId, entryPublicId));
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
+async function reportFiches(kind: TaxEntryKind) {
+    const current = declaration.value;
+    if (!current) return;
+    saving.value = true;
+    error.value = '';
+    try {
+        apply(await taxApi.reportEntries(current.publicId, kind, person.value));
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
 async function validateCurrentStep() {
     if (step.value === SITUATION) {
         const saved = await saveHeader();
@@ -371,6 +471,21 @@ async function removeReturn() {
 
 function openReturn(id: string) {
     void router.push(taxDetailPath(id));
+}
+
+async function downloadPdf(id: string, year: number, canton: string) {
+    error.value = '';
+    try {
+        const blob = await taxApi.pdf(id);
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `declaration-${year}-${canton}.pdf`;
+        link.click();
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    }
 }
 
 function onCardActivate(event: MouseEvent, id: string) {
@@ -492,6 +607,15 @@ function money(value: number | null): string {
                                     <span class="su-menu-item__title">{{ t('taxPage.actions.open') }}</span>
                                 </button>
                                 <button
+                                    type="button"
+                                    class="su-menu-item"
+                                    :disabled="saving"
+                                    @click="downloadPdf(item.publicId, item.year, item.canton)"
+                                >
+                                    <span class="su-menu-item__icon"><FileTextIcon :size="18" stroke-width="1.6" /></span>
+                                    <span class="su-menu-item__title">{{ t('taxPage.actions.pdf') }}</span>
+                                </button>
+                                <button
                                     v-if="item.status !== 'preteARecopier'"
                                     type="button"
                                     class="su-menu-item"
@@ -575,6 +699,15 @@ function money(value: number | null): string {
             <button type="button" class="su-btn" @click="router.push(TAX_BASE)">
                 <ArrowLeftIcon :size="18" />
                 {{ t('taxPage.back') }}
+            </button>
+            <button
+                type="button"
+                class="su-btn"
+                :disabled="saving"
+                @click="downloadPdf(declaration.publicId, declaration.year, declaration.canton)"
+            >
+                <FileTextIcon :size="18" stroke-width="1.6" />
+                {{ t('taxPage.actions.pdf') }}
             </button>
             <button type="button" class="su-btn" :disabled="saving" @click="removeReturn">{{ t('taxPage.delete') }}</button>
         </template>
@@ -845,6 +978,61 @@ function money(value: number | null): string {
             {{ t('taxPage.gaps', { count: declaration.gaps.length }, declaration.gaps.length) }}
         </p>
 
+        <div v-if="ficheKinds.length" class="tax-fiches">
+            <section v-for="kind in ficheKinds" :key="kind" class="tax-form">
+                <h2 class="tax-form__legend">{{ t(`taxPage.fiches.${kind}`) }}</h2>
+                <article v-for="entry in entriesOf(kind)" :key="entry.publicId" class="tax-fiche">
+                    <div>
+                        <p class="tax-fiche__title">{{ entry.title }}</p>
+                        <p v-if="entry.detail" class="tax-fiche__detail">{{ entry.detail }}</p>
+                    </div>
+                    <p v-if="entry.amount != null" class="tax-fiche__amount">{{ money(entry.amount) }}</p>
+                    <p v-if="entry.secondaryAmount != null" class="tax-fiche__amount">{{ money(entry.secondaryAmount) }}</p>
+                    <button type="button" class="su-btn" :disabled="saving" @click="removeFiche(entry.publicId)">
+                        {{ t('taxPage.fiches.remove') }}
+                    </button>
+                </article>
+                <form class="tax-form" @submit.prevent="addFiche(kind)">
+                    <div class="tax-form__row">
+                        <label class="tax-form__label">{{ t('taxPage.fiches.title') }}</label>
+                        <div class="tax-form__field">
+                            <v-text-field v-model="ficheDraft(kind).title" color="primary" variant="outlined" hide-details />
+                        </div>
+                    </div>
+                    <div class="tax-form__row">
+                        <label class="tax-form__label">{{ t('taxPage.fiches.detail') }}</label>
+                        <div class="tax-form__field">
+                            <v-text-field v-model="ficheDraft(kind).detail" color="primary" variant="outlined" hide-details />
+                        </div>
+                    </div>
+                    <div v-if="kind !== 'child'" class="tax-form__row">
+                        <label class="tax-form__label">{{ amountLabel(kind) }}</label>
+                        <div class="tax-form__field">
+                            <v-text-field v-model="ficheDraft(kind).amount" color="primary" variant="outlined" hide-details />
+                        </div>
+                    </div>
+                    <div v-if="secondaryLabel(kind)" class="tax-form__row">
+                        <label class="tax-form__label">{{ secondaryLabel(kind) }}</label>
+                        <div class="tax-form__field">
+                            <v-text-field v-model="ficheDraft(kind).secondary" color="primary" variant="outlined" hide-details />
+                        </div>
+                    </div>
+                    <div class="tax-form__actions">
+                        <button type="submit" class="su-btn" :disabled="saving">{{ t('taxPage.fiches.save') }}</button>
+                        <button
+                            v-if="kind !== 'child'"
+                            type="button"
+                            class="su-btn su-btn--ink"
+                            :disabled="saving"
+                            @click="reportFiches(kind)"
+                        >
+                            {{ t('taxPage.fiches.report') }}
+                        </button>
+                    </div>
+                </form>
+            </section>
+        </div>
+
         <section v-for="section in declaration.sections" v-show="step === section.code" :key="section.code" class="tax-section">
             <div
                 v-for="line in section.lines"
@@ -1113,6 +1301,34 @@ function money(value: number | null): string {
     color: var(--blue-ink);
     font-size: 14px;
     --sq-color: var(--blue);
+}
+
+.tax-fiches {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    margin-bottom: 28px;
+}
+
+.tax-fiche {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+}
+
+.tax-fiche__title {
+    margin: 0;
+    font-weight: 700;
+}
+
+.tax-fiche__detail,
+.tax-fiche__amount {
+    margin: 0;
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
 }
 
 .tax-section {
