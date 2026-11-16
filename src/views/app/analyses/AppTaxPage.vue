@@ -471,14 +471,36 @@ async function importReturn() {
         try {
             const report = await readTaxPdf(file, (target) => labels.get(target) ?? target);
             if (report) {
-                notice = report.suggestions.length
-                    ? t('taxPage.importRead', { count: report.suggestions.length })
-                    : t('taxPage.importReadNone');
+                // Une ligne qui se saisit séparément (canton / Confédération) reçoit le même montant des deux côtés.
+                const readCount = report.suggestions.length;
+                const splitting = new Set(
+                    created.declaration.sections.flatMap((section) =>
+                        section.lines.filter((item) => item.splitsCompetence).map((item) => item.code)
+                    )
+                );
+                report.suggestions = report.suggestions.flatMap((item) =>
+                    splitting.has(item.code) ? (['cantonal', 'federal'] as const).map((competence) => ({ ...item, competence })) : [item]
+                );
+                notice = readCount ? t('taxPage.importRead', { count: readCount }) : t('taxPage.importReadNone');
                 stashPendingRead(
                     createdId,
                     { profileLabel: report.profileLabel, items: report.suggestions, totals: report.totals, unmapped: report.unmapped },
                     notice
                 );
+                // Des montants pour la personne 2 : le couple doit être ouvert pour pouvoir les accepter.
+                if (report.suggestions.some((item) => item.person === '2')) {
+                    const base = created.declaration;
+                    await taxApi.update(createdId, {
+                        canton: base.canton,
+                        couple: true,
+                        status: base.status,
+                        taxpayerNumber: base.taxpayerNumber,
+                        notes: base.notes,
+                        name: base.name,
+                        person1: cleanIdentity(base.person1),
+                        person2: cleanIdentity(base.person2 ?? emptyIdentity())
+                    });
+                }
             } else {
                 stashPendingRead(createdId, null, notice);
             }
