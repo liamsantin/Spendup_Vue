@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Page Fonctionnalités : un hero, puis six sections bâties sur le même gabarit que l'accueil
+ * Page Fonctionnalités : un hero, puis sept sections bâties sur le même gabarit que l'accueil
  * (intitulé numéroté fixé à gauche, capture et liste à droite), puis l'appel final.
  * Chaque point décrit un écran qui existe dans l'application : rien d'annoncé à l'avance.
  */
@@ -113,8 +113,33 @@ const sections: FeatureSection[] = [
         ]
     },
     {
-        id: 'partager',
+        id: 'impots',
         number: '05',
+        kicker: 'Impôts',
+        title: 'Préparez votre déclaration, sans repartir de zéro.',
+        lead: 'Spend.Up prépare un brouillon par année et par canton, que vous recopiez ensuite dans la déclaration officielle. Seuls les montants que vous validez y figurent.',
+        items: [
+            {
+                title: 'Une déclaration par année',
+                text: 'Les 26 cantons, une ou deux personnes, et un statut : en cours, prête à recopier ou archivée.'
+            },
+            {
+                title: 'Étapes guidées',
+                text: 'Situation, revenus, déductions, fortune et dettes, avec les cases remplies et celles qu’il reste à compléter.'
+            },
+            {
+                title: 'Propositions tirées de vos données',
+                text: 'Salaires, placements, immeubles et dettes déjà dans Spend.Up sont proposés. Rien n’est repris sans votre accord.'
+            },
+            {
+                title: 'Fiches, pièces et PDF',
+                text: 'Emplois, enfants, immeubles et établissements en fiches, justificatifs joints, relevé eCH-0196 importé, brouillon exporté en PDF.'
+            }
+        ]
+    },
+    {
+        id: 'partager',
+        number: '06',
         layout: ['flip'],
         kicker: 'Partager',
         title: 'Gérez ensemble, sans tout mélanger.',
@@ -130,7 +155,7 @@ const sections: FeatureSection[] = [
     },
     {
         id: 'securite',
-        number: '06',
+        number: '07',
         layout: ['dark'],
         kicker: 'Sécurité',
         title: 'Protégé par défaut. Contrôlé par vous.',

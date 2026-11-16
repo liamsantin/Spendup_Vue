@@ -79,6 +79,7 @@ export const spendupDomainNames = [
     'Immobilier',
     'Placements',
     'Crypto',
+    'Impôts',
     'Alertes',
     'Famille & partage',
     'Sécurité'
