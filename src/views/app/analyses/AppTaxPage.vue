@@ -17,7 +17,8 @@ import {
     HelpCircleIcon,
     PlusIcon,
     ProgressCheckIcon,
-    TrashIcon
+    TrashIcon,
+    UploadIcon
 } from 'vue-tabler-icons';
 import { withReturnTo } from '@/utils/helpers/navigation-helpers';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
@@ -40,6 +41,7 @@ import {
     type TaxStatus,
     type TaxSuggestion
 } from '@/features/tax/types';
+import { filesApi } from '@/features/files';
 import { isQuotaExceededMessage, wouldExceedQuota } from '@/features/files/format';
 import { useFilesStore } from '@/features/files/stores/files-store';
 import type { FileDto } from '@/features/files/types';
@@ -60,17 +62,41 @@ const emptyIdentity = (): TaxIdentity => ({
     job: null
 });
 
+const IMPORTED_FLAG = 'spendup.tax.imported';
+
+function readImportedFlag(): string | null {
+    try {
+        return sessionStorage.getItem(IMPORTED_FLAG);
+    } catch {
+        return null;
+    }
+}
+
+function writeImportedFlag(value: string | null) {
+    try {
+        if (value) sessionStorage.setItem(IMPORTED_FLAG, value);
+        else sessionStorage.removeItem(IMPORTED_FLAG);
+    } catch {
+        /* navigation privée : le message d’import ne survit pas au changement de page */
+    }
+}
+
 const list = ref<TaxReturnListItem[]>([]);
 const declaration = ref<TaxReturn | null>(null);
 const loading = ref(false);
 const saving = ref(false);
 const error = ref('');
-const creating = ref(false);
+const notice = ref('');
+const formMode = ref<'create' | 'import' | null>(null);
 const year = ref(new Date().getFullYear());
 const canton = ref('VD');
 const createCouple = ref(false);
 const createPerson1 = ref<TaxIdentity>(emptyIdentity());
 const createPerson2 = ref<TaxIdentity>(emptyIdentity());
+const returnName = ref('');
+const importFile = ref<File | null>(null);
+const importFileLabel = ref('');
+const creating = ref(false);
 const person = ref<TaxPerson>('1');
 const drafts = ref<Record<string, string>>({});
 const suggestions = ref<TaxSuggestion[]>([]);
@@ -82,6 +108,7 @@ const cantonItems = TAX_CANTONS.map((code) => ({ title: code, value: code }));
 const statusItems = computed(() => STATUSES.map((value) => ({ title: t(`taxPage.statuses.${value}`), value })));
 
 const header = ref({
+    name: '',
     canton: 'VD',
     couple: false,
     status: 'enCours' as TaxStatus,
@@ -89,6 +116,18 @@ const header = ref({
     notes: '',
     person1: emptyIdentity(),
     person2: emptyIdentity()
+});
+
+const detailTitle = computed(() => {
+    const current = declaration.value;
+    if (!current) return '';
+    return current.name?.trim() || `${current.year} · ${current.canton}`;
+});
+
+const detailSubtitle = computed(() => {
+    const current = declaration.value;
+    if (!current?.name?.trim()) return t('taxPage.subtitle');
+    return `${current.year} · ${current.canton}`;
 });
 
 const publicId = computed(() => taxPublicIdFromPath(route.path));
@@ -244,6 +283,7 @@ watch(
 
 async function refresh() {
     error.value = '';
+    notice.value = '';
     loading.value = true;
     try {
         if (!publicId.value) {
@@ -257,6 +297,10 @@ async function refresh() {
         const detail = await taxApi.get(publicId.value);
         apply(detail);
         await loadSuggestions(publicId.value);
+        if (readImportedFlag() === publicId.value) {
+            notice.value = t('taxPage.importDone');
+            writeImportedFlag(null);
+        }
     } catch (e) {
         error.value = getErrorMessage(AppError.fromUnknown(e));
     } finally {
@@ -268,6 +312,7 @@ function apply(detail: TaxReturn) {
     declaration.value = detail;
     headerSync = true;
     header.value = {
+        name: detail.name ?? '',
         canton: detail.canton,
         couple: detail.couple,
         status: detail.status,
@@ -285,10 +330,34 @@ function apply(detail: TaxReturn) {
 function openCreate() {
     error.value = '';
     year.value = new Date().getFullYear();
+    returnName.value = '';
+    formMode.value = null;
     createCouple.value = false;
     createPerson1.value = emptyIdentity();
     createPerson2.value = emptyIdentity();
     creating.value = true;
+}
+
+function openImport() {
+    formMode.value = formMode.value === 'import' ? null : 'import';
+    error.value = '';
+}
+
+function closeForm() {
+    formMode.value = null;
+    importFile.value = null;
+    importFileLabel.value = '';
+}
+
+function onImportFile(event: Event) {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || !input.files?.[0]) {
+        importFile.value = null;
+        importFileLabel.value = '';
+        return;
+    }
+    importFile.value = input.files[0];
+    importFileLabel.value = input.files[0].name;
 }
 
 async function createReturn() {
@@ -296,7 +365,7 @@ async function createReturn() {
     saving.value = true;
     error.value = '';
     try {
-        const created = await taxApi.create(year.value, canton.value);
+        const created = await taxApi.create(year.value, canton.value, returnName.value.trim() || null);
         const person1 = cleanIdentity(createPerson1.value);
         const hasIdentity = Object.values(person1).some(Boolean) || createCouple.value;
         if (hasIdentity) {
@@ -307,6 +376,7 @@ async function createReturn() {
                 status: base.status,
                 taxpayerNumber: base.taxpayerNumber,
                 notes: base.notes,
+                name: base.name,
                 person1,
                 person2: createCouple.value ? cleanIdentity(createPerson2.value) : null
             });
@@ -318,6 +388,37 @@ async function createReturn() {
     } finally {
         saving.value = false;
     }
+}
+
+async function importReturn() {
+    const file = importFile.value;
+    if (!file) {
+        error.value = t('taxPage.importFileRequired');
+        return;
+    }
+    saving.value = true;
+    error.value = '';
+    let createdId = '';
+    try {
+        const created = await taxApi.create(year.value, canton.value, returnName.value.trim() || null);
+        createdId = created.declaration.publicId;
+        const uploaded = await filesApi.upload(file);
+        await taxApi.attachDocument(createdId, uploaded.publicId, null);
+        writeImportedFlag(createdId);
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+    if (!createdId) return;
+    const failure = error.value;
+    closeForm();
+    if (!failure) {
+        await router.push(taxDetailPath(createdId));
+        return;
+    }
+    await refresh();
+    error.value = failure;
 }
 
 async function saveHeader(): Promise<boolean> {
@@ -332,6 +433,7 @@ async function saveHeader(): Promise<boolean> {
             status: header.value.status,
             taxpayerNumber: header.value.taxpayerNumber.trim() || null,
             notes: header.value.notes.trim() || null,
+            name: header.value.name.trim() || null,
             person1: cleanIdentity(header.value.person1),
             person2: header.value.couple ? cleanIdentity(header.value.person2) : null
         });
@@ -732,6 +834,7 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
             status,
             taxpayerNumber: detail.taxpayerNumber,
             notes: detail.notes,
+            name: detail.name,
             person1: detail.person1,
             person2: detail.person2
         });
@@ -752,6 +855,10 @@ function money(value: number | null): string {
 <template>
     <AppPageShell v-if="!declaration" :title="t('taxPage.title')" :subtitle="t('taxPage.subtitle')">
         <template #actions>
+            <button type="button" class="su-btn" :class="{ 'is-active': formMode === 'import' }" @click="openImport()">
+                <UploadIcon :size="18" />
+                {{ t('taxPage.importExisting') }}
+            </button>
             <button type="button" class="su-btn su-btn--ink" @click="openCreate">
                 <PlusIcon :size="18" />
                 {{ t('taxPage.new') }}
@@ -772,6 +879,20 @@ function money(value: number | null): string {
         >
             <form id="tax-create-form" class="tax-form tax-form--modal" @submit.prevent="createReturn">
                 <p v-if="error" class="tax-error" role="alert">{{ error }}</p>
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-create-name">{{ t('taxPage.name') }}</label>
+                    <div class="tax-form__field">
+                        <v-text-field
+                            id="tax-create-name"
+                            v-model="returnName"
+                            color="primary"
+                            variant="outlined"
+                            hide-details="auto"
+                            maxlength="80"
+                            :placeholder="t('taxPage.namePlaceholder')"
+                        />
+                    </div>
+                </div>
                 <div class="tax-form__row">
                     <label class="tax-form__label" for="tax-create-year">{{ t('taxPage.year') }}</label>
                     <div class="tax-form__field">
@@ -900,6 +1021,60 @@ function money(value: number | null): string {
             </template>
         </AppModalBase>
 
+        <form v-if="formMode === 'import'" class="tax-form" @submit.prevent="importReturn()">
+            <div class="tax-form__row">
+                <label class="tax-form__label" for="tax-import-name">{{ t('taxPage.name') }}</label>
+                <div class="tax-form__field">
+                    <v-text-field
+                        id="tax-import-name"
+                        v-model="returnName"
+                        color="primary"
+                        variant="outlined"
+                        hide-details="auto"
+                        maxlength="80"
+                        :placeholder="t('taxPage.namePlaceholder')"
+                    />
+                </div>
+            </div>
+            <div class="tax-form__row">
+                <label class="tax-form__label" for="tax-import-year">{{ t('taxPage.year') }}</label>
+                <div class="tax-form__field">
+                    <v-text-field
+                        id="tax-import-year"
+                        v-model.number="year"
+                        type="number"
+                        min="2000"
+                        color="primary"
+                        variant="outlined"
+                        hide-details="auto"
+                    />
+                </div>
+            </div>
+            <div class="tax-form__row">
+                <label class="tax-form__label" for="tax-import-canton">{{ t('taxPage.canton') }}</label>
+                <div class="tax-form__field">
+                    <AppSelect
+                        id="tax-import-canton"
+                        v-model="canton"
+                        :items="cantonItems"
+                        :label="t('taxPage.canton')"
+                        hide-details="auto"
+                    />
+                </div>
+            </div>
+            <div class="tax-form__row">
+                <label class="tax-form__label" for="tax-import-file">{{ t('taxPage.importFile') }}</label>
+                <div class="tax-form__field">
+                    <input id="tax-import-file" class="tax-import-file" type="file" accept="application/pdf,.pdf" @change="onImportFile" />
+                    <p v-if="importFileLabel" class="tax-muted">{{ importFileLabel }}</p>
+                </div>
+            </div>
+            <div class="tax-form__actions">
+                <button type="submit" class="su-btn su-btn--ink" :disabled="saving">{{ t('taxPage.import') }}</button>
+                <button type="button" class="su-btn" @click="closeForm">{{ t('taxPage.cancel') }}</button>
+            </div>
+        </form>
+
         <p v-if="!loading && !list.length" class="tax-muted">{{ t('taxPage.empty') }}</p>
         <div v-else class="tax-list">
             <article
@@ -912,7 +1087,7 @@ function money(value: number | null): string {
                 @keydown.enter.prevent="openReturn(item.publicId)"
             >
                 <div class="tax-card__head">
-                    <p class="tax-card__kicker">{{ item.canton }}</p>
+                    <p class="tax-card__kicker">{{ item.name?.trim() ? `${item.year} · ${item.canton}` : item.canton }}</p>
                     <div class="tax-card__actions" @click.stop>
                         <v-menu location="bottom end" :offset="4">
                             <template #activator="{ props: menuProps }">
@@ -979,7 +1154,7 @@ function money(value: number | null): string {
                         </v-menu>
                     </div>
                 </div>
-                <h3 class="tax-card__name">{{ item.year }}</h3>
+                <h3 class="tax-card__name">{{ item.name?.trim() || item.year }}</h3>
                 <p class="tax-card__sub">{{ t(`taxPage.statuses.${item.status}`) }}</p>
                 <div
                     class="su-gauge tax-card__gauge"
@@ -996,7 +1171,7 @@ function money(value: number | null): string {
         </div>
     </AppPageShell>
 
-    <AppPageShell v-else :title="`${declaration.year} · ${declaration.canton}`" :subtitle="t('taxPage.subtitle')">
+    <AppPageShell v-else :title="detailTitle" :subtitle="detailSubtitle">
         <template #tabs>
             <nav class="su-tabs" :aria-label="t('taxPage.steps')">
                 <button
@@ -1039,9 +1214,24 @@ function money(value: number | null): string {
         </template>
 
         <p v-if="error" class="tax-error" role="alert">{{ error }}</p>
+        <p v-if="notice" class="tax-muted">{{ notice }}</p>
         <p v-if="saving" class="tax-muted">{{ t('taxPage.saving') }}</p>
 
         <form v-show="step === SITUATION" class="tax-form" @submit.prevent="validateCurrentStep">
+            <div class="tax-form__row">
+                <label class="tax-form__label" for="tax-name">{{ t('taxPage.name') }}</label>
+                <div class="tax-form__field">
+                    <v-text-field
+                        id="tax-name"
+                        v-model="header.name"
+                        color="primary"
+                        variant="outlined"
+                        hide-details="auto"
+                        maxlength="80"
+                        :placeholder="t('taxPage.namePlaceholder')"
+                    />
+                </div>
+            </div>
             <div class="tax-form__row">
                 <label class="tax-form__label" for="tax-status">{{ t('taxPage.status') }}</label>
                 <div class="tax-form__field">
@@ -1712,6 +1902,12 @@ function money(value: number | null): string {
 
 .tax-line .tax-form__split {
     max-width: 480px;
+}
+
+.tax-import-file {
+    font: inherit;
+    font-size: 14px;
+    color: var(--ink);
 }
 
 .tax-form__field :deep(.v-field) {

@@ -5156,6 +5156,7 @@
             "person1": "Person 1",
             "person2": "Person 2"
         },
+        "importExisting": "Import an existing return",
         "actions": {
             "open": "Open",
             "pdf": "Download the PDF",
@@ -5166,7 +5167,13 @@
         },
         "year": "Year",
         "canton": "Canton",
+        "name": "Name",
+        "namePlaceholder": "For example: canton, spouse, simulation",
         "create": "Create",
+        "import": "Import",
+        "importFile": "PDF return",
+        "importFileRequired": "Choose the return PDF.",
+        "importDone": "The return is created. The PDF is filed with the documents.",
         "cancel": "Cancel",
         "empty": "No return yet. Create one for the current year.",
         "filled": "{filled} line filled of {total} | {filled} lines filled of {total}",

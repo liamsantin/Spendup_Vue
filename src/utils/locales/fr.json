@@ -5156,6 +5156,7 @@
             "person1": "Personne 1",
             "person2": "Personne 2"
         },
+        "importExisting": "Importer une déclaration existante",
         "actions": {
             "open": "Ouvrir",
             "pdf": "Télécharger le PDF",
@@ -5166,7 +5167,13 @@
         },
         "year": "Année",
         "canton": "Canton",
+        "name": "Nom",
+        "namePlaceholder": "Par exemple : canton, conjoint, simulation",
         "create": "Créer",
+        "import": "Importer",
+        "importFile": "Déclaration PDF",
+        "importFileRequired": "Choisissez le PDF de la déclaration.",
+        "importDone": "La déclaration est créée. Le PDF est rangé dans les pièces.",
         "cancel": "Annuler",
         "empty": "Aucune déclaration. Créez-en une pour l’année en cours.",
         "filled": "{filled} case remplie sur {total} | {filled} cases remplies sur {total}",

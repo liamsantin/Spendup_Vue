@@ -265,6 +265,7 @@ function toResponse(tax: DemoTaxReturn): TaxReturn {
     const filled = filledCodes(tax);
     return {
         publicId: tax.publicId,
+        name: null,
         year: tax.year,
         canton: tax.canton,
         status: tax.status,
@@ -284,6 +285,7 @@ function toResponse(tax: DemoTaxReturn): TaxReturn {
 function toListItem(tax: DemoTaxReturn): TaxReturnListItem {
     return {
         publicId: tax.publicId,
+        name: null,
         year: tax.year,
         canton: tax.canton,
         status: tax.status,

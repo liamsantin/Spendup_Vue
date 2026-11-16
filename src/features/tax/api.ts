@@ -16,8 +16,8 @@ export const taxApi = {
         return fetchWrapper.get('/api/tax-returns') as Promise<TaxReturnListResult>;
     },
 
-    create(year: number, canton: string) {
-        return fetchWrapper.post('/api/tax-returns', { year, canton }) as Promise<TaxReturnCreated>;
+    create(year: number, canton: string, name: string | null = null) {
+        return fetchWrapper.post('/api/tax-returns', { year, canton, name }) as Promise<TaxReturnCreated>;
     },
 
     get(publicId: string) {

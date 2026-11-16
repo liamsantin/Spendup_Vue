@@ -96,6 +96,7 @@ export interface UpsertTaxEntryPayload {
 
 export interface TaxReturn {
     publicId: string;
+    name: string | null;
     year: number;
     canton: string;
     status: TaxStatus;
@@ -121,6 +122,7 @@ export interface TaxDocumentLink {
 
 export interface TaxReturnListItem {
     publicId: string;
+    name: string | null;
     year: number;
     canton: string;
     status: TaxStatus;
@@ -170,6 +172,7 @@ export interface UpdateTaxReturnPayload {
     status: TaxStatus;
     taxpayerNumber: string | null;
     notes: string | null;
+    name: string | null;
     person1: TaxIdentity;
     person2: TaxIdentity | null;
 }
