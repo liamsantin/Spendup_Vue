@@ -66,6 +66,7 @@ import {
     isSharedDebtStatus,
     useSharedDebtsStore
 } from '@/features/shared-debts';
+import { readReturnTo } from '@/utils/helpers/navigation-helpers';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const SEARCH_MAX = LIABILITY_NAME_MAX;
@@ -352,6 +353,13 @@ function listQuery(): Record<string, string> {
     return next;
 }
 
+/** Retour : la page d'où l'on vient si la fiche a été ouverte depuis ailleurs (ex. une proposition d'impôts), sinon la liste. */
+function goBack() {
+    const origin = readReturnTo();
+    if (origin) void router.push(origin);
+    else backToList();
+}
+
 function backToList() {
     const kind = detailKind.value ?? 'liabilities';
     void router.push({ path: debtsPathForTab(kind), query: listQuery() });
@@ -380,7 +388,7 @@ onUnmounted(() => {
         </template>
 
         <template #actions>
-            <button type="button" class="su-btn" @click="backToList">
+            <button type="button" class="su-btn" @click="goBack">
                 <ArrowLeftIcon :size="16" stroke-width="1.6" />
                 {{ t('debtsPage.actions.back') }}
             </button>

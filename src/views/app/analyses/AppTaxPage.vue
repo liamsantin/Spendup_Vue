@@ -14,15 +14,20 @@ import {
     FileTextIcon,
     PencilIcon,
     PlayerPlayIcon,
+    HelpCircleIcon,
     PlusIcon,
     ProgressCheckIcon,
     TrashIcon
 } from 'vue-tabler-icons';
+import { withReturnTo } from '@/utils/helpers/navigation-helpers';
+import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
+import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import { taxApi } from '@/features/tax/api';
-import { TAX_BASE, taxDetailPath, taxPublicIdFromPath } from '@/features/tax/paths';
+import { buildTaxGroups, migrateValidatedSteps, type TaxGroup } from '@/features/tax/steps';
+import { TAX_BASE, taxDetailPath, taxPublicIdFromPath, taxSuggestionTargets } from '@/features/tax/paths';
 import {
     TAX_CANTONS,
     type TaxCompetence,
@@ -35,10 +40,14 @@ import {
     type TaxStatus,
     type TaxSuggestion
 } from '@/features/tax/types';
-import { filesApi } from '@/features/files/api';
+import { isQuotaExceededMessage, wouldExceedQuota } from '@/features/files/format';
+import { useFilesStore } from '@/features/files/stores/files-store';
+import type { FileDto } from '@/features/files/types';
+import { validatePdfFile } from '@/features/files/validate-upload';
+import AttachmentActions from '@/features/transactions/components/forms/AttachmentActions.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 
-const { t, locale } = useI18n();
+const { t, te, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 
@@ -59,11 +68,14 @@ const error = ref('');
 const creating = ref(false);
 const year = ref(new Date().getFullYear());
 const canton = ref('VD');
+const createCouple = ref(false);
+const createPerson1 = ref<TaxIdentity>(emptyIdentity());
+const createPerson2 = ref<TaxIdentity>(emptyIdentity());
 const person = ref<TaxPerson>('1');
 const drafts = ref<Record<string, string>>({});
 const suggestions = ref<TaxSuggestion[]>([]);
-const library = ref<{ publicId: string; name: string }[]>([]);
-const attachFileId = ref('');
+const filesStore = useFilesStore();
+const attaching = ref(false);
 const attachLine = ref('');
 
 const cantonItems = TAX_CANTONS.map((code) => ({ title: code, value: code }));
@@ -96,13 +108,30 @@ const step = ref(SITUATION);
 const validated = ref<string[]>([]);
 let headerSync = false;
 
-const steps = computed(() => {
-    const sections = declaration.value?.sections ?? [];
-    return [
-        { id: SITUATION, number: 1, label: t('taxPage.identity') },
-        ...sections.map((section, index) => ({ id: section.code, number: index + 2, label: section.label }))
-    ];
-});
+const groups = computed(() => buildTaxGroups(declaration.value?.sections ?? []));
+
+function stepLabel(group: TaxGroup): string {
+    const key = `taxPage.stepLabels.${group.id}`;
+    const text = t(key);
+    return text === key ? group.fallbackLabel : text;
+}
+
+const steps = computed(() => [
+    { id: SITUATION, number: 1, label: t('taxPage.identity') },
+    ...groups.value.map((group, index) => ({ id: group.id, number: index + 2, label: stepLabel(group) }))
+]);
+
+const currentGroup = computed(() => groups.value.find((group) => group.id === step.value));
+
+/** Texte d'aide d'une case, s'il existe : `taxPage.help.<code>` (le code « income.employed » devient un chemin). */
+function helpFor(line: TaxLine): string {
+    const key = `taxPage.help.${line.code}`;
+    return te(key) ? t(key) : '';
+}
+
+function groupOf(code: string): TaxGroup | undefined {
+    return groups.value.find((group) => group.lines.some((item) => item.code === code));
+}
 
 function stepTitle(item: { number: number; label: string }): string {
     return `${item.number} ${item.label}`;
@@ -116,7 +145,9 @@ function loadValidated(id: string) {
     try {
         const raw = localStorage.getItem(validatedKey(id));
         const parsed = raw ? (JSON.parse(raw) as unknown) : [];
-        validated.value = Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === 'string') : [];
+        validated.value = Array.isArray(parsed)
+            ? migrateValidatedSteps(parsed.filter((item): item is string => typeof item === 'string'))
+            : [];
     } catch {
         validated.value = [];
     }
@@ -251,11 +282,35 @@ function apply(detail: TaxReturn) {
     });
 }
 
+function openCreate() {
+    error.value = '';
+    year.value = new Date().getFullYear();
+    createCouple.value = false;
+    createPerson1.value = emptyIdentity();
+    createPerson2.value = emptyIdentity();
+    creating.value = true;
+}
+
 async function createReturn() {
+    if (saving.value) return;
     saving.value = true;
     error.value = '';
     try {
         const created = await taxApi.create(year.value, canton.value);
+        const person1 = cleanIdentity(createPerson1.value);
+        const hasIdentity = Object.values(person1).some(Boolean) || createCouple.value;
+        if (hasIdentity) {
+            const base = created.declaration;
+            await taxApi.update(base.publicId, {
+                canton: base.canton,
+                couple: createCouple.value,
+                status: base.status,
+                taxpayerNumber: base.taxpayerNumber,
+                notes: base.notes,
+                person1,
+                person2: createCouple.value ? cleanIdentity(createPerson2.value) : null
+            });
+        }
         creating.value = false;
         await router.push(taxDetailPath(created.declaration.publicId));
     } catch (e) {
@@ -321,7 +376,7 @@ function shownAmount(line: TaxLine, competence: TaxCompetence): string {
 
 function setDraft(line: TaxLine, competence: TaxCompetence, value: string | number | null) {
     drafts.value = { ...drafts.value, [draftKey(line.code, competence)]: value == null ? '' : String(value) };
-    const sectionId = declaration.value?.sections.find((section) => section.lines.some((item) => item.code === line.code))?.code;
+    const sectionId = groupOf(line.code)?.id;
     if (sectionId) forgetStep(sectionId);
 }
 
@@ -358,7 +413,7 @@ async function commitAmount(line: TaxLine, competence: TaxCompetence, raw: strin
             delete nextDrafts[key];
             drafts.value = nextDrafts;
         }
-        const sectionId = declaration.value?.sections.find((section) => section.lines.some((item) => item.code === line.code))?.code;
+        const sectionId = groupOf(line.code)?.id;
         if (sectionId) forgetStep(sectionId);
         apply(detail);
     } catch (e) {
@@ -368,8 +423,22 @@ async function commitAmount(line: TaxLine, competence: TaxCompetence, raw: strin
     }
 }
 
+/** Même montant pour l'autre ressort : action explicite, rien n'est inscrit sans ce clic. */
+function copySource(line: TaxLine): 'cantonal' | 'federal' | null {
+    const cantonal = shownAmount(line, 'cantonal').trim();
+    const federal = shownAmount(line, 'federal').trim();
+    if (cantonal && cantonal !== federal) return 'cantonal';
+    if (federal && !cantonal) return 'federal';
+    return null;
+}
+
+async function copyAmount(line: TaxLine, from: 'cantonal' | 'federal') {
+    const to = from === 'cantonal' ? 'federal' : 'cantonal';
+    await commitAmount(line, to, shownAmount(line, from));
+}
+
 async function flushCurrentDrafts(): Promise<boolean> {
-    const section = declaration.value?.sections.find((item) => item.code === step.value);
+    const section = currentGroup.value;
     if (!section) return true;
     for (const line of section.lines) {
         const competences: TaxCompetence[] = line.splitsCompetence ? ['cantonal', 'federal'] : ['both'];
@@ -385,27 +454,29 @@ async function flushCurrentDrafts(): Promise<boolean> {
 
 async function loadSuggestions(id: string) {
     try {
-        const [suggested, files] = await Promise.all([taxApi.suggestions(id), filesApi.list({ page: 1, pageSize: 100 }).catch(() => null)]);
+        // la bibliothèque et le quota servent au bouton « Sélectionner » ; un échec n'empêche pas l'affichage
+        void filesStore.loadList().catch(() => undefined);
+        void filesStore.loadUsage().catch(() => undefined);
+        const suggested = await taxApi.suggestions(id);
         suggestions.value = suggested.items ?? [];
-        library.value = (files?.items ?? []).map((file) => ({ publicId: file.publicId, name: file.nameOriginal }));
     } catch {
         suggestions.value = [];
     }
 }
 
 const stepSuggestions = computed(() => {
-    const codes = new Set(declaration.value?.sections.find((section) => section.code === step.value)?.lines.map((line) => line.code) ?? []);
+    const codes = new Set(currentGroup.value?.lines.map((line) => line.code) ?? []);
     return suggestions.value.filter((item) => codes.has(item.code));
 });
 
 const stepDocuments = computed(() => {
     const docs = declaration.value?.documents ?? [];
     if (step.value === SITUATION) return docs.filter((doc) => !doc.lineCode);
-    const codes = new Set(declaration.value?.sections.find((section) => section.code === step.value)?.lines.map((line) => line.code) ?? []);
+    const codes = new Set(currentGroup.value?.lines.map((line) => line.code) ?? []);
     return docs.filter((doc) => doc.lineCode && codes.has(doc.lineCode));
 });
 
-const stepLines = computed(() => declaration.value?.sections.find((section) => section.code === step.value)?.lines ?? []);
+const stepLines = computed(() => currentGroup.value?.lines ?? []);
 
 async function acceptSuggestion(item: TaxSuggestion) {
     const current = declaration.value;
@@ -431,16 +502,44 @@ async function acceptSuggestion(item: TaxSuggestion) {
     }
 }
 
-async function attachDocument() {
+const attachedFiles = computed(() => (declaration.value?.documents ?? []).map((doc) => ({ publicId: doc.filePublicId })));
+
+/** Range un fichier de la bibliothèque sur la déclaration (et sur la ligne choisie dans l'étape, s'il y en a une). */
+async function attachFile(filePublicId: string) {
     const current = declaration.value;
-    if (!current || !attachFileId.value) return;
+    if (!current) return;
+    apply(await taxApi.attachDocument(current.publicId, filePublicId, step.value === SITUATION ? null : attachLine.value || null));
+}
+
+async function onAttachUpload(file: File) {
+    const valid = await validatePdfFile(file);
+    if (!valid.ok) {
+        error.value = t(`filesPage.errors.${valid.code}`);
+        return;
+    }
+    if (filesStore.usage && wouldExceedQuota(filesStore.usage, file.size)) {
+        error.value = t('filesPage.errors.quotaExceeded');
+        return;
+    }
+    attaching.value = true;
+    error.value = '';
+    try {
+        const uploaded = await filesStore.uploadFile(file);
+        await attachFile(uploaded.publicId);
+    } catch (e) {
+        const message = getErrorMessage(AppError.fromUnknown(e));
+        error.value = isQuotaExceededMessage(message) ? t('filesPage.errors.quotaExceeded') : message;
+    } finally {
+        attaching.value = false;
+    }
+}
+
+/** Plusieurs fichiers choisis dans la fenêtre « Sélectionner » : rangés l'un après l'autre. */
+async function onAttachMany(files: FileDto[]) {
     saving.value = true;
     error.value = '';
     try {
-        apply(
-            await taxApi.attachDocument(current.publicId, attachFileId.value, step.value === SITUATION ? null : attachLine.value || null)
-        );
-        attachFileId.value = '';
+        for (const file of files) await attachFile(file.publicId);
     } catch (e) {
         error.value = getErrorMessage(AppError.fromUnknown(e));
     } finally {
@@ -559,19 +658,42 @@ watch(
     { deep: true }
 );
 
-async function removeReturn() {
-    const current = declaration.value;
-    if (!current || !window.confirm(t('taxPage.deleteConfirm'))) return;
+/** Déclaration en attente de confirmation de suppression (modale), depuis le détail ou la liste. */
+const deleteTarget = ref<{ publicId: string; year: number; canton: string; fromDetail: boolean } | null>(null);
+const deleteOpen = computed({
+    get: () => deleteTarget.value !== null,
+    set: (open: boolean) => {
+        if (!open) deleteTarget.value = null;
+    }
+});
+
+function askRemove(target: { publicId: string; year: number; canton: string }, fromDetail: boolean) {
+    if (saving.value) return;
+    deleteTarget.value = { publicId: target.publicId, year: target.year, canton: target.canton, fromDetail };
+}
+
+async function confirmRemove() {
+    const target = deleteTarget.value;
+    if (!target || saving.value) return;
     saving.value = true;
     error.value = '';
     try {
-        await taxApi.remove(current.publicId);
-        await router.push(TAX_BASE);
+        await taxApi.remove(target.publicId);
+        deleteTarget.value = null;
+        if (target.fromDetail) await router.push(TAX_BASE);
+        else await refresh();
     } catch (e) {
+        deleteTarget.value = null;
         error.value = getErrorMessage(AppError.fromUnknown(e));
     } finally {
         saving.value = false;
     }
+}
+
+/** Ouvre la fiche d'une proposition en retenant cette déclaration : son « Retour » y ramène. */
+function openSuggestion(path: string) {
+    const current = declaration.value;
+    void router.push(current ? withReturnTo(path, taxDetailPath(current.publicId)) : path);
 }
 
 function openReturn(id: string) {
@@ -621,20 +743,6 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
     }
 }
 
-async function removeFromList(item: TaxReturnListItem) {
-    if (!window.confirm(t('taxPage.deleteConfirm'))) return;
-    saving.value = true;
-    error.value = '';
-    try {
-        await taxApi.remove(item.publicId);
-        await refresh();
-    } catch (e) {
-        error.value = getErrorMessage(AppError.fromUnknown(e));
-    } finally {
-        saving.value = false;
-    }
-}
-
 function money(value: number | null): string {
     if (value == null) return t('common.emptyValue');
     return new Intl.NumberFormat(locale.value, { style: 'currency', currency: 'CHF' }).format(value);
@@ -644,7 +752,7 @@ function money(value: number | null): string {
 <template>
     <AppPageShell v-if="!declaration" :title="t('taxPage.title')" :subtitle="t('taxPage.subtitle')">
         <template #actions>
-            <button type="button" class="su-btn su-btn--ink" @click="creating = !creating">
+            <button type="button" class="su-btn su-btn--ink" @click="openCreate">
                 <PlusIcon :size="18" />
                 {{ t('taxPage.new') }}
             </button>
@@ -653,38 +761,144 @@ function money(value: number | null): string {
         <p v-if="error" class="tax-error" role="alert">{{ error }}</p>
         <p v-if="loading" class="tax-muted">{{ t('taxPage.loading') }}</p>
 
-        <form v-if="creating" class="tax-form" @submit.prevent="createReturn">
-            <div class="tax-form__row">
-                <label class="tax-form__label" for="tax-create-year">{{ t('taxPage.year') }}</label>
-                <div class="tax-form__field">
-                    <v-text-field
-                        id="tax-create-year"
-                        v-model.number="year"
-                        type="number"
-                        min="2000"
-                        color="primary"
-                        variant="outlined"
-                        hide-details="auto"
-                    />
+        <AppModalBase
+            v-model="creating"
+            :title="t('taxPage.createModal.title')"
+            :subtitle="t('taxPage.createModal.subtitle')"
+            :max-width="560"
+            :height="640"
+            scrollable
+            mobile-layout="fullscreen"
+        >
+            <form id="tax-create-form" class="tax-form tax-form--modal" @submit.prevent="createReturn">
+                <p v-if="error" class="tax-error" role="alert">{{ error }}</p>
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-create-year">{{ t('taxPage.year') }}</label>
+                    <div class="tax-form__field">
+                        <v-text-field
+                            id="tax-create-year"
+                            v-model.number="year"
+                            type="number"
+                            min="2000"
+                            color="primary"
+                            variant="outlined"
+                            hide-details="auto"
+                        />
+                    </div>
                 </div>
-            </div>
-            <div class="tax-form__row">
-                <label class="tax-form__label" for="tax-create-canton">{{ t('taxPage.canton') }}</label>
-                <div class="tax-form__field">
-                    <AppSelect
-                        id="tax-create-canton"
-                        v-model="canton"
-                        :items="cantonItems"
-                        :label="t('taxPage.canton')"
-                        hide-details="auto"
-                    />
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-create-canton">{{ t('taxPage.canton') }}</label>
+                    <div class="tax-form__field">
+                        <AppSelect
+                            id="tax-create-canton"
+                            v-model="canton"
+                            :items="cantonItems"
+                            :label="t('taxPage.canton')"
+                            hide-details="auto"
+                        />
+                    </div>
                 </div>
-            </div>
-            <div class="tax-form__actions">
-                <button type="submit" class="su-btn su-btn--ink" :disabled="saving">{{ t('taxPage.create') }}</button>
-                <button type="button" class="su-btn" @click="creating = false">{{ t('taxPage.cancel') }}</button>
-            </div>
-        </form>
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-create-couple">{{ t('taxPage.couple') }}</label>
+                    <div class="tax-form__field">
+                        <AppSwitch id="tax-create-couple" v-model="createCouple" />
+                    </div>
+                </div>
+
+                <h3 class="tax-form__legend">{{ t('taxPage.createModal.person1') }}</h3>
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-create-p1-name">{{ t('taxPage.officialName') }}</label>
+                    <div class="tax-form__field">
+                        <v-text-field
+                            id="tax-create-p1-name"
+                            v-model="createPerson1.officialName"
+                            color="primary"
+                            variant="outlined"
+                            hide-details="auto"
+                            maxlength="100"
+                        />
+                    </div>
+                </div>
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-create-p1-first">{{ t('taxPage.firstName') }}</label>
+                    <div class="tax-form__field">
+                        <v-text-field
+                            id="tax-create-p1-first"
+                            v-model="createPerson1.firstName"
+                            color="primary"
+                            variant="outlined"
+                            hide-details="auto"
+                            maxlength="100"
+                        />
+                    </div>
+                </div>
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-create-p1-city">{{ t('taxPage.municipality') }}</label>
+                    <div class="tax-form__field">
+                        <v-text-field
+                            id="tax-create-p1-city"
+                            v-model="createPerson1.municipality"
+                            color="primary"
+                            variant="outlined"
+                            hide-details="auto"
+                            maxlength="100"
+                        />
+                    </div>
+                </div>
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-create-p1-job">{{ t('taxPage.job') }}</label>
+                    <div class="tax-form__field">
+                        <v-text-field
+                            id="tax-create-p1-job"
+                            v-model="createPerson1.job"
+                            color="primary"
+                            variant="outlined"
+                            hide-details="auto"
+                            maxlength="100"
+                        />
+                    </div>
+                </div>
+
+                <template v-if="createCouple">
+                    <h3 class="tax-form__legend">{{ t('taxPage.createModal.person2') }}</h3>
+                    <div class="tax-form__row">
+                        <label class="tax-form__label" for="tax-create-p2-name">{{ t('taxPage.officialName') }}</label>
+                        <div class="tax-form__field">
+                            <v-text-field
+                                id="tax-create-p2-name"
+                                v-model="createPerson2.officialName"
+                                color="primary"
+                                variant="outlined"
+                                hide-details="auto"
+                                maxlength="100"
+                            />
+                        </div>
+                    </div>
+                    <div class="tax-form__row">
+                        <label class="tax-form__label" for="tax-create-p2-first">{{ t('taxPage.firstName') }}</label>
+                        <div class="tax-form__field">
+                            <v-text-field
+                                id="tax-create-p2-first"
+                                v-model="createPerson2.firstName"
+                                color="primary"
+                                variant="outlined"
+                                hide-details="auto"
+                                maxlength="100"
+                            />
+                        </div>
+                    </div>
+                </template>
+            </form>
+
+            <template #footer="{ close }">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="saving" @click="close">
+                    {{ t('taxPage.cancel') }}
+                </button>
+                <button type="submit" form="tax-create-form" class="su-btn su-btn--ink" :disabled="saving">
+                    {{ t('taxPage.create') }}
+                </button>
+            </template>
+        </AppModalBase>
 
         <p v-if="!loading && !list.length" class="tax-muted">{{ t('taxPage.empty') }}</p>
         <div v-else class="tax-list">
@@ -754,7 +968,7 @@ function money(value: number | null): string {
                                     type="button"
                                     class="su-menu-item tax-actions-menu__delete"
                                     :disabled="saving"
-                                    @click="removeFromList(item)"
+                                    @click="askRemove(item, false)"
                                 >
                                     <span class="su-menu-item__icon su-menu-item__icon--danger"
                                         ><TrashIcon :size="18" stroke-width="1.6"
@@ -814,7 +1028,14 @@ function money(value: number | null): string {
                 <FileTextIcon :size="18" stroke-width="1.6" />
                 {{ t('taxPage.actions.pdf') }}
             </button>
-            <button type="button" class="su-btn" :disabled="saving" @click="removeReturn">{{ t('taxPage.delete') }}</button>
+            <button
+                type="button"
+                class="su-btn"
+                :disabled="saving"
+                @click="askRemove({ publicId: declaration.publicId, year: declaration.year, canton: declaration.canton }, true)"
+            >
+                {{ t('taxPage.delete') }}
+            </button>
         </template>
 
         <p v-if="error" class="tax-error" role="alert">{{ error }}</p>
@@ -867,7 +1088,7 @@ function money(value: number | null): string {
             </div>
             <div class="tax-form__row">
                 <label class="tax-form__label" for="tax-notes">{{ t('taxPage.notes') }}</label>
-                <div class="tax-form__field">
+                <div class="tax-form__field tax-form__field--wide">
                     <v-textarea
                         id="tax-notes"
                         v-model="header.notes"
@@ -1091,6 +1312,33 @@ function money(value: number | null): string {
                     <p class="tax-fiche__detail">{{ item.originLabel }}</p>
                 </div>
                 <p class="tax-fiche__amount">{{ money(item.amount) }}</p>
+                <button
+                    v-if="taxSuggestionTargets(item).length === 1"
+                    type="button"
+                    class="su-btn su-btn--ghost"
+                    :disabled="saving"
+                    @click="openSuggestion(taxSuggestionTargets(item)[0].path)"
+                >
+                    {{ t('taxPage.see') }}
+                </button>
+                <v-menu v-else-if="taxSuggestionTargets(item).length > 1" location="bottom end" :offset="4">
+                    <template #activator="{ props: menuProps }">
+                        <button v-bind="menuProps" type="button" class="su-btn su-btn--ghost" :disabled="saving">
+                            {{ t('taxPage.see') }}
+                        </button>
+                    </template>
+                    <v-sheet class="su-menu tax-actions-menu">
+                        <button
+                            v-for="target in taxSuggestionTargets(item)"
+                            :key="target.path"
+                            type="button"
+                            class="su-menu-item"
+                            @click="openSuggestion(target.path)"
+                        >
+                            <span class="su-menu-item__title">{{ target.name }}</span>
+                        </button>
+                    </v-sheet>
+                </v-menu>
                 <button type="button" class="su-btn su-btn--ink" :disabled="saving" @click="acceptSuggestion(item)">
                     {{ t('taxPage.accept') }}
                 </button>
@@ -1105,17 +1353,10 @@ function money(value: number | null): string {
                     {{ t('taxPage.fiches.remove') }}
                 </button>
             </article>
-            <div class="tax-form__row">
-                <label class="tax-form__label">{{ t('taxPage.attach') }}</label>
-                <div class="tax-form__field tax-form__split">
+            <div v-if="step !== SITUATION" class="tax-form__row">
+                <label class="tax-form__label">{{ t('taxPage.attachLine') }}</label>
+                <div class="tax-form__field">
                     <AppSelect
-                        v-model="attachFileId"
-                        :items="library.map((file) => ({ title: file.name, value: file.publicId }))"
-                        :label="t('taxPage.attach')"
-                        hide-details="auto"
-                    />
-                    <AppSelect
-                        v-if="step !== SITUATION"
                         v-model="attachLine"
                         :items="stepLines.map((line) => ({ title: line.label, value: line.code }))"
                         :label="t('taxPage.line')"
@@ -1124,9 +1365,18 @@ function money(value: number | null): string {
                 </div>
             </div>
             <div class="tax-form__actions">
-                <button type="button" class="su-btn" :disabled="saving || !attachFileId" @click="attachDocument">
-                    {{ t('taxPage.attach') }}
-                </button>
+                <AttachmentActions
+                    split
+                    :attached="attachedFiles"
+                    :library="filesStore.items"
+                    :uploading="attaching"
+                    :acting="saving"
+                    :max="50"
+                    :upload-label="t('taxPage.attachUpload')"
+                    :select-label="t('taxPage.attachSelect')"
+                    @upload="onAttachUpload"
+                    @pick-many="onAttachMany"
+                />
                 <label v-if="step === 'revenus' || step === 'fortune'" class="su-btn">
                     {{ t('taxPage.importStatement') }}
                     <input class="tax-file" type="file" accept=".xml,text/xml" @change="importStatement" />
@@ -1189,15 +1439,25 @@ function money(value: number | null): string {
             </section>
         </div>
 
-        <section v-for="section in declaration.sections" v-show="step === section.code" :key="section.code" class="tax-section">
+        <section v-for="group in groups" v-show="step === group.id" :key="group.id" class="tax-section">
             <div
-                v-for="line in section.lines"
+                v-for="line in group.lines"
                 :key="line.code"
                 class="tax-form tax-line"
                 :class="{ 'is-empty': !line.values.some((value) => value.person === person) }"
             >
                 <div v-if="line.splitsCompetence" class="tax-form__row">
-                    <p class="tax-form__label">{{ line.label }}</p>
+                    <p class="tax-form__label">
+                        {{ line.label }}
+                        <span v-if="helpFor(line)" class="tax-help">
+                            <button type="button" class="tax-help__btn" :aria-label="helpFor(line)">
+                                <HelpCircleIcon :size="16" stroke-width="1.8" aria-hidden="true" />
+                            </button>
+                            <v-tooltip activator="parent" location="top" open-delay="100" content-class="tax-help__tip">
+                                <v-chip class="tax-help__chip" color="primary" variant="flat" label>{{ helpFor(line) }}</v-chip>
+                            </v-tooltip>
+                        </span>
+                    </p>
                     <div class="tax-form__field tax-form__split">
                         <v-text-field
                             :model-value="shownAmount(line, 'cantonal')"
@@ -1220,9 +1480,30 @@ function money(value: number | null): string {
                             @blur="commitAmount(line, 'federal', shownAmount(line, 'federal'))"
                         />
                     </div>
+                    <template v-if="copySource(line)">
+                        <span />
+                        <button
+                            type="button"
+                            class="su-btn su-btn--ghost tax-copy"
+                            :disabled="saving"
+                            @click="copyAmount(line, copySource(line)!)"
+                        >
+                            {{ copySource(line) === 'cantonal' ? t('taxPage.simple.copyToFederal') : t('taxPage.simple.copyToCantonal') }}
+                        </button>
+                    </template>
                 </div>
                 <div v-else class="tax-form__row">
-                    <label class="tax-form__label" :for="`tax-line-${line.code}`">{{ line.label }}</label>
+                    <label class="tax-form__label" :for="`tax-line-${line.code}`">
+                        {{ line.label }}
+                        <span v-if="helpFor(line)" class="tax-help">
+                            <button type="button" class="tax-help__btn" :aria-label="helpFor(line)">
+                                <HelpCircleIcon :size="16" stroke-width="1.8" aria-hidden="true" />
+                            </button>
+                            <v-tooltip activator="parent" location="top" open-delay="100" content-class="tax-help__tip">
+                                <v-chip class="tax-help__chip" color="primary" variant="flat" label>{{ helpFor(line) }}</v-chip>
+                            </v-tooltip>
+                        </span>
+                    </label>
                     <div class="tax-form__field">
                         <v-text-field
                             :id="`tax-line-${line.code}`"
@@ -1249,6 +1530,16 @@ function money(value: number | null): string {
             </p>
         </div>
     </AppPageShell>
+
+    <AppConfirmationModal
+        v-model="deleteOpen"
+        :title="t('taxPage.deleteModal.title', { year: deleteTarget?.year ?? '', canton: deleteTarget?.canton ?? '' })"
+        :message="t('taxPage.deleteModal.message')"
+        :confirm-label="t('taxPage.actions.delete')"
+        confirm-color="error"
+        :loading="saving"
+        @confirm="confirmRemove"
+    />
 </template>
 
 <style scoped>
@@ -1407,6 +1698,20 @@ function money(value: number | null): string {
 
 .tax-form__field {
     min-width: 0;
+    max-width: 380px;
+}
+
+.tax-form__field--wide {
+    max-width: 560px;
+}
+
+/* Un montant tient en quelques chiffres : pas besoin de la largeur du formulaire. */
+.tax-line .tax-form__field {
+    max-width: 240px;
+}
+
+.tax-line .tax-form__split {
+    max-width: 480px;
 }
 
 .tax-form__field :deep(.v-field) {
@@ -1419,10 +1724,15 @@ function money(value: number | null): string {
     padding-bottom: 0;
 }
 
+.tax-form--modal {
+    margin-bottom: 0;
+}
+
 .tax-form__split {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
+    max-width: 520px;
 }
 
 .tax-form__actions {
@@ -1440,6 +1750,40 @@ function money(value: number | null): string {
 
 .su-tab.is-done.is-active {
     box-shadow: inset 0 -2px 0 var(--blue);
+}
+
+.tax-help {
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
+.tax-help__btn {
+    display: inline-flex;
+    padding: 2px;
+    border: 0;
+    background: none;
+    color: var(--gray);
+    cursor: help;
+}
+
+.tax-help__btn:hover,
+.tax-help__btn:focus-visible {
+    color: var(--ink);
+}
+
+/* le chip est une pastille de texte, pas une étiquette d'une ligne */
+.tax-help__chip {
+    height: auto;
+    max-width: 320px;
+    padding: 8px 12px;
+    white-space: normal;
+    line-height: 1.35;
+}
+
+.tax-copy {
+    align-self: flex-start;
+    justify-self: start;
 }
 
 .tax-step-foot {
@@ -1524,6 +1868,14 @@ function money(value: number | null): string {
     .tax-form__split {
         grid-template-columns: minmax(0, 1fr);
         gap: 6px;
+    }
+
+    .tax-form__field,
+    .tax-form__field--wide,
+    .tax-line .tax-form__field,
+    .tax-form__split,
+    .tax-line .tax-form__split {
+        max-width: none;
     }
 }
 </style>

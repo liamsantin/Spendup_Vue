@@ -18,6 +18,7 @@ import type { CreateTransactionPayload, UpdateTransactionPayload } from '@/featu
 import type { UserSettings } from '@/features/user-settings/types';
 import { DEMO_USER_PUBLIC_ID } from '@/features/demo/user';
 import { mortgageRemainingFor, routeWealth } from '@/features/demo/wealth';
+import { routeTax } from '@/features/demo/tax';
 import type { UpdateFileRequest } from '@/features/files/types';
 import {
     demoFileContent,
@@ -139,6 +140,8 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
         return ok({ ...page, unreadCount: db.notifications.filter((item) => !item.isRead).length });
     }
 
+    const tax = routeTax(method, path, body);
+    if (tax) return tax;
     const wealth = routeWealth(method, path, query, body);
     if (wealth) return wealth;
     const filesResult = dispatchFiles(method, path, query, body);

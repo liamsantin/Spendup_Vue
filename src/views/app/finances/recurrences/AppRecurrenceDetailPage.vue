@@ -20,6 +20,7 @@ import {
     type RecurringDetailTab
 } from '@/features/recurring-payments/paths';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
+import { readReturnTo } from '@/utils/helpers/navigation-helpers';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -58,6 +59,13 @@ function selectTab(tab: RecurringDetailTab) {
 }
 
 /** Retour à la liste d’où l’on vient (charges ou revenus). */
+/** Retour : la page d'où l'on vient si la fiche a été ouverte depuis ailleurs (ex. une proposition d'impôts), sinon la liste. */
+function goBack() {
+    const origin = readReturnTo();
+    if (origin) void router.push(origin);
+    else backToList();
+}
+
 function backToList() {
     const kind = target.value?.kind;
     void router.push(kind === 'income' ? RECURRENCES_PATHS.revenus : RECURRENCES_PATHS.charges);
@@ -78,7 +86,7 @@ watch(
         </template>
 
         <template #actions>
-            <button type="button" class="su-btn" @click="backToList">
+            <button type="button" class="su-btn" @click="goBack">
                 <ArrowLeftIcon :size="16" stroke-width="1.6" />
                 {{ t('common.back') }}
             </button>

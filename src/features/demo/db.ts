@@ -17,6 +17,7 @@ import type { SharedDebt } from '@/features/shared-debts/types';
 import { seedFriends, type DemoFriend } from '@/features/demo/friends';
 import { seedRecurringHousehold } from '@/features/demo/recurring';
 import { seedWealth } from '@/features/demo/wealth';
+import { seedTaxReturns, type DemoTaxReturn } from '@/features/demo/tax';
 import type { Tag } from '@/features/tags/types';
 import type { Tier } from '@/features/tiers/types';
 import type { Transaction, TransactionMovement, TransactionType } from '@/features/transactions/types';
@@ -90,6 +91,7 @@ export type DemoDb = {
     realEstateCharges: Record<string, RealEstateCharge[]>;
     realEstateMaintenance: Record<string, RealEstateMaintenance[]>;
     notifications: AppNotification[];
+    taxReturns: DemoTaxReturn[];
 };
 
 const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -744,6 +746,7 @@ export function createDemoDb(): DemoDb {
         ...wealth,
         files: [],
         fileBlobs: {},
+        taxReturns: seedTaxReturns(),
         aliases: {
             TIERMIG: [
                 {

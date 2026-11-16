@@ -5150,6 +5150,12 @@
         "title": "Tax",
         "subtitle": "A draft to copy into the cantonal return. Only amounts you type are stored.",
         "new": "New return",
+        "createModal": {
+            "title": "New return",
+            "subtitle": "Pick the year and canton, then say who is filing. You can change everything later.",
+            "person1": "Person 1",
+            "person2": "Person 2"
+        },
         "actions": {
             "open": "Open",
             "pdf": "Download the PDF",
@@ -5211,13 +5217,17 @@
         "stepDone": "Step validated",
         "stepOpen": "Step still open",
         "validate": {
-            "situation": "Validate the situation",
+            "situation": "Save the situation",
             "revenus": "Validate income",
             "deductions": "Validate deductions",
             "fortune": "Validate wealth",
             "dettes": "Validate debts",
             "aPart": "Validate separately taxed amounts",
-            "fallback": "Validate {name}"
+            "fallback": "Validate {name}",
+            "prevoyance": "Confirm retirement savings",
+            "assurances": "Confirm insurance and health",
+            "famille": "Confirm family",
+            "autres": "Confirm other deductions"
         },
         "officialName": "Last name",
         "firstName": "First name",
@@ -5242,6 +5252,81 @@
         "delete": "Delete",
         "deleteConfirm": "Delete this return? The amounts you entered will be removed.",
         "loading": "Loading…",
-        "saving": "Saving…"
+        "saving": "Saving…",
+        "simple": {
+            "copyToFederal": "Same amount for the Confederation",
+            "copyToCantonal": "Same amount for the canton"
+        },
+        "deleteModal": {
+            "title": "Delete the {year} return ({canton})?",
+            "message": "The amounts and entries you entered will be deleted. This cannot be undone."
+        },
+        "stepLabels": {
+            "revenus": "Income",
+            "prevoyance": "Retirement savings",
+            "assurances": "Insurance and health",
+            "famille": "Family",
+            "autres": "Other deductions",
+            "fortune": "Assets",
+            "dettes": "Debts",
+            "aPart": "Taxed separately"
+        },
+        "help": {
+            "income": {
+                "employed": "Your net salary for the year, as shown on each employer's salary certificate.",
+                "selfEmployed": "The net result of your self-employed activity, from your accounts or annual statement.",
+                "liquidationProfit": "The profit made when you closed or sold your self-employed business.",
+                "retirementPension": "AHV/AVS pensions received during the year, including child pensions: see the compensation fund's statement.",
+                "disabilityPension": "Disability insurance pensions received during the year: see the statement from the DI office or fund.",
+                "unemployment": "Unemployment benefits, daily allowances (illness, accident, maternity) and loss-of-earnings payments received: see the funds' statements.",
+                "allowances": "Child and training allowances received. They are sometimes already on the salary certificate: check so you do not count them twice.",
+                "alimony": "Alimony received, for you or for your children, under a judgment or agreement.",
+                "securities": "Account interest and dividends from your securities: see your bank's tax statement.",
+                "withholdingTax": "The withholding tax deducted from your interest and dividends: it is shown on your bank's tax statement.",
+                "property": "Rent received and, depending on the canton, the rental value of a home you own.",
+                "other": "Any other taxable income that fits none of the boxes above."
+            },
+            "deduction": {
+                "jobExpenses": "Commuting, meals and other costs related to your job. Depending on the canton: a flat rate or actual costs.",
+                "debtInterest": "Interest paid on your debts (mortgage, loan…): see your bank's interest statement.",
+                "pillar2": "Your regular pension fund contributions (2nd pillar): they are shown on your salary certificate.",
+                "pillar2BuyIn": "Buy-ins of contribution years paid to your pension fund: see the fund's statement.",
+                "pillar3a": "Your payments into pillar 3a during the year: see the bank or insurer's statement. An annual cap applies.",
+                "insurance": "Health, accident and life insurance premiums, and interest on your savings accounts. The canton usually applies a cap or a flat rate.",
+                "healthGross": "The illness and accident costs you paid, before reimbursement: doctor, dentist, medication, glasses…",
+                "healthReimbursed": "What your insurer reimbursed for these costs.",
+                "health": "The illness and accident costs left to you. Only the part above a threshold (usually a percentage of net income) is deductible.",
+                "handicap": "Costs related to a disability (care, aids, adaptations), if you are recognised as having a disability.",
+                "education": "Continuing education costs related to your profession. Initial training is not deductible. A cap applies.",
+                "donations": "Gifts to tax-exempt public-interest institutions: keep your receipts. A minimum and a cap apply.",
+                "childcare": "Childcare costs paid to third parties (nursery, day care): see the invoices. A cap applies.",
+                "social": "Deductions for children, dependants and other social situations: they depend on your situation and canton.",
+                "other": "Any other allowed deduction that fits none of the boxes above."
+            },
+            "asset": {
+                "cashAndSecurities": "Your account balances and the value of your securities on 31 December: see your bank's tax statement.",
+                "property": "The tax value of your properties, set by the canton: see your latest assessment notice.",
+                "qualifiedPrivate": "Your holdings of at least 10% in a company, held as private assets.",
+                "qualifiedBusiness": "Your qualifying holdings held as business assets of a self-employed activity.",
+                "crypto": "The value of your cryptocurrencies on 31 December, at the rate published by the tax administration.",
+                "other": "Other assets: vehicles, valuables, insurance with a surrender value… Depending on the canton."
+            },
+            "liability": {
+                "debts": "The total of your debts on 31 December (mortgage, loans, leasing): see your creditors' statements."
+            },
+            "capital": {
+                "pillar2": "The capital received from your pension fund (2nd pillar), taxed separately: see the payment statement.",
+                "pillar3a": "The capital withdrawn from your pillar 3a, taxed separately: see the bank or insurer's statement.",
+                "vested": "The capital from a vested-benefits payment made during the year.",
+                "other": "Other capital benefits received during the year (compensation, insurance benefits…)."
+            },
+            "gift": {
+                "amount": "Gifts, advancements and inheritances received during the year. Depending on the canton, they are taxed or exempt."
+            }
+        },
+        "attachUpload": "Attach a file",
+        "attachSelect": "Select",
+        "attachLine": "Related box (optional)",
+        "see": "View"
     }
 }

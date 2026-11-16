@@ -5150,6 +5150,12 @@
         "title": "Impôts",
         "subtitle": "Brouillon à recopier dans la déclaration cantonale. Seuls les montants que vous saisissez y entrent.",
         "new": "Nouvelle déclaration",
+        "createModal": {
+            "title": "Nouvelle déclaration",
+            "subtitle": "Choisissez l’année et le canton, puis indiquez qui déclare. Tout reste modifiable ensuite.",
+            "person1": "Personne 1",
+            "person2": "Personne 2"
+        },
         "actions": {
             "open": "Ouvrir",
             "pdf": "Télécharger le PDF",
@@ -5211,13 +5217,17 @@
         "stepDone": "Étape validée",
         "stepOpen": "Étape à faire",
         "validate": {
-            "situation": "Valider la situation",
+            "situation": "Enregistrer la situation",
             "revenus": "Valider les revenus",
             "deductions": "Valider les déductions",
             "fortune": "Valider la fortune",
             "dettes": "Valider les dettes",
             "aPart": "Valider les montants à part",
-            "fallback": "Valider {name}"
+            "fallback": "Valider {name}",
+            "prevoyance": "Valider la prévoyance",
+            "assurances": "Valider les assurances et la santé",
+            "famille": "Valider la famille",
+            "autres": "Valider les autres déductions"
         },
         "officialName": "Nom",
         "firstName": "Prénom",
@@ -5226,7 +5236,7 @@
         "job": "Profession",
         "taxpayerNumber": "N° de contribuable",
         "notes": "Notes",
-        "saveHeader": "Valider la situation",
+        "saveHeader": "Enregistrer la situation",
         "cantonal": "Canton",
         "federal": "Confédération",
         "amount": "Montant",
@@ -5242,6 +5252,81 @@
         "delete": "Supprimer",
         "deleteConfirm": "Supprimer cette déclaration ? Les montants saisis disparaîtront.",
         "loading": "Chargement…",
-        "saving": "Enregistrement…"
+        "saving": "Enregistrement…",
+        "simple": {
+            "copyToFederal": "Même montant pour la Confédération",
+            "copyToCantonal": "Même montant pour le canton"
+        },
+        "deleteModal": {
+            "title": "Supprimer la déclaration {year} ({canton}) ?",
+            "message": "Les montants et les fiches saisis seront supprimés. Cette action est définitive."
+        },
+        "stepLabels": {
+            "revenus": "Revenus",
+            "prevoyance": "Prévoyance",
+            "assurances": "Assurances et santé",
+            "famille": "Famille",
+            "autres": "Autres déductions",
+            "fortune": "Fortune",
+            "dettes": "Dettes",
+            "aPart": "Imposés à part"
+        },
+        "help": {
+            "income": {
+                "employed": "Votre salaire net de l’année, tel qu’indiqué sur le certificat de salaire de chaque employeur.",
+                "selfEmployed": "Le résultat net de votre activité indépendante, selon votre comptabilité ou votre décompte annuel.",
+                "liquidationProfit": "Le bénéfice réalisé lors de la cessation ou de la vente de votre activité indépendante.",
+                "retirementPension": "Les rentes AVS perçues dans l’année, rentes pour enfants comprises : voir l’attestation de la caisse de compensation.",
+                "disabilityPension": "Les rentes AI perçues dans l’année : voir l’attestation de l’office AI ou de la caisse.",
+                "unemployment": "Chômage, indemnités journalières (maladie, accident, maternité) et perte de gain reçues dans l’année : voir les attestations des caisses.",
+                "allowances": "Allocations pour enfants et de formation reçues. Elles figurent parfois déjà sur le certificat de salaire : vérifiez pour ne pas les compter deux fois.",
+                "alimony": "Pensions alimentaires reçues, pour vous ou pour vos enfants, selon jugement ou convention.",
+                "securities": "Intérêts de comptes et dividendes de vos titres : voir le relevé fiscal de votre banque.",
+                "withholdingTax": "L’impôt anticipé retenu sur vos intérêts et dividendes : il figure sur le relevé fiscal de votre banque.",
+                "property": "Loyers encaissés et, selon le canton, valeur locative d’un logement dont vous êtes propriétaire.",
+                "other": "Tout autre revenu imposable qui ne rentre dans aucune des cases ci-dessus."
+            },
+            "deduction": {
+                "jobExpenses": "Frais de déplacement, de repas et autres frais liés à votre emploi. Selon le canton : un forfait ou les frais effectifs.",
+                "debtInterest": "Les intérêts payés sur vos dettes (hypothèque, crédit…) : voir le relevé d’intérêts de votre banque.",
+                "pillar2": "Vos cotisations ordinaires à la caisse de pension (2e pilier) : elles figurent sur le certificat de salaire.",
+                "pillar2BuyIn": "Les rachats d’années de cotisation versés à votre caisse de pension : voir l’attestation de la caisse.",
+                "pillar3a": "Vos versements sur le 3e pilier a dans l’année : voir l’attestation de la banque ou de l’assurance. Un plafond annuel s’applique.",
+                "insurance": "Primes d’assurance maladie, accidents et vie, et intérêts de vos comptes d’épargne. Le canton applique en général un plafond ou un forfait.",
+                "healthGross": "Les frais de maladie et d’accident que vous avez payés, avant remboursement : médecin, dentiste, médicaments, lunettes…",
+                "healthReimbursed": "Ce que votre assurance vous a remboursé pour ces frais.",
+                "health": "Les frais de maladie et d’accident restant à votre charge. Seule la part au-delà d’un seuil (en général un pourcentage du revenu net) est déductible.",
+                "handicap": "Les frais liés à un handicap (soins, aides, adaptations), si vous êtes reconnu·e en situation de handicap.",
+                "education": "Les frais de formation continue ou de perfectionnement liés à votre profession. La formation initiale n’est pas déductible. Un plafond s’applique.",
+                "donations": "Les dons à des institutions d’utilité publique exonérées d’impôt : conservez vos justificatifs. Un minimum et un plafond s’appliquent.",
+                "childcare": "Les frais de garde de vos enfants par des tiers (crèche, accueil de jour) : voir les factures. Un plafond s’applique.",
+                "social": "Les déductions pour enfants, personnes à charge et autres situations sociales : elles dépendent de votre situation et de votre canton.",
+                "other": "Toute autre déduction autorisée qui ne rentre dans aucune des cases ci-dessus."
+            },
+            "asset": {
+                "cashAndSecurities": "Le solde de vos comptes et la valeur de vos titres au 31 décembre : voir le relevé fiscal de votre banque.",
+                "property": "La valeur fiscale de vos immeubles, fixée par le canton : voir votre dernier avis de taxation.",
+                "qualifiedPrivate": "Vos participations d’au moins 10 % dans une société, détenues dans votre fortune privée.",
+                "qualifiedBusiness": "Vos participations qualifiées détenues dans la fortune commerciale d’une activité indépendante.",
+                "crypto": "La valeur de vos cryptomonnaies au 31 décembre, selon le cours indiqué par l’administration fiscale.",
+                "other": "Autres éléments de fortune : véhicules, objets de valeur, assurances avec valeur de rachat… Selon le canton."
+            },
+            "liability": {
+                "debts": "Le total de vos dettes au 31 décembre (hypothèque, crédits, leasing) : voir les relevés de vos créanciers."
+            },
+            "capital": {
+                "pillar2": "Le capital reçu de votre caisse de pension (2e pilier), imposé à part : voir l’attestation de versement.",
+                "pillar3a": "Le capital retiré de votre 3e pilier a, imposé à part : voir l’attestation de la banque ou de l’assurance.",
+                "vested": "Le capital d’une prestation de libre passage versée dans l’année.",
+                "other": "Les autres prestations en capital reçues dans l’année (indemnités, prestations d’assurance…)."
+            },
+            "gift": {
+                "amount": "Donations, avances d’hoirie et successions reçues dans l’année. Selon le canton, elles sont imposées ou exonérées."
+            }
+        },
+        "attachUpload": "Joindre un fichier",
+        "attachSelect": "Sélectionner",
+        "attachLine": "Ligne concernée (facultatif)",
+        "see": "Voir"
     }
 }

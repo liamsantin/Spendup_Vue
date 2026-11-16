@@ -4,6 +4,8 @@
  * - `menu` (onglet Justificatifs) : un seul bouton « Ajouter » en haut à droite, comme les autres onglets ; son menu
  *   propose « Uploader un PDF » et « Choisir », qui ouvre une fenêtre avec tous les PDF de la bibliothèque,
  *   une recherche et une sélection multiple ;
+ * - `split` : deux boutons toujours visibles, « envoyer » puis « sélectionner » ; le second ouvre la même fenêtre
+ *   de sélection que `menu` (tous les PDF de la bibliothèque, recherche, sélection multiple) ;
  * - par défaut (formulaire) : « Choisir dans Fichiers » puis « Uploader un PDF » côte à côte sous la liste.
  */
 defineOptions({ name: 'AttachmentActions' });
@@ -27,12 +29,20 @@ const props = withDefaults(
         max?: number;
         /** Un seul bouton « Ajouter » avec menu, aligné à droite. */
         menu?: boolean;
+        /** Deux boutons toujours visibles : envoyer un fichier, ou en sélectionner dans la bibliothèque. */
+        split?: boolean;
+        /** Libellés des deux boutons du mode `split`. */
+        uploadLabel?: string;
+        selectLabel?: string;
     }>(),
     {
         uploading: false,
         acting: false,
         max: TRANSACTION_FILES_MAX,
-        menu: false
+        menu: false,
+        split: false,
+        uploadLabel: undefined,
+        selectLabel: undefined
     }
 );
 
@@ -166,6 +176,22 @@ onBeforeUnmount(() => {
             </div>
         </div>
 
+        <!-- deux boutons : envoyer (principal), puis sélectionner dans la bibliothèque -->
+        <template v-else-if="split">
+            <button type="button" class="su-btn su-btn--ink" :disabled="busy || maxReached" @click="openUpload">
+                <UploadIcon :size="16" stroke-width="1.6" />
+                {{
+                    uploading
+                        ? t('transactionsPage.form.attachments.uploading')
+                        : (uploadLabel ?? t('transactionsPage.form.attachments.upload'))
+                }}
+            </button>
+            <button type="button" class="su-btn" :disabled="busy || maxReached" @click="openLibrary">
+                <FilePlusIcon :size="16" stroke-width="1.6" />
+                {{ selectLabel ?? t('transactionsPage.form.attachments.choose') }}
+            </button>
+        </template>
+
         <!-- formulaire : deux boutons, l’envoi (principal) en dernier -->
         <template v-else>
             <div class="attach-actions__picker">
@@ -187,7 +213,7 @@ onBeforeUnmount(() => {
         </template>
 
         <AppModalBase
-            v-if="menu"
+            v-if="menu || split"
             v-model="libraryOpen"
             :title="t('transactionsPage.form.attachments.chooseTitle')"
             :subtitle="t('transactionsPage.form.attachments.chooseSubtitle')"

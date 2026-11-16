@@ -21,6 +21,7 @@ import {
     realEstatePublicIdFromPath,
     type RealEstateDetailTab
 } from '@/features/real-estate';
+import { readReturnTo } from '@/utils/helpers/navigation-helpers';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -122,6 +123,13 @@ function tabLabel(tab: RealEstateDetailTab) {
     return t(`realEstatePage.detail.tabs.${TAB_LABEL[tab]}`);
 }
 
+/** Retour : la page d'où l'on vient si la fiche a été ouverte depuis ailleurs (ex. une proposition d'impôts), sinon la liste. */
+function goBack() {
+    const origin = readReturnTo();
+    if (origin) void router.push(origin);
+    else backToList();
+}
+
 function backToList() {
     void router.push({ path: REAL_ESTATE_PATHS.list });
 }
@@ -154,7 +162,7 @@ onUnmounted(() => {
         </template>
 
         <template #actions>
-            <button type="button" class="su-btn" @click="backToList">
+            <button type="button" class="su-btn" @click="goBack">
                 <ArrowLeftIcon :size="16" stroke-width="1.6" />
                 {{ t('realEstatePage.actions.back') }}
             </button>

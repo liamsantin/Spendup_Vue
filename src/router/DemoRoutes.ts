@@ -27,7 +27,8 @@ const OPEN_DEMO_PATHS = new Set([
     'patrimoine/placements/:accountPublicId?',
     'patrimoine/dettes/prets/:publicId?',
     'patrimoine/dettes/amis/:publicId?',
-    'patrimoine/dettes/:publicId?'
+    'patrimoine/dettes/:publicId?',
+    'analyses/impots/:publicId?'
 ]);
 
 function toDemoChild(child: RouteRecordRaw): RouteRecordRaw {
