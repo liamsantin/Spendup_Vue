@@ -1,4 +1,4 @@
-import type { FormProfile, ProfileLine, ReaderSection, TotalRule, ValueLookup } from '../types';
+import type { FormProfile, ProfileLine, ReaderSection, TotalRule } from '../types';
 
 const line = (code: string, section: ReaderSection, label: string, target: string | null, sign?: 1 | -1): ProfileLine => ({
     code,
@@ -100,7 +100,6 @@ const ASSETS: ProfileLine[] = [
 ];
 
 const codes = (list: ProfileLine[]) => list.map((item) => item.code);
-const sum = (value: ValueLookup, list: string[], person: '1' | '2' | '*') => list.reduce((total, code) => total + value(code, person), 0);
 
 const INCOME_CODES = codes(INCOME);
 const DEDUCTION_CODES = codes(DEDUCTIONS.filter((item) => Number(item.code) < 560));
@@ -109,15 +108,15 @@ const PERSONAL_CODES = codes(DEDUCTIONS.filter((item) => Number(item.code) >= 60
 const ASSET_CODES = codes(ASSETS.filter((item) => item.section === 'asset' && Number(item.code) <= 780));
 
 const TOTALS: TotalRule[] = [
-    { code: '480', label: 'Totaux des revenus (contribuable)', person: '1', compute: (v) => sum(v, INCOME_CODES, '1') },
-    { code: '480', label: 'Totaux des revenus (conjoint)', person: '2', compute: (v) => sum(v, INCOME_CODES, '2') },
-    { code: '490', label: 'Revenu total', person: '*', compute: (v) => v('480', '1') + v('480', '2') },
-    { code: '560', label: 'Revenu net I', person: '*', compute: (v) => v('490', '*') - sum(v, DEDUCTION_CODES, '*') },
-    { code: '590', label: 'Revenu net II', person: '*', compute: (v) => v('560', '*') - v('580', '*') - v('585', '*') },
-    { code: '690', label: 'Revenu imposable', person: '*', compute: (v) => Math.max(0, v('590', '*') - sum(v, PERSONAL_CODES, '*')) },
-    { code: '790', label: "Total de l'actif", person: '*', compute: (v) => sum(v, ASSET_CODES, '*') },
-    { code: '840', label: 'Fortune nette', person: '*', compute: (v) => v('790', '*') - v('800', '*') - v('810', '*') - v('820', '*') },
-    { code: '890', label: 'Fortune imposable', person: '*', compute: (v) => Math.max(0, v('840', '*') - v('860', '*') - v('870', '*')) }
+    { code: '480', label: 'Totaux des revenus (contribuable)', person: '1', plus: INCOME_CODES },
+    { code: '480', label: 'Totaux des revenus (conjoint)', person: '2', plus: INCOME_CODES },
+    { code: '490', label: 'Revenu total', person: '*', plus: ['480'] },
+    { code: '560', label: 'Revenu net I', person: '*', plus: ['490'], minus: DEDUCTION_CODES },
+    { code: '590', label: 'Revenu net II', person: '*', plus: ['560'], minus: ['580', '585'] },
+    { code: '690', label: 'Revenu imposable', person: '*', plus: ['590'], minus: PERSONAL_CODES, floorZero: true },
+    { code: '790', label: "Total de l'actif", person: '*', plus: ASSET_CODES },
+    { code: '840', label: 'Fortune nette', person: '*', plus: ['790'], minus: ['800', '810', '820'] },
+    { code: '890', label: 'Fortune imposable', person: '*', plus: ['840'], minus: ['860', '870'], floorZero: true }
 ];
 
 /** Déclaration d'impôts du canton du Jura (JuraTax Online), formulaire imprimé de l'année fiscale 2025. */
@@ -126,8 +125,9 @@ export const JU_2025: FormProfile = {
     label: 'JuraTax 2025',
     canton: 'JU',
     year: 2025,
-    detect: /JuraTax/i,
+    detect: ['JuraTax'],
     pages: [2, 4, 5],
+    layout: { codePattern: '^(\\d{3})(C?)$', persons: { kind: 'suffix', suffix: 'C' }, minusIsNegative: true },
     lines: [...INCOME, ...DEDUCTIONS, ...ASSETS],
     totals: TOTALS
 };

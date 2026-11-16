@@ -1,12 +1,11 @@
 import type { TaxSuggestion } from '@/features/tax/types';
-import type { FormProfile, PageTokens, ReadLine, ReadReport, ReaderPerson, Token, TotalCheck } from './types';
+import type { FormProfile, PageTokens, ReadLine, ReadReport, ReaderColumn, ReaderPerson, Token, TotalCheck, TotalRule } from './types';
 
-const CODE = /^(\d{3})(C?)$/;
 const AMOUNT = /^(?:\d{1,3}(?:[’']\d{3})+|\d+)(?:\.(?:\d{1,2}|-+))?$/;
 const NUMERIC = /^[\d’'.,\-C]+$/;
 /** Deux glyphes plus proches que cela (en points) appartiennent au même nombre. */
 const GLUE_GAP = 2.5;
-const ROW_TOLERANCE = 3;
+const ROW_TOLERANCE = 4.5;
 const COLUMN_TOLERANCE = 14;
 const COLUMN_MIN_CODES = 3;
 
@@ -48,15 +47,24 @@ interface Value {
 interface Found {
     code: string;
     person: ReaderPerson;
+    column: ReaderColumn;
     amount: number;
 }
 
-/** Lit les codes de ligne et les montants d'une page : un montant est le nombre le plus à droite après son code. */
-function readPage(page: PageTokens, known: Set<string>): Found[] {
+/** Le formulaire est-il celui de ce profil ? Toutes les expressions de détection doivent figurer dans le texte. */
+export function matchesProfile(text: string, profile: FormProfile): boolean {
+    return profile.detect.every((pattern) => new RegExp(pattern, 'i').test(text));
+}
+
+/** Lit les codes de ligne et les montants d'une page selon la disposition du profil. */
+function readPage(page: PageTokens, profile: FormProfile, known: Set<string>): Found[] {
+    const { layout } = profile;
+    const codeRe = new RegExp(layout.codePattern);
     const rows = buildRows(page.tokens);
     const candidates = rows.flat().filter((token) => {
-        const match = CODE.exec(token.text);
-        return match !== null && known.has(match[1]);
+        const match = codeRe.exec(token.text);
+        if (!match || !known.has(match[1])) return false;
+        return !layout.codeColumn || (token.x >= layout.codeColumn.min && token.x <= layout.codeColumn.max);
     });
     // un vrai code appartient à une colonne : plusieurs codes connus alignés au même x
     const isCode = (token: Token) =>
@@ -66,22 +74,43 @@ function readPage(page: PageTokens, known: Set<string>): Found[] {
     for (const row of rows) {
         const codes = row.filter((token) => candidates.includes(token) && isCode(token)).sort((a, b) => a.x - b.x);
         codes.forEach((codeToken, index) => {
-            const match = CODE.exec(codeToken.text);
+            const match = codeRe.exec(codeToken.text);
             if (!match) return;
             const from = codeToken.x + codeToken.w;
             const to = codes[index + 1]?.x ?? Infinity;
             const between = row.filter((token) => token.x >= from - 0.5 && token.x < to && !codes.includes(token));
             const amounts = between.filter((token) => parseAmount(token.text) !== null);
-            const last = amounts[amounts.length - 1];
-            if (!last) return;
-            const negative = between.some((token) => token.x < last.x && /^[-–−]$/.test(token.text));
-            const amount = parseAmount(last.text);
-            if (amount === null || amount === 0) return;
-            out.push({ code: match[1], person: match[2] === 'C' ? '2' : '1', amount: negative ? -amount : amount });
+
+            if (layout.persons.kind === 'suffix') {
+                const last = amounts[amounts.length - 1];
+                if (!last) return;
+                const value = parseAmount(last.text);
+                if (value === null || value === 0) return;
+                const negative = layout.minusIsNegative && between.some((token) => token.x < last.x && /^[-–−]$/.test(token.text));
+                out.push({
+                    code: match[1],
+                    person: match[2] === layout.persons.suffix ? '2' : '1',
+                    column: 'amount',
+                    amount: negative ? -value : value
+                });
+                return;
+            }
+
+            // une colonne par personne et une colonne fortune, repérées par le bord droit du montant
+            for (const column of layout.persons.columns) {
+                const inColumn = amounts.filter((token) => token.x + token.w >= column.minRight && token.x + token.w < column.maxRight);
+                const last = inColumn[inColumn.length - 1];
+                if (!last) continue;
+                const value = parseAmount(last.text);
+                if (value === null || value === 0) continue;
+                out.push({ code: match[1], person: column.person ?? '1', column: column.kind, amount: value });
+            }
         });
     }
     return out;
 }
+
+const valueKey = (code: string, person: ReaderPerson, column: ReaderColumn) => `${code}|${person}|${column}`;
 
 /** Lit un formulaire avec son profil : montants par code, propositions, lignes sans équivalent, contrôle des totaux. */
 export function readForm(pages: PageTokens[], profile: FormProfile, labelFor: (target: string) => string = (t) => t): ReadReport {
@@ -90,44 +119,56 @@ export function readForm(pages: PageTokens[], profile: FormProfile, labelFor: (t
     const values = new Map<string, Value>();
     for (const page of pages) {
         if (profile.pages && !profile.pages.includes(page.page)) continue;
-        for (const found of readPage(page, known)) {
-            const key = `${found.code}|${found.person}`;
+        for (const found of readPage(page, profile, known)) {
+            const key = valueKey(found.code, found.person, found.column);
             if (!values.has(key)) values.set(key, { amount: found.amount, page: page.page });
         }
     }
 
     const lines: ReadLine[] = [];
     for (const [key, value] of values) {
-        const [code, person] = key.split('|') as [string, ReaderPerson];
+        const [code, person, column] = key.split('|') as [string, ReaderPerson, ReaderColumn];
         const line = byCode.get(code);
         if (!line) continue;
         const amount = line.sign === -1 && value.amount > 0 ? -value.amount : value.amount;
-        lines.push({ code, person, label: line.label, section: line.section, amount, page: value.page, target: line.target });
+        const target = column === 'wealth' ? (line.wealthTarget ?? null) : line.target;
+        lines.push({ code, person, column, label: line.label, section: line.section, amount, page: value.page, target });
     }
-    lines.sort((a, b) => Number(a.code) - Number(b.code) || a.person.localeCompare(b.person));
+    lines.sort((a, b) => a.code.localeCompare(b.code, 'en', { numeric: true }) || a.person.localeCompare(b.person));
 
-    const lookup = (code: string, person: ReaderPerson | '*') => {
+    const lookup = (code: string, person: ReaderPerson | '*', column: ReaderColumn) => {
         const get = (p: ReaderPerson) => {
-            const value = values.get(`${code}|${p}`);
+            const value = values.get(valueKey(code, p, column));
             if (!value) return 0;
             return byCode.get(code)?.sign === -1 && value.amount > 0 ? -value.amount : value.amount;
         };
         return person === '*' ? get('1') + get('2') : get(person);
     };
 
-    const totals: TotalCheck[] = profile.totals.map((total) => {
-        const read = values.get(`${total.code}|${total.person === '2' ? '2' : '1'}`)?.amount ?? null;
-        const computed = total.compute(lookup);
+    const evaluate = (rule: TotalRule) => {
+        const term = (raw: string) => {
+            const [code, suffix] = raw.split(':');
+            const column: ReaderColumn = suffix === 'w' ? 'wealth' : suffix === 'a' ? 'amount' : (rule.column ?? 'amount');
+            return lookup(code, rule.person, column);
+        };
+        const total = rule.plus.reduce((sum, code) => sum + term(code), 0) - (rule.minus ?? []).reduce((sum, code) => sum + term(code), 0);
+        return rule.floorZero ? Math.max(0, total) : total;
+    };
+
+    const totals: TotalCheck[] = profile.totals.map((rule) => {
+        const column = rule.column ?? 'amount';
+        const read = values.get(valueKey(rule.code, rule.person === '2' ? '2' : '1', column))?.amount ?? null;
+        const computed = evaluate(rule);
         // un total imprimé à zéro n'a pas de montant : il est cohérent si les lignes lues somment aussi à zéro
         const status =
             read === null
-                ? Math.abs(computed) <= 1 && total.person !== '2'
+                ? Math.abs(computed) <= 1 && rule.person !== '2'
                     ? 'ok'
                     : 'missing'
                 : Math.abs(read - computed) <= 1
                   ? 'ok'
                   : 'mismatch';
-        return { code: total.code, label: total.label, read, computed, status };
+        return { code: rule.code, label: rule.label, read, computed, status };
     });
 
     const mapped = new Map<string, { target: string; person: ReaderPerson; amount: number; codes: string[]; page: number }>();
