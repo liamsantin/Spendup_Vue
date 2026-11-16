@@ -3,7 +3,7 @@
  * Brouillon de déclaration : une année, des cases saisies à la main.
  * Rien n'est repris des comptes. Une case vide reste vide.
  */
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -84,6 +84,14 @@ function writeImportedFlag(value: string | null) {
 const list = ref<TaxReturnListItem[]>([]);
 const declaration = ref<TaxReturn | null>(null);
 const loading = ref(false);
+
+// Chargement signalé par le curseur uniquement (pas de texte qui décale la page).
+watch(loading, (value) => {
+    document.body.style.cursor = value ? 'progress' : '';
+});
+onBeforeUnmount(() => {
+    document.body.style.cursor = '';
+});
 const saving = ref(false);
 const error = ref('');
 const notice = ref('');
@@ -121,13 +129,14 @@ const header = ref({
 const detailTitle = computed(() => {
     const current = declaration.value;
     if (!current) return '';
-    return current.name?.trim() || `${current.year} · ${current.canton}`;
+    const name = current.name?.trim();
+    return name ? `${name} · ${current.year}` : `${current.year} · ${current.canton}`;
 });
 
 const detailSubtitle = computed(() => {
     const current = declaration.value;
     if (!current?.name?.trim()) return t('taxPage.subtitle');
-    return `${current.year} · ${current.canton}`;
+    return current.canton;
 });
 
 const publicId = computed(() => taxPublicIdFromPath(route.path));
@@ -866,7 +875,6 @@ function money(value: number | null): string {
         </template>
 
         <p v-if="error" class="tax-error" role="alert">{{ error }}</p>
-        <p v-if="loading" class="tax-muted">{{ t('taxPage.loading') }}</p>
 
         <AppModalBase
             v-model="creating"
@@ -1087,7 +1095,7 @@ function money(value: number | null): string {
                 @keydown.enter.prevent="openReturn(item.publicId)"
             >
                 <div class="tax-card__head">
-                    <p class="tax-card__kicker">{{ item.name?.trim() ? `${item.year} · ${item.canton}` : item.canton }}</p>
+                    <p class="tax-card__kicker">{{ item.canton }}</p>
                     <div class="tax-card__actions" @click.stop>
                         <v-menu location="bottom end" :offset="4">
                             <template #activator="{ props: menuProps }">
@@ -1154,7 +1162,7 @@ function money(value: number | null): string {
                         </v-menu>
                     </div>
                 </div>
-                <h3 class="tax-card__name">{{ item.name?.trim() || item.year }}</h3>
+                <h3 class="tax-card__name">{{ item.name?.trim() ? `${item.name.trim()} · ${item.year}` : item.year }}</h3>
                 <p class="tax-card__sub">{{ t(`taxPage.statuses.${item.status}`) }}</p>
                 <div
                     class="su-gauge tax-card__gauge"
