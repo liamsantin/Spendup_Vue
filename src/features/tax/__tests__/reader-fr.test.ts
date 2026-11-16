@@ -115,6 +115,33 @@ describe('profil FriTax 2025', () => {
     });
 });
 
+describe('colonne de la personne 2 superposée à la colonne fortune', () => {
+    it('lit la colonne de droite comme personne 2 en haut de la page, et comme fortune plus bas', () => {
+        const report = run([
+            { code: '1.110', p1: "84'317", wealth: "61'853" },
+            { code: '2.130', wealth: "2'000" },
+            { code: '3.210', p1: "1'483", wealth: "37'409" }
+        ]);
+        const found = (target: string, person: string) =>
+            report.suggestions.find((item) => item.code === target && item.person === person)?.amount;
+        expect(found('income.employed', '2')).toBe(61853);
+        expect(found('deduction.jobExpenses', '2')).toBe(2000);
+        expect(found('asset.cashAndSecurities', '1')).toBe(37409);
+        expect(found('asset.cashAndSecurities', '2')).toBeUndefined();
+    });
+});
+
+describe('revenu net négatif', () => {
+    it('considère cohérent un revenu net imprimé à zéro quand les déductions dépassent les revenus', () => {
+        const report = run(
+            [{ code: '3.910', p1: "10'000" }, { code: '4.130', p1: "6'831" }, { code: '4.210', p1: "20'000" }, { code: '4.910' }],
+            5
+        );
+        const net = report.totals.find((total) => total.code === '4.910');
+        expect(net?.status).toBe('ok');
+    });
+});
+
 describe('détection du formulaire', () => {
     it('distingue Fribourg et le Jura, et refuse un format inconnu', () => {
         expect(findProfile('ETAT DE FRIBOURG Déclaration d’impôt 2025')?.id).toBe('fr-2025');

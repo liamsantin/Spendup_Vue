@@ -65,7 +65,17 @@ export interface FormLayout {
      * `suffix` : le conjoint a le même code suivi d'un suffixe (Jura : « 100C »), un seul montant par ligne.
      * `columns` : une colonne par personne et une colonne fortune, repérées par leur bord droit (Fribourg).
      */
-    persons: { kind: 'suffix'; suffix: string } | { kind: 'columns'; columns: AmountColumn[] };
+    persons:
+        | { kind: 'suffix'; suffix: string }
+        | {
+              kind: 'columns';
+              columns: AmountColumn[];
+              /**
+               * Expression des codes pour lesquels la colonne de droite est la personne 2 et non la fortune :
+               * sur certains formulaires, les deux colonnes se superposent selon la section (Fribourg).
+               */
+              person2InWealthBandFor?: string;
+          };
     /** Zone horizontale où se trouvent les vrais codes (ignore les renvois dans les annexes). */
     codeColumn?: { min: number; max: number };
     /** `true` : un « - » devant le montant le rend négatif ; `false` : c'est seulement l'indicateur d'une déduction. */

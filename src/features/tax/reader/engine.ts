@@ -97,12 +97,17 @@ function readPage(page: PageTokens, profile: FormProfile, known: Set<string>): F
             }
 
             // une colonne par personne et une colonne fortune, repérées par le bord droit du montant
+            const person2Re = layout.persons.person2InWealthBandFor ? new RegExp(layout.persons.person2InWealthBandFor) : null;
             for (const column of layout.persons.columns) {
                 const inColumn = amounts.filter((token) => token.x + token.w >= column.minRight && token.x + token.w < column.maxRight);
                 const last = inColumn[inColumn.length - 1];
                 if (!last) continue;
                 const value = parseAmount(last.text);
                 if (value === null || value === 0) continue;
+                if (column.kind === 'wealth' && person2Re?.test(match[1])) {
+                    out.push({ code: match[1], person: '2', column: 'amount', amount: value });
+                    continue;
+                }
                 out.push({ code: match[1], person: column.person ?? '1', column: column.kind, amount: value });
             }
         });

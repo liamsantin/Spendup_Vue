@@ -111,12 +111,20 @@ const TOTALS: TotalRule[] = [
         minus: ACQUISITION
     }),
     { code: '3.180', label: 'Total intermédiaire', person: '1', plus: range(['2.910'], ...RENTS) },
-    { code: '3.910', label: 'Total des revenus', person: '1', plus: range(['3.180'], ...OTHER_INCOME) },
+    { code: '3.180', label: 'Total intermédiaire (personne 2)', person: '2', plus: ['2.910'] },
+    { code: '3.910', label: 'Total des revenus', person: '*', plus: range(['3.180'], ...OTHER_INCOME) },
     { code: '3.910', label: 'Total de la fortune', person: '1', column: 'wealth', plus: WEALTH },
-    { code: '4.910', label: 'Revenu net', person: '1', plus: ['3.910'], minus: DEDUCTION_CODES },
-    { code: '6.910', label: 'Revenu après déductions', person: '1', plus: ['4.910'], minus: range(['5.110', '5.120'], ...SOCIAL) },
+    { code: '4.910', label: 'Revenu net', person: '*', plus: ['3.910'], minus: DEDUCTION_CODES, floorZero: true },
+    {
+        code: '6.910',
+        label: 'Revenu après déductions',
+        person: '1',
+        plus: ['4.910'],
+        minus: range(['5.110', '5.120'], ...SOCIAL),
+        floorZero: true
+    },
     { code: '6.910', label: 'Fortune après passifs', person: '1', column: 'wealth', plus: ['3.910'], minus: ['4.210', '4.220'] },
-    { code: '7.910', label: 'Revenu imposable', person: '1', plus: ['6.910'], minus: ['7.110:a'], floorZero: true },
+    { code: '7.910', label: 'Revenu imposable', person: '*', plus: ['6.910'], minus: ['7.110:a'], floorZero: true },
     { code: '7.910', label: 'Fortune imposable', person: '1', column: 'wealth', plus: ['6.910'], minus: ['7.110'], floorZero: true }
 ];
 
@@ -134,6 +142,8 @@ export const FR_2025: FormProfile = {
         // montants alignés à droite : revenu personne 1, revenu personne 2, fortune
         persons: {
             kind: 'columns',
+            // en haut de la page centrale (activité, rentes), la colonne de droite est la personne 2
+            person2InWealthBandFor: '^(1|2)\\.|^3\\.1',
             columns: [
                 { person: '1', kind: 'amount', minRight: 470, maxRight: 505 },
                 { person: '2', kind: 'amount', minRight: 505, maxRight: 545 },
