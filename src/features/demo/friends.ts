@@ -8,7 +8,7 @@ export type DemoFriend = {
     profilePicture: string;
     friendshipPublicId: string | null;
     status: FriendshipStatus | null;
-    /** `incoming` = l’autre a écrit à Camille. `outgoing` = Camille a écrit. */
+    /** `incoming` = l’autre a écrit à Sacha. `outgoing` = Sacha a écrit. */
     direction: 'incoming' | 'outgoing' | null;
     nickname: string | null;
     friendsSince: string | null;

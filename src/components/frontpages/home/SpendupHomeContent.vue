@@ -98,7 +98,7 @@ const platforms = [
 ];
 
 const demoPoints = [
-    { title: 'Un foyer déjà rempli', text: 'Camille a des comptes, des transactions, des amis et un patrimoine.' },
+    { title: 'Un foyer déjà rempli', text: 'Sacha a des comptes, des transactions, des amis et un patrimoine.' },
     { title: 'Vous pouvez modifier', text: 'Ajoutez une dépense, un budget ou un fichier : trois PDF au maximum.' },
     { title: 'Rien n’est conservé', text: 'Rechargez la page ou réinitialisez pour retrouver l’exemple de départ.' }
 ];

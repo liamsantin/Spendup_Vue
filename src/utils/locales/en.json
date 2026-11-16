@@ -2865,7 +2865,8 @@
                 "birthDate": "Date of birth",
                 "street": "Street",
                 "streetNumber": "No.",
-                "country": "Country"
+                "country": "Country",
+                "canton": "Canton"
             },
             "noCountries": "No countries available",
             "countriesLoadFailed": "Could not load the country list.",
@@ -5171,6 +5172,37 @@
         "namePlaceholder": "For example: canton, spouse, simulation",
         "create": "Create",
         "import": "Import",
+        "cantons": {
+            "AG": "Aargau",
+            "AI": "Appenzell Inner Rhodes",
+            "AR": "Appenzell Outer Rhodes",
+            "BE": "Bern",
+            "BL": "Basel-Landschaft",
+            "BS": "Basel-Stadt",
+            "FR": "Fribourg",
+            "GE": "Geneva",
+            "GL": "Glarus",
+            "GR": "Graubünden",
+            "JU": "Jura",
+            "LU": "Lucerne",
+            "NE": "Neuchâtel",
+            "NW": "Nidwalden",
+            "OW": "Obwalden",
+            "SG": "St. Gallen",
+            "SH": "Schaffhausen",
+            "SO": "Solothurn",
+            "SZ": "Schwyz",
+            "TG": "Thurgau",
+            "TI": "Ticino",
+            "UR": "Uri",
+            "VD": "Vaud",
+            "VS": "Valais",
+            "ZG": "Zug",
+            "ZH": "Zurich"
+        },
+        "importOrigin": "Read from the imported PDF",
+        "importRead": "{count} amount read from the PDF | {count} amounts read from the PDF. They are offered in each step: check them, then accept them.",
+        "chooseFile": "Choose a PDF",
         "importFile": "PDF return",
         "importFileRequired": "Choose the return PDF.",
         "importDone": "The return is created. The PDF is filed with the documents.",
@@ -5334,6 +5366,19 @@
         "attachUpload": "Attach a file",
         "attachSelect": "Select",
         "attachLine": "Related box (optional)",
-        "see": "View"
+        "see": "View",
+        "importFormatUnknown": "Return format not recognised (only JuraTax is supported for now): the PDF is filed with the documents, nothing was read.",
+        "importReadNone": "No amount to suggest was read from this PDF. It is filed with the documents.",
+        "review": {
+            "title": "PDF reading · {profile}",
+            "dismiss": "Hide",
+            "checks": "{ok} total out of {n} matches the form. | {ok} totals out of {n} match the form.",
+            "mismatch": "Mismatch on: {lines}. Check these lines before accepting.",
+            "none": "Nothing to review.",
+            "spouse": "spouse",
+            "acceptSelected": "Accept selection ({count})",
+            "unmapped": "{count} line read with no equivalent in the app",
+            "code": "code {code}, p. {page}"
+        }
     }
 }

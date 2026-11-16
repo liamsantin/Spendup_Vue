@@ -414,7 +414,7 @@ function createTransaction(body: CreateTransactionPayload) {
         categoryPublicId: body.categoryPublicId ?? null,
         tierPublicId: body.tierPublicId ?? null,
         createdByUserPublicId: DEMO_USER_PUBLIC_ID,
-        createdByDisplayName: 'Camille Démo',
+        createdByDisplayName: 'Sacha Démo',
         createdByPhotoUrl: null,
         createdAt: stamp(),
         updatedAt: null,

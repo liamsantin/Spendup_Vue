@@ -205,7 +205,7 @@ function transaction(input: {
         categoryPublicId: input.categoryPublicId ?? null,
         tierPublicId: input.tierPublicId ?? null,
         createdByUserPublicId: DEMO_USER_PUBLIC_ID,
-        createdByDisplayName: 'Camille Démo',
+        createdByDisplayName: 'Sacha Démo',
         createdByPhotoUrl: null,
         createdAt: `${input.operationDate}T08:00:00.000Z`,
         updatedAt: null,

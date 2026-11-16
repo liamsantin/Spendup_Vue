@@ -43,13 +43,14 @@ const street = ref('');
 const streetNumber = ref('');
 const profilePicture = ref<string | null>(null);
 const countryId = ref<number | null>(null);
+const canton = ref<string | null>(null);
 const username = ref('');
 const accountError = ref<string | null>(null);
 const accountSuccess = ref<string | null>(null);
 
 const avatar = useAccountAvatarEditor(profilePicture);
 const profile = useAccountProfileForm({
-    fields: { firstName, name, phone, birthDate, street, streetNumber, countryId, username, profilePicture },
+    fields: { firstName, name, phone, birthDate, street, streetNumber, countryId, canton, username, profilePicture },
     onHydratePicture: (picture) => void avatar.resolveAvatarDisplay(picture),
     emitDirty: (value) => emit('dirty', value),
     clearAccountFeedback: () => {
@@ -112,6 +113,7 @@ defineExpose({
                 v-model:street="street"
                 v-model:street-number="streetNumber"
                 v-model:country-id="countryId"
+                v-model:canton="canton"
                 :loading="profile.loading"
                 :countries="countries.items"
                 :countries-loading="countries.loading"

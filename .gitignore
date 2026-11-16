@@ -32,3 +32,6 @@ Thumbs.db
 
 # Worktrees locaux Claude Code
 .claude/worktrees/
+
+# Documents personnels de test (ne jamais commiter)
+.private/

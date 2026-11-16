@@ -2865,7 +2865,8 @@
                 "birthDate": "Date de naissance",
                 "street": "Rue",
                 "streetNumber": "N°",
-                "country": "Pays"
+                "country": "Pays",
+                "canton": "Canton"
             },
             "noCountries": "Aucun pays disponible",
             "countriesLoadFailed": "Impossible de charger la liste des pays.",
@@ -5171,6 +5172,37 @@
         "namePlaceholder": "Par exemple : canton, conjoint, simulation",
         "create": "Créer",
         "import": "Importer",
+        "cantons": {
+            "AG": "Argovie",
+            "AI": "Appenzell Rhodes-Intérieures",
+            "AR": "Appenzell Rhodes-Extérieures",
+            "BE": "Berne",
+            "BL": "Bâle-Campagne",
+            "BS": "Bâle-Ville",
+            "FR": "Fribourg",
+            "GE": "Genève",
+            "GL": "Glaris",
+            "GR": "Grisons",
+            "JU": "Jura",
+            "LU": "Lucerne",
+            "NE": "Neuchâtel",
+            "NW": "Nidwald",
+            "OW": "Obwald",
+            "SG": "Saint-Gall",
+            "SH": "Schaffhouse",
+            "SO": "Soleure",
+            "SZ": "Schwytz",
+            "TG": "Thurgovie",
+            "TI": "Tessin",
+            "UR": "Uri",
+            "VD": "Vaud",
+            "VS": "Valais",
+            "ZG": "Zoug",
+            "ZH": "Zurich"
+        },
+        "importOrigin": "Lu dans le PDF importé",
+        "importRead": "{count} montant lu dans le PDF | {count} montants lus dans le PDF. Ils sont proposés dans chaque étape : vérifiez-les, puis acceptez-les.",
+        "chooseFile": "Choisir un PDF",
         "importFile": "Déclaration PDF",
         "importFileRequired": "Choisissez le PDF de la déclaration.",
         "importDone": "La déclaration est créée. Le PDF est rangé dans les pièces.",
@@ -5334,6 +5366,19 @@
         "attachUpload": "Joindre un fichier",
         "attachSelect": "Sélectionner",
         "attachLine": "Ligne concernée (facultatif)",
-        "see": "Voir"
+        "see": "Voir",
+        "importFormatUnknown": "Format de déclaration non reconnu (seul JuraTax est pris en charge pour l'instant) : le PDF est rangé dans les pièces, rien n'a été lu.",
+        "importReadNone": "Aucun montant à proposer n'a été lu dans ce PDF. Il est rangé dans les pièces.",
+        "review": {
+            "title": "Lecture du PDF · {profile}",
+            "dismiss": "Masquer",
+            "checks": "{ok} total sur {n} recoupé avec le formulaire. | {ok} totaux sur {n} recoupés avec le formulaire.",
+            "mismatch": "Écart sur : {lines}. Vérifiez ces lignes avant d’accepter.",
+            "none": "Rien à valider.",
+            "spouse": "conjoint",
+            "acceptSelected": "Accepter la sélection ({count})",
+            "unmapped": "{count} ligne lue sans équivalent dans l’application",
+            "code": "code {code}, p. {page}"
+        }
     }
 }

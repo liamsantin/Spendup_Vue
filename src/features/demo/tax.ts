@@ -94,6 +94,7 @@ const CATALOGUE: LineDefinition[] = [
     line('asset.qualifiedBusiness', 'fortune', 'Fortune', 'Participations qualifiées, fortune commerciale', 'asset'),
     line('asset.crypto', 'fortune', 'Fortune', 'Cryptomonnaies', 'asset'),
     line('asset.other', 'fortune', 'Fortune', 'Autres éléments de fortune', 'asset'),
+    line('asset.generalDeduction', 'fortune', 'Fortune', 'Déductions générales sur la fortune', 'none'),
 
     line('liability.debts', 'dettes', 'Dettes', 'Dettes', 'liability'),
 
@@ -167,7 +168,7 @@ export function seedTaxReturns(): DemoTaxReturn[] {
             couple: false,
             taxpayerNumber: null,
             notes: null,
-            person1: { officialName: 'Démo', firstName: 'Camille', vn: null, municipality: 'Lausanne', job: 'Responsable atelier' },
+            person1: { officialName: 'Démo', firstName: 'Sacha', vn: null, municipality: 'Lausanne', job: 'Responsable atelier' },
             person2: null,
             amounts: [
                 amountOf('income.employed', '1', 'both', 74400, 'saisie'),
@@ -500,7 +501,7 @@ function createReturn(body: { year: number; canton: string }) {
         couple: false,
         taxpayerNumber: null,
         notes: null,
-        person1: { officialName: 'Démo', firstName: 'Camille', vn: null, municipality: 'Lausanne', job: null },
+        person1: { officialName: 'Démo', firstName: 'Sacha', vn: null, municipality: 'Lausanne', job: null },
         person2: null,
         amounts: [],
         entries: [],

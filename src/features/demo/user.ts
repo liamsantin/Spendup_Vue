@@ -5,9 +5,9 @@ export const DEMO_USER_PUBLIC_ID = 'DEMO001';
 export function demoMe(): Me {
     return {
         userPublicId: DEMO_USER_PUBLIC_ID,
-        email: 'camille@demo.spendup.ch',
-        username: 'camille',
-        firstName: 'Camille',
+        email: 'sacha@demo.spendup.ch',
+        username: 'sacha',
+        firstName: 'Sacha',
         name: 'Démo',
         emailVerified: true,
         twoFactorEnabled: false,
@@ -17,6 +17,7 @@ export function demoMe(): Me {
         street: null,
         streetNumber: null,
         countryId: null,
+        canton: null,
         profilePicture: null,
         hasPassword: false,
         hasGoogle: false

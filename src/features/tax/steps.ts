@@ -53,7 +53,8 @@ export const TAX_GROUP_DEFINITIONS: TaxGroupDefinition[] = [
             'asset.qualifiedPrivate',
             'asset.qualifiedBusiness',
             'asset.crypto',
-            'asset.other'
+            'asset.other',
+            'asset.generalDeduction'
         ]
     },
     { id: 'dettes', section: 'dettes', codes: ['liability.debts'] },

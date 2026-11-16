@@ -26,11 +26,24 @@ import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
+import { useAuthStore } from '@/features/auth';
 import { taxApi } from '@/features/tax/api';
+import { useCantonItems } from '@/features/tax/cantons';
+import {
+    clearPendingRead,
+    dismissReadReport,
+    forgetPendingRead,
+    isImportedReturn,
+    markImportedReturn,
+    stashPendingRead,
+    takePendingRead
+} from '@/features/tax/pending-read';
+import { readTaxPdf } from '@/features/tax/reader/pdf';
+import TaxImportReview from '@/features/tax/components/TaxImportReview.vue';
+import type { ReadLine, TotalCheck } from '@/features/tax/reader/types';
 import { buildTaxGroups, migrateValidatedSteps, type TaxGroup } from '@/features/tax/steps';
 import { TAX_BASE, taxDetailPath, taxPublicIdFromPath, taxSuggestionTargets } from '@/features/tax/paths';
 import {
-    TAX_CANTONS,
     type TaxCompetence,
     type TaxEntryKind,
     type TaxIdentity,
@@ -95,24 +108,33 @@ onBeforeUnmount(() => {
 const saving = ref(false);
 const error = ref('');
 const notice = ref('');
-const formMode = ref<'create' | 'import' | null>(null);
+const importing = ref(false);
 const year = ref(new Date().getFullYear());
-const canton = ref('VD');
+const auth = useAuthStore();
+/** Canton du profil s'il est renseigné (Suisse), sinon Vaud : sert de valeur par défaut à la création et à l'import. */
+function defaultCanton(): string {
+    return auth.user?.canton ?? 'VD';
+}
+const canton = ref(defaultCanton());
 const createCouple = ref(false);
 const createPerson1 = ref<TaxIdentity>(emptyIdentity());
 const createPerson2 = ref<TaxIdentity>(emptyIdentity());
 const returnName = ref('');
 const importFile = ref<File | null>(null);
+const importInputRef = ref<HTMLInputElement | null>(null);
 const importFileLabel = ref('');
 const creating = ref(false);
 const person = ref<TaxPerson>('1');
 const drafts = ref<Record<string, string>>({});
 const suggestions = ref<TaxSuggestion[]>([]);
+/** Lecture locale d'un PDF importé, à vérifier (persistée sur l'appareil). */
+const readItems = ref<TaxSuggestion[]>([]);
+const readReport = ref<{ profileLabel: string; totals: TotalCheck[]; unmapped: ReadLine[] } | null>(null);
 const filesStore = useFilesStore();
 const attaching = ref(false);
 const attachLine = ref('');
 
-const cantonItems = TAX_CANTONS.map((code) => ({ title: code, value: code }));
+const cantonItems = useCantonItems();
 const statusItems = computed(() => STATUSES.map((value) => ({ title: t(`taxPage.statuses.${value}`), value })));
 
 const header = ref({
@@ -306,6 +328,20 @@ async function refresh() {
         const detail = await taxApi.get(publicId.value);
         apply(detail);
         await loadSuggestions(publicId.value);
+        const pending = takePendingRead(publicId.value);
+        readItems.value = pending.items;
+        readReport.value = pending.report;
+        if (pending) {
+            const known = new Set(suggestions.value.map((item) => `${item.code}|${item.person}|${item.competence}`));
+            suggestions.value = [
+                ...suggestions.value,
+                ...pending.items.filter((item) => !known.has(`${item.code}|${item.person}|${item.competence}`))
+            ];
+            if (pending.notice) {
+                notice.value = pending.notice;
+                writeImportedFlag(null);
+            }
+        }
         if (readImportedFlag() === publicId.value) {
             notice.value = t('taxPage.importDone');
             writeImportedFlag(null);
@@ -340,7 +376,7 @@ function openCreate() {
     error.value = '';
     year.value = new Date().getFullYear();
     returnName.value = '';
-    formMode.value = null;
+    canton.value = defaultCanton();
     createCouple.value = false;
     createPerson1.value = emptyIdentity();
     createPerson2.value = emptyIdentity();
@@ -348,15 +384,27 @@ function openCreate() {
 }
 
 function openImport() {
-    formMode.value = formMode.value === 'import' ? null : 'import';
     error.value = '';
+    year.value = new Date().getFullYear();
+    returnName.value = '';
+    canton.value = defaultCanton();
+    importFile.value = null;
+    importFileLabel.value = '';
+    importing.value = true;
 }
 
 function closeForm() {
-    formMode.value = null;
+    importing.value = false;
     importFile.value = null;
     importFileLabel.value = '';
 }
+
+watch(importing, (open) => {
+    if (!open) {
+        importFile.value = null;
+        importFileLabel.value = '';
+    }
+});
 
 function onImportFile(event: Event) {
     const input = event.target;
@@ -411,9 +459,32 @@ async function importReturn() {
     try {
         const created = await taxApi.create(year.value, canton.value, returnName.value.trim() || null);
         createdId = created.declaration.publicId;
+        markImportedReturn(createdId);
         const uploaded = await filesApi.upload(file);
         await taxApi.attachDocument(createdId, uploaded.publicId, null);
         writeImportedFlag(createdId);
+        // Lecture locale du PDF : un échec de lecture n'empêche jamais l'import.
+        const labels = new Map(
+            created.declaration.sections.flatMap((section) => section.lines.map((item) => [item.code, item.label] as const))
+        );
+        let notice = t('taxPage.importFormatUnknown');
+        try {
+            const report = await readTaxPdf(file, (target) => labels.get(target) ?? target);
+            if (report) {
+                notice = report.suggestions.length
+                    ? t('taxPage.importRead', { count: report.suggestions.length })
+                    : t('taxPage.importReadNone');
+                stashPendingRead(
+                    createdId,
+                    { profileLabel: report.profileLabel, items: report.suggestions, totals: report.totals, unmapped: report.unmapped },
+                    notice
+                );
+            } else {
+                stashPendingRead(createdId, null, notice);
+            }
+        } catch {
+            stashPendingRead(createdId, null, t('taxPage.importReadNone'));
+        }
     } catch (e) {
         error.value = getErrorMessage(AppError.fromUnknown(e));
     } finally {
@@ -568,8 +639,8 @@ async function loadSuggestions(id: string) {
         // la bibliothèque et le quota servent au bouton « Sélectionner » ; un échec n'empêche pas l'affichage
         void filesStore.loadList().catch(() => undefined);
         void filesStore.loadUsage().catch(() => undefined);
-        const suggested = await taxApi.suggestions(id);
-        suggestions.value = suggested.items ?? [];
+        // Déclaration importée d'un fichier : seuls les montants lus dans le PDF sont proposés.
+        suggestions.value = isImportedReturn(id) ? [] : ((await taxApi.suggestions(id)).items ?? []);
     } catch {
         suggestions.value = [];
     }
@@ -603,14 +674,31 @@ async function acceptSuggestion(item: TaxSuggestion) {
                 amount: item.amount
             })
         );
+        forgetPendingRead(current.publicId, item.code, item.competence, item.person);
+        readItems.value = readItems.value.filter(
+            (candidate) => !(candidate.code === item.code && candidate.competence === item.competence && candidate.person === item.person)
+        );
         suggestions.value = suggestions.value.filter(
-            (candidate) => !(candidate.code === item.code && candidate.competence === item.competence)
+            (candidate) => !(candidate.code === item.code && candidate.competence === item.competence && candidate.person === item.person)
         );
     } catch (e) {
         error.value = getErrorMessage(AppError.fromUnknown(e));
     } finally {
         saving.value = false;
     }
+}
+
+async function acceptMany(items: TaxSuggestion[]) {
+    for (const item of items) {
+        await acceptSuggestion(item);
+        if (error.value) return;
+    }
+}
+
+function closeReview() {
+    const current = declaration.value;
+    if (current) dismissReadReport(current.publicId);
+    readReport.value = null;
 }
 
 const attachedFiles = computed(() => (declaration.value?.documents ?? []).map((doc) => ({ publicId: doc.filePublicId })));
@@ -790,6 +878,7 @@ async function confirmRemove() {
     error.value = '';
     try {
         await taxApi.remove(target.publicId);
+        clearPendingRead(target.publicId);
         deleteTarget.value = null;
         if (target.fromDetail) await router.push(TAX_BASE);
         else await refresh();
@@ -864,7 +953,7 @@ function money(value: number | null): string {
 <template>
     <AppPageShell v-if="!declaration" :title="t('taxPage.title')" :subtitle="t('taxPage.subtitle')">
         <template #actions>
-            <button type="button" class="su-btn" :class="{ 'is-active': formMode === 'import' }" @click="openImport()">
+            <button type="button" class="su-btn" @click="openImport()">
                 <UploadIcon :size="18" />
                 {{ t('taxPage.importExisting') }}
             </button>
@@ -1029,59 +1118,76 @@ function money(value: number | null): string {
             </template>
         </AppModalBase>
 
-        <form v-if="formMode === 'import'" class="tax-form" @submit.prevent="importReturn()">
-            <div class="tax-form__row">
-                <label class="tax-form__label" for="tax-import-name">{{ t('taxPage.name') }}</label>
-                <div class="tax-form__field">
-                    <v-text-field
-                        id="tax-import-name"
-                        v-model="returnName"
-                        color="primary"
-                        variant="outlined"
-                        hide-details="auto"
-                        maxlength="80"
-                        :placeholder="t('taxPage.namePlaceholder')"
-                    />
+        <AppModalBase v-model="importing" :title="t('taxPage.importExisting')" :max-width="560" scrollable mobile-layout="fullscreen">
+            <form id="tax-import-form" class="tax-form tax-form--modal" @submit.prevent="importReturn()">
+                <p v-if="error" class="tax-error" role="alert">{{ error }}</p>
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-import-name">{{ t('taxPage.name') }}</label>
+                    <div class="tax-form__field">
+                        <v-text-field
+                            id="tax-import-name"
+                            v-model="returnName"
+                            color="primary"
+                            variant="outlined"
+                            hide-details="auto"
+                            maxlength="80"
+                            :placeholder="t('taxPage.namePlaceholder')"
+                        />
+                    </div>
                 </div>
-            </div>
-            <div class="tax-form__row">
-                <label class="tax-form__label" for="tax-import-year">{{ t('taxPage.year') }}</label>
-                <div class="tax-form__field">
-                    <v-text-field
-                        id="tax-import-year"
-                        v-model.number="year"
-                        type="number"
-                        min="2000"
-                        color="primary"
-                        variant="outlined"
-                        hide-details="auto"
-                    />
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-import-year">{{ t('taxPage.year') }}</label>
+                    <div class="tax-form__field">
+                        <v-text-field
+                            id="tax-import-year"
+                            v-model.number="year"
+                            type="number"
+                            min="2000"
+                            color="primary"
+                            variant="outlined"
+                            hide-details="auto"
+                        />
+                    </div>
                 </div>
-            </div>
-            <div class="tax-form__row">
-                <label class="tax-form__label" for="tax-import-canton">{{ t('taxPage.canton') }}</label>
-                <div class="tax-form__field">
-                    <AppSelect
-                        id="tax-import-canton"
-                        v-model="canton"
-                        :items="cantonItems"
-                        :label="t('taxPage.canton')"
-                        hide-details="auto"
-                    />
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-import-canton">{{ t('taxPage.canton') }}</label>
+                    <div class="tax-form__field">
+                        <AppSelect
+                            id="tax-import-canton"
+                            v-model="canton"
+                            :items="cantonItems"
+                            :label="t('taxPage.canton')"
+                            hide-details="auto"
+                        />
+                    </div>
                 </div>
-            </div>
-            <div class="tax-form__row">
-                <label class="tax-form__label" for="tax-import-file">{{ t('taxPage.importFile') }}</label>
-                <div class="tax-form__field">
-                    <input id="tax-import-file" class="tax-import-file" type="file" accept="application/pdf,.pdf" @change="onImportFile" />
-                    <p v-if="importFileLabel" class="tax-muted">{{ importFileLabel }}</p>
+                <div class="tax-form__row">
+                    <label class="tax-form__label" for="tax-import-file">{{ t('taxPage.importFile') }}</label>
+                    <div class="tax-form__field">
+                        <input
+                            ref="importInputRef"
+                            class="tax-import-file"
+                            type="file"
+                            accept="application/pdf,.pdf"
+                            @change="onImportFile"
+                        />
+                        <button id="tax-import-file" type="button" class="su-btn" :disabled="saving" @click="importInputRef?.click()">
+                            <UploadIcon :size="16" stroke-width="1.6" />
+                            {{ importFileLabel || t('taxPage.chooseFile') }}
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="tax-form__actions">
-                <button type="submit" class="su-btn su-btn--ink" :disabled="saving">{{ t('taxPage.import') }}</button>
-                <button type="button" class="su-btn" @click="closeForm">{{ t('taxPage.cancel') }}</button>
-            </div>
-        </form>
+            </form>
+
+            <template #footer="{ close }">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="saving" @click="close">
+                    {{ t('taxPage.cancel') }}
+                </button>
+                <button type="submit" form="tax-import-form" class="su-btn su-btn--ink" :disabled="saving">
+                    {{ t('taxPage.import') }}
+                </button>
+            </template>
+        </AppModalBase>
 
         <p v-if="!loading && !list.length" class="tax-muted">{{ t('taxPage.empty') }}</p>
         <div v-else class="tax-list">
@@ -1223,6 +1329,16 @@ function money(value: number | null): string {
 
         <p v-if="error" class="tax-error" role="alert">{{ error }}</p>
         <p v-if="notice" class="tax-muted">{{ notice }}</p>
+        <TaxImportReview
+            v-if="readReport"
+            :profile-label="readReport.profileLabel"
+            :items="readItems"
+            :totals="readReport.totals"
+            :unmapped="readReport.unmapped"
+            :saving="saving"
+            @accept="acceptMany"
+            @dismiss="closeReview"
+        />
         <p v-if="saving" class="tax-muted">{{ t('taxPage.saving') }}</p>
 
         <form v-show="step === SITUATION" class="tax-form" @submit.prevent="validateCurrentStep">
@@ -1504,7 +1620,7 @@ function money(value: number | null): string {
 
         <section v-if="stepSuggestions.length" class="tax-form">
             <h2 class="tax-form__legend">{{ t('taxPage.suggestionsTitle') }}</h2>
-            <article v-for="item in stepSuggestions" :key="`${item.code}-${item.competence}`" class="tax-fiche">
+            <article v-for="item in stepSuggestions" :key="`${item.code}-${item.person}-${item.competence}`" class="tax-fiche">
                 <div>
                     <p class="tax-fiche__title">{{ item.label }}</p>
                     <p class="tax-fiche__detail">{{ item.originLabel }}</p>
@@ -1913,9 +2029,7 @@ function money(value: number | null): string {
 }
 
 .tax-import-file {
-    font: inherit;
-    font-size: 14px;
-    color: var(--ink);
+    display: none;
 }
 
 .tax-form__field :deep(.v-field) {

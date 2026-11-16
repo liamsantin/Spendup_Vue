@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
+import AppSelect from '@/components/shared/select/AppSelect.vue';
 import type { Country } from '@/features/countries';
+import { useCantonItems } from '@/features/tax/cantons';
 
-defineProps<{
+const props = defineProps<{
     loading: boolean;
     countries: Country[];
     countriesLoading: boolean;
@@ -27,7 +29,15 @@ const birthDate = defineModel<string>('birthDate', { required: true });
 const street = defineModel<string>('street', { required: true });
 const streetNumber = defineModel<string>('streetNumber', { required: true });
 const countryId = defineModel<number | null>('countryId', { required: true });
+const canton = defineModel<string | null>('canton', { required: true });
 const { t } = useI18n();
+const cantonItems = useCantonItems();
+
+/** Le canton n'existe que pour la Suisse : ailleurs, le champ disparaît et la valeur est vidée. */
+const isSwitzerland = computed(() => props.countries.find((country) => country.id === countryId.value)?.code === 'CH');
+watch([isSwitzerland, () => props.countriesLoading], ([swiss, loadingCountries]) => {
+    if (!swiss && !loadingCountries && canton.value !== null) canton.value = null;
+});
 
 const birthDateModel = computed({
     get: () => birthDate.value || null,
@@ -129,6 +139,17 @@ const birthDateModel = computed({
                     :loading="countriesLoading"
                     :disabled="loading || (countriesLoading && !countries.length)"
                     :no-data-text="countriesError ? t('accounts.personal.countriesLoadFailed') : t('accounts.personal.noCountries')"
+                />
+            </div>
+            <div v-if="isSwitzerland" class="su-field">
+                <label class="su-field__label" for="account-canton">{{ t('accounts.personal.fields.canton') }}</label>
+                <AppSelect
+                    id="account-canton"
+                    v-model="canton"
+                    :items="cantonItems"
+                    :label="t('accounts.personal.fields.canton')"
+                    hide-details
+                    :disabled="loading"
                 />
             </div>
         </div>

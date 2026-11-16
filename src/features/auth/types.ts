@@ -58,6 +58,8 @@ export type Me = {
     street: string | null;
     streetNumber: string | null;
     countryId: number | null;
+    /** Canton suisse (abréviation), renseigné seulement si le pays est la Suisse. */
+    canton?: string | null;
     /**
      * Avatar catalogue (`/avatar/…`), hash SHA-256 uploadé (64 hex), ou `null`.
      * Géré via `/api/auth/me/avatar`, pas via `PUT /profile`.
@@ -81,6 +83,7 @@ export type UpdateProfilePayload = {
     street: string | null;
     streetNumber: string | null;
     countryId: number | null;
+    canton: string | null;
 };
 
 /** Réponse `POST /api/auth/me/avatar`. */

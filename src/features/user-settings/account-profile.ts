@@ -8,6 +8,7 @@ export type ProfileSnapshot = {
     street: string | null;
     streetNumber: string | null;
     countryId: number | null;
+    canton: string | null;
 };
 
 export function emptyToNull(value: string): string | null {
@@ -23,6 +24,7 @@ export function buildProfilePayload(fields: {
     street: string;
     streetNumber: string;
     countryId: number | null;
+    canton: string | null;
 }): UpdateProfilePayload {
     return {
         firstName: emptyToNull(fields.firstName),
@@ -31,7 +33,8 @@ export function buildProfilePayload(fields: {
         birthDate: emptyToNull(fields.birthDate),
         street: emptyToNull(fields.street),
         streetNumber: emptyToNull(fields.streetNumber),
-        countryId: fields.countryId
+        countryId: fields.countryId,
+        canton: fields.countryId === null ? null : fields.canton
     };
 }
 
@@ -43,6 +46,7 @@ export function takeProfileSnapshot(fields: {
     street: string;
     streetNumber: string;
     countryId: number | null;
+    canton: string | null;
 }): ProfileSnapshot {
     return {
         firstName: emptyToNull(fields.firstName),
@@ -51,7 +55,8 @@ export function takeProfileSnapshot(fields: {
         birthDate: emptyToNull(fields.birthDate),
         street: emptyToNull(fields.street),
         streetNumber: emptyToNull(fields.streetNumber),
-        countryId: fields.countryId
+        countryId: fields.countryId,
+        canton: fields.countryId === null ? null : fields.canton
     };
 }
 
@@ -64,7 +69,8 @@ export function isProfileDirty(current: ProfileSnapshot, baseline: ProfileSnapsh
         current.birthDate !== baseline.birthDate ||
         current.street !== baseline.street ||
         current.streetNumber !== baseline.streetNumber ||
-        current.countryId !== baseline.countryId
+        current.countryId !== baseline.countryId ||
+        current.canton !== baseline.canton
     );
 }
 

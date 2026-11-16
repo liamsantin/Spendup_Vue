@@ -242,7 +242,7 @@ export function createAuthSession() {
      * Mode cookie : tente un refresh silencieux (cookie HttpOnly) si pas d’access utilisable.
      * À appeler depuis le guard avant de décider login /app.
      */
-    /** Session locale « Camille », sans jeton persistant et sans appel réseau. */
+    /** Session locale « Sacha », sans jeton persistant et sans appel réseau. */
     function enterDemo() {
         markDemoSession();
         accessToken.value = 'demo';
