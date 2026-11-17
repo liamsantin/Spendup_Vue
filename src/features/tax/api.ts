@@ -81,6 +81,25 @@ export const taxApi = {
         }) as Promise<TaxReturn>;
     },
 
+    /** Crée la déclaration de l'année suivante : identité, fiches sans montant et pièces attendues. */
+    createNextYear(publicId: string, name?: string | null) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/next-year`, {
+            name: name ?? null
+        }) as Promise<TaxReturnCreated>;
+    },
+
+    updateChecklistItem(publicId: string, code: string, body: { complete?: boolean; comment?: string | null }) {
+        return fetchWrapper.put(
+            `/api/tax-returns/${encodeURIComponent(publicId)}/checklist/${encodeURIComponent(code)}`,
+            body
+        ) as Promise<TaxReturn>;
+    },
+
+    /** Complète les pièces attendues d'après les fiches et l'année précédente, sans doublon. */
+    generateChecklist(publicId: string) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/checklist/generate`, {}) as Promise<TaxReturn>;
+    },
+
     attachDocument(publicId: string, filePublicId: string, lineCode: string | null) {
         return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/documents`, {
             filePublicId,

@@ -94,6 +94,15 @@ export interface UpsertTaxEntryPayload {
     secondaryAmount: number | null;
 }
 
+/** Pièce attendue : cochée par la personne, ou reçue d'office quand un fichier est rangé sur sa ligne. */
+export interface TaxChecklistItem {
+    code: string;
+    label: string;
+    category: string | null;
+    required: boolean;
+    received: boolean;
+    comment: string | null;
+}
 export interface TaxReturn {
     publicId: string;
     name: string | null;
@@ -110,6 +119,9 @@ export interface TaxReturn {
     gaps: string[];
     entries: TaxEntry[];
     documents: TaxDocumentLink[];
+    checklist: TaxChecklistItem[];
+    /** Déclaration de l'année précédente d'où celle-ci est reprise, si elle l'est. */
+    previousPublicId: string | null;
 }
 
 export interface TaxDocumentLink {
@@ -129,6 +141,8 @@ export interface TaxReturnListItem {
     couple: boolean;
     filledCount: number;
     lineCount: number;
+    checklistReceived: number;
+    checklistTotal: number;
 }
 
 export interface TaxReturnListResult {

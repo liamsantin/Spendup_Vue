@@ -5161,6 +5161,7 @@
         "actions": {
             "open": "Open",
             "pdf": "Download the PDF",
+            "nextYear": "Create {year}",
             "ready": "Mark ready to copy",
             "resume": "Resume",
             "archive": "Archive",
@@ -5227,6 +5228,21 @@
         "steps": "Return steps",
         "suggestionsTitle": "Suggestions",
         "detectedTitle": "Amounts detected in the PDF",
+        "previousYear": "Last year: {value}",
+        "nextYearModal": {
+            "title": "Create the {year} return?",
+            "message": "Identity and entries (without amounts) are carried over, and the list of expected documents is prepared. No amount is copied: last year's amounts stay visible as a reference.",
+            "confirm": "Create"
+        },
+        "checklist": {
+            "step": "Documents",
+            "title": "Expected documents",
+            "empty": "No expected document yet. They are prepared from your entries and last year.",
+            "progress": "{received} of {total} documents received.",
+            "count": "{received} / {total} documents",
+            "required": "required",
+            "generate": "Complete the list"
+        },
         "acceptVerified": "Accept verified lines ({count})",
         "acceptAlerts": "Accept despite alerts ({count})",
         "acceptAlertsModal": {

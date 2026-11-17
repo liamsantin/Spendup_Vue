@@ -2,8 +2,18 @@
 /** Carte d'une déclaration dans la liste : statut, avancement et menu d'actions. */
 defineOptions({ name: 'TaxReturnCard' });
 
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { ArchiveIcon, DotsIcon, FileTextIcon, PencilIcon, PlayerPlayIcon, ProgressCheckIcon, TrashIcon } from 'vue-tabler-icons';
+import {
+    ArchiveIcon,
+    ArrowRightIcon,
+    DotsIcon,
+    FileTextIcon,
+    PencilIcon,
+    PlayerPlayIcon,
+    ProgressCheckIcon,
+    TrashIcon
+} from 'vue-tabler-icons';
 import type { TaxReturnListItem, TaxStatus } from '@/features/tax/types';
 
 const props = defineProps<{
@@ -15,6 +25,7 @@ const emit = defineEmits<{
     open: [];
     pdf: [];
     status: [status: TaxStatus];
+    next: [];
     remove: [];
 }>();
 
@@ -24,6 +35,9 @@ function fillRatio(filled: number, total: number): string {
     if (total <= 0) return '0%';
     return `${Math.min(100, Math.round((filled / total) * 100))}%`;
 }
+
+/** L'année suivante s'ouvre au plus tard l'année civile qui la précède. */
+const canCreateNext = computed(() => props.item.year + 1 <= new Date().getFullYear() + 1);
 
 function onActivate(event: MouseEvent) {
     if (props.saving) return;
@@ -51,6 +65,10 @@ function onActivate(event: MouseEvent) {
                         <button type="button" class="su-menu-item" :disabled="saving" @click="emit('pdf')">
                             <span class="su-menu-item__icon"><FileTextIcon :size="18" stroke-width="1.6" /></span>
                             <span class="su-menu-item__title">{{ t('taxPage.actions.pdf') }}</span>
+                        </button>
+                        <button v-if="canCreateNext" type="button" class="su-menu-item" :disabled="saving" @click="emit('next')">
+                            <span class="su-menu-item__icon"><ArrowRightIcon :size="18" stroke-width="1.6" /></span>
+                            <span class="su-menu-item__title">{{ t('taxPage.actions.nextYear', { year: item.year + 1 }) }}</span>
                         </button>
                         <button
                             v-if="item.status !== 'preteARecopier'"
@@ -98,6 +116,9 @@ function onActivate(event: MouseEvent) {
             :aria-label="t('taxPage.filled', { filled: item.filledCount, total: item.lineCount }, item.filledCount)"
         >
             <span class="su-gauge__fill su-gauge__fill--blue" :style="{ width: fillRatio(item.filledCount, item.lineCount) }" />
+        </div>
+        <div v-if="item.checklistTotal > 0" class="su-kv">
+            <span>{{ t('taxPage.checklist.count', { received: item.checklistReceived, total: item.checklistTotal }) }}</span>
         </div>
         <div class="su-kv su-kv--strong">
             <span>{{ t('taxPage.filled', { filled: item.filledCount, total: item.lineCount }, item.filledCount) }}</span>

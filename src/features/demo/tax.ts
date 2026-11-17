@@ -1,6 +1,7 @@
 import { AppError } from '@/utils/errors/app-error';
 import { TAX_CANTONS } from '@/features/tax/types';
 import type {
+    TaxChecklistItem,
     TaxCompetence,
     TaxDocumentLink,
     TaxEntry,
@@ -49,7 +50,12 @@ export type DemoTaxReturn = {
     amounts: StoredAmount[];
     entries: TaxEntry[];
     documents: TaxDocumentLink[];
+    checklist: DemoChecklistItem[];
+    previousPublicId: string | null;
 };
+
+/** Pièce attendue telle que la démo la garde : `complete` est ce que la personne a coché. */
+type DemoChecklistItem = Omit<TaxChecklistItem, 'received'> & { complete: boolean };
 
 type TaxResult = { status: number; body: unknown } | null;
 
@@ -189,7 +195,9 @@ export function seedTaxReturns(): DemoTaxReturn[] {
                     secondaryAmount: null
                 }
             ],
-            documents: []
+            documents: [],
+            checklist: [],
+            previousPublicId: null
         }
     ];
 }
@@ -279,8 +287,16 @@ function toResponse(tax: DemoTaxReturn): TaxReturn {
         subtotals: subtotals(tax),
         gaps: CATALOGUE.filter((item) => !filled.has(item.code)).map((item) => item.code),
         entries: tax.entries.map((item) => ({ ...item })),
-        documents: tax.documents.map((item) => ({ ...item }))
+        documents: tax.documents.map((item) => ({ ...item })),
+        checklist: tax.checklist.map(toChecklistItem(tax)),
+        previousPublicId:
+            tax.previousPublicId && store().some((item) => item.publicId === tax.previousPublicId) ? tax.previousPublicId : null
     };
+}
+
+function toChecklistItem(tax: DemoTaxReturn) {
+    const filedLines = new Set(tax.documents.map((doc) => doc.lineCode).filter((code): code is string => Boolean(code)));
+    return ({ complete, ...item }: DemoChecklistItem): TaxChecklistItem => ({ ...item, received: complete || filedLines.has(item.code) });
 }
 
 function toListItem(tax: DemoTaxReturn): TaxReturnListItem {
@@ -292,7 +308,9 @@ function toListItem(tax: DemoTaxReturn): TaxReturnListItem {
         status: tax.status,
         couple: tax.couple,
         filledCount: filledCodes(tax).size,
-        lineCount: CATALOGUE.length
+        lineCount: CATALOGUE.length,
+        checklistReceived: tax.checklist.map(toChecklistItem(tax)).filter((item) => item.received).length,
+        checklistTotal: tax.checklist.length
     };
 }
 
@@ -505,10 +523,96 @@ function createReturn(body: { year: number; canton: string }) {
         person2: null,
         amounts: [],
         entries: [],
-        documents: []
+        documents: [],
+        checklist: [],
+        previousPublicId: null
     };
     store().push(tax);
     return { declaration: toResponse(tax), suggestions: buildSuggestions(tax) };
+}
+
+/** Pièces à attendre, comme l'API : une par fiche, et une par ligne remplie qui en demande une. */
+const CHECKLIST_BY_LINE: Record<string, { category: string; label: string; required: boolean }> = {
+    'deduction.pillar3a': { category: 'troisiemePilier', label: 'Attestation du 3e pilier a', required: true },
+    'deduction.pillar2BuyIn': { category: 'other', label: 'Attestation de rachat dans le 2e pilier', required: true },
+    'deduction.insurance': { category: 'assuranceMaladie', label: "Attestation des primes d'assurance", required: false },
+    'deduction.healthGross': { category: 'fraisMedicaux', label: "Justificatifs des frais de maladie et d'accident", required: false },
+    'deduction.childcare': { category: 'other', label: 'Justificatifs des frais de garde', required: false },
+    'deduction.education': { category: 'other', label: 'Justificatifs des frais de formation', required: false },
+    'deduction.donations': { category: 'other', label: 'Attestations de dons', required: false },
+    'income.retirementPension': { category: 'other', label: 'Attestation de rente AVS', required: false },
+    'income.disabilityPension': { category: 'other', label: 'Attestation de rente AI', required: false },
+    'income.unemployment': { category: 'other', label: 'Décompte des indemnités de chômage', required: false },
+    'asset.crypto': { category: 'crypto', label: 'Relevé des cryptomonnaies au 31.12', required: false }
+};
+
+function checklistSeeds(tax: DemoTaxReturn, previous: DemoTaxReturn | null): DemoChecklistItem[] {
+    const seeds: DemoChecklistItem[] = [];
+    const add = (code: string, label: string, category: string, required: boolean) => {
+        if (!seeds.some((item) => item.code === code)) seeds.push({ code, label, category, required, complete: false, comment: null });
+    };
+    for (const entry of tax.entries) {
+        if (entry.kind === 'employment')
+            add(`employment:${entry.publicId}`, `Certificat de salaire — ${entry.title}`, 'certificatSalaire', true);
+        if (entry.kind === 'institution') add(`institution:${entry.publicId}`, `Relevé fiscal — ${entry.title}`, 'banque', true);
+        if (entry.kind === 'property')
+            add(`property:${entry.publicId}`, `Justificatifs de l'immeuble — ${entry.title}`, 'immobilier', false);
+        if (entry.kind === 'debt') add(`debt:${entry.publicId}`, `Attestation de dette et d'intérêts — ${entry.title}`, 'dette', false);
+    }
+    if (previous) {
+        const filled = filledCodes(previous);
+        if (filled.has('deduction.health')) filled.add('deduction.healthGross');
+        for (const definition of CATALOGUE) {
+            const rule = CHECKLIST_BY_LINE[definition.code];
+            if (rule && filled.has(definition.code)) add(definition.code, rule.label, rule.category, rule.required);
+        }
+        for (const doc of previous.documents) {
+            const definition = doc.lineCode ? findLine(doc.lineCode) : undefined;
+            if (definition) add(definition.code, `Justificatif — ${definition.label}`, 'other', false);
+        }
+    }
+    return seeds;
+}
+
+function createNextYear(source: DemoTaxReturn) {
+    const year = source.year + 1;
+    const max = new Date().getFullYear() + 1;
+    if (year > max) invalid("La déclaration de l'année suivante n'est pas encore ouverte.");
+    if (store().some((item) => item.year === year)) invalid('Une déclaration existe déjà pour cette année.');
+    const tax: DemoTaxReturn = {
+        publicId: createPublicId(),
+        year,
+        canton: source.canton,
+        status: 'enCours',
+        couple: source.couple,
+        taxpayerNumber: source.taxpayerNumber,
+        notes: null,
+        person1: { ...source.person1 },
+        person2: source.person2 ? { ...source.person2 } : null,
+        amounts: [],
+        entries: source.entries.map((entry) => ({ ...entry, publicId: createPublicId(), amount: null, secondaryAmount: null })),
+        documents: [],
+        checklist: [],
+        previousPublicId: source.publicId
+    };
+    tax.checklist = checklistSeeds(tax, source);
+    store().push(tax);
+    return { declaration: toResponse(tax), suggestions: [] };
+}
+
+function generateChecklist(tax: DemoTaxReturn) {
+    const previous = tax.previousPublicId ? (store().find((item) => item.publicId === tax.previousPublicId) ?? null) : null;
+    for (const seed of checklistSeeds(tax, previous)) {
+        if (!tax.checklist.some((item) => item.code === seed.code)) tax.checklist.push(seed);
+    }
+    return toResponse(tax);
+}
+
+function updateChecklistItem(tax: DemoTaxReturn, code: string, body: { complete?: boolean; comment?: string | null }) {
+    const item = tax.checklist.find((candidate) => candidate.code === code) ?? notFound('Pièce attendue introuvable.');
+    if (typeof body.complete === 'boolean') item.complete = body.complete;
+    if (body.comment !== undefined && body.comment !== null) item.comment = body.comment.trim() || null;
+    return toResponse(tax);
 }
 
 function updateReturn(tax: DemoTaxReturn, body: UpdateTaxReturnPayload) {
@@ -780,6 +884,19 @@ export function routeTax(method: string, path: string, body: unknown): TaxResult
             acceptSuggestions(
                 findReturn(acceptMany.id),
                 body as { items: { code: string; person: string; competence: string; amount: number; origin?: string }[] }
+            )
+        );
+    const nextYear = match(path, '/api/tax-returns/:id/next-year');
+    if (nextYear && method === 'POST') return ok(createNextYear(findReturn(nextYear.id)));
+    const generate = match(path, '/api/tax-returns/:id/checklist/generate');
+    if (generate && method === 'POST') return ok(generateChecklist(findReturn(generate.id)));
+    const checklistItem = match(path, '/api/tax-returns/:id/checklist/:code');
+    if (checklistItem && method === 'PUT')
+        return ok(
+            updateChecklistItem(
+                findReturn(checklistItem.id),
+                decodeURIComponent(checklistItem.code),
+                body as { complete?: boolean; comment?: string | null }
             )
         );
     const accept = match(path, '/api/tax-returns/:id/suggestions/accept');

@@ -81,6 +81,30 @@ describe('démo : impôts', () => {
         expect(lines.find((l) => l.code === 'income.securities')?.values[0]?.amount).toBe(20);
     });
 
+    it('crée l’année suivante sans montant, avec les fiches et les pièces attendues', () => {
+        const created = handleDemoRequest('POST', '/api/tax-returns/TAX2025/next-year', {}) as { declaration: TaxReturn };
+        const next = created.declaration;
+        expect(next.year).toBe(2026);
+        expect(next.previousPublicId).toBe('TAX2025');
+        expect(next.sections.flatMap((s) => s.lines).every((l) => l.values.length === 0)).toBe(true);
+        expect(next.entries.map((e) => [e.kind, e.amount])).toEqual([['employment', null]]);
+        const codes = next.checklist.map((item) => item.code);
+        expect(codes.some((code) => code.startsWith('employment:'))).toBe(true);
+        expect(codes).toContain('deduction.pillar3a');
+        expect(next.checklist.every((item) => !item.received)).toBe(true);
+
+        const ticked = handleDemoRequest('PUT', `/api/tax-returns/${next.publicId}/checklist/deduction.pillar3a`, {
+            complete: true
+        }) as TaxReturn;
+        expect(ticked.checklist.find((item) => item.code === 'deduction.pillar3a')?.received).toBe(true);
+        const list = handleDemoRequest('GET', '/api/tax-returns') as {
+            items: { publicId: string; checklistReceived: number; checklistTotal: number }[];
+        };
+        const row = list.items.find((item) => item.publicId === next.publicId);
+        expect(row?.checklistReceived).toBe(1);
+        expect(row?.checklistTotal).toBe(next.checklist.length);
+    });
+
     it('reporte le total d’une fiche immeuble sur deux lignes', () => {
         handleDemoRequest('POST', '/api/tax-returns/TAX2025/entries', {
             kind: 'property',

@@ -2,12 +2,16 @@
 /** Une ligne du formulaire : un montant, ou deux (canton / Confédération) pour une ligne qui se dédouble. */
 defineOptions({ name: 'TaxLineRow' });
 
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useTaxMoney } from '@/features/tax/composables/useTaxMoney';
 import TaxHelpTip from '@/features/tax/components/TaxHelpTip.vue';
 import type { TaxCompetence, TaxLine } from '@/features/tax/types';
 
-defineProps<{
+const props = defineProps<{
     line: TaxLine;
+    /** Montants de l'an dernier pour la personne affichée : une référence, jamais une valeur. */
+    previous?: Partial<Record<TaxCompetence, number>>;
     /** Texte affiché par compétence (brouillon en cours de frappe, sinon montant inscrit). */
     shown: Record<TaxCompetence, string>;
     /** Aucune valeur pour la personne affichée. */
@@ -25,6 +29,18 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const money = useTaxMoney();
+
+const hint = computed(() => {
+    const before = props.previous ?? {};
+    if (props.line.splitsCompetence) {
+        const parts: string[] = [];
+        if (before.cantonal != null) parts.push(`${t('taxPage.cantonal')} ${money(before.cantonal)}`);
+        if (before.federal != null) parts.push(`${t('taxPage.federal')} ${money(before.federal)}`);
+        return parts.length ? t('taxPage.previousYear', { value: parts.join(' · ') }) : '';
+    }
+    return before.both != null ? t('taxPage.previousYear', { value: money(before.both) }) : '';
+});
 </script>
 
 <template>
@@ -56,6 +72,10 @@ const { t } = useI18n();
                     @blur="emit('commit', 'federal')"
                 />
             </div>
+            <template v-if="hint">
+                <span />
+                <p class="tax-line__hint">{{ hint }}</p>
+            </template>
             <template v-if="copyFrom">
                 <span />
                 <button type="button" class="su-btn su-btn--ghost tax-copy" :disabled="saving" @click="emit('copy', copyFrom)">
@@ -80,6 +100,10 @@ const { t } = useI18n();
                     @blur="emit('commit', 'both')"
                 />
             </div>
+            <template v-if="hint">
+                <span />
+                <p class="tax-line__hint">{{ hint }}</p>
+            </template>
         </div>
     </div>
 </template>

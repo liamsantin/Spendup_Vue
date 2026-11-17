@@ -5161,6 +5161,7 @@
         "actions": {
             "open": "Ouvrir",
             "pdf": "Télécharger le PDF",
+            "nextYear": "Créer {year}",
             "ready": "Marquer prête à recopier",
             "resume": "Remettre en cours",
             "archive": "Archiver",
@@ -5227,6 +5228,21 @@
         "steps": "Étapes de la déclaration",
         "suggestionsTitle": "Propositions",
         "detectedTitle": "Montants détectés dans le PDF",
+        "previousYear": "An dernier : {value}",
+        "nextYearModal": {
+            "title": "Créer la déclaration {year} ?",
+            "message": "L'identité et les fiches (sans montants) sont reprises, et la liste des pièces attendues est préparée. Aucun montant n'est copié : ceux de l'an dernier restent affichés en référence.",
+            "confirm": "Créer"
+        },
+        "checklist": {
+            "step": "Pièces",
+            "title": "Pièces attendues",
+            "empty": "Aucune pièce attendue pour l'instant. Elles se préparent d'après vos fiches et l'an dernier.",
+            "progress": "{received} pièces reçues sur {total}.",
+            "count": "{received} / {total} pièces",
+            "required": "obligatoire",
+            "generate": "Compléter la liste"
+        },
         "acceptVerified": "Accepter les lignes vérifiées ({count})",
         "acceptAlerts": "Accepter malgré les alertes ({count})",
         "acceptAlertsModal": {

@@ -6,13 +6,14 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeftIcon, CheckIcon, FileTextIcon, PlusIcon, UploadIcon } from 'vue-tabler-icons';
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, FileTextIcon, PlusIcon, UploadIcon } from 'vue-tabler-icons';
 import { withReturnTo } from '@/utils/helpers/navigation-helpers';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import { useAuthStore } from '@/features/auth';
 import { taxApi, type TaxAcceptBody } from '@/features/tax/api';
 import { useCantonItems } from '@/features/tax/cantons';
+import TaxChecklistSection from '@/features/tax/components/TaxChecklistSection.vue';
 import TaxCreateModal, { type TaxCreatePayload } from '@/features/tax/components/TaxCreateModal.vue';
 import TaxDocumentsSection from '@/features/tax/components/TaxDocumentsSection.vue';
 import TaxFichesSection, { type TaxFicheDraft } from '@/features/tax/components/TaxFichesSection.vue';
@@ -29,7 +30,7 @@ import { cleanIdentity, emptyHeader, emptyIdentity } from '@/features/tax/identi
 import { importTaxPdf } from '@/features/tax/import-return';
 import { readImportedFlag, writeImportedFlag } from '@/features/tax/imported-flag';
 import { clearPendingRead, dismissReadReport, forgetPendingRead, isImportedReturn, takePendingRead } from '@/features/tax/pending-read';
-import { compareWithPrevious, markAllToCheck, scopeMismatch, type ReadScope } from '@/features/tax/read-checks';
+import { compareWithPrevious, markAllToCheck, previousAmountFor, scopeMismatch, type ReadScope } from '@/features/tax/read-checks';
 import type { ReadLine, TotalCheck } from '@/features/tax/reader/types';
 import { buildTaxGroups, type TaxGroup } from '@/features/tax/steps';
 import { TAX_BASE, taxDetailPath, taxPublicIdFromPath } from '@/features/tax/paths';
@@ -118,6 +119,7 @@ const visibleSubtotals = computed(() => {
 });
 
 const SITUATION = 'situation';
+const PIECES = 'pieces';
 const step = ref(SITUATION);
 let headerSync = false;
 
@@ -139,7 +141,8 @@ function stepLabel(group: TaxGroup): string {
 
 const steps = computed(() => [
     { id: SITUATION, number: 1, label: t('taxPage.identity') },
-    ...groups.value.map((group, index) => ({ id: group.id, number: index + 2, label: stepLabel(group) }))
+    ...groups.value.map((group, index) => ({ id: group.id, number: index + 2, label: stepLabel(group) })),
+    { id: PIECES, number: groups.value.length + 2, label: t('taxPage.checklist.step') }
 ]);
 
 const currentGroup = computed(() => groups.value.find((group) => group.id === step.value));
@@ -219,7 +222,7 @@ async function refresh() {
         readReport.value = pending.report;
         // Un formulaire d'un autre canton ou d'une autre année : plus rien n'est « vérifié ».
         if (scopeMismatch(pending.report?.scope, detail.canton, detail.year)) readItems.value = markAllToCheck(readItems.value);
-        if (readItems.value.length) void compareWithPreviousYear(detail);
+        void loadPreviousReturn(detail);
         if (pending) {
             const known = new Set(suggestions.value.map((item) => `${item.code}|${item.person}|${item.competence}`));
             suggestions.value = [
@@ -242,20 +245,41 @@ async function refresh() {
     }
 }
 
-/** Compare les montants lus avec la déclaration de l'an dernier (même canton) : un écart anormal est à vérifier. */
-async function compareWithPreviousYear(current: TaxReturn) {
+/** Déclaration de l'an dernier : celle dont on est issu, sinon la même du même canton. Sert de référence et de contrôle. */
+const previousReturn = ref<TaxReturn | null>(null);
+
+async function loadPreviousReturn(current: TaxReturn) {
+    previousReturn.value = null;
     try {
-        const { items } = await taxApi.list();
-        const previous = items.find(
-            (item) => item.year === current.year - 1 && item.canton === current.canton && item.publicId !== current.publicId
-        );
-        if (!previous) return;
-        const detail = await taxApi.get(previous.publicId);
+        let previousId = current.previousPublicId;
+        if (!previousId) {
+            const { items } = await taxApi.list();
+            previousId =
+                items.find((item) => item.year === current.year - 1 && item.canton === current.canton && item.publicId !== current.publicId)
+                    ?.publicId ?? null;
+        }
+        if (!previousId) return;
+        const detail = await taxApi.get(previousId);
         if (declaration.value?.publicId !== current.publicId) return;
-        readItems.value = compareWithPrevious(readItems.value, detail);
+        previousReturn.value = detail;
+        // un écart anormal avec l'an dernier repasse la ligne lue « à vérifier »
+        if (readItems.value.length) readItems.value = compareWithPrevious(readItems.value, detail);
     } catch {
-        /* la comparaison est un plus : sans elle, la lecture reste utilisable */
+        /* la référence est un plus : sans elle, la page reste utilisable */
     }
+}
+
+/** Montants de l'an dernier sur cette ligne, pour la personne affichée. */
+function previousFor(line: TaxLine): Partial<Record<TaxCompetence, number>> {
+    const before = previousReturn.value;
+    if (!before) return {};
+    const out: Partial<Record<TaxCompetence, number>> = {};
+    const competences: TaxCompetence[] = line.splitsCompetence ? ['cantonal', 'federal'] : ['both'];
+    for (const competence of competences) {
+        const amount = previousAmountFor(before, { code: line.code, person: person.value, competence });
+        if (amount != null) out[competence] = amount;
+    }
+    return out;
 }
 
 function apply(detail: TaxReturn) {
@@ -763,6 +787,69 @@ function openReturn(id: string) {
     void router.push(taxDetailPath(id));
 }
 
+/** Déclaration dont on propose de créer l'année suivante (fenêtre de confirmation). */
+const nextYearTarget = ref<{ publicId: string; year: number } | null>(null);
+const nextYearOpen = computed({
+    get: () => nextYearTarget.value !== null,
+    set: (open: boolean) => {
+        if (!open) nextYearTarget.value = null;
+    }
+});
+
+/** L'année suivante s'ouvre au plus tard l'année civile qui la précède. */
+const canCreateNextYear = (year: number) => year + 1 <= new Date().getFullYear() + 1;
+
+function askNextYear(target: { publicId: string; year: number }) {
+    if (saving.value) return;
+    nextYearTarget.value = { publicId: target.publicId, year: target.year };
+}
+
+async function confirmNextYear() {
+    const target = nextYearTarget.value;
+    if (!target || saving.value) return;
+    saving.value = true;
+    error.value = '';
+    try {
+        const created = await taxApi.createNextYear(target.publicId);
+        nextYearTarget.value = null;
+        await router.push(taxDetailPath(created.declaration.publicId));
+    } catch (e) {
+        nextYearTarget.value = null;
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
+async function toggleChecklist(code: string, complete: boolean) {
+    const current = declaration.value;
+    if (!current) return;
+    saving.value = true;
+    error.value = '';
+    try {
+        apply(await taxApi.updateChecklistItem(current.publicId, code, { complete }));
+        forgetStep(PIECES);
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
+async function generateChecklist() {
+    const current = declaration.value;
+    if (!current) return;
+    saving.value = true;
+    error.value = '';
+    try {
+        apply(await taxApi.generateChecklist(current.publicId));
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
 async function downloadPdf(id: string, year: number, canton: string) {
     error.value = '';
     try {
@@ -829,6 +916,7 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
                 :saving="saving"
                 @open="openReturn(item.publicId)"
                 @pdf="downloadPdf(item.publicId, item.year, item.canton)"
+                @next="askNextYear(item)"
                 @status="setReturnStatus(item, $event)"
                 @remove="askRemove(item, false)"
             />
@@ -871,6 +959,16 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
                 {{ t('taxPage.actions.pdf') }}
             </button>
             <button
+                v-if="canCreateNextYear(declaration.year)"
+                type="button"
+                class="su-btn"
+                :disabled="saving"
+                @click="askNextYear({ publicId: declaration.publicId, year: declaration.year })"
+            >
+                <ArrowRightIcon :size="18" stroke-width="1.6" />
+                {{ t('taxPage.actions.nextYear', { year: declaration.year + 1 }) }}
+            </button>
+            <button
                 type="button"
                 class="su-btn"
                 :disabled="saving"
@@ -904,7 +1002,7 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
             @submit="validateCurrentStep"
         />
 
-        <nav v-if="header.couple && step !== SITUATION" class="su-tabs tax-person" :aria-label="t('taxPage.person')">
+        <nav v-if="header.couple && step !== SITUATION && step !== PIECES" class="su-tabs tax-person" :aria-label="t('taxPage.person')">
             <button
                 type="button"
                 class="su-tab"
@@ -950,7 +1048,16 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
             @see="openSuggestion"
         />
 
+        <TaxChecklistSection
+            v-if="step === PIECES"
+            :items="declaration.checklist"
+            :saving="saving"
+            @toggle="toggleChecklist"
+            @generate="generateChecklist"
+        />
+
         <TaxDocumentsSection
+            v-if="step !== PIECES"
             v-model:attach-line="attachLine"
             :documents="stepDocuments"
             :lines="stepLines"
@@ -986,6 +1093,7 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
                 :empty="!line.values.some((value) => value.person === person)"
                 :help="helpFor(line)"
                 :copy-from="copySource(line)"
+                :previous="previousFor(line)"
                 :saving="saving"
                 @draft="(competence, value) => setDraft(line, competence, value)"
                 @commit="(competence) => commitAmount(line, competence, shownAmount(line, competence))"
@@ -1003,6 +1111,15 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
             </p>
         </div>
     </AppPageShell>
+
+    <AppConfirmationModal
+        v-model="nextYearOpen"
+        :title="t('taxPage.nextYearModal.title', { year: (nextYearTarget?.year ?? 0) + 1 })"
+        :message="t('taxPage.nextYearModal.message')"
+        :confirm-label="t('taxPage.nextYearModal.confirm')"
+        :loading="saving"
+        @confirm="confirmNextYear"
+    />
 
     <AppConfirmationModal
         v-model="deleteOpen"

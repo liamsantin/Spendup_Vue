@@ -267,6 +267,30 @@
     font-weight: 700;
 }
 
+.tax-piece {
+    display: flex;
+    flex: 1 1 280px;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+
+    input {
+        accent-color: var(--blue);
+    }
+
+    .is-received {
+        color: var(--gray);
+        text-decoration: line-through;
+    }
+}
+
+.tax-line__hint {
+    margin: 0;
+    color: var(--gray);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
 .tax-check {
     margin-left: 6px;
     font-weight: 700;
