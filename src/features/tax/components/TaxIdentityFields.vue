@@ -4,6 +4,7 @@ defineOptions({ name: 'TaxIdentityFields' });
 
 import { useI18n } from 'vue-i18n';
 import type { TaxIdentity } from '@/features/tax/types';
+import { isCipher } from '@/features/vault/crypto';
 
 type IdentityField = keyof TaxIdentity;
 
@@ -33,7 +34,17 @@ const META: Record<IdentityField, { suffix: string; label: string; maxlength: nu
     <div v-for="field in fields" :key="field" class="tax-form__row">
         <label class="tax-form__label" :for="`${idPrefix}-${META[field].suffix}`">{{ t(META[field].label) }}</label>
         <div class="tax-form__field">
+            <!-- chiffré par le Coffre mais illisible (Coffre fermé) : affiché verrouillé, renvoyé tel quel -->
             <v-text-field
+                v-if="isCipher(identity[field])"
+                :id="`${idPrefix}-${META[field].suffix}`"
+                :model-value="`🔒 ${t('vault.unreadable')}`"
+                variant="outlined"
+                hide-details="auto"
+                disabled
+            />
+            <v-text-field
+                v-else
                 :id="`${idPrefix}-${META[field].suffix}`"
                 v-model="identity[field]"
                 color="primary"

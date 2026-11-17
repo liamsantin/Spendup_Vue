@@ -893,7 +893,9 @@ async function confirmNextYear() {
     saving.value = true;
     error.value = '';
     try {
-        const created = await taxApi.createNextYear(target.publicId);
+        // la déclaration d'origine, déchiffrée : ses champs du Coffre sont rechiffrés pour le nouveau dossier
+        const source = declaration.value?.publicId === target.publicId ? declaration.value : await taxApi.get(target.publicId);
+        const created = await taxApi.createNextYear(target.publicId, null, source);
         nextYearTarget.value = null;
         await router.push(taxDetailPath(created.declaration.publicId));
     } catch (e) {

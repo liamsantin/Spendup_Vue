@@ -7,6 +7,7 @@ import { useI18n } from 'vue-i18n';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import TaxIdentityFields from '@/features/tax/components/TaxIdentityFields.vue';
+import { isCipher } from '@/features/vault/crypto';
 import type { TaxHeaderState } from '@/features/tax/identity';
 import { TAX_CIVIL_STATUSES } from '@/features/tax/types';
 
@@ -101,7 +102,17 @@ const taxationItems = computed(() =>
         <div class="tax-form__row">
             <label class="tax-form__label" for="tax-taxpayer">{{ t('taxPage.taxpayerNumber') }}</label>
             <div class="tax-form__field">
+                <!-- chiffré par le Coffre mais illisible (Coffre fermé) : affiché verrouillé, renvoyé tel quel -->
                 <v-text-field
+                    v-if="isCipher(header.taxpayerNumber)"
+                    id="tax-taxpayer"
+                    :model-value="`🔒 ${t('vault.unreadable')}`"
+                    variant="outlined"
+                    hide-details="auto"
+                    disabled
+                />
+                <v-text-field
+                    v-else
                     id="tax-taxpayer"
                     v-model="header.taxpayerNumber"
                     color="primary"
@@ -114,7 +125,16 @@ const taxationItems = computed(() =>
         <div class="tax-form__row">
             <label class="tax-form__label" for="tax-notes">{{ t('taxPage.notes') }}</label>
             <div class="tax-form__field tax-form__field--wide">
+                <v-text-field
+                    v-if="isCipher(header.notes)"
+                    id="tax-notes"
+                    :model-value="`🔒 ${t('vault.unreadable')}`"
+                    variant="outlined"
+                    hide-details="auto"
+                    disabled
+                />
                 <v-textarea
+                    v-else
                     id="tax-notes"
                     v-model="header.notes"
                     color="primary"

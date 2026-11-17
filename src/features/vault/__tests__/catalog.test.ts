@@ -13,7 +13,7 @@ import {
 import { fieldAad } from '@/features/vault/crypto';
 
 describe('catalogue du Coffre', () => {
-    it('reprend les onze tables de VaultCatalog.cs avec leurs colonnes et périmètres', () => {
+    it('reprend les douze tables de VaultCatalog.cs avec leurs colonnes et périmètres', () => {
         expect(VAULT_TABLES).toEqual([
             'account',
             'asset',
@@ -25,7 +25,8 @@ describe('catalogue du Coffre', () => {
             'tier_person',
             'tier_company',
             'file',
-            'attachment'
+            'attachment',
+            'tax_return'
         ]);
         const columns = (table: keyof typeof VAULT_CATALOG) => VAULT_CATALOG[table].map((f) => `${f.column}:${f.scope}`);
         expect(columns('account')).toEqual(['iban:core', 'account_number:core']);
@@ -44,6 +45,16 @@ describe('catalogue du Coffre', () => {
         expect(columns('tier_company')).toEqual(['vat_number:extended', 'company_registration_number:extended']);
         expect(columns('file')).toEqual(['name_original:extended', 'description:extended']);
         expect(columns('attachment')).toEqual(['name_fichier:extended']);
+        expect(columns('tax_return')).toEqual([
+            'vn:core',
+            'partner_vn:core',
+            'taxpayer_number:core',
+            'official_name:extended',
+            'first_name:extended',
+            'partner_official_name:extended',
+            'partner_first_name:extended',
+            'notes:extended'
+        ]);
         expect(vaultField('account', 'iban')?.fingerprint).toBe(true);
         expect(vaultField('tier', 'notes')?.long).toBe(true);
     });

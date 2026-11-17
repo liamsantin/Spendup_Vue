@@ -18,7 +18,8 @@ export type VaultTableName =
     | 'tier_person'
     | 'tier_company'
     | 'file'
-    | 'attachment';
+    | 'attachment'
+    | 'tax_return';
 
 export type VaultFieldSpec = {
     column: string;
@@ -44,7 +45,17 @@ export const VAULT_CATALOG: Readonly<Record<VaultTableName, readonly VaultFieldS
     tier_person: [extended('first_name'), extended('name')],
     tier_company: [extended('vat_number'), extended('company_registration_number')],
     file: [extended('name_original'), extended('description', { long: true })],
-    attachment: [extended('name_fichier')]
+    attachment: [extended('name_fichier')],
+    tax_return: [
+        core('vn'),
+        core('partner_vn'),
+        core('taxpayer_number'),
+        extended('official_name'),
+        extended('first_name'),
+        extended('partner_official_name'),
+        extended('partner_first_name'),
+        extended('notes', { long: true })
+    ]
 };
 
 export const VAULT_TABLES = Object.keys(VAULT_CATALOG) as VaultTableName[];
