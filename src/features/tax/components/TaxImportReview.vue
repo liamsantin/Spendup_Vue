@@ -5,7 +5,7 @@
  */
 defineOptions({ name: 'TaxImportReview' });
 
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import type { ReadLine, TotalCheck } from '@/features/tax/reader/types';
 import type { TaxSuggestion } from '@/features/tax/types';
@@ -15,42 +15,17 @@ const props = defineProps<{
     items: TaxSuggestion[];
     totals: TotalCheck[];
     unmapped: ReadLine[];
-    saving: boolean;
 }>();
 
 const emit = defineEmits<{
-    accept: [items: TaxSuggestion[]];
     dismiss: [];
 }>();
 
 const { t, locale } = useI18n();
 
-const itemKey = (item: TaxSuggestion) => `${item.code}|${item.person}|${item.competence}`;
-const selected = ref<Set<string>>(new Set());
-watch(
-    () => props.items,
-    (items) => {
-        // tout est coché par défaut ; ce qui disparaît (accepté) quitte la sélection
-        const keys = new Set(items.map(itemKey));
-        const next = new Set([...selected.value].filter((key) => keys.has(key)));
-        for (const key of keys) if (!selected.value.has(key) && !next.has(key)) next.add(key);
-        selected.value = next;
-    },
-    { immediate: true }
-);
-
-const chosen = computed(() => props.items.filter((item) => selected.value.has(itemKey(item))));
 const checked = computed(() => props.totals.filter((total) => total.status !== 'missing'));
 const okCount = computed(() => checked.value.filter((total) => total.status === 'ok').length);
 const mismatches = computed(() => props.totals.filter((total) => total.status === 'mismatch'));
-
-function toggle(item: TaxSuggestion) {
-    const next = new Set(selected.value);
-    const key = itemKey(item);
-    if (next.has(key)) next.delete(key);
-    else next.add(key);
-    selected.value = next;
-}
 
 function money(value: number) {
     return new Intl.NumberFormat(locale.value, { style: 'currency', currency: 'CHF' }).format(value);
@@ -71,26 +46,9 @@ function money(value: number) {
             </template>
         </p>
 
-        <p v-if="!items.length" class="tax-review__muted">{{ t('taxPage.review.none') }}</p>
-        <ul v-else class="tax-review__list">
-            <li v-for="item in items" :key="itemKey(item)" class="tax-review__row">
-                <label class="tax-review__check">
-                    <input type="checkbox" :checked="selected.has(itemKey(item))" :disabled="saving" @change="toggle(item)" />
-                    <span class="tax-review__label">
-                        {{ item.label }}
-                        <small v-if="item.person === '2'">{{ t('taxPage.review.spouse') }}</small>
-                    </span>
-                </label>
-                <span class="tax-review__origin">{{ item.originLabel }}</span>
-                <strong class="tax-review__amount">{{ money(item.amount) }}</strong>
-            </li>
-        </ul>
-
-        <div v-if="items.length" class="tax-review__actions">
-            <button type="button" class="su-btn su-btn--ink" :disabled="saving || !chosen.length" @click="emit('accept', chosen)">
-                {{ t('taxPage.review.acceptSelected', { count: chosen.length }) }}
-            </button>
-        </div>
+        <p class="tax-review__muted">
+            {{ items.length ? t('taxPage.review.detected', { count: items.length }, items.length) : t('taxPage.review.none') }}
+        </p>
 
         <details v-if="unmapped.length" class="tax-review__unmapped">
             <summary>{{ t('taxPage.review.unmapped', { count: unmapped.length }) }}</summary>

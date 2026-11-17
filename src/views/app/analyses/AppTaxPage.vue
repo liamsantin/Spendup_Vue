@@ -127,6 +127,7 @@ const creating = ref(false);
 const person = ref<TaxPerson>('1');
 const drafts = ref<Record<string, string>>({});
 const suggestions = ref<TaxSuggestion[]>([]);
+const suggestionKey = (item: TaxSuggestion) => `${item.code}|${item.person}|${item.competence}`;
 /** Lecture locale d'un PDF importé, à vérifier (persistée sur l'appareil). */
 const readItems = ref<TaxSuggestion[]>([]);
 const readReport = ref<{ profileLabel: string; totals: TotalCheck[]; unmapped: ReadLine[] } | null>(null);
@@ -329,7 +330,7 @@ async function refresh() {
         apply(detail);
         await loadSuggestions(publicId.value);
         const pending = takePendingRead(publicId.value);
-        readItems.value = pending.items;
+        readItems.value = [...new Map(pending.items.map((item) => [suggestionKey(item), item])).values()];
         readReport.value = pending.report;
         if (pending) {
             const known = new Set(suggestions.value.map((item) => `${item.code}|${item.person}|${item.competence}`));
@@ -668,9 +669,22 @@ async function loadSuggestions(id: string) {
     }
 }
 
+/** Montants lus dans le PDF importé et pas encore acceptés, rangés par étape (onglet). */
+const readByStep = computed(() => {
+    const byStep = new Map<string, TaxSuggestion[]>();
+    for (const item of readItems.value) {
+        const id = groupOf(item.code)?.id;
+        if (id) byStep.set(id, [...(byStep.get(id) ?? []), item]);
+    }
+    return byStep;
+});
+
+const stepRead = computed(() => readByStep.value.get(step.value) ?? []);
+
 const stepSuggestions = computed(() => {
     const codes = new Set(currentGroup.value?.lines.map((line) => line.code) ?? []);
-    return suggestions.value.filter((item) => codes.has(item.code));
+    const read = new Set(readItems.value.map(suggestionKey));
+    return suggestions.value.filter((item) => codes.has(item.code) && !read.has(suggestionKey(item)));
 });
 
 const stepDocuments = computed(() => {
@@ -1321,6 +1335,9 @@ function money(value: number | null): string {
                     @click="step = item.id"
                 >
                     <span class="su-tab__label" :data-label="stepTitle(item)">{{ stepTitle(item) }}</span>
+                    <span v-if="readByStep.get(item.id)?.length" class="tax-tab-count" :title="t('taxPage.detectedTitle')">
+                        {{ readByStep.get(item.id)?.length }}
+                    </span>
                     <CheckIcon v-if="isStepDone(item.id)" :size="14" stroke-width="2" aria-hidden="true" />
                 </button>
             </nav>
@@ -1357,8 +1374,6 @@ function money(value: number | null): string {
             :items="readItems"
             :totals="readReport.totals"
             :unmapped="readReport.unmapped"
-            :saving="saving"
-            @accept="acceptMany"
             @dismiss="closeReview"
         />
         <p v-if="saving" class="tax-muted">{{ t('taxPage.saving') }}</p>
@@ -1640,11 +1655,37 @@ function money(value: number | null): string {
             {{ t('taxPage.gaps', { count: declaration.gaps.length }, declaration.gaps.length) }}
         </p>
 
+        <section v-if="stepRead.length" class="tax-form">
+            <h2 class="tax-form__legend">{{ t('taxPage.detectedTitle') }}</h2>
+            <article v-for="item in stepRead" :key="suggestionKey(item)" class="tax-fiche">
+                <div>
+                    <p class="tax-fiche__title">
+                        {{ item.label }}
+                        <small v-if="item.person === '2'">{{ t('taxPage.review.spouse') }}</small>
+                        <small v-if="item.competence !== 'both'">{{ t(`taxPage.${item.competence}`) }}</small>
+                    </p>
+                    <p class="tax-fiche__detail">{{ item.originLabel }}</p>
+                </div>
+                <p class="tax-fiche__amount">{{ money(item.amount) }}</p>
+                <button type="button" class="su-btn su-btn--ink" :disabled="saving" @click="acceptSuggestion(item)">
+                    {{ t('taxPage.accept') }}
+                </button>
+            </article>
+            <div v-if="stepRead.length > 1" class="tax-form__actions">
+                <button type="button" class="su-btn" :disabled="saving" @click="acceptMany([...stepRead])">
+                    {{ t('taxPage.acceptAllStep', { count: stepRead.length }) }}
+                </button>
+            </div>
+        </section>
+
         <section v-if="stepSuggestions.length" class="tax-form">
             <h2 class="tax-form__legend">{{ t('taxPage.suggestionsTitle') }}</h2>
             <article v-for="item in stepSuggestions" :key="`${item.code}-${item.person}-${item.competence}`" class="tax-fiche">
                 <div>
-                    <p class="tax-fiche__title">{{ item.label }}</p>
+                    <p class="tax-fiche__title">
+                        {{ item.label }}
+                        <small v-if="item.competence !== 'both'">{{ t(`taxPage.${item.competence}`) }}</small>
+                    </p>
                     <p class="tax-fiche__detail">{{ item.originLabel }}</p>
                 </div>
                 <p class="tax-fiche__amount">{{ money(item.amount) }}</p>
@@ -1879,6 +1920,21 @@ function money(value: number | null): string {
 </template>
 
 <style scoped>
+.tax-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    margin-left: 6px;
+    border-radius: 9px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--ink);
+    color: var(--paper, #fff);
+}
+
 .tax-error {
     color: var(--danger);
     margin: 0 0 16px;
