@@ -131,6 +131,16 @@ const lockedNotice = computed(() => {
     return t('taxPage.locked', { date: formatTaxDate(current.submissionDate, locale.value) });
 });
 
+/** Profil cantonal pas encore relu, ou repris d'une année antérieure : signalé discrètement. */
+const profileNotice = computed(() => {
+    const profile = declaration.value?.profile;
+    if (!profile) return '';
+    if (profile.otherYear) {
+        return t('taxPage.profile.otherYear', { canton: profile.canton, year: profile.year, current: declaration.value?.year ?? '' });
+    }
+    return profile.status === 'draft' ? t('taxPage.profile.draft', { canton: profile.canton, year: profile.year }) : '';
+});
+
 const header = ref(emptyHeader());
 
 const detailTitle = computed(() => {
@@ -1312,6 +1322,7 @@ async function submitCorrection(payload: TaxCorrectPayload) {
         <p v-if="error" class="tax-error" role="alert">{{ error }}</p>
         <p v-if="notice" class="tax-muted">{{ notice }}</p>
         <p v-if="lockedNotice" class="tax-locked" role="status">{{ lockedNotice }}</p>
+        <p v-if="profileNotice" class="tax-muted tax-profile-note">{{ profileNotice }}</p>
         <TaxImportReview
             v-if="readReport"
             :profile-label="readReport.profileLabel"

@@ -5241,6 +5241,10 @@
             "source": "Taxed at source"
         },
         "taxationSourceHint": "Taxation at source is not supported yet: the return still works as a draft, but check with your canton what you need to declare.",
+        "profile": {
+            "draft": "Canton {canton} {year} settings in preparation: official labels and codes only, no limit is checked yet.",
+            "otherYear": "Canton {canton} settings not yet updated for {current}: the {year} settings are used."
+        },
         "couple": "Couple (person 2)",
         "person": "Person",
         "persons": {

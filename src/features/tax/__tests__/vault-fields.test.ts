@@ -58,7 +58,9 @@ function tax(payload: UpdateTaxReturnPayload, publicId = 'T1'): TaxReturn {
         locked: false,
         corrections: [],
         civilStatus: null,
-        taxationMode: 'ordinaire'
+        taxationMode: 'ordinaire',
+        profile: null,
+        federalProfile: null
     };
 }
 

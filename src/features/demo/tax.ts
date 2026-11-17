@@ -11,6 +11,7 @@ import type {
     TaxIdentity,
     TaxLineValue,
     TaxPerson,
+    TaxProfileInfo,
     TaxReturn,
     TaxReturnListItem,
     TaxStatus,
@@ -304,7 +305,22 @@ function toResponse(tax: DemoTaxReturn): TaxReturn {
         locked: isLocked(tax),
         corrections: (tax.corrections ?? []).map((item) => ({ ...item })),
         civilStatus: tax.civilStatus ?? null,
-        taxationMode: tax.taxationMode ?? 'ordinaire'
+        taxationMode: tax.taxationMode ?? 'ordinaire',
+        profile: demoProfile(tax.canton, tax.year),
+        federalProfile: demoProfile('CH', tax.year)
+    };
+}
+
+/** Profils de la démo, comme l'API : JU et CH 2025 en brouillon, repris (signalés) pour les années suivantes. */
+function demoProfile(canton: string, year: number): TaxProfileInfo | null {
+    if ((canton !== 'JU' && canton !== 'CH') || year < 2025) return null;
+    return {
+        canton,
+        year: 2025,
+        version: 1,
+        status: 'draft',
+        otherYear: year !== 2025,
+        officialSoftware: canton === 'JU' ? 'JuraTax' : null
     };
 }
 

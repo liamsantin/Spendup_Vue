@@ -139,6 +139,14 @@ describe('démo : impôts', () => {
         expect(JSON.parse(await json.text()).publicId).toBe('TAX2025');
     });
 
+    it('indique le profil cantonal retenu : aucun pour VD, JU 2025 repris (signalé) pour 2026', () => {
+        const vd = handleDemoRequest('GET', '/api/tax-returns/TAX2025') as TaxReturn;
+        expect(vd.profile).toBeNull();
+        expect(vd.federalProfile).toMatchObject({ canton: 'CH', year: 2025, status: 'draft', otherYear: false });
+        const ju = (handleDemoRequest('POST', '/api/tax-returns', { year: 2026, canton: 'JU' }) as { declaration: TaxReturn }).declaration;
+        expect(ju.profile).toMatchObject({ canton: 'JU', year: 2025, status: 'draft', otherYear: true, officialSoftware: 'JuraTax' });
+    });
+
     it('enregistre l’état civil et le mode de taxation, et les reprend l’année suivante', () => {
         const base = '/api/tax-returns/TAX2025';
         const header = handleDemoRequest('GET', base) as TaxReturn;

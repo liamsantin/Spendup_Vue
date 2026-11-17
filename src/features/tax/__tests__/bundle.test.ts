@@ -52,7 +52,9 @@ function tax(): TaxReturn {
         locked: false,
         corrections: [],
         civilStatus: null,
-        taxationMode: 'ordinaire'
+        taxationMode: 'ordinaire',
+        profile: null,
+        federalProfile: null
     };
 }
 

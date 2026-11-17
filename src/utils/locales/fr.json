@@ -5241,6 +5241,10 @@
             "source": "Imposé·e à la source"
         },
         "taxationSourceHint": "L'imposition à la source n'est pas encore prise en charge : la déclaration reste utilisable comme brouillon, mais vérifiez auprès de votre canton ce que vous devez déclarer.",
+        "profile": {
+            "draft": "Paramètres du canton {canton} {year} en préparation : libellés et codes officiels seulement, aucun plafond n'est encore vérifié.",
+            "otherYear": "Paramètres du canton {canton} pas encore mis à jour pour {current} : ceux de {year} sont utilisés."
+        },
         "couple": "Couple (personne 2)",
         "person": "Personne",
         "persons": {

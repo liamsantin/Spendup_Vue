@@ -138,6 +138,23 @@ export interface TaxReturn {
     /** `null` tant qu'il n'est pas indiqué. */
     civilStatus: TaxCivilStatus | null;
     taxationMode: TaxationMode;
+    /** Profil cantonal retenu (libellés, codes officiels, plafonds) ; `null` : aucun profil pour ce canton. */
+    profile: TaxProfileInfo | null;
+    /** Profil de l'impôt fédéral direct (`CH`). */
+    federalProfile: TaxProfileInfo | null;
+}
+
+/** Profil cantonal (ou fédéral) retenu pour une déclaration. */
+export interface TaxProfileInfo {
+    canton: string;
+    /** Année du profil : différente de celle de la déclaration quand `otherYear`. */
+    year: number;
+    version: number;
+    /** `draft` : brouillon, aucun plafond utilisé ; `reviewed` : relu par un référent. */
+    status: 'draft' | 'reviewed';
+    /** Profil d'une année antérieure : paramètres pas encore mis à jour. */
+    otherYear: boolean;
+    officialSoftware: string | null;
 }
 
 /** Correction d'un montant d'une déclaration déposée. `null` = case vide. */
