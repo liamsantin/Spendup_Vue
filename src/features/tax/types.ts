@@ -155,6 +155,8 @@ export interface TaxProfileInfo {
     /** Profil d'une année antérieure : paramètres pas encore mis à jour. */
     otherYear: boolean;
     officialSoftware: string | null;
+    /** Profil figé au dépôt : il ne suit plus les mises à jour du profil. */
+    frozen: boolean;
 }
 
 /** Correction d'un montant d'une déclaration déposée. `null` = case vide. */

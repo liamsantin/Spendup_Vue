@@ -144,7 +144,14 @@ describe('démo : impôts', () => {
         expect(vd.profile).toBeNull();
         expect(vd.federalProfile).toMatchObject({ canton: 'CH', year: 2025, status: 'draft', otherYear: false });
         const ju = (handleDemoRequest('POST', '/api/tax-returns', { year: 2026, canton: 'JU' }) as { declaration: TaxReturn }).declaration;
-        expect(ju.profile).toMatchObject({ canton: 'JU', year: 2025, status: 'draft', otherYear: true, officialSoftware: 'JuraTax' });
+        expect(ju.profile).toMatchObject({
+            canton: 'JU',
+            year: 2025,
+            status: 'draft',
+            otherYear: true,
+            officialSoftware: 'JuraTax',
+            frozen: false
+        });
     });
 
     it('enregistre l’état civil et le mode de taxation, et les reprend l’année suivante', () => {
@@ -209,6 +216,7 @@ describe('démo : impôts', () => {
         expect(() => handleDemoRequest('PUT', base, { ...body, status: 'deposee', submissionDate: '2999-01-01' })).toThrow();
 
         const filed = handleDemoRequest('PUT', base, { ...body, status: 'deposee', submissionDate: '2026-03-30' }) as TaxReturn;
+        expect(filed.federalProfile?.frozen).toBe(true);
         expect(filed.locked).toBe(true);
         expect(filed.submissionDate).toBe('2026-03-30');
 

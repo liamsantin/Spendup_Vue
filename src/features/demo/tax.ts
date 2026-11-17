@@ -306,13 +306,13 @@ function toResponse(tax: DemoTaxReturn): TaxReturn {
         corrections: (tax.corrections ?? []).map((item) => ({ ...item })),
         civilStatus: tax.civilStatus ?? null,
         taxationMode: tax.taxationMode ?? 'ordinaire',
-        profile: demoProfile(tax.canton, tax.year),
-        federalProfile: demoProfile('CH', tax.year)
+        profile: demoProfile(tax.canton, tax.year, isLocked(tax)),
+        federalProfile: demoProfile('CH', tax.year, isLocked(tax))
     };
 }
 
-/** Profils de la démo, comme l'API : JU et CH 2025 en brouillon, repris (signalés) pour les années suivantes. */
-function demoProfile(canton: string, year: number): TaxProfileInfo | null {
+/** Profils de la démo, comme l'API : JU et CH 2025 en brouillon, repris (signalés) pour les années suivantes, figés au dépôt. */
+function demoProfile(canton: string, year: number, frozen: boolean): TaxProfileInfo | null {
     if ((canton !== 'JU' && canton !== 'CH') || year < 2025) return null;
     return {
         canton,
@@ -320,7 +320,9 @@ function demoProfile(canton: string, year: number): TaxProfileInfo | null {
         version: 1,
         status: 'draft',
         otherYear: year !== 2025,
-        officialSoftware: canton === 'JU' ? 'JuraTax' : null
+        officialSoftware: canton === 'JU' ? 'JuraTax' : null,
+        // comme l'API : figé au dépôt, libéré par l'annulation du dépôt
+        frozen
     };
 }
 
