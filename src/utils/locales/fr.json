@@ -5165,6 +5165,9 @@
             "ready": "Marquer prête à recopier",
             "resume": "Remettre en cours",
             "archive": "Archiver",
+            "file": "Marquer comme déposée",
+            "correct": "Corriger",
+            "unfile": "Annuler le dépôt",
             "delete": "Supprimer"
         },
         "year": "Année",
@@ -5215,7 +5218,8 @@
         "statuses": {
             "enCours": "En cours",
             "preteARecopier": "Prête à recopier",
-            "archivee": "Archivée"
+            "archivee": "Archivée",
+            "deposee": "Déposée"
         },
         "couple": "Couple (personne 2)",
         "person": "Personne",
@@ -5229,6 +5233,29 @@
         "suggestionsTitle": "Propositions",
         "detectedTitle": "Montants détectés dans le PDF",
         "previousYear": "An dernier : {value}",
+        "locked": "Déposée le {date} : les montants sont verrouillés. Pour en changer un, utilisez « Corriger » sur la ligne ; chaque correction est journalisée avec son motif.",
+        "corrected": "Corrigé le {date} : {change} ({reason})",
+        "fileModal": {
+            "title": "Marquer la déclaration {year} comme déposée ?",
+            "message": "Indiquez quand vous l'avez déposée. Les montants seront ensuite verrouillés : une modification passera par « Corriger », avec un motif. Les pièces restent modifiables.",
+            "date": "Date de dépôt",
+            "confirm": "Marquer comme déposée"
+        },
+        "unfileModal": {
+            "title": "Annuler le dépôt de la déclaration {year} ?",
+            "message": "À utiliser si elle a été marquée déposée par erreur. Elle redevient « Prête à recopier » et ses montants sont de nouveau modifiables. L'annulation est journalisée ; les corrections déjà faites restent dans l'historique."
+        },
+        "correctModal": {
+            "title": "Corriger un montant",
+            "message": "La déclaration est déposée : la correction est journalisée avec l’ancien montant, le nouveau et le motif.",
+            "competence": "Ressort",
+            "current": "Montant actuel",
+            "empty": "vide",
+            "amount": "Nouveau montant",
+            "reason": "Motif",
+            "reasonPlaceholder": "Ex. certificat de salaire rectifié par l’employeur",
+            "confirm": "Corriger"
+        },
         "nextYearModal": {
             "title": "Créer la déclaration {year} ?",
             "message": "L'identité et les fiches (sans montants) sont reprises, et la liste des pièces attendues est préparée. Aucun montant n'est copié : ceux de l'an dernier restent affichés en référence.",

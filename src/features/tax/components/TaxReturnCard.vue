@@ -7,7 +7,9 @@ import { useI18n } from 'vue-i18n';
 import {
     ArchiveIcon,
     ArrowRightIcon,
+    CircleCheckIcon,
     DotsIcon,
+    ArrowBackUpIcon,
     FileTextIcon,
     PencilIcon,
     PlayerPlayIcon,
@@ -25,6 +27,8 @@ const emit = defineEmits<{
     open: [];
     pdf: [];
     status: [status: TaxStatus];
+    file: [];
+    unfile: [];
     next: [];
     remove: [];
 }>();
@@ -70,8 +74,16 @@ function onActivate(event: MouseEvent) {
                             <span class="su-menu-item__icon"><ArrowRightIcon :size="18" stroke-width="1.6" /></span>
                             <span class="su-menu-item__title">{{ t('taxPage.actions.nextYear', { year: item.year + 1 }) }}</span>
                         </button>
+                        <button v-if="!item.locked" type="button" class="su-menu-item" :disabled="saving" @click="emit('file')">
+                            <span class="su-menu-item__icon"><CircleCheckIcon :size="18" stroke-width="1.6" /></span>
+                            <span class="su-menu-item__title">{{ t('taxPage.actions.file') }}</span>
+                        </button>
+                        <button v-if="item.locked" type="button" class="su-menu-item" :disabled="saving" @click="emit('unfile')">
+                            <span class="su-menu-item__icon"><ArrowBackUpIcon :size="18" stroke-width="1.6" /></span>
+                            <span class="su-menu-item__title">{{ t('taxPage.actions.unfile') }}</span>
+                        </button>
                         <button
-                            v-if="item.status !== 'preteARecopier'"
+                            v-if="!item.locked && item.status !== 'preteARecopier'"
                             type="button"
                             class="su-menu-item"
                             :disabled="saving"
@@ -81,7 +93,7 @@ function onActivate(event: MouseEvent) {
                             <span class="su-menu-item__title">{{ t('taxPage.actions.ready') }}</span>
                         </button>
                         <button
-                            v-if="item.status !== 'enCours'"
+                            v-if="!item.locked && item.status !== 'enCours'"
                             type="button"
                             class="su-menu-item"
                             :disabled="saving"

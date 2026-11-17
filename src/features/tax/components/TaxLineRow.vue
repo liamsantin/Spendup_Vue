@@ -6,7 +6,8 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useTaxMoney } from '@/features/tax/composables/useTaxMoney';
 import TaxHelpTip from '@/features/tax/components/TaxHelpTip.vue';
-import type { TaxCompetence, TaxLine } from '@/features/tax/types';
+import { formatTaxDate } from '@/features/tax/format';
+import type { TaxCompetence, TaxCorrection, TaxLine } from '@/features/tax/types';
 
 const props = defineProps<{
     line: TaxLine;
@@ -20,15 +21,20 @@ const props = defineProps<{
     /** Compétence dont le montant peut être recopié sur l'autre, ou `null`. */
     copyFrom: 'cantonal' | 'federal' | null;
     saving: boolean;
+    /** Déclaration déposée : champs en lecture seule, seul « Corriger » change un montant. */
+    locked?: boolean;
+    /** Corrections de cette ligne pour la personne affichée, la plus récente en premier. */
+    corrections?: TaxCorrection[];
 }>();
 
 const emit = defineEmits<{
     draft: [competence: TaxCompetence, value: string | number | null];
     commit: [competence: TaxCompetence];
     copy: [from: 'cantonal' | 'federal'];
+    correct: [];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const money = useTaxMoney();
 
 const hint = computed(() => {
@@ -40,6 +46,19 @@ const hint = computed(() => {
         return parts.length ? t('taxPage.previousYear', { value: parts.join(' · ') }) : '';
     }
     return before.both != null ? t('taxPage.previousYear', { value: money(before.both) }) : '';
+});
+
+/** Dernière correction de la ligne : date, ancien et nouveau montant, motif. */
+const corrected = computed(() => {
+    const last = props.corrections?.[0];
+    if (!last) return '';
+    const amount = (value: number | null) => (value == null ? t('taxPage.correctModal.empty') : money(value));
+    const competence = props.line.splitsCompetence ? `${t(`taxPage.${last.competence}`)} · ` : '';
+    return t('taxPage.corrected', {
+        date: formatTaxDate(last.at, locale.value),
+        change: `${competence}${amount(last.previous)} → ${amount(last.amount)}`,
+        reason: last.reason
+    });
 });
 </script>
 
@@ -58,6 +77,7 @@ const hint = computed(() => {
                     color="primary"
                     variant="outlined"
                     hide-details
+                    :readonly="locked"
                     @update:model-value="emit('draft', 'cantonal', $event)"
                     @blur="emit('commit', 'cantonal')"
                 />
@@ -68,6 +88,7 @@ const hint = computed(() => {
                     color="primary"
                     variant="outlined"
                     hide-details
+                    :readonly="locked"
                     @update:model-value="emit('draft', 'federal', $event)"
                     @blur="emit('commit', 'federal')"
                 />
@@ -76,7 +97,17 @@ const hint = computed(() => {
                 <span />
                 <p class="tax-line__hint">{{ hint }}</p>
             </template>
-            <template v-if="copyFrom">
+            <template v-if="corrected">
+                <span />
+                <p class="tax-line__hint tax-line__hint--corrected">{{ corrected }}</p>
+            </template>
+            <template v-if="locked">
+                <span />
+                <button type="button" class="su-btn su-btn--ghost tax-copy" :disabled="saving" @click="emit('correct')">
+                    {{ t('taxPage.actions.correct') }}
+                </button>
+            </template>
+            <template v-if="copyFrom && !locked">
                 <span />
                 <button type="button" class="su-btn su-btn--ghost tax-copy" :disabled="saving" @click="emit('copy', copyFrom)">
                     {{ copyFrom === 'cantonal' ? t('taxPage.simple.copyToFederal') : t('taxPage.simple.copyToCantonal') }}
@@ -96,6 +127,7 @@ const hint = computed(() => {
                     color="primary"
                     variant="outlined"
                     hide-details
+                    :readonly="locked"
                     @update:model-value="emit('draft', 'both', $event)"
                     @blur="emit('commit', 'both')"
                 />
@@ -103,6 +135,16 @@ const hint = computed(() => {
             <template v-if="hint">
                 <span />
                 <p class="tax-line__hint">{{ hint }}</p>
+            </template>
+            <template v-if="corrected">
+                <span />
+                <p class="tax-line__hint tax-line__hint--corrected">{{ corrected }}</p>
+            </template>
+            <template v-if="locked">
+                <span />
+                <button type="button" class="su-btn su-btn--ghost tax-copy" :disabled="saving" @click="emit('correct')">
+                    {{ t('taxPage.actions.correct') }}
+                </button>
             </template>
         </div>
     </div>

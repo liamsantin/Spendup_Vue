@@ -20,6 +20,8 @@ const props = defineProps<{
     entries: TaxEntry[];
     person: TaxPerson;
     saving: boolean;
+    /** Faux pour une déclaration déposée : les fiches ne se reportent plus sur les lignes. */
+    canReport?: boolean;
     /** Enregistre une fiche ; `true` si elle l'est (le brouillon est alors vidé). */
     add: (kind: TaxEntryKind, draft: TaxFicheDraft) => Promise<boolean>;
 }>();
@@ -114,7 +116,7 @@ async function submit(kind: TaxEntryKind) {
                 <div class="tax-form__actions">
                     <button type="submit" class="su-btn" :disabled="saving">{{ t('taxPage.fiches.save') }}</button>
                     <button
-                        v-if="kind !== 'child'"
+                        v-if="kind !== 'child' && canReport !== false"
                         type="button"
                         class="su-btn su-btn--ink"
                         :disabled="saving"

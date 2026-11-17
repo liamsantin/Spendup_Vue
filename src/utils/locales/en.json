@@ -5165,6 +5165,9 @@
             "ready": "Mark ready to copy",
             "resume": "Resume",
             "archive": "Archive",
+            "file": "Mark as filed",
+            "correct": "Correct",
+            "unfile": "Cancel filing",
             "delete": "Delete"
         },
         "year": "Year",
@@ -5215,7 +5218,8 @@
         "statuses": {
             "enCours": "In progress",
             "preteARecopier": "Ready to copy",
-            "archivee": "Archived"
+            "archivee": "Archived",
+            "deposee": "Filed"
         },
         "couple": "Couple (person 2)",
         "person": "Person",
@@ -5229,6 +5233,29 @@
         "suggestionsTitle": "Suggestions",
         "detectedTitle": "Amounts detected in the PDF",
         "previousYear": "Last year: {value}",
+        "locked": "Filed on {date}: amounts are locked. To change one, use “Correct” on the line; each correction is logged with its reason.",
+        "corrected": "Corrected on {date}: {change} ({reason})",
+        "fileModal": {
+            "title": "Mark the {year} return as filed?",
+            "message": "Tell us when you filed it. Amounts will then be locked: any change goes through “Correct”, with a reason. Documents stay editable.",
+            "date": "Filing date",
+            "confirm": "Mark as filed"
+        },
+        "unfileModal": {
+            "title": "Cancel filing of the {year} return?",
+            "message": "Use this if it was marked as filed by mistake. It goes back to “Ready to copy” and its amounts can be edited again. The cancellation is logged; corrections already made stay in the history."
+        },
+        "correctModal": {
+            "title": "Correct an amount",
+            "message": "The return is filed: the correction is logged with the old amount, the new one and the reason.",
+            "competence": "Level",
+            "current": "Current amount",
+            "empty": "empty",
+            "amount": "New amount",
+            "reason": "Reason",
+            "reasonPlaceholder": "E.g. salary certificate corrected by the employer",
+            "confirm": "Correct"
+        },
         "nextYearModal": {
             "title": "Create the {year} return?",
             "message": "Identity and entries (without amounts) are carried over, and the list of expected documents is prepared. No amount is copied: last year's amounts stay visible as a reference.",

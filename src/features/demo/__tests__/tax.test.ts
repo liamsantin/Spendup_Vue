@@ -127,4 +127,51 @@ describe('démo : impôts', () => {
         handleDemoRequest('DELETE', '/api/tax-returns/TAX2025');
         expect((handleDemoRequest('GET', '/api/tax-returns') as TaxReturnListResult).totalCount).toBe(0);
     });
+
+    it('verrouille une déclaration déposée et la corrige ligne par ligne, avec un motif', () => {
+        const base = '/api/tax-returns/TAX2025';
+        const header = handleDemoRequest('GET', base) as TaxReturn;
+        const body = {
+            canton: header.canton,
+            couple: header.couple,
+            taxpayerNumber: header.taxpayerNumber,
+            notes: header.notes,
+            name: header.name,
+            person1: header.person1,
+            person2: header.person2
+        };
+        expect(() => handleDemoRequest('PUT', base, { ...body, status: 'deposee', submissionDate: '2999-01-01' })).toThrow();
+
+        const filed = handleDemoRequest('PUT', base, { ...body, status: 'deposee', submissionDate: '2026-03-30' }) as TaxReturn;
+        expect(filed.locked).toBe(true);
+        expect(filed.submissionDate).toBe('2026-03-30');
+
+        expect(() => handleDemoRequest('PUT', `${base}/amounts/income.other`, { person: '1', competence: null, amount: 1 })).toThrow();
+        expect(() =>
+            handleDemoRequest('POST', `${base}/suggestions/accept`, { code: 'income.other', person: '1', competence: 'both', amount: 1 })
+        ).toThrow();
+        expect(() => handleDemoRequest('PUT', base, { ...body, status: 'enCours' })).toThrow();
+
+        const correct = { code: 'income.employed', person: '1', competence: null, amount: 1 };
+        expect(() => handleDemoRequest('POST', `${base}/corrections`, { ...correct, reason: '  ' })).toThrow();
+        const corrected = handleDemoRequest('POST', `${base}/corrections`, { ...correct, reason: 'Certificat rectifié' }) as TaxReturn;
+        const employed = corrected.sections.flatMap((s) => s.lines).find((l) => l.code === 'income.employed')?.values[0];
+        expect(employed?.amount).toBe(1);
+        expect(corrected.corrections[0]).toMatchObject({ code: 'income.employed', amount: 1, reason: 'Certificat rectifié' });
+        expect(corrected.corrections[0].previous).not.toBe(1);
+        expect(() => handleDemoRequest('POST', `${base}/corrections`, { ...correct, reason: 'Même montant' })).toThrow();
+
+        const archived = handleDemoRequest('PUT', base, { ...body, status: 'archivee' }) as TaxReturn;
+        expect(archived.locked).toBe(true);
+        const row = (handleDemoRequest('GET', '/api/tax-returns') as TaxReturnListResult).items[0];
+        expect(row.locked).toBe(true);
+
+        const reopened = handleDemoRequest('POST', `${base}/cancel-filing`, {}) as TaxReturn;
+        expect(reopened.locked).toBe(false);
+        expect(reopened.status).toBe('preteARecopier');
+        expect(reopened.submissionDate).toBeNull();
+        expect(reopened.corrections).toHaveLength(1);
+        expect(() => handleDemoRequest('POST', `${base}/cancel-filing`, {})).toThrow();
+        handleDemoRequest('PUT', `${base}/amounts/income.other`, { person: '1', competence: null, amount: 1 });
+    });
 });

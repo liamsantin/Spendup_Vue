@@ -6,7 +6,16 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, FileTextIcon, PlusIcon, UploadIcon } from 'vue-tabler-icons';
+import {
+    ArrowBackUpIcon,
+    ArrowLeftIcon,
+    ArrowRightIcon,
+    CheckIcon,
+    CircleCheckIcon,
+    FileTextIcon,
+    PlusIcon,
+    UploadIcon
+} from 'vue-tabler-icons';
 import { withReturnTo } from '@/utils/helpers/navigation-helpers';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
@@ -14,8 +23,10 @@ import { useAuthStore } from '@/features/auth';
 import { taxApi, type TaxAcceptBody } from '@/features/tax/api';
 import { useCantonItems } from '@/features/tax/cantons';
 import TaxChecklistSection from '@/features/tax/components/TaxChecklistSection.vue';
+import TaxCorrectModal, { type TaxCorrectPayload } from '@/features/tax/components/TaxCorrectModal.vue';
 import TaxCreateModal, { type TaxCreatePayload } from '@/features/tax/components/TaxCreateModal.vue';
 import TaxDocumentsSection from '@/features/tax/components/TaxDocumentsSection.vue';
+import TaxFileModal from '@/features/tax/components/TaxFileModal.vue';
 import TaxFichesSection, { type TaxFicheDraft } from '@/features/tax/components/TaxFichesSection.vue';
 import TaxHeaderForm from '@/features/tax/components/TaxHeaderForm.vue';
 import TaxImportModal, { type TaxImportPayload } from '@/features/tax/components/TaxImportModal.vue';
@@ -33,9 +44,11 @@ import { clearPendingRead, dismissReadReport, forgetPendingRead, isImportedRetur
 import { compareWithPrevious, markAllToCheck, previousAmountFor, scopeMismatch, type ReadScope } from '@/features/tax/read-checks';
 import type { ReadLine, TotalCheck } from '@/features/tax/reader/types';
 import { buildTaxGroups, type TaxGroup } from '@/features/tax/steps';
+import { formatTaxDate } from '@/features/tax/format';
 import { TAX_BASE, taxDetailPath, taxPublicIdFromPath } from '@/features/tax/paths';
 import type {
     TaxCompetence,
+    TaxCorrection,
     TaxEntryKind,
     TaxLine,
     TaxPerson,
@@ -50,11 +63,13 @@ import type { FileDto } from '@/features/files/types';
 import { validatePdfFile } from '@/features/files/validate-upload';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 
-const { t, te } = useI18n();
+const { t, te, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 
 const STATUSES: TaxStatus[] = ['enCours', 'preteARecopier', 'archivee'];
+/** Une déclaration déposée ne revient pas en arrière : elle reste déposée, ou s'archive. */
+const LOCKED_STATUSES: TaxStatus[] = ['deposee', 'archivee'];
 
 const list = ref<TaxReturnListItem[]>([]);
 const declaration = ref<TaxReturn | null>(null);
@@ -89,7 +104,15 @@ const attaching = ref(false);
 const attachLine = ref('');
 
 const cantonItems = useCantonItems();
-const statusItems = computed(() => STATUSES.map((value) => ({ title: t(`taxPage.statuses.${value}`), value })));
+const statusItems = computed(() =>
+    (declaration.value?.locked ? LOCKED_STATUSES : STATUSES).map((value) => ({ title: t(`taxPage.statuses.${value}`), value }))
+);
+
+const lockedNotice = computed(() => {
+    const current = declaration.value;
+    if (!current?.locked) return '';
+    return t('taxPage.locked', { date: formatTaxDate(current.submissionDate, locale.value) });
+});
 
 const header = ref(emptyHeader());
 
@@ -366,7 +389,7 @@ async function importReturn(payload: TaxImportPayload) {
     error.value = failure;
 }
 
-async function saveHeader(): Promise<boolean> {
+async function saveHeader(submissionDate?: string): Promise<boolean> {
     const current = declaration.value;
     if (!current) return false;
     saving.value = true;
@@ -380,7 +403,8 @@ async function saveHeader(): Promise<boolean> {
             notes: header.value.notes.trim() || null,
             name: header.value.name.trim() || null,
             person1: cleanIdentity(header.value.person1),
-            person2: header.value.couple ? cleanIdentity(header.value.person2) : null
+            person2: header.value.couple ? cleanIdentity(header.value.person2) : null,
+            submissionDate: submissionDate ?? null
         });
         apply(detail);
         return true;
@@ -865,7 +889,7 @@ async function downloadPdf(id: string, year: number, canton: string) {
     }
 }
 
-async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
+async function setReturnStatus(item: { publicId: string }, status: TaxStatus, submissionDate?: string): Promise<boolean> {
     saving.value = true;
     error.value = '';
     try {
@@ -878,11 +902,132 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
             notes: detail.notes,
             name: detail.name,
             person1: detail.person1,
-            person2: detail.person2
+            person2: detail.person2,
+            submissionDate: submissionDate ?? null
         });
         await refresh();
+        return true;
     } catch (e) {
         error.value = getErrorMessage(AppError.fromUnknown(e));
+        return false;
+    } finally {
+        saving.value = false;
+    }
+}
+
+/** Déclaration à marquer comme déposée (fenêtre avec la date de dépôt). */
+const fileTarget = ref<{ publicId: string; year: number } | null>(null);
+const fileOpen = computed({
+    get: () => fileTarget.value !== null,
+    set: (open: boolean) => {
+        if (!open) fileTarget.value = null;
+    }
+});
+
+function askFile(target: { publicId: string; year: number }) {
+    if (saving.value) return;
+    error.value = '';
+    fileTarget.value = { publicId: target.publicId, year: target.year };
+}
+
+async function confirmFile(submissionDate: string) {
+    const target = fileTarget.value;
+    if (!target || saving.value) return;
+    let ok: boolean;
+    if (declaration.value?.publicId === target.publicId) {
+        // Depuis le détail : l'en-tête affiché (éventuellement modifié) part avec le statut.
+        const previous = header.value.status;
+        header.value.status = 'deposee';
+        ok = await saveHeader(submissionDate);
+        if (!ok) header.value.status = previous;
+    } else {
+        ok = await setReturnStatus(target, 'deposee', submissionDate);
+    }
+    if (ok) fileTarget.value = null;
+}
+
+/** Déclaration dont on annule le dépôt (fenêtre de confirmation). */
+const unfileTarget = ref<{ publicId: string; year: number } | null>(null);
+const unfileOpen = computed({
+    get: () => unfileTarget.value !== null,
+    set: (open: boolean) => {
+        if (!open) unfileTarget.value = null;
+    }
+});
+
+function askUnfile(target: { publicId: string; year: number }) {
+    if (saving.value) return;
+    error.value = '';
+    unfileTarget.value = { publicId: target.publicId, year: target.year };
+}
+
+async function confirmUnfile() {
+    const target = unfileTarget.value;
+    if (!target || saving.value) return;
+    saving.value = true;
+    error.value = '';
+    try {
+        const detail = await taxApi.cancelFiling(target.publicId);
+        unfileTarget.value = null;
+        if (declaration.value?.publicId === target.publicId) apply(detail);
+        else await refresh();
+    } catch (e) {
+        unfileTarget.value = null;
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
+/** Ligne en cours de correction (déclaration déposée). */
+const correctLine = ref<TaxLine | null>(null);
+const correctError = ref('');
+const correctOpen = computed({
+    get: () => correctLine.value !== null,
+    set: (open: boolean) => {
+        if (!open) correctLine.value = null;
+    }
+});
+
+const correctCurrent = computed(() => {
+    const line = correctLine.value;
+    const out: Partial<Record<TaxCompetence, number>> = {};
+    if (!line) return out;
+    for (const competence of ['cantonal', 'federal', 'both'] as TaxCompetence[]) {
+        const amount = cellAmount(line, competence);
+        if (amount != null) out[competence] = amount;
+    }
+    return out;
+});
+
+function correctionsFor(line: TaxLine): TaxCorrection[] {
+    return (declaration.value?.corrections ?? []).filter((item) => item.code === line.code && item.person === person.value);
+}
+
+function askCorrect(line: TaxLine) {
+    if (saving.value) return;
+    correctError.value = '';
+    correctLine.value = line;
+}
+
+async function submitCorrection(payload: TaxCorrectPayload) {
+    const current = declaration.value;
+    const line = correctLine.value;
+    if (!current || !line || saving.value) return;
+    saving.value = true;
+    correctError.value = '';
+    try {
+        const detail = await taxApi.correctAmount(current.publicId, {
+            code: line.code,
+            person: person.value,
+            competence: line.splitsCompetence ? payload.competence : null,
+            amount: payload.amount,
+            reason: payload.reason
+        });
+        correctLine.value = null;
+        apply(detail);
+    } catch (e) {
+        correctError.value = getErrorMessage(AppError.fromUnknown(e));
     } finally {
         saving.value = false;
     }
@@ -917,6 +1062,8 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
                 @open="openReturn(item.publicId)"
                 @pdf="downloadPdf(item.publicId, item.year, item.canton)"
                 @next="askNextYear(item)"
+                @file="askFile(item)"
+                @unfile="askUnfile(item)"
                 @status="setReturnStatus(item, $event)"
                 @remove="askRemove(item, false)"
             />
@@ -959,6 +1106,26 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
                 {{ t('taxPage.actions.pdf') }}
             </button>
             <button
+                v-if="!declaration.locked"
+                type="button"
+                class="su-btn"
+                :disabled="saving"
+                @click="askFile({ publicId: declaration.publicId, year: declaration.year })"
+            >
+                <CircleCheckIcon :size="18" stroke-width="1.6" />
+                {{ t('taxPage.actions.file') }}
+            </button>
+            <button
+                v-else
+                type="button"
+                class="su-btn"
+                :disabled="saving"
+                @click="askUnfile({ publicId: declaration.publicId, year: declaration.year })"
+            >
+                <ArrowBackUpIcon :size="18" stroke-width="1.6" />
+                {{ t('taxPage.actions.unfile') }}
+            </button>
+            <button
                 v-if="canCreateNextYear(declaration.year)"
                 type="button"
                 class="su-btn"
@@ -980,6 +1147,7 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
 
         <p v-if="error" class="tax-error" role="alert">{{ error }}</p>
         <p v-if="notice" class="tax-muted">{{ notice }}</p>
+        <p v-if="lockedNotice" class="tax-locked" role="status">{{ lockedNotice }}</p>
         <TaxImportReview
             v-if="readReport"
             :profile-label="readReport.profileLabel"
@@ -1038,10 +1206,16 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
             {{ t('taxPage.gaps', { count: declaration.gaps.length }, declaration.gaps.length) }}
         </p>
 
-        <TaxReadProposals v-if="stepRead.length" :items="stepRead" :saving="saving" @accept="acceptSuggestion" @accept-many="acceptMany" />
+        <TaxReadProposals
+            v-if="stepRead.length && !declaration.locked"
+            :items="stepRead"
+            :saving="saving"
+            @accept="acceptSuggestion"
+            @accept-many="acceptMany"
+        />
 
         <TaxSuggestionList
-            v-if="stepSuggestions.length"
+            v-if="stepSuggestions.length && !declaration.locked"
             :items="stepSuggestions"
             :saving="saving"
             @accept="acceptSuggestion"
@@ -1079,6 +1253,7 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
             :entries="declaration.entries"
             :person="person"
             :saving="saving"
+            :can-report="!declaration.locked"
             :add="addFiche"
             @remove="removeFiche"
             @report="reportFiches"
@@ -1095,9 +1270,12 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
                 :copy-from="copySource(line)"
                 :previous="previousFor(line)"
                 :saving="saving"
+                :locked="declaration.locked"
+                :corrections="correctionsFor(line)"
                 @draft="(competence, value) => setDraft(line, competence, value)"
                 @commit="(competence) => commitAmount(line, competence, shownAmount(line, competence))"
                 @copy="(from) => copyAmount(line, from)"
+                @correct="askCorrect(line)"
             />
         </section>
 
@@ -1111,6 +1289,26 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
             </p>
         </div>
     </AppPageShell>
+
+    <TaxFileModal v-model="fileOpen" :saving="saving" :error="error" :year="fileTarget?.year ?? 0" @submit="confirmFile" />
+
+    <TaxCorrectModal
+        v-model="correctOpen"
+        :line="correctLine"
+        :current="correctCurrent"
+        :saving="saving"
+        :error="correctError"
+        @submit="submitCorrection"
+    />
+
+    <AppConfirmationModal
+        v-model="unfileOpen"
+        :title="t('taxPage.unfileModal.title', { year: unfileTarget?.year ?? '' })"
+        :message="t('taxPage.unfileModal.message')"
+        :confirm-label="t('taxPage.actions.unfile')"
+        :loading="saving"
+        @confirm="confirmUnfile"
+    />
 
     <AppConfirmationModal
         v-model="nextYearOpen"

@@ -20,6 +20,15 @@ export interface TaxAcceptBody {
     origin?: 'propositionAcceptee' | 'importee';
 }
 
+/** Correction d'un montant d'une déclaration déposée. `amount: null` vide la case. */
+export interface TaxCorrectBody {
+    code: string;
+    person: string;
+    competence: string | null;
+    amount: number | null;
+    reason: string;
+}
+
 export const taxApi = {
     list() {
         return fetchWrapper.get('/api/tax-returns') as Promise<TaxReturnListResult>;
@@ -42,6 +51,16 @@ export const taxApi = {
             `/api/tax-returns/${encodeURIComponent(publicId)}/amounts/${encodeURIComponent(code)}`,
             body
         ) as Promise<TaxReturn>;
+    },
+
+    /** Corrige un montant d'une déclaration déposée. Le motif est obligatoire : la correction est journalisée. */
+    correctAmount(publicId: string, body: TaxCorrectBody) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/corrections`, body) as Promise<TaxReturn>;
+    },
+
+    /** Annule un dépôt marqué par erreur : retour à « prête à recopier », montants déverrouillés (journalisé). */
+    cancelFiling(publicId: string) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/cancel-filing`, {}) as Promise<TaxReturn>;
     },
 
     remove(publicId: string) {

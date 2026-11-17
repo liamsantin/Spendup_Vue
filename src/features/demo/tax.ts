@@ -3,6 +3,7 @@ import { TAX_CANTONS } from '@/features/tax/types';
 import type {
     TaxChecklistItem,
     TaxCompetence,
+    TaxCorrection,
     TaxDocumentLink,
     TaxEntry,
     TaxEntryKind,
@@ -52,6 +53,10 @@ export type DemoTaxReturn = {
     documents: TaxDocumentLink[];
     checklist: DemoChecklistItem[];
     previousPublicId: string | null;
+    /** Date de dépôt (`yyyy-mm-dd`). Posée, elle verrouille les montants. Absente des démos plus anciennes. */
+    submissionDate?: string | null;
+    /** Corrections journalisées, la plus récente en premier. */
+    corrections?: TaxCorrection[];
 };
 
 /** Pièce attendue telle que la démo la garde : `complete` est ce que la personne a coché. */
@@ -112,7 +117,7 @@ const CATALOGUE: LineDefinition[] = [
 ];
 
 const KINDS: TaxEntryKind[] = ['employment', 'child', 'property', 'debt', 'institution'];
-const STATUSES: TaxStatus[] = ['enCours', 'preteARecopier', 'archivee'];
+const STATUSES: TaxStatus[] = ['enCours', 'preteARecopier', 'deposee', 'archivee'];
 const PERSONS: TaxPerson[] = ['1', '2', '1+2'];
 
 function round(value: number): number {
@@ -290,8 +295,26 @@ function toResponse(tax: DemoTaxReturn): TaxReturn {
         documents: tax.documents.map((item) => ({ ...item })),
         checklist: tax.checklist.map(toChecklistItem(tax)),
         previousPublicId:
-            tax.previousPublicId && store().some((item) => item.publicId === tax.previousPublicId) ? tax.previousPublicId : null
+            tax.previousPublicId && store().some((item) => item.publicId === tax.previousPublicId) ? tax.previousPublicId : null,
+        submissionDate: tax.submissionDate ?? null,
+        locked: isLocked(tax),
+        corrections: (tax.corrections ?? []).map((item) => ({ ...item }))
     };
+}
+
+/** Comme l'API : déposée, ou déposée puis archivée (la date de dépôt reste posée). */
+function isLocked(tax: DemoTaxReturn): boolean {
+    return tax.status === 'deposee' || Boolean(tax.submissionDate);
+}
+
+function ensureUnlocked(tax: DemoTaxReturn): void {
+    if (isLocked(tax)) invalid('La déclaration est déposée : corrige le montant ligne par ligne, avec un motif.');
+}
+
+function todayYmd(): string {
+    const now = new Date();
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
 function toChecklistItem(tax: DemoTaxReturn) {
@@ -310,7 +333,8 @@ function toListItem(tax: DemoTaxReturn): TaxReturnListItem {
         filledCount: filledCodes(tax).size,
         lineCount: CATALOGUE.length,
         checklistReceived: tax.checklist.map(toChecklistItem(tax)).filter((item) => item.received).length,
-        checklistTotal: tax.checklist.length
+        checklistTotal: tax.checklist.length,
+        locked: isLocked(tax)
     };
 }
 
@@ -616,7 +640,14 @@ function updateChecklistItem(tax: DemoTaxReturn, code: string, body: { complete?
 }
 
 function updateReturn(tax: DemoTaxReturn, body: UpdateTaxReturnPayload) {
-    if (!STATUSES.includes(body.status)) invalid('Statut invalide (enCours, preteARecopier, archivee).');
+    if (!STATUSES.includes(body.status)) invalid('Statut invalide (enCours, preteARecopier, deposee, archivee).');
+    if (isLocked(tax) && (body.status === 'enCours' || body.status === 'preteARecopier'))
+        invalid('Une déclaration déposée ne se rouvre pas : corrige les montants ligne par ligne.');
+    if (body.status === 'deposee') {
+        const date = (body.submissionDate ?? tax.submissionDate ?? todayYmd()).slice(0, 10);
+        if (date > todayYmd()) invalid('La date de dépôt ne peut pas être dans le futur.');
+        tax.submissionDate = date;
+    }
     tax.canton = normalizeCanton(body.canton);
     tax.status = body.status;
     tax.couple = Boolean(body.couple);
@@ -629,6 +660,7 @@ function updateReturn(tax: DemoTaxReturn, body: UpdateTaxReturnPayload) {
 }
 
 function upsertAmount(tax: DemoTaxReturn, code: string, body: UpsertTaxAmountPayload) {
+    ensureUnlocked(tax);
     const definition = findLine(code) ?? notFound('Ligne inconnue.');
     const person = parsePerson(body.person);
     ensurePersonAllowed(tax, person);
@@ -702,6 +734,7 @@ function sumOf(entries: TaxEntry[], pick: (entry: TaxEntry) => number | null): n
 }
 
 function reportEntries(tax: DemoTaxReturn, body: { kind: TaxEntryKind; person: TaxPerson }) {
+    ensureUnlocked(tax);
     if (!KINDS.includes(body.kind)) invalid('Type de fiche invalide (employment, child, property, debt, institution).');
     const person = parsePerson(body.person);
     ensurePersonAllowed(tax, person);
@@ -717,6 +750,7 @@ function reportEntries(tax: DemoTaxReturn, body: { kind: TaxEntryKind; person: T
 }
 
 function acceptSuggestion(tax: DemoTaxReturn, body: { code: string; person: string; competence: string; amount: number; origin?: string }) {
+    ensureUnlocked(tax);
     const definition = findLine(body.code) ?? notFound('Ligne inconnue.');
     const person = parsePerson(body.person);
     ensurePersonAllowed(tax, person);
@@ -752,6 +786,43 @@ function acceptSuggestions(
         tax.amounts = before;
         throw e;
     }
+    return toResponse(tax);
+}
+
+/** Annulation d'un dépôt, comme l'API : retour à « prête à recopier », corrections conservées. */
+function cancelFiling(tax: DemoTaxReturn) {
+    if (!isLocked(tax)) invalid("La déclaration n'est pas déposée.");
+    tax.status = 'preteARecopier';
+    tax.submissionDate = null;
+    return toResponse(tax);
+}
+
+/** Correction d'une déclaration déposée, comme l'API : motif obligatoire, montant changé, trace gardée. */
+function correctAmount(
+    tax: DemoTaxReturn,
+    body: { code: string; person: string; competence: string | null; amount: number | null; reason: string }
+) {
+    if (!isLocked(tax)) invalid("La déclaration n'est pas déposée : modifie le montant directement.");
+    const reason = normalizeText(body.reason, 500, 'Le motif') ?? invalid('Indique le motif de la correction.');
+    const definition = findLine(body.code) ?? notFound('Ligne inconnue.');
+    const person = parsePerson(body.person);
+    ensurePersonAllowed(tax, person);
+    const competence = (body.competence || 'both') as TaxCompetence;
+    if (!['cantonal', 'federal', 'both'].includes(competence)) invalid('Ressort invalide (cantonal, federal, both).');
+    if (definition.splits === (competence === 'both')) invalid('Ressort incompatible avec cette ligne.');
+    const amount = normalizeAmount(body.amount);
+    const existing = tax.amounts.find((item) => item.code === body.code && item.person === person && item.competence === competence);
+    const previous = existing ? existing.amount : null;
+    if (previous === amount) invalid("Le montant n'a pas changé.");
+    if (amount === null) {
+        tax.amounts = tax.amounts.filter((item) => item !== existing);
+    } else {
+        writeAmount(tax, body.code, person, competence, amount, 'saisie');
+    }
+    tax.corrections = [
+        { code: body.code, person, competence, previous, amount, reason, at: new Date().toISOString() },
+        ...(tax.corrections ?? [])
+    ];
     return toResponse(tax);
 }
 
@@ -859,6 +930,16 @@ export function routeTax(method: string, path: string, body: unknown): TaxResult
         return noContent();
     }
 
+    const unfile = match(path, '/api/tax-returns/:id/cancel-filing');
+    if (unfile && method === 'POST') return ok(cancelFiling(findReturn(unfile.id)));
+    const correction = match(path, '/api/tax-returns/:id/corrections');
+    if (correction && method === 'POST')
+        return ok(
+            correctAmount(
+                findReturn(correction.id),
+                body as { code: string; person: string; competence: string | null; amount: number | null; reason: string }
+            )
+        );
     const amount = match(path, '/api/tax-returns/:id/amounts/:code');
     if (amount && method === 'PUT') return ok(upsertAmount(findReturn(amount.id), amount.code, body as UpsertTaxAmountPayload));
 

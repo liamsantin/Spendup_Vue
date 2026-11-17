@@ -31,7 +31,7 @@ export type TaxCanton = (typeof TAX_CANTONS)[number];
 
 export type TaxPerson = '1' | '2' | '1+2';
 export type TaxCompetence = 'cantonal' | 'federal' | 'both';
-export type TaxStatus = 'enCours' | 'preteARecopier' | 'archivee';
+export type TaxStatus = 'enCours' | 'preteARecopier' | 'deposee' | 'archivee';
 
 export interface TaxIdentity {
     officialName: string | null;
@@ -122,6 +122,23 @@ export interface TaxReturn {
     checklist: TaxChecklistItem[];
     /** Déclaration de l'année précédente d'où celle-ci est reprise, si elle l'est. */
     previousPublicId: string | null;
+    /** Date de dépôt indiquée par la personne (ISO), ou `null`. */
+    submissionDate: string | null;
+    /** Déposée : les montants ne changent plus que par une correction. */
+    locked: boolean;
+    /** Corrections journalisées, la plus récente en premier. */
+    corrections: TaxCorrection[];
+}
+
+/** Correction d'un montant d'une déclaration déposée. `null` = case vide. */
+export interface TaxCorrection {
+    code: string;
+    person: TaxPerson;
+    competence: TaxCompetence;
+    previous: number | null;
+    amount: number | null;
+    reason: string;
+    at: string;
 }
 
 export interface TaxDocumentLink {
@@ -143,6 +160,8 @@ export interface TaxReturnListItem {
     lineCount: number;
     checklistReceived: number;
     checklistTotal: number;
+    /** Déposée (même archivée ensuite) : montants verrouillés. */
+    locked: boolean;
 }
 
 export interface TaxReturnListResult {
@@ -196,6 +215,8 @@ export interface UpdateTaxReturnPayload {
     name: string | null;
     person1: TaxIdentity;
     person2: TaxIdentity | null;
+    /** Date de dépôt (`yyyy-mm-dd`), lue seulement quand le statut passe à `deposee`. */
+    submissionDate?: string | null;
 }
 
 export interface UpsertTaxAmountPayload {
