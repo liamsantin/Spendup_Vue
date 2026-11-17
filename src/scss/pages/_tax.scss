@@ -104,6 +104,76 @@
     }
 }
 
+.tax-actions-menu__sep {
+    height: 1px;
+    margin: 4px 8px;
+    background: var(--line);
+}
+
+// Onglets des étapes : la barre défile ; un fondu signale les onglets cachés d'un côté.
+.tax-steps {
+    scroll-behavior: smooth;
+
+    &.has-more-right {
+        mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent);
+    }
+
+    &.has-more-left {
+        mask-image: linear-gradient(to left, #000 calc(100% - 56px), transparent);
+    }
+
+    &.has-more-left.has-more-right {
+        mask-image: linear-gradient(to right, transparent, #000 56px, #000 calc(100% - 56px), transparent);
+    }
+}
+
+// Choix d'un export : une ligne par format, avec son usage.
+.tax-export {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tax-export__choice {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s var(--ease);
+
+    &:hover,
+    &:focus-visible {
+        border-color: var(--ink);
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: default;
+    }
+}
+
+.tax-export__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tax-export__title {
+    font-weight: 700;
+}
+
+.tax-export__detail {
+    color: var(--gray);
+    font-size: 13px;
+}
+
 .tax-actions-menu__delete .su-menu-item__title {
     color: var(--danger);
 }

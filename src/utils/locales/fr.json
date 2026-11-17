@@ -5168,6 +5168,8 @@
             "file": "Marquer comme déposée",
             "correct": "Corriger",
             "unfile": "Annuler le dépôt",
+            "bundle": "Télécharger les justificatifs",
+            "export": "Exporter…",
             "exportCsv": "Exporter en CSV",
             "exportJson": "Exporter en JSON",
             "delete": "Supprimer"
@@ -5280,6 +5282,38 @@
             "page": "Page {page}",
             "close": "Fermer"
         },
+        "bundle": {
+            "summaryFile": "Sommaire",
+            "summaryTitle": "Dossier de justificatifs — {title}",
+            "generated": "Préparé le {date} avec Spend.Up. Ce n’est pas un document du canton.",
+            "files": "Pièces incluses, dans l’ordre de la déclaration :",
+            "none": "Aucune pièce rangée sur la déclaration.",
+            "extra": "declaration-{year}-{canton}.pdf (récapitulatif de travail) et .json (dossier complet)",
+            "missing": "Pièces attendues pas encore reçues :",
+            "skipped": "Pièces qui n’ont pas pu être ajoutées :",
+            "disclaimer": "Ce dossier aide à préparer votre déclaration ; il ne remplace pas le logiciel officiel ni un conseil fiscal.",
+            "done": "Le dossier de justificatifs est téléchargé.",
+            "partial": "Le dossier est téléchargé, mais {count} pièce n’a pas pu être ajoutée : voyez le sommaire. | Le dossier est téléchargé, mais {count} pièces n’ont pas pu être ajoutées : voyez le sommaire."
+        },
+        "exportModal": {
+            "title": "Exporter la déclaration {year}",
+            "pdf": {
+                "title": "Récapitulatif PDF",
+                "detail": "À recopier dans le logiciel officiel, dans l’ordre du formulaire."
+            },
+            "bundle": {
+                "title": "Justificatifs (ZIP)",
+                "detail": "Toutes les pièces numérotées dans l’ordre de la déclaration, avec un sommaire."
+            },
+            "csv": {
+                "title": "Tableur (CSV)",
+                "detail": "Un montant par ligne, à ouvrir dans Excel ou Numbers."
+            },
+            "json": {
+                "title": "Données (JSON)",
+                "detail": "Sauvegarde complète de la déclaration."
+            }
+        },
         "correctModal": {
             "title": "Corriger un montant",
             "message": "La déclaration est déposée : la correction est journalisée avec l’ancien montant, le nouveau et le motif.",
@@ -5391,15 +5425,20 @@
             "title": "Supprimer la déclaration {year} ({canton}) ?",
             "message": "Les montants et les fiches saisis seront supprimés. Cette action est définitive."
         },
+        "stepTitles": {
+            "assurances": "Assurances et santé",
+            "autres": "Autres déductions",
+            "aPart": "Imposés à part"
+        },
         "stepLabels": {
             "revenus": "Revenus",
             "prevoyance": "Prévoyance",
-            "assurances": "Assurances et santé",
+            "assurances": "Santé",
             "famille": "Famille",
-            "autres": "Autres déductions",
+            "autres": "Déductions",
             "fortune": "Fortune",
             "dettes": "Dettes",
-            "aPart": "Imposés à part"
+            "aPart": "À part"
         },
         "help": {
             "income": {

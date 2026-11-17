@@ -5168,6 +5168,8 @@
             "file": "Mark as filed",
             "correct": "Correct",
             "unfile": "Cancel filing",
+            "bundle": "Download supporting documents",
+            "export": "Export…",
             "exportCsv": "Export as CSV",
             "exportJson": "Export as JSON",
             "delete": "Delete"
@@ -5280,6 +5282,38 @@
             "page": "Page {page}",
             "close": "Close"
         },
+        "bundle": {
+            "summaryFile": "Summary",
+            "summaryTitle": "Supporting documents — {title}",
+            "generated": "Prepared on {date} with Spend.Up. This is not a cantonal document.",
+            "files": "Included documents, in the order of the return:",
+            "none": "No document filed on the return.",
+            "extra": "declaration-{year}-{canton}.pdf (working summary) and .json (full return)",
+            "missing": "Expected documents not received yet:",
+            "skipped": "Documents that could not be added:",
+            "disclaimer": "This bundle helps you prepare your return; it does not replace the official software or tax advice.",
+            "done": "The supporting documents are downloaded.",
+            "partial": "The bundle is downloaded, but {count} document could not be added: see the summary. | The bundle is downloaded, but {count} documents could not be added: see the summary."
+        },
+        "exportModal": {
+            "title": "Export the {year} return",
+            "pdf": {
+                "title": "PDF summary",
+                "detail": "To copy into the official software, in the order of the form."
+            },
+            "bundle": {
+                "title": "Supporting documents (ZIP)",
+                "detail": "All documents numbered in the order of the return, with a summary."
+            },
+            "csv": {
+                "title": "Spreadsheet (CSV)",
+                "detail": "One amount per row, for Excel or Numbers."
+            },
+            "json": {
+                "title": "Data (JSON)",
+                "detail": "Full backup of the return."
+            }
+        },
         "correctModal": {
             "title": "Correct an amount",
             "message": "The return is filed: the correction is logged with the old amount, the new one and the reason.",
@@ -5391,15 +5425,20 @@
             "title": "Delete the {year} return ({canton})?",
             "message": "The amounts and entries you entered will be deleted. This cannot be undone."
         },
+        "stepTitles": {
+            "assurances": "Insurance and health",
+            "autres": "Other deductions",
+            "aPart": "Taxed separately"
+        },
         "stepLabels": {
             "revenus": "Income",
             "prevoyance": "Retirement savings",
-            "assurances": "Insurance and health",
+            "assurances": "Health",
             "famille": "Family",
-            "autres": "Other deductions",
+            "autres": "Deductions",
             "fortune": "Assets",
             "dettes": "Debts",
-            "aPart": "Taxed separately"
+            "aPart": "Separate"
         },
         "help": {
             "income": {

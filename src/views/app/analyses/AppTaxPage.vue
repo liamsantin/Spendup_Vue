@@ -12,8 +12,10 @@ import {
     ArrowRightIcon,
     CheckIcon,
     CircleCheckIcon,
-    FileTextIcon,
+    DotsIcon,
+    DownloadIcon,
     PlusIcon,
+    TrashIcon,
     UploadIcon
 } from 'vue-tabler-icons';
 import { withReturnTo } from '@/utils/helpers/navigation-helpers';
@@ -26,6 +28,7 @@ import TaxChecklistSection from '@/features/tax/components/TaxChecklistSection.v
 import TaxCorrectModal, { type TaxCorrectPayload } from '@/features/tax/components/TaxCorrectModal.vue';
 import TaxCreateModal, { type TaxCreatePayload } from '@/features/tax/components/TaxCreateModal.vue';
 import TaxDocumentsSection from '@/features/tax/components/TaxDocumentsSection.vue';
+import TaxExportModal, { type TaxExportKind } from '@/features/tax/components/TaxExportModal.vue';
 import TaxFileModal from '@/features/tax/components/TaxFileModal.vue';
 import TaxFichesSection, { type TaxFicheDraft } from '@/features/tax/components/TaxFichesSection.vue';
 import TaxHeaderForm from '@/features/tax/components/TaxHeaderForm.vue';
@@ -40,6 +43,7 @@ import TaxSuggestionList from '@/features/tax/components/TaxSuggestionList.vue';
 import TaxTotalsEntry from '@/features/tax/components/TaxTotalsEntry.vue';
 import { useTaxValidatedSteps } from '@/features/tax/composables/useTaxValidatedSteps';
 import { cleanIdentity, emptyHeader, emptyIdentity } from '@/features/tax/identity';
+import { buildTaxBundle } from '@/features/tax/bundle';
 import { importTaxPdf } from '@/features/tax/import-return';
 import { readImportedFlag, writeImportedFlag } from '@/features/tax/imported-flag';
 import { clearPendingRead, dismissReadReport, forgetPendingRead, isImportedReturn, takePendingRead } from '@/features/tax/pending-read';
@@ -175,11 +179,46 @@ function stepLabel(group: TaxGroup): string {
     return text === key ? group.fallbackLabel : text;
 }
 
+/** Libellé complet d'une étape (au survol et pour les lecteurs d'écran) ; l'onglet garde le libellé court. */
+function stepLong(group: TaxGroup): string {
+    const key = `taxPage.stepTitles.${group.id}`;
+    return te(key) ? t(key) : stepLabel(group);
+}
+
 const steps = computed(() => [
-    { id: SITUATION, number: 1, label: t('taxPage.identity') },
-    ...groups.value.map((group, index) => ({ id: group.id, number: index + 2, label: stepLabel(group) })),
-    { id: PIECES, number: groups.value.length + 2, label: t('taxPage.checklist.step') }
+    { id: SITUATION, number: 1, label: t('taxPage.identity'), long: t('taxPage.identity') },
+    ...groups.value.map((group, index) => ({ id: group.id, number: index + 2, label: stepLabel(group), long: stepLong(group) })),
+    { id: PIECES, number: groups.value.length + 2, label: t('taxPage.checklist.step'), long: t('taxPage.checklist.title') }
 ]);
+
+/** Barre d'onglets : fondu quand des onglets sont cachés d'un côté, onglet actif toujours à l'écran. */
+const stepsNav = ref<HTMLElement | null>(null);
+const stepsFade = ref({ left: false, right: false });
+let stepsObserver: ResizeObserver | null = null;
+
+function updateStepsFade() {
+    const nav = stepsNav.value;
+    if (!nav) return;
+    stepsFade.value = { left: nav.scrollLeft > 2, right: nav.scrollLeft + nav.clientWidth < nav.scrollWidth - 2 };
+}
+
+watch(stepsNav, (nav) => {
+    stepsObserver?.disconnect();
+    stepsObserver = null;
+    if (nav && typeof ResizeObserver !== 'undefined') {
+        stepsObserver = new ResizeObserver(updateStepsFade);
+        stepsObserver.observe(nav);
+    }
+    updateStepsFade();
+});
+
+watch(step, async () => {
+    await nextTick();
+    stepsNav.value?.querySelector('.su-tab.is-active')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    updateStepsFade();
+});
+
+onBeforeUnmount(() => stepsObserver?.disconnect());
 
 const currentGroup = computed(() => groups.value.find((group) => group.id === step.value));
 
@@ -912,6 +951,47 @@ async function downloadPdf(id: string, year: number, canton: string) {
     }
 }
 
+/** Déclaration dont on choisit l'export (fenêtre). */
+const exportTarget = ref<{ publicId: string; year: number; canton: string } | null>(null);
+const exportOpen = computed({
+    get: () => exportTarget.value !== null,
+    set: (open: boolean) => {
+        if (!open) exportTarget.value = null;
+    }
+});
+
+function askExport(target: { publicId: string; year: number; canton: string }) {
+    if (saving.value) return;
+    exportTarget.value = { publicId: target.publicId, year: target.year, canton: target.canton };
+}
+
+async function chooseExport(kind: TaxExportKind) {
+    const target = exportTarget.value;
+    if (!target) return;
+    exportTarget.value = null;
+    if (kind === 'pdf') await downloadPdf(target.publicId, target.year, target.canton);
+    else if (kind === 'bundle') await downloadBundle(target.publicId);
+    else await downloadExport(target.publicId, target.year, target.canton, kind);
+}
+
+/** Dossier de justificatifs : pièces numérotées dans l'ordre de la déclaration, assemblées sur l'appareil. */
+async function downloadBundle(id: string) {
+    if (saving.value) return;
+    saving.value = true;
+    error.value = '';
+    notice.value = '';
+    try {
+        const detail = declaration.value?.publicId === id ? declaration.value : await taxApi.get(id);
+        const bundle = await buildTaxBundle(detail, t);
+        saveBlob(bundle.blob, bundle.fileName);
+        notice.value = bundle.skipped ? t('taxPage.bundle.partial', { count: bundle.skipped }, bundle.skipped) : t('taxPage.bundle.done');
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
 /** Export des données (CSV pour un tableur, JSON pour garder tout le dossier). */
 async function downloadExport(id: string, year: number, canton: string, format: 'csv' | 'json') {
     error.value = '';
@@ -1129,8 +1209,7 @@ async function submitCorrection(payload: TaxCorrectPayload) {
                 :item="item"
                 :saving="saving"
                 @open="openReturn(item.publicId)"
-                @pdf="downloadPdf(item.publicId, item.year, item.canton)"
-                @export="(format) => downloadExport(item.publicId, item.year, item.canton, format)"
+                @export="askExport(item)"
                 @next="askNextYear(item)"
                 @file="askFile(item)"
                 @unfile="askUnfile(item)"
@@ -1142,7 +1221,13 @@ async function submitCorrection(payload: TaxCorrectPayload) {
 
     <AppPageShell v-else :title="detailTitle" :subtitle="detailSubtitle">
         <template #tabs>
-            <nav class="su-tabs" :aria-label="t('taxPage.steps')">
+            <nav
+                ref="stepsNav"
+                class="su-tabs tax-steps"
+                :class="{ 'has-more-left': stepsFade.left, 'has-more-right': stepsFade.right }"
+                :aria-label="t('taxPage.steps')"
+                @scroll.passive="updateStepsFade"
+            >
                 <button
                     v-for="item in steps"
                     :key="item.id"
@@ -1150,7 +1235,8 @@ async function submitCorrection(payload: TaxCorrectPayload) {
                     class="su-tab"
                     :class="{ 'is-active': step === item.id, 'is-done': isStepDone(item.id) }"
                     :aria-pressed="step === item.id"
-                    :aria-label="`${stepTitle(item)}, ${isStepDone(item.id) ? t('taxPage.stepDone') : t('taxPage.stepOpen')}`"
+                    :title="item.long"
+                    :aria-label="`${item.number} ${item.long}, ${isStepDone(item.id) ? t('taxPage.stepDone') : t('taxPage.stepOpen')}`"
                     @click="step = item.id"
                 >
                     <span class="su-tab__label" :data-label="stepTitle(item)">{{ stepTitle(item) }}</span>
@@ -1167,18 +1253,9 @@ async function submitCorrection(payload: TaxCorrectPayload) {
                 {{ t('taxPage.back') }}
             </button>
             <button
-                type="button"
-                class="su-btn"
-                :disabled="saving"
-                @click="downloadPdf(declaration.publicId, declaration.year, declaration.canton)"
-            >
-                <FileTextIcon :size="18" stroke-width="1.6" />
-                {{ t('taxPage.actions.pdf') }}
-            </button>
-            <button
                 v-if="!declaration.locked"
                 type="button"
-                class="su-btn"
+                class="su-btn su-btn--ink"
                 :disabled="saving"
                 @click="askFile({ publicId: declaration.publicId, year: declaration.year })"
             >
@@ -1195,24 +1272,39 @@ async function submitCorrection(payload: TaxCorrectPayload) {
                 <ArrowBackUpIcon :size="18" stroke-width="1.6" />
                 {{ t('taxPage.actions.unfile') }}
             </button>
-            <button
-                v-if="canCreateNextYear(declaration.year)"
-                type="button"
-                class="su-btn"
-                :disabled="saving"
-                @click="askNextYear({ publicId: declaration.publicId, year: declaration.year })"
-            >
-                <ArrowRightIcon :size="18" stroke-width="1.6" />
-                {{ t('taxPage.actions.nextYear', { year: declaration.year + 1 }) }}
+            <button type="button" class="su-btn" :disabled="saving" @click="askExport(declaration)">
+                <DownloadIcon :size="18" stroke-width="1.6" />
+                {{ t('taxPage.actions.export') }}
             </button>
-            <button
-                type="button"
-                class="su-btn"
-                :disabled="saving"
-                @click="askRemove({ publicId: declaration.publicId, year: declaration.year, canton: declaration.canton }, true)"
-            >
-                {{ t('taxPage.delete') }}
-            </button>
+            <v-menu location="bottom end" :offset="4">
+                <template #activator="{ props: menuProps }">
+                    <button v-bind="menuProps" type="button" class="su-btn" :disabled="saving" :aria-label="t('common.more')">
+                        <DotsIcon :size="18" stroke-width="1.75" />
+                    </button>
+                </template>
+                <v-sheet class="su-menu tax-actions-menu">
+                    <button
+                        v-if="canCreateNextYear(declaration.year)"
+                        type="button"
+                        class="su-menu-item"
+                        :disabled="saving"
+                        @click="askNextYear({ publicId: declaration.publicId, year: declaration.year })"
+                    >
+                        <span class="su-menu-item__icon"><ArrowRightIcon :size="18" stroke-width="1.6" /></span>
+                        <span class="su-menu-item__title">{{ t('taxPage.actions.nextYear', { year: declaration.year + 1 }) }}</span>
+                    </button>
+                    <div v-if="canCreateNextYear(declaration.year)" class="tax-actions-menu__sep" role="separator" />
+                    <button
+                        type="button"
+                        class="su-menu-item tax-actions-menu__delete"
+                        :disabled="saving"
+                        @click="askRemove({ publicId: declaration.publicId, year: declaration.year, canton: declaration.canton }, true)"
+                    >
+                        <span class="su-menu-item__icon su-menu-item__icon--danger"><TrashIcon :size="18" stroke-width="1.6" /></span>
+                        <span class="su-menu-item__title">{{ t('taxPage.actions.delete') }}</span>
+                    </button>
+                </v-sheet>
+            </v-menu>
         </template>
 
         <p v-if="error" class="tax-error" role="alert">{{ error }}</p>
@@ -1371,6 +1463,8 @@ async function submitCorrection(payload: TaxCorrectPayload) {
             </p>
         </div>
     </AppPageShell>
+
+    <TaxExportModal v-model="exportOpen" :saving="saving" :year="exportTarget?.year ?? 0" @choose="chooseExport" />
 
     <TaxPdfZoneModal v-model="zoneOpen" :file-public-id="readFile" :boxes="zoneItem?.boxes ?? []" :title="zoneItem?.label ?? ''" />
 

@@ -6,16 +6,14 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
     ArchiveIcon,
+    ArrowBackUpIcon,
     ArrowRightIcon,
     CircleCheckIcon,
-    CodeIcon,
     DotsIcon,
-    ArrowBackUpIcon,
-    FileTextIcon,
+    DownloadIcon,
     PencilIcon,
     PlayerPlayIcon,
     ProgressCheckIcon,
-    TableExportIcon,
     TrashIcon
 } from 'vue-tabler-icons';
 import type { TaxReturnListItem, TaxStatus } from '@/features/tax/types';
@@ -27,8 +25,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     open: [];
-    pdf: [];
-    export: [format: 'csv' | 'json'];
+    /** Ouvre le choix d'export (PDF, justificatifs, CSV, JSON). */
+    export: [];
     status: [status: TaxStatus];
     file: [];
     unfile: [];
@@ -69,27 +67,20 @@ function onActivate(event: MouseEvent) {
                             <span class="su-menu-item__icon"><PencilIcon :size="18" stroke-width="1.6" /></span>
                             <span class="su-menu-item__title">{{ t('taxPage.actions.open') }}</span>
                         </button>
-                        <button type="button" class="su-menu-item" :disabled="saving" @click="emit('pdf')">
-                            <span class="su-menu-item__icon"><FileTextIcon :size="18" stroke-width="1.6" /></span>
-                            <span class="su-menu-item__title">{{ t('taxPage.actions.pdf') }}</span>
-                        </button>
-                        <button type="button" class="su-menu-item" :disabled="saving" @click="emit('export', 'csv')">
-                            <span class="su-menu-item__icon"><TableExportIcon :size="18" stroke-width="1.6" /></span>
-                            <span class="su-menu-item__title">{{ t('taxPage.actions.exportCsv') }}</span>
-                        </button>
-                        <button type="button" class="su-menu-item" :disabled="saving" @click="emit('export', 'json')">
-                            <span class="su-menu-item__icon"><CodeIcon :size="18" stroke-width="1.6" /></span>
-                            <span class="su-menu-item__title">{{ t('taxPage.actions.exportJson') }}</span>
+                        <button type="button" class="su-menu-item" :disabled="saving" @click="emit('export')">
+                            <span class="su-menu-item__icon"><DownloadIcon :size="18" stroke-width="1.6" /></span>
+                            <span class="su-menu-item__title">{{ t('taxPage.actions.export') }}</span>
                         </button>
                         <button v-if="canCreateNext" type="button" class="su-menu-item" :disabled="saving" @click="emit('next')">
                             <span class="su-menu-item__icon"><ArrowRightIcon :size="18" stroke-width="1.6" /></span>
                             <span class="su-menu-item__title">{{ t('taxPage.actions.nextYear', { year: item.year + 1 }) }}</span>
                         </button>
+                        <div class="tax-actions-menu__sep" role="separator" />
                         <button v-if="!item.locked" type="button" class="su-menu-item" :disabled="saving" @click="emit('file')">
                             <span class="su-menu-item__icon"><CircleCheckIcon :size="18" stroke-width="1.6" /></span>
                             <span class="su-menu-item__title">{{ t('taxPage.actions.file') }}</span>
                         </button>
-                        <button v-if="item.locked" type="button" class="su-menu-item" :disabled="saving" @click="emit('unfile')">
+                        <button v-else type="button" class="su-menu-item" :disabled="saving" @click="emit('unfile')">
                             <span class="su-menu-item__icon"><ArrowBackUpIcon :size="18" stroke-width="1.6" /></span>
                             <span class="su-menu-item__title">{{ t('taxPage.actions.unfile') }}</span>
                         </button>
@@ -123,6 +114,7 @@ function onActivate(event: MouseEvent) {
                             <span class="su-menu-item__icon"><ArchiveIcon :size="18" stroke-width="1.6" /></span>
                             <span class="su-menu-item__title">{{ t('taxPage.actions.archive') }}</span>
                         </button>
+                        <div class="tax-actions-menu__sep" role="separator" />
                         <button type="button" class="su-menu-item tax-actions-menu__delete" :disabled="saving" @click="emit('remove')">
                             <span class="su-menu-item__icon su-menu-item__icon--danger"><TrashIcon :size="18" stroke-width="1.6" /></span>
                             <span class="su-menu-item__title">{{ t('taxPage.actions.delete') }}</span>
