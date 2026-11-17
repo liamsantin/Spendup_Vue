@@ -11,7 +11,7 @@ import { withReturnTo } from '@/utils/helpers/navigation-helpers';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import { useAuthStore } from '@/features/auth';
-import { taxApi } from '@/features/tax/api';
+import { taxApi, type TaxAcceptBody } from '@/features/tax/api';
 import { useCantonItems } from '@/features/tax/cantons';
 import TaxCreateModal, { type TaxCreatePayload } from '@/features/tax/components/TaxCreateModal.vue';
 import TaxDocumentsSection from '@/features/tax/components/TaxDocumentsSection.vue';
@@ -29,6 +29,7 @@ import { cleanIdentity, emptyHeader, emptyIdentity } from '@/features/tax/identi
 import { importTaxPdf } from '@/features/tax/import-return';
 import { readImportedFlag, writeImportedFlag } from '@/features/tax/imported-flag';
 import { clearPendingRead, dismissReadReport, forgetPendingRead, isImportedReturn, takePendingRead } from '@/features/tax/pending-read';
+import { compareWithPrevious, markAllToCheck, scopeMismatch, type ReadScope } from '@/features/tax/read-checks';
 import type { ReadLine, TotalCheck } from '@/features/tax/reader/types';
 import { buildTaxGroups, type TaxGroup } from '@/features/tax/steps';
 import { TAX_BASE, taxDetailPath, taxPublicIdFromPath } from '@/features/tax/paths';
@@ -81,7 +82,7 @@ const suggestions = ref<TaxSuggestion[]>([]);
 const suggestionKey = (item: TaxSuggestion) => `${item.code}|${item.person}|${item.competence}`;
 /** Lecture locale d'un PDF importé, à vérifier (persistée sur l'appareil). */
 const readItems = ref<TaxSuggestion[]>([]);
-const readReport = ref<{ profileLabel: string; totals: TotalCheck[]; unmapped: ReadLine[] } | null>(null);
+const readReport = ref<{ profileLabel: string; scope?: ReadScope; totals: TotalCheck[]; unmapped: ReadLine[] } | null>(null);
 const filesStore = useFilesStore();
 const attaching = ref(false);
 const attachLine = ref('');
@@ -216,6 +217,9 @@ async function refresh() {
         const pending = takePendingRead(publicId.value);
         readItems.value = [...new Map(pending.items.map((item) => [suggestionKey(item), item])).values()];
         readReport.value = pending.report;
+        // Un formulaire d'un autre canton ou d'une autre année : plus rien n'est « vérifié ».
+        if (scopeMismatch(pending.report?.scope, detail.canton, detail.year)) readItems.value = markAllToCheck(readItems.value);
+        if (readItems.value.length) void compareWithPreviousYear(detail);
         if (pending) {
             const known = new Set(suggestions.value.map((item) => `${item.code}|${item.person}|${item.competence}`));
             suggestions.value = [
@@ -235,6 +239,22 @@ async function refresh() {
         error.value = getErrorMessage(AppError.fromUnknown(e));
     } finally {
         loading.value = false;
+    }
+}
+
+/** Compare les montants lus avec la déclaration de l'an dernier (même canton) : un écart anormal est à vérifier. */
+async function compareWithPreviousYear(current: TaxReturn) {
+    try {
+        const { items } = await taxApi.list();
+        const previous = items.find(
+            (item) => item.year === current.year - 1 && item.canton === current.canton && item.publicId !== current.publicId
+        );
+        if (!previous) return;
+        const detail = await taxApi.get(previous.publicId);
+        if (declaration.value?.publicId !== current.publicId) return;
+        readItems.value = compareWithPrevious(readItems.value, detail);
+    } catch {
+        /* la comparaison est un plus : sans elle, la lecture reste utilisable */
     }
 }
 
@@ -484,20 +504,25 @@ const stepDocuments = computed(() => {
 
 const stepLines = computed(() => currentGroup.value?.lines ?? []);
 
+/** Un montant lu dans le PDF importé garde l'origine « importée » ; les autres sont des propositions de l'application. */
+function acceptBody(item: TaxSuggestion): TaxAcceptBody {
+    const fromPdf = readItems.value.some((candidate) => suggestionKey(candidate) === suggestionKey(item));
+    return {
+        code: item.code,
+        person: item.person,
+        competence: item.competence,
+        amount: item.amount,
+        origin: fromPdf ? 'importee' : 'propositionAcceptee'
+    };
+}
+
 async function acceptSuggestion(item: TaxSuggestion) {
     const current = declaration.value;
     if (!current) return;
     saving.value = true;
     error.value = '';
     try {
-        apply(
-            await taxApi.acceptSuggestion(current.publicId, {
-                code: item.code,
-                person: item.person,
-                competence: item.competence,
-                amount: item.amount
-            })
-        );
+        apply(await taxApi.acceptSuggestion(current.publicId, acceptBody(item)));
         forgetPendingRead(current.publicId, item.code, item.competence, item.person);
         readItems.value = readItems.value.filter(
             (candidate) => !(candidate.code === item.code && candidate.competence === item.competence && candidate.person === item.person)
@@ -522,7 +547,7 @@ async function acceptMany(items: TaxSuggestion[]) {
         apply(
             await taxApi.acceptSuggestions(
                 current.publicId,
-                items.map((item) => ({ code: item.code, person: item.person, competence: item.competence, amount: item.amount }))
+                items.map((item) => acceptBody(item))
             )
         );
         for (const item of items) forgetPendingRead(current.publicId, item.code, item.competence, item.person);
@@ -860,6 +885,9 @@ async function setReturnStatus(item: TaxReturnListItem, status: TaxStatus) {
         <TaxImportReview
             v-if="readReport"
             :profile-label="readReport.profileLabel"
+            :scope="readReport.scope"
+            :canton="declaration.canton"
+            :year="declaration.year"
             :items="readItems"
             :totals="readReport.totals"
             :unmapped="readReport.unmapped"

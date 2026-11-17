@@ -7,11 +7,17 @@ defineOptions({ name: 'TaxImportReview' });
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { scopeMismatch, type ReadScope } from '@/features/tax/read-checks';
 import type { ReadLine, TotalCheck } from '@/features/tax/reader/types';
 import type { TaxSuggestion } from '@/features/tax/types';
 
 const props = defineProps<{
     profileLabel: string;
+    /** Canton et année du formulaire lu. */
+    scope?: ReadScope;
+    /** Canton et année de la déclaration ouverte. */
+    canton: string;
+    year: number;
     items: TaxSuggestion[];
     totals: TotalCheck[];
     unmapped: ReadLine[];
@@ -26,6 +32,10 @@ const { t, locale } = useI18n();
 const checked = computed(() => props.totals.filter((total) => total.status !== 'missing'));
 const okCount = computed(() => checked.value.filter((total) => total.status === 'ok').length);
 const mismatches = computed(() => props.totals.filter((total) => total.status === 'mismatch'));
+const wrongForm = computed(() => scopeMismatch(props.scope, props.canton, props.year));
+const verifiedCount = computed(() => props.items.filter((item) => item.check === 'verified').length);
+const toCheckCount = computed(() => props.items.length - verifiedCount.value);
+const anomalies = computed(() => props.items.filter((item) => item.previousAmount != null).length);
 
 function money(value: number) {
     return new Intl.NumberFormat(locale.value, { style: 'currency', currency: 'CHF' }).format(value);
@@ -39,6 +49,10 @@ function money(value: number) {
             <button type="button" class="su-btn su-btn--ghost" @click="emit('dismiss')">{{ t('taxPage.review.dismiss') }}</button>
         </header>
 
+        <p v-if="wrongForm && scope" class="tax-review__checks is-warn" role="alert">
+            {{ t('taxPage.review.wrongForm', { formCanton: scope.canton, formYear: scope.year, canton, year }) }}
+        </p>
+
         <p v-if="checked.length" class="tax-review__checks" :class="{ 'is-warn': mismatches.length }">
             {{ t('taxPage.review.checks', { ok: okCount, n: checked.length }, checked.length) }}
             <template v-if="mismatches.length">
@@ -48,6 +62,13 @@ function money(value: number) {
 
         <p class="tax-review__muted">
             {{ items.length ? t('taxPage.review.detected', { count: items.length }, items.length) : t('taxPage.review.none') }}
+            <template v-if="items.length">
+                {{ t('taxPage.review.split', { verified: verifiedCount, toCheck: toCheckCount }) }}
+            </template>
+        </p>
+
+        <p v-if="anomalies" class="tax-review__checks is-warn">
+            {{ t('taxPage.review.previousYear', { count: anomalies }, anomalies) }}
         </p>
 
         <details v-if="unmapped.length" class="tax-review__unmapped">

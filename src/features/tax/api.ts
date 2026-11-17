@@ -11,6 +11,15 @@ import type {
     UpsertTaxEntryPayload
 } from '@/features/tax/types';
 
+/** Proposition acceptée. `origin` : `importee` pour un montant lu dans un PDF, sinon `propositionAcceptee` (défaut). */
+export interface TaxAcceptBody {
+    code: string;
+    person: string;
+    competence: string;
+    amount: number;
+    origin?: 'propositionAcceptee' | 'importee';
+}
+
 export const taxApi = {
     list() {
         return fetchWrapper.get('/api/tax-returns') as Promise<TaxReturnListResult>;
@@ -61,12 +70,12 @@ export const taxApi = {
         return fetchWrapper.get(`/api/tax-returns/${encodeURIComponent(publicId)}/suggestions`) as Promise<TaxSuggestionList>;
     },
 
-    acceptSuggestion(publicId: string, body: { code: string; person: string; competence: string; amount: number }) {
+    acceptSuggestion(publicId: string, body: TaxAcceptBody) {
         return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/suggestions/accept`, body) as Promise<TaxReturn>;
     },
 
     /** Plusieurs propositions en une requête : tout est inscrit, ou rien. */
-    acceptSuggestions(publicId: string, items: { code: string; person: string; competence: string; amount: number }[]) {
+    acceptSuggestions(publicId: string, items: TaxAcceptBody[]) {
         return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/suggestions/accept-many`, {
             items
         }) as Promise<TaxReturn>;

@@ -612,7 +612,7 @@ function reportEntries(tax: DemoTaxReturn, body: { kind: TaxEntryKind; person: T
     return toResponse(tax);
 }
 
-function acceptSuggestion(tax: DemoTaxReturn, body: { code: string; person: string; competence: string; amount: number }) {
+function acceptSuggestion(tax: DemoTaxReturn, body: { code: string; person: string; competence: string; amount: number; origin?: string }) {
     const definition = findLine(body.code) ?? notFound('Ligne inconnue.');
     const person = parsePerson(body.person);
     ensurePersonAllowed(tax, person);
@@ -620,12 +620,17 @@ function acceptSuggestion(tax: DemoTaxReturn, body: { code: string; person: stri
     if (!['cantonal', 'federal', 'both'].includes(competence)) invalid('Ressort invalide (cantonal, federal, both).');
     if (definition.splits === (competence === 'both')) invalid('Ressort incompatible avec cette ligne.');
     const amount = normalizeAmount(body.amount) ?? invalid('Montant invalide.');
-    writeAmount(tax, body.code, person, competence, amount, 'propositionAcceptee');
+    const origin = body.origin || 'propositionAcceptee';
+    if (origin !== 'propositionAcceptee' && origin !== 'importee') invalid('Origine invalide (propositionAcceptee, importee).');
+    writeAmount(tax, body.code, person, competence, amount, origin);
     return toResponse(tax);
 }
 
 /** Plusieurs propositions d'un coup, comme l'API : tout est inscrit, ou rien (case remplie, case répétée, liste vide). */
-function acceptSuggestions(tax: DemoTaxReturn, body: { items: { code: string; person: string; competence: string; amount: number }[] }) {
+function acceptSuggestions(
+    tax: DemoTaxReturn,
+    body: { items: { code: string; person: string; competence: string; amount: number; origin?: string }[] }
+) {
     const items = body.items ?? [];
     if (!items.length) invalid('Aucune proposition à accepter.');
     if (items.length > 200) invalid('Trop de propositions à la fois.');
@@ -774,7 +779,7 @@ export function routeTax(method: string, path: string, body: unknown): TaxResult
         return ok(
             acceptSuggestions(
                 findReturn(acceptMany.id),
-                body as { items: { code: string; person: string; competence: string; amount: number }[] }
+                body as { items: { code: string; person: string; competence: string; amount: number; origin?: string }[] }
             )
         );
     const accept = match(path, '/api/tax-returns/:id/suggestions/accept');

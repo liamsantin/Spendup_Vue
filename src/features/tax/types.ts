@@ -46,7 +46,7 @@ export interface TaxLineValue {
     competence: TaxCompetence;
     amount: number;
     currency: string;
-    origin: 'saisie' | 'propositionAcceptee';
+    origin: 'saisie' | 'propositionAcceptee' | 'importee';
 }
 
 export interface TaxLine {
@@ -158,6 +158,8 @@ export interface TaxSuggestion {
     originLabel: string;
     /** Présent seulement pour un montant lu dans un PDF. Absent : à vérifier. */
     check?: TaxCheck;
+    /** Montant de l'an dernier sur la même ligne, quand l'écart est anormal (probable erreur de lecture). */
+    previousAmount?: number;
     source?: TaxSuggestionSource;
     sources?: TaxSuggestionSourceItem[];
 }

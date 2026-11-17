@@ -52,6 +52,9 @@ function acceptAlerts() {
                     <small class="tax-check" :class="`is-${checkOf(item)}`">{{ t(`taxPage.check.${checkOf(item)}`) }}</small>
                 </p>
                 <p class="tax-fiche__detail">{{ item.originLabel }}</p>
+                <p v-if="item.previousAmount != null" class="tax-fiche__detail tax-check is-toCheck">
+                    {{ t('taxPage.check.previousYear', { amount: money(item.previousAmount) }) }}
+                </p>
             </div>
             <p class="tax-fiche__amount">{{ money(item.amount) }}</p>
             <button type="button" class="su-btn su-btn--ink" :disabled="saving" @click="emit('accept', item)">

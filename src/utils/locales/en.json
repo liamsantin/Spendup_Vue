@@ -5236,7 +5236,8 @@
         },
         "check": {
             "verified": "matched by a total",
-            "toCheck": "to check"
+            "toCheck": "to check",
+            "previousYear": "Differs from last year ({amount}): check the decimals and digits"
         },
         "accept": "Accept",
         "documentsTitle": "Documents",
@@ -5391,7 +5392,10 @@
             "spouse": "spouse",
             "acceptSelected": "Accept selection ({count})",
             "unmapped": "{count} line read with no equivalent in the app",
-            "code": "code {code}, p. {page}"
+            "code": "code {code}, p. {page}",
+            "split": "{verified} matched by a total, {toCheck} to check.",
+            "wrongForm": "This PDF is a {formCanton} {formYear} form, the return is {canton} {year}. Nothing is treated as verified.",
+            "previousYear": "{count} amount very different from last year, probably misread. | {count} amounts very different from last year, probably misread."
         }
     }
 }

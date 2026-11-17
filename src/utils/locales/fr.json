@@ -5236,7 +5236,8 @@
         },
         "check": {
             "verified": "vérifiée par un total",
-            "toCheck": "à vérifier"
+            "toCheck": "à vérifier",
+            "previousYear": "Écart avec l’an dernier ({amount}) : vérifiez la virgule et les chiffres"
         },
         "accept": "Accepter",
         "documentsTitle": "Pièces",
@@ -5391,7 +5392,10 @@
             "spouse": "conjoint",
             "acceptSelected": "Accepter la sélection ({count})",
             "unmapped": "{count} ligne lue sans équivalent dans l’application",
-            "code": "code {code}, p. {page}"
+            "code": "code {code}, p. {page}",
+            "split": "{verified} vérifiés par un total, {toCheck} à vérifier.",
+            "wrongForm": "Ce PDF est un formulaire {formCanton} {formYear}, la déclaration est {canton} {year}. Rien n’est considéré comme vérifié.",
+            "previousYear": "{count} montant très différent de l’an dernier, probablement mal lu. | {count} montants très différents de l’an dernier, probablement mal lus."
         }
     }
 }

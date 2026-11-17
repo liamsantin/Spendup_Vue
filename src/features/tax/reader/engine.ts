@@ -236,6 +236,8 @@ export function readForm(pages: PageTokens[], profile: FormProfile, labelFor: (t
     return {
         profileId: profile.id,
         profileLabel: profile.label,
+        canton: profile.canton,
+        year: profile.year,
         lines,
         suggestions,
         unmapped: lines.filter((line) => !line.target),

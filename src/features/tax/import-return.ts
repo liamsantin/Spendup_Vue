@@ -55,7 +55,13 @@ export async function importTaxPdf({ file, year, canton, name, t }: ImportTaxPdf
                 notice = readCount ? t('taxPage.importRead', { count: readCount }) : t('taxPage.importReadNone');
                 stashPendingRead(
                     createdId,
-                    { profileLabel: report.profileLabel, items: report.suggestions, totals: report.totals, unmapped: report.unmapped },
+                    {
+                        profileLabel: report.profileLabel,
+                        scope: { canton: report.canton, year: report.year },
+                        items: report.suggestions,
+                        totals: report.totals,
+                        unmapped: report.unmapped
+                    },
                     notice
                 );
                 // Des montants pour la personne 2 : le couple doit être ouvert pour pouvoir les accepter.

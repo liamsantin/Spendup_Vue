@@ -1,4 +1,5 @@
 import type { TotalCheck, ReadLine } from '@/features/tax/reader/types';
+import type { ReadScope } from '@/features/tax/read-checks';
 import type { TaxSuggestion } from '@/features/tax/types';
 
 /**
@@ -9,6 +10,8 @@ import type { TaxSuggestion } from '@/features/tax/types';
 
 export interface StoredRead {
     profileLabel: string;
+    /** Canton et année du formulaire lu ; absent sur une lecture enregistrée avant ce contrôle. */
+    scope?: ReadScope;
     items: TaxSuggestion[];
     totals: TotalCheck[];
     unmapped: ReadLine[];
@@ -83,7 +86,9 @@ export function takePendingRead(publicId: string): PendingRead {
     notices.delete(publicId);
     const stored = load(publicId);
     if (!stored) return { items: [], notice, report: null };
-    const report = stored.dismissed ? null : { profileLabel: stored.profileLabel, totals: stored.totals, unmapped: stored.unmapped };
+    const report = stored.dismissed
+        ? null
+        : { profileLabel: stored.profileLabel, scope: stored.scope, totals: stored.totals, unmapped: stored.unmapped };
     return { items: stored.items, notice, report };
 }
 

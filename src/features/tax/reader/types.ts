@@ -124,6 +124,9 @@ export interface TotalCheck {
 export interface ReadReport {
     profileId: string;
     profileLabel: string;
+    /** Canton et année du formulaire reconnu. */
+    canton: string;
+    year: number;
     lines: ReadLine[];
     suggestions: TaxSuggestion[];
     /** Lignes lues qui n'ont pas d'équivalent dans l'application. */
