@@ -41,6 +41,22 @@ describe('tax paths', () => {
         ).toContain('/patrimoine/actifs/A2');
     });
 
+    it('ouvre la page des comptes avec le compte mis en avant pour un solde au 31.12', () => {
+        expect(taxSuggestionPath({ code: 'asset.cashAndSecurities', source: 'account' })).toBe('/app/finances/comptes');
+        const accounts = taxSuggestionTargets({
+            code: 'asset.cashAndSecurities',
+            source: 'account',
+            sources: [
+                { publicId: 'ACC1', name: 'Compte courant' },
+                { publicId: 'ACC 2', name: 'Épargne' }
+            ]
+        });
+        expect(accounts).toEqual([
+            { name: 'Compte courant', path: '/app/finances/comptes?account=ACC1' },
+            { name: 'Épargne', path: '/app/finances/comptes?account=ACC%202' }
+        ]);
+    });
+
     it('retombe sur la page de liste sans détail, et ne propose rien pour un relevé importé', () => {
         expect(taxSuggestionTargets({ code: 'liability.debts', source: 'liability' })).toEqual([
             { name: '', path: '/app/patrimoine/dettes' }

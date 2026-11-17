@@ -5,6 +5,13 @@ import { REAL_ESTATE_PATHS, realEstateDetailPath } from '@/features/real-estate/
 import { RECURRENCES_PATHS, recurrenceDetailPath } from '@/features/recurring-payments/paths';
 import type { TaxSuggestion } from '@/features/tax/types';
 
+/** Page des comptes : n'a pas de fiche à part, un compte s'ouvre en avant par `?account=<publicId>`. */
+const ACCOUNTS_PAGE = '/app/finances/comptes';
+
+function accountFocusPath(publicId: string): string {
+    return `${ACCOUNTS_PAGE}?account=${encodeURIComponent(publicId)}`;
+}
+
 /** Brouillon de déclaration : `/app/analyses/impots`. */
 export const TAX_BASE = '/app/analyses/impots';
 
@@ -27,6 +34,7 @@ export function taxSuggestionPath(item: Pick<TaxSuggestion, 'code' | 'source'>):
     if (item.source === 'recurringIncome') return RECURRENCES_PATHS.revenus;
     if (item.source === 'liability') return DEBTS_PATHS.liabilities;
     if (item.source === 'asset') return item.code === 'asset.property' ? REAL_ESTATE_PATHS.list : ASSETS_PATHS.list;
+    if (item.source === 'account') return ACCOUNTS_PAGE;
     return null;
 }
 
@@ -39,6 +47,7 @@ function sourceDetailPath(item: Pick<TaxSuggestion, 'code' | 'source'>, publicId
     if (item.source === 'recurringIncome') return recurrenceDetailPath('income', publicId);
     if (item.source === 'liability') return liabilityDetailPath(publicId);
     if (item.source === 'asset') return item.code === 'asset.property' ? realEstateDetailPath(publicId) : assetDetailPath(publicId);
+    if (item.source === 'account') return accountFocusPath(publicId);
     return null;
 }
 

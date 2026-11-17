@@ -198,8 +198,8 @@ export interface TaxReturnListResult {
     totalCount: number;
 }
 
-/** D'où vient une proposition : revenu récurrent, dette, actif, ou relevé importé (sans page à rouvrir). */
-export type TaxSuggestionSource = 'recurringIncome' | 'liability' | 'asset' | 'statement';
+/** D'où vient une proposition : revenu récurrent, dette, actif, compte (solde au 31.12), ou relevé importé (sans page à rouvrir). */
+export type TaxSuggestionSource = 'recurringIncome' | 'liability' | 'asset' | 'account' | 'statement';
 
 /** Un élément de l'application qui compose une proposition (revenu récurrent, dette, actif). */
 export interface TaxSuggestionSourceItem {

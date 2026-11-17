@@ -38,11 +38,18 @@ export const TAX_GROUP_DEFINITIONS: TaxGroupDefinition[] = [
         section: 'deductions',
         codes: ['deduction.insurance', 'deduction.healthGross', 'deduction.healthReimbursed', 'deduction.health', 'deduction.handicap']
     },
-    { id: 'famille', section: 'deductions', codes: ['deduction.childcare', 'deduction.social'] },
+    { id: 'famille', section: 'deductions', codes: ['deduction.childcare', 'deduction.alimonyPaid', 'deduction.social'] },
     {
         id: 'autres',
         section: 'deductions',
-        codes: ['deduction.jobExpenses', 'deduction.debtInterest', 'deduction.education', 'deduction.donations', 'deduction.other']
+        codes: [
+            'deduction.jobExpenses',
+            'deduction.debtInterest',
+            'deduction.education',
+            'deduction.donations',
+            'deduction.politicalContributions',
+            'deduction.other'
+        ]
     },
     {
         id: 'fortune',
