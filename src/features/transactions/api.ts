@@ -1,4 +1,5 @@
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
+import type { SetTransactionTaxNaturePayload, TransactionTaxNatureResult } from '@/features/transactions/tax-nature';
 import {
     TRANSACTION_PAGE_SIZE_DEFAULT,
     TRANSACTION_PAGE_SIZE_MAX,
@@ -60,6 +61,14 @@ export const transactionsApi = {
 
     remove(publicId: string) {
         return fetchWrapper.delete(`/api/transactions/${encodeURIComponent(publicId)}`) as Promise<void>;
+    },
+
+    /** Confirme, écarte ou réinitialise la nature fiscale (module Impôts). */
+    setTaxNature(txPublicId: string, body: SetTransactionTaxNaturePayload) {
+        return fetchWrapper.put(
+            `/api/transactions/${encodeURIComponent(txPublicId)}/tax-nature`,
+            body
+        ) as Promise<TransactionTaxNatureResult>;
     },
 
     attachFile(txPublicId: string, filePublicId: string) {

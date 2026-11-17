@@ -2057,6 +2057,21 @@
         }
     },
     "transactionsPage": {
+        "taxNature": {
+            "title": "Nature fiscale",
+            "noneHint": "Aucune nature. Facultatif : sert à préparer votre déclaration d’impôts.",
+            "choose": "Choisir une nature",
+            "change": "Changer",
+            "confirm": "Confirmer",
+            "dismiss": "Écarter",
+            "reset": "Revenir à la suggestion",
+            "states": {
+                "none": "Aucune",
+                "suggested": "Suggérée, à confirmer",
+                "confirmed": "Confirmée",
+                "dismissed": "Écartée"
+            }
+        },
         "title": "Transactions",
         "titleForAccount": "Transactions du compte : {name}",
         "titleForRecurrence": "Transactions de récurrence : {name}",

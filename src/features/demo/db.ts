@@ -180,6 +180,8 @@ function transaction(input: {
     tierPublicId?: string | null;
     tagPublicIds?: string[];
     savingsGoalPublicId?: string | null;
+    taxNature?: string | null;
+    taxNatureStatus?: 'confirmee' | 'ecartee' | null;
 }): Transaction {
     const movements: TransactionMovement[] =
         input.type === 'transfert'
@@ -214,7 +216,9 @@ function transaction(input: {
         files: [],
         savingsGoalPublicId: input.savingsGoalPublicId ?? null,
         tagPublicIds: input.tagPublicIds ?? [],
-        assetPublicId: null
+        assetPublicId: null,
+        taxNature: input.taxNature ?? null,
+        taxNatureStatus: input.taxNatureStatus ?? null
     };
 }
 
@@ -369,6 +373,36 @@ export function createDemoDb(): DemoDb {
                 accountPublicId: 'ACCCOUR',
                 categoryPublicId: 'CATGROC',
                 tierPublicId: 'TIERMIG'
+            }),
+            // Nature fiscale : la catégorie suggère, la dernière est déjà confirmée.
+            transaction({
+                publicId: 'TXN0010',
+                type: 'depense',
+                label: 'Prime assurance maladie',
+                amount: 412,
+                operationDate: '2026-11-01',
+                accountPublicId: 'ACCCOUR',
+                categoryPublicId: 'CATHINS'
+            }),
+            transaction({
+                publicId: 'TXN0011',
+                type: 'depense',
+                label: 'Dr Martin',
+                amount: 95,
+                operationDate: '2026-10-22',
+                accountPublicId: 'ACCCOUR',
+                categoryPublicId: 'CATMEDX'
+            }),
+            transaction({
+                publicId: 'TXN0012',
+                type: 'depense',
+                label: 'Dentiste',
+                amount: 180,
+                operationDate: '2026-10-09',
+                accountPublicId: 'ACCCOUR',
+                categoryPublicId: 'CATMEDX',
+                taxNature: 'medicalExpense',
+                taxNatureStatus: 'confirmee'
             })
         ],
         budgets: [],

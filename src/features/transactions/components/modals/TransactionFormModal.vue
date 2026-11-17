@@ -9,6 +9,8 @@ import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
+import TransactionTaxNature from '@/features/transactions/components/forms/TransactionTaxNature.vue';
+import type { SetTransactionTaxNaturePayload } from '@/features/transactions/tax-nature';
 import { categorySelectItems } from '@/features/categories/payload';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
@@ -651,6 +653,27 @@ async function onDetachAttachment(file: TransactionFile) {
     }
 }
 
+/** Transaction à jour (cache du store) : porte la nature fiscale après un geste. */
+const liveTransaction = computed(() => {
+    const current = editTransaction.value;
+    if (!current) return null;
+    return store.allKnownItems().find((item) => item.publicId === current.publicId) ?? current;
+});
+
+/** Nature par défaut de la catégorie choisie dans le formulaire (suggestion, jamais appliquée seule). */
+const categoryTaxNature = computed(() => categoriesStore.findByPublicId(form.categoryPublicId ?? '')?.taxNature ?? null);
+
+async function onTaxNatureChange(payload: SetTransactionTaxNaturePayload) {
+    localError.message = null;
+    if (!editTransaction.value || !canEditFiles.value) return;
+    try {
+        await store.setTransactionTaxNature(editTransaction.value.publicId, payload);
+    } catch (e: unknown) {
+        const err = AppError.fromUnknown(e);
+        localError.message = err.status === 404 ? t('transactionsPage.errors.notFound') : err.message;
+    }
+}
+
 function onOpenAttachment(file: TransactionFile) {
     previewFile.value = file;
     previewOpen.value = true;
@@ -725,6 +748,15 @@ function onOpenAttachment(file: TransactionFile) {
                     :tier-hint="tierHint"
                     :savings-goal-hint="savingsGoalHint"
                     :asset-hint="assetHint"
+                />
+                <TransactionTaxNature
+                    v-if="isEdit && liveTransaction && form.type !== 'transfert'"
+                    :tax-nature="liveTransaction.taxNature"
+                    :tax-nature-status="liveTransaction.taxNatureStatus"
+                    :category-nature="categoryTaxNature"
+                    :transaction-type="form.type"
+                    :disabled="store.acting || !canEditFiles"
+                    @change="onTaxNatureChange"
                 />
                 <button
                     v-if="showUnlinkFromBudget"

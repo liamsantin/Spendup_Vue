@@ -2057,6 +2057,21 @@
         }
     },
     "transactionsPage": {
+        "taxNature": {
+            "title": "Tax nature",
+            "noneHint": "No nature. Optional: used to prepare your tax return.",
+            "choose": "Choose a nature",
+            "change": "Change",
+            "confirm": "Confirm",
+            "dismiss": "Dismiss",
+            "reset": "Back to the suggestion",
+            "states": {
+                "none": "None",
+                "suggested": "Suggested, to confirm",
+                "confirmed": "Confirmed",
+                "dismissed": "Dismissed"
+            }
+        },
         "title": "Transactions",
         "titleForAccount": "Account transactions: {name}",
         "titleForRecurrence": "Recurring transactions: {name}",

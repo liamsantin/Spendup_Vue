@@ -15,8 +15,22 @@ describe('handleDemoRequest', () => {
             items: { label: string }[];
             totalCount: number;
         };
-        expect(november.totalCount).toBe(6);
+        expect(november.totalCount).toBe(7);
         expect(november.items.some((item) => item.label === 'Salaire octobre')).toBe(false);
+    });
+
+    it('pose, écarte et réinitialise la nature fiscale d’une transaction', () => {
+        const confirmed = handleDemoRequest('PUT', '/api/transactions/TXN0011/tax-nature', { taxNature: 'medicalExpense' }) as {
+            taxNature: string | null;
+            taxNatureStatus: string | null;
+        };
+        expect(confirmed).toMatchObject({ taxNature: 'medicalExpense', taxNatureStatus: 'confirmee' });
+
+        const dismissed = handleDemoRequest('PUT', '/api/transactions/TXN0011/tax-nature', { taxNature: null, dismissed: true });
+        expect(dismissed).toMatchObject({ taxNature: null, taxNatureStatus: 'ecartee' });
+
+        const reset = handleDemoRequest('PUT', '/api/transactions/TXN0011/tax-nature', { taxNature: null });
+        expect(reset).toMatchObject({ taxNature: null, taxNatureStatus: null });
     });
 
     it('crée une dépense et met à jour le solde et le budget', () => {

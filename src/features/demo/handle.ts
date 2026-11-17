@@ -1,3 +1,4 @@
+import type { SetTransactionTaxNaturePayload } from '@/features/transactions/tax-nature';
 import { AppError } from '@/utils/errors/app-error';
 import type { CreateAliasPayload, UpdateAliasPayload } from '@/features/aliases/types';
 import type { CreateAccountPayload, UpdateAccountPayload } from '@/features/accounts/types';
@@ -171,6 +172,8 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
 
     if (path === '/api/transactions' && method === 'GET') return ok(listTransactions(query));
     if (path === '/api/transactions' && method === 'POST') return ok(createTransaction(body as CreateTransactionPayload));
+    const txNatureId = match(path, '/api/transactions/:id/tax-nature');
+    if (txNatureId && method === 'PUT') return ok(setTransactionTaxNature(txNatureId.id, body as SetTransactionTaxNaturePayload));
     const txId = match(path, '/api/transactions/:id');
     if (txId && method === 'GET') return ok(findTx(txId.id));
     if (txId && method === 'PUT') return ok(updateTransaction(txId.id, body as UpdateTransactionPayload));
@@ -436,6 +439,22 @@ function findTx(id: string) {
     const item = demoDb().transactions.find((row) => row.publicId === id);
     if (!item) notFound('Transaction introuvable.');
     return item;
+}
+
+function setTransactionTaxNature(id: string, body: SetTransactionTaxNaturePayload) {
+    const tx = findTx(id);
+    const nature = body.taxNature?.trim() || null;
+    if (nature) {
+        tx.taxNature = nature;
+        tx.taxNatureStatus = 'confirmee';
+    } else if (body.dismissed) {
+        tx.taxNature = null;
+        tx.taxNatureStatus = 'ecartee';
+    } else {
+        tx.taxNature = null;
+        tx.taxNatureStatus = null;
+    }
+    return { publicId: tx.publicId, taxNature: tx.taxNature, taxNatureStatus: tx.taxNatureStatus };
 }
 
 function updateTransaction(id: string, body: UpdateTransactionPayload) {

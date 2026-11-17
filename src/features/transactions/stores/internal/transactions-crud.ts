@@ -3,6 +3,7 @@ import { ASSET_NOT_FOUND_MESSAGE } from '@/features/assets/types';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { involvedAccountPublicIds, normalizeTransaction, sanitizeFilePublicIds } from '@/features/transactions/format';
 import { transactionsApi } from '@/features/transactions/api';
+import type { SetTransactionTaxNaturePayload } from '@/features/transactions/tax-nature';
 import { canWriteTransaction, canWriteTransactions, canWriteTransfer } from '@/features/transactions/rights';
 import { buildCreateTransactionPayload, buildUpdateTransactionPayload, type TransactionFormFields } from '@/features/transactions/payload';
 import { refreshTagCountersIfLoaded } from '@/features/tags/stores/tags-store';
@@ -347,6 +348,29 @@ export function createTransactionsCrud(state: TransactionsState) {
         }
     }
 
+    /**
+     * Geste sur la nature fiscale : n'altère ni montant ni mouvement, seulement la nature
+     * de la transaction en cache.
+     */
+    async function setTransactionTaxNature(txPublicId: string, body: SetTransactionTaxNaturePayload) {
+        beginActing();
+        clearError();
+        try {
+            const result = await transactionsApi.setTaxNature(txPublicId, body);
+            const known = state.allKnownItems().find((item) => item.publicId === txPublicId);
+            if (known) {
+                upsertItem({ ...known, taxNature: result.taxNature, taxNatureStatus: result.taxNatureStatus });
+            }
+            return result;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
     async function attachTransactionFile(txPublicId: string, filePublicId: string) {
         beginActing();
         clearError();
@@ -506,6 +530,7 @@ export function createTransactionsCrud(state: TransactionsState) {
         createTransaction,
         updateTransaction,
         attachTransactionFile,
+        setTransactionTaxNature,
         detachTransactionFile,
         deleteTransaction,
         refetchAccount,

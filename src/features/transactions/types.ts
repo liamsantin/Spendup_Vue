@@ -1,3 +1,5 @@
+import type { TransactionTaxNatureStatus } from '@/features/transactions/tax-nature';
+
 export type TransactionType = 'depense' | 'revenu' | 'transfert';
 export type TransactionStatus = 'validee' | 'rapprochee';
 export type TransactionSource = 'manuelle' | 'recurrence' | 'import';
@@ -63,6 +65,10 @@ export type Transaction = {
      * ou si le viewer n’en est pas le propriétaire (compte partagé).
      */
     assetPublicId: string | null;
+    /** Nature fiscale confirmée sur la transaction (module Impôts), ou `null`. */
+    taxNature?: string | null;
+    /** `confirmee`, `ecartee`, ou `null` : la suggestion de la catégorie s'applique. */
+    taxNatureStatus?: TransactionTaxNatureStatus | null;
 };
 
 export type TransactionList = {
