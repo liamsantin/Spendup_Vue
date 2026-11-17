@@ -718,6 +718,16 @@
         }
     },
     "recurrencesPage": {
+        "insuranceTypes": {
+            "healthBasic": "Assurance maladie de base",
+            "healthSupplementary": "Assurance maladie complémentaire",
+            "life": "Assurance vie ou 3e pilier B",
+            "accident": "Assurance accident",
+            "householdLiability": "Ménage et responsabilité civile",
+            "vehicle": "Assurance véhicule",
+            "legalProtection": "Protection juridique",
+            "other": "Autre assurance"
+        },
         "title": "Récurrences",
         "subtitle": "Charges et revenus prévus. Une échéance ne devient une transaction qu’après confirmation.",
         "hero": {
@@ -987,6 +997,19 @@
                 "tier": "Tiers",
                 "notes": "Notes"
             },
+            "insurance": {
+                "type": "Type d’assurance",
+                "typeNone": "Non précisé",
+                "grossPremium": "Prime brute",
+                "premiumSubsidy": "Réduction de primes",
+                "franchise": "Franchise",
+                "renewalDate": "Renouvellement",
+                "perPeriodHint": "Par période, avant réduction de primes.",
+                "subsidyHint": "Information : le montant prévu ci-dessus reste ce que vous payez.",
+                "deductible": "Primes déductibles de vos impôts.",
+                "notDeductible": "Primes non déductibles de vos impôts.",
+                "deductibleUnknown": "Précisez le type pour savoir si les primes sont déductibles."
+            },
             "errors": {
                 "nameRequired": "Le nom est obligatoire.",
                 "nameTooLong": "Le nom est trop long.",
@@ -1003,6 +1026,8 @@
                 "forbidden": "Action non autorisée.",
                 "paymentDayInvalid": "Le jour de paiement doit être entre 1 et 28.",
                 "notesTooLong": "Notes trop longues.",
+                "insuranceAmountInvalid": "Montant invalide.",
+                "insuranceSubsidyTooHigh": "La réduction de primes ne peut pas dépasser la prime brute.",
                 "isActiveRequired": "Le statut actif est obligatoire.",
                 "paymentDateInvalid": "Date invalide.",
                 "paymentDateFuture": "La date ne peut pas être dans le futur."

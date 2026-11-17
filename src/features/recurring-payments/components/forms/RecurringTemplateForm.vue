@@ -18,6 +18,8 @@ import { canWritePaymentMethods } from '@/features/payment-methods/rights';
 import type { PaymentMethod } from '@/features/payment-methods/types';
 import type { RecurringTemplateFormFields } from '@/features/recurring-payments/payload';
 import {
+    DEDUCTIBLE_INSURANCE_TYPES,
+    INSURANCE_TYPES,
     RECURRING_EXPENSE_NAME_MAX,
     RECURRING_INCOME_NAME_MAX,
     RECURRING_NOTES_MAX,
@@ -41,6 +43,9 @@ export type RecurringTemplateFormFieldErrors = {
     accountPublicId?: string | null;
     paymentDay?: string | null;
     notes?: string | null;
+    insuranceFranchise?: string | null;
+    insuranceGrossPremium?: string | null;
+    insurancePremiumSubsidy?: string | null;
 };
 
 const props = withDefaults(
@@ -126,6 +131,29 @@ watch(
         if (value === 'hebdomadaire') props.form.paymentDay = '';
     }
 );
+
+/** Fiche d'assurance : seulement pour une charge de type assurance, dans l'onglet principal. */
+const showInsurance = computed(() => props.form.kind === 'expense' && props.form.expenseType === 'assurance');
+
+const insuranceTypeItems = computed(() => [
+    { title: t('recurrencesPage.form.insurance.typeNone'), value: '' },
+    ...INSURANCE_TYPES.map((value) => ({ title: t(`recurrencesPage.insuranceTypes.${value}`), value }))
+]);
+
+const insuranceDeductibility = computed(() => {
+    const type = props.form.insuranceType;
+    if (!type) return t('recurrencesPage.form.insurance.deductibleUnknown');
+    return (DEDUCTIBLE_INSURANCE_TYPES as readonly string[]).includes(type)
+        ? t('recurrencesPage.form.insurance.deductible')
+        : t('recurrencesPage.form.insurance.notDeductible');
+});
+
+const insuranceRenewalModel = computed({
+    get: () => props.form.insuranceRenewalDate ?? '',
+    set: (value: string | null) => {
+        props.form.insuranceRenewalDate = value || null;
+    }
+});
 
 function openCategoryCreate(name: string) {
     categoryCreateName.value = name;
@@ -288,6 +316,81 @@ function openPaymentMethodCreate(name: string) {
                 />
             </div>
         </div>
+        <template v-if="showTemplate && showInsurance">
+            <div class="recurring-form__row">
+                <label class="recurring-form__label" for="rec-form-insurance-type">{{ t('recurrencesPage.form.insurance.type') }}</label>
+                <div class="recurring-form__field">
+                    <AppSelect
+                        id="rec-form-insurance-type"
+                        v-model="form.insuranceType"
+                        :items="insuranceTypeItems"
+                        :label="t('recurrencesPage.form.insurance.type')"
+                        hide-details="auto"
+                        :hint="insuranceDeductibility"
+                        persistent-hint
+                    />
+                </div>
+            </div>
+            <div class="recurring-form__row">
+                <label class="recurring-form__label" for="rec-form-insurance-gross">{{
+                    t('recurrencesPage.form.insurance.grossPremium')
+                }}</label>
+                <div class="recurring-form__field">
+                    <v-text-field
+                        id="rec-form-insurance-gross"
+                        v-model="form.insuranceGrossPremium"
+                        color="primary"
+                        variant="outlined"
+                        hide-details="auto"
+                        inputmode="decimal"
+                        :hint="t('recurrencesPage.form.insurance.perPeriodHint')"
+                        :error="!!fieldErrors.insuranceGrossPremium"
+                        :error-messages="fieldErrors.insuranceGrossPremium || undefined"
+                    />
+                </div>
+            </div>
+            <div class="recurring-form__row">
+                <label class="recurring-form__label" for="rec-form-insurance-subsidy">{{
+                    t('recurrencesPage.form.insurance.premiumSubsidy')
+                }}</label>
+                <div class="recurring-form__field">
+                    <v-text-field
+                        id="rec-form-insurance-subsidy"
+                        v-model="form.insurancePremiumSubsidy"
+                        color="primary"
+                        variant="outlined"
+                        hide-details="auto"
+                        inputmode="decimal"
+                        :hint="t('recurrencesPage.form.insurance.subsidyHint')"
+                        :error="!!fieldErrors.insurancePremiumSubsidy"
+                        :error-messages="fieldErrors.insurancePremiumSubsidy || undefined"
+                    />
+                </div>
+            </div>
+            <div class="recurring-form__row">
+                <label class="recurring-form__label" for="rec-form-insurance-franchise">{{
+                    t('recurrencesPage.form.insurance.franchise')
+                }}</label>
+                <div class="recurring-form__field">
+                    <v-text-field
+                        id="rec-form-insurance-franchise"
+                        v-model="form.insuranceFranchise"
+                        color="primary"
+                        variant="outlined"
+                        hide-details="auto"
+                        inputmode="decimal"
+                        :error="!!fieldErrors.insuranceFranchise"
+                        :error-messages="fieldErrors.insuranceFranchise || undefined"
+                    />
+                </div>
+            </div>
+            <div class="recurring-form__row">
+                <label class="recurring-form__label">{{ t('recurrencesPage.form.insurance.renewalDate') }}</label>
+                <div class="recurring-form__field">
+                    <AppDatePicker v-model="insuranceRenewalModel" clearable :label="t('recurrencesPage.form.insurance.renewalDate')" />
+                </div>
+            </div>
+        </template>
         <div v-if="showClassification" class="recurring-form__row">
             <label class="recurring-form__label">{{ t('recurrencesPage.form.fields.paymentMethod') }}</label>
             <div class="recurring-form__field">

@@ -199,6 +199,9 @@ function clearFieldErrors() {
     fieldErrors.accountPublicId = null;
     fieldErrors.paymentDay = null;
     fieldErrors.notes = null;
+    fieldErrors.insuranceFranchise = null;
+    fieldErrors.insuranceGrossPremium = null;
+    fieldErrors.insurancePremiumSubsidy = null;
 }
 
 function fillFromExpense(item: RecurringExpense) {
@@ -215,6 +218,12 @@ function fillFromExpense(item: RecurringExpense) {
     form.tierPublicId = item.tierPublicId ?? '';
     form.tagPublicIds = sanitizeTagPublicIds(item.tagPublicIds);
     form.notes = item.notes ?? '';
+    const insurance = item.insurance;
+    form.insuranceType = insurance?.insuranceType ?? '';
+    form.insuranceRenewalDate = insurance?.renewalDate ?? null;
+    form.insuranceFranchise = insurance?.franchise == null ? '' : String(insurance.franchise);
+    form.insuranceGrossPremium = insurance?.grossPremium == null ? '' : String(insurance.grossPremium);
+    form.insurancePremiumSubsidy = insurance?.premiumSubsidy == null ? '' : String(insurance.premiumSubsidy);
 }
 
 function fillFromIncome(item: RecurringIncome) {

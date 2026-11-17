@@ -772,6 +772,8 @@ function updateExpense(id: string, body: CreateRecurringExpensePayload) {
     const next = expenseFromPayload(id, body);
     next.createdAt = current.createdAt;
     next.updatedAt = stamp();
+    // Un PUT sans fiche conserve la fiche existante (comme l'API) tant que la charge reste une assurance.
+    if (body.expenseType === 'assurance' && !body.insurance) next.insurance = current.insurance ?? null;
     const dues = duesFromExpense(next);
     demoDb().expenseDues[id] = dues;
     refreshExpenseUpcoming(next, dues);

@@ -1,9 +1,12 @@
-import type {
-    CreateRecurringExpensePayload,
-    CreateRecurringIncomePayload,
-    RecurringDue,
-    RecurringExpense,
-    RecurringIncome
+import {
+    insuranceTaxNature,
+    type CreateRecurringExpensePayload,
+    type CreateRecurringIncomePayload,
+    type InsuranceDetails,
+    type InsuranceInput,
+    type RecurringDue,
+    type RecurringExpense,
+    type RecurringIncome
 } from '@/features/recurring-payments/types';
 
 const NOW = '2026-11-14T09:00:00.000Z';
@@ -23,6 +26,7 @@ type ExpenseDraft = {
     tierPublicId: string | null;
     tagPublicIds: string[];
     notes: string | null;
+    insurance?: InsuranceInput;
 };
 
 type IncomeDraft = {
@@ -71,7 +75,14 @@ const EXPENSES: ExpenseDraft[] = [
         categoryPublicId: null,
         tierPublicId: 'TIERCSS',
         tagPublicIds: [],
-        notes: 'LAMal'
+        notes: 'LAMal',
+        insurance: {
+            insuranceType: 'healthBasic',
+            renewalDate: '2027-01-01',
+            franchise: 2500,
+            grossPremium: 445.2,
+            premiumSubsidy: 60
+        }
     },
     {
         publicId: 'REXCFF1',
@@ -244,8 +255,14 @@ function expenseFrom(draft: ExpenseDraft, dues: RecurringDue[]): RecurringExpens
         createdAt: NOW,
         updatedAt: null,
         upcomingDues: dues.filter((due) => due.scheduledAt >= today).slice(0, 3),
-        files: []
+        files: [],
+        insurance: draft.insurance ? insuranceDetails(draft.insurance) : null
     };
+}
+
+/** Fiche d'assurance renvoyée, avec la nature fiscale déduite du type (comme l'API). */
+export function insuranceDetails(input: InsuranceInput): InsuranceDetails {
+    return { ...input, taxNature: insuranceTaxNature(input.insuranceType) };
 }
 
 function incomeFrom(draft: IncomeDraft, dues: RecurringDue[]): RecurringIncome {
@@ -346,7 +363,8 @@ export function expenseFromPayload(publicId: string, body: CreateRecurringExpens
         createdAt: new Date().toISOString(),
         updatedAt: null,
         upcomingDues: [],
-        files: []
+        files: [],
+        insurance: body.expenseType === 'assurance' && body.insurance ? insuranceDetails(body.insurance) : null
     };
 }
 

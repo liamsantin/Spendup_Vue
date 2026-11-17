@@ -16,6 +16,7 @@ import {
     type ConfirmDueBody,
     type CreateRecurringExpensePayload,
     type CreateRecurringIncomePayload,
+    type InsuranceInput,
     type RecurringExpenseFrequency,
     type RecurringExpenseType,
     type RecurringIncomeFrequency,
@@ -41,6 +42,8 @@ export type RecurringPayloadErrorCode =
     | 'forbidden'
     | 'paymentDayInvalid'
     | 'notesTooLong'
+    | 'insuranceAmountInvalid'
+    | 'insuranceSubsidyTooHigh'
     | 'isActiveRequired'
     | 'paymentDateInvalid'
     | 'paymentDateFuture';
@@ -63,6 +66,12 @@ export type RecurringTemplateFormFields = {
     tagPublicIds: string[];
     notes: string;
     paymentDay: string;
+    /** Fiche d'assurance (charge de type `assurance`) : vide = non renseigné. */
+    insuranceType: string;
+    insuranceRenewalDate: string | null;
+    insuranceFranchise: string;
+    insuranceGrossPremium: string;
+    insurancePremiumSubsidy: string;
 };
 
 export type ConfirmDueFormFields = {
@@ -104,7 +113,43 @@ export function emptyRecurringForm(kind: RecurringKind, accountPublicId = ''): R
         tierPublicId: '',
         tagPublicIds: [],
         notes: '',
-        paymentDay: ''
+        paymentDay: '',
+        insuranceType: '',
+        insuranceRenewalDate: null,
+        insuranceFranchise: '',
+        insuranceGrossPremium: '',
+        insurancePremiumSubsidy: ''
+    };
+}
+
+/** Montant facultatif : vide donne `null`, illisible ou négatif donne `undefined`. */
+function optionalAmount(raw: string): number | null | undefined {
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+    const parsed = parseAccountAmount(trimmed);
+    if (parsed == null || parsed < 0) return undefined;
+    return parsed;
+}
+
+function buildInsurance(fields: RecurringTemplateFormFields): BuildRecurringPayloadResult<InsuranceInput> {
+    const franchise = optionalAmount(fields.insuranceFranchise);
+    if (franchise === undefined) return fail('insuranceAmountInvalid', 'insuranceFranchise');
+    const grossPremium = optionalAmount(fields.insuranceGrossPremium);
+    if (grossPremium === undefined) return fail('insuranceAmountInvalid', 'insuranceGrossPremium');
+    const premiumSubsidy = optionalAmount(fields.insurancePremiumSubsidy);
+    if (premiumSubsidy === undefined) return fail('insuranceAmountInvalid', 'insurancePremiumSubsidy');
+    if (grossPremium != null && premiumSubsidy != null && premiumSubsidy > grossPremium) {
+        return fail('insuranceSubsidyTooHigh', 'insurancePremiumSubsidy');
+    }
+    return {
+        ok: true,
+        payload: {
+            insuranceType: emptyToNull(fields.insuranceType),
+            renewalDate: emptyToNull(fields.insuranceRenewalDate),
+            franchise,
+            grossPremium,
+            premiumSubsidy
+        }
     };
 }
 
@@ -190,15 +235,18 @@ export function buildCreateExpensePayload(
     if (!RECURRING_EXPENSE_FREQUENCIES.includes(fields.expenseFrequency)) return fail('frequencyInvalid', 'expenseFrequency');
     const common = commonTemplateFields(fields, ctx);
     if (!common.ok) return common;
-    return {
-        ok: true,
-        payload: {
-            ...common.payload,
-            expenseType: fields.expenseType,
-            frequency: fields.expenseFrequency,
-            tagPublicIds: sanitizeTagPublicIds(fields.tagPublicIds)
-        }
+    const payload: CreateRecurringExpensePayload = {
+        ...common.payload,
+        expenseType: fields.expenseType,
+        frequency: fields.expenseFrequency,
+        tagPublicIds: sanitizeTagPublicIds(fields.tagPublicIds)
     };
+    if (fields.expenseType === 'assurance') {
+        const insurance = buildInsurance(fields);
+        if (!insurance.ok) return insurance;
+        payload.insurance = insurance.payload;
+    }
+    return { ok: true, payload };
 }
 
 export function buildUpdateExpensePayload(
@@ -264,6 +312,21 @@ export function buildConfirmDuePayload(fields: ConfirmDueFormFields, now = new D
     };
 }
 
+function sameAmount(raw: string, current: number | null | undefined): boolean {
+    const parsed = optionalAmount(raw);
+    return (parsed === undefined ? raw.trim() : parsed) === (current ?? null);
+}
+
+function insuranceSheetChanged(current: InsuranceInput | null, fields: RecurringTemplateFormFields): boolean {
+    return (
+        emptyToNull(fields.insuranceType) !== (current?.insuranceType ?? null) ||
+        emptyToNull(fields.insuranceRenewalDate) !== (current?.renewalDate ?? null) ||
+        !sameAmount(fields.insuranceFranchise, current?.franchise) ||
+        !sameAmount(fields.insuranceGrossPremium, current?.grossPremium) ||
+        !sameAmount(fields.insurancePremiumSubsidy, current?.premiumSubsidy)
+    );
+}
+
 export function isExpenseFormDirty(
     current: {
         name: string;
@@ -279,10 +342,12 @@ export function isExpenseFormDirty(
         tierPublicId: string | null;
         tagPublicIds?: string[] | null;
         notes: string | null;
+        insurance?: InsuranceInput | null;
     },
     fields: RecurringTemplateFormFields
 ): boolean {
     const amount = parseAccountAmount(fields.plannedAmount);
+    if (fields.expenseType === 'assurance' && insuranceSheetChanged(current.insurance ?? null, fields)) return true;
     return (
         fields.name.trim() !== current.name ||
         fields.expenseType !== current.expenseType ||

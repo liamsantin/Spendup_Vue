@@ -199,7 +199,7 @@ export interface TaxReturnListResult {
 }
 
 /** D'où vient une proposition : revenu récurrent, dette, actif, compte (solde au 31.12), ou relevé importé (sans page à rouvrir). */
-export type TaxSuggestionSource = 'recurringIncome' | 'liability' | 'asset' | 'account' | 'statement';
+export type TaxSuggestionSource = 'recurringIncome' | 'recurringExpense' | 'liability' | 'asset' | 'account' | 'statement';
 
 /** Un élément de l'application qui compose une proposition (revenu récurrent, dette, actif). */
 export interface TaxSuggestionSourceItem {

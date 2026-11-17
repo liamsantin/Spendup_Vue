@@ -718,6 +718,16 @@
         }
     },
     "recurrencesPage": {
+        "insuranceTypes": {
+            "healthBasic": "Basic health insurance",
+            "healthSupplementary": "Supplementary health insurance",
+            "life": "Life insurance or pillar 3b",
+            "accident": "Accident insurance",
+            "householdLiability": "Household and liability",
+            "vehicle": "Vehicle insurance",
+            "legalProtection": "Legal protection",
+            "other": "Other insurance"
+        },
         "title": "Recurring",
         "subtitle": "Planned expenses and income. A due becomes a transaction only after you confirm it.",
         "hero": {
@@ -987,6 +997,19 @@
                 "tier": "Payee",
                 "notes": "Notes"
             },
+            "insurance": {
+                "type": "Insurance type",
+                "typeNone": "Not specified",
+                "grossPremium": "Gross premium",
+                "premiumSubsidy": "Premium reduction",
+                "franchise": "Deductible",
+                "renewalDate": "Renewal",
+                "perPeriodHint": "Per period, before premium reduction.",
+                "subsidyHint": "For information: the planned amount above stays what you pay.",
+                "deductible": "Premiums are tax-deductible.",
+                "notDeductible": "Premiums are not tax-deductible.",
+                "deductibleUnknown": "Specify the type to know whether premiums are deductible."
+            },
             "errors": {
                 "nameRequired": "Name is required.",
                 "nameTooLong": "Name is too long.",
@@ -1003,6 +1026,8 @@
                 "forbidden": "Action not allowed.",
                 "paymentDayInvalid": "Payment day must be between 1 and 28.",
                 "notesTooLong": "Notes are too long.",
+                "insuranceAmountInvalid": "Invalid amount.",
+                "insuranceSubsidyTooHigh": "The premium reduction cannot exceed the gross premium.",
                 "isActiveRequired": "Active status is required.",
                 "paymentDateInvalid": "Invalid date.",
                 "paymentDateFuture": "Date cannot be in the future."

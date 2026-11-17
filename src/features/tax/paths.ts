@@ -32,6 +32,7 @@ export function taxPublicIdFromPath(path: string): string | null {
 /** Page de liste d'où vient une proposition, ou `null` (relevé importé, source inconnue). */
 export function taxSuggestionPath(item: Pick<TaxSuggestion, 'code' | 'source'>): string | null {
     if (item.source === 'recurringIncome') return RECURRENCES_PATHS.revenus;
+    if (item.source === 'recurringExpense') return RECURRENCES_PATHS.charges;
     if (item.source === 'liability') return DEBTS_PATHS.liabilities;
     if (item.source === 'asset') return item.code === 'asset.property' ? REAL_ESTATE_PATHS.list : ASSETS_PATHS.list;
     if (item.source === 'account') return ACCOUNTS_PAGE;
@@ -45,6 +46,7 @@ export interface TaxSuggestionTarget {
 
 function sourceDetailPath(item: Pick<TaxSuggestion, 'code' | 'source'>, publicId: string): string | null {
     if (item.source === 'recurringIncome') return recurrenceDetailPath('income', publicId);
+    if (item.source === 'recurringExpense') return recurrenceDetailPath('expense', publicId);
     if (item.source === 'liability') return liabilityDetailPath(publicId);
     if (item.source === 'asset') return item.code === 'asset.property' ? realEstateDetailPath(publicId) : assetDetailPath(publicId);
     if (item.source === 'account') return accountFocusPath(publicId);
