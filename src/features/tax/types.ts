@@ -145,6 +145,9 @@ export interface TaxSuggestionSourceItem {
     name: string;
 }
 
+/** Contrôle d'une valeur lue dans un PDF : recoupée par un total imprimé, ou à vérifier par la personne. */
+export type TaxCheck = 'verified' | 'toCheck';
+
 export interface TaxSuggestion {
     code: string;
     label: string;
@@ -153,6 +156,8 @@ export interface TaxSuggestion {
     amount: number;
     currency: string;
     originLabel: string;
+    /** Présent seulement pour un montant lu dans un PDF. Absent : à vérifier. */
+    check?: TaxCheck;
     source?: TaxSuggestionSource;
     sources?: TaxSuggestionSourceItem[];
 }

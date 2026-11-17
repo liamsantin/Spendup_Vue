@@ -176,13 +176,48 @@ export function readForm(pages: PageTokens[], profile: FormProfile, labelFor: (t
         return { code: rule.code, label: rule.label, read, computed, status };
     });
 
-    const mapped = new Map<string, { target: string; person: ReaderPerson; amount: number; codes: string[]; page: number }>();
+    // Une ligne est « vérifiée » quand elle entre dans un total imprimé et recoupé, et dans aucun total en écart.
+    // Aucune probabilité : un total recoupe ou non (la lecture d'un PDF natif est exacte ou la ligne est mal repérée).
+    const confirmed = new Set<string>();
+    const contradicted = new Set<string>();
+    profile.totals.forEach((rule, index) => {
+        const { status, read } = totals[index];
+        const persons: ReaderPerson[] = rule.person === '*' ? ['1', '2'] : [rule.person];
+        for (const raw of [...rule.plus, ...(rule.minus ?? [])]) {
+            const [code, suffix] = raw.split(':');
+            const column: ReaderColumn = suffix === 'w' ? 'wealth' : suffix === 'a' ? 'amount' : (rule.column ?? 'amount');
+            for (const person of persons) {
+                const key = valueKey(code, person, column);
+                if (status === 'mismatch') contradicted.add(key);
+                else if (status === 'ok' && read !== null) confirmed.add(key);
+            }
+        }
+    });
+    const isVerified = (line: ReadLine) => {
+        const key = valueKey(line.code, line.person, line.column ?? 'amount');
+        return confirmed.has(key) && !contradicted.has(key);
+    };
+    for (const line of lines) line.check = isVerified(line) ? 'verified' : 'toCheck';
+
+    const mapped = new Map<
+        string,
+        { target: string; person: ReaderPerson; amount: number; codes: string[]; page: number; verified: boolean }
+    >();
     for (const line of lines) {
         if (!line.target) continue;
         const key = `${line.target}|${line.person}`;
-        const entry = mapped.get(key) ?? { target: line.target, person: line.person, amount: 0, codes: [], page: line.page };
+        const entry = mapped.get(key) ?? {
+            target: line.target,
+            person: line.person,
+            amount: 0,
+            codes: [],
+            page: line.page,
+            verified: true
+        };
         entry.amount += line.amount;
         entry.codes.push(line.code);
+        // la proposition regroupe plusieurs lignes : elle n'est vérifiée que si chacune l'est
+        entry.verified = entry.verified && line.check === 'verified';
         mapped.set(key, entry);
     }
     const suggestions: TaxSuggestion[] = [...mapped.values()]
@@ -194,7 +229,8 @@ export function readForm(pages: PageTokens[], profile: FormProfile, labelFor: (t
             competence: 'both',
             amount: Math.round(entry.amount * 100) / 100,
             currency: 'CHF',
-            originLabel: `${profile.label} · code${entry.codes.length > 1 ? 's' : ''} ${entry.codes.join(', ')} (p. ${entry.page})`
+            originLabel: `${profile.label} · code${entry.codes.length > 1 ? 's' : ''} ${entry.codes.join(', ')} (p. ${entry.page})`,
+            check: entry.verified ? 'verified' : 'toCheck'
         }));
 
     return {

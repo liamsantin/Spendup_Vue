@@ -624,6 +624,28 @@ function acceptSuggestion(tax: DemoTaxReturn, body: { code: string; person: stri
     return toResponse(tax);
 }
 
+/** Plusieurs propositions d'un coup, comme l'API : tout est inscrit, ou rien (case remplie, case répétée, liste vide). */
+function acceptSuggestions(tax: DemoTaxReturn, body: { items: { code: string; person: string; competence: string; amount: number }[] }) {
+    const items = body.items ?? [];
+    if (!items.length) invalid('Aucune proposition à accepter.');
+    if (items.length > 200) invalid('Trop de propositions à la fois.');
+    const before = tax.amounts.map((item) => ({ ...item }));
+    const seen = new Set<string>();
+    try {
+        for (const item of items) {
+            const key = `${item.code}|${item.person || '1'}|${item.competence}`;
+            const taken = tax.amounts.some((a) => `${a.code}|${a.person}|${a.competence}` === key);
+            if (seen.has(key) || taken) invalid('Cette case est déjà remplie.');
+            seen.add(key);
+            acceptSuggestion(tax, item);
+        }
+    } catch (e) {
+        tax.amounts = before;
+        throw e;
+    }
+    return toResponse(tax);
+}
+
 function attachDocument(tax: DemoTaxReturn, body: { filePublicId: string; lineCode: string | null }) {
     const file = demoDb().files.find((item) => item.publicId === body.filePublicId) ?? notFound('Fichier introuvable.');
     const lineCode = body.lineCode?.trim() || null;
@@ -747,6 +769,14 @@ export function routeTax(method: string, path: string, body: unknown): TaxResult
 
     const suggestions = match(path, '/api/tax-returns/:id/suggestions');
     if (suggestions && method === 'GET') return ok({ items: buildSuggestions(findReturn(suggestions.id)) });
+    const acceptMany = match(path, '/api/tax-returns/:id/suggestions/accept-many');
+    if (acceptMany && method === 'POST')
+        return ok(
+            acceptSuggestions(
+                findReturn(acceptMany.id),
+                body as { items: { code: string; person: string; competence: string; amount: number }[] }
+            )
+        );
     const accept = match(path, '/api/tax-returns/:id/suggestions/accept');
     if (accept && method === 'POST')
         return ok(acceptSuggestion(findReturn(accept.id), body as { code: string; person: string; competence: string; amount: number }));

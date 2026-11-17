@@ -5227,7 +5227,17 @@
         "steps": "Étapes de la déclaration",
         "suggestionsTitle": "Propositions",
         "detectedTitle": "Montants détectés dans le PDF",
-        "acceptAllStep": "Tout accepter ({count})",
+        "acceptVerified": "Accepter les lignes vérifiées ({count})",
+        "acceptAlerts": "Accepter malgré les alertes ({count})",
+        "acceptAlertsModal": {
+            "title": "Accepter {count} lignes à vérifier ?",
+            "message": "Ces lignes ne sont recoupées par aucun total du formulaire, ou un total présente un écart. Contrôlez-les avant de les inscrire.",
+            "confirm": "Accepter quand même"
+        },
+        "check": {
+            "verified": "vérifiée par un total",
+            "toCheck": "à vérifier"
+        },
         "accept": "Accepter",
         "documentsTitle": "Pièces",
         "attach": "Joindre un fichier",

@@ -65,6 +65,13 @@ export const taxApi = {
         return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/suggestions/accept`, body) as Promise<TaxReturn>;
     },
 
+    /** Plusieurs propositions en une requête : tout est inscrit, ou rien. */
+    acceptSuggestions(publicId: string, items: { code: string; person: string; competence: string; amount: number }[]) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/suggestions/accept-many`, {
+            items
+        }) as Promise<TaxReturn>;
+    },
+
     attachDocument(publicId: string, filePublicId: string, lineCode: string | null) {
         return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/documents`, {
             filePublicId,

@@ -5227,7 +5227,17 @@
         "steps": "Return steps",
         "suggestionsTitle": "Suggestions",
         "detectedTitle": "Amounts detected in the PDF",
-        "acceptAllStep": "Accept all ({count})",
+        "acceptVerified": "Accept verified lines ({count})",
+        "acceptAlerts": "Accept despite alerts ({count})",
+        "acceptAlertsModal": {
+            "title": "Accept {count} lines to check?",
+            "message": "These lines are not matched by any total on the form, or a total shows a difference. Check them before entering them.",
+            "confirm": "Accept anyway"
+        },
+        "check": {
+            "verified": "matched by a total",
+            "toCheck": "to check"
+        },
         "accept": "Accept",
         "documentsTitle": "Documents",
         "attach": "Attach a file",

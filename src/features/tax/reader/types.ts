@@ -1,4 +1,4 @@
-import type { TaxSuggestion } from '@/features/tax/types';
+import type { TaxCheck, TaxSuggestion } from '@/features/tax/types';
 
 /** Morceau de texte positionné (coordonnées PDF : x vers la droite, y vers le haut). */
 export interface Token {
@@ -107,6 +107,8 @@ export interface ReadLine {
     amount: number;
     page: number;
     target: string | null;
+    /** `verified` : la ligne entre dans un total imprimé qui recoupe. `toCheck` : sinon (total absent ou en écart). */
+    check?: TaxCheck;
 }
 
 export type TotalStatus = 'ok' | 'mismatch' | 'missing';

@@ -62,6 +62,24 @@ describe('démo : impôts', () => {
         expect(after.items.some((item) => item.code === 'income.allowances')).toBe(false);
     });
 
+    it('accepte plusieurs propositions d’un coup, tout ou rien', () => {
+        const items = [
+            { code: 'income.unemployment', person: '1', competence: 'both', amount: 1000 },
+            { code: 'income.securities', person: '1', competence: 'both', amount: 20 }
+        ];
+        // une case répétée refuse toute la demande : rien n'est inscrit
+        expect(() =>
+            handleDemoRequest('POST', '/api/tax-returns/TAX2025/suggestions/accept-many', { items: [...items, items[0]] })
+        ).toThrow();
+        const untouched = handleDemoRequest('GET', '/api/tax-returns/TAX2025') as TaxReturn;
+        expect(untouched.sections.flatMap((s) => s.lines).find((l) => l.code === 'income.securities')?.values).toEqual([]);
+
+        const tax = handleDemoRequest('POST', '/api/tax-returns/TAX2025/suggestions/accept-many', { items }) as TaxReturn;
+        const lines = tax.sections.flatMap((s) => s.lines);
+        expect(lines.find((l) => l.code === 'income.unemployment')?.values[0]?.origin).toBe('propositionAcceptee');
+        expect(lines.find((l) => l.code === 'income.securities')?.values[0]?.amount).toBe(20);
+    });
+
     it('reporte le total d’une fiche immeuble sur deux lignes', () => {
         handleDemoRequest('POST', '/api/tax-returns/TAX2025/entries', {
             kind: 'property',
