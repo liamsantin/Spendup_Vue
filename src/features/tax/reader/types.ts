@@ -1,4 +1,6 @@
-import type { TaxCheck, TaxSuggestion } from '@/features/tax/types';
+import type { TaxCheck, TaxReadBox, TaxSuggestion } from '@/features/tax/types';
+
+export type ReadBox = TaxReadBox;
 
 /** Morceau de texte positionné (coordonnées PDF : x vers la droite, y vers le haut). */
 export interface Token {
@@ -6,6 +8,8 @@ export interface Token {
     x: number;
     w: number;
     y: number;
+    /** Hauteur du texte (points), quand pdf.js la donne. */
+    h?: number;
 }
 
 export interface PageTokens {
@@ -106,6 +110,8 @@ export interface ReadLine {
     /** Montant signé (les excédents de dépenses sont négatifs). */
     amount: number;
     page: number;
+    /** Zone du code et du montant sur la page, pour la surbrillance. */
+    box?: ReadBox;
     target: string | null;
     /** `verified` : la ligne entre dans un total imprimé qui recoupe. `toCheck` : sinon (total absent ou en écart). */
     check?: TaxCheck;

@@ -789,6 +789,28 @@ function acceptSuggestions(
     return toResponse(tax);
 }
 
+/** Saisie groupée, comme l'API : tout ou rien, origine « saisie », refusée si la déclaration est déposée. */
+function upsertAmounts(tax: DemoTaxReturn, body: { items?: (UpsertTaxAmountPayload & { code: string })[] }) {
+    ensureUnlocked(tax);
+    const items = body.items ?? [];
+    if (!items.length) invalid('Aucun montant à inscrire.');
+    if (items.length > 200) invalid('Trop de montants à la fois.');
+    const seen = new Set<string>();
+    for (const item of items) {
+        const key = `${item.code}|${item.person || '1'}|${item.competence || 'both'}`;
+        if (seen.has(key)) invalid('Une même case apparaît deux fois.');
+        seen.add(key);
+    }
+    const before = tax.amounts.map((item) => ({ ...item }));
+    try {
+        for (const item of items) upsertAmount(tax, item.code, item);
+    } catch (e) {
+        tax.amounts = before;
+        throw e;
+    }
+    return toResponse(tax);
+}
+
 /** Annulation d'un dépôt, comme l'API : retour à « prête à recopier », corrections conservées. */
 function cancelFiling(tax: DemoTaxReturn) {
     if (!isLocked(tax)) invalid("La déclaration n'est pas déposée.");
@@ -940,6 +962,9 @@ export function routeTax(method: string, path: string, body: unknown): TaxResult
                 body as { code: string; person: string; competence: string | null; amount: number | null; reason: string }
             )
         );
+    const amounts = match(path, '/api/tax-returns/:id/amounts');
+    if (amounts && method === 'PUT')
+        return ok(upsertAmounts(findReturn(amounts.id), body as { items?: (UpsertTaxAmountPayload & { code: string })[] }));
     const amount = match(path, '/api/tax-returns/:id/amounts/:code');
     if (amount && method === 'PUT') return ok(upsertAmount(findReturn(amount.id), amount.code, body as UpsertTaxAmountPayload));
 

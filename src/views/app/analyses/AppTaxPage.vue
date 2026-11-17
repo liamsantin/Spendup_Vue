@@ -20,7 +20,7 @@ import { withReturnTo } from '@/utils/helpers/navigation-helpers';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import { useAuthStore } from '@/features/auth';
-import { taxApi, type TaxAcceptBody } from '@/features/tax/api';
+import { taxApi, type TaxAcceptBody, type TaxAmountItem } from '@/features/tax/api';
 import { useCantonItems } from '@/features/tax/cantons';
 import TaxChecklistSection from '@/features/tax/components/TaxChecklistSection.vue';
 import TaxCorrectModal, { type TaxCorrectPayload } from '@/features/tax/components/TaxCorrectModal.vue';
@@ -31,11 +31,13 @@ import TaxFichesSection, { type TaxFicheDraft } from '@/features/tax/components/
 import TaxHeaderForm from '@/features/tax/components/TaxHeaderForm.vue';
 import TaxImportModal, { type TaxImportPayload } from '@/features/tax/components/TaxImportModal.vue';
 import TaxImportReview from '@/features/tax/components/TaxImportReview.vue';
+import TaxPdfZoneModal from '@/features/tax/components/TaxPdfZoneModal.vue';
 import TaxLineRow from '@/features/tax/components/TaxLineRow.vue';
 import TaxReadProposals from '@/features/tax/components/TaxReadProposals.vue';
 import TaxReturnCard from '@/features/tax/components/TaxReturnCard.vue';
 import TaxSubtotals from '@/features/tax/components/TaxSubtotals.vue';
 import TaxSuggestionList from '@/features/tax/components/TaxSuggestionList.vue';
+import TaxTotalsEntry from '@/features/tax/components/TaxTotalsEntry.vue';
 import { useTaxValidatedSteps } from '@/features/tax/composables/useTaxValidatedSteps';
 import { cleanIdentity, emptyHeader, emptyIdentity } from '@/features/tax/identity';
 import { importTaxPdf } from '@/features/tax/import-return';
@@ -45,6 +47,7 @@ import { compareWithPrevious, markAllToCheck, previousAmountFor, scopeMismatch, 
 import type { ReadLine, TotalCheck } from '@/features/tax/reader/types';
 import { buildTaxGroups, type TaxGroup } from '@/features/tax/steps';
 import { formatTaxDate } from '@/features/tax/format';
+import { dismissGuided, isGuidedDismissed } from '@/features/tax/guided-totals';
 import { TAX_BASE, taxDetailPath, taxPublicIdFromPath } from '@/features/tax/paths';
 import type {
     TaxCompetence,
@@ -98,6 +101,16 @@ const suggestions = ref<TaxSuggestion[]>([]);
 const suggestionKey = (item: TaxSuggestion) => `${item.code}|${item.person}|${item.competence}`;
 /** Lecture locale d'un PDF importé, à vérifier (persistée sur l'appareil). */
 const readItems = ref<TaxSuggestion[]>([]);
+/** PDF lu (fichier de la bibliothèque), pour montrer la zone d'un montant ; `null` pour une lecture plus ancienne. */
+const readFile = ref<string | null>(null);
+/** Montant lu dont on montre la zone dans le PDF. */
+const zoneItem = ref<TaxSuggestion | null>(null);
+const zoneOpen = computed({
+    get: () => zoneItem.value !== null,
+    set: (open: boolean) => {
+        if (!open) zoneItem.value = null;
+    }
+});
 const readReport = ref<{ profileLabel: string; scope?: ReadScope; totals: TotalCheck[]; unmapped: ReadLine[] } | null>(null);
 const filesStore = useFilesStore();
 const attaching = ref(false);
@@ -243,6 +256,7 @@ async function refresh() {
         const pending = takePendingRead(publicId.value);
         readItems.value = [...new Map(pending.items.map((item) => [suggestionKey(item), item])).values()];
         readReport.value = pending.report;
+        readFile.value = pending.filePublicId;
         // Un formulaire d'un autre canton ou d'une autre année : plus rien n'est « vérifié ».
         if (scopeMismatch(pending.report?.scope, detail.canton, detail.year)) readItems.value = markAllToCheck(readItems.value);
         void loadPreviousReturn(detail);
@@ -946,6 +960,40 @@ async function confirmFile(submissionDate: string) {
     if (ok) fileTarget.value = null;
 }
 
+/** Saisie guidée des totaux : proposée tant que la déclaration n'a aucun montant ni lecture de PDF en attente. */
+const guidedTick = ref(0);
+const showGuided = computed(() => {
+    const current = declaration.value;
+    void guidedTick.value;
+    if (!current || current.locked || filledCount.value > 0 || readItems.value.length) return false;
+    return !isGuidedDismissed(current.publicId);
+});
+const guidedUnreadImport = computed(() => Boolean(declaration.value && isImportedReturn(declaration.value.publicId) && !readReport.value));
+const guidedLines = computed(() => declaration.value?.sections.flatMap((section) => section.lines) ?? []);
+
+function hideGuided() {
+    const current = declaration.value;
+    if (!current) return;
+    dismissGuided(current.publicId);
+    guidedTick.value += 1;
+}
+
+async function submitGuided(items: TaxAmountItem[]) {
+    const current = declaration.value;
+    if (!current || saving.value) return;
+    saving.value = true;
+    error.value = '';
+    try {
+        apply(await taxApi.upsertAmounts(current.publicId, items));
+        const lines = new Set(items.map((item) => item.code)).size;
+        notice.value = t('taxPage.guided.done', { count: lines }, lines);
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    } finally {
+        saving.value = false;
+    }
+}
+
 /** Déclaration dont on annule le dépôt (fenêtre de confirmation). */
 const unfileTarget = ref<{ publicId: string; year: number } | null>(null);
 const unfileOpen = computed({
@@ -1200,6 +1248,16 @@ async function submitCorrection(payload: TaxCorrectPayload) {
             </button>
         </nav>
 
+        <TaxTotalsEntry
+            v-if="step === SITUATION && showGuided"
+            :lines="guidedLines"
+            :couple="declaration.couple"
+            :saving="saving"
+            :unread-import="guidedUnreadImport"
+            @submit="submitGuided"
+            @dismiss="hideGuided"
+        />
+
         <TaxSubtotals v-if="step === SITUATION && visibleSubtotals.length" :rows="visibleSubtotals" />
 
         <p v-show="step === SITUATION" class="tax-muted">
@@ -1210,8 +1268,10 @@ async function submitCorrection(payload: TaxCorrectPayload) {
             v-if="stepRead.length && !declaration.locked"
             :items="stepRead"
             :saving="saving"
+            :can-show="Boolean(readFile)"
             @accept="acceptSuggestion"
             @accept-many="acceptMany"
+            @show="zoneItem = $event"
         />
 
         <TaxSuggestionList
@@ -1289,6 +1349,8 @@ async function submitCorrection(payload: TaxCorrectPayload) {
             </p>
         </div>
     </AppPageShell>
+
+    <TaxPdfZoneModal v-model="zoneOpen" :file-public-id="readFile" :boxes="zoneItem?.boxes ?? []" :title="zoneItem?.label ?? ''" />
 
     <TaxFileModal v-model="fileOpen" :saving="saving" :error="error" :year="fileTarget?.year ?? 0" @submit="confirmFile" />
 

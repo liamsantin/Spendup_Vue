@@ -60,7 +60,8 @@ export async function importTaxPdf({ file, year, canton, name, t }: ImportTaxPdf
                         scope: { canton: report.canton, year: report.year },
                         items: report.suggestions,
                         totals: report.totals,
-                        unmapped: report.unmapped
+                        unmapped: report.unmapped,
+                        filePublicId: uploaded.publicId
                     },
                     notice
                 );

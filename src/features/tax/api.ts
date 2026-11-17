@@ -20,6 +20,14 @@ export interface TaxAcceptBody {
     origin?: 'propositionAcceptee' | 'importee';
 }
 
+/** Un montant d'une saisie groupée (saisie guidée des totaux). `competence: null` pour une ligne à un seul montant. */
+export interface TaxAmountItem {
+    code: string;
+    person: string;
+    competence: string | null;
+    amount: number | null;
+}
+
 /** Correction d'un montant d'une déclaration déposée. `amount: null` vide la case. */
 export interface TaxCorrectBody {
     code: string;
@@ -51,6 +59,11 @@ export const taxApi = {
             `/api/tax-returns/${encodeURIComponent(publicId)}/amounts/${encodeURIComponent(code)}`,
             body
         ) as Promise<TaxReturn>;
+    },
+
+    /** Plusieurs montants saisis en une requête (saisie guidée des totaux) : tout est inscrit, ou rien. */
+    upsertAmounts(publicId: string, items: TaxAmountItem[]) {
+        return fetchWrapper.put(`/api/tax-returns/${encodeURIComponent(publicId)}/amounts`, { items }) as Promise<TaxReturn>;
     },
 
     /** Corrige un montant d'une déclaration déposée. Le motif est obligatoire : la correction est journalisée. */

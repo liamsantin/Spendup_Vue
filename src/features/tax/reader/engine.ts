@@ -1,5 +1,16 @@
 import type { TaxSuggestion } from '@/features/tax/types';
-import type { FormProfile, PageTokens, ReadLine, ReadReport, ReaderColumn, ReaderPerson, Token, TotalCheck, TotalRule } from './types';
+import type {
+    FormProfile,
+    PageTokens,
+    ReadBox,
+    ReadLine,
+    ReadReport,
+    ReaderColumn,
+    ReaderPerson,
+    Token,
+    TotalCheck,
+    TotalRule
+} from './types';
 
 const AMOUNT = /^(?:\d{1,3}(?:[’']\d{3})+|\d+)(?:\.(?:\d{1,2}|-+))?$/;
 const NUMERIC = /^[\d’'.,\-C]+$/;
@@ -8,6 +19,16 @@ const GLUE_GAP = 2.5;
 const ROW_TOLERANCE = 4.5;
 const COLUMN_TOLERANCE = 14;
 const COLUMN_MIN_CODES = 3;
+/** Hauteur d'une ligne quand pdf.js ne donne pas celle du texte (points). */
+const DEFAULT_TEXT_HEIGHT = 9;
+
+/** Zone qui va du code de la ligne au bord droit du montant. */
+function boxOf(page: number, code: Token, amount: Token): ReadBox {
+    const x = Math.min(code.x, amount.x);
+    const right = Math.max(code.x + code.w, amount.x + amount.w);
+    const h = Math.max(code.h ?? 0, amount.h ?? 0) || DEFAULT_TEXT_HEIGHT;
+    return { page, x, y: Math.min(code.y, amount.y), w: right - x, h };
+}
 
 export function parseAmount(raw: string): number | null {
     if (!AMOUNT.test(raw)) return null;
@@ -42,6 +63,7 @@ export function buildRows(tokens: Token[]): Token[][] {
 interface Value {
     amount: number;
     page: number;
+    box: ReadBox;
 }
 
 interface Found {
@@ -49,6 +71,7 @@ interface Found {
     person: ReaderPerson;
     column: ReaderColumn;
     amount: number;
+    box: ReadBox;
 }
 
 /** Le formulaire est-il celui de ce profil ? Toutes les expressions de détection doivent figurer dans le texte. */
@@ -91,7 +114,8 @@ function readPage(page: PageTokens, profile: FormProfile, known: Set<string>): F
                     code: match[1],
                     person: match[2] === layout.persons.suffix ? '2' : '1',
                     column: 'amount',
-                    amount: negative ? -value : value
+                    amount: negative ? -value : value,
+                    box: boxOf(page.page, codeToken, last)
                 });
                 return;
             }
@@ -105,10 +129,16 @@ function readPage(page: PageTokens, profile: FormProfile, known: Set<string>): F
                 const value = parseAmount(last.text);
                 if (value === null || value === 0) continue;
                 if (column.kind === 'wealth' && person2Re?.test(match[1])) {
-                    out.push({ code: match[1], person: '2', column: 'amount', amount: value });
+                    out.push({ code: match[1], person: '2', column: 'amount', amount: value, box: boxOf(page.page, codeToken, last) });
                     continue;
                 }
-                out.push({ code: match[1], person: column.person ?? '1', column: column.kind, amount: value });
+                out.push({
+                    code: match[1],
+                    person: column.person ?? '1',
+                    column: column.kind,
+                    amount: value,
+                    box: boxOf(page.page, codeToken, last)
+                });
             }
         });
     }
@@ -126,7 +156,7 @@ export function readForm(pages: PageTokens[], profile: FormProfile, labelFor: (t
         if (profile.pages && !profile.pages.includes(page.page)) continue;
         for (const found of readPage(page, profile, known)) {
             const key = valueKey(found.code, found.person, found.column);
-            if (!values.has(key)) values.set(key, { amount: found.amount, page: page.page });
+            if (!values.has(key)) values.set(key, { amount: found.amount, page: page.page, box: found.box });
         }
     }
 
@@ -137,7 +167,7 @@ export function readForm(pages: PageTokens[], profile: FormProfile, labelFor: (t
         if (!line) continue;
         const amount = line.sign === -1 && value.amount > 0 ? -value.amount : value.amount;
         const target = column === 'wealth' ? (line.wealthTarget ?? null) : line.target;
-        lines.push({ code, person, column, label: line.label, section: line.section, amount, page: value.page, target });
+        lines.push({ code, person, column, label: line.label, section: line.section, amount, page: value.page, box: value.box, target });
     }
     lines.sort((a, b) => a.code.localeCompare(b.code, 'en', { numeric: true }) || a.person.localeCompare(b.person));
 
@@ -201,7 +231,7 @@ export function readForm(pages: PageTokens[], profile: FormProfile, labelFor: (t
 
     const mapped = new Map<
         string,
-        { target: string; person: ReaderPerson; amount: number; codes: string[]; page: number; verified: boolean }
+        { target: string; person: ReaderPerson; amount: number; codes: string[]; page: number; verified: boolean; boxes: ReadBox[] }
     >();
     for (const line of lines) {
         if (!line.target) continue;
@@ -212,10 +242,12 @@ export function readForm(pages: PageTokens[], profile: FormProfile, labelFor: (t
             amount: 0,
             codes: [],
             page: line.page,
-            verified: true
+            verified: true,
+            boxes: []
         };
         entry.amount += line.amount;
         entry.codes.push(line.code);
+        if (line.box) entry.boxes.push(line.box);
         // la proposition regroupe plusieurs lignes : elle n'est vérifiée que si chacune l'est
         entry.verified = entry.verified && line.check === 'verified';
         mapped.set(key, entry);
@@ -230,7 +262,8 @@ export function readForm(pages: PageTokens[], profile: FormProfile, labelFor: (t
             amount: Math.round(entry.amount * 100) / 100,
             currency: 'CHF',
             originLabel: `${profile.label} · code${entry.codes.length > 1 ? 's' : ''} ${entry.codes.join(', ')} (p. ${entry.page})`,
-            check: entry.verified ? 'verified' : 'toCheck'
+            check: entry.verified ? 'verified' : 'toCheck',
+            boxes: entry.boxes
         }));
 
     return {

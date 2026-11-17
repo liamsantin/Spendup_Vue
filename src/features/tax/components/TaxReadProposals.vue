@@ -14,11 +14,14 @@ import type { TaxCheck, TaxSuggestion } from '@/features/tax/types';
 const props = defineProps<{
     items: TaxSuggestion[];
     saving: boolean;
+    /** Le PDF lu est connu : chaque montant peut être montré à sa place dans le document. */
+    canShow?: boolean;
 }>();
 
 const emit = defineEmits<{
     accept: [item: TaxSuggestion];
     acceptMany: [items: TaxSuggestion[]];
+    show: [item: TaxSuggestion];
 }>();
 
 const { t } = useI18n();
@@ -57,6 +60,9 @@ function acceptAlerts() {
                 </p>
             </div>
             <p class="tax-fiche__amount">{{ money(item.amount) }}</p>
+            <button v-if="canShow && item.boxes?.length" type="button" class="su-btn su-btn--ghost" @click="emit('show', item)">
+                {{ t('taxPage.zone.show') }}
+            </button>
             <button type="button" class="su-btn su-btn--ink" :disabled="saving" @click="emit('accept', item)">
                 {{ t('taxPage.accept') }}
             </button>

@@ -5245,6 +5245,23 @@
             "title": "Annuler le dépôt de la déclaration {year} ?",
             "message": "À utiliser si elle a été marquée déposée par erreur. Elle redevient « Prête à recopier » et ses montants sont de nouveau modifiables. L'annulation est journalisée ; les corrections déjà faites restent dans l'historique."
         },
+        "guided": {
+            "title": "Saisie rapide des totaux",
+            "intro": "Recopiez les grands totaux de votre déclaration : quelques montants suffisent pour démarrer. Vous complétez ensuite le détail étape par étape.",
+            "introUnread": "Le PDF n'a pas pu être lu (scan, photo ou formulaire non reconnu). Recopiez ses grands totaux : quelques montants suffisent pour démarrer.",
+            "both": "même montant canton et Confédération",
+            "submit": "Inscrire {count} montant | Inscrire {count} montants",
+            "dismiss": "Remplir étape par étape",
+            "done": "{count} ligne remplie. Complétez le détail dans chaque étape. | {count} lignes remplies. Complétez le détail dans chaque étape."
+        },
+        "zone": {
+            "show": "Voir dans le PDF",
+            "title": "Montant dans le PDF",
+            "loading": "Ouverture du PDF…",
+            "unavailable": "La position de ce montant n'est pas connue (lecture faite avant cette fonction) : ouvrez le PDF depuis les pièces.",
+            "page": "Page {page}",
+            "close": "Fermer"
+        },
         "correctModal": {
             "title": "Corriger un montant",
             "message": "La déclaration est déposée : la correction est journalisée avec l’ancien montant, le nouveau et le motif.",
@@ -5423,7 +5440,7 @@
         "attachSelect": "Sélectionner",
         "attachLine": "Ligne concernée (facultatif)",
         "see": "Voir",
-        "importFormatUnknown": "Format de déclaration non reconnu (seul JuraTax est pris en charge pour l'instant) : le PDF est rangé dans les pièces, rien n'a été lu.",
+        "importFormatUnknown": "Format de déclaration non reconnu (seuls les PDF JuraTax et FriTax 2025 sont lus pour l'instant) : le PDF est rangé dans les pièces, rien n'a été lu. Saisissez les totaux ci-dessous pour démarrer.",
         "importReadNone": "Aucun montant à proposer n'a été lu dans ce PDF. Il est rangé dans les pièces.",
         "review": {
             "title": "Lecture du PDF · {profile}",

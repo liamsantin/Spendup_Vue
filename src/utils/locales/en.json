@@ -5245,6 +5245,23 @@
             "title": "Cancel filing of the {year} return?",
             "message": "Use this if it was marked as filed by mistake. It goes back to “Ready to copy” and its amounts can be edited again. The cancellation is logged; corrections already made stay in the history."
         },
+        "guided": {
+            "title": "Quick totals entry",
+            "intro": "Copy the main totals of your return: a few amounts are enough to get started. Fill in the detail step by step afterwards.",
+            "introUnread": "The PDF could not be read (scan, photo or unrecognised form). Copy its main totals: a few amounts are enough to get started.",
+            "both": "same amount for canton and Confederation",
+            "submit": "Enter {count} amount | Enter {count} amounts",
+            "dismiss": "Fill in step by step",
+            "done": "{count} line filled. Complete the detail in each step. | {count} lines filled. Complete the detail in each step."
+        },
+        "zone": {
+            "show": "Show in the PDF",
+            "title": "Amount in the PDF",
+            "loading": "Opening the PDF…",
+            "unavailable": "The position of this amount is not known (read before this feature): open the PDF from the documents.",
+            "page": "Page {page}",
+            "close": "Close"
+        },
         "correctModal": {
             "title": "Correct an amount",
             "message": "The return is filed: the correction is logged with the old amount, the new one and the reason.",
@@ -5423,7 +5440,7 @@
         "attachSelect": "Select",
         "attachLine": "Related box (optional)",
         "see": "View",
-        "importFormatUnknown": "Return format not recognised (only JuraTax is supported for now): the PDF is filed with the documents, nothing was read.",
+        "importFormatUnknown": "Return format not recognised (only JuraTax and FriTax 2025 PDFs are read for now): the PDF is filed with the documents, nothing was read. Enter the totals below to get started.",
         "importReadNone": "No amount to suggest was read from this PDF. It is filed with the documents.",
         "review": {
             "title": "PDF reading · {profile}",

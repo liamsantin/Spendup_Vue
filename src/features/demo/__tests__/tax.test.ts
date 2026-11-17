@@ -128,6 +128,29 @@ describe('démo : impôts', () => {
         expect((handleDemoRequest('GET', '/api/tax-returns') as TaxReturnListResult).totalCount).toBe(0);
     });
 
+    it('saisit les totaux guidés d’un coup, tout ou rien', () => {
+        const created = handleDemoRequest('POST', '/api/tax-returns', { year: 2024, canton: 'JU' }) as { declaration: TaxReturn };
+        const base = `/api/tax-returns/${created.declaration.publicId}/amounts`;
+        expect(() =>
+            handleDemoRequest('PUT', base, {
+                items: [
+                    { code: 'income.employed', person: '1', competence: null, amount: 1 },
+                    { code: 'income.employed', person: '1', competence: null, amount: 2 }
+                ]
+            })
+        ).toThrow();
+        const tax = handleDemoRequest('PUT', base, {
+            items: [
+                { code: 'income.employed', person: '1', competence: null, amount: 72000 },
+                { code: 'deduction.pillar3a', person: '1', competence: 'cantonal', amount: 7258 },
+                { code: 'deduction.pillar3a', person: '1', competence: 'federal', amount: 7258 }
+            ]
+        }) as TaxReturn;
+        const lines = tax.sections.flatMap((s) => s.lines);
+        expect(lines.find((l) => l.code === 'income.employed')?.values[0]).toMatchObject({ amount: 72000, origin: 'saisie' });
+        expect(lines.find((l) => l.code === 'deduction.pillar3a')?.values).toHaveLength(2);
+    });
+
     it('verrouille une déclaration déposée et la corrige ligne par ligne, avec un motif', () => {
         const base = '/api/tax-returns/TAX2025';
         const header = handleDemoRequest('GET', base) as TaxReturn;

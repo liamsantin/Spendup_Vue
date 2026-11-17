@@ -32,6 +32,15 @@ describe('pending-read', () => {
         expect(again.report?.profileLabel).toBe('JuraTax 2025');
     });
 
+    it('garde le PDF lu et la zone de chaque montant, pour la surbrillance', () => {
+        const box = { page: 2, x: 301, y: 780, w: 122, h: 9 };
+        stashPendingRead('t5', { ...read([{ ...item('income.employed'), boxes: [box] }]), filePublicId: 'FILE1' }, '');
+        const pending = takePendingRead('t5');
+        expect(pending.filePublicId).toBe('FILE1');
+        expect(pending.items[0].boxes).toEqual([box]);
+        expect(takePendingRead('t1').filePublicId).toBeNull();
+    });
+
     it('ferme le panneau sans perdre les propositions', () => {
         stashPendingRead('t4', read([item('income.employed')]), '');
         dismissReadReport('t4');

@@ -11,7 +11,7 @@ export async function extractPages(pdf: Pick<PDFDocumentProxy, 'numPages' | 'get
         const tokens: PageTokens['tokens'] = [];
         for (const item of content.items) {
             if (!('str' in item)) continue;
-            tokens.push({ text: item.str, x: item.transform[4], w: item.width, y: item.transform[5] });
+            tokens.push({ text: item.str, x: item.transform[4], w: item.width, y: item.transform[5], h: item.height || undefined });
         }
         pages.push({ page: pageNumber, tokens });
     }
@@ -32,6 +32,12 @@ function loadPdfjs() {
         return pdfjs;
     });
     return pdfjsReady;
+}
+
+/** Ouvre un PDF avec pdf.js sur l'appareil (aucun envoi réseau), pour l'afficher. */
+export async function openPdfDocument(blob: Blob): Promise<PDFDocumentProxy> {
+    const { getDocument } = await loadPdfjs();
+    return getDocument({ data: new Uint8Array(await blob.arrayBuffer()) }).promise;
 }
 
 /** Lit le PDF sur l'appareil (aucun envoi réseau) : rapport de lecture, ou `null` si le format n'est pas reconnu. */

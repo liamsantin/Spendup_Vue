@@ -354,3 +354,26 @@
         max-width: none;
     }
 }
+
+// Zone d'un montant lu, montrée sur la page du PDF rendue sur l'appareil.
+.tax-pdf-zone {
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.tax-pdf-zone__page {
+    position: relative;
+    border: 1px solid var(--line);
+    background: #fff;
+}
+
+.tax-pdf-zone__canvas {
+    display: block;
+}
+
+.tax-pdf-zone__mark {
+    position: absolute;
+    border: 2px solid var(--blue);
+    background: color-mix(in srgb, var(--blue) 18%, transparent);
+    pointer-events: none;
+}

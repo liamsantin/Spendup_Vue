@@ -68,6 +68,14 @@ describe('readForm (profil JuraTax 2025)', () => {
         expect(report.suggestions[0]).toMatchObject({ code: 'income.employed', person: '1', amount: 85000 });
     });
 
+    it('garde la zone du code et du montant, pour la surbrillance dans la revue', () => {
+        const report = run([{ code: '100', amount: '85’000' }, { code: '200' }, { code: '230' }]);
+        const line = report.lines.find((item) => item.code === '100');
+        // code à x=301 (3 glyphes de 4.45), montant à x=387 sur 36 : la zone va de 301 à 423, ligne y=780
+        expect(line?.box).toEqual({ page: 2, x: 301, y: 780, w: 122, h: 9 });
+        expect(report.suggestions[0].boxes).toEqual([line?.box]);
+    });
+
     it('additionne les codes qui visent la même ligne', () => {
         const report = run([
             { code: '100', amount: '60’000' },

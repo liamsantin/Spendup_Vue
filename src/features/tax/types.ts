@@ -178,6 +178,18 @@ export interface TaxSuggestionSourceItem {
     name: string;
 }
 
+/**
+ * Zone d'une valeur lue sur une page du PDF (coordonnées PDF en points : x vers la droite, y vers le haut, depuis le bas
+ * de la page). Couvre le code de la ligne et le montant, pour la surbrillance dans la revue.
+ */
+export interface TaxReadBox {
+    page: number;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+}
+
 /** Contrôle d'une valeur lue dans un PDF : recoupée par un total imprimé, ou à vérifier par la personne. */
 export type TaxCheck = 'verified' | 'toCheck';
 
@@ -193,6 +205,8 @@ export interface TaxSuggestion {
     check?: TaxCheck;
     /** Montant de l'an dernier sur la même ligne, quand l'écart est anormal (probable erreur de lecture). */
     previousAmount?: number;
+    /** Zones du PDF d'où vient un montant lu (une par ligne du formulaire regroupée dans la proposition). */
+    boxes?: TaxReadBox[];
     source?: TaxSuggestionSource;
     sources?: TaxSuggestionSourceItem[];
 }
