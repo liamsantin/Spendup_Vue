@@ -8,12 +8,14 @@ import {
     ArchiveIcon,
     ArrowRightIcon,
     CircleCheckIcon,
+    CodeIcon,
     DotsIcon,
     ArrowBackUpIcon,
     FileTextIcon,
     PencilIcon,
     PlayerPlayIcon,
     ProgressCheckIcon,
+    TableExportIcon,
     TrashIcon
 } from 'vue-tabler-icons';
 import type { TaxReturnListItem, TaxStatus } from '@/features/tax/types';
@@ -26,6 +28,7 @@ const props = defineProps<{
 const emit = defineEmits<{
     open: [];
     pdf: [];
+    export: [format: 'csv' | 'json'];
     status: [status: TaxStatus];
     file: [];
     unfile: [];
@@ -69,6 +72,14 @@ function onActivate(event: MouseEvent) {
                         <button type="button" class="su-menu-item" :disabled="saving" @click="emit('pdf')">
                             <span class="su-menu-item__icon"><FileTextIcon :size="18" stroke-width="1.6" /></span>
                             <span class="su-menu-item__title">{{ t('taxPage.actions.pdf') }}</span>
+                        </button>
+                        <button type="button" class="su-menu-item" :disabled="saving" @click="emit('export', 'csv')">
+                            <span class="su-menu-item__icon"><TableExportIcon :size="18" stroke-width="1.6" /></span>
+                            <span class="su-menu-item__title">{{ t('taxPage.actions.exportCsv') }}</span>
+                        </button>
+                        <button type="button" class="su-menu-item" :disabled="saving" @click="emit('export', 'json')">
+                            <span class="su-menu-item__icon"><CodeIcon :size="18" stroke-width="1.6" /></span>
+                            <span class="su-menu-item__title">{{ t('taxPage.actions.exportJson') }}</span>
                         </button>
                         <button v-if="canCreateNext" type="button" class="su-menu-item" :disabled="saving" @click="emit('next')">
                             <span class="su-menu-item__icon"><ArrowRightIcon :size="18" stroke-width="1.6" /></span>

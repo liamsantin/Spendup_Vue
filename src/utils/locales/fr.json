@@ -5168,6 +5168,8 @@
             "file": "Marquer comme déposée",
             "correct": "Corriger",
             "unfile": "Annuler le dépôt",
+            "exportCsv": "Exporter en CSV",
+            "exportJson": "Exporter en JSON",
             "delete": "Supprimer"
         },
         "year": "Année",
@@ -5221,6 +5223,22 @@
             "archivee": "Archivée",
             "deposee": "Déposée"
         },
+        "civilStatus": "État civil (au 31.12)",
+        "civilStatuses": {
+            "none": "Non indiqué",
+            "celibataire": "Célibataire",
+            "marie": "Marié·e",
+            "partenariatEnregistre": "Partenariat enregistré",
+            "separe": "Séparé·e",
+            "divorce": "Divorcé·e",
+            "veuf": "Veuf·ve"
+        },
+        "taxationMode": "Mode de taxation",
+        "taxationModes": {
+            "ordinaire": "Ordinaire",
+            "source": "Imposé·e à la source"
+        },
+        "taxationSourceHint": "L'imposition à la source n'est pas encore prise en charge : la déclaration reste utilisable comme brouillon, mais vérifiez auprès de votre canton ce que vous devez déclarer.",
         "couple": "Couple (personne 2)",
         "person": "Personne",
         "persons": {

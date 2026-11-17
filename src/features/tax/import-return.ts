@@ -72,6 +72,8 @@ export async function importTaxPdf({ file, year, canton, name, t }: ImportTaxPdf
                         canton: base.canton,
                         couple: true,
                         status: base.status,
+                        civilStatus: base.civilStatus,
+                        taxationMode: base.taxationMode,
                         taxpayerNumber: base.taxpayerNumber,
                         notes: base.notes,
                         name: base.name,

@@ -1,4 +1,4 @@
-import type { TaxIdentity, TaxStatus } from '@/features/tax/types';
+import type { TaxCivilStatus, TaxIdentity, TaxStatus, TaxationMode } from '@/features/tax/types';
 
 export const emptyIdentity = (): TaxIdentity => ({
     officialName: null,
@@ -25,6 +25,9 @@ export interface TaxHeaderState {
     canton: string;
     couple: boolean;
     status: TaxStatus;
+    /** `''` : non indiqué. */
+    civilStatus: TaxCivilStatus | '';
+    taxationMode: TaxationMode;
     taxpayerNumber: string;
     notes: string;
     person1: TaxIdentity;
@@ -37,6 +40,8 @@ export function emptyHeader(): TaxHeaderState {
         canton: 'VD',
         couple: false,
         status: 'enCours',
+        civilStatus: '',
+        taxationMode: 'ordinaire',
         taxpayerNumber: '',
         notes: '',
         person1: emptyIdentity(),

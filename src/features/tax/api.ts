@@ -94,6 +94,11 @@ export const taxApi = {
         return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/entries/report`, { kind, person }) as Promise<TaxReturn>;
     },
 
+    /** Export des données : CSV (un montant par ligne) ou JSON (dossier complet). */
+    exportFile(publicId: string, format: 'csv' | 'json') {
+        return fetchWrapper.getBlob(`/api/tax-returns/${encodeURIComponent(publicId)}/export?format=${format}`);
+    },
+
     pdf(publicId: string) {
         return fetchWrapper.getBlob(`/api/tax-returns/${encodeURIComponent(publicId)}/pdf`);
     },

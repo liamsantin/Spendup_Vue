@@ -33,6 +33,13 @@ export type TaxPerson = '1' | '2' | '1+2';
 export type TaxCompetence = 'cantonal' | 'federal' | 'both';
 export type TaxStatus = 'enCours' | 'preteARecopier' | 'deposee' | 'archivee';
 
+/** État civil au 31.12 de l'année fiscale (jetons de l'API). */
+export const TAX_CIVIL_STATUSES = ['celibataire', 'marie', 'partenariatEnregistre', 'separe', 'divorce', 'veuf'] as const;
+export type TaxCivilStatus = (typeof TAX_CIVIL_STATUSES)[number];
+
+/** Taxation ordinaire, ou imposition à la source (signalée seulement, hors périmètre du module). */
+export type TaxationMode = 'ordinaire' | 'source';
+
 export interface TaxIdentity {
     officialName: string | null;
     firstName: string | null;
@@ -128,6 +135,9 @@ export interface TaxReturn {
     locked: boolean;
     /** Corrections journalisées, la plus récente en premier. */
     corrections: TaxCorrection[];
+    /** `null` tant qu'il n'est pas indiqué. */
+    civilStatus: TaxCivilStatus | null;
+    taxationMode: TaxationMode;
 }
 
 /** Correction d'un montant d'une déclaration déposée. `null` = case vide. */
@@ -231,6 +241,10 @@ export interface UpdateTaxReturnPayload {
     person2: TaxIdentity | null;
     /** Date de dépôt (`yyyy-mm-dd`), lue seulement quand le statut passe à `deposee`. */
     submissionDate?: string | null;
+    /** À renvoyer à chaque mise à jour : absent, l'API l'efface. */
+    civilStatus: TaxCivilStatus | null;
+    /** À renvoyer à chaque mise à jour : absent, l'API revient à `ordinaire`. */
+    taxationMode: TaxationMode;
 }
 
 export interface UpsertTaxAmountPayload {

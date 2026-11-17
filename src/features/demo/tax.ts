@@ -1,7 +1,8 @@
 import { AppError } from '@/utils/errors/app-error';
-import { TAX_CANTONS } from '@/features/tax/types';
+import { TAX_CANTONS, TAX_CIVIL_STATUSES } from '@/features/tax/types';
 import type {
     TaxChecklistItem,
+    TaxCivilStatus,
     TaxCompetence,
     TaxCorrection,
     TaxDocumentLink,
@@ -17,6 +18,7 @@ import type {
     TaxSuggestion,
     TaxSuggestionSource,
     TaxSuggestionSourceItem,
+    TaxationMode,
     UpdateTaxReturnPayload,
     UpsertTaxAmountPayload,
     UpsertTaxEntryPayload
@@ -57,6 +59,8 @@ export type DemoTaxReturn = {
     submissionDate?: string | null;
     /** Corrections journalisées, la plus récente en premier. */
     corrections?: TaxCorrection[];
+    civilStatus?: TaxCivilStatus | null;
+    taxationMode?: TaxationMode;
 };
 
 /** Pièce attendue telle que la démo la garde : `complete` est ce que la personne a coché. */
@@ -298,7 +302,9 @@ function toResponse(tax: DemoTaxReturn): TaxReturn {
             tax.previousPublicId && store().some((item) => item.publicId === tax.previousPublicId) ? tax.previousPublicId : null,
         submissionDate: tax.submissionDate ?? null,
         locked: isLocked(tax),
-        corrections: (tax.corrections ?? []).map((item) => ({ ...item }))
+        corrections: (tax.corrections ?? []).map((item) => ({ ...item })),
+        civilStatus: tax.civilStatus ?? null,
+        taxationMode: tax.taxationMode ?? 'ordinaire'
     };
 }
 
@@ -617,7 +623,9 @@ function createNextYear(source: DemoTaxReturn) {
         entries: source.entries.map((entry) => ({ ...entry, publicId: createPublicId(), amount: null, secondaryAmount: null })),
         documents: [],
         checklist: [],
-        previousPublicId: source.publicId
+        previousPublicId: source.publicId,
+        civilStatus: source.civilStatus ?? null,
+        taxationMode: source.taxationMode ?? 'ordinaire'
     };
     tax.checklist = checklistSeeds(tax, source);
     store().push(tax);
@@ -648,6 +656,12 @@ function updateReturn(tax: DemoTaxReturn, body: UpdateTaxReturnPayload) {
         if (date > todayYmd()) invalid('La date de dépôt ne peut pas être dans le futur.');
         tax.submissionDate = date;
     }
+    if (body.civilStatus && !TAX_CIVIL_STATUSES.includes(body.civilStatus))
+        invalid('État civil invalide (celibataire, marie, partenariatEnregistre, separe, divorce, veuf).');
+    if (body.taxationMode && body.taxationMode !== 'ordinaire' && body.taxationMode !== 'source')
+        invalid('Mode de taxation invalide (ordinaire, source).');
+    tax.civilStatus = body.civilStatus || null;
+    tax.taxationMode = body.taxationMode || 'ordinaire';
     tax.canton = normalizeCanton(body.canton);
     tax.status = body.status;
     tax.couple = Boolean(body.couple);
@@ -934,7 +948,7 @@ function buildPdf(lines: string[]): Blob {
 }
 
 /** Routes `/api/tax-returns`. `null` si le chemin n’est pas concerné. */
-export function routeTax(method: string, path: string, body: unknown): TaxResult {
+export function routeTax(method: string, path: string, body: unknown, query?: URLSearchParams): TaxResult {
     if (!path.startsWith('/api/tax-returns')) return null;
 
     if (path === '/api/tax-returns' && method === 'GET') {
@@ -1020,6 +1034,30 @@ export function routeTax(method: string, path: string, body: unknown): TaxResult
         return ok(toResponse(tax));
     }
 
+    const exported = match(path, '/api/tax-returns/:id/export');
+    if (exported && method === 'GET') {
+        const tax = toResponse(findReturn(exported.id));
+        if (query?.get('format') === 'json') return ok(new Blob([JSON.stringify(tax, null, 2)], { type: 'application/json' }));
+        const rows = ['section;code;ligne;personne;ressort;montant;devise;origine'];
+        for (const section of tax.sections)
+            for (const line of section.lines)
+                for (const value of line.values)
+                    rows.push(
+                        [
+                            section.label,
+                            line.code,
+                            line.label,
+                            value.person,
+                            value.competence,
+                            value.amount.toFixed(2),
+                            value.currency,
+                            value.origin
+                        ]
+                            .map((cell) => (/[;"\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell))
+                            .join(';')
+                    );
+        return ok(new Blob(['\ufeff' + rows.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' }));
+    }
     const pdf = match(path, '/api/tax-returns/:id/pdf');
     if (pdf && method === 'GET') return ok(buildPdf(pdfLines(findReturn(pdf.id))));
 

@@ -5168,6 +5168,8 @@
             "file": "Mark as filed",
             "correct": "Correct",
             "unfile": "Cancel filing",
+            "exportCsv": "Export as CSV",
+            "exportJson": "Export as JSON",
             "delete": "Delete"
         },
         "year": "Year",
@@ -5221,6 +5223,22 @@
             "archivee": "Archived",
             "deposee": "Filed"
         },
+        "civilStatus": "Civil status (at 31.12)",
+        "civilStatuses": {
+            "none": "Not specified",
+            "celibataire": "Single",
+            "marie": "Married",
+            "partenariatEnregistre": "Registered partnership",
+            "separe": "Separated",
+            "divorce": "Divorced",
+            "veuf": "Widowed"
+        },
+        "taxationMode": "Taxation mode",
+        "taxationModes": {
+            "ordinaire": "Ordinary",
+            "source": "Taxed at source"
+        },
+        "taxationSourceHint": "Taxation at source is not supported yet: the return still works as a draft, but check with your canton what you need to declare.",
         "couple": "Couple (person 2)",
         "person": "Person",
         "persons": {

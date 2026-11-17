@@ -327,6 +327,8 @@ function apply(detail: TaxReturn) {
         canton: detail.canton,
         couple: detail.couple,
         status: detail.status,
+        civilStatus: detail.civilStatus ?? '',
+        taxationMode: detail.taxationMode,
         taxpayerNumber: detail.taxpayerNumber ?? '',
         notes: detail.notes ?? '',
         person1: { ...detail.person1 },
@@ -361,6 +363,8 @@ async function createReturn(payload: TaxCreatePayload) {
                 canton: base.canton,
                 couple: payload.couple,
                 status: base.status,
+                civilStatus: base.civilStatus,
+                taxationMode: base.taxationMode,
                 taxpayerNumber: base.taxpayerNumber,
                 notes: base.notes,
                 name: base.name,
@@ -413,6 +417,8 @@ async function saveHeader(submissionDate?: string): Promise<boolean> {
             canton: header.value.canton,
             couple: header.value.couple,
             status: header.value.status,
+            civilStatus: header.value.civilStatus || null,
+            taxationMode: header.value.taxationMode,
             taxpayerNumber: header.value.taxpayerNumber.trim() || null,
             notes: header.value.notes.trim() || null,
             name: header.value.name.trim() || null,
@@ -888,16 +894,29 @@ async function generateChecklist() {
     }
 }
 
+function saveBlob(blob: Blob, fileName: string) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
 async function downloadPdf(id: string, year: number, canton: string) {
     error.value = '';
     try {
-        const blob = await taxApi.pdf(id);
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `declaration-${year}-${canton}.pdf`;
-        link.click();
-        URL.revokeObjectURL(url);
+        saveBlob(await taxApi.pdf(id), `declaration-${year}-${canton}.pdf`);
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    }
+}
+
+/** Export des données (CSV pour un tableur, JSON pour garder tout le dossier). */
+async function downloadExport(id: string, year: number, canton: string, format: 'csv' | 'json') {
+    error.value = '';
+    try {
+        saveBlob(await taxApi.exportFile(id, format), `declaration-${year}-${canton}.${format}`);
     } catch (e) {
         error.value = getErrorMessage(AppError.fromUnknown(e));
     }
@@ -912,6 +931,8 @@ async function setReturnStatus(item: { publicId: string }, status: TaxStatus, su
             canton: detail.canton,
             couple: detail.couple,
             status,
+            civilStatus: detail.civilStatus,
+            taxationMode: detail.taxationMode,
             taxpayerNumber: detail.taxpayerNumber,
             notes: detail.notes,
             name: detail.name,
@@ -1109,6 +1130,7 @@ async function submitCorrection(payload: TaxCorrectPayload) {
                 :saving="saving"
                 @open="openReturn(item.publicId)"
                 @pdf="downloadPdf(item.publicId, item.year, item.canton)"
+                @export="(format) => downloadExport(item.publicId, item.year, item.canton, format)"
                 @next="askNextYear(item)"
                 @file="askFile(item)"
                 @unfile="askUnfile(item)"

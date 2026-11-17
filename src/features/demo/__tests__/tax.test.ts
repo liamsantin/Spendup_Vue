@@ -128,6 +128,41 @@ describe('démo : impôts', () => {
         expect((handleDemoRequest('GET', '/api/tax-returns') as TaxReturnListResult).totalCount).toBe(0);
     });
 
+    it('exporte en CSV (un montant par ligne) et en JSON (dossier complet)', async () => {
+        const csv = handleDemoRequest('GET', '/api/tax-returns/TAX2025/export?format=csv') as Blob;
+        const text = await csv.text();
+        // Blob.text() retire le BOM au d\u00e9codage : on le v\u00e9rifie sur les octets
+        expect([...new Uint8Array(await csv.arrayBuffer()).slice(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);
+        expect(text.split('\r\n')[0]).toBe('section;code;ligne;personne;ressort;montant;devise;origine');
+        expect(text).toContain(';income.employed;');
+        const json = handleDemoRequest('GET', '/api/tax-returns/TAX2025/export?format=json') as Blob;
+        expect(JSON.parse(await json.text()).publicId).toBe('TAX2025');
+    });
+
+    it('enregistre l’état civil et le mode de taxation, et les reprend l’année suivante', () => {
+        const base = '/api/tax-returns/TAX2025';
+        const header = handleDemoRequest('GET', base) as TaxReturn;
+        expect(header.civilStatus).toBeNull();
+        expect(header.taxationMode).toBe('ordinaire');
+        const body = {
+            canton: header.canton,
+            couple: header.couple,
+            status: header.status,
+            taxpayerNumber: header.taxpayerNumber,
+            notes: header.notes,
+            name: header.name,
+            person1: header.person1,
+            person2: header.person2
+        };
+        expect(() => handleDemoRequest('PUT', base, { ...body, civilStatus: 'concubin', taxationMode: 'ordinaire' })).toThrow();
+        const saved = handleDemoRequest('PUT', base, { ...body, civilStatus: 'marie', taxationMode: 'source' }) as TaxReturn;
+        expect(saved.civilStatus).toBe('marie');
+        expect(saved.taxationMode).toBe('source');
+        const next = (handleDemoRequest('POST', `${base}/next-year`, {}) as { declaration: TaxReturn }).declaration;
+        expect(next.civilStatus).toBe('marie');
+        expect(next.taxationMode).toBe('source');
+    });
+
     it('saisit les totaux guidés d’un coup, tout ou rien', () => {
         const created = handleDemoRequest('POST', '/api/tax-returns', { year: 2024, canton: 'JU' }) as { declaration: TaxReturn };
         const base = `/api/tax-returns/${created.declaration.publicId}/amounts`;

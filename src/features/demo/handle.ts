@@ -140,7 +140,7 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
         return ok({ ...page, unreadCount: db.notifications.filter((item) => !item.isRead).length });
     }
 
-    const tax = routeTax(method, path, body);
+    const tax = routeTax(method, path, body, query);
     if (tax) return tax;
     const wealth = routeWealth(method, path, query, body);
     if (wealth) return wealth;

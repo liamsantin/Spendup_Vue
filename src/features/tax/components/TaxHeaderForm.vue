@@ -2,11 +2,13 @@
 /** Étape « Identité » : en-tête de la déclaration et identité des deux personnes. */
 defineOptions({ name: 'TaxHeaderForm' });
 
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import AppSwitch from '@/components/shared/switch/AppSwitch.vue';
 import TaxIdentityFields from '@/features/tax/components/TaxIdentityFields.vue';
 import type { TaxHeaderState } from '@/features/tax/identity';
+import { TAX_CIVIL_STATUSES } from '@/features/tax/types';
 
 const header = defineModel<TaxHeaderState>({ required: true });
 
@@ -20,6 +22,14 @@ defineProps<{
 const emit = defineEmits<{ submit: [] }>();
 
 const { t } = useI18n();
+
+const civilItems = computed(() => [
+    { title: t('taxPage.civilStatuses.none'), value: '' },
+    ...TAX_CIVIL_STATUSES.map((value) => ({ title: t(`taxPage.civilStatuses.${value}`), value }))
+]);
+const taxationItems = computed(() =>
+    (['ordinaire', 'source'] as const).map((value) => ({ title: t(`taxPage.taxationModes.${value}`), value }))
+);
 </script>
 
 <template>
@@ -61,6 +71,31 @@ const { t } = useI18n();
             <label class="tax-form__label" for="tax-couple">{{ t('taxPage.couple') }}</label>
             <div class="tax-form__field">
                 <AppSwitch id="tax-couple" v-model="header.couple" />
+            </div>
+        </div>
+        <div class="tax-form__row">
+            <label class="tax-form__label" for="tax-civil">{{ t('taxPage.civilStatus') }}</label>
+            <div class="tax-form__field">
+                <AppSelect
+                    id="tax-civil"
+                    v-model="header.civilStatus"
+                    :items="civilItems"
+                    :label="t('taxPage.civilStatus')"
+                    hide-details="auto"
+                />
+            </div>
+        </div>
+        <div class="tax-form__row">
+            <label class="tax-form__label" for="tax-taxation">{{ t('taxPage.taxationMode') }}</label>
+            <div class="tax-form__field">
+                <AppSelect
+                    id="tax-taxation"
+                    v-model="header.taxationMode"
+                    :items="taxationItems"
+                    :label="t('taxPage.taxationMode')"
+                    hide-details="auto"
+                />
+                <p v-if="header.taxationMode === 'source'" class="tax-line__hint">{{ t('taxPage.taxationSourceHint') }}</p>
             </div>
         </div>
         <div class="tax-form__row">
