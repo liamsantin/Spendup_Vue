@@ -297,6 +297,7 @@ export function createCategoriesCrud(state: CategoriesState) {
                 type?: Category['type'];
                 color?: string | null;
                 icone?: string | null;
+                taxNature?: string | null;
             }>;
         }>
     ): Promise<{ created: number; skipped: number }> {
@@ -348,7 +349,8 @@ export function createCategoriesCrud(state: CategoriesState) {
                             type: childType,
                             color: child.color ?? null,
                             icone: child.icone ?? '',
-                            parentPublicId: parentPublicId ?? ''
+                            parentPublicId: parentPublicId ?? '',
+                            taxNature: child.taxNature ?? ''
                         },
                         treeRoots()
                     );

@@ -1,4 +1,5 @@
 import type { CategoryIconKey } from '@/features/categories/icons';
+import type { TaxNatureCode } from '@/features/categories/tax-natures';
 import type { CategoryType } from '@/features/categories/types';
 
 /** Nœud du plan (clés i18n sous `categoriesPage.plan.nodes.*`). */
@@ -12,6 +13,8 @@ export type CategoryPlanNodeDef = {
         type?: CategoryType;
         color?: string;
         icone?: CategoryIconKey;
+        /** Nature fiscale par défaut, jamais héritée du parent. */
+        taxNature?: TaxNatureCode;
     }>;
 };
 
@@ -27,7 +30,7 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
         icone: 'home',
         children: [
             { nameKey: 'loyer', icone: 'home' },
-            { nameKey: 'hypotheque', icone: 'building-bank' },
+            { nameKey: 'hypotheque', icone: 'building-bank', taxNature: 'debtInterest' },
             { nameKey: 'charges', icone: 'bolt' },
             { nameKey: 'entretienLogement', icone: 'tools' },
             { nameKey: 'assuranceMenage', icone: 'receipt' }
@@ -63,11 +66,11 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
         color: '#EF4444',
         icone: 'heart',
         children: [
-            { nameKey: 'assuranceMaladie', icone: 'heart' },
-            { nameKey: 'assuranceComplementaire', icone: 'star' },
-            { nameKey: 'franchiseSoins', icone: 'receipt' },
-            { nameKey: 'pharmacie', icone: 'droplet' },
-            { nameKey: 'dentiste', icone: 'user' }
+            { nameKey: 'assuranceMaladie', icone: 'heart', taxNature: 'healthInsurancePremium' },
+            { nameKey: 'assuranceComplementaire', icone: 'star', taxNature: 'healthInsurancePremium' },
+            { nameKey: 'franchiseSoins', icone: 'receipt', taxNature: 'medicalExpense' },
+            { nameKey: 'pharmacie', icone: 'droplet', taxNature: 'medicalExpense' },
+            { nameKey: 'dentiste', icone: 'user', taxNature: 'medicalExpense' }
         ]
     },
     {
@@ -76,8 +79,8 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
         color: '#78716C',
         icone: 'building-bank',
         children: [
-            { nameKey: 'impotsRevenu', icone: 'receipt' },
-            { nameKey: 'acomptesProvisionnels', icone: 'chart-bar' },
+            { nameKey: 'impotsRevenu', icone: 'receipt', taxNature: 'taxPayment' },
+            { nameKey: 'acomptesProvisionnels', icone: 'chart-bar', taxNature: 'taxPayment' },
             { nameKey: 'taxesAmendes', icone: 'tag' }
         ]
     },
@@ -121,7 +124,7 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
         color: '#F472B6',
         icone: 'baby-carriage',
         children: [
-            { nameKey: 'gardeEnfants', icone: 'baby-carriage' },
+            { nameKey: 'gardeEnfants', icone: 'baby-carriage', taxNature: 'childcare' },
             { nameKey: 'ecoleActivites', icone: 'school' },
             { nameKey: 'animaux', icone: 'paw' }
         ]
@@ -133,7 +136,7 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
         icone: 'credit-card',
         children: [
             { nameKey: 'fraisBancaires', icone: 'credit-card' },
-            { nameKey: 'dons', icone: 'gift' }
+            { nameKey: 'dons', icone: 'gift', taxNature: 'donation' }
         ]
     },
     {
@@ -147,6 +150,7 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
             { nameKey: 'independant', icone: 'briefcase' },
             { nameKey: 'allocations', icone: 'users' },
             { nameKey: 'rentes', icone: 'wallet' },
+            { nameKey: 'remboursementsSante', icone: 'heart', taxNature: 'medicalReimbursement' },
             { nameKey: 'autresRevenus', icone: 'gift' }
         ]
     },
@@ -156,7 +160,7 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
         color: '#0D9488',
         icone: 'pig-money',
         children: [
-            { nameKey: 'troisiemePilier', icone: 'pig-money' },
+            { nameKey: 'troisiemePilier', icone: 'pig-money', taxNature: 'pillar3aContribution' },
             { nameKey: 'epargneCourante', icone: 'wallet' },
             { nameKey: 'virementInterne', icone: 'arrows-exchange' }
         ]

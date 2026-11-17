@@ -1400,6 +1400,25 @@
             }
         }
     },
+    "taxNatures": {
+        "none": "None",
+        "pillar3aContribution": "Pillar 3a contribution",
+        "pillar2BuyIn": "Pillar 2 buy-in",
+        "healthInsurancePremium": "Health insurance premium",
+        "lifeInsurancePremium": "Life, accident or pillar 3b premium",
+        "medicalExpense": "Medical expenses I bear",
+        "medicalReimbursement": "Medical expense reimbursement",
+        "disabilityExpense": "Disability-related expenses",
+        "childcare": "Childcare costs",
+        "alimonyPaid": "Alimony paid",
+        "commuting": "Commute to work",
+        "jobExpense": "Other job expense",
+        "trainingExpense": "Training or professional development",
+        "donation": "Donation to a public-benefit organisation",
+        "politicalContribution": "Political party contribution or donation",
+        "debtInterest": "Debt or mortgage interest",
+        "taxPayment": "Tax payment"
+    },
     "categoriesPage": {
         "title": "Categories",
         "subtitle": "Your personal tree for classifying transactions.",
@@ -1484,6 +1503,7 @@
                 "independant": "Self-employed",
                 "allocations": "Allowances",
                 "rentes": "Pensions (AHV / pillar 2)",
+                "remboursementsSante": "Health reimbursements",
                 "autresRevenus": "Other income",
                 "epargne": "Savings & retirement",
                 "troisiemePilier": "Pillar 3",
@@ -1531,8 +1551,12 @@
                 "type": "Type",
                 "parent": "Parent",
                 "color": "Color",
-                "icone": "Icon"
+                "icone": "Icon",
+                "taxNature": "Tax nature"
             },
+            "taxNatureHint": "Optional. Used to prepare your tax return; changes nothing else.",
+            "taxNatureSuggestion": "Suggestion: {nature}.",
+            "taxNatureUse": "Use",
             "errors": {
                 "nameRequired": "Category name is required.",
                 "nameTooLong": "Category name exceeds 150 characters.",

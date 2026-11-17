@@ -10,6 +10,8 @@ export type Category = {
     createdAt: string;
     updatedAt: string | null;
     children: Category[];
+    /** Nature fiscale par défaut (code du catalogue), facultative. */
+    taxNature?: string | null;
 };
 
 export type CategoryList = {
@@ -27,6 +29,7 @@ export type CreateCategoryPayload = {
     color?: string | null;
     icone?: string | null;
     parentPublicId?: string | null;
+    taxNature?: string | null;
 };
 
 export type UpdateCategoryPayload = {
@@ -35,6 +38,8 @@ export type UpdateCategoryPayload = {
     color: string | null;
     icone: string | null;
     parentPublicId: string | null;
+    /** Absent : l'API conserve la nature ; chaîne vide : elle l'efface. */
+    taxNature?: string;
 };
 
 export const CATEGORY_TYPES: CategoryType[] = ['depense', 'revenu', 'transfert', 'mixte'];

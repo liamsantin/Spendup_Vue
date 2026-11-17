@@ -34,6 +34,8 @@ export type CategoryFormFields = {
     color: string | null;
     icone: string;
     parentPublicId: string;
+    /** Code de nature fiscale ; vide = aucune. */
+    taxNature?: string;
 };
 
 export type BuildCategoryPayloadOk<T> = { ok: true; payload: T };
@@ -75,6 +77,7 @@ function commonFields(
           color: string | null;
           icone: string | null;
           parentPublicId: string | null;
+          taxNature: string | null;
       } {
     if (!CATEGORY_TYPES.includes(fields.type)) {
         return fail('typeInvalid', 'type');
@@ -125,7 +128,8 @@ function commonFields(
         type: fields.type,
         color,
         icone,
-        parentPublicId
+        parentPublicId,
+        taxNature: emptyToNull(fields.taxNature ?? '')
     };
 }
 
@@ -143,6 +147,7 @@ export function buildCreateCategoryPayload(
     if (common.color) payload.color = common.color;
     if (common.icone) payload.icone = common.icone;
     if (common.parentPublicId) payload.parentPublicId = common.parentPublicId;
+    if (common.taxNature) payload.taxNature = common.taxNature;
     return { ok: true, payload };
 }
 
@@ -154,16 +159,16 @@ export function buildUpdateCategoryPayload(
     const common = commonFields(fields, roots, { excludePublicId });
     if (!common.ok) return common;
 
-    return {
-        ok: true,
-        payload: {
-            name: common.name,
-            type: common.type,
-            color: common.color,
-            icone: common.icone,
-            parentPublicId: common.parentPublicId
-        }
+    const payload: UpdateCategoryPayload = {
+        name: common.name,
+        type: common.type,
+        color: common.color,
+        icone: common.icone,
+        parentPublicId: common.parentPublicId
     };
+    // Champ absent : l'API conserve la nature ; chaîne vide : elle l'efface.
+    if (fields.taxNature !== undefined) payload.taxNature = common.taxNature ?? '';
+    return { ok: true, payload };
 }
 
 export function isCategoryFormDirty(category: Category, fields: CategoryFormFields): boolean {
@@ -172,6 +177,7 @@ export function isCategoryFormDirty(category: Category, fields: CategoryFormFiel
     if (normalizeColor(fields.color) !== normalizeColor(category.color)) return true;
     if (emptyToNull(fields.icone) !== emptyToNull(category.icone)) return true;
     if (emptyToNull(fields.parentPublicId) !== emptyToNull(category.parentPublicId)) return true;
+    if (emptyToNull(fields.taxNature ?? '') !== emptyToNull(category.taxNature ?? '')) return true;
     return false;
 }
 

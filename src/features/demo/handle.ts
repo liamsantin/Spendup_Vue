@@ -180,6 +180,7 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
     }
     if (path.startsWith('/api/transactions/') && path.endsWith('/files') && method === 'GET') return ok({ items: [], totalCount: 0 });
 
+    if (path === '/api/tax-natures/suggest' && method === 'GET') return ok({ taxNature: null });
     if (path === '/api/categories' && method === 'GET') return ok(listCategories(query));
     if (path === '/api/categories' && method === 'POST') return ok(createCategory(body as CreateCategoryPayload));
     const categoryId = match(path, '/api/categories/:id');
@@ -1103,6 +1104,7 @@ function createCategory(body: CreateCategoryPayload) {
         color: body.color ?? null,
         icone: body.icone ?? null,
         parentPublicId: body.parentPublicId?.trim() || null,
+        taxNature: body.taxNature?.trim() || null,
         createdAt: stamp(),
         updatedAt: null,
         children: [] as ReturnType<typeof findCategory>['children']
@@ -1126,6 +1128,8 @@ function updateCategory(id: string, body: UpdateCategoryPayload) {
     item.type = body.type;
     item.color = body.color;
     item.icone = body.icone;
+    // Absent : la nature est conservée ; chaîne vide : elle est effacée (comme l'API).
+    if (body.taxNature !== undefined) item.taxNature = body.taxNature.trim() || null;
     item.updatedAt = stamp();
     return item;
 }

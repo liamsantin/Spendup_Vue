@@ -41,6 +41,7 @@ type ShopChild = {
     type: CategoryPlanNodeDef['type'];
     color?: string;
     icone?: string;
+    taxNature?: string;
 };
 
 type ShopItem = {
@@ -75,7 +76,8 @@ const shopItems = computed<ShopItem[]>(() =>
                 name: t(`categoriesPage.plan.nodes.${child.nameKey}`),
                 type: child.type ?? root.type,
                 color: child.color,
-                icone: child.icone
+                icone: child.icone,
+                taxNature: child.taxNature
             })),
             alreadyPresent: rootAlreadyPresent(name, root.type)
         };

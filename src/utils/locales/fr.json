@@ -1400,6 +1400,25 @@
             }
         }
     },
+    "taxNatures": {
+        "none": "Aucune",
+        "pillar3aContribution": "Cotisation 3e pilier A",
+        "pillar2BuyIn": "Rachat dans le 2e pilier",
+        "healthInsurancePremium": "Prime d’assurance maladie",
+        "lifeInsurancePremium": "Prime d’assurance vie, accident ou 3e pilier B",
+        "medicalExpense": "Frais médicaux à ma charge",
+        "medicalReimbursement": "Remboursement de frais médicaux",
+        "disabilityExpense": "Frais liés à un handicap",
+        "childcare": "Frais de garde d’un enfant",
+        "alimonyPaid": "Pension alimentaire versée",
+        "commuting": "Trajet domicile-travail",
+        "jobExpense": "Autre frais professionnel",
+        "trainingExpense": "Formation ou perfectionnement",
+        "donation": "Don à une organisation d’utilité publique",
+        "politicalContribution": "Cotisation ou don à un parti politique",
+        "debtInterest": "Intérêts d’une dette ou d’une hypothèque",
+        "taxPayment": "Paiement d’impôts"
+    },
     "categoriesPage": {
         "title": "Catégories",
         "subtitle": "Votre arbre personnel pour classer les transactions.",
@@ -1484,6 +1503,7 @@
                 "independant": "Indépendant",
                 "allocations": "Allocations",
                 "rentes": "Rentes (AVS / 2e pilier)",
+                "remboursementsSante": "Remboursements santé",
                 "autresRevenus": "Autres revenus",
                 "epargne": "Épargne & prévoyance",
                 "troisiemePilier": "3e pilier",
@@ -1531,8 +1551,12 @@
                 "type": "Type",
                 "parent": "Parent",
                 "color": "Couleur",
-                "icone": "Icône"
+                "icone": "Icône",
+                "taxNature": "Nature fiscale"
             },
+            "taxNatureHint": "Facultatif. Sert à préparer votre déclaration d’impôts ; ne change rien d’autre.",
+            "taxNatureSuggestion": "Suggestion : {nature}.",
+            "taxNatureUse": "Utiliser",
             "errors": {
                 "nameRequired": "Le nom de la catégorie est obligatoire.",
                 "nameTooLong": "Le nom de la catégorie dépasse 150 caractères.",

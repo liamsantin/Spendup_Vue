@@ -12,6 +12,7 @@ import { XIcon } from 'vue-tabler-icons';
 import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import CategoryIconPicker from '@/features/categories/components/forms/CategoryIconPicker.vue';
+import { taxNatureCodesForType } from '@/features/categories/tax-natures';
 import { CATEGORY_COLOR_PRESETS, CATEGORY_NAME_MAX, type CategoryType } from '@/features/categories/types';
 import type { CategoryFormFields } from '@/features/categories/payload';
 
@@ -21,6 +22,7 @@ export type CategoryFormFieldErrors = {
     color?: string | null;
     icone?: string | null;
     parentPublicId?: string | null;
+    taxNature?: string | null;
 };
 
 const props = withDefaults(
@@ -32,11 +34,14 @@ const props = withDefaults(
         fieldErrors?: CategoryFormFieldErrors;
         parentDisabled?: boolean;
         parentHint?: string | null;
+        /** Nature proposée d'après le nom ; appliquée seulement par un clic. */
+        suggestedTaxNature?: string | null;
     }>(),
     {
         fieldErrors: () => ({}),
         parentDisabled: false,
-        parentHint: null
+        parentHint: null,
+        suggestedTaxNature: null
     }
 );
 
@@ -48,6 +53,24 @@ const colorModel = computed({
         props.form.color = value;
     }
 });
+
+const taxNatureItems = computed(() => [
+    { title: t('taxNatures.none'), value: '' },
+    ...taxNatureCodesForType(props.form.type).map((code) => ({ title: t(`taxNatures.${code}`), value: code }))
+]);
+
+const suggestedLabel = computed(() => (props.suggestedTaxNature ? t(`taxNatures.${props.suggestedTaxNature}`) : null));
+
+const taxNatureModel = computed({
+    get: () => props.form.taxNature ?? '',
+    set: (value: string) => {
+        props.form.taxNature = value;
+    }
+});
+
+function applySuggestion() {
+    if (props.suggestedTaxNature) props.form.taxNature = props.suggestedTaxNature;
+}
 
 function isPresetSelected(preset: string): boolean {
     return (props.form.color ?? '').toUpperCase() === preset.toUpperCase();
@@ -104,6 +127,28 @@ function isPresetSelected(preset: string): boolean {
                     :hint="parentHint || undefined"
                     :persistent-hint="!!parentHint"
                 />
+            </div>
+        </div>
+        <div class="category-form__row category-form__row--top">
+            <label class="category-form__label" for="category-form-tax-nature">{{ t('categoriesPage.form.fields.taxNature') }}</label>
+            <div class="category-form__field">
+                <AppSelect
+                    id="category-form-tax-nature"
+                    v-model="taxNatureModel"
+                    :items="taxNatureItems"
+                    :label="t('categoriesPage.form.fields.taxNature')"
+                    hide-details="auto"
+                    :error="!!fieldErrors.taxNature"
+                    :error-messages="fieldErrors.taxNature || undefined"
+                    :hint="t('categoriesPage.form.taxNatureHint')"
+                    persistent-hint
+                />
+                <p v-if="suggestedLabel && !form.taxNature" class="category-form__note">
+                    {{ t('categoriesPage.form.taxNatureSuggestion', { nature: suggestedLabel }) }}
+                    <button type="button" class="su-btn su-btn--ghost su-btn--sm" @click="applySuggestion">
+                        {{ t('categoriesPage.form.taxNatureUse') }}
+                    </button>
+                </p>
             </div>
         </div>
         <div class="category-form__row category-form__row--top">

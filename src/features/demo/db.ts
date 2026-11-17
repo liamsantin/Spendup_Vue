@@ -113,7 +113,7 @@ function category(
     name: string,
     type: CategoryType,
     color: string,
-    extras: { parentPublicId?: string | null; icone?: string | null } = {}
+    extras: { parentPublicId?: string | null; icone?: string | null; taxNature?: string | null } = {}
 ): Category {
     return {
         publicId,
@@ -124,7 +124,8 @@ function category(
         parentPublicId: extras.parentPublicId ?? null,
         createdAt: NOW,
         updatedAt: null,
-        children: []
+        children: [],
+        taxNature: extras.taxNature ?? null
     };
 }
 
@@ -259,6 +260,25 @@ export function createDemoDb(): DemoDb {
             tree(category('CATSAL1', 'Salaire', 'revenu', '#2A9D8F', { icone: 'briefcase' }), [
                 category('CATSALN', 'Salaire net', 'revenu', '#2A9D8F', { parentPublicId: 'CATSAL1', icone: 'cash' }),
                 category('CAT13TH', '13e salaire', 'revenu', '#2A9D8F', { parentPublicId: 'CATSAL1', icone: 'star' })
+            ]),
+            tree(category('CATHLTH', 'Santé', 'depense', '#EF4444', { icone: 'heart' }), [
+                category('CATHINS', 'Assurance maladie', 'depense', '#EF4444', {
+                    parentPublicId: 'CATHLTH',
+                    icone: 'heart',
+                    taxNature: 'healthInsurancePremium'
+                }),
+                category('CATMEDX', 'Soins', 'depense', '#EF4444', {
+                    parentPublicId: 'CATHLTH',
+                    icone: 'receipt',
+                    taxNature: 'medicalExpense'
+                })
+            ]),
+            tree(category('CATSAVE', 'Épargne & prévoyance', 'transfert', '#0D9488', { icone: 'pig-money' }), [
+                category('CAT3PIL', '3e pilier', 'transfert', '#0D9488', {
+                    parentPublicId: 'CATSAVE',
+                    icone: 'pig-money',
+                    taxNature: 'pillar3aContribution'
+                })
             ])
         ],
         transactions: [

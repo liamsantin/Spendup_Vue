@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
+import { taxNaturesApi } from '@/features/categories/api';
+import { TAX_NATURE_CODES } from '@/features/categories/tax-natures';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { compatibleParentCandidates } from '@/features/categories/format';
 import {
@@ -57,8 +59,37 @@ const form = reactive<CategoryFormFields>({
     type: 'depense',
     color: null,
     icone: '',
-    parentPublicId: ''
+    parentPublicId: '',
+    taxNature: ''
 });
+
+/** Nature proposée d'après le nom (création seulement) ; appliquée seulement sur geste. */
+const suggestedTaxNature = ref<string | null>(null);
+let suggestTimer: ReturnType<typeof setTimeout> | null = null;
+let suggestSeq = 0;
+
+function scheduleSuggestion() {
+    if (suggestTimer) clearTimeout(suggestTimer);
+    suggestedTaxNature.value = null;
+    if (isEdit.value || form.taxNature || form.name.trim().length < 3) return;
+    const seq = ++suggestSeq;
+    suggestTimer = setTimeout(async () => {
+        try {
+            const res = await taxNaturesApi.suggest(form.name.trim(), form.type);
+            const code = res.taxNature;
+            if (seq === suggestSeq && !form.taxNature && code && (TAX_NATURE_CODES as readonly string[]).includes(code)) {
+                suggestedTaxNature.value = code;
+            }
+        } catch {
+            // Suggestion facultative : l'échec ne gêne jamais la saisie.
+        }
+    }, 350);
+}
+
+watch(
+    () => [form.name, form.type, form.taxNature] as const,
+    () => scheduleSuggestion()
+);
 
 const open = computed({
     get: () => props.modelValue,
@@ -76,6 +107,7 @@ function clearFieldErrors() {
     fieldErrors.color = null;
     fieldErrors.icone = null;
     fieldErrors.parentPublicId = null;
+    fieldErrors.taxNature = null;
 }
 
 function payloadErrorText(code: CategoryPayloadErrorCode): string {
@@ -101,6 +133,7 @@ function resetForm() {
         form.color = category.color;
         form.icone = category.icone ?? '';
         form.parentPublicId = category.parentPublicId ?? '';
+        form.taxNature = category.taxNature ?? '';
         return;
     }
     form.name = props.defaultName?.trim() || '';
@@ -108,6 +141,8 @@ function resetForm() {
     form.color = null;
     form.icone = '';
     form.parentPublicId = props.defaultParentPublicId?.trim() || '';
+    form.taxNature = '';
+    suggestedTaxNature.value = null;
 }
 
 watch(
@@ -181,6 +216,7 @@ async function onSave() {
             :field-errors="fieldErrors"
             :parent-disabled="hasChildren"
             :parent-hint="parentHint"
+            :suggested-tax-nature="suggestedTaxNature"
         />
 
         <template #footer="{ close }">
