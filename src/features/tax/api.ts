@@ -191,6 +191,19 @@ export const taxApi = {
         ) as Promise<TaxAssessments>;
     },
 
+    linkAssessmentTransaction(publicId: string, assessmentPublicId: string, transactionPublicId: string) {
+        return fetchWrapper.post(
+            `/api/tax-returns/${encodeURIComponent(publicId)}/assessments/${encodeURIComponent(assessmentPublicId)}/transactions`,
+            { transactionPublicId }
+        ) as Promise<TaxAssessments>;
+    },
+
+    unlinkAssessmentTransaction(publicId: string, assessmentPublicId: string, transactionPublicId: string) {
+        return fetchWrapper.delete(
+            `/api/tax-returns/${encodeURIComponent(publicId)}/assessments/${encodeURIComponent(assessmentPublicId)}/transactions/${encodeURIComponent(transactionPublicId)}`
+        ) as Promise<TaxAssessments>;
+    },
+
     changeAssessmentStatus(publicId: string, status: 'taxee' | 'soldee' | 'contestee') {
         return fetchWrapper.put(`/api/tax-returns/${encodeURIComponent(publicId)}/assessments/status`, {
             status

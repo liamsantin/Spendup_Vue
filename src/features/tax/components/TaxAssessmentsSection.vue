@@ -11,7 +11,14 @@ import { displayFileName } from '@/features/files/file-name-display';
 import { useFilesStore } from '@/features/files/stores/files-store';
 import { taxApi } from '@/features/tax/api';
 import { useTaxMoney } from '@/features/tax/composables/useTaxMoney';
-import type { TaxAssessment, TaxAssessmentKind, TaxAssessmentPayload, TaxAssessments, TaxStatus } from '@/features/tax/types';
+import type {
+    TaxAssessment,
+    TaxAssessmentKind,
+    TaxAssessmentPayload,
+    TaxAssessments,
+    TaxInstallmentCandidate,
+    TaxStatus
+} from '@/features/tax/types';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 
 const props = defineProps<{
@@ -30,7 +37,9 @@ const { t, locale } = useI18n();
 const money = useTaxMoney();
 const filesStore = useFilesStore();
 
-const data = ref<TaxAssessments>({ items: [], status: 'deposee' });
+const data = ref<TaxAssessments>({ items: [], status: 'deposee', settleSuggested: false });
+const candidates = ref<TaxInstallmentCandidate[]>([]);
+const picked = ref<Record<string, string | null>>({});
 const saving = ref(false);
 const error = ref('');
 
@@ -96,9 +105,25 @@ function parseAmount(raw: string): number | null {
     return Number.isFinite(value) ? value : null;
 }
 
+const candidateItems = computed(() =>
+    candidates.value.map((item) => ({
+        title: `${item.label} · ${formatDate(item.date)} · ${money(item.amount)}`,
+        value: item.transactionPublicId
+    }))
+);
+
+async function loadCandidates() {
+    try {
+        candidates.value = await taxApi.installmentCandidates(props.publicId);
+    } catch {
+        candidates.value = [];
+    }
+}
+
 async function load() {
     try {
         data.value = await taxApi.assessments(props.publicId);
+        await loadCandidates();
         error.value = '';
     } catch (e) {
         error.value = getErrorMessage(AppError.fromUnknown(e));
@@ -110,6 +135,7 @@ async function run(action: () => Promise<TaxAssessments>): Promise<boolean> {
     error.value = '';
     try {
         data.value = await action();
+        await loadCandidates();
         emit('changed', data.value.status);
         return true;
     } catch (e) {
@@ -176,6 +202,16 @@ function cancelEdit() {
     editing.value = null;
     draft.value = emptyDraft();
 }
+
+async function link(item: TaxAssessment) {
+    const transactionPublicId = picked.value[item.publicId];
+    if (!transactionPublicId) return;
+    await run(() => taxApi.linkAssessmentTransaction(props.publicId, item.publicId, transactionPublicId));
+    picked.value = { ...picked.value, [item.publicId]: null };
+}
+
+const unlink = (item: TaxAssessment, transactionPublicId: string) =>
+    run(() => taxApi.unlinkAssessmentTransaction(props.publicId, item.publicId, transactionPublicId));
 
 const remove = (item: TaxAssessment) => run(() => taxApi.deleteAssessment(props.publicId, item.publicId));
 const setStatus = (status: 'taxee' | 'soldee' | 'contestee') => run(() => taxApi.changeAssessmentStatus(props.publicId, status));
@@ -251,6 +287,31 @@ watch(() => props.publicId, load);
                         </li>
                     </ul>
                 </template>
+                <ul v-if="item.transactions?.length" class="tax-pillar3a__list">
+                    <li v-for="tx in item.transactions" :key="tx.publicId">
+                        {{ tx.label }} · {{ formatDate(tx.date) }} · {{ money(tx.amount) }}
+                        <button type="button" class="su-btn" :disabled="saving" @click="unlink(item, tx.publicId)">
+                            {{ t('taxPage.assessments.unlink') }}
+                        </button>
+                    </li>
+                </ul>
+                <div
+                    v-if="candidateItems.length && item.balance !== null && item.balance > 0 && item.paidAmount < item.balance"
+                    class="tax-form__field"
+                >
+                    <v-select
+                        v-model="picked[item.publicId]"
+                        :items="candidateItems"
+                        :label="t('taxPage.assessments.pick')"
+                        color="primary"
+                        variant="outlined"
+                        hide-details
+                        clearable
+                    />
+                    <button type="button" class="su-btn" :disabled="saving || !picked[item.publicId]" @click="link(item)">
+                        {{ t('taxPage.assessments.link') }}
+                    </button>
+                </div>
                 <p v-if="item.filePublicId" class="tax-fiche__detail" data-test="tax-assessment-file">
                     {{ displayFileName(item.filePublicId, item.fileName, t('vault.unreadable')) }}
                 </p>
@@ -259,6 +320,10 @@ watch(() => props.publicId, load);
             <button type="button" class="su-btn" :disabled="saving" @click="edit(item)">{{ t('taxPage.assessments.edit') }}</button>
             <button type="button" class="su-btn" :disabled="saving" @click="remove(item)">{{ t('taxPage.assessments.remove') }}</button>
         </article>
+
+        <p v-if="data.settleSuggested" class="tax-check" data-test="tax-assessments-settle-suggested">
+            {{ t('taxPage.assessments.settleSuggested') }}
+        </p>
 
         <div v-if="data.items.length" class="tax-form__actions">
             <button v-if="data.status === 'taxee'" type="button" class="su-btn" :disabled="saving" @click="setStatus('contestee')">

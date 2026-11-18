@@ -83,7 +83,8 @@ export type DemoTaxReturn = {
 };
 
 /** Document de l'administration tel que la démo le garde (sans fichier : les fichiers ne sont pas dans la démo). */
-type DemoAssessment = Omit<TaxAssessment, 'filePublicId' | 'fileName' | 'deviations'> & {
+type DemoAssessment = Omit<TaxAssessment, 'filePublicId' | 'fileName' | 'deviations' | 'paidAmount' | 'transactions'> & {
+    transactionIds: string[];
     deviations: { code: string; declared: number | null; assessed: number; comment: string | null }[];
 };
 
@@ -1338,7 +1339,12 @@ function toInstallments(tax: DemoTaxReturn): TaxInstallments {
 
 /** Dépenses confirmées « paiement d'impôts » de l'année ou de la suivante qui ne paient encore aucune tranche. */
 function installmentCandidates(tax: DemoTaxReturn): TaxInstallmentCandidate[] {
-    const used = new Set(store().flatMap((item) => installmentsOf(item).flatMap((i) => i.transactionIds)));
+    const used = new Set(
+        store().flatMap((item) => [
+            ...installmentsOf(item).flatMap((i) => i.transactionIds),
+            ...assessmentsOf(item).flatMap((a) => a.transactionIds)
+        ])
+    );
     return demoDb()
         .transactions.filter(
             (tx) =>
@@ -1456,21 +1462,47 @@ function assessmentsOf(tax: DemoTaxReturn): DemoAssessment[] {
     return tax.assessments;
 }
 
+/** Paiements rapprochés avec le solde d'un document (transactions encore présentes dans la démo). */
+function assessmentPayments(item: DemoAssessment) {
+    const transactions = demoDb().transactions;
+    return item.transactionIds
+        .map((id) => transactions.find((tx) => tx.publicId === id))
+        .filter((tx): tx is NonNullable<typeof tx> => Boolean(tx))
+        .map((tx) => ({ publicId: tx.publicId, label: tx.label, date: tx.operationDate, amount: Math.abs(tx.amount ?? 0) }));
+}
+
 function toAssessments(tax: DemoTaxReturn): TaxAssessments {
     const items = assessmentsOf(tax)
-        .map(
-            (item): TaxAssessment => ({
-                ...item,
+        .map((item): TaxAssessment => {
+            const rest: Omit<DemoAssessment, 'transactionIds'> & { transactionIds?: string[] } = { ...item };
+            delete rest.transactionIds;
+            const payments = assessmentPayments(item);
+            return {
+                ...rest,
                 filePublicId: null,
                 fileName: null,
                 deviations: item.deviations.map((deviation) => ({
                     ...deviation,
                     difference: round(deviation.assessed - (deviation.declared ?? 0))
-                }))
-            })
-        )
+                })),
+                paidAmount: round(payments.reduce((sum, payment) => sum + payment.amount, 0)),
+                transactions: payments
+            };
+        })
         .sort((a, b) => a.issuedAt.localeCompare(b.issuedAt));
-    return { items, status: tax.status };
+    return { items, status: tax.status, settleSuggested: settleSuggested(tax, items) };
+}
+
+/** Le dossier est « taxé » et les paiements rapprochés couvrent le solde positif du document le plus récent de chaque ressort. */
+function settleSuggested(tax: DemoTaxReturn, items: TaxAssessment[]): boolean {
+    if (tax.status !== 'taxee') return false;
+    const latest = new Map<string, TaxAssessment>();
+    for (const item of items) {
+        const known = latest.get(item.competence);
+        if (!known || item.issuedAt >= known.issuedAt) latest.set(item.competence, item);
+    }
+    const due = [...latest.values()].filter((item) => (item.balance ?? 0) > 0);
+    return due.length > 0 && due.every((item) => item.paidAmount >= (item.balance ?? 0));
 }
 
 function requireAssessment(tax: DemoTaxReturn, id: string): DemoAssessment {
@@ -1540,10 +1572,29 @@ function routeAssessments(method: string, path: string, body: unknown): TaxResul
     if (list && method === 'POST') {
         const tax = findReturn(list.id);
         if (!isLocked(tax)) invalid('Indique d’abord que la déclaration est déposée.');
-        const item = { publicId: createPublicId() } as DemoAssessment;
+        const item = { publicId: createPublicId(), transactionIds: [] } as unknown as DemoAssessment;
         fillAssessment(tax, item, body as TaxAssessmentPayload);
         assessmentsOf(tax).push(item);
         applyDecisionStatus(tax, item.kind);
+        return ok(toAssessments(tax));
+    }
+    const links = match(path, '/api/tax-returns/:id/assessments/:assessmentId/transactions');
+    if (links && method === 'POST') {
+        const tax = findReturn(links.id);
+        const item = requireAssessment(tax, links.assessmentId);
+        const id = (body as { transactionPublicId: string }).transactionPublicId;
+        if (!installmentCandidates(tax).some((candidate) => candidate.transactionPublicId === id)) {
+            invalid("Seul un paiement d'impôts confirmé, pas encore rapproché, peut payer un solde.");
+        }
+        item.transactionIds.push(id);
+        return ok(toAssessments(tax));
+    }
+    const link = match(path, '/api/tax-returns/:id/assessments/:assessmentId/transactions/:transactionId');
+    if (link && method === 'DELETE') {
+        const tax = findReturn(link.id);
+        const item = requireAssessment(tax, link.assessmentId);
+        if (!item.transactionIds.includes(link.transactionId)) notFound('Rapprochement introuvable.');
+        item.transactionIds = item.transactionIds.filter((id) => id !== link.transactionId);
         return ok(toAssessments(tax));
     }
     const one = match(path, '/api/tax-returns/:id/assessments/:assessmentId');

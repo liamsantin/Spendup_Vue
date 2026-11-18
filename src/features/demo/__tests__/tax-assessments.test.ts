@@ -77,6 +77,24 @@ describe('décision de taxation en mode démo', () => {
         expect(result.items[0]).toMatchObject({ publicId: id, totalTax: 1000, balance: 350, deviations: [] });
     });
 
+    it('suggère « soldé » quand un paiement rapproché couvre le solde, sans changer le statut', () => {
+        filed();
+        handleDemoRequest('DELETE', '/api/tax-returns/TAX2026/installments/TXI0001/transactions/TXN0017');
+        const created = handleDemoRequest('POST', BASE, decision({ totalTax: 650, interest: 0, installmentsPaid: 0 })) as TaxAssessments;
+        const id = created.items[0].publicId;
+        expect(created.items[0].balance).toBe(650);
+        expect(created.settleSuggested).toBe(false);
+
+        const linked = handleDemoRequest('POST', `${BASE}/${id}/transactions`, { transactionPublicId: 'TXN0017' }) as TaxAssessments;
+        expect(linked.items[0].paidAmount).toBe(650);
+        expect(linked.settleSuggested).toBe(true);
+        expect(linked.status).toBe('taxee');
+        expect(handleDemoRequest('GET', '/api/tax-returns/TAX2026/installments/candidates')).toEqual([]);
+
+        const unlinked = handleDemoRequest('DELETE', `${BASE}/${id}/transactions/TXN0017`) as TaxAssessments;
+        expect(unlinked.settleSuggested).toBe(false);
+    });
+
     it('revient à « déposée » quand la dernière décision est supprimée', () => {
         filed();
         const created = handleDemoRequest('POST', BASE, decision()) as TaxAssessments;

@@ -451,11 +451,16 @@ export interface TaxAssessment {
     fileName: string | null;
     note: string | null;
     deviations: TaxAssessmentDeviation[];
+    /** Somme des paiements rapprochés avec le solde. */
+    paidAmount: number;
+    transactions: TaxInstallmentTransaction[];
 }
 
 export interface TaxAssessments {
     items: TaxAssessment[];
     status: TaxStatus;
+    /** Le dossier est « taxé » et les paiements rapprochés couvrent le solde : il reste à le passer à « soldé ». */
+    settleSuggested: boolean;
 }
 
 export interface TaxAssessmentPayload {
