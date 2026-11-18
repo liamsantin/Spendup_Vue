@@ -403,6 +403,17 @@ export function createDemoDb(): DemoDb {
                 categoryPublicId: 'CATMEDX',
                 taxNature: 'medicalExpense',
                 taxNatureStatus: 'confirmee'
+            }),
+            transaction({
+                publicId: 'TXN0013',
+                type: 'depense',
+                label: 'Versement 3e pilier a',
+                amount: 2000,
+                operationDate: '2026-09-15',
+                accountPublicId: 'ACCCOUR',
+                categoryPublicId: 'CAT3PIL',
+                taxNature: 'pillar3aContribution',
+                taxNatureStatus: 'confirmee'
             })
         ],
         budgets: [],

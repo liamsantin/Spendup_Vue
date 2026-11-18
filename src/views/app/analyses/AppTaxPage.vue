@@ -36,6 +36,7 @@ import TaxImportModal, { type TaxImportPayload } from '@/features/tax/components
 import TaxImportReview from '@/features/tax/components/TaxImportReview.vue';
 import TaxPdfZoneModal from '@/features/tax/components/TaxPdfZoneModal.vue';
 import TaxLineRow from '@/features/tax/components/TaxLineRow.vue';
+import TaxPillar3aSection from '@/features/tax/components/TaxPillar3aSection.vue';
 import TaxReadProposals from '@/features/tax/components/TaxReadProposals.vue';
 import TaxReturnCard from '@/features/tax/components/TaxReturnCard.vue';
 import TaxSubtotals from '@/features/tax/components/TaxSubtotals.vue';
@@ -59,6 +60,7 @@ import type {
     TaxEntryKind,
     TaxLine,
     TaxPerson,
+    TaxPillar3a,
     TaxReturn,
     TaxReturnListItem,
     TaxStatus,
@@ -102,6 +104,7 @@ function defaultCanton(): string {
 const person = ref<TaxPerson>('1');
 const drafts = ref<Record<string, string>>({});
 const suggestions = ref<TaxSuggestion[]>([]);
+const pillar3a = ref<TaxPillar3a | null>(null);
 const suggestionKey = (item: TaxSuggestion) => `${item.code}|${item.person}|${item.competence}`;
 /** Lecture locale d'un PDF importé, à vérifier (persistée sur l'appareil). */
 const readItems = ref<TaxSuggestion[]>([]);
@@ -591,6 +594,11 @@ async function loadSuggestions(id: string) {
         suggestions.value = isImportedReturn(id) ? [] : ((await taxApi.suggestions(id)).items ?? []);
     } catch {
         suggestions.value = [];
+    }
+    try {
+        pillar3a.value = isImportedReturn(id) ? null : await taxApi.pillar3a(id);
+    } catch {
+        pillar3a.value = null;
     }
 }
 
@@ -1400,6 +1408,8 @@ async function submitCorrection(payload: TaxCorrectPayload) {
             @accept-many="acceptMany"
             @show="zoneItem = $event"
         />
+
+        <TaxPillar3aSection v-if="pillar3a && currentGroup?.lines.some((line) => line.code === 'deduction.pillar3a')" :data="pillar3a" />
 
         <TaxSuggestionList
             v-if="stepSuggestions.length && !declaration.locked"

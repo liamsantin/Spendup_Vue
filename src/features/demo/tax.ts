@@ -10,6 +10,7 @@ import type {
     TaxEntryKind,
     TaxIdentity,
     TaxLineValue,
+    TaxPillar3a,
     TaxPerson,
     TaxProfileInfo,
     TaxReturn,
@@ -409,6 +410,36 @@ function suggestionSource(code: string): TaxSuggestionSource {
     if (code === 'liability.debts') return 'liability';
     if (code === 'asset.property' || code === 'asset.crypto') return 'asset';
     return 'recurringIncome';
+}
+
+/** « 3a de l'année » de la démo : transactions de l'année dont la nature 3a est confirmée. Pas de plafond (profil non relu). */
+function buildPillar3a(tax: DemoTaxReturn): TaxPillar3a {
+    const contributions: TaxPillar3a['contributions'] = demoDb()
+        .transactions.filter(
+            (item) =>
+                item.operationDate.startsWith(`${tax.year}-`) &&
+                item.taxNature === 'pillar3aContribution' &&
+                item.taxNatureStatus === 'confirmee'
+        )
+        .map((item) => ({
+            transactionPublicId: item.publicId,
+            label: item.label,
+            date: item.operationDate,
+            amount: item.amount ?? 0,
+            accountPublicId: null,
+            accountName: null,
+            basis: 'nature' as const
+        }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+    return {
+        year: tax.year,
+        canton: tax.canton,
+        currency: 'CHF',
+        paid: contributions.reduce((sum, item) => sum + item.amount, 0),
+        limitsAvailable: false,
+        limits: [],
+        contributions
+    };
 }
 
 /** Propositions pour les cases vides, tirées du foyer de démo (revenus récurrents, dettes, actifs). */
@@ -1018,6 +1049,8 @@ export function routeTax(method: string, path: string, body: unknown, query?: UR
         return ok(toResponse(tax));
     }
 
+    const pillar3a = match(path, '/api/tax-returns/:id/pillar3a');
+    if (pillar3a && method === 'GET') return ok(buildPillar3a(findReturn(pillar3a.id)));
     const suggestions = match(path, '/api/tax-returns/:id/suggestions');
     if (suggestions && method === 'GET') return ok({ items: buildSuggestions(findReturn(suggestions.id)) });
     const acceptMany = match(path, '/api/tax-returns/:id/suggestions/accept-many');

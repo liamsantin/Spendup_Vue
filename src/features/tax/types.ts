@@ -244,6 +244,37 @@ export interface TaxSuggestionList {
     items: TaxSuggestion[];
 }
 
+/** Un versement au 3e pilier a de l'année : `account` (virement vers un compte 3a) ou `nature` (nature confirmée). */
+export interface TaxPillar3aContribution {
+    transactionPublicId: string;
+    label: string;
+    date: string;
+    amount: number;
+    accountPublicId: string | null;
+    accountName: string | null;
+    basis: 'account' | 'nature';
+}
+
+/** Plafond issu d'un profil cantonal relu ; `remaining` est le reste avant ce plafond (information, pas une déduction). */
+export interface TaxPillar3aLimit {
+    appliesTo: string;
+    maxAmount: number | null;
+    percentOfIncome: number | null;
+    remaining: number | null;
+    sourceUrl: string | null;
+}
+
+/** « 3a de l'année » : versé, plafonds du canton (vides tant que le profil n'est pas relu) et versements. */
+export interface TaxPillar3a {
+    year: number;
+    canton: string;
+    currency: string;
+    paid: number;
+    limitsAvailable: boolean;
+    limits: TaxPillar3aLimit[];
+    contributions: TaxPillar3aContribution[];
+}
+
 export interface TaxReturnCreated {
     declaration: TaxReturn;
     suggestions: unknown[];

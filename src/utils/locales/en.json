@@ -5318,6 +5318,20 @@
         },
         "identity": "Situation",
         "steps": "Return steps",
+        "pillar3a": {
+            "title": "Pillar 3a for {year}",
+            "hint": "For information only: this is not a calculated deduction.",
+            "paid": "Paid: {amount}",
+            "none": "No contribution found this year (transfer to a 3a account, or the “Pillar 3a” nature confirmed on a transaction).",
+            "limit": "limit {max}, {remaining} left",
+            "limitPercent": "{percent}% of income",
+            "noLimit": "Limit not shown: the canton profile has not been reviewed yet.",
+            "certificate": "The deductible amount is the one on the foundation's annual certificate: compare it with what was paid.",
+            "appliesTo": {
+                "employeeWithPillar2": "With 2nd pillar",
+                "withoutPillar2": "Without 2nd pillar"
+            }
+        },
         "suggestionsTitle": "Suggestions",
         "detectedTitle": "Amounts detected in the PDF",
         "previousYear": "Last year: {value}",

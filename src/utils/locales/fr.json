@@ -5318,6 +5318,20 @@
         },
         "identity": "Situation",
         "steps": "Étapes de la déclaration",
+        "pillar3a": {
+            "title": "3e pilier a de l'année {year}",
+            "hint": "Information seulement : ce n'est pas une déduction calculée.",
+            "paid": "Versé : {amount}",
+            "none": "Aucun versement repéré cette année (virement vers un compte 3a, ou nature « 3e pilier a » confirmée sur une transaction).",
+            "limit": "plafond {max}, reste {remaining}",
+            "limitPercent": "{percent} % du revenu",
+            "noLimit": "Plafond non affiché : le profil du canton n'a pas encore été relu.",
+            "certificate": "Le montant déductible est celui de l'attestation annuelle de la fondation : comparez-le au versé.",
+            "appliesTo": {
+                "employeeWithPillar2": "Avec 2e pilier",
+                "withoutPillar2": "Sans 2e pilier"
+            }
+        },
         "suggestionsTitle": "Propositions",
         "detectedTitle": "Montants détectés dans le PDF",
         "previousYear": "An dernier : {value}",
