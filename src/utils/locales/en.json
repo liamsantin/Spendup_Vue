@@ -2208,7 +2208,8 @@
         },
         "deleteModal": {
             "title": "Delete this transaction?",
-            "body": "Linked movements will be reversed and the account balance will be recalculated."
+            "body": "Linked movements will be reversed and the account balance will be recalculated.",
+            "importedBody": "This transaction comes from a bank import: deleting it creates a gap with your statement."
         },
         "unlinkModal": {
             "title": "Unlink {count} transaction? | Unlink {count} transaction? | Unlink {count} transactions?",

@@ -2208,7 +2208,8 @@
         },
         "deleteModal": {
             "title": "Supprimer cette transaction ?",
-            "body": "Les mouvements liés seront annulés et le solde du compte sera recalculé."
+            "body": "Les mouvements liés seront annulés et le solde du compte sera recalculé.",
+            "importedBody": "Cette opération vient d’un import bancaire : la supprimer crée un écart avec votre relevé."
         },
         "unlinkModal": {
             "title": "Délier {count} transaction ? | Délier {count} transaction ? | Délier {count} transactions ?",

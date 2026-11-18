@@ -19,6 +19,7 @@ import {
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useTagsStore } from '@/features/tags/stores/tags-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
+import { isImportedTransaction } from '@/features/transactions/delete-warning';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import {
     formatOperationDate,
@@ -127,6 +128,12 @@ const editOpen = computed({
     set: (value: boolean) => {
         if (!value) editTarget.value = null;
     }
+});
+
+/** Message de suppression : on ajoute l'avertissement si l'opération vient d'un import bancaire. */
+const deleteMessage = computed(() => {
+    const body = t('transactionsPage.deleteModal.body');
+    return isImportedTransaction(deleteTarget.value) ? `${body} ${t('transactionsPage.deleteModal.importedBody')}` : body;
 });
 
 const deleteOpen = computed({
@@ -738,7 +745,7 @@ async function confirmDelete() {
         <AppConfirmationModal
             v-model="deleteOpen"
             :title="t('transactionsPage.deleteModal.title')"
-            :message="t('transactionsPage.deleteModal.body')"
+            :message="deleteMessage"
             :confirm-label="t('transactionsPage.actions.delete')"
             confirm-color="error"
             :loading="store.acting"
