@@ -31,7 +31,7 @@ export type TaxCanton = (typeof TAX_CANTONS)[number];
 
 export type TaxPerson = '1' | '2' | '1+2';
 export type TaxCompetence = 'cantonal' | 'federal' | 'both';
-export type TaxStatus = 'enCours' | 'preteARecopier' | 'deposee' | 'archivee';
+export type TaxStatus = 'enCours' | 'preteARecopier' | 'deposee' | 'taxee' | 'soldee' | 'contestee' | 'archivee';
 
 /** État civil au 31.12 de l'année fiscale (jetons de l'API). */
 export const TAX_CIVIL_STATUSES = ['celibataire', 'marie', 'partenariatEnregistre', 'separe', 'divorce', 'veuf'] as const;
@@ -418,4 +418,56 @@ export interface TaxInstallmentPayload {
     paidAmount?: number | null;
     paidAt?: string | null;
     clearPayment?: boolean;
+}
+
+/** Nature d'un document de l'administration fiscale. */
+export type TaxAssessmentKind = 'intermediateStatement' | 'assessment' | 'finalStatement' | 'correction';
+
+/** Écart sur une ligne : `difference` = retenu − déclaré. */
+export interface TaxAssessmentDeviation {
+    code: string;
+    declared: number | null;
+    assessed: number;
+    difference: number;
+    comment: string | null;
+}
+
+/** Document de l'administration saisi d'après le papier reçu. `interest` et `balance` : positif = à payer. */
+export interface TaxAssessment {
+    publicId: string;
+    competence: 'cantonal' | 'federal';
+    kind: TaxAssessmentKind;
+    issuedAt: string;
+    taxableIncome: number | null;
+    taxableWealth: number | null;
+    totalTax: number | null;
+    installmentsPaid: number | null;
+    interest: number | null;
+    balance: number | null;
+    paymentDueDate: string | null;
+    filePublicId: string | null;
+    fileName: string | null;
+    note: string | null;
+    deviations: TaxAssessmentDeviation[];
+}
+
+export interface TaxAssessments {
+    items: TaxAssessment[];
+    status: TaxStatus;
+}
+
+export interface TaxAssessmentPayload {
+    competence: 'cantonal' | 'federal';
+    kind: TaxAssessmentKind;
+    issuedAt: string;
+    taxableIncome?: number | null;
+    taxableWealth?: number | null;
+    totalTax?: number | null;
+    installmentsPaid?: number | null;
+    interest?: number | null;
+    balance?: number | null;
+    paymentDueDate?: string | null;
+    filePublicId?: string | null;
+    note?: string | null;
+    deviations?: { code: string; assessed: number; comment?: string | null }[];
 }

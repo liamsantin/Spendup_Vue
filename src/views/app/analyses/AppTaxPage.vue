@@ -36,6 +36,7 @@ import TaxImportModal, { type TaxImportPayload } from '@/features/tax/components
 import TaxImportReview from '@/features/tax/components/TaxImportReview.vue';
 import TaxPdfZoneModal from '@/features/tax/components/TaxPdfZoneModal.vue';
 import TaxLineRow from '@/features/tax/components/TaxLineRow.vue';
+import TaxAssessmentsSection from '@/features/tax/components/TaxAssessmentsSection.vue';
 import TaxInstallmentsSection from '@/features/tax/components/TaxInstallmentsSection.vue';
 import TaxRemindersSection from '@/features/tax/components/TaxRemindersSection.vue';
 import TaxDocumentCandidates from '@/features/tax/components/TaxDocumentCandidates.vue';
@@ -137,9 +138,17 @@ const attaching = ref(false);
 const attachLine = ref('');
 
 const cantonItems = useCantonItems();
-const statusItems = computed(() =>
-    (declaration.value?.locked ? LOCKED_STATUSES : STATUSES).map((value) => ({ title: t(`taxPage.statuses.${value}`), value }))
-);
+/** Après la décision, le statut se pose depuis l'étape « Paiements » : le formulaire le montre, sans le proposer à la main. */
+const ASSESSED_STATUSES: TaxStatus[] = ['taxee', 'soldee', 'contestee'];
+const statusItems = computed(() => {
+    const current = declaration.value?.status;
+    const values = !declaration.value?.locked
+        ? STATUSES
+        : current && ASSESSED_STATUSES.includes(current)
+          ? [current, 'archivee' as TaxStatus]
+          : LOCKED_STATUSES;
+    return values.map((value) => ({ title: t(`taxPage.statuses.${value}`), value }));
+});
 
 const lockedNotice = computed(() => {
     const current = declaration.value;
@@ -622,6 +631,20 @@ async function fileCandidate(item: TaxDocumentCandidate) {
     apply(await taxApi.attachDocument(current.publicId, item.filePublicId, item.line));
     await loadDocumentCandidates(current.publicId);
     await loadReminders(current.publicId);
+}
+
+/** Lignes du catalogue, pour choisir celle d'un écart de la décision. */
+const paymentLines = computed(() => groups.value.flatMap((group) => group.lines.map((line) => ({ code: line.code, label: line.label }))));
+
+/** La décision change le statut du dossier : on relit le dossier pour que l'en-tête et le verrou suivent. */
+async function reloadDeclaration() {
+    const current = declaration.value;
+    if (!current) return;
+    try {
+        apply(await taxApi.get(current.publicId));
+    } catch (e) {
+        error.value = getErrorMessage(AppError.fromUnknown(e));
+    }
 }
 
 /** Les rappels dépendent des pièces rangées : on les relit après chaque rangement. */
@@ -1344,7 +1367,7 @@ async function submitCorrection(payload: TaxCorrectPayload) {
                 {{ t('taxPage.actions.file') }}
             </button>
             <button
-                v-else
+                v-else-if="!ASSESSED_STATUSES.includes(declaration.status)"
                 type="button"
                 class="su-btn"
                 :disabled="saving"
@@ -1501,6 +1524,14 @@ async function submitCorrection(payload: TaxCorrectPayload) {
         />
 
         <TaxInstallmentsSection v-if="step === PAYMENTS" :public-id="declaration.publicId" />
+
+        <TaxAssessmentsSection
+            v-if="step === PAYMENTS"
+            :public-id="declaration.publicId"
+            :filed="declaration.locked"
+            :lines="paymentLines"
+            @changed="reloadDeclaration"
+        />
 
         <TaxRemindersSection v-if="reminders.length && (step === SITUATION || step === PIECES) && !declaration.locked" :items="reminders" />
 

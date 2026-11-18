@@ -80,7 +80,13 @@ function onActivate(event: MouseEvent) {
                             <span class="su-menu-item__icon"><CircleCheckIcon :size="18" stroke-width="1.6" /></span>
                             <span class="su-menu-item__title">{{ t('taxPage.actions.file') }}</span>
                         </button>
-                        <button v-else type="button" class="su-menu-item" :disabled="saving" @click="emit('unfile')">
+                        <button
+                            v-else-if="!['taxee', 'soldee', 'contestee'].includes(item.status)"
+                            type="button"
+                            class="su-menu-item"
+                            :disabled="saving"
+                            @click="emit('unfile')"
+                        >
                             <span class="su-menu-item__icon"><ArrowBackUpIcon :size="18" stroke-width="1.6" /></span>
                             <span class="su-menu-item__title">{{ t('taxPage.actions.unfile') }}</span>
                         </button>

@@ -9,6 +9,10 @@ import type {
     TaxEntry,
     TaxEntryKind,
     TaxIdentity,
+    TaxAssessment,
+    TaxAssessmentKind,
+    TaxAssessmentPayload,
+    TaxAssessments,
     TaxInstallment,
     TaxInstallmentCandidate,
     TaxInstallmentCompetence,
@@ -74,6 +78,13 @@ export type DemoTaxReturn = {
     taxationMode?: TaxationMode;
     /** Tranches d'impôt saisies. Absentes des démos plus anciennes. */
     installments?: DemoInstallment[];
+    /** Documents de l'administration (décision, décomptes). */
+    assessments?: DemoAssessment[];
+};
+
+/** Document de l'administration tel que la démo le garde (sans fichier : les fichiers ne sont pas dans la démo). */
+type DemoAssessment = Omit<TaxAssessment, 'filePublicId' | 'fileName' | 'deviations'> & {
+    deviations: { code: string; declared: number | null; assessed: number; comment: string | null }[];
 };
 
 /** Tranche telle que la démo la garde : le payé vient des transactions rapprochées, sinon du montant saisi. */
@@ -955,7 +966,12 @@ function updateChecklistItem(tax: DemoTaxReturn, code: string, body: { complete?
 }
 
 function updateReturn(tax: DemoTaxReturn, body: UpdateTaxReturnPayload) {
-    if (!STATUSES.includes(body.status)) invalid('Statut invalide (enCours, preteARecopier, deposee, archivee).');
+    if (!STATUSES.includes(body.status) && body.status !== tax.status)
+        invalid('Statut invalide (enCours, preteARecopier, deposee, archivee).');
+    if (['taxee', 'soldee', 'contestee'].includes(body.status) && body.status !== tax.status)
+        invalid('Ce statut se pose en saisissant la décision de taxation.');
+    if (['taxee', 'soldee', 'contestee'].includes(tax.status) && body.status === 'deposee')
+        invalid('Une décision de taxation est saisie : supprime-la pour revenir à « déposée ».');
     if (isLocked(tax) && (body.status === 'enCours' || body.status === 'preteARecopier'))
         invalid('Une déclaration déposée ne se rouvre pas : corrige les montants ligne par ligne.');
     if (body.status === 'deposee') {
@@ -1135,6 +1151,8 @@ function upsertAmounts(tax: DemoTaxReturn, body: { items?: (UpsertTaxAmountPaylo
 /** Annulation d'un dépôt, comme l'API : retour à « prête à recopier », corrections conservées. */
 function cancelFiling(tax: DemoTaxReturn) {
     if (!isLocked(tax)) invalid("La déclaration n'est pas déposée.");
+    if (['taxee', 'soldee', 'contestee'].includes(tax.status) || tax.assessments?.length)
+        invalid("Une décision de taxation est saisie : supprime-la d'abord pour annuler le dépôt.");
     tax.status = 'preteARecopier';
     tax.submissionDate = null;
     return toResponse(tax);
@@ -1416,6 +1434,123 @@ function routeInstallments(method: string, path: string, body: unknown): TaxResu
     return null;
 }
 
+const ASSESSED_STATUSES: TaxStatus[] = ['taxee', 'soldee', 'contestee'];
+const ASSESSMENT_KINDS: TaxAssessmentKind[] = ['intermediateStatement', 'assessment', 'finalStatement', 'correction'];
+
+function assessmentsOf(tax: DemoTaxReturn): DemoAssessment[] {
+    tax.assessments ??= [];
+    return tax.assessments;
+}
+
+function toAssessments(tax: DemoTaxReturn): TaxAssessments {
+    const items = assessmentsOf(tax)
+        .map(
+            (item): TaxAssessment => ({
+                ...item,
+                filePublicId: null,
+                fileName: null,
+                deviations: item.deviations.map((deviation) => ({
+                    ...deviation,
+                    difference: round(deviation.assessed - (deviation.declared ?? 0))
+                }))
+            })
+        )
+        .sort((a, b) => a.issuedAt.localeCompare(b.issuedAt));
+    return { items, status: tax.status };
+}
+
+function requireAssessment(tax: DemoTaxReturn, id: string): DemoAssessment {
+    return assessmentsOf(tax).find((item) => item.publicId === id) ?? notFound('Document introuvable.');
+}
+
+/** Remplit un document d'après la requête : acomptes et solde par défaut, écarts avec le déclaré du ressort. */
+function fillAssessment(tax: DemoTaxReturn, item: DemoAssessment, body: TaxAssessmentPayload) {
+    if (body.competence !== 'cantonal' && body.competence !== 'federal') invalid('Ressort invalide (cantonal, federal).');
+    if (!ASSESSMENT_KINDS.includes(body.kind)) invalid('Nature invalide (intermediateStatement, assessment, finalStatement, correction).');
+    if (!body.issuedAt) invalid('Indiquez la date du document.');
+    const amount = (value: number | null | undefined) => (value == null ? null : round(value));
+    item.competence = body.competence;
+    item.kind = body.kind;
+    item.issuedAt = body.issuedAt;
+    item.taxableIncome = amount(body.taxableIncome);
+    item.taxableWealth = amount(body.taxableWealth);
+    item.totalTax = amount(body.totalTax);
+    item.interest = amount(body.interest);
+    item.paymentDueDate = body.paymentDueDate || null;
+    item.note = body.note?.trim() || null;
+    const paidByCompetence = toInstallments(tax)
+        .items.filter((installment) => installment.competence === body.competence)
+        .reduce((sum, installment) => sum + installment.paidAmount, 0);
+    item.installmentsPaid = amount(body.installmentsPaid) ?? (paidByCompetence > 0 ? paidByCompetence : null);
+    item.balance =
+        amount(body.balance) ??
+        (item.totalTax === null ? null : round(item.totalTax + (item.interest ?? 0) - (item.installmentsPaid ?? 0)));
+    const requested = body.deviations ?? [];
+    const codes = requested.map((deviation) => deviation.code);
+    if (codes.some((code) => !findLine(code))) invalid('Ligne inconnue.');
+    if (new Set(codes).size !== codes.length) invalid('Une ligne ne peut avoir qu’un écart.');
+    item.deviations = requested.map((deviation) => {
+        const rows = tax.amounts.filter(
+            (row) => row.code === deviation.code && (row.competence === body.competence || row.competence === 'both')
+        );
+        return {
+            code: deviation.code,
+            declared: rows.length ? round(rows.reduce((sum, row) => sum + row.amount, 0)) : null,
+            assessed: round(deviation.assessed),
+            comment: deviation.comment?.trim() || null
+        };
+    });
+}
+
+function applyDecisionStatus(tax: DemoTaxReturn, kind: TaxAssessmentKind) {
+    if ((kind === 'assessment' || kind === 'correction') && (tax.status === 'deposee' || tax.status === 'contestee')) tax.status = 'taxee';
+}
+
+/** Décision de taxation et décomptes : saisie d'un dossier déposé, statut, écarts. */
+function routeAssessments(method: string, path: string, body: unknown): TaxResult {
+    const status = match(path, '/api/tax-returns/:id/assessments/status');
+    if (status && method === 'PUT') {
+        const tax = findReturn(status.id);
+        const next = (body as { status: TaxStatus }).status;
+        if (!ASSESSED_STATUSES.includes(next)) invalid('Statut invalide (taxee, soldee, contestee).');
+        const allowed =
+            (tax.status === 'taxee' && (next === 'soldee' || next === 'contestee')) ||
+            (tax.status === 'contestee' && next === 'taxee') ||
+            (tax.status === 'soldee' && next === 'taxee');
+        if (!allowed) invalid('Ce changement de statut n’est pas possible depuis le statut actuel.');
+        tax.status = next;
+        return ok(toAssessments(tax));
+    }
+    const list = match(path, '/api/tax-returns/:id/assessments');
+    if (list && method === 'GET') return ok(toAssessments(findReturn(list.id)));
+    if (list && method === 'POST') {
+        const tax = findReturn(list.id);
+        if (!isLocked(tax)) invalid('Indique d’abord que la déclaration est déposée.');
+        const item = { publicId: createPublicId() } as DemoAssessment;
+        fillAssessment(tax, item, body as TaxAssessmentPayload);
+        assessmentsOf(tax).push(item);
+        applyDecisionStatus(tax, item.kind);
+        return ok(toAssessments(tax));
+    }
+    const one = match(path, '/api/tax-returns/:id/assessments/:assessmentId');
+    if (one && method === 'PUT') {
+        const tax = findReturn(one.id);
+        const item = requireAssessment(tax, one.assessmentId);
+        fillAssessment(tax, item, body as TaxAssessmentPayload);
+        applyDecisionStatus(tax, item.kind);
+        return ok(toAssessments(tax));
+    }
+    if (one && method === 'DELETE') {
+        const tax = findReturn(one.id);
+        requireAssessment(tax, one.assessmentId);
+        tax.assessments = assessmentsOf(tax).filter((item) => item.publicId !== one.assessmentId);
+        const decisionLeft = tax.assessments.some((item) => item.kind === 'assessment' || item.kind === 'correction');
+        if (!decisionLeft && ASSESSED_STATUSES.includes(tax.status)) tax.status = 'deposee';
+        return ok(toAssessments(tax));
+    }
+    return null;
+}
+
 /** Routes `/api/tax-returns`. `null` si le chemin n’est pas concerné. */
 export function routeTax(method: string, path: string, body: unknown, query?: URLSearchParams): TaxResult {
     if (!path.startsWith('/api/tax-returns')) return null;
@@ -1467,6 +1602,8 @@ export function routeTax(method: string, path: string, body: unknown, query?: UR
 
     const installmentsRoute = routeInstallments(method, path, body);
     if (installmentsRoute) return installmentsRoute;
+    const assessmentsRoute = routeAssessments(method, path, body);
+    if (assessmentsRoute) return assessmentsRoute;
 
     const reminders = match(path, '/api/tax-returns/:id/reminders');
     if (reminders && method === 'GET') return ok({ year: findReturn(reminders.id).year, items: buildReminders(findReturn(reminders.id)) });

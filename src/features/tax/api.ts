@@ -5,6 +5,8 @@ import type {
     TaxReturn,
     TaxReturnCreated,
     TaxReturnListResult,
+    TaxAssessmentPayload,
+    TaxAssessments,
     TaxDocumentCandidate,
     TaxInstallmentCandidate,
     TaxInstallmentPayload,
@@ -166,6 +168,33 @@ export const taxApi = {
         return fetchWrapper.delete(
             `/api/tax-returns/${encodeURIComponent(publicId)}/installments/${encodeURIComponent(installmentPublicId)}/transactions/${encodeURIComponent(transactionPublicId)}`
         ) as Promise<TaxInstallments>;
+    },
+
+    assessments(publicId: string) {
+        return fetchWrapper.get(`/api/tax-returns/${encodeURIComponent(publicId)}/assessments`) as Promise<TaxAssessments>;
+    },
+
+    createAssessment(publicId: string, body: TaxAssessmentPayload) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/assessments`, body) as Promise<TaxAssessments>;
+    },
+
+    updateAssessment(publicId: string, assessmentPublicId: string, body: TaxAssessmentPayload) {
+        return fetchWrapper.put(
+            `/api/tax-returns/${encodeURIComponent(publicId)}/assessments/${encodeURIComponent(assessmentPublicId)}`,
+            body
+        ) as Promise<TaxAssessments>;
+    },
+
+    deleteAssessment(publicId: string, assessmentPublicId: string) {
+        return fetchWrapper.delete(
+            `/api/tax-returns/${encodeURIComponent(publicId)}/assessments/${encodeURIComponent(assessmentPublicId)}`
+        ) as Promise<TaxAssessments>;
+    },
+
+    changeAssessmentStatus(publicId: string, status: 'taxee' | 'soldee' | 'contestee') {
+        return fetchWrapper.put(`/api/tax-returns/${encodeURIComponent(publicId)}/assessments/status`, {
+            status
+        }) as Promise<TaxAssessments>;
     },
 
     reminders(publicId: string) {
