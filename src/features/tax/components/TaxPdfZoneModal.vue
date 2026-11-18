@@ -45,7 +45,7 @@ let run = 0;
 
 async function documentFor(id: string): Promise<PDFDocumentProxy> {
     if (doc.value?.id === id) return doc.value.pdf;
-    void doc.value?.pdf.destroy();
+    void doc.value?.pdf.loadingTask.destroy();
     doc.value = null;
     const pdf = await openPdfDocument(await loadReadablePdf(id));
     doc.value = { id, pdf };
@@ -76,12 +76,8 @@ async function render() {
                 zones: props.boxes
                     .filter((box) => box.page === numbers[index])
                     .map((box) => {
-                        const [x1, y1, x2, y2] = viewport.convertToViewportRectangle([
-                            box.x - PAD,
-                            box.y - PAD,
-                            box.x + box.w + PAD,
-                            box.y + box.h + PAD
-                        ]);
+                        const [x1, y1] = viewport.convertToViewportPoint(box.x - PAD, box.y - PAD);
+                        const [x2, y2] = viewport.convertToViewportPoint(box.x + box.w + PAD, box.y + box.h + PAD);
                         return {
                             left: Math.min(x1, x2),
                             top: Math.min(y1, y2),
@@ -126,7 +122,7 @@ watch(open, (isOpen) => {
 
 onBeforeUnmount(() => {
     run++;
-    void doc.value?.pdf.destroy();
+    void doc.value?.pdf.loadingTask.destroy();
     doc.value = null;
 });
 </script>
