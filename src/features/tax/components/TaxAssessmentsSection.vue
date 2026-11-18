@@ -7,6 +7,8 @@ defineOptions({ name: 'TaxAssessmentsSection' });
 
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { displayFileName } from '@/features/files/file-name-display';
+import { useFilesStore } from '@/features/files/stores/files-store';
 import { taxApi } from '@/features/tax/api';
 import { useTaxMoney } from '@/features/tax/composables/useTaxMoney';
 import type { TaxAssessment, TaxAssessmentKind, TaxAssessmentPayload, TaxAssessments, TaxStatus } from '@/features/tax/types';
@@ -26,6 +28,7 @@ const emit = defineEmits<{
 
 const { t, locale } = useI18n();
 const money = useTaxMoney();
+const filesStore = useFilesStore();
 
 const data = ref<TaxAssessments>({ items: [], status: 'deposee' });
 const saving = ref(false);
@@ -34,7 +37,11 @@ const error = ref('');
 interface DeviationDraft {
     code: string;
     assessed: string;
+    comment?: string | null;
 }
+
+/** Document en cours de modification ; `null` : un nouveau document. */
+const editing = ref<string | null>(null);
 
 function emptyDraft() {
     return {
@@ -48,6 +55,7 @@ function emptyDraft() {
         balance: '',
         paymentDueDate: '',
         note: '',
+        filePublicId: null as string | null,
         deviations: [] as DeviationDraft[]
     };
 }
@@ -65,6 +73,12 @@ const kindItems = computed(() =>
     }))
 );
 const lineItems = computed(() => props.lines.map((line) => ({ title: line.label, value: line.code })));
+const fileItems = computed(() =>
+    filesStore.items.map((file) => ({
+        title: displayFileName(file.publicId, file.nameOriginal, t('vault.unreadable')),
+        value: file.publicId
+    }))
+);
 
 function formatDate(iso: string): string {
     const date = new Date(`${iso}T00:00:00`);
@@ -106,7 +120,7 @@ async function run(action: () => Promise<TaxAssessments>): Promise<boolean> {
     }
 }
 
-async function add() {
+async function save() {
     if (!draft.value.issuedAt) {
         error.value = t('taxPage.assessments.invalid');
         return;
@@ -122,11 +136,45 @@ async function add() {
         balance: parseAmount(draft.value.balance),
         paymentDueDate: draft.value.paymentDueDate || null,
         note: draft.value.note.trim() || null,
+        filePublicId: draft.value.filePublicId,
         deviations: draft.value.deviations
             .filter((row) => row.code && parseAmount(row.assessed) !== null)
-            .map((row) => ({ code: row.code, assessed: parseAmount(row.assessed) ?? 0 }))
+            .map((row) => ({ code: row.code, assessed: parseAmount(row.assessed) ?? 0, comment: row.comment ?? null }))
     };
-    if (await run(() => taxApi.createAssessment(props.publicId, body))) draft.value = emptyDraft();
+    const target = editing.value;
+    const done = await run(() =>
+        target ? taxApi.updateAssessment(props.publicId, target, body) : taxApi.createAssessment(props.publicId, body)
+    );
+    if (done) cancelEdit();
+}
+
+const text = (value: number | null) => (value === null ? '' : String(value));
+
+/** Reprend un document dans le formulaire. Le solde n'est repris que s'il a été saisi : sinon il se recalcule. */
+function edit(item: TaxAssessment) {
+    const computedBalance = item.totalTax === null ? null : item.totalTax + (item.interest ?? 0) - (item.installmentsPaid ?? 0);
+    const custom = item.balance !== null && (computedBalance === null || Math.abs(item.balance - computedBalance) > 0.004);
+    editing.value = item.publicId;
+    error.value = '';
+    draft.value = {
+        competence: item.competence,
+        kind: item.kind,
+        issuedAt: item.issuedAt,
+        taxableIncome: text(item.taxableIncome),
+        taxableWealth: text(item.taxableWealth),
+        totalTax: text(item.totalTax),
+        interest: text(item.interest),
+        balance: custom ? text(item.balance) : '',
+        paymentDueDate: item.paymentDueDate ?? '',
+        note: item.note ?? '',
+        filePublicId: item.filePublicId,
+        deviations: item.deviations.map((row) => ({ code: row.code, assessed: String(row.assessed), comment: row.comment }))
+    };
+}
+
+function cancelEdit() {
+    editing.value = null;
+    draft.value = emptyDraft();
 }
 
 const remove = (item: TaxAssessment) => run(() => taxApi.deleteAssessment(props.publicId, item.publicId));
@@ -147,7 +195,10 @@ function balanceText(item: TaxAssessment): string {
         : t('taxPage.assessments.balanceRefund', { amount: money(Math.abs(item.balance)) });
 }
 
-onMounted(load);
+onMounted(() => {
+    void load();
+    void filesStore.loadList().catch(() => undefined);
+});
 watch(() => props.publicId, load);
 </script>
 
@@ -200,8 +251,12 @@ watch(() => props.publicId, load);
                         </li>
                     </ul>
                 </template>
+                <p v-if="item.filePublicId" class="tax-fiche__detail" data-test="tax-assessment-file">
+                    {{ displayFileName(item.filePublicId, item.fileName, t('vault.unreadable')) }}
+                </p>
                 <p v-if="item.note" class="tax-fiche__detail">{{ item.note }}</p>
             </div>
+            <button type="button" class="su-btn" :disabled="saving" @click="edit(item)">{{ t('taxPage.assessments.edit') }}</button>
             <button type="button" class="su-btn" :disabled="saving" @click="remove(item)">{{ t('taxPage.assessments.remove') }}</button>
         </article>
 
@@ -223,7 +278,7 @@ watch(() => props.publicId, load);
             </button>
         </div>
 
-        <form v-if="filed" class="tax-form" @submit.prevent="add">
+        <form v-if="filed" class="tax-form" @submit.prevent="save">
             <div class="tax-form__row">
                 <label class="tax-form__label">{{ t('taxPage.assessments.kindLabel') }}</label>
                 <div class="tax-form__field">
@@ -291,6 +346,12 @@ watch(() => props.publicId, load);
                     <v-text-field v-model="draft.note" maxlength="255" color="primary" variant="outlined" hide-details />
                 </div>
             </div>
+            <div class="tax-form__row">
+                <label class="tax-form__label">{{ t('taxPage.assessments.fileLabel') }}</label>
+                <div class="tax-form__field">
+                    <v-select v-model="draft.filePublicId" :items="fileItems" clearable color="primary" variant="outlined" hide-details />
+                </div>
+            </div>
             <div v-for="(row, index) in draft.deviations" :key="index" class="tax-form__row">
                 <label class="tax-form__label">{{ t('taxPage.assessments.deviationLine') }}</label>
                 <div class="tax-form__field">
@@ -312,7 +373,12 @@ watch(() => props.publicId, load);
                 <button type="button" class="su-btn" :disabled="saving" @click="addDeviation">
                     {{ t('taxPage.assessments.addDeviation') }}
                 </button>
-                <button type="submit" class="su-btn" :disabled="saving">{{ t('taxPage.assessments.add') }}</button>
+                <button v-if="editing" type="button" class="su-btn" :disabled="saving" @click="cancelEdit">
+                    {{ t('taxPage.assessments.cancelEdit') }}
+                </button>
+                <button type="submit" class="su-btn" :disabled="saving">
+                    {{ editing ? t('taxPage.assessments.update') : t('taxPage.assessments.add') }}
+                </button>
             </div>
         </form>
     </section>

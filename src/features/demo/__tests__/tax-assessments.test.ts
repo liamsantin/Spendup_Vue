@@ -60,6 +60,23 @@ describe('décision de taxation en mode démo', () => {
         expect(() => handleDemoRequest('POST', '/api/tax-returns/TAX2026/cancel-filing')).toThrow();
     });
 
+    it('remplace un document : montants et écarts, solde recalculé', () => {
+        filed();
+        const created = handleDemoRequest(
+            'POST',
+            BASE,
+            decision({ deviations: [{ code: 'deduction.pillar3a', assessed: 6000 }] })
+        ) as TaxAssessments;
+        const id = created.items[0].publicId;
+        const result = handleDemoRequest(
+            'PUT',
+            `${BASE}/${id}`,
+            decision({ totalTax: 1000, interest: 0, deviations: [] })
+        ) as TaxAssessments;
+        expect(result.items).toHaveLength(1);
+        expect(result.items[0]).toMatchObject({ publicId: id, totalTax: 1000, balance: 350, deviations: [] });
+    });
+
     it('revient à « déposée » quand la dernière décision est supprimée', () => {
         filed();
         const created = handleDemoRequest('POST', BASE, decision()) as TaxAssessments;
