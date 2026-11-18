@@ -9,6 +9,7 @@ import type {
     TaxEntry,
     TaxEntryKind,
     TaxIdentity,
+    TaxDocumentCandidate,
     TaxLineValue,
     TaxMedical,
     TaxPillar3a,
@@ -412,6 +413,62 @@ function suggestionSource(code: string): TaxSuggestionSource {
     if (code === 'liability.debts') return 'liability';
     if (code === 'asset.property' || code === 'asset.crypto') return 'asset';
     return 'recurringIncome';
+}
+
+const DOCUMENT_CATEGORY_BY_LINE: Record<string, string> = {
+    'deduction.pillar3a': 'troisiemePilier',
+    'deduction.pillar2BuyIn': 'deuxiemePilier',
+    'deduction.insurance': 'assuranceMaladie',
+    'deduction.healthGross': 'fraisMedicaux',
+    'deduction.healthReimbursed': 'fraisMedicaux',
+    'deduction.handicap': 'fraisMedicaux',
+    'deduction.childcare': 'gardeEnfant',
+    'deduction.jobExpenses': 'fraisProfessionnels',
+    'deduction.education': 'fraisFormation',
+    'deduction.donations': 'don',
+    'deduction.debtInterest': 'interetsPassifs'
+};
+
+const LINE_BY_NATURE: Record<string, string> = {
+    pillar3aContribution: 'deduction.pillar3a',
+    pillar2BuyIn: 'deduction.pillar2BuyIn',
+    healthInsurancePremium: 'deduction.insurance',
+    lifeInsurancePremium: 'deduction.insurance',
+    medicalExpense: 'deduction.healthGross',
+    medicalReimbursement: 'deduction.healthReimbursed',
+    disabilityExpense: 'deduction.handicap',
+    childcare: 'deduction.childcare',
+    alimonyPaid: 'deduction.alimonyPaid',
+    commuting: 'deduction.jobExpenses',
+    jobExpense: 'deduction.jobExpenses',
+    trainingExpense: 'deduction.education',
+    donation: 'deduction.donations',
+    politicalContribution: 'deduction.politicalContributions',
+    debtInterest: 'deduction.debtInterest'
+};
+
+/** Pièces déjà jointes aux transactions de l'année à nature confirmée, pas encore rangées dans le dossier. */
+function buildDocumentCandidates(tax: DemoTaxReturn): TaxDocumentCandidate[] {
+    const filed = new Set(tax.documents.map((item) => item.filePublicId));
+    const items: TaxDocumentCandidate[] = [];
+    for (const tx of demoDb().transactions) {
+        const line = tx.taxNatureStatus === 'confirmee' && tx.taxNature ? LINE_BY_NATURE[tx.taxNature] : undefined;
+        if (!line || !tx.operationDate.startsWith(`${tax.year}-`)) continue;
+        for (const file of tx.files) {
+            if (filed.has(file.publicId) || items.some((item) => item.filePublicId === file.publicId)) continue;
+            items.push({
+                filePublicId: file.publicId,
+                fileName: file.nameOriginal,
+                sourceKind: 'transaction',
+                sourcePublicId: tx.publicId,
+                sourceLabel: tx.label,
+                line,
+                category: DOCUMENT_CATEGORY_BY_LINE[line] ?? 'other',
+                nature: tx.taxNature ?? ''
+            });
+        }
+    }
+    return items;
 }
 
 const THEME_LINES: Record<string, { line: string; document: string | null }> = {
@@ -1009,7 +1066,12 @@ function correctAmount(
 }
 
 function attachDocument(tax: DemoTaxReturn, body: { filePublicId: string; lineCode: string | null }) {
-    const file = demoDb().files.find((item) => item.publicId === body.filePublicId) ?? notFound('Fichier introuvable.');
+    const file =
+        demoDb().files.find((item) => item.publicId === body.filePublicId) ??
+        demoDb()
+            .transactions.flatMap((tx) => tx.files)
+            .find((item) => item.publicId === body.filePublicId) ??
+        notFound('Fichier introuvable.');
     const lineCode = body.lineCode?.trim() || null;
     if (lineCode && !findLine(lineCode)) invalid('Ligne inconnue.');
     if (tax.documents.some((item) => item.filePublicId === file.publicId)) invalid('Cette pièce est déjà rangée ici.');
@@ -1142,6 +1204,8 @@ export function routeTax(method: string, path: string, body: unknown, query?: UR
         return ok(toResponse(tax));
     }
 
+    const candidates = match(path, '/api/tax-returns/:id/document-candidates');
+    if (candidates && method === 'GET') return ok({ items: buildDocumentCandidates(findReturn(candidates.id)) });
     const themes = match(path, '/api/tax-returns/:id/themes');
     if (themes && method === 'GET') return ok(buildThemes(findReturn(themes.id)));
     const medical = match(path, '/api/tax-returns/:id/medical');

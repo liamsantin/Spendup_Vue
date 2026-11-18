@@ -264,6 +264,18 @@ export interface TaxPillar3aLimit {
     sourceUrl: string | null;
 }
 
+/** Pièce déjà jointe à une opération de l'année et utile au dossier (ligne et catégorie suggérées). */
+export interface TaxDocumentCandidate {
+    filePublicId: string;
+    fileName: string;
+    sourceKind: 'transaction' | 'recurringExpense';
+    sourcePublicId: string;
+    sourceLabel: string;
+    line: string;
+    category: string;
+    nature: string;
+}
+
 /** Une dépense d'un thème fiscal (nature confirmée). */
 export interface TaxThemeTransaction {
     transactionPublicId: string;

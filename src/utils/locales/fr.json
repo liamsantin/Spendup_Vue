@@ -5332,6 +5332,12 @@
         },
         "identity": "Situation",
         "steps": "Étapes de la déclaration",
+        "documentCandidates": {
+            "title": "Pièces trouvées dans vos opérations",
+            "hint": "Déjà jointes à une transaction ou à une assurance : un geste suffit pour les ranger sur la bonne ligne.",
+            "from": "Jointe à : {label}",
+            "file": "Ranger"
+        },
         "themes": {
             "title": "Dons, garde, formation, transports {year}",
             "hint": "Information seulement : les plafonds du canton ne sont pas appliqués. Seules les natures confirmées sur une transaction comptent.",

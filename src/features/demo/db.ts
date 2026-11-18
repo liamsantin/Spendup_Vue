@@ -184,6 +184,7 @@ function transaction(input: {
     savingsGoalPublicId?: string | null;
     taxNature?: string | null;
     taxNatureStatus?: 'confirmee' | 'ecartee' | null;
+    files?: Transaction['files'];
 }): Transaction {
     const movements: TransactionMovement[] =
         input.type === 'transfert'
@@ -215,7 +216,7 @@ function transaction(input: {
         createdAt: `${input.operationDate}T08:00:00.000Z`,
         updatedAt: null,
         movements,
-        files: [],
+        files: input.files ?? [],
         savingsGoalPublicId: input.savingsGoalPublicId ?? null,
         tagPublicIds: input.tagPublicIds ?? [],
         assetPublicId: null,
@@ -399,6 +400,7 @@ export function createDemoDb(): DemoDb {
                 publicId: 'TXN0012',
                 type: 'depense',
                 label: 'Dentiste',
+                files: [{ publicId: 'FILEDEN', nameOriginal: 'facture-dentiste.pdf', sizeBytes: 48200, mimeType: 'application/pdf' }],
                 amount: 180,
                 operationDate: '2026-10-09',
                 accountPublicId: 'ACCCOUR',

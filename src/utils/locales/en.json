@@ -5332,6 +5332,12 @@
         },
         "identity": "Situation",
         "steps": "Return steps",
+        "documentCandidates": {
+            "title": "Documents found in your transactions",
+            "hint": "Already attached to a transaction or an insurance: one click files them on the right line.",
+            "from": "Attached to: {label}",
+            "file": "File it"
+        },
         "themes": {
             "title": "Donations, childcare, training, commuting {year}",
             "hint": "For information only: canton limits are not applied. Only natures confirmed on a transaction count.",

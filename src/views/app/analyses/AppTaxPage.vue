@@ -36,6 +36,7 @@ import TaxImportModal, { type TaxImportPayload } from '@/features/tax/components
 import TaxImportReview from '@/features/tax/components/TaxImportReview.vue';
 import TaxPdfZoneModal from '@/features/tax/components/TaxPdfZoneModal.vue';
 import TaxLineRow from '@/features/tax/components/TaxLineRow.vue';
+import TaxDocumentCandidates from '@/features/tax/components/TaxDocumentCandidates.vue';
 import TaxThemesSection from '@/features/tax/components/TaxThemesSection.vue';
 import TaxMedicalSection from '@/features/tax/components/TaxMedicalSection.vue';
 import TaxPillar3aSection from '@/features/tax/components/TaxPillar3aSection.vue';
@@ -61,6 +62,7 @@ import type {
     TaxCorrection,
     TaxEntryKind,
     TaxLine,
+    TaxDocumentCandidate,
     TaxMedical,
     TaxPerson,
     TaxPillar3a,
@@ -111,6 +113,7 @@ const suggestions = ref<TaxSuggestion[]>([]);
 const pillar3a = ref<TaxPillar3a | null>(null);
 const medical = ref<TaxMedical | null>(null);
 const themes = ref<TaxThemes | null>(null);
+const documentCandidates = ref<TaxDocumentCandidate[]>([]);
 const suggestionKey = (item: TaxSuggestion) => `${item.code}|${item.person}|${item.competence}`;
 /** Lecture locale d'un PDF importé, à vérifier (persistée sur l'appareil). */
 const readItems = ref<TaxSuggestion[]>([]);
@@ -591,6 +594,29 @@ async function flushCurrentDrafts(): Promise<boolean> {
     return true;
 }
 
+async function loadDocumentCandidates(id: string) {
+    try {
+        documentCandidates.value = isImportedReturn(id) ? [] : ((await taxApi.documentCandidates(id)).items ?? []);
+    } catch {
+        documentCandidates.value = [];
+    }
+}
+
+/** Pièces proposées pour l'étape ouverte (toutes sur l'étape « Pièces »). */
+const stepDocumentCandidates = computed(() => {
+    if (step.value === PIECES) return documentCandidates.value;
+    const codes = new Set(currentGroup.value?.lines.map((line) => line.code) ?? []);
+    return documentCandidates.value.filter((item) => codes.has(item.line));
+});
+
+/** Range une pièce proposée sur sa ligne suggérée. */
+async function fileCandidate(item: TaxDocumentCandidate) {
+    const current = declaration.value;
+    if (!current) return;
+    apply(await taxApi.attachDocument(current.publicId, item.filePublicId, item.line));
+    await loadDocumentCandidates(current.publicId);
+}
+
 async function loadSuggestions(id: string) {
     try {
         // la bibliothèque et le quota servent au bouton « Sélectionner » ; un échec n'empêche pas l'affichage
@@ -616,6 +642,7 @@ async function loadSuggestions(id: string) {
     } catch {
         themes.value = null;
     }
+    await loadDocumentCandidates(id);
 }
 
 /** Montants lus dans le PDF importé et pas encore acceptés, rangés par étape (onglet). */
@@ -1449,6 +1476,13 @@ async function submitCorrection(payload: TaxCorrectPayload) {
             :saving="saving"
             @toggle="toggleChecklist"
             @generate="generateChecklist"
+        />
+
+        <TaxDocumentCandidates
+            v-if="stepDocumentCandidates.length && !declaration.locked"
+            :items="stepDocumentCandidates"
+            :saving="saving"
+            @file="fileCandidate"
         />
 
         <TaxDocumentsSection
