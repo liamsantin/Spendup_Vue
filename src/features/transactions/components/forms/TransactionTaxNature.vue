@@ -50,9 +50,11 @@ function startChoosing() {
     choosing.value = true;
 }
 
-function applyChoice() {
-    if (!chosen.value) return;
-    emit('change', { taxNature: chosen.value });
+/** Le choix s'applique dès la sélection : pas de second bouton à trouver sous la liste. */
+function pick(value: unknown) {
+    if (typeof value !== 'string' || !value) return;
+    chosen.value = value;
+    emit('change', { taxNature: value });
     choosing.value = false;
 }
 
@@ -80,11 +82,14 @@ function reset() {
         <p v-else class="tx-tax-nature__hint">{{ t('transactionsPage.taxNature.noneHint') }}</p>
 
         <div v-if="choosing" class="tx-tax-nature__choose">
-            <AppSelect v-model="chosen" :items="items" :label="t('transactionsPage.taxNature.choose')" hide-details />
+            <AppSelect
+                :model-value="chosen"
+                :items="items"
+                :label="t('transactionsPage.taxNature.choose')"
+                hide-details
+                @update:model-value="pick"
+            />
             <div class="tx-tax-nature__actions">
-                <button type="button" class="su-btn su-btn--ink su-btn--sm" :disabled="disabled || !chosen" @click="applyChoice">
-                    {{ t('transactionsPage.taxNature.confirm') }}
-                </button>
                 <button type="button" class="su-btn su-btn--ghost su-btn--sm" :disabled="disabled" @click="choosing = false">
                     {{ t('common.cancel') }}
                 </button>
