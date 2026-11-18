@@ -22,6 +22,10 @@ const props = defineProps<{
     publicId: string;
 }>();
 
+const emit = defineEmits<{
+    changed: [];
+}>();
+
 const { t, locale } = useI18n();
 const money = useTaxMoney();
 
@@ -73,6 +77,7 @@ async function run(action: () => Promise<TaxInstallments>) {
     error.value = '';
     try {
         data.value = await action();
+        emit('changed');
         candidates.value = await taxApi.installmentCandidates(props.publicId);
     } catch (e) {
         error.value = getErrorMessage(AppError.fromUnknown(e));

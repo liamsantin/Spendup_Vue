@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { resetDemoDb } from '@/features/demo/db';
 import { handleDemoRequest } from '@/features/demo/handle';
-import type { TaxInstallmentCandidate, TaxInstallments } from '@/features/tax/types';
+import type { TaxInstallmentCandidate, TaxInstallments, TaxReminder } from '@/features/tax/types';
 
 const BASE = '/api/tax-returns/TAX2026/installments';
 
@@ -55,5 +55,20 @@ describe('tranches d’impôt en mode démo', () => {
         const linked = handleDemoRequest('POST', `${BASE}/TXI0002/transactions`, { transactionPublicId: 'TXN0017' }) as TaxInstallments;
         expect(linked.items.find((item) => item.publicId === 'TXI0002')).toMatchObject({ status: 'paid', paidAmount: 650 });
         expect(() => handleDemoRequest('POST', `${BASE}/TXI0003/transactions`, { transactionPublicId: 'TXN0017' })).toThrow();
+    });
+    it('rappelle une tranche proche ou en retard, pas une payée ni une lointaine', () => {
+        const day = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+        handleDemoRequest('POST', BASE, { competence: 'cantonal', dueDate: day(3), amount: 100 });
+        handleDemoRequest('POST', BASE, { competence: 'federal', dueDate: day(-5), amount: 80 });
+        handleDemoRequest('POST', BASE, { competence: 'federal', dueDate: day(40), amount: 60 });
+        const reminders = (handleDemoRequest('GET', '/api/tax-returns/TAX2026/reminders') as { items: TaxReminder[] }).items;
+        const deadlines = reminders.filter((item) => item.code === 'deadlineSoon' || item.code === 'deadlineOverdue');
+        expect(deadlines.map((item) => [item.code, item.amount])).toEqual(
+            expect.arrayContaining([
+                ['deadlineSoon', 100],
+                ['deadlineOverdue', 80]
+            ])
+        );
+        expect(deadlines).toHaveLength(2);
     });
 });

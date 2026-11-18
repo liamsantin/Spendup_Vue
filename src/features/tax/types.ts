@@ -264,13 +264,15 @@ export interface TaxPillar3aLimit {
     sourceUrl: string | null;
 }
 
-/** Un rappel du dossier : `unconfirmedNatures` (count, amount), `missingDocument` (line, label, amount), `pillar3aYearEnd` (amount). */
+/** Un rappel du dossier : `unconfirmedNatures` (count, amount), `missingDocument` (line, label, amount), `pillar3aYearEnd` (amount), `deadlineSoon` / `deadlineOverdue` (label, amount restant, dueDate). */
 export interface TaxReminder {
-    code: 'unconfirmedNatures' | 'missingDocument' | 'pillar3aYearEnd';
+    code: 'unconfirmedNatures' | 'missingDocument' | 'pillar3aYearEnd' | 'deadlineSoon' | 'deadlineOverdue';
     count: number;
     amount: number;
     line: string | null;
     label: string | null;
+    /** Échéance (`yyyy-mm-dd`) d'un rappel `deadlineSoon` ou `deadlineOverdue`. */
+    dueDate?: string | null;
 }
 
 /** Pièce déjà jointe à une opération de l'année et utile au dossier (ligne et catégorie suggérées). */

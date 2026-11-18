@@ -5,12 +5,13 @@ defineOptions({ name: 'TaxRemindersSection' });
 import { useI18n } from 'vue-i18n';
 import { useTaxMoney } from '@/features/tax/composables/useTaxMoney';
 import type { TaxReminder } from '@/features/tax/types';
+import { formatTaxDate } from '@/features/tax/format';
 
 defineProps<{
     items: TaxReminder[];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const money = useTaxMoney();
 </script>
 
@@ -24,6 +25,15 @@ const money = useTaxMoney();
                 </template>
                 <template v-else-if="item.code === 'missingDocument'">
                     {{ t('taxPage.reminders.missingDocument', { label: item.label ?? '', amount: money(item.amount) }) }}
+                </template>
+                <template v-else-if="item.code === 'deadlineSoon' || item.code === 'deadlineOverdue'">
+                    {{
+                        t(`taxPage.reminders.${item.code}`, {
+                            label: item.label ?? '',
+                            date: formatTaxDate(item.dueDate ?? null, locale),
+                            amount: money(item.amount)
+                        })
+                    }}
                 </template>
                 <template v-else-if="item.code === 'pillar3aYearEnd'">
                     {{ t('taxPage.reminders.pillar3aYearEnd', { amount: money(item.amount) }) }}

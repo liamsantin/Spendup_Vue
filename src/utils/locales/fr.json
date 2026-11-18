@@ -5343,6 +5343,8 @@
             "title": "À faire avant de déclarer",
             "unconfirmedNatures": "{count} dépense à confirmer ({amount}) : leur catégorie suggère une nature fiscale, elle ne compte pas tant que vous ne l'avez pas confirmée. | {count} dépenses à confirmer ({amount}) : leur catégorie suggère une nature fiscale, elles ne comptent pas tant que vous ne les avez pas confirmées.",
             "missingDocument": "Pièce manquante : {label} ({amount} d’après vos opérations confirmées).",
+            "deadlineSoon": "Échéance proche : {label}, le {date} (reste {amount}).",
+            "deadlineOverdue": "Échéance dépassée : {label}, le {date} (reste {amount}).",
             "pillar3aYearEnd": "3e pilier a : {amount} versés cette année. Le 3a se verse avant le 31 décembre."
         },
         "documentCandidates": {

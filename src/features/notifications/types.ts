@@ -23,6 +23,7 @@ export type NotificationType =
     | 'sharedDebtCreated'
     | 'sharedDebtSettled'
     | 'sharedDebtCanceled'
+    | 'taxDeadline'
     | 'other'
     | (string & {});
 

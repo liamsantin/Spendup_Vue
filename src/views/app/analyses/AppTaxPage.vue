@@ -642,10 +642,17 @@ async function reloadDeclaration() {
     if (!current) return;
     try {
         apply(await taxApi.get(current.publicId));
+        await loadReminders(current.publicId);
     } catch (e) {
         error.value = getErrorMessage(AppError.fromUnknown(e));
     }
 }
+
+const isDeadline = (item: TaxReminder) => item.code === 'deadlineSoon' || item.code === 'deadlineOverdue';
+/** Rappels de préparation (natures, pièces, 3a) : seulement avant le dépôt. */
+const preparationReminders = computed(() => reminders.value.filter((item) => !isDeadline(item)));
+/** Échéances d'impôt à venir ou dépassées : visibles dans l'étape « Paiements », même après le dépôt. */
+const deadlineReminders = computed(() => reminders.value.filter(isDeadline));
 
 /** Les rappels dépendent des pièces rangées : on les relit après chaque rangement. */
 async function loadReminders(id: string) {
@@ -1523,7 +1530,7 @@ async function submitCorrection(payload: TaxCorrectPayload) {
             @generate="generateChecklist"
         />
 
-        <TaxInstallmentsSection v-if="step === PAYMENTS" :public-id="declaration.publicId" />
+        <TaxInstallmentsSection v-if="step === PAYMENTS" :public-id="declaration.publicId" @changed="loadReminders(declaration.publicId)" />
 
         <TaxAssessmentsSection
             v-if="step === PAYMENTS"
@@ -1533,7 +1540,12 @@ async function submitCorrection(payload: TaxCorrectPayload) {
             @changed="reloadDeclaration"
         />
 
-        <TaxRemindersSection v-if="reminders.length && (step === SITUATION || step === PIECES) && !declaration.locked" :items="reminders" />
+        <TaxRemindersSection
+            v-if="preparationReminders.length && (step === SITUATION || step === PIECES) && !declaration.locked"
+            :items="preparationReminders"
+        />
+
+        <TaxRemindersSection v-if="deadlineReminders.length && step === PAYMENTS" :items="deadlineReminders" />
 
         <TaxDocumentCandidates
             v-if="stepDocumentCandidates.length && !declaration.locked"

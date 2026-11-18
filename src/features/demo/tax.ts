@@ -582,6 +582,20 @@ function buildReminders(tax: DemoTaxReturn): TaxReminder[] {
     for (const [line, info] of [...totals.entries()].sort(([a], [b]) => a.localeCompare(b))) {
         if (!filed.has(line)) items.push({ code: 'missingDocument', count: 0, amount: info.amount, line, label: info.label });
     }
+    // Échéances saisies : tranches non payées dans les 7 jours ou en retard de 30 jours au plus.
+    const today = todayYmd();
+    const day = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+    for (const installment of toInstallments(tax).items) {
+        if (installment.status === 'paid' || installment.dueDate > day(7) || installment.dueDate < day(-30)) continue;
+        items.push({
+            code: installment.dueDate < today ? 'deadlineOverdue' : 'deadlineSoon',
+            count: 0,
+            amount: Math.max(0, installment.amount - installment.paidAmount),
+            line: null,
+            label: `${installment.competence === 'federal' ? 'Impôt fédéral' : 'Canton et commune'}, tranche ${installment.sequence}`,
+            dueDate: installment.dueDate
+        });
+    }
     return items;
 }
 
