@@ -9,6 +9,11 @@ import type {
     TaxEntry,
     TaxEntryKind,
     TaxIdentity,
+    TaxInstallment,
+    TaxInstallmentCandidate,
+    TaxInstallmentCompetence,
+    TaxInstallmentPayload,
+    TaxInstallments,
     TaxDocumentCandidate,
     TaxLineValue,
     TaxMedical,
@@ -67,6 +72,21 @@ export type DemoTaxReturn = {
     corrections?: TaxCorrection[];
     civilStatus?: TaxCivilStatus | null;
     taxationMode?: TaxationMode;
+    /** Tranches d'impôt saisies. Absentes des démos plus anciennes. */
+    installments?: DemoInstallment[];
+};
+
+/** Tranche telle que la démo la garde : le payé vient des transactions rapprochées, sinon du montant saisi. */
+type DemoInstallment = {
+    publicId: string;
+    competence: TaxInstallmentCompetence;
+    sequence: number;
+    dueDate: string;
+    amount: number;
+    paidAmount: number | null;
+    paidAt: string | null;
+    note: string | null;
+    transactionIds: string[];
 };
 
 /** Pièce attendue telle que la démo la garde : `complete` est ce que la personne a coché. */
@@ -214,7 +234,42 @@ export function seedTaxReturns(): DemoTaxReturn[] {
             ],
             documents: [],
             checklist: [],
-            previousPublicId: null
+            previousPublicId: null,
+            installments: [
+                {
+                    publicId: 'TXI0001',
+                    competence: 'cantonal',
+                    sequence: 1,
+                    dueDate: '2026-03-31',
+                    amount: 650,
+                    paidAmount: null,
+                    paidAt: null,
+                    note: null,
+                    transactionIds: ['TXN0017']
+                },
+                {
+                    publicId: 'TXI0002',
+                    competence: 'cantonal',
+                    sequence: 2,
+                    dueDate: '2026-12-31',
+                    amount: 650,
+                    paidAmount: null,
+                    paidAt: null,
+                    note: null,
+                    transactionIds: []
+                },
+                {
+                    publicId: 'TXI0003',
+                    competence: 'federal',
+                    sequence: 1,
+                    dueDate: '2026-12-31',
+                    amount: 300,
+                    paidAmount: null,
+                    paidAt: null,
+                    note: 'Impôt fédéral direct',
+                    transactionIds: []
+                }
+            ]
         }
     ];
 }
@@ -1204,6 +1259,163 @@ function buildPdf(lines: string[]): Blob {
     return new Blob([bytes], { type: 'application/pdf' });
 }
 
+function installmentStatus(amount: number, paid: number, dueDate: string): TaxInstallment['status'] {
+    if (paid >= amount) return 'paid';
+    if (paid > 0) return 'partial';
+    return dueDate < new Date().toISOString().slice(0, 10) ? 'overdue' : 'due';
+}
+
+function installmentsOf(tax: DemoTaxReturn): DemoInstallment[] {
+    tax.installments ??= [];
+    return tax.installments;
+}
+
+function toInstallments(tax: DemoTaxReturn): TaxInstallments {
+    const transactions = demoDb().transactions;
+    const items = installmentsOf(tax)
+        .map((item): TaxInstallment => {
+            const linked = item.transactionIds
+                .map((id) => transactions.find((tx) => tx.publicId === id))
+                .filter((tx): tx is NonNullable<typeof tx> => Boolean(tx))
+                .map((tx) => ({ publicId: tx.publicId, label: tx.label, date: tx.operationDate, amount: Math.abs(tx.amount ?? 0) }));
+            const paid = linked.length ? linked.reduce((sum, tx) => sum + tx.amount, 0) : (item.paidAmount ?? 0);
+            const paidAt = linked.length
+                ? linked
+                      .map((tx) => tx.date)
+                      .sort()
+                      .at(-1)!
+                : item.paidAt;
+            return {
+                publicId: item.publicId,
+                competence: item.competence,
+                sequence: item.sequence,
+                dueDate: item.dueDate,
+                amount: item.amount,
+                paidAmount: paid,
+                paidAt,
+                status: installmentStatus(item.amount, paid, item.dueDate),
+                note: item.note,
+                transactions: linked
+            };
+        })
+        .sort((a, b) => a.competence.localeCompare(b.competence) || a.sequence - b.sequence);
+    const planned = items.reduce((sum, item) => sum + item.amount, 0);
+    const paid = items.reduce((sum, item) => sum + item.paidAmount, 0);
+    return { items, planned, paid, remaining: Math.max(0, planned - paid) };
+}
+
+/** Dépenses confirmées « paiement d'impôts » de l'année ou de la suivante qui ne paient encore aucune tranche. */
+function installmentCandidates(tax: DemoTaxReturn): TaxInstallmentCandidate[] {
+    const used = new Set(store().flatMap((item) => installmentsOf(item).flatMap((i) => i.transactionIds)));
+    return demoDb()
+        .transactions.filter(
+            (tx) =>
+                tx.type === 'depense' &&
+                tx.currency === 'CHF' &&
+                tx.taxNature === 'taxPayment' &&
+                tx.taxNatureStatus === 'confirmee' &&
+                Number(tx.operationDate.slice(0, 4)) >= tax.year &&
+                Number(tx.operationDate.slice(0, 4)) <= tax.year + 1 &&
+                !used.has(tx.publicId)
+        )
+        .sort((a, b) => a.operationDate.localeCompare(b.operationDate))
+        .map((tx) => ({ transactionPublicId: tx.publicId, label: tx.label, date: tx.operationDate, amount: Math.abs(tx.amount ?? 0) }));
+}
+
+function requireInstallment(tax: DemoTaxReturn, id: string): DemoInstallment {
+    return installmentsOf(tax).find((item) => item.publicId === id) ?? notFound('Tranche introuvable.');
+}
+
+function nextSequence(tax: DemoTaxReturn, competence: TaxInstallmentCompetence): number {
+    return (
+        installmentsOf(tax)
+            .filter((item) => item.competence === competence)
+            .reduce((max, item) => Math.max(max, item.sequence), 0) + 1
+    );
+}
+
+function applyInstallmentPayload(tax: DemoTaxReturn, item: DemoInstallment, body: TaxInstallmentPayload) {
+    if (body.competence && body.competence !== item.competence) {
+        if (body.competence !== 'cantonal' && body.competence !== 'federal') invalid('Ressort invalide (cantonal, federal).');
+        item.competence = body.competence;
+        item.sequence = nextSequence(tax, body.competence);
+    }
+    if (body.dueDate) item.dueDate = body.dueDate;
+    if (body.amount != null) {
+        if (!(body.amount > 0)) invalid('Le montant doit être supérieur à zéro.');
+        item.amount = Math.round(body.amount * 100) / 100;
+    }
+    if (body.note !== undefined) item.note = body.note?.trim() || null;
+    if (body.clearPayment) {
+        item.paidAmount = null;
+        item.paidAt = null;
+    } else {
+        if (body.paidAmount != null) item.paidAmount = Math.round(body.paidAmount * 100) / 100;
+        if (body.paidAt) item.paidAt = body.paidAt;
+    }
+}
+
+/** Tranches d'impôt : saisie, rapprochement avec les paiements de la démo. */
+function routeInstallments(method: string, path: string, body: unknown): TaxResult {
+    const candidates = match(path, '/api/tax-returns/:id/installments/candidates');
+    if (candidates && method === 'GET') return ok(installmentCandidates(findReturn(candidates.id)));
+    const list = match(path, '/api/tax-returns/:id/installments');
+    if (list && method === 'GET') return ok(toInstallments(findReturn(list.id)));
+    if (list && method === 'POST') {
+        const tax = findReturn(list.id);
+        const payload = body as TaxInstallmentPayload;
+        if (payload.competence !== 'cantonal' && payload.competence !== 'federal') invalid('Ressort invalide (cantonal, federal).');
+        if (!payload.dueDate) invalid("Indiquez l'échéance.");
+        const item: DemoInstallment = {
+            publicId: createPublicId(),
+            competence: payload.competence,
+            sequence: nextSequence(tax, payload.competence),
+            dueDate: payload.dueDate,
+            amount: 0,
+            paidAmount: null,
+            paidAt: null,
+            note: null,
+            transactionIds: []
+        };
+        applyInstallmentPayload(tax, item, { ...payload, competence: undefined });
+        if (!(item.amount > 0)) invalid('Le montant doit être supérieur à zéro.');
+        installmentsOf(tax).push(item);
+        return ok(toInstallments(tax));
+    }
+    const one = match(path, '/api/tax-returns/:id/installments/:installmentId');
+    if (one && method === 'PUT') {
+        const tax = findReturn(one.id);
+        applyInstallmentPayload(tax, requireInstallment(tax, one.installmentId), body as TaxInstallmentPayload);
+        return ok(toInstallments(tax));
+    }
+    if (one && method === 'DELETE') {
+        const tax = findReturn(one.id);
+        requireInstallment(tax, one.installmentId);
+        tax.installments = installmentsOf(tax).filter((item) => item.publicId !== one.installmentId);
+        return ok(toInstallments(tax));
+    }
+    const links = match(path, '/api/tax-returns/:id/installments/:installmentId/transactions');
+    if (links && method === 'POST') {
+        const tax = findReturn(links.id);
+        const item = requireInstallment(tax, links.installmentId);
+        const id = (body as { transactionPublicId: string }).transactionPublicId;
+        if (!installmentCandidates(tax).some((candidate) => candidate.transactionPublicId === id)) {
+            invalid("Seul un paiement d'impôts confirmé, pas encore rapproché, peut payer une tranche.");
+        }
+        item.transactionIds.push(id);
+        return ok(toInstallments(tax));
+    }
+    const link = match(path, '/api/tax-returns/:id/installments/:installmentId/transactions/:transactionId');
+    if (link && method === 'DELETE') {
+        const tax = findReturn(link.id);
+        const item = requireInstallment(tax, link.installmentId);
+        if (!item.transactionIds.includes(link.transactionId)) notFound('Rapprochement introuvable.');
+        item.transactionIds = item.transactionIds.filter((id) => id !== link.transactionId);
+        return ok(toInstallments(tax));
+    }
+    return null;
+}
+
 /** Routes `/api/tax-returns`. `null` si le chemin n’est pas concerné. */
 export function routeTax(method: string, path: string, body: unknown, query?: URLSearchParams): TaxResult {
     if (!path.startsWith('/api/tax-returns')) return null;
@@ -1252,6 +1464,9 @@ export function routeTax(method: string, path: string, body: unknown, query?: UR
         tax.entries = tax.entries.filter((item) => item.publicId !== entry.entryId);
         return ok(toResponse(tax));
     }
+
+    const installmentsRoute = routeInstallments(method, path, body);
+    if (installmentsRoute) return installmentsRoute;
 
     const reminders = match(path, '/api/tax-returns/:id/reminders');
     if (reminders && method === 'GET') return ok({ year: findReturn(reminders.id).year, items: buildReminders(findReturn(reminders.id)) });

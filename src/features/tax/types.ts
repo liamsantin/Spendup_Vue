@@ -367,3 +367,55 @@ export interface UpsertTaxAmountPayload {
     competence: TaxCompetence | null;
     amount: number | null;
 }
+
+/** Ressort d'une tranche d'impôt : cantonal et communal (ICC) ou fédéral (IFD). */
+export type TaxInstallmentCompetence = 'cantonal' | 'federal';
+
+/** `paid` : payée en entier ; `partial` ; `overdue` : échéance passée sans paiement ; `due` : à venir. */
+export type TaxInstallmentStatus = 'paid' | 'partial' | 'overdue' | 'due';
+
+export interface TaxInstallmentTransaction {
+    publicId: string;
+    label: string;
+    date: string;
+    amount: number;
+}
+
+/** Tranche à payer. `paidAmount` est la somme des transactions rapprochées, ou le montant saisi à la main. */
+export interface TaxInstallment {
+    publicId: string;
+    competence: TaxInstallmentCompetence;
+    sequence: number;
+    dueDate: string;
+    amount: number;
+    paidAmount: number;
+    paidAt: string | null;
+    status: TaxInstallmentStatus;
+    note: string | null;
+    transactions: TaxInstallmentTransaction[];
+}
+
+export interface TaxInstallments {
+    items: TaxInstallment[];
+    planned: number;
+    paid: number;
+    remaining: number;
+}
+
+/** Paiement d'impôts confirmé, pas encore rapproché d'une tranche. */
+export interface TaxInstallmentCandidate {
+    transactionPublicId: string;
+    label: string;
+    date: string;
+    amount: number;
+}
+
+export interface TaxInstallmentPayload {
+    competence?: TaxInstallmentCompetence;
+    dueDate?: string;
+    amount?: number;
+    note?: string | null;
+    paidAmount?: number | null;
+    paidAt?: string | null;
+    clearPayment?: boolean;
+}

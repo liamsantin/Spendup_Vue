@@ -36,6 +36,7 @@ import TaxImportModal, { type TaxImportPayload } from '@/features/tax/components
 import TaxImportReview from '@/features/tax/components/TaxImportReview.vue';
 import TaxPdfZoneModal from '@/features/tax/components/TaxPdfZoneModal.vue';
 import TaxLineRow from '@/features/tax/components/TaxLineRow.vue';
+import TaxInstallmentsSection from '@/features/tax/components/TaxInstallmentsSection.vue';
 import TaxRemindersSection from '@/features/tax/components/TaxRemindersSection.vue';
 import TaxDocumentCandidates from '@/features/tax/components/TaxDocumentCandidates.vue';
 import TaxThemesSection from '@/features/tax/components/TaxThemesSection.vue';
@@ -185,6 +186,7 @@ const visibleSubtotals = computed(() => {
 
 const SITUATION = 'situation';
 const PIECES = 'pieces';
+const PAYMENTS = 'payments';
 const step = ref(SITUATION);
 let headerSync = false;
 
@@ -213,7 +215,8 @@ function stepLong(group: TaxGroup): string {
 const steps = computed(() => [
     { id: SITUATION, number: 1, label: t('taxPage.identity'), long: t('taxPage.identity') },
     ...groups.value.map((group, index) => ({ id: group.id, number: index + 2, label: stepLabel(group), long: stepLong(group) })),
-    { id: PIECES, number: groups.value.length + 2, label: t('taxPage.checklist.step'), long: t('taxPage.checklist.title') }
+    { id: PIECES, number: groups.value.length + 2, label: t('taxPage.checklist.step'), long: t('taxPage.checklist.title') },
+    { id: PAYMENTS, number: groups.value.length + 3, label: t('taxPage.installments.step'), long: t('taxPage.installments.heading') }
 ]);
 
 /** Barre d'onglets : fondu quand des onglets sont cachés d'un côté, onglet actif toujours à l'écran. */
@@ -1411,7 +1414,11 @@ async function submitCorrection(payload: TaxCorrectPayload) {
             @submit="validateCurrentStep"
         />
 
-        <nav v-if="header.couple && step !== SITUATION && step !== PIECES" class="su-tabs tax-person" :aria-label="t('taxPage.person')">
+        <nav
+            v-if="header.couple && step !== SITUATION && step !== PIECES && step !== PAYMENTS"
+            class="su-tabs tax-person"
+            :aria-label="t('taxPage.person')"
+        >
             <button
                 type="button"
                 class="su-tab"
@@ -1493,6 +1500,8 @@ async function submitCorrection(payload: TaxCorrectPayload) {
             @generate="generateChecklist"
         />
 
+        <TaxInstallmentsSection v-if="step === PAYMENTS" :public-id="declaration.publicId" />
+
         <TaxRemindersSection v-if="reminders.length && (step === SITUATION || step === PIECES) && !declaration.locked" :items="reminders" />
 
         <TaxDocumentCandidates
@@ -1503,7 +1512,7 @@ async function submitCorrection(payload: TaxCorrectPayload) {
         />
 
         <TaxDocumentsSection
-            v-if="step !== PIECES"
+            v-if="step !== PIECES && step !== PAYMENTS"
             v-model:attach-line="attachLine"
             :documents="stepDocuments"
             :lines="stepLines"

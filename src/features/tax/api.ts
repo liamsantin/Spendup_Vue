@@ -6,6 +6,9 @@ import type {
     TaxReturnCreated,
     TaxReturnListResult,
     TaxDocumentCandidate,
+    TaxInstallmentCandidate,
+    TaxInstallmentPayload,
+    TaxInstallments,
     TaxMedical,
     TaxReminder,
     TaxPillar3a,
@@ -123,6 +126,46 @@ export const taxApi = {
 
     pdf(publicId: string) {
         return fetchWrapper.getBlob(`/api/tax-returns/${encodeURIComponent(publicId)}/pdf`);
+    },
+
+    installments(publicId: string) {
+        return fetchWrapper.get(`/api/tax-returns/${encodeURIComponent(publicId)}/installments`) as Promise<TaxInstallments>;
+    },
+
+    installmentCandidates(publicId: string) {
+        return fetchWrapper.get(`/api/tax-returns/${encodeURIComponent(publicId)}/installments/candidates`) as Promise<
+            TaxInstallmentCandidate[]
+        >;
+    },
+
+    createInstallment(publicId: string, body: TaxInstallmentPayload) {
+        return fetchWrapper.post(`/api/tax-returns/${encodeURIComponent(publicId)}/installments`, body) as Promise<TaxInstallments>;
+    },
+
+    updateInstallment(publicId: string, installmentPublicId: string, body: TaxInstallmentPayload) {
+        return fetchWrapper.put(
+            `/api/tax-returns/${encodeURIComponent(publicId)}/installments/${encodeURIComponent(installmentPublicId)}`,
+            body
+        ) as Promise<TaxInstallments>;
+    },
+
+    deleteInstallment(publicId: string, installmentPublicId: string) {
+        return fetchWrapper.delete(
+            `/api/tax-returns/${encodeURIComponent(publicId)}/installments/${encodeURIComponent(installmentPublicId)}`
+        ) as Promise<TaxInstallments>;
+    },
+
+    linkInstallmentTransaction(publicId: string, installmentPublicId: string, transactionPublicId: string) {
+        return fetchWrapper.post(
+            `/api/tax-returns/${encodeURIComponent(publicId)}/installments/${encodeURIComponent(installmentPublicId)}/transactions`,
+            { transactionPublicId }
+        ) as Promise<TaxInstallments>;
+    },
+
+    unlinkInstallmentTransaction(publicId: string, installmentPublicId: string, transactionPublicId: string) {
+        return fetchWrapper.delete(
+            `/api/tax-returns/${encodeURIComponent(publicId)}/installments/${encodeURIComponent(installmentPublicId)}/transactions/${encodeURIComponent(transactionPublicId)}`
+        ) as Promise<TaxInstallments>;
     },
 
     reminders(publicId: string) {

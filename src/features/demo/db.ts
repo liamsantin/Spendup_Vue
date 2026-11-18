@@ -420,6 +420,16 @@ export function createDemoDb(): DemoDb {
                 taxNatureStatus: 'confirmee'
             }),
             transaction({
+                publicId: 'TXN0017',
+                type: 'depense',
+                label: 'Acompte impôts 2026',
+                amount: 650,
+                operationDate: '2026-03-31',
+                accountPublicId: 'ACCCOUR',
+                taxNature: 'taxPayment',
+                taxNatureStatus: 'confirmee'
+            }),
+            transaction({
                 publicId: 'TXN0016',
                 type: 'depense',
                 label: 'Rachat 2e pilier',
