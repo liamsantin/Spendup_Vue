@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { handleDemoRequest } from '@/features/demo/handle';
 import { resetDemoDb } from '@/features/demo/db';
 import { suggestedLinkAmount, type ReimbursementCandidate, type TransactionReimbursements } from '@/features/transactions/reimbursements';
-import type { TaxMedical, TaxReturn } from '@/features/tax/types';
+import type { TaxMedical } from '@/features/tax/types';
 
 describe('remboursements de frais médicaux (démo)', () => {
     beforeEach(() => {
@@ -26,8 +26,7 @@ describe('remboursements de frais médicaux (démo)', () => {
         expect(invoice.reimbursed).toBe(120);
         expect(invoice.net).toBe(60);
 
-        const created = handleDemoRequest('POST', '/api/tax-returns', { year: 2026, canton: 'VD' }) as { declaration: TaxReturn };
-        const medical = handleDemoRequest('GET', `/api/tax-returns/${created.declaration.publicId}/medical`) as TaxMedical;
+        const medical = handleDemoRequest('GET', '/api/tax-returns/TAX2026/medical') as TaxMedical;
         expect(medical).toMatchObject({ gross: 180, reimbursed: 120, net: 60 });
 
         const unlinked = handleDemoRequest('DELETE', '/api/transactions/TXN0014/reimbursements/TXN0012') as TransactionReimbursements;

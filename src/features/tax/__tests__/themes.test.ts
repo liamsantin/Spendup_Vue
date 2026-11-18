@@ -9,6 +9,7 @@ describe('thèmes de déduction en mode démo', () => {
     });
 
     it('totalise les dépenses confirmées de l’année par thème et donne la pièce attendue', () => {
+        handleDemoRequest('DELETE', '/api/tax-returns/TAX2026');
         const created = handleDemoRequest('POST', '/api/tax-returns', { year: 2026, canton: 'VD' }) as { declaration: TaxReturn };
         const themes = handleDemoRequest('GET', `/api/tax-returns/${created.declaration.publicId}/themes`) as TaxThemes;
         expect(themes.items).toHaveLength(7);

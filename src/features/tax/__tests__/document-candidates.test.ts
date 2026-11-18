@@ -9,6 +9,7 @@ describe('pièces des opérations proposées au dossier (démo)', () => {
     });
 
     it('propose la facture du dentiste sur la ligne frais médicaux, puis ne la propose plus une fois rangée', () => {
+        handleDemoRequest('DELETE', '/api/tax-returns/TAX2026');
         const created = handleDemoRequest('POST', '/api/tax-returns', { year: 2026, canton: 'VD' }) as { declaration: TaxReturn };
         const id = created.declaration.publicId;
         const before = handleDemoRequest('GET', `/api/tax-returns/${id}/document-candidates`) as { items: TaxDocumentCandidate[] };

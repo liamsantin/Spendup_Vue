@@ -9,6 +9,7 @@ describe('3e pilier a de l’année en mode démo', () => {
     });
 
     it('additionne les versements de l’année à nature confirmée, sans plafond tant que le profil n’est pas relu', () => {
+        handleDemoRequest('DELETE', '/api/tax-returns/TAX2026');
         const created = handleDemoRequest('POST', '/api/tax-returns', { year: 2026, canton: 'VD' }) as { declaration: TaxReturn };
         const result = handleDemoRequest('GET', `/api/tax-returns/${created.declaration.publicId}/pillar3a`) as TaxPillar3a;
         expect(result.year).toBe(2026);

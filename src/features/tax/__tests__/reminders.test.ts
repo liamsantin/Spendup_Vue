@@ -9,6 +9,7 @@ describe('rappels du dossier en mode démo', () => {
     });
 
     it('signale les natures à confirmer et les pièces manquantes, puis une pièce rangée retire le rappel', () => {
+        handleDemoRequest('DELETE', '/api/tax-returns/TAX2026');
         const created = handleDemoRequest('POST', '/api/tax-returns', { year: 2026, canton: 'VD' }) as { declaration: TaxReturn };
         const id = created.declaration.publicId;
         const before = (handleDemoRequest('GET', `/api/tax-returns/${id}/reminders`) as { items: TaxReminder[] }).items;

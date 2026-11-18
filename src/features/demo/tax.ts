@@ -180,12 +180,12 @@ function amountOf(
     return { code, person, competence, amount, currency: 'CHF', origin };
 }
 
-/** Une déclaration 2025 déjà entamée, pour que l’écran ne s’ouvre pas à vide. */
+/** Une déclaration de l’année en cours déjà entamée (2026, comme les opérations de la démo), pour que l’écran ne s’ouvre pas à vide. */
 export function seedTaxReturns(): DemoTaxReturn[] {
     return [
         {
-            publicId: 'TAX2025',
-            year: 2025,
+            publicId: 'TAX2026',
+            year: 2026,
             canton: 'VD',
             status: 'enCours',
             couple: false,
@@ -207,7 +207,7 @@ export function seedTaxReturns(): DemoTaxReturn[] {
                     kind: 'employment',
                     person: '1',
                     title: 'Atelier Horizon',
-                    detail: 'Certificat de salaire 2025',
+                    detail: 'Certificat de salaire 2026',
                     amount: 74400,
                     secondaryAmount: null
                 }

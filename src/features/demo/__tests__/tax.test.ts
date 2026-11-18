@@ -8,12 +8,12 @@ describe('démo : impôts', () => {
         resetDemoDb();
     });
 
-    it('sert une déclaration 2025 entamée avec ses sous-totaux', () => {
+    it('sert une déclaration 2026 entamée avec ses sous-totaux', () => {
         const list = handleDemoRequest('GET', '/api/tax-returns') as TaxReturnListResult;
-        expect(list.items.map((item) => item.year)).toEqual([2025]);
+        expect(list.items.map((item) => item.year)).toEqual([2026]);
         expect(list.items[0].filledCount).toBeGreaterThan(0);
 
-        const tax = handleDemoRequest('GET', '/api/tax-returns/TAX2025') as TaxReturn;
+        const tax = handleDemoRequest('GET', '/api/tax-returns/TAX2026') as TaxReturn;
         const cantonal = tax.subtotals.find((item) => item.competence === 'cantonal');
         expect(cantonal?.income).toBe(74400);
         expect(cantonal?.deductions).toBe(9058);
@@ -29,7 +29,7 @@ describe('démo : impôts', () => {
     });
 
     it('exige un ressort pour une ligne dédoublée et refuse la personne 2 hors couple', () => {
-        const base = '/api/tax-returns/TAX2025/amounts';
+        const base = '/api/tax-returns/TAX2026/amounts';
         expect(() =>
             handleDemoRequest('PUT', `${base}/deduction.donations`, { person: '1', competence: 'cantonal', amount: 100 })
         ).toThrow();
@@ -48,17 +48,17 @@ describe('démo : impôts', () => {
     });
 
     it('propose des montants depuis le foyer et les inscrit comme acceptés', () => {
-        const list = handleDemoRequest('GET', '/api/tax-returns/TAX2025/suggestions') as TaxSuggestionList;
+        const list = handleDemoRequest('GET', '/api/tax-returns/TAX2026/suggestions') as TaxSuggestionList;
         expect(list.items.some((item) => item.code === 'income.employed')).toBe(false);
         const allowances = list.items.find((item) => item.code === 'income.allowances');
         expect(allowances?.amount).toBe(3864);
         expect(allowances?.source).toBe('recurringIncome');
         expect(allowances?.sources?.map((item) => item.publicId)).toEqual(['RINALL1']);
 
-        const tax = handleDemoRequest('POST', '/api/tax-returns/TAX2025/suggestions/accept', allowances) as TaxReturn;
+        const tax = handleDemoRequest('POST', '/api/tax-returns/TAX2026/suggestions/accept', allowances) as TaxReturn;
         const value = tax.sections.flatMap((s) => s.lines).find((l) => l.code === 'income.allowances')?.values[0];
         expect(value?.origin).toBe('propositionAcceptee');
-        const after = handleDemoRequest('GET', '/api/tax-returns/TAX2025/suggestions') as TaxSuggestionList;
+        const after = handleDemoRequest('GET', '/api/tax-returns/TAX2026/suggestions') as TaxSuggestionList;
         expect(after.items.some((item) => item.code === 'income.allowances')).toBe(false);
     });
 
@@ -69,12 +69,12 @@ describe('démo : impôts', () => {
         ];
         // une case répétée refuse toute la demande : rien n'est inscrit
         expect(() =>
-            handleDemoRequest('POST', '/api/tax-returns/TAX2025/suggestions/accept-many', { items: [...items, items[0]] })
+            handleDemoRequest('POST', '/api/tax-returns/TAX2026/suggestions/accept-many', { items: [...items, items[0]] })
         ).toThrow();
-        const untouched = handleDemoRequest('GET', '/api/tax-returns/TAX2025') as TaxReturn;
+        const untouched = handleDemoRequest('GET', '/api/tax-returns/TAX2026') as TaxReturn;
         expect(untouched.sections.flatMap((s) => s.lines).find((l) => l.code === 'income.securities')?.values).toEqual([]);
 
-        const tax = handleDemoRequest('POST', '/api/tax-returns/TAX2025/suggestions/accept-many', { items }) as TaxReturn;
+        const tax = handleDemoRequest('POST', '/api/tax-returns/TAX2026/suggestions/accept-many', { items }) as TaxReturn;
         const lines = tax.sections.flatMap((s) => s.lines);
         expect(lines.find((l) => l.code === 'income.unemployment')?.values[0]?.origin).toBe('importee');
         expect(lines.find((l) => l.code === 'income.securities')?.values[0]?.origin).toBe('propositionAcceptee');
@@ -82,10 +82,10 @@ describe('démo : impôts', () => {
     });
 
     it('crée l’année suivante sans montant, avec les fiches et les pièces attendues', () => {
-        const created = handleDemoRequest('POST', '/api/tax-returns/TAX2025/next-year', {}) as { declaration: TaxReturn };
+        const created = handleDemoRequest('POST', '/api/tax-returns/TAX2026/next-year', {}) as { declaration: TaxReturn };
         const next = created.declaration;
-        expect(next.year).toBe(2026);
-        expect(next.previousPublicId).toBe('TAX2025');
+        expect(next.year).toBe(2027);
+        expect(next.previousPublicId).toBe('TAX2026');
         expect(next.sections.flatMap((s) => s.lines).every((l) => l.values.length === 0)).toBe(true);
         expect(next.entries.map((e) => [e.kind, e.amount])).toEqual([['employment', null]]);
         const codes = next.checklist.map((item) => item.code);
@@ -106,7 +106,7 @@ describe('démo : impôts', () => {
     });
 
     it('reporte le total d’une fiche immeuble sur deux lignes', () => {
-        handleDemoRequest('POST', '/api/tax-returns/TAX2025/entries', {
+        handleDemoRequest('POST', '/api/tax-returns/TAX2026/entries', {
             kind: 'property',
             person: '1',
             title: 'Appartement Lausanne',
@@ -114,36 +114,36 @@ describe('démo : impôts', () => {
             amount: 640000,
             secondaryAmount: 0
         });
-        const tax = handleDemoRequest('POST', '/api/tax-returns/TAX2025/entries/report', { kind: 'property', person: '1' }) as TaxReturn;
+        const tax = handleDemoRequest('POST', '/api/tax-returns/TAX2026/entries/report', { kind: 'property', person: '1' }) as TaxReturn;
         const lines = tax.sections.flatMap((s) => s.lines);
         expect(lines.find((l) => l.code === 'asset.property')?.values[0].amount).toBe(640000);
         expect(lines.find((l) => l.code === 'income.property')?.values[0].amount).toBe(0);
     });
 
     it('supprime une déclaration et sert un PDF', () => {
-        const pdf = handleDemoRequest('GET', '/api/tax-returns/TAX2025/pdf') as Blob;
+        const pdf = handleDemoRequest('GET', '/api/tax-returns/TAX2026/pdf') as Blob;
         expect(pdf.type).toBe('application/pdf');
         expect(pdf.size).toBeGreaterThan(200);
-        handleDemoRequest('DELETE', '/api/tax-returns/TAX2025');
+        handleDemoRequest('DELETE', '/api/tax-returns/TAX2026');
         expect((handleDemoRequest('GET', '/api/tax-returns') as TaxReturnListResult).totalCount).toBe(0);
     });
 
     it('exporte en CSV (un montant par ligne) et en JSON (dossier complet)', async () => {
-        const csv = handleDemoRequest('GET', '/api/tax-returns/TAX2025/export?format=csv') as Blob;
+        const csv = handleDemoRequest('GET', '/api/tax-returns/TAX2026/export?format=csv') as Blob;
         const text = await csv.text();
         // Blob.text() retire le BOM au d\u00e9codage : on le v\u00e9rifie sur les octets
         expect([...new Uint8Array(await csv.arrayBuffer()).slice(0, 3)]).toEqual([0xef, 0xbb, 0xbf]);
         expect(text.split('\r\n')[0]).toBe('section;code;ligne;personne;ressort;montant;devise;origine');
         expect(text).toContain(';income.employed;');
-        const json = handleDemoRequest('GET', '/api/tax-returns/TAX2025/export?format=json') as Blob;
-        expect(JSON.parse(await json.text()).publicId).toBe('TAX2025');
+        const json = handleDemoRequest('GET', '/api/tax-returns/TAX2026/export?format=json') as Blob;
+        expect(JSON.parse(await json.text()).publicId).toBe('TAX2026');
     });
 
-    it('indique le profil cantonal retenu : aucun pour VD, JU 2025 repris (signalé) pour 2026', () => {
-        const vd = handleDemoRequest('GET', '/api/tax-returns/TAX2025') as TaxReturn;
+    it('indique le profil cantonal retenu : aucun pour VD, JU 2025 repris (signalé) pour 2026 et 2027', () => {
+        const vd = handleDemoRequest('GET', '/api/tax-returns/TAX2026') as TaxReturn;
         expect(vd.profile).toBeNull();
-        expect(vd.federalProfile).toMatchObject({ canton: 'CH', year: 2025, status: 'draft', otherYear: false });
-        const ju = (handleDemoRequest('POST', '/api/tax-returns', { year: 2026, canton: 'JU' }) as { declaration: TaxReturn }).declaration;
+        expect(vd.federalProfile).toMatchObject({ canton: 'CH', year: 2025, status: 'draft', otherYear: true });
+        const ju = (handleDemoRequest('POST', '/api/tax-returns', { year: 2027, canton: 'JU' }) as { declaration: TaxReturn }).declaration;
         expect(ju.profile).toMatchObject({
             canton: 'JU',
             year: 2025,
@@ -155,7 +155,7 @@ describe('démo : impôts', () => {
     });
 
     it('enregistre l’état civil et le mode de taxation, et les reprend l’année suivante', () => {
-        const base = '/api/tax-returns/TAX2025';
+        const base = '/api/tax-returns/TAX2026';
         const header = handleDemoRequest('GET', base) as TaxReturn;
         expect(header.civilStatus).toBeNull();
         expect(header.taxationMode).toBe('ordinaire');
@@ -202,7 +202,7 @@ describe('démo : impôts', () => {
     });
 
     it('verrouille une déclaration déposée et la corrige ligne par ligne, avec un motif', () => {
-        const base = '/api/tax-returns/TAX2025';
+        const base = '/api/tax-returns/TAX2026';
         const header = handleDemoRequest('GET', base) as TaxReturn;
         const body = {
             canton: header.canton,
