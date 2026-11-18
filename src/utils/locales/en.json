@@ -5332,6 +5332,12 @@
         },
         "identity": "Situation",
         "steps": "Return steps",
+        "reminders": {
+            "title": "To do before filing",
+            "unconfirmedNatures": "{count} expense to confirm ({amount}): its category suggests a tax nature, it does not count until you confirm it. | {count} expenses to confirm ({amount}): their category suggests a tax nature, they do not count until you confirm them.",
+            "missingDocument": "Missing document: {label} ({amount} on this line).",
+            "pillar3aYearEnd": "Pillar 3a: {amount} paid this year. Pillar 3a must be paid before December 31."
+        },
         "documentCandidates": {
             "title": "Documents found in your transactions",
             "hint": "Already attached to a transaction or an insurance: one click files them on the right line.",

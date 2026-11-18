@@ -264,6 +264,15 @@ export interface TaxPillar3aLimit {
     sourceUrl: string | null;
 }
 
+/** Un rappel du dossier : `unconfirmedNatures` (count, amount), `missingDocument` (line, label, amount), `pillar3aYearEnd` (amount). */
+export interface TaxReminder {
+    code: 'unconfirmedNatures' | 'missingDocument' | 'pillar3aYearEnd';
+    count: number;
+    amount: number;
+    line: string | null;
+    label: string | null;
+}
+
 /** Pièce déjà jointe à une opération de l'année et utile au dossier (ligne et catégorie suggérées). */
 export interface TaxDocumentCandidate {
     filePublicId: string;

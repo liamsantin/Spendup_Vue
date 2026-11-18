@@ -7,6 +7,7 @@ import type {
     TaxReturnListResult,
     TaxDocumentCandidate,
     TaxMedical,
+    TaxReminder,
     TaxPillar3a,
     TaxThemes,
     TaxSuggestionList,
@@ -122,6 +123,13 @@ export const taxApi = {
 
     pdf(publicId: string) {
         return fetchWrapper.getBlob(`/api/tax-returns/${encodeURIComponent(publicId)}/pdf`);
+    },
+
+    reminders(publicId: string) {
+        return fetchWrapper.get(`/api/tax-returns/${encodeURIComponent(publicId)}/reminders`) as Promise<{
+            year: number;
+            items: TaxReminder[];
+        }>;
     },
 
     documentCandidates(publicId: string) {

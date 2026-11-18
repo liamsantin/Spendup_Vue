@@ -36,6 +36,7 @@ import TaxImportModal, { type TaxImportPayload } from '@/features/tax/components
 import TaxImportReview from '@/features/tax/components/TaxImportReview.vue';
 import TaxPdfZoneModal from '@/features/tax/components/TaxPdfZoneModal.vue';
 import TaxLineRow from '@/features/tax/components/TaxLineRow.vue';
+import TaxRemindersSection from '@/features/tax/components/TaxRemindersSection.vue';
 import TaxDocumentCandidates from '@/features/tax/components/TaxDocumentCandidates.vue';
 import TaxThemesSection from '@/features/tax/components/TaxThemesSection.vue';
 import TaxMedicalSection from '@/features/tax/components/TaxMedicalSection.vue';
@@ -66,6 +67,7 @@ import type {
     TaxMedical,
     TaxPerson,
     TaxPillar3a,
+    TaxReminder,
     TaxReturn,
     TaxReturnListItem,
     TaxStatus,
@@ -114,6 +116,7 @@ const pillar3a = ref<TaxPillar3a | null>(null);
 const medical = ref<TaxMedical | null>(null);
 const themes = ref<TaxThemes | null>(null);
 const documentCandidates = ref<TaxDocumentCandidate[]>([]);
+const reminders = ref<TaxReminder[]>([]);
 const suggestionKey = (item: TaxSuggestion) => `${item.code}|${item.person}|${item.competence}`;
 /** Lecture locale d'un PDF importé, à vérifier (persistée sur l'appareil). */
 const readItems = ref<TaxSuggestion[]>([]);
@@ -641,6 +644,11 @@ async function loadSuggestions(id: string) {
         themes.value = isImportedReturn(id) ? null : await taxApi.themes(id);
     } catch {
         themes.value = null;
+    }
+    try {
+        reminders.value = isImportedReturn(id) ? [] : ((await taxApi.reminders(id)).items ?? []);
+    } catch {
+        reminders.value = [];
     }
     await loadDocumentCandidates(id);
 }
@@ -1477,6 +1485,8 @@ async function submitCorrection(payload: TaxCorrectPayload) {
             @toggle="toggleChecklist"
             @generate="generateChecklist"
         />
+
+        <TaxRemindersSection v-if="reminders.length && (step === SITUATION || step === PIECES) && !declaration.locked" :items="reminders" />
 
         <TaxDocumentCandidates
             v-if="stepDocumentCandidates.length && !declaration.locked"

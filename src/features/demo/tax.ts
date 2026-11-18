@@ -13,6 +13,7 @@ import type {
     TaxLineValue,
     TaxMedical,
     TaxPillar3a,
+    TaxReminder,
     TaxThemes,
     TaxPerson,
     TaxProfileInfo,
@@ -467,6 +468,53 @@ function buildDocumentCandidates(tax: DemoTaxReturn): TaxDocumentCandidate[] {
                 nature: tx.taxNature ?? ''
             });
         }
+    }
+    return items;
+}
+
+/** Rappels de la démo : natures à confirmer et pièces manquantes. Le rappel de fin d'année dépend de l'horloge : il n'est pas rejoué ici. */
+function buildReminders(tax: DemoTaxReturn): TaxReminder[] {
+    const db = demoDb();
+    const items: TaxReminder[] = [];
+    const flatten = (nodes: typeof db.categories): typeof db.categories => nodes.flatMap((node) => [node, ...flatten(node.children ?? [])]);
+    const categories = flatten(db.categories);
+    const natureOfCategory = (id: string | null) => categories.find((category) => category.publicId === id)?.taxNature ?? null;
+    const pending = db.transactions.filter((tx) => {
+        const nature = natureOfCategory(tx.categoryPublicId);
+        return (
+            tx.type === 'depense' &&
+            tx.operationDate.startsWith(`${tax.year}-`) &&
+            !tx.taxNature &&
+            !tx.taxNatureStatus &&
+            Boolean(nature && LINE_BY_NATURE[nature])
+        );
+    });
+    if (pending.length > 0) {
+        items.push({
+            code: 'unconfirmedNatures',
+            count: pending.length,
+            amount: pending.reduce((sum, tx) => sum + (tx.amount ?? 0), 0),
+            line: null,
+            label: null
+        });
+    }
+
+    const totals = new Map<string, { amount: number; label: string }>();
+    for (const theme of buildThemes(tax).items) {
+        if (theme.total > 0 && theme.documentExpected) {
+            const current = totals.get(theme.line);
+            totals.set(theme.line, { amount: (current?.amount ?? 0) + theme.total, label: theme.documentExpected });
+        }
+    }
+    const medical = buildMedical(tax);
+    if (medical.gross > 0) {
+        totals.set('deduction.healthGross', { amount: medical.gross, label: "Justificatifs des frais de maladie et d'accident" });
+    }
+    const pillar = buildPillar3a(tax);
+    if (pillar.paid > 0) totals.set('deduction.pillar3a', { amount: pillar.paid, label: 'Attestation du 3e pilier a' });
+    const filed = new Set(tax.documents.map((doc) => doc.lineCode).filter(Boolean));
+    for (const [line, info] of [...totals.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+        if (!filed.has(line)) items.push({ code: 'missingDocument', count: 0, amount: info.amount, line, label: info.label });
     }
     return items;
 }
@@ -1204,6 +1252,8 @@ export function routeTax(method: string, path: string, body: unknown, query?: UR
         return ok(toResponse(tax));
     }
 
+    const reminders = match(path, '/api/tax-returns/:id/reminders');
+    if (reminders && method === 'GET') return ok({ year: findReturn(reminders.id).year, items: buildReminders(findReturn(reminders.id)) });
     const candidates = match(path, '/api/tax-returns/:id/document-candidates');
     if (candidates && method === 'GET') return ok({ items: buildDocumentCandidates(findReturn(candidates.id)) });
     const themes = match(path, '/api/tax-returns/:id/themes');

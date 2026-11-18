@@ -61,6 +61,8 @@ function build(tx: Transaction): TransactionReimbursements {
 function candidates(reimbursement: Transaction): { items: ReimbursementCandidate[] } {
     const db = demoDb();
     if (reimbursement.type !== 'revenu') return { items: [] };
+    const flatten = (nodes: typeof db.categories): typeof db.categories => nodes.flatMap((node) => [node, ...flatten(node.children ?? [])]);
+    const categories = flatten(db.categories);
     const items = db.transactions
         .filter(
             (tx) =>
@@ -68,7 +70,7 @@ function candidates(reimbursement: Transaction): { items: ReimbursementCandidate
                 tx.taxNatureStatus !== 'ecartee' &&
                 (tx.taxNature === 'medicalExpense' ||
                     (!tx.taxNature &&
-                        db.categories.find((category) => category.publicId === tx.categoryPublicId)?.taxNature === 'medicalExpense')) &&
+                        categories.find((category) => category.publicId === tx.categoryPublicId)?.taxNature === 'medicalExpense')) &&
                 tx.operationDate <= reimbursement.operationDate
         )
         .map((tx) => {

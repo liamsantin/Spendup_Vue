@@ -5332,6 +5332,12 @@
         },
         "identity": "Situation",
         "steps": "Étapes de la déclaration",
+        "reminders": {
+            "title": "À faire avant de déclarer",
+            "unconfirmedNatures": "{count} dépense à confirmer ({amount}) : leur catégorie suggère une nature fiscale, elle ne compte pas tant que vous ne l'avez pas confirmée. | {count} dépenses à confirmer ({amount}) : leur catégorie suggère une nature fiscale, elles ne comptent pas tant que vous ne les avez pas confirmées.",
+            "missingDocument": "Pièce manquante : {label} ({amount} déclarés sur cette ligne).",
+            "pillar3aYearEnd": "3e pilier a : {amount} versés cette année. Le 3a se verse avant le 31 décembre."
+        },
         "documentCandidates": {
             "title": "Pièces trouvées dans vos opérations",
             "hint": "Déjà jointes à une transaction ou à une assurance : un geste suffit pour les ranger sur la bonne ligne.",
