@@ -2,6 +2,8 @@ import type { ComposerTranslation } from 'vue-i18n';
 import { loadReadablePdf } from '@/features/files/content';
 import { taxApi } from '@/features/tax/api';
 import type { TaxReturn } from '@/features/tax/types';
+import { isCipher } from '@/features/vault/crypto';
+import { useVaultStore } from '@/features/vault/stores/vault-store';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { buildZip, type ZipEntry } from '@/utils/helpers/zip-helpers';
 
@@ -75,6 +77,21 @@ export function bundleSummary(tax: TaxReturn, plan: BundleItem[], skipped: strin
     return out.join('\r\n') + '\r\n';
 }
 
+/**
+ * Noms lisibles des pièces : l'API renvoie le nom d'un fichier chiffré (`enc:v1:`) quand le Coffre le couvre ;
+ * on le déchiffre sur l'appareil, sinon l'archive aurait des entrées illisibles.
+ */
+export async function withReadableNames(tax: TaxReturn): Promise<TaxReturn> {
+    const documents = await Promise.all(
+        tax.documents.map(async (doc) => {
+            if (!isCipher(doc.fileName)) return doc;
+            const result = await useVaultStore().decrypt('file', 'name_original', doc.filePublicId, doc.fileName);
+            return { ...doc, fileName: result.ok ? result.value : 'document.pdf' };
+        })
+    );
+    return { ...tax, documents };
+}
+
 export interface TaxBundle {
     blob: Blob;
     fileName: string;
@@ -84,7 +101,7 @@ export interface TaxBundle {
 
 /** Télécharge les pièces (déchiffrées sur l'appareil), le PDF de travail et le JSON, puis assemble l'archive. */
 export async function buildTaxBundle(tax: TaxReturn, t: ComposerTranslation, now: Date = new Date()): Promise<TaxBundle> {
-    const plan = bundlePlan(tax);
+    const plan = bundlePlan(await withReadableNames(tax));
     const entries: ZipEntry[] = [];
     const skipped: string[] = [];
     for (const item of plan) {

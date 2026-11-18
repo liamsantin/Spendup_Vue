@@ -3,6 +3,7 @@
 defineOptions({ name: 'TaxDocumentCandidates' });
 
 import { useI18n } from 'vue-i18n';
+import { displayFileName } from '@/features/files/file-name-display';
 import type { TaxDocumentCandidate } from '@/features/tax/types';
 
 defineProps<{
@@ -22,7 +23,7 @@ const { t } = useI18n();
         <h2 class="tax-form__legend">{{ t('taxPage.documentCandidates.title') }}</h2>
         <p class="tax-muted">{{ t('taxPage.documentCandidates.hint') }}</p>
         <article v-for="item in items" :key="item.filePublicId" class="tax-fiche">
-            <p class="tax-fiche__title">{{ item.fileName }}</p>
+            <p class="tax-fiche__title">{{ displayFileName(item.filePublicId, item.fileName, t('vault.unreadable')) }}</p>
             <p class="tax-muted">{{ t('taxPage.documentCandidates.from', { label: item.sourceLabel }) }}</p>
             <button type="button" class="su-btn su-btn--ink su-btn--sm" :disabled="saving" @click="emit('file', item)">
                 {{ t('taxPage.documentCandidates.file') }}

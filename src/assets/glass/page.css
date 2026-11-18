@@ -70,7 +70,9 @@
     align-items: flex-end;
     justify-content: flex-end;
     gap: 8px;
-    flex: none;
+    /* peut rétrécir pour passer à la ligne sur mobile ; ne change rien tant que tout tient */
+    flex: 0 1 auto;
+    max-width: 100%;
 }
 
 /* ── onglets texte : actif = noir 700 souligné d'un trait 2 px ── */

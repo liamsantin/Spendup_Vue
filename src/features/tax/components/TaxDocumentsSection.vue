@@ -5,6 +5,7 @@ defineOptions({ name: 'TaxDocumentsSection' });
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
+import { displayFileName } from '@/features/files/file-name-display';
 import type { FileDto } from '@/features/files/types';
 import type { TaxDocumentLink, TaxLine } from '@/features/tax/types';
 import AttachmentActions from '@/features/transactions/components/forms/AttachmentActions.vue';
@@ -42,7 +43,7 @@ const lineItems = computed(() => props.lines.map((line) => ({ title: line.label,
     <section class="tax-form">
         <h2 class="tax-form__legend">{{ t('taxPage.documentsTitle') }}</h2>
         <article v-for="doc in documents" :key="doc.publicId" class="tax-fiche">
-            <p class="tax-fiche__title">{{ doc.fileName }}</p>
+            <p class="tax-fiche__title">{{ displayFileName(doc.filePublicId, doc.fileName, t('vault.unreadable')) }}</p>
             <button type="button" class="su-btn" :disabled="saving" @click="emit('detach', doc.publicId)">
                 {{ t('taxPage.fiches.remove') }}
             </button>

@@ -4,6 +4,8 @@ import type { TaxReturn } from '@/features/tax/types';
 
 const loadReadablePdf = vi.fn();
 vi.mock('@/features/files/content', () => ({ loadReadablePdf: (id: string) => loadReadablePdf(id) }));
+const decrypt = vi.fn();
+vi.mock('@/features/vault/stores/vault-store', () => ({ useVaultStore: () => ({ decrypt }) }));
 vi.mock('@/features/tax/api', () => ({
     taxApi: {
         pdf: vi.fn(async () => new Blob(['%PDF travail'])),
@@ -11,7 +13,7 @@ vi.mock('@/features/tax/api', () => ({
     }
 }));
 
-const { bundlePlan, bundleSummary, buildTaxBundle, safeFileName } = await import('@/features/tax/bundle');
+const { bundlePlan, bundleSummary, buildTaxBundle, safeFileName, withReadableNames } = await import('@/features/tax/bundle');
 
 /** Traduction de test : la clé, suivie des paramètres. */
 const t = ((key: string, params?: Record<string, unknown>) =>
@@ -98,5 +100,20 @@ describe('dossier de justificatifs', () => {
         expect(text).toContain('declaration-2025-JU.json');
         expect(text).toContain('%PDF F3');
         expect(text).not.toContain('%PDF F1');
+    });
+});
+
+describe('withReadableNames', () => {
+    it('déchiffre les noms de fichiers du Coffre et laisse les autres', async () => {
+        decrypt.mockImplementation(async (_t: string, _c: string, id: string) =>
+            id === 'F3' ? { ok: true, value: 'attestation 3a.pdf' } : { ok: false, reason: 'unreadable' }
+        );
+        const source = tax();
+        source.documents[0].fileName = 'enc:v1:AAAA';
+        source.documents[1].fileName = 'enc:v1:BBBB';
+        const readable = await withReadableNames(source);
+        expect(readable.documents.map((d) => d.fileName)).toEqual(['attestation 3a.pdf', 'document.pdf', 'déclaration 2024.pdf']);
+        expect(decrypt).toHaveBeenCalledWith('file', 'name_original', 'F3', 'enc:v1:AAAA');
+        expect(decrypt).toHaveBeenCalledTimes(2);
     });
 });
