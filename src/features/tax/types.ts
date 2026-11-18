@@ -264,6 +264,30 @@ export interface TaxPillar3aLimit {
     sourceUrl: string | null;
 }
 
+/** Une dépense d'un thème fiscal (nature confirmée). */
+export interface TaxThemeTransaction {
+    transactionPublicId: string;
+    label: string;
+    date: string;
+    amount: number;
+}
+
+/** Un thème : sa nature, la ligne qu'il alimente, le total de l'année et la pièce attendue. */
+export interface TaxTheme {
+    nature: string;
+    line: string;
+    total: number;
+    transactions: TaxThemeTransaction[];
+    documentExpected: string | null;
+}
+
+/** Dons, garde, pensions, formation, transports et frais professionnels de l'année. */
+export interface TaxThemes {
+    year: number;
+    currency: string;
+    items: TaxTheme[];
+}
+
 /** Une facture médicale de l'année et ce qui en a été remboursé. */
 export interface TaxMedicalInvoice {
     transactionPublicId: string;

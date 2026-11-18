@@ -5332,6 +5332,22 @@
         },
         "identity": "Situation",
         "steps": "Return steps",
+        "themes": {
+            "title": "Donations, childcare, training, commuting {year}",
+            "hint": "For information only: canton limits are not applied. Only natures confirmed on a transaction count.",
+            "total": "{amount}",
+            "empty": "No confirmed expense for this theme.",
+            "document": "Expected document: {label}",
+            "natures": {
+                "donation": "Donations",
+                "politicalContribution": "Political parties",
+                "childcare": "Childcare",
+                "alimonyPaid": "Alimony paid",
+                "trainingExpense": "Training",
+                "commuting": "Commuting",
+                "jobExpense": "Other job expenses"
+            }
+        },
         "medical": {
             "title": "Medical expenses {year}",
             "hint": "For information only: the deduction depends on your canton's threshold.",

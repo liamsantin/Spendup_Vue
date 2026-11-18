@@ -5332,6 +5332,22 @@
         },
         "identity": "Situation",
         "steps": "Étapes de la déclaration",
+        "themes": {
+            "title": "Dons, garde, formation, transports {year}",
+            "hint": "Information seulement : les plafonds du canton ne sont pas appliqués. Seules les natures confirmées sur une transaction comptent.",
+            "total": "{amount}",
+            "empty": "Aucune dépense confirmée pour ce thème.",
+            "document": "Pièce attendue : {label}",
+            "natures": {
+                "donation": "Dons",
+                "politicalContribution": "Partis politiques",
+                "childcare": "Frais de garde",
+                "alimonyPaid": "Pensions versées",
+                "trainingExpense": "Formation",
+                "commuting": "Trajet domicile-travail",
+                "jobExpense": "Autres frais professionnels"
+            }
+        },
         "medical": {
             "title": "Frais médicaux {year}",
             "hint": "Information seulement : la déduction dépend du seuil de votre canton.",

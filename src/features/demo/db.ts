@@ -418,6 +418,16 @@ export function createDemoDb(): DemoDb {
                 taxNatureStatus: 'confirmee'
             }),
             transaction({
+                publicId: 'TXN0015',
+                type: 'depense',
+                label: 'Don Croix-Rouge',
+                amount: 100,
+                operationDate: '2026-06-12',
+                accountPublicId: 'ACCCOUR',
+                taxNature: 'donation',
+                taxNatureStatus: 'confirmee'
+            }),
+            transaction({
                 publicId: 'TXN0014',
                 type: 'revenu',
                 label: 'Remboursement CSS',

@@ -36,6 +36,7 @@ import TaxImportModal, { type TaxImportPayload } from '@/features/tax/components
 import TaxImportReview from '@/features/tax/components/TaxImportReview.vue';
 import TaxPdfZoneModal from '@/features/tax/components/TaxPdfZoneModal.vue';
 import TaxLineRow from '@/features/tax/components/TaxLineRow.vue';
+import TaxThemesSection from '@/features/tax/components/TaxThemesSection.vue';
 import TaxMedicalSection from '@/features/tax/components/TaxMedicalSection.vue';
 import TaxPillar3aSection from '@/features/tax/components/TaxPillar3aSection.vue';
 import TaxReadProposals from '@/features/tax/components/TaxReadProposals.vue';
@@ -66,7 +67,8 @@ import type {
     TaxReturn,
     TaxReturnListItem,
     TaxStatus,
-    TaxSuggestion
+    TaxSuggestion,
+    TaxThemes
 } from '@/features/tax/types';
 import { isQuotaExceededMessage, wouldExceedQuota } from '@/features/files/format';
 import { useFilesStore } from '@/features/files/stores/files-store';
@@ -108,6 +110,7 @@ const drafts = ref<Record<string, string>>({});
 const suggestions = ref<TaxSuggestion[]>([]);
 const pillar3a = ref<TaxPillar3a | null>(null);
 const medical = ref<TaxMedical | null>(null);
+const themes = ref<TaxThemes | null>(null);
 const suggestionKey = (item: TaxSuggestion) => `${item.code}|${item.person}|${item.competence}`;
 /** Lecture locale d'un PDF importé, à vérifier (persistée sur l'appareil). */
 const readItems = ref<TaxSuggestion[]>([]);
@@ -607,6 +610,11 @@ async function loadSuggestions(id: string) {
         medical.value = isImportedReturn(id) ? null : await taxApi.medical(id);
     } catch {
         medical.value = null;
+    }
+    try {
+        themes.value = isImportedReturn(id) ? null : await taxApi.themes(id);
+    } catch {
+        themes.value = null;
     }
 }
 
@@ -1418,6 +1426,12 @@ async function submitCorrection(payload: TaxCorrectPayload) {
         />
 
         <TaxPillar3aSection v-if="pillar3a && currentGroup?.lines.some((line) => line.code === 'deduction.pillar3a')" :data="pillar3a" />
+
+        <TaxThemesSection
+            v-if="themes && currentGroup?.lines.some((line) => themes?.items.some((item) => item.line === line.code))"
+            :data="themes"
+            :lines="currentGroup?.lines.map((line) => line.code) ?? []"
+        />
 
         <TaxMedicalSection v-if="medical && currentGroup?.lines.some((line) => line.code === 'deduction.healthGross')" :data="medical" />
 

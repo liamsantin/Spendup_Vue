@@ -12,6 +12,7 @@ import type {
     TaxLineValue,
     TaxMedical,
     TaxPillar3a,
+    TaxThemes,
     TaxPerson,
     TaxProfileInfo,
     TaxReturn,
@@ -411,6 +412,51 @@ function suggestionSource(code: string): TaxSuggestionSource {
     if (code === 'liability.debts') return 'liability';
     if (code === 'asset.property' || code === 'asset.crypto') return 'asset';
     return 'recurringIncome';
+}
+
+const THEME_LINES: Record<string, { line: string; document: string | null }> = {
+    donation: { line: 'deduction.donations', document: 'Attestations de dons' },
+    politicalContribution: { line: 'deduction.politicalContributions', document: 'Attestation des cotisations ou dons au parti' },
+    childcare: { line: 'deduction.childcare', document: 'Justificatifs des frais de garde' },
+    alimonyPaid: { line: 'deduction.alimonyPaid', document: 'Jugement ou convention et preuves des pensions versées' },
+    trainingExpense: { line: 'deduction.education', document: 'Justificatifs des frais de formation' },
+    commuting: {
+        line: 'deduction.jobExpenses',
+        document: 'Justificatifs des frais professionnels (abonnement de transport, repas, matériel)'
+    },
+    jobExpense: {
+        line: 'deduction.jobExpenses',
+        document: 'Justificatifs des frais professionnels (abonnement de transport, repas, matériel)'
+    }
+};
+
+/** Thèmes de déduction de la démo : dépenses de l'année dont la nature est confirmée. */
+function buildThemes(tax: DemoTaxReturn): TaxThemes {
+    const rows = demoDb().transactions.filter(
+        (item) => item.type === 'depense' && item.taxNatureStatus === 'confirmee' && item.operationDate.startsWith(`${tax.year}-`)
+    );
+    return {
+        year: tax.year,
+        currency: 'CHF',
+        items: Object.entries(THEME_LINES).map(([nature, info]) => {
+            const transactions = rows
+                .filter((item) => item.taxNature === nature)
+                .map((item) => ({
+                    transactionPublicId: item.publicId,
+                    label: item.label,
+                    date: item.operationDate,
+                    amount: item.amount ?? 0
+                }))
+                .sort((a, b) => a.date.localeCompare(b.date));
+            return {
+                nature,
+                line: info.line,
+                total: transactions.reduce((sum, item) => sum + item.amount, 0),
+                transactions,
+                documentExpected: info.document
+            };
+        })
+    };
 }
 
 /** « Frais médicaux de l'année » de la démo : factures à nature confirmée, remboursements reliés ou à nature confirmée. */
@@ -1096,6 +1142,8 @@ export function routeTax(method: string, path: string, body: unknown, query?: UR
         return ok(toResponse(tax));
     }
 
+    const themes = match(path, '/api/tax-returns/:id/themes');
+    if (themes && method === 'GET') return ok(buildThemes(findReturn(themes.id)));
     const medical = match(path, '/api/tax-returns/:id/medical');
     if (medical && method === 'GET') return ok(buildMedical(findReturn(medical.id)));
     const pillar3a = match(path, '/api/tax-returns/:id/pillar3a');
