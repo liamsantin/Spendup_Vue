@@ -36,6 +36,7 @@ import TaxImportModal, { type TaxImportPayload } from '@/features/tax/components
 import TaxImportReview from '@/features/tax/components/TaxImportReview.vue';
 import TaxPdfZoneModal from '@/features/tax/components/TaxPdfZoneModal.vue';
 import TaxLineRow from '@/features/tax/components/TaxLineRow.vue';
+import TaxMedicalSection from '@/features/tax/components/TaxMedicalSection.vue';
 import TaxPillar3aSection from '@/features/tax/components/TaxPillar3aSection.vue';
 import TaxReadProposals from '@/features/tax/components/TaxReadProposals.vue';
 import TaxReturnCard from '@/features/tax/components/TaxReturnCard.vue';
@@ -59,6 +60,7 @@ import type {
     TaxCorrection,
     TaxEntryKind,
     TaxLine,
+    TaxMedical,
     TaxPerson,
     TaxPillar3a,
     TaxReturn,
@@ -105,6 +107,7 @@ const person = ref<TaxPerson>('1');
 const drafts = ref<Record<string, string>>({});
 const suggestions = ref<TaxSuggestion[]>([]);
 const pillar3a = ref<TaxPillar3a | null>(null);
+const medical = ref<TaxMedical | null>(null);
 const suggestionKey = (item: TaxSuggestion) => `${item.code}|${item.person}|${item.competence}`;
 /** Lecture locale d'un PDF importé, à vérifier (persistée sur l'appareil). */
 const readItems = ref<TaxSuggestion[]>([]);
@@ -599,6 +602,11 @@ async function loadSuggestions(id: string) {
         pillar3a.value = isImportedReturn(id) ? null : await taxApi.pillar3a(id);
     } catch {
         pillar3a.value = null;
+    }
+    try {
+        medical.value = isImportedReturn(id) ? null : await taxApi.medical(id);
+    } catch {
+        medical.value = null;
     }
 }
 
@@ -1410,6 +1418,8 @@ async function submitCorrection(payload: TaxCorrectPayload) {
         />
 
         <TaxPillar3aSection v-if="pillar3a && currentGroup?.lines.some((line) => line.code === 'deduction.pillar3a')" :data="pillar3a" />
+
+        <TaxMedicalSection v-if="medical && currentGroup?.lines.some((line) => line.code === 'deduction.healthGross')" :data="medical" />
 
         <TaxSuggestionList
             v-if="stepSuggestions.length && !declaration.locked"

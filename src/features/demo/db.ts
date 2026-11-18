@@ -92,6 +92,8 @@ export type DemoDb = {
     realEstateMaintenance: Record<string, RealEstateMaintenance[]>;
     notifications: AppNotification[];
     taxReturns: DemoTaxReturn[];
+    /** Liens remboursement → facture (part reliée). */
+    reimbursementLinks: { reimbursementPublicId: string; invoicePublicId: string; amount: number }[];
 };
 
 const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -414,6 +416,14 @@ export function createDemoDb(): DemoDb {
                 categoryPublicId: 'CAT3PIL',
                 taxNature: 'pillar3aContribution',
                 taxNatureStatus: 'confirmee'
+            }),
+            transaction({
+                publicId: 'TXN0014',
+                type: 'revenu',
+                label: 'Remboursement CSS',
+                amount: 120,
+                operationDate: '2026-11-05',
+                accountPublicId: 'ACCCOUR'
             })
         ],
         budgets: [],
@@ -812,6 +822,7 @@ export function createDemoDb(): DemoDb {
         files: [],
         fileBlobs: {},
         taxReturns: seedTaxReturns(),
+        reimbursementLinks: [],
         aliases: {
             TIERMIG: [
                 {

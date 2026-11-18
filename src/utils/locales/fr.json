@@ -2082,6 +2082,20 @@
         }
     },
     "transactionsPage": {
+        "reimbursements": {
+            "title": "Remboursements",
+            "invoiceSummary": "Remboursé : {reimbursed} · À charge : {net}",
+            "noneForInvoice": "Aucun remboursement relié.",
+            "reimbursementSummary": "Relié : {allocated} · Reste à relier : {remaining}",
+            "candidates": "Factures probables :",
+            "link": "Relier",
+            "unlink": "Délier",
+            "failed": "Action impossible pour le moment.",
+            "reasons": {
+                "sameTier": "même bénéficiaire",
+                "sameAmount": "même montant"
+            }
+        },
         "taxNature": {
             "title": "Nature fiscale",
             "noneHint": "Aucune nature. Facultatif : sert à préparer votre déclaration d’impôts.",
@@ -5318,6 +5332,14 @@
         },
         "identity": "Situation",
         "steps": "Étapes de la déclaration",
+        "medical": {
+            "title": "Frais médicaux {year}",
+            "hint": "Information seulement : la déduction dépend du seuil de votre canton.",
+            "summary": "Brut : {gross} · Remboursé : {reimbursed} · À charge : {net}",
+            "reimbursedLine": "remboursé {amount}",
+            "none": "Aucune facture médicale confirmée cette année (nature « frais médicaux » à confirmer sur la transaction).",
+            "unlinked": "{count} remboursement(s) non relié(s) à une facture sont comptés dans le remboursé."
+        },
         "pillar3a": {
             "title": "3e pilier a de l'année {year}",
             "hint": "Information seulement : ce n'est pas une déduction calculée.",

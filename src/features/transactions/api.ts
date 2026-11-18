@@ -1,4 +1,5 @@
 import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
+import type { LinkReimbursementPayload, ReimbursementCandidate, TransactionReimbursements } from '@/features/transactions/reimbursements';
 import type { SetTransactionTaxNaturePayload, TransactionTaxNatureResult } from '@/features/transactions/tax-nature';
 import {
     TRANSACTION_PAGE_SIZE_DEFAULT,
@@ -69,6 +70,29 @@ export const transactionsApi = {
             `/api/transactions/${encodeURIComponent(txPublicId)}/tax-nature`,
             body
         ) as Promise<TransactionTaxNatureResult>;
+    },
+
+    reimbursements(txPublicId: string) {
+        return fetchWrapper.get(`/api/transactions/${encodeURIComponent(txPublicId)}/reimbursements`) as Promise<TransactionReimbursements>;
+    },
+
+    reimbursementCandidates(txPublicId: string) {
+        return fetchWrapper.get(`/api/transactions/${encodeURIComponent(txPublicId)}/reimbursement-candidates`) as Promise<{
+            items: ReimbursementCandidate[];
+        }>;
+    },
+
+    linkReimbursement(txPublicId: string, body: LinkReimbursementPayload) {
+        return fetchWrapper.post(
+            `/api/transactions/${encodeURIComponent(txPublicId)}/reimbursements`,
+            body
+        ) as Promise<TransactionReimbursements>;
+    },
+
+    unlinkReimbursement(txPublicId: string, invoicePublicId: string) {
+        return fetchWrapper.delete(
+            `/api/transactions/${encodeURIComponent(txPublicId)}/reimbursements/${encodeURIComponent(invoicePublicId)}`
+        ) as Promise<TransactionReimbursements>;
     },
 
     attachFile(txPublicId: string, filePublicId: string) {

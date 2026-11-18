@@ -7,6 +7,7 @@ import type { TaxSuggestion } from '@/features/tax/types';
 
 /** Page des comptes : n'a pas de fiche à part, un compte s'ouvre en avant par `?account=<publicId>`. */
 const ACCOUNTS_PAGE = '/app/finances/comptes';
+const TRANSACTIONS_PAGE = '/app/finances/transactions';
 
 function accountFocusPath(publicId: string): string {
     return `${ACCOUNTS_PAGE}?account=${encodeURIComponent(publicId)}`;
@@ -33,6 +34,7 @@ export function taxPublicIdFromPath(path: string): string | null {
 export function taxSuggestionPath(item: Pick<TaxSuggestion, 'code' | 'source'>): string | null {
     if (item.source === 'recurringIncome') return RECURRENCES_PATHS.revenus;
     if (item.source === 'recurringExpense') return RECURRENCES_PATHS.charges;
+    if (item.source === 'transaction') return TRANSACTIONS_PAGE;
     if (item.source === 'liability') return DEBTS_PATHS.liabilities;
     if (item.source === 'asset') return item.code === 'asset.property' ? REAL_ESTATE_PATHS.list : ASSETS_PATHS.list;
     if (item.source === 'account') return ACCOUNTS_PAGE;

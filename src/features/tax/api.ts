@@ -5,6 +5,7 @@ import type {
     TaxReturn,
     TaxReturnCreated,
     TaxReturnListResult,
+    TaxMedical,
     TaxPillar3a,
     TaxSuggestionList,
     UpdateTaxReturnPayload,
@@ -119,6 +120,10 @@ export const taxApi = {
 
     pdf(publicId: string) {
         return fetchWrapper.getBlob(`/api/tax-returns/${encodeURIComponent(publicId)}/pdf`);
+    },
+
+    medical(publicId: string) {
+        return fetchWrapper.get(`/api/tax-returns/${encodeURIComponent(publicId)}/medical`) as Promise<TaxMedical>;
     },
 
     pillar3a(publicId: string) {

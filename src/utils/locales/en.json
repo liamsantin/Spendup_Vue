@@ -2082,6 +2082,20 @@
         }
     },
     "transactionsPage": {
+        "reimbursements": {
+            "title": "Reimbursements",
+            "invoiceSummary": "Reimbursed: {reimbursed} · Out of pocket: {net}",
+            "noneForInvoice": "No reimbursement linked.",
+            "reimbursementSummary": "Linked: {allocated} · Left to link: {remaining}",
+            "candidates": "Likely invoices:",
+            "link": "Link",
+            "unlink": "Unlink",
+            "failed": "Action not possible right now.",
+            "reasons": {
+                "sameTier": "same payee",
+                "sameAmount": "same amount"
+            }
+        },
         "taxNature": {
             "title": "Tax nature",
             "noneHint": "No nature. Optional: used to prepare your tax return.",
@@ -5318,6 +5332,14 @@
         },
         "identity": "Situation",
         "steps": "Return steps",
+        "medical": {
+            "title": "Medical expenses {year}",
+            "hint": "For information only: the deduction depends on your canton's threshold.",
+            "summary": "Gross: {gross} · Reimbursed: {reimbursed} · Out of pocket: {net}",
+            "reimbursedLine": "reimbursed {amount}",
+            "none": "No confirmed medical invoice this year (confirm the “medical expenses” nature on the transaction).",
+            "unlinked": "{count} reimbursement(s) not linked to an invoice are counted as reimbursed."
+        },
         "pillar3a": {
             "title": "Pillar 3a for {year}",
             "hint": "For information only: this is not a calculated deduction.",

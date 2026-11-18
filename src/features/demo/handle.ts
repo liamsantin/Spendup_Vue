@@ -20,6 +20,7 @@ import type { UserSettings } from '@/features/user-settings/types';
 import { DEMO_USER_PUBLIC_ID } from '@/features/demo/user';
 import { mortgageRemainingFor, routeWealth } from '@/features/demo/wealth';
 import { routeTax } from '@/features/demo/tax';
+import { routeReimbursements } from '@/features/demo/reimbursements';
 import type { UpdateFileRequest } from '@/features/files/types';
 import {
     demoFileContent,
@@ -172,6 +173,8 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
 
     if (path === '/api/transactions' && method === 'GET') return ok(listTransactions(query));
     if (path === '/api/transactions' && method === 'POST') return ok(createTransaction(body as CreateTransactionPayload));
+    const reimbursements = routeReimbursements(method, path, body);
+    if (reimbursements) return reimbursements;
     const txNatureId = match(path, '/api/transactions/:id/tax-nature');
     if (txNatureId && method === 'PUT') return ok(setTransactionTaxNature(txNatureId.id, body as SetTransactionTaxNaturePayload));
     const txId = match(path, '/api/transactions/:id');

@@ -9,8 +9,9 @@ import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
+import TransactionReimbursements from '@/features/transactions/components/forms/TransactionReimbursements.vue';
 import TransactionTaxNature from '@/features/transactions/components/forms/TransactionTaxNature.vue';
-import type { SetTransactionTaxNaturePayload } from '@/features/transactions/tax-nature';
+import { resolveTaxNature, type SetTransactionTaxNaturePayload } from '@/features/transactions/tax-nature';
 import { categorySelectItems } from '@/features/categories/payload';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
@@ -663,6 +664,13 @@ const liveTransaction = computed(() => {
 /** Nature par défaut de la catégorie choisie dans le formulaire (suggestion, jamais appliquée seule). */
 const categoryTaxNature = computed(() => categoriesStore.findByPublicId(form.categoryPublicId ?? '')?.taxNature ?? null);
 
+/** Nature fiscale effective de la transaction (confirmée, sinon suggérée par la catégorie). */
+const effectiveTaxNature = computed(() => {
+    const current = liveTransaction.value;
+    if (!current) return null;
+    return resolveTaxNature({ taxNature: current.taxNature, taxNatureStatus: current.taxNatureStatus }, categoryTaxNature.value).code;
+});
+
 async function onTaxNatureChange(payload: SetTransactionTaxNaturePayload) {
     localError.message = null;
     if (!editTransaction.value || !canEditFiles.value) return;
@@ -757,6 +765,13 @@ function onOpenAttachment(file: TransactionFile) {
                     :transaction-type="form.type"
                     :disabled="store.acting || !canEditFiles"
                     @change="onTaxNatureChange"
+                />
+                <TransactionReimbursements
+                    v-if="isEdit && liveTransaction && (form.type === 'depense' || form.type === 'revenu')"
+                    :public-id="liveTransaction.publicId"
+                    :transaction-type="form.type"
+                    :effective-nature="effectiveTaxNature"
+                    :disabled="store.acting || !canEditFiles"
                 />
                 <button
                     v-if="showUnlinkFromBudget"

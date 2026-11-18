@@ -15,7 +15,7 @@ describe('handleDemoRequest', () => {
             items: { label: string }[];
             totalCount: number;
         };
-        expect(november.totalCount).toBe(7);
+        expect(november.totalCount).toBe(8);
         expect(november.items.some((item) => item.label === 'Salaire octobre')).toBe(false);
     });
 

@@ -199,7 +199,7 @@ export interface TaxReturnListResult {
 }
 
 /** D'où vient une proposition : revenu récurrent, dette, actif, compte (solde au 31.12), ou relevé importé (sans page à rouvrir). */
-export type TaxSuggestionSource = 'recurringIncome' | 'recurringExpense' | 'liability' | 'asset' | 'account' | 'statement';
+export type TaxSuggestionSource = 'recurringIncome' | 'recurringExpense' | 'transaction' | 'liability' | 'asset' | 'account' | 'statement';
 
 /** Un élément de l'application qui compose une proposition (revenu récurrent, dette, actif). */
 export interface TaxSuggestionSourceItem {
@@ -262,6 +262,26 @@ export interface TaxPillar3aLimit {
     percentOfIncome: number | null;
     remaining: number | null;
     sourceUrl: string | null;
+}
+
+/** Une facture médicale de l'année et ce qui en a été remboursé. */
+export interface TaxMedicalInvoice {
+    transactionPublicId: string;
+    label: string;
+    date: string;
+    amount: number;
+    reimbursed: number;
+}
+
+/** « Frais médicaux de l'année » : brut, remboursé, à charge (natures confirmées seulement). */
+export interface TaxMedical {
+    year: number;
+    currency: string;
+    gross: number;
+    reimbursed: number;
+    net: number;
+    invoices: TaxMedicalInvoice[];
+    unlinkedReimbursements: { transactionPublicId: string; label: string; date: string; amount: number }[];
 }
 
 /** « 3a de l'année » : versé, plafonds du canton (vides tant que le profil n'est pas relu) et versements. */

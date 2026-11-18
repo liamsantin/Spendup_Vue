@@ -10,6 +10,7 @@ import type {
     TaxEntryKind,
     TaxIdentity,
     TaxLineValue,
+    TaxMedical,
     TaxPillar3a,
     TaxPerson,
     TaxProfileInfo,
@@ -410,6 +411,52 @@ function suggestionSource(code: string): TaxSuggestionSource {
     if (code === 'liability.debts') return 'liability';
     if (code === 'asset.property' || code === 'asset.crypto') return 'asset';
     return 'recurringIncome';
+}
+
+/** « Frais médicaux de l'année » de la démo : factures à nature confirmée, remboursements reliés ou à nature confirmée. */
+function buildMedical(tax: DemoTaxReturn): TaxMedical {
+    const db = demoDb();
+    const inYear = db.transactions.filter((item) => item.operationDate.startsWith(`${tax.year}-`) && item.taxNatureStatus === 'confirmee');
+    const invoices = inYear
+        .filter((item) => item.taxNature === 'medicalExpense' && item.type === 'depense')
+        .map((item) => {
+            const linked = db.reimbursementLinks
+                .filter((link) => link.invoicePublicId === item.publicId)
+                .reduce((sum, link) => sum + link.amount, 0);
+            return {
+                transactionPublicId: item.publicId,
+                label: item.label,
+                date: item.operationDate,
+                amount: item.amount ?? 0,
+                reimbursed: Math.min(item.amount ?? 0, linked)
+            };
+        })
+        .sort((a, b) => a.date.localeCompare(b.date));
+    const unlinked = inYear
+        .filter((item) => item.taxNature === 'medicalReimbursement' && item.type === 'revenu')
+        .map((item) => {
+            const linked = db.reimbursementLinks
+                .filter((link) => link.reimbursementPublicId === item.publicId)
+                .reduce((sum, link) => sum + link.amount, 0);
+            return {
+                transactionPublicId: item.publicId,
+                label: item.label,
+                date: item.operationDate,
+                amount: Math.max(0, (item.amount ?? 0) - linked)
+            };
+        })
+        .filter((item) => item.amount > 0);
+    const gross = invoices.reduce((sum, item) => sum + item.amount, 0);
+    const reimbursed = invoices.reduce((sum, item) => sum + item.reimbursed, 0) + unlinked.reduce((sum, item) => sum + item.amount, 0);
+    return {
+        year: tax.year,
+        currency: 'CHF',
+        gross,
+        reimbursed,
+        net: Math.max(0, gross - reimbursed),
+        invoices,
+        unlinkedReimbursements: unlinked
+    };
 }
 
 /** « 3a de l'année » de la démo : transactions de l'année dont la nature 3a est confirmée. Pas de plafond (profil non relu). */
@@ -1049,6 +1096,8 @@ export function routeTax(method: string, path: string, body: unknown, query?: UR
         return ok(toResponse(tax));
     }
 
+    const medical = match(path, '/api/tax-returns/:id/medical');
+    if (medical && method === 'GET') return ok(buildMedical(findReturn(medical.id)));
     const pillar3a = match(path, '/api/tax-returns/:id/pillar3a');
     if (pillar3a && method === 'GET') return ok(buildPillar3a(findReturn(pillar3a.id)));
     const suggestions = match(path, '/api/tax-returns/:id/suggestions');
