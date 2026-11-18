@@ -202,6 +202,7 @@ function clearFieldErrors() {
     fieldErrors.insuranceFranchise = null;
     fieldErrors.insuranceGrossPremium = null;
     fieldErrors.insurancePremiumSubsidy = null;
+    fieldErrors.insurancePolicyNumber = null;
 }
 
 function fillFromExpense(item: RecurringExpense) {
@@ -224,6 +225,7 @@ function fillFromExpense(item: RecurringExpense) {
     form.insuranceFranchise = insurance?.franchise == null ? '' : String(insurance.franchise);
     form.insuranceGrossPremium = insurance?.grossPremium == null ? '' : String(insurance.grossPremium);
     form.insurancePremiumSubsidy = insurance?.premiumSubsidy == null ? '' : String(insurance.premiumSubsidy);
+    form.insurancePolicyNumber = insurance?.policyNumber ?? '';
 }
 
 function fillFromIncome(item: RecurringIncome) {

@@ -618,6 +618,16 @@ async function fileCandidate(item: TaxDocumentCandidate) {
     if (!current) return;
     apply(await taxApi.attachDocument(current.publicId, item.filePublicId, item.line));
     await loadDocumentCandidates(current.publicId);
+    await loadReminders(current.publicId);
+}
+
+/** Les rappels dépendent des pièces rangées : on les relit après chaque rangement. */
+async function loadReminders(id: string) {
+    try {
+        reminders.value = isImportedReturn(id) ? [] : ((await taxApi.reminders(id)).items ?? []);
+    } catch {
+        reminders.value = [];
+    }
 }
 
 async function loadSuggestions(id: string) {
@@ -645,11 +655,7 @@ async function loadSuggestions(id: string) {
     } catch {
         themes.value = null;
     }
-    try {
-        reminders.value = isImportedReturn(id) ? [] : ((await taxApi.reminders(id)).items ?? []);
-    } catch {
-        reminders.value = [];
-    }
+    await loadReminders(id);
     await loadDocumentCandidates(id);
 }
 
@@ -750,6 +756,7 @@ async function attachFile(filePublicId: string) {
     const current = declaration.value;
     if (!current) return;
     apply(await taxApi.attachDocument(current.publicId, filePublicId, step.value === SITUATION ? null : attachLine.value || null));
+    await loadReminders(current.publicId);
 }
 
 async function onAttachUpload(file: File) {

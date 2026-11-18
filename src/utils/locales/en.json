@@ -438,11 +438,13 @@
                 "details": "Details",
                 "snapshots": "Snapshot",
                 "paymentMethods": "Payment methods",
-                "shares": "Sharing"
+                "shares": "Sharing",
+                "documents": "Documents"
             },
             "seeAllTransactions": "View all transactions",
             "snapshotsHiddenHint": "Balance snapshots are hidden because the balance is not visible to you.",
-            "shareUnavailable": "You do not have access to manage sharing for this account."
+            "shareUnavailable": "You do not have access to manage sharing for this account.",
+            "documentsUnavailable": "Only the account owner can attach documents (annual pillar 3a certificate, year-end statement)."
         },
         "form": {
             "createTitle": "New account",
@@ -1003,6 +1005,7 @@
                 "grossPremium": "Gross premium",
                 "premiumSubsidy": "Premium reduction",
                 "franchise": "Deductible",
+                "policyNumber": "Policy number",
                 "renewalDate": "Renewal",
                 "perPeriodHint": "Per period, before premium reduction.",
                 "subsidyHint": "For information: the planned amount above stays what you pay.",
@@ -5346,7 +5349,7 @@
             "file": "File it"
         },
         "themes": {
-            "title": "Donations, childcare, training, commuting {year}",
+            "title": "Totals for the year {year}",
             "hint": "For information only: canton limits are not applied. Only natures confirmed on a transaction count.",
             "total": "{amount}",
             "empty": "No confirmed expense for this theme.",
@@ -5358,7 +5361,8 @@
                 "alimonyPaid": "Alimony paid",
                 "trainingExpense": "Training",
                 "commuting": "Commuting",
-                "jobExpense": "Other job expenses"
+                "jobExpense": "Other job expenses",
+                "pillar2BuyIn": "Buy-ins to the 2nd pillar"
             }
         },
         "medical": {

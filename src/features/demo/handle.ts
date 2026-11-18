@@ -185,6 +185,8 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
         return noContent();
     }
     if (path.startsWith('/api/transactions/') && path.endsWith('/files') && method === 'GET') return ok({ items: [], totalCount: 0 });
+    if (path.startsWith('/api/attachments/') && path.endsWith('/files') && method === 'GET') return ok({ items: [], totalCount: 0 });
+    if (path.startsWith('/api/attachments/') && path.includes('/files')) throw new AppError('Les fichiers ne sont pas dans la démo.', 403);
 
     if (path === '/api/tax-natures/suggest' && method === 'GET') return ok({ taxNature: null });
     if (path === '/api/categories' && method === 'GET') return ok(listCategories(query));

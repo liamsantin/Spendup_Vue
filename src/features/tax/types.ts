@@ -277,7 +277,7 @@ export interface TaxReminder {
 export interface TaxDocumentCandidate {
     filePublicId: string;
     fileName: string;
-    sourceKind: 'transaction' | 'recurringExpense';
+    sourceKind: 'transaction' | 'recurringExpense' | 'account';
     sourcePublicId: string;
     sourceLabel: string;
     line: string;

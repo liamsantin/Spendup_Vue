@@ -81,7 +81,8 @@ const EXPENSES: ExpenseDraft[] = [
             renewalDate: '2027-01-01',
             franchise: 2500,
             grossPremium: 445.2,
-            premiumSubsidy: 60
+            premiumSubsidy: 60,
+            policyNumber: '756.1234.5678.97'
         }
     },
     {

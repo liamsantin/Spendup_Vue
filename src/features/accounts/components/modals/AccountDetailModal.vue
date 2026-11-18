@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { DotsVerticalIcon, CreditCardIcon, FileDescriptionIcon, LockIcon, Receipt2Icon, UsersIcon } from 'vue-tabler-icons';
+import { DotsVerticalIcon, CreditCardIcon, FileDescriptionIcon, LockIcon, PaperclipIcon, Receipt2Icon, UsersIcon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
@@ -23,6 +23,8 @@ import {
     isPrimaryActionBlocked
 } from '@/features/accounts/rights';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { entityAttachmentSource } from '@/features/attachments/api';
+import EntityAttachmentsPanel from '@/features/attachments/components/EntityAttachmentsPanel.vue';
 import AccountBalanceSnapshotsPanel from '@/features/accounts/components/panels/AccountBalanceSnapshotsPanel.vue';
 import AccountSharesPanel from '@/features/accounts/components/panels/AccountSharesPanel.vue';
 import AccountFormModal from '@/features/accounts/components/modals/AccountFormModal.vue';
@@ -55,7 +57,7 @@ const linkedGoalsOpen = ref(false);
 const pendingAccountAction = ref<'archive' | 'delete' | null>(null);
 const localError = ref<string | null>(null);
 const linkedRecurrenceNames = ref<string[]>([]);
-const activeTab = ref<'details' | 'snapshots' | 'paymentMethods' | 'shares'>('details');
+const activeTab = ref<'details' | 'snapshots' | 'paymentMethods' | 'shares' | 'documents'>('details');
 
 const open = computed({
     get: () => props.modelValue,
@@ -110,6 +112,7 @@ const showAccountNumber = computed(() => {
 const detailTabs = computed(() => {
     const current = account.value;
     const canShares = !!current && canManageShares(current);
+    const canDocuments = !!current?.isOwned;
     return [
         { value: 'details' as const, label: t('comptesPage.detail.tabs.details'), icon: FileDescriptionIcon },
         {
@@ -130,6 +133,13 @@ const detailTabs = computed(() => {
             icon: UsersIcon,
             disabled: !canShares,
             title: !canShares ? t('comptesPage.detail.shareUnavailable') : undefined
+        },
+        {
+            value: 'documents' as const,
+            label: t('comptesPage.detail.tabs.documents'),
+            icon: PaperclipIcon,
+            disabled: !canDocuments,
+            title: !canDocuments ? t('comptesPage.detail.documentsUnavailable') : undefined
         }
     ];
 });
@@ -184,6 +194,9 @@ watch([balanceHidden, account], () => {
         activeTab.value = 'details';
     }
     if (activeTab.value === 'shares' && account.value && !canManageShares(account.value)) {
+        activeTab.value = 'details';
+    }
+    if (activeTab.value === 'documents' && account.value && !account.value.isOwned) {
         activeTab.value = 'details';
     }
 });
@@ -571,6 +584,13 @@ function seeAllTransactions() {
 
         <template v-if="account" #panel-paymentMethods>
             <AccountPaymentMethodsPanel :account="account" />
+        </template>
+
+        <template v-if="account" #panel-documents>
+            <EntityAttachmentsPanel v-if="account.isOwned" :source="entityAttachmentSource('account', account.publicId)" />
+            <div v-else class="su-empty">
+                {{ t('comptesPage.detail.documentsUnavailable') }}
+            </div>
         </template>
 
         <template v-if="account" #panel-shares>

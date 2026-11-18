@@ -127,6 +127,8 @@ export type InsuranceInput = {
     franchise: number | null;
     grossPremium: number | null;
     premiumSubsidy: number | null;
+    /** Numéro de police : une information, rien n'en est déduit. */
+    policyNumber?: string | null;
 };
 
 export type InsuranceDetails = InsuranceInput & {

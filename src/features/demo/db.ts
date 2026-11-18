@@ -420,6 +420,16 @@ export function createDemoDb(): DemoDb {
                 taxNatureStatus: 'confirmee'
             }),
             transaction({
+                publicId: 'TXN0016',
+                type: 'depense',
+                label: 'Rachat 2e pilier',
+                amount: 3000,
+                operationDate: '2026-10-20',
+                accountPublicId: 'ACCCOUR',
+                taxNature: 'pillar2BuyIn',
+                taxNatureStatus: 'confirmee'
+            }),
+            transaction({
                 publicId: 'TXN0015',
                 type: 'depense',
                 label: 'Don Croix-Rouge',

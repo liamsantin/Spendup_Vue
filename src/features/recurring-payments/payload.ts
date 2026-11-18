@@ -72,6 +72,7 @@ export type RecurringTemplateFormFields = {
     insuranceFranchise: string;
     insuranceGrossPremium: string;
     insurancePremiumSubsidy: string;
+    insurancePolicyNumber: string;
 };
 
 export type ConfirmDueFormFields = {
@@ -118,7 +119,8 @@ export function emptyRecurringForm(kind: RecurringKind, accountPublicId = ''): R
         insuranceRenewalDate: null,
         insuranceFranchise: '',
         insuranceGrossPremium: '',
-        insurancePremiumSubsidy: ''
+        insurancePremiumSubsidy: '',
+        insurancePolicyNumber: ''
     };
 }
 
@@ -148,7 +150,8 @@ function buildInsurance(fields: RecurringTemplateFormFields): BuildRecurringPayl
             renewalDate: emptyToNull(fields.insuranceRenewalDate),
             franchise,
             grossPremium,
-            premiumSubsidy
+            premiumSubsidy,
+            policyNumber: emptyToNull(fields.insurancePolicyNumber.trim())
         }
     };
 }
@@ -323,7 +326,8 @@ function insuranceSheetChanged(current: InsuranceInput | null, fields: Recurring
         emptyToNull(fields.insuranceRenewalDate) !== (current?.renewalDate ?? null) ||
         !sameAmount(fields.insuranceFranchise, current?.franchise) ||
         !sameAmount(fields.insuranceGrossPremium, current?.grossPremium) ||
-        !sameAmount(fields.insurancePremiumSubsidy, current?.premiumSubsidy)
+        !sameAmount(fields.insurancePremiumSubsidy, current?.premiumSubsidy) ||
+        emptyToNull(fields.insurancePolicyNumber.trim()) !== (current?.policyNumber ?? null)
     );
 }
 

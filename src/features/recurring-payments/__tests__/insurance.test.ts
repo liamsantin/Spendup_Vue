@@ -50,7 +50,8 @@ describe('fiche d’assurance d’une charge récurrente', () => {
                 insuranceType: 'healthBasic',
                 insuranceGrossPremium: '445.20',
                 insurancePremiumSubsidy: '60',
-                insuranceFranchise: '2500'
+                insuranceFranchise: '2500',
+                insurancePolicyNumber: '  756.1234  '
             }),
             ctx
         );
@@ -59,7 +60,8 @@ describe('fiche d’assurance d’une charge récurrente', () => {
             renewalDate: null,
             franchise: 2500,
             grossPremium: 445.2,
-            premiumSubsidy: 60
+            premiumSubsidy: 60,
+            policyNumber: '756.1234'
         });
 
         const other = buildCreateExpensePayload(fields({ expenseType: 'abonnement', insuranceType: 'healthBasic' }), ctx);
@@ -73,7 +75,8 @@ describe('fiche d’assurance d’une charge récurrente', () => {
             renewalDate: null,
             franchise: null,
             grossPremium: null,
-            premiumSubsidy: null
+            premiumSubsidy: null,
+            policyNumber: null
         });
     });
 

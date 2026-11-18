@@ -46,6 +46,7 @@ export type RecurringTemplateFormFieldErrors = {
     insuranceFranchise?: string | null;
     insuranceGrossPremium?: string | null;
     insurancePremiumSubsidy?: string | null;
+    insurancePolicyNumber?: string | null;
 };
 
 const props = withDefaults(
@@ -381,6 +382,23 @@ function openPaymentMethodCreate(name: string) {
                         inputmode="decimal"
                         :error="!!fieldErrors.insuranceFranchise"
                         :error-messages="fieldErrors.insuranceFranchise || undefined"
+                    />
+                </div>
+            </div>
+            <div class="recurring-form__row">
+                <label class="recurring-form__label" for="rec-form-insurance-policy">{{
+                    t('recurrencesPage.form.insurance.policyNumber')
+                }}</label>
+                <div class="recurring-form__field">
+                    <v-text-field
+                        id="rec-form-insurance-policy"
+                        v-model="form.insurancePolicyNumber"
+                        color="primary"
+                        variant="outlined"
+                        hide-details="auto"
+                        maxlength="100"
+                        :error="!!fieldErrors.insurancePolicyNumber"
+                        :error-messages="fieldErrors.insurancePolicyNumber || undefined"
                     />
                 </div>
             </div>

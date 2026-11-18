@@ -532,7 +532,8 @@ const THEME_LINES: Record<string, { line: string; document: string | null }> = {
     jobExpense: {
         line: 'deduction.jobExpenses',
         document: 'Justificatifs des frais professionnels (abonnement de transport, repas, matériel)'
-    }
+    },
+    pillar2BuyIn: { line: 'deduction.pillar2BuyIn', document: 'Attestation de rachat dans le 2e pilier' }
 };
 
 /** Thèmes de déduction de la démo : dépenses de l'année dont la nature est confirmée. */

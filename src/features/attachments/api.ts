@@ -2,7 +2,7 @@ import { fetchWrapper } from '@/utils/helpers/fetch-helpers';
 import type { TransactionFile } from '@/features/transactions/types';
 
 /** Éléments qui portent des justificatifs par `/api/attachments/{kind}/{publicId}/files`. */
-export type AttachmentKind = 'recurringIncome' | 'liability' | 'personalLoan' | 'sharedDebt' | 'tier';
+export type AttachmentKind = 'recurringIncome' | 'liability' | 'personalLoan' | 'sharedDebt' | 'tier' | 'account';
 
 export type AttachmentFilesResult = { items: TransactionFile[]; totalCount: number };
 
@@ -40,7 +40,7 @@ export const entityFilesApi = {
     }
 };
 
-/** Source générique d’un revenu récurrent, d’un passif, d’un prêt, d’une dette entre amis ou d’un tiers. */
+/** Source générique d’un revenu récurrent, d’un passif, d’un prêt, d’une dette entre amis, d’un tiers ou d’un compte. */
 export function entityAttachmentSource(kind: AttachmentKind, publicId: string): AttachmentSource {
     return {
         key: `${kind}:${publicId}`,

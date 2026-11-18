@@ -438,11 +438,13 @@
                 "details": "Détails",
                 "snapshots": "Relevé",
                 "paymentMethods": "Moyens de paiement",
-                "shares": "Partage"
+                "shares": "Partage",
+                "documents": "Justificatifs"
             },
             "seeAllTransactions": "Voir toutes les transactions",
             "snapshotsHiddenHint": "Les relevés sont masqués car le solde n’est pas visible pour vous.",
-            "shareUnavailable": "Vous n’avez pas accès à la gestion du partage de ce compte."
+            "shareUnavailable": "Vous n’avez pas accès à la gestion du partage de ce compte.",
+            "documentsUnavailable": "Seul le propriétaire du compte peut y joindre des justificatifs (attestation annuelle du 3e pilier a, relevé de fin d’année)."
         },
         "form": {
             "createTitle": "Nouveau compte",
@@ -1003,6 +1005,7 @@
                 "grossPremium": "Prime brute",
                 "premiumSubsidy": "Réduction de primes",
                 "franchise": "Franchise",
+                "policyNumber": "N° de police",
                 "renewalDate": "Renouvellement",
                 "perPeriodHint": "Par période, avant réduction de primes.",
                 "subsidyHint": "Information : le montant prévu ci-dessus reste ce que vous payez.",
@@ -5346,7 +5349,7 @@
             "file": "Ranger"
         },
         "themes": {
-            "title": "Dons, garde, formation, transports {year}",
+            "title": "Totaux de l’année {year}",
             "hint": "Information seulement : les plafonds du canton ne sont pas appliqués. Seules les natures confirmées sur une transaction comptent.",
             "total": "{amount}",
             "empty": "Aucune dépense confirmée pour ce thème.",
@@ -5358,7 +5361,8 @@
                 "alimonyPaid": "Pensions versées",
                 "trainingExpense": "Formation",
                 "commuting": "Trajet domicile-travail",
-                "jobExpense": "Autres frais professionnels"
+                "jobExpense": "Autres frais professionnels",
+                "pillar2BuyIn": "Rachats dans le 2e pilier"
             }
         },
         "medical": {
