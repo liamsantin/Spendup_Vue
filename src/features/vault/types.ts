@@ -109,7 +109,7 @@ export type VaultPasswordWrapRequest = {
 
 /**
  * Paramètres du Coffre lisibles avec un jeton de réinitialisation valide —
- * `GET /api/auth/reset-password/vault?token=`. `exists` faux : aucun Coffre à ré-emballer.
+ * `POST /api/auth/reset-password/vault` (jeton dans le corps). `exists` faux : aucun Coffre à ré-emballer.
  */
 export type VaultResetParams = {
     exists: boolean;

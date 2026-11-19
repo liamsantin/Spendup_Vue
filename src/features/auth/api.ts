@@ -316,10 +316,12 @@ export const authApi = {
         return authHttp.post<null>('/api/auth/reset-password', { token, newPassword, ...(vaultWrap ? { vaultWrap } : {}) });
     },
 
-    /** Paramètres du Coffre lisibles avec un jeton de réinitialisation valide (avant connexion). */
+    /**
+     * Paramètres du Coffre lisibles avec un jeton de réinitialisation valide (avant connexion). Le jeton part
+     * dans le corps : en query string il finirait dans les journaux d'accès du serveur, du proxy ou du CDN.
+     */
     resetPasswordVaultParams(token: string) {
-        const params = new URLSearchParams({ token });
-        return authHttp.get<VaultResetParams>(`/api/auth/reset-password/vault?${params}`);
+        return authHttp.post<VaultResetParams>('/api/auth/reset-password/vault', { token });
     },
 
     /**

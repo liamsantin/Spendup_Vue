@@ -1,11 +1,11 @@
 <script setup lang="ts">
 /**
  * Réinitialisation du mot de passe par jeton e-mail. Si le compte a un Coffre, les paramètres sont lus
- * avec le jeton (`GET /api/auth/reset-password/vault`) : le code de récupération déballe la DEK et la
+ * avec le jeton (`POST /api/auth/reset-password/vault`, jeton dans le corps) : le code de récupération déballe la DEK et la
  * ré-emballe avec le nouveau mot de passe (`vaultWrap`). Sans code, l’utilisateur confirme explicitement
  * que les champs du Coffre seront perdus avant l’envoi sans `vaultWrap`.
  */
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
@@ -85,7 +85,31 @@ onMounted(() => {
     clearPasswordResetTokenFromUrl(router, route);
 });
 
-watch(token, (value) => void loadVaultParams(value), { immediate: true });
+/** Délai avant d'interroger l'API pendant la saisie manuelle du jeton : un appel par pause, pas par frappe. */
+const VAULT_PARAMS_DEBOUNCE_MS = 400;
+let vaultParamsTimer: ReturnType<typeof setTimeout> | null = null;
+
+watch(
+    token,
+    (value) => {
+        if (vaultParamsTimer) clearTimeout(vaultParamsTimer);
+        vaultParamsTimer = null;
+        // jeton lu dans le lien : appel immédiat ; saisie à la main : on attend une pause
+        if (capturedFromUrl.value || !value.trim()) {
+            void loadVaultParams(value);
+            return;
+        }
+        vaultParamsTimer = setTimeout(() => {
+            vaultParamsTimer = null;
+            void loadVaultParams(value);
+        }, VAULT_PARAMS_DEBOUNCE_MS);
+    },
+    { immediate: true }
+);
+
+onBeforeUnmount(() => {
+    if (vaultParamsTimer) clearTimeout(vaultParamsTimer);
+});
 
 async function submit() {
     error.value = null;

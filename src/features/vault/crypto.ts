@@ -276,7 +276,7 @@ export async function rewrapDek(dekBytes: Uint8Array, secret: string, params: Va
  * Mot de passe oublié : déballe la DEK par le code de récupération puis la ré-emballe avec le nouveau
  * mot de passe (même sel, mêmes paramètres). Les octets de la DEK sont effacés ensuite.
  * @param code Code de récupération saisi.
- * @param params Paramètres renvoyés par `GET /api/auth/reset-password/vault` (ou `GET /api/vault`).
+ * @param params Paramètres renvoyés par `POST /api/auth/reset-password/vault` (ou `GET /api/vault`).
  * @param newPassword Nouveau mot de passe.
  * @returns `dekWrappedPassword` à envoyer dans `vaultWrap`.
  */
