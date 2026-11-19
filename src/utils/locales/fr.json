@@ -340,7 +340,8 @@
             "upcoming": "À payer sous {days} jours",
             "upcomingHint": "aucune échéance | {count} échéance | {count} échéances",
             "vsPrevious": "{change} vs {month}",
-            "noComparison": "Pas de comparaison possible"
+            "noComparison": "Pas de comparaison possible",
+            "loadFailed": "Les chiffres du mois n’ont pas pu être chargés : les montants affichés sont incomplets."
         },
         "spending": {
             "title": "Dépenses par catégorie",
@@ -2993,7 +2994,8 @@
             "errors": {
                 "invalidUsername": "Le nom d’utilisateur doit faire 3–30 caractères ([a-z0-9._-]).",
                 "invalidPassword": "Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.",
-                "passwordMismatch": "La confirmation ne correspond pas au mot de passe."
+                "passwordMismatch": "La confirmation ne correspond pas au mot de passe.",
+                "passwordFailedAfterUsername": "Le nom d’utilisateur « {username} » est enregistré, mais le mot de passe n’a pas été créé : {error} Réessayez pour créer le mot de passe."
             },
             "success": {
                 "credentialsCreated": "Identifiants créés : connectez-vous avec le nom d’utilisateur « {username} » et le mot de passe que vous venez de définir."

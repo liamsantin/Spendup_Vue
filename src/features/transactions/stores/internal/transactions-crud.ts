@@ -1,6 +1,7 @@
 import { AppError } from '@/utils/errors/app-error';
 import { ASSET_NOT_FOUND_MESSAGE } from '@/features/assets/types';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
 import { involvedAccountPublicIds, normalizeTransaction, sanitizeFilePublicIds } from '@/features/transactions/format';
 import { transactionsApi } from '@/features/transactions/api';
 import type { SetTransactionTaxNaturePayload } from '@/features/transactions/tax-nature';
@@ -20,6 +21,11 @@ export const TRANSACTION_NOT_FOUND_CODE = 'transaction_not_found';
 export const TRANSACTION_NOT_FOUND_MESSAGE = 'Cette transaction n’est plus disponible.';
 export const TRANSACTION_FORBIDDEN_CODE = 'transaction_forbidden';
 export const TRANSACTION_FORBIDDEN_MESSAGE = 'Action non autorisée sur cette transaction.';
+
+/** Fuseau de l'utilisateur pour juger une date future comme l'API (`null` = fuseau du navigateur). */
+function userTimeZone(): string | null {
+    return useUserSettingsStore().current.timezone ?? null;
+}
 
 function isAssetNotFound(err: AppError): boolean {
     return err.status === 404 && err.message === ASSET_NOT_FOUND_MESSAGE;
@@ -291,7 +297,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                     throw new AppError(TRANSACTION_FORBIDDEN_MESSAGE, 403, TRANSACTION_FORBIDDEN_CODE);
                 }
             }
-            const built = buildCreateTransactionPayload(fields, { accounts });
+            const built = buildCreateTransactionPayload(fields, { accounts, timeZone: userTimeZone() });
             if (!built.ok) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
@@ -324,7 +330,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             if (!known) {
                 assertCanWriteAccounts([fields.accountPublicId.trim()].filter(Boolean));
             }
-            const built = buildUpdateTransactionPayload(fields, { accounts });
+            const built = buildUpdateTransactionPayload(fields, { accounts, timeZone: userTimeZone() });
             if (!built.ok) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
@@ -507,8 +513,24 @@ export function createTransactionsCrud(state: TransactionsState) {
         }
     }
 
+    /**
+     * Recharge les pages déjà affichées après un retour d'onglet ou un événement temps réel : la page 1 est
+     * relue, puis « Charger plus » est rejoué jusqu'à retrouver le nombre de lignes d'avant (position gardée,
+     * et une liste chargée en entier pour un filtre client ne retombe pas à 200 lignes).
+     */
+    async function restoreDepth(previousCount: number, key: string) {
+        let guard = 0;
+        while (activeListKey.value === key && items.value.length < previousCount && items.value.length < totalCount.value && guard++ < 50) {
+            const before = items.value.length;
+            await loadMore().catch(() => undefined);
+            if (items.value.length <= before) break;
+        }
+    }
+
     async function refetchActive(force = true) {
-        const current = parseListCacheKey(activeListKey.value);
+        const key = activeListKey.value;
+        const previousCount = items.value.length;
+        const current = parseListCacheKey(key);
         await loadList({
             accountPublicId: current.accountPublicId ?? undefined,
             categoryPublicId: current.categoryPublicId ?? undefined,
@@ -517,17 +539,20 @@ export function createTransactionsCrud(state: TransactionsState) {
             recurringExpensePublicId: current.recurringExpensePublicId ?? undefined,
             recurringIncomePublicId: current.recurringIncomePublicId ?? undefined,
             assetPublicId: current.assetPublicId ?? undefined,
+            type: current.type ?? undefined,
             from: current.from ?? undefined,
             to: current.to ?? undefined,
             search: current.search ?? undefined,
             pageSize: pageSize.value || TRANSACTION_PAGE_SIZE_DEFAULT,
             force
         }).catch(() => undefined);
+        await restoreDepth(previousCount, key);
     }
 
     return {
         loadList,
         loadMore,
+        restoreDepth,
         cancelPendingLoads,
         createTransaction,
         updateTransaction,

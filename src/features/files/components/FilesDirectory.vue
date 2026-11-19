@@ -251,16 +251,19 @@ async function uploadFiles(list: FileList | File[]) {
     localError.value = null;
     store.clearError();
 
+    // un fichier refusé n'arrête pas les suivants ; chaque refus est nommé dans le message final
+    const failures: string[] = [];
+    const fail = (file: File, message: string) => failures.push(`${file.name} : ${message}`);
     for (const file of files) {
         const check = await validatePdfFile(file);
         if (!check.ok) {
-            localError.value = t(`filesPage.errors.${check.code}`);
-            return;
+            fail(file, t(`filesPage.errors.${check.code}`));
+            continue;
         }
         const usage = store.usage;
         if (usage && wouldExceedQuota(usage, file.size)) {
-            localError.value = t('filesPage.errors.quotaExceeded');
-            return;
+            fail(file, t('filesPage.errors.quotaExceeded'));
+            continue;
         }
         uploadingName.value = file.name;
         uploadProgress.value = 0;
@@ -270,13 +273,13 @@ async function uploadFiles(list: FileList | File[]) {
             });
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
-            localError.value = isQuotaExceededMessage(err.message) ? t('filesPage.errors.quotaExceeded') : getErrorMessage(e);
-            break;
+            fail(file, isQuotaExceededMessage(err.message) ? t('filesPage.errors.quotaExceeded') : getErrorMessage(e));
         } finally {
             uploadingName.value = null;
             uploadProgress.value = 0;
         }
     }
+    localError.value = failures.length ? failures.join(' · ') : null;
 }
 
 function onFileSelected(event: Event) {

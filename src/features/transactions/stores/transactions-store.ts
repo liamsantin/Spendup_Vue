@@ -45,6 +45,8 @@ export const useTransactionsStore = defineStore('transactions', () => {
         clearError: state.clearError,
         loadList: crud.loadList,
         loadMore: crud.loadMore,
+        restoreDepth: crud.restoreDepth,
+        activeListKey: state.activeListKey,
         createTransaction: crud.createTransaction,
         updateTransaction: crud.updateTransaction,
         attachTransactionFile: crud.attachTransactionFile,

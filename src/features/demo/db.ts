@@ -1,4 +1,5 @@
 import type { Alias } from '@/features/aliases/types';
+import { clearDemoDeviceStorage } from '@/features/demo/device-storage';
 import type { Account, AccountType, Currency } from '@/features/accounts/types';
 import type { Bank } from '@/features/banks/types';
 import type { Asset, AssetValuation, VehicleMaintenance, VehicleMileage } from '@/features/assets/types';
@@ -1041,6 +1042,8 @@ export function demoDb(): DemoDb {
 export function resetDemoDb(): void {
     db = createDemoDb();
     seedBudgetsAndGoals(db);
+    // étapes validées, montants lus d'un PDF… : la démo repart de zéro et ne laisse rien sur l'appareil
+    clearDemoDeviceStorage();
 }
 
 export function applyMovement(tx: Transaction, sign: 1 | -1): void {

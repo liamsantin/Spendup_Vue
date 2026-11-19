@@ -14,7 +14,17 @@ export function createInvestmentsLifecycle(state: InvestmentsState, deps: Lifecy
     /** Branche le temps réel puis charge positions + journal du compte donné. */
     async function bootstrap(accountPublicId: string, options: { includeClosed?: boolean } = {}) {
         ensureRealtimeBridge();
-        await Promise.all([loadPositions(accountPublicId, options), loadOperations(accountPublicId)]);
+        // filtres du journal mémorisés pour ce compte : rechargés tels quels, comme la page les affiche
+        const filters = state.operationsFor(accountPublicId)?.filters;
+        await Promise.all([
+            loadPositions(accountPublicId, options),
+            loadOperations(accountPublicId, {
+                instrumentPublicId: filters?.instrumentPublicId ?? undefined,
+                type: filters?.type ?? undefined,
+                from: filters?.from ?? undefined,
+                to: filters?.to ?? undefined
+            })
+        ]);
         state.initialized.value = true;
     }
 

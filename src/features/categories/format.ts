@@ -56,6 +56,29 @@ export function findCategoryInTree(roots: readonly Category[], publicId: string)
     return null;
 }
 
+/**
+ * Arbre réduit aux catégories d'un type (et aux `mixte`), comme `GET /api/categories?type=` : une sous-catégorie
+ * dont le parent est écarté remonte à plat plutôt que de disparaître.
+ */
+export function filterCategoryTreeByType(roots: readonly Category[], type: CategoryType): Category[] {
+    const matches = (category: Category) => category.type === type || category.type === 'mixte';
+    const result: Category[] = [];
+    for (const root of roots) {
+        const children = (root.children ?? []).filter(matches);
+        if (matches(root)) {
+            result.push({ ...root, children });
+        } else {
+            result.push(...children.map((child) => ({ ...child, children: [] })));
+        }
+    }
+    return sortCategoryTree(result);
+}
+
+/** Vrai si la catégorie apparaît dans la liste filtrée sur ce type. */
+export function categoryMatchesType(category: Pick<Category, 'type'>, type: CategoryType): boolean {
+    return category.type === type || category.type === 'mixte';
+}
+
 export function isCompatibleParentType(parentType: CategoryType, childType: CategoryType): boolean {
     return parentType === 'mixte' || parentType === childType;
 }

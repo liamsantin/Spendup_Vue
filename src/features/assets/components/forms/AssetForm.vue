@@ -111,9 +111,8 @@ const err = (key: string) => props.fieldErrors[key] || undefined;
             <v-text-field
                 id="asset-form-value"
                 v-model="form.estimatedValue"
-                type="number"
-                step="0.01"
-                min="0"
+                type="text"
+                inputmode="decimal"
                 :suffix="currencySuffix"
                 color="primary"
                 variant="outlined"

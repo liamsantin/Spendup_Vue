@@ -266,8 +266,10 @@ export function createSharedDebtsCrud(state: SharedDebtsState) {
         const requestId = ++candidatesRequestSeq;
         expenseCandidatesLoading.value = true;
         try {
+            // filtre « dépense » côté serveur : les 100 candidates sont 100 dépenses, pas 100 transactions tous types
             const result = await transactionsApi.list({
                 search: search?.trim() || undefined,
+                type: 'depense',
                 pageSize: SHARED_DEBT_EXPENSE_CANDIDATES_PAGE_SIZE
             });
             if (requestId !== candidatesRequestSeq) return expenseCandidates.value;

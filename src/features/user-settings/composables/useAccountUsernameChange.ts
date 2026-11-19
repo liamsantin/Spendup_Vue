@@ -62,8 +62,13 @@ export function useAccountUsernameChange(options: {
         }
 
         usernameSaving.value = true;
+        let usernameSaved = false;
         try {
-            await auth.setUsername(value);
+            // nouvel essai après un échec du mot de passe : le nom est déjà enregistré, ne pas le renvoyer
+            if (normalizeUsername(auth.user?.username ?? '') !== value) {
+                await auth.setUsername(value);
+            }
+            usernameSaved = true;
             options.username.value = auth.user?.username ?? value;
 
             if (withPassword) {
@@ -82,7 +87,11 @@ export function useAccountUsernameChange(options: {
             options.accountSuccess.value = t('accounts.credentials.success.usernameUpdated');
             options.accountError.value = null;
         } catch (e: unknown) {
-            usernameError.value = getErrorMessage(e);
+            // succès partiel : dire que le nom est enregistré et que seul le mot de passe reste à créer
+            usernameError.value =
+                usernameSaved && withPassword
+                    ? t('accounts.usernameModal.errors.passwordFailedAfterUsername', { username: value, error: getErrorMessage(e) })
+                    : getErrorMessage(e);
         } finally {
             usernameSaving.value = false;
         }

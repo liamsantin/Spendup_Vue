@@ -84,7 +84,9 @@ export function createImportsLines(state: ImportsState) {
 
     async function loadMoreLines() {
         const publicId = currentId();
-        if (!publicId || !linesHasMore.value || linesLoadingMore.value) return;
+        // pas pendant un rechargement de la page 1 (changement d'onglet, de recherche, de tri) : la page 2 du nouveau
+        // filtre serait ajoutée aux lignes de l'ancien
+        if (!publicId || !linesHasMore.value || linesLoadingMore.value || linesLoading.value) return;
         linesLoadingMore.value = true;
         try {
             // Pages de taille fixe : la page suivante reste alignée même après un rechargement agrandi.

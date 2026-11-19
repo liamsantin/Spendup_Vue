@@ -76,10 +76,21 @@ const primarySuggestion = computed(() => analysis.value.suggestedTemplates[0] ??
 const otherSuggestions = computed(() => analysis.value.suggestedTemplates.slice(1));
 const tooManyLines = computed(() => analysis.value.errors.some((issue) => issue.code === 'TOO_MANY_LINES'));
 
+/** Réglages lus du serveur la dernière fois, pour savoir si la saisie en cours a été modifiée. */
+let serverBaseline = JSON.stringify(mappingFormFromAnalysis(props.item.analysis));
+
 watch(
     () => props.item.analysis,
     (next) => {
-        Object.assign(form, mappingFormFromAnalysis(next));
+        const nextForm = mappingFormFromAnalysis(next);
+        const nextBaseline = JSON.stringify(nextForm);
+        // `analysis` est recréé à chaque GET (retour sur l'onglet, événement d'un autre onglet) : mêmes réglages,
+        // rien à faire. Réglages changés côté serveur : appliqués seulement si la personne n'a rien modifié.
+        if (nextBaseline === serverBaseline) return;
+        const dirty = JSON.stringify(form) !== serverBaseline;
+        serverBaseline = nextBaseline;
+        if (dirty) return;
+        Object.assign(form, nextForm);
         fieldError.value = null;
     }
 );

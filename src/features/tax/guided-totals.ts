@@ -1,5 +1,6 @@
 import type { TaxAmountItem } from '@/features/tax/api';
 import type { TaxLine, TaxPerson } from '@/features/tax/types';
+import { deviceStorage } from '@/features/demo/device-storage';
 
 /**
  * Saisie guidée des totaux (I0) : les huit lignes qui résument une déclaration, dans l'ordre du formulaire.
@@ -44,7 +45,7 @@ const KEY = 'spendup.tax.guided-dismissed';
 /** La personne a écarté la saisie guidée pour cette déclaration (préférence de l'appareil). */
 export function isGuidedDismissed(publicId: string): boolean {
     try {
-        return (JSON.parse(localStorage.getItem(KEY) ?? '[]') as string[]).includes(publicId);
+        return (JSON.parse(deviceStorage.getItem(KEY) ?? '[]') as string[]).includes(publicId);
     } catch {
         return false;
     }
@@ -52,8 +53,8 @@ export function isGuidedDismissed(publicId: string): boolean {
 
 export function dismissGuided(publicId: string): void {
     try {
-        const list = JSON.parse(localStorage.getItem(KEY) ?? '[]') as string[];
-        if (!list.includes(publicId)) localStorage.setItem(KEY, JSON.stringify([...list, publicId].slice(-200)));
+        const list = JSON.parse(deviceStorage.getItem(KEY) ?? '[]') as string[];
+        if (!list.includes(publicId)) deviceStorage.setItem(KEY, JSON.stringify([...list, publicId].slice(-200)));
     } catch {
         /* stockage indisponible : la saisie guidée reviendra au prochain chargement */
     }

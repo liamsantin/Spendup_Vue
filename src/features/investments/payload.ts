@@ -1,4 +1,5 @@
 import { parseAccountAmount } from '@/features/accounts/format';
+import { toPlainDecimalString } from '@/utils/helpers/decimal-string';
 import {
     emptyToNull,
     isInstrumentCurrency,
@@ -263,9 +264,10 @@ export function operationToFormFields(operation: InvestmentOperation): Operation
         instrumentPublicId: operation.instrument.publicId,
         type: operation.type,
         operationDate: operation.operationDate,
-        quantity: operation.quantity != null ? String(operation.quantity) : '',
-        unitPrice: operation.unitPrice != null ? String(operation.unitPrice) : '',
-        totalAmount: operation.totalAmount != null ? String(operation.totalAmount) : '',
+        // notation décimale simple : « 5e-7 » ne repasserait pas la validation à l'enregistrement
+        quantity: operation.quantity != null ? toPlainDecimalString(operation.quantity) : '',
+        unitPrice: operation.unitPrice != null ? toPlainDecimalString(operation.unitPrice) : '',
+        totalAmount: operation.totalAmount != null ? toPlainDecimalString(operation.totalAmount) : '',
         transactionPublicId: operation.transactionPublicId ?? '',
         notes: operation.notes ?? ''
     };

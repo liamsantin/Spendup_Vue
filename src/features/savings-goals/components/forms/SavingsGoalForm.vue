@@ -110,9 +110,8 @@ const targetDateModel = computed({
                 <v-text-field
                     id="savings-goal-form-opening"
                     v-model="form.openingAmount"
-                    type="number"
-                    step="0.01"
-                    min="0"
+                    type="text"
+                    inputmode="decimal"
                     color="primary"
                     variant="outlined"
                     hide-details="auto"

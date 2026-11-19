@@ -68,6 +68,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         subscribeToLiabilityChanged: hub.subscribeToLiabilityChanged,
         subscribeToPersonalLoanChanged: hub.subscribeToPersonalLoanChanged,
         subscribeToSharedDebtChanged: hub.subscribeToSharedDebtChanged,
+        subscribeToResync: hub.subscribeToResync,
         dispatchLocalAccountChanged: hub.dispatchLocalAccountChanged,
         dismissLiveFriendChip: native.dismissLiveFriendChip,
         dismissLiveFriendChipsByNotificationId: native.dismissLiveFriendChipsByNotificationId,

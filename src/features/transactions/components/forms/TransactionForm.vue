@@ -18,12 +18,9 @@ import { canWritePaymentMethods } from '@/features/payment-methods/rights';
 import type { PaymentMethod } from '@/features/payment-methods/types';
 import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
 import TagPicker from '@/features/tags/components/forms/TagPicker.vue';
-import {
-    formatSignedAmountDelta,
-    recurrenceAmountVariance,
-    resolveTransactionAmountDisplay,
-    todayUtcYmd
-} from '@/features/transactions/format';
+import { formatSignedAmountDelta, recurrenceAmountVariance, resolveTransactionAmountDisplay } from '@/features/transactions/format';
+import { useUserSettingsStore } from '@/features/user-settings';
+import { useTodayYmd } from '@/utils/helpers/today';
 import { TRANSACTION_LABEL_MAX, type TransactionType } from '@/features/transactions/types';
 import type { TransactionFormFields } from '@/features/transactions/payload';
 
@@ -90,7 +87,9 @@ const isTransfer = computed(() => props.form.type === 'transfert');
 const showOperation = computed(() => props.section === 'all' || props.section === 'operation');
 const showClassification = computed(() => props.section === 'all' || props.section === 'classification');
 const showRecurrence = computed(() => showClassification.value && !isTransfer.value);
-const todayUtc = computed(() => todayUtcYmd());
+const userSettings = useUserSettingsStore();
+// borne « pas dans le futur » dans le fuseau de l'utilisateur (règle de l'API), recalculée après minuit
+const todayUtc = useTodayYmd(() => userSettings.current.timezone);
 const hasCounterpartyOptions = computed(() => props.counterpartyItems.length > 0);
 const counterpartySelectItems = computed(() =>
     hasCounterpartyOptions.value ? props.counterpartyItems : [{ title: t('transactionsPage.form.noCounterpartyOption'), value: '' }]

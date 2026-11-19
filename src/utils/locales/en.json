@@ -340,7 +340,8 @@
             "upcoming": "Due within {days} days",
             "upcomingHint": "nothing due | {count} payment due | {count} payments due",
             "vsPrevious": "{change} vs {month}",
-            "noComparison": "No comparison available"
+            "noComparison": "No comparison available",
+            "loadFailed": "This month’s figures could not be loaded: the amounts shown are incomplete."
         },
         "spending": {
             "title": "Spending by category",
@@ -2993,7 +2994,8 @@
             "errors": {
                 "invalidUsername": "Username must be 3–30 characters ([a-z0-9._-]).",
                 "invalidPassword": "Password must be at least 8 characters and include a letter and a digit.",
-                "passwordMismatch": "Confirmation does not match the password."
+                "passwordMismatch": "Confirmation does not match the password.",
+                "passwordFailedAfterUsername": "Username “{username}” is saved, but the password was not created: {error} Try again to create the password."
             },
             "success": {
                 "credentialsCreated": "Credentials created: sign in with username “{username}” and the password you just set."

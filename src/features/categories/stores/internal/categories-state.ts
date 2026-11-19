@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
 import {
+    categoryMatchesType,
     flattenCategories,
     sortCategoryTree,
     upsertCategoryInTree,
@@ -26,6 +27,11 @@ export type CategoriesCacheEntry = {
  */
 export function createCategoriesState() {
     const items = ref<Category[]>([]);
+    /**
+     * Arbre complet, réactif et indépendant de la liste active : un formulaire peut le filtrer pour son type
+     * sans changer `items`, que la page derrière utilise (filtres, budgets).
+     */
+    const tree = ref<Category[]>([]);
     const itemsByListKey = new Map<string, CategoriesCacheEntry>();
     const activeListKey = ref(KEY_TREE);
     const totalCount = ref(0);
@@ -74,6 +80,9 @@ export function createCategoriesState() {
             totalCount: meta?.totalCount ?? prev?.totalCount ?? flattenCategories(sorted).length
         };
         itemsByListKey.set(key, entry);
+        if (key === KEY_TREE) {
+            tree.value = entry.items;
+        }
         if (activeListKey.value === key) {
             items.value = entry.items;
             totalCount.value = entry.totalCount;
@@ -98,13 +107,23 @@ export function createCategoriesState() {
             const next = upsertCategoryInTree(tree.items, category);
             setList(KEY_TREE, next, { totalCount: flattenCategories(next).length });
         }
+        const activeKey = activeListKey.value;
         for (const key of [...itemsByListKey.keys()]) {
             if (key === KEY_TREE) continue;
             cache.invalidate(key);
+            if (key === activeKey) {
+                // la liste affichée reste remplie : mise à jour locale, rechargée au prochain accès (cache invalidé)
+                const prev = itemsByListKey.get(key);
+                const type = activeType.value;
+                if (prev && type) {
+                    const next = categoryMatchesType(category, type)
+                        ? upsertCategoryInTree(prev.items, category)
+                        : removeCategoryFromTree(prev.items, category.publicId);
+                    setList(key, next, { totalCount: flattenCategories(next).length });
+                }
+                continue;
+            }
             itemsByListKey.delete(key);
-        }
-        if (activeListKey.value !== KEY_TREE) {
-            activateList(activeListKey.value);
         }
     }
 
@@ -166,6 +185,7 @@ export function createCategoriesState() {
 
     return {
         items,
+        tree,
         itemsByListKey,
         activeListKey,
         totalCount,

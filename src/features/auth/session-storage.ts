@@ -5,6 +5,25 @@ export const ACCESS_KEY = 'spendup_access_token';
 export const EXPIRES_AT_KEY = 'spendup_access_expires_at';
 export const PENDING_EMAIL_KEY = 'spendup_pending_email';
 export const LOGIN_NOTICE_KEY = 'spendup_login_notice';
+/**
+ * Identifiant de la chaîne de refresh tokens de l'onglet. « Dupliquer l'onglet » copie sessionStorage, donc le
+ * double hérite du même identifiant : les deux onglets se reconnaissent et se passent leurs nouveaux jetons.
+ */
+export const TOKEN_CHAIN_KEY = 'spendup_token_chain';
+
+/** Identifiant de chaîne de l'onglet, ou `null` hors session Bearer. */
+export function readTokenChainId(): string | null {
+    return sessionStorage.getItem(TOKEN_CHAIN_KEY);
+}
+
+function ensureTokenChainId() {
+    if (sessionStorage.getItem(TOKEN_CHAIN_KEY)) return;
+    const id =
+        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+            ? crypto.randomUUID()
+            : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem(TOKEN_CHAIN_KEY, id);
+}
 
 /** Marge avant expiration pour déclencher un refresh proactif. */
 export const ACCESS_EXPIRY_SKEW_MS = 30_000;
@@ -102,6 +121,7 @@ export function writeTokens(
     const persistRefresh = options?.persistRefresh !== false;
     if (persistRefresh && refreshToken) {
         sessionStorage.setItem(REFRESH_KEY, refreshToken);
+        ensureTokenChainId();
     } else {
         sessionStorage.removeItem(REFRESH_KEY);
     }
@@ -112,6 +132,7 @@ export function clearStoredTokens() {
     sessionStorage.removeItem(ACCESS_KEY);
     sessionStorage.removeItem(EXPIRES_AT_KEY);
     sessionStorage.removeItem(REFRESH_KEY);
+    sessionStorage.removeItem(TOKEN_CHAIN_KEY);
     localStorage.removeItem(REFRESH_KEY);
     clearLegacyPendingPassword();
 }

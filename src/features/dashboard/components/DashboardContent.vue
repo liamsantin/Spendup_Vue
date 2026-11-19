@@ -34,6 +34,11 @@
             </div>
         </section>
 
+        <AppAlert v-if="month.failed.value && !month.loading.value" type="error" class="su-alert">
+            {{ t('dashboard.month.loadFailed') }}
+            <button type="button" class="su-link" @click="month.reload()">{{ t('common.retry') }}</button>
+        </AppAlert>
+
         <!-- ── alertes : lignes texte sur filet fin ── -->
         <nav v-if="alerts.length" class="dash-alerts" :aria-label="t('dashboard.alerts.label')">
             <RouterLink v-for="alert in alerts" :key="alert.id" :to="alert.to" class="dash-alert">
@@ -175,6 +180,7 @@ import { BUDGETS_PATHS } from '@/features/budgets/paths';
 import { DashboardSavingsGoalsCard } from '@/features/savings-goals';
 import { SAVINGS_GOALS_PATHS } from '@/features/savings-goals/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
+import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { useDashboardMonth } from '@/features/dashboard/composables/useDashboardMonth';
 import { useDashboardOverview } from '@/features/dashboard/composables/useDashboardOverview';
 import {

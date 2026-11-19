@@ -49,10 +49,18 @@ export function createSharedDebtsRealtime(state: SharedDebtsState, deps: Realtim
         scheduleRefetch();
     }
 
+    let unsubscribeResync: (() => void) | null = null;
+
     function ensureRealtimeBridge() {
         if (unsubscribeSharedDebtChanged) return;
         const notifications = useNotificationsStore();
         unsubscribeSharedDebtChanged = notifications.subscribeToSharedDebtChanged(handleSharedDebtChanged);
+        // après une coupure du temps réel, les `sharedDebtChanged` manqués sont rattrapés par un refetch
+        unsubscribeResync =
+            notifications.subscribeToResync?.(() => {
+                invalidateAllLists();
+                scheduleRefetch();
+            }) ?? null;
     }
 
     function onAuthenticatedSession() {
@@ -62,6 +70,8 @@ export function createSharedDebtsRealtime(state: SharedDebtsState, deps: Realtim
     function teardownRealtimeBridge() {
         unsubscribeSharedDebtChanged?.();
         unsubscribeSharedDebtChanged = null;
+        unsubscribeResync?.();
+        unsubscribeResync = null;
         refreshScheduled = false;
     }
 

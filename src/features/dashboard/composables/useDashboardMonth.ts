@@ -54,7 +54,8 @@ export function useDashboardMonth() {
         previous.value = prev.status === 'fulfilled' ? prev.value : [];
         expenses.value = exp.status === 'fulfilled' && Array.isArray(exp.value?.items) ? exp.value.items : [];
         incomes.value = inc.status === 'fulfilled' && Array.isArray(inc.value?.items) ? inc.value.items : [];
-        failed.value = cur.status === 'rejected';
+        // un seul chargement en échec suffit : sans cela, « Revenus 0.00 » s'affichait comme un vrai chiffre
+        failed.value = [cur, prev, exp, inc].some((result) => result.status === 'rejected');
         loading.value = false;
     }
 

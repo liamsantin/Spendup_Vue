@@ -39,6 +39,7 @@ import { useSharedDebtsStore } from '@/features/shared-debts/stores/shared-debts
 import { useNetWorthStore } from '@/features/net-worth/stores/net-worth-store';
 import { useSidebarNavStore } from '@/layouts/full/vertical-sidebar/sidebar-nav-store';
 import { isIdleSessionError } from '@/features/auth/idle-session';
+import { createTokenBroadcast } from '@/features/auth/token-broadcast';
 import { clearCsrfToken, rememberCsrfToken } from '@/features/auth/csrf';
 import { isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 import { useVaultStore } from '@/features/vault/stores/vault-store';
@@ -108,6 +109,17 @@ export function createAuthSession() {
     const lastRefreshTransient = ref(false);
     /** Change à chaque `clearSession` : un refresh parti avant ne doit plus rien écrire. */
     let sessionEpoch = 0;
+
+    /**
+     * Mode Bearer : un onglet dupliqué partage la chaîne de refresh. Celui qui rafraîchit annonce ses nouveaux
+     * jetons, l'autre les adopte au lieu de présenter un jeton déjà roté (V1.5).
+     */
+    const tokenBroadcast = cookieMode
+        ? null
+        : createTokenBroadcast((tokens) => {
+              if (!refreshToken.value || !tokens.refreshToken || tokens.refreshToken === refreshToken.value) return;
+              setTokens(tokens);
+          });
 
     /** Cookie-mode : cookies HttpOnly ; Bearer : access/refresh en mémoire + sessionStorage. */
     const isAuthenticated = computed(() => (cookieMode ? cookieSessionActive.value : !!accessToken.value || !!refreshToken.value));
@@ -234,6 +246,7 @@ export function createAuthSession() {
                 if (epoch !== sessionEpoch) return false;
                 lastRefreshTransient.value = false;
                 setTokens(tokens);
+                tokenBroadcast?.publish(tokens);
                 return true;
             } catch (e: unknown) {
                 if (epoch !== sessionEpoch) return false;

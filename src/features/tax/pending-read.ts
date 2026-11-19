@@ -1,6 +1,7 @@
 import type { TotalCheck, ReadLine } from '@/features/tax/reader/types';
 import type { ReadScope } from '@/features/tax/read-checks';
 import type { TaxSuggestion } from '@/features/tax/types';
+import { deviceStorage } from '@/features/demo/device-storage';
 
 /**
  * Montants lus dans un PDF importé, gardés sur cet appareil (localStorage) tant que l'utilisateur ne les a pas
@@ -40,7 +41,7 @@ function key(publicId: string): string {
 
 function load(publicId: string): StoredRead | null {
     try {
-        const raw = localStorage.getItem(key(publicId));
+        const raw = deviceStorage.getItem(key(publicId));
         const parsed: unknown = raw ? JSON.parse(raw) : null;
         if (Array.isArray(parsed)) {
             return { profileLabel: '', items: parsed as TaxSuggestion[], totals: [], unmapped: [], dismissed: true };
@@ -54,8 +55,8 @@ function load(publicId: string): StoredRead | null {
 function save(publicId: string, value: StoredRead | null) {
     try {
         if (value && (value.items.length || (!value.dismissed && (value.totals.length || value.unmapped.length)))) {
-            localStorage.setItem(key(publicId), JSON.stringify(value));
-        } else localStorage.removeItem(key(publicId));
+            deviceStorage.setItem(key(publicId), JSON.stringify(value));
+        } else deviceStorage.removeItem(key(publicId));
     } catch {
         /* stockage indisponible : les montants lus ne survivront pas à un rechargement */
     }
@@ -64,7 +65,7 @@ function save(publicId: string, value: StoredRead | null) {
 /** Déclaration créée par import d'un fichier : les propositions de l'application n'y sont pas affichées. */
 export function markImportedReturn(publicId: string) {
     try {
-        localStorage.setItem(`${IMPORTED_PREFIX}${publicId}`, '1');
+        deviceStorage.setItem(`${IMPORTED_PREFIX}${publicId}`, '1');
     } catch {
         /* stockage indisponible : les propositions de l'application réapparaîtront */
     }
@@ -72,7 +73,7 @@ export function markImportedReturn(publicId: string) {
 
 export function isImportedReturn(publicId: string): boolean {
     try {
-        return localStorage.getItem(`${IMPORTED_PREFIX}${publicId}`) === '1';
+        return deviceStorage.getItem(`${IMPORTED_PREFIX}${publicId}`) === '1';
     } catch {
         return false;
     }
@@ -117,7 +118,7 @@ export function clearPendingRead(publicId: string) {
     notices.delete(publicId);
     save(publicId, null);
     try {
-        localStorage.removeItem(`${IMPORTED_PREFIX}${publicId}`);
+        deviceStorage.removeItem(`${IMPORTED_PREFIX}${publicId}`);
     } catch {
         /* rien à nettoyer */
     }

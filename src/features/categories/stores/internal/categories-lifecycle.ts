@@ -22,6 +22,7 @@ export function createCategoriesLifecycle(state: CategoriesState, deps: Lifecycl
         itemsByListKey.clear();
         activateList(KEY_TREE);
         items.value = [];
+        state.tree.value = [];
         loading.value = false;
         resetActing();
         initialized.value = false;

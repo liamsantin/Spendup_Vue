@@ -151,23 +151,37 @@ async function onConfirm() {
     linking.value = true;
     localError.value = null;
     const chosen = candidates.value.filter((item) => selectedIds.value.includes(item.publicId));
+    const nextGoalId = isUnlink.value ? '' : goal.publicId;
+    let changed = 0;
+    let firstError: string | null = null;
     try {
-        const nextGoalId = isUnlink.value ? '' : goal.publicId;
+        // chaque transaction séparément : un refus n'annule pas celles déjà liées, et ne bloque pas les suivantes
         for (const item of chosen) {
             const fields = transactionFormFieldsWithSavingsGoal(item, nextGoalId);
             if (!fields) continue;
-            await transactionsStore.updateTransaction(item.publicId, fields);
+            try {
+                await transactionsStore.updateTransaction(item.publicId, fields);
+                changed += 1;
+            } catch (e: unknown) {
+                const err = AppError.fromUnknown(e);
+                firstError ??= `${item.label} : ${err.status === 404 ? t('transactionsPage.errors.notFound') : getErrorMessage(e)}`;
+            }
         }
-        await savingsGoalsStore.fetchSavingsGoal(goal.publicId, true).catch(() => undefined);
-        emit('linked');
-        open.value = false;
-    } catch (e: unknown) {
-        const err = AppError.fromUnknown(e);
-        localError.value = err.status === 404 ? t('transactionsPage.errors.notFound') : getErrorMessage(e);
-        await loadCandidates();
     } finally {
+        // le montant épargné de la fiche suit ce qui a réellement été lié, même en cas d'échec partiel
+        if (changed > 0) {
+            await savingsGoalsStore.fetchSavingsGoal(goal.publicId, true).catch(() => undefined);
+            emit('linked');
+        }
         linking.value = false;
     }
+    if (!firstError) {
+        open.value = false;
+        return;
+    }
+    await loadCandidates();
+    // posé après le rechargement, qui remet l'erreur à zéro
+    localError.value = firstError;
 }
 </script>
 

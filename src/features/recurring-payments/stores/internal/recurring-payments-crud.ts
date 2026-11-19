@@ -604,6 +604,31 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         }
     }
 
+    /**
+     * Rafraîchissements qui suivent une action réussie sur une échéance (modèle, soldes, journal). Une erreur ici
+     * ne fait pas échouer l'action : elle est déjà faite côté serveur, et la présenter comme un échec pousserait à
+     * recliquer (second POST sur la même échéance).
+     */
+    async function refreshAfterDueAction(
+        kind: RecurringKind,
+        templatePublicId: string,
+        options: { reloadDues?: boolean; finance?: boolean }
+    ) {
+        let accountPublicId: string | null | undefined;
+        try {
+            const template = kind === 'expense' ? await getExpense(templatePublicId, true) : await getIncome(templatePublicId, true);
+            accountPublicId = template.accountPublicId;
+        } catch {
+            const cached =
+                kind === 'expense'
+                    ? expenses.value.find((item) => item.publicId === templatePublicId)
+                    : incomes.value.find((item) => item.publicId === templatePublicId);
+            accountPublicId = cached?.accountPublicId ?? getDetail(kind, templatePublicId)?.accountPublicId;
+        }
+        if (options.reloadDues) await loadDues(kind, templatePublicId, { force: true }).catch(() => undefined);
+        if (options.finance) await refreshLinkedFinance(accountPublicId).catch(() => undefined);
+    }
+
     async function confirmDue(kind: RecurringKind, templatePublicId: string, duePublicId: string, fields?: ConfirmDueFormFields) {
         beginActing();
         clearError();
@@ -620,8 +645,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
                     ? await recurringExpensesApi.confirmDue(templatePublicId, duePublicId, body)
                     : await recurringIncomesApi.confirmDue(templatePublicId, duePublicId, body);
             upsertDue(kind, templatePublicId, due);
-            const template = kind === 'expense' ? await getExpense(templatePublicId, true) : await getIncome(templatePublicId, true);
-            await refreshLinkedFinance(template.accountPublicId);
+            await refreshAfterDueAction(kind, templatePublicId, { finance: true });
             if (kind === 'expense') refreshTagCountersIfLoaded();
             return due;
         } catch (e: unknown) {
@@ -646,9 +670,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
                     ? await recurringExpensesApi.linkDue(templatePublicId, duePublicId, body)
                     : await recurringIncomesApi.linkDue(templatePublicId, duePublicId, body);
             upsertDue(kind, templatePublicId, due);
-            const template = kind === 'expense' ? await getExpense(templatePublicId, true) : await getIncome(templatePublicId, true);
-            await loadDues(kind, templatePublicId, { force: true }).catch(() => undefined);
-            await refreshLinkedFinance(template.accountPublicId);
+            await refreshAfterDueAction(kind, templatePublicId, { reloadDues: true, finance: true });
             return due;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
@@ -669,8 +691,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
                     ? await recurringExpensesApi.skipDue(templatePublicId, duePublicId)
                     : await recurringIncomesApi.skipDue(templatePublicId, duePublicId);
             upsertDue(kind, templatePublicId, due);
-            if (kind === 'expense') await getExpense(templatePublicId, true);
-            else await getIncome(templatePublicId, true);
+            await refreshAfterDueAction(kind, templatePublicId, {});
             return due;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);

@@ -46,10 +46,18 @@ export function createPersonalLoansRealtime(state: PersonalLoansState, deps: Rea
         scheduleRefetch();
     }
 
+    let unsubscribeResync: (() => void) | null = null;
+
     function ensureRealtimeBridge() {
         if (unsubscribePersonalLoanChanged) return;
         const notifications = useNotificationsStore();
         unsubscribePersonalLoanChanged = notifications.subscribeToPersonalLoanChanged(handlePersonalLoanChanged);
+        // après une coupure du temps réel, les `personalLoanChanged` manqués sont rattrapés par un refetch
+        unsubscribeResync =
+            notifications.subscribeToResync?.(() => {
+                invalidateAllLists();
+                scheduleRefetch();
+            }) ?? null;
     }
 
     function onAuthenticatedSession() {
@@ -59,6 +67,8 @@ export function createPersonalLoansRealtime(state: PersonalLoansState, deps: Rea
     function teardownRealtimeBridge() {
         unsubscribePersonalLoanChanged?.();
         unsubscribePersonalLoanChanged = null;
+        unsubscribeResync?.();
+        unsubscribeResync = null;
         refreshScheduled = false;
     }
 

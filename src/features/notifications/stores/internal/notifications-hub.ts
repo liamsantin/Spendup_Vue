@@ -93,6 +93,8 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
     const { pushLiveFriendChip, maybeShowNativeOsNotification, applyInboxCleared, fetchUnreadCount, loadInbox } = deps;
 
     let handlingSessionEnded = false;
+    /** Stores à resynchroniser après une coupure (amis, dettes, prêts…) : leurs événements ont pu être perdus. */
+    const resyncListeners = new Set<() => void>();
 
     /** Handler SignalR : notification reçue (badge, inbox, chips, OS). */
     function onNotificationReceived(payload: NotificationReceivedPayload) {
@@ -242,7 +244,26 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         if (state.inboxLoaded.value) {
             tasks.push(loadInbox({ page: 1, append: false }).catch(() => undefined));
         }
+        resyncListeners.forEach((listener) => {
+            try {
+                listener();
+            } catch {
+                // un store qui échoue n'empêche pas les autres de se resynchroniser
+            }
+        });
         await Promise.all(tasks);
+    }
+
+    /**
+     * Abonne un store à la resynchronisation après coupure du temps réel.
+     * @param listener Callback (refetch des listes chargées).
+     * @returns Fonction de désabonnement.
+     */
+    function subscribeToResync(listener: () => void) {
+        resyncListeners.add(listener);
+        return () => {
+            resyncListeners.delete(listener);
+        };
     }
 
     /**
@@ -456,7 +477,10 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
             onSharedDebtChanged,
             onInboxCleared,
             onSessionEnded: (payload) => onSessionEnded(payload),
-            onReconnected
+            onReconnected,
+            onDisconnected: () => {
+                hubConnected.value = false;
+            }
         });
     }
 
@@ -500,6 +524,7 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         subscribeToLiabilityChanged,
         subscribeToPersonalLoanChanged,
         subscribeToSharedDebtChanged,
+        subscribeToResync,
         dispatchLocalAccountChanged
     };
 }

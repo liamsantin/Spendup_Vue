@@ -1,5 +1,6 @@
 import { ref } from 'vue';
 import { migrateValidatedSteps } from '@/features/tax/steps';
+import { deviceStorage } from '@/features/demo/device-storage';
 
 const validatedKey = (id: string) => `spendup.tax.validated.${id}`;
 
@@ -12,7 +13,7 @@ export function useTaxValidatedSteps(currentId: () => string | null | undefined)
 
     function load(id: string) {
         try {
-            const raw = localStorage.getItem(validatedKey(id));
+            const raw = deviceStorage.getItem(validatedKey(id));
             const parsed = raw ? (JSON.parse(raw) as unknown) : [];
             validated.value = Array.isArray(parsed)
                 ? migrateValidatedSteps(parsed.filter((item): item is string => typeof item === 'string'))
@@ -29,7 +30,7 @@ export function useTaxValidatedSteps(currentId: () => string | null | undefined)
     function persist() {
         const id = currentId();
         if (!id) return;
-        localStorage.setItem(validatedKey(id), JSON.stringify(validated.value));
+        deviceStorage.setItem(validatedKey(id), JSON.stringify(validated.value));
     }
 
     function isDone(id: string): boolean {

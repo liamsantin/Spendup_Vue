@@ -1,6 +1,7 @@
 import { HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { useAuthStore } from '@/features/auth';
 import { getApiBaseUrl, isAuthCookieMode } from '@/utils/helpers/axios-helpers';
+import { isDemoSession } from '@/features/demo/session';
 import type {
     AccountChangedPayload,
     CategoryChangedPayload,
@@ -43,13 +44,66 @@ export type NotificationsHubHandlers = {
     onSharedDebtChanged?: (payload: SharedDebtChangedPayload) => void;
     onInboxCleared?: (payload: InboxClearedPayload) => void;
     onSessionEnded?: (payload: SessionEndedPayload) => void | Promise<void>;
-    /** Après reconnexion auto : resynchroniser ce qui a pu être poussé pendant la coupure. */
+    /** Après reconnexion (auto ou relance après fermeture) : resynchroniser ce qui a pu être poussé pendant la coupure. */
     onReconnected?: () => void | Promise<void>;
+    /** Connexion perdue (reconnexion en cours ou fermeture définitive). */
+    onDisconnected?: () => void;
 };
 
 let connection: HubConnection | null = null;
 let handlers: NotificationsHubHandlers = {};
 let startPromise: Promise<void> | null = null;
+
+/** Arrêt volontaire (déconnexion) : aucune relance automatique. */
+let stopped = true;
+let restartTimer: ReturnType<typeof setTimeout> | null = null;
+let restartAttempt = 0;
+let wakeListenersAttached = false;
+
+/** Délai de relance après une fermeture définitive : 5 s, 10 s, 20 s… plafonné à 5 min. */
+export function hubRestartDelayMs(attempt: number): number {
+    return Math.min(300_000, 5_000 * 2 ** Math.max(0, attempt));
+}
+
+function clearRestartTimer() {
+    if (restartTimer) clearTimeout(restartTimer);
+    restartTimer = null;
+}
+
+/**
+ * `withAutomaticReconnect` abandonne après ~42 s (veille, réseau coupé) : sans relance, plus aucun événement
+ * (notifications, `sessionEnded`) jusqu'à la navigation suivante. On relance avec un délai croissant.
+ */
+function scheduleRestart() {
+    if (stopped || restartTimer) return;
+    const delay = hubRestartDelayMs(restartAttempt);
+    restartAttempt += 1;
+    restartTimer = setTimeout(() => {
+        restartTimer = null;
+        void startNotificationsHub()
+            .then(() => {
+                restartAttempt = 0;
+            })
+            .catch(() => scheduleRestart());
+    }, delay);
+}
+
+/** Retour du réseau ou de l'onglet : relance immédiate si la connexion est fermée. */
+function restartNowIfClosed() {
+    if (stopped || !connection || connection.state !== HubConnectionState.Disconnected) return;
+    clearRestartTimer();
+    restartAttempt = 0;
+    void startNotificationsHub().catch(() => scheduleRestart());
+}
+
+function attachWakeListeners() {
+    if (wakeListenersAttached || typeof window === 'undefined') return;
+    wakeListenersAttached = true;
+    window.addEventListener('online', restartNowIfClosed);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') restartNowIfClosed();
+    });
+}
 
 /** Cookie `spendup_access` est Path=/api — hors scope du hub `/hubs/realtime`. */
 export const HUB_ACCESS_TOKEN_REQUIRED = 'SignalR requires an access token in memory (API: ReturnAccessTokenInBody=true).';
@@ -189,15 +243,30 @@ function buildConnection(): HubConnection {
 
     conn.onreconnected(() => {
         attachHandlers(conn);
-        // Les événements émis pendant la coupure sont perdus : le store refetch badge / inbox.
-        try {
-            void Promise.resolve(handlers.onReconnected?.()).catch(() => undefined);
-        } catch {
-            // ignore
-        }
+        notifyReconnected();
+    });
+
+    conn.onreconnecting(() => {
+        handlers.onDisconnected?.();
+    });
+
+    // fermeture définitive (reconnexion auto abandonnée, serveur arrêté) : relance par nos soins
+    conn.onclose(() => {
+        if (conn !== connection) return;
+        handlers.onDisconnected?.();
+        scheduleRestart();
     });
 
     return conn;
+}
+
+/** Les événements émis pendant la coupure sont perdus : les stores resynchronisent (badge, inbox, listes). */
+function notifyReconnected() {
+    try {
+        void Promise.resolve(handlers.onReconnected?.()).catch(() => undefined);
+    } catch {
+        // ignore
+    }
 }
 
 export function setNotificationsHubHandlers(next: NotificationsHubHandlers) {
@@ -210,13 +279,21 @@ export function getNotificationsHubState(): HubConnectionState | null {
 }
 
 export async function startNotificationsHub(): Promise<void> {
+    // mode démo : aucune session réelle, aucune requête vers l'API (le jeton « demo » finirait en 401)
+    if (isDemoSession()) return;
+    stopped = false;
+    attachWakeListeners();
     if (connection?.state === HubConnectionState.Connected) return;
+    // reconnexion automatique en cours : ne pas appeler start() dessus (rejet, refresh et nouvelle connexion inutiles)
+    if (connection && (connection.state === HubConnectionState.Reconnecting || connection.state === HubConnectionState.Connecting)) return;
     if (startPromise) return startPromise;
 
     startPromise = (async () => {
         // Échoue tôt si aucun JWT mémoire (évite un start opaque 401).
         await accessTokenFactory();
 
+        // une connexion déjà ouverte puis fermée : sa relance doit resynchroniser ce qui a été manqué
+        const restarting = !!connection;
         if (!connection) {
             connection = buildConnection();
         } else {
@@ -225,8 +302,10 @@ export async function startNotificationsHub(): Promise<void> {
 
         if (connection.state === HubConnectionState.Connected) return;
 
+        clearRestartTimer();
         try {
             await connection.start();
+            if (restarting) notifyReconnected();
         } catch (firstError) {
             // 401 / échec start → refresh puis une seconde tentative.
             const auth = useAuthStore();
@@ -242,6 +321,7 @@ export async function startNotificationsHub(): Promise<void> {
             }
             connection = buildConnection();
             await connection.start();
+            if (restarting) notifyReconnected();
         }
     })();
 
@@ -253,6 +333,9 @@ export async function startNotificationsHub(): Promise<void> {
 }
 
 export async function stopNotificationsHub(): Promise<void> {
+    stopped = true;
+    clearRestartTimer();
+    restartAttempt = 0;
     startPromise = null;
     const conn = connection;
     connection = null;

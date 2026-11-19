@@ -227,7 +227,8 @@ describe('useSharedDebtsStore', () => {
         });
         const store = useSharedDebtsStore();
         const items = await store.loadExpenseCandidates('coop');
-        expect(transactions.list).toHaveBeenCalledWith({ search: 'coop', pageSize: 100 });
+        // V4.3 : filtre « dépense » côté serveur, les 100 candidates sont toutes des dépenses
+        expect(transactions.list).toHaveBeenCalledWith({ search: 'coop', type: 'depense', pageSize: 100 });
         expect(items.map((item) => item.publicId)).toEqual(['t-1']);
         expect(store.expenseCandidates).toHaveLength(1);
     });

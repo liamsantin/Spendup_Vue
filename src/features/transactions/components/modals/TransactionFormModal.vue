@@ -13,6 +13,7 @@ import TransactionReimbursements from '@/features/transactions/components/forms/
 import TransactionTaxNature from '@/features/transactions/components/forms/TransactionTaxNature.vue';
 import { resolveTaxNature, type SetTransactionTaxNaturePayload } from '@/features/transactions/tax-nature';
 import { categorySelectItems } from '@/features/categories/payload';
+import { filterCategoryTreeByType } from '@/features/categories/format';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { sanitizeTagPublicIds } from '@/features/tags/format';
@@ -22,7 +23,9 @@ import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-go
 import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import { ASSET_NOT_FOUND_MESSAGE } from '@/features/assets/types';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
-import { sourceAccountPublicId, targetAccountPublicId, todayUtcYmd } from '@/features/transactions/format';
+import { sourceAccountPublicId, targetAccountPublicId } from '@/features/transactions/format';
+import { useUserSettingsStore } from '@/features/user-settings';
+import { todayInTimeZone } from '@/utils/helpers/today';
 import { plannedAmountForRecurrenceTransaction } from '@/features/transactions/recurrence-planned';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import {
@@ -87,6 +90,12 @@ const store = useTransactionsStore();
 const filesStore = useFilesStore();
 const savingsGoalsStore = useSavingsGoalsStore();
 const assetsStore = useAssetsStore();
+const userSettings = useUserSettingsStore();
+
+/** Aujourd'hui dans le fuseau de l'utilisateur : celui que l'API applique pour refuser une date future. */
+function todayForUser(): string {
+    return todayInTimeZone(userSettings.current.timezone);
+}
 
 const isEdit = ref(false);
 const editTransaction = ref<Transaction | null>(null);
@@ -160,8 +169,10 @@ const paymentMethodItems = computed(() => {
     return [...none, ...options];
 });
 
+// arbre complet filtré ici : le formulaire ne change plus la liste active du store (filtres de la page derrière)
 const categoryItems = computed(() => {
-    const items = categorySelectItems(categoriesStore.items, { noneTitle: t('transactionsPage.form.noCategory') });
+    const roots = filterCategoryTreeByType(categoriesStore.tree, form.type);
+    const items = categorySelectItems(roots, { noneTitle: t('transactionsPage.form.noCategory') });
     const selected = form.categoryPublicId;
     if (selected && !items.some((item) => item.value === selected)) {
         const known = categoriesStore.findByPublicId(selected);
@@ -170,14 +181,19 @@ const categoryItems = computed(() => {
     return items;
 });
 
+/** Modèles du type et du compte choisis : seuls candidats valables pour une nouvelle liaison. */
+function recurrenceTemplatesForForm() {
+    if (form.type === 'transfert') return [];
+    const accountId = form.accountPublicId;
+    return form.type === 'revenu'
+        ? recurringStore.incomes.filter((item) => !accountId || item.accountPublicId === accountId)
+        : recurringStore.expenses.filter((item) => !accountId || item.accountPublicId === accountId);
+}
+
 const recurrenceItems = computed(() => {
     const none = [{ title: t('transactionsPage.form.noRecurrence'), value: '' }];
     if (form.type === 'transfert') return none;
-    const accountId = form.accountPublicId;
-    const templates =
-        form.type === 'revenu'
-            ? recurringStore.incomes.filter((item) => !accountId || item.accountPublicId === accountId)
-            : recurringStore.expenses.filter((item) => !accountId || item.accountPublicId === accountId);
+    const templates = recurrenceTemplatesForForm();
     const selected = form.recurrencePublicId;
     const options = templates
         .filter((item) => item.isActive || item.publicId === selected)
@@ -284,7 +300,7 @@ const form = reactive<TransactionFormFields>({
     counterpartyAccountPublicId: '',
     label: '',
     amount: '',
-    operationDate: todayUtcYmd(),
+    operationDate: todayForUser(),
     valueDate: null,
     paymentMethodPublicId: '',
     categoryPublicId: '',
@@ -426,7 +442,7 @@ function resetForm() {
     form.counterpartyAccountPublicId = '';
     form.label = '';
     form.amount = '';
-    form.operationDate = todayUtcYmd();
+    form.operationDate = todayForUser();
     form.valueDate = null;
     form.paymentMethodPublicId = '';
     form.categoryPublicId = props.defaultCategoryPublicId?.trim() || '';
@@ -443,8 +459,8 @@ async function loadPaymentMethodsForAccount(accountPublicId: string | null) {
     await paymentMethodsStore.loadList({ accountPublicId: id }).catch(() => undefined);
 }
 
-async function loadCategoriesForType(type: TransactionType) {
-    await categoriesStore.loadList({ type }).catch(() => undefined);
+async function loadCategoryTree() {
+    await categoriesStore.loadTree().catch(() => undefined);
 }
 
 async function loadRecurrences() {
@@ -460,7 +476,9 @@ function syncRecurrenceSelection() {
         return;
     }
     if (!form.recurrencePublicId) return;
-    if (!recurrenceItems.value.some((item) => item.value === form.recurrencePublicId)) {
+    // contrôle sur les modèles du compte, pas sur `recurrenceItems` qui garde toujours la valeur choisie en repli
+    // (pour l'afficher) : sinon une récurrence du compte A restait liée après le passage au compte B
+    if (!recurrenceTemplatesForForm().some((item) => item.publicId === form.recurrencePublicId)) {
         form.recurrencePublicId = '';
     }
 }
@@ -484,7 +502,7 @@ watch(
         resetForm();
         await Promise.all([
             loadPaymentMethodsForAccount(form.accountPublicId),
-            loadCategoriesForType(form.type),
+            loadCategoryTree(),
             loadRecurrences(),
             filesStore.loadList().catch(() => undefined),
             filesStore.loadUsage(),
@@ -497,7 +515,7 @@ watch(
 
 watch(
     () => form.type,
-    async (type) => {
+    (type) => {
         const fromReset = typeSetByReset;
         typeSetByReset = false;
         if (isEdit.value) return;
@@ -510,7 +528,6 @@ watch(
         form.categoryPublicId = '';
         form.recurrencePublicId = '';
         form.savingsGoalPublicId = '';
-        await loadCategoriesForType(type);
     }
 );
 
@@ -526,9 +543,13 @@ watch(
             form.counterpartyAccountPublicId = '';
         }
         await loadPaymentMethodsForAccount(accountId);
-        const stillValid = paymentMethodItems.value.some((item) => item.value === form.paymentMethodPublicId);
-        if (!stillValid) form.paymentMethodPublicId = '';
-        syncRecurrenceSelection();
+        // en édition le compte ne change pas : un GET des moyens de paiement en échec (ou qui n'inclut pas celui
+        // de la transaction) ne doit pas retirer le moyen de paiement à l'enregistrement
+        if (!isEdit.value) {
+            const stillValid = paymentMethodItems.value.some((item) => item.value === form.paymentMethodPublicId);
+            if (!stillValid) form.paymentMethodPublicId = '';
+            syncRecurrenceSelection();
+        }
         syncSavingsGoalSelection();
     }
 );
@@ -546,7 +567,8 @@ async function onSave() {
     clearFieldErrors();
     const context = {
         accounts: accountsStore.accounts,
-        savingsGoals: savingsGoalsStore.allKnownItems()
+        savingsGoals: savingsGoalsStore.allKnownItems(),
+        timeZone: userSettings.current.timezone ?? null
     };
     const built = isEdit.value ? buildUpdateTransactionPayload(form, context) : buildCreateTransactionPayload(form, context);
     if (!built.ok) {

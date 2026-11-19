@@ -29,6 +29,7 @@ export const useCategoriesStore = defineStore('categories', () => {
 
     return {
         items: state.items,
+        tree: state.tree,
         totalCount: state.totalCount,
         loading: state.loading,
         acting: state.acting,
@@ -40,6 +41,7 @@ export const useCategoriesStore = defineStore('categories', () => {
         findByPublicId: state.findByPublicId,
         clearError: state.clearError,
         loadList: crud.loadList,
+        loadTree: crud.loadTree,
         createCategory: crud.createCategory,
         updateCategory: crud.updateCategory,
         deleteCategory: crud.deleteCategory,

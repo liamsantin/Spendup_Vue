@@ -9,6 +9,8 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { getFriendDisplayNameFromItem, useFriendsStore } from '@/features/friends';
+import { listAllFriends } from '@/features/friends/list-all';
+import type { FriendItem } from '@/features/friends/types';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { formatCalendarDate, formatSharedDebtAmount, isSharedDebtCurrency } from '@/features/shared-debts/format';
 import {
@@ -52,8 +54,25 @@ const open = computed({
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
+/** Tous les amis (toutes les pages) : le store ne garde que la première page (20), le 21e restait introuvable. */
+const allFriends = ref<FriendItem[] | null>(null);
+let friendsRequestSeq = 0;
+
+async function loadAllFriends() {
+    const seq = ++friendsRequestSeq;
+    try {
+        const items = await listAllFriends();
+        if (seq === friendsRequestSeq) allFriends.value = items;
+    } catch {
+        // repli sur la première page du store
+    }
+}
+
 const friendItems = computed(() =>
-    friendsStore.friends.map((friend) => ({ title: getFriendDisplayNameFromItem(friend), value: friend.user.publicId }))
+    (allFriends.value ?? friendsStore.friends).map((friend) => ({
+        title: getFriendDisplayNameFromItem(friend),
+        value: friend.user.publicId
+    }))
 );
 
 const transactionItems = computed(() =>
@@ -148,6 +167,7 @@ watch(
         if (!friendsStore.initialized || !friendsStore.friends.length) {
             void friendsStore.loadFriends().catch(() => undefined);
         }
+        void loadAllFriends();
         void store.loadExpenseCandidates().catch(() => undefined);
     }
 );

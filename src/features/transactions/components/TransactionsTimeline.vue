@@ -546,7 +546,11 @@ async function loadTimeline(force = false) {
 
 function onVisibilityChange() {
     if (document.visibilityState !== 'visible' || !store.initialized) return;
-    void loadTimeline(true).catch(() => undefined);
+    // au retour sur l'onglet, la liste garde les lignes déjà chargées par « Charger plus » (position conservée)
+    const previousCount = store.items.length;
+    void loadTimeline(true)
+        .then(() => store.restoreDepth(previousCount, store.activeListKey))
+        .catch(() => undefined);
 }
 
 onMounted(() => {

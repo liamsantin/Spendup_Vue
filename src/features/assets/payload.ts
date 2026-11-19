@@ -1,5 +1,6 @@
 import { parseAccountAmount } from '@/features/accounts/format';
 import { emptyToNull, isAssetCurrency, isAssetType, isValidYmd } from '@/features/assets/format';
+import { toPlainDecimalString } from '@/utils/helpers/decimal-string';
 import {
     ASSET_DESCRIPTION_MAX,
     ASSET_NAME_MAX,
@@ -195,8 +196,9 @@ export type AssetSubPayloadContext = {
     today?: string | null;
 };
 
+/** Valeur pour un champ de saisie, en notation décimale simple (jamais « 5e-7 »). */
 function numberString(value: number | null | undefined): string {
-    return value == null ? '' : String(value);
+    return value == null ? '' : toPlainDecimalString(value);
 }
 
 export function emptyVehicleFormFields(): VehicleFormFields {
@@ -297,7 +299,7 @@ export function assetToFormFields(asset: Asset): AssetFormFields {
         fields.crypto = {
             name: asset.crypto.name,
             symbol: asset.crypto.symbol,
-            quantity: String(asset.crypto.quantity),
+            quantity: toPlainDecimalString(asset.crypto.quantity),
             averagePurchasePrice: numberString(asset.crypto.averagePurchasePrice),
             platform: asset.crypto.platform ?? '',
             walletAddress: asset.crypto.walletAddress ?? ''
@@ -591,6 +593,8 @@ function commonFields(fields: AssetFormFields, context: AssetPayloadContext): Co
         // Épargne adossée : la valeur suit le solde du compte, la saisie est ignorée.
         estimatedValue = Math.max(0, Number(context.currentEstimatedValue) || 0);
     } else {
+        // Vide = 0 (valeur inconnue, voulu). Le champ est en texte libre (`AssetForm`) : une saisie illisible
+        // comme « 250'000 » arrive telle quelle et est refusée, au lieu de devenir '' (input number) puis 0.
         const parsed = parseAccountAmount(fields.estimatedValue.trim() || '0');
         if (parsed == null) return fail('estimatedValueInvalid', 'estimatedValue');
         if (parsed < 0) return fail('estimatedValueNegative', 'estimatedValue');

@@ -66,6 +66,8 @@ const loadingLinkedTx = ref(false);
 const linkOpen = ref(false);
 const editOpen = ref(false);
 const visibleDues = ref<RecurringDue[]>([]);
+/** Récurrence à laquelle appartiennent `visibleDues` : jamais affichées sur la fiche d'une autre. */
+const visibleDuesFor = ref('');
 const groupOpen = reactive({ existing: true, upcoming: true });
 
 const template = computed(() => {
@@ -79,7 +81,7 @@ const dues = computed(() => {
     void store.duesEpoch;
     const loaded = store.getDues(props.kind, props.publicId);
     if (loaded.length) return loaded;
-    if (visibleDues.value.length) return visibleDues.value;
+    if (visibleDues.value.length && visibleDuesFor.value === props.publicId.trim()) return visibleDues.value;
     return template.value?.upcomingDues ?? [];
 });
 const dueGroups = computed(() => {
@@ -201,19 +203,33 @@ const txOpen = computed({
         if (!value) txTarget.value = null;
     }
 });
+/**
+ * Le composant n'est pas recréé quand on passe d'une récurrence à l'autre : chaque chargement porte un numéro,
+ * et une réponse qui arrive après la navigation (récurrence A sur la fiche de B) est ignorée.
+ */
+let loadSeq = 0;
+
 async function loadDetail() {
     const id = props.publicId.trim();
     if (!id) return;
+    const seq = ++loadSeq;
+    const kind = props.kind;
+    const stale = () => seq !== loadSeq;
     loading.value = true;
     localError.value = null;
+    visibleDues.value = [];
+    visibleDuesFor.value = id;
     try {
-        const detail = props.kind === 'expense' ? await store.getExpense(id, true) : await store.getIncome(id, true);
-        visibleDues.value = detail.upcomingDues ?? store.getDues(props.kind, id);
+        const detail = kind === 'expense' ? await store.getExpense(id, true) : await store.getIncome(id, true);
+        if (stale()) return;
+        visibleDues.value = detail.upcomingDues ?? store.getDues(kind, id);
         if (!accountsStore.initialized) void accountsStore.loadAccounts().catch(() => undefined);
-        const items = await store.loadDues(props.kind, id, { force: true });
-        visibleDues.value = items.length ? items : (store.getDues(props.kind, id) ?? []);
-        await loadLinkedTransactions();
+        const items = await store.loadDues(kind, id, { force: true });
+        if (stale()) return;
+        visibleDues.value = items.length ? items : (store.getDues(kind, id) ?? []);
+        await loadLinkedTransactions(seq);
     } catch (e: unknown) {
+        if (stale()) return;
         const err = AppError.fromUnknown(e);
         store.clearError();
         if (err.status === 404) {
@@ -222,20 +238,25 @@ async function loadDetail() {
         }
         localError.value = getErrorMessage(e);
     } finally {
-        loading.value = false;
+        if (!stale()) loading.value = false;
     }
 }
 
-async function loadLinkedTransactions() {
+async function loadLinkedTransactions(seq = loadSeq) {
+    const kind = props.kind;
+    const publicId = props.publicId;
     loadingLinkedTx.value = true;
     try {
-        linkedTransactions.value = await listAllLinkedTransactions({
-            kind: props.kind,
-            publicId: props.publicId,
+        const found = await listAllLinkedTransactions({
+            kind,
+            publicId,
             list: (query) => transactionsApi.list(query),
-            get: (publicId) => transactionsApi.get(publicId)
+            get: (txPublicId) => transactionsApi.get(txPublicId)
         });
+        if (seq !== loadSeq) return;
+        linkedTransactions.value = found;
     } catch (e: unknown) {
+        if (seq !== loadSeq) return;
         linkedTransactions.value = [];
         localError.value = getErrorMessage(e);
     } finally {

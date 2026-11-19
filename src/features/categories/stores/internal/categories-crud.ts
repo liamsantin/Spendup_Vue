@@ -78,6 +78,26 @@ export function createCategoriesCrud(state: CategoriesState) {
         }
     }
 
+    let treeRequestSeq = 0;
+
+    /**
+     * Charge l'arbre complet dans `tree` sans changer la liste active (`items`) : un formulaire qui ne veut que
+     * les catégories d'un type le filtre lui-même, et la page derrière garde ses filtres.
+     */
+    async function loadTree(force = false) {
+        const requestId = ++treeRequestSeq;
+        await cache.ensure(
+            KEY_TREE,
+            async () => {
+                const result = await categoriesApi.list({});
+                if (requestId !== treeRequestSeq) return;
+                const nextItems = Array.isArray(result?.items) ? result.items : [];
+                setList(KEY_TREE, nextItems, { totalCount: result?.totalCount ?? nextItems.length });
+            },
+            { force }
+        );
+    }
+
     async function loadList(query: ListCategoriesQuery & { force?: boolean } = {}) {
         const type = query.type && CATEGORY_TYPES.includes(query.type) ? query.type : undefined;
         const key = listCacheKey(type);
@@ -376,6 +396,7 @@ export function createCategoriesCrud(state: CategoriesState) {
 
     return {
         loadList,
+        loadTree,
         cancelPendingLoads,
         createCategory,
         updateCategory,
