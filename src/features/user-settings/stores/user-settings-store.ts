@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
+import { withStepUpRetry } from '@/features/auth/step-up';
 import { userSettingsApi } from '@/features/user-settings/api';
 import {
     applyUserSettingsToRuntime,
@@ -102,7 +103,7 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
         error.value = null;
         try {
             const payload = normalizeSecuritySettings(next);
-            const result = await userSettingsApi.put(payload);
+            const result = await withStepUpRetry((stepUp) => userSettingsApi.put(payload, stepUp));
             return await applySavedResult(result);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);
@@ -127,7 +128,7 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
         saving.value = true;
         error.value = null;
         try {
-            const result = await userSettingsApi.patch(patch);
+            const result = await withStepUpRetry((stepUp) => userSettingsApi.patch(patch, stepUp));
             return await applySavedResult(result);
         } catch (e: unknown) {
             error.value = e instanceof Error ? e.message : String(e);

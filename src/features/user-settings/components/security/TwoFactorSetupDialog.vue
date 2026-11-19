@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import QRCode from 'qrcode';
 import { useAuthStore, type TwoFactorSetup } from '@/features/auth';
+import { withStepUpRetry } from '@/features/auth/step-up';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppCheckbox from '@/components/shared/checkbox/AppCheckbox.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
@@ -47,7 +48,7 @@ async function startSetup() {
     codesAcknowledged.value = false;
     loading.value = true;
     try {
-        const result = await auth.setupTwoFactor();
+        const result = await withStepUpRetry((stepUp) => auth.setupTwoFactor(stepUp));
         setup.value = result;
         qrDataUrl.value = await QRCode.toDataURL(result.otpAuthUri, {
             width: 220,

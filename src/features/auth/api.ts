@@ -385,8 +385,9 @@ export const authApi = {
         return authHttp.delete<null>('/api/auth/account', payload, accessToken);
     },
 
-    setup2fa(accessToken: string | null | undefined) {
-        return authHttp.post<TwoFactorSetup>('/api/auth/2fa/setup', undefined, accessToken);
+    /** Le serveur demande une preuve de propriété (`STEP_UP_REQUIRED`) avant de poser un second facteur. */
+    setup2fa(accessToken: string | null | undefined, stepUp?: StepUpProof) {
+        return authHttp.post<TwoFactorSetup>('/api/auth/2fa/setup', stepUp ? { stepUp } : undefined, accessToken);
     },
 
     enable2fa(accessToken: string | null | undefined, code: string) {

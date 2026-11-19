@@ -273,9 +273,9 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
     }
 
     /** Démarre la configuration 2FA (QR / secret). */
-    async function setupTwoFactor() {
+    async function setupTwoFactor(stepUp?: StepUpProof) {
         const token = await requireAccessToken();
-        return authApi.setup2fa(token);
+        return authApi.setup2fa(token, stepUp);
     }
 
     /**
