@@ -57,7 +57,7 @@ import { clearPendingRead, dismissReadReport, forgetPendingRead, isImportedRetur
 import { compareWithPrevious, markAllToCheck, previousAmountFor, scopeMismatch, type ReadScope } from '@/features/tax/read-checks';
 import type { ReadLine, TotalCheck } from '@/features/tax/reader/types';
 import { buildTaxGroups, type TaxGroup } from '@/features/tax/steps';
-import { formatTaxDate } from '@/features/tax/format';
+import { formatTaxDate, parseTaxAmount } from '@/features/tax/format';
 import { dismissGuided, isGuidedDismissed } from '@/features/tax/guided-totals';
 import { TAX_BASE, taxDetailPath, taxPublicIdFromPath } from '@/features/tax/paths';
 import type {
@@ -284,10 +284,8 @@ const ficheKinds = computed((): TaxEntryKind[] => {
 });
 
 function parseFicheAmount(raw: string): number | null {
-    const trimmed = raw.trim().replace(/\s/g, '').replace(',', '.');
-    if (!trimmed) return null;
-    const value = Number(trimmed);
-    return Number.isFinite(value) ? value : null;
+    const value = parseTaxAmount(raw);
+    return value === null || Number.isNaN(value) ? null : value;
 }
 
 const validateLabel = computed(() => {
@@ -544,9 +542,12 @@ function setDraft(line: TaxLine, competence: TaxCompetence, value: string | numb
 async function commitAmount(line: TaxLine, competence: TaxCompetence, raw: string) {
     const current = declaration.value;
     if (!current) return;
-    const trimmed = raw.trim().replace(/\s/g, '').replace(',', '.');
-    const next = trimmed === '' ? null : Number(trimmed);
-    if (next != null && !Number.isFinite(next)) return;
+    const next = parseTaxAmount(raw);
+    if (next !== null && Number.isNaN(next)) {
+        // un montant illisible n'est jamais ignoré en silence : l'étape ne se valide pas tant qu'il reste
+        error.value = t('taxPage.amountInvalid', { line: line.label });
+        return;
+    }
     const key = draftKey(line.code, competence);
     if (next === cellAmount(line, competence)) {
         if (key in drafts.value) {
@@ -664,32 +665,30 @@ async function loadReminders(id: string) {
 }
 
 async function loadSuggestions(id: string) {
-    try {
-        // la bibliothèque et le quota servent au bouton « Sélectionner » ; un échec n'empêche pas l'affichage
-        void filesStore.loadList().catch(() => undefined);
-        void filesStore.loadUsage().catch(() => undefined);
-        // Déclaration importée d'un fichier : seuls les montants lus dans le PDF sont proposés.
-        suggestions.value = isImportedReturn(id) ? [] : ((await taxApi.suggestions(id)).items ?? []);
-    } catch {
-        suggestions.value = [];
-    }
-    try {
-        pillar3a.value = isImportedReturn(id) ? null : await taxApi.pillar3a(id);
-    } catch {
-        pillar3a.value = null;
-    }
-    try {
-        medical.value = isImportedReturn(id) ? null : await taxApi.medical(id);
-    } catch {
-        medical.value = null;
-    }
-    try {
-        themes.value = isImportedReturn(id) ? null : await taxApi.themes(id);
-    } catch {
-        themes.value = null;
-    }
-    await loadReminders(id);
-    await loadDocumentCandidates(id);
+    // la bibliothèque et le quota servent au bouton « Sélectionner » ; un échec n'empêche pas l'affichage
+    void filesStore.loadList().catch(() => undefined);
+    void filesStore.loadUsage().catch(() => undefined);
+    // Déclaration importée d'un fichier : seuls les montants lus dans le PDF sont proposés.
+    const imported = isImportedReturn(id);
+    const orElse = <T,>(request: Promise<T>, fallback: T): Promise<T> => request.catch(() => fallback);
+    // les lectures sont indépendantes : elles partent ensemble, et l'échec de l'une ne retire pas les autres
+    const [suggested, pillar, medicalYear, themesYear] = await Promise.all([
+        imported
+            ? []
+            : orElse(
+                  taxApi.suggestions(id).then((result) => result.items ?? []),
+                  []
+              ),
+        imported ? null : orElse<TaxPillar3a | null>(taxApi.pillar3a(id), null),
+        imported ? null : orElse<TaxMedical | null>(taxApi.medical(id), null),
+        imported ? null : orElse<TaxThemes | null>(taxApi.themes(id), null),
+        loadReminders(id),
+        loadDocumentCandidates(id)
+    ]);
+    suggestions.value = suggested;
+    pillar3a.value = pillar;
+    medical.value = medicalYear;
+    themes.value = themesYear;
 }
 
 /** Montants lus dans le PDF importé et pas encore acceptés, rangés par étape (onglet). */

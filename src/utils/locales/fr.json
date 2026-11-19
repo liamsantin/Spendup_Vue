@@ -5230,6 +5230,7 @@
         }
     },
     "taxPage": {
+        "amountInvalid": "Le montant saisi pour « {line} » n'est pas lisible. Corrigez-le ou videz la case.",
         "title": "Impôts",
         "subtitle": "Brouillon à recopier dans la déclaration cantonale. Seuls les montants que vous saisissez y entrent.",
         "new": "Nouvelle déclaration",

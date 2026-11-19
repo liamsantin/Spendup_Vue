@@ -7,6 +7,7 @@ defineOptions({ name: 'TaxInstallmentsSection' });
 
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { todayYmd } from '@/features/accounts/format';
 import { taxApi } from '@/features/tax/api';
 import { useTaxMoney } from '@/features/tax/composables/useTaxMoney';
 import type {
@@ -108,9 +109,7 @@ async function add() {
 
 /** Payée à la main, sans transaction : la somme et la date du jour. */
 const markPaid = (item: TaxInstallment) =>
-    run(() =>
-        taxApi.updateInstallment(props.publicId, item.publicId, { paidAmount: item.amount, paidAt: new Date().toISOString().slice(0, 10) })
-    );
+    run(() => taxApi.updateInstallment(props.publicId, item.publicId, { paidAmount: item.amount, paidAt: todayYmd() }));
 
 const clearPaid = (item: TaxInstallment) => run(() => taxApi.updateInstallment(props.publicId, item.publicId, { clearPayment: true }));
 

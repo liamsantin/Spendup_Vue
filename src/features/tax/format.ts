@@ -10,3 +10,14 @@ export function formatTaxDate(value: string | null | undefined, locale?: string)
     if (Number.isNaN(date.getTime())) return value;
     return new Intl.DateTimeFormat(locale || undefined, { dateStyle: 'medium' }).format(date);
 }
+
+/**
+ * Montant saisi à la main : espaces et apostrophes de milliers retirés (« 1'200.50 », « 1 200,50 »), virgule décimale
+ * acceptée. Vide → `null` (la case se vide) ; illisible → `NaN`, que l'appelant signale au lieu de l'ignorer.
+ */
+export function parseTaxAmount(raw: string): number | null {
+    const text = raw.replace(/[’'`\s]/g, '').replace(',', '.');
+    if (!text) return null;
+    const value = Number(text);
+    return Number.isFinite(value) ? value : Number.NaN;
+}

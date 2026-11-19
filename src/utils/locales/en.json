@@ -5230,6 +5230,7 @@
         }
     },
     "taxPage": {
+        "amountInvalid": "The amount entered for “{line}” cannot be read. Fix it or clear the field.",
         "title": "Tax",
         "subtitle": "A draft to copy into the cantonal return. Only amounts you type are stored.",
         "new": "New return",
