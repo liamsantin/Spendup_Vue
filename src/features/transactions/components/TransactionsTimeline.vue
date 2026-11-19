@@ -478,6 +478,7 @@ async function loadTimeline(force = false) {
                 recurringExpensePublicId: filterRecurringExpenseId.value ?? undefined,
                 recurringIncomePublicId: filterRecurringIncomeId.value ?? undefined,
                 assetPublicId: filterAssetId.value ?? undefined,
+                type: filterType.value ?? undefined,
                 from: filterFrom.value ?? undefined,
                 to: filterTo.value ?? undefined,
                 search: filterSearch.value ?? undefined,
@@ -515,6 +516,7 @@ async function loadTimeline(force = false) {
                 await store
                     .loadList({
                         accountPublicId: dropTier || dropTag || dropRecurring ? (filterAccountId.value ?? undefined) : undefined,
+                        type: filterType.value ?? undefined,
                         from: filterFrom.value ?? undefined,
                         to: filterTo.value ?? undefined,
                         categoryPublicId: filterCategoryId.value ?? undefined,
@@ -602,6 +604,7 @@ watch(
         [
             filterAccountId.value,
             filterAssetId.value,
+            filterType.value,
             filterFrom.value,
             filterTo.value,
             filterCategoryId.value,

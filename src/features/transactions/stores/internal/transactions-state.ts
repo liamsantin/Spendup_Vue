@@ -6,7 +6,8 @@ import {
     TRANSACTION_PAGE_SIZE_DEFAULT,
     TRANSACTION_SEARCH_MAX,
     type ListTransactionsQuery,
-    type Transaction
+    type Transaction,
+    type TransactionType
 } from '@/features/transactions/types';
 
 export const TRANSACTIONS_LIST_MAX_AGE_MS = 30_000;
@@ -19,6 +20,7 @@ export type TransactionsListQuery = {
     recurringExpensePublicId: string | null;
     recurringIncomePublicId: string | null;
     assetPublicId: string | null;
+    type: TransactionType | null;
     from: string | null;
     to: string | null;
     /** Recherche serveur normalisée (trim, tronquée à 100). */
@@ -33,6 +35,7 @@ export const EMPTY_LIST_QUERY: TransactionsListQuery = {
     recurringExpensePublicId: null,
     recurringIncomePublicId: null,
     assetPublicId: null,
+    type: null,
     from: null,
     to: null,
     search: null
@@ -47,6 +50,7 @@ export function normalizeListQuery(query: ListTransactionsQuery = {}): Transacti
         recurringExpensePublicId: query.recurringExpensePublicId?.trim() || null,
         recurringIncomePublicId: query.recurringIncomePublicId?.trim() || null,
         assetPublicId: query.assetPublicId?.trim() || null,
+        type: query.type ?? null,
         from: query.from?.trim() || null,
         to: query.to?.trim() || null,
         search: query.search?.trim().slice(0, TRANSACTION_SEARCH_MAX) || null
@@ -63,8 +67,9 @@ export function listCacheKey(query: TransactionsListQuery): string {
     const recExp = query.recurringExpensePublicId || 'all';
     const recInc = query.recurringIncomePublicId || 'all';
     const asset = query.assetPublicId || 'all';
+    const type = query.type || 'all';
     // `search` en dernier : il peut contenir des « : » (reconstitué par `parseListCacheKey`).
-    return `list:${account}:${from}:${to}:${category}:${tag}:${tier}:${recExp}:${recInc}:${asset}:${query.search ?? ''}`;
+    return `list:${account}:${from}:${to}:${category}:${tag}:${tier}:${recExp}:${recInc}:${asset}:${type}:${query.search ?? ''}`;
 }
 
 export function parseListCacheKey(key: string): TransactionsListQuery {
@@ -79,7 +84,8 @@ export function parseListCacheKey(key: string): TransactionsListQuery {
         recurringExpensePublicId: !parts[7] || parts[7] === 'all' ? null : parts[7],
         recurringIncomePublicId: !parts[8] || parts[8] === 'all' ? null : parts[8],
         assetPublicId: !parts[9] || parts[9] === 'all' ? null : parts[9],
-        search: parts.slice(10).join(':') || null
+        type: !parts[10] || parts[10] === 'all' ? null : (parts[10] as TransactionType),
+        search: parts.slice(11).join(':') || null
     };
 }
 
@@ -101,6 +107,7 @@ function queryMatchesTransaction(query: TransactionsListQuery, tx: Transaction):
     if (query.recurringExpensePublicId && tx.recurringExpensePublicId !== query.recurringExpensePublicId) return false;
     if (query.recurringIncomePublicId && tx.recurringIncomePublicId !== query.recurringIncomePublicId) return false;
     if (query.assetPublicId && tx.assetPublicId !== query.assetPublicId) return false;
+    if (query.type && tx.type !== query.type) return false;
     // `search` n’est pas vérifié ici : le serveur cherche aussi dans les noms liés (tiers, catégorie, tags…),
     // qu’on ne connaît pas toujours localement. Voir `upsertItem`.
     return true;

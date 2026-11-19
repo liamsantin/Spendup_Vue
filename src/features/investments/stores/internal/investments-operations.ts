@@ -93,6 +93,8 @@ export function createInvestmentsOperations(state: InvestmentsState, deps: Pick<
     const { refetchPositions } = deps;
 
     const requestSeqByAccount = new Map<string, number>();
+    // Dernière clé (compte + filtres) voulue par compte : voir `investments-positions.ts`.
+    const wantedKeyByAccount = new Map<string, string>();
 
     function nextSeq(accountPublicId: string): number {
         const next = (requestSeqByAccount.get(accountPublicId) ?? 0) + 1;
@@ -122,6 +124,7 @@ export function createInvestmentsOperations(state: InvestmentsState, deps: Pick<
         const filters = normalizeFilters(options);
         const key = operationsCacheKey(id, filters);
         const seq = nextSeq(id);
+        wantedKeyByAccount.set(id, key);
         const current = operationsFor(id);
         const sameFilters = !!current && operationsCacheKey(id, current.filters) === key;
         const force = !!options.force || !sameFilters;
@@ -132,7 +135,7 @@ export function createInvestmentsOperations(state: InvestmentsState, deps: Pick<
                 key,
                 async () => {
                     const result = await investmentsApi.listOperations(id, { ...stripNull(filters), page: 1 });
-                    if (!isCurrent(id, seq)) return;
+                    if (wantedKeyByAccount.get(id) !== key) return;
                     setOperations(id, toPage(result, filters, 1));
                 },
                 { force }
@@ -288,6 +291,7 @@ export function createInvestmentsOperations(state: InvestmentsState, deps: Pick<
 
     function cancelPendingOperations() {
         for (const id of requestSeqByAccount.keys()) nextSeq(id);
+        wantedKeyByAccount.clear();
         loadingOperations.value = false;
     }
 

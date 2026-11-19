@@ -192,6 +192,10 @@ export function useAccountProfileForm(options: {
     async function resetProfile() {
         profileError.value = null;
         options.clearAccountFeedback();
+        // Les valeurs connues d'abord : `loadProfile` n'écrase pas une saisie en cours, et l'annulation
+        // doit aboutir même si `/me` échoue.
+        hydrateFromUser(auth.user);
+        commitBaseline();
         await loadProfile();
     }
 

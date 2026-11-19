@@ -224,4 +224,19 @@ describe('authGuard', () => {
         expect(auth.fetchMe).not.toHaveBeenCalled();
         expect(next).toHaveBeenCalledWith();
     });
+
+    it('ne détruit pas la session si /me est injoignable : page de maintenance', async () => {
+        const auth = useAuthStore();
+        auth.refreshToken = 'refresh-1';
+        auth.bootstrapSession = vi.fn().mockResolvedValue(undefined);
+        auth.fetchMe = vi.fn().mockRejectedValue(Object.assign(new Error('Bad Gateway'), { status: 502 }));
+        auth.forceReLogin = vi.fn().mockResolvedValue(undefined);
+
+        const next = vi.fn();
+        await authGuard(route('/app/settings'), route('/'), next);
+
+        expect(auth.forceReLogin).not.toHaveBeenCalled();
+        expect(auth.returnUrl).toBe('/app/settings');
+        expect(next).toHaveBeenCalledWith('/auth/maintenance');
+    });
 });

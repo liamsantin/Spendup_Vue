@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { ensureAccessToken, refreshSession, forceReLogin, clearSession, axiosRequest } = vi.hoisted(() => ({
+const { ensureAccessToken, refreshSession, forceReLogin, clearSession, axiosRequest, session } = vi.hoisted(() => ({
+    session: { lastRefreshTransient: false },
     ensureAccessToken: vi.fn(),
     refreshSession: vi.fn(),
     forceReLogin: vi.fn(),
@@ -13,6 +14,9 @@ vi.mock('@/features/auth', () => ({
         accessToken: 'access-token',
         refreshToken: 'refresh-token',
         isAuthenticated: true,
+        get lastRefreshTransient() {
+            return session.lastRefreshTransient;
+        },
         ensureAccessToken,
         refreshSession,
         forceReLogin,
@@ -35,6 +39,7 @@ describe('fetchWrapper', () => {
         forceReLogin.mockReset().mockResolvedValue(undefined);
         clearSession.mockReset();
         axiosRequest.mockReset();
+        session.lastRefreshTransient = false;
     });
 
     it('force le re-login après 401 si le refresh échoue', async () => {
@@ -97,6 +102,17 @@ describe('fetchWrapper', () => {
         await expect(fetchWrapper.get('/api/countries')).rejects.toMatchObject({ name: 'AppError', status: 401 });
         expect(axiosRequest).toHaveBeenCalledTimes(2);
         expect(forceReLogin).toHaveBeenCalledWith('Unauthorized');
+    });
+
+    it('ne force pas le re-login si le refresh échoue pour une panne', async () => {
+        axiosRequest.mockResolvedValue({ status: 401, data: { message: 'Unauthorized' }, statusText: 'Unauthorized' });
+        refreshSession.mockImplementation(async () => {
+            session.lastRefreshTransient = true;
+            return false;
+        });
+
+        await expect(fetchWrapper.get('/api/countries')).rejects.toMatchObject({ name: 'AppError', status: 401 });
+        expect(forceReLogin).not.toHaveBeenCalled();
     });
 
     it('passe le message idle au re-login si le refresh échoue', async () => {

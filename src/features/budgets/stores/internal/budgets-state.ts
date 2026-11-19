@@ -1,5 +1,6 @@
 import { computed, ref } from 'vue';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
+import { createTrackedMap } from '@/utils/helpers/tracked-map';
 import { queryMatchesBudget } from '@/features/budgets/format';
 import type { Budget, BudgetPeriode, ListBudgetsQuery } from '@/features/budgets/types';
 
@@ -25,7 +26,12 @@ export type BudgetsCacheEntry = {
 export function createBudgetsState() {
     const items = ref<Budget[]>([]);
     const itemsByListKey = new Map<string, BudgetsCacheEntry>();
-    const knownById = new Map<string, Budget>();
+    // `knownById` est une Map non suivie par Vue : `knownVersion` est la dépendance réactive lue par
+    // `findByPublicId` / `allKnownItems` (fiche budget, titre de page, filtre des transactions…).
+    const knownVersion = ref(0);
+    const knownById = createTrackedMap<string, Budget>(() => {
+        knownVersion.value += 1;
+    });
     const activeListKey = ref(listCacheKey({ isActive: null, periode: null, categoryPublicId: null }));
     const totalCount = ref(0);
 
@@ -184,10 +190,12 @@ export function createBudgetsState() {
     }
 
     function allKnownItems(): Budget[] {
+        void knownVersion.value;
         return [...knownById.values()];
     }
 
     function findByPublicId(publicId: string): Budget | null {
+        void knownVersion.value;
         const id = publicId.trim();
         if (!id) return null;
         return knownById.get(id) ?? items.value.find((item) => item.publicId === id) ?? null;

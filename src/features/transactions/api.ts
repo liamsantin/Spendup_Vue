@@ -39,6 +39,7 @@ export const transactionsApi = {
         if (recurringIncomePublicId) params.set('recurringIncomePublicId', recurringIncomePublicId);
         const assetPublicId = query.assetPublicId?.trim();
         if (assetPublicId) params.set('assetPublicId', assetPublicId);
+        if (query.type) params.set('type', query.type);
         const from = query.from?.trim();
         if (from) params.set('from', from);
         const to = query.to?.trim();

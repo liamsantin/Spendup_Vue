@@ -70,6 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
         setDeviceTrust: actions.setDeviceTrust,
         revokeAllDevices: actions.revokeAllDevices,
         refreshSession: session.refreshSession,
+        lastRefreshTransient: session.lastRefreshTransient,
         bootstrapSession: session.bootstrapSession,
         fetchMe: profile.fetchMe,
         updateProfile: profile.updateProfile,

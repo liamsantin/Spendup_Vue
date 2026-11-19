@@ -489,4 +489,30 @@ describe('useAuthStore', () => {
             expect(call[5]).toBeNull();
         }, 30_000);
     });
+
+    it('un refresh qui aboutit après la déconnexion ne ressuscite pas la session', async () => {
+        const auth = useAuthStore();
+        auth.setTokens(tokens());
+
+        let resolveRefresh!: (value: AuthTokens) => void;
+        authApiMock.refresh.mockImplementation(() => new Promise<AuthTokens>((resolve) => (resolveRefresh = resolve)));
+
+        const pending = auth.refreshSession();
+        auth.clearSession();
+        resolveRefresh(tokens({ accessToken: 'after-logout' }));
+
+        await expect(pending).resolves.toBe(false);
+        expect(auth.accessToken).toBeNull();
+        expect(auth.isAuthenticated).toBe(false);
+    });
+
+    it('garde la session quand le refresh échoue pour une panne (5xx)', async () => {
+        const auth = useAuthStore();
+        auth.setTokens(tokens());
+        authApiMock.refresh.mockRejectedValue(new ApiError('Service Unavailable', 503));
+
+        await expect(auth.refreshSession()).resolves.toBe(false);
+        expect(auth.lastRefreshTransient).toBe(true);
+        expect(auth.isAuthenticated).toBe(true);
+    });
 });

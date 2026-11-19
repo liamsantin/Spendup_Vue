@@ -3868,6 +3868,7 @@
         "today": "Aujourd’hui",
         "selectedDay": "Jour sélectionné",
         "emptyDay": "Rien de prévu ce jour-là.",
+        "notConnected": "Le calendrier n’affiche pas encore vos récurrences, échéances et objectifs.",
         "monthSummary": "Bilan du mois",
         "inflows": "Entrées prévues",
         "outflows": "Sorties prévues",

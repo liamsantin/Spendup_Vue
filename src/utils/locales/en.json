@@ -3868,6 +3868,7 @@
         "today": "Today",
         "selectedDay": "Selected day",
         "emptyDay": "Nothing planned that day.",
+        "notConnected": "The calendar does not show your recurring items, dues and goals yet.",
         "monthSummary": "Month summary",
         "inflows": "Planned income",
         "outflows": "Planned outgoings",

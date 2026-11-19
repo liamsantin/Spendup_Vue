@@ -51,6 +51,15 @@ export const AUTH_ROUTE = '/auth';
 export const AUTH_LOGIN_HREF = `${AUTH_ROUTE}?tab=login`;
 export const AUTH_REGISTER_HREF = `${AUTH_ROUTE}?tab=register`;
 
+/** Panne réseau ou 5xx : l'échec ne dit rien de la validité de la session. */
+export function isTransientAuthError(e: unknown): boolean {
+    const status =
+        e && typeof e === 'object' && 'status' in e && typeof (e as { status: unknown }).status === 'number'
+            ? (e as { status: number }).status
+            : 0;
+    return status === 0 || status >= 500;
+}
+
 /** Mot de passe post-inscription — mémoire seule (jamais sessionStorage). */
 let pendingPasswordMemory: string | null = null;
 
@@ -92,19 +101,16 @@ export function createAuthSession() {
 
     /** Notice idle en attente si le refresh a échoué pour inactivité (lue par `forceReLogin`). */
     const pendingIdleLogoutNotice = { value: false };
-    /** Dernier refresh en échec « transient » (réseau / 5xx) — le bootstrap peut retenter. */
-    let lastRefreshTransient = false;
+    /**
+     * Dernier refresh en échec « transient » (réseau / 5xx) : la session locale est gardée, le
+     * bootstrap peut retenter et les appelants ne doivent pas forcer une reconnexion.
+     */
+    const lastRefreshTransient = ref(false);
+    /** Change à chaque `clearSession` : un refresh parti avant ne doit plus rien écrire. */
+    let sessionEpoch = 0;
 
     /** Cookie-mode : cookies HttpOnly ; Bearer : access/refresh en mémoire + sessionStorage. */
     const isAuthenticated = computed(() => (cookieMode ? cookieSessionActive.value : !!accessToken.value || !!refreshToken.value));
-
-    function isTransientRefreshError(e: unknown): boolean {
-        const status =
-            e && typeof e === 'object' && 'status' in e && typeof (e as { status: unknown }).status === 'number'
-                ? (e as { status: number }).status
-                : 0;
-        return status === 0 || status >= 500;
-    }
 
     const displayName = computed(() => {
         if (!user.value) return '';
@@ -166,6 +172,9 @@ export function createAuthSession() {
 
     /** Vide la session locale et reset les stores liés. */
     function clearSession() {
+        sessionEpoch += 1;
+        refreshInFlight = null;
+        lastRefreshTransient.value = false;
         accessToken.value = null;
         refreshToken.value = null;
         expiresAt.value = null;
@@ -215,27 +224,34 @@ export function createAuthSession() {
         if (!cookieMode && !refreshToken.value) return false;
         if (refreshInFlight) return refreshInFlight;
 
-        refreshInFlight = (async () => {
+        const epoch = sessionEpoch;
+        // Porteur : le `finally` compare l'identité de ce refresh sans TS2454.
+        const holder = { promise: undefined as Promise<boolean> | undefined };
+        holder.promise = (async () => {
             try {
                 const tokens = await authApi.refresh(cookieMode ? null : refreshToken.value);
-                lastRefreshTransient = false;
+                // Déconnexion (ou timer d'inactivité) pendant le refresh : ne pas ressusciter la session.
+                if (epoch !== sessionEpoch) return false;
+                lastRefreshTransient.value = false;
                 setTokens(tokens);
                 return true;
             } catch (e: unknown) {
+                if (epoch !== sessionEpoch) return false;
                 if (isIdleSessionError(e)) {
                     pendingIdleLogoutNotice.value = true;
                 }
-                lastRefreshTransient = isTransientRefreshError(e);
-                if (!lastRefreshTransient) {
+                lastRefreshTransient.value = isTransientAuthError(e);
+                if (!lastRefreshTransient.value) {
                     clearSession();
                 }
                 return false;
             } finally {
-                refreshInFlight = null;
+                if (refreshInFlight === holder.promise) refreshInFlight = null;
             }
         })();
+        refreshInFlight = holder.promise;
 
-        return refreshInFlight;
+        return holder.promise;
     }
 
     /**
@@ -285,7 +301,7 @@ export function createAuthSession() {
                 await refreshSession();
                 // Échec réseau / 5xx : laisser retenter au prochain passage du guard.
                 // Échec auth (401) ou succès : ne plus retenter jusqu’au prochain clearSession.
-                if (!lastRefreshTransient) {
+                if (!lastRefreshTransient.value) {
                     bootstrapDone = true;
                 }
             } finally {
@@ -360,6 +376,7 @@ export function createAuthSession() {
         returnUrl,
         cookieSessionActive,
         pendingIdleLogoutNotice,
+        lastRefreshTransient,
         isAuthenticated,
         displayName,
         hasVerifiedEmail,

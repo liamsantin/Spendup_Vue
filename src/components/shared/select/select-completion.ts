@@ -77,6 +77,13 @@ export function selectCreateMode(input: {
     return 'blank';
 }
 
+/** Le texte du champ est le libellé de cet élément (casse, espaces et préfixe « ↳ » ignorés). */
+export function isSameSelectTitle(query: string, title: string): boolean {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return false;
+    return needle === title.trim().toLowerCase() || needle === searchTitle(title).trim().toLowerCase();
+}
+
 export function findExactSelectItem<T>(items: readonly SelectCompletionItem<T>[], query: string): SelectCompletionItem<T> | null {
     const needle = query.trim().toLowerCase();
     if (!needle) return null;

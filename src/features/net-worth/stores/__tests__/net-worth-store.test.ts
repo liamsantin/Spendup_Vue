@@ -213,4 +213,17 @@ describe('useNetWorthStore', () => {
         expect(listeners.asset).toHaveLength(0);
         expect(listeners.account).toHaveLength(0);
     });
+
+    it('écrit la réponse quand un second appel rejoint la requête en vol du premier', async () => {
+        let resolve!: (value: NetWorthOverview) => void;
+        api.get.mockImplementation(() => new Promise<NetWorthOverview>((r) => (resolve = r)));
+        const store = useNetWorthStore();
+        const first = store.load();
+        const second = store.load();
+        resolve(overview);
+        await Promise.all([first, second]);
+        expect(api.get).toHaveBeenCalledTimes(1);
+        expect(store.overview?.netWorth).toBe(-284800);
+        expect(store.loading).toBe(false);
+    });
 });

@@ -87,6 +87,8 @@ export type ListTransactionsQuery = {
     recurringIncomePublicId?: string;
     /** Transactions accessibles liées à cet actif. 404 si l’actif est inconnu, à autrui ou supprimé. */
     assetPublicId?: string;
+    /** Type filtré par le serveur, avant la pagination : `totalCount` porte sur ce type seul. */
+    type?: TransactionType;
     from?: string;
     to?: string;
     /**

@@ -1,6 +1,6 @@
 import type { NavigationGuard } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
-import { APP_HOME_ROUTE, AUTH_ROUTE } from '@/features/auth/stores/internal/auth-session';
+import { APP_HOME_ROUTE, AUTH_ROUTE, isTransientAuthError } from '@/features/auth/stores/internal/auth-session';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 import { useFriendsStore } from '@/features/friends';
 import { useAccountsStore } from '@/features/accounts';
@@ -25,6 +25,8 @@ import { useNotificationsStore } from '@/features/notifications';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isDevAppEnv } from '@/utils/helpers/env-helpers';
 import { isDemoSession } from '@/features/demo/session';
+
+const MAINTENANCE_ROUTE = '/auth/maintenance';
 
 export const authGuard: NavigationGuard = async (to, _from, next) => {
     const auth = useAuthStore();
@@ -59,14 +61,22 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
         if (!auth.user) {
             try {
                 const me = await auth.fetchMe();
+                if (!me && auth.isAuthenticated && auth.lastRefreshTransient) {
+                    auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
+                    return next(MAINTENANCE_ROUTE);
+                }
                 if (!me || !auth.isAuthenticated) {
                     auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
                     await auth.forceReLogin();
                     // `forceReLogin` a déjà navigué vers /auth — annuler la nav courante.
                     return next(false);
                 }
-            } catch {
+            } catch (e: unknown) {
                 auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
+                // API injoignable ou en 5xx : la session reste valide, on attend sur la page de maintenance.
+                if (isTransientAuthError(e)) {
+                    return next(MAINTENANCE_ROUTE);
+                }
                 await auth.forceReLogin();
                 return next(false);
             }

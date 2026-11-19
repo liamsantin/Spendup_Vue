@@ -12,10 +12,14 @@ export function createNetWorthLoad(state: NetWorthState) {
 
     let overviewSeq = 0;
     let snapshotsSeq = 0;
+    // Les `seq` ne servent qu'aux drapeaux de chargement. Une réponse est écrite tant que personne n'a
+    // annulé (`cancelEpoch`) : un second appel qui rejoint la requête en vol du premier doit en profiter.
+    let cancelEpoch = 0;
 
     /** Calcul du jour, cache 30 s ; `force` après une mutation, un « Actualiser » ou un événement temps réel. */
     async function load(force = false): Promise<void> {
         const requestId = ++overviewSeq;
+        const epoch = cancelEpoch;
         loading.value = true;
         clearError();
         try {
@@ -23,7 +27,7 @@ export function createNetWorthLoad(state: NetWorthState) {
                 NET_WORTH_OVERVIEW_KEY,
                 async () => {
                     const result = await netWorthApi.get();
-                    if (requestId !== overviewSeq) return;
+                    if (epoch !== cancelEpoch) return;
                     overview.value = normalizeOverview(result);
                     lastLoadedAt.value = Date.now();
                 },
@@ -49,13 +53,15 @@ export function createNetWorthLoad(state: NetWorthState) {
         snapshotsQuery.value = normalized;
         const key = snapshotsCacheKey(normalized);
         const requestId = ++snapshotsSeq;
+        const epoch = cancelEpoch;
         loadingSnapshots.value = true;
         try {
             await cache.ensure(
                 key,
                 async () => {
                     const result = await netWorthApi.listSnapshots(normalized);
-                    if (requestId !== snapshotsSeq) return;
+                    // la plage demandée a pu changer entre-temps : seule la dernière voulue s'affiche
+                    if (epoch !== cancelEpoch || snapshotsCacheKey(snapshotsQuery.value) !== key) return;
                     snapshots.value = normalizeSnapshotsResult(result);
                 },
                 { force }
@@ -91,6 +97,7 @@ export function createNetWorthLoad(state: NetWorthState) {
     function cancelPendingLoads() {
         overviewSeq += 1;
         snapshotsSeq += 1;
+        cancelEpoch += 1;
     }
 
     return { load, loadSnapshots, takeSnapshot, refresh, cancelPendingLoads };

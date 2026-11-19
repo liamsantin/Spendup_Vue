@@ -180,6 +180,10 @@ async function handleResponse(
             if (refreshed) {
                 return retry();
             }
+            // Refresh injoignable (réseau, 5xx) : la session n'est pas invalide, on ne la détruit pas.
+            if (auth.lastRefreshTransient) {
+                return Promise.reject(new AppError(err.message, 401, err.code, err.details));
+            }
         }
         // Passe le message API (ex. idle) pour la notice login si le refresh a aussi échoué.
         await auth.forceReLogin(err.message);

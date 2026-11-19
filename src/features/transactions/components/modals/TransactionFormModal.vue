@@ -388,7 +388,11 @@ function formatAmountInput(value: number | null | undefined): string {
     return value.toFixed(2);
 }
 
+/** Vrai entre un `resetForm` qui change le type et le watcher de type qui s'ensuit. */
+let typeSetByReset = false;
+
 function resetForm() {
+    typeSetByReset = false;
     localError.message = null;
     tierDeletedHint.value = false;
     pendingFiles.value = [];
@@ -413,7 +417,11 @@ function resetForm() {
         form.tagPublicIds = sanitizeTagPublicIds(transaction.tagPublicIds);
         return;
     }
-    form.type = props.defaultType || 'depense';
+    const nextType = props.defaultType || 'depense';
+    // Le watcher de type vide catégorie, récurrence et objectif quand la personne change de type :
+    // ici le type vient des valeurs par défaut, posées avec lui, et elles doivent rester.
+    typeSetByReset = nextType !== form.type;
+    form.type = nextType;
     form.accountPublicId = props.defaultAccountPublicId?.trim() || writableAccounts.value[0]?.publicId || '';
     form.counterpartyAccountPublicId = '';
     form.label = '';
@@ -490,7 +498,10 @@ watch(
 watch(
     () => form.type,
     async (type) => {
+        const fromReset = typeSetByReset;
+        typeSetByReset = false;
         if (isEdit.value) return;
+        if (fromReset) return;
         if (type !== 'transfert') {
             form.counterpartyAccountPublicId = '';
         } else if (form.counterpartyAccountPublicId === form.accountPublicId) {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
- * Calendrier — maquette de style. Les événements viennent de `calendar-mock.ts` (TEMPORAIRE),
- * en attendant le branchement sur les récurrences, échéances et objectifs.
+ * Calendrier — pas encore branché sur les récurrences, échéances et objectifs. Seul le mode démo
+ * a des événements ; un vrai compte voit un calendrier vide et un avis, jamais des exemples.
  */
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -10,7 +10,7 @@ import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import { formatAccountBalance } from '@/features/accounts/format';
 import { demoEventsForMonth } from '@/features/demo/calendar';
 import { isDemoSession } from '@/features/demo/session';
-import { mockEventsForMonth, toYmd, type CalendarEvent, type CalendarEventKind } from '@/views/app/calendar/calendar-mock';
+import { toYmd, type CalendarEvent, type CalendarEventKind } from '@/views/app/calendar/calendar-mock';
 
 const MAX_PILLS = 3;
 const KINDS: CalendarEventKind[] = ['income', 'expense', 'due', 'goal'];
@@ -24,9 +24,8 @@ const year = ref(today.getFullYear());
 const month = ref(today.getMonth());
 const selected = ref(todayYmd);
 
-const events = computed(() =>
-    isDemoSession() ? demoEventsForMonth(year.value, month.value) : mockEventsForMonth(year.value, month.value)
-);
+const isDemo = isDemoSession();
+const events = computed<CalendarEvent[]>(() => (isDemo ? demoEventsForMonth(year.value, month.value) : []));
 const eventsByDay = computed(() => {
     const map = new Map<string, CalendarEvent[]>();
     for (const event of events.value) {
@@ -124,6 +123,7 @@ function selectCell(cell: Cell) {
 
 <template>
     <AppPageShell :title="t('calendarPage.title')">
+        <p v-if="!isDemo" class="cal-side__empty cal-notice" role="status">{{ t('calendarPage.notConnected') }}</p>
         <!-- Navigation : boutons-icônes carrés, titre du mois 16 px 700, « Aujourd’hui » discret. -->
         <div class="cal-bar">
             <button type="button" class="su-orb" :aria-label="t('calendarPage.previous')" @click="shiftMonth(-1)">
@@ -296,6 +296,10 @@ function selectCell(cell: Cell) {
 
 .cal-legend__item {
     --chip-color: var(--tone);
+}
+
+.cal-notice {
+    margin: 0 0 16px;
 }
 
 /* ── barre de navigation ─────────────────────────────── */

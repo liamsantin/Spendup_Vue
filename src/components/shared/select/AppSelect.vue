@@ -3,7 +3,12 @@ import { computed, nextTick, ref, useAttrs, watch } from 'vue';
 import { CheckIcon, ChevronDownIcon, PlusIcon } from 'vue-tabler-icons';
 import { PERFECT_SCROLLBAR_OPTIONS } from '@/utils/helpers/scrollbar-helpers';
 import { matchesSearchTokens } from '@/utils/helpers/text-search';
-import { findExactSelectItem, findSelectCompletion, selectCreateMode } from '@/components/shared/select/select-completion';
+import {
+    findExactSelectItem,
+    findSelectCompletion,
+    isSameSelectTitle,
+    selectCreateMode
+} from '@/components/shared/select/select-completion';
 
 defineOptions({ name: 'AppSelect', inheritAttrs: false });
 
@@ -157,7 +162,11 @@ function syncQueryFromValue() {
     query.value = selectedTitle.value;
 }
 
+/** Valeur choisie pendant que le menu est ouvert : la prop peut ne pas encore la refléter à la fermeture. */
+let applied: { value: T } | null = null;
+
 function applyValue(value: T) {
+    applied = { value };
     emit('update:modelValue', value);
     query.value = normalizedItems.value.find((item) => item.value === value)?.title ?? '';
 }
@@ -177,6 +186,12 @@ function acceptCompletion() {
 
 function commitQuery() {
     const needle = trimmedQuery.value;
+    const current = applied ? applied.value : props.modelValue;
+    applied = null;
+    // Le champ affiche déjà le libellé de la valeur courante : rien à retrouver par le texte. Sinon,
+    // deux éléments de même libellé (deux comptes « Compte courant ») ramèneraient toujours au premier.
+    const currentTitle = normalizedItems.value.find((item) => item.value === current)?.title;
+    if (needle && currentTitle !== undefined && isSameSelectTitle(needle, currentTitle)) return;
     if (!needle) {
         const empty = normalizedItems.value.find((item) => isEmptyValue(item.value));
         if (empty) {

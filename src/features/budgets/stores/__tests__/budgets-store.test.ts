@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { computed } from 'vue';
 import { createTestPinia } from '@/test/pinia';
 import { AppError } from '@/utils/errors/app-error';
 import type { Budget } from '@/features/budgets/types';
@@ -229,5 +230,19 @@ describe('useBudgetsStore', () => {
         expect(store.initialized).toBe(false);
         expect(store.findByPublicId('b-1')).toBeNull();
         expect(unsubscribe).toHaveBeenCalled();
+    });
+
+    it('findByPublicId est réactif : une fiche suit le chargement puis la modification', async () => {
+        const store = useBudgetsStore();
+        const seen = computed(() => store.findByPublicId('b-1')?.limitAmount ?? null);
+        expect(seen.value).toBeNull();
+
+        api.get.mockResolvedValue(alimentation);
+        await store.fetchBudget('b-1');
+        expect(seen.value).toBe(400);
+
+        api.get.mockResolvedValue({ ...alimentation, limitAmount: 800 });
+        await store.fetchBudget('b-1', true);
+        expect(seen.value).toBe(800);
     });
 });

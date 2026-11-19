@@ -10,6 +10,9 @@ export function createInvestmentsPositions(state: InvestmentsState) {
     const { loadingPositions, error, cache, initialized, clearError, setPositions, includeClosedFor, forgetAccount } = state;
 
     const requestSeqByAccount = new Map<string, number>();
+    // Dernière clé voulue par compte. Le `seq` ne sert qu'aux drapeaux : un second appel qui rejoint
+    // la requête en vol du premier (même clé) doit voir sa réponse écrite.
+    const wantedKeyByAccount = new Map<string, string>();
 
     function nextSeq(accountPublicId: string): number {
         const next = (requestSeqByAccount.get(accountPublicId) ?? 0) + 1;
@@ -31,6 +34,7 @@ export function createInvestmentsPositions(state: InvestmentsState) {
         const includeClosed = options.includeClosed ?? includeClosedFor(id);
         const key = positionsCacheKey(id, includeClosed);
         const seq = nextSeq(id);
+        wantedKeyByAccount.set(id, key);
         // Un seul résultat mémorisé par compte : changer `includeClosed` force le GET même si le cache est frais.
         const force = !!options.force || includeClosed !== includeClosedFor(id) || !state.positionsFor(id);
         loadingPositions.value = true;
@@ -40,7 +44,7 @@ export function createInvestmentsPositions(state: InvestmentsState) {
                 key,
                 async () => {
                     const result = normalizePositionsResult(await investmentsApi.positions(id, { includeClosed }));
-                    if (!isCurrent(id, seq)) return;
+                    if (wantedKeyByAccount.get(id) !== key) return;
                     setPositions(id, result, includeClosed);
                 },
                 { force }
@@ -71,6 +75,7 @@ export function createInvestmentsPositions(state: InvestmentsState) {
 
     function cancelPendingPositions() {
         for (const id of requestSeqByAccount.keys()) nextSeq(id);
+        wantedKeyByAccount.clear();
         loadingPositions.value = false;
     }
 

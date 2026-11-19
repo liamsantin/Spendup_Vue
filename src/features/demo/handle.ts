@@ -387,6 +387,7 @@ function listTransactions(query: URLSearchParams) {
     const tag = query.get('tagPublicId');
     const tier = query.get('tierPublicId');
     const asset = query.get('assetPublicId');
+    const type = query.get('type');
     const from = query.get('from');
     const to = query.get('to');
     const search = query.get('search')?.trim().toLowerCase();
@@ -395,6 +396,7 @@ function listTransactions(query: URLSearchParams) {
     if (tag) items = items.filter((tx) => tx.tagPublicIds.includes(tag));
     if (tier) items = items.filter((tx) => tx.tierPublicId === tier);
     if (asset) items = items.filter((tx) => tx.assetPublicId === asset);
+    if (type) items = items.filter((tx) => tx.type === type);
     if (from) items = items.filter((tx) => tx.operationDate >= from);
     if (to) items = items.filter((tx) => tx.operationDate <= to);
     if (search) items = items.filter((tx) => tx.label.toLowerCase().includes(search) || String(tx.amount ?? '').includes(search));
