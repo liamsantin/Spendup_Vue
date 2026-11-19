@@ -4540,7 +4540,8 @@
                 "currency": "Devise",
                 "cancel": "Annulé",
                 "residualValue": "Valeur résiduelle",
-                "recurringExpense": "Mensualité"
+                "recurringExpense": "Mensualité",
+                "amortizationPerDue": "Amortissement par échéance"
             },
             "noLender": "Aucun prêteur",
             "lenderHint": "Banque ou prêteur, parmi vos tiers.",
@@ -4566,11 +4567,13 @@
                 "plannedEndDateBeforeStart": "La fin prévue précède le début.",
                 "currencyInvalid": "Devise non prise en charge.",
                 "currencyLocked": "La devise ne se modifie pas après la création.",
-                "residualValueInvalid": "La valeur résiduelle est invalide."
+                "residualValueInvalid": "La valeur résiduelle est invalide.",
+                "amortizationPerDueInvalid": "L'amortissement par échéance est invalide."
             },
             "residualHint": "Montant à payer en fin de contrat pour garder le véhicule.",
             "noRecurringExpense": "Aucune charge récurrente",
-            "recurringExpenseHint": "La charge récurrente qui rembourse ce passif. Chaque échéance payée diminue le restant dû."
+            "recurringExpenseHint": "La charge récurrente qui rembourse ce passif. Chaque échéance payée diminue le restant dû.",
+            "amortizationHint": "La part de chaque échéance qui réduit le capital. Vide : toute l'échéance. 0 : intérêts seuls, le restant dû ne bouge pas."
         },
         "detail": {
             "asset": "Actif financé",

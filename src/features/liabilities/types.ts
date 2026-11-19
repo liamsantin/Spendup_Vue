@@ -37,6 +37,11 @@ export type Liability = {
     /** Leasing : valeur résiduelle en fin de contrat. */
     residualValue: number | null;
     /**
+     * Part de chaque échéance payée qui réduit le capital. `null` : toute l'échéance le réduit ;
+     * `0` : aucune (intérêts seuls).
+     */
+    amortizationPerDue: number | null;
+    /**
      * Charge récurrente qui rembourse ce passif (sa mensualité). Chaque échéance payée après la dernière
      * mise à jour du restant le diminue : `remainingAmount` est déjà calculé par l’API.
      */
@@ -69,6 +74,7 @@ export type CreateLiabilityPayload = {
     assetPublicId: string | null;
     residualValue: number | null;
     recurringExpensePublicId: string | null;
+    amortizationPerDue: number | null;
 };
 
 export type UpdateLiabilityPayload = {
@@ -85,6 +91,7 @@ export type UpdateLiabilityPayload = {
     assetPublicId: string | null;
     residualValue: number | null;
     recurringExpensePublicId: string | null;
+    amortizationPerDue: number | null;
     /** `'annule'` colle ensuite ; `null` = le serveur dérive le statut du restant. */
     status: 'annule' | null;
 };

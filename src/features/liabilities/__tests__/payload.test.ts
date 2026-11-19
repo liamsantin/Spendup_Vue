@@ -41,7 +41,8 @@ const existing: Liability = {
     updatedAt: null,
     residualValue: null,
     recurringExpensePublicId: null,
-    recurringExpenseName: null
+    recurringExpenseName: null,
+    amortizationPerDue: null
 };
 
 describe('liabilities payload', () => {
@@ -60,8 +61,35 @@ describe('liabilities payload', () => {
                 lenderTierPublicId: null,
                 assetPublicId: null,
                 residualValue: null,
-                recurringExpensePublicId: null
+                recurringExpensePublicId: null,
+                amortizationPerDue: null
             }
+        });
+    });
+
+    it('n’envoie la part d’amortissement qu’avec une charge liée, zéro compris', () => {
+        const linked = { recurringExpensePublicId: 'rec-1' };
+        expect(buildCreateLiabilityPayload(fields({ ...linked, amortizationPerDue: '355.50' }))).toMatchObject({
+            ok: true,
+            payload: { amortizationPerDue: 355.5 }
+        });
+        // intérêts seuls : 0 est une valeur, pas une absence
+        expect(buildCreateLiabilityPayload(fields({ ...linked, amortizationPerDue: '0' }))).toMatchObject({
+            ok: true,
+            payload: { amortizationPerDue: 0 }
+        });
+        expect(buildCreateLiabilityPayload(fields({ ...linked, amortizationPerDue: '' }))).toMatchObject({
+            ok: true,
+            payload: { amortizationPerDue: null }
+        });
+        expect(buildCreateLiabilityPayload(fields({ amortizationPerDue: '300' }))).toMatchObject({
+            ok: true,
+            payload: { amortizationPerDue: null }
+        });
+        expect(buildCreateLiabilityPayload(fields({ ...linked, amortizationPerDue: '-1' }))).toMatchObject({
+            ok: false,
+            code: 'amortizationPerDueInvalid',
+            field: 'amortizationPerDue'
         });
     });
 

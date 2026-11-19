@@ -110,6 +110,7 @@ export function normalizeLiability(liability: Liability): Liability {
         lenderTierName: liability.lenderTierName ?? null,
         assetPublicId: liability.assetPublicId ?? null,
         residualValue: liability.residualValue == null ? null : Number(liability.residualValue) || 0,
+        amortizationPerDue: liability.amortizationPerDue == null ? null : Number(liability.amortizationPerDue) || 0,
         recurringExpensePublicId: liability.recurringExpensePublicId ?? null,
         recurringExpenseName: liability.recurringExpenseName ?? null,
         initialAmount,

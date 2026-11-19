@@ -71,7 +71,8 @@ export function seedWealth(): {
                 updatedAt: null,
                 residualValue: null,
                 recurringExpensePublicId: null,
-                recurringExpenseName: null
+                recurringExpenseName: null,
+                amortizationPerDue: null
             },
             {
                 publicId: 'LIALEAS',
@@ -93,7 +94,8 @@ export function seedWealth(): {
                 updatedAt: null,
                 residualValue: 4500,
                 recurringExpensePublicId: null,
-                recurringExpenseName: null
+                recurringExpenseName: null,
+                amortizationPerDue: null
             }
         ],
         personalLoans: [
@@ -530,7 +532,8 @@ function createLiability(body: unknown) {
         updatedAt: null,
         residualValue: (raw.residualValue as number | null) ?? null,
         recurringExpensePublicId: (raw.recurringExpensePublicId as string | null) ?? null,
-        recurringExpenseName: null
+        recurringExpenseName: null,
+        amortizationPerDue: (raw.amortizationPerDue as number | null) ?? null
     });
     demoDb().liabilities.unshift(created);
     return created;
@@ -551,6 +554,7 @@ function updateLiability(id: string, body: unknown) {
     item.assetPublicId = (raw.assetPublicId as string | null) ?? null;
     item.residualValue = (raw.residualValue as number | null) ?? null;
     item.recurringExpensePublicId = (raw.recurringExpensePublicId as string | null) ?? null;
+    item.amortizationPerDue = (raw.amortizationPerDue as number | null) ?? null;
     if (raw.status === 'annule') item.status = 'annule';
     item.updatedAt = stamp();
     return refreshLiability(item);

@@ -101,6 +101,9 @@ const facts = computed<Fact[]>(() => {
     if (current.plannedEndDate) add('end', field('plannedEndDate'), formatCalendarDate(current.plannedEndDate, locale.value));
     add('asset', field('asset'), assetName.value, assetPath.value);
     if (current.residualValue != null) add('residual', field('residualValue'), money(current.residualValue));
+    if (current.recurringExpensePublicId && current.amortizationPerDue != null) {
+        add('amortization', field('amortizationPerDue'), money(current.amortizationPerDue));
+    }
     if (current.recurringExpensePublicId) {
         add(
             'expense',

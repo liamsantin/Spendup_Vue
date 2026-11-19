@@ -27,6 +27,7 @@ export type LiabilityFormFieldErrors = {
     assetPublicId?: string | null;
     residualValue?: string | null;
     recurringExpensePublicId?: string | null;
+    amortizationPerDue?: string | null;
 };
 
 const props = withDefaults(
@@ -254,6 +255,27 @@ const plannedEndDateModel = computed({
                     :error-messages="fieldErrors.recurringExpensePublicId || undefined"
                 />
                 <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ t('liabilitiesPage.form.recurringExpenseHint') }}</p>
+            </div>
+        </div>
+
+        <div v-if="form.recurringExpensePublicId" class="liability-form__row">
+            <label class="liability-form__label" for="liability-form-amortization">{{
+                t('liabilitiesPage.form.fields.amortizationPerDue')
+            }}</label>
+            <div class="liability-form__field">
+                <v-text-field
+                    id="liability-form-amortization"
+                    v-model="form.amortizationPerDue"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    color="primary"
+                    variant="outlined"
+                    hide-details="auto"
+                    :error="!!fieldErrors.amortizationPerDue"
+                    :error-messages="fieldErrors.amortizationPerDue || undefined"
+                />
+                <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ t('liabilitiesPage.form.amortizationHint') }}</p>
             </div>
         </div>
 

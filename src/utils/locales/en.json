@@ -4540,7 +4540,8 @@
                 "currency": "Currency",
                 "cancel": "Canceled",
                 "residualValue": "Residual value",
-                "recurringExpense": "Instalment"
+                "recurringExpense": "Instalment",
+                "amortizationPerDue": "Amortisation per instalment"
             },
             "noLender": "No lender",
             "lenderHint": "Bank or lender, from your payees.",
@@ -4566,11 +4567,13 @@
                 "plannedEndDateBeforeStart": "The planned end is before the start.",
                 "currencyInvalid": "Unsupported currency.",
                 "currencyLocked": "The currency can’t change after creation.",
-                "residualValueInvalid": "The residual value is invalid."
+                "residualValueInvalid": "The residual value is invalid.",
+                "amortizationPerDueInvalid": "The amortisation per instalment is invalid."
             },
             "residualHint": "Amount due at the end of the contract to keep the vehicle.",
             "noRecurringExpense": "No recurring charge",
-            "recurringExpenseHint": "The recurring charge that repays this liability. Each paid due date lowers the remaining amount."
+            "recurringExpenseHint": "The recurring charge that repays this liability. Each paid due date lowers the remaining amount.",
+            "amortizationHint": "The part of each instalment that reduces the principal. Empty: the whole instalment. 0: interest only, the balance does not move."
         },
         "detail": {
             "asset": "Financed asset",

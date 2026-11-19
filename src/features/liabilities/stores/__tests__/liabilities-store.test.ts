@@ -54,7 +54,8 @@ const mortgage: Liability = {
     updatedAt: null,
     residualValue: null,
     recurringExpensePublicId: null,
-    recurringExpenseName: null
+    recurringExpenseName: null,
+    amortizationPerDue: null
 };
 
 function form(partial: Partial<LiabilityFormFields> = {}): LiabilityFormFields {

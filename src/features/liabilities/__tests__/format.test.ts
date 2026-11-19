@@ -34,7 +34,8 @@ const mortgage: Liability = {
     updatedAt: null,
     residualValue: null,
     recurringExpensePublicId: null,
-    recurringExpenseName: null
+    recurringExpenseName: null,
+    amortizationPerDue: null
 };
 
 describe('liabilities format', () => {
