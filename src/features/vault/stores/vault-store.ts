@@ -23,7 +23,7 @@ import {
     type VaultKeys
 } from '@/features/vault/crypto';
 import { decryptPdfBlob, encryptPdfFile } from '@/features/vault/file-content';
-import { clearVaultKeys, loadVaultKeys, saveVaultKeys } from '@/features/vault/key-storage';
+import { clearVaultKeys, loadVaultRecord, saveVaultKeys } from '@/features/vault/key-storage';
 import { runVaultMigration, type MigrationProgress } from '@/features/vault/migration';
 import { formatRecoveryCode, generateRecoveryCode } from '@/features/vault/recovery-code';
 import type { DecryptResult, VaultScope, VaultSetupRequest, VaultState, VaultStatus, VaultWrapRequest } from '@/features/vault/types';
@@ -33,6 +33,9 @@ import type { DecryptResult, VaultScope, VaultSetupRequest, VaultState, VaultSta
  * serveur (réinitialisation sans code) ; le bandeau « Coffre verrouillé » prend le relais.
  */
 export type VaultUnlockOutcome = 'unlocked' | 'absent' | 'already' | 'failed' | 'lost';
+
+/** Au-delà, l’état serveur est relu avant de chiffrer : un autre appareil a pu remettre le Coffre à zéro ou le désactiver. */
+export const VAULT_STATUS_MAX_AGE_MS = 5 * 60_000;
 
 /** Étapes de la désactivation, pour l’affichage. */
 export type VaultDisableStep = 'idle' | 'disabling' | 'decrypting' | 'deleting' | 'done';
@@ -48,8 +51,16 @@ export const useVaultStore = defineStore('vault', () => {
     const status = ref<VaultStatus | null>(null);
     const statusLoading = ref(false);
     const keys = shallowRef<VaultKeys | null>(null);
+    /** Utilisateur à qui appartiennent `keys`. */
+    let keysFor: string | null = null;
+    /** Sel du Coffre dont viennent `keys` (`null` : inconnu, clés enregistrées par une version ancienne). */
+    let keysVaultId: string | null = null;
+    /** Change à chaque `lock()` : une lecture de clés partie avant ne doit plus rien poser. */
+    let lockEpoch = 0;
+    let statusLoadedAt = 0;
     /** Clés préparées à l’inscription, confirmées une fois le compte créé. */
     let pendingSetupKeys: VaultKeys | null = null;
+    let pendingSetupVaultId: string | null = null;
     /** Mot de passe gardé en mémoire entre `login` et la validation 2FA, puis effacé. */
     let pendingPassword: string | null = null;
     let deviceLoadFor: string | null = null;
@@ -95,18 +106,65 @@ export const useVaultStore = defineStore('vault', () => {
      * @returns Les clés, ou `null` si l’appareil n’en a pas.
      */
     async function ensureReady(): Promise<VaultKeys | null> {
-        if (keys.value) return keys.value;
         const userId = currentUserId();
+        if (keys.value) {
+            // Des clés en mémoire ne servent qu'à leur propriétaire (session changée dans le même onglet).
+            if (!userId || keysFor === userId) return keys.value;
+            forgetKeys();
+        }
         if (!userId) return null;
         if (deviceLoad && deviceLoadFor === userId) return deviceLoad;
+        const epoch = lockEpoch;
         deviceLoadFor = userId;
-        deviceLoad = loadVaultKeys(userId)
+        deviceLoad = loadVaultRecord(userId)
             .then((loaded) => {
-                if (loaded && !keys.value) keys.value = loaded;
+                // `lock()` pendant la lecture : la session est finie, ces clés ne reviennent pas.
+                if (epoch !== lockEpoch) return null;
+                if (loaded && !keys.value) {
+                    keys.value = loaded.keys;
+                    keysFor = userId;
+                    keysVaultId = loaded.vaultId;
+                    reconcileKeys();
+                }
                 return keys.value;
             })
             .catch(() => null);
         return deviceLoad;
+    }
+
+    /** Retire les clés de la mémoire, sans toucher à l'appareil. */
+    function forgetKeys(): void {
+        keys.value = null;
+        keysFor = null;
+        keysVaultId = null;
+        deviceLoad = null;
+        deviceLoadFor = null;
+    }
+
+    /**
+     * Confronte les clés de l'appareil à l'état serveur connu. Coffre supprimé, ou recréé avec un autre sel
+     * (remise à zéro sur un autre appareil) : les clés d'ici ne déchiffrent plus rien et ce qu'elles
+     * chiffreraient serait illisible partout ailleurs, donc elles sont oubliées. Des clés sans sel connu
+     * (enregistrement ancien) sont rattachées au Coffre courant.
+     */
+    function reconcileKeys(): void {
+        const current = status.value;
+        if (!keys.value || !current) return;
+        if (current.exists && current.salt && keysVaultId === current.salt) return;
+        if (current.exists && current.salt && keysVaultId == null && keysFor) {
+            keysVaultId = current.salt;
+            void saveVaultKeys(keysFor, keys.value, keysVaultId);
+            return;
+        }
+        if (current.exists && !current.salt) return;
+        forgetKeys();
+        void clearVaultKeys();
+    }
+
+    function setStatus(next: VaultStatus): void {
+        status.value = next;
+        statusLoadedAt = Date.now();
+        reconcileKeys();
     }
 
     /** `GET /api/vault` ; `null` si la route est absente (404) ou en erreur. */
@@ -115,7 +173,7 @@ export const useVaultStore = defineStore('vault', () => {
         try {
             const result = await vaultApi.status();
             // Une réponse vide (route absente, enveloppe inattendue) ne doit pas effacer un état connu.
-            if (result && typeof result === 'object' && 'exists' in result) status.value = result;
+            if (result && typeof result === 'object' && 'exists' in result) setStatus(result);
             return status.value;
         } catch {
             return null;
@@ -124,16 +182,19 @@ export const useVaultStore = defineStore('vault', () => {
         }
     }
 
-    /** État serveur connu, chargé une seule fois à la demande (périmètre pour les écritures). */
+    /**
+     * État serveur connu (périmètre pour les écritures), relu à la demande s'il a plus de
+     * `VAULT_STATUS_MAX_AGE_MS`. Une relecture en échec (hors ligne) garde l'état déjà connu.
+     */
     async function ensureStatus(): Promise<VaultStatus | null> {
-        if (status.value) return status.value;
-        if (!currentUserId()) return null;
+        if (status.value && Date.now() - statusLoadedAt < VAULT_STATUS_MAX_AGE_MS) return status.value;
+        if (!currentUserId()) return status.value;
         if (!statusLoad) {
             statusLoad = loadStatus().finally(() => {
                 statusLoad = null;
             });
         }
-        return statusLoad;
+        return (await statusLoad) ?? status.value;
     }
 
     /**
@@ -145,16 +206,18 @@ export const useVaultStore = defineStore('vault', () => {
         return ensureStatus();
     }
 
-    function adoptKeys(userId: string, imported: VaultKeys): Promise<void> {
+    function adoptKeys(userId: string, imported: VaultKeys, vaultId: string | null): Promise<void> {
         keys.value = imported;
+        keysFor = userId;
+        keysVaultId = vaultId;
         deviceLoadFor = userId;
         deviceLoad = Promise.resolve(imported);
-        return saveVaultKeys(userId, imported);
+        return saveVaultKeys(userId, imported, vaultId);
     }
 
     function applyStatusResult(result: VaultStatus | undefined): Promise<VaultStatus | null> {
         if (result && typeof result === 'object' && 'exists' in result) {
-            status.value = result;
+            setStatus(result);
             return Promise.resolve(result);
         }
         return loadStatus();
@@ -169,9 +232,11 @@ export const useVaultStore = defineStore('vault', () => {
         try {
             const { setup, keys: prepared } = await createVaultSetup(password);
             pendingSetupKeys = prepared;
+            pendingSetupVaultId = setup.salt;
             return setup;
         } catch {
             pendingSetupKeys = null;
+            pendingSetupVaultId = null;
             return null;
         }
     }
@@ -179,16 +244,19 @@ export const useVaultStore = defineStore('vault', () => {
     /** Inscription réussie et session ouverte : conserve les clés préparées sur l’appareil. */
     async function commitRegistration(): Promise<void> {
         const prepared = pendingSetupKeys;
+        const vaultId = pendingSetupVaultId;
         pendingSetupKeys = null;
+        pendingSetupVaultId = null;
         pendingPassword = null;
         const userId = currentUserId();
         if (!prepared || !userId) return;
-        await adoptKeys(userId, prepared);
+        await adoptKeys(userId, prepared, vaultId);
     }
 
     /** Abandonne les clés préparées (inscription refusée). */
     function discardRegistration(): void {
         pendingSetupKeys = null;
+        pendingSetupVaultId = null;
     }
 
     /** Garde le mot de passe pour ouvrir le Coffre après la validation 2FA. */
@@ -213,7 +281,7 @@ export const useVaultStore = defineStore('vault', () => {
         if (!current.dekWrappedPassword) return 'lost';
         try {
             const dekBytes = await unwrapDekWithSecret(secret, current, current.dekWrappedPassword);
-            await adoptKeys(userId, await importVaultKeys(dekBytes));
+            await adoptKeys(userId, await importVaultKeys(dekBytes), current.salt);
             return 'unlocked';
         } catch {
             return 'failed';
@@ -232,12 +300,13 @@ export const useVaultStore = defineStore('vault', () => {
 
     /** Oublie les clés (mémoire et appareil) et l’état : déconnexion, inactivité, révocation. */
     function lock(): void {
-        keys.value = null;
+        lockEpoch += 1;
+        forgetKeys();
         pendingSetupKeys = null;
+        pendingSetupVaultId = null;
         pendingPassword = null;
         status.value = null;
-        deviceLoadFor = null;
-        deviceLoad = null;
+        statusLoadedAt = 0;
         statusLoad = null;
         phraseUnlockRequested.value = false;
         migration.running = false;
@@ -270,6 +339,8 @@ export const useVaultStore = defineStore('vault', () => {
     async function canEncryptScope(scope: VaultScope): Promise<boolean> {
         if (!(await ensureReady())) return false;
         const current = await ensureStatus();
+        // L'état relu a pu faire oublier les clés (Coffre supprimé ou remis à zéro ailleurs).
+        if (!keys.value) return false;
         if (current?.state === 'disabling') return false;
         if (scope === 'core') return true;
         return current?.exists === true && canEncryptField(current.allowedScope ?? 'core', 'asset', 'notes');
@@ -429,7 +500,7 @@ export const useVaultStore = defineStore('vault', () => {
         if (!userId) throw new VaultCryptoError('crypto_unavailable', 'Aucune session.');
         const { setup, keys: prepared } = await createVaultSetup(secret);
         const result = await vaultApi.create(setup, stepUp);
-        await adoptKeys(userId, prepared);
+        await adoptKeys(userId, prepared, setup.salt);
         await applyStatusResult(result);
         startBackgroundMigration();
     }
@@ -450,7 +521,7 @@ export const useVaultStore = defineStore('vault', () => {
         try {
             const dekWrappedPassword = await rewrapDek(dekBytes, secret, current);
             const result = await vaultApi.setPasswordWrap({ dekWrappedPassword }, stepUp);
-            await adoptKeys(userId, await importVaultKeys(dekBytes));
+            await adoptKeys(userId, await importVaultKeys(dekBytes), current.salt);
             await applyStatusResult(result);
             startBackgroundMigration();
         } finally {
@@ -470,7 +541,7 @@ export const useVaultStore = defineStore('vault', () => {
         const { setup, keys: prepared } = await createVaultSetup(secret);
         const result = await vaultApi.reset(setup, stepUp);
         await clearVaultKeys();
-        await adoptKeys(userId, prepared);
+        await adoptKeys(userId, prepared, setup.salt);
         await applyStatusResult(result);
         startBackgroundMigration();
     }
@@ -511,9 +582,7 @@ export const useVaultStore = defineStore('vault', () => {
             disabling.step = 'deleting';
             await vaultApi.remove(stepUp);
             disabling.step = 'done';
-            keys.value = null;
-            deviceLoad = null;
-            deviceLoadFor = null;
+            forgetKeys();
             await clearVaultKeys();
             await loadStatus();
         } catch (e: unknown) {

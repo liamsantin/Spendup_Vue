@@ -49,6 +49,9 @@ function tier(source: TierWritePayload & { publicId: string }): Tier {
     };
 }
 
+/** Sel du Coffre créé dans `beforeEach` : les clés de l'appareil ne valent que pour ce Coffre. */
+let registeredSalt: string | null = null;
+
 async function status(scope: 'core' | 'extended'): Promise<VaultStatus> {
     const { setup } = await createVaultSetup('Secret123');
     return {
@@ -59,7 +62,7 @@ async function status(scope: 'core' | 'extended'): Promise<VaultStatus> {
         iterations: setup.iterations,
         memoryKiB: null,
         parallelism: null,
-        salt: setup.salt,
+        salt: registeredSalt ?? setup.salt,
         dekWrappedPassword: setup.dekWrappedPassword,
         recoverySalt: null,
         dekWrappedRecovery: null,
@@ -78,7 +81,7 @@ describe('champs étendus des tiers', () => {
         createTestPinia();
         apiMock.status.mockReset();
         const vault = useVaultStore();
-        await vault.prepareRegistration('Secret123');
+        registeredSalt = (await vault.prepareRegistration('Secret123'))?.salt ?? null;
         await vault.commitRegistration();
     }, 20_000);
 

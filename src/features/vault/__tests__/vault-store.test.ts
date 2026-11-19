@@ -184,4 +184,46 @@ describe('useVaultStore', () => {
         ).resolves.toHaveLength(32);
         expect(vault.hasRecovery).toBe(true);
     }, 40_000);
+
+    it('Coffre remis à zéro ou supprimé sur un autre appareil : les clés d’ici sont oubliées, plus rien ne part chiffré', async () => {
+        apiMock.status.mockResolvedValue(await statusFor('Secret123'));
+        const vault = useVaultStore();
+        expect(await vault.unlockWithPassword('Secret123')).toBe('unlocked');
+        expect(isCipher(await vault.encrypt('account', 'iban', 'a1', 'CH93'))).toBe(true);
+
+        // Même mot de passe, mais un Coffre neuf : autre sel, autre DEK.
+        apiMock.status.mockResolvedValue(await statusFor('Secret123'));
+        await vault.loadStatus();
+        expect(vault.locked).toBe(true);
+        expect(await vault.encrypt('account', 'iban', 'a1', 'CH93')).toBe('CH93');
+
+        expect(await vault.unlockWithPassword('Secret123')).toBe('unlocked');
+        apiMock.status.mockResolvedValue(await statusFor('Secret123', { exists: false }));
+        await vault.loadStatus();
+        expect(vault.locked).toBe(true);
+    }, 30_000);
+
+    it('les clés en mémoire ne servent pas à un autre utilisateur du même onglet', async () => {
+        apiMock.status.mockResolvedValue(await statusFor('Secret123'));
+        const vault = useVaultStore();
+        expect(await vault.unlockWithPassword('Secret123')).toBe('unlocked');
+
+        authMock.user = { userPublicId: 'U2' };
+        expect(await vault.ensureReady()).toBeNull();
+        expect(vault.locked).toBe(true);
+    }, 20_000);
+
+    it('lock() pendant la relecture des clés de l’appareil : elles ne reviennent pas', async () => {
+        apiMock.status.mockResolvedValue(await statusFor('Secret123'));
+        expect(await useVaultStore().unlockWithPassword('Secret123')).toBe('unlocked');
+
+        // Nouvel onglet logique : store neuf, clés encore sur l'appareil.
+        createTestPinia();
+        const vault = useVaultStore();
+        const reading = vault.ensureReady();
+        vault.lock();
+        expect(await reading).toBeNull();
+        expect(vault.locked).toBe(true);
+        expect(await vault.ensureReady()).toBeNull();
+    }, 20_000);
 });

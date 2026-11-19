@@ -126,7 +126,10 @@ export const useFileSyncStore = defineStore('fileSync', () => {
             lastError.value = AppError.fromUnknown(e).message;
         }
         if (!timer) timer = setInterval(() => void run(), SYNC_INTERVAL_MS);
-        void run();
+        // Un passage du compte précédent peut encore être en vol : celui de ce compte part après lui.
+        void Promise.resolve(pending)
+            .catch(() => undefined)
+            .then(() => run());
     }
 
     /** Arrête la synchro (déconnexion). Le dossier local est conservé. */
@@ -164,9 +167,12 @@ export const useFileSyncStore = defineStore('fileSync', () => {
             }
             if (pause.value === 'root_unavailable') pause.value = null;
 
-            await pullChanges(acc);
+            // Compte changé pendant le passage : l'index en mémoire n'est plus celui de `acc`, on s'arrête.
+            if (!(await pullChanges(acc)) || account !== acc) return;
             await checkIntegrity(acc);
+            if (account !== acc) return;
             await localStore.purgeTrash(acc, TRASH_RETENTION_DAYS).catch(() => 0);
+            if (account !== acc) return;
             await uploadQueue();
             lastRunAt.value = new Date();
         } catch (e: unknown) {
@@ -183,15 +189,21 @@ export const useFileSyncStore = defineStore('fileSync', () => {
     }
 
     /** Applique les changements serveur ; les suppressions venues d'un autre appareil vont dans la corbeille. */
-    async function pullChanges(acc: string) {
+    async function pullChanges(acc: string): Promise<boolean> {
         const full = serverSince === null;
+        // Seules les entrées connues avant la requête peuvent manquer à la réponse parce qu'elles ont été
+        // supprimées ailleurs : un fichier déposé pendant la requête n'y figure pas encore, et il doit rester.
+        const knownBefore = Object.keys(index.value.entries);
         const changes = await filesApi.changes(serverSince);
         const items = await Promise.all(changes.items.map(decryptFileFields));
+        if (account !== acc) return false;
         const deleted = new Set(changes.deletedPublicIds);
         if (full) {
             const alive = new Set(items.map((f) => f.publicId));
+            const addedMeanwhile = [...remote.entries()].filter(([id]) => !knownBefore.includes(id) && !alive.has(id));
             remote.clear();
-            for (const id of Object.keys(index.value.entries)) {
+            for (const [id, file] of addedMeanwhile) remote.set(id, file);
+            for (const id of knownBefore) {
                 if (!alive.has(id)) deleted.add(id);
             }
         }
@@ -210,6 +222,7 @@ export const useFileSyncStore = defineStore('fileSync', () => {
         if (indexChanged) await saveIndex();
         serverSince = changes.serverTime;
         if (pause.value === 'offline') pause.value = null;
+        return true;
     }
 
     /** Repère les fichiers de l'index disparus du dossier (supprimés ou déplacés à la main). */
