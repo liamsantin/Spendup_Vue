@@ -49,6 +49,68 @@ const steps = [
     }
 ];
 
+/**
+ * Impôts : le parcours d’un dossier, de sa création au solde. Chaque point décrit un écran
+ * qui existe dans le module (voir aussi la section « Impôts » de la page Fonctionnalités).
+ */
+const taxPhases = [
+    {
+        title: 'Préparer',
+        text: 'Une déclaration par année et par canton, pour une ou deux personnes. Repartez du PDF d’une déclaration existante ou de celle de l’an dernier : situation et fiches sont reprises, jamais les montants.'
+    },
+    {
+        title: 'Remplir',
+        text: 'Revenus, prévoyance, santé, famille, déductions, fortune et dettes : des étapes courtes, avec les cases remplies et celles qu’il reste à compléter.'
+    },
+    {
+        title: 'Déposer',
+        text: 'Exportez le récapitulatif à recopier dans le logiciel officiel, avec vos justificatifs numérotés. Une fois la déclaration marquée déposée, ses montants sont verrouillés et chaque correction est journalisée.'
+    },
+    {
+        title: 'Suivre',
+        text: 'Décision de taxation, écarts avec ce que vous aviez déclaré, acomptes et solde : chaque tranche se rapproche de vos paiements, jusqu’au dossier soldé.'
+    }
+];
+
+/** Les statuts d’un dossier, dans l’ordre où il les traverse. */
+const taxStatuses = ['En cours', 'Prête à recopier', 'Déposée', 'Taxée', 'Soldée'];
+
+/** Ce que le module propose à partir des données déjà saisies ; rien n’entre sans validation. */
+const taxSources = [
+    'Salaires',
+    'Placements et dividendes',
+    'Immeubles',
+    'Dettes et intérêts',
+    '3e pilier a',
+    'Primes d’assurance',
+    'Frais médicaux et remboursements',
+    'Frais de garde',
+    'Dons',
+    'Formation',
+    'Trajets domicile-travail',
+    'Pensions versées'
+];
+
+const taxExports = [
+    { label: 'Récapitulatif PDF', value: 'Dans l’ordre du formulaire, à recopier' },
+    { label: 'Justificatifs (ZIP)', value: 'Pièces numérotées, avec un sommaire' },
+    { label: 'Tableur (CSV)', value: 'Un montant par ligne' },
+    { label: 'Données (JSON)', value: 'Sauvegarde complète du dossier' }
+];
+
+/** Les limites, dites clairement : c’est un brouillon de travail. */
+const taxLimits = [
+    {
+        title: 'Aucun impôt calculé',
+        text: 'Spend.Up additionne vos montants et les compare à la décision reçue. Le calcul reste celui du canton.'
+    },
+    { title: 'Rien n’est transmis', text: 'Aucun envoi à l’administration : vous recopiez vous-même dans le logiciel officiel.' },
+    {
+        title: 'Rien sans votre accord',
+        text: 'Une proposition ne compte qu’une fois acceptée, et une dépense qu’une fois sa nature confirmée.'
+    }
+];
+
 /** Ce que recouvre l’hébergement : faits vérifiables, sans répéter le mot « Suisse ». */
 const swissFacts = [
     { label: 'Ce qui est hébergé', value: 'Comptes, transactions, documents et sauvegardes' },
@@ -257,12 +319,83 @@ const demoPoints = [
             </div>
         </section>
 
-        <!-- 05 : sans connexion bancaire -->
+        <!-- 05 : impôts — le parcours d’un dossier, ce qui est proposé, ce qui sort, et les limites -->
+        <section id="impots" class="s-section home-tax">
+            <div class="s-container">
+                <header v-reveal class="home-head home-head--lead">
+                    <span class="s-kicker"><b>05</b> Impôts</span>
+                    <h2 class="s-h2">Votre déclaration d’impôts, <span class="s-primary">préparée toute l’année.</span></h2>
+                    <p>
+                        Ce que vous suivez déjà dans Spend.Up devient un brouillon de déclaration, par année et pour les 26 cantons. Vous
+                        validez chaque montant, puis vous le recopiez dans le logiciel officiel.
+                    </p>
+                </header>
+
+                <ol v-reveal class="tax-phases" data-reveal-stagger="100">
+                    <li v-for="(phase, index) in taxPhases" :key="phase.title">
+                        <span class="tax-phases__number">{{ index + 1 }}</span>
+                        <h3>{{ phase.title }}</h3>
+                        <p>{{ phase.text }}</p>
+                    </li>
+                </ol>
+
+                <div v-reveal class="tax-status">
+                    <span class="tax-status__label">Le statut de chaque dossier</span>
+                    <ol>
+                        <li v-for="status in taxStatuses" :key="status">{{ status }}</li>
+                    </ol>
+                </div>
+
+                <div v-reveal class="s-grid tax-detail">
+                    <div class="tax-detail__sources">
+                        <h3>Proposé à partir de vos données</h3>
+                        <p>
+                            Vos opérations, vos assurances et votre patrimoine alimentent des propositions, ligne par ligne. Les pièces déjà
+                            jointes à une transaction se rangent d’un geste sur la bonne ligne.
+                        </p>
+                        <ul>
+                            <li v-for="source in taxSources" :key="source">{{ source }}</li>
+                        </ul>
+                    </div>
+
+                    <div class="tax-detail__exports">
+                        <h3>Ce que vous emportez</h3>
+                        <dl>
+                            <div v-for="item in taxExports" :key="item.label">
+                                <dt>{{ item.label }}</dt>
+                                <dd>{{ item.value }}</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <div v-reveal class="s-grid tax-note">
+                    <div class="tax-note__copy">
+                        <h3>Un brouillon de travail, pas un logiciel officiel.</h3>
+                        <div class="s-actions">
+                            <v-btn color="white" size="large" flat class="text-none" to="/demo/analyses/impots">
+                                Essayer dans la démo
+                                <ArrowRightIcon size="18" class="ms-3" />
+                            </v-btn>
+                            <RouterLink to="/fonctionnalites#impots" class="tax-note__link">Voir le détail</RouterLink>
+                        </div>
+                    </div>
+                    <ul class="tax-note__limits">
+                        <li v-for="limit in taxLimits" :key="limit.title">
+                            <h4>{{ limit.title }}</h4>
+                            <p>{{ limit.text }}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 06 : sans connexion bancaire -->
         <section id="sans-connexion-bancaire" class="s-section home-trust">
             <div class="s-container">
                 <div v-reveal class="s-grid trust">
                     <div class="trust__statement">
-                        <span class="s-kicker"><b>05</b> Sans connexion bancaire</span>
+                        <span class="s-kicker"><b>06</b> Sans connexion bancaire</span>
                         <h2 class="s-h2">Spend.Up ne se connecte pas à votre banque. <span>Et c’est voulu.</span></h2>
                     </div>
 
@@ -276,12 +409,12 @@ const demoPoints = [
             </div>
         </section>
 
-        <!-- 06 : disponible partout, dont l’application de bureau -->
+        <!-- 07 : disponible partout, dont l’application de bureau -->
         <section id="applications" class="s-section home-anywhere">
             <div class="s-container">
                 <div v-reveal class="s-grid anywhere">
                     <div class="anywhere__copy">
-                        <span class="s-kicker"><b>06</b> Disponible partout</span>
+                        <span class="s-kicker"><b>07</b> Disponible partout</span>
                         <h2 class="s-h2">Sur le web, sur smartphone et sur votre ordinateur.</h2>
                         <p>Vos données restent synchronisées d’un appareil à l’autre.</p>
                         <div class="s-actions">
@@ -302,12 +435,12 @@ const demoPoints = [
             </div>
         </section>
 
-        <!-- 07 : essayer sans créer de compte -->
+        <!-- 08 : essayer sans créer de compte -->
         <section id="essayer-la-demo" class="s-section home-demo">
             <div class="s-container">
                 <div v-reveal class="s-grid demo">
                     <div class="demo__copy">
-                        <span class="s-kicker"><b>07</b> Essayer la démo</span>
+                        <span class="s-kicker"><b>08</b> Essayer la démo</span>
                         <h2 class="s-h2">Parcourez Spend.Up avant de créer un compte.</h2>
                         <p>
                             Un foyer d’exemple est déjà rempli : comptes, transactions, budgets, récurrences et patrimoine. Rien n’est
