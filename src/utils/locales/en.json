@@ -341,7 +341,8 @@
             "upcomingHint": "nothing due | {count} payment due | {count} payments due",
             "vsPrevious": "{change} vs {month}",
             "noComparison": "No comparison available",
-            "loadFailed": "This month’s figures could not be loaded: the amounts shown are incomplete."
+            "loadFailed": "This month’s figures could not be loaded: the amounts shown are incomplete.",
+            "truncated": "This month has too many transactions to load in full: the amounts shown are partial."
         },
         "spending": {
             "title": "Spending by category",

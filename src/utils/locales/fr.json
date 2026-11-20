@@ -341,7 +341,8 @@
             "upcomingHint": "aucune échéance | {count} échéance | {count} échéances",
             "vsPrevious": "{change} vs {month}",
             "noComparison": "Pas de comparaison possible",
-            "loadFailed": "Les chiffres du mois n’ont pas pu être chargés : les montants affichés sont incomplets."
+            "loadFailed": "Les chiffres du mois n’ont pas pu être chargés : les montants affichés sont incomplets.",
+            "truncated": "Ce mois compte trop de transactions pour être chargé en entier : les montants affichés sont partiels."
         },
         "spending": {
             "title": "Dépenses par catégorie",

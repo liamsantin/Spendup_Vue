@@ -38,6 +38,9 @@
             {{ t('dashboard.month.loadFailed') }}
             <button type="button" class="su-link" @click="month.reload()">{{ t('common.retry') }}</button>
         </AppAlert>
+        <AppAlert v-else-if="month.truncated.value && !month.loading.value" type="warning" class="su-alert">
+            {{ t('dashboard.month.truncated') }}
+        </AppAlert>
 
         <!-- ── alertes : lignes texte sur filet fin ── -->
         <nav v-if="alerts.length" class="dash-alerts" :aria-label="t('dashboard.alerts.label')">
