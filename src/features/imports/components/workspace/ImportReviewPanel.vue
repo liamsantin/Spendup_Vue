@@ -34,7 +34,8 @@ import ImportLineTable from '@/features/imports/components/list/ImportLineTable.
 import ImportCommitModal from '@/features/imports/components/modals/ImportCommitModal.vue';
 import ImportLineEditModal from '@/features/imports/components/modals/ImportLineEditModal.vue';
 import { isImportLineStatus, parseImportLineSort } from '@/features/imports/format';
-import { importDetailPath } from '@/features/imports/paths';
+import { importDetailPath, importLinesRouteQuery } from '@/features/imports/paths';
+import { isDemoSession } from '@/features/demo/session';
 import { useImportsStore } from '@/features/imports/stores/imports-store';
 import {
     IMPORT_LINE_SEARCH_MAX,
@@ -95,22 +96,30 @@ const filterStatus = computed<ImportLineStatus | null>(() => {
     const raw = queryString('status');
     return isImportLineStatus(raw) ? raw : null;
 });
-const filterSearch = computed(() => queryString('q').trim().slice(0, IMPORT_LINE_SEARCH_MAX));
+// En démo, la recherche vit dans la page, jamais dans l'adresse (voir `importLinesRouteQuery`).
+const demoSearch = ref('');
+function readSearch(): string {
+    return isDemoSession() ? demoSearch.value : queryString('q');
+}
+
+const filterSearch = computed(() => readSearch().trim().slice(0, IMPORT_LINE_SEARCH_MAX));
 const listSort = computed(() => parseImportLineSort(queryString('sort')));
 
 function patchQuery(patch: Record<string, string | undefined>) {
-    const next: Record<string, string> = {};
     const status = 'status' in patch ? patch.status : queryString('status') || undefined;
-    const q = 'q' in patch ? patch.q : queryString('q') || undefined;
+    const q = 'q' in patch ? patch.q : readSearch() || undefined;
     const sort = 'sort' in patch ? patch.sort : queryString('sort') || undefined;
-    if (status && isImportLineStatus(status)) next.status = status;
-    if (q) next.q = q.slice(0, IMPORT_LINE_SEARCH_MAX);
-    if (sort && sort !== IMPORT_LINE_SORT_DEFAULT) next.sort = sort;
+    const inDemo = isDemoSession();
+    if (inDemo) demoSearch.value = (q ?? '').slice(0, IMPORT_LINE_SEARCH_MAX);
+    const next = importLinesRouteQuery(
+        { status: status && isImportLineStatus(status) ? status : undefined, q, sort },
+        { inDemo, maxSearch: IMPORT_LINE_SEARCH_MAX, defaultSort: IMPORT_LINE_SORT_DEFAULT }
+    );
     void router.replace({ path: importDetailPath(props.item.publicId), query: next });
 }
 
 const search = useBoardSearch({
-    read: () => queryString('q'),
+    read: readSearch,
     commit: (value) => patchQuery({ q: value }),
     max: IMPORT_LINE_SEARCH_MAX
 });

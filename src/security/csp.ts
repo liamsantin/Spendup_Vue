@@ -9,7 +9,9 @@
 
 const SHARED = [
     "default-src 'self'",
-    "img-src 'self' data: blob: https:",
+    // Aucune image externe : avatars du catalogue (même site), photos chargées en `blob:`, QR en `data:`.
+    // Une adresse d'image ne peut donc pas emporter de texte vers un autre site.
+    "img-src 'self' data: blob:",
     "font-src 'self' https://fonts.gstatic.com data:",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "frame-src 'self' blob: https://accounts.google.com",

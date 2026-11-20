@@ -36,6 +36,9 @@ describe('csp', () => {
         // Preview PDF : iframe blob: (même origine), jamais l’origine API.
         expect(CSP_PROD_ENFORCE).toMatch(/frame-src[^;]*\bblob:/);
         expect(CSP_PROD_ENFORCE).toMatch(/frame-src[^;]*https:\/\/accounts\.google\.com/);
+        // Aucune image externe : une adresse d'image ne peut pas emporter de texte (import en démo, E4).
+        expect(CSP_PROD_ENFORCE).toContain("img-src 'self' data: blob:;");
+        expect(CSP_DEV_REPORT_ONLY).not.toMatch(/img-src[^;]*https?:/);
     });
 
     it('buildCspProdEnforce injecte l’origine API + wss', () => {
@@ -78,6 +81,8 @@ describe('tauri.conf.json CSP', () => {
         expect(csp['connect-src']).not.toMatch(/(?:^|\s)wss:(?=\s|$)/);
         expect(csp['img-src']).toContain('asset:');
         expect(csp['img-src']).toContain('http://asset.localhost');
+        expect(csp['img-src']).not.toMatch(/(?:^|\s)https:(?=\s|$)/);
+        expect(tauriConf.app.security.devCsp?.['img-src']).not.toMatch(/(?:^|\s)https:(?=\s|$)/);
         expect(csp['object-src']).toBe("'none'");
         expect(csp['frame-src']).toContain('blob:');
         expect(csp['frame-src']).toContain('https://accounts.google.com');

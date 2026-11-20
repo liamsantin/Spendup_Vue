@@ -4,6 +4,7 @@
  * repli en mémoire : la clé vit le temps de l’onglet.
  */
 import type { VaultKeys } from '@/features/vault/crypto';
+import { isDemoSession } from '@/features/demo/session';
 
 const DB_NAME = 'spendup-vault';
 const DB_VERSION = 1;
@@ -24,6 +25,8 @@ let memoryRecord: StoredRecord | null = null;
 let clearGeneration = 0;
 
 function hasIndexedDb(): boolean {
+    // Démo : rien n'est écrit sur l'appareil, pas même une base vide ; le repli mémoire suffit.
+    if (isDemoSession()) return false;
     return typeof indexedDB !== 'undefined' && indexedDB != null;
 }
 
