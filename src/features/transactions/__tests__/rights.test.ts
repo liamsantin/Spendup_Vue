@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Account } from '@/features/accounts/types';
-import { canViewTransactions, canWriteTransaction, canWriteTransactions, canWriteTransfer } from '@/features/transactions/rights';
+import {
+    canSetTransactionTaxNature,
+    canViewTransactions,
+    canWriteTransaction,
+    canWriteTransactions,
+    canWriteTransfer
+} from '@/features/transactions/rights';
 import type { Transaction } from '@/features/transactions/types';
 
 function account(partial: Partial<Account> = {}): Account {
@@ -82,6 +88,13 @@ describe('transactions rights', () => {
         expect(canWriteTransfer(owner, editor)).toBe(true);
         expect(canWriteTransfer(owner, viewer)).toBe(false);
         expect(canWriteTransfer(owner, account({ publicId: 'a2', isActive: false }))).toBe(false);
+    });
+
+    it('réserve la nature fiscale au propriétaire du compte', () => {
+        expect(canSetTransactionTaxNature(transaction(), [account()])).toBe(true);
+        expect(canSetTransactionTaxNature(transaction(), [account({ isOwned: false, myRole: 'editor' })])).toBe(false);
+        expect(canSetTransactionTaxNature(transaction(), [account({ isOwned: false, myRole: 'viewer' })])).toBe(false);
+        expect(canSetTransactionTaxNature(transaction(), [])).toBe(false);
     });
 
     it('bloque l’écriture d’une transaction si un compte touché est archivé ou viewer', () => {

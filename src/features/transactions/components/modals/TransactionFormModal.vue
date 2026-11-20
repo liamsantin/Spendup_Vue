@@ -22,7 +22,7 @@ import { isSavingsGoalCompatibleWithTransactionForm } from '@/features/savings-g
 import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
 import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import { ASSET_NOT_FOUND_MESSAGE } from '@/features/assets/types';
-import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
+import { canSetTransactionTaxNature, canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import { sourceAccountPublicId, targetAccountPublicId } from '@/features/transactions/format';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { todayInTimeZone } from '@/utils/helpers/today';
@@ -704,9 +704,14 @@ const effectiveTaxNature = computed(() => {
     return resolveTaxNature({ taxNature: current.taxNature, taxNatureStatus: current.taxNatureStatus }, categoryTaxNature.value).code;
 });
 
+/** Sur un compte reçu en partage, la nature fiscale appartient au propriétaire : le bloc n'est pas affiché. */
+const canSetTaxNature = computed(
+    () => !!liveTransaction.value && canSetTransactionTaxNature(liveTransaction.value, accountsStore.accounts)
+);
+
 async function onTaxNatureChange(payload: SetTransactionTaxNaturePayload) {
     localError.message = null;
-    if (!editTransaction.value || !canEditFiles.value) return;
+    if (!editTransaction.value || !canEditFiles.value || !canSetTaxNature.value) return;
     try {
         await store.setTransactionTaxNature(editTransaction.value.publicId, payload);
     } catch (e: unknown) {
@@ -791,7 +796,7 @@ function onOpenAttachment(file: TransactionFile) {
                     :asset-hint="assetHint"
                 />
                 <TransactionTaxNature
-                    v-if="isEdit && liveTransaction && form.type !== 'transfert'"
+                    v-if="isEdit && liveTransaction && form.type !== 'transfert' && canSetTaxNature"
                     :tax-nature="liveTransaction.taxNature"
                     :tax-nature-status="liveTransaction.taxNatureStatus"
                     :category-nature="categoryTaxNature"
