@@ -4,6 +4,7 @@ import { readAndClearLoginNotice, writeLoginNotice } from '@/features/auth/sessi
 import { i18n } from '@/plugins/i18n';
 import { isIdleSessionMessage } from '@/features/auth/idle-session';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
+import { isDemoSession } from '@/features/demo/session';
 import { APP_HOME_ROUTE, AUTH_ROUTE, type AuthSessionState } from '@/features/auth/stores/internal/auth-session';
 
 function t(key: string) {
@@ -20,6 +21,8 @@ export function createAuthLogout(session: AuthSessionState) {
 
     /** Appelle l’API logout serveur (ignore les erreurs). */
     async function clearServerSession() {
+        // Démo : aucune session côté serveur, donc rien à révoquer et aucune requête à émettre.
+        if (isDemoSession()) return;
         try {
             if (cookieMode) {
                 await authApi.logout(null, accessToken.value);

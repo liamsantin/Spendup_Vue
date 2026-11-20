@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import { csrfHeaderRecord } from '@/features/auth/csrf';
+import { isDemoSession } from '@/features/demo/session';
 import { isTauri } from '@/utils/helpers/platform-helpers';
 
 export function getApiBaseUrl(): string {
@@ -32,14 +33,35 @@ export function shouldSendBearerAuth(): boolean {
     return !isAuthCookieMode();
 }
 
-/** Instance Axios de base (JSON). Sans interceptor refresh. Timeout 30s. */
+/**
+ * Verrou réseau de la démo : une requête qui tente de sortir pendant une session démo est refusée
+ * avant l'envoi. La démo répond depuis la mémoire du navigateur (`features/demo/handle.ts`) ; ce
+ * verrou garantit qu'un appel oublié échoue au lieu de partir vers l'API.
+ */
+export class DemoNetworkBlockedError extends Error {
+    constructor(method: string | undefined, url: string | undefined) {
+        super(`Mode démo : aucune requête ne sort du navigateur (${(method ?? 'get').toUpperCase()} ${url ?? ''}).`);
+        this.name = 'DemoNetworkBlockedError';
+    }
+}
+
+/**
+ * Instance Axios de base (JSON). Sans interceptor refresh. Timeout 30s.
+ * Seul endroit du front où un client HTTP est créé (vérifié par `network-exits.test.ts`) :
+ * chaque instance porte donc le verrou de la démo.
+ */
 export function createApiAxios(): AxiosInstance {
-    return axios.create({
+    const instance = axios.create({
         baseURL: getApiBaseUrl(),
         timeout: 30_000,
         headers: { 'Content-Type': 'application/json' },
         withCredentials: isAuthCookieMode()
     });
+    instance.interceptors.request.use((config) => {
+        if (isDemoSession()) throw new DemoNetworkBlockedError(config.method, config.url);
+        return config;
+    });
+    return instance;
 }
 
 function needsCsrfHeader(config: InternalAxiosRequestConfig): boolean {
