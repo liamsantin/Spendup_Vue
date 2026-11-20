@@ -37,6 +37,7 @@ export const useSharedDebtsStore = defineStore('shared-debts', () => {
         totalCount: state.totalCount,
         totalOwedToMe: state.totalOwedToMe,
         totalIOwe: state.totalIOwe,
+        otherCurrenciesCount: state.otherCurrenciesCount,
         totalsCurrency: state.totalsCurrency,
         loading: state.loading,
         acting: state.acting,

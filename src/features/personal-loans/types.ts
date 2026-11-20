@@ -43,6 +43,8 @@ export type PersonalLoansListResult = {
     /** Somme des restants des prêts actifs `emprunt`, en devise de base. */
     totalBorrowed: number;
     currency: PersonalLoanCurrency | null;
+    /** Prêts actifs dans une autre devise que `currency`, absents des deux totaux. */
+    otherCurrenciesCount?: number;
 };
 
 export type ListPersonalLoansQuery = {

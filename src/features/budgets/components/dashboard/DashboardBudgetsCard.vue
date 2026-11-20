@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n';
 import { BUDGETS_PATHS, budgetDetailPath } from '@/features/budgets/paths';
 import { budgetBarWidth, budgetProgressTone, formatBudgetAmount, formatPercentUsed, isBudgetOverspent } from '@/features/budgets/format';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
+import { useUserSettingsStore } from '@/features/user-settings';
 import { BUDGET_GAUGE_SEGMENTS, DASHBOARD_MASKED_AMOUNT, summarizeBudgets } from '@/features/dashboard/format';
 
 const props = defineProps<{
@@ -13,11 +14,12 @@ const props = defineProps<{
 
 const { t, locale } = useI18n();
 const store = useBudgetsStore();
+const settings = useUserSettingsStore();
 
 const rows = computed(() => store.items.filter((item) => item.isActive).slice(0, 6));
 
-/** Budget global de la période en cours (somme des budgets actifs et courants). */
-const summary = computed(() => summarizeBudgets(store.items));
+/** « Budget du mois » : le budget global seul, sinon la somme des budgets mensuels (comme la page Budgets). */
+const summary = computed(() => summarizeBudgets(store.items, settings.current.defaultCurrency));
 const isOver = computed(() => (summary.value?.percent ?? 0) > 100);
 
 const monthLabel = computed(() => new Intl.DateTimeFormat(locale.value, { month: 'long' }).format(new Date()));

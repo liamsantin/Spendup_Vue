@@ -119,7 +119,8 @@ export function createSharedDebtsCrud(state: SharedDebtsState) {
                             totalCount: result?.totalCount ?? nextItems.length,
                             totalOwedToMe: Number(result?.totalOwedToMe) || 0,
                             totalIOwe: Number(result?.totalIOwe) || 0,
-                            currency: result?.currency ?? null
+                            currency: result?.currency ?? null,
+                            otherCurrenciesCount: Number(result?.otherCurrenciesCount) || 0
                         });
                         applied = true;
                     } catch (e: unknown) {

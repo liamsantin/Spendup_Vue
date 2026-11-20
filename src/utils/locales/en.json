@@ -1088,7 +1088,7 @@
             "perDay": "Available per day",
             "byCategory": "By category",
             "reached": "Reached",
-            "aggregateNote": "Total of current budgets"
+            "aggregateNote": "Total of current monthly budgets"
         },
         "searchPlaceholder": "Search a budget",
         "count": "{count} budget | {count} budget | {count} budgets",
@@ -4678,7 +4678,8 @@
             "label": "Ongoing loan totals",
             "lent": "I lend",
             "borrowed": "I borrow",
-            "note": "Remaining on ongoing loans"
+            "note": "Remaining on ongoing loans",
+            "otherCurrencies": "{count} ongoing loan in another currency is not counted in these {currency} totals. | {count} ongoing loans in other currencies are not counted in these {currency} totals."
         },
         "card": {
             "remaining": "Remaining",
@@ -5118,7 +5119,8 @@
             "owedToMe": "Owed to me",
             "owedToMeNote": "still to be repaid by your friends",
             "iOwe": "I owe",
-            "iOweNote": "still to be repaid to your friends"
+            "iOweNote": "still to be repaid to your friends",
+            "otherCurrencies": "{count} open debt in another currency is not counted in these {currency} totals. | {count} open debts in other currencies are not counted in these {currency} totals."
         },
         "tabs": {
             "label": "Point of view",

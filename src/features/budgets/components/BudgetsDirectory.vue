@@ -18,6 +18,7 @@ import {
     isBudgetPeriode,
     matchesBudgetSearch
 } from '@/features/budgets/format';
+import { selectMonthBudgets } from '@/features/dashboard/format';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { BUDGET_NAME_MAX, type Budget, type BudgetPeriode } from '@/features/budgets/types';
@@ -80,27 +81,26 @@ const GAUGE_SEGMENTS = 20;
 
 /**
  * Bloc « Budget du mois » (maquette 06) : le budget global en cours (sans catégorie, mensuel de préférence) ;
- * à défaut, total des budgets actifs en cours dans la devise par défaut (signalé par une note).
+ * à défaut, total des budgets mensuels en cours dans la devise par défaut (signalé par une note).
+ * Même sélection que le tableau de bord (`selectMonthBudgets`), sur tous les budgets connus et non sur
+ * la liste affichée : un filtre de la page ne change pas le budget du mois.
  */
 const overview = computed(() => {
-    const current = store.items.filter((budget) => budget.isActive && budget.isCurrent);
-    if (!current.length) return null;
-    const globals = current.filter((budget) => !budget.categoryPublicId);
-    const global = globals.find((budget) => budget.periode === 'mensuel') ?? globals[0] ?? null;
-    if (global) {
+    const selection = selectMonthBudgets(store.allKnownItems(), settings.current.defaultCurrency);
+    if (!selection) return null;
+    const { currency, budgets: scoped } = selection;
+    if (!selection.aggregate) {
+        const global = scoped[0];
         return {
             spent: global.spentAmount,
             limit: global.limitAmount,
             remaining: global.remainingAmount,
             percent: global.percentUsed,
-            currency: global.currency,
+            currency,
             periodEnd: global.periodEnd,
             aggregate: false
         };
     }
-    const preferred = settings.current.defaultCurrency;
-    const currency = current.some((budget) => budget.currency === preferred) ? preferred : current[0].currency;
-    const scoped = current.filter((budget) => budget.currency === currency);
     const spent = scoped.reduce((sum, budget) => sum + budget.spentAmount, 0);
     const limit = scoped.reduce((sum, budget) => sum + budget.limitAmount, 0);
     return {

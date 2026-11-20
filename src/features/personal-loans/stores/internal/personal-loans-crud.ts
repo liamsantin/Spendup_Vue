@@ -100,7 +100,8 @@ export function createPersonalLoansCrud(state: PersonalLoansState) {
                             totalCount: result?.totalCount ?? nextItems.length,
                             totalLent: Number(result?.totalLent) || 0,
                             totalBorrowed: Number(result?.totalBorrowed) || 0,
-                            currency: isPersonalLoanCurrency(result?.currency) ? result.currency : null
+                            currency: isPersonalLoanCurrency(result?.currency) ? result.currency : null,
+                            otherCurrenciesCount: Number(result?.otherCurrenciesCount) || 0
                         });
                         applied = true;
                     } catch (e: unknown) {

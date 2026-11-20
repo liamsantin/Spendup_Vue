@@ -32,6 +32,7 @@ export type PersonalLoansTotals = {
     totalLent: number;
     totalBorrowed: number;
     currency: PersonalLoanCurrency | null;
+    otherCurrenciesCount: number;
 };
 
 export type PersonalLoansCacheEntry = PersonalLoansTotals & {
@@ -76,6 +77,7 @@ export function createPersonalLoansState() {
     const totalLent = ref(0);
     const totalBorrowed = ref(0);
     const totalsCurrency = ref<PersonalLoanCurrency | null>(null);
+    const otherCurrenciesCount = ref(0);
 
     const loading = ref(false);
     const acting = ref(false);
@@ -118,6 +120,7 @@ export function createPersonalLoansState() {
         totalLent.value = entry?.totalLent ?? 0;
         totalBorrowed.value = entry?.totalBorrowed ?? 0;
         totalsCurrency.value = entry?.currency ?? null;
+        otherCurrenciesCount.value = entry?.otherCurrenciesCount ?? 0;
     }
 
     function setList(key: string, nextItems: PersonalLoan[], meta?: Partial<PersonalLoansTotals> & { totalCount?: number }) {
@@ -127,7 +130,8 @@ export function createPersonalLoansState() {
             totalCount: meta?.totalCount ?? prev?.totalCount ?? nextItems.length,
             totalLent: meta?.totalLent ?? prev?.totalLent ?? 0,
             totalBorrowed: meta?.totalBorrowed ?? prev?.totalBorrowed ?? 0,
-            currency: meta?.currency !== undefined ? meta.currency : (prev?.currency ?? null)
+            currency: meta?.currency !== undefined ? meta.currency : (prev?.currency ?? null),
+            otherCurrenciesCount: meta?.otherCurrenciesCount ?? prev?.otherCurrenciesCount ?? 0
         };
         itemsByListKey.set(key, entry);
         for (const item of nextItems) knownById.set(item.publicId, item);
@@ -227,6 +231,7 @@ export function createPersonalLoansState() {
         totalCount,
         totalLent,
         totalBorrowed,
+        otherCurrenciesCount,
         totalsCurrency,
         loading,
         acting,

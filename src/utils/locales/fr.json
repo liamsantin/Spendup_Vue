@@ -1088,7 +1088,7 @@
             "perDay": "Disponible par jour",
             "byCategory": "Par catégorie",
             "reached": "Atteint",
-            "aggregateNote": "Total des budgets en cours"
+            "aggregateNote": "Total des budgets mensuels en cours"
         },
         "searchPlaceholder": "Rechercher un budget",
         "count": "{count} budget | {count} budget | {count} budgets",
@@ -4678,7 +4678,8 @@
             "label": "Totaux des prêts en cours",
             "lent": "Je prête",
             "borrowed": "J’emprunte",
-            "note": "Restant des prêts en cours"
+            "note": "Restant des prêts en cours",
+            "otherCurrencies": "{count} prêt en cours dans une autre devise n’est pas compté dans ces totaux en {currency}. | {count} prêts en cours dans d’autres devises ne sont pas comptés dans ces totaux en {currency}."
         },
         "card": {
             "remaining": "Restant",
@@ -5118,7 +5119,8 @@
             "owedToMe": "On me doit",
             "owedToMeNote": "reste à rembourser par vos amis",
             "iOwe": "Je dois",
-            "iOweNote": "reste à rembourser à vos amis"
+            "iOweNote": "reste à rembourser à vos amis",
+            "otherCurrencies": "{count} dette ouverte dans une autre devise n’est pas comptée dans ces totaux en {currency}. | {count} dettes ouvertes dans d’autres devises ne sont pas comptées dans ces totaux en {currency}."
         },
         "tabs": {
             "label": "Point de vue",

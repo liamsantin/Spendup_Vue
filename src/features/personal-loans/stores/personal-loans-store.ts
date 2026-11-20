@@ -33,6 +33,7 @@ export const usePersonalLoansStore = defineStore('personal-loans', () => {
         totalCount: state.totalCount,
         totalLent: state.totalLent,
         totalBorrowed: state.totalBorrowed,
+        otherCurrenciesCount: state.otherCurrenciesCount,
         totalsCurrency: state.totalsCurrency,
         loading: state.loading,
         acting: state.acting,

@@ -36,6 +36,7 @@ export type SharedDebtsCacheEntry = {
     totalOwedToMe: number;
     totalIOwe: number;
     currency: SharedDebtCurrency | null;
+    otherCurrenciesCount: number;
 };
 
 export type SharedDebtsListMeta = Partial<Omit<SharedDebtsCacheEntry, 'items'>>;
@@ -80,6 +81,7 @@ export function createSharedDebtsState() {
     const totalOwedToMe = ref(0);
     const totalIOwe = ref(0);
     const totalsCurrency = ref<SharedDebtCurrency | null>(null);
+    const otherCurrenciesCount = ref(0);
 
     const loading = ref(false);
     const acting = ref(false);
@@ -123,6 +125,7 @@ export function createSharedDebtsState() {
         totalOwedToMe.value = entry?.totalOwedToMe ?? 0;
         totalIOwe.value = entry?.totalIOwe ?? 0;
         totalsCurrency.value = entry?.currency ?? null;
+        otherCurrenciesCount.value = entry?.otherCurrenciesCount ?? 0;
     }
 
     function setList(key: string, nextItems: SharedDebt[], meta: SharedDebtsListMeta = {}) {
@@ -132,7 +135,8 @@ export function createSharedDebtsState() {
             totalCount: meta.totalCount ?? prev?.totalCount ?? nextItems.length,
             totalOwedToMe: meta.totalOwedToMe ?? prev?.totalOwedToMe ?? 0,
             totalIOwe: meta.totalIOwe ?? prev?.totalIOwe ?? 0,
-            currency: meta.currency ?? prev?.currency ?? null
+            currency: meta.currency ?? prev?.currency ?? null,
+            otherCurrenciesCount: meta.otherCurrenciesCount ?? prev?.otherCurrenciesCount ?? 0
         };
         itemsByListKey.set(key, entry);
         for (const item of nextItems) knownById.set(item.publicId, item);
@@ -238,6 +242,7 @@ export function createSharedDebtsState() {
         totalCount,
         totalOwedToMe,
         totalIOwe,
+        otherCurrenciesCount,
         totalsCurrency,
         loading,
         acting,

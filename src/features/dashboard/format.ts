@@ -211,7 +211,51 @@ export function formatShortDayMonth(ymdValue: string): string {
 
 export const BUDGET_GAUGE_SEGMENTS = 20;
 
-type BudgetLike = { isActive: boolean; isCurrent: boolean; currency: string; spentAmount: number; limitAmount: number };
+type BudgetLike = {
+    isActive: boolean;
+    isCurrent: boolean;
+    currency: string;
+    spentAmount: number;
+    limitAmount: number;
+    periode?: string;
+    categoryPublicId?: string | null;
+};
+
+export type MonthBudgetSelection<T> = {
+    /** Les budgets à additionner : le budget global seul, ou les budgets mensuels d’une même devise. */
+    budgets: T[];
+    currency: string;
+    /** `true` quand il n’y a pas de budget global : le total est une somme de budgets par catégorie. */
+    aggregate: boolean;
+};
+
+/**
+ * Ce que montre « Budget du mois », au tableau de bord comme sur la page Budgets.
+ * Le budget global (sans catégorie, mensuel de préférence) compte déjà toutes les dépenses : il est
+ * pris seul, sans y ajouter les budgets par catégorie (double comptage). Sans budget global, seuls
+ * les budgets mensuels sont additionnés, dans une seule devise (celle de l’utilisateur si elle est
+ * présente, sinon la plus représentée par plafond) : un annuel ou un hebdomadaire ne se compare pas
+ * à un mois.
+ */
+export function selectMonthBudgets<T extends BudgetLike>(
+    budgets: readonly T[],
+    preferredCurrency?: string | null
+): MonthBudgetSelection<T> | null {
+    const current = budgets.filter((budget) => budget.isActive && budget.isCurrent);
+    const globals = current.filter((budget) => !budget.categoryPublicId);
+    const global = globals.find((budget) => budget.periode === 'mensuel') ?? globals[0];
+    if (global) return { budgets: [global], currency: global.currency, aggregate: false };
+
+    const monthly = current.filter((budget) => budget.periode === 'mensuel');
+    if (!monthly.length) return null;
+    const limits = new Map<string, number>();
+    for (const budget of monthly) limits.set(budget.currency, (limits.get(budget.currency) ?? 0) + Math.max(0, budget.limitAmount));
+    const currency =
+        preferredCurrency && limits.has(preferredCurrency)
+            ? preferredCurrency
+            : [...limits.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0];
+    return { budgets: monthly.filter((budget) => budget.currency === currency), currency, aggregate: true };
+}
 
 export type BudgetsSummary = {
     currency: string;
@@ -225,21 +269,15 @@ export type BudgetsSummary = {
 };
 
 /**
- * Budget global de la période en cours : somme des budgets actifs et courants, dans la devise
- * la plus représentée (par plafond). `null` s’il n’y a rien à additionner.
+ * « Budget du mois » du tableau de bord, sur la sélection de {@link selectMonthBudgets}.
+ * `null` s’il n’y a ni budget global ni budget mensuel en cours.
  */
-export function summarizeBudgets(budgets: readonly BudgetLike[]): BudgetsSummary | null {
-    const byCurrency = new Map<string, { spent: number; limit: number }>();
-    for (const budget of budgets) {
-        if (!budget.isActive || !budget.isCurrent) continue;
-        const row = byCurrency.get(budget.currency) ?? { spent: 0, limit: 0 };
-        row.spent += Math.max(0, budget.spentAmount);
-        row.limit += Math.max(0, budget.limitAmount);
-        byCurrency.set(budget.currency, row);
-    }
-    const best = [...byCurrency.entries()].sort((a, b) => b[1].limit - a[1].limit || a[0].localeCompare(b[0]))[0];
-    if (!best) return null;
-    const [currency, { spent, limit }] = best;
+export function summarizeBudgets(budgets: readonly BudgetLike[], preferredCurrency?: string | null): BudgetsSummary | null {
+    const selection = selectMonthBudgets(budgets, preferredCurrency);
+    if (!selection) return null;
+    const { currency } = selection;
+    const spent = selection.budgets.reduce((sum, budget) => sum + Math.max(0, budget.spentAmount), 0);
+    const limit = selection.budgets.reduce((sum, budget) => sum + Math.max(0, budget.limitAmount), 0);
     const percent = limit > 0 ? Math.round((spent / limit) * 100) : 0;
     const segments = Math.min(BUDGET_GAUGE_SEGMENTS, Math.max(0, Math.round((percent / 100) * BUDGET_GAUGE_SEGMENTS)));
     return { currency, spent, limit, remaining: limit - spent, percent, segments };

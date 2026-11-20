@@ -204,6 +204,15 @@ async function confirmDelete() {
                 <p class="su-fig__note">{{ t('personalLoansPage.figs.note') }}</p>
             </div>
         </div>
+        <p v-if="store.otherCurrenciesCount > 0" class="su-fig__note">
+            {{
+                t(
+                    'personalLoansPage.figs.otherCurrencies',
+                    { count: store.otherCurrenciesCount, currency: totalsCurrency },
+                    store.otherCurrenciesCount
+                )
+            }}
+        </p>
 
         <div v-if="store.loading && !store.items.length" class="su-loading">
             <span class="su-spin" />

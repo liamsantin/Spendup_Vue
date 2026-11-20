@@ -275,6 +275,15 @@ watch(filterSearch, (search, previousSearch) => {
                 <p class="su-fig__note">{{ t('sharedDebtsPage.figures.iOweNote') }}</p>
             </div>
         </div>
+        <p v-if="store.otherCurrenciesCount > 0" class="su-fig__note shared-debts-panel__other-currencies">
+            {{
+                t(
+                    'sharedDebtsPage.figures.otherCurrencies',
+                    { count: store.otherCurrenciesCount, currency: totalsCurrency },
+                    store.otherCurrenciesCount
+                )
+            }}
+        </p>
 
         <nav class="su-tabs shared-debts-panel__tabs" :aria-label="t('sharedDebtsPage.tabs.label')">
             <RouterLink

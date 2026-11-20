@@ -17,6 +17,7 @@ import type { RealEstateCharge, RealEstateMaintenance, RealEstateUnit } from '@/
 import type { SharedDebt } from '@/features/shared-debts/types';
 import { seedFriends, type DemoFriend } from '@/features/demo/friends';
 import { seedRecurringHousehold } from '@/features/demo/recurring';
+import { DEMO_REFERENCE_TAX_YEAR, demoMonthShift, demoTaxYear, shiftDemoDates, shiftTaxYear, shiftYmd } from '@/features/demo/sliding';
 import { seedWealth } from '@/features/demo/wealth';
 import { seedTaxReturns, type DemoTaxReturn } from '@/features/demo/tax';
 import type { Tag } from '@/features/tags/types';
@@ -1038,16 +1039,63 @@ function seedBudgetsAndGoals(db: DemoDb): void {
     refreshGoals(db);
 }
 
-let db = createDemoDb();
-seedBudgetsAndGoals(db);
+/** Décalage en mois appliqué à la base courante (0 = dates de référence). */
+let monthShift = 0;
+
+/**
+ * Fait glisser la base de référence sur le mois de `now` (V6.7) : opérations, budgets, patrimoine et
+ * notifications avancent d’autant de mois entiers. Les récurrences ne bougent pas, leurs échéances
+ * sont déjà calculées depuis la date du jour. La déclaration d’impôts suit l’année qui contient le
+ * plus d’opérations une fois le décalage fait.
+ */
+export function slideDemoDb(source: DemoDb, now?: Date): DemoDb {
+    const months = demoMonthShift(now);
+    monthShift = months;
+    if (!months) return source;
+
+    const today = now ?? new Date();
+    const todayYmd = localYmd(today);
+    const skip = new Set<string>([...Object.keys(seedRecurringHousehold()), 'taxReturns', 'fileBlobs']);
+    const slid: Record<string, unknown> = { ...source };
+    for (const key of Object.keys(slid)) {
+        if (!skip.has(key)) slid[key] = shiftDemoDates(slid[key], months, today);
+    }
+    const next = slid as DemoDb;
+
+    // La fin de période se recalcule : décaler le 30 novembre donnerait le 30 décembre, pas le 31.
+    for (const budget of next.budgets) Object.assign(budget, periodBounds(budget.periode, budget.startDate));
+
+    const taxYear = demoTaxYear(next.transactions.map((tx) => tx.operationDate));
+    next.taxReturns = shiftTaxYear(source.taxReturns, taxYear);
+    // Les acomptes d’impôts restent dans l’année de la déclaration qu’ils règlent, sans tomber dans le futur.
+    for (const tx of next.transactions) {
+        if (tx.taxNature !== 'taxPayment') continue;
+        const original = source.transactions.find((item) => item.publicId === tx.publicId);
+        if (!original) continue;
+        const due = shiftYmd(original.operationDate, (taxYear - DEMO_REFERENCE_TAX_YEAR) * 12);
+        tx.operationDate = due <= todayYmd ? due : todayYmd;
+        tx.label = original.label.replaceAll(String(DEMO_REFERENCE_TAX_YEAR), String(taxYear));
+    }
+
+    refreshBudgets(next);
+    refreshGoals(next);
+    return next;
+}
+
+function freshDemoDb(): DemoDb {
+    const fresh = createDemoDb();
+    seedBudgetsAndGoals(fresh);
+    return slideDemoDb(fresh);
+}
+
+let db = freshDemoDb();
 
 export function demoDb(): DemoDb {
     return db;
 }
 
 export function resetDemoDb(): void {
-    db = createDemoDb();
-    seedBudgetsAndGoals(db);
+    db = freshDemoDb();
     // étapes validées, montants lus d'un PDF… : la démo repart de zéro et ne laisse rien sur l'appareil
     clearDemoDeviceStorage();
 }
@@ -1154,13 +1202,19 @@ export function netWorthOverview(): NetWorthOverview {
             )
         },
         excluded: [],
-        lastSnapshot: { periode: '2026-10-01', netWorth: totalAccounts + totalAssets - totalLiabilities - 1200, delta: 1200 }
+        lastSnapshot: {
+            periode: shiftYmd('2026-10-01', monthShift),
+            netWorth: totalAccounts + totalAssets - totalLiabilities - 1200,
+            delta: 1200
+        }
     };
 }
 
 export function netWorthSnapshots(): NetWorthSnapshot[] {
     const current = netWorthOverview();
-    const months = ['2026-06-01', '2026-07-01', '2026-08-01', '2026-09-01', '2026-10-01', '2026-11-01'];
+    const months = ['2026-06-01', '2026-07-01', '2026-08-01', '2026-09-01', '2026-10-01', '2026-11-01'].map((month) =>
+        shiftYmd(month, monthShift)
+    );
     return months.map((periode, index) => {
         const netWorth = roundMoney(current.netWorth - (months.length - 1 - index) * 1800);
         return {

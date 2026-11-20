@@ -43,6 +43,8 @@ export type SharedDebtsListResult = {
     /** Reste que je dois (rôle débiteur), devise `currency`. */
     totalIOwe: number;
     currency: SharedDebtCurrency;
+    /** Dettes ouvertes dans une autre devise que `currency`, absentes des deux totaux. */
+    otherCurrenciesCount?: number;
 };
 
 export type ListSharedDebtsQuery = {
