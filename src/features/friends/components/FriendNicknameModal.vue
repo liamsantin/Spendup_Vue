@@ -89,13 +89,14 @@ async function removeNickname() {
         :max-width="480"
         :scrollable="false"
     >
-        <p class="text-body-2 text-medium-emphasis mb-4">
+        <p class="nickname-modal__hint">
             {{ t('friendsPage.nicknameModal.hint') }}
         </p>
 
+        <label class="nickname-modal__label" for="friend-nickname">{{ t('friendsPage.nicknameModal.label') }}</label>
         <v-text-field
+            id="friend-nickname"
             v-model="draft"
-            :label="t('friendsPage.nicknameModal.label')"
             :placeholder="t('friendsPage.nicknameModal.placeholder')"
             variant="outlined"
             hide-details="auto"
@@ -118,3 +119,19 @@ async function removeNickname() {
         </template>
     </AppModalBase>
 </template>
+
+<style scoped>
+.nickname-modal__hint {
+    margin: 0 0 16px;
+    color: var(--gray);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+.nickname-modal__label {
+    display: block;
+    margin: 0 0 8px;
+    color: var(--ink);
+    font-size: 13px;
+}
+</style>

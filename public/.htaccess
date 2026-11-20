@@ -1,0 +1,25 @@
+# Apache : application Vue à une seule page (history mode).
+# Toute URL qui n'est ni un fichier ni un dossier renvoie index.html ; le routeur Vue prend le relais.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    RewriteRule ^index\.html$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L]
+</IfModule>
+
+# index.html : jamais en cache (sinon un ancien bundle reste servi). Fichiers hachés : cache long.
+<IfModule mod_headers.c>
+    <FilesMatch "\.html$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+    <If "%{REQUEST_URI} =~ m#^/assets/#">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </If>
+    # Remplacé au build (vite.plugins.ts, apacheHeadersCsp) par la CSP calculée depuis VITE_API_BASE_URL.
+    Header set Content-Security-Policy "__CSP__"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>

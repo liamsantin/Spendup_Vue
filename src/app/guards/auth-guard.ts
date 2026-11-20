@@ -1,6 +1,6 @@
 import type { NavigationGuard } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
-import { APP_HOME_ROUTE, AUTH_ROUTE } from '@/features/auth/stores/internal/auth-session';
+import { APP_HOME_ROUTE, AUTH_ROUTE, isTransientAuthError } from '@/features/auth/stores/internal/auth-session';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
 import { useFriendsStore } from '@/features/friends';
 import { useAccountsStore } from '@/features/accounts';
@@ -13,9 +13,20 @@ import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
 import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/recurring-payments-store';
+import { useAssetsStore } from '@/features/assets/stores/assets-store';
+import { useRealEstateStore } from '@/features/real-estate/stores/real-estate-store';
+import { useInvestmentsStore } from '@/features/investments/stores/investments-store';
+import { useInstrumentsStore } from '@/features/investments/stores/instruments-store';
+import { useLiabilitiesStore } from '@/features/liabilities/stores/liabilities-store';
+import { usePersonalLoansStore } from '@/features/personal-loans/stores/personal-loans-store';
+import { useSharedDebtsStore } from '@/features/shared-debts/stores/shared-debts-store';
+import { useNetWorthStore } from '@/features/net-worth/stores/net-worth-store';
 import { useNotificationsStore } from '@/features/notifications';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isDevAppEnv } from '@/utils/helpers/env-helpers';
+import { isDemoSession } from '@/features/demo/session';
+
+const MAINTENANCE_ROUTE = '/auth/maintenance';
 
 export const authGuard: NavigationGuard = async (to, _from, next) => {
     const auth = useAuthStore();
@@ -27,7 +38,20 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
     }
 
     // Mode cookie : restaure l’access via refresh HttpOnly avant les checks auth.
+    // La démo restaure une session mémoire, sans refresh.
     await auth.bootstrapSession();
+
+    if (isDemoSession() && (to.path === AUTH_ROUTE || to.path.startsWith(`${AUTH_ROUTE}/`))) {
+        auth.exitDemo();
+        return next();
+    }
+
+    if ((to.path === '/demo' || to.path.startsWith('/demo/')) && !isDemoSession()) {
+        if (auth.isAuthenticated) {
+            return next({ path: `/app${to.path.slice('/demo'.length)}`, query: to.query, hash: to.hash, replace: true });
+        }
+        auth.enterDemo();
+    }
 
     if (requiresAuth) {
         if (!auth.isAuthenticated) {
@@ -37,14 +61,22 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
         if (!auth.user) {
             try {
                 const me = await auth.fetchMe();
+                if (!me && auth.isAuthenticated && auth.lastRefreshTransient) {
+                    auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
+                    return next(MAINTENANCE_ROUTE);
+                }
                 if (!me || !auth.isAuthenticated) {
                     auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
                     await auth.forceReLogin();
                     // `forceReLogin` a déjà navigué vers /auth — annuler la nav courante.
                     return next(false);
                 }
-            } catch {
+            } catch (e: unknown) {
                 auth.returnUrl = sanitizeReturnUrl(to.fullPath, APP_HOME_ROUTE);
+                // API injoignable ou en 5xx : la session reste valide, on attend sur la page de maintenance.
+                if (isTransientAuthError(e)) {
+                    return next(MAINTENANCE_ROUTE);
+                }
                 await auth.forceReLogin();
                 return next(false);
             }
@@ -70,6 +102,14 @@ export const authGuard: NavigationGuard = async (to, _from, next) => {
         useRecurringPaymentsStore().onAuthenticatedSession();
         useBudgetsStore().onAuthenticatedSession();
         useSavingsGoalsStore().onAuthenticatedSession();
+        useAssetsStore().onAuthenticatedSession();
+        useRealEstateStore().onAuthenticatedSession();
+        useInvestmentsStore().onAuthenticatedSession();
+        useInstrumentsStore().onAuthenticatedSession();
+        useLiabilitiesStore().onAuthenticatedSession();
+        usePersonalLoansStore().onAuthenticatedSession();
+        useSharedDebtsStore().onAuthenticatedSession();
+        useNetWorthStore().onAuthenticatedSession();
         return next();
     }
 

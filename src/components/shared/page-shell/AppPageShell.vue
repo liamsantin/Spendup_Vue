@@ -2,6 +2,7 @@
 /**
  * Shell de page liste — titre + onglets de vue, barre d’outils optionnelle, corps scrollable.
  * `#tabs` : famille d’objets (à droite du titre).
+ * `#hero-extra` : rangée pleine largeur sous le titre et les actions (onglets d’une fiche).
  * `#toolbar` : recherche / filtre / ajouter (ligne sous le sous-titre).
  * `#actions` : actions du hero (inbox, enregistrer) — pas Filtre/Ajouter des listes.
  */
@@ -48,13 +49,14 @@ const emit = defineEmits<{
     <div class="su-page">
         <header class="su-hero">
             <div class="su-hero__top" :class="{ 'su-hero__top--with-tabs': $slots.tabs }">
-                <div class="su-hero__heading">
+                <div class="su-hero__heading" :class="{ 'su-hero__heading--icon': $slots['title-icon'] }">
+                    <slot name="title-icon" />
                     <h1>{{ title }}</h1>
                 </div>
                 <div v-if="$slots.actions || !hideActions" class="su-hero__actions">
                     <slot name="actions" />
                     <template v-if="!hideActions">
-                        <button type="button" class="su-btn su-btn--ghost" :disabled="cancelDisabled" @click="emit('cancel')">
+                        <button type="button" class="su-btn" :disabled="cancelDisabled" @click="emit('cancel')">
                             {{ t('shell.cancel') }}
                         </button>
                         <button type="button" class="su-btn su-btn--ink" :disabled="saveDisabled || saveLoading" @click="emit('save')">
@@ -64,6 +66,7 @@ const emit = defineEmits<{
                 </div>
                 <slot name="tabs" />
             </div>
+            <slot name="hero-extra" />
             <p v-if="subtitle">{{ subtitle }}</p>
             <div v-if="$slots.toolbar" class="su-toolbar">
                 <slot name="toolbar" />
@@ -79,6 +82,25 @@ const emit = defineEmits<{
     </div>
 </template>
 <style scoped>
+/* pictogramme à gauche du titre (slot `title-icon`) : carré teinté centré sur la ligne du titre */
+.su-hero__heading--icon {
+    align-items: center;
+    gap: 14px;
+}
+
+.su-hero__heading--icon > h1 {
+    min-width: 0;
+}
+
+.su-hero {
+    border-bottom-color: color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+/* le corps laisse 48 px sous le filet du titre : on resserre cet espace */
+.su-page :deep(.su-body) {
+    padding-top: 16px;
+}
+
 .su-hero__top--with-tabs > .su-hero__actions {
     margin-left: auto;
 }

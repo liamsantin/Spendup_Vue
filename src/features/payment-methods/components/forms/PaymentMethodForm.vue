@@ -57,23 +57,19 @@ function onLastFourInput(value: string) {
 
 <template>
     <div class="payment-method-form">
-        <v-row class="align-center" no-gutters>
-            <v-col cols="auto" sm="3" class="pr-3">
-                <label class="v-label font-weight-medium" for="pm-form-active">
-                    {{ t('paymentMethodsPage.form.fields.isActive') }}
-                </label>
-            </v-col>
-            <v-col cols="auto" sm="9">
-                <AppSwitch id="pm-form-active" v-model="form.isActive" />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="pm-form-account">
-                    {{ t('paymentMethodsPage.form.fields.account') }} *
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <!-- Actif : libellé 700 à gauche, interrupteur rond à droite -->
+        <div class="payment-method-form__switch">
+            <label class="payment-method-form__switch-title" for="pm-form-active">
+                {{ t('paymentMethodsPage.form.fields.isActive') }}
+            </label>
+            <AppSwitch id="pm-form-active" v-model="form.isActive" />
+        </div>
+
+        <div class="payment-method-form__row">
+            <label class="payment-method-form__label" for="pm-form-account">
+                {{ t('paymentMethodsPage.form.fields.account') }} <span class="payment-method-form__required" aria-hidden="true">*</span>
+            </label>
+            <div class="payment-method-form__field">
                 <AppSelect
                     id="pm-form-account"
                     v-model="form.accountPublicId"
@@ -84,13 +80,14 @@ function onLastFourInput(value: string) {
                     :error="!!fieldErrors.accountPublicId"
                     :error-messages="fieldErrors.accountPublicId || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="pm-form-type"> {{ t('paymentMethodsPage.form.fields.type') }} * </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+
+        <div class="payment-method-form__row">
+            <label class="payment-method-form__label" for="pm-form-type">
+                {{ t('paymentMethodsPage.form.fields.type') }} <span class="payment-method-form__required" aria-hidden="true">*</span>
+            </label>
+            <div class="payment-method-form__field">
                 <AppSelect
                     id="pm-form-type"
                     v-model="form.type"
@@ -100,13 +97,14 @@ function onLastFourInput(value: string) {
                     :error="!!fieldErrors.type"
                     :error-messages="fieldErrors.type || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="pm-form-label"> {{ t('paymentMethodsPage.form.fields.label') }} * </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+
+        <div class="payment-method-form__row">
+            <label class="payment-method-form__label" for="pm-form-label">
+                {{ t('paymentMethodsPage.form.fields.label') }} <span class="payment-method-form__required" aria-hidden="true">*</span>
+            </label>
+            <div class="payment-method-form__field">
                 <v-text-field
                     id="pm-form-label"
                     v-model="form.label"
@@ -117,15 +115,12 @@ function onLastFourInput(value: string) {
                     :error="!!fieldErrors.label"
                     :error-messages="fieldErrors.label || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="pm-form-reference">
-                    {{ t('paymentMethodsPage.form.fields.reference') }}
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+
+        <div class="payment-method-form__row">
+            <label class="payment-method-form__label" for="pm-form-reference">{{ t('paymentMethodsPage.form.fields.reference') }}</label>
+            <div class="payment-method-form__field">
                 <v-text-field
                     id="pm-form-reference"
                     v-model="form.reference"
@@ -137,15 +132,12 @@ function onLastFourInput(value: string) {
                     :error="!!fieldErrors.reference"
                     :error-messages="fieldErrors.reference || undefined"
                 />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="pm-form-last4">
-                    {{ t('paymentMethodsPage.form.fields.lastFourDigits') }}
-                </label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+
+        <div class="payment-method-form__row">
+            <label class="payment-method-form__label" for="pm-form-last4">{{ t('paymentMethodsPage.form.fields.lastFourDigits') }}</label>
+            <div class="payment-method-form__field">
                 <v-text-field
                     id="pm-form-last4"
                     :model-value="form.lastFourDigits"
@@ -155,18 +147,18 @@ function onLastFourInput(value: string) {
                     maxlength="4"
                     inputmode="numeric"
                     autocomplete="off"
+                    class="payment-method-form__mono"
                     :placeholder="t('paymentMethodsPage.form.lastFourPlaceholder')"
                     :error="!!fieldErrors.lastFourDigits"
                     :error-messages="fieldErrors.lastFourDigits || undefined"
                     @update:model-value="onLastFourInput"
                 />
-            </v-col>
-        </v-row>
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('paymentMethodsPage.form.fields.expirationDate') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+            </div>
+        </div>
+
+        <div class="payment-method-form__row">
+            <span class="payment-method-form__label">{{ t('paymentMethodsPage.form.fields.expirationDate') }}</span>
+            <div class="payment-method-form__field">
                 <AppDatePicker
                     v-model="expirationModel"
                     color="primary"
@@ -174,30 +166,71 @@ function onLastFourInput(value: string) {
                     :min="minExpiration"
                     :placeholder="t('paymentMethodsPage.form.expirationPlaceholder')"
                 />
-                <div v-if="fieldErrors.expirationDate" class="text-caption text-error mt-1">{{ fieldErrors.expirationDate }}</div>
-            </v-col>
-        </v-row>
+                <p v-if="fieldErrors.expirationDate" class="payment-method-form__error">{{ fieldErrors.expirationDate }}</p>
+            </div>
+        </div>
     </div>
 </template>
 
 <style scoped>
+/* Lignes libellé (170 px, étoile bleue) | champ carré ; libellé au-dessus sur mobile. */
 .payment-method-form {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 20px;
 }
 
-.payment-method-form .v-row:has(.app-switch) .v-label {
-    margin-bottom: 0 !important;
+.payment-method-form__row {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 8px 16px;
+    align-items: center;
+}
+
+.payment-method-form__label {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.3;
+}
+
+.payment-method-form__required {
+    color: var(--blue-ink);
+}
+
+.payment-method-form__field {
+    min-width: 0;
+}
+
+.payment-method-form__mono :deep(input) {
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+}
+
+.payment-method-form__switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.payment-method-form__switch-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.payment-method-form__error {
+    margin: 6px 0 0;
+    color: var(--danger);
+    font-size: 12.5px;
 }
 
 @media (max-width: 599.98px) {
-    .payment-method-form {
-        gap: 12px;
-    }
-
-    .payment-method-form :deep(.v-label) {
-        margin-bottom: 4px;
+    .payment-method-form__row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
     }
 }
 </style>

@@ -11,7 +11,11 @@ import type {
     BudgetChangedPayload,
     SavingsGoalChangedPayload,
     ImportChangedPayload,
-    ImportTemplateChangedPayload
+    ImportTemplateChangedPayload,
+    AssetChangedPayload,
+    LiabilityChangedPayload,
+    PersonalLoanChangedPayload,
+    SharedDebtChangedPayload
 } from '@/features/notifications/types';
 
 export const DEFAULT_PAGE_SIZE = 20;
@@ -51,6 +55,10 @@ export function createNotificationsState() {
     const savingsGoalChangeListeners = new Set<(payload: SavingsGoalChangedPayload) => void>();
     const importChangeListeners = new Set<(payload: ImportChangedPayload) => void>();
     const importTemplateChangeListeners = new Set<(payload: ImportTemplateChangedPayload) => void>();
+    const assetChangeListeners = new Set<(payload: AssetChangedPayload) => void>();
+    const liabilityChangeListeners = new Set<(payload: LiabilityChangedPayload) => void>();
+    const personalLoanChangeListeners = new Set<(payload: PersonalLoanChangedPayload) => void>();
+    const sharedDebtChangeListeners = new Set<(payload: SharedDebtChangedPayload) => void>();
     const liveFriendChips = ref<LiveFriendChip[]>([]);
 
     const hasUnread = computed(() => unreadCount.value > 0);
@@ -113,6 +121,10 @@ export function createNotificationsState() {
         savingsGoalChangeListeners,
         importChangeListeners,
         importTemplateChangeListeners,
+        assetChangeListeners,
+        liabilityChangeListeners,
+        personalLoanChangeListeners,
+        sharedDebtChangeListeners,
         liveFriendChips,
         hasUnread,
         badgeContent,

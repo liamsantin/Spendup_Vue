@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
-import { PlusIcon, ChevronDownIcon, CheckIcon, LayoutGridIcon, FileExportIcon } from 'vue-tabler-icons';
+import { ArrowLeftIcon, FileExportIcon, PencilIcon, PlusIcon } from 'vue-tabler-icons';
 import AppBoard from '@/components/shared/board/AppBoard.vue';
 import AppBoardSearch from '@/components/shared/board/AppBoardSearch.vue';
 import { useBoardSearch } from '@/components/shared/board/useBoardSearch';
 import AppChoiceList from '@/components/shared/dropdown-filter/AppChoiceList.vue';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
+import AppTitleTile from '@/components/shared/page-shell/AppTitleTile.vue';
 import {
     TIER_NATURES,
     TIER_ROLES,
@@ -23,9 +24,11 @@ import {
     parseTierSort,
     useTiersStore
 } from '@/features/tiers';
-import { TIER_NATURE_ICONS } from '@/features/tiers/natureUi';
 import type { TierNature } from '@/features/tiers/types';
 import TierCreateMenu from '@/features/tiers/components/TierCreateMenu.vue';
+import TierDetail, { type TierDetailTab } from '@/features/tiers/components/TierDetail.vue';
+import { TIER_NATURE_ICONS, TIER_NATURE_TONES } from '@/features/tiers/natureUi';
+import { TIERS_PATH, tierPublicIdFromPath } from '@/features/tiers/paths';
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
@@ -33,6 +36,41 @@ const store = useTiersStore();
 const { width: viewportWidth } = useDisplay();
 const compactNotch = computed(() => viewportWidth.value < 768);
 const directoryRef = ref<{ openCreate: (nature?: TierNature | null) => void; exportCsv: () => void } | null>(null);
+
+/* ── fiche d’un tiers : `/app/gestion/tiers/:publicId`, onglets `?tab=` ── */
+const DETAIL_TABS: TierDetailTab[] = ['informations', 'transactions', 'attachments'];
+const detailRef = ref<{ openEdit: () => void } | null>(null);
+const notFound = ref(false);
+
+const detailId = computed(() => tierPublicIdFromPath(route.path));
+const detailTier = computed(() => (detailId.value ? store.findByPublicId(detailId.value) : null));
+const detailTitle = computed(() => (notFound.value || !detailTier.value ? t('tiersPage.detail.title') : detailTier.value.name));
+const activeDetailTab = computed<TierDetailTab>(() => {
+    const raw = route.query.tab;
+    return raw === 'attachments' || raw === 'transactions' ? raw : 'informations';
+});
+
+function selectDetailTab(tab: TierDetailTab) {
+    if (tab === activeDetailTab.value) return;
+    const query = { ...route.query };
+    if (tab === 'informations') delete query.tab;
+    else query.tab = tab;
+    void router.replace({ path: route.path, query });
+}
+
+/** Retour à la liste en gardant ses filtres (recherche, nature, rôle, tri). */
+function backToList() {
+    const next: Record<string, string> = {};
+    for (const key of ['q', 'nature', 'role', 'sort'] as const) {
+        const value = queryString(key);
+        if (value) next[key] = value;
+    }
+    void router.push({ path: TIERS_PATH, query: next });
+}
+
+watch(detailId, () => {
+    notFound.value = false;
+});
 
 const roleItems = computed(() => [
     { title: t('tiersPage.filters.allRoles'), value: '' },
@@ -43,8 +81,6 @@ function queryString(name: string): string {
     const raw = route.query[name];
     return typeof raw === 'string' ? raw : '';
 }
-
-const natureMenuOpen = ref(false);
 
 const filterNature = computed({
     get: (): TierNature | '' => {
@@ -72,13 +108,30 @@ const visibleCount = computed(() => {
 
 const filterCount = computed(() => (filterRole.value ? 1 : 0));
 
-const natureTabLabel = computed(() => (filterNature.value ? t(`tiersPage.natures.${filterNature.value}`) : t('tiersPage.tabs.all')));
+/** « Rôle · Tous » / « Rôle · Banque » : le filtre discret porte sa valeur. */
+const roleFilterLabel = computed(() => {
+    const value = filterRole.value ? t(`tiersPage.roles.${filterRole.value}`) : t('tiersPage.tabs.all');
+    return `${t('tiersPage.filters.role')} · ${value}`;
+});
 
-const natureTabIcon = computed(() => (filterNature.value ? TIER_NATURE_ICONS[filterNature.value] : LayoutGridIcon));
+/* ── effectifs des onglets : tiers connus (toutes listes chargées), comptés par nature ── */
+const knownTiers = computed(() => store.allKnownItems());
+
+const natureCounts = computed(() => {
+    const counts: Record<TierNature, number> = { person: 0, company: 0, organization: 0, administration: 0, unknown: 0 };
+    for (const tier of knownTiers.value) counts[tier.nature] += 1;
+    return counts;
+});
+
+/** Total : compteur serveur de la liste « Tous » quand elle n’est pas entièrement chargée, sinon les tiers connus. */
+const tiersTotal = computed(() => {
+    const known = knownTiers.value.length;
+    if (!filterNature.value && !filterRole.value && !queryString('q') && store.totalCount > known) return store.totalCount;
+    return known;
+});
 
 function selectNature(value: TierNature | '') {
     filterNature.value = value;
-    natureMenuOpen.value = false;
 }
 
 function patchQuery(patch: Record<string, string | undefined>) {
@@ -91,7 +144,7 @@ function patchQuery(patch: Record<string, string | undefined>) {
     if (nature && isTierNature(nature)) next.nature = nature;
     if (role && isTierRole(role)) next.role = role;
     if (sort && isTierSort(sort) && sort !== TIER_SORT_DEFAULT) next.sort = sort;
-    void router.replace({ path: '/app/gestion/tiers', query: next });
+    void router.replace({ path: TIERS_PATH, query: next });
 }
 
 const search = useBoardSearch({
@@ -108,78 +161,87 @@ function onCreate(nature?: TierNature) {
 </script>
 
 <template>
-    <AppPageShell class="tiers-page" :title="t('tiersPage.title')" :body-scroll="false">
-        <AppBoard>
-            <template #filters>
-                <v-menu v-model="natureMenuOpen" location="bottom start" :offset="8" scrim>
-                    <template #activator="{ props: menuProps }">
-                        <nav class="tiers-nature-tabs" :aria-label="t('tiersPage.tabs.label')">
-                            <button
-                                type="button"
-                                class="tiers-nature-trigger"
-                                v-bind="menuProps"
-                                :aria-expanded="natureMenuOpen"
-                                :aria-haspopup="true"
-                            >
-                                <span
-                                    class="su-tab is-active tiers-nature-trigger__pill"
-                                    :class="filterNature ? `is-${filterNature}` : 'is-all'"
-                                >
-                                    <span class="su-tab__body">
-                                        <component :is="natureTabIcon" :size="16" stroke-width="1.7" />
-                                        {{ natureTabLabel }}
-                                    </span>
-                                </span>
-                                <ChevronDownIcon
-                                    class="tiers-nature-menu__chevron"
-                                    :class="{ 'is-open': natureMenuOpen }"
-                                    :size="16"
-                                    stroke-width="1.8"
-                                />
-                            </button>
-                        </nav>
-                    </template>
-                    <v-sheet elevation="0" class="su-menu tiers-nature-menu">
-                        <p class="tiers-nature-menu__label">{{ t('tiersPage.tabs.label') }}</p>
-                        <button
-                            type="button"
-                            class="tiers-nature-menu__item is-all"
-                            :class="{ 'is-active': !filterNature }"
-                            @click="selectNature('')"
-                        >
-                            <span class="tiers-nature-menu__icon">
-                                <LayoutGridIcon :size="18" stroke-width="1.75" />
-                            </span>
-                            <span class="tiers-nature-menu__name">{{ t('tiersPage.tabs.all') }}</span>
-                            <CheckIcon v-if="!filterNature" class="tiers-nature-menu__check" :size="16" stroke-width="2" />
-                        </button>
-                        <button
-                            v-for="nature in TIER_NATURES"
-                            :key="nature"
-                            type="button"
-                            class="tiers-nature-menu__item"
-                            :class="[`is-${nature}`, { 'is-active': filterNature === nature }]"
-                            @click="selectNature(nature)"
-                        >
-                            <span class="tiers-nature-menu__icon">
-                                <component :is="TIER_NATURE_ICONS[nature]" :size="18" stroke-width="1.75" />
-                            </span>
-                            <span class="tiers-nature-menu__name">{{ t(`tiersPage.natures.${nature}`) }}</span>
-                            <CheckIcon v-if="filterNature === nature" class="tiers-nature-menu__check" :size="16" stroke-width="2" />
-                        </button>
-                    </v-sheet>
-                </v-menu>
-                <AppDropdownFilter
-                    :label="t('tiersPage.filters.role')"
-                    :min-width="260"
-                    :count="filterCount"
-                    :reset-disabled="!filterRole"
-                    close-on-content-click
-                    @reset="filterRole = ''"
+    <!-- ── fiche d’un tiers ── -->
+    <AppPageShell v-if="detailId" :key="`detail-${detailId}`" :title="detailTitle" :body-scroll="activeDetailTab !== 'transactions'">
+        <template v-if="!notFound && detailTier" #title-icon>
+            <AppTitleTile :icon="TIER_NATURE_ICONS[detailTier.nature]" :tone="TIER_NATURE_TONES[detailTier.nature]" />
+        </template>
+
+        <template #actions>
+            <button type="button" class="su-btn" @click="backToList">
+                <ArrowLeftIcon :size="16" stroke-width="1.6" />
+                {{ t('common.back') }}
+            </button>
+            <button
+                v-if="!notFound && detailTier"
+                type="button"
+                class="su-btn su-btn--ink"
+                :disabled="store.acting"
+                @click="detailRef?.openEdit()"
+            >
+                <PencilIcon :size="16" stroke-width="1.6" />
+                {{ t('tiersPage.actions.edit') }}
+            </button>
+        </template>
+
+        <template #hero-extra>
+            <nav v-if="!notFound" class="su-tabs su-tabs--links tiers-page__detail-tabs" :aria-label="t('tiersPage.detail.tabs.label')">
+                <button
+                    v-for="tab in DETAIL_TABS"
+                    :key="tab"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': activeDetailTab === tab }"
+                    :aria-current="activeDetailTab === tab ? 'page' : undefined"
+                    @click="selectDetailTab(tab)"
                 >
-                    <AppChoiceList v-model="filterRole" :items="roleItems" :label="t('tiersPage.filters.role')" />
-                </AppDropdownFilter>
-            </template>
+                    <span class="su-tab__label" :data-label="t(`tiersPage.detail.tabs.${tab}`)">{{
+                        t(`tiersPage.detail.tabs.${tab}`)
+                    }}</span>
+                </button>
+            </nav>
+        </template>
+
+        <div v-if="notFound" class="su-empty tiers-page__not-found">
+            <p>{{ t('tiersPage.detail.notFound') }}</p>
+            <button type="button" class="su-link tiers-page__back" @click="backToList">{{ t('tiersPage.detail.backToList') }}</button>
+        </div>
+        <TierDetail v-else ref="detailRef" :tier-public-id="detailId" :tab="activeDetailTab" @not-found="notFound = true" />
+    </AppPageShell>
+
+    <!-- ── liste ── -->
+    <AppPageShell v-else class="tiers-page" :title="t('tiersPage.title')" :body-scroll="false">
+        <!-- onglets par nature en haut à droite du titre, avec l’effectif -->
+        <template #tabs>
+            <nav class="su-tabs" :aria-label="t('tiersPage.tabs.label')">
+                <button
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': !filterNature }"
+                    :aria-pressed="!filterNature"
+                    @click="selectNature('')"
+                >
+                    <span class="su-tab__label" :data-label="t('tiersPage.tabs.all')">{{ t('tiersPage.tabs.all') }}</span>
+                    <span v-if="store.initialized" class="tiers-page__tab-count">{{ tiersTotal }}</span>
+                </button>
+                <button
+                    v-for="nature in TIER_NATURES"
+                    :key="nature"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': filterNature === nature }"
+                    :aria-pressed="filterNature === nature"
+                    @click="selectNature(nature)"
+                >
+                    <span class="su-tab__label" :data-label="t(`tiersPage.naturesPlural.${nature}`)">{{
+                        t(`tiersPage.naturesPlural.${nature}`)
+                    }}</span>
+                    <span v-if="store.initialized" class="tiers-page__tab-count">{{ natureCounts[nature] }}</span>
+                </button>
+            </nav>
+        </template>
+
+        <AppBoard>
             <template #bar>
                 <AppBoardSearch
                     :model-value="search.input.value"
@@ -193,6 +255,18 @@ function onCreate(nature?: TierNature) {
                 <span v-if="store.initialized && visibleCount" class="su-toolbar__count app-board__count">
                     {{ t('tiersPage.count', { count: visibleCount }, visibleCount) }}
                 </span>
+                <div class="tiers-role-filter">
+                    <AppDropdownFilter
+                        :label="roleFilterLabel"
+                        :min-width="260"
+                        :count="filterCount"
+                        :reset-disabled="!filterRole"
+                        close-on-content-click
+                        @reset="filterRole = ''"
+                    >
+                        <AppChoiceList v-model="filterRole" :items="roleItems" :label="t('tiersPage.filters.role')" />
+                    </AppDropdownFilter>
+                </div>
             </template>
             <template #actions>
                 <button
@@ -215,13 +289,14 @@ function onCreate(nature?: TierNature) {
                 <button
                     v-else
                     type="button"
-                    class="su-btn su-btn--ink app-board__primary"
+                    class="su-btn su-btn--ink app-board__primary tiers-page__create"
+                    :class="{ 'tiers-page__create--compact': compactNotch }"
                     :disabled="store.acting"
                     :aria-label="t('tiersPage.actions.create')"
                     @click="onCreate()"
                 >
-                    <PlusIcon :size="16" stroke-width="1.6" />
-                    <span class="app-board__label">{{ t('tiersPage.actions.create') }}</span>
+                    <PlusIcon :size="16" stroke-width="1.8" />
+                    <span v-if="!compactNotch">{{ t('tiersPage.actions.create') }}</span>
                 </button>
             </template>
 
@@ -231,148 +306,75 @@ function onCreate(nature?: TierNature) {
 </template>
 
 <style scoped>
-.tiers-nature-trigger {
-    appearance: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    height: 34px;
-    margin: 0;
-    padding: 0 14px;
-    border: 0;
-    border-radius: 17px;
-    background: #fff;
-    color: inherit;
-    font: inherit;
-    font-size: 0.8rem;
-    cursor: pointer;
-    box-shadow:
-        0 1px 2px rgba(16, 16, 20, 0.06),
-        0 0 0 1px rgba(16, 16, 20, 0.05);
+/* ── fiche : onglets sous le titre, comme la fiche d’un actif ── */
+.tiers-page__detail-tabs {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 16px;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
 }
 
-.tiers-nature-tabs {
+.tiers-page__not-found {
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
 }
 
-.tiers-nature-trigger__pill {
-    pointer-events: none;
-    height: auto !important;
-    padding: 0 !important;
-    color: var(--ink) !important;
-    background: transparent !important;
-    box-shadow: none !important;
+.tiers-page__back {
+    border: 0;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
 }
 
-.tiers-nature-trigger__pill .su-tab__body {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+/* la liste occupe tout le corps : le titre et les onglets suffisent au-dessus */
+.tiers-page :deep(.su-body) {
+    padding-bottom: 0;
 }
 
-.tiers-nature-menu__chevron {
-    flex: none;
-    color: var(--ink-mute);
-    transition: transform 0.28s var(--ease, ease);
+.tiers-page__tab-count {
+    font-size: 13px;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    color: var(--gray);
 }
 
-.tiers-nature-menu__chevron.is-open {
-    transform: rotate(180deg);
+.su-tab.is-active .tiers-page__tab-count {
+    color: var(--ink);
+}
+
+/* filtre « Rôle · Tous » : bouton discret (bordure fine grise, texte gris) */
+.tiers-role-filter {
+    margin-left: auto;
+}
+
+.tiers-role-filter :deep(.su-btn) {
+    border-color: var(--line);
+    color: var(--gray);
+    font-weight: 400;
+}
+
+.tiers-role-filter :deep(.su-btn:hover:not(:disabled)),
+.tiers-role-filter :deep(.su-btn[aria-expanded='true']) {
+    border-color: var(--ink);
+    color: var(--ink);
+}
+
+.tiers-role-filter :deep(.su-btn > svg) {
+    display: none;
+}
+
+.tiers-page__create--compact {
+    width: 40px;
+    padding: 0;
 }
 
 @media (max-width: 767px) {
-    .tiers-nature-trigger {
-        padding: 0 10px;
+    .tiers-role-filter {
+        margin-left: 0;
     }
-}
-</style>
-
-<!-- Menus téléportés hors du scoped. -->
-<style>
-.tiers-nature-menu.su-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    width: min(280px, calc(100vw - 24px));
-    padding: 10px 8px 8px !important;
-}
-
-.tiers-nature-menu__label {
-    margin: 2px 10px 8px;
-    font-size: 11px;
-    font-weight: 650;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-}
-
-.tiers-nature-menu__item {
-    --nature-tint: rgb(var(--v-theme-primary));
-    appearance: none;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    margin: 0;
-    padding: 8px 10px;
-    border: 0;
-    border-radius: 16px;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    transition: background 0.2s var(--ease, ease);
-}
-
-.tiers-nature-menu__item.is-person {
-    --nature-tint: rgb(var(--v-theme-success));
-}
-
-.tiers-nature-menu__item.is-organization {
-    --nature-tint: rgb(var(--v-theme-secondary));
-}
-
-.tiers-nature-menu__item.is-administration {
-    --nature-tint: rgb(var(--v-theme-warning));
-}
-
-.tiers-nature-menu__item.is-unknown {
-    --nature-tint: var(--ink-muted);
-}
-
-.tiers-nature-menu__item:hover,
-.tiers-nature-menu__item:focus-visible {
-    background: color-mix(in srgb, var(--nature-tint) 10%, transparent);
-    outline: none;
-}
-
-.tiers-nature-menu__item.is-active {
-    background: color-mix(in srgb, var(--nature-tint) 14%, transparent);
-}
-
-.tiers-nature-menu__icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 34px;
-    height: 34px;
-    border-radius: 11px;
-    background: color-mix(in srgb, var(--nature-tint) 16%, var(--surface-raised));
-    color: var(--nature-tint);
-}
-
-.tiers-nature-menu__name {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-size: 0.9rem;
-    font-weight: 620;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-}
-
-.tiers-nature-menu__check {
-    flex: none;
-    color: var(--nature-tint);
 }
 </style>

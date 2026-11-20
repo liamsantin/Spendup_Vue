@@ -44,7 +44,7 @@ function toggle(field: HiddenAccountField, checked: boolean | null) {
 
 <template>
     <div class="share-hidden-fields">
-        <div class="text-body-2 text-medium-emphasis mb-2">{{ t('comptesPage.share.hiddenFields.hint') }}</div>
+        <p class="share-hidden-fields__hint">{{ t('comptesPage.share.hiddenFields.hint') }}</p>
         <div class="d-flex flex-column ga-1">
             <AppCheckbox
                 v-for="field in HIDDEN_ACCOUNT_FIELDS"
@@ -57,3 +57,12 @@ function toggle(field: HiddenAccountField, checked: boolean | null) {
         </div>
     </div>
 </template>
+
+<style scoped>
+.share-hidden-fields__hint {
+    margin: 0 0 8px;
+    color: var(--gray);
+    font-size: 13px;
+    line-height: 1.4;
+}
+</style>

@@ -101,7 +101,10 @@ export type TierWritePayload = {
     bank: TierBankPayload | null;
 };
 
-export type CreateTierPayload = TierWritePayload;
+export type CreateTierPayload = TierWritePayload & {
+    /** Identifiant public choisi par le client (GUID minuscule) pour chiffrer avant l’envoi ; absent : le serveur le génère. */
+    publicId?: string;
+};
 export type UpdateTierPayload = TierWritePayload;
 
 export const TIER_NATURES: TierNature[] = ['person', 'company', 'organization', 'administration', 'unknown'];

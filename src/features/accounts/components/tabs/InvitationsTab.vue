@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { InboxIcon } from 'vue-tabler-icons';
 import { useDisplay } from 'vuetify';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { shouldVirtualize } from '@/utils/helpers/list-virtualization';
@@ -23,14 +22,13 @@ function useVirtualList(length: number) {
             {{ store.error }}
         </AppAlert>
 
-        <section class="su-surface">
-            <header class="su-panel__head">
-                <span class="su-panel__icon"><InboxIcon :size="20" stroke-width="1.5" /></span>
-                <div>
-                    <h2>{{ t('comptesPage.invitations.title') }}</h2>
-                    <p>{{ t('comptesPage.invitations.subtitle') }}</p>
-                </div>
-                <span v-if="store.incomingCount > 0" class="su-panel__chip">{{ store.incomingCount }}</span>
+        <section class="su-section">
+            <header class="su-section__head">
+                <h2>{{ t('comptesPage.invitations.title') }}</h2>
+                <p>
+                    <template v-if="store.incomingCount > 0">{{ store.incomingCount }} · </template
+                    >{{ t('comptesPage.invitations.subtitle') }}
+                </p>
             </header>
 
             <div v-if="store.loadingIncoming && !store.incomingShares.length" class="su-loading">
@@ -50,9 +48,9 @@ function useVirtualList(length: number) {
                     <IncomingShareListItem :invite="item" />
                 </template>
             </v-virtual-scroll>
-            <v-list v-else class="py-0">
+            <div v-else class="invitations-list">
                 <IncomingShareListItem v-for="invite in store.incomingShares" :key="invite.publicId" :invite="invite" />
-            </v-list>
+            </div>
         </section>
     </div>
 </template>

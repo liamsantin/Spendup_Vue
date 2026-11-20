@@ -109,6 +109,10 @@ export type CreateAccountPayload = {
     institutionTierPublicId?: string | null;
     /** Établissement du référentiel : le serveur réutilise ou crée le tier banque. */
     bankPublicId?: string | null;
+    /** Empreinte `h:…` d’un IBAN chiffré (Coffre) : unicité sans voir l’IBAN. */
+    ibanFingerprint?: string | null;
+    /** Identifiant public choisi par le client (GUID minuscule) pour chiffrer avant l’envoi ; absent : le serveur le génère. */
+    publicId?: string;
 };
 
 /**
@@ -127,6 +131,8 @@ export type UpdateAccountPayload = {
     isPrimary?: boolean;
     institutionTierPublicId?: string | null;
     bankPublicId?: string | null;
+    /** Empreinte `h:…` d’un IBAN chiffré (Coffre). */
+    ibanFingerprint?: string | null;
 };
 
 export type InviteAccountSharePayload = {

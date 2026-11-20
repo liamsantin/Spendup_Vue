@@ -1,4 +1,5 @@
 <script setup lang="ts">
+/** Bouton principal « + Ajouter » et son menu Swiss (nature puis type de récurrence). */
 defineOptions({ name: 'RecurringCreateMenu' });
 
 import { useDisplay } from 'vuetify';
@@ -37,7 +38,7 @@ const { smAndDown } = useDisplay();
                 </template>
             </button>
         </template>
-        <v-sheet rounded="md" width="328" elevation="0" class="su-menu recurring-create-menu">
+        <v-sheet width="328" elevation="0" class="su-menu recurring-create-menu">
             <template v-if="kind">
                 <PerfectScrollbar v-if="!smAndDown" class="recurring-create-menu__types" :options="PERFECT_SCROLLBAR_OPTIONS">
                     <RecurringTypeChoice :kind="kind" variant="menu" @select="emit('pick', $event)" />
@@ -55,21 +56,16 @@ const { smAndDown } = useDisplay();
 </template>
 
 <style scoped>
-.recurring-create-menu.su-menu {
-    padding: 10px 8px !important;
-}
-
 .recurring-create-menu__list,
 .recurring-create-menu__types {
     display: flex;
     flex-direction: column;
-    gap: 2px;
     max-height: min(70vh, 420px);
 }
 
 .recurring-create-menu__types {
     position: relative;
-    padding-right: 10px;
+    padding-right: 6px;
 }
 
 .recurring-create-menu__types--native {

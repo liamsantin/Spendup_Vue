@@ -14,6 +14,7 @@ export function createFriendsRealtime(state: FriendsState, lists: FriendsLists) 
 
     let unsubscribeNotifications: (() => void) | null = null;
     let unsubscribeFriendshipChanged: (() => void) | null = null;
+    let unsubscribeResync: (() => void) | null = null;
     let friendshipRefreshQueue: FriendshipChange[] = [];
     let friendshipRefreshRunning = false;
 
@@ -104,6 +105,12 @@ export function createFriendsRealtime(state: FriendsState, lists: FriendsLists) 
         const notifications = useNotificationsStore();
         unsubscribeNotifications ??= notifications.subscribeToFriendNotifications(handleRealtime);
         unsubscribeFriendshipChanged ??= notifications.subscribeToFriendshipChanged(handleFriendshipChanged);
+        // après une coupure du temps réel : demandes, amis et blocages manqués sont relus (même file que `blocked`)
+        unsubscribeResync ??=
+            notifications.subscribeToResync?.(() => {
+                friendshipRefreshQueue.push('blocked');
+                void drainFriendshipRefreshQueue();
+            }) ?? null;
     }
 
     /** Après login : écoute live même avant la première visite de /app/friends. */
@@ -117,6 +124,8 @@ export function createFriendsRealtime(state: FriendsState, lists: FriendsLists) 
         unsubscribeNotifications = null;
         unsubscribeFriendshipChanged?.();
         unsubscribeFriendshipChanged = null;
+        unsubscribeResync?.();
+        unsubscribeResync = null;
         friendshipRefreshQueue = [];
         friendshipRefreshRunning = false;
     }

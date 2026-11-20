@@ -104,8 +104,12 @@ async function onDismiss(item: RecurringSuggestion) {
 
         <ul v-if="store.hasItems" class="recurring-suggestions__list">
             <li v-for="item in store.items" :key="item.publicId" class="recurring-suggestions__item">
-                <span class="recurring-suggestions__icon" :class="item.type === 'depense' ? 'is-expense' : 'is-income'">
-                    <component :is="item.type === 'depense' ? Receipt2Icon : TrendingUpIcon" size="18" stroke-width="1.8" />
+                <span
+                    class="su-tile recurring-suggestions__icon"
+                    :class="item.type === 'depense' ? 'is-expense' : 'su-tile--blue'"
+                    aria-hidden="true"
+                >
+                    <component :is="item.type === 'depense' ? Receipt2Icon : TrendingUpIcon" :size="18" stroke-width="1.7" />
                 </span>
                 <div class="recurring-suggestions__meta">
                     <p class="recurring-suggestions__name">{{ item.suggestedName }}</p>
@@ -123,13 +127,13 @@ async function onDismiss(item: RecurringSuggestion) {
                     </p>
                 </div>
                 <div class="recurring-suggestions__actions">
-                    <span class="recurring-suggestions__amount" :class="item.type === 'depense' ? 'is-debit' : 'is-credit'">
+                    <span class="recurring-suggestions__amount" :class="item.type === 'depense' ? 'su-neg' : 'su-pos'">
                         {{ formatPlannedAmount(item.type === 'depense' ? -item.amount : item.amount, item.currency, locale) }}
                     </span>
                     <div class="recurring-suggestions__buttons">
                         <button
                             type="button"
-                            class="su-btn su-btn--ghost"
+                            class="su-btn su-btn--sm"
                             :disabled="!!store.actingId"
                             :aria-label="t('recurrencesPage.suggestions.dismiss')"
                             @click="onDismiss(item)"
@@ -137,7 +141,7 @@ async function onDismiss(item: RecurringSuggestion) {
                             <XIcon :size="16" stroke-width="1.6" />
                             <span>{{ t('recurrencesPage.suggestions.dismiss') }}</span>
                         </button>
-                        <button type="button" class="su-btn su-btn--ink" :disabled="!!store.actingId" @click="onAccept(item)">
+                        <button type="button" class="su-btn su-btn--sm su-btn--ink" :disabled="!!store.actingId" @click="onAccept(item)">
                             <CheckIcon :size="16" stroke-width="1.6" />
                             <span>{{ t('recurrencesPage.suggestions.accept') }}</span>
                         </button>
@@ -152,47 +156,40 @@ async function onDismiss(item: RecurringSuggestion) {
 .recurring-suggestions {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 .recurring-suggestions__empty {
     margin: 0;
-    font-size: 0.86rem;
-    color: var(--ink-soft);
+    font-size: 14px;
+    color: var(--gray);
 }
 
+/* lignes sur filets fins : 36px | nom 700 + sous-lignes grises | montant + actions */
 .recurring-suggestions__list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
     margin: 0;
     padding: 0;
     list-style: none;
+    border-top: 1px solid var(--line);
 }
 
 .recurring-suggestions__item {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--ink-muted) 6%, transparent);
+    gap: 14px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
 }
 
-.recurring-suggestions__icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    background: color-mix(in srgb, rgb(var(--v-theme-error)) 12%, transparent);
-    color: rgb(var(--v-theme-error));
+.recurring-suggestions__list > .recurring-suggestions__item:first-child {
+    border-top: 0;
 }
 
-.recurring-suggestions__icon.is-income {
-    background: color-mix(in srgb, rgb(var(--v-theme-success)) 12%, transparent);
-    color: rgb(var(--v-theme-success));
+.recurring-suggestions__icon.is-expense {
+    background: var(--t-gray-bg);
+    color: var(--ink);
 }
 
 .recurring-suggestions__meta {
@@ -202,7 +199,7 @@ async function onDismiss(item: RecurringSuggestion) {
 
 .recurring-suggestions__name {
     margin: 0;
-    font-weight: 620;
+    font-weight: 700;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -211,15 +208,14 @@ async function onDismiss(item: RecurringSuggestion) {
 .recurring-suggestions__sub,
 .recurring-suggestions__label {
     margin: 2px 0 0;
-    font-size: 0.8rem;
-    color: var(--ink-soft);
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .recurring-suggestions__label {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--ink-muted);
 }
 
 .recurring-suggestions__actions {
@@ -231,16 +227,8 @@ async function onDismiss(item: RecurringSuggestion) {
 }
 
 .recurring-suggestions__amount {
-    font-weight: 650;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
-}
-
-.recurring-suggestions__amount.is-debit {
-    color: rgb(var(--v-theme-error));
-}
-
-.recurring-suggestions__amount.is-credit {
-    color: rgb(var(--v-theme-success));
 }
 
 .recurring-suggestions__buttons {

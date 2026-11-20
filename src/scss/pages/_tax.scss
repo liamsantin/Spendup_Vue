@@ -1,0 +1,449 @@
+// Page « Impôts » : classes partagées par les composants de features/tax/components (préfixe `tax-`).
+
+.tax-error {
+    color: var(--danger);
+    margin: 0 0 16px;
+}
+
+.tax-muted {
+    color: var(--gray);
+    margin: 0 0 16px;
+}
+
+.tax-list,
+.tax-totals {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 40px 32px;
+    width: 100%;
+    margin: 8px 0 28px;
+}
+
+.tax-totals h2,
+.tax-form__legend {
+    grid-column: 1 / -1;
+    margin: 8px 0 0;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.tax-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 18px 20px 16px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    transition: border-color 0.15s var(--ease);
+
+    &[role='button'] {
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            border-color: var(--ink);
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--ink);
+        outline-offset: 4px;
+    }
+
+    > .su-kv:last-child {
+        border-bottom: 1px solid var(--line);
+    }
+}
+
+.tax-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 36px;
+}
+
+.tax-card__actions {
+    display: flex;
+    margin: -4px -8px -4px 0;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .tax-card__actions {
+        opacity: 0;
+        transition: opacity 0.15s var(--ease);
+    }
+
+    .tax-card:hover .tax-card__actions,
+    .tax-card:focus-within .tax-card__actions {
+        opacity: 1;
+    }
+}
+
+.tax-card__kicker {
+    margin: 0;
+    color: var(--gray);
+    font-size: 16px;
+}
+
+.tax-actions-menu {
+    width: min(260px, calc(100vw - 32px));
+
+    .su-menu-item:disabled {
+        opacity: 0.45;
+        cursor: default;
+    }
+
+    .su-menu-item__icon--danger {
+        background: var(--danger-soft);
+        color: var(--danger);
+    }
+}
+
+.tax-actions-menu__sep {
+    height: 1px;
+    margin: 4px 8px;
+    background: var(--line);
+}
+
+// Onglets des étapes : la barre défile ; un fondu signale les onglets cachés d'un côté.
+.tax-steps {
+    scroll-behavior: smooth;
+
+    &.has-more-right {
+        mask-image: linear-gradient(to right, #000 calc(100% - 56px), transparent);
+    }
+
+    &.has-more-left {
+        mask-image: linear-gradient(to left, #000 calc(100% - 56px), transparent);
+    }
+
+    &.has-more-left.has-more-right {
+        mask-image: linear-gradient(to right, transparent, #000 56px, #000 calc(100% - 56px), transparent);
+    }
+}
+
+// Choix d'un export : une ligne par format, avec son usage.
+.tax-export {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.tax-export__choice {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s var(--ease);
+
+    &:hover,
+    &:focus-visible {
+        border-color: var(--ink);
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: default;
+    }
+}
+
+.tax-export__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.tax-export__title {
+    font-weight: 700;
+}
+
+.tax-export__detail {
+    color: var(--gray);
+    font-size: 13px;
+}
+
+.tax-actions-menu__delete .su-menu-item__title {
+    color: var(--danger);
+}
+
+.tax-card__name {
+    margin: 6px 0 0;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.25;
+}
+
+.tax-card__sub {
+    margin: 2px 0 14px;
+    color: var(--gray);
+    font-size: 13px;
+}
+
+.tax-card__gauge {
+    margin-bottom: 8px;
+}
+
+.tax-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.tax-form__row {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 16px;
+}
+
+.tax-form__label {
+    margin: 0;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.3;
+}
+
+.tax-line {
+    margin-bottom: 0;
+
+    &.is-empty .tax-form__label {
+        color: var(--gray);
+    }
+
+    // Un montant tient en quelques chiffres : pas besoin de la largeur du formulaire.
+    .tax-form__field {
+        max-width: 240px;
+    }
+
+    .tax-form__split {
+        max-width: 480px;
+    }
+}
+
+.tax-form__field {
+    min-width: 0;
+    max-width: 380px;
+
+    .v-field {
+        --v-input-control-height: 42px;
+    }
+
+    .v-text-field input {
+        min-height: 42px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
+
+.tax-form__field--wide {
+    max-width: 560px;
+}
+
+.tax-import-file {
+    display: none;
+}
+
+.tax-form--modal {
+    margin-bottom: 0;
+}
+
+.tax-form__split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    max-width: 520px;
+}
+
+.tax-form__actions {
+    display: flex;
+    gap: 8px;
+}
+
+.tax-help {
+    display: inline-flex;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
+.tax-help__btn {
+    display: inline-flex;
+    padding: 2px;
+    border: 0;
+    background: none;
+    color: var(--gray);
+    cursor: help;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--ink);
+    }
+}
+
+// le chip est une pastille de texte, pas une étiquette d'une ligne
+.tax-help__chip {
+    height: auto;
+    max-width: 320px;
+    padding: 8px 12px;
+    white-space: normal;
+    line-height: 1.35;
+}
+
+.tax-copy {
+    align-self: flex-start;
+    justify-self: start;
+}
+
+.tax-fiches {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    margin-bottom: 28px;
+}
+
+.tax-fiche {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+}
+
+.tax-file {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+
+.tax-fiche__title {
+    margin: 0;
+    font-weight: 700;
+}
+
+.tax-piece {
+    display: flex;
+    flex: 1 1 280px;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+
+    input {
+        accent-color: var(--blue);
+    }
+
+    .is-received {
+        color: var(--gray);
+        text-decoration: line-through;
+    }
+}
+
+.tax-line__hint {
+    margin: 0;
+    color: var(--gray);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.tax-line__hint--corrected {
+    color: var(--blue-ink);
+}
+
+// Déclaration déposée : rappel permanent que les montants ne changent plus que par « Corriger ».
+.tax-locked {
+    margin: 0 0 20px;
+    padding: 12px 16px;
+    border-left: 3px solid var(--blue);
+    background: var(--blue-soft, transparent);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.tax-check {
+    margin-left: 6px;
+    font-weight: 700;
+
+    &.is-verified {
+        color: var(--blue-ink);
+    }
+
+    &.is-toCheck {
+        color: var(--danger);
+    }
+}
+
+.tax-fiche__detail,
+.tax-fiche__amount {
+    margin: 0;
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1199.98px) {
+    .tax-list,
+    .tax-totals {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .tax-list,
+    .tax-totals {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 32px;
+    }
+
+    .tax-form__row,
+    .tax-form__split {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .tax-form__field,
+    .tax-form__field--wide,
+    .tax-line .tax-form__field,
+    .tax-form__split,
+    .tax-line .tax-form__split {
+        max-width: none;
+    }
+}
+
+// Zone d'un montant lu, montrée sur la page du PDF rendue sur l'appareil.
+.tax-pdf-zone {
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.tax-pdf-zone__page {
+    position: relative;
+    border: 1px solid var(--line);
+    background: #fff;
+}
+
+.tax-pdf-zone__canvas {
+    display: block;
+}
+
+.tax-pdf-zone__mark {
+    position: absolute;
+    border: 2px solid var(--blue);
+    background: color-mix(in srgb, var(--blue) 18%, transparent);
+    pointer-events: none;
+}

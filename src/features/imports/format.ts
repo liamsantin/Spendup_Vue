@@ -87,7 +87,7 @@ export function reparseLosesReviewWork(item: Pick<Import, 'status' | 'counts'>):
     return item.status === 'aValider' && item.counts.total > 0;
 }
 
-export type ImportFileCheckCode = 'required' | 'empty' | 'legacyXls' | 'macroXlsm' | 'unsupported' | 'tooLarge';
+export type ImportFileCheckCode = 'required' | 'empty' | 'legacyXls' | 'macroXlsm' | 'unsupported' | 'tooLarge' | 'demoCsvOnly';
 
 export type ImportFileCheck =
     | { ok: true; sourceType: ImportSourceType; maxBytes: number }
@@ -106,14 +106,21 @@ export function importSourceTypeFromFileName(fileName: string): ImportSourceType
     return null;
 }
 
-/** Contrôle client avant upload (le serveur revalide) : extension, taille par format. */
-export function validateImportFile(file: Pick<File, 'name' | 'size'> | null | undefined): ImportFileCheck {
+/**
+ * Contrôle client avant upload (le serveur revalide) : extension, taille par format.
+ * `csvOnly` : la démo ne lit pas les classeurs Excel.
+ */
+export function validateImportFile(
+    file: Pick<File, 'name' | 'size'> | null | undefined,
+    options: { csvOnly?: boolean } = {}
+): ImportFileCheck {
     if (!file) return { ok: false, code: 'required' };
     const ext = extensionOf(file.name);
     if (ext === 'xls') return { ok: false, code: 'legacyXls' };
     if (ext === 'xlsm') return { ok: false, code: 'macroXlsm' };
     const sourceType = importSourceTypeFromFileName(file.name);
     if (!sourceType) return { ok: false, code: 'unsupported' };
+    if (options.csvOnly && sourceType !== 'csv') return { ok: false, code: 'demoCsvOnly' };
     const maxBytes = sourceType === 'csv' ? IMPORT_CSV_MAX_BYTES : IMPORT_XLSX_MAX_BYTES;
     if (file.size === 0) return { ok: false, code: 'empty' };
     if (file.size > maxBytes) return { ok: false, code: 'tooLarge', maxBytes };

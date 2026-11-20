@@ -93,6 +93,54 @@ vi.mock('@/features/savings-goals/stores/savings-goals-store', () => ({
     })
 }));
 
+vi.mock('@/features/assets/stores/assets-store', () => ({
+    useAssetsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/real-estate/stores/real-estate-store', () => ({
+    useRealEstateStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/investments/stores/investments-store', () => ({
+    useInvestmentsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/investments/stores/instruments-store', () => ({
+    useInstrumentsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/liabilities/stores/liabilities-store', () => ({
+    useLiabilitiesStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/personal-loans/stores/personal-loans-store', () => ({
+    usePersonalLoansStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/shared-debts/stores/shared-debts-store', () => ({
+    useSharedDebtsStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
+vi.mock('@/features/net-worth/stores/net-worth-store', () => ({
+    useNetWorthStore: () => ({
+        onAuthenticatedSession: vi.fn()
+    })
+}));
+
 vi.mock('@/features/user-settings', () => ({
     useUserSettingsStore: () => ({
         ensureLoaded: vi.fn().mockResolvedValue(undefined),
@@ -175,5 +223,20 @@ describe('authGuard', () => {
 
         expect(auth.fetchMe).not.toHaveBeenCalled();
         expect(next).toHaveBeenCalledWith();
+    });
+
+    it('ne détruit pas la session si /me est injoignable : page de maintenance', async () => {
+        const auth = useAuthStore();
+        auth.refreshToken = 'refresh-1';
+        auth.bootstrapSession = vi.fn().mockResolvedValue(undefined);
+        auth.fetchMe = vi.fn().mockRejectedValue(Object.assign(new Error('Bad Gateway'), { status: 502 }));
+        auth.forceReLogin = vi.fn().mockResolvedValue(undefined);
+
+        const next = vi.fn();
+        await authGuard(route('/app/settings'), route('/'), next);
+
+        expect(auth.forceReLogin).not.toHaveBeenCalled();
+        expect(auth.returnUrl).toBe('/app/settings');
+        expect(next).toHaveBeenCalledWith('/auth/maintenance');
     });
 });

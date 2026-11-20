@@ -17,5 +17,6 @@ export function downloadCsv(baseName: string, header: readonly string[], rows: r
     link.href = url;
     link.download = `${baseName}-${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
-    URL.revokeObjectURL(url);
+    // Révocation différée : certains moteurs (Safari / WKWebView) lisent le blob après `click()`.
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }

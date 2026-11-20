@@ -12,12 +12,18 @@ const { t, locale } = useI18n();
 const router = useRouter();
 const store = useNotificationsStore();
 
+/** Date courte « 23.10 » ; l’heure reste dans l’attribut `title`. */
 function formatCreatedAt(iso: string): string {
     try {
-        return new Intl.DateTimeFormat(locale.value || undefined, {
-            dateStyle: 'medium',
-            timeStyle: 'short'
-        }).format(new Date(iso));
+        return new Intl.DateTimeFormat(locale.value || undefined, { day: '2-digit', month: '2-digit' }).format(new Date(iso));
+    } catch {
+        return iso;
+    }
+}
+
+function formatCreatedAtFull(iso: string): string {
+    try {
+        return new Intl.DateTimeFormat(locale.value || undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
     } catch {
         return iso;
     }
@@ -65,23 +71,27 @@ async function onLoadMore() {
         <span class="su-empty__mark"><BellIcon :size="24" stroke-width="1.5" /></span>
         {{ t('header.notifications.empty') }}
     </div>
-    <div v-else class="su-surface">
+    <!-- Lignes `su-person` : non lu = titre 700 + carré bleu 6 px, lu = 400 gris ; date courte grise à droite. -->
+    <div v-else class="su-surface inbox-list">
         <button
             v-for="(item, i) in store.items"
             :key="item.id"
             type="button"
-            class="su-person"
-            :class="{ 'is-focused': !item.isRead }"
+            class="su-person inbox-item"
+            :class="{ 'is-unread': !item.isRead }"
             :style="{ '--i': i }"
             @click="onItemClick(item)"
         >
-            <UserPhotoAvatar :photo-url="item.photoUrl" :fallback-label="item.title" :size="44" />
+            <UserPhotoAvatar :photo-url="item.photoUrl" :fallback-label="item.title" :size="36" />
             <div class="su-person__meta">
-                <p class="su-person__name">{{ item.title }}</p>
+                <p class="su-person__name inbox-item__title">
+                    {{ item.title }}
+                    <span v-if="!item.isRead" class="inbox-item__dot" aria-hidden="true" />
+                </p>
                 <p v-if="item.subtitle || item.message" class="su-person__sub">{{ item.subtitle || item.message }}</p>
-                <p class="su-person__sub">{{ formatCreatedAt(item.createdAt) }}</p>
             </div>
-            <span v-if="!item.isRead" class="su-chip">{{ t('notificationsPage.unread') }}</span>
+            <span class="inbox-item__date" :title="formatCreatedAtFull(item.createdAt)">{{ formatCreatedAt(item.createdAt) }}</span>
+            <span v-if="!item.isRead" class="d-sr-only">{{ t('notificationsPage.unread') }}</span>
         </button>
         <div v-if="store.hasMore" class="su-more">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="onLoadMore">
@@ -90,3 +100,40 @@ async function onLoadMore() {
         </div>
     </div>
 </template>
+
+<style scoped>
+.inbox-list {
+    display: flex;
+    flex-direction: column;
+}
+
+/* lu : titre en 400 gris foncé ; non lu : 700 noir */
+.inbox-item .inbox-item__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--ink-mute);
+    font-weight: 400;
+}
+
+.inbox-item.is-unread .inbox-item__title {
+    color: var(--ink);
+    font-weight: 700;
+}
+
+.inbox-item__dot {
+    display: inline-block;
+    flex: none;
+    width: 6px;
+    height: 6px;
+    background: var(--blue);
+}
+
+.inbox-item__date {
+    flex: none;
+    color: var(--gray);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+</style>

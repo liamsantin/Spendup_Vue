@@ -20,6 +20,7 @@ import {
     useImportsStore
 } from '@/features/imports';
 import type { Import, ImportStatus } from '@/features/imports';
+import { asAppPath, demoActive } from '@/features/demo/session';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -29,7 +30,7 @@ const accountsStore = useAccountsStore();
 
 const uploadOpen = ref(false);
 
-const tab = computed<'history' | 'templates'>(() => (route.path.startsWith(IMPORTS_PATHS.templates) ? 'templates' : 'history'));
+const tab = computed<'history' | 'templates'>(() => (asAppPath(route.path).startsWith(IMPORTS_PATHS.templates) ? 'templates' : 'history'));
 
 function queryString(name: string): string {
     const raw = route.query[name];
@@ -92,14 +93,19 @@ useCreateFromQuery(onCreate, () => !store.acting);
 </script>
 
 <template>
-    <AppPageShell class="imports-page" :title="t('importsPage.title')" :subtitle="t('importsPage.subtitle')" :body-scroll="false">
+    <AppPageShell
+        class="imports-page"
+        :title="t('importsPage.title')"
+        :subtitle="demoActive ? t('importsPage.subtitleDemo') : t('importsPage.subtitle')"
+        :body-scroll="false"
+    >
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('importsPage.tabs.label')">
                 <RouterLink :to="IMPORTS_PATHS.list" class="su-tab" :class="{ 'is-active': tab === 'history' }">
-                    {{ t('importsPage.tabs.history') }}
+                    <span class="su-tab__label" :data-label="t('importsPage.tabs.history')">{{ t('importsPage.tabs.history') }}</span>
                 </RouterLink>
                 <RouterLink :to="IMPORTS_PATHS.templates" class="su-tab" :class="{ 'is-active': tab === 'templates' }">
-                    {{ t('importsPage.tabs.templates') }}
+                    <span class="su-tab__label" :data-label="t('importsPage.tabs.templates')">{{ t('importsPage.tabs.templates') }}</span>
                 </RouterLink>
             </nav>
         </template>
@@ -161,7 +167,7 @@ useCreateFromQuery(onCreate, () => !store.acting);
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
-    padding: 8px 10px 12px;
+    padding: 0 0 24px;
     -webkit-overflow-scrolling: touch;
 }
 

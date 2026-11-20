@@ -199,6 +199,10 @@ function clearFieldErrors() {
     fieldErrors.accountPublicId = null;
     fieldErrors.paymentDay = null;
     fieldErrors.notes = null;
+    fieldErrors.insuranceFranchise = null;
+    fieldErrors.insuranceGrossPremium = null;
+    fieldErrors.insurancePremiumSubsidy = null;
+    fieldErrors.insurancePolicyNumber = null;
 }
 
 function fillFromExpense(item: RecurringExpense) {
@@ -215,6 +219,13 @@ function fillFromExpense(item: RecurringExpense) {
     form.tierPublicId = item.tierPublicId ?? '';
     form.tagPublicIds = sanitizeTagPublicIds(item.tagPublicIds);
     form.notes = item.notes ?? '';
+    const insurance = item.insurance;
+    form.insuranceType = insurance?.insuranceType ?? '';
+    form.insuranceRenewalDate = insurance?.renewalDate ?? null;
+    form.insuranceFranchise = insurance?.franchise == null ? '' : String(insurance.franchise);
+    form.insuranceGrossPremium = insurance?.grossPremium == null ? '' : String(insurance.grossPremium);
+    form.insurancePremiumSubsidy = insurance?.premiumSubsidy == null ? '' : String(insurance.premiumSubsidy);
+    form.insurancePolicyNumber = insurance?.policyNumber ?? '';
 }
 
 function fillFromIncome(item: RecurringIncome) {
@@ -437,7 +448,7 @@ async function onSave() {
         </template>
 
         <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
+            <button type="button" class="su-btn" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
             <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">

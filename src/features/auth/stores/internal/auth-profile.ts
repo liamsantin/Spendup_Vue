@@ -3,6 +3,7 @@ import type { StepUpProof, UpdateProfilePayload } from '@/features/auth/types';
 import { i18n } from '@/plugins/i18n';
 import type { AuthSessionState } from '@/features/auth/stores/internal/auth-session';
 import type { AuthLogout } from '@/features/auth/stores/internal/auth-logout';
+import { useVaultStore } from '@/features/vault/stores/vault-store';
 
 function t(key: string) {
     return i18n.global.t(key);
@@ -145,9 +146,28 @@ export function createAuthProfile(session: AuthSessionState, deps: ProfileDeps) 
      * @param reLoginMessage Notice affichée au re-login.
      * @param stepUp Preuve step-up optionnelle.
      */
-    async function changePassword(currentPassword: string | null, newPassword: string, reLoginMessage?: string, stepUp?: StepUpProof) {
+    async function changePassword(
+        currentPassword: string | null,
+        newPassword: string,
+        reLoginMessage?: string,
+        stepUp?: StepUpProof,
+        vaultPhrase?: string | null
+    ) {
         const token = await requireAccessToken();
-        await authApi.changePassword(token, currentPassword, newPassword, stepUp);
+        const vault = useVaultStore();
+        // Coffre : la DEK est ré-emballée avec le nouveau mot de passe dans la même requête (même transaction côté API).
+        // Compte Google avec phrase de Coffre qui pose son premier mot de passe : la phrase déballe la DEK.
+        const secret = currentPassword || vaultPhrase || null;
+        const vaultWrap = secret ? await vault.rewrapForPassword(secret, newPassword) : null;
+        // Premier mot de passe d’un compte sans Coffre : création silencieuse du Coffre.
+        const vaultSetup =
+            !currentPassword && !vaultWrap && !(await vault.loadStatus())?.exists ? await vault.prepareRegistration(newPassword) : null;
+        try {
+            await authApi.changePassword(token, currentPassword, newPassword, stepUp, vaultWrap, vaultSetup);
+        } catch (e: unknown) {
+            vault.discardRegistration();
+            throw e;
+        }
         await forceReLogin(reLoginMessage ?? t('auth.notices.passwordUpdatedRelogin'));
     }
 

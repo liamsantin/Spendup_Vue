@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue';
+import { nextPageFromLoaded as nextPageFromLoadedShared } from '@/utils/helpers/paging';
 import { createResourceCache } from '@/utils/helpers/resource-cache';
 import { sortFiles } from '@/features/files/format';
 import { FILE_PAGE_SIZE_DEFAULT, type FileDto, type FileUsage } from '@/features/files/types';
@@ -7,14 +8,9 @@ export const FILES_LIST_MAX_AGE_MS = 30_000;
 
 export const FILES_LIST_CACHE_KEY = 'list:all';
 
-/**
- * Page suivante à demander d’après le nombre d’éléments déjà chargés.
- * Après une suppression locale, les offsets serveur reculent d’un cran : repartir de `page + 1`
- * sauterait un élément. On recharge la page qui contient le premier élément manquant (dédup par `publicId`).
- */
+/** Page suivante d’après le nombre de fichiers chargés (voir `utils/helpers/paging`). */
 export function nextPageFromLoaded(loaded: number, pageSize: number): number {
-    const size = pageSize > 0 ? pageSize : FILE_PAGE_SIZE_DEFAULT;
-    return Math.floor(Math.max(0, loaded) / size) + 1;
+    return nextPageFromLoadedShared(loaded, pageSize, FILE_PAGE_SIZE_DEFAULT);
 }
 
 export type FilesCacheEntry = {

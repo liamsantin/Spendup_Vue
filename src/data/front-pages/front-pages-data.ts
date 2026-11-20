@@ -54,7 +54,7 @@ export const FooterMenu1: FooterType[] = [
 export const FooterMenu2: FooterType[] = [
     { menu: 'Tarifs', link: '/tarifs' },
     { menu: "Conditions d'utilisation", link: '/conditions-utilisation' },
-    { menu: 'Politique de confidentialité', link: '/politique-confidentialite' },
+    { menu: 'Protection des données', link: '/protection-des-donnees' },
     { menu: 'Application', link: '/app' }
 ];
 

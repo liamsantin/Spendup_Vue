@@ -1,418 +1,496 @@
-﻿<script setup lang="ts">
-import {
-    ArrowRightIcon,
-    BrandWindowsIcon,
-    BuildingBankIcon,
-    ChartPieIcon,
-    CheckIcon,
-    DeviceDesktopIcon,
-    DownloadIcon,
-    FileImportIcon,
-    FileSpreadsheetIcon,
-    GavelIcon,
-    HistoryIcon,
-    KeyOffIcon,
-    LeafIcon,
-    MapPinIcon,
-    PaperclipIcon,
-    ServerIcon,
-    ShieldCheckIcon,
-    SparklesIcon,
-    UserPlusIcon
-} from 'vue-tabler-icons';
-import heroVisual from '@/assets/images/front-pages/dashboard-preview.png';
+<script setup lang="ts">
+import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
+import { ArrowRightIcon, BrandWindowsIcon, ExternalLinkIcon, LockIcon } from 'vue-tabler-icons';
+import SwissFlag from '@/components/frontpages/shared/SwissFlag.vue';
 import infomaniakLogo from '@/assets/images/front-pages/infomaniak-logo.svg';
-import AnywhereScene from '@/components/frontpages/mockups/scenes/AnywhereScene.vue';
-import HubScene from '@/components/frontpages/mockups/scenes/HubScene.vue';
-import { spendupDomainNames } from '@/data/front-pages/spendup-additional-domains';
+import { APP_SCREENSHOTS_PATH as SHOTS } from '@/data/front-pages/spendup-additional-domains';
+
+const showPricing = isPricingPageEnabled();
 
 const INSTALLER_PATH = '/downloads/SpendUp-Setup-x64.msi';
 const windowsDownloadUrl = (import.meta.env.VITE_WINDOWS_APP_DOWNLOAD_URL as string | undefined)?.trim() || INSTALLER_PATH;
 
-/** Pourquoi Spend.Up ne se connecte pas à la banque : la contrainte présentée comme un choix. */
-const noBankLinkReasons = [
+/** Les trois bénéfices : une capture smartphone réelle, un titre, une ligne. */
+const benefits = [
     {
-        icon: KeyOffIcon,
-        title: 'Aucun accès à vos comptes',
-        text: 'Spend.Up ne vous demande jamais vos identifiants e-banking et ne peut ni consulter ni déplacer votre argent.'
+        title: 'Voir clair',
+        text: 'Chaque dépense classée par catégorie, compte et contrepartie.',
+        shot: 'mobile-transactions.webp',
+        alt: 'Les transactions Spend.Up sur smartphone, classées par jour'
     },
     {
-        icon: FileImportIcon,
-        title: 'Vous choisissez ce qui entre',
-        text: 'Vous importez les relevés que vous voulez, quand vous le voulez. Rien n’arrive dans votre espace sans votre accord.'
+        title: 'Anticiper',
+        text: 'Loyer, salaire, abonnements : vos échéances avant la fin du mois.',
+        shot: 'mobile-due-dates.webp',
+        alt: 'Les échéances à venir dans Spend.Up sur smartphone'
     },
     {
-        icon: BuildingBankIcon,
-        title: 'Toutes les banques, sans partenariat',
-        text: 'Si votre banque permet d’exporter vos relevés en CSV ou en Excel, elle est compatible. Aucune intégration à attendre.'
-    },
-    {
-        icon: FileSpreadsheetIcon,
-        title: 'Un import qui apprend',
-        text: 'Spend.Up reconnaît les colonnes de votre fichier, vous laisse relire chaque ligne avant de valider et mémorise le modèle.'
-    },
-    {
-        icon: PaperclipIcon,
-        title: 'Les justificatifs à côté des chiffres',
-        text: 'Factures, reçus et contrats en PDF se joignent à vos opérations : la preuve reste à portée de main.'
-    },
-    {
-        icon: HistoryIcon,
-        title: 'Un historique qui vous appartient',
-        text: 'Année après année, votre carnet de bord s’enrichit. Il reste exportable et ne dépend d’aucune banque.'
+        title: 'Construire',
+        text: 'Des budgets et des objectifs qui avancent à chaque import.',
+        shot: 'mobile-budgets.webp',
+        alt: 'Les budgets Spend.Up sur smartphone avec leur progression'
     }
 ];
-
-const hostingFacts = [
-    {
-        icon: ServerIcon,
-        title: 'Des serveurs en Suisse',
-        text: 'Vos comptes, transactions et documents sont stockés dans des centres de données situés en Suisse, pas sur des serveurs à l’étranger.'
-    },
-    {
-        icon: GavelIcon,
-        title: 'Protégées par le droit suisse',
-        text: 'Vos données relèvent de la loi fédérale sur la protection des données (nLPD), l’un des cadres les plus exigeants au monde.'
-    },
-    {
-        icon: ShieldCheckIcon,
-        title: 'Un hébergeur suisse indépendant',
-        text: 'Infomaniak est une entreprise suisse fondée à Genève en 1994, indépendante des géants du cloud étrangers.'
-    },
-    {
-        icon: LeafIcon,
-        title: 'Une infrastructure responsable',
-        text: 'Des centres de données alimentés en énergie renouvelable, dont la chaleur est valorisée plutôt que perdue.'
-    }
-];
-
-const hostingScope = ['Base de données', 'Documents & justificatifs', 'Sauvegardes'];
 
 const steps = [
     {
-        icon: UserPlusIcon,
         title: 'Créez votre espace',
-        text: 'Une adresse e-mail suffit. Aucune carte bancaire, aucun engagement : votre espace est prêt en moins d’une minute.',
-        meta: 'Moins d’une minute'
+        text: showPricing
+            ? 'Une adresse e-mail ou votre compte Google suffit, et l’offre gratuite ne demande aucune carte bancaire. Avec un mot de passe, votre Coffre se crée au passage, sans réglage.'
+            : 'Une adresse e-mail ou votre compte Google suffit. Avec un mot de passe, votre Coffre se crée au passage, sans réglage.'
     },
     {
-        icon: FileImportIcon,
         title: 'Importez vos relevés',
-        text: 'Exportez vos relevés depuis votre e-banking et déposez-les dans Spend.Up. Il reconnaît les colonnes, vous relisez, vous validez.',
-        meta: 'CSV & Excel'
+        text: 'Exportez un fichier CSV ou Excel depuis votre e-banking et associez ses colonnes une fois, puis gardez-les comme modèle pour les imports suivants. Vous relisez chaque ligne avant de la valider.'
     },
     {
-        icon: ChartPieIcon,
-        title: 'Organisez, décidez',
-        text: 'Catégories, tiers et justificatifs PDF se mettent en place. Budgets, objectifs et alertes transforment ensuite vos chiffres en décisions.',
-        meta: 'Justificatifs PDF liés'
+        title: 'Pilotez',
+        text: 'Budgets, objectifs d’épargne, paiements récurrents et patrimoine, au même endroit. Une alerte vous prévient quand un budget approche de sa limite.'
     }
 ];
 
-const faqs = [
+/**
+ * Impôts : le parcours d’un dossier, de sa création au solde. Chaque point décrit un écran
+ * qui existe dans le module (voir aussi la section « Impôts » de la page Fonctionnalités).
+ */
+const taxPhases = [
     {
-        question: 'Spend.Up se connecte-t-il à ma banque ?',
-        answer: 'Non, et c’est un choix. Spend.Up ne vous demande jamais vos identifiants bancaires et n’a aucun accès à vos comptes. Vous exportez vos relevés depuis votre e-banking, puis vous les importez dans Spend.Up quand vous le souhaitez.'
+        title: 'Préparer',
+        text: 'Une déclaration par année et par canton, pour une ou deux personnes. Repartez du PDF d’une déclaration existante ou de celle de l’an dernier : situation et fiches sont reprises, jamais les montants.'
     },
     {
-        question: 'Quels fichiers puis-je importer ?',
-        answer: 'Vos relevés de transactions au format CSV ou Excel (XLSX), proposés par la plupart des banques. Spend.Up reconnaît les colonnes, vous laisse vérifier chaque ligne avant validation et mémorise le modèle pour vos prochains imports. Vos justificatifs (factures, reçus, contrats) se joignent en PDF à vos opérations.'
+        title: 'Remplir',
+        text: 'Revenus, prévoyance, santé, famille, déductions, fortune et dettes : des étapes courtes, avec les cases remplies et celles qu’il reste à compléter.'
     },
     {
-        question: 'Mes soldes sont-ils à jour en permanence ?',
-        answer: 'Ils sont à jour de votre dernier import et de vos saisies. Importez au rythme qui vous convient, chaque semaine ou chaque mois : Spend.Up vous signale les doublons possibles pour que rien ne soit compté deux fois.'
+        title: 'Déposer',
+        text: 'Exportez le récapitulatif à recopier dans le logiciel officiel, avec vos justificatifs numérotés. Une fois la déclaration marquée déposée, ses montants sont verrouillés et chaque correction est journalisée.'
     },
     {
-        question: 'Puis-je commencer gratuitement ?',
-        answer: 'Oui. L’offre Gratuit ne nécessite aucune carte bancaire : vous y saisissez vos opérations et joignez vos justificatifs PDF. L’import de relevés est inclus dès l’offre Étudiant ou Solo.'
-    },
-    {
-        question: 'Mes données sont-elles sécurisées ?',
-        answer: 'Oui. Spend.Up intègre notamment la 2FA, la gestion des appareils et des mécanismes de protection des accès.'
-    },
-    {
-        question: 'Puis-je utiliser Spend.Up en famille ?',
-        answer: 'Oui. L’offre Famille (5) permet à un payeur de créer un foyer jusqu’à 5 personnes (propriétaire inclus). Les membres héritent du plan du propriétaire et n’ont pas besoin d’un abonnement payant.'
-    },
-    {
-        question: 'Où sont hébergées mes données ?',
-        answer: 'En Suisse, chez Infomaniak. Vos comptes, transactions et documents sont stockés dans des centres de données situés en Suisse et relèvent du droit suisse sur la protection des données (nLPD).'
-    },
-    {
-        question: 'Sur quels appareils puis-je utiliser Spend.Up ?',
-        answer: 'Depuis n’importe quel navigateur récent, sur ordinateur comme sur smartphone, ou via l’application Windows. Vos données restent synchronisées d’un appareil à l’autre.'
-    },
-    {
-        question: 'Que deviennent mes données après résiliation ?',
-        answer: 'Elles restent consultables et exportables. Seules les fonctionnalités Premium passent en lecture seule.'
+        title: 'Suivre',
+        text: 'Décision de taxation, écarts avec ce que vous aviez déclaré, acomptes et solde : chaque tranche se rapproche de vos paiements, jusqu’au dossier soldé.'
     }
 ];
 
-/** FAQ en deux colonnes : chaque colonne est un accordéon indépendant. */
-const faqColumns = [faqs.slice(0, Math.ceil(faqs.length / 2)), faqs.slice(Math.ceil(faqs.length / 2))];
+/** Les statuts d’un dossier, dans l’ordre où il les traverse. */
+const taxStatuses = ['En cours', 'Prête à recopier', 'Déposée', 'Taxée', 'Soldée'];
+
+/** Ce que le module propose à partir des données déjà saisies ; rien n’entre sans validation. */
+const taxSources = [
+    'Salaires',
+    'Placements et dividendes',
+    'Immeubles',
+    'Dettes et intérêts',
+    '3e pilier a',
+    'Primes d’assurance',
+    'Frais médicaux et remboursements',
+    'Frais de garde',
+    'Dons',
+    'Formation',
+    'Trajets domicile-travail',
+    'Pensions versées'
+];
+
+const taxExports = [
+    { label: 'Récapitulatif PDF', value: 'Dans l’ordre du formulaire, à recopier' },
+    { label: 'Justificatifs (ZIP)', value: 'Pièces numérotées, avec un sommaire' },
+    { label: 'Tableur (CSV)', value: 'Un montant par ligne' },
+    { label: 'Données (JSON)', value: 'Sauvegarde complète du dossier' }
+];
+
+/** Les limites, dites clairement : c’est un brouillon de travail. */
+const taxLimits = [
+    {
+        title: 'Aucun impôt calculé',
+        text: 'Spend.Up additionne vos montants et les compare à la décision reçue. Le calcul reste celui du canton.'
+    },
+    { title: 'Rien n’est transmis', text: 'Aucun envoi à l’administration : vous recopiez vous-même dans le logiciel officiel.' },
+    {
+        title: 'Rien sans votre accord',
+        text: 'Une proposition ne compte qu’une fois acceptée, et une dépense qu’une fois sa nature confirmée.'
+    }
+];
+
+/** Ce que recouvre l’hébergement : faits vérifiables, sans répéter le mot « Suisse ». */
+const swissFacts = [
+    { label: 'Ce qui est hébergé', value: 'Comptes, transactions, documents et sauvegardes' },
+    { label: 'L’hébergeur', value: 'Infomaniak, indépendant, fondé à Genève en 1994' },
+    { label: 'Le cadre légal', value: 'Loi fédérale sur la protection des données (nLPD)' },
+    { label: 'À l’étranger', value: 'Aucune copie, aucun cloud tiers' }
+];
+
+/** Sans connexion bancaire : la contrainte présentée comme un choix. */
+const trustFacts = [
+    { title: 'Aucun identifiant bancaire', text: 'Spend.Up ne peut ni consulter ni déplacer votre argent.' },
+    { title: 'Vous choisissez ce qui entre', text: 'Rien n’arrive dans votre espace sans votre import.' },
+    { title: 'Toutes les banques', text: 'Un export CSV ou Excel suffit, sans partenariat à attendre.' },
+    { title: '2FA incluse', text: 'Double authentification et gestion des appareils pour chaque compte.' }
+];
+
+/** Chiffrement : les trois couches décrites dans la cartographie du chiffrement de l’API. */
+const encryptionLayers = [
+    {
+        where: 'Sur votre appareil',
+        title: 'Données sensibles chiffrées',
+        text: showPricing
+            ? 'IBAN, numéros de compte et immatriculations, puis notes et documents PDF selon votre offre : chiffrés en AES-256 dans votre navigateur, avant tout envoi. La clé est dérivée de votre mot de passe et nos serveurs ne la reçoivent jamais en clair.'
+            : 'IBAN, numéros de compte, immatriculations et autres données sensibles : chiffrés en AES-256 dans votre navigateur, avant tout envoi. La clé est dérivée de votre mot de passe et nos serveurs ne la reçoivent jamais en clair.'
+    },
+    {
+        where: 'Entre vous et nous',
+        title: 'Connexion chiffrée',
+        text: 'Tous les échanges avec nos serveurs passent par une connexion HTTPS chiffrée. Vos données sensibles, déjà chiffrées sur votre appareil, voyagent ainsi sous deux couches de protection.'
+    },
+    {
+        where: 'Sur nos serveurs',
+        title: 'Base de données chiffrée',
+        text: 'L’ensemble de la base est chiffré au repos, sur le disque, dans les centres de données d’Infomaniak en Suisse. Un disque copié ou dérobé resterait illisible.'
+    },
+    {
+        where: 'Dans les sauvegardes',
+        title: 'Sauvegardes chiffrées',
+        text: 'Chaque sauvegarde est chiffrée avant d’être stockée. Vos données sensibles y sont copiées telles quelles, toujours chiffrées avec votre clé.'
+    }
+];
+
+const platforms = [
+    { label: 'Navigateur', value: 'Chrome, Edge, Firefox, Safari' },
+    { label: 'Smartphone', value: 'iPhone et Android, depuis le navigateur' },
+    { label: 'Ordinateur', value: 'Application Windows 10/11 · 64 bits' }
+];
+
+const demoPoints = [
+    { title: 'Un foyer déjà rempli', text: 'Sacha a des comptes, des transactions, des amis et un patrimoine.' },
+    { title: 'Vous pouvez modifier', text: 'Ajoutez une dépense, un budget ou un fichier : trois PDF au maximum.' },
+    {
+        title: 'Importez votre relevé',
+        text: 'Un CSV de votre banque, ou notre relevé d’exemple. Le fichier est lu dans votre navigateur et n’est jamais envoyé à nos serveurs.'
+    },
+    { title: 'Rien n’est conservé', text: 'Rechargez la page ou réinitialisez pour retrouver l’exemple de départ.' }
+];
 </script>
 
 <template>
     <div class="home-page">
+        <!-- Hero : la promesse, un appel à l’action, le produit réel -->
         <section class="home-hero">
-            <v-container class="max-width-1218">
-                <v-row align="center">
-                    <v-col cols="12" lg="6" class="home-hero__copy">
-                        <v-chip color="primary" variant="tonal" rounded="pill" class="home-eyebrow su-hero-in">
-                            <KeyOffIcon size="15" class="me-2" />
-                            Sans connexion bancaire, par choix
-                        </v-chip>
-
-                        <h1 class="home-title textPrimary su-hero-in" style="--su-in-delay: 80ms">
-                            Votre carnet de bord financier,
-                            <span>alimenté par vos relevés.</span>
+            <div class="s-container">
+                <div class="s-grid home-hero__grid">
+                    <div class="home-hero__copy">
+                        <h1 class="s-display su-hero-in">
+                            La future plateforme de gestion&nbsp;financière
+                            <span class="s-primary">100&#8239;%&nbsp;Suisse.<SwissFlag class="home-hero__flag" /></span>
                         </h1>
-
-                        <p class="home-subtitle text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
-                            Importez les relevés de votre banque, joignez vos justificatifs : Spend.Up classe, relie et transforme votre
-                            historique en budgets, objectifs et décisions. Sans jamais accéder à vos comptes.
+                        <p class="s-lead su-hero-in" style="--su-in-delay: 120ms">
+                            Spend.Up centralise toute votre vie financière au même endroit : comptes, budgets, objectifs et patrimoine. Sans
+                            jamais accéder à vos comptes bancaires.
                         </p>
-
-                        <div class="home-hero__actions su-hero-in" style="--su-in-delay: 240ms">
-                            <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth?tab=register">
+                        <div class="s-actions su-hero-in" style="--su-in-delay: 180ms">
+                            <v-btn color="primary" size="x-large" flat class="text-none" to="/auth?tab=register">
                                 Commencer gratuitement
-                                <ArrowRightIcon size="19" class="ms-2" />
+                                <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>
-                            <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-7" to="/fonctionnalites">
-                                Découvrir Spend.Up
-                            </v-btn>
+                            <v-btn variant="outlined" size="x-large" flat class="text-none" to="/demo">Essayer la démo</v-btn>
+                            <RouterLink to="/fonctionnalites" class="home-link">Voir les fonctionnalités</RouterLink>
                         </div>
-
-                        <div class="home-hero__reassurance su-hero-in" style="--su-in-delay: 320ms">
-                            <span><CheckIcon size="16" /> Aucun identifiant bancaire</span>
-                            <span><CheckIcon size="16" /> Gratuit pour commencer</span>
-                            <span><CheckIcon size="16" /> Données en Suisse</span>
-                        </div>
-                    </v-col>
-
-                    <v-col cols="12" lg="6" class="mt-12 mt-lg-0">
-                        <div class="hero-product su-hero-visual-in">
-                            <div class="hero-product__glow"></div>
-                            <div class="hero-product__window">
-                                <div class="hero-product__bar">
-                                    <span></span><span></span><span></span>
-                                    <div class="hero-product__label">Tableau de bord Spend.Up</div>
-                                </div>
-                                <img
-                                    :src="heroVisual"
-                                    alt="Aperçu du tableau de bord Spend.Up"
-                                    class="hero-product__image"
-                                    width="1024"
-                                    height="505"
-                                />
-                            </div>
-                            <div class="hero-float hero-float--security su-float-soft">
-                                <ShieldCheckIcon size="21" />
-                                <div><strong>100 % Suisse</strong><small>Vos données sont protégées</small></div>
-                            </div>
-                            <div class="hero-float hero-float--overview su-float-soft" style="--su-float-delay: 1.4s">
-                                <FileImportIcon size="21" />
-                                <div><strong>Relevé importé</strong><small>CSV, Excel &amp; justificatifs PDF</small></div>
-                            </div>
-                        </div>
-                    </v-col>
-                </v-row>
-            </v-container>
-        </section>
-
-        <section class="trust-strip">
-            <v-container class="max-width-1218">
-                <div v-reveal class="trust-strip__grid" data-reveal-stagger="70">
-                    <div>
-                        <strong>{{ spendupDomainNames.length }}</strong
-                        ><span>domaines métiers réunis</span>
+                        <p class="home-hero__note su-hero-in" style="--su-in-delay: 240ms">
+                            Sans connexion bancaire · Web, smartphone et Windows
+                        </p>
                     </div>
-                    <div><strong>100 %</strong><span>des données en Suisse</span></div>
-                    <div><strong>2FA</strong><span>incluse pour chaque compte</span></div>
-                    <div><strong>0</strong><span>accès à vos comptes bancaires</span></div>
+
+                    <div class="home-hero__visual su-hero-visual-in" style="--su-in-delay: 160ms">
+                        <!-- Mobile : la capture smartphone seule, lisible (même fichier que le téléphone, déjà en cache) -->
+                        <picture>
+                            <source media="(max-width: 599px)" :srcset="`${SHOTS}/mobile-dashboard.webp`" width="780" height="1688" />
+                            <img
+                                class="home-hero__desktop"
+                                :src="`${SHOTS}/dashboard.webp`"
+                                alt="Tableau de bord Spend.Up : solde visible, revenus et dépenses du mois, dépenses par catégorie et comptes"
+                                width="2160"
+                                height="1350"
+                                fetchpriority="high"
+                            />
+                        </picture>
+                        <img
+                            class="home-hero__phone"
+                            :src="`${SHOTS}/mobile-dashboard.webp`"
+                            alt="Le même tableau de bord sur smartphone"
+                            width="780"
+                            height="1688"
+                        />
+                    </div>
                 </div>
-            </v-container>
+            </div>
         </section>
 
-        <section id="hebergement" class="home-hosting">
-            <v-container class="max-width-1218">
-                <div v-reveal class="section-heading">
-                    <span class="section-kicker">Hébergement souverain</span>
-                    <h2 class="textPrimary">Vos données restent en Suisse,<br /><span>chez Infomaniak.</span></h2>
-                    <p class="text-medium-emphasis">
-                        Spend.Up confie l’hébergement de vos données à Infomaniak, un hébergeur cloud suisse reconnu. Pas de détour par
-                        l’étranger : vos finances restent là où vous vivez.
-                    </p>
-                </div>
+        <!-- 01 : tout est en Suisse — l’argument mis en avant en premier -->
+        <section id="hebergement" class="s-section home-swiss">
+            <div class="s-container">
+                <div v-reveal class="s-grid swiss">
+                    <div class="swiss__intro">
+                        <span class="s-kicker"><b>01</b> Hébergement</span>
+                        <h2 class="s-h2">Vos données restent en Suisse, <span class="s-primary">chez Infomaniak.</span></h2>
+                        <p>Absolument tout, sans exception.</p>
+                        <div class="swiss__brand">
+                            <SwissFlag class="swiss__flag" />
+                            <img :src="infomaniakLogo" alt="Infomaniak" width="244" height="32" />
+                            <a href="https://www.infomaniak.com" target="_blank" rel="noopener noreferrer" class="home-link">
+                                infomaniak.com <ExternalLinkIcon size="14" />
+                            </a>
+                        </div>
+                    </div>
 
-                <div v-reveal class="hosting-panel">
-                    <div class="hosting-card">
-                        <span class="hosting-card__label">Hébergé par</span>
-                        <img :src="infomaniakLogo" alt="Infomaniak" class="hosting-card__logo" width="244" height="32" />
-                        <div class="hosting-card__place">
-                            <svg viewBox="0 0 32 32" aria-hidden="true">
-                                <rect width="32" height="32" rx="7" fill="#DA291C" />
-                                <rect x="13" y="6" width="6" height="20" fill="#FFFFFF" />
-                                <rect x="6" y="13" width="20" height="6" fill="#FFFFFF" />
-                            </svg>
+                    <ul class="swiss__facts">
+                        <li v-for="fact in swissFacts" :key="fact.label">
                             <div>
-                                <strong>Centres de données en Suisse</strong>
-                                <small><MapPinIcon size="13" /> Genève, Suisse</small>
+                                <span>{{ fact.label }}</span>
+                                <strong>{{ fact.value }}</strong>
                             </div>
-                        </div>
-                        <ul class="hosting-card__scope" aria-label="Données hébergées en Suisse">
-                            <li v-for="item in hostingScope" :key="item"><CheckIcon size="14" stroke-width="2.4" />{{ item }}</li>
-                        </ul>
-                    </div>
-
-                    <ul v-reveal class="hosting-facts" data-reveal-stagger="90">
-                        <li v-for="fact in hostingFacts" :key="fact.title" class="hosting-fact">
-                            <span class="hosting-fact__icon">
-                                <component :is="fact.icon" size="21" stroke-width="1.65" />
-                            </span>
-                            <h3 class="textPrimary">{{ fact.title }}</h3>
-                            <p class="text-medium-emphasis">{{ fact.text }}</p>
                         </li>
                     </ul>
                 </div>
-            </v-container>
+            </div>
         </section>
 
-        <section id="comment-ca-marche" class="home-steps">
-            <v-container class="max-width-1218">
-                <div v-reveal class="steps-intro">
-                    <div class="steps-intro__copy">
-                        <span class="section-kicker">Comment ça marche</span>
-                        <h2 class="textPrimary">Trois étapes pour y voir clair</h2>
-                        <p class="text-medium-emphasis">
-                            Un relevé exporté depuis votre e-banking suffit pour démarrer. Chaque import nourrit ensuite les
-                            <strong>{{ spendupDomainNames.length }} domaines métiers</strong> de votre carnet de bord.
+        <!-- 02 : données sensibles chiffrées dans le navigateur (Coffre) -->
+        <section id="chiffrement" class="s-section home-encryption">
+            <div class="s-container">
+                <div v-reveal class="s-grid encryption">
+                    <div class="encryption__intro">
+                        <span class="s-kicker"><b>02</b> Chiffrement</span>
+                        <h2 class="s-h2">Vos données sensibles, <span class="s-primary">illisibles même pour nous.</span></h2>
+                        <p>
+                            Vos informations les plus sensibles sont chiffrées dans votre navigateur, avec une clé que nos serveurs ne
+                            possèdent pas. Personne d’autre que vous ne peut les lire, pas même un administrateur.
                         </p>
-                        <v-btn variant="text" color="primary" class="text-none px-0" to="/fonctionnalites">
-                            Découvrir toutes les fonctionnalités
-                            <ArrowRightIcon size="17" class="ms-2" />
-                        </v-btn>
+                        <RouterLink to="/protection-des-donnees" class="home-link">
+                            Tout savoir sur la protection des données <ArrowRightIcon size="14" />
+                        </RouterLink>
                     </div>
-                    <div class="steps-intro__visual">
-                        <HubScene />
-                    </div>
-                </div>
 
-                <ol v-reveal class="steps-grid" data-reveal-stagger="120">
-                    <li v-for="(step, index) in steps" :key="step.title" class="step-card">
-                        <div class="step-card__head">
-                            <span class="step-card__index">0{{ index + 1 }}</span>
-                            <div class="step-card__icon">
-                                <component :is="step.icon" size="23" stroke-width="1.6" />
-                            </div>
-                        </div>
-                        <h3 class="textPrimary">{{ step.title }}</h3>
-                        <p class="text-medium-emphasis">{{ step.text }}</p>
-                        <span class="step-card__meta">{{ step.meta }}</span>
+                    <ol class="encryption__layers">
+                        <li v-for="layer in encryptionLayers" :key="layer.where">
+                            <LockIcon size="20" stroke-width="1.8" class="encryption__icon" />
+                            <span>{{ layer.where }}</span>
+                            <h3>{{ layer.title }}</h3>
+                            <p>{{ layer.text }}</p>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- 03 : ce que vous en tirez, trois captures smartphone -->
+        <section id="benefices" class="s-section home-benefits">
+            <div class="s-container">
+                <header v-reveal class="home-head">
+                    <span class="s-kicker"><b>03</b> Ce que vous en tirez</span>
+                    <h2 class="s-h2">Une vue claire, aujourd’hui et pour la suite.</h2>
+                </header>
+
+                <ol v-reveal class="benefits" data-reveal-stagger="100">
+                    <li v-for="(benefit, index) in benefits" :key="benefit.title">
+                        <span class="benefits__index">{{ String(index + 1).padStart(2, '0') }}</span>
+                        <h3>{{ benefit.title }}</h3>
+                        <p>{{ benefit.text }}</p>
+                        <img :src="`${SHOTS}/${benefit.shot}`" :alt="benefit.alt" width="780" height="1688" loading="lazy" />
                     </li>
                 </ol>
-            </v-container>
+            </div>
         </section>
 
-        <section id="sans-connexion-bancaire" class="home-features">
-            <v-container class="max-width-1218">
-                <div v-reveal class="section-heading">
-                    <span class="section-kicker">Sans connexion bancaire</span>
-                    <h2 class="textPrimary">Spend.Up ne se connecte pas à votre banque.<br /><span>Et c’est voulu.</span></h2>
-                    <p class="text-medium-emphasis">
-                        Pas d’identifiants à confier, pas d’accès permanent à vos comptes. Vous gardez la main sur ce qui entre dans votre
-                        espace, Spend.Up se charge de le rendre lisible.
+        <!-- 04 : trois étapes, une ligne chacune -->
+        <section id="comment-ca-marche" class="s-section home-steps">
+            <div class="s-container">
+                <div class="s-grid how">
+                    <div v-reveal class="how__intro">
+                        <span class="s-kicker"><b>04</b> Comment ça marche</span>
+                        <h2 class="s-h2">Prêt en trois étapes.</h2>
+                        <p>
+                            Aucune connexion bancaire à configurer, aucun partenariat à attendre : les fichiers de votre e-banking
+                            suffisent.
+                        </p>
+                    </div>
+
+                    <ol v-reveal class="steps" data-reveal-stagger="100">
+                        <li v-for="(step, index) in steps" :key="step.title">
+                            <span class="steps__number">{{ index + 1 }}</span>
+                            <h3>{{ step.title }}</h3>
+                            <p>{{ step.text }}</p>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- 05 : impôts — le parcours d’un dossier, ce qui est proposé, ce qui sort, et les limites -->
+        <section id="impots" class="s-section home-tax">
+            <div class="s-container">
+                <header v-reveal class="home-head home-head--lead">
+                    <span class="s-kicker"><b>05</b> Impôts</span>
+                    <h2 class="s-h2">Votre déclaration d’impôts, <span class="s-primary">préparée toute l’année.</span></h2>
+                    <p>
+                        Ce que vous suivez déjà dans Spend.Up devient un brouillon de déclaration, par année et pour les 26 cantons. Vous
+                        validez chaque montant, puis vous le recopiez dans le logiciel officiel.
                     </p>
+                </header>
+
+                <ol v-reveal class="tax-phases" data-reveal-stagger="100">
+                    <li v-for="(phase, index) in taxPhases" :key="phase.title">
+                        <span class="tax-phases__number">{{ index + 1 }}</span>
+                        <h3>{{ phase.title }}</h3>
+                        <p>{{ phase.text }}</p>
+                    </li>
+                </ol>
+
+                <div v-reveal class="tax-status">
+                    <span class="tax-status__label">Le statut de chaque dossier</span>
+                    <ol>
+                        <li v-for="status in taxStatuses" :key="status">{{ status }}</li>
+                    </ol>
                 </div>
 
-                <ul v-reveal class="feature-grid" data-reveal-stagger="80">
-                    <li v-for="reason in noBankLinkReasons" :key="reason.title" class="feature-card">
-                        <div class="feature-card__icon">
-                            <component :is="reason.icon" size="23" stroke-width="1.65" />
-                        </div>
-                        <h3 class="textPrimary">{{ reason.title }}</h3>
-                        <p class="text-medium-emphasis">{{ reason.text }}</p>
-                    </li>
-                </ul>
+                <div v-reveal class="s-grid tax-detail">
+                    <div class="tax-detail__sources">
+                        <h3>Proposé à partir de vos données</h3>
+                        <p>
+                            Vos opérations, vos assurances et votre patrimoine alimentent des propositions, ligne par ligne. Les pièces déjà
+                            jointes à une transaction se rangent d’un geste sur la bonne ligne.
+                        </p>
+                        <ul>
+                            <li v-for="source in taxSources" :key="source">{{ source }}</li>
+                        </ul>
+                    </div>
 
-                <p v-reveal class="home-features__note text-medium-emphasis">
-                    Vos soldes sont à jour de votre dernier import : importez chaque semaine ou chaque mois, à votre rythme.
-                </p>
-            </v-container>
+                    <div class="tax-detail__exports">
+                        <h3>Ce que vous emportez</h3>
+                        <dl>
+                            <div v-for="item in taxExports" :key="item.label">
+                                <dt>{{ item.label }}</dt>
+                                <dd>{{ item.value }}</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <div v-reveal class="s-grid tax-note">
+                    <div class="tax-note__copy">
+                        <h3>Un brouillon de travail, pas un logiciel officiel.</h3>
+                        <div class="s-actions">
+                            <v-btn color="white" size="large" flat class="text-none" to="/demo/analyses/impots">
+                                Essayer dans la démo
+                                <ArrowRightIcon size="18" class="ms-3" />
+                            </v-btn>
+                            <RouterLink to="/fonctionnalites#impots" class="tax-note__link">Voir le détail</RouterLink>
+                        </div>
+                    </div>
+                    <ul class="tax-note__limits">
+                        <li v-for="limit in taxLimits" :key="limit.title">
+                            <h4>{{ limit.title }}</h4>
+                            <p>{{ limit.text }}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </section>
 
-        <section class="home-anywhere">
-            <v-container class="max-width-1218">
-                <div v-reveal class="anywhere-panel">
-                    <div class="anywhere-panel__copy">
-                        <div class="feature-card__icon">
-                            <DeviceDesktopIcon size="25" stroke-width="1.65" />
-                        </div>
-                        <span class="section-kicker">Disponible partout</span>
-                        <h2 class="textPrimary">Votre espace financier vous suit, pas l’inverse.</h2>
-                        <p class="text-medium-emphasis">
-                            Consultez Spend.Up depuis votre navigateur ou installez l’application Windows : votre carnet de bord et vos
-                            justificatifs vous attendent sur chaque appareil.
-                        </p>
-                        <div class="anywhere-panel__actions">
+        <!-- 06 : sans connexion bancaire -->
+        <section id="sans-connexion-bancaire" class="s-section home-trust">
+            <div class="s-container">
+                <div v-reveal class="s-grid trust">
+                    <div class="trust__statement">
+                        <span class="s-kicker"><b>06</b> Sans connexion bancaire</span>
+                        <h2 class="s-h2">Spend.Up ne se connecte pas à votre banque. <span>Et c’est voulu.</span></h2>
+                    </div>
+
+                    <ul class="trust__facts">
+                        <li v-for="fact in trustFacts" :key="fact.title">
+                            <h3>{{ fact.title }}</h3>
+                            <p>{{ fact.text }}</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 07 : disponible partout, dont l’application de bureau -->
+        <section id="applications" class="s-section home-anywhere">
+            <div class="s-container">
+                <div v-reveal class="s-grid anywhere">
+                    <div class="anywhere__copy">
+                        <span class="s-kicker"><b>07</b> Disponible partout</span>
+                        <h2 class="s-h2">Sur le web, sur smartphone et sur votre ordinateur.</h2>
+                        <p>Vos données restent synchronisées d’un appareil à l’autre.</p>
+                        <div class="s-actions">
                             <v-btn color="primary" size="large" flat class="text-none" :href="windowsDownloadUrl" download>
-                                <BrandWindowsIcon size="19" class="me-2" />
+                                <BrandWindowsIcon size="18" class="me-2" />
                                 Télécharger pour Windows
                             </v-btn>
-                            <span><DownloadIcon size="15" /> Windows 10/11 · 64 bits</span>
+                            <RouterLink to="/app" class="home-link">Ouvrir l’application web</RouterLink>
                         </div>
                     </div>
-
-                    <div class="anywhere-panel__devices">
-                        <AnywhereScene />
-                    </div>
+                    <dl class="anywhere__platforms">
+                        <div v-for="platform in platforms" :key="platform.label">
+                            <dt>{{ platform.label }}</dt>
+                            <dd>{{ platform.value }}</dd>
+                        </div>
+                    </dl>
                 </div>
-            </v-container>
+            </div>
         </section>
 
-        <section id="questions" class="home-faq">
-            <v-container class="max-width-1218">
-                <div v-reveal class="section-heading">
-                    <span class="section-kicker">Questions fréquentes</span>
-                    <h2 class="textPrimary">Tout ce qu’il faut savoir avant de commencer</h2>
+        <!-- 08 : essayer sans créer de compte -->
+        <section id="essayer-la-demo" class="s-section home-demo">
+            <div class="s-container">
+                <div v-reveal class="s-grid demo">
+                    <div class="demo__copy">
+                        <span class="s-kicker"><b>08</b> Essayer la démo</span>
+                        <h2 class="s-h2">Parcourez Spend.Up avant de créer un compte.</h2>
+                        <p>
+                            Un foyer d’exemple est déjà rempli : comptes, transactions, budgets, récurrences et patrimoine. Vous pouvez y
+                            importer votre propre relevé. Rien n’est enregistré sur nos serveurs.
+                        </p>
+                        <div class="s-actions">
+                            <v-btn color="primary" size="x-large" flat class="text-none" to="/demo">
+                                Essayer la démo
+                                <ArrowRightIcon size="18" class="ms-3" />
+                            </v-btn>
+                        </div>
+                    </div>
+                    <ul class="demo__points">
+                        <li v-for="point in demoPoints" :key="point.title">
+                            <h3>{{ point.title }}</h3>
+                            <p>{{ point.text }}</p>
+                        </li>
+                    </ul>
                 </div>
-                <div v-reveal class="faq-columns">
-                    <v-expansion-panels v-for="(column, index) in faqColumns" :key="index" class="faq-list" elevation="0">
-                        <v-expansion-panel v-for="faq in column" :key="faq.question" class="faq-item" elevation="0">
-                            <v-expansion-panel-title>{{ faq.question }}</v-expansion-panel-title>
-                            <v-expansion-panel-text>{{ faq.answer }}</v-expansion-panel-text>
-                        </v-expansion-panel>
-                    </v-expansion-panels>
-                </div>
-            </v-container>
+            </div>
         </section>
 
-        <section id="commencer" class="home-final-cta">
-            <div class="home-final-cta__ring home-final-cta__ring--one" aria-hidden="true"></div>
-            <div class="home-final-cta__ring home-final-cta__ring--two" aria-hidden="true"></div>
-            <v-container class="max-width-1218">
-                <div v-reveal class="final-cta">
-                    <span class="section-kicker">Votre prochaine bonne décision financière</span>
-                    <h2 class="textPrimary">Commencez simplement.<br /><span>Évoluez à votre rythme.</span></h2>
-                    <p class="text-medium-emphasis">Créez votre espace gratuitement, sans carte bancaire et sans engagement.</p>
-                    <div class="home-final-cta__actions">
-                        <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
-                            Commencer gratuitement
-                            <ArrowRightIcon size="19" class="ms-2" />
-                        </v-btn>
-                        <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-8" to="/tarifs">Voir les tarifs</v-btn>
+        <!-- Appel final -->
+        <section id="commencer" class="home-final">
+            <div class="s-container">
+                <div v-reveal class="s-grid home-final__grid">
+                    <h2 class="home-final__title s-display">Commencez simplement. <span>Évoluez à votre rythme.</span></h2>
+                    <div class="home-final__side">
+                        <p>
+                            {{
+                                showPricing
+                                    ? 'Créez votre espace gratuitement, sans engagement.'
+                                    : 'Créez votre espace : il ne vous faut qu’une adresse e-mail.'
+                            }}
+                        </p>
+                        <div class="s-actions">
+                            <v-btn color="white" size="x-large" flat class="text-none" to="/auth?tab=register">
+                                Commencer gratuitement
+                                <ArrowRightIcon size="18" class="ms-3" />
+                            </v-btn>
+                            <RouterLink v-if="showPricing" to="/tarifs" class="home-final__link">Voir les tarifs</RouterLink>
+                        </div>
+                        <p class="home-final__meta">Version bêta : les données peuvent être réinitialisées pendant cette phase.</p>
                     </div>
-                    <div class="final-cta__reassurance">
-                        <span><CheckIcon size="16" /> Sans carte bancaire</span>
-                        <span><CheckIcon size="16" /> Sans engagement</span>
-                        <span><CheckIcon size="16" /> Données en Suisse</span>
-                    </div>
-                    <p class="final-cta__beta">
-                        <SparklesIcon size="15" />
-                        Spend.Up est en version bêta : les données peuvent être réinitialisées sans préavis pendant cette phase.
-                    </p>
                 </div>
-            </v-container>
+            </div>
         </section>
     </div>
 </template>

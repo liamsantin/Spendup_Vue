@@ -6,72 +6,88 @@ import ShellNavIcon from './ShellNavIcon.vue';
 import { useLinkTag } from '../composables/useLinkTag';
 import type { NavItem, NavLeaf as NavLeafType } from '../types/navigation';
 
+/**
+ * Rangée de section Swiss, même comportement que l'ancienne colonne : icône 16 px,
+ * libellé 14 px et chevron sur 40 px ; un clic déplie ses pages en accordéon (une
+ * seule section ouverte à la fois, arbitrée par le parent). Une section sans
+ * enfants (Tableau de bord) est un lien.
+ *
+ * Rail replié (`expanded = false`) : la rangée devient un carré de 40 px avec sa
+ * seule icône ; libellé, chevron et liste restent dans le DOM et s'effacent en
+ * opacité, pour que le repli glisse sans reconstruire la colonne. Un clic sur
+ * l'icône redéploie la colonne sur cette section.
+ */
 const props = defineProps<{
     item: NavItem;
-    /** L'onglet est celui qui est ouvert. */
+    /** Section dépliée. */
     open?: boolean;
-    /** Feuille sélectionnée, pour la surbrillance et le point du fil. */
+    /** Feuille sélectionnée. */
     activeId?: string | null;
-    /** La colonne est déployée : conditionne l'accessibilité, pas le style. */
+    /** Colonne déployée ; repliée, seule l'icône de section reste. */
     expanded?: boolean;
-    /** Rang dans la liste, pour l'entrée en cascade des libellés. */
     index?: number;
 }>();
 
 const emit = defineEmits<{
     toggle: [item: NavItem];
     select: [leaf: NavLeafType];
+    /** Clic sur l'icône de section du rail replié. */
+    tab: [item: NavItem];
 }>();
 
 const subId = useId();
+const compact = computed(() => props.expanded === false);
 const hasChildren = computed(() => !!props.item.children?.length);
-/** Un onglet à sous-menu reste un bouton : son rôle est de déplier, pas de naviguer. */
+/* replié, toutes les listes se ferment : seule l'icône de section reste visible */
+const isOpen = computed(() => hasChildren.value && !!props.open && !compact.value);
+const childActive = computed(() => !!props.item.children?.some((child) => child.id === props.activeId));
+const isCurrent = computed(() => childActive.value || props.activeId === props.item.id);
+/** Une section à sous-menu reste un bouton : son rôle est de déplier, pas de naviguer. */
 const { tag, attrs } = useLinkTag(
     () => props.item,
     () => hasChildren.value
 );
-/** Ni focusable ni annoncé tant que l'accordéon est fermé ou la colonne repliée. */
-const subHidden = computed(() => !props.expanded || !props.open || undefined);
+
+function onRowClick() {
+    if (compact.value) {
+        emit('tab', props.item);
+        return;
+    }
+    if (hasChildren.value) {
+        emit('toggle', props.item);
+        return;
+    }
+    if (!props.item.disabled) emit('select', props.item);
+}
 </script>
 
 <template>
-    <li class="nav__row" :style="{ '--i': index ?? 0 }">
+    <li class="group" :class="{ 'is-open': isOpen, 'is-compact': compact, 'is-muted': item.muted }">
         <component
             :is="tag"
             v-bind="attrs"
-            class="item"
-            :class="{ 'is-open': open, 'is-disabled': item.disabled, 'has-children': hasChildren }"
-            :title="expanded ? undefined : item.label"
-            :aria-expanded="hasChildren ? !!open : undefined"
+            class="row"
+            :class="{ 'is-current': isCurrent, 'is-disabled': item.disabled }"
+            :title="compact ? item.label : undefined"
+            :aria-label="compact ? item.label : undefined"
+            :aria-expanded="hasChildren && !compact ? isOpen : undefined"
             :aria-controls="hasChildren ? subId : undefined"
+            :aria-current="!hasChildren && isCurrent && !item.disabled ? 'page' : undefined"
             :aria-disabled="item.disabled ? 'true' : undefined"
-            @click="emit('toggle', item)"
+            @click="onRowClick"
         >
-            <span class="item__icon">
-                <ShellNavIcon :icon="item.icon" />
-                <span v-if="item.dot" class="item__dot" />
-            </span>
-            <span class="item__label">{{ item.label }}</span>
-            <span v-if="item.caption" class="item__caption">{{ item.caption }}</span>
-            <span v-else-if="item.badge" class="badge">{{ item.badge }}</span>
-            <span v-else-if="hasChildren" class="item__chev">
-                <BaseIcon :name="open ? 'minus' : 'plus'" :size="18" />
-            </span>
-            <span v-else-if="item.action" class="item__chev">
-                <BaseIcon :name="item.action" :size="18" />
-            </span>
+            <span class="row__icon"><ShellNavIcon :icon="item.icon" :size="compact ? 18 : 16" /></span>
+            <span class="row__label">{{ item.label }}</span>
+            <span v-if="item.badge" class="row__badge">{{ item.badge }}</span>
+            <span v-else-if="item.caption" class="row__caption">{{ item.caption }}</span>
+            <BaseIcon v-else-if="hasChildren" name="chevron-right" :size="14" class="row__chev" />
+            <span v-else-if="isCurrent" class="row__mark" aria-hidden="true" />
         </component>
 
-        <!-- sous-onglets : points sur le fil au repos, lignes une fois déployé -->
-        <div v-if="hasChildren" :id="subId" class="sub" :class="{ 'is-open': open }" :inert="subHidden" :aria-hidden="subHidden">
-            <ul class="sub__list">
-                <li
-                    v-for="(child, ci) in item.children"
-                    :key="child.id"
-                    class="sub__row"
-                    :class="{ 'is-active': activeId === child.id }"
-                    :style="{ '--i': ci }"
-                >
+        <!-- un seul enfant de grille : la hauteur 0fr se replie proprement -->
+        <div v-if="hasChildren" :id="subId" class="fold" :inert="!isOpen || undefined" :aria-hidden="!isOpen || undefined">
+            <ul class="fold__list">
+                <li v-for="child in item.children" :key="child.id">
                     <NavLeaf :leaf="child" :active="activeId === child.id" @select="emit('select', $event)" />
                 </li>
             </ul>
@@ -80,260 +96,227 @@ const subHidden = computed(() => !props.expanded || !props.open || undefined);
 </template>
 
 <style scoped>
-/* ── la ligne : bouton d'icône au repos, pilule pleine largeur déployée ── */
-.item {
-    appearance: none;
-    border: 0;
-    cursor: pointer;
-    width: 100%;
-    height: var(--slot);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 0;
-    overflow: hidden;
-    /* --radius-pill vaut --slot / 2 : cercle parfait tant que la ligne fait 44 px */
-    border-radius: var(--radius-pill);
-    background: transparent;
-    color: var(--ink-soft);
-    font: inherit;
-    font-size: 15px;
-    font-weight: 520;
-    letter-spacing: -0.01em;
-    text-align: left;
-    text-decoration: none;
-    transition:
-        background 0.42s var(--ease),
-        color 0.3s var(--ease),
-        box-shadow 0.42s var(--ease);
-}
-.item:hover {
-    color: var(--ink);
-    background: var(--surface-hover);
-    box-shadow: var(--shadow-hover);
-}
-.item.is-open {
-    background: rgb(var(--v-theme-primary));
-    color: #fff;
-    box-shadow: 0 14px 28px -16px rgba(var(--v-theme-primary), 0.7);
-}
-.item.is-disabled {
-    opacity: 0.55;
-}
-.item.is-disabled:hover {
-    color: var(--ink-soft);
-    background: transparent;
-    box-shadow: none;
-}
-/* replié, la ligne courante reste la pastille du rail */
-.sidebar:not(.is-expanded) .item.is-open {
-    background: rgba(var(--v-theme-primary), 0.14);
-    color: rgb(var(--v-theme-primary));
-    box-shadow: var(--shadow-pill);
-}
-
-.item__icon {
-    position: relative;
-    flex: none;
-    display: grid;
-    place-items: center;
-    width: var(--slot);
-    height: var(--slot);
-    /* les icônes rail gardent leur accent aligné sur la couleur du texte */
-    --rail-icon-tone-stroke: currentColor;
-    /* le survol ne joue que sur transform : l'icône grossit sans quitter son centre */
-    transition:
-        transform 0.35s var(--spring),
-        color 0.25s var(--ease);
-}
-.item__icon :deep(svg) {
-    display: block;
-    color: inherit;
-}
-.item:hover .item__icon {
-    transform: scale(1.08);
-}
-/*
- * Bold Duotone Solar : la grande surface = --solar-secondary-color,
- * les détails (moins de surface) = color / currentColor.
- * Au hover parent : primary sur la petite surface,
- * teinte du fond actif des enfants sur la grande.
- */
-.item.has-children:not(.is-open):hover .item__icon {
-    color: rgb(var(--v-theme-primary));
-    --solar-secondary-color: rgba(var(--v-theme-primary), 0.12);
-    --solar-secondary-opacity: 1;
-}
-.item__dot {
-    position: absolute;
-    top: 9px;
-    right: 10px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8);
-}
-
-/* libellé, badge et chevron n'apparaissent qu'une fois la place libérée */
-.item__label,
-.item__chev,
-.item__caption,
-.badge {
-    opacity: 0;
-    transition: opacity 0.42s var(--ease);
-}
-.is-expanded .item__label,
-.is-expanded .badge {
-    opacity: 1;
-    transition-delay: calc(var(--i) * 38ms + 90ms);
-}
-.is-expanded .item__caption {
-    opacity: 0.72;
-    transition-delay: calc(var(--i) * 38ms + 90ms);
-}
-.is-expanded .item__chev {
-    opacity: 0.45;
-    transition-delay: calc(var(--i) * 38ms + 90ms);
-}
-.is-expanded .item:hover .item__chev {
-    opacity: 0.9;
-}
-.is-expanded .item.is-open .item__chev {
-    opacity: 0.85;
-}
-
-.item__label {
-    flex: 1;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transform: translateX(-6px);
-    transition:
-        opacity 0.42s var(--ease),
-        transform 0.55s var(--ease);
-}
-.is-expanded .item__label {
-    transform: none;
-}
-/* le survol ne touche que l'icône : le libellé ne doit ni grossir ni bouger */
-
-.item__chev {
-    flex: none;
-    display: grid;
-    place-items: center;
-    margin-right: 14px;
-    transition:
-        opacity 0.42s var(--ease),
-        transform 0.45s var(--spring);
-}
-.item__caption {
-    flex: none;
-    margin-right: 14px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    color: inherit;
-}
-.item.is-open .item__chev {
-    transform: rotate(180deg);
-}
-
-.badge {
-    flex: none;
-    display: grid;
-    place-items: center;
-    min-width: 24px;
-    height: 24px;
-    margin-right: 14px;
-    padding: 0 7px;
-    border-radius: 12px;
-    background: rgb(var(--v-theme-primary));
-    color: #fff;
-    font-size: 12px;
-    font-weight: 600;
-}
-.item.is-open .badge {
-    background: var(--surface-raised);
-    color: var(--ink);
-}
-
-/* ── accordéon ─────────────────────────────────────────── */
-.sub {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.6s var(--ease);
-}
-.sub.is-open {
-    grid-template-rows: 1fr;
-}
-.sub__list {
-    position: relative;
-    overflow: hidden;
+.group {
     list-style: none;
     margin: 0;
-    padding: 0 0 0 26px;
-}
-/* le filet tombe pile sous le centre de l'icône parente */
-.sub__list::before {
-    content: '';
-    position: absolute;
-    left: calc(var(--slot) / 2);
-    top: 8px;
-    bottom: 14px;
-    width: 1px;
-    background: var(--thread);
-    transform: scaleY(0);
-    transform-origin: top;
-    transition: transform 0.6s var(--ease) 0.08s;
-}
-.sub.is-open .sub__list::before {
-    transform: scaleY(1);
+    padding: 0;
 }
 
-/* replié, chaque sous-onglet se résume à son point sur le fil */
-.sub__row {
+.group + .group {
+    transition: margin-top var(--dur-expand) var(--ease);
+}
+
+/* les rangées se suivent, séparées par un filet fin */
+.group + .group .row {
+    border-top-color: var(--line);
+}
+
+.row {
+    appearance: none;
     position: relative;
-}
-.sub__row::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: -6.5px;
-    width: 5px;
-    height: 5px;
-    margin-top: -2.5px;
-    border-radius: 50%;
-    background: var(--thread-node);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 40px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-top: 1px solid transparent;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.2;
+    text-align: left;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
     transition:
-        opacity 0.35s var(--ease),
-        background 0.3s,
-        box-shadow 0.3s;
+        padding-left var(--dur-expand) var(--ease),
+        border-color 0.2s var(--ease),
+        background 0.15s var(--ease),
+        color 0.15s var(--ease);
 }
-.sub__row.is-active::before {
-    background: rgb(var(--v-theme-primary));
-    box-shadow: 0 0 0 4px var(--hair);
+
+.row:hover {
+    background: var(--soft);
 }
-.is-expanded .sub__row::before {
+
+.row:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: -2px;
+}
+
+/* section de la page courante : graisse 700, icône bleue */
+.row.is-current {
+    font-weight: 700;
+}
+
+.row.is-current .row__icon {
+    color: var(--blue);
+}
+
+.row.is-disabled {
+    cursor: not-allowed;
+    color: var(--gray);
+}
+
+.row.is-disabled:hover {
+    background: transparent;
+}
+
+/* section annoncée : en retrait, en gris */
+.is-muted .row {
+    color: var(--gray);
+}
+
+.row__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    color: var(--ink-mute);
+    --rail-icon-tone-stroke: currentColor;
+    transition:
+        width var(--dur-expand) var(--ease),
+        height var(--dur-expand) var(--ease),
+        color 0.15s var(--ease);
+}
+
+.is-muted .row__icon {
+    color: var(--gray);
+}
+
+.row__icon :deep(svg) {
+    display: block;
+}
+
+.row__label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.row__caption {
+    flex: none;
+    color: var(--gray);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.row__chev {
+    flex: none;
+    color: var(--gray);
+    transition:
+        transform 0.2s var(--ease),
+        opacity 0.2s var(--ease);
+}
+
+.is-open .row__chev {
+    transform: rotate(90deg);
+}
+
+.row__badge {
+    flex: none;
+    display: grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: var(--blue);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.row__mark {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    background: var(--blue);
+}
+
+/* ce qui n'est pas l'icône s'efface au repli, et revient après l'élargissement */
+.row__label,
+.row__caption,
+.row__chev,
+.row__badge,
+.row__mark {
+    transition:
+        opacity 0.2s var(--ease) 0.1s,
+        visibility 0s linear 0s;
+}
+
+.fold {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition:
+        grid-template-rows 0.25s var(--ease),
+        opacity 0.2s var(--ease);
+}
+
+.is-open .fold {
+    grid-template-rows: 1fr;
+}
+
+/* pages de la section, en retrait de l'icône */
+.fold__list {
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 28px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ── rail replié : l'icône seule, en carré de 40 px, sans changer le DOM ── */
+.is-compact + .is-compact {
+    margin-top: 4px;
+}
+
+.is-compact .row {
+    /* (40 − 18) / 2 : l'icône est centrée dans le carré */
+    padding-left: 11px;
+    border-top-color: transparent;
+}
+
+.is-compact .row__icon {
+    width: 18px;
+    height: 18px;
+    color: var(--ink);
+}
+
+.is-compact .row.is-current .row__icon {
+    color: var(--blue);
+}
+
+.is-compact .row__label,
+.is-compact .row__caption,
+.is-compact .row__chev,
+.is-compact .row__badge,
+.is-compact .row__mark {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+        opacity 0.15s var(--ease),
+        visibility 0s linear 0.15s;
+}
+
+.is-compact .fold {
     opacity: 0;
 }
 
 @media (max-width: 767px) {
-    /* cible tactile */
-    .item {
-        height: 48px;
+    .row {
+        min-height: 46px;
+        font-size: 15px;
     }
-    /* pas d'état de survol au doigt */
-    .item:hover {
+    .row:hover {
         background: transparent;
-        box-shadow: none;
-    }
-    .item:hover .item__icon {
-        transform: none;
-    }
-    .item.is-open:hover {
-        background: rgb(var(--v-theme-primary));
     }
 }
 </style>

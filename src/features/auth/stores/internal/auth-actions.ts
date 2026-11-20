@@ -8,6 +8,8 @@ import { i18n } from '@/plugins/i18n';
 import { APP_HOME_ROUTE, type AuthSessionState } from '@/features/auth/stores/internal/auth-session';
 import type { AuthLogout } from '@/features/auth/stores/internal/auth-logout';
 import type { AuthProfile } from '@/features/auth/stores/internal/auth-profile';
+import { useVaultStore } from '@/features/vault/stores/vault-store';
+import type { VaultWrapRequest } from '@/features/vault/types';
 
 function t(key: string) {
     return i18n.global.t(key);
@@ -27,6 +29,7 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         twoFactorToken,
         pendingPassword,
         returnUrl,
+        returnUrlOwner,
         setPendingEmail,
         setPendingPassword,
         clearPendingRegistration,
@@ -83,10 +86,16 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         return 'ok';
     }
 
-    /** Navigue vers `returnUrl` sanitisé (ou l’accueil app). */
+    /**
+     * Navigue vers `returnUrl` sanitisé (ou l’accueil app). Un lien conservé pour un autre compte
+     * (re-login forcé de A, puis connexion de B dans le même onglet) est ignoré.
+     */
     async function navigateAfterLogin() {
-        const target = sanitizeReturnUrl(returnUrl.value, APP_HOME_ROUTE);
+        const owner = returnUrlOwner.value;
+        const sameAccount = !owner || owner === session.user.value?.userPublicId;
+        const target = sameAccount ? sanitizeReturnUrl(returnUrl.value, APP_HOME_ROUTE) : APP_HOME_ROUTE;
         returnUrl.value = null;
+        returnUrlOwner.value = null;
         await router.push(target);
     }
 
@@ -98,11 +107,30 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
     async function login(identifier: string, password: string) {
         const authSession = await authApi.login(identifier.trim(), password);
         const outcome = await applySession(authSession);
+        const vault = useVaultStore();
         if (outcome === '2fa') {
+            // Le Coffre s’ouvre après la validation du code : on garde le mot de passe en mémoire.
+            vault.rememberPassword(password);
             await router.push('/auth/two-step');
             return;
         }
+        await openVaultAfterLogin(password);
         await navigateAfterLogin();
+    }
+
+    /**
+     * Coffre silencieux : déballe la DEK avec le mot de passe (ou garde les clés préparées à
+     * l’inscription), puis lance la migration en arrière-plan. Ne bloque jamais la connexion.
+     * @param password Mot de passe saisi, ou `undefined` après la 2FA (gardé par le store).
+     */
+    async function openVaultAfterLogin(password?: string) {
+        const vault = useVaultStore();
+        try {
+            await vault.unlockWithPassword(password);
+        } catch {
+            // Coffre indisponible : l’app fonctionne en clair.
+        }
+        vault.startBackgroundMigration();
     }
 
     /**
@@ -116,6 +144,10 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
             await router.push('/auth/two-step');
             return;
         }
+        // Pas de mot de passe : clés déjà sur l’appareil, sinon la phrase de Coffre est demandée (hôte `/app`).
+        const vault = useVaultStore();
+        vault.startBackgroundMigration();
+        vault.requestPhraseUnlock();
         await navigateAfterLogin();
     }
 
@@ -130,15 +162,22 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         firstName?: string | null;
         name?: string | null;
     }) {
-        const result = await authApi.register(payload);
+        // Coffre silencieux : DEK et sel générés ici, DEK emballée par le mot de passe saisi.
+        const vault = useVaultStore();
+        const vaultSetup = await vault.prepareRegistration(payload.password);
+        let result: Awaited<ReturnType<typeof authApi.register>>;
+        try {
+            result = await authApi.register(vaultSetup ? { ...payload, vault: vaultSetup } : payload);
+        } catch (e: unknown) {
+            vault.discardRegistration();
+            throw e;
+        }
         if (result.email) {
             setPendingEmail(result.email);
             setPendingPassword(payload.password);
             // replace : le retour arrière ne ramène pas sur un formulaire d’inscription déjà consommé
-            await router.replace({
-                path: '/auth/confirm-email',
-                query: { email: result.email }
-            });
+            // Pas d’e-mail dans l’URL (historique, journaux de l’hébergeur) : le formulaire relit `pendingEmail`.
+            await router.replace('/auth/confirm-email');
             return { outcome: 'confirm-email' as const, result };
         }
         const identifier = result.username || payload.username || payload.email;
@@ -206,8 +245,8 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
      * @param token Token de reset.
      * @param newPassword Nouveau mot de passe.
      */
-    async function resetPassword(token: string, newPassword: string) {
-        await authApi.resetPassword(token, newPassword);
+    async function resetPassword(token: string, newPassword: string, vaultWrap?: VaultWrapRequest | null) {
+        await authApi.resetPassword(token, newPassword, vaultWrap);
         await goToLogin(t('auth.notices.passwordUpdated'));
     }
 
@@ -234,13 +273,14 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         setTokens(tokens);
         twoFactorToken.value = null;
         await fetchMe();
+        await openVaultAfterLogin();
         await navigateAfterLogin();
     }
 
     /** Démarre la configuration 2FA (QR / secret). */
-    async function setupTwoFactor() {
+    async function setupTwoFactor(stepUp?: StepUpProof) {
         const token = await requireAccessToken();
-        return authApi.setup2fa(token);
+        return authApi.setup2fa(token, stepUp);
     }
 
     /**
@@ -261,6 +301,30 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         const token = await requireAccessToken();
         await authApi.disable2fa(token, code);
         await fetchMe();
+    }
+
+    /** État du code d’assistance courant (actif, expiration, utilisé). */
+    async function getSupportCodeStatus() {
+        const token = await requireAccessToken();
+        return authApi.getSupportCodeStatus(token);
+    }
+
+    /** Génère un code d’assistance (montré une seule fois, remplace le précédent). */
+    async function generateSupportCode() {
+        const token = await requireAccessToken();
+        return authApi.generateSupportCode(token);
+    }
+
+    /** Accès techniques subis par l’utilisateur (page 1 = la plus récente). */
+    async function getAccessLog(page: number, pageSize: number) {
+        const token = await requireAccessToken();
+        return authApi.getAccessLog(page, pageSize, token);
+    }
+
+    /** Registre de transparence de l’opérateur. */
+    async function getTransparency() {
+        const token = await requireAccessToken();
+        return authApi.getTransparency(token);
     }
 
     /** Liste les appareils / sessions connus. */
@@ -313,6 +377,10 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         setupTwoFactor,
         enableTwoFactor,
         disableTwoFactor,
+        getSupportCodeStatus,
+        generateSupportCode,
+        getAccessLog,
+        getTransparency,
         listDevices,
         revokeDevice,
         setDeviceTrust,

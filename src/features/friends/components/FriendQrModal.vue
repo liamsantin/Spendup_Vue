@@ -107,19 +107,28 @@ watch(
                         {{ generate.qrError }}
                     </AppAlert>
                     <template v-else>
-                        <p class="text-body-2 text-medium-emphasis mb-0">{{ t('friendsPage.qr.showHint') }}</p>
-                        <v-img v-if="generate.qrDataUrl" :src="generate.qrDataUrl" width="240" height="240" class="friend-qr-panel__img" />
-                        <span v-else class="su-spin" />
-                        <div v-if="publicId" class="text-subtitle-1 font-weight-semibold">
-                            {{ t('friendsPage.qr.yourId', { id: publicId }) }}
+                        <p class="friend-qr-panel__hint">{{ t('friendsPage.qr.showHint') }}</p>
+                        <div class="friend-qr-panel__frame">
+                            <img
+                                v-if="generate.qrDataUrl"
+                                :src="generate.qrDataUrl"
+                                width="240"
+                                height="240"
+                                class="friend-qr-panel__img"
+                                :alt="t('friendsPage.qr.title')"
+                            />
+                            <span v-else class="su-spin" />
                         </div>
+                        <p v-if="publicId" class="friend-qr-panel__id">
+                            {{ t('friendsPage.qr.yourId', { id: publicId }) }}
+                        </p>
                     </template>
                 </div>
             </v-window-item>
 
             <v-window-item value="Add">
                 <div class="friend-qr-panel d-flex flex-column align-center ga-3 py-2">
-                    <p class="text-body-2 text-medium-emphasis text-center mb-0">{{ t('friendsPage.qr.scanHint') }}</p>
+                    <p class="friend-qr-panel__hint text-center">{{ t('friendsPage.qr.scanHint') }}</p>
 
                     <AppAlert v-if="scanError" type="warning" class="w-100">
                         {{ scanError }}
@@ -133,7 +142,7 @@ watch(
                     <div v-if="!cameraNeedsEnable || cameraStarting || scannerReady" class="friend-qr-scanner-wrap">
                         <div v-if="cameraStarting" class="friend-qr-scanner-loading">
                             <span class="su-spin" />
-                            <p class="text-body-2 text-medium-emphasis mb-0">{{ t('friendsPage.qr.enableCamera') }}…</p>
+                            <p>{{ t('friendsPage.qr.enableCamera') }}…</p>
                         </div>
                         <div
                             :id="scannerElementId"
@@ -153,12 +162,13 @@ watch(
 </template>
 
 <style scoped>
+/* onglets texte : actif = 700 souligné d’un trait 2 px noir, pas de pilule */
 .app-modal-tabs__toolbar {
     display: flex;
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    padding: 2px 24px 12px;
+    padding: 0 24px 12px;
     box-sizing: border-box;
 }
 
@@ -167,7 +177,7 @@ watch(
     flex-wrap: nowrap;
     justify-content: flex-start;
     align-items: center;
-    gap: 4px;
+    gap: 22px;
     width: 100%;
     max-width: 100%;
     min-width: 0;
@@ -190,38 +200,38 @@ watch(
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 8px;
     flex: 0 0 auto;
     min-width: 0;
-    height: 34px;
-    padding: 0 12px;
+    height: 40px;
+    padding: 0;
     border: 0;
-    border-radius: 17px;
+    border-radius: 0;
     background: transparent;
-    color: var(--ink-mute);
+    color: var(--gray);
     font: inherit;
-    font-size: 13.5px;
-    font-weight: 550;
-    letter-spacing: -0.01em;
+    font-size: 14px;
+    font-weight: 400;
     white-space: nowrap;
     cursor: pointer;
     transition:
-        color 0.25s var(--ease),
-        background 0.25s var(--ease),
-        box-shadow 0.3s var(--ease),
-        transform 0.35s var(--spring);
+        color 0.15s var(--ease),
+        box-shadow 0.15s var(--ease);
 }
 
 .app-modal-tabs__tab:hover:not(:disabled):not(.is-active) {
     color: var(--ink);
-    background: rgba(var(--v-theme-primary), 0.05);
 }
 
 .app-modal-tabs__tab.is-active {
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.12);
-    font-weight: 600;
-    box-shadow: none;
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: inset 0 -2px 0 var(--ink);
+}
+
+.app-modal-tabs__tab:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
 }
 
 .app-modal-tabs__tab:disabled {
@@ -231,11 +241,6 @@ watch(
 
 .app-modal-tabs__tab svg {
     flex: none;
-    opacity: 0.65;
-}
-
-.app-modal-tabs__tab.is-active svg {
-    opacity: 1;
 }
 
 .app-modal-tabs__label {
@@ -248,10 +253,35 @@ watch(
     min-height: 240px;
 }
 
-.friend-qr-panel__img {
-    border-radius: 16px;
-    overflow: hidden;
+.friend-qr-panel__hint {
+    margin: 0;
+    color: var(--gray);
+    font-size: 14px;
+    line-height: 1.45;
+}
+
+/* code QR dans un carré à cadre 1 px noir ; fond blanc conservé pour la lecture caméra */
+.friend-qr-panel__frame {
+    display: grid;
+    place-items: center;
+    width: 264px;
+    height: 264px;
+    padding: 12px;
+    border: 1px solid var(--ink);
     background: #fff;
+}
+
+.friend-qr-panel__img {
+    width: 240px;
+    height: 240px;
+}
+
+.friend-qr-panel__id {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
 }
 
 .friend-qr-scanner-wrap {
@@ -263,9 +293,9 @@ watch(
 .friend-qr-scanner {
     width: 100%;
     min-height: 240px;
-    border-radius: 16px;
+    border: 1px solid var(--ink);
     overflow: hidden;
-    background: rgba(var(--v-theme-on-surface), 0.06);
+    background: var(--soft);
 }
 
 .friend-qr-scanner-loading {
@@ -277,12 +307,17 @@ watch(
     align-items: center;
     justify-content: center;
     gap: 12px;
-    border-radius: 16px;
-    background: rgba(var(--v-theme-surface), 0.92);
+    background: var(--raise);
+}
+
+.friend-qr-scanner-loading p {
+    margin: 0;
+    color: var(--gray);
+    font-size: 14px;
 }
 
 .friend-qr-scanner :deep(video) {
+    display: block;
     width: 100%;
-    border-radius: 16px;
 }
 </style>

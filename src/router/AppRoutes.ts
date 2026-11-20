@@ -6,6 +6,7 @@
  *   dashboard / notifications → views/app/<page>/
  *   Paramètres               → views/app/parametres/
  *   Finances                 → views/app/finances/
+ *   Patrimoine               → views/app/patrimoine/
  */
 import type { RouteRecordRaw } from 'vue-router';
 import { SETTINGS_PATHS, resolveLegacySettingsRedirect } from '@/features/user-settings/settings-paths';
@@ -74,6 +75,16 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/finances/imports/AppImportDetailPage.vue')
         },
         {
+            name: 'AppRecurrenceExpenseDetail',
+            path: 'finances/recurrences/charges/:publicId',
+            component: () => import('@/views/app/finances/recurrences/AppRecurrenceDetailPage.vue')
+        },
+        {
+            name: 'AppRecurrenceIncomeDetail',
+            path: 'finances/recurrences/revenus/:publicId',
+            component: () => import('@/views/app/finances/recurrences/AppRecurrenceDetailPage.vue')
+        },
+        {
             name: 'AppRecurrencesCharges',
             path: 'finances/recurrences/charges',
             component: () => import('@/views/app/finances/recurrences/AppRecurrencesPage.vue')
@@ -110,7 +121,7 @@ const AppRoutes: RouteRecordRaw = {
         },
         {
             name: 'AppTiers',
-            path: 'gestion/tiers',
+            path: 'gestion/tiers/:publicId?',
             component: () => import('@/views/app/gestion/tiers/AppTiersPage.vue')
         },
         {
@@ -122,6 +133,46 @@ const AppRoutes: RouteRecordRaw = {
             name: 'AppSavingsGoals',
             path: 'planning/objectifs/:publicId?',
             component: () => import('@/views/app/planning/objectifs/AppSavingsGoalsPage.vue')
+        },
+        {
+            name: 'AppWealthOverview',
+            path: 'patrimoine',
+            component: () => import('@/views/app/patrimoine/AppWealthOverviewPage.vue')
+        },
+        {
+            name: 'AppAssets',
+            path: 'patrimoine/actifs/:publicId?',
+            component: () => import('@/views/app/patrimoine/actifs/AppAssetsPage.vue')
+        },
+        {
+            name: 'AppRealEstate',
+            path: 'patrimoine/immobilier/:publicId?',
+            component: () => import('@/views/app/patrimoine/immobilier/AppRealEstatePage.vue')
+        },
+        {
+            name: 'AppInvestments',
+            path: 'patrimoine/placements/:accountPublicId?',
+            component: () => import('@/views/app/patrimoine/placements/AppInvestmentsPage.vue')
+        },
+        {
+            name: 'AppPersonalLoans',
+            path: 'patrimoine/dettes/prets/:publicId?',
+            component: () => import('@/views/app/patrimoine/dettes/AppDebtsPage.vue')
+        },
+        {
+            name: 'AppSharedDebts',
+            path: 'patrimoine/dettes/amis/:publicId?',
+            component: () => import('@/views/app/patrimoine/dettes/AppDebtsPage.vue')
+        },
+        {
+            name: 'AppLiabilities',
+            path: 'patrimoine/dettes/:publicId?',
+            component: () => import('@/views/app/patrimoine/dettes/AppDebtsPage.vue')
+        },
+        {
+            name: 'AppTax',
+            path: 'analyses/impots/:publicId?',
+            component: () => import('@/views/app/analyses/AppTaxPage.vue')
         },
         {
             path: 'parametres',
@@ -151,6 +202,16 @@ const AppRoutes: RouteRecordRaw = {
             name: 'AppSettingsSecurity',
             path: 'parametres/securite',
             component: () => import('@/views/app/parametres/securite/AppSettingsSecurityPage.vue')
+        },
+        {
+            name: 'AppSecurityAccessLog',
+            path: 'parametres/securite/acces-techniques',
+            component: () => import('@/views/app/parametres/securite/AppSecurityAccessLogPage.vue')
+        },
+        {
+            name: 'AppSecurityTransparency',
+            path: 'parametres/securite/transparence',
+            component: () => import('@/views/app/parametres/securite/AppSecurityTransparencyPage.vue')
         },
         {
             name: 'AppSettingsSubscription',

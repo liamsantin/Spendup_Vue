@@ -93,8 +93,8 @@ async function onItemClick(item: AppNotification) {
                 </v-badge>
             </button>
         </template>
-        <v-sheet rounded="md" width="360" elevation="0" class="su-menu">
-            <div class="px-8 pb-4 pt-6">
+        <v-sheet rounded="0" width="380" elevation="0" class="su-menu">
+            <div class="px-4 pb-3 pt-3">
                 <div class="d-flex align-center justify-space-between">
                     <h6 class="text-h5">{{ t('header.notifications.title') }}</h6>
                     <div class="d-flex align-center ga-1">
@@ -157,11 +157,12 @@ async function onItemClick(item: AppNotification) {
 
 <style scoped>
 .header-notif-badge :deep(.v-badge__badge) {
-    background: rgb(var(--v-theme-primary)) !important;
+    background: var(--blue-btn) !important;
     color: #fff !important;
     border: 0;
-    box-shadow: 0 6px 14px -10px rgba(var(--v-theme-primary), 0.45);
-    font-weight: 600;
+    box-shadow: none;
+    font-weight: 700;
+    font-family: var(--font-ui);
 }
 
 .notification-dd__when {
@@ -199,10 +200,5 @@ async function onItemClick(item: AppNotification) {
 
 .notification-dd__view-all {
     width: 100%;
-    box-shadow: 0 8px 18px -14px rgba(var(--v-theme-primary), 0.35);
-}
-
-.notification-dd__view-all:hover {
-    box-shadow: 0 10px 22px -12px rgba(var(--v-theme-primary), 0.42);
 }
 </style>

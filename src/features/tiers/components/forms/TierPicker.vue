@@ -253,6 +253,7 @@ onUnmounted(() => {
     min-width: 0;
 }
 
+/* champ carré 42 px : bordure fine, focus noir sans halo */
 .tier-picker__control {
     appearance: none;
     display: flex;
@@ -260,45 +261,40 @@ onUnmounted(() => {
     justify-content: space-between;
     gap: 12px;
     width: 100%;
-    min-height: 48px;
-    padding: 0 14px 0 16px;
-    border: 1px solid var(--thread);
-    border-radius: var(--radius-field);
-    background: var(--surface-raised);
+    min-height: 42px;
+    padding: 0 12px 0 14px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--raise);
     color: var(--ink);
     font: inherit;
-    font-size: 0.875rem;
-    font-weight: 600;
-    line-height: 1.5;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.4;
     text-align: left;
     cursor: pointer;
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background 0.2s ease;
+    transition: border-color 0.15s var(--ease);
 }
 
 .tier-picker__control:hover:not(:disabled) {
-    background: var(--surface-hover);
-    border-color: rgba(var(--v-theme-primary), 0.3);
+    border-color: var(--gray);
 }
 
 .tier-picker__control:focus-visible,
 .tier-picker__control--open {
     outline: none;
-    border-color: rgba(var(--v-theme-primary), 0.55);
-    box-shadow: 0 0 0 3px rgba(var(--v-theme-primary), 0.1);
+    border-color: var(--ink);
+    box-shadow: none;
 }
 
 .tier-picker--error .tier-picker__control {
-    border-color: rgb(var(--v-theme-error));
+    border-color: var(--danger);
 }
 
 .tier-picker--disabled .tier-picker__control {
-    background: var(--hair);
-    color: var(--ink-muted);
+    background: var(--soft);
+    color: var(--gray);
     cursor: default;
-    opacity: 0.68;
 }
 
 .tier-picker__value {
@@ -308,14 +304,13 @@ onUnmounted(() => {
 }
 
 .tier-picker__value--empty {
-    color: var(--ink-muted);
-    font-weight: 500;
+    color: var(--gray);
 }
 
 .tier-picker__chevron {
     flex: none;
-    color: var(--ink-mute);
-    transition: transform 0.25s var(--ease);
+    color: var(--gray);
+    transition: transform 0.2s var(--ease);
 }
 
 .tier-picker__control--open .tier-picker__chevron {
@@ -327,25 +322,27 @@ onUnmounted(() => {
     max-width: 100%;
 }
 
+/* recherche de liste : simple ligne 1 px noire en bas */
 .tier-picker__search {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 6px 6px 2px;
-    padding: 0 10px;
-    height: 38px;
-    border: 1px solid var(--thread);
-    border-radius: 10px;
-    background: var(--surface);
+    margin: 6px 10px 4px;
+    padding: 0 2px;
+    height: 40px;
+    border: 0;
+    border-bottom: 1px solid var(--ink);
+    border-radius: 0;
+    background: transparent;
 }
 
 .tier-picker__search:focus-within {
-    border-color: rgba(var(--v-theme-primary), 0.45);
+    border-bottom-color: var(--blue-btn);
 }
 
 .tier-picker__search-icon {
     flex: none;
-    color: var(--ink-muted);
+    color: var(--gray);
 }
 
 .tier-picker__search-input {
@@ -357,11 +354,15 @@ onUnmounted(() => {
     background: none;
     color: var(--ink);
     font: inherit;
-    font-size: 0.85rem;
+    font-size: 14px;
 }
 
 .tier-picker__search-input::-webkit-search-cancel-button {
     display: none;
+}
+
+.tier-picker__search-input::placeholder {
+    color: var(--gray);
 }
 
 .tier-picker__option {
@@ -373,25 +374,25 @@ onUnmounted(() => {
 
 .tier-picker__option-nature {
     flex: none;
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: var(--ink-muted);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray);
 }
 
 .tier-picker__empty {
     padding: 10px 14px;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .tier-picker__details {
-    margin: 6px 16px 0;
-    font-size: 0.75rem;
+    margin: 6px 0 0;
+    font-size: 13px;
     line-height: 1.4;
-    color: var(--ink-muted);
+    color: var(--gray);
 }
 
 .tier-picker__details--error {
-    color: rgb(var(--v-theme-error));
+    color: var(--danger);
 }
 </style>

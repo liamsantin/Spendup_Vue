@@ -11,6 +11,7 @@
         "notification:default",
         "allow-oauth-loopback-wait",
         "allow-oauth-loopback-cancel",
-        "allow-google-exchange-code"
+        "allow-google-exchange-code",
+        "allow-local-files"
     ]
 }

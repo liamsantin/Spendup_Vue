@@ -99,7 +99,7 @@ async function onSave() {
         v-model="open"
         :title="t('filesPage.form.editTitle')"
         :subtitle="t('filesPage.form.subtitle')"
-        :max-width="480"
+        :max-width="560"
         :height="smAndDown ? 460 : undefined"
         :fixed-height="smAndDown"
         :scrollable="false"
@@ -109,28 +109,54 @@ async function onSave() {
             {{ localError.message }}
         </AppAlert>
 
-        <v-text-field
-            v-model="form.nameOriginal"
-            :label="t('filesPage.form.fields.nameOriginal')"
-            variant="outlined"
-            density="comfortable"
-            class="mb-3"
-            hide-details="auto"
-            :error="!!nameError.message"
-            :error-messages="nameError.message || undefined"
-        />
-        <div class="mb-3">
-            <AppDatePicker v-model="form.documentDate" :label="t('filesPage.form.fields.documentDate')" color="primary" hide-details />
+        <!-- lignes libellé 170 px | champ carré -->
+        <div class="file-edit-form">
+            <div class="file-edit-form__row">
+                <label class="file-edit-form__label" for="file-form-name">
+                    {{ t('filesPage.form.fields.nameOriginal') }} <span class="file-edit-form__req" aria-hidden="true">*</span>
+                </label>
+                <div class="file-edit-form__field">
+                    <v-text-field
+                        id="file-form-name"
+                        v-model="form.nameOriginal"
+                        variant="outlined"
+                        color="primary"
+                        hide-details="auto"
+                        autocomplete="off"
+                        :placeholder="t('filesPage.form.placeholders.nameOriginal')"
+                        :error="!!nameError.message"
+                        :error-messages="nameError.message || undefined"
+                    />
+                </div>
+            </div>
+            <div class="file-edit-form__row">
+                <label class="file-edit-form__label" for="file-form-date">{{ t('filesPage.form.fields.documentDate') }}</label>
+                <div class="file-edit-form__field">
+                    <AppDatePicker
+                        id="file-form-date"
+                        v-model="form.documentDate"
+                        color="primary"
+                        hide-details
+                        :placeholder="t('filesPage.form.placeholders.documentDate')"
+                    />
+                </div>
+            </div>
+            <div class="file-edit-form__row file-edit-form__row--top">
+                <label class="file-edit-form__label" for="file-form-description">{{ t('filesPage.form.fields.description') }}</label>
+                <div class="file-edit-form__field">
+                    <v-textarea
+                        id="file-form-description"
+                        v-model="form.description"
+                        variant="outlined"
+                        color="primary"
+                        hide-details="auto"
+                        rows="3"
+                        auto-grow
+                        :placeholder="t('filesPage.form.placeholders.description')"
+                    />
+                </div>
+            </div>
         </div>
-        <v-textarea
-            v-model="form.description"
-            :label="t('filesPage.form.fields.description')"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            rows="3"
-            auto-grow
-        />
 
         <template #footer="{ close }">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
@@ -142,3 +168,51 @@ async function onSave() {
         </template>
     </AppModalBase>
 </template>
+
+<style scoped>
+.file-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.file-edit-form__row {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 8px 16px;
+    align-items: center;
+}
+
+.file-edit-form__row--top {
+    align-items: start;
+}
+
+.file-edit-form__row--top .file-edit-form__label {
+    padding-top: 10px;
+}
+
+.file-edit-form__label {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.3;
+}
+
+.file-edit-form__req {
+    color: var(--blue-ink);
+}
+
+.file-edit-form__field {
+    min-width: 0;
+}
+
+@media (max-width: 599.98px) {
+    .file-edit-form__row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
+
+    .file-edit-form__row--top .file-edit-form__label {
+        padding-top: 0;
+    }
+}
+</style>

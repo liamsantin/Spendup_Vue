@@ -151,23 +151,37 @@ async function onConfirm() {
     linking.value = true;
     localError.value = null;
     const chosen = candidates.value.filter((item) => selectedIds.value.includes(item.publicId));
+    const nextGoalId = isUnlink.value ? '' : goal.publicId;
+    let changed = 0;
+    let firstError: string | null = null;
     try {
-        const nextGoalId = isUnlink.value ? '' : goal.publicId;
+        // chaque transaction séparément : un refus n'annule pas celles déjà liées, et ne bloque pas les suivantes
         for (const item of chosen) {
             const fields = transactionFormFieldsWithSavingsGoal(item, nextGoalId);
             if (!fields) continue;
-            await transactionsStore.updateTransaction(item.publicId, fields);
+            try {
+                await transactionsStore.updateTransaction(item.publicId, fields);
+                changed += 1;
+            } catch (e: unknown) {
+                const err = AppError.fromUnknown(e);
+                firstError ??= `${item.label} : ${err.status === 404 ? t('transactionsPage.errors.notFound') : getErrorMessage(e)}`;
+            }
         }
-        await savingsGoalsStore.fetchSavingsGoal(goal.publicId, true).catch(() => undefined);
-        emit('linked');
-        open.value = false;
-    } catch (e: unknown) {
-        const err = AppError.fromUnknown(e);
-        localError.value = err.status === 404 ? t('transactionsPage.errors.notFound') : getErrorMessage(e);
-        await loadCandidates();
     } finally {
+        // le montant épargné de la fiche suit ce qui a réellement été lié, même en cas d'échec partiel
+        if (changed > 0) {
+            await savingsGoalsStore.fetchSavingsGoal(goal.publicId, true).catch(() => undefined);
+            emit('linked');
+        }
         linking.value = false;
     }
+    if (!firstError) {
+        open.value = false;
+        return;
+    }
+    await loadCandidates();
+    // posé après le rechargement, qui remet l'erreur à zéro
+    localError.value = firstError;
 }
 </script>
 
@@ -200,9 +214,7 @@ async function onConfirm() {
         </label>
 
         <div class="goal-link-tx__toolbar">
-            <span class="text-caption text-medium-emphasis">
-                {{ t(`${i18nPrefix}.selected`, { count: selectedCount }, selectedCount) }}
-            </span>
+            <span>{{ t(`${i18nPrefix}.selected`, { count: selectedCount }, selectedCount) }}</span>
             <div class="d-flex ga-2">
                 <button type="button" class="su-btn su-btn--ghost" :disabled="linking || allVisibleSelected" @click="selectAllVisible">
                     {{ t(`${i18nPrefix}.selectAll`) }}
@@ -214,7 +226,7 @@ async function onConfirm() {
         </div>
 
         <div v-if="transactionsStore.loading && !candidates.length" class="su-loading"><span class="su-spin" /></div>
-        <p v-else-if="!visibleItems.length" class="text-medium-emphasis">
+        <p v-else-if="!visibleItems.length" class="goal-link-tx__empty">
             {{ search.trim() ? t(`${i18nPrefix}.emptyFiltered`) : t(`${i18nPrefix}.empty`) }}
         </p>
         <div v-else class="goal-link-tx__list" role="list">
@@ -247,7 +259,7 @@ async function onConfirm() {
         </div>
 
         <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="linking" @click="close">
+            <button type="button" class="su-btn" :disabled="linking" @click="close">
                 {{ t('common.cancel') }}
             </button>
             <button type="button" class="su-btn su-btn--ink" :disabled="linking || !selectedCount" @click="onConfirm">
@@ -263,13 +275,29 @@ async function onConfirm() {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
+    color: var(--gray);
+    font-size: 13px;
 }
 
+.goal-link-tx__toolbar .su-btn--ghost {
+    height: 32px;
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 13px;
+}
+
+.goal-link-tx__empty {
+    margin: 0;
+    color: var(--gray);
+    font-size: 14px;
+}
+
+/* lignes sur filets fins ; sélection = fond bleu pâle + filet gauche 2 px */
 .goal-link-tx__list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    border-top: 1px solid var(--line);
 }
 
 .goal-link-tx__row {
@@ -278,21 +306,42 @@ async function onConfirm() {
     align-items: center;
     gap: 10px;
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid transparent;
-    border-radius: 14px;
-    background: var(--surface-raised);
-    color: inherit;
+    min-height: 52px;
+    padding: 8px 8px 8px 4px;
+    border: 0;
+    border-top: 1px solid var(--line);
+    box-shadow: inset 2px 0 0 transparent;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
     text-align: left;
     cursor: pointer;
+    transition:
+        background 0.15s var(--ease),
+        box-shadow 0.15s var(--ease);
+}
+
+.goal-link-tx__list > .goal-link-tx__row:first-child {
+    border-top: 0;
 }
 
 .goal-link-tx__row:hover:not(:disabled) {
-    border-color: var(--thread);
+    background: var(--soft);
 }
 
 .goal-link-tx__row.is-selected {
-    border-color: rgb(var(--v-theme-primary));
+    background: var(--blue-soft);
+    box-shadow: inset 2px 0 0 var(--blue-btn);
+}
+
+.goal-link-tx__row:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: -2px;
+}
+
+.goal-link-tx__row:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .goal-link-tx__meta {
@@ -304,20 +353,20 @@ async function onConfirm() {
 }
 
 .goal-link-tx__name {
-    font-weight: 600;
+    font-weight: 700;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.goal-link-tx__sub,
-.goal-link-tx__amount {
-    font-size: 0.8125rem;
-    color: rgba(var(--v-theme-on-surface), 0.64);
+.goal-link-tx__sub {
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .goal-link-tx__amount {
     flex: 0 0 auto;
+    font-weight: 700;
     font-variant-numeric: tabular-nums;
 }
 </style>

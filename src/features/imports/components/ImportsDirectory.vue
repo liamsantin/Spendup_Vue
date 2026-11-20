@@ -10,6 +10,7 @@ import ImportListItem from '@/features/imports/components/list/ImportListItem.vu
 import { importDetailPath } from '@/features/imports/paths';
 import { useImportsStore } from '@/features/imports/stores/imports-store';
 import type { Import, ImportStatus } from '@/features/imports/types';
+import { demoActive } from '@/features/demo/session';
 
 const props = defineProps<{
     status?: ImportStatus | null;
@@ -100,7 +101,11 @@ async function confirmDelete() {
             <span class="su-spin" />
         </div>
         <div v-else-if="!store.items.length" class="su-empty">
-            <p>{{ filtered ? t('importsPage.empty.filtered') : t('importsPage.empty.list') }}</p>
+            <p>
+                {{
+                    filtered ? t('importsPage.empty.filtered') : demoActive ? t('importsPage.empty.listDemo') : t('importsPage.empty.list')
+                }}
+            </p>
         </div>
         <div v-else class="imports-directory__list">
             <ImportListItem
@@ -132,10 +137,15 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
+/* Historique : lignes à filet fin, la première fermée par un filet 2 px noir. */
 .imports-directory__list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
     width: 100%;
+    border-top: 1px solid var(--line);
+}
+
+.imports-directory__list > :first-child {
+    border-top: 0;
 }
 </style>

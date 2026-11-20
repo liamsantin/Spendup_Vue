@@ -20,7 +20,11 @@ import {
     parseBudgetChangedPayload,
     parseSavingsGoalChangedPayload,
     parseImportChangedPayload,
-    parseImportTemplateChangedPayload
+    parseImportTemplateChangedPayload,
+    parseAssetChangedPayload,
+    parseLiabilityChangedPayload,
+    parsePersonalLoanChangedPayload,
+    parseSharedDebtChangedPayload
 } from '@/features/notifications/normalize';
 import type {
     AppNotification,
@@ -37,7 +41,11 @@ import type {
     BudgetChangedPayload,
     SavingsGoalChangedPayload,
     ImportChangedPayload,
-    ImportTemplateChangedPayload
+    ImportTemplateChangedPayload,
+    AssetChangedPayload,
+    LiabilityChangedPayload,
+    PersonalLoanChangedPayload,
+    SharedDebtChangedPayload
 } from '@/features/notifications/types';
 import type { NotificationsState } from '@/features/notifications/stores/internal/notifications-state';
 import type { NotificationsNative } from '@/features/notifications/stores/internal/notifications-native';
@@ -74,6 +82,10 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         savingsGoalChangeListeners,
         importChangeListeners,
         importTemplateChangeListeners,
+        assetChangeListeners,
+        liabilityChangeListeners,
+        personalLoanChangeListeners,
+        sharedDebtChangeListeners,
         applyUnreadCount,
         upsertItem
     } = state;
@@ -81,6 +93,8 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
     const { pushLiveFriendChip, maybeShowNativeOsNotification, applyInboxCleared, fetchUnreadCount, loadInbox } = deps;
 
     let handlingSessionEnded = false;
+    /** Stores à resynchroniser après une coupure (amis, dettes, prêts…) : leurs événements ont pu être perdus. */
+    const resyncListeners = new Set<() => void>();
 
     /** Handler SignalR : notification reçue (badge, inbox, chips, OS). */
     function onNotificationReceived(payload: NotificationReceivedPayload) {
@@ -179,6 +193,34 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         importTemplateChangeListeners.forEach((listener) => listener(parsed));
     }
 
+    /** Live sans inbox : actifs patrimoniaux perso (acteur inclus). */
+    function onAssetChanged(payload: AssetChangedPayload) {
+        const parsed = parseAssetChangedPayload(payload);
+        if (!parsed) return;
+        assetChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /** Live sans inbox : passifs perso (acteur inclus). */
+    function onLiabilityChanged(payload: LiabilityChangedPayload) {
+        const parsed = parseLiabilityChangedPayload(payload);
+        if (!parsed) return;
+        liabilityChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /** Live sans inbox : prêts entre personnes perso (acteur inclus). */
+    function onPersonalLoanChanged(payload: PersonalLoanChangedPayload) {
+        const parsed = parsePersonalLoanChangedPayload(payload);
+        if (!parsed) return;
+        personalLoanChangeListeners.forEach((listener) => listener(parsed));
+    }
+
+    /** Live : dettes entre amis (créancier et débiteur ; l’inbox du débiteur arrive à part). */
+    function onSharedDebtChanged(payload: SharedDebtChangedPayload) {
+        const parsed = parseSharedDebtChangedPayload(payload);
+        if (!parsed) return;
+        sharedDebtChangeListeners.forEach((listener) => listener(parsed));
+    }
+
     /**
      * Rejoue un `accountChanged` pour la session courante : l’API ne l’envoie qu’aux **autres**
      * co-détenteurs (commit / revert d’import). Même fan-out que l’événement SignalR.
@@ -202,7 +244,26 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         if (state.inboxLoaded.value) {
             tasks.push(loadInbox({ page: 1, append: false }).catch(() => undefined));
         }
+        resyncListeners.forEach((listener) => {
+            try {
+                listener();
+            } catch {
+                // un store qui échoue n'empêche pas les autres de se resynchroniser
+            }
+        });
         await Promise.all(tasks);
+    }
+
+    /**
+     * Abonne un store à la resynchronisation après coupure du temps réel.
+     * @param listener Callback (refetch des listes chargées).
+     * @returns Fonction de désabonnement.
+     */
+    function subscribeToResync(listener: () => void) {
+        resyncListeners.add(listener);
+        return () => {
+            resyncListeners.delete(listener);
+        };
     }
 
     /**
@@ -364,6 +425,34 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         };
     }
 
+    function subscribeToAssetChanged(listener: (payload: AssetChangedPayload) => void) {
+        assetChangeListeners.add(listener);
+        return () => {
+            assetChangeListeners.delete(listener);
+        };
+    }
+
+    function subscribeToLiabilityChanged(listener: (payload: LiabilityChangedPayload) => void) {
+        liabilityChangeListeners.add(listener);
+        return () => {
+            liabilityChangeListeners.delete(listener);
+        };
+    }
+
+    function subscribeToPersonalLoanChanged(listener: (payload: PersonalLoanChangedPayload) => void) {
+        personalLoanChangeListeners.add(listener);
+        return () => {
+            personalLoanChangeListeners.delete(listener);
+        };
+    }
+
+    function subscribeToSharedDebtChanged(listener: (payload: SharedDebtChangedPayload) => void) {
+        sharedDebtChangeListeners.add(listener);
+        return () => {
+            sharedDebtChangeListeners.delete(listener);
+        };
+    }
+
     /** Branche les handlers SignalR sur le hub partagé. */
     function wireHubHandlers() {
         setNotificationsHubHandlers({
@@ -382,9 +471,16 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
             onSavingsGoalChanged,
             onImportChanged,
             onImportTemplateChanged,
+            onAssetChanged,
+            onLiabilityChanged,
+            onPersonalLoanChanged,
+            onSharedDebtChanged,
             onInboxCleared,
             onSessionEnded: (payload) => onSessionEnded(payload),
-            onReconnected
+            onReconnected,
+            onDisconnected: () => {
+                hubConnected.value = false;
+            }
         });
     }
 
@@ -424,6 +520,11 @@ export function createNotificationsHub(state: NotificationsState, deps: HubDeps)
         subscribeToSavingsGoalChanged,
         subscribeToImportChanged,
         subscribeToImportTemplateChanged,
+        subscribeToAssetChanged,
+        subscribeToLiabilityChanged,
+        subscribeToPersonalLoanChanged,
+        subscribeToSharedDebtChanged,
+        subscribeToResync,
         dispatchLocalAccountChanged
     };
 }

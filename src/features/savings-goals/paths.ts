@@ -1,3 +1,5 @@
+import { asAppPath } from '@/features/demo/session';
+
 export const SAVINGS_GOALS_BASE = '/app/planning/objectifs';
 
 export const SAVINGS_GOALS_PATHS = {
@@ -10,7 +12,7 @@ export function savingsGoalDetailPath(publicId: string): string {
 }
 
 export function savingsGoalPublicIdFromPath(path: string): string | null {
-    const trimmed = path.trim();
+    const trimmed = asAppPath(path);
     if (trimmed === SAVINGS_GOALS_BASE || trimmed === `${SAVINGS_GOALS_BASE}/`) return null;
     if (!trimmed.startsWith(`${SAVINGS_GOALS_BASE}/`)) return null;
     const rest = trimmed.slice(`${SAVINGS_GOALS_BASE}/`.length).split(/[/?#]/)[0] ?? '';

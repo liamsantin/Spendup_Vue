@@ -98,3 +98,23 @@ describe('recurring format', () => {
         expect(addMonthsYmd('2026-03-31', -1)).toBe('2026-02-28');
     });
 });
+
+describe('recurring presentation helpers', () => {
+    it('formate une date courte jour.mois', async () => {
+        const { formatShortDayMonth, dayOfYmd } = await import('@/features/recurring-payments/format');
+        expect(formatShortDayMonth('2026-11-25', 'fr-CH')).toBe('25.11');
+        expect(formatShortDayMonth('', 'fr-CH')).toBe('');
+        expect(dayOfYmd('2026-11-05')).toBe(5);
+        expect(dayOfYmd('nope')).toBeNull();
+    });
+
+    it('ramène une fréquence à un équivalent mensuel', async () => {
+        const { recurringMonthlyFactor } = await import('@/features/recurring-payments/format');
+        expect(recurringMonthlyFactor('mensuel')).toBe(1);
+        expect(recurringMonthlyFactor('mensuelle')).toBe(1);
+        expect(recurringMonthlyFactor('annuel')).toBeCloseTo(1 / 12);
+        expect(recurringMonthlyFactor('trimestrielle')).toBeCloseTo(1 / 3);
+        expect(recurringMonthlyFactor('hebdomadaire')).toBeCloseTo(52 / 12);
+        expect(recurringMonthlyFactor(undefined)).toBe(1);
+    });
+});

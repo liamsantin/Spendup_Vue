@@ -37,12 +37,14 @@ onMounted(() => {
             class="tag-chips__chip"
             :style="chip.color ? { '--tag-color': chip.color } : undefined"
         >
+            <span class="tag-chips__sq" aria-hidden="true" />
             {{ chip.name }}
         </span>
     </span>
 </template>
 
 <style scoped>
+/* Tags Swiss : carré gris bordé d'un filet, petit carré de la couleur du tag, texte gris. */
 .tag-chips {
     display: inline-flex;
     flex-wrap: wrap;
@@ -52,26 +54,37 @@ onMounted(() => {
 }
 
 .tag-chips__chip {
-    --tag-color: rgb(var(--v-theme-primary));
+    --tag-color: var(--gray);
     display: inline-flex;
     align-items: center;
-    max-width: 140px;
-    padding: 1px 8px;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--tag-color) 16%, transparent);
-    color: var(--tag-color);
-    font-size: 0.7rem;
-    font-weight: 650;
-    letter-spacing: 0.01em;
-    line-height: 1.4;
+    gap: 6px;
+    max-width: 160px;
+    height: 22px;
+    padding: 0 8px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--gray);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
+.tag-chips__sq {
+    flex: none;
+    width: 6px;
+    height: 6px;
+    background: var(--tag-color);
+}
+
 .tag-chips.is-compact .tag-chips__chip {
-    max-width: 110px;
+    max-width: 120px;
+    height: 20px;
     padding: 0 6px;
-    font-size: 0.65rem;
+    font-size: 11.5px;
 }
 </style>

@@ -1,12 +1,11 @@
 <script setup lang="ts">
 /**
- * Carte appareils de session — UI branchée sur `useSecurityDevices`
+ * Section appareils de session — UI branchée sur `useSecurityDevices`
  * (liste, confiance, révocation unitaire / globale, détails).
  */
 import { DeviceLaptopIcon, DeviceMobileIcon, DotsVerticalIcon } from 'vue-tabler-icons';
 import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
-import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { useSecurityDevices } from '@/features/user-settings/composables/useSecurityDevices';
@@ -24,97 +23,110 @@ const devices = useSecurityDevices({
 </script>
 
 <template>
-    <AppGlassCard :title="t('security.devices.title')" :subtitle="t('security.devices.subtitle')">
-        <template #icon>
-            <DeviceLaptopIcon :size="20" stroke-width="1.5" />
-        </template>
-        <template #actions>
+    <section class="su-settings security-devices">
+        <div class="su-settings__lead">
+            <h2>{{ t('security.devices.title') }}</h2>
+            <p>{{ t('security.devices.subtitle') }}</p>
             <button
                 type="button"
-                class="su-btn su-btn--danger"
+                class="su-btn su-btn--danger security-devices__revoke-all"
                 :disabled="devices.devicesLoading || devices.devices.length === 0 || devices.revokeAllLoading"
                 @click="devices.revokeAllOpen = true"
             >
                 {{ t('security.devices.revokeAll') }}
             </button>
-        </template>
-        <AppAlert v-if="devices.devicesError" type="error" class="su-alert" closable @dismiss="devices.devicesError = null">
-            {{ devices.devicesError }}
-        </AppAlert>
-
-        <div class="mt-2">
-            <div v-if="devices.devicesLoading" class="su-loading">
-                <span class="su-spin" />
-            </div>
-
-            <div v-else-if="devices.devices.length === 0" class="su-empty">
-                {{ t('security.devices.empty') }}
-            </div>
-
-            <template v-else>
-                <template v-for="(device, index) in devices.devices" :key="device.deviceIdentifier">
-                    <v-divider v-if="index > 0" />
-                    <div class="d-flex align-start my-4">
-                        <v-avatar size="30" rounded="md" color="surface" class="mt-1 flex-shrink-0">
-                            <DeviceMobileIcon v-if="devices.isMobileDevice(device)" size="25" />
-                            <DeviceLaptopIcon v-else size="25" />
-                        </v-avatar>
-                        <div class="ml-3 pr-2 flex-grow-1" style="min-width: 0">
-                            <div class="d-flex align-center flex-wrap ga-2 mb-2">
-                                <h6 class="text-h6 mb-0 text-truncate">
-                                    {{ device.deviceName || t('security.devices.fallbackName') }}
-                                </h6>
-                                <v-chip v-if="devices.isCurrentDevice(device)" size="x-small" color="primary" variant="tonal">
-                                    {{ t('security.devices.chips.current') }}
-                                </v-chip>
-                                <v-chip v-if="devices.isDeviceTrusted(device)" size="x-small" color="success" variant="tonal">
-                                    {{ t('security.devices.chips.trusted') }}
-                                </v-chip>
-                            </div>
-                            <div
-                                v-for="row in devices.deviceSummaryRows(device)"
-                                :key="`${device.deviceIdentifier}-${row.label}`"
-                                class="text-subtitle-2 text-medium-emphasis mb-1"
-                            >
-                                <span class="font-weight-medium textPrimary">{{ row.label }} :</span>
-                                {{ row.value }}
-                            </div>
-                        </div>
-                        <v-menu location="bottom end">
-                            <template #activator="{ props: menuProps }">
-                                <button
-                                    type="button"
-                                    class="su-orb"
-                                    v-bind="menuProps"
-                                    :disabled="
-                                        devices.revokeLoadingId === device.deviceIdentifier ||
-                                        devices.trustLoadingId === device.deviceIdentifier
-                                    "
-                                    :aria-label="t('common.more')"
-                                >
-                                    <DotsVerticalIcon :size="18" stroke-width="1.75" />
-                                </button>
-                            </template>
-                            <v-list density="compact" min-width="200">
-                                <v-list-item :title="t('security.devices.menu.viewDetails')" @click="devices.openDeviceDetails(device)" />
-                                <v-list-item
-                                    v-if="!devices.isDeviceTrusted(device)"
-                                    :title="t('security.devices.menu.trust')"
-                                    @click="devices.setDeviceTrust(device, true)"
-                                />
-                                <v-list-item
-                                    v-else
-                                    :title="t('security.devices.menu.untrust')"
-                                    @click="devices.setDeviceTrust(device, false)"
-                                />
-                                <v-list-item :title="t('security.devices.menu.disconnect')" @click="devices.openRevokeDevice(device)" />
-                            </v-list>
-                        </v-menu>
-                    </div>
-                </template>
-            </template>
         </div>
-    </AppGlassCard>
+        <div class="su-settings__fields">
+            <AppAlert v-if="devices.devicesError" type="error" class="is-full su-alert" closable @dismiss="devices.devicesError = null">
+                {{ devices.devicesError }}
+            </AppAlert>
+
+            <div class="is-full">
+                <div v-if="devices.devicesLoading" class="su-loading">
+                    <span class="su-spin" />
+                </div>
+
+                <div v-else-if="devices.devices.length === 0" class="su-empty">
+                    {{ t('security.devices.empty') }}
+                </div>
+
+                <!-- Lignes `su-person` : pictogramme dans un carré 36 px teinté, nom 700, sous-ligne grise, menu `su-orb`. -->
+                <div v-else class="security-devices__list">
+                    <div v-for="device in devices.devices" :key="device.deviceIdentifier" class="su-person security-devices__row">
+                        <span class="su-person__avatar su-person__avatar--tile">
+                            <DeviceMobileIcon v-if="devices.isMobileDevice(device)" :size="18" stroke-width="1.6" />
+                            <DeviceLaptopIcon v-else :size="18" stroke-width="1.6" />
+                        </span>
+                        <div class="su-person__meta">
+                            <p class="su-person__name">
+                                {{ device.deviceName || t('security.devices.fallbackName') }}
+                                <span
+                                    v-if="devices.isCurrentDevice(device)"
+                                    class="su-chip security-devices__chip"
+                                    style="--chip-color: var(--blue)"
+                                >
+                                    {{ t('security.devices.chips.current') }}
+                                </span>
+                                <span
+                                    v-if="devices.isDeviceTrusted(device)"
+                                    class="su-chip security-devices__chip"
+                                    style="--chip-color: var(--violet)"
+                                >
+                                    {{ t('security.devices.chips.trusted') }}
+                                </span>
+                            </p>
+                            <p class="su-person__sub">
+                                <template
+                                    v-for="(row, index) in devices.deviceSummaryRows(device)"
+                                    :key="`${device.deviceIdentifier}-${row.label}`"
+                                >
+                                    <template v-if="index > 0"> · </template>{{ row.label }} : {{ row.value }}
+                                </template>
+                            </p>
+                        </div>
+                        <div class="su-person__actions">
+                            <button type="button" class="su-btn su-btn--sm" @click="devices.openDeviceDetails(device)">
+                                {{ t('security.devices.menu.viewDetails') }}
+                            </button>
+                            <v-menu location="bottom end">
+                                <template #activator="{ props: menuProps }">
+                                    <button
+                                        type="button"
+                                        class="su-orb"
+                                        v-bind="menuProps"
+                                        :disabled="
+                                            devices.revokeLoadingId === device.deviceIdentifier ||
+                                            devices.trustLoadingId === device.deviceIdentifier
+                                        "
+                                        :aria-label="t('common.more')"
+                                    >
+                                        <DotsVerticalIcon :size="18" stroke-width="1.75" />
+                                    </button>
+                                </template>
+                                <v-list density="compact" min-width="220">
+                                    <v-list-item
+                                        :title="t('security.devices.menu.viewDetails')"
+                                        @click="devices.openDeviceDetails(device)"
+                                    />
+                                    <v-list-item
+                                        v-if="!devices.isDeviceTrusted(device)"
+                                        :title="t('security.devices.menu.trust')"
+                                        @click="devices.setDeviceTrust(device, true)"
+                                    />
+                                    <v-list-item
+                                        v-else
+                                        :title="t('security.devices.menu.untrust')"
+                                        @click="devices.setDeviceTrust(device, false)"
+                                    />
+                                    <v-list-item :title="t('security.devices.menu.disconnect')" @click="devices.openRevokeDevice(device)" />
+                                </v-list>
+                            </v-menu>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <AppConfirmationModal
         v-model="devices.revokeAllOpen"
@@ -153,15 +165,16 @@ const devices = useSecurityDevices({
         :height="520"
         @update:model-value="devices.onDetailsOpenChange"
     >
-        <div v-if="devices.detailsRows.length === 0" class="text-body-1 text-medium-emphasis">
+        <div v-if="devices.detailsRows.length === 0" class="security-devices__details-empty">
             {{ t('security.devices.details.empty') }}
         </div>
-        <div v-else class="d-flex flex-column ga-3">
-            <div v-for="row in devices.detailsRows" :key="row.label">
-                <div class="text-subtitle-2 text-medium-emphasis mb-1">{{ row.label }}</div>
-                <div class="text-body-1 text-break">{{ row.value }}</div>
+        <!-- Lignes libellé / valeur sur filets fins. -->
+        <dl v-else class="security-devices__details">
+            <div v-for="row in devices.detailsRows" :key="row.label" class="su-kv">
+                <dt>{{ row.label }}</dt>
+                <dd>{{ row.value }}</dd>
             </div>
-        </div>
+        </dl>
 
         <template #footer="{ close }">
             <button
@@ -186,3 +199,71 @@ const devices = useSecurityDevices({
         </template>
     </AppModalBase>
 </template>
+
+<style scoped>
+.security-devices__revoke-all {
+    margin-top: 16px;
+}
+
+.security-devices__list {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ligne statique (pas un bouton) : pas de curseur main */
+.security-devices__row {
+    cursor: default;
+}
+
+.security-devices__row:first-child {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.security-devices__row .su-person__name {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    white-space: normal;
+}
+
+.security-devices__chip {
+    height: auto;
+    font-size: 12.5px;
+}
+
+.security-devices__row .su-person__sub {
+    white-space: normal;
+}
+
+.security-devices__details {
+    margin: 0;
+}
+
+.security-devices__details dt,
+.security-devices__details dd {
+    margin: 0;
+}
+
+.security-devices__details dd {
+    overflow-wrap: anywhere;
+}
+
+.security-devices__details-empty {
+    color: var(--gray);
+    font-size: 14px;
+}
+
+@media (max-width: 767px) {
+    .security-devices__row {
+        flex-wrap: wrap;
+    }
+
+    .security-devices__row .su-person__actions {
+        width: 100%;
+        justify-content: flex-start;
+        padding-left: 50px;
+    }
+}
+</style>

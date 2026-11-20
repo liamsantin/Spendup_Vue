@@ -2,6 +2,7 @@ import { formatAccountBalance } from '@/features/accounts/format';
 import type { Currency } from '@/features/accounts/types';
 import { sanitizeTagPublicIds } from '@/features/tags/format';
 import { matchesSearchTokens } from '@/utils/helpers/text-search';
+import { todayInTimeZone } from '@/utils/helpers/today';
 import type { MovementSens, Transaction, TransactionFile, TransactionMovement, TransactionType } from '@/features/transactions/types';
 import { TRANSACTION_FILES_MAX } from '@/features/transactions/types';
 
@@ -33,6 +34,15 @@ export function isValidYmd(value: string | null | undefined): boolean {
 export function isOperationDateInFutureUtc(ymd: string, now = new Date()): boolean {
     if (!isValidYmd(ymd)) return false;
     return ymd.trim() > todayUtcYmd(now);
+}
+
+/**
+ * Date d'opération dans le futur, jugée dans le fuseau de l'utilisateur (règle de l'API) : en Suisse à 00h30
+ * le 20, le 20 est aujourd'hui, pas demain comme en UTC.
+ */
+export function isOperationDateInFuture(ymd: string, timeZone: string | null | undefined, now = new Date()): boolean {
+    if (!isValidYmd(ymd)) return false;
+    return ymd.trim() > todayInTimeZone(timeZone, now);
 }
 
 /**
@@ -230,6 +240,7 @@ export function normalizeTransaction(transaction: Transaction, previous?: Transa
         duePlannedAmount: source === 'recurrence' ? (readDuePlannedAmount(transaction) ?? previous?.duePlannedAmount ?? null) : null,
         files: normalizeTransactionFiles(transaction.files),
         savingsGoalPublicId: transaction.savingsGoalPublicId ?? null,
+        assetPublicId: transaction.assetPublicId?.trim() || null,
         tagPublicIds: sanitizeTagPublicIds(transaction.tagPublicIds)
     };
 }

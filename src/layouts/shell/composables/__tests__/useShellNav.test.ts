@@ -19,6 +19,14 @@ describe('idsFromPath', () => {
     });
 
     it('mappe les finances', () => {
+        expect(idsFromPath('/demo')).toEqual({
+            openId: SHELL_NAV_IDS.dashboard,
+            activeId: SHELL_NAV_IDS.dashboard
+        });
+        expect(idsFromPath('/demo/finances/comptes')).toEqual({
+            openId: SHELL_NAV_IDS.finances,
+            activeId: SHELL_NAV_IDS.accounts
+        });
         expect(idsFromPath('/app/finances/comptes')).toEqual({
             openId: SHELL_NAV_IDS.finances,
             activeId: SHELL_NAV_IDS.accounts
@@ -33,7 +41,7 @@ describe('idsFromPath', () => {
         });
     });
 
-    it('mappe les récurrences comme section principale', () => {
+    it('mappe les récurrences dans leur propre section', () => {
         expect(idsFromPath('/app/finances/recurrences')).toEqual({
             openId: SHELL_NAV_IDS.recurrences,
             activeId: SHELL_NAV_IDS.recurrencesOverview
@@ -60,6 +68,14 @@ describe('idsFromPath', () => {
         expect(idsFromPath('/app/friends/requests')).toEqual({
             openId: SHELL_NAV_IDS.network,
             activeId: SHELL_NAV_IDS.friends
+        });
+        expect(idsFromPath('/app/analyses/impots')).toEqual({
+            openId: SHELL_NAV_IDS.analytics,
+            activeId: SHELL_NAV_IDS.tax
+        });
+        expect(idsFromPath('/demo/analyses/impots/abc')).toEqual({
+            openId: SHELL_NAV_IDS.analytics,
+            activeId: SHELL_NAV_IDS.tax
         });
     });
 
@@ -140,6 +156,14 @@ describe('idsFromPath', () => {
         expect(idsFromPath(SETTINGS_PATHS.security)).toEqual({
             openId: SHELL_NAV_IDS.settings,
             activeId: SHELL_NAV_IDS.security
+        });
+        expect(idsFromPath('/app/parametres/securite/acces-techniques')).toEqual({
+            openId: SHELL_NAV_IDS.settings,
+            activeId: SHELL_NAV_IDS.security
+        });
+        expect(idsFromPath('/app/parametres/securite/transparence')).toEqual({
+            openId: SHELL_NAV_IDS.settings,
+            activeId: SHELL_NAV_IDS.transparency
         });
         expect(idsFromPath(SETTINGS_PATHS.subscription)).toEqual({
             openId: SHELL_NAV_IDS.settings,

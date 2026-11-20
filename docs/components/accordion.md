@@ -11,7 +11,7 @@ import AppAccordion from '@/components/shared/accordion/AppAccordion.vue';
 
 ## Style Spend.Up
 
-Panneau verre (bordure soft primary, fond blanc léger), chevron circulaire animé, ouverture en `grid-template-rows` (pas de `v-expansion-panels`).
+Rangée sur filets 1 px (sans fond ni bordure colorée), titre 700, chevron trait animé, ouverture en `grid-template-rows` (pas de `v-expansion-panels`).
 
 ```vue
 <AppAccordion v-model="open" title="Synthèse" subtitle="Détails optionnels">

@@ -1,6 +1,7 @@
 import { useNotificationsStore } from '@/features/notifications';
 import { isTransactionAccountChange, parseAccountChangedPayload } from '@/features/notifications/normalize';
 import type { AccountChangedPayload } from '@/features/notifications';
+import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import { useTagsStore } from '@/features/tags/stores/tags-store';
 import type { TransactionsCrud } from '@/features/transactions/stores/internal/transactions-crud';
 import type { TransactionsState } from '@/features/transactions/stores/internal/transactions-state';
@@ -11,11 +12,12 @@ type RealtimeDeps = Pick<TransactionsCrud, 'refetchActive' | 'refreshAccountBala
  * Abonnement SignalR `accountChanged` pour invalider les transactions (et les soldes).
  */
 export function createTransactionsRealtime(state: TransactionsState, deps: RealtimeDeps) {
-    const { removeByAccount, stripTag, initialized, invalidateAllLists } = state;
+    const { removeByAccount, stripTag, stripAsset, initialized, invalidateAllLists } = state;
     const { refetchActive, refreshAccountBalances } = deps;
 
     let unsubscribeAccountChanged: (() => void) | null = null;
     let unsubscribeTagDeleted: (() => void) | null = null;
+    let unsubscribeAssetDeleted: (() => void) | null = null;
     let refreshScheduled = false;
     const pendingAccountIds = new Set<string>();
 
@@ -67,6 +69,11 @@ export function createTransactionsRealtime(state: TransactionsState, deps: Realt
                 stripTag(publicId);
             });
         }
+        if (!unsubscribeAssetDeleted) {
+            unsubscribeAssetDeleted = useAssetsStore().subscribeToDeleted((publicId) => {
+                stripAsset(publicId);
+            });
+        }
     }
 
     function onAuthenticatedSession() {
@@ -78,6 +85,8 @@ export function createTransactionsRealtime(state: TransactionsState, deps: Realt
         unsubscribeAccountChanged = null;
         unsubscribeTagDeleted?.();
         unsubscribeTagDeleted = null;
+        unsubscribeAssetDeleted?.();
+        unsubscribeAssetDeleted = null;
         pendingAccountIds.clear();
         refreshScheduled = false;
     }

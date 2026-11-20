@@ -10,16 +10,14 @@ $white: #fff !default;
 // cards
 $card-title-size: 18px !default;
 
-$body-font-family: 'Outfit' !default;
-$heading-font-family: 'Urbanist' !default;
-$border-radius-root: 7px;
-$btn-font-weight: 400 !default;
+$body-font-family: 'Helvetica Neue', Helvetica, 'Inter Tight', Arial, sans-serif !default;
+$heading-font-family: 'Helvetica Neue', Helvetica, 'Inter Tight', Arial, sans-serif !default;
+$border-radius-root: 0px;
+$btn-font-weight: 700 !default;
 $btn-letter-spacing: 0 !default;
 
 // Global Shadow
-$box-shadow:
-    rgba(145 158 171 / 30%) 0px 0px 2px 0px,
-    rgba(145 158 171 / 12%) 0px 12px 24px -4px;
+$box-shadow: none;
 
 // Global Radius as per breakeven point
 
@@ -34,37 +32,37 @@ $box-shadow:
     $typography: (
             'h1': (
                 'size': 2.25rem,
-                'weight': 600,
+                'weight': 700,
                 'line-height': 2.75rem,
                 'font-family': $heading-font-family
             ),
             'h2': (
                 'size': 1.875rem,
-                'weight': 600,
+                'weight': 700,
                 'line-height': 2.25rem,
                 'font-family': $heading-font-family
             ),
             'h3': (
                 'size': 1.5rem,
-                'weight': 600,
+                'weight': 700,
                 'line-height': 2rem,
                 'font-family': $heading-font-family
             ),
             'h4': (
                 'size': 1.3125rem,
-                'weight': 600,
+                'weight': 700,
                 'line-height': 1.6rem,
                 'font-family': $heading-font-family
             ),
             'h5': (
                 'size': 1.125rem,
-                'weight': 600,
+                'weight': 700,
                 'line-height': 1.6rem,
                 'font-family': $heading-font-family
             ),
             'h6': (
                 'size': 1rem,
-                'weight': 600,
+                'weight': 700,
                 'line-height': 1.2rem,
                 'font-family': $heading-font-family
             ),
@@ -92,9 +90,9 @@ $box-shadow:
             ),
             'button': (
                 'size': 0.875rem,
-                'weight': 500,
+                'weight': 700,
                 'font-family': inherit,
-                'text-transform': capitalize
+                'text-transform': none
             ),
             'caption': (
                 'size': 0.75rem,
@@ -103,16 +101,16 @@ $box-shadow:
             ),
             'overline': (
                 'size': 0.75rem,
-                'weight': 500,
+                'weight': 700,
                 'font-family': inherit,
-                'text-transform': uppercase
+                'text-transform': none
             )
         )
         !default,
     // 👉 Button
     $button-border-radius: $border-radius-root !default,
     $button-text-letter-spacing: 0 !default,
-    $button-text-transform: capitalize,
+    $button-text-transform: none,
     $button-elevation: (
         'default': 0,
         'hover': 4,
@@ -121,10 +119,10 @@ $box-shadow:
     !default,
 
     // 👉 Tooltip
-    $tooltip-background-color: #212121 !default,
+    $tooltip-background-color: #0b0c10 !default,
     $tooltip-text-color: rgb(var(--v-theme-on-primary)) !default,
     $tooltip-font-size: 0.75rem !default,
-    $tooltip-border-radius: 4px !default,
+    $tooltip-border-radius: 0 !default,
     $tooltip-padding: 4px 8px !default,
 
     // 👉 Rounded
@@ -141,7 +139,7 @@ $box-shadow:
 
     // 👉 Card
     // $card-color: rgba(var(--v-theme-on-surface), var(--v-medium-emphasis-opacity)) !default,
-    $card-elevation: 10 !default,
+    $card-elevation: 0 !default,
     $card-title-line-height: 1.6 !default,
     $card-text-padding: 24px !default,
     $card-item-padding: 30px 30px 24px !default,

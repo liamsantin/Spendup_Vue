@@ -89,8 +89,10 @@ async function confirmDelete() {
             <span class="su-spin" />
         </div>
         <template v-else>
-            <section class="import-templates__section">
-                <h2 class="import-templates__title">{{ t('importsPage.templates.personal') }}</h2>
+            <section class="su-section import-templates__section">
+                <header class="su-section__head">
+                    <h2>{{ t('importsPage.templates.personal') }}</h2>
+                </header>
                 <p v-if="!personal.length" class="import-templates__empty">{{ t('importsPage.templates.emptyPersonal') }}</p>
                 <div v-else class="import-templates__list">
                     <ImportTemplateListItem
@@ -105,8 +107,10 @@ async function confirmDelete() {
                     />
                 </div>
             </section>
-            <section v-if="system.length" class="import-templates__section">
-                <h2 class="import-templates__title">{{ t('importsPage.templates.systemSection') }}</h2>
+            <section v-if="system.length" class="su-section import-templates__section">
+                <header class="su-section__head">
+                    <h2>{{ t('importsPage.templates.systemSection') }}</h2>
+                </header>
                 <div class="import-templates__list">
                     <ImportTemplateListItem v-for="template in system" :key="template.publicId" :template="template" />
                 </div>
@@ -128,37 +132,31 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
+/* Deux sections (perso / Spend.Up) sur filet 2 px, 56 px d'air entre elles, lignes à filet fin. */
 .import-templates {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: var(--section-gap);
 }
 
 .import-templates__section {
     display: flex;
     flex-direction: column;
-    gap: 6px;
 }
 
-.import-templates__title {
-    margin: 0;
-    padding: 6px 10px 2px;
-    font-size: 0.78rem;
-    font-weight: 650;
-    letter-spacing: 0.02em;
-    color: var(--ink-muted);
+.import-templates__section .su-section__head {
+    margin-bottom: 4px;
 }
 
 .import-templates__empty {
     margin: 0;
-    padding: 6px 10px;
-    font-size: 0.86rem;
-    color: var(--ink-muted);
+    padding: 8px 0;
+    font-size: 14px;
+    color: var(--gray);
 }
 
 .import-templates__list {
     display: flex;
     flex-direction: column;
-    gap: 4px;
 }
 </style>

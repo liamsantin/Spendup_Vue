@@ -1,0 +1,15 @@
+<svg width="600" height="600" viewBox="200 200 600 600" xmlns="http://www.w3.org/2000/svg">
+  <title>Spend.Up</title>
+  <g transform="translate(210.0 268.0) scale(1.0000) translate(-140 -196)">
+    <g><animateTransform attributeName="transform" type="rotate" dur="4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.3;0.75;1" keySplines=".2 .8 .2 1;0 0 1 1;.6 0 .4 1" values="0 300 650;-21 300 650;-21 300 650;0 300 650"/><rect x="260.0" y="310.0" width="420.0" height="280.0" fill="#E1E3E8"/></g>
+    <g><animateTransform attributeName="transform" type="rotate" dur="4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.3;0.75;1" keySplines=".2 .8 .2 1;0 0 1 1;.6 0 .4 1" values="0 300 650;-14 300 650;-14 300 650;0 300 650"/><rect x="272.0" y="324.0" width="420.0" height="280.0" fill="#E1E3E8"/></g>
+    <g><animateTransform attributeName="transform" type="rotate" dur="4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.3;0.75;1" keySplines=".2 .8 .2 1;0 0 1 1;.6 0 .4 1" values="0 300 650;-7 300 650;-7 300 650;0 300 650"/><rect x="284.0" y="338.0" width="420.0" height="280.0" fill="#0B0C10"/></g>
+    <rect x="300.0" y="370.0" width="420.0" height="290.0" fill="#5D87FF"/>
+    <rect x="350.4" y="422.2" width="79.8" height="63.8" fill="#FFFFFF">
+      <animate attributeName="opacity" dur="4s" repeatCount="indefinite" keyTimes="0;0.2;0.3;0.8;0.9;1" values="0;0;1;1;0;0"/>
+    </rect>
+    <rect x="350.4" y="573.0" width="168.0" height="26.1" fill="#FFFFFF">
+      <animate attributeName="width" dur="4s" repeatCount="indefinite" calcMode="spline" keyTimes="0;0.25;0.45;0.75;0.9;1" keySplines="0 0 1 1;.2 .8 .2 1;0 0 1 1;.6 0 .4 1;0 0 1 1" values="0;0;168;168;0;0"/>
+    </rect>
+  </g>
+</svg>

@@ -68,23 +68,15 @@ defineExpose({
             <span class="su-spin" />
         </div>
 
-        <v-row v-else class="justify-center py-1" no-gutters>
-            <v-col cols="12" md="9" class="pb-2">
-                <AppAlert v-if="localError" type="error" class="mb-4" closable @dismiss="localError = null">
-                    {{ localError }}
-                </AppAlert>
-            </v-col>
+        <div v-else class="preferences-tab__sections">
+            <AppAlert v-if="localError" type="error" class="su-alert" closable @dismiss="localError = null">
+                {{ localError }}
+            </AppAlert>
 
-            <v-col cols="12" md="9" class="pb-4">
-                <PreferencesRegionalCard v-model="draft" />
-            </v-col>
-            <v-col cols="12" md="9" class="pb-4">
-                <PreferencesThemeColorsCard v-model="draft" />
-            </v-col>
-            <v-col cols="12" md="9" class="pb-4">
-                <PreferencesDashboardCard v-model="draft" />
-            </v-col>
-        </v-row>
+            <PreferencesRegionalCard v-model="draft" />
+            <PreferencesThemeColorsCard v-model="draft" />
+            <PreferencesDashboardCard v-model="draft" />
+        </div>
     </div>
 </template>
 
@@ -92,5 +84,11 @@ defineExpose({
 .preferences-tab {
     max-width: 100%;
     overflow-x: hidden;
+}
+
+/* Les sections s’enchaînent sur leurs filets 2 px ; pas de grille Vuetify. */
+.preferences-tab__sections {
+    display: flex;
+    flex-direction: column;
 }
 </style>

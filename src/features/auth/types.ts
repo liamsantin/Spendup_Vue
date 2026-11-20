@@ -58,6 +58,8 @@ export type Me = {
     street: string | null;
     streetNumber: string | null;
     countryId: number | null;
+    /** Canton suisse (abréviation), renseigné seulement si le pays est la Suisse. */
+    canton?: string | null;
     /**
      * Avatar catalogue (`/avatar/…`), hash SHA-256 uploadé (64 hex), ou `null`.
      * Géré via `/api/auth/me/avatar`, pas via `PUT /profile`.
@@ -81,6 +83,7 @@ export type UpdateProfilePayload = {
     street: string | null;
     streetNumber: string | null;
     countryId: number | null;
+    canton: string | null;
 };
 
 /** Réponse `POST /api/auth/me/avatar`. */
@@ -97,6 +100,101 @@ export type TwoFactorSetup = {
     secret: string;
     otpAuthUri: string;
     recoveryCodes: string[];
+};
+
+/** Code d’assistance généré — POST /api/auth/security/support-code (montré une seule fois). */
+export type SupportCode = {
+    code: string;
+    expiresAt: string;
+};
+
+/** État du code d’assistance courant — GET /api/auth/security/support-code (sans le code). */
+export type SupportCodeStatus = {
+    hasActiveCode: boolean;
+    expiresAt: string | null;
+    usedAt: string | null;
+};
+
+/** Écran consulté pendant un accès technique, regroupé par ressource (`accounts`, `transactions`…). */
+export type AccessLogView = {
+    resource: string;
+    count: number;
+};
+
+/** État d’un accès technique : en cours, clôturé, expiré, ou annulé avant tout affichage (e-mail non envoyé). */
+export type AccessLogStatus = 'active' | 'terminated' | 'expired' | 'email_failed';
+
+/** Un accès technique subi par l’utilisateur — GET /api/auth/security/access-log. Jamais le nom de l’opérateur. */
+export type AccessLogEntry = {
+    publicId: string;
+    openedAt: string;
+    endedAt: string | null;
+    durationMinutes: number;
+    category: string;
+    reason: string;
+    status: AccessLogStatus | string;
+    codeUsed: boolean;
+    userEmailSentAt: string | null;
+    views: AccessLogView[];
+};
+
+/** Page d’accès techniques (du plus récent au plus ancien). */
+export type AccessLogPage = {
+    items: AccessLogEntry[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+};
+
+/** Consultation anonymisée du registre de transparence : jour, catégorie, durée, code ou non. */
+export type TransparencyConsultation = {
+    day: string;
+    category: string;
+    durationMinutes: number;
+    codeUsed: boolean;
+};
+
+/** Nature d’une visite de la console : consultation ouverte, statistiques seulement, rien ouvert. */
+export type TransparencyConsoleVisitKind = 'consultation' | 'statistics' | 'none';
+
+export type TransparencyConsoleVisit = {
+    day: string;
+    durationMinutes: number;
+    kind: TransparencyConsoleVisitKind | string;
+};
+
+/** Totaux d’un mois (`month` au format AAAA-MM). */
+export type TransparencyMonth = {
+    month: string;
+    consoleVisits: number;
+    consultations: number;
+    usersConsulted: number;
+    loginsRefused: number;
+};
+
+export type TransparencyCategoryCount = {
+    category: string;
+    count: number;
+};
+
+/** Compteur d’interventions humaines sur le serveur ; `available` faux = indisponible (jamais 0). */
+export type TransparencyCounter = {
+    available: boolean;
+    eventsTotal: number | null;
+    updatedAt: string | null;
+};
+
+/** Registre de transparence, identique pour tous — GET /api/auth/security/transparency. */
+export type TransparencyReport = {
+    generatedAt: string;
+    fromDay: string;
+    toDay: string;
+    monthsShown: number;
+    consultations: TransparencyConsultation[];
+    consoleVisits: TransparencyConsoleVisit[];
+    months: TransparencyMonth[];
+    byCategory: TransparencyCategoryCount[];
+    humanInterventions: TransparencyCounter;
 };
 
 export type DeviceInfo = {

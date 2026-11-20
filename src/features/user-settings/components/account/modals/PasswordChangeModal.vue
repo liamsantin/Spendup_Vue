@@ -9,6 +9,9 @@ import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 defineProps<{
     open: boolean;
     requiresCurrentPassword: boolean;
+    /** Compte Google avec phrase de Coffre : la phrase est demandée pour ré-emballer la clé avec le mot de passe. */
+    requiresVaultPhrase?: boolean;
+    vaultPhrase?: string;
     currentPassword: string;
     newPassword: string;
     confirmPassword: string;
@@ -19,6 +22,7 @@ defineProps<{
 const emit = defineEmits<{
     'update:open': [value: boolean];
     'update:currentPassword': [value: string];
+    'update:vaultPhrase': [value: string];
     'update:newPassword': [value: string];
     'update:confirmPassword': [value: string];
     'update:error': [value: string | null];
@@ -53,6 +57,22 @@ const { t } = useI18n();
                     hide-details
                     class="mb-2"
                     @update:model-value="emit('update:currentPassword', $event)"
+                />
+            </template>
+            <template v-if="requiresVaultPhrase">
+                <v-label class="mb-1 font-weight-medium">{{ t('accounts.passwordModal.fields.vaultPhrase') }}</v-label>
+                <v-text-field
+                    :model-value="vaultPhrase ?? ''"
+                    color="primary"
+                    variant="outlined"
+                    type="password"
+                    autocomplete="off"
+                    density="comfortable"
+                    :hint="t('accounts.passwordModal.vaultPhraseHint')"
+                    persistent-hint
+                    class="mb-2"
+                    data-test="password-vault-phrase"
+                    @update:model-value="emit('update:vaultPhrase', $event)"
                 />
             </template>
             <v-label class="mb-1 font-weight-medium">{{ t('accounts.passwordModal.fields.newPassword') }}</v-label>

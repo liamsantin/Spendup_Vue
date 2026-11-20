@@ -6,7 +6,9 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { downloadCsv } from '@/utils/helpers/csv';
+import { sensitiveExportValue } from '@/features/vault/display';
 import { isTierNature, isTierRole, matchesTierSearch, parseTierSort, sortTiers, type TierSort } from '@/features/tiers/format';
+import { tierDetailPath } from '@/features/tiers/paths';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { TIER_PAGE_SIZE_MAX, TIER_SEARCH_MAX, type Tier, type TierNature, type TierRole } from '@/features/tiers/types';
 import TierListItem from '@/features/tiers/components/list/TierListItem.vue';
@@ -57,6 +59,11 @@ const deleteOpen = computed({
         }
     }
 });
+
+/** La fiche d’un tiers est une page (`/app/gestion/tiers/:publicId`), y compris depuis la page Banques. */
+function openDetail(tier: Tier) {
+    void router.push(tierDetailPath(tier.publicId));
+}
 
 function queryString(name: string): string | null {
     const raw = route.query[name];
@@ -152,13 +159,15 @@ watch(createOpen, (value) => {
 
 function exportCsv() {
     const header = (['name', 'nature', 'roles', 'email', 'phone', 'website'] as const).map((key) => t(`tiersPage.columns.${key}`));
+    // Coffre ouvert : valeurs en clair ; sinon un chiffré sort marqué « chiffré », jamais tel quel.
+    const encrypted = t('vault.encrypted');
     const rows = visibleItems.value.map((tier) => [
         tier.name,
         t(`tiersPage.natures.${tier.nature}`),
         tier.roles.map((role) => t(`tiersPage.roles.${role}`)).join(', '),
-        tier.email,
-        tier.phone,
-        tier.website
+        sensitiveExportValue(tier.email, encrypted),
+        sensitiveExportValue(tier.phone, encrypted),
+        sensitiveExportValue(tier.website, encrypted)
     ]);
     downloadCsv(props.exportName ?? 'tiers', header, rows);
 }
@@ -241,6 +250,7 @@ async function confirmDelete() {
                         :tier="tier"
                         :acting="store.acting"
                         :style="{ '--i': index }"
+                        @open="openDetail"
                         @edit="editTarget = $event"
                         @delete="requestDelete"
                     />
@@ -251,6 +261,7 @@ async function confirmDelete() {
                     :items="visibleItems"
                     :acting="store.acting"
                     :sort="listSort"
+                    @open="openDetail"
                     @edit="editTarget = $event"
                     @delete="requestDelete"
                     @sort="emit('sort', $event)"
@@ -289,6 +300,7 @@ async function confirmDelete() {
 </template>
 
 <style scoped>
+/* annuaire à plat : la liste (téléphone) ou le tableau éditorial (≥ 768 px), sans cadre ni fond */
 .tiers-panel {
     flex: 1 1 auto;
     min-height: 0;
@@ -309,7 +321,7 @@ async function confirmDelete() {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    padding: 0 4px 4px;
+    padding: 0;
     background: transparent;
 }
 
@@ -324,10 +336,6 @@ async function confirmDelete() {
 }
 
 @media (min-width: 768px) {
-    .tiers-directory {
-        padding: 4px 16px 10px;
-    }
-
     .tiers-directory__list {
         display: none;
     }
@@ -349,7 +357,7 @@ async function confirmDelete() {
 
     .tiers-directory {
         display: block;
-        padding: 0 4px 4px;
+        padding: 0;
     }
 }
 </style>

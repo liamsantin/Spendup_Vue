@@ -46,6 +46,8 @@ export interface NavLeaf {
     disabled?: boolean;
     /** Mention à droite du libellé, ex. « Bientôt ». */
     caption?: string;
+    /** Intitulé de groupe affiché au-dessus de cette feuille, dans un accordéon. */
+    group?: string;
 }
 
 /** Bloc de la colonne de détail, avec son intitulé et son action facultative. */
@@ -68,4 +70,6 @@ export interface NavItem extends NavLeaf {
     children?: NavLeaf[];
     /** Contenu de la colonne de droite quand l'entrée est ouverte. */
     detail?: NavGroup[];
+    /** Section annoncée : visuellement en retrait du menu principal. */
+    muted?: boolean;
 }

@@ -14,6 +14,7 @@ export { BuildingsIcon as WealthNavIcon } from '@solar-icons/vue/bold-duotone/bu
 export { GraphNewUpIcon as AnalyticsNavIcon } from '@solar-icons/vue/bold-duotone/graph-new-up';
 export { UsersGroupRoundedIcon as NetworkNavIcon } from '@solar-icons/vue/bold-duotone/users-group-rounded';
 export { SettingsIcon as SettingsNavIcon } from '@solar-icons/vue/bold-duotone/settings';
+export { StarsIcon as UpcomingNavIcon } from '@solar-icons/vue/bold-duotone/stars';
 
 /* ── Entrées top-level & feuilles (line-duotone) ───────────── */
 export { Widget5Icon as DashboardNavIcon } from '@solar-icons/vue/line-duotone/widget-5';
@@ -27,7 +28,7 @@ export { RestartIcon as RecurrencesOverviewNavIcon } from '@solar-icons/vue/line
 export { BillListIcon as RecurrencesExpensesNavIcon } from '@solar-icons/vue/line-duotone/bill-list';
 export { GraphUpIcon as RecurrencesIncomesNavIcon } from '@solar-icons/vue/line-duotone/graph-up';
 export { CalendarMarkIcon as RecurrencesUpcomingNavIcon } from '@solar-icons/vue/line-duotone/calendar-mark';
-export { DocumentsIcon as FilesNavIcon } from '@solar-icons/vue/line-duotone/documents';
+export { FileTextIcon as FilesNavIcon } from '@solar-icons/vue/line-duotone/file-text';
 export { UserIdIcon as TiersNavIcon } from '@solar-icons/vue/line-duotone/user-id';
 export { TagIcon as CategoriesNavIcon } from '@solar-icons/vue/line-duotone/tag';
 export { HashtagCircleIcon as TagsNavIcon } from '@solar-icons/vue/line-duotone/hashtag-circle';
@@ -48,6 +49,7 @@ export { Tuning2Icon as PreferencesNavIcon } from '@solar-icons/vue/line-duotone
 export { BellIcon as NotificationsNavIcon } from '@solar-icons/vue/line-duotone/bell';
 export { EyeClosedIcon as PrivacyNavIcon } from '@solar-icons/vue/line-duotone/eye-closed';
 export { LockKeyholeIcon as SecurityNavIcon } from '@solar-icons/vue/line-duotone/lock-keyhole';
+export { EyeIcon as TransparencyNavIcon } from '@solar-icons/vue/line-duotone/eye';
 export { CrownIcon as SubscriptionNavIcon } from '@solar-icons/vue/line-duotone/crown';
 export { DatabaseIcon as AccountNavIcon } from '@solar-icons/vue/line-duotone/database';
 export { HamburgerMenuIcon as MenuNavIcon } from '@solar-icons/vue/line-duotone/hamburger-menu';

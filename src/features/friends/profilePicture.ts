@@ -1,4 +1,5 @@
 import { DEFAULT_AVATAR_SRC, catalogAvatarSrc, isCatalogProfilePicture, isUploadedProfilePicture } from '@/features/auth/profilePicture';
+import { isDemoSession } from '@/features/demo/session';
 import { getApiBaseUrl } from '@/utils/helpers/axios-helpers';
 
 const USER_AVATAR_API_PATTERN = /^\/api\/users\/([^/]+)\/avatar\/?$/i;
@@ -35,6 +36,12 @@ export function resolveFriendAvatarSrc(profilePicture: string | null | undefined
 
     if (isCatalogProfilePicture(value)) {
         return catalogAvatarSrc(value);
+    }
+
+    // Démo : seules les images embarquées dans l'application s'affichent. Aucune adresse vers l'API
+    // ni vers un autre site n'est fabriquée (verrou réseau de la démo).
+    if (isDemoSession() && !value.startsWith('blob:')) {
+        return DEFAULT_AVATAR_SRC;
     }
 
     if (needsUserAvatarFetch(value)) {

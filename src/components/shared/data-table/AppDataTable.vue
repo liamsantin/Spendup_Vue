@@ -12,6 +12,8 @@ export type AppDataTableColumn = {
     sortable?: boolean;
     /** Largeur de colonne (`table-layout: fixed`), par exemple `18%` ou `160px`. */
     width?: string;
+    /** `right` pour une colonne de chiffres : l'en-tête s'aligne sur ses cellules. */
+    align?: 'left' | 'right';
 };
 
 export type AppDataTableSort = {
@@ -55,7 +57,11 @@ const { smAndDown } = useDisplay();
             </colgroup>
             <thead>
                 <tr>
-                    <th v-for="column in columns" :key="column.key" :class="{ 'is-sortable': column.sortable }">
+                    <th
+                        v-for="column in columns"
+                        :key="column.key"
+                        :class="{ 'is-sortable': column.sortable, 'is-right': column.align === 'right' }"
+                    >
                         <span class="app-data-table__head-cell">
                             <span v-if="column.sortable" class="app-data-table__arrows">
                                 <button
@@ -117,6 +123,7 @@ const { smAndDown } = useDisplay();
 </template>
 
 <style scoped>
+/* Tableau Swiss : en-tête 12.5 px gris sur filet 2 px noir, lignes à filet fin, chiffres à droite, survol gris. */
 .app-data-table {
     display: flex;
     flex-direction: column;
@@ -124,12 +131,13 @@ const { smAndDown } = useDisplay();
     width: 100%;
     min-height: 0;
     height: 100%;
+    font-variant-numeric: tabular-nums;
 }
 
 .app-data-table__head {
     flex: none;
-    margin-bottom: 6px;
-    border-bottom: 1px dashed rgba(16, 16, 20, 0.16);
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--line);
 }
 
 .app-data-table table.app-data-table__head {
@@ -153,17 +161,17 @@ const { smAndDown } = useDisplay();
 .app-data-table table {
     width: 100%;
     table-layout: fixed;
-    border-collapse: separate;
-    border-spacing: 0 4px;
+    border-collapse: collapse;
+    border-spacing: 0;
     text-align: left;
 }
 
 .app-data-table th {
-    padding: 18px 16px 16px;
+    padding: 0 8px 10px;
     background: transparent;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #8a8172;
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--gray);
     white-space: nowrap;
 }
 
@@ -187,7 +195,15 @@ button.app-data-table__label:hover {
 }
 
 .app-data-table th:first-child {
-    padding-left: 18px;
+    padding-left: 0;
+}
+
+.app-data-table th.is-right {
+    text-align: right;
+}
+
+.app-data-table th.is-right .app-data-table__head-cell {
+    flex-direction: row-reverse;
 }
 
 .app-data-table__end,
@@ -224,7 +240,7 @@ button.app-data-table__label:hover {
     padding: 0;
     border: 0;
     background: transparent;
-    color: rgba(16, 16, 20, 0.28);
+    color: var(--line);
     cursor: pointer;
     line-height: 0;
 }
@@ -234,34 +250,35 @@ button.app-data-table__label:hover {
 }
 
 .app-data-table__arrow:hover {
-    color: var(--ink-soft);
+    color: var(--gray);
 }
 
-/* Lignes : classes partagées par les `<tr>` passés en slot. `--tint` colore avatar et pastille. */
+/* Lignes : classes partagées par les `<tr>` passés en slot. `--tint` colore l'icône et le carré. */
 .app-data-table :deep(.app-data-table__row) {
     --row: transparent;
-    --tint: rgb(var(--v-theme-primary));
+    --tint: var(--blue);
 }
 
 .app-data-table :deep(.app-data-table__row > td) {
-    height: 58px;
-    padding: 10px 16px;
+    height: 56px;
+    padding: 12px 8px;
+    border-bottom: 1px solid var(--line);
     background: var(--row);
     vertical-align: middle;
-    font-size: 0.86rem;
+    font-size: 14px;
     color: var(--ink);
     white-space: nowrap;
-    transition: background 0.22s var(--ease, ease);
+    transition: background 0.15s var(--ease, ease);
 }
 
 .app-data-table :deep(.app-data-table__row > td:first-child) {
-    border-radius: 16px 0 0 16px;
-    padding-left: 18px;
+    border-radius: 0;
+    padding-left: 0;
 }
 
 .app-data-table :deep(.app-data-table__row > td:last-child) {
-    border-radius: 0 16px 16px 0;
-    padding-right: 12px;
+    border-radius: 0;
+    padding-right: 0;
 }
 
 .app-data-table :deep(.app-data-table__row > td.app-data-table__actions-cell) {
@@ -270,7 +287,7 @@ button.app-data-table__label:hover {
 
 @media (hover: hover) and (pointer: fine) {
     .app-data-table :deep(.app-data-table__row:hover) {
-        --row: rgba(16, 16, 20, 0.055);
+        --row: var(--soft);
         cursor: pointer;
     }
 }
@@ -282,69 +299,76 @@ button.app-data-table__label:hover {
 .app-data-table :deep(.app-data-table__name) {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     min-width: 0;
 }
 
+/* pictogramme dans un carré 36 px teinté */
 .app-data-table :deep(.app-data-table__avatar) {
     display: grid;
     place-items: center;
     flex: none;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    border-radius: 0;
     background: color-mix(in srgb, var(--tint) 12%, transparent);
-    color: var(--tint);
+    color: color-mix(in srgb, var(--tint) 72%, var(--ink));
 }
 
 .app-data-table :deep(.app-data-table__identity) {
     display: flex;
     flex-direction: column;
     min-width: 0;
-    gap: 1px;
+    gap: 2px;
 }
 
 .app-data-table :deep(.app-data-table__title) {
-    font-size: 0.88rem;
-    font-weight: 560;
-    letter-spacing: -0.01em;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.006em;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .app-data-table :deep(.app-data-table__muted) {
-    color: #8a8172;
-    font-size: 0.75rem;
+    color: var(--gray);
+    font-size: 13px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .app-data-table :deep(.app-data-table__strong) {
-    font-weight: 650;
-    letter-spacing: -0.01em;
+    font-weight: 700;
+    letter-spacing: -0.006em;
 }
 
+.app-data-table :deep(.app-data-table__num) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* catégorie / type : petit carré de couleur + nom en gris (pas de pilule) */
 .app-data-table :deep(.app-data-table__pill) {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     max-width: 100%;
-    height: 28px;
-    padding: 0 12px 0 10px;
-    border-radius: 999px;
-    font-size: 0.74rem;
-    font-weight: 600;
-    background: color-mix(in srgb, var(--tint) 12%, transparent);
-    color: var(--tint);
+    height: auto;
+    padding: 0;
+    border-radius: 0;
+    font-size: 14px;
+    font-weight: 400;
+    background: transparent;
+    color: var(--gray);
 }
 
 .app-data-table :deep(.app-data-table__pill::before) {
     content: '';
     flex: none;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: currentColor;
+    width: 7px;
+    height: 7px;
+    border-radius: 0;
+    background: var(--tint);
 }
 
 .app-data-table :deep(.app-data-table__pill-label) {
@@ -356,9 +380,9 @@ button.app-data-table__label:hover {
 .app-data-table :deep(.app-data-table__actions) {
     display: flex;
     justify-content: flex-end;
-    gap: 4px;
+    gap: 2px;
     opacity: 0;
-    transition: opacity 0.18s var(--ease, ease);
+    transition: opacity 0.15s var(--ease, ease);
 }
 
 .app-data-table :deep(.app-data-table__row:hover .app-data-table__actions),

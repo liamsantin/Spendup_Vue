@@ -73,17 +73,17 @@ async function confirmDelete() {
 </script>
 
 <template>
-    <div class="account-payment-methods-panel d-flex flex-column h-100">
-        <div class="d-flex align-center justify-space-between ga-3 flex-wrap mb-4 px-2">
+    <div class="account-payment-methods-panel">
+        <header class="su-section__head account-payment-methods-panel__head">
             <div class="min-width-0">
-                <h5 class="text-h6 mb-0">{{ t('paymentMethodsPage.detail.title') }}</h5>
-                <div class="text-body-2 text-medium-emphasis">{{ t('paymentMethodsPage.detail.subtitle') }}</div>
+                <h2>{{ t('paymentMethodsPage.detail.title') }}</h2>
+                <p>{{ t('paymentMethodsPage.detail.subtitle') }}</p>
             </div>
             <button v-if="canWrite" type="button" class="su-btn su-btn--ink" @click="createOpen = true">
-                <PlusIcon size="16" stroke-width="1.6" />
+                <PlusIcon :size="16" stroke-width="1.6" />
                 {{ t('paymentMethodsPage.actions.create') }}
             </button>
-        </div>
+        </header>
 
         <AppAlert
             v-if="localError || store.error"
@@ -98,13 +98,13 @@ async function confirmDelete() {
             {{ localError || store.error }}
         </AppAlert>
 
-        <div v-if="store.loading && !items.length" class="py-8 text-center">
+        <div v-if="store.loading && !items.length" class="su-loading">
             <span class="su-spin" />
         </div>
-        <div v-else-if="!items.length" class="py-8 text-center text-medium-emphasis">
+        <div v-else-if="!items.length" class="su-empty">
             {{ t('paymentMethodsPage.empty.account') }}
         </div>
-        <v-list v-else class="py-0">
+        <div v-else class="account-payment-methods-panel__list">
             <PaymentMethodListItem
                 v-for="method in items"
                 :key="method.publicId"
@@ -114,9 +114,9 @@ async function confirmDelete() {
                 @edit="editTarget = $event"
                 @delete="deleteTarget = $event"
             />
-        </v-list>
+        </div>
 
-        <div v-if="store.hasMore && store.activeAccountPublicId === account.publicId" class="text-center mt-3">
+        <div v-if="store.hasMore && store.activeAccountPublicId === account.publicId" class="su-more">
             <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
                 {{ t('paymentMethodsPage.loadMore') }}
             </button>
@@ -136,3 +136,15 @@ async function confirmDelete() {
         />
     </div>
 </template>
+
+<style scoped>
+.account-payment-methods-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.account-payment-methods-panel__head {
+    align-items: center;
+}
+</style>

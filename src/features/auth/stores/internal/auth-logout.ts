@@ -4,6 +4,7 @@ import { readAndClearLoginNotice, writeLoginNotice } from '@/features/auth/sessi
 import { i18n } from '@/plugins/i18n';
 import { isIdleSessionMessage } from '@/features/auth/idle-session';
 import { sanitizeReturnUrl } from '@/features/auth/safe-return-url';
+import { isDemoSession } from '@/features/demo/session';
 import { APP_HOME_ROUTE, AUTH_ROUTE, type AuthSessionState } from '@/features/auth/stores/internal/auth-session';
 
 function t(key: string) {
@@ -16,10 +17,12 @@ function t(key: string) {
  * @returns Les actions de logout / navigation login.
  */
 export function createAuthLogout(session: AuthSessionState) {
-    const { cookieMode, accessToken, refreshToken, returnUrl, pendingIdleLogoutNotice, clearSession } = session;
+    const { cookieMode, accessToken, refreshToken, returnUrl, returnUrlOwner, user, pendingIdleLogoutNotice, clearSession } = session;
 
     /** Appelle l’API logout serveur (ignore les erreurs). */
     async function clearServerSession() {
+        // Démo : aucune session côté serveur, donc rien à révoquer et aucune requête à émettre.
+        if (isDemoSession()) return;
         try {
             if (cookieMode) {
                 await authApi.logout(null, accessToken.value);
@@ -36,6 +39,7 @@ export function createAuthLogout(session: AuthSessionState) {
         await clearServerSession();
         clearSession();
         returnUrl.value = null;
+        returnUrlOwner.value = null;
         await router.push('/');
     }
 
@@ -74,9 +78,12 @@ export function createAuthLogout(session: AuthSessionState) {
         pendingIdleLogoutNotice.value = false;
         preserveReturnUrlForReLogin();
         const preservedReturnUrl = returnUrl.value;
+        // Le lien conservé appartient à ce compte : un autre compte qui se connecte ensuite ne doit pas y être envoyé.
+        const owner = user.value?.userPublicId ?? returnUrlOwner.value;
         await clearServerSession();
         clearSession();
         returnUrl.value = preservedReturnUrl;
+        returnUrlOwner.value = preservedReturnUrl ? owner : null;
         await goToLogin(idleNotice ? t('security.session.idleLogoutNotice') : message);
     }
 

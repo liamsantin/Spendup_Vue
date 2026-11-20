@@ -8,7 +8,11 @@ import {
     percentChange,
     summarizeFlows,
     topExpenseCategories,
-    upcomingDues
+    upcomingDues,
+    splitHeroAmount,
+    formatShortDayMonth,
+    selectMonthBudgets,
+    summarizeBudgets
 } from '@/features/dashboard/format';
 
 function account(partial: Partial<Account> = {}): Account {
@@ -137,5 +141,80 @@ describe('dashboard : chiffres du mois', () => {
             ['salaire', 100],
             ['loyer', -100]
         ]);
+    });
+});
+
+describe('dashboard : affichage éditorial', () => {
+    it('découpe un montant formaté en entier / décimales / devise', () => {
+        expect(splitHeroAmount('48 688,55 CHF')).toEqual({ currency: 'CHF', main: '48 688', decimals: ',55' });
+        expect(splitHeroAmount('CHF 48’688.55')).toEqual({ currency: 'CHF', main: '48’688', decimals: '.55' });
+        expect(splitHeroAmount('1 234,50 €')).toEqual({ currency: '€', main: '1 234', decimals: ',50' });
+        expect(splitHeroAmount('••••')).toEqual({ currency: null, main: '••••', decimals: null });
+        expect(splitHeroAmount('-12,00 CHF')).toEqual({ currency: 'CHF', main: '-12', decimals: ',00' });
+    });
+
+    it('date courte jj.mm', () => {
+        expect(formatShortDayMonth('2026-10-23')).toBe('23.10');
+        expect(formatShortDayMonth('n/a')).toBe('n/a');
+    });
+
+    it('budget global : devise majoritaire, pourcentage et carrés de jauge', () => {
+        const budget = (currency: string, spentAmount: number, limitAmount: number, isCurrent = true) => ({
+            isActive: true,
+            isCurrent,
+            currency,
+            spentAmount,
+            limitAmount
+        });
+        expect(summarizeBudgets([])).toBeNull();
+        expect(summarizeBudgets([budget('CHF', 100, 200, false)])).toBeNull();
+        expect(summarizeBudgets([budget('CHF', 3412.6, 4500), budget('EUR', 10, 20)])).toEqual({
+            currency: 'CHF',
+            spent: 3412.6,
+            limit: 4500,
+            remaining: 1087.4,
+            percent: 76,
+            segments: 15
+        });
+        expect(summarizeBudgets([budget('CHF', 300, 200)])?.segments).toBe(20);
+        expect(summarizeBudgets([budget('CHF', 300, 200)])?.percent).toBe(150);
+    });
+
+    it('budget du mois : le global seul, sans double comptage des catégories (V5.3)', () => {
+        const row = (spentAmount: number, limitAmount: number, periode: string, categoryPublicId: string | null, currency = 'CHF') => ({
+            isActive: true,
+            isCurrent: true,
+            currency,
+            spentAmount,
+            limitAmount,
+            periode,
+            categoryPublicId
+        });
+        // Global mensuel 3 000 (dépensé 1 500) + « Courses » 600 (dépensé 400) : 50 %, pas 1 900 / 3 600.
+        expect(summarizeBudgets([row(400, 600, 'mensuel', 'cat-1'), row(1500, 3000, 'mensuel', null)])).toMatchObject({
+            spent: 1500,
+            limit: 3000,
+            percent: 50
+        });
+        // Le global mensuel passe avant un global annuel.
+        expect(selectMonthBudgets([row(9000, 36000, 'annuel', null), row(1500, 3000, 'mensuel', null)])?.budgets[0].limitAmount).toBe(3000);
+    });
+
+    it('budget du mois sans global : seuls les mensuels, dans une seule devise (V5.3)', () => {
+        const row = (spentAmount: number, limitAmount: number, periode: string, currency = 'CHF') => ({
+            isActive: true,
+            isCurrent: true,
+            currency,
+            spentAmount,
+            limitAmount,
+            periode,
+            categoryPublicId: 'cat'
+        });
+        const budgets = [row(6000, 12000, 'annuel'), row(250, 500, 'mensuel'), row(50, 100, 'hebdo'), row(100, 900, 'mensuel', 'EUR')];
+        expect(summarizeBudgets(budgets, 'CHF')).toMatchObject({ currency: 'CHF', spent: 250, limit: 500, percent: 50 });
+        // Sans devise préférée présente : la plus représentée par plafond.
+        expect(selectMonthBudgets(budgets, 'USD')).toMatchObject({ currency: 'EUR', aggregate: true });
+        // Que de l’annuel : rien à comparer à un mois.
+        expect(summarizeBudgets([row(6000, 12000, 'annuel')])).toBeNull();
     });
 });

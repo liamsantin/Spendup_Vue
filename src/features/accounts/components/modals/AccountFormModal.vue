@@ -23,6 +23,7 @@ import { bankChoiceRegistryId, isResolvableIban, preferredBankChoice, sameBankCh
 import type { Bank, BankChoice } from '@/features/banks/types';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import type { Tier } from '@/features/tiers/types';
+import { isCipher } from '@/features/vault/crypto';
 
 const IBAN_RESOLVE_DEBOUNCE_MS = 300;
 
@@ -95,6 +96,14 @@ let resolveSeq = 0;
 let myBanksPromise: Promise<Tier[]> | null = null;
 
 const bankRequired = computed(() => accountTypeRequiresBank(form.type));
+
+/**
+ * Banque déduite de l’IBAN, envoyée comme `bankPublicId` quand aucun choix n’est fait : avec le Coffre,
+ * le serveur ne voit plus l’IBAN et ne peut plus la déduire lui-même.
+ */
+const detectedBankChoice = computed<BankChoice | null>(() =>
+    detectedBank.value ? { kind: 'registry', bankPublicId: detectedBank.value.publicId, name: detectedBank.value.name } : null
+);
 
 /** L’IBAN CH / LI désigne une autre banque que celle choisie : l’API répondrait `400`. */
 const bankMismatch = computed(() => {
@@ -281,7 +290,11 @@ async function onSave() {
     }
     const account = editAccount.value;
     const lockOwner = !!account && !canEditAccountOwnerFields(account);
-    if (shouldValidateAccountIban(account) && !isValidIbanFormat(form.iban)) {
+    if (shouldValidateAccountIban(account) && isCipher(form.iban)) {
+        // Chiffré illisible resté dans le champ : ne jamais le renvoyer tel quel.
+        fieldErrors.iban = t('comptesPage.form.errors.ibanUnreadable');
+        hasFieldError = true;
+    } else if (shouldValidateAccountIban(account) && !isValidIbanFormat(form.iban)) {
         fieldErrors.iban = t('comptesPage.form.errors.ibanInvalid');
         hasFieldError = true;
     }
@@ -321,7 +334,7 @@ async function onSave() {
                     iban: form.iban,
                     accountNumber: form.accountNumber,
                     color: form.color,
-                    bank: form.bank
+                    bank: form.bank ?? detectedBankChoice.value
                 });
                 const updated = await store.updateAccount(account.publicId, payload);
                 syncBankTier(updated);
@@ -344,7 +357,7 @@ async function onSave() {
                 accountNumber: emptyToNull(form.accountNumber),
                 color: normalizeAccountColor(form.color),
                 isPrimary: isFirstOwnedAccount.value ? true : form.isPrimary,
-                ...bankPayloadFields(form.bank)
+                ...bankPayloadFields(form.bank ?? detectedBankChoice.value)
             });
             syncBankTier(created);
             emit('saved', created);

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { DotsVerticalIcon, UsersIcon } from 'vue-tabler-icons';
+import { BanIcon, DotsVerticalIcon, PencilIcon, UserMinusIcon, UsersIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import FriendListItem from '@/features/friends/components/FriendListItem.vue';
@@ -88,15 +88,27 @@ async function confirmRemoveFriend() {
                                 <DotsVerticalIcon size="18" stroke-width="1.75" />
                             </button>
                         </template>
+                        <!-- Menu Swiss (maquette 09) : icône dans un carré teinté + titre 700. -->
                         <v-sheet class="su-menu friend-actions-menu">
-                            <button type="button" class="su-btn su-btn--ink" @click="openNicknameModal(friend)">
-                                {{ t('friendsPage.actions.nickname') }}
+                            <button type="button" class="su-menu-item" @click="openNicknameModal(friend)">
+                                <span class="su-menu-item__icon"><PencilIcon :size="18" stroke-width="1.6" /></span>
+                                <span class="su-menu-item__title">{{ t('friendsPage.actions.nickname') }}</span>
                             </button>
-                            <button type="button" class="su-btn su-btn--danger" @click="openRemoveFriend(friend)">
-                                {{ t('friendsPage.actions.remove') }}
+                            <button type="button" class="su-menu-item" @click="openRemoveFriend(friend)">
+                                <span class="su-menu-item__icon friend-actions-menu__icon--gray"
+                                    ><UserMinusIcon :size="18" stroke-width="1.6"
+                                /></span>
+                                <span class="su-menu-item__title">{{ t('friendsPage.actions.remove') }}</span>
                             </button>
-                            <button type="button" class="su-btn su-btn--warn" @click="store.blockUser(friend.user.publicId)">
-                                {{ t('friendsPage.actions.block') }}
+                            <button
+                                type="button"
+                                class="su-menu-item friend-actions-menu__item--danger"
+                                @click="store.blockUser(friend.user.publicId)"
+                            >
+                                <span class="su-menu-item__icon friend-actions-menu__icon--danger"
+                                    ><BanIcon :size="18" stroke-width="1.6"
+                                /></span>
+                                <span class="su-menu-item__title">{{ t('friendsPage.actions.block') }}</span>
                             </button>
                         </v-sheet>
                     </v-menu>
@@ -128,12 +140,20 @@ async function confirmRemoveFriend() {
 .friend-actions-menu {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    width: min(170px, calc(100vw - 24px));
-    padding: 12px;
+    width: min(260px, calc(100vw - 24px));
 }
 
-.friend-actions-menu .su-btn {
-    width: 100%;
+.friend-actions-menu__icon--gray {
+    background: var(--t-gray-bg);
+    color: var(--t-gray-ink);
+}
+
+.friend-actions-menu__icon--danger {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.friend-actions-menu__item--danger .su-menu-item__title {
+    color: var(--danger);
 }
 </style>

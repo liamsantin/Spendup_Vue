@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { findExactSelectItem, findSelectCompletion, selectCreateMode } from '@/components/shared/select/select-completion';
+import {
+    findExactSelectItem,
+    findSelectCompletion,
+    isSameSelectTitle,
+    selectCreateMode
+} from '@/components/shared/select/select-completion';
+
+describe('isSameSelectTitle', () => {
+    it('reconnaît le libellé de la valeur courante, sans tenir compte de la casse ni du préfixe', () => {
+        expect(isSameSelectTitle('compte courant ', 'Compte courant')).toBe(true);
+        expect(isSameSelectTitle('Courses', '↳ Courses')).toBe(true);
+        expect(isSameSelectTitle('↳ Courses', '↳ Courses')).toBe(true);
+        expect(isSameSelectTitle('Compte', 'Compte courant')).toBe(false);
+        expect(isSameSelectTitle('', '')).toBe(false);
+    });
+});
 
 const items = [
     { title: 'Tous les comptes', value: '' },

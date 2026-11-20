@@ -9,6 +9,9 @@ import { useUserSettingsStore } from '@/features/user-settings/stores/user-setti
 import SecurityTwoFactorCard from '@/features/user-settings/components/security/SecurityTwoFactorCard.vue';
 import SecuritySessionCard from '@/features/user-settings/components/security/SecuritySessionCard.vue';
 import SecurityDevicesCard from '@/features/user-settings/components/security/SecurityDevicesCard.vue';
+import SecuritySupportCodeCard from '@/features/user-settings/components/security/SecuritySupportCodeCard.vue';
+import SecurityVaultCard from '@/features/user-settings/components/security/SecurityVaultCard.vue';
+import SecurityTransparencyLinksCard from '@/features/user-settings/components/security/SecurityTransparencyLinksCard.vue';
 import TwoFactorSetupDialog from '@/features/user-settings/components/security/TwoFactorSetupDialog.vue';
 import TwoFactorDisableDialog from '@/features/user-settings/components/security/TwoFactorDisableDialog.vue';
 
@@ -99,34 +102,32 @@ defineExpose({
 
 <template>
     <div class="security-tab">
-        <v-row class="justify-center py-1" no-gutters>
-            <v-col cols="12" md="9" class="pb-2">
-                <AppAlert v-if="localError" type="error" class="mb-4" closable @dismiss="localError = null">
-                    {{ localError }}
-                </AppAlert>
-            </v-col>
+        <div class="security-tab__sections">
+            <AppAlert v-if="localError" type="error" class="su-alert" closable @dismiss="localError = null">
+                {{ localError }}
+            </AppAlert>
 
-            <v-col cols="12" md="9" class="pb-4">
-                <SecurityTwoFactorCard
-                    :enabled="twoFactorEnabled"
-                    :success-message="successMessage"
-                    @enable="openSetup"
-                    @disable="openDisable"
-                    @dismiss-success="successMessage = null"
-                />
-            </v-col>
+            <SecurityTwoFactorCard
+                :enabled="twoFactorEnabled"
+                :success-message="successMessage"
+                @enable="openSetup"
+                @disable="openDisable"
+                @dismiss-success="successMessage = null"
+            />
 
-            <v-col cols="12" md="9" class="pb-4">
-                <SecurityDevicesCard @success="onDevicesSuccess" />
-            </v-col>
+            <SecurityDevicesCard @success="onDevicesSuccess" />
 
-            <v-col cols="12" md="9">
-                <div v-if="loading" class="d-flex justify-center py-6">
-                    <span class="su-spin" />
-                </div>
-                <SecuritySessionCard v-else v-model="draft" :two-factor-enabled="twoFactorEnabled" />
-            </v-col>
-        </v-row>
+            <SecurityVaultCard />
+
+            <SecuritySupportCodeCard />
+
+            <SecurityTransparencyLinksCard />
+
+            <div v-if="loading" class="d-flex justify-center py-6">
+                <span class="su-spin" />
+            </div>
+            <SecuritySessionCard v-else v-model="draft" :two-factor-enabled="twoFactorEnabled" />
+        </div>
 
         <TwoFactorSetupDialog v-model="setupOpen" @enabled="onEnabled" />
         <TwoFactorDisableDialog v-model="disableOpen" @disabled="onDisabled" />
@@ -137,5 +138,11 @@ defineExpose({
 .security-tab {
     max-width: 100%;
     overflow-x: hidden;
+}
+
+/* Les sections s’enchaînent sur leurs filets 2 px ; pas de grille Vuetify. */
+.security-tab__sections {
+    display: flex;
+    flex-direction: column;
 }
 </style>

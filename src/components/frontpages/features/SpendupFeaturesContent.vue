@@ -1,381 +1,298 @@
 <script setup lang="ts">
-import {
-    AlertTriangleIcon,
-    ArrowRightIcon,
-    CalendarIcon,
-    ChartLineIcon,
-    ChartPieIcon,
-    CheckIcon,
-    FileImportIcon,
-    FileInvoiceIcon,
-    HomeEcoIcon,
-    KeyOffIcon,
-    LayoutDashboardIcon,
-    LockIcon,
-    PaperclipIcon,
-    RepeatIcon,
-    ShieldCheckIcon,
-    SparklesIcon,
-    TagsIcon,
-    TargetIcon,
-    UsersIcon,
-    WalletIcon
-} from 'vue-tabler-icons';
-import type { Component } from 'vue';
-import AccountsScene from '@/components/frontpages/mockups/scenes/AccountsScene.vue';
-import BudgetScene from '@/components/frontpages/mockups/scenes/BudgetScene.vue';
-import FeaturesHeroScene from '@/components/frontpages/mockups/scenes/FeaturesHeroScene.vue';
-import SharedScene from '@/components/frontpages/mockups/scenes/SharedScene.vue';
-import WealthScene from '@/components/frontpages/mockups/scenes/WealthScene.vue';
-import {
-    spendupAdditionalDomains,
-    spendupDomainGroups,
-    spendupDomainNames,
-    type SpendupAdditionalDomain,
-    type SpendupDomainGroup
-} from '@/data/front-pages/spendup-additional-domains';
+/**
+ * Page Fonctionnalités : un hero, puis sept sections bâties sur le même gabarit que l'accueil
+ * (intitulé numéroté fixé à gauche, capture et liste à droite), puis l'appel final.
+ * Chaque point décrit un écran qui existe dans l'application : rien d'annoncé à l'avance.
+ */
+import { ArrowRightIcon } from 'vue-tabler-icons';
+import FeaturesHeroVisual from '@/components/frontpages/features/FeaturesHeroVisual.vue';
+import { isPricingPageEnabled } from '@/utils/helpers/pricing-helpers';
+import { APP_SCREENSHOTS_PATH as SHOTS } from '@/data/front-pages/spendup-additional-domains';
 
-interface JourneyFeature {
-    icon: Component;
+const showPricing = isPricingPageEnabled();
+
+interface FeatureItem {
     title: string;
     text: string;
 }
 
-interface Journey {
+interface FeatureSection {
+    id: string;
     number: string;
-    icon: Component;
     kicker: string;
     title: string;
-    text: string;
-    scene: Component;
-    features: JourneyFeature[];
+    lead: string;
+    /** Capture desktop, et sa version smartphone si elle existe (affichée sous 600 px). */
+    shot?: { file: string; mobile?: string; alt: string };
+    link?: { label: string; to: string };
+    items: FeatureItem[];
+    /** Composition de la section (voir _page-blocks.scss) ; par défaut, intitulé fixé à gauche. */
+    layout?: Array<'wide' | 'flip' | 'dark' | 'numbered'>;
 }
 
-const journeys: Journey[] = [
+const sections: FeatureSection[] = [
     {
+        id: 'quotidien',
         number: '01',
-        icon: WalletIcon,
+        layout: ['wide'],
         kicker: 'Au quotidien',
         title: 'Comprenez chaque mouvement de votre argent.',
-        text: 'Exportez vos relevés depuis votre e-banking et importez-les en CSV ou en Excel : Spend.Up reconnaît les colonnes, vous laisse relire chaque ligne, puis classe et relie tout. Banques, cartes, TWINT et espèces se retrouvent dans une seule vue.',
-        scene: AccountsScene,
-        features: [
+        lead: 'Importez les relevés de votre e-banking : Spend.Up les lit, vous les relisez, puis tout est classé. Banques, cartes, TWINT et espèces se retrouvent dans une seule vue.',
+        shot: {
+            file: 'transactions.webp',
+            mobile: 'mobile-transactions.webp',
+            alt: 'Liste des transactions Spend.Up avec compte, catégorie, contrepartie et montant'
+        },
+        items: [
             {
-                icon: FileImportIcon,
+                title: 'Tous vos comptes',
+                text: 'Comptes bancaires, cartes, TWINT et espèces, en francs suisses, en euros, en dollars ou en livres.'
+            },
+            {
                 title: 'Imports de relevés',
-                text: 'CSV et Excel, modèle mémorisé par banque, revue ligne par ligne avant validation.'
+                text: 'Fichiers CSV ou Excel. Vous associez les colonnes une fois et les gardez comme modèle pour votre banque.'
             },
             {
-                icon: TagsIcon,
+                title: 'Relecture avant validation',
+                text: 'Chaque ligne importée se vérifie et se corrige avant d’entrer dans vos comptes. Une ligne déjà importée est signalée.'
+            },
+            {
                 title: 'Reconnaissance qui apprend',
-                text: 'Tiers et moyens de paiement retrouvés grâce aux alias appris de vos corrections.'
-            },
-            { icon: PaperclipIcon, title: 'Justificatifs PDF', text: 'Factures, reçus et contrats joints à vos opérations.' },
-            {
-                icon: AlertTriangleIcon,
-                title: 'Doublons détectés',
-                text: 'Une ligne déjà importée est signalée avant d’être comptée deux fois.'
+                text: 'Tiers et moyens de paiement sont retrouvés automatiquement, grâce aux corrections que vous avez déjà faites.'
             }
         ]
     },
     {
+        id: 'organiser',
         number: '02',
-        icon: ChartPieIcon,
+        layout: ['flip'],
+        kicker: 'Organiser',
+        title: 'Des données propres, classées, fiables.',
+        lead: 'Catégories, étiquettes et tiers donnent à chaque opération sa place. Vos justificatifs restent rangés à côté.',
+        shot: { file: 'categories.webp', alt: 'Arbre des catégories Spend.Up : alimentation, logement, loisirs, salaire, santé' },
+        items: [
+            { title: 'Catégories', text: 'Votre propre arbre de catégories, pour les dépenses comme pour les revenus.' },
+            { title: 'Étiquettes', text: 'Un projet, un voyage, une personne : des repères qui traversent les catégories.' },
+            { title: 'Tiers', text: 'Employeur, commerces, administrations et proches, avec leurs coordonnées.' },
+            { title: 'Justificatifs PDF', text: 'Factures, reçus et contrats joints à vos opérations, toujours sous la main.' }
+        ]
+    },
+    {
+        id: 'planifier',
+        number: '03',
         kicker: 'Planifier',
         title: 'Donnez une direction à votre budget.',
-        text: 'Passez du simple suivi à une vraie capacité d’anticipation : des limites claires, des projets chiffrés et un reste à vivre recalculé à chaque import.',
-        scene: BudgetScene,
-        features: [
-            { icon: ChartPieIcon, title: 'Budgets personnalisés', text: 'Limites mensuelles ou annuelles avec suivi par catégorie.' },
-            { icon: TargetIcon, title: 'Objectifs d’épargne', text: 'Mesurez vos progrès et planifiez vos projets importants.' },
-            { icon: RepeatIcon, title: 'Revenus & charges récurrents', text: 'Anticipez salaires, loyers, crédits et abonnements.' },
-            { icon: CalendarIcon, title: 'Calendrier financier', text: 'Échéances, rappels et événements réunis dans le temps.' }
+        lead: 'Passez du suivi à l’anticipation : des limites claires, des projets chiffrés et les échéances à venir sous les yeux.',
+        shot: {
+            file: 'budgets.webp',
+            mobile: 'mobile-budgets.webp',
+            alt: 'Budgets Spend.Up : alimentation et budget mensuel avec progression'
+        },
+        items: [
+            {
+                title: 'Budgets mensuels',
+                text: 'Une enveloppe par catégorie, avec ce qu’il reste à dépenser. Une alerte vous prévient avant le dépassement.'
+            },
+            { title: 'Objectifs d’épargne', text: 'Vacances, fonds d’urgence ou achat important : suivez vos progrès vers chaque projet.' },
+            { title: 'Revenus et charges récurrents', text: 'Salaire, loyer, crédits et abonnements, avec leurs prochaines échéances.' },
+            { title: 'Calendrier', text: 'Le mois en un coup d’œil, avec revenus, charges et échéances au bon jour.' }
         ]
     },
     {
-        number: '03',
-        icon: HomeEcoIcon,
-        kicker: 'Construire',
-        title: 'Pilotez votre patrimoine dans son ensemble.',
-        text: 'Immobilier, placements, 3e pilier et véhicules : une lecture consolidée de ce que vous possédez, devez et préparez pour demain.',
-        scene: WealthScene,
-        features: [
-            { icon: ChartLineIcon, title: 'Placements & crypto', text: 'Portefeuilles, positions, opérations et valorisations.' },
-            { icon: HomeEcoIcon, title: 'Immobilier & actifs', text: 'Biens, hypothèques, baux, véhicules, charges et rendement.' },
-            { icon: FileInvoiceIcon, title: 'Fiscalité & revenus', text: 'Employeurs, salaires, retenues et préparation fiscale.' },
-            { icon: LayoutDashboardIcon, title: 'Scénarios & projections', text: 'Trésorerie, patrimoine net et santé financière.' }
-        ]
-    },
-    {
+        id: 'patrimoine',
         number: '04',
-        icon: UsersIcon,
+        layout: ['wide', 'numbered'],
+        kicker: 'Patrimoine',
+        title: 'Pilotez votre patrimoine dans son ensemble.',
+        lead: 'Ce que vous possédez, ce que vous devez et ce que vous préparez, réunis dans un patrimoine net toujours à jour.',
+        items: [
+            { title: 'Immobilier', text: 'Vos biens, leurs hypothèques et les loyers perçus.' },
+            { title: 'Placements et crypto', text: 'Portefeuilles, positions, opérations et dividendes.' },
+            { title: 'Véhicules et objets de valeur', text: 'Ce qui compte dans votre patrimoine, avec sa valeur au fil du temps.' },
+            { title: 'Dettes et prêts', text: 'Crédits, prêts entre particuliers et remboursements, jusqu’au solde.' }
+        ]
+    },
+    {
+        id: 'impots',
+        number: '05',
+        kicker: 'Impôts',
+        title: 'Préparez votre déclaration, sans repartir de zéro.',
+        lead: 'Spend.Up prépare un brouillon par année et par canton, que vous recopiez ensuite dans la déclaration officielle. Seuls les montants que vous validez y figurent.',
+        items: [
+            {
+                title: 'Une déclaration par année',
+                text: 'Les 26 cantons, une ou deux personnes, et un statut : en cours, prête à recopier ou archivée.'
+            },
+            {
+                title: 'Étapes guidées',
+                text: 'Situation, revenus, déductions, fortune et dettes, avec les cases remplies et celles qu’il reste à compléter.'
+            },
+            {
+                title: 'Propositions tirées de vos données',
+                text: 'Salaires, placements, immeubles et dettes déjà dans Spend.Up sont proposés. Rien n’est repris sans votre accord.'
+            },
+            {
+                title: 'Fiches, pièces et PDF',
+                text: 'Emplois, enfants, immeubles et établissements en fiches, justificatifs joints, relevé eCH-0196 importé, brouillon exporté en PDF.'
+            }
+        ]
+    },
+    {
+        id: 'partager',
+        number: '06',
+        layout: ['flip'],
         kicker: 'Partager',
         title: 'Gérez ensemble, sans tout mélanger.',
-        text: 'Couple, famille ou colocation : partagez budgets et dépenses communes en gardant chacun le contrôle de son espace personnel.',
-        scene: SharedScene,
-        features: [
-            { icon: UsersIcon, title: 'Espaces partagés', text: 'Famille, couple ou colocation, jusqu’à 5 membres.' },
-            { icon: LockIcon, title: 'Rôles & permissions', text: 'Contrôlez précisément qui peut voir ou modifier.' },
-            { icon: WalletIcon, title: 'Dépenses communes', text: 'Répartition, remboursements et engagements partagés.' },
-            { icon: TargetIcon, title: 'Projets collectifs', text: 'Budgets, objectifs et patrimoine du foyer réunis.' }
+        lead: 'Couple, famille ou colocation : partagez ce qui est commun, et gardez le reste pour vous.',
+        items: [
+            { title: 'Amis', text: 'Ajoutez vos proches et choisissez qui peut vous trouver et vous envoyer une demande.' },
+            {
+                title: 'Comptes partagés',
+                text: 'En lecture seule ou en modification, au choix. Vous décidez des champs visibles, l’IBAN compris.'
+            },
+            { title: 'Dépenses entre amis', text: 'Qui a avancé quoi, qui doit combien à qui, et les remboursements jusqu’au solde.' }
+        ]
+    },
+    {
+        id: 'securite',
+        number: '07',
+        layout: ['dark'],
+        kicker: 'Sécurité',
+        title: 'Protégé par défaut. Contrôlé par vous.',
+        lead: showPricing
+            ? 'Spend.Up n’a aucun accès à vos comptes bancaires. La sécurité est incluse dans toutes les offres, jamais vendue en option.'
+            : 'Spend.Up n’a aucun accès à vos comptes bancaires. La sécurité est incluse par défaut, pour tout le monde.',
+        shot: {
+            file: 'security.webp',
+            alt: 'Paramètres de sécurité Spend.Up : authentification à deux facteurs et appareils connectés'
+        },
+        link: { label: 'Protection des données', to: '/protection-des-donnees' },
+        items: [
+            { title: 'Aucun identifiant bancaire', text: 'Rien n’entre dans votre espace sans votre import.' },
+            { title: 'Chiffré dans votre navigateur', text: 'Vos IBAN et numéros sont illisibles pour tout le monde, même pour nous.' },
+            { title: 'Double authentification', text: 'Un code en plus du mot de passe, et la liste de vos appareils connectés.' },
+            { title: 'Hébergé en Suisse', text: 'Chez Infomaniak, sous la loi suisse sur la protection des données.' }
         ]
     }
-];
-
-interface DomainTile {
-    domain: SpendupAdditionalDomain;
-    number: string;
-    points: string[];
-    /** Largeur de la tuile sur 12 colonnes. */
-    span: 6 | 12;
-}
-
-/**
- * Rythme de la grille : deux tuiles par ligne (au moins la moitié de la largeur, pour que
- * les maquettes restent lisibles), et une tuile pleine largeur disposée à l'horizontale
- * quand le groupe est impair.
- */
-const SPAN_PATTERNS: Record<number, DomainTile['span'][]> = {
-    1: [12],
-    2: [6, 6],
-    3: [6, 6, 12],
-    4: [6, 6, 6, 6]
-};
-
-const groups = spendupDomainGroups.map((group: SpendupDomainGroup) => {
-    const domains = spendupAdditionalDomains.filter((domain) => domain.group === group.id);
-    const pattern = SPAN_PATTERNS[domains.length] ?? domains.map(() => 12 as const);
-    return {
-        ...group,
-        tiles: domains.map<DomainTile>((domain, index) => ({
-            domain,
-            number: String(journeys.length + spendupAdditionalDomains.indexOf(domain) + 1).padStart(2, '0'),
-            points: [...(domain.cards ?? []).flatMap((card) => card.items), ...(domain.items ?? [])].slice(0, 5),
-            span: pattern[index] ?? 12
-        }))
-    };
-});
-
-const navItems = [
-    ...journeys.map((journey) => ({ href: `#journey-${journey.number}`, number: journey.number, label: journey.kicker })),
-    ...groups.map((group) => ({ href: `#groupe-${group.id}`, number: group.number, label: group.kicker }))
-];
-
-const securityItems = [
-    'Aucun identifiant bancaire demandé',
-    'Authentification à deux facteurs et appareils',
-    'Journal des activités sensibles',
-    'Visibilité configurable par champ',
-    'Export et suppression des données',
-    'Hébergement en Suisse, chez Infomaniak'
 ];
 </script>
 
 <template>
-    <div class="features-page">
-        <section class="features-hero">
-            <div class="features-hero__grid" aria-hidden="true"></div>
-            <v-container class="max-width-1218">
-                <div class="features-hero__layout">
-                    <div class="features-hero__copy">
-                        <v-chip color="primary" variant="tonal" rounded="pill" class="features-eyebrow su-hero-in">
-                            <SparklesIcon size="15" class="me-2" />
-                            Votre carnet de bord financier, en {{ spendupDomainNames.length }} domaines métiers
-                        </v-chip>
-                        <h1 class="textPrimary su-hero-in" style="--su-in-delay: 80ms">
-                            Tout ce qu’il faut pour piloter <span>votre vie financière.</span>
+    <div class="page features-page">
+        <section class="page-hero">
+            <div class="s-container">
+                <div class="s-grid page-hero__grid">
+                    <div class="page-hero__copy">
+                        <h1 class="s-display su-hero-in">
+                            Tout ce qu’il faut pour piloter <span class="s-primary">votre vie financière.</span>
                         </h1>
-                        <p class="text-medium-emphasis su-hero-in" style="--su-in-delay: 160ms">
-                            Importez vos relevés, joignez vos justificatifs : du premier budget au patrimoine familial, Spend.Up relie
-                            chaque donnée pour vous donner une vision claire, en francs suisses. Sans jamais se connecter à votre banque.
+                        <p class="s-lead su-hero-in" style="--su-in-delay: 120ms">
+                            Du premier budget au patrimoine familial, Spend.Up relie chaque donnée pour vous donner une vision claire, en
+                            francs suisses. Sans jamais se connecter à votre banque.
                         </p>
-                        <div class="features-hero__actions su-hero-in" style="--su-in-delay: 240ms">
-                            <v-btn color="primary" size="x-large" flat class="text-none px-7" to="/auth?tab=register">
+                        <div class="s-actions su-hero-in" style="--su-in-delay: 180ms">
+                            <v-btn color="primary" size="x-large" flat class="text-none" to="/auth?tab=register">
                                 Commencer gratuitement
-                                <ArrowRightIcon size="19" class="ms-2" />
+                                <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>
-                            <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-7" to="/tarifs"
+                            <v-btn v-if="showPricing" size="x-large" variant="outlined" class="text-none" to="/tarifs"
                                 >Voir les tarifs</v-btn
                             >
                         </div>
-                        <ul class="features-hero__proof su-hero-in" style="--su-in-delay: 320ms">
-                            <li><KeyOffIcon size="15" stroke-width="2.2" /> Sans connexion bancaire</li>
-                            <li><CheckIcon size="15" stroke-width="2.4" /> Données hébergées en Suisse</li>
-                            <li><CheckIcon size="15" stroke-width="2.4" /> Web &amp; Windows</li>
-                        </ul>
+                        <ol class="page-hero__index su-hero-in" style="--su-in-delay: 240ms" aria-label="Sections de la page">
+                            <li v-for="section in sections" :key="section.id">
+                                <a :href="`#${section.id}`"
+                                    ><b>{{ section.number }}</b> {{ section.kicker }}</a
+                                >
+                            </li>
+                        </ol>
                     </div>
 
-                    <div class="features-hero__visual su-hero-visual-in">
-                        <FeaturesHeroScene />
+                    <div class="page-hero__visual page-hero__visual--wide su-hero-visual-in" style="--su-in-delay: 160ms">
+                        <FeaturesHeroVisual />
                     </div>
-                </div>
-            </v-container>
-
-            <div class="features-marquee" aria-label="Domaines couverts par Spend.Up">
-                <div class="features-marquee__track">
-                    <ul v-for="copy in 2" :key="copy" :aria-hidden="copy === 2 ? 'true' : undefined">
-                        <li v-for="name in spendupDomainNames" :key="name">{{ name }}</li>
-                    </ul>
                 </div>
             </div>
         </section>
 
-        <nav class="features-nav" aria-label="Sections de la page">
-            <v-container class="max-width-1218">
-                <div class="features-nav__items">
-                    <a v-for="item in navItems" :key="item.href" :href="item.href">
-                        <span>{{ item.number }}</span>
-                        {{ item.label }}
-                    </a>
-                </div>
-            </v-container>
-        </nav>
-
         <section
-            v-for="(journey, index) in journeys"
-            :id="`journey-${journey.number}`"
-            :key="journey.number"
-            class="journey"
-            :class="{ 'journey--alt': index % 2 === 1 }"
+            v-for="(section, index) in sections"
+            :id="section.id"
+            :key="section.id"
+            class="s-section page-block"
+            :class="[
+                { 'page-block--tint': index % 2 === 0 && !section.layout?.includes('dark') },
+                ...(section.layout ?? []).map((variant) => `page-block--${variant}`)
+            ]"
         >
-            <v-container class="max-width-1218">
-                <div v-reveal class="journey__layout" :class="{ 'journey__layout--reversed': index % 2 === 1 }">
-                    <div class="journey__copy">
-                        <div class="journey__meta">
-                            <span class="journey__number">{{ journey.number }}</span>
-                            <span class="features-kicker">{{ journey.kicker }}</span>
-                        </div>
-                        <h2 class="textPrimary">{{ journey.title }}</h2>
-                        <p class="journey__lead text-medium-emphasis">{{ journey.text }}</p>
+            <div class="s-container">
+                <div class="s-grid page-block__grid">
+                    <div v-reveal class="page-block__intro">
+                        <span class="s-kicker"
+                            ><b>{{ section.number }}</b> {{ section.kicker }}</span
+                        >
+                        <h2 class="s-h2">{{ section.title }}</h2>
+                        <p>{{ section.lead }}</p>
+                        <RouterLink v-if="section.link" :to="section.link.to" class="page-block__link">
+                            {{ section.link.label }} <ArrowRightIcon size="14" />
+                        </RouterLink>
+                    </div>
 
-                        <ul class="journey__features">
-                            <li v-for="feature in journey.features" :key="feature.title">
-                                <span class="journey__feature-icon">
-                                    <component :is="feature.icon" size="19" stroke-width="1.7" />
-                                </span>
-                                <div>
-                                    <strong class="textPrimary">{{ feature.title }}</strong>
-                                    <p>{{ feature.text }}</p>
-                                </div>
+                    <div v-reveal class="page-block__body">
+                        <figure
+                            v-if="section.shot"
+                            class="s-figure page-block__figure"
+                            :class="{ 'page-block__figure--phone': section.shot.mobile }"
+                        >
+                            <picture>
+                                <source
+                                    v-if="section.shot.mobile"
+                                    media="(max-width: 599px)"
+                                    :srcset="`${SHOTS}/${section.shot.mobile}`"
+                                    width="780"
+                                    height="1688"
+                                />
+                                <img
+                                    :src="`${SHOTS}/${section.shot.file}`"
+                                    :alt="section.shot.alt"
+                                    width="2160"
+                                    height="1350"
+                                    loading="lazy"
+                                />
+                            </picture>
+                        </figure>
+
+                        <ul class="page-block__list">
+                            <li v-for="item in section.items" :key="item.title">
+                                <h3>{{ item.title }}</h3>
+                                <p>{{ item.text }}</p>
                             </li>
                         </ul>
                     </div>
-
-                    <div class="journey__visual">
-                        <component :is="journey.scene" />
-                    </div>
                 </div>
-            </v-container>
+            </div>
         </section>
 
-        <section id="domaines" class="domains">
-            <v-container class="max-width-1218">
-                <div v-reveal class="features-heading">
-                    <span class="features-kicker">Dans le détail</span>
-                    <h2 class="textPrimary">Chaque domaine, pensé jusqu’au bout.</h2>
-                    <p class="text-medium-emphasis">
-                        Derrière les grands parcours, une dizaine de modules spécialisés qui se parlent entre eux : chaque relevé importé
-                        alimente vos budgets, vos prévisions et votre patrimoine.
-                    </p>
-                </div>
-
-                <div v-for="group in groups" :id="`groupe-${group.id}`" :key="group.id" class="domain-group">
-                    <header v-reveal class="domain-group__head">
-                        <span class="domain-group__number">{{ group.number }}</span>
-                        <div>
-                            <span class="features-kicker">{{ group.kicker }}</span>
-                            <h3 class="textPrimary">{{ group.title }}</h3>
-                        </div>
-                        <p class="text-medium-emphasis">{{ group.lead }}</p>
-                    </header>
-
-                    <div v-reveal class="domain-grid" data-reveal-stagger="90">
-                        <article
-                            v-for="tile in group.tiles"
-                            :id="`domaine-${tile.domain.id}`"
-                            :key="tile.domain.id"
-                            class="domain-tile"
-                            :class="[`domain-tile--span-${tile.span}`, { 'domain-tile--wide': tile.span === 12 }]"
-                        >
-                            <div class="domain-tile__visual">
-                                <component :is="tile.domain.scene" />
-                            </div>
-                            <div class="domain-tile__body">
-                                <div class="domain-tile__meta">
-                                    <span class="domain-tile__icon">
-                                        <component :is="tile.domain.icon" size="19" stroke-width="1.7" />
-                                    </span>
-                                    <span class="domain-tile__kicker">{{ tile.number }} · {{ tile.domain.kicker }}</span>
-                                </div>
-                                <h4 class="textPrimary">{{ tile.domain.title }}</h4>
-                                <p class="text-medium-emphasis">{{ tile.domain.lead }}</p>
-                                <ul>
-                                    <li v-for="point in tile.points" :key="point">
-                                        <CheckIcon size="14" stroke-width="2.4" />
-                                        <span>{{ point }}</span>
-                                    </li>
-                                </ul>
-                                <p v-if="tile.domain.footer" class="domain-tile__footnote">{{ tile.domain.footer }}</p>
-                            </div>
-                        </article>
-                    </div>
-                </div>
-            </v-container>
-        </section>
-
-        <section class="features-security">
-            <v-container class="max-width-1218">
-                <div v-reveal class="features-security__panel">
-                    <div class="features-security__glow" aria-hidden="true"></div>
-                    <div class="features-security__copy">
-                        <span class="features-security__badge"><ShieldCheckIcon size="17" stroke-width="1.8" /> Sécurité incluse</span>
-                        <h2>Protégé par défaut.<br />Contrôlé par vous.</h2>
-                        <p>
-                            Spend.Up n’a aucun accès à vos comptes bancaires. La sécurité, la confidentialité et la maîtrise de vos données
-                            sont incluses dans toutes les offres, jamais vendues en option.
-                        </p>
-                        <div class="features-security__actions">
-                            <v-btn color="white" size="large" flat class="text-none" to="/politique-confidentialite">
-                                Notre engagement confidentialité
-                                <ArrowRightIcon size="18" class="ms-2" />
+        <section class="page-final">
+            <div class="s-container">
+                <div v-reveal class="s-grid page-final__grid">
+                    <h2 class="page-final__title s-display">Découvrez une autre façon <span>de gérer vos finances.</span></h2>
+                    <div class="page-final__side">
+                        <p>{{ showPricing ? 'Commencez gratuitement, sans engagement.' : 'Il ne vous faut qu’une adresse e-mail.' }}</p>
+                        <div class="s-actions">
+                            <v-btn color="white" size="x-large" flat class="text-none" to="/auth?tab=register">
+                                Créer mon espace
+                                <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>
-                            <RouterLink to="/#hebergement" class="features-security__link">Hébergement en Suisse</RouterLink>
+                            <RouterLink v-if="showPricing" to="/tarifs" class="page-final__link">Comparer les offres</RouterLink>
                         </div>
                     </div>
-
-                    <ul class="features-security__list">
-                        <li v-for="item in securityItems" :key="item">
-                            <span><CheckIcon size="15" stroke-width="2.5" /></span>
-                            {{ item }}
-                        </li>
-                    </ul>
                 </div>
-            </v-container>
-        </section>
-
-        <section class="features-final">
-            <v-container class="max-width-1218">
-                <div v-reveal class="features-final__card">
-                    <div class="features-final__ring features-final__ring--one" aria-hidden="true"></div>
-                    <div class="features-final__ring features-final__ring--two" aria-hidden="true"></div>
-                    <span class="features-kicker">À vous de jouer</span>
-                    <h2 class="textPrimary">Découvrez une autre façon <span>de gérer vos finances.</span></h2>
-                    <p class="text-medium-emphasis">Commencez gratuitement, sans carte bancaire et sans engagement.</p>
-                    <div class="features-final__actions">
-                        <v-btn color="primary" size="x-large" flat class="text-none px-8" to="/auth?tab=register">
-                            Créer mon espace
-                            <ArrowRightIcon size="19" class="ms-2" />
-                        </v-btn>
-                        <v-btn color="primary" size="x-large" variant="outlined" class="text-none px-8" to="/tarifs">
-                            Comparer les offres
-                        </v-btn>
-                    </div>
-                </div>
-            </v-container>
+            </div>
         </section>
     </div>
 </template>
 
 <style scoped lang="scss">
-@use '@/scss/frontpages/pages/features';
+@use '@/scss/frontpages/page-blocks';
 </style>

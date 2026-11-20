@@ -14,6 +14,7 @@ import {
     writeTokens
 } from '@/features/auth/session-storage';
 import { useUserSettingsStore } from '@/features/user-settings';
+import { useStepUpStore } from '@/features/auth/stores/step-up-store';
 import { useNotificationsStore } from '@/features/notifications/stores/notifications-store';
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
@@ -29,15 +30,37 @@ import { useRecurringPaymentsStore } from '@/features/recurring-payments/stores/
 import { useRecurringSuggestionsStore } from '@/features/recurring-payments/stores/recurring-suggestions-store';
 import { useFilesStore } from '@/features/files/stores/files-store';
 import { useSubscriptionStore } from '@/features/subscription/stores/subscription-store';
+import { useAssetsStore } from '@/features/assets/stores/assets-store';
+import { useRealEstateStore } from '@/features/real-estate/stores/real-estate-store';
+import { useInvestmentsStore } from '@/features/investments/stores/investments-store';
+import { useInstrumentsStore } from '@/features/investments/stores/instruments-store';
+import { useLiabilitiesStore } from '@/features/liabilities/stores/liabilities-store';
+import { usePersonalLoansStore } from '@/features/personal-loans/stores/personal-loans-store';
+import { useSharedDebtsStore } from '@/features/shared-debts/stores/shared-debts-store';
+import { useNetWorthStore } from '@/features/net-worth/stores/net-worth-store';
 import { useSidebarNavStore } from '@/layouts/full/vertical-sidebar/sidebar-nav-store';
 import { isIdleSessionError } from '@/features/auth/idle-session';
+import { createTokenBroadcast } from '@/features/auth/token-broadcast';
 import { clearCsrfToken, rememberCsrfToken } from '@/features/auth/csrf';
 import { isAuthCookieMode } from '@/utils/helpers/axios-helpers';
+import { useVaultStore } from '@/features/vault/stores/vault-store';
+import { clearDemoSession, isDemoSession, markDemoSession } from '@/features/demo/session';
+import { resetDemoDb } from '@/features/demo/db';
+import { demoMe } from '@/features/demo/user';
 
 export const APP_HOME_ROUTE = '/app';
 export const AUTH_ROUTE = '/auth';
 export const AUTH_LOGIN_HREF = `${AUTH_ROUTE}?tab=login`;
 export const AUTH_REGISTER_HREF = `${AUTH_ROUTE}?tab=register`;
+
+/** Panne réseau ou 5xx : l'échec ne dit rien de la validité de la session. */
+export function isTransientAuthError(e: unknown): boolean {
+    const status =
+        e && typeof e === 'object' && 'status' in e && typeof (e as { status: unknown }).status === 'number'
+            ? (e as { status: number }).status
+            : 0;
+    return status === 0 || status >= 500;
+}
 
 /** Mot de passe post-inscription — mémoire seule (jamais sessionStorage). */
 let pendingPasswordMemory: string | null = null;
@@ -66,6 +89,11 @@ export function createAuthSession() {
     const pendingPassword = ref<string | null>(pendingPasswordMemory);
     const user = ref<Me | null>(null);
     const returnUrl = ref<string | null>(null);
+    /**
+     * Compte qui était connecté quand `returnUrl` a été conservé par un re-login forcé (inactivité, 401).
+     * `null` = lien demandé sans session (guard) : valable pour le compte qui se connecte.
+     */
+    const returnUrlOwner = ref<string | null>(null);
 
     /** Mutex partagé store ↔ fetchWrapper — un seul refresh à la fois. */
     let refreshInFlight: Promise<boolean> | null = null;
@@ -80,19 +108,27 @@ export function createAuthSession() {
 
     /** Notice idle en attente si le refresh a échoué pour inactivité (lue par `forceReLogin`). */
     const pendingIdleLogoutNotice = { value: false };
-    /** Dernier refresh en échec « transient » (réseau / 5xx) — le bootstrap peut retenter. */
-    let lastRefreshTransient = false;
+    /**
+     * Dernier refresh en échec « transient » (réseau / 5xx) : la session locale est gardée, le
+     * bootstrap peut retenter et les appelants ne doivent pas forcer une reconnexion.
+     */
+    const lastRefreshTransient = ref(false);
+    /** Change à chaque `clearSession` : un refresh parti avant ne doit plus rien écrire. */
+    let sessionEpoch = 0;
+
+    /**
+     * Mode Bearer : un onglet dupliqué partage la chaîne de refresh. Celui qui rafraîchit annonce ses nouveaux
+     * jetons, l'autre les adopte au lieu de présenter un jeton déjà roté (V1.5).
+     */
+    const tokenBroadcast = cookieMode
+        ? null
+        : createTokenBroadcast((tokens) => {
+              if (!refreshToken.value || !tokens.refreshToken || tokens.refreshToken === refreshToken.value) return;
+              setTokens(tokens);
+          });
 
     /** Cookie-mode : cookies HttpOnly ; Bearer : access/refresh en mémoire + sessionStorage. */
     const isAuthenticated = computed(() => (cookieMode ? cookieSessionActive.value : !!accessToken.value || !!refreshToken.value));
-
-    function isTransientRefreshError(e: unknown): boolean {
-        const status =
-            e && typeof e === 'object' && 'status' in e && typeof (e as { status: unknown }).status === 'number'
-                ? (e as { status: number }).status
-                : 0;
-        return status === 0 || status >= 500;
-    }
 
     const displayName = computed(() => {
         if (!user.value) return '';
@@ -154,6 +190,9 @@ export function createAuthSession() {
 
     /** Vide la session locale et reset les stores liés. */
     function clearSession() {
+        sessionEpoch += 1;
+        refreshInFlight = null;
+        lastRefreshTransient.value = false;
         accessToken.value = null;
         refreshToken.value = null;
         expiresAt.value = null;
@@ -165,6 +204,9 @@ export function createAuthSession() {
         clearCsrfToken();
         bootstrapDone = false;
         bootstrapInFlight = null;
+        clearDemoSession();
+        resetDemoDb();
+        useStepUpStore().reset();
         useUserSettingsStore().reset();
         useNotificationsStore().reset();
         useFriendsStore().reset();
@@ -181,7 +223,16 @@ export function createAuthSession() {
         useSavingsGoalsStore().reset();
         useFilesStore().reset();
         useSubscriptionStore().reset();
+        useAssetsStore().reset();
+        useRealEstateStore().reset();
+        useInvestmentsStore().reset();
+        useInstrumentsStore().reset();
+        useLiabilitiesStore().reset();
+        usePersonalLoansStore().reset();
+        useSharedDebtsStore().reset();
+        useNetWorthStore().reset();
         useSidebarNavStore().reset();
+        useVaultStore().lock();
     }
 
     /**
@@ -192,34 +243,63 @@ export function createAuthSession() {
         if (!cookieMode && !refreshToken.value) return false;
         if (refreshInFlight) return refreshInFlight;
 
-        refreshInFlight = (async () => {
+        const epoch = sessionEpoch;
+        // Porteur : le `finally` compare l'identité de ce refresh sans TS2454.
+        const holder = { promise: undefined as Promise<boolean> | undefined };
+        holder.promise = (async () => {
             try {
                 const tokens = await authApi.refresh(cookieMode ? null : refreshToken.value);
-                lastRefreshTransient = false;
+                // Déconnexion (ou timer d'inactivité) pendant le refresh : ne pas ressusciter la session.
+                if (epoch !== sessionEpoch) return false;
+                lastRefreshTransient.value = false;
                 setTokens(tokens);
+                tokenBroadcast?.publish(tokens);
                 return true;
             } catch (e: unknown) {
+                if (epoch !== sessionEpoch) return false;
                 if (isIdleSessionError(e)) {
                     pendingIdleLogoutNotice.value = true;
                 }
-                lastRefreshTransient = isTransientRefreshError(e);
-                if (!lastRefreshTransient) {
+                lastRefreshTransient.value = isTransientAuthError(e);
+                if (!lastRefreshTransient.value) {
                     clearSession();
                 }
                 return false;
             } finally {
-                refreshInFlight = null;
+                if (refreshInFlight === holder.promise) refreshInFlight = null;
             }
         })();
+        refreshInFlight = holder.promise;
 
-        return refreshInFlight;
+        return holder.promise;
     }
 
     /**
      * Mode cookie : tente un refresh silencieux (cookie HttpOnly) si pas d’access utilisable.
      * À appeler depuis le guard avant de décider login /app.
      */
+    /** Session locale « Sacha », sans jeton persistant et sans appel réseau. */
+    function enterDemo() {
+        markDemoSession();
+        accessToken.value = 'demo';
+        refreshToken.value = null;
+        expiresAt.value = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString();
+        cookieSessionActive.value = true;
+        user.value = demoMe();
+        bootstrapDone = true;
+    }
+
+    /** Quitte la démo et oublie les données locales. */
+    function exitDemo() {
+        clearDemoSession();
+        clearSession();
+    }
+
     async function bootstrapSession(): Promise<void> {
+        if (isDemoSession()) {
+            enterDemo();
+            return;
+        }
         if (!cookieMode) return;
         // Challenge 2FA en cours : ne pas restaurer une ancienne session via refresh cookie.
         if (twoFactorToken.value) return;
@@ -241,7 +321,7 @@ export function createAuthSession() {
                 await refreshSession();
                 // Échec réseau / 5xx : laisser retenter au prochain passage du guard.
                 // Échec auth (401) ou succès : ne plus retenter jusqu’au prochain clearSession.
-                if (!lastRefreshTransient) {
+                if (!lastRefreshTransient.value) {
                     bootstrapDone = true;
                 }
             } finally {
@@ -257,6 +337,10 @@ export function createAuthSession() {
      * @returns Le token, ou `null` si non authentifié.
      */
     async function ensureAccessToken(): Promise<string | null> {
+        if (isDemoSession()) {
+            enterDemo();
+            return accessToken.value;
+        }
         if (cookieMode) {
             const expired = !!expiresAt.value && isAccessExpired(expiresAt.value);
             const needsRefresh = !cookieSessionActive.value || expired;
@@ -310,8 +394,10 @@ export function createAuthSession() {
         pendingPassword,
         user,
         returnUrl,
+        returnUrlOwner,
         cookieSessionActive,
         pendingIdleLogoutNotice,
+        lastRefreshTransient,
         isAuthenticated,
         displayName,
         hasVerifiedEmail,
@@ -320,6 +406,8 @@ export function createAuthSession() {
         clearPendingRegistration,
         setTokens,
         clearSession,
+        enterDemo,
+        exitDemo,
         refreshSession,
         bootstrapSession,
         ensureAccessToken,

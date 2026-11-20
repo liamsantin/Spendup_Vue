@@ -3,6 +3,7 @@ import type { Account } from '@/features/accounts/types';
 import { sanitizeTagPublicIds, sameTagPublicIds } from '@/features/tags/format';
 import {
     emptyToNull,
+    isOperationDateInFuture,
     isOperationDateInFutureUtc,
     isValidYmd,
     sourceAccountPublicId,
@@ -56,6 +57,8 @@ export type TransactionFormFields = {
     recurrencePublicId: string;
     /** Objectif d’épargne lié. Vide = détaché. */
     savingsGoalPublicId: string;
+    /** Actif du patrimoine. Vide = détaché. La devise peut différer de celle de la transaction. */
+    assetPublicId: string;
     tagPublicIds: string[];
 };
 
@@ -68,6 +71,11 @@ export type SavingsGoalLinkHint = {
 export type TransactionPayloadContext = {
     accounts: readonly Pick<Account, 'publicId' | 'currency' | 'isActive' | 'myRole'>[];
     now?: Date;
+    /**
+     * Fuseau de l'utilisateur pour juger une date « dans le futur », comme l'API. `null` = fuseau du navigateur ;
+     * absent = calendrier UTC (ancien comportement, gardé pour les appels qui ne connaissent pas l'utilisateur).
+     */
+    timeZone?: string | null;
     /** Objectifs connus — validation client du lien. Absents = le serveur tranche. */
     savingsGoals?: readonly SavingsGoalLinkHint[];
 };
@@ -107,7 +115,7 @@ type CommonFields =
           recurrencePublicId: string | null;
       };
 
-function commonFields(fields: TransactionFormFields, now?: Date): CommonFields {
+function commonFields(fields: TransactionFormFields, now?: Date, timeZone?: string | null): CommonFields {
     const label = normalizeLabel(fields.label);
     if (!label) return fail('labelRequired', 'label');
     if (label.length > TRANSACTION_LABEL_MAX) return fail('labelTooLong', 'label');
@@ -119,7 +127,9 @@ function commonFields(fields: TransactionFormFields, now?: Date): CommonFields {
     const operationDate = emptyToNull(fields.operationDate);
     if (!operationDate) return fail('operationDateRequired', 'operationDate');
     if (!isValidYmd(operationDate)) return fail('operationDateInvalid', 'operationDate');
-    if (isOperationDateInFutureUtc(operationDate, now)) return fail('operationDateFuture', 'operationDate');
+    const inFuture =
+        timeZone === undefined ? isOperationDateInFutureUtc(operationDate, now) : isOperationDateInFuture(operationDate, timeZone, now);
+    if (inFuture) return fail('operationDateFuture', 'operationDate');
 
     const valueDate = emptyToNull(fields.valueDate);
     if (valueDate) {
@@ -198,7 +208,7 @@ export function buildCreateTransactionPayload(
     const accountPublicId = fields.accountPublicId.trim();
     if (!accountPublicId) return fail('accountRequired', 'accountPublicId');
 
-    const common = commonFields(fields, context.now);
+    const common = commonFields(fields, context.now, context.timeZone);
     if (!common.ok) return common;
 
     const source = resolveAccount(context.accounts, accountPublicId);
@@ -245,6 +255,8 @@ export function buildCreateTransactionPayload(
     if (goalError) return goalError;
     const savingsGoalPublicId = emptyToNull(fields.savingsGoalPublicId);
     if (savingsGoalPublicId) payload.savingsGoalPublicId = savingsGoalPublicId;
+    const assetPublicId = emptyToNull(fields.assetPublicId);
+    if (assetPublicId) payload.assetPublicId = assetPublicId;
     const tagPublicIds = sanitizeTagPublicIds(fields.tagPublicIds);
     if (tagPublicIds.length) payload.tagPublicIds = tagPublicIds;
 
@@ -255,7 +267,7 @@ export function buildUpdateTransactionPayload(
     fields: TransactionFormFields,
     context: TransactionPayloadContext = { accounts: [] }
 ): BuildTransactionPayloadResult<UpdateTransactionPayload> {
-    const common = commonFields(fields, context.now);
+    const common = commonFields(fields, context.now, context.timeZone);
     if (!common.ok) return common;
 
     const accountPublicId = fields.accountPublicId.trim();
@@ -286,6 +298,7 @@ export function buildUpdateTransactionPayload(
         recurringExpensePublicId: recurrence.recurringExpensePublicId,
         recurringIncomePublicId: recurrence.recurringIncomePublicId,
         savingsGoalPublicId: emptyToNull(fields.savingsGoalPublicId),
+        assetPublicId: emptyToNull(fields.assetPublicId),
         tagPublicIds: sanitizeTagPublicIds(fields.tagPublicIds)
     };
     return { ok: true, payload };
@@ -305,6 +318,7 @@ export function isTransactionFormDirty(
     if (emptyToNull(fields.tierPublicId) !== emptyToNull(transaction.tierPublicId ?? null)) return true;
     if (emptyToNull(fields.recurrencePublicId) !== emptyToNull(recurrencePublicIdFromTransaction(transaction))) return true;
     if (emptyToNull(fields.savingsGoalPublicId) !== emptyToNull(transaction.savingsGoalPublicId ?? null)) return true;
+    if (emptyToNull(fields.assetPublicId) !== emptyToNull(transaction.assetPublicId ?? null)) return true;
     if (!sameTagPublicIds(fields.tagPublicIds, transaction.tagPublicIds)) return true;
     return false;
 }
@@ -326,6 +340,7 @@ export function transactionToFormFields(transaction: Transaction): TransactionFo
         tierPublicId: transaction.tierPublicId ?? '',
         recurrencePublicId: recurrencePublicIdFromTransaction(transaction),
         savingsGoalPublicId: transaction.savingsGoalPublicId ?? '',
+        assetPublicId: transaction.assetPublicId ?? '',
         tagPublicIds: sanitizeTagPublicIds(transaction.tagPublicIds)
     };
 }
@@ -342,5 +357,6 @@ type TransactionFormDirtySource = {
     recurringExpensePublicId: string | null;
     recurringIncomePublicId: string | null;
     savingsGoalPublicId?: string | null;
+    assetPublicId?: string | null;
     tagPublicIds?: string[] | null;
 };

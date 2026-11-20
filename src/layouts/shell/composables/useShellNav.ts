@@ -5,8 +5,14 @@ import { useNotificationsStore } from '@/features/notifications';
 import { BUDGETS_PATHS } from '@/features/budgets/paths';
 import { IMPORTS_PATHS } from '@/features/imports/paths';
 import { SAVINGS_GOALS_PATHS } from '@/features/savings-goals/paths';
+import { NET_WORTH_PATHS } from '@/features/net-worth/paths';
+import { ASSETS_PATHS } from '@/features/assets/paths';
+import { REAL_ESTATE_PATHS } from '@/features/real-estate/paths';
+import { INVESTMENTS_PATHS } from '@/features/investments/paths';
+import { DEBTS_PATHS } from '@/features/liabilities/paths';
+import { TAX_BASE } from '@/features/tax/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
-import { SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
+import { SECURITY_PATHS, SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import {
     AccountNavIcon,
     AccountsNavIcon,
@@ -27,8 +33,8 @@ import {
     GoalsNavIcon,
     HouseholdNavIcon,
     ImportNavIcon,
-    InvestmentsNavIcon,
     NetworkNavIcon,
+    InvestmentsNavIcon,
     NotificationsNavIcon,
     BanksNavIcon,
     PaymentMethodsNavIcon,
@@ -48,6 +54,7 @@ import {
     TaxNavIcon,
     TiersNavIcon,
     TransactionsNavIcon,
+    TransparencyNavIcon,
     WealthNavIcon,
     WealthOverviewNavIcon
 } from '../solarNavIcons';
@@ -94,8 +101,10 @@ export const SHELL_NAV_IDS = {
     notificationSettings: 'notification-settings',
     privacy: 'privacy',
     security: 'security',
+    transparency: 'transparency',
     subscription: 'subscription',
-    account: 'account'
+    account: 'account',
+    upcoming: 'upcoming'
 } as const;
 
 function pathIs(path: string, prefix: string): boolean {
@@ -103,6 +112,9 @@ function pathIs(path: string, prefix: string): boolean {
 }
 
 export function idsFromPath(path: string): { openId: string | null; activeId: string | null } {
+    if (path === '/demo' || path.startsWith('/demo/')) {
+        path = `/app${path.slice('/demo'.length)}`;
+    }
     if (path === '/app' || path === '/app/') {
         return { openId: SHELL_NAV_IDS.dashboard, activeId: SHELL_NAV_IDS.dashboard };
     }
@@ -154,6 +166,24 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, BUDGETS_PATHS.list) || pathIs(path, '/app/planning')) {
         return { openId: SHELL_NAV_IDS.planning, activeId: SHELL_NAV_IDS.budgets };
     }
+    if (pathIs(path, ASSETS_PATHS.list)) {
+        return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.assets };
+    }
+    if (pathIs(path, REAL_ESTATE_PATHS.list)) {
+        return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.realEstate };
+    }
+    if (pathIs(path, INVESTMENTS_PATHS.list)) {
+        return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.investments };
+    }
+    if (pathIs(path, DEBTS_PATHS.liabilities)) {
+        return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.debts };
+    }
+    if (pathIs(path, TAX_BASE)) {
+        return { openId: SHELL_NAV_IDS.analytics, activeId: SHELL_NAV_IDS.tax };
+    }
+    if (pathIs(path, NET_WORTH_PATHS.overview)) {
+        return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.wealthOverview };
+    }
     if (pathIs(path, '/app/friends')) {
         return { openId: SHELL_NAV_IDS.network, activeId: SHELL_NAV_IDS.friends };
     }
@@ -165,6 +195,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     }
     if (pathIs(path, SETTINGS_PATHS.privacy)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.privacy };
+    }
+    if (pathIs(path, SECURITY_PATHS.transparency)) {
+        return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.transparency };
     }
     if (pathIs(path, SETTINGS_PATHS.security)) {
         return { openId: SHELL_NAV_IDS.settings, activeId: SHELL_NAV_IDS.security };
@@ -190,20 +223,21 @@ export function useShellNav() {
     const unreadCount = computed(() => notifications.unreadCount);
     const soon = computed(() => t('nav.subCaptions.soon'));
 
-    function live(id: string, label: string, icon: NavIcon, to: string): NavLeaf {
-        return { id, label, icon, to };
+    function live(id: string, label: string, icon: NavIcon, to: string, group?: string): NavLeaf {
+        return { id, label, icon, to, group };
     }
 
-    function upcoming(id: string, label: string, icon: NavIcon): NavLeaf {
-        return { id, label, icon, disabled: true, caption: soon.value };
+    function upcoming(id: string, label: string, icon: NavIcon, group?: string): NavLeaf {
+        return { id, label, icon, disabled: true, caption: soon.value, group };
     }
 
-    function section(id: string, label: string, icon: NavIcon, children: NavLeaf[]): NavItem {
+    function section(id: string, label: string, icon: NavIcon, children: NavLeaf[], muted = false): NavItem {
         return {
             id,
             label,
             icon,
             children,
+            muted: muted || undefined,
             detail: [{ id: `${id}-pages`, title: label, items: children }]
         };
     }
@@ -237,16 +271,16 @@ export function useShellNav() {
     ]);
 
     const wealthLeaves = computed<NavLeaf[]>(() => [
-        upcoming(SHELL_NAV_IDS.wealthOverview, t('nav.items.wealthOverview'), WealthOverviewNavIcon),
-        upcoming(SHELL_NAV_IDS.assets, t('nav.items.assets'), AssetsNavIcon),
-        upcoming(SHELL_NAV_IDS.investments, t('nav.items.investments'), InvestmentsNavIcon),
-        upcoming(SHELL_NAV_IDS.realEstate, t('nav.items.realEstate'), RealEstateNavIcon),
-        upcoming(SHELL_NAV_IDS.debts, t('nav.items.debts'), DebtsNavIcon)
+        live(SHELL_NAV_IDS.wealthOverview, t('nav.items.wealthOverview'), WealthOverviewNavIcon, NET_WORTH_PATHS.overview),
+        live(SHELL_NAV_IDS.assets, t('nav.items.assets'), AssetsNavIcon, ASSETS_PATHS.list),
+        live(SHELL_NAV_IDS.investments, t('nav.items.investments'), InvestmentsNavIcon, INVESTMENTS_PATHS.list),
+        live(SHELL_NAV_IDS.realEstate, t('nav.items.realEstate'), RealEstateNavIcon, REAL_ESTATE_PATHS.list),
+        live(SHELL_NAV_IDS.debts, t('nav.items.debts'), DebtsNavIcon, DEBTS_PATHS.liabilities)
     ]);
 
     const analyticsLeaves = computed<NavLeaf[]>(() => [
         upcoming(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), ForecastsNavIcon),
-        upcoming(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon)
+        live(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon, TAX_BASE)
     ]);
 
     const networkLeaves = computed<NavLeaf[]>(() => [
@@ -260,13 +294,15 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.notificationSettings, t('nav.items.notificationSettings'), NotificationsNavIcon, SETTINGS_PATHS.notifications),
         live(SHELL_NAV_IDS.privacy, t('nav.items.privacy'), PrivacyNavIcon, SETTINGS_PATHS.privacy),
         live(SHELL_NAV_IDS.security, t('nav.items.security'), SecurityNavIcon, SETTINGS_PATHS.security),
+        live(SHELL_NAV_IDS.transparency, t('nav.items.transparency'), TransparencyNavIcon, SECURITY_PATHS.transparency),
         upcoming(SHELL_NAV_IDS.subscription, t('nav.items.subscription'), SubscriptionNavIcon),
         live(SHELL_NAV_IDS.account, t('nav.items.account'), AccountNavIcon, SETTINGS_PATHS.account)
     ]);
 
+    /* Une rangée par section, comme l'ancienne colonne : un clic déplie ses pages (accordéon).
+       Analyses est annoncée (`muted`) : toutes ses pages sont à venir. */
     const primaryNav = computed<NavItem[]>(() => [
         live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardNavIcon, '/app'),
-        live(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarNavIcon, '/app/calendrier'),
         section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesNavIcon, financeLeaves.value),
         section(SHELL_NAV_IDS.recurrences, t('nav.headers.recurrences'), RecurrencesNavIcon, recurrencesLeaves.value),
         section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionNavIcon, gestionLeaves.value),
@@ -276,8 +312,17 @@ export function useShellNav() {
         section(SHELL_NAV_IDS.network, t('nav.headers.network'), NetworkNavIcon, networkLeaves.value)
     ]);
 
+    const headerLinks = computed<NavLeaf[]>(() => [
+        live(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarNavIcon, '/app/calendrier'),
+        live(SHELL_NAV_IDS.files, t('nav.items.files'), FilesNavIcon, '/app/gestion/files'),
+        live(SHELL_NAV_IDS.friends, t('nav.items.friends'), FriendsNavIcon, '/app/friends')
+    ]);
+
+    /* Paramètres vit en bas de la sidebar, sous le filet 2 px (header : raccourcis seuls). */
+    const headerMenus = computed<NavItem[]>(() => []);
+
     const secondaryNav = computed<NavItem[]>(() => [
-        section(SHELL_NAV_IDS.settings, t('nav.headers.settings'), SettingsNavIcon, settingsLeaves.value)
+        section(SHELL_NAV_IDS.settings, t('nav.headers.settings'), SettingsNavIcon, settingsLeaves.value, true)
     ]);
 
     watch(
@@ -296,6 +341,8 @@ export function useShellNav() {
         activeId,
         primaryNav,
         secondaryNav,
+        headerLinks,
+        headerMenus,
         unreadCount,
         title: computed(() => t('nav.menu'))
     };

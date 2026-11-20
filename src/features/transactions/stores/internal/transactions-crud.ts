@@ -1,7 +1,11 @@
 import { AppError } from '@/utils/errors/app-error';
+import { nextPageFromLoaded } from '@/utils/helpers/paging';
+import { ASSET_NOT_FOUND_MESSAGE } from '@/features/assets/types';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
 import { involvedAccountPublicIds, normalizeTransaction, sanitizeFilePublicIds } from '@/features/transactions/format';
 import { transactionsApi } from '@/features/transactions/api';
+import type { SetTransactionTaxNaturePayload } from '@/features/transactions/tax-nature';
 import { canWriteTransaction, canWriteTransactions, canWriteTransfer } from '@/features/transactions/rights';
 import { buildCreateTransactionPayload, buildUpdateTransactionPayload, type TransactionFormFields } from '@/features/transactions/payload';
 import { refreshTagCountersIfLoaded } from '@/features/tags/stores/tags-store';
@@ -18,6 +22,15 @@ export const TRANSACTION_NOT_FOUND_CODE = 'transaction_not_found';
 export const TRANSACTION_NOT_FOUND_MESSAGE = 'Cette transaction n’est plus disponible.';
 export const TRANSACTION_FORBIDDEN_CODE = 'transaction_forbidden';
 export const TRANSACTION_FORBIDDEN_MESSAGE = 'Action non autorisée sur cette transaction.';
+
+/** Fuseau de l'utilisateur pour juger une date future comme l'API (`null` = fuseau du navigateur). */
+function userTimeZone(): string | null {
+    return useUserSettingsStore().current.timezone ?? null;
+}
+
+function isAssetNotFound(err: AppError): boolean {
+    return err.status === 404 && err.message === ASSET_NOT_FOUND_MESSAGE;
+}
 
 function payloadErrorMessage(code: string): string {
     switch (code) {
@@ -163,6 +176,8 @@ export function createTransactionsCrud(state: TransactionsState) {
                             tierPublicId: normalized.tierPublicId ?? undefined,
                             recurringExpensePublicId: normalized.recurringExpensePublicId ?? undefined,
                             recurringIncomePublicId: normalized.recurringIncomePublicId ?? undefined,
+                            assetPublicId: normalized.assetPublicId ?? undefined,
+                            type: normalized.type ?? undefined,
                             from: normalized.from ?? undefined,
                             to: normalized.to ?? undefined,
                             search: normalized.search ?? undefined,
@@ -180,7 +195,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                     } catch (e: unknown) {
                         if (requestId === listRequestSeq) {
                             const err = AppError.fromUnknown(e);
-                            error.value = err.status === 404 ? TRANSACTION_NOT_FOUND_MESSAGE : err.message;
+                            error.value = err.status === 404 && !isAssetNotFound(err) ? TRANSACTION_NOT_FOUND_MESSAGE : err.message;
                         }
                         throw e;
                     }
@@ -226,7 +241,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             const size = pageSize.value || TRANSACTION_PAGE_SIZE_DEFAULT;
             // Page déduite du nombre d’éléments chargés (robuste aux suppressions locales qui décalent les offsets serveur).
             const loaded = itemsByListKey.get(key)?.items.length ?? items.value.length;
-            const nextPage = Math.floor(loaded / size) + 1;
+            const nextPage = nextPageFromLoaded(loaded, size, TRANSACTION_PAGE_SIZE_DEFAULT);
             const result = await transactionsApi.list({
                 accountPublicId: query.accountPublicId ?? undefined,
                 categoryPublicId: query.categoryPublicId ?? undefined,
@@ -234,6 +249,8 @@ export function createTransactionsCrud(state: TransactionsState) {
                 tierPublicId: query.tierPublicId ?? undefined,
                 recurringExpensePublicId: query.recurringExpensePublicId ?? undefined,
                 recurringIncomePublicId: query.recurringIncomePublicId ?? undefined,
+                assetPublicId: query.assetPublicId ?? undefined,
+                type: query.type ?? undefined,
                 from: query.from ?? undefined,
                 to: query.to ?? undefined,
                 search: query.search ?? undefined,
@@ -281,7 +298,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                     throw new AppError(TRANSACTION_FORBIDDEN_MESSAGE, 403, TRANSACTION_FORBIDDEN_CODE);
                 }
             }
-            const built = buildCreateTransactionPayload(fields, { accounts });
+            const built = buildCreateTransactionPayload(fields, { accounts, timeZone: userTimeZone() });
             if (!built.ok) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
@@ -295,7 +312,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             return created;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
-            error.value = err.status === 404 ? TRANSACTION_NOT_FOUND_MESSAGE : err.message;
+            error.value = err.status === 404 && !isAssetNotFound(err) ? TRANSACTION_NOT_FOUND_MESSAGE : err.message;
             throw err;
         } finally {
             endActing();
@@ -314,7 +331,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             if (!known) {
                 assertCanWriteAccounts([fields.accountPublicId.trim()].filter(Boolean));
             }
-            const built = buildUpdateTransactionPayload(fields, { accounts });
+            const built = buildUpdateTransactionPayload(fields, { accounts, timeZone: userTimeZone() });
             if (!built.ok) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
@@ -326,12 +343,37 @@ export function createTransactionsCrud(state: TransactionsState) {
             return updated;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
-            if (err.status === 404) {
+            if (isAssetNotFound(err)) {
+                error.value = err.message;
+            } else if (err.status === 404) {
                 rememberNotFound();
                 removeItemLocal(publicId);
             } else {
                 error.value = err.message;
             }
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
+    /**
+     * Geste sur la nature fiscale : n'altère ni montant ni mouvement, seulement la nature
+     * de la transaction en cache.
+     */
+    async function setTransactionTaxNature(txPublicId: string, body: SetTransactionTaxNaturePayload) {
+        beginActing();
+        clearError();
+        try {
+            const result = await transactionsApi.setTaxNature(txPublicId, body);
+            const known = state.allKnownItems().find((item) => item.publicId === txPublicId);
+            if (known) {
+                upsertItem({ ...known, taxNature: result.taxNature, taxNatureStatus: result.taxNatureStatus });
+            }
+            return result;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.message;
             throw err;
         } finally {
             endActing();
@@ -443,6 +485,7 @@ export function createTransactionsCrud(state: TransactionsState) {
                 tierPublicId: current.tierPublicId ?? undefined,
                 recurringExpensePublicId: current.recurringExpensePublicId ?? undefined,
                 recurringIncomePublicId: current.recurringIncomePublicId ?? undefined,
+                assetPublicId: current.assetPublicId ?? undefined,
                 from: current.from ?? undefined,
                 to: current.to ?? undefined,
                 search: current.search ?? undefined,
@@ -471,8 +514,24 @@ export function createTransactionsCrud(state: TransactionsState) {
         }
     }
 
+    /**
+     * Recharge les pages déjà affichées après un retour d'onglet ou un événement temps réel : la page 1 est
+     * relue, puis « Charger plus » est rejoué jusqu'à retrouver le nombre de lignes d'avant (position gardée,
+     * et une liste chargée en entier pour un filtre client ne retombe pas à 200 lignes).
+     */
+    async function restoreDepth(previousCount: number, key: string) {
+        let guard = 0;
+        while (activeListKey.value === key && items.value.length < previousCount && items.value.length < totalCount.value && guard++ < 50) {
+            const before = items.value.length;
+            await loadMore().catch(() => undefined);
+            if (items.value.length <= before) break;
+        }
+    }
+
     async function refetchActive(force = true) {
-        const current = parseListCacheKey(activeListKey.value);
+        const key = activeListKey.value;
+        const previousCount = items.value.length;
+        const current = parseListCacheKey(key);
         await loadList({
             accountPublicId: current.accountPublicId ?? undefined,
             categoryPublicId: current.categoryPublicId ?? undefined,
@@ -480,21 +539,26 @@ export function createTransactionsCrud(state: TransactionsState) {
             tierPublicId: current.tierPublicId ?? undefined,
             recurringExpensePublicId: current.recurringExpensePublicId ?? undefined,
             recurringIncomePublicId: current.recurringIncomePublicId ?? undefined,
+            assetPublicId: current.assetPublicId ?? undefined,
+            type: current.type ?? undefined,
             from: current.from ?? undefined,
             to: current.to ?? undefined,
             search: current.search ?? undefined,
             pageSize: pageSize.value || TRANSACTION_PAGE_SIZE_DEFAULT,
             force
         }).catch(() => undefined);
+        await restoreDepth(previousCount, key);
     }
 
     return {
         loadList,
         loadMore,
+        restoreDepth,
         cancelPendingLoads,
         createTransaction,
         updateTransaction,
         attachTransactionFile,
+        setTransactionTaxNature,
         detachTransactionFile,
         deleteTransaction,
         refetchAccount,

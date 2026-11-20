@@ -31,6 +31,16 @@
         "save": "Save",
         "cancel": "Cancel"
     },
+    "demo": {
+        "banner": "Demo — nothing is saved on our servers.",
+        "importPromise": "An imported statement is read in your browser and never sent to our servers.",
+        "reset": "Reset",
+        "exit": "Exit",
+        "signup": "Create an account",
+        "lockedTitle": "Available with an account",
+        "lockedText": "This part of Spend.Up is not in the demo. Create an account to use it with your own data.",
+        "back": "Back to the dashboard"
+    },
     "nav": {
         "menu": "Menu",
         "closeMenu": "Close menu",
@@ -45,7 +55,8 @@
             "wealth": "Wealth",
             "analytics": "Analytics",
             "network": "Network",
-            "settings": "Settings"
+            "settings": "Settings",
+            "upcoming": "Coming up"
         },
         "items": {
             "dashboard": "Dashboard",
@@ -83,8 +94,10 @@
             "privacy": "Privacy",
             "security": "Security",
             "subscription": "Subscription",
-            "account": "Account"
+            "account": "Account",
+            "transparency": "Transparency"
         },
+        "shortcuts": "Shortcuts",
         "subCaptions": {
             "soon": "Soon"
         },
@@ -187,11 +200,15 @@
             "menu": {
                 "preferences": {
                     "title": "My account",
-                    "subtitle": "Account, preferences & security"
+                    "subtitle": "Account and preferences"
                 },
                 "friends": {
                     "title": "My friends",
                     "subtitle": "List, requests & discover"
+                },
+                "security": {
+                    "title": "Security",
+                    "subtitle": "Password and sign-in"
                 }
             }
         },
@@ -297,7 +314,9 @@
             "subtitle": "Current period.",
             "empty": "No active budget yet.",
             "used": "{percent} used",
-            "overspent": "Over the limit"
+            "overspent": "Over the limit",
+            "monthLabel": "Current budget · {month}",
+            "summary": "{spent} spent of {limit} · {remaining} left"
         },
         "savingsGoals": {
             "title": "Savings goals",
@@ -322,7 +341,9 @@
             "upcoming": "Due within {days} days",
             "upcomingHint": "nothing due | {count} payment due | {count} payments due",
             "vsPrevious": "{change} vs {month}",
-            "noComparison": "No comparison available"
+            "noComparison": "No comparison available",
+            "loadFailed": "This month’s figures could not be loaded: the amounts shown are incomplete.",
+            "truncated": "This month has too many transactions to load in full: the amounts shown are partial."
         },
         "spending": {
             "title": "Spending by category",
@@ -347,6 +368,11 @@
     "comptesPage": {
         "title": "Accounts",
         "subtitle": "Banks, savings and payment methods",
+        "hero": {
+            "accounts": "{count} account | {count} accounts",
+            "banks": "{count} bank | {count} banks",
+            "netWorth": "Net worth"
+        },
         "tabs": {
             "accounts": "Accounts",
             "invitations": "Invitations"
@@ -409,15 +435,19 @@
             "currentBalance": "Current balance",
             "initialBalance": "Initial balance",
             "fieldHidden": "Hidden",
+            "fieldUnreadable": "Unreadable",
+            "fieldForeign": "Encrypted by the owner",
             "tabs": {
                 "details": "Details",
                 "snapshots": "Snapshot",
                 "paymentMethods": "Payment methods",
-                "shares": "Sharing"
+                "shares": "Sharing",
+                "documents": "Documents"
             },
             "seeAllTransactions": "View all transactions",
             "snapshotsHiddenHint": "Balance snapshots are hidden because the balance is not visible to you.",
-            "shareUnavailable": "You do not have access to manage sharing for this account."
+            "shareUnavailable": "You do not have access to manage sharing for this account.",
+            "documentsUnavailable": "Only the account owner can attach documents (annual pillar 3a certificate, year-end statement)."
         },
         "form": {
             "createTitle": "New account",
@@ -441,6 +471,7 @@
                 "nameRequired": "Name is required.",
                 "balanceInvalid": "Enter a valid balance.",
                 "ibanInvalid": "Invalid IBAN.",
+                "ibanUnreadable": "This IBAN is encrypted and unreadable on this device: clear it or enter it again.",
                 "colorInvalid": "Invalid color. Use #RGB, #RRGGBB, or #RRGGBBAA.",
                 "bankRequired": "A bank is required for a current or savings account: choose one, or enter a Swiss IBAN."
             },
@@ -692,8 +723,45 @@
         }
     },
     "recurrencesPage": {
+        "insuranceTypes": {
+            "healthBasic": "Basic health insurance",
+            "healthSupplementary": "Supplementary health insurance",
+            "life": "Life insurance or pillar 3b",
+            "accident": "Accident insurance",
+            "householdLiability": "Household and liability",
+            "vehicle": "Vehicle insurance",
+            "legalProtection": "Legal protection",
+            "other": "Other insurance"
+        },
         "title": "Recurring",
         "subtitle": "Planned expenses and income. A due becomes a transaction only after you confirm it.",
+        "hero": {
+            "active": "{count} active recurrence | {count} active recurrence | {count} active recurrences",
+            "duesInMonth": "{count} due in {month} | {count} due in {month} | {count} dues in {month}"
+        },
+        "figs": {
+            "fixedPerMonth": "Fixed costs / month",
+            "subscriptionsPerMonth": "Subscriptions / month",
+            "incomesPerMonth": "Recurring income / month",
+            "note": "Monthly equivalent of active recurrences"
+        },
+        "calendar": {
+            "legend": "Legend",
+            "savings": "Savings"
+        },
+        "groups": {
+            "incomes": "Income",
+            "fixed": "Fixed costs",
+            "subscriptions": "Subscriptions",
+            "savings": "Scheduled savings"
+        },
+        "row": {
+            "onDay": "on the {day}",
+            "next": "Next {date}"
+        },
+        "timeline": {
+            "dues": "{count} due | {count} due | {count} dues"
+        },
         "loadMore": "Load more",
         "unknownAccount": "Account",
         "tabs": {
@@ -789,6 +857,8 @@
             "noNextDue": "No upcoming due"
         },
         "detail": {
+            "nextDue": "Next due date",
+            "backToList": "Back to recurrences",
             "title": "Recurring",
             "subtitle": "Generated dues. Confirm to create a transaction.",
             "duesTitle": "Dues",
@@ -800,10 +870,12 @@
             "filesOnTransactions": "On transactions",
             "filesOnTransactionsEmpty": "No PDFs linked to this recurrence’s transactions.",
             "tabs": {
+                "label": "Recurrence sections",
+                "informations": "Information",
                 "dues": "Dues",
-                "attachments": "Attachments"
-            },
-            "seeTransactions": "View linked transactions"
+                "attachments": "Attachments",
+                "transactions": "Transactions"
+            }
         },
         "linkTransactions": {
             "title": "Link a transaction",
@@ -930,6 +1002,20 @@
                 "tier": "Payee",
                 "notes": "Notes"
             },
+            "insurance": {
+                "type": "Insurance type",
+                "typeNone": "Not specified",
+                "grossPremium": "Gross premium",
+                "premiumSubsidy": "Premium reduction",
+                "franchise": "Deductible",
+                "policyNumber": "Policy number",
+                "renewalDate": "Renewal",
+                "perPeriodHint": "Per period, before premium reduction.",
+                "subsidyHint": "For information: the planned amount above stays what you pay.",
+                "deductible": "Premiums are tax-deductible.",
+                "notDeductible": "Premiums are not tax-deductible.",
+                "deductibleUnknown": "Specify the type to know whether premiums are deductible."
+            },
             "errors": {
                 "nameRequired": "Name is required.",
                 "nameTooLong": "Name is too long.",
@@ -946,6 +1032,8 @@
                 "forbidden": "Action not allowed.",
                 "paymentDayInvalid": "Payment day must be between 1 and 28.",
                 "notesTooLong": "Notes are too long.",
+                "insuranceAmountInvalid": "Invalid amount.",
+                "insuranceSubsidyTooHigh": "The premium reduction cannot exceed the gross premium.",
                 "isActiveRequired": "Active status is required.",
                 "paymentDateInvalid": "Invalid date.",
                 "paymentDateFuture": "Date cannot be in the future."
@@ -977,11 +1065,32 @@
             "nameDesc": "Z → A",
             "amountDesc": "Highest",
             "amountAsc": "Lowest"
-        }
+        },
+        "aside": {
+            "figsTitle": "Per month",
+            "nextTitle": "Upcoming dues",
+            "allDues": "All dues",
+            "none": "No upcoming due."
+        },
+        "subnav": "Recurrence views"
     },
     "budgetsPage": {
         "title": "Budgets",
         "subtitle": "Recurring envelopes, current-period tracking and alerts.",
+        "hero": {
+            "monthBudget": "{month} budget",
+            "daysLeft": "{count} day left | {count} day left | {count} days left"
+        },
+        "overview": {
+            "spent": "Spent",
+            "budget": "Budget",
+            "remaining": "Left",
+            "overBy": "Over by",
+            "perDay": "Available per day",
+            "byCategory": "By category",
+            "reached": "Reached",
+            "aggregateNote": "Total of current monthly budgets"
+        },
         "searchPlaceholder": "Search a budget",
         "count": "{count} budget | {count} budget | {count} budgets",
         "tabs": {
@@ -1037,7 +1146,13 @@
             "allCategories": "All categories"
         },
         "detail": {
-            "seeTransactions": "View linked transactions"
+            "tabs": {
+                "transactions": "Transactions",
+                "label": "Budget sections",
+                "informations": "Information"
+            },
+            "window": "Current period",
+            "backToList": "Back to budgets"
         },
         "linkTransactions": {
             "title": "Add transactions",
@@ -1117,6 +1232,11 @@
     "savingsGoalsPage": {
         "title": "Savings goals",
         "subtitle": "Tracked amount = opening plus explicitly linked transactions.",
+        "card": {
+            "saved": "Saved",
+            "target": "Target",
+            "dueDate": "Due date"
+        },
         "searchPlaceholder": "Search a goal",
         "count": "{count} goal | {count} goal | {count} goals",
         "tabs": {
@@ -1169,9 +1289,18 @@
         },
         "detail": {
             "tabs": {
-                "details": "Details",
-                "transactions": "Linked transactions"
-            }
+                "transactions": "Transactions",
+                "label": "Goal sections",
+                "informations": "Information"
+            },
+            "figs": {
+                "saved": "Saved",
+                "remaining": "Remaining",
+                "exceeded": "Exceeded by",
+                "contributed": "Linked contributions",
+                "projected": "Estimated completion"
+            },
+            "backToList": "Back to goals"
         },
         "linkTransactions": {
             "title": "Link transactions",
@@ -1302,6 +1431,25 @@
             }
         }
     },
+    "taxNatures": {
+        "none": "None",
+        "pillar3aContribution": "Pillar 3a contribution",
+        "pillar2BuyIn": "Pillar 2 buy-in",
+        "healthInsurancePremium": "Health insurance premium",
+        "lifeInsurancePremium": "Life, accident or pillar 3b premium",
+        "medicalExpense": "Medical expenses I bear",
+        "medicalReimbursement": "Medical expense reimbursement",
+        "disabilityExpense": "Disability-related expenses",
+        "childcare": "Childcare costs",
+        "alimonyPaid": "Alimony paid",
+        "commuting": "Commute to work",
+        "jobExpense": "Other job expense",
+        "trainingExpense": "Training or professional development",
+        "donation": "Donation to a public-benefit organisation",
+        "politicalContribution": "Political party contribution or donation",
+        "debtInterest": "Debt or mortgage interest",
+        "taxPayment": "Tax payment"
+    },
     "categoriesPage": {
         "title": "Categories",
         "subtitle": "Your personal tree for classifying transactions.",
@@ -1386,6 +1534,7 @@
                 "independant": "Self-employed",
                 "allocations": "Allowances",
                 "rentes": "Pensions (AHV / pillar 2)",
+                "remboursementsSante": "Health reimbursements",
                 "autresRevenus": "Other income",
                 "epargne": "Savings & retirement",
                 "troisiemePilier": "Pillar 3",
@@ -1433,8 +1582,12 @@
                 "type": "Type",
                 "parent": "Parent",
                 "color": "Color",
-                "icone": "Icon"
+                "icone": "Icon",
+                "taxNature": "Tax nature"
             },
+            "taxNatureHint": "Optional. Used to prepare your tax return; changes nothing else.",
+            "taxNatureSuggestion": "Suggestion: {nature}.",
+            "taxNatureUse": "Use",
             "errors": {
                 "nameRequired": "Category name is required.",
                 "nameTooLong": "Category name exceeds 150 characters.",
@@ -1568,6 +1721,14 @@
             "organization": "Association, foundation, club",
             "administration": "Municipality, tax office, fund",
             "unknown": "The type is not clear yet"
+        },
+        "naturesPlural": {
+            "all": "Counterparties",
+            "person": "People",
+            "company": "Companies",
+            "organization": "Organizations",
+            "administration": "Administrations",
+            "unknown": "Unspecified"
         },
         "natures": {
             "person": "Person",
@@ -1718,6 +1879,25 @@
             "bankRoleLocked": "This counterparty is a bank (Bank tab): the role is required.",
             "bankRoleWithoutPanel": "To use this counterparty as an account’s bank, enable it in the Bank tab.",
             "bankNotListed": "Bank not in the list?"
+        },
+        "detail": {
+            "title": "Third party",
+            "tabs": {
+                "label": "Third-party sections",
+                "informations": "Information",
+                "attachments": "Receipts",
+                "transactions": "Transactions"
+            },
+            "sections": {
+                "contact": "Contact",
+                "identity": "Identity",
+                "bank": "Bank",
+                "notes": "Notes"
+            },
+            "noContact": "No contact details.",
+            "backToList": "Back to third parties",
+            "notFound": "Third party not found.",
+            "loading": "Loading third party"
         }
     },
     "filesPage": {
@@ -1784,10 +1964,83 @@
         },
         "preview": {
             "title": "Preview",
-            "unavailable": "This PDF cannot be displayed."
+            "unavailable": "This PDF cannot be displayed.",
+            "pageOf": "Page {current} of {total}",
+            "zoomOut": "Zoom out",
+            "zoomIn": "Zoom in",
+            "fitWidth": "Fit to width"
         },
         "upload": {
             "progress": "Uploading {name}… {percent}%"
+        },
+        "sync": {
+            "status": {
+                "synced": "Synced",
+                "cloud": "Online",
+                "pending": "Waiting to upload",
+                "local": "On this computer",
+                "excluded": "Excluded from sync",
+                "elsewhere": "On {device}",
+                "missing": "Missing from folder",
+                "blocked": "Blocking the queue (quota)",
+                "neverFits": "Too large for your plan"
+            },
+            "actions": {
+                "manage": "Sync"
+            },
+            "prompt": {
+                "title": "Sync your documents online?",
+                "body": "Your PDFs stay in a folder on this computer, with no limit. Sync copies the oldest ones online, within your quota, so you can reach them from your other devices.",
+                "enable": "Turn on sync",
+                "later": "Later"
+            },
+            "vaultAdvice": "Your PDFs are not encrypted: they are readable in this computer's folder and online. Recommended: turn on the Vault to encrypt them with your password.",
+            "panel": {
+                "disabled": "Online sync is off",
+                "upToDate": "Sync up to date",
+                "uploading": "Uploading {done} / {total}",
+                "blocked": "Quota reached: “{name}” is waiting for space",
+                "neverFits": "“{name}” will never fit in your quota: exclude it to continue",
+                "localOnly": "{count} file only on this computer ({size}) | {count} file only on this computer ({size}) | {count} files only on this computer ({size})",
+                "missing": "{count} file missing from the folder | {count} file missing from the folder | {count} files missing from the folder"
+            },
+            "pause": {
+                "quota": "Sync paused: quota reached",
+                "rate": "Sync paused: too many uploads this hour, resuming automatically",
+                "root_unavailable": "Documents folder not found (drive unplugged?). Sync will resume once it is reachable again.",
+                "offline": "Sync paused: server unreachable"
+            },
+            "deleteModal": {
+                "body": "This document is also online. Delete it everywhere, or only from this computer (it will stay online)?",
+                "localOnly": "From this computer",
+                "everywhere": "Everywhere"
+            },
+            "modal": {
+                "title": "Sync",
+                "nothing": "This document is not on this computer.",
+                "neverFits": "This file is larger than your whole quota: it blocks the next ones.",
+                "excludeTitle": "Exclude from sync?",
+                "excludeBody": "The document will stay only on this computer and will no longer block the upload queue.",
+                "excludeConfirm": "Exclude",
+                "includeTitle": "Include in sync?",
+                "includeBody": "The document goes back into the upload queue, by the date it was added.",
+                "includeConfirm": "Include",
+                "keepHereTitle": "Keep only on this computer?",
+                "keepHereBody": "The online copy will be deleted and your quota freed. The document will no longer be visible on your other devices and will only exist in this computer's folder.",
+                "keepHereConfirm": "Keep only here",
+                "restoreTitle": "Download the document again?",
+                "restoreBody": "The file disappeared from this computer's folder. It is still online: it will be copied back into the folder.",
+                "restoreConfirm": "Download again"
+            },
+            "settings": {
+                "title": "Documents on this computer",
+                "subtitle": "Your PDFs are kept in a folder on this computer, with no size limit. Documents deleted from another device are kept {days} days in the .corbeille subfolder.",
+                "folder": "Documents folder",
+                "change": "Change…",
+                "moving": "Moving…",
+                "enabled": "Sync online",
+                "enabledHint": "Copies your documents online, oldest first, within your quota."
+            }
         },
         "deleteModal": {
             "title": "Delete this file?",
@@ -1799,7 +2052,7 @@
             "tooLarge": "The file exceeds 10 MB.",
             "notPdf": "Only PDF files are accepted.",
             "quotaExceeded": "Storage quota exceeded.",
-            "linkedToTransactions": "This file is still linked to a transaction. Detach it first.",
+            "linkedToTransactions": "This file is still linked to a transaction, a recurrence or an asset. Detach it first.",
             "nameRequired": "The file name is required.",
             "documentDateInvalid": "The document date is invalid."
         },
@@ -1835,6 +2088,35 @@
         }
     },
     "transactionsPage": {
+        "reimbursements": {
+            "title": "Reimbursements",
+            "invoiceSummary": "Reimbursed: {reimbursed} · Out of pocket: {net}",
+            "noneForInvoice": "No reimbursement linked.",
+            "reimbursementSummary": "Linked: {allocated} · Left to link: {remaining}",
+            "candidates": "Likely invoices:",
+            "link": "Link",
+            "unlink": "Unlink",
+            "failed": "Action not possible right now.",
+            "reasons": {
+                "sameTier": "same payee",
+                "sameAmount": "same amount"
+            }
+        },
+        "taxNature": {
+            "title": "Tax nature",
+            "noneHint": "No nature. Optional: used to prepare your tax return.",
+            "choose": "Choose a nature",
+            "change": "Change",
+            "confirm": "Confirm",
+            "dismiss": "Dismiss",
+            "reset": "Back to the suggestion",
+            "states": {
+                "none": "None",
+                "suggested": "Suggested, to confirm",
+                "confirmed": "Confirmed",
+                "dismissed": "Dismissed"
+            }
+        },
         "title": "Transactions",
         "titleForAccount": "Account transactions: {name}",
         "titleForRecurrence": "Recurring transactions: {name}",
@@ -1851,7 +2133,8 @@
             "budget": "No transactions for this budget.",
             "budgetOut": "No expenses to add to this envelope for this period.",
             "byType": "No “{type}” transactions.",
-            "filtered": "No transaction matches this search."
+            "filtered": "No transaction matches this search.",
+            "asset": "No transactions linked to this asset."
         },
         "searchPlaceholder": "Search…",
         "actions": {
@@ -1860,6 +2143,7 @@
             "create": "Add",
             "edit": "Edit",
             "delete": "Delete",
+            "unlink": "Unlink",
             "search": "Search",
             "clearSearch": "Clear search",
             "export": "Export"
@@ -1922,6 +2206,7 @@
             "createdByUnknown": "Entered by a user",
             "myCategory": "My category: {name}",
             "myTier": "My counterparty: {name}",
+            "asset": "Asset: {name}",
             "hasAttachments": "{count} receipt | {count} receipt | {count} receipts",
             "sourceRecurrence": "Recurring",
             "recurrenceDelta": "{delta} vs planned ({planned})",
@@ -1929,10 +2214,42 @@
         },
         "deleteModal": {
             "title": "Delete this transaction?",
-            "body": "Linked movements will be reversed and the account balance will be recalculated."
+            "body": "Linked movements will be reversed and the account balance will be recalculated.",
+            "importedBody": "This transaction comes from a bank import: deleting it creates a gap with your statement."
+        },
+        "unlinkModal": {
+            "title": "Unlink {count} transaction? | Unlink {count} transaction? | Unlink {count} transactions?",
+            "body": "It stays on the account. Only the link to this asset is removed. | They stay on the account. Only the link to this asset is removed. | They stay on the account. Only the link to this asset is removed.",
+            "bodyGeneric": "It stays on the account. Only the link is removed. | It stays on the account. Only the link is removed. | They stay on the account. Only the link is removed."
         },
         "errors": {
             "notFound": "This transaction is no longer available."
+        },
+        "linkTransactions": {
+            "action": "Link",
+            "title": "Link transactions",
+            "subtitle": "Entries not yet attached to an asset. The currency can differ from the asset’s.",
+            "searchPlaceholder": "Search a transaction",
+            "empty": "No transaction to link.",
+            "emptyFiltered": "No transaction matches this search.",
+            "selected": "{count} selected | {count} selected | {count} selected",
+            "selectAll": "Select all",
+            "selectNone": "Clear selection",
+            "confirm": "Link {count} transaction | Link {count} transaction | Link {count} transactions",
+            "subtitleTier": "Entries that have no third party yet."
+        },
+        "unlinkTransactions": {
+            "action": "Unlink",
+            "select": "Select {name}",
+            "title": "Unlink transactions",
+            "subtitle": "Entries already attached to this asset. They stay on the account.",
+            "searchPlaceholder": "Search a transaction",
+            "empty": "No transaction to unlink.",
+            "emptyFiltered": "No transaction matches this search.",
+            "selected": "{count} selected | {count} selected | {count} selected",
+            "selectAll": "Select all",
+            "selectNone": "Clear selection",
+            "confirm": "Unlink {count} transaction | Unlink {count} transaction | Unlink {count} transactions"
         },
         "form": {
             "createTitle": "New transaction",
@@ -1951,6 +2268,10 @@
             "noCategory": "None",
             "noRecurrence": "None",
             "noSavingsGoal": "None",
+            "noAsset": "None",
+            "assetSearchPlaceholder": "Search an asset…",
+            "assetNoResults": "No asset matches.",
+            "assetHint": "Optional. The transaction currency can differ from the asset’s. On a shared account, only the asset owner sees this link.",
             "savingsGoalSearchPlaceholder": "Search a goal…",
             "savingsGoalNoResults": "No goal matches.",
             "savingsGoalHint": "The transaction must touch the goal’s account, in the same currency. Typical case: a transfer into the savings account.",
@@ -1994,6 +2315,7 @@
                 "tags": "My tags",
                 "tier": "My counterparty",
                 "savingsGoal": "Savings goal",
+                "asset": "Asset",
                 "attachments": "PDF receipts"
             },
             "attachments": {
@@ -2004,7 +2326,16 @@
                 "pick": "Choose from Files",
                 "detach": "Detach",
                 "maxReached": "A transaction accepts at most {max} files.",
-                "alreadyLinked": "File already linked."
+                "alreadyLinked": "File already linked.",
+                "add": "Add",
+                "libraryEmpty": "No file in your library.",
+                "maxFiles": "{max} files at most.",
+                "choose": "Choose",
+                "chooseTitle": "Choose a file",
+                "chooseSubtitle": "All the PDFs in your library. Tick one or more.",
+                "chooseNoMatch": "No file matches the search.",
+                "chooseSelected": "No file selected | {count} file selected | {count} files selected",
+                "chooseConfirm": "Add | Add {count} file | Add {count} files"
             },
             "errors": {
                 "typeInvalid": "Invalid transaction type (expense, income, transfer).",
@@ -2027,10 +2358,24 @@
                 "savingsGoalInvalid": "Savings goal not found.",
                 "savingsGoalNoAccount": "Link an account to the goal before attaching a transaction.",
                 "savingsGoalCurrencyMismatch": "The transaction currency must match the goal.",
-                "savingsGoalAccountMismatch": "The transaction must touch the account linked to the goal."
+                "savingsGoalAccountMismatch": "The transaction must touch the account linked to the goal.",
+                "assetAlreadyLinked": "This transaction is already linked to another asset."
             }
         },
         "count": "{count} transaction | {count} transactions",
+        "operations": "{count} operation | {count} operation | {count} operations",
+        "shownOf": "{shown} of {total} transactions shown",
+        "typeTabs": {
+            "all": "All",
+            "revenu": "Income",
+            "depense": "Purchases",
+            "transfert": "Transfers"
+        },
+        "figures": {
+            "inflow": "Income",
+            "outflow": "Purchases",
+            "net": "Net balance"
+        },
         "sortDir": {
             "asc": "Ascending",
             "desc": "Descending"
@@ -2049,6 +2394,7 @@
     "importsPage": {
         "title": "Imports",
         "subtitle": "Import a CSV or Excel statement, review the lines, then create the transactions in one go.",
+        "subtitleDemo": "Import a CSV statement, review the lines, then create the transactions in one go.",
         "count": "{count} import | {count} import | {count} imports",
         "loadMore": "Load more",
         "tabs": {
@@ -2112,6 +2458,7 @@
         },
         "empty": {
             "list": "No imports yet. Import a CSV or Excel statement exported from your bank.",
+            "listDemo": "No imports yet. Import a CSV statement exported from your bank, or the sample statement.",
             "filtered": "No import matches these filters."
         },
         "list": {
@@ -2149,6 +2496,15 @@
             "account": "Target account",
             "pick": "Choose a file or drop it here",
             "formats": ".csv (2 MB max.) or .xlsx (5 MB max.)",
+            "formatsDemo": ".csv (2 MB max.)",
+            "demo": {
+                "promise": "The file is read in your browser and never sent to our servers.",
+                "reload": "Reloading the page clears the import and its transactions, like the rest of the demo.",
+                "sample": "No statement at hand?",
+                "useSample": "Use the sample statement",
+                "downloadSample": "Download",
+                "sampleName": "sample-statement.csv"
+            },
             "clearFile": "Remove file",
             "template": "Template",
             "autoDetect": "Automatic detection",
@@ -2171,6 +2527,7 @@
                 "legacyXls": ".xls is not supported: save the workbook as .xlsx or .csv.",
                 "macroXlsm": "Macro-enabled workbooks (.xlsm) are not accepted: save as .xlsx.",
                 "unsupported": "Unsupported format. Use a .csv or .xlsx file (OFX and CAMT are not accepted).",
+                "demoCsvOnly": "The demo reads CSV statements: export your statement as .csv from your e-banking.",
                 "tooLarge": "File too large ({max} max.)."
             }
         },
@@ -2605,7 +2962,8 @@
                 "birthDate": "Date of birth",
                 "street": "Street",
                 "streetNumber": "No.",
-                "country": "Country"
+                "country": "Country",
+                "canton": "Canton"
             },
             "noCountries": "No countries available",
             "countriesLoadFailed": "Could not load the country list.",
@@ -2650,7 +3008,8 @@
             "errors": {
                 "invalidUsername": "Username must be 3–30 characters ([a-z0-9._-]).",
                 "invalidPassword": "Password must be at least 8 characters and include a letter and a digit.",
-                "passwordMismatch": "Confirmation does not match the password."
+                "passwordMismatch": "Confirmation does not match the password.",
+                "passwordFailedAfterUsername": "Username “{username}” is saved, but the password was not created: {error} Try again to create the password."
             },
             "success": {
                 "credentialsCreated": "Credentials created: sign in with username “{username}” and the password you just set."
@@ -2680,13 +3039,18 @@
             "fields": {
                 "currentPassword": "Current password",
                 "newPassword": "New password",
-                "confirmPassword": "Confirm password"
+                "confirmPassword": "Confirm password",
+                "vaultPhrase": "Vault phrase"
             },
             "errors": {
                 "currentRequired": "Enter your current password.",
+                "currentIncorrect": "Current password is incorrect.",
                 "invalidNew": "New password must be at least 8 characters and include a letter and a digit.",
-                "mismatch": "Confirmation does not match the new password."
-            }
+                "mismatch": "Confirmation does not match the new password.",
+                "vaultPhraseRequired": "Enter your vault phrase.",
+                "vaultPhraseIncorrect": "Incorrect vault phrase."
+            },
+            "vaultPhraseHint": "Your vault is protected by a phrase: it is needed so that your new password also opens the vault."
         },
         "unlinkGoogleModal": {
             "title": "Unlink Google account",
@@ -2729,6 +3093,92 @@
         },
         "leaveConfirm": "You have unsaved changes. Do you really want to leave this page?",
         "googleSignIn": "Sign in with Google"
+    },
+    "vault": {
+        "unreadable": "Unreadable",
+        "foreign": "Encrypted by the owner",
+        "migration": {
+            "progress": "Encrypting your data: {done} of {total}",
+            "error": "Encryption of your data will resume at your next sign-in."
+        },
+        "encrypted": "Encrypted",
+        "secret": {
+            "password": "Password",
+            "phrase": "Vault phrase"
+        },
+        "locked": {
+            "title": "Vault locked",
+            "textRecoverable": "Your password was reset without a recovery code: your password no longer opens the vault key. Restore it with your code, or reset the vault.",
+            "textLost": "Your password was reset without a recovery code: the encrypted fields (IBANs, numbers, notes…) cannot be recovered. Reset the vault to start again with a new key.",
+            "restore": "Restore with the code",
+            "reset": "Reset"
+        },
+        "restore": {
+            "title": "Restore the vault",
+            "subtitle": "The recovery code opens the vault key; your password protects it again.",
+            "codeLabel": "Recovery code",
+            "codePlaceholder": "XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX",
+            "secretHint": "Your {label} protects the vault key on the server again; it never leaves this device in clear.",
+            "submit": "Restore",
+            "errors": {
+                "codeInvalid": "The code must have 32 characters (8 groups of 4).",
+                "wrongCode": "This code does not match the vault.",
+                "secretRequired": "Enter your {label}."
+            }
+        },
+        "reset": {
+            "title": "Reset the vault",
+            "warning": "Values still encrypted (IBANs, account numbers, plates, notes, addresses, file names…) will be erased permanently. A new vault will be created with the secret below.",
+            "confirmLabel": "I understand this data is lost and I want to start with a new vault.",
+            "submit": "Reset",
+            "errors": {
+                "confirmRequired": "Tick the box to confirm the reset.",
+                "secretRequired": "Enter your {label}."
+            }
+        },
+        "unlock": {
+            "title": "Open the vault",
+            "subtitle": "This device does not have your vault key yet: enter your vault phrase to read your encrypted fields.",
+            "submit": "Open",
+            "later": "Later",
+            "errors": {
+                "required": "Enter your vault phrase.",
+                "wrongPhrase": "Incorrect vault phrase.",
+                "unavailable": "The vault cannot be opened right now."
+            }
+        },
+        "setup": {
+            "titlePhrase": "Set a vault phrase",
+            "titlePassword": "Enable the vault",
+            "subtitlePhrase": "Your account signs in with Google: a phrase known only to you will protect the key that encrypts your sensitive fields in the browser.",
+            "subtitlePassword": "Your password will protect the key that encrypts your sensitive fields in the browser, as for new accounts.",
+            "confirmLabel": "Confirm the phrase",
+            "phraseHint": "At least {min} characters. Without this phrase or a recovery code, the vault fields are lost: write it down.",
+            "submit": "Create the vault",
+            "hintText": "Your account signs in with Google: set a vault phrase to encrypt your IBANs, numbers and notes in the browser.",
+            "hintAction": "Set a phrase",
+            "hintLater": "Later",
+            "errors": {
+                "required": "Enter your {label}.",
+                "tooShort": "The phrase must have at least {min} characters.",
+                "mismatch": "The two phrases do not match."
+            }
+        },
+        "disable": {
+            "title": "Disable the vault",
+            "warning": "All encrypted values will be stored in clear on the server again, then the vault will be deleted. The operator will be able to read them again. Your password is unchanged.",
+            "confirmLabel": "I understand my sensitive fields will no longer be encrypted.",
+            "submit": "Disable",
+            "progress": {
+                "disabling": "Switching the vault to removal…",
+                "decrypting": "Decrypting: {done} of {total}",
+                "deleting": "Deleting the vault…"
+            },
+            "errors": {
+                "confirmRequired": "Tick the box to confirm.",
+                "secretRequired": "Enter your password."
+            }
+        }
     },
     "security": {
         "twoFactor": {
@@ -2841,6 +3291,98 @@
                 "allRevoked": "All sessions were signed out. Please sign in again."
             }
         },
+        "supportCode": {
+            "title": "Support code",
+            "subtitle": "Let support view your account, only when you ask for it.",
+            "description": "This code lets support view your account in read-only mode for 30 minutes. You will be notified by e-mail when the review starts and ends. Only share it for a request you made yourself.",
+            "status": {
+                "active": "A code is active until {date}",
+                "used": "Your last code was used on {date}",
+                "none": "No active code"
+            },
+            "generate": "Generate a code",
+            "regenerate": "Generate a new code",
+            "codeLabel": "Your support code",
+            "expiresAt": "Valid until {date}",
+            "oneTimeWarning": "This code will not be shown again: write it down or copy it now.",
+            "copy": "Copy",
+            "copied": "Copied",
+            "errors": {
+                "copyFailed": "Could not copy to the clipboard."
+            }
+        },
+        "vault": {
+            "title": "Vault",
+            "subtitle": "Your IBANs, account numbers, plates and serial numbers are encrypted in your browser.",
+            "description": "The server only stores these fields encrypted, with a key it does not have: even the operator cannot read them. Your password opens the vault at each sign-in; nothing else to do.",
+            "status": {
+                "active": "Vault active",
+                "migrating": "Encryption in progress · {count} item(s) left",
+                "disabling": "Vault removal in progress",
+                "absent": "No vault on this account",
+                "locked": "Vault closed on this device",
+                "lost": "Vault key lost: these fields cannot be recovered",
+                "wrapLost": "Vault locked: your password no longer opens the key"
+            },
+            "absentHint": "Accounts that sign in with Google only do not have a vault yet.",
+            "lockedHint": "Sign in again with your password to reopen the vault on this device.",
+            "scope": {
+                "label": "Covered scope",
+                "core": "Core: IBANs, account numbers, plates, serial numbers, wallet addresses.",
+                "extended": "Extended: the core, plus notes, contacts, addresses and receipts."
+            },
+            "recovery": {
+                "reminder": "Generate your recovery code",
+                "reminderText": "Without your password or a recovery code, the vault fields are lost: a forgotten password cannot bring them back. The code is shown only once.",
+                "done": "Recovery code saved on {date}",
+                "doneText": "If you forget your password, this code will restore the vault fields.",
+                "generate": "Generate the code",
+                "renew": "Renew the code",
+                "renewHint": "A new code makes the previous one unusable."
+            },
+            "dialog": {
+                "title": "Recovery code",
+                "subtitle": "Your current password is needed to protect the vault key with this code.",
+                "passwordLabel": "Current password",
+                "generate": "Generate the code",
+                "codeLabel": "Your recovery code",
+                "oneTimeWarning": "This code will not be shown again: write it down somewhere safe, away from this device.",
+                "confirmLabel": "To confirm you wrote it down, enter the first 4 characters of the code",
+                "confirmPlaceholder": "XXXX",
+                "close": "I saved my code",
+                "copy": "Copy",
+                "copied": "Copied",
+                "errors": {
+                    "passwordRequired": "Enter your password.",
+                    "wrongPassword": "Incorrect password.",
+                    "confirmMismatch": "The characters entered do not match the start of the code.",
+                    "copyFailed": "Could not copy to the clipboard."
+                }
+            },
+            "absentHintPassword": "This account predates the vault: enable it with your password.",
+            "wrapLostHint": "Your password was reset without a recovery code: the encrypted fields cannot be recovered, reset the vault.",
+            "wrapLostHintRecoverable": "Your password was reset without a code: restore the key with your recovery code, or reset the vault.",
+            "actions": {
+                "setPhrase": "Set a vault phrase",
+                "activate": "Enable the vault",
+                "restore": "Restore with the code",
+                "reset": "Reset",
+                "disable": "Disable the vault",
+                "resumeDisable": "Resume disabling"
+            },
+            "disable": {
+                "title": "Disable the vault",
+                "text": "Your sensitive fields will be stored in clear on the server again, then the vault will be deleted.",
+                "resumeText": "Vault removal was interrupted: some values still need decrypting before deletion."
+            },
+            "success": {
+                "created": "Vault enabled. Your sensitive fields are encrypted in the browser.",
+                "createdPhrase": "Vault phrase set. Your sensitive fields are encrypted in the browser.",
+                "disabled": "Vault disabled: your fields are stored in clear on the server again.",
+                "restored": "Vault restored: your password opens the key again.",
+                "reset": "Vault reset with a new key."
+            }
+        },
         "session": {
             "title": "Session",
             "subtitle": "Idle logout, trusted devices and 2FA for sensitive actions.",
@@ -2854,6 +3396,117 @@
             "require2faForSensitiveActions": "Require 2FA for sensitive actions",
             "require2faHint": "When enabled, an OTP code is required in addition to your password for sensitive actions.",
             "require2faNeedsTwoFactor": "Enable two-factor authentication first to use this option."
+        },
+        "common": {
+            "backToSecurity": "Security settings",
+            "duration": {
+                "minutes": "{n} min",
+                "hours": "{h} h {m}"
+            }
+        },
+        "categories": {
+            "incident": "Incident",
+            "demande_utilisateur": "User request",
+            "restauration": "Restore",
+            "rgpd": "GDPR",
+            "securite": "Security"
+        },
+        "links": {
+            "title": "Access to your data",
+            "subtitle": "Who viewed your data, and what the operator does on the server.",
+            "accessLog": "Technical access",
+            "accessLogHint": "Every time support viewed your data, with the reason and the screens opened.",
+            "transparency": "Transparency",
+            "transparencyHint": "The operator’s activity register, identical for every user.",
+            "open": "Open"
+        },
+        "accessLog": {
+            "title": "Technical access",
+            "subtitle": "Support reviews of your data.",
+            "intro": "A technical access is a read-only review of your data by Spend.Up support: for an incident, a request you made, a restore, a legal obligation or a security check. It is always announced by e-mail the moment it opens, and every screen opened is logged. The operator’s name is never shown: you know that support looked, not who.",
+            "empty": "Nobody has viewed your data.",
+            "fields": {
+                "reason": "Reason",
+                "views": "Screens viewed",
+                "email": "Notification e-mail",
+                "code": "Support code"
+            },
+            "viewsNone": "No screen displayed",
+            "viewCount": "{resource} ×{count}",
+            "emailNotSent": "Not sent",
+            "codeUsed": "Support code used",
+            "status": {
+                "active": "In progress",
+                "terminated": "Ended",
+                "expired": "Expired",
+                "email_failed": "Cancelled: e-mail not sent, nothing was displayed"
+            },
+            "resources": {
+                "accounts": "accounts",
+                "transactions": "transactions",
+                "budgets": "budgets",
+                "recurring_expenses": "recurring expenses",
+                "recurring_incomes": "recurring income",
+                "imports": "imports",
+                "files": "files"
+            },
+            "pagination": {
+                "label": "Technical access pagination",
+                "summary": "Page {page} of {pages} · {count} access | Page {page} of {pages} · {count} access | Page {page} of {pages} · {count} accesses",
+                "previous": "Previous",
+                "next": "Next"
+            }
+        },
+        "transparency": {
+            "title": "Transparency",
+            "subtitle": "What the operator does on the server and on the data.",
+            "intro": "This register is the same for every Spend.Up user. It shows the operator’s activity over the last months without naming anyone: it contains no name, no address, no reason and no precise time. Reviews cancelled before anything was displayed are not listed.",
+            "window": "From {from} to {to} · {months}",
+            "monthsShown": "{n} month | {n} month | {n} months",
+            "generatedAt": "Generated on {date}",
+            "months": {
+                "title": "Monthly summary",
+                "month": "Month",
+                "consoleVisits": "Console visits",
+                "consultations": "Data reviews",
+                "usersConsulted": "Users affected",
+                "loginsRefused": "Logins refused",
+                "empty": "No activity over the period."
+            },
+            "consultations": {
+                "title": "Data reviews",
+                "day": "Day",
+                "category": "Category",
+                "duration": "Duration",
+                "code": "Support code",
+                "codeYes": "Code used",
+                "codeNo": "No code",
+                "empty": "No data review over the period."
+            },
+            "visits": {
+                "title": "Admin console visits",
+                "day": "Day",
+                "duration": "Duration",
+                "kind": "Kind",
+                "kinds": {
+                    "consultation": "Review opened",
+                    "statistics": "Statistics only",
+                    "none": "Nothing opened"
+                },
+                "empty": "No visit over the period."
+            },
+            "byCategory": {
+                "title": "Breakdown by category",
+                "total": "{n} review | {n} review | {n} reviews"
+            },
+            "counter": {
+                "title": "Human interventions",
+                "label": "human interventions on the server, all reasons combined",
+                "unavailable": "unavailable",
+                "updatedAt": "Updated on {date}",
+                "noUpdate": "The counter cannot be read right now.",
+                "note": "Cumulative count of sessions opened by a person on the server (SSH, administrative commands, manual database access), including the operator’s routine maintenance."
+            }
         }
     },
     "userSettings": {
@@ -3019,7 +3672,7 @@
             },
             "acceptTerms": "I accept the {terms} and the {privacy}.",
             "termsLink": "terms of use",
-            "privacyLink": "privacy policy"
+            "privacyLink": "data protection page"
         },
         "twoStep": {
             "title": "Two-step verification",
@@ -3102,6 +3755,19 @@
                 "letter": "At least one letter.",
                 "digit": "At least one digit.",
                 "mismatch": "Passwords do not match."
+            },
+            "vault": {
+                "codeLabel": "Vault recovery code (optional)",
+                "codePlaceholder": "XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX",
+                "codeHint": "Your IBANs, numbers and notes are encrypted with a key only your previous password opened. The recovery code lets you keep it.",
+                "lossWarningNoCode": "Without a recovery code, the encrypted fields of your vault (IBANs, account numbers, plates, notes…) will be permanently lost. The account itself is recovered.",
+                "lossWarningNoRecovery": "No recovery code was generated for this account: the encrypted fields of your vault (IBANs, account numbers, plates, notes…) will be permanently lost. The account itself is recovered.",
+                "acceptLoss": "I understand the vault fields will be lost.",
+                "errors": {
+                    "codeInvalid": "The code must have 32 characters (8 groups of 4).",
+                    "wrongCode": "This code does not match this account’s vault.",
+                    "confirmLoss": "Tick the box to confirm the loss of the vault fields, or enter your code."
+                }
             }
         },
         "stepUp": {
@@ -3218,6 +3884,7 @@
         "today": "Today",
         "selectedDay": "Selected day",
         "emptyDay": "Nothing planned that day.",
+        "notConnected": "The calendar does not show your recurring items, dues and goals yet.",
         "monthSummary": "Month summary",
         "inflows": "Planned income",
         "outflows": "Planned outgoings",
@@ -3230,6 +3897,1863 @@
             "expense": "Charge",
             "due": "Due",
             "goal": "Goal"
+        }
+    },
+    "assetsPage": {
+        "title": "Assets",
+        "detailTitle": "Asset: {name}",
+        "subtitle": "No assets | {count} asset · total value {total} | {count} assets · total value {total}",
+        "searchPlaceholder": "Search an asset",
+        "count": "{count} asset | {count} asset | {count} assets",
+        "tabs": {
+            "label": "Asset types",
+            "all": "All",
+            "vehicule": "Vehicles",
+            "crypto": "Crypto",
+            "objetValeur": "Valuables",
+            "compteEpargne": "Savings",
+            "other": "Other"
+        },
+        "filters": {
+            "state": "State",
+            "active": "Active",
+            "sold": "Sold"
+        },
+        "loading": "Loading…",
+        "actions": {
+            "create": "Add",
+            "edit": "Edit",
+            "delete": "Delete",
+            "search": "Search",
+            "clearSearch": "Clear search",
+            "filter": "Filter",
+            "add": "Add",
+            "deleteRow": "Delete row",
+            "back": "Assets",
+            "backToList": "Back to the asset list"
+        },
+        "empty": {
+            "list": "No assets yet. Add a vehicle, a crypto, a valuable item or a savings account.",
+            "filtered": "No asset matches your search.",
+            "sold": "No sold assets.",
+            "type": "No assets of this type."
+        },
+        "list": {
+            "sold": "sold",
+            "lastValuation": "valued on {date}",
+            "noValuation": "not valued yet",
+            "valueFromAccount": "account balance",
+            "quantity": "{quantity} {symbol}",
+            "financed": "Financed"
+        },
+        "types": {
+            "vehicule": "Vehicle",
+            "immobilier": "Real estate",
+            "crypto": "Crypto",
+            "objetValeur": "Valuable item",
+            "compteEpargne": "Savings",
+            "other": "Other"
+        },
+        "propertyTypes": {
+            "appartement": "Apartment",
+            "maison": "House",
+            "immeuble": "Building",
+            "terrain": "Land",
+            "garage": "Garage",
+            "placeParking": "Parking space",
+            "localCommercial": "Commercial space",
+            "other": "Other"
+        },
+        "vehicleTypes": {
+            "voiture": "Car",
+            "moto": "Motorcycle",
+            "scooter": "Scooter",
+            "velo": "Bicycle",
+            "veloElectrique": "E-bike",
+            "campingCar": "Camper van",
+            "bateau": "Boat",
+            "other": "Other"
+        },
+        "fuels": {
+            "essence": "Petrol",
+            "diesel": "Diesel",
+            "hybride": "Hybrid",
+            "hybrideRechargeable": "Plug-in hybrid",
+            "electrique": "Electric",
+            "gpl": "LPG",
+            "other": "Other"
+        },
+        "valuableItemTypes": {
+            "montre": "Watch",
+            "bijou": "Jewellery",
+            "oeuvreArt": "Artwork",
+            "collection": "Collection",
+            "electronique": "Electronics",
+            "meuble": "Furniture",
+            "instrumentMusique": "Musical instrument",
+            "other": "Other"
+        },
+        "savingsTypes": {
+            "epargneClassique": "Standard savings",
+            "pilier3a": "Pillar 3a",
+            "pilier3b": "Pillar 3b",
+            "compteJeune": "Youth account",
+            "compteProjet": "Project account",
+            "other": "Other"
+        },
+        "maintenanceTypes": {
+            "vidange": "Oil change",
+            "pneus": "Tyres",
+            "freins": "Brakes",
+            "batterie": "Battery",
+            "controleTechnique": "Inspection",
+            "revision": "Service",
+            "reparation": "Repair",
+            "lavage": "Cleaning",
+            "other": "Other"
+        },
+        "valuationSources": {
+            "manuelle": "Manual",
+            "systeme": "Automatic",
+            "import": "Import"
+        },
+        "mileageSources": {
+            "manuelle": "Manual",
+            "entretien": "Maintenance"
+        },
+        "form": {
+            "createTitle": "New asset",
+            "editTitle": "Asset",
+            "subtitle": "Estimated value, acquisition and details by type.",
+            "fields": {
+                "name": "Name",
+                "type": "Type",
+                "estimatedValue": "Estimated value",
+                "currency": "Currency",
+                "acquisitionDate": "Acquisition date",
+                "acquisitionPrice": "Acquisition price",
+                "description": "Description",
+                "notes": "Notes",
+                "sold": "Sold or disposed of",
+                "brand": "Brand",
+                "model": "Model",
+                "vehicleType": "Vehicle type",
+                "fuel": "Fuel",
+                "firstRegistrationYear": "First registration",
+                "plate": "Plate",
+                "currentMileage": "Current mileage",
+                "cryptoName": "Cryptocurrency",
+                "symbol": "Symbol",
+                "quantity": "Quantity",
+                "averagePurchasePrice": "Average purchase price",
+                "platform": "Platform",
+                "itemType": "Item type",
+                "isInsured": "Insured",
+                "insuredValue": "Insured value",
+                "savingsType": "Savings type",
+                "account": "Linked account",
+                "interestRate": "Interest rate (%)",
+                "isBlocked": "Locked funds",
+                "releaseDate": "Release date",
+                "customType": "Custom type",
+                "propertyType": "Property type",
+                "addressLine1": "Address",
+                "addressLine2": "Address line 2",
+                "postalCode": "Postcode",
+                "city": "City",
+                "country": "Country",
+                "livingAreaM2": "Living area (m²)",
+                "landAreaM2": "Land area (m²)",
+                "rooms": "Rooms",
+                "bedrooms": "Bedrooms",
+                "bathrooms": "Bathrooms",
+                "floor": "Floor",
+                "hasElevator": "Lift",
+                "hasBalcony": "Balcony",
+                "hasCellar": "Cellar",
+                "hasGarage": "Garage",
+                "constructionYear": "Year built",
+                "renovationYear": "Year renovated",
+                "taxValue": "Tax value",
+                "chassisNumber": "Chassis number",
+                "walletAddress": "Wallet address",
+                "serialNumber": "Serial number",
+                "storageLocation": "Storage location"
+            },
+            "noFuel": "Not specified",
+            "noAccount": "No account",
+            "valueFromAccountHint": "The value follows the linked account balance and cannot be entered.",
+            "estimatedValueHint": "A valuation dated today is recorded with this value.",
+            "currencyDefaultHint": "Default: {currency}. The currency cannot be changed later.",
+            "currencyLockedHint": "An asset’s currency cannot be changed.",
+            "typeLockedHint": "An asset’s type cannot be changed.",
+            "soldHint": "A sold asset stays in the “Sold” list but leaves your net worth.",
+            "accountHint": "Active accounts you own. The asset value will follow their balance.",
+            "mileageHint": "Also records today’s mileage reading.",
+            "customTypeHint": "If left empty, the asset name is used as its type.",
+            "countryHint": "Two-letter country code (e.g. CH).",
+            "taxValueHint": "For information only, never counted in net worth.",
+            "errors": {
+                "nameRequired": "Name is required.",
+                "nameTooLong": "Name exceeds 150 characters.",
+                "typeInvalid": "Choose an asset type.",
+                "estimatedValueInvalid": "Enter a valid amount.",
+                "estimatedValueNegative": "The estimated value cannot be negative.",
+                "acquisitionPriceInvalid": "Enter a valid amount.",
+                "acquisitionPriceNegative": "The acquisition price cannot be negative.",
+                "acquisitionDateInvalid": "The acquisition date is invalid.",
+                "descriptionTooLong": "Description exceeds 500 characters.",
+                "notesTooLong": "Notes exceed 2000 characters.",
+                "currencyInvalid": "Unsupported currency (CHF, EUR, USD, GBP).",
+                "currencyLocked": "An asset’s currency cannot be changed.",
+                "vehicleBrandRequired": "Brand is required.",
+                "vehicleModelRequired": "Model is required.",
+                "vehicleTypeInvalid": "Choose a vehicle type.",
+                "vehicleFuelInvalid": "Invalid fuel.",
+                "vehicleYearInvalid": "Enter a valid year.",
+                "vehicleMileageInvalid": "Enter a positive whole mileage.",
+                "cryptoNameRequired": "Cryptocurrency name is required.",
+                "cryptoSymbolRequired": "Symbol is required.",
+                "cryptoQuantityInvalid": "Enter a quantity of zero or more.",
+                "cryptoAveragePriceInvalid": "Enter a price of zero or more.",
+                "valuableItemTypeInvalid": "Choose an item type.",
+                "insuredValueInvalid": "Enter an insured value of zero or more.",
+                "savingsTypeInvalid": "Choose a savings type.",
+                "accountInvalid": "The linked account must be an active account you own.",
+                "interestRateInvalid": "Enter a rate between 0 and 100.",
+                "releaseDateInvalid": "The release date is invalid.",
+                "propertyTypeInvalid": "Choose a property type.",
+                "countryInvalid": "Country must be a two-letter code.",
+                "realEstateNumberInvalid": "Enter a valid number.",
+                "valuationDateInvalid": "Choose a valid date.",
+                "valuationDateFuture": "The date cannot be in the future.",
+                "valuationValueInvalid": "Enter a valid amount.",
+                "valuationValueNegative": "The value cannot be negative.",
+                "mileageDateInvalid": "Choose a valid date.",
+                "mileageDateFuture": "The date cannot be in the future.",
+                "kilometrageInvalid": "Enter a positive whole mileage.",
+                "maintenanceTypeInvalid": "Choose a maintenance type.",
+                "maintenanceDateInvalid": "Choose a valid date.",
+                "maintenanceDateFuture": "The date cannot be in the future.",
+                "costInvalid": "Enter a cost of zero or more.",
+                "nextMaintenanceDateInvalid": "The next maintenance date is invalid.",
+                "nextMaintenanceBeforeDate": "The next maintenance must be after this one.",
+                "nextMaintenanceKmInvalid": "Enter a positive whole mileage.",
+                "maintenanceDescriptionTooLong": "Description exceeds 500 characters."
+            }
+        },
+        "detail": {
+            "attachments": {
+                "onAsset": "On the asset",
+                "onTransactions": "On the transactions",
+                "empty": "No PDF on the transactions linked to this asset."
+            },
+            "sold": "Sold",
+            "boughtFor": "bought on {date} for {amount}",
+            "boughtOn": "bought on {date}",
+            "averagePrice": "average price {amount}",
+            "insured": "insured {amount}",
+            "insuredUnknown": "insured",
+            "notInsured": "not insured",
+            "interest": "{rate}% interest",
+            "blocked": "locked funds",
+            "releaseOn": "released on {date}",
+            "figs": {
+                "label": "Key figures",
+                "value": "Estimated value",
+                "valuedOn": "valued on {date}",
+                "valueFromAccount": "account balance",
+                "noValuation": "not valued yet"
+            },
+            "tabs": {
+                "label": "Asset sections",
+                "informations": "Information",
+                "details": "Details",
+                "valuations": "Valuations",
+                "mileages": "Readings",
+                "maintenances": "Maintenance",
+                "transactions": "Transactions",
+                "attachments": "Receipts"
+            },
+            "financing": {
+                "title": "Financing",
+                "remaining": "Remaining",
+                "netValue": "Net value",
+                "netValueNote": "Estimated value minus the remaining amount",
+                "excluded": "Outside the asset currency: {count} debt | Outside the asset currency: {count} debts",
+                "residual": "Residual value {amount}"
+            }
+        },
+        "valuations": {
+            "createTitle": "New valuation",
+            "hint": "One valuation per day. The displayed value is the most recent by date.",
+            "date": "Date",
+            "value": "Value",
+            "source": "Source",
+            "empty": "No valuations.",
+            "lastHint": "The last valuation cannot be deleted.",
+            "deleteTitle": "Delete this valuation?",
+            "deleteBody": "The valuation of {date} will be permanently deleted."
+        },
+        "mileages": {
+            "createTitle": "New reading",
+            "hint": "One reading per day. Current mileage is the most recent reading.",
+            "date": "Date",
+            "kilometrage": "Mileage",
+            "source": "Source",
+            "empty": "No mileage readings.",
+            "km": "{value} km",
+            "deleteTitle": "Delete this reading?",
+            "deleteBody": "The reading of {date} will be permanently deleted."
+        },
+        "maintenances": {
+            "hint": "A maintenance with mileage also records the reading for its date.",
+            "empty": "No maintenance.",
+            "date": "Date",
+            "type": "Type",
+            "kilometrage": "Mileage",
+            "garage": "Garage",
+            "cost": "Cost",
+            "next": "Next",
+            "nextKm": "at {value} km",
+            "createTitle": "New maintenance",
+            "editTitle": "Maintenance",
+            "subtitle": "Date, type, garage and cost of the maintenance.",
+            "fields": {
+                "maintenanceDate": "Date",
+                "maintenanceType": "Type",
+                "kilometrage": "Mileage",
+                "garage": "Garage",
+                "cost": "Cost ({currency})",
+                "description": "Description",
+                "nextMaintenanceDate": "Next maintenance",
+                "nextMaintenanceKm": "Next at (km)"
+            },
+            "noGarage": "No garage",
+            "transactionHint": "Linked to an expense transaction: the link is kept.",
+            "deleteTitle": "Delete this maintenance?",
+            "deleteBody": "The maintenance of {date} will be deleted."
+        },
+        "deleteModal": {
+            "title": "Delete this asset?",
+            "body": "“{name}” and its history will no longer be visible. To keep it out of your net worth, mark it as sold instead."
+        },
+        "errors": {
+            "notFound": "Asset not found."
+        }
+    },
+    "debtsPage": {
+        "title": "Debts",
+        "tabs": {
+            "label": "Kinds of debts",
+            "liabilities": "Liabilities",
+            "loans": "Loans",
+            "shared": "Between friends"
+        },
+        "subtitles": {
+            "liabilities": "Loans, mortgages and cards: only ongoing liabilities count toward net worth.",
+            "loans": "Money lent to or borrowed from someone outside Spend.Up."
+        },
+        "searchPlaceholder": {
+            "liabilities": "Search a liability or lender",
+            "loans": "Search a person or label"
+        },
+        "count": {
+            "liabilities": "{count} liability | {count} liability | {count} liabilities",
+            "loans": "{count} loan | {count} loan | {count} loans"
+        },
+        "filters": {
+            "type": "Type",
+            "allTypes": "All types",
+            "direction": "Direction",
+            "allDirections": "All directions",
+            "status": "Status",
+            "allStatuses": "All statuses"
+        },
+        "loading": "Loading…",
+        "detailTitle": {
+            "liabilities": "Debt: {name}",
+            "loans": "Loan: {name}",
+            "shared": "Debt: {name}"
+        },
+        "actions": {
+            "create": "Add",
+            "search": "Search",
+            "clearSearch": "Clear search",
+            "filter": "Filters",
+            "back": "Debts",
+            "backToList": "Back to debts",
+            "edit": "Edit"
+        },
+        "detail": {
+            "tabs": {
+                "label": "Debt sections",
+                "informations": "Information",
+                "attachments": "Receipts",
+                "transactions": "Transactions"
+            },
+            "figs": {
+                "label": "Amounts",
+                "remaining": "Outstanding",
+                "initial": "Original amount",
+                "repaid": "Already repaid",
+                "amount": "Amount"
+            }
+        }
+    },
+    "investmentsPage": {
+        "title": "Investments",
+        "tabs": {
+            "label": "Investment accounts"
+        },
+        "accountPicker": {
+            "label": "Investment account",
+            "search": "Search an account"
+        },
+        "actions": {
+            "createOperation": "New operation",
+            "createInstrument": "New instrument",
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "empty": {
+            "noAccount": "No investment account yet. Create an investment or crypto account to track your positions.",
+            "goToAccounts": "Manage accounts"
+        },
+        "readOnly": "Shared account: read only, only the owner records operations and prices.",
+        "instrumentTypes": {
+            "action": "Stock",
+            "etf": "ETF",
+            "obligation": "Bond",
+            "fonds": "Fund",
+            "crypto": "Crypto",
+            "other": "Other"
+        },
+        "operationTypes": {
+            "achat": "Buy",
+            "vente": "Sell",
+            "depot": "Securities deposit",
+            "retrait": "Securities withdrawal",
+            "dividende": "Dividend",
+            "frais": "Fees"
+        },
+        "positions": {
+            "title": "Positions",
+            "showClosed": "Closed positions",
+            "figsLabel": "Position totals",
+            "costBasis": "Total cost",
+            "marketValue": "Market value",
+            "unrealizedGain": "Unrealised gain",
+            "mixedCurrencies": "Mixed currencies: totals unavailable.",
+            "empty": "No open position on this account.",
+            "emptyAll": "No position on this account.",
+            "noQuote": "No price, valued at cost",
+            "updatePrice": "Update the price of {symbol}",
+            "editInstrument": "Edit instrument {symbol}",
+            "columns": {
+                "instrument": "Instrument",
+                "quantity": "Quantity",
+                "averagePrice": "Avg. cost",
+                "lastPrice": "Last price",
+                "marketValue": "Value",
+                "gain": "Gain / loss",
+                "actions": "Actions"
+            }
+        },
+        "operations": {
+            "title": "Operations log",
+            "count": "no operation | {count} operation | {count} operations",
+            "empty": "No operation recorded on this account.",
+            "emptyFiltered": "No operation matches the filters.",
+            "loadMore": "Load more",
+            "menu": "Actions for operation {symbol}",
+            "filters": {
+                "allInstruments": "All instruments",
+                "allTypes": "All types",
+                "instrument": "Instrument",
+                "type": "Type",
+                "period": "Period",
+                "periodRange": "{from} to {to}",
+                "periodFrom": "Since {date}",
+                "periodTo": "Until {date}",
+                "from": "From",
+                "to": "To",
+                "reset": "Clear filters"
+            },
+            "columns": {
+                "date": "Date",
+                "instrument": "Instrument",
+                "type": "Type",
+                "quantity": "Quantity",
+                "unitPrice": "Unit price",
+                "amount": "Amount",
+                "actions": "Actions"
+            }
+        },
+        "instrumentPicker": {
+            "placeholder": "Choose an instrument",
+            "search": "Symbol, name or ISIN",
+            "noResults": "No instrument found",
+            "emptyCatalog": "Your instrument catalogue is empty",
+            "createNamed": "Create “{name}”",
+            "create": "New instrument"
+        },
+        "instrumentForm": {
+            "createTitle": "New instrument",
+            "editTitle": "Edit instrument",
+            "subtitle": "Personal catalogue of securities, funds and cryptos",
+            "lockedHint": "Symbol, type and currency can no longer be changed once an operation exists.",
+            "lastPriceHint": "Optional: initial manual price.",
+            "lastPriceDateHint": "Empty = today.",
+            "fields": {
+                "symbol": "Symbol",
+                "name": "Name",
+                "type": "Type",
+                "currency": "Currency",
+                "isin": "ISIN",
+                "lastPrice": "Initial price",
+                "lastPriceDate": "Price date"
+            }
+        },
+        "priceForm": {
+            "title": "Price of {symbol}",
+            "subtitle": "Manual price update",
+            "noQuote": "No price recorded yet: the position is valued at cost.",
+            "currentQuote": "Last price: {price} on {date}",
+            "dateHint": "No future date.",
+            "fields": {
+                "price": "Price",
+                "date": "Date"
+            }
+        },
+        "operationForm": {
+            "createTitle": "New operation",
+            "editTitle": "Edit operation",
+            "subtitle": "Positions are recalculated from every operation",
+            "totalHint": "Calculated automatically (quantity × price), editable to include fees.",
+            "transactionHint": "Linking to an account transaction (cash leg) is not available here yet.",
+            "transactionLinked": "This operation is linked to an account transaction; the link is kept.",
+            "typeHints": {
+                "achat": "Securities bought: quantity and unit price.",
+                "vente": "Securities sold: the average cost stays the same.",
+                "depot": "Securities received from another custody account, no cash movement.",
+                "retrait": "Securities transferred to another custody account, no cash movement.",
+                "dividende": "Amount received, no quantity or price.",
+                "frais": "Fees paid, no quantity or price."
+            },
+            "fields": {
+                "instrument": "Instrument",
+                "type": "Type",
+                "date": "Date",
+                "quantity": "Quantity",
+                "unitPrice": "Unit price",
+                "totalAmount": "Total amount",
+                "notes": "Notes"
+            }
+        },
+        "deleteModal": {
+            "title": "Delete this operation?",
+            "body": "{type} of {symbol} on {date}. The position will be recalculated."
+        },
+        "errors": {
+            "symbolRequired": "Symbol is required.",
+            "symbolTooLong": "Symbol is 20 characters at most.",
+            "nameRequired": "Name is required.",
+            "nameTooLong": "Name is 150 characters at most.",
+            "typeInvalid": "Choose a type.",
+            "currencyInvalid": "Choose a currency (CHF, EUR, USD, GBP).",
+            "isinInvalid": "Invalid ISIN: 12 characters, a 2-letter country code and a check digit.",
+            "priceInvalid": "Price must be a positive number or zero.",
+            "priceNegative": "Price cannot be negative.",
+            "priceDateInvalid": "Price date is invalid.",
+            "priceDateFuture": "Price date cannot be in the future.",
+            "priceRequired": "Price is required.",
+            "instrumentRequired": "Choose an instrument.",
+            "operationTypeInvalid": "Choose an operation type.",
+            "operationDateInvalid": "Date is invalid.",
+            "operationDateFuture": "Date cannot be in the future.",
+            "quantityInvalid": "Invalid quantity (8 decimals at most).",
+            "quantityNotPositive": "Quantity must be greater than zero.",
+            "unitPriceInvalid": "Unit price must be a positive number or zero.",
+            "unitPriceNegative": "Unit price cannot be negative.",
+            "totalAmountInvalid": "Total amount is invalid.",
+            "totalAmountNotPositive": "Total amount must be greater than zero.",
+            "transactionNotAllowed": "A securities deposit or withdrawal cannot be linked to a transaction.",
+            "notesTooLong": "Notes are 500 characters at most.",
+            "instrumentNotFound": "Instrument not found.",
+            "operationNotFound": "Operation not found.",
+            "accountNotFound": "Investment account not found."
+        }
+    },
+    "liabilitiesPage": {
+        "title": "Liabilities",
+        "types": {
+            "credit": "Loan",
+            "hypotheque": "Mortgage",
+            "dettePersonnelle": "Personal debt",
+            "carteCredit": "Credit card",
+            "other": "Other",
+            "leasing": "Leasing"
+        },
+        "statuses": {
+            "active": "Ongoing",
+            "rembourse": "Repaid",
+            "annule": "Canceled"
+        },
+        "badges": {
+            "rembourse": "Repaid",
+            "annule": "Canceled"
+        },
+        "card": {
+            "remaining": "Remaining",
+            "initial": "Initial amount",
+            "interestRate": "Rate",
+            "plannedEndDate": "Planned end"
+        },
+        "list": {
+            "repaidPercent": "{percent} repaid",
+            "noDate": "No end date",
+            "financedAsset": "Finances {name}",
+            "unknownAsset": "an asset"
+        },
+        "empty": {
+            "list": "No liabilities yet. Add a loan, a mortgage or a card.",
+            "active": "No ongoing liabilities.",
+            "rembourse": "No repaid liabilities.",
+            "annule": "No canceled liabilities.",
+            "filtered": "No liability matches these filters."
+        },
+        "actions": {
+            "edit": "Edit",
+            "updateRemaining": "Update remaining amount",
+            "delete": "Delete"
+        },
+        "deleteModal": {
+            "title": "Delete this liability?",
+            "body": "It will disappear from your debts and from your net worth."
+        },
+        "remainingModal": {
+            "title": "Remaining amount",
+            "subtitle": "Update the remaining amount",
+            "hint": "Between 0 and {initial}. At zero, the liability is marked repaid."
+        },
+        "errors": {
+            "notFound": "Liability not found."
+        },
+        "form": {
+            "createTitle": "New liability",
+            "editTitle": "Liability",
+            "subtitle": "Loan, mortgage, leasing, card or debt owed to a lender",
+            "fields": {
+                "name": "Name",
+                "type": "Type",
+                "lender": "Lender",
+                "initialAmount": "Initial amount",
+                "remainingAmount": "Remaining",
+                "interestRate": "Annual rate",
+                "startDate": "Start",
+                "plannedEndDate": "Planned end",
+                "asset": "Financed asset",
+                "currency": "Currency",
+                "cancel": "Canceled",
+                "residualValue": "Residual value",
+                "recurringExpense": "Instalment",
+                "amortizationPerDue": "Amortisation per instalment"
+            },
+            "noLender": "No lender",
+            "lenderHint": "Bank or lender, from your payees.",
+            "noAsset": "No asset",
+            "assetHint": "The property or vehicle financed, for its summary.",
+            "remainingCreateHint": "Empty = the initial amount.",
+            "remainingEditHint": "Already repaid: {repaid}.",
+            "currencyDefaultHint": "Defaults to {currency}. Locked after creation.",
+            "currencyLockedHint": "The currency is locked after creation.",
+            "cancelHint": "A canceled liability leaves your net worth for good.",
+            "errors": {
+                "nameRequired": "Name is required.",
+                "nameTooLong": "150 characters maximum.",
+                "typeInvalid": "Pick a type.",
+                "initialAmountInvalid": "Invalid amount.",
+                "initialAmountNotPositive": "The initial amount must be greater than zero.",
+                "remainingAmountInvalid": "Invalid amount.",
+                "remainingAmountOutOfRange": "Between 0 and the initial amount.",
+                "interestRateInvalid": "Invalid rate.",
+                "interestRateOutOfRange": "Between 0 and 100 %.",
+                "startDateInvalid": "Invalid date.",
+                "plannedEndDateInvalid": "Invalid date.",
+                "plannedEndDateBeforeStart": "The planned end is before the start.",
+                "currencyInvalid": "Unsupported currency.",
+                "currencyLocked": "The currency can’t change after creation.",
+                "residualValueInvalid": "The residual value is invalid.",
+                "amortizationPerDueInvalid": "The amortisation per instalment is invalid."
+            },
+            "residualHint": "Amount due at the end of the contract to keep the vehicle.",
+            "noRecurringExpense": "No recurring charge",
+            "recurringExpenseHint": "The recurring charge that repays this liability. Each paid due date lowers the remaining amount.",
+            "amortizationHint": "The part of each instalment that reduces the principal. Empty: the whole instalment. 0: interest only, the balance does not move."
+        },
+        "detail": {
+            "asset": "Financed asset",
+            "recurringExpense": "Instalment",
+            "nextDue": "Next due date",
+            "residualValue": "Residual value",
+            "autoRemaining": "The remaining amount follows the paid due dates of this instalment."
+        }
+    },
+    "netWorthPage": {
+        "title": "Wealth",
+        "subtitle": "Accounts, assets, investments and liabilities in one figure",
+        "hero": {
+            "label": "Net worth",
+            "asOf": "as of {date}",
+            "since": "{delta} since {date}",
+            "noSnapshot": "No snapshot to compare with yet"
+        },
+        "figs": {
+            "label": "Wealth key figures",
+            "accounts": "Accounts",
+            "assets": "Assets",
+            "liabilities": "Liabilities",
+            "investments": "Investments",
+            "withoutQuote": "none without a quote | including {count} without a quote (at cost) | including {count} without a quote (at cost)"
+        },
+        "excluded": {
+            "message": "Items in another currency are not counted: {list}.",
+            "accounts": "no account | {count} account | {count} accounts",
+            "assets": "no asset | {count} asset | {count} assets",
+            "liabilities": "no liability | {count} liability | {count} liabilities"
+        },
+        "breakdown": {
+            "title": "Breakdown",
+            "subtitle": "Accounts, assets, investments and liabilities",
+            "barLabel": "Wealth breakdown",
+            "empty": "Nothing to break down yet",
+            "none": "No item",
+            "assetsTitle": "Assets by type",
+            "liabilitiesTitle": "Liabilities by type",
+            "accountsTitle": "Accounts by type",
+            "seeAssets": "All assets",
+            "seeRealEstate": "Real estate",
+            "seeLiabilities": "All liabilities",
+            "seeAccounts": "All accounts",
+            "seeInvestments": "Investments",
+            "pretAccorde": "Loans granted",
+            "dettePartagee": "Debts between friends",
+            "compteCredit": "Credit accounts",
+            "emprunt": "Borrowings"
+        },
+        "friends": {
+            "title": "Between friends",
+            "seeAll": "See all",
+            "receivable": "Owed to me",
+            "payable": "I owe"
+        },
+        "evolution": {
+            "title": "Evolution",
+            "chartLabel": "Net worth evolution chart",
+            "today": "today",
+            "empty": "No snapshot yet",
+            "note": "A snapshot is recomputed every day for the current month."
+        },
+        "snapshot": {
+            "title": "Latest snapshot",
+            "period": "Month of {date}",
+            "income": "Monthly income",
+            "expenses": "Monthly expenses",
+            "savingsRate": "Savings rate"
+        },
+        "actions": {
+            "refresh": "Refresh",
+            "takeSnapshot": "Take a snapshot now"
+        },
+        "errors": {
+            "load": "Unable to load your wealth.",
+            "snapshot": "Unable to save the snapshot."
+        }
+    },
+    "personalLoansPage": {
+        "title": "Loans",
+        "directions": {
+            "pret": "I lend",
+            "emprunt": "I borrow"
+        },
+        "statuses": {
+            "active": "Ongoing",
+            "rembourse": "Repaid",
+            "annule": "Canceled"
+        },
+        "badges": {
+            "rembourse": "Repaid",
+            "annule": "Canceled",
+            "overdue": "Overdue"
+        },
+        "figs": {
+            "label": "Ongoing loan totals",
+            "lent": "I lend",
+            "borrowed": "I borrow",
+            "note": "Remaining on ongoing loans",
+            "otherCurrencies": "{count} ongoing loan in another currency is not counted in these {currency} totals. | {count} ongoing loans in other currencies are not counted in these {currency} totals."
+        },
+        "card": {
+            "remaining": "Remaining",
+            "initial": "Initial amount",
+            "plannedEndDate": "Due date"
+        },
+        "list": {
+            "repaidPercent": "{percent} repaid",
+            "noDate": "No due date",
+            "noLabel": "No label",
+            "unknownCounterpart": "Unknown counterpart"
+        },
+        "empty": {
+            "list": "No loans yet. Keep track of money lent to or borrowed from someone.",
+            "active": "No ongoing loans.",
+            "rembourse": "No repaid loans.",
+            "annule": "No canceled loans.",
+            "filtered": "No loan matches these filters."
+        },
+        "actions": {
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "deleteModal": {
+            "title": "Delete this loan?",
+            "body": "It will disappear from your debts and totals."
+        },
+        "errors": {
+            "notFound": "Loan not found."
+        },
+        "form": {
+            "createTitle": "New loan",
+            "editTitle": "Loan",
+            "subtitle": "Money lent to or borrowed from someone outside Spend.Up",
+            "fields": {
+                "direction": "Direction",
+                "counterpart": "Counterpart",
+                "label": "Label",
+                "initialAmount": "Initial amount",
+                "remainingAmount": "Remaining",
+                "startDate": "Start",
+                "plannedEndDate": "Due date",
+                "currency": "Currency",
+                "notes": "Notes",
+                "cancel": "Canceled"
+            },
+            "placeholders": {
+                "label": "E.g. Marc’s car"
+            },
+            "counterpartHint": "Someone from your payees. For a Spend.Up friend, use the friends tab.",
+            "identityLockedHint": "Direction and counterpart only change on an ongoing loan.",
+            "remainingCreateHint": "Empty = the initial amount.",
+            "remainingEditHint": "Already repaid: {repaid}.",
+            "currencyDefaultHint": "Defaults to {currency}. Locked after creation.",
+            "currencyLockedHint": "The currency is locked after creation.",
+            "cancelHint": "A canceled loan leaves the totals for good.",
+            "errors": {
+                "directionInvalid": "Pick a direction.",
+                "directionLocked": "The direction can only change on an ongoing loan.",
+                "counterpartRequired": "Pick a counterpart.",
+                "counterpartLocked": "The counterpart can only change on an ongoing loan.",
+                "labelTooLong": "150 characters maximum.",
+                "initialAmountInvalid": "Invalid amount.",
+                "initialAmountNotPositive": "The initial amount must be greater than zero.",
+                "remainingAmountInvalid": "Invalid amount.",
+                "remainingAmountOutOfRange": "Between 0 and the initial amount.",
+                "startDateRequired": "The start date is required.",
+                "startDateInvalid": "Invalid date.",
+                "plannedEndDateInvalid": "Invalid date.",
+                "plannedEndDateBeforeStart": "The due date is before the start.",
+                "notesTooLong": "Notes are too long.",
+                "currencyInvalid": "Unsupported currency.",
+                "currencyLocked": "The currency can’t change after creation."
+            }
+        }
+    },
+    "realEstatePage": {
+        "title": "Real estate",
+        "detailTitle": "Property: {name}",
+        "loading": "Loading…",
+        "searchPlaceholder": "Search a property, a town, an address",
+        "tabs": {
+            "label": "Property status",
+            "active": "Owned",
+            "sold": "Sold"
+        },
+        "actions": {
+            "create": "Add a property",
+            "search": "Search",
+            "clearSearch": "Clear search",
+            "edit": "Edit",
+            "delete": "Delete",
+            "back": "Real estate",
+            "backToList": "Back to the property list"
+        },
+        "empty": {
+            "active": "No property yet.",
+            "sold": "No sold property.",
+            "filtered": "No property matches this search."
+        },
+        "errors": {
+            "notFound": "Property not found.",
+            "unitNotFound": "Unit not found.",
+            "chargeNotFound": "Charge not found.",
+            "maintenanceNotFound": "Works not found.",
+            "documentNotFound": "Document not found.",
+            "rentalNotFound": "Lease not found."
+        },
+        "card": {
+            "noAddress": "No address"
+        },
+        "detail": {
+            "sold": "Sold, excluded from net worth",
+            "livingArea": "{value} m² living space",
+            "landArea": "land {value} m²",
+            "rooms": "{value} rooms",
+            "builtIn": "built in {year}",
+            "renovatedIn": "renovated in {year}",
+            "boughtOn": "bought on {date}",
+            "boughtFor": "bought on {date} for {amount}",
+            "taxValue": "Tax value {amount} (for information)",
+            "amenities": {
+                "elevator": "lift",
+                "balcony": "balcony",
+                "cellar": "cellar",
+                "garage": "garage"
+            },
+            "figs": {
+                "label": "Property summary",
+                "summary": "Summary",
+                "value": "Estimated value",
+                "valuedOn": "estimated on {date}",
+                "mortgage": "Remaining mortgage",
+                "noMortgage": "no linked liability",
+                "mortgageExcluded": "{count} liability in another currency, not counted | {count} liabilities in another currency, not counted",
+                "equity": "Equity",
+                "rent": "Monthly rent",
+                "rentCharges": "+ {amount} of rental charges",
+                "activeRentals": "{count} active lease | {count} active leases",
+                "charges": "Monthly charges",
+                "perMonth": "current charges, per month",
+                "maintenance": "Total works",
+                "maintenanceCount": "no works | {count} job | {count} jobs"
+            },
+            "tabs": {
+                "label": "Property sections",
+                "informations": "Information",
+                "units": "Units",
+                "charges": "Charges",
+                "maintenance": "Works",
+                "documents": "Documents",
+                "rentals": "Leases",
+                "transactions": "Transactions"
+            }
+        },
+        "units": {
+            "add": "Add a unit",
+            "count": "{count} unit | {count} units",
+            "empty": "No unit. Split the property into units to rent out only part of it.",
+            "occupied": "occupied",
+            "vacant": "vacant",
+            "notRentable": "not rentable",
+            "deleteTitle": "Delete this unit?",
+            "deleteBody": "A unit still covered by a lease cannot be deleted.",
+            "columns": {
+                "name": "Unit",
+                "type": "Type",
+                "surface": "Area",
+                "rooms": "Rooms",
+                "floor": "Floor",
+                "occupancy": "Occupancy"
+            }
+        },
+        "charges": {
+            "add": "Add a charge",
+            "count": "{count} charge | {count} charges",
+            "empty": "No charge recorded.",
+            "current": "current",
+            "notCurrent": "out of period",
+            "monthlyTotal": "Current charges, per month",
+            "deleteTitle": "Delete this charge?",
+            "deleteBody": "The charge is removed from the property summary.",
+            "columns": {
+                "name": "Charge",
+                "type": "Type",
+                "amount": "Amount",
+                "monthly": "Per month",
+                "period": "Period",
+                "unit": "Unit",
+                "tier": "Supplier",
+                "state": "State"
+            }
+        },
+        "maintenance": {
+            "add": "Add works",
+            "count": "{count} job | {count} jobs",
+            "empty": "No works recorded.",
+            "overdue": "due date passed",
+            "total": "Total works",
+            "deleteTitle": "Delete these works?",
+            "deleteBody": "The cost is removed from the property's works total.",
+            "columns": {
+                "date": "Date",
+                "type": "Type",
+                "description": "Description",
+                "unit": "Unit",
+                "provider": "Contractor",
+                "cost": "Cost",
+                "next": "Next due"
+            }
+        },
+        "documents": {
+            "add": "Add a document",
+            "count": "{count} document | {count} documents",
+            "empty": "No document linked to this property.",
+            "open": "Open {name}",
+            "unlink": "Unlink",
+            "deleteTitle": "Unlink this document?",
+            "deleteBody": "The document is removed from the property. The PDF file stays in your files.",
+            "columns": {
+                "name": "Document",
+                "type": "Type",
+                "date": "Date",
+                "unit": "Unit",
+                "size": "Size"
+            }
+        },
+        "rentals": {
+            "add": "Add a lease",
+            "count": "{count} lease | {count} leases",
+            "empty": "No lease for this property.",
+            "emptyFiltered": "No lease with this status.",
+            "statusFilter": "Status",
+            "allStatuses": "All statuses",
+            "incomeLinked": "recurring income linked",
+            "deleteTitle": "Delete this lease?",
+            "deleteBody": "The lease is deleted. Its linked recurring income, if any, is left unchanged.",
+            "columns": {
+                "tenant": "Tenant",
+                "unit": "Unit",
+                "period": "Period",
+                "rent": "Rent",
+                "charges": "Charges",
+                "deposit": "Deposit",
+                "status": "Status"
+            }
+        },
+        "unitTypes": {
+            "appartement": "Flat",
+            "chambre": "Room",
+            "localCommercial": "Commercial space",
+            "bureau": "Office",
+            "garage": "Garage",
+            "placeParking": "Parking space",
+            "cave": "Cellar",
+            "grenier": "Attic",
+            "terrain": "Land",
+            "other": "Other"
+        },
+        "chargeTypes": {
+            "ppe": "Condominium fees",
+            "syndic": "Property management",
+            "eau": "Water",
+            "electricite": "Electricity",
+            "chauffage": "Heating",
+            "assuranceBatiment": "Building insurance",
+            "taxeFonciere": "Property tax",
+            "impotImmobilier": "Real estate tax",
+            "entretien": "Upkeep",
+            "fondsRenovation": "Renovation fund",
+            "ordures": "Waste",
+            "other": "Other"
+        },
+        "periodicities": {
+            "ponctuelle": "One-off",
+            "mensuelle": "Monthly",
+            "trimestrielle": "Quarterly",
+            "semestrielle": "Half-yearly",
+            "annuelle": "Yearly"
+        },
+        "maintenanceTypes": {
+            "peinture": "Painting",
+            "plomberie": "Plumbing",
+            "electricite": "Electrical",
+            "chauffage": "Heating",
+            "toiture": "Roofing",
+            "facade": "Facade",
+            "sols": "Flooring",
+            "fenetres": "Windows",
+            "cuisine": "Kitchen",
+            "salleBain": "Bathroom",
+            "renovation": "Renovation",
+            "reparation": "Repair",
+            "controle": "Inspection",
+            "other": "Other"
+        },
+        "documentTypes": {
+            "acteVente": "Deed of sale",
+            "contratBail": "Lease agreement",
+            "hypotheque": "Mortgage",
+            "assurance": "Insurance",
+            "factureTravaux": "Works invoice",
+            "diagnostic": "Survey",
+            "photo": "Photo",
+            "plan": "Floor plan",
+            "impot": "Tax",
+            "other": "Other"
+        },
+        "rentalStatuses": {
+            "active": "Active",
+            "aVenir": "Upcoming",
+            "suspendue": "Suspended",
+            "terminee": "Ended"
+        },
+        "form": {
+            "wholeProperty": "Whole property",
+            "noTier": "None",
+            "fields": {
+                "name": "Name",
+                "unitType": "Unit type",
+                "surfaceM2": "Area",
+                "rooms": "Rooms",
+                "floor": "Floor",
+                "isRentable": "Rentable",
+                "notes": "Notes",
+                "chargeType": "Charge type",
+                "amount": "Amount",
+                "periodicity": "Frequency",
+                "startDate": "Start",
+                "endDate": "End",
+                "unit": "Unit",
+                "chargeTier": "Supplier",
+                "maintenanceDate": "Date",
+                "maintenanceType": "Type of works",
+                "description": "Description",
+                "cost": "Cost",
+                "nextMaintenanceDate": "Next due",
+                "provider": "Contractor",
+                "file": "PDF file",
+                "documentType": "Document type",
+                "documentName": "Display name",
+                "documentDate": "Document date",
+                "tenant": "Tenant",
+                "monthlyRent": "Monthly rent",
+                "monthlyCharges": "Monthly charges",
+                "deposit": "Security deposit",
+                "recurringIncome": "Recurring income",
+                "status": "Status"
+            },
+            "unit": {
+                "createTitle": "New unit",
+                "editTitle": "Edit unit",
+                "subtitle": "Part of the property: flat, room, parking space…",
+                "rentableHint": "Only a rentable unit can be leased."
+            },
+            "charge": {
+                "createTitle": "New charge",
+                "editTitle": "Edit charge",
+                "subtitle": "Amount in the property currency, brought back to a monthly figure in the summary.",
+                "periodHint": "Without dates, the charge counts as current."
+            },
+            "maintenance": {
+                "createTitle": "New works",
+                "editTitle": "Edit works",
+                "subtitle": "Past job on the property or on a unit."
+            },
+            "document": {
+                "createTitle": "New document",
+                "editTitle": "Edit document",
+                "subtitle": "A PDF from your files, filed with the property.",
+                "noFile": "Choose a file",
+                "upload": "Upload a PDF",
+                "uploading": "Uploading… {percent}%",
+                "fileHint": "Pick an existing PDF or upload one (10 MB max).",
+                "fileLockedHint": "To change the file, unlink this document and add a new one.",
+                "nameHint": "Empty: file name.",
+                "dateHint": "Empty: file date."
+            },
+            "rental": {
+                "createTitle": "New lease",
+                "editTitle": "Edit lease",
+                "subtitle": "Rental of the whole property or of a rentable unit.",
+                "noTenant": "Choose a tenant",
+                "tenantHint": "The tenant role is added to the contact automatically.",
+                "unitHint": "Without a unit, the lease covers the whole property.",
+                "noIncome": "None",
+                "incomeHint": "The recurring income that collects this rent, to be created first under Recurring.",
+                "statusAuto": "From the dates",
+                "statusHint": "Ended without an end date: the end is set to today."
+            },
+            "errors": {
+                "nameRequired": "The name is required.",
+                "nameTooLong": "The name exceeds 150 characters.",
+                "notesTooLong": "The notes exceed 2000 characters.",
+                "descriptionTooLong": "The description exceeds 500 characters.",
+                "unitTypeInvalid": "Choose a unit type.",
+                "surfaceInvalid": "Invalid area.",
+                "roomsInvalid": "Invalid number of rooms.",
+                "floorInvalid": "The floor must be a whole number.",
+                "chargeTypeInvalid": "Choose a charge type.",
+                "periodicityInvalid": "Choose a frequency.",
+                "amountInvalid": "Invalid amount.",
+                "amountNegative": "The amount cannot be negative.",
+                "startDateInvalid": "Invalid start date.",
+                "endDateInvalid": "Invalid end date.",
+                "endDateBeforeStart": "The end must come after the start.",
+                "unitInvalid": "This unit no longer exists.",
+                "unitNotRentable": "This unit is not rentable.",
+                "maintenanceTypeInvalid": "Choose a type of works.",
+                "maintenanceDateRequired": "The date is required.",
+                "maintenanceDateInvalid": "Invalid date.",
+                "maintenanceDateFuture": "The date cannot be in the future.",
+                "nextDateInvalid": "Invalid due date.",
+                "nextDateBeforeDate": "The due date must come after the works date.",
+                "costInvalid": "Invalid cost.",
+                "costNegative": "The cost cannot be negative.",
+                "documentTypeInvalid": "Choose a document type.",
+                "fileRequired": "Pick or upload a PDF.",
+                "documentDateInvalid": "Invalid document date.",
+                "tenantRequired": "The tenant is required.",
+                "rentInvalid": "Invalid rent.",
+                "rentNegative": "The rent cannot be negative.",
+                "chargesInvalid": "Invalid charges.",
+                "chargesNegative": "Charges cannot be negative.",
+                "depositInvalid": "Invalid deposit.",
+                "depositNegative": "The deposit cannot be negative.",
+                "statusInvalid": "Unsupported status."
+            }
+        }
+    },
+    "sharedDebtsPage": {
+        "title": "Debts between friends",
+        "subtitle": "What your friends owe you, and what you owe them.",
+        "createButton": "New debt",
+        "searchPlaceholder": "Search a friend or a label",
+        "figures": {
+            "owedToMe": "Owed to me",
+            "owedToMeNote": "still to be repaid by your friends",
+            "iOwe": "I owe",
+            "iOweNote": "still to be repaid to your friends",
+            "otherCurrencies": "{count} open debt in another currency is not counted in these {currency} totals. | {count} open debts in other currencies are not counted in these {currency} totals."
+        },
+        "tabs": {
+            "label": "Point of view",
+            "creditor": "I'm the creditor",
+            "debtor": "I'm the debtor"
+        },
+        "roles": {
+            "creditor": "Creditor",
+            "debtor": "Debtor"
+        },
+        "statuses": {
+            "aRembourser": "To be repaid",
+            "partiellementRemboursee": "Partially repaid",
+            "remboursee": "Repaid",
+            "canceled": "Canceled",
+            "overdue": "Overdue"
+        },
+        "filters": {
+            "status": "Status",
+            "allStatuses": "All statuses"
+        },
+        "list": {
+            "dueOn": "due {date}",
+            "noDueDate": "No due date"
+        },
+        "empty": {
+            "creditor": "Nobody owes you money right now.",
+            "debtor": "You don't owe your friends anything.",
+            "status": "No debt with this status.",
+            "filtered": "No debt matches this search."
+        },
+        "actions": {
+            "settle": "Record repayment",
+            "edit": "Edit",
+            "cancel": "Cancel debt",
+            "delete": "Delete"
+        },
+        "form": {
+            "createTitle": "New debt",
+            "createSubtitle": "You paid for a friend: they owe you this amount.",
+            "editTitle": "Edit debt",
+            "editSubtitle": "Editable as long as nothing has been repaid.",
+            "fields": {
+                "friend": "Friend",
+                "transaction": "Linked expense",
+                "amount": "Amount",
+                "label": "Label",
+                "currency": "Currency",
+                "dueDate": "Due date"
+            },
+            "friendSearch": "Search a friend",
+            "friendNoResults": "No friend found",
+            "noFriends": "Add a friend first to assign them a debt.",
+            "noTransaction": "None",
+            "transactionSearch": "Search an expense",
+            "transactionNoResults": "No expense found",
+            "transactionHint": "Optional: currency and label are taken from the expense.",
+            "currencyLockedHint": "The currency can no longer be changed.",
+            "currencyFromTransactionHint": "Currency of the linked expense.",
+            "currencyDefaultHint": "Default: {currency}.",
+            "errors": {
+                "friendRequired": "Choose the friend who owes you this amount.",
+                "labelRequired": "A label is required without a linked expense.",
+                "labelTooLong": "The label exceeds 150 characters.",
+                "amountInvalid": "Invalid amount.",
+                "amountNotPositive": "The amount must be greater than zero.",
+                "dueDateInvalid": "The due date is invalid.",
+                "currencyInvalid": "Unsupported currency.",
+                "settleAmountInvalid": "Invalid amount.",
+                "settleAmountNotPositive": "The repaid amount must be greater than zero.",
+                "settleAmountAboveRemaining": "The repaid amount exceeds what is still owed.",
+                "settleDateInvalid": "The repayment date is invalid.",
+                "settleDateFuture": "The repayment date cannot be in the future."
+            }
+        },
+        "settle": {
+            "title": "Record a repayment",
+            "subtitle": "{label} · {remaining} still owed",
+            "fields": {
+                "amount": "Amount repaid",
+                "date": "Date"
+            },
+            "amountHint": "At most {remaining}. Leave empty to settle the whole debt.",
+            "confirm": "Save"
+        },
+        "detail": {
+            "title": "Debt",
+            "subtitle": {
+                "creditor": "{name} owes you",
+                "debtor": "You owe {name}"
+            },
+            "role": "My role",
+            "label": "Label",
+            "amount": "Initial amount",
+            "repaid": "Already repaid",
+            "remaining": "Still owed",
+            "status": "Status",
+            "dueDate": "Due date",
+            "createdAt": "Created on",
+            "updatedAt": "Updated on",
+            "settledAt": "Closed on",
+            "transaction": "Linked expense",
+            "noTransaction": "None",
+            "linkedTransaction": "Linked expense"
+        },
+        "cancelModal": {
+            "title": "Cancel this debt?",
+            "body": "Your friend will no longer owe you anything for this debt. It will stay visible as canceled."
+        },
+        "deleteModal": {
+            "title": "Delete this debt?",
+            "body": "The debt will disappear for you and your friend. This cannot be undone."
+        },
+        "errors": {
+            "notFound": "Debt not found."
+        }
+    },
+    "taxPage": {
+        "amountInvalid": "The amount entered for “{line}” cannot be read. Fix it or clear the field.",
+        "title": "Tax",
+        "subtitle": "A draft to copy into the cantonal return. Only amounts you type are stored.",
+        "new": "New return",
+        "createModal": {
+            "title": "New return",
+            "subtitle": "Pick the year and canton, then say who is filing. You can change everything later.",
+            "person1": "Person 1",
+            "person2": "Person 2"
+        },
+        "importExisting": "Import an existing return",
+        "actions": {
+            "open": "Open",
+            "pdf": "Download the PDF",
+            "nextYear": "Create {year}",
+            "ready": "Mark ready to copy",
+            "resume": "Resume",
+            "archive": "Archive",
+            "file": "Mark as filed",
+            "correct": "Correct",
+            "unfile": "Cancel filing",
+            "bundle": "Download supporting documents",
+            "export": "Export…",
+            "exportCsv": "Export as CSV",
+            "exportJson": "Export as JSON",
+            "delete": "Delete"
+        },
+        "year": "Year",
+        "canton": "Canton",
+        "name": "Name",
+        "namePlaceholder": "For example: canton, spouse, simulation",
+        "create": "Create",
+        "import": "Import",
+        "cantons": {
+            "AG": "Aargau",
+            "AI": "Appenzell Inner Rhodes",
+            "AR": "Appenzell Outer Rhodes",
+            "BE": "Bern",
+            "BL": "Basel-Landschaft",
+            "BS": "Basel-Stadt",
+            "FR": "Fribourg",
+            "GE": "Geneva",
+            "GL": "Glarus",
+            "GR": "Graubünden",
+            "JU": "Jura",
+            "LU": "Lucerne",
+            "NE": "Neuchâtel",
+            "NW": "Nidwalden",
+            "OW": "Obwalden",
+            "SG": "St. Gallen",
+            "SH": "Schaffhausen",
+            "SO": "Solothurn",
+            "SZ": "Schwyz",
+            "TG": "Thurgau",
+            "TI": "Ticino",
+            "UR": "Uri",
+            "VD": "Vaud",
+            "VS": "Valais",
+            "ZG": "Zug",
+            "ZH": "Zurich"
+        },
+        "importOrigin": "Read from the imported PDF",
+        "importRead": "{count} amount read from the PDF | {count} amounts read from the PDF. They are offered in each step: check them, then accept them.",
+        "chooseFile": "Choose a PDF",
+        "importFile": "PDF return",
+        "importFileRequired": "Choose the return PDF.",
+        "importDone": "The return is created. The PDF is filed with the documents.",
+        "cancel": "Cancel",
+        "empty": "No return yet. Create one for the current year.",
+        "filled": "{filled} line filled of {total} | {filled} lines filled of {total}",
+        "back": "All returns",
+        "status": "Status",
+        "statuses": {
+            "enCours": "In progress",
+            "preteARecopier": "Ready to copy",
+            "archivee": "Archived",
+            "deposee": "Filed",
+            "taxee": "Assessed",
+            "soldee": "Settled",
+            "contestee": "Disputed"
+        },
+        "civilStatus": "Civil status (at 31.12)",
+        "civilStatuses": {
+            "none": "Not specified",
+            "celibataire": "Single",
+            "marie": "Married",
+            "partenariatEnregistre": "Registered partnership",
+            "separe": "Separated",
+            "divorce": "Divorced",
+            "veuf": "Widowed"
+        },
+        "taxationMode": "Taxation mode",
+        "taxationModes": {
+            "ordinaire": "Ordinary",
+            "source": "Taxed at source"
+        },
+        "taxationSourceHint": "Taxation at source is not supported yet: the return still works as a draft, but check with your canton what you need to declare.",
+        "profile": {
+            "draft": "Canton {canton} {year} settings in preparation: official labels and codes only, no limit is checked yet.",
+            "otherYear": "Canton {canton} settings not yet updated for {current}: the {year} settings are used."
+        },
+        "couple": "Couple (person 2)",
+        "person": "Person",
+        "persons": {
+            "1": "Person 1",
+            "2": "Person 2",
+            "both": "Both"
+        },
+        "identity": "Situation",
+        "steps": "Return steps",
+        "reminders": {
+            "title": "To do before filing",
+            "unconfirmedNatures": "{count} expense to confirm ({amount}): its category suggests a tax nature, it does not count until you confirm it. | {count} expenses to confirm ({amount}): their category suggests a tax nature, they do not count until you confirm them.",
+            "missingDocument": "Missing document: {label} ({amount} from your confirmed transactions).",
+            "deadlineSoon": "Due soon: {label}, on {date} ({amount} left).",
+            "deadlineOverdue": "Overdue: {label}, due on {date} ({amount} left).",
+            "pillar3aYearEnd": "Pillar 3a: {amount} paid this year. Pillar 3a must be paid before December 31."
+        },
+        "documentCandidates": {
+            "title": "Documents found in your transactions",
+            "hint": "Already attached to a transaction or an insurance: one click files them on the right line.",
+            "from": "Attached to: {label}",
+            "file": "File it"
+        },
+        "themes": {
+            "title": "Totals for the year {year}",
+            "hint": "For information only: canton limits are not applied. Only natures confirmed on a transaction count.",
+            "total": "{amount}",
+            "empty": "No confirmed expense for this theme.",
+            "document": "Expected document: {label}",
+            "natures": {
+                "donation": "Donations",
+                "politicalContribution": "Political parties",
+                "childcare": "Childcare",
+                "alimonyPaid": "Alimony paid",
+                "trainingExpense": "Training",
+                "commuting": "Commuting",
+                "jobExpense": "Other job expenses",
+                "pillar2BuyIn": "Buy-ins to the 2nd pillar"
+            }
+        },
+        "medical": {
+            "title": "Medical expenses {year}",
+            "hint": "For information only: the deduction depends on your canton's threshold.",
+            "summary": "Gross: {gross} · Reimbursed: {reimbursed} · Out of pocket: {net}",
+            "reimbursedLine": "reimbursed {amount}",
+            "none": "No confirmed medical invoice this year (confirm the “medical expenses” nature on the transaction).",
+            "unlinked": "{count} reimbursement(s) not linked to an invoice are counted as reimbursed."
+        },
+        "pillar3a": {
+            "title": "Pillar 3a for {year}",
+            "hint": "For information only: this is not a calculated deduction.",
+            "paid": "Paid: {amount}",
+            "none": "No contribution found this year (transfer to a 3a account, or the “Pillar 3a” nature confirmed on a transaction).",
+            "limit": "limit {max}, {remaining} left",
+            "limitPercent": "{percent}% of income",
+            "noLimit": "Limit not shown: the canton profile has not been reviewed yet.",
+            "certificate": "The deductible amount is the one on the foundation's annual certificate: compare it with what was paid.",
+            "appliesTo": {
+                "employeeWithPillar2": "With 2nd pillar",
+                "withoutPillar2": "Without 2nd pillar"
+            }
+        },
+        "suggestionsTitle": "Suggestions",
+        "detectedTitle": "Amounts detected in the PDF",
+        "previousYear": "Last year: {value}",
+        "locked": "Filed on {date}: amounts are locked. To change one, use “Correct” on the line; each correction is logged with its reason.",
+        "corrected": "Corrected on {date}: {change} ({reason})",
+        "fileModal": {
+            "title": "Mark the {year} return as filed?",
+            "message": "Tell us when you filed it. Amounts will then be locked: any change goes through “Correct”, with a reason. Documents stay editable.",
+            "date": "Filing date",
+            "confirm": "Mark as filed"
+        },
+        "unfileModal": {
+            "title": "Cancel filing of the {year} return?",
+            "message": "Use this if it was marked as filed by mistake. It goes back to “Ready to copy” and its amounts can be edited again. The cancellation is logged; corrections already made stay in the history."
+        },
+        "guided": {
+            "title": "Quick totals entry",
+            "intro": "Copy the main totals of your return: a few amounts are enough to get started. Fill in the detail step by step afterwards.",
+            "introUnread": "The PDF could not be read (scan, photo or unrecognised form). Copy its main totals: a few amounts are enough to get started.",
+            "both": "same amount for canton and Confederation",
+            "submit": "Enter {count} amount | Enter {count} amounts",
+            "dismiss": "Fill in step by step",
+            "done": "{count} line filled. Complete the detail in each step. | {count} lines filled. Complete the detail in each step."
+        },
+        "zone": {
+            "show": "Show in the PDF",
+            "title": "Amount in the PDF",
+            "loading": "Opening the PDF…",
+            "unavailable": "The position of this amount is not known (read before this feature): open the PDF from the documents.",
+            "page": "Page {page}",
+            "close": "Close"
+        },
+        "bundle": {
+            "summaryFile": "Summary",
+            "summaryTitle": "Supporting documents — {title}",
+            "generated": "Prepared on {date} with Spend.Up. This is not a cantonal document.",
+            "files": "Included documents, in the order of the return:",
+            "none": "No document filed on the return.",
+            "extra": "declaration-{year}-{canton}.pdf (working summary) and .json (full return)",
+            "missing": "Expected documents not received yet:",
+            "skipped": "Documents that could not be added:",
+            "disclaimer": "This bundle helps you prepare your return; it does not replace the official software or tax advice.",
+            "done": "The supporting documents are downloaded.",
+            "partial": "The bundle is downloaded, but {count} document could not be added: see the summary. | The bundle is downloaded, but {count} documents could not be added: see the summary."
+        },
+        "exportModal": {
+            "title": "Export the {year} return",
+            "pdf": {
+                "title": "PDF summary",
+                "detail": "To copy into the official software, in the order of the form."
+            },
+            "bundle": {
+                "title": "Supporting documents (ZIP)",
+                "detail": "All documents numbered in the order of the return, with a summary."
+            },
+            "csv": {
+                "title": "Spreadsheet (CSV)",
+                "detail": "One amount per row, for Excel or Numbers."
+            },
+            "json": {
+                "title": "Data (JSON)",
+                "detail": "Full backup of the return."
+            }
+        },
+        "correctModal": {
+            "title": "Correct an amount",
+            "message": "The return is filed: the correction is logged with the old amount, the new one and the reason.",
+            "competence": "Level",
+            "current": "Current amount",
+            "empty": "empty",
+            "amount": "New amount",
+            "reason": "Reason",
+            "reasonPlaceholder": "E.g. salary certificate corrected by the employer",
+            "confirm": "Correct"
+        },
+        "nextYearModal": {
+            "title": "Create the {year} return?",
+            "message": "Identity and entries (without amounts) are carried over, and the list of expected documents is prepared. No amount is copied: last year's amounts stay visible as a reference.",
+            "confirm": "Create"
+        },
+        "assessments": {
+            "heading": "Tax assessment",
+            "hint": "For information only: copy what the tax office decided (assessment, statement). Nothing is calculated; the figures are only compared with your return.",
+            "notFiled": "Mark the return as filed first to enter the assessment.",
+            "empty": "No assessment entered.",
+            "kind": {
+                "intermediateStatement": "Interim statement",
+                "assessment": "Tax assessment",
+                "finalStatement": "Final statement",
+                "correction": "Decision on objection"
+            },
+            "issuedOn": "of {date}",
+            "taxableIncome": "Taxable income: {amount}",
+            "taxableWealth": "Taxable wealth: {amount}",
+            "totalTax": "Tax: {amount}",
+            "installmentsPaid": "Advance payments: {amount}",
+            "interest": "Interest: {amount}",
+            "balanceDue": "Balance to pay: {amount}",
+            "balanceRefund": "To be refunded: {amount}",
+            "dueBy": "to pay by {date}",
+            "deviationsTitle": "Differences with your return",
+            "deviation": "{line}: declared {declared}, assessed {assessed} ({difference})",
+            "notDeclared": "not declared",
+            "competenceLabel": "Tax",
+            "kindLabel": "Document",
+            "issuedLabel": "Document date",
+            "incomeLabel": "Taxable income",
+            "wealthLabel": "Taxable wealth",
+            "totalTaxLabel": "Total tax",
+            "interestLabel": "Interest (negative: in your favour)",
+            "balanceLabel": "Balance (negative: to be refunded)",
+            "balanceHint": "Left empty, the balance is calculated: tax + interest − advance payments.",
+            "dueLabel": "Payment deadline",
+            "noteLabel": "Note",
+            "addDeviation": "Add a difference",
+            "deviationLine": "Line",
+            "deviationAssessed": "Assessed amount",
+            "removeDeviation": "Remove",
+            "add": "Save the document",
+            "edit": "Edit",
+            "fileLabel": "Received file",
+            "cancelEdit": "Cancel",
+            "update": "Save changes",
+            "pick": "Payment to match",
+            "link": "Match",
+            "unlink": "Remove",
+            "settleSuggested": "The matched payments cover the balance: you can mark the return as settled.",
+            "remove": "Delete",
+            "invalid": "Enter the document date.",
+            "contest": "File an objection",
+            "settle": "Mark as settled",
+            "reopen": "Reopen"
+        },
+        "installments": {
+            "step": "Payments",
+            "heading": "Tax payments",
+            "hint": "For information only: copy the instalments from your bill (due date and amount). Nothing is calculated or suggested, and nothing is sent to the canton.",
+            "empty": "No instalment entered. Add your advance payments or balance from the bill you received.",
+            "summary": "Planned {planned} · paid {paid} · remaining {remaining}",
+            "title": "{competence}, instalment {sequence}",
+            "dueOn": "due on {date}",
+            "competence": { "cantonal": "Canton and municipality", "federal": "Federal tax" },
+            "status": { "paid": "paid", "partial": "partly paid", "overdue": "overdue", "due": "to pay" },
+            "competenceLabel": "Tax",
+            "dueLabel": "Due date",
+            "amountLabel": "Amount",
+            "noteLabel": "Note",
+            "add": "Add the instalment",
+            "remove": "Delete",
+            "invalid": "Enter a due date and an amount greater than zero.",
+            "pick": "Payment to match",
+            "link": "Match",
+            "unlink": "Remove",
+            "markPaid": "Mark as paid",
+            "clearPaid": "Cancel the payment"
+        },
+        "checklist": {
+            "step": "Documents",
+            "title": "Expected documents",
+            "empty": "No expected document yet. They are prepared from your entries and last year.",
+            "progress": "{received} of {total} documents received.",
+            "count": "{received} / {total} documents",
+            "required": "required",
+            "generate": "Complete the list"
+        },
+        "acceptVerified": "Accept verified lines ({count})",
+        "acceptAlerts": "Accept despite alerts ({count})",
+        "acceptAlertsModal": {
+            "title": "Accept {count} lines to check?",
+            "message": "These lines are not matched by any total on the form, or a total shows a difference. Check them before entering them.",
+            "confirm": "Accept anyway"
+        },
+        "check": {
+            "verified": "matched by a total",
+            "toCheck": "to check",
+            "previousYear": "Differs from last year ({amount}): check the decimals and digits"
+        },
+        "accept": "Accept",
+        "documentsTitle": "Documents",
+        "attach": "Attach a file",
+        "line": "Line",
+        "importStatement": "Import an eCH-0196 statement",
+        "fiches": {
+            "add": "Add a sheet",
+            "title": "Title",
+            "detail": "Detail",
+            "amount": "Amount",
+            "secondary": "Second amount",
+            "save": "Add",
+            "remove": "Remove",
+            "report": "Copy the total onto the lines",
+            "employment": "Job",
+            "child": "Child",
+            "property": "Property",
+            "debt": "Debt",
+            "institution": "Institution",
+            "employmentAmount": "Salary",
+            "propertyAmount": "Tax value",
+            "propertyIncome": "Property income",
+            "debtAmount": "Balance at 31 December",
+            "debtInterest": "Interest",
+            "institutionAmount": "Value of accounts and securities",
+            "institutionIncome": "Income from accounts and securities"
+        },
+        "stepDone": "Step validated",
+        "stepOpen": "Step still open",
+        "validate": {
+            "situation": "Save the situation",
+            "revenus": "Validate income",
+            "deductions": "Validate deductions",
+            "fortune": "Validate wealth",
+            "dettes": "Validate debts",
+            "aPart": "Validate separately taxed amounts",
+            "fallback": "Validate {name}",
+            "prevoyance": "Confirm retirement savings",
+            "assurances": "Confirm insurance and health",
+            "famille": "Confirm family",
+            "autres": "Confirm other deductions"
+        },
+        "officialName": "Last name",
+        "firstName": "First name",
+        "vn": "AVS number",
+        "municipality": "Municipality",
+        "job": "Occupation",
+        "taxpayerNumber": "Taxpayer number",
+        "notes": "Notes",
+        "saveHeader": "Save situation",
+        "cantonal": "Canton",
+        "federal": "Confederation",
+        "amount": "Amount",
+        "emptyCell": "Not declared",
+        "subtotals": "Subtotals of filled lines",
+        "income": "Income",
+        "deductions": "Deductions",
+        "netIncome": "Net income",
+        "assets": "Wealth",
+        "liabilities": "Debts",
+        "netAssets": "Net wealth",
+        "gaps": "{count} line still empty | {count} lines still empty",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this return? The amounts you entered will be removed.",
+        "loading": "Loading…",
+        "saving": "Saving…",
+        "simple": {
+            "copyToFederal": "Same amount for the Confederation",
+            "copyToCantonal": "Same amount for the canton"
+        },
+        "deleteModal": {
+            "title": "Delete the {year} return ({canton})?",
+            "message": "The amounts and entries you entered will be deleted. This cannot be undone."
+        },
+        "stepTitles": {
+            "assurances": "Insurance and health",
+            "autres": "Other deductions",
+            "aPart": "Taxed separately"
+        },
+        "stepLabels": {
+            "revenus": "Income",
+            "prevoyance": "Retirement savings",
+            "assurances": "Health",
+            "famille": "Family",
+            "autres": "Deductions",
+            "fortune": "Assets",
+            "dettes": "Debts",
+            "aPart": "Separate"
+        },
+        "help": {
+            "income": {
+                "employed": "Your net salary for the year, as shown on each employer's salary certificate.",
+                "selfEmployed": "The net result of your self-employed activity, from your accounts or annual statement.",
+                "liquidationProfit": "The profit made when you closed or sold your self-employed business.",
+                "retirementPension": "AHV/AVS pensions received during the year, including child pensions: see the compensation fund's statement.",
+                "disabilityPension": "Disability insurance pensions received during the year: see the statement from the DI office or fund.",
+                "unemployment": "Unemployment benefits, daily allowances (illness, accident, maternity) and loss-of-earnings payments received: see the funds' statements.",
+                "allowances": "Child and training allowances received. They are sometimes already on the salary certificate: check so you do not count them twice.",
+                "alimony": "Alimony received, for you or for your children, under a judgment or agreement.",
+                "securities": "Account interest and dividends from your securities: see your bank's tax statement.",
+                "withholdingTax": "The withholding tax deducted from your interest and dividends: it is shown on your bank's tax statement.",
+                "property": "Rent received and, depending on the canton, the rental value of a home you own.",
+                "other": "Any other taxable income that fits none of the boxes above."
+            },
+            "deduction": {
+                "jobExpenses": "Commuting, meals and other costs related to your job. Depending on the canton: a flat rate or actual costs.",
+                "debtInterest": "Interest paid on your debts (mortgage, loan…): see your bank's interest statement.",
+                "pillar2": "Your regular pension fund contributions (2nd pillar): they are shown on your salary certificate.",
+                "pillar2BuyIn": "Buy-ins of contribution years paid to your pension fund: see the fund's statement.",
+                "pillar3a": "Your payments into pillar 3a during the year: see the bank or insurer's statement. An annual cap applies.",
+                "insurance": "Health, accident and life insurance premiums, and interest on your savings accounts. The canton usually applies a cap or a flat rate.",
+                "healthGross": "The illness and accident costs you paid, before reimbursement: doctor, dentist, medication, glasses…",
+                "healthReimbursed": "What your insurer reimbursed for these costs.",
+                "health": "The illness and accident costs left to you. Only the part above a threshold (usually a percentage of net income) is deductible.",
+                "handicap": "Costs related to a disability (care, aids, adaptations), if you are recognised as having a disability.",
+                "education": "Continuing education costs related to your profession. Initial training is not deductible. A cap applies.",
+                "donations": "Gifts to tax-exempt public-interest institutions: keep your receipts. A minimum and a cap apply.",
+                "childcare": "Childcare costs paid to third parties (nursery, day care): see the invoices. A cap applies.",
+                "social": "Deductions for children, dependants and other social situations: they depend on your situation and canton.",
+                "other": "Any other allowed deduction that fits none of the boxes above."
+            },
+            "asset": {
+                "cashAndSecurities": "Your account balances and the value of your securities on 31 December: see your bank's tax statement.",
+                "property": "The tax value of your properties, set by the canton: see your latest assessment notice.",
+                "qualifiedPrivate": "Your holdings of at least 10% in a company, held as private assets.",
+                "qualifiedBusiness": "Your qualifying holdings held as business assets of a self-employed activity.",
+                "crypto": "The value of your cryptocurrencies on 31 December, at the rate published by the tax administration.",
+                "other": "Other assets: vehicles, valuables, insurance with a surrender value… Depending on the canton."
+            },
+            "liability": {
+                "debts": "The total of your debts on 31 December (mortgage, loans, leasing): see your creditors' statements."
+            },
+            "capital": {
+                "pillar2": "The capital received from your pension fund (2nd pillar), taxed separately: see the payment statement.",
+                "pillar3a": "The capital withdrawn from your pillar 3a, taxed separately: see the bank or insurer's statement.",
+                "vested": "The capital from a vested-benefits payment made during the year.",
+                "other": "Other capital benefits received during the year (compensation, insurance benefits…)."
+            },
+            "gift": {
+                "amount": "Gifts, advancements and inheritances received during the year. Depending on the canton, they are taxed or exempt."
+            }
+        },
+        "attachUpload": "Attach a file",
+        "attachSelect": "Select",
+        "attachLine": "Related box (optional)",
+        "see": "View",
+        "importFormatUnknown": "Return format not recognised (only JuraTax and FriTax 2025 PDFs are read for now): the PDF is filed with the documents, nothing was read. Enter the totals below to get started.",
+        "importReadNone": "No amount to suggest was read from this PDF. It is filed with the documents.",
+        "review": {
+            "title": "PDF reading · {profile}",
+            "dismiss": "Hide",
+            "checks": "{ok} total out of {n} matches the form. | {ok} totals out of {n} match the form.",
+            "mismatch": "Mismatch on: {lines}. Check these lines before accepting.",
+            "none": "Nothing to review.",
+            "detected": "{count} amount detected, to review in its tab. | {count} amounts detected, to review in their tabs.",
+            "spouse": "spouse",
+            "acceptSelected": "Accept selection ({count})",
+            "unmapped": "{count} line read with no equivalent in the app",
+            "code": "code {code}, p. {page}",
+            "split": "{verified} matched by a total, {toCheck} to check.",
+            "wrongForm": "This PDF is a {formCanton} {formYear} form, the return is {canton} {year}. Nothing is treated as verified.",
+            "previousYear": "{count} amount very different from last year, probably misread. | {count} amounts very different from last year, probably misread."
         }
     }
 }

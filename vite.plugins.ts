@@ -43,6 +43,28 @@ export function netlifyHeadersCsp(csp: string): Plugin {
 }
 
 /**
+ * Équivalent Apache de `netlifyHeadersCsp` : `public/.htaccess` contient le marqueur
+ * `__CSP__`, remplacé dans `dist/.htaccess` par la politique calculée pour le build.
+ */
+export function apacheHeadersCsp(csp: string): Plugin {
+    return {
+        name: 'spendup-apache-headers-csp',
+        apply: 'build',
+        async closeBundle() {
+            const file = resolve(process.cwd(), 'dist/.htaccess');
+            let content: string;
+            try {
+                content = await readFile(file, 'utf8');
+            } catch {
+                return;
+            }
+            const next = content.replace('__CSP__', () => csp.replace(/"/g, '\\"'));
+            if (next !== content) await writeFile(file, next, 'utf8');
+        }
+    };
+}
+
+/**
  * Réécrit les imports nommés `vue-tabler-icons` vers les fichiers individuels
  * (`icons/FooIcon.js`) pour permettre le tree-shaking. Le barrel ES (~6 Mo)
  * n’est jamais chargé en prod.

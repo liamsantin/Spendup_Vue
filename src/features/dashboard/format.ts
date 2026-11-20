@@ -167,3 +167,118 @@ export function upcomingDues(
         .sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name))
         .slice(0, limit);
 }
+
+/* ── affichage éditorial (D.A. Swiss) ───────────────────────────────────── */
+
+export type HeroAmountParts = {
+    /** Code ou symbole de devise détaché du nombre (`null` si absent, ex. montant masqué). */
+    currency: string | null;
+    /** Partie entière formatée (séparateurs de milliers conservés). */
+    main: string;
+    /** Séparateur + décimales (« ,55 » / « .55 »), `null` si le montant n’en a pas. */
+    decimals: string | null;
+};
+
+/**
+ * Découpe un montant déjà formaté (`Intl`) pour le chiffre héros : la partie entière en grand,
+ * les décimales et la devise en petit gris. Aucun reformatage : on ne fait que séparer la chaîne.
+ */
+export function splitHeroAmount(text: string): HeroAmountParts {
+    let rest = text.trim();
+    let currency: string | null = null;
+    const lead = /^(\p{Sc}|[A-Z]{3})\s*/u.exec(rest);
+    if (lead) {
+        currency = lead[1];
+        rest = rest.slice(lead[0].length);
+    } else {
+        const trail = /\s*(\p{Sc}|[A-Z]{3})$/u.exec(rest);
+        if (trail) {
+            currency = trail[1];
+            rest = rest.slice(0, rest.length - trail[0].length);
+        }
+    }
+    const decimals = /^(.*\d)([.,]\d{1,2})$/.exec(rest);
+    if (decimals) return { currency, main: decimals[1], decimals: decimals[2] };
+    return { currency, main: rest, decimals: null };
+}
+
+/** Date courte à la suisse : `yyyy-MM-dd` → « 23.10 ». */
+export function formatShortDayMonth(ymdValue: string): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(ymdValue.trim());
+    if (!match) return ymdValue;
+    return `${match[3]}.${match[2]}`;
+}
+
+export const BUDGET_GAUGE_SEGMENTS = 20;
+
+type BudgetLike = {
+    isActive: boolean;
+    isCurrent: boolean;
+    currency: string;
+    spentAmount: number;
+    limitAmount: number;
+    periode?: string;
+    categoryPublicId?: string | null;
+};
+
+export type MonthBudgetSelection<T> = {
+    /** Les budgets à additionner : le budget global seul, ou les budgets mensuels d’une même devise. */
+    budgets: T[];
+    currency: string;
+    /** `true` quand il n’y a pas de budget global : le total est une somme de budgets par catégorie. */
+    aggregate: boolean;
+};
+
+/**
+ * Ce que montre « Budget du mois », au tableau de bord comme sur la page Budgets.
+ * Le budget global (sans catégorie, mensuel de préférence) compte déjà toutes les dépenses : il est
+ * pris seul, sans y ajouter les budgets par catégorie (double comptage). Sans budget global, seuls
+ * les budgets mensuels sont additionnés, dans une seule devise (celle de l’utilisateur si elle est
+ * présente, sinon la plus représentée par plafond) : un annuel ou un hebdomadaire ne se compare pas
+ * à un mois.
+ */
+export function selectMonthBudgets<T extends BudgetLike>(
+    budgets: readonly T[],
+    preferredCurrency?: string | null
+): MonthBudgetSelection<T> | null {
+    const current = budgets.filter((budget) => budget.isActive && budget.isCurrent);
+    const globals = current.filter((budget) => !budget.categoryPublicId);
+    const global = globals.find((budget) => budget.periode === 'mensuel') ?? globals[0];
+    if (global) return { budgets: [global], currency: global.currency, aggregate: false };
+
+    const monthly = current.filter((budget) => budget.periode === 'mensuel');
+    if (!monthly.length) return null;
+    const limits = new Map<string, number>();
+    for (const budget of monthly) limits.set(budget.currency, (limits.get(budget.currency) ?? 0) + Math.max(0, budget.limitAmount));
+    const currency =
+        preferredCurrency && limits.has(preferredCurrency)
+            ? preferredCurrency
+            : [...limits.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0];
+    return { budgets: monthly.filter((budget) => budget.currency === currency), currency, aggregate: true };
+}
+
+export type BudgetsSummary = {
+    currency: string;
+    spent: number;
+    limit: number;
+    remaining: number;
+    /** Pourcentage arrondi, non plafonné (> 100 = dépassement). */
+    percent: number;
+    /** Nombre de carrés pleins de la jauge segmentée (0 à `BUDGET_GAUGE_SEGMENTS`). */
+    segments: number;
+};
+
+/**
+ * « Budget du mois » du tableau de bord, sur la sélection de {@link selectMonthBudgets}.
+ * `null` s’il n’y a ni budget global ni budget mensuel en cours.
+ */
+export function summarizeBudgets(budgets: readonly BudgetLike[], preferredCurrency?: string | null): BudgetsSummary | null {
+    const selection = selectMonthBudgets(budgets, preferredCurrency);
+    if (!selection) return null;
+    const { currency } = selection;
+    const spent = selection.budgets.reduce((sum, budget) => sum + Math.max(0, budget.spentAmount), 0);
+    const limit = selection.budgets.reduce((sum, budget) => sum + Math.max(0, budget.limitAmount), 0);
+    const percent = limit > 0 ? Math.round((spent / limit) * 100) : 0;
+    const segments = Math.min(BUDGET_GAUGE_SEGMENTS, Math.max(0, Math.round((percent / 100) * BUDGET_GAUGE_SEGMENTS)));
+    return { currency, spent, limit, remaining: limit - spent, percent, segments };
+}

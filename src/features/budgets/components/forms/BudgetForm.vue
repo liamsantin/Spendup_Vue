@@ -70,21 +70,17 @@ function onCategoryCreated(category: Category) {
 
 <template>
     <div class="budget-form">
-        <v-row class="align-center" no-gutters>
-            <v-col cols="auto" sm="3" class="pr-3">
-                <label class="v-label font-weight-medium" for="budget-form-active">{{ t('budgetsPage.form.fields.isActive') }}</label>
-            </v-col>
-            <v-col cols="auto" sm="9">
+        <div class="budget-form__row">
+            <label class="budget-form__label" for="budget-form-active">{{ t('budgetsPage.form.fields.isActive') }}</label>
+            <div class="budget-form__field">
                 <AppSwitch id="budget-form-active" v-model="form.isActive" />
                 <p v-if="pauseHint && !form.isActive" class="text-caption text-medium-emphasis mb-0 mt-1">{{ pauseHint }}</p>
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="budget-form-name">{{ t('budgetsPage.form.fields.name') }} *</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="budget-form__row">
+            <label class="budget-form__label" for="budget-form-name">{{ t('budgetsPage.form.fields.name') }} *</label>
+            <div class="budget-form__field">
                 <v-text-field
                     id="budget-form-name"
                     v-model="form.name"
@@ -95,14 +91,12 @@ function onCategoryCreated(category: Category) {
                     :error="!!fieldErrors.name"
                     :error-messages="fieldErrors.name || undefined"
                 />
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="budget-form-amount">{{ t('budgetsPage.form.fields.limitAmount') }} *</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="budget-form__row">
+            <label class="budget-form__label" for="budget-form-amount">{{ t('budgetsPage.form.fields.limitAmount') }} *</label>
+            <div class="budget-form__field">
                 <v-text-field
                     id="budget-form-amount"
                     v-model="form.limitAmount"
@@ -115,14 +109,12 @@ function onCategoryCreated(category: Category) {
                     :error="!!fieldErrors.limitAmount"
                     :error-messages="fieldErrors.limitAmount || undefined"
                 />
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('budgetsPage.form.fields.periode') }} *</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="budget-form__row">
+            <label class="budget-form__label">{{ t('budgetsPage.form.fields.periode') }} *</label>
+            <div class="budget-form__field">
                 <AppSelect
                     id="budget-form-periode"
                     v-model="form.periode"
@@ -132,24 +124,20 @@ function onCategoryCreated(category: Category) {
                     :error="!!fieldErrors.periode"
                     :error-messages="fieldErrors.periode || undefined"
                 />
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('budgetsPage.form.fields.startDate') }} *</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="budget-form__row">
+            <label class="budget-form__label">{{ t('budgetsPage.form.fields.startDate') }} *</label>
+            <div class="budget-form__field">
                 <AppDatePicker v-model="startDateModel" :label="t('budgetsPage.form.fields.startDate')" />
                 <p v-if="fieldErrors.startDate" class="text-caption text-error mt-1 mb-0">{{ fieldErrors.startDate }}</p>
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('budgetsPage.form.fields.endDate') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="budget-form__row">
+            <label class="budget-form__label">{{ t('budgetsPage.form.fields.endDate') }}</label>
+            <div class="budget-form__field">
                 <AppDatePicker
                     v-model="endDateModel"
                     :label="t('budgetsPage.form.fields.endDate')"
@@ -157,14 +145,12 @@ function onCategoryCreated(category: Category) {
                     clearable
                 />
                 <p v-if="fieldErrors.endDate" class="text-caption text-error mt-1 mb-0">{{ fieldErrors.endDate }}</p>
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('budgetsPage.form.fields.category') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="budget-form__row">
+            <label class="budget-form__label">{{ t('budgetsPage.form.fields.category') }}</label>
+            <div class="budget-form__field">
                 <AppSelect
                     id="budget-form-category"
                     v-model="form.categoryPublicId"
@@ -181,14 +167,12 @@ function onCategoryCreated(category: Category) {
                         categoryCreateOpen = true;
                     "
                 />
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
-        <v-row class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium">{{ t('budgetsPage.form.fields.currency') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <div class="budget-form__row">
+            <label class="budget-form__label">{{ t('budgetsPage.form.fields.currency') }}</label>
+            <div class="budget-form__field">
                 <AppSelect
                     id="budget-form-currency"
                     v-model="form.currency"
@@ -200,8 +184,8 @@ function onCategoryCreated(category: Category) {
                     :error-messages="fieldErrors.currency || undefined"
                 />
                 <p v-if="currencyHint" class="text-caption text-medium-emphasis mb-0 mt-1">{{ currencyHint }}</p>
-            </v-col>
-        </v-row>
+            </div>
+        </div>
 
         <CategoryFormModal
             v-model="categoryCreateOpen"
@@ -213,7 +197,59 @@ function onCategoryCreated(category: Category) {
 </template>
 
 <style scoped>
-.budget-form :deep(.v-row) {
-    margin-bottom: 12px;
+/* Formulaire de fenêtre modale (maquette 04) : libellé à gauche sur 170 px | champ carré. */
+.budget-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.budget-form__row {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px 16px;
+}
+
+.budget-form__label {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.3;
+}
+
+.budget-form__field {
+    min-width: 0;
+}
+
+/* champ texte Vuetify : 42 px, carré (bordure et focus gérés par le kit) */
+.budget-form__field :deep(.v-field) {
+    --v-input-control-height: 42px;
+}
+
+.budget-form__field :deep(.v-input--density-default .v-field--variant-outlined) {
+    --v-input-control-height: 42px;
+}
+
+.budget-form__field :deep(.v-text-field input) {
+    min-height: 42px;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.budget-form__field .text-caption {
+    color: var(--gray) !important;
+    font-size: 13px !important;
+}
+
+.budget-form__field .text-error {
+    color: var(--danger) !important;
+}
+
+@media (max-width: 599.98px) {
+    .budget-form__row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+    }
 }
 </style>

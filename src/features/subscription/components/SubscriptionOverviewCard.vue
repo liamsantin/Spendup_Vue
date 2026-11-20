@@ -3,8 +3,6 @@ defineOptions({ name: 'SubscriptionOverviewCard' });
 
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CrownIcon } from 'vue-tabler-icons';
-import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 import { formatSubscriptionDate } from '@/features/subscription/format';
 import type { UserSubscription } from '@/features/subscription/types';
 
@@ -26,118 +24,102 @@ const canceledAt = computed(() => formatSubscriptionDate(props.subscription.canc
 </script>
 
 <template>
-    <AppGlassCard :title="t('subscriptionPage.overview.title')" :subtitle="t('subscriptionPage.overview.subtitle')">
-        <template #icon>
-            <CrownIcon :size="20" stroke-width="1.5" />
-        </template>
-        <template #actions>
-            <button type="button" class="su-btn su-btn--ink" :disabled="disabled" @click="emit('changePlan')">
-                {{ t('subscriptionPage.actions.changePlan') }}
-            </button>
-        </template>
-
-        <div class="subscription-overview">
-            <div class="subscription-overview__plan">
-                <p class="subscription-overview__name">{{ subscription.plan.name }}</p>
-                <span class="subscription-overview__status" :class="statusClass">
-                    {{ t(`subscriptionPage.status.${subscription.status}`) }}
-                </span>
+    <section class="su-settings subscription-overview">
+        <div class="su-settings__lead">
+            <h2>{{ t('subscriptionPage.overview.title') }}</h2>
+            <p>{{ t('subscriptionPage.overview.subtitle') }}</p>
+        </div>
+        <div class="su-settings__fields">
+            <!-- Bloc plan : nom en chiffre clé 30 px 700, état en petit carré + texte, dates en lignes libellé / valeur. -->
+            <div class="is-full subscription-overview__plan">
+                <div class="su-fig subscription-overview__fig">
+                    <p class="su-fig__label">{{ t('subscriptionPage.overview.title') }}</p>
+                    <p class="su-fig__num">{{ subscription.plan.name }}</p>
+                    <p class="su-fig__note">
+                        <span class="su-chip subscription-overview__status" :class="statusClass">
+                            {{ t(`subscriptionPage.status.${subscription.status}`) }}
+                        </span>
+                    </p>
+                </div>
+                <button type="button" class="su-btn su-btn--ink" :disabled="disabled" @click="emit('changePlan')">
+                    {{ t('subscriptionPage.actions.changePlan') }}
+                </button>
             </div>
-            <p v-if="subscription.plan.description" class="subscription-overview__description">
+            <p v-if="subscription.plan.description" class="is-full subscription-overview__description">
                 {{ subscription.plan.description }}
             </p>
-            <dl class="subscription-overview__dates">
-                <div>
+            <dl class="is-full subscription-overview__dates">
+                <div class="su-kv">
                     <dt>{{ t('subscriptionPage.overview.startedAt') }}</dt>
                     <dd>{{ startedAt }}</dd>
                 </div>
-                <div v-if="expiresAt">
+                <div v-if="expiresAt" class="su-kv">
                     <dt>{{ t('subscriptionPage.overview.expiresAt') }}</dt>
                     <dd>{{ expiresAt }}</dd>
                 </div>
-                <div v-if="canceledAt">
+                <div v-if="canceledAt" class="su-kv">
                     <dt>{{ t('subscriptionPage.overview.canceledAt') }}</dt>
                     <dd>{{ canceledAt }}</dd>
                 </div>
             </dl>
         </div>
-    </AppGlassCard>
+    </section>
 </template>
 
 <style scoped>
-.subscription-overview {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
 .subscription-overview__plan {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    align-items: flex-end;
+    justify-content: space-between;
     flex-wrap: wrap;
+    gap: 16px 24px;
 }
 
-.subscription-overview__name {
-    margin: 0;
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+.subscription-overview__fig {
+    flex: 1 1 16ch;
+    border-top: 0;
+    padding-top: 0;
 }
 
+.subscription-overview__fig .su-fig__label {
+    color: var(--gray);
+}
+
+.subscription-overview__fig .su-fig__num {
+    white-space: normal;
+}
+
+/* état : bleu actif, violet en attente, rouge résilié / expiré — toujours accompagné du texte */
 .subscription-overview__status {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 9px;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    background: var(--hair);
-    color: var(--ink-muted);
+    --chip-color: var(--gray);
 }
 
 .subscription-overview__status.is-active {
-    background: rgba(var(--v-theme-success), 0.12);
-    color: rgb(var(--v-theme-success));
+    --chip-color: var(--blue);
 }
 
 .subscription-overview__status.is-pending {
-    background: rgba(var(--v-theme-warning), 0.14);
-    color: rgb(var(--v-theme-warning));
+    --chip-color: var(--violet);
 }
 
 .subscription-overview__status.is-canceled,
 .subscription-overview__status.is-expired {
-    background: rgba(var(--v-theme-error), 0.12);
-    color: rgb(var(--v-theme-error));
+    --chip-color: var(--danger);
 }
 
 .subscription-overview__description {
     margin: 0;
-    color: var(--ink-muted);
-    font-size: 0.88rem;
+    color: var(--gray);
+    font-size: 14px;
+    line-height: 1.45;
 }
 
 .subscription-overview__dates {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 28px;
-    margin: 6px 0 0;
+    margin: 0;
 }
 
-.subscription-overview__dates dt {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ink-muted);
-}
-
+.subscription-overview__dates dt,
 .subscription-overview__dates dd {
-    margin: 2px 0 0;
-    font-weight: 600;
-    font-size: 0.9rem;
+    margin: 0;
 }
 </style>

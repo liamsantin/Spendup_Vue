@@ -31,6 +31,16 @@
         "save": "Enregistrer",
         "cancel": "Annuler"
     },
+    "demo": {
+        "banner": "Démo — rien n’est enregistré sur nos serveurs.",
+        "importPromise": "Un relevé importé est lu dans votre navigateur et n’est jamais envoyé à nos serveurs.",
+        "reset": "Réinitialiser",
+        "exit": "Quitter",
+        "signup": "Créer un compte",
+        "lockedTitle": "Disponible avec un compte",
+        "lockedText": "Cette partie de Spend.Up n’est pas dans la démo. Créez un compte pour l’utiliser avec vos données.",
+        "back": "Retour au tableau de bord"
+    },
     "nav": {
         "menu": "Menu",
         "closeMenu": "Fermer le menu",
@@ -45,7 +55,8 @@
             "wealth": "Patrimoine",
             "analytics": "Analyses",
             "network": "Réseau",
-            "settings": "Paramètres"
+            "settings": "Paramètres",
+            "upcoming": "À venir"
         },
         "items": {
             "dashboard": "Tableau de bord",
@@ -83,8 +94,10 @@
             "privacy": "Confidentialité",
             "security": "Sécurité",
             "subscription": "Abonnement",
-            "account": "Compte"
+            "account": "Compte",
+            "transparency": "Transparence"
         },
+        "shortcuts": "Raccourcis",
         "subCaptions": {
             "soon": "Bientôt"
         },
@@ -187,11 +200,15 @@
             "menu": {
                 "preferences": {
                     "title": "Mon compte",
-                    "subtitle": "Compte, préférences & sécurité"
+                    "subtitle": "Compte et préférences"
                 },
                 "friends": {
                     "title": "Mes amis",
                     "subtitle": "Liste, demandes & découverte"
+                },
+                "security": {
+                    "title": "Sécurité",
+                    "subtitle": "Mot de passe et connexion"
                 }
             }
         },
@@ -297,7 +314,9 @@
             "subtitle": "Période en cours.",
             "empty": "Aucun budget actif pour l’instant.",
             "used": "{percent} utilisé",
-            "overspent": "Limite dépassée"
+            "overspent": "Limite dépassée",
+            "monthLabel": "Budget en cours · {month}",
+            "summary": "{spent} dépensé sur {limit} · reste {remaining}"
         },
         "savingsGoals": {
             "title": "Objectifs d’épargne",
@@ -322,7 +341,9 @@
             "upcoming": "À payer sous {days} jours",
             "upcomingHint": "aucune échéance | {count} échéance | {count} échéances",
             "vsPrevious": "{change} vs {month}",
-            "noComparison": "Pas de comparaison possible"
+            "noComparison": "Pas de comparaison possible",
+            "loadFailed": "Les chiffres du mois n’ont pas pu être chargés : les montants affichés sont incomplets.",
+            "truncated": "Ce mois compte trop de transactions pour être chargé en entier : les montants affichés sont partiels."
         },
         "spending": {
             "title": "Dépenses par catégorie",
@@ -347,6 +368,11 @@
     "comptesPage": {
         "title": "Comptes",
         "subtitle": "Banques, épargne et moyens de paiement",
+        "hero": {
+            "accounts": "{count} compte | {count} comptes",
+            "banks": "{count} banque | {count} banques",
+            "netWorth": "Valeur nette"
+        },
         "tabs": {
             "accounts": "Comptes",
             "invitations": "Invitations"
@@ -409,15 +435,19 @@
             "currentBalance": "Solde actuel",
             "initialBalance": "Solde initial",
             "fieldHidden": "Caché",
+            "fieldUnreadable": "Illisible",
+            "fieldForeign": "Chiffré par le propriétaire",
             "tabs": {
                 "details": "Détails",
                 "snapshots": "Relevé",
                 "paymentMethods": "Moyens de paiement",
-                "shares": "Partage"
+                "shares": "Partage",
+                "documents": "Justificatifs"
             },
             "seeAllTransactions": "Voir toutes les transactions",
             "snapshotsHiddenHint": "Les relevés sont masqués car le solde n’est pas visible pour vous.",
-            "shareUnavailable": "Vous n’avez pas accès à la gestion du partage de ce compte."
+            "shareUnavailable": "Vous n’avez pas accès à la gestion du partage de ce compte.",
+            "documentsUnavailable": "Seul le propriétaire du compte peut y joindre des justificatifs (attestation annuelle du 3e pilier a, relevé de fin d’année)."
         },
         "form": {
             "createTitle": "Nouveau compte",
@@ -441,6 +471,7 @@
                 "nameRequired": "Le nom est obligatoire.",
                 "balanceInvalid": "Saisissez un solde valide.",
                 "ibanInvalid": "IBAN invalide.",
+                "ibanUnreadable": "Cet IBAN est chiffré et illisible sur cet appareil : effacez-le ou saisissez-le à nouveau.",
                 "colorInvalid": "Couleur invalide. Utilisez #RGB, #RRGGBB ou #RRGGBBAA.",
                 "bankRequired": "Une banque est obligatoire pour un compte courant ou d’épargne : choisissez-la, ou saisissez un IBAN suisse."
             },
@@ -692,8 +723,45 @@
         }
     },
     "recurrencesPage": {
+        "insuranceTypes": {
+            "healthBasic": "Assurance maladie de base",
+            "healthSupplementary": "Assurance maladie complémentaire",
+            "life": "Assurance vie ou 3e pilier B",
+            "accident": "Assurance accident",
+            "householdLiability": "Ménage et responsabilité civile",
+            "vehicle": "Assurance véhicule",
+            "legalProtection": "Protection juridique",
+            "other": "Autre assurance"
+        },
         "title": "Récurrences",
         "subtitle": "Charges et revenus prévus. Une échéance ne devient une transaction qu’après confirmation.",
+        "hero": {
+            "active": "{count} récurrence active | {count} récurrence active | {count} récurrences actives",
+            "duesInMonth": "{count} échéance en {month} | {count} échéance en {month} | {count} échéances en {month}"
+        },
+        "figs": {
+            "fixedPerMonth": "Charges fixes / mois",
+            "subscriptionsPerMonth": "Abonnements / mois",
+            "incomesPerMonth": "Revenus récurrents / mois",
+            "note": "Équivalent mensuel des récurrences actives"
+        },
+        "calendar": {
+            "legend": "Légende",
+            "savings": "Épargne"
+        },
+        "groups": {
+            "incomes": "Revenus",
+            "fixed": "Charges fixes",
+            "subscriptions": "Abonnements",
+            "savings": "Épargne programmée"
+        },
+        "row": {
+            "onDay": "le {day}",
+            "next": "Prochaine {date}"
+        },
+        "timeline": {
+            "dues": "{count} échéance | {count} échéance | {count} échéances"
+        },
         "loadMore": "Charger plus",
         "unknownAccount": "Compte",
         "tabs": {
@@ -789,6 +857,8 @@
             "noNextDue": "Pas d’échéance à venir"
         },
         "detail": {
+            "nextDue": "Prochaine échéance",
+            "backToList": "Retour aux récurrences",
             "title": "Récurrence",
             "subtitle": "Échéances générées. Confirmez pour créer une transaction.",
             "duesTitle": "Échéances",
@@ -800,10 +870,12 @@
             "filesOnTransactions": "Sur les transactions",
             "filesOnTransactionsEmpty": "Aucun PDF lié aux transactions de cette récurrence.",
             "tabs": {
+                "label": "Sections de la récurrence",
+                "informations": "Informations",
                 "dues": "Échéances",
-                "attachments": "Justificatifs"
-            },
-            "seeTransactions": "Voir les transactions liées"
+                "attachments": "Justificatifs",
+                "transactions": "Transactions"
+            }
         },
         "linkTransactions": {
             "title": "Lier une transaction",
@@ -930,6 +1002,20 @@
                 "tier": "Tiers",
                 "notes": "Notes"
             },
+            "insurance": {
+                "type": "Type d’assurance",
+                "typeNone": "Non précisé",
+                "grossPremium": "Prime brute",
+                "premiumSubsidy": "Réduction de primes",
+                "franchise": "Franchise",
+                "policyNumber": "N° de police",
+                "renewalDate": "Renouvellement",
+                "perPeriodHint": "Par période, avant réduction de primes.",
+                "subsidyHint": "Information : le montant prévu ci-dessus reste ce que vous payez.",
+                "deductible": "Primes déductibles de vos impôts.",
+                "notDeductible": "Primes non déductibles de vos impôts.",
+                "deductibleUnknown": "Précisez le type pour savoir si les primes sont déductibles."
+            },
             "errors": {
                 "nameRequired": "Le nom est obligatoire.",
                 "nameTooLong": "Le nom est trop long.",
@@ -946,6 +1032,8 @@
                 "forbidden": "Action non autorisée.",
                 "paymentDayInvalid": "Le jour de paiement doit être entre 1 et 28.",
                 "notesTooLong": "Notes trop longues.",
+                "insuranceAmountInvalid": "Montant invalide.",
+                "insuranceSubsidyTooHigh": "La réduction de primes ne peut pas dépasser la prime brute.",
                 "isActiveRequired": "Le statut actif est obligatoire.",
                 "paymentDateInvalid": "Date invalide.",
                 "paymentDateFuture": "La date ne peut pas être dans le futur."
@@ -977,11 +1065,32 @@
             "nameDesc": "Z → A",
             "amountDesc": "Élevé",
             "amountAsc": "Faible"
-        }
+        },
+        "aside": {
+            "figsTitle": "Par mois",
+            "nextTitle": "Prochaines échéances",
+            "allDues": "Toutes les échéances",
+            "none": "Aucune échéance à venir."
+        },
+        "subnav": "Vues des récurrences"
     },
     "budgetsPage": {
         "title": "Budgets",
         "subtitle": "Enveloppes récurrentes, suivi de la période en cours et alertes.",
+        "hero": {
+            "monthBudget": "Budget {month}",
+            "daysLeft": "{count} jour restant | {count} jour restant | {count} jours restants"
+        },
+        "overview": {
+            "spent": "Dépensé",
+            "budget": "Budget",
+            "remaining": "Reste",
+            "overBy": "Dépassé de",
+            "perDay": "Disponible par jour",
+            "byCategory": "Par catégorie",
+            "reached": "Atteint",
+            "aggregateNote": "Total des budgets mensuels en cours"
+        },
         "searchPlaceholder": "Rechercher un budget",
         "count": "{count} budget | {count} budget | {count} budgets",
         "tabs": {
@@ -1037,7 +1146,13 @@
             "allCategories": "Toutes les catégories"
         },
         "detail": {
-            "seeTransactions": "Voir les transactions liées"
+            "tabs": {
+                "transactions": "Transactions",
+                "label": "Sections du budget",
+                "informations": "Informations"
+            },
+            "window": "Période en cours",
+            "backToList": "Retour aux budgets"
         },
         "linkTransactions": {
             "title": "Ajouter des transactions",
@@ -1117,6 +1232,11 @@
     "savingsGoalsPage": {
         "title": "Objectifs d’épargne",
         "subtitle": "Le montant suivi = ouverture + transactions explicitement liées.",
+        "card": {
+            "saved": "Épargné",
+            "target": "Objectif",
+            "dueDate": "Échéance"
+        },
         "searchPlaceholder": "Rechercher un objectif",
         "count": "{count} objectif | {count} objectif | {count} objectifs",
         "tabs": {
@@ -1169,9 +1289,18 @@
         },
         "detail": {
             "tabs": {
-                "details": "Détails",
-                "transactions": "Transactions liées"
-            }
+                "transactions": "Transactions",
+                "label": "Sections de l’objectif",
+                "informations": "Informations"
+            },
+            "figs": {
+                "saved": "Épargné",
+                "remaining": "Reste",
+                "exceeded": "Dépassé de",
+                "contributed": "Versements rattachés",
+                "projected": "Atteinte estimée"
+            },
+            "backToList": "Retour aux objectifs"
         },
         "linkTransactions": {
             "title": "Lier des transactions",
@@ -1302,6 +1431,25 @@
             }
         }
     },
+    "taxNatures": {
+        "none": "Aucune",
+        "pillar3aContribution": "Cotisation 3e pilier A",
+        "pillar2BuyIn": "Rachat dans le 2e pilier",
+        "healthInsurancePremium": "Prime d’assurance maladie",
+        "lifeInsurancePremium": "Prime d’assurance vie, accident ou 3e pilier B",
+        "medicalExpense": "Frais médicaux à ma charge",
+        "medicalReimbursement": "Remboursement de frais médicaux",
+        "disabilityExpense": "Frais liés à un handicap",
+        "childcare": "Frais de garde d’un enfant",
+        "alimonyPaid": "Pension alimentaire versée",
+        "commuting": "Trajet domicile-travail",
+        "jobExpense": "Autre frais professionnel",
+        "trainingExpense": "Formation ou perfectionnement",
+        "donation": "Don à une organisation d’utilité publique",
+        "politicalContribution": "Cotisation ou don à un parti politique",
+        "debtInterest": "Intérêts d’une dette ou d’une hypothèque",
+        "taxPayment": "Paiement d’impôts"
+    },
     "categoriesPage": {
         "title": "Catégories",
         "subtitle": "Votre arbre personnel pour classer les transactions.",
@@ -1386,6 +1534,7 @@
                 "independant": "Indépendant",
                 "allocations": "Allocations",
                 "rentes": "Rentes (AVS / 2e pilier)",
+                "remboursementsSante": "Remboursements santé",
                 "autresRevenus": "Autres revenus",
                 "epargne": "Épargne & prévoyance",
                 "troisiemePilier": "3e pilier",
@@ -1433,8 +1582,12 @@
                 "type": "Type",
                 "parent": "Parent",
                 "color": "Couleur",
-                "icone": "Icône"
+                "icone": "Icône",
+                "taxNature": "Nature fiscale"
             },
+            "taxNatureHint": "Facultatif. Sert à préparer votre déclaration d’impôts ; ne change rien d’autre.",
+            "taxNatureSuggestion": "Suggestion : {nature}.",
+            "taxNatureUse": "Utiliser",
             "errors": {
                 "nameRequired": "Le nom de la catégorie est obligatoire.",
                 "nameTooLong": "Le nom de la catégorie dépasse 150 caractères.",
@@ -1568,6 +1721,14 @@
             "organization": "Association, fondation, club",
             "administration": "Commune, impôts, caisse",
             "unknown": "Le type n’est pas encore clair"
+        },
+        "naturesPlural": {
+            "all": "Tiers",
+            "person": "Personnes",
+            "company": "Entreprises",
+            "organization": "Organisations",
+            "administration": "Administrations",
+            "unknown": "Non précisés"
         },
         "natures": {
             "person": "Personne",
@@ -1718,6 +1879,25 @@
             "bankRoleLocked": "Ce tiers est une banque (onglet Banque) : le rôle est obligatoire.",
             "bankRoleWithoutPanel": "Pour choisir ce tiers comme banque d’un compte, activez-le dans l’onglet Banque.",
             "bankNotListed": "Votre banque n’est pas dans la liste ?"
+        },
+        "detail": {
+            "title": "Tiers",
+            "tabs": {
+                "label": "Sections du tiers",
+                "informations": "Informations",
+                "attachments": "Justificatifs",
+                "transactions": "Transactions"
+            },
+            "sections": {
+                "contact": "Contact",
+                "identity": "Identité",
+                "bank": "Banque",
+                "notes": "Notes"
+            },
+            "noContact": "Aucune coordonnée renseignée.",
+            "backToList": "Retour aux tiers",
+            "notFound": "Tiers introuvable.",
+            "loading": "Chargement du tiers"
         }
     },
     "filesPage": {
@@ -1784,10 +1964,83 @@
         },
         "preview": {
             "title": "Aperçu",
-            "unavailable": "Impossible d’afficher ce PDF."
+            "unavailable": "Impossible d’afficher ce PDF.",
+            "pageOf": "Page {current} sur {total}",
+            "zoomOut": "Zoom arrière",
+            "zoomIn": "Zoom avant",
+            "fitWidth": "Ajuster à la largeur"
         },
         "upload": {
             "progress": "Envoi de {name}… {percent} %"
+        },
+        "sync": {
+            "status": {
+                "synced": "Synchronisé",
+                "cloud": "En ligne",
+                "pending": "En attente d’envoi",
+                "local": "Sur cet ordinateur",
+                "excluded": "Exclu de la synchro",
+                "elsewhere": "Sur {device}",
+                "missing": "Introuvable dans le dossier",
+                "blocked": "Bloque la file (quota)",
+                "neverFits": "Trop gros pour votre offre"
+            },
+            "actions": {
+                "manage": "Synchronisation"
+            },
+            "prompt": {
+                "title": "Synchroniser vos documents en ligne ?",
+                "body": "Vos PDF restent dans un dossier de cet ordinateur, sans limite. La synchro en copie les plus anciens en ligne, dans la limite de votre quota, pour les retrouver sur vos autres appareils.",
+                "enable": "Activer la synchro",
+                "later": "Plus tard"
+            },
+            "vaultAdvice": "Vos PDF ne sont pas chiffrés : ils sont lisibles dans le dossier de cet ordinateur et en ligne. Conseillé : activez le Coffre pour les chiffrer avec votre mot de passe.",
+            "panel": {
+                "disabled": "Synchro en ligne désactivée",
+                "upToDate": "Synchro à jour",
+                "uploading": "Envoi {done} / {total}",
+                "blocked": "Quota atteint : « {name} » attend de la place",
+                "neverFits": "« {name} » ne tiendra jamais dans votre quota : excluez-le pour continuer",
+                "localOnly": "{count} fichier seulement sur cet ordinateur ({size}) | {count} fichier seulement sur cet ordinateur ({size}) | {count} fichiers seulement sur cet ordinateur ({size})",
+                "missing": "{count} fichier introuvable dans le dossier | {count} fichier introuvable dans le dossier | {count} fichiers introuvables dans le dossier"
+            },
+            "pause": {
+                "quota": "Synchro en pause : quota atteint",
+                "rate": "Synchro en pause : trop d’envois cette heure, reprise automatique",
+                "root_unavailable": "Dossier des documents introuvable (disque débranché ?). La synchro reprendra quand il sera de nouveau accessible.",
+                "offline": "Synchro en pause : serveur injoignable"
+            },
+            "deleteModal": {
+                "body": "Ce document est aussi en ligne. Le supprimer partout, ou seulement de cet ordinateur (il restera en ligne) ?",
+                "localOnly": "De cet ordinateur",
+                "everywhere": "Partout"
+            },
+            "modal": {
+                "title": "Synchronisation",
+                "nothing": "Ce document n’est pas sur cet ordinateur.",
+                "neverFits": "Ce fichier est plus grand que votre quota entier : il bloque la synchro des suivants.",
+                "excludeTitle": "Exclure de la synchro ?",
+                "excludeBody": "Le document restera seulement sur cet ordinateur et ne bloquera plus la file d’envoi.",
+                "excludeConfirm": "Exclure",
+                "includeTitle": "Inclure dans la synchro ?",
+                "includeBody": "Le document reprendra sa place dans la file d’envoi, selon sa date d’ajout.",
+                "includeConfirm": "Inclure",
+                "keepHereTitle": "Garder seulement sur cet ordinateur ?",
+                "keepHereBody": "La copie en ligne sera supprimée et votre quota libéré. Le document ne sera plus visible sur vos autres appareils, et il n’existera plus que dans le dossier de cet ordinateur.",
+                "keepHereConfirm": "Garder seulement ici",
+                "restoreTitle": "Retélécharger le document ?",
+                "restoreBody": "Le fichier a disparu du dossier de cet ordinateur. Il est encore en ligne : il sera recopié dans le dossier.",
+                "restoreConfirm": "Retélécharger"
+            },
+            "settings": {
+                "title": "Documents sur cet ordinateur",
+                "subtitle": "Vos PDF sont rangés dans un dossier de cet ordinateur, sans limite de taille. Les documents supprimés depuis un autre appareil sont gardés {days} jours dans le sous-dossier .corbeille.",
+                "folder": "Dossier des documents",
+                "change": "Changer…",
+                "moving": "Déplacement…",
+                "enabled": "Synchroniser en ligne",
+                "enabledHint": "Copie vos documents en ligne, du plus ancien au plus récent, dans la limite de votre quota."
+            }
         },
         "deleteModal": {
             "title": "Supprimer ce fichier ?",
@@ -1799,7 +2052,7 @@
             "tooLarge": "Le fichier dépasse 10 Mo.",
             "notPdf": "Seuls les fichiers PDF sont acceptés.",
             "quotaExceeded": "Quota de stockage dépassé.",
-            "linkedToTransactions": "Ce fichier est encore lié à une transaction. Déliez-le d’abord.",
+            "linkedToTransactions": "Ce fichier est encore lié à une transaction, une récurrence ou un actif. Déliez-le d’abord.",
             "nameRequired": "Le nom du fichier est obligatoire.",
             "documentDateInvalid": "La date du document est invalide."
         },
@@ -1835,6 +2088,35 @@
         }
     },
     "transactionsPage": {
+        "reimbursements": {
+            "title": "Remboursements",
+            "invoiceSummary": "Remboursé : {reimbursed} · À charge : {net}",
+            "noneForInvoice": "Aucun remboursement relié.",
+            "reimbursementSummary": "Relié : {allocated} · Reste à relier : {remaining}",
+            "candidates": "Factures probables :",
+            "link": "Relier",
+            "unlink": "Délier",
+            "failed": "Action impossible pour le moment.",
+            "reasons": {
+                "sameTier": "même bénéficiaire",
+                "sameAmount": "même montant"
+            }
+        },
+        "taxNature": {
+            "title": "Nature fiscale",
+            "noneHint": "Aucune nature. Facultatif : sert à préparer votre déclaration d’impôts.",
+            "choose": "Choisir une nature",
+            "change": "Changer",
+            "confirm": "Confirmer",
+            "dismiss": "Écarter",
+            "reset": "Revenir à la suggestion",
+            "states": {
+                "none": "Aucune",
+                "suggested": "Suggérée, à confirmer",
+                "confirmed": "Confirmée",
+                "dismissed": "Écartée"
+            }
+        },
         "title": "Transactions",
         "titleForAccount": "Transactions du compte : {name}",
         "titleForRecurrence": "Transactions de récurrence : {name}",
@@ -1851,7 +2133,8 @@
             "budget": "Aucune transaction pour ce budget.",
             "budgetOut": "Aucune dépense à ajouter à cette enveloppe pour cette période.",
             "byType": "Aucune transaction de type « {type} ».",
-            "filtered": "Aucune transaction ne correspond à cette recherche."
+            "filtered": "Aucune transaction ne correspond à cette recherche.",
+            "asset": "Aucune transaction liée à cet actif."
         },
         "searchPlaceholder": "Rechercher…",
         "actions": {
@@ -1860,6 +2143,7 @@
             "create": "Ajouter",
             "edit": "Modifier",
             "delete": "Supprimer",
+            "unlink": "Délier",
             "search": "Rechercher",
             "clearSearch": "Effacer la recherche",
             "export": "Exporter"
@@ -1922,6 +2206,7 @@
             "createdByUnknown": "Saisi par un utilisateur",
             "myCategory": "Ma catégorie : {name}",
             "myTier": "Ma contrepartie : {name}",
+            "asset": "Actif : {name}",
             "hasAttachments": "{count} justificatif | {count} justificatif | {count} justificatifs",
             "sourceRecurrence": "Récurrence",
             "recurrenceDelta": "{delta} par rapport au prévu ({planned})",
@@ -1929,10 +2214,42 @@
         },
         "deleteModal": {
             "title": "Supprimer cette transaction ?",
-            "body": "Les mouvements liés seront annulés et le solde du compte sera recalculé."
+            "body": "Les mouvements liés seront annulés et le solde du compte sera recalculé.",
+            "importedBody": "Cette opération vient d’un import bancaire : la supprimer crée un écart avec votre relevé."
+        },
+        "unlinkModal": {
+            "title": "Délier {count} transaction ? | Délier {count} transaction ? | Délier {count} transactions ?",
+            "body": "Elle reste sur le compte. Seul le lien avec cet actif est retiré. | Elles restent sur le compte. Seul le lien avec cet actif est retiré. | Elles restent sur le compte. Seul le lien avec cet actif est retiré.",
+            "bodyGeneric": "Elle reste sur le compte. Seul le lien est retiré. | Elle reste sur le compte. Seul le lien est retiré. | Elles restent sur le compte. Seul le lien est retiré."
         },
         "errors": {
             "notFound": "Cette transaction n’est plus disponible."
+        },
+        "linkTransactions": {
+            "action": "Lier",
+            "title": "Lier des transactions",
+            "subtitle": "Écritures qui ne sont pas encore rattachées à un actif. La devise peut différer de celle de l’actif.",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune transaction à lier.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "confirm": "Lier {count} transaction | Lier {count} transaction | Lier {count} transactions",
+            "subtitleTier": "Écritures qui n’ont pas encore de tiers."
+        },
+        "unlinkTransactions": {
+            "action": "Délier",
+            "select": "Sélectionner {name}",
+            "title": "Délier des transactions",
+            "subtitle": "Écritures déjà rattachées à cet actif. Elles restent sur le compte.",
+            "searchPlaceholder": "Rechercher une transaction",
+            "empty": "Aucune transaction à délier.",
+            "emptyFiltered": "Aucune transaction ne correspond à cette recherche.",
+            "selected": "{count} sélectionnée | {count} sélectionnée | {count} sélectionnées",
+            "selectAll": "Tout sélectionner",
+            "selectNone": "Tout désélectionner",
+            "confirm": "Délier {count} transaction | Délier {count} transaction | Délier {count} transactions"
         },
         "form": {
             "createTitle": "Nouvelle transaction",
@@ -1951,6 +2268,10 @@
             "noCategory": "Aucune",
             "noRecurrence": "Aucune",
             "noSavingsGoal": "Aucun",
+            "noAsset": "Aucun",
+            "assetSearchPlaceholder": "Rechercher un actif…",
+            "assetNoResults": "Aucun actif ne correspond.",
+            "assetHint": "Optionnel. La devise de la transaction peut différer de celle de l’actif. Sur un compte partagé, seul le propriétaire de l’actif voit ce lien.",
             "savingsGoalSearchPlaceholder": "Rechercher un objectif…",
             "savingsGoalNoResults": "Aucun objectif ne correspond.",
             "savingsGoalHint": "La transaction doit toucher le compte de l’objectif, dans la même devise. Cas typique : un transfert vers le compte d’épargne.",
@@ -1994,6 +2315,7 @@
                 "tags": "Mes tags",
                 "tier": "Ma contrepartie",
                 "savingsGoal": "Objectif d’épargne",
+                "asset": "Actif",
                 "attachments": "Justificatifs PDF"
             },
             "attachments": {
@@ -2004,7 +2326,16 @@
                 "pick": "Choisir dans Fichiers",
                 "detach": "Détacher",
                 "maxReached": "Une transaction accepte au plus {max} fichiers.",
-                "alreadyLinked": "Fichier déjà lié."
+                "alreadyLinked": "Fichier déjà lié.",
+                "add": "Ajouter",
+                "libraryEmpty": "Aucun fichier dans votre bibliothèque.",
+                "maxFiles": "{max} fichiers au plus.",
+                "choose": "Choisir",
+                "chooseTitle": "Choisir un fichier",
+                "chooseSubtitle": "Tous les PDF de votre bibliothèque. Cochez-en un ou plusieurs.",
+                "chooseNoMatch": "Aucun fichier ne correspond à la recherche.",
+                "chooseSelected": "Aucun fichier sélectionné | {count} fichier sélectionné | {count} fichiers sélectionnés",
+                "chooseConfirm": "Ajouter | Ajouter {count} fichier | Ajouter {count} fichiers"
             },
             "errors": {
                 "typeInvalid": "Type de transaction invalide (depense, revenu, transfert).",
@@ -2027,10 +2358,24 @@
                 "savingsGoalInvalid": "Objectif d’épargne introuvable.",
                 "savingsGoalNoAccount": "Liez un compte à l’objectif avant d’y rattacher une transaction.",
                 "savingsGoalCurrencyMismatch": "La devise de la transaction doit être celle de l’objectif.",
-                "savingsGoalAccountMismatch": "La transaction doit toucher le compte rattaché à l’objectif."
+                "savingsGoalAccountMismatch": "La transaction doit toucher le compte rattaché à l’objectif.",
+                "assetAlreadyLinked": "Cette transaction est déjà liée à un autre actif."
             }
         },
         "count": "{count} transaction | {count} transactions",
+        "operations": "{count} opération | {count} opération | {count} opérations",
+        "shownOf": "{shown} transactions affichées sur {total}",
+        "typeTabs": {
+            "all": "Toutes",
+            "revenu": "Revenus",
+            "depense": "Achats",
+            "transfert": "Virements"
+        },
+        "figures": {
+            "inflow": "Revenus",
+            "outflow": "Achats",
+            "net": "Solde net"
+        },
         "sortDir": {
             "asc": "Croissant",
             "desc": "Décroissant"
@@ -2049,6 +2394,7 @@
     "importsPage": {
         "title": "Imports",
         "subtitle": "Importez un relevé CSV ou Excel, vérifiez les lignes, puis créez les transactions en une fois.",
+        "subtitleDemo": "Importez un relevé CSV, vérifiez les lignes, puis créez les transactions en une fois.",
         "count": "{count} import | {count} import | {count} imports",
         "loadMore": "Charger plus",
         "tabs": {
@@ -2112,6 +2458,7 @@
         },
         "empty": {
             "list": "Aucun import pour l’instant. Importez un relevé CSV ou Excel exporté depuis votre banque.",
+            "listDemo": "Aucun import pour l’instant. Importez un relevé CSV exporté depuis votre banque, ou le relevé d’exemple.",
             "filtered": "Aucun import ne correspond à ces filtres."
         },
         "list": {
@@ -2149,6 +2496,15 @@
             "account": "Compte cible",
             "pick": "Choisir un fichier ou le déposer ici",
             "formats": ".csv (2 Mo max.) ou .xlsx (5 Mo max.)",
+            "formatsDemo": ".csv (2 Mo max.)",
+            "demo": {
+                "promise": "Le fichier est lu dans votre navigateur et n’est jamais envoyé à nos serveurs.",
+                "reload": "Recharger la page efface l’import et ses transactions, comme le reste de la démo.",
+                "sample": "Pas de relevé sous la main ?",
+                "useSample": "Utiliser le relevé d’exemple",
+                "downloadSample": "Télécharger",
+                "sampleName": "releve-exemple.csv"
+            },
             "clearFile": "Retirer le fichier",
             "template": "Modèle",
             "autoDetect": "Détection automatique",
@@ -2171,6 +2527,7 @@
                 "legacyXls": "Format .xls non pris en charge : enregistrez le classeur en .xlsx ou .csv.",
                 "macroXlsm": "Les classeurs avec macros (.xlsm) ne sont pas acceptés : enregistrez en .xlsx.",
                 "unsupported": "Format non pris en charge. Utilisez un fichier .csv ou .xlsx (OFX et CAMT ne sont pas acceptés).",
+                "demoCsvOnly": "La démo lit les relevés au format CSV : exportez votre relevé en .csv depuis votre e-banking.",
                 "tooLarge": "Fichier trop volumineux (maximum {max})."
             }
         },
@@ -2605,7 +2962,8 @@
                 "birthDate": "Date de naissance",
                 "street": "Rue",
                 "streetNumber": "N°",
-                "country": "Pays"
+                "country": "Pays",
+                "canton": "Canton"
             },
             "noCountries": "Aucun pays disponible",
             "countriesLoadFailed": "Impossible de charger la liste des pays.",
@@ -2650,7 +3008,8 @@
             "errors": {
                 "invalidUsername": "Le nom d’utilisateur doit faire 3–30 caractères ([a-z0-9._-]).",
                 "invalidPassword": "Le mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.",
-                "passwordMismatch": "La confirmation ne correspond pas au mot de passe."
+                "passwordMismatch": "La confirmation ne correspond pas au mot de passe.",
+                "passwordFailedAfterUsername": "Le nom d’utilisateur « {username} » est enregistré, mais le mot de passe n’a pas été créé : {error} Réessayez pour créer le mot de passe."
             },
             "success": {
                 "credentialsCreated": "Identifiants créés : connectez-vous avec le nom d’utilisateur « {username} » et le mot de passe que vous venez de définir."
@@ -2680,13 +3039,18 @@
             "fields": {
                 "currentPassword": "Mot de passe actuel",
                 "newPassword": "Nouveau mot de passe",
-                "confirmPassword": "Confirmer le mot de passe"
+                "confirmPassword": "Confirmer le mot de passe",
+                "vaultPhrase": "Phrase de Coffre"
             },
             "errors": {
                 "currentRequired": "Saisissez votre mot de passe actuel.",
+                "currentIncorrect": "Mot de passe actuel incorrect.",
                 "invalidNew": "Le nouveau mot de passe doit contenir au moins 8 caractères, une lettre et un chiffre.",
-                "mismatch": "La confirmation ne correspond pas au nouveau mot de passe."
-            }
+                "mismatch": "La confirmation ne correspond pas au nouveau mot de passe.",
+                "vaultPhraseRequired": "Saisissez votre phrase de Coffre.",
+                "vaultPhraseIncorrect": "Phrase de Coffre incorrecte."
+            },
+            "vaultPhraseHint": "Votre Coffre est protégé par une phrase : elle est nécessaire pour que votre nouveau mot de passe ouvre aussi le Coffre."
         },
         "unlinkGoogleModal": {
             "title": "Dissocier le compte Google",
@@ -2729,6 +3093,92 @@
         },
         "leaveConfirm": "Vous avez des modifications non enregistrées. Voulez-vous vraiment quitter cette page ?",
         "googleSignIn": "Se connecter avec Google"
+    },
+    "vault": {
+        "unreadable": "Illisible",
+        "foreign": "Chiffré par le propriétaire",
+        "migration": {
+            "progress": "Chiffrement de vos données en cours : {done} sur {total}",
+            "error": "Le chiffrement de vos données reprendra à la prochaine connexion."
+        },
+        "encrypted": "Chiffré",
+        "secret": {
+            "password": "Mot de passe",
+            "phrase": "Phrase de Coffre"
+        },
+        "locked": {
+            "title": "Coffre verrouillé",
+            "textRecoverable": "Votre mot de passe a été réinitialisé sans code de récupération : la clé du Coffre n’est plus ouverte par votre mot de passe. Restaurez-la avec votre code, ou remettez le Coffre à zéro.",
+            "textLost": "Votre mot de passe a été réinitialisé sans code de récupération : les champs chiffrés (IBAN, numéros, notes…) sont irrécupérables. Remettez le Coffre à zéro pour repartir avec une clé neuve.",
+            "restore": "Restaurer avec le code",
+            "reset": "Remettre à zéro"
+        },
+        "restore": {
+            "title": "Restaurer le Coffre",
+            "subtitle": "Le code de récupération ouvre la clé du Coffre ; votre mot de passe la protège à nouveau.",
+            "codeLabel": "Code de récupération",
+            "codePlaceholder": "XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX",
+            "secretHint": "Votre {label} sert à protéger à nouveau la clé du Coffre sur le serveur ; il ne quitte jamais cet appareil en clair.",
+            "submit": "Restaurer",
+            "errors": {
+                "codeInvalid": "Le code doit comporter 32 caractères (8 groupes de 4).",
+                "wrongCode": "Ce code ne correspond pas au Coffre.",
+                "secretRequired": "Saisissez votre {label}."
+            }
+        },
+        "reset": {
+            "title": "Remettre le Coffre à zéro",
+            "warning": "Les valeurs encore chiffrées (IBAN, numéros de compte, plaques, notes, adresses, noms de fichiers…) seront effacées définitivement. Un Coffre neuf sera créé avec le secret saisi ci-dessous.",
+            "confirmLabel": "Je comprends que ces données sont perdues et je veux repartir avec un Coffre neuf.",
+            "submit": "Remettre à zéro",
+            "errors": {
+                "confirmRequired": "Cochez la case pour confirmer la remise à zéro.",
+                "secretRequired": "Saisissez votre {label}."
+            }
+        },
+        "unlock": {
+            "title": "Ouvrir le Coffre",
+            "subtitle": "Cet appareil n’a pas encore la clé de votre Coffre : saisissez votre phrase de Coffre pour lire vos champs chiffrés.",
+            "submit": "Ouvrir",
+            "later": "Plus tard",
+            "errors": {
+                "required": "Saisissez votre phrase de Coffre.",
+                "wrongPhrase": "Phrase de Coffre incorrecte.",
+                "unavailable": "Le Coffre ne peut pas être ouvert pour le moment."
+            }
+        },
+        "setup": {
+            "titlePhrase": "Définir une phrase de Coffre",
+            "titlePassword": "Activer le Coffre",
+            "subtitlePhrase": "Votre compte se connecte avec Google : une phrase, connue de vous seul, protégera la clé qui chiffre vos champs sensibles dans le navigateur.",
+            "subtitlePassword": "Votre mot de passe protégera la clé qui chiffre vos champs sensibles dans le navigateur, comme pour les nouveaux comptes.",
+            "confirmLabel": "Confirmer la phrase",
+            "phraseHint": "Au moins {min} caractères. Sans cette phrase ni code de récupération, les champs du Coffre seront perdus : notez-la.",
+            "submit": "Créer le Coffre",
+            "hintText": "Votre compte se connecte avec Google : définissez une phrase de Coffre pour chiffrer vos IBAN, numéros et notes dans le navigateur.",
+            "hintAction": "Définir une phrase",
+            "hintLater": "Plus tard",
+            "errors": {
+                "required": "Saisissez votre {label}.",
+                "tooShort": "La phrase doit comporter au moins {min} caractères.",
+                "mismatch": "Les deux phrases ne correspondent pas."
+            }
+        },
+        "disable": {
+            "title": "Désactiver le Coffre",
+            "warning": "Toutes les valeurs chiffrées seront remises en clair sur le serveur, puis le Coffre sera supprimé. L’opérateur pourra de nouveau les lire. Votre mot de passe reste inchangé.",
+            "confirmLabel": "Je comprends que mes champs sensibles ne seront plus chiffrés.",
+            "submit": "Désactiver",
+            "progress": {
+                "disabling": "Passage du Coffre en retrait…",
+                "decrypting": "Déchiffrement : {done} sur {total}",
+                "deleting": "Suppression du Coffre…"
+            },
+            "errors": {
+                "confirmRequired": "Cochez la case pour confirmer la désactivation.",
+                "secretRequired": "Saisissez votre mot de passe."
+            }
+        }
     },
     "security": {
         "twoFactor": {
@@ -2841,6 +3291,98 @@
                 "allRevoked": "Toutes les sessions ont été déconnectées. Veuillez vous reconnecter."
             }
         },
+        "supportCode": {
+            "title": "Code d’assistance",
+            "subtitle": "Autorisez le support à consulter votre compte, uniquement à votre demande.",
+            "description": "Ce code permet au support de consulter votre compte en lecture seule pendant 30 minutes. Vous serez prévenu par e-mail à l’ouverture et à la fin de la consultation. Ne le donnez que pour une demande que vous avez faite vous-même.",
+            "status": {
+                "active": "Un code est actif jusqu’au {date}",
+                "used": "Votre dernier code a été utilisé le {date}",
+                "none": "Aucun code actif"
+            },
+            "generate": "Générer un code",
+            "regenerate": "Générer un nouveau code",
+            "codeLabel": "Votre code d’assistance",
+            "expiresAt": "Valable jusqu’au {date}",
+            "oneTimeWarning": "Ce code ne sera plus affiché ensuite : notez-le ou copiez-le maintenant.",
+            "copy": "Copier",
+            "copied": "Copié",
+            "errors": {
+                "copyFailed": "Impossible de copier dans le presse-papiers."
+            }
+        },
+        "vault": {
+            "title": "Coffre",
+            "subtitle": "Vos IBAN, numéros de compte, plaques et numéros de série sont chiffrés dans votre navigateur.",
+            "description": "Le serveur ne conserve ces champs que chiffrés, avec une clé qu’il ne possède pas : même l’opérateur ne peut pas les lire. Votre mot de passe ouvre le Coffre à chaque connexion ; rien d’autre à faire.",
+            "status": {
+                "active": "Coffre actif",
+                "migrating": "Chiffrement en cours · {count} élément(s) restant(s)",
+                "disabling": "Retrait du Coffre en cours",
+                "absent": "Aucun Coffre sur ce compte",
+                "locked": "Coffre fermé sur cet appareil",
+                "lost": "Clé du Coffre perdue : ces champs sont irrécupérables",
+                "wrapLost": "Coffre verrouillé : votre mot de passe n’ouvre plus la clé"
+            },
+            "absentHint": "Les comptes connectés avec Google seulement n’ont pas encore de Coffre.",
+            "lockedHint": "Reconnectez-vous avec votre mot de passe pour rouvrir le Coffre sur cet appareil.",
+            "scope": {
+                "label": "Périmètre couvert",
+                "core": "Socle : IBAN, numéros de compte, plaques, numéros de série, adresses de portefeuille.",
+                "extended": "Étendu : le socle, plus les notes, les tiers, les adresses et les justificatifs."
+            },
+            "recovery": {
+                "reminder": "Générez votre code de récupération",
+                "reminderText": "Sans mot de passe ni code de récupération, les champs du Coffre sont perdus : un mot de passe oublié ne pourra pas les restituer. Le code est montré une seule fois.",
+                "done": "Code de récupération enregistré le {date}",
+                "doneText": "Si vous oubliez votre mot de passe, ce code permettra de retrouver les champs du Coffre.",
+                "generate": "Générer le code",
+                "renew": "Renouveler le code",
+                "renewHint": "Un nouveau code rend l’ancien inutilisable."
+            },
+            "dialog": {
+                "title": "Code de récupération",
+                "subtitle": "Votre mot de passe actuel est nécessaire pour protéger la clé du Coffre avec ce code.",
+                "passwordLabel": "Mot de passe actuel",
+                "generate": "Générer le code",
+                "codeLabel": "Votre code de récupération",
+                "oneTimeWarning": "Ce code ne sera plus affiché ensuite : notez-le dans un endroit sûr, hors de cet appareil.",
+                "confirmLabel": "Pour confirmer que vous l’avez noté, saisissez les 4 premiers caractères du code",
+                "confirmPlaceholder": "XXXX",
+                "close": "J’ai noté mon code",
+                "copy": "Copier",
+                "copied": "Copié",
+                "errors": {
+                    "passwordRequired": "Saisissez votre mot de passe.",
+                    "wrongPassword": "Mot de passe incorrect.",
+                    "confirmMismatch": "Les caractères saisis ne correspondent pas au début du code.",
+                    "copyFailed": "Impossible de copier dans le presse-papiers."
+                }
+            },
+            "absentHintPassword": "Ce compte a été créé avant le Coffre : activez-le avec votre mot de passe.",
+            "wrapLostHint": "Votre mot de passe a été réinitialisé sans code de récupération : les champs chiffrés sont irrécupérables, remettez le Coffre à zéro.",
+            "wrapLostHintRecoverable": "Votre mot de passe a été réinitialisé sans code : restaurez la clé avec votre code de récupération, ou remettez le Coffre à zéro.",
+            "actions": {
+                "setPhrase": "Définir une phrase de Coffre",
+                "activate": "Activer le Coffre",
+                "restore": "Restaurer avec le code",
+                "reset": "Remettre à zéro",
+                "disable": "Désactiver le Coffre",
+                "resumeDisable": "Reprendre la désactivation"
+            },
+            "disable": {
+                "title": "Désactiver le Coffre",
+                "text": "Vos champs sensibles seront remis en clair sur le serveur, puis le Coffre sera supprimé.",
+                "resumeText": "Le retrait du Coffre a été interrompu : des valeurs restent à déchiffrer avant la suppression."
+            },
+            "success": {
+                "created": "Coffre activé. Vos champs sensibles sont chiffrés dans le navigateur.",
+                "createdPhrase": "Phrase de Coffre définie. Vos champs sensibles sont chiffrés dans le navigateur.",
+                "disabled": "Coffre désactivé : vos champs sont de nouveau en clair sur le serveur.",
+                "restored": "Coffre restauré : votre mot de passe ouvre à nouveau la clé.",
+                "reset": "Coffre remis à zéro avec une clé neuve."
+            }
+        },
         "session": {
             "title": "Session",
             "subtitle": "Déconnexion après inactivité, appareils de confiance et 2FA sensible.",
@@ -2854,6 +3396,117 @@
             "require2faForSensitiveActions": "Exiger la 2FA pour les actions sensibles",
             "require2faHint": "Si activé, un code OTP est exigé en plus du mot de passe pour les actions sensibles.",
             "require2faNeedsTwoFactor": "Activez d’abord la double authentification pour utiliser cette option."
+        },
+        "common": {
+            "backToSecurity": "Réglages de sécurité",
+            "duration": {
+                "minutes": "{n} min",
+                "hours": "{h} h {m}"
+            }
+        },
+        "categories": {
+            "incident": "Incident",
+            "demande_utilisateur": "Demande de l’utilisateur",
+            "restauration": "Restauration",
+            "rgpd": "RGPD",
+            "securite": "Sécurité"
+        },
+        "links": {
+            "title": "Accès à vos données",
+            "subtitle": "Qui a consulté vos données, et ce que fait l’opérateur sur le serveur.",
+            "accessLog": "Accès techniques",
+            "accessLogHint": "Chaque consultation de vos données par le support, avec sa raison et les écrans ouverts.",
+            "transparency": "Transparence",
+            "transparencyHint": "Le registre d’activité de l’opérateur, identique pour tous les utilisateurs.",
+            "open": "Ouvrir"
+        },
+        "accessLog": {
+            "title": "Accès techniques",
+            "subtitle": "Les consultations de vos données par le support.",
+            "intro": "Un accès technique est une consultation de vos données, en lecture seule, par le support de Spend.Up : pour un incident, une demande que vous avez faite, une restauration, une obligation légale ou une vérification de sécurité. Il est toujours annoncé par e-mail au moment où il s’ouvre, et chaque écran ouvert est journalisé. Le nom de l’opérateur n’apparaît pas : vous savez que le support a consulté, pas qui.",
+            "empty": "Personne n’a consulté vos données.",
+            "fields": {
+                "reason": "Raison",
+                "views": "Écrans consultés",
+                "email": "E-mail d’information",
+                "code": "Code d’assistance"
+            },
+            "viewsNone": "Aucun écran affiché",
+            "viewCount": "{resource} ×{count}",
+            "emailNotSent": "Non envoyé",
+            "codeUsed": "Code d’assistance utilisé",
+            "status": {
+                "active": "En cours",
+                "terminated": "Terminée",
+                "expired": "Expirée",
+                "email_failed": "Annulée : e-mail non envoyé, rien n’a été affiché"
+            },
+            "resources": {
+                "accounts": "comptes",
+                "transactions": "transactions",
+                "budgets": "budgets",
+                "recurring_expenses": "charges récurrentes",
+                "recurring_incomes": "revenus récurrents",
+                "imports": "imports",
+                "files": "fichiers"
+            },
+            "pagination": {
+                "label": "Pagination des accès techniques",
+                "summary": "Page {page} sur {pages} · {count} accès",
+                "previous": "Précédent",
+                "next": "Suivant"
+            }
+        },
+        "transparency": {
+            "title": "Transparence",
+            "subtitle": "Ce que fait l’opérateur sur le serveur et sur les données.",
+            "intro": "Ce registre est le même pour tous les utilisateurs de Spend.Up. Il montre l’activité de l’opérateur sur les derniers mois sans désigner personne : il ne contient ni nom, ni adresse, ni raison, ni heure précise. Les consultations annulées avant tout affichage n’y figurent pas.",
+            "window": "Du {from} au {to} · {months}",
+            "monthsShown": "{n} mois",
+            "generatedAt": "Généré le {date}",
+            "months": {
+                "title": "Résumé par mois",
+                "month": "Mois",
+                "consoleVisits": "Visites de la console",
+                "consultations": "Consultations",
+                "usersConsulted": "Utilisateurs concernés",
+                "loginsRefused": "Connexions refusées",
+                "empty": "Aucune activité sur la période."
+            },
+            "consultations": {
+                "title": "Consultations de données",
+                "day": "Jour",
+                "category": "Catégorie",
+                "duration": "Durée",
+                "code": "Code d’assistance",
+                "codeYes": "Code utilisé",
+                "codeNo": "Sans code",
+                "empty": "Aucune consultation sur la période."
+            },
+            "visits": {
+                "title": "Visites de la console d’administration",
+                "day": "Jour",
+                "duration": "Durée",
+                "kind": "Nature",
+                "kinds": {
+                    "consultation": "Consultation ouverte",
+                    "statistics": "Statistiques seulement",
+                    "none": "Rien ouvert"
+                },
+                "empty": "Aucune visite sur la période."
+            },
+            "byCategory": {
+                "title": "Répartition par catégorie",
+                "total": "{n} consultation | {n} consultation | {n} consultations"
+            },
+            "counter": {
+                "title": "Interventions humaines",
+                "label": "interventions humaines sur le serveur, toutes raisons confondues",
+                "unavailable": "indisponible",
+                "updatedAt": "Mis à jour le {date}",
+                "noUpdate": "Le compteur ne peut pas être lu en ce moment.",
+                "note": "Compteur cumulé des sessions ouvertes par une personne sur le serveur (SSH, commandes d’administration, accès manuel à la base), y compris la maintenance ordinaire de l’opérateur."
+            }
         }
     },
     "userSettings": {
@@ -3019,7 +3672,7 @@
             },
             "acceptTerms": "J’accepte les {terms} et la {privacy}.",
             "termsLink": "conditions générales d’utilisation",
-            "privacyLink": "politique de confidentialité"
+            "privacyLink": "page Protection des données"
         },
         "twoStep": {
             "title": "Vérification en deux étapes",
@@ -3102,6 +3755,19 @@
                 "letter": "Au moins une lettre.",
                 "digit": "Au moins un chiffre.",
                 "mismatch": "Les mots de passe ne correspondent pas."
+            },
+            "vault": {
+                "codeLabel": "Code de récupération du Coffre (facultatif)",
+                "codePlaceholder": "XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX",
+                "codeHint": "Vos IBAN, numéros et notes sont chiffrés avec une clé que seul votre ancien mot de passe ouvrait. Le code de récupération permet de la conserver.",
+                "lossWarningNoCode": "Sans code de récupération, les champs chiffrés de votre Coffre (IBAN, numéros de compte, plaques, notes…) seront définitivement perdus. Le compte lui-même est récupéré.",
+                "lossWarningNoRecovery": "Aucun code de récupération n’a été généré pour ce compte : les champs chiffrés de votre Coffre (IBAN, numéros de compte, plaques, notes…) seront définitivement perdus. Le compte lui-même est récupéré.",
+                "acceptLoss": "Je comprends que les champs du Coffre seront perdus.",
+                "errors": {
+                    "codeInvalid": "Le code doit comporter 32 caractères (8 groupes de 4).",
+                    "wrongCode": "Ce code ne correspond pas au Coffre de ce compte.",
+                    "confirmLoss": "Cochez la case pour confirmer la perte des champs du Coffre, ou saisissez votre code."
+                }
             }
         },
         "stepUp": {
@@ -3218,6 +3884,7 @@
         "today": "Aujourd’hui",
         "selectedDay": "Jour sélectionné",
         "emptyDay": "Rien de prévu ce jour-là.",
+        "notConnected": "Le calendrier n’affiche pas encore vos récurrences, échéances et objectifs.",
         "monthSummary": "Bilan du mois",
         "inflows": "Entrées prévues",
         "outflows": "Sorties prévues",
@@ -3230,6 +3897,1863 @@
             "expense": "Charge",
             "due": "Échéance",
             "goal": "Objectif"
+        }
+    },
+    "assetsPage": {
+        "title": "Actifs",
+        "detailTitle": "Actif : {name}",
+        "subtitle": "Aucun actif | {count} actif · valeur totale {total} | {count} actifs · valeur totale {total}",
+        "searchPlaceholder": "Rechercher un actif",
+        "count": "{count} actif | {count} actif | {count} actifs",
+        "tabs": {
+            "label": "Types d’actifs",
+            "all": "Tous",
+            "vehicule": "Véhicules",
+            "crypto": "Crypto",
+            "objetValeur": "Objets de valeur",
+            "compteEpargne": "Épargne",
+            "other": "Autres"
+        },
+        "filters": {
+            "state": "État",
+            "active": "Actifs",
+            "sold": "Cédés"
+        },
+        "loading": "Chargement…",
+        "actions": {
+            "create": "Ajouter",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche",
+            "filter": "Filtrer",
+            "add": "Ajouter",
+            "deleteRow": "Supprimer la ligne",
+            "back": "Actifs",
+            "backToList": "Retour à la liste des actifs"
+        },
+        "empty": {
+            "list": "Aucun actif pour l’instant. Ajoutez un véhicule, une crypto, un objet de valeur ou une épargne.",
+            "filtered": "Aucun actif ne correspond à votre recherche.",
+            "sold": "Aucun actif cédé.",
+            "type": "Aucun actif de ce type."
+        },
+        "list": {
+            "sold": "cédé",
+            "lastValuation": "valorisé le {date}",
+            "noValuation": "pas encore valorisé",
+            "valueFromAccount": "solde du compte",
+            "quantity": "{quantity} {symbol}",
+            "financed": "Financé"
+        },
+        "types": {
+            "vehicule": "Véhicule",
+            "immobilier": "Immobilier",
+            "crypto": "Crypto",
+            "objetValeur": "Objet de valeur",
+            "compteEpargne": "Épargne",
+            "other": "Autre"
+        },
+        "propertyTypes": {
+            "appartement": "Appartement",
+            "maison": "Maison",
+            "immeuble": "Immeuble",
+            "terrain": "Terrain",
+            "garage": "Garage",
+            "placeParking": "Place de parc",
+            "localCommercial": "Local commercial",
+            "other": "Autre"
+        },
+        "vehicleTypes": {
+            "voiture": "Voiture",
+            "moto": "Moto",
+            "scooter": "Scooter",
+            "velo": "Vélo",
+            "veloElectrique": "Vélo électrique",
+            "campingCar": "Camping-car",
+            "bateau": "Bateau",
+            "other": "Autre"
+        },
+        "fuels": {
+            "essence": "Essence",
+            "diesel": "Diesel",
+            "hybride": "Hybride",
+            "hybrideRechargeable": "Hybride rechargeable",
+            "electrique": "Électrique",
+            "gpl": "GPL",
+            "other": "Autre"
+        },
+        "valuableItemTypes": {
+            "montre": "Montre",
+            "bijou": "Bijou",
+            "oeuvreArt": "Œuvre d’art",
+            "collection": "Collection",
+            "electronique": "Électronique",
+            "meuble": "Meuble",
+            "instrumentMusique": "Instrument de musique",
+            "other": "Autre"
+        },
+        "savingsTypes": {
+            "epargneClassique": "Épargne classique",
+            "pilier3a": "3e pilier A",
+            "pilier3b": "3e pilier B",
+            "compteJeune": "Compte jeunesse",
+            "compteProjet": "Compte projet",
+            "other": "Autre"
+        },
+        "maintenanceTypes": {
+            "vidange": "Vidange",
+            "pneus": "Pneus",
+            "freins": "Freins",
+            "batterie": "Batterie",
+            "controleTechnique": "Expertise",
+            "revision": "Révision",
+            "reparation": "Réparation",
+            "lavage": "Lavage",
+            "other": "Autre"
+        },
+        "valuationSources": {
+            "manuelle": "Manuelle",
+            "systeme": "Automatique",
+            "import": "Import"
+        },
+        "mileageSources": {
+            "manuelle": "Manuel",
+            "entretien": "Entretien"
+        },
+        "form": {
+            "createTitle": "Nouvel actif",
+            "editTitle": "Actif",
+            "subtitle": "Valeur estimée, acquisition et détails selon le type.",
+            "fields": {
+                "name": "Nom",
+                "type": "Type",
+                "estimatedValue": "Valeur estimée",
+                "currency": "Devise",
+                "acquisitionDate": "Date d’acquisition",
+                "acquisitionPrice": "Prix d’acquisition",
+                "description": "Description",
+                "notes": "Notes",
+                "sold": "Cédé ou vendu",
+                "brand": "Marque",
+                "model": "Modèle",
+                "vehicleType": "Type de véhicule",
+                "fuel": "Carburant",
+                "firstRegistrationYear": "1re mise en circulation",
+                "plate": "Plaque",
+                "currentMileage": "Kilométrage actuel",
+                "cryptoName": "Cryptomonnaie",
+                "symbol": "Symbole",
+                "quantity": "Quantité",
+                "averagePurchasePrice": "Prix moyen d’achat",
+                "platform": "Plateforme",
+                "itemType": "Type d’objet",
+                "isInsured": "Assuré",
+                "insuredValue": "Valeur assurée",
+                "savingsType": "Type d’épargne",
+                "account": "Compte lié",
+                "interestRate": "Taux d’intérêt (%)",
+                "isBlocked": "Fonds bloqués",
+                "releaseDate": "Date de libération",
+                "customType": "Type personnalisé",
+                "propertyType": "Type de bien",
+                "addressLine1": "Adresse",
+                "addressLine2": "Complément d’adresse",
+                "postalCode": "NPA",
+                "city": "Localité",
+                "country": "Pays",
+                "livingAreaM2": "Surface habitable (m²)",
+                "landAreaM2": "Surface du terrain (m²)",
+                "rooms": "Pièces",
+                "bedrooms": "Chambres",
+                "bathrooms": "Salles d’eau",
+                "floor": "Étage",
+                "hasElevator": "Ascenseur",
+                "hasBalcony": "Balcon",
+                "hasCellar": "Cave",
+                "hasGarage": "Garage",
+                "constructionYear": "Année de construction",
+                "renovationYear": "Année de rénovation",
+                "taxValue": "Valeur fiscale",
+                "chassisNumber": "Numéro de châssis",
+                "walletAddress": "Adresse du portefeuille",
+                "serialNumber": "Numéro de série",
+                "storageLocation": "Lieu de conservation"
+            },
+            "noFuel": "Non précisé",
+            "noAccount": "Aucun compte",
+            "valueFromAccountHint": "La valeur suit le solde du compte lié et ne se saisit pas.",
+            "estimatedValueHint": "Une valorisation datée d’aujourd’hui est enregistrée avec cette valeur.",
+            "currencyDefaultHint": "Par défaut : {currency}. La devise ne pourra plus être modifiée.",
+            "currencyLockedHint": "La devise d’un actif ne peut pas être modifiée.",
+            "typeLockedHint": "Le type d’un actif ne peut pas être modifié.",
+            "soldHint": "Un actif cédé reste dans la liste « Cédés » mais sort du patrimoine net.",
+            "accountHint": "Comptes actifs dont vous êtes propriétaire. La valeur de l’actif suivra leur solde.",
+            "mileageHint": "Enregistre aussi le relevé kilométrique du jour.",
+            "customTypeHint": "Laissé vide, le nom de l’actif fait office de type.",
+            "countryHint": "Code pays à 2 lettres (ex. CH).",
+            "taxValueHint": "Information seulement, jamais comptée dans le patrimoine.",
+            "errors": {
+                "nameRequired": "Le nom est obligatoire.",
+                "nameTooLong": "Le nom dépasse 150 caractères.",
+                "typeInvalid": "Choisissez un type d’actif.",
+                "estimatedValueInvalid": "Saisissez un montant valide.",
+                "estimatedValueNegative": "La valeur estimée ne peut pas être négative.",
+                "acquisitionPriceInvalid": "Saisissez un montant valide.",
+                "acquisitionPriceNegative": "Le prix d’acquisition ne peut pas être négatif.",
+                "acquisitionDateInvalid": "La date d’acquisition est invalide.",
+                "descriptionTooLong": "La description dépasse 500 caractères.",
+                "notesTooLong": "Les notes dépassent 2000 caractères.",
+                "currencyInvalid": "Devise non prise en charge (CHF, EUR, USD, GBP).",
+                "currencyLocked": "La devise d’un actif ne peut pas être modifiée.",
+                "vehicleBrandRequired": "La marque est obligatoire.",
+                "vehicleModelRequired": "Le modèle est obligatoire.",
+                "vehicleTypeInvalid": "Choisissez un type de véhicule.",
+                "vehicleFuelInvalid": "Carburant invalide.",
+                "vehicleYearInvalid": "Saisissez une année valide.",
+                "vehicleMileageInvalid": "Saisissez un kilométrage entier positif.",
+                "cryptoNameRequired": "Le nom de la cryptomonnaie est obligatoire.",
+                "cryptoSymbolRequired": "Le symbole est obligatoire.",
+                "cryptoQuantityInvalid": "Saisissez une quantité positive ou nulle.",
+                "cryptoAveragePriceInvalid": "Saisissez un prix positif ou nul.",
+                "valuableItemTypeInvalid": "Choisissez un type d’objet.",
+                "insuredValueInvalid": "Saisissez une valeur assurée positive ou nulle.",
+                "savingsTypeInvalid": "Choisissez un type d’épargne.",
+                "accountInvalid": "Le compte lié doit être un compte actif dont vous êtes propriétaire.",
+                "interestRateInvalid": "Saisissez un taux entre 0 et 100.",
+                "releaseDateInvalid": "La date de libération est invalide.",
+                "propertyTypeInvalid": "Choisissez un type de bien.",
+                "countryInvalid": "Le pays doit être un code à 2 lettres.",
+                "realEstateNumberInvalid": "Saisissez un nombre valide.",
+                "valuationDateInvalid": "Choisissez une date valide.",
+                "valuationDateFuture": "La date ne peut pas être dans le futur.",
+                "valuationValueInvalid": "Saisissez un montant valide.",
+                "valuationValueNegative": "La valeur ne peut pas être négative.",
+                "mileageDateInvalid": "Choisissez une date valide.",
+                "mileageDateFuture": "La date ne peut pas être dans le futur.",
+                "kilometrageInvalid": "Saisissez un kilométrage entier positif.",
+                "maintenanceTypeInvalid": "Choisissez un type d’entretien.",
+                "maintenanceDateInvalid": "Choisissez une date valide.",
+                "maintenanceDateFuture": "La date ne peut pas être dans le futur.",
+                "costInvalid": "Saisissez un coût positif ou nul.",
+                "nextMaintenanceDateInvalid": "La date du prochain entretien est invalide.",
+                "nextMaintenanceBeforeDate": "Le prochain entretien doit être postérieur à celui-ci.",
+                "nextMaintenanceKmInvalid": "Saisissez un kilométrage entier positif.",
+                "maintenanceDescriptionTooLong": "La description dépasse 500 caractères."
+            }
+        },
+        "detail": {
+            "attachments": {
+                "onAsset": "Sur l’actif",
+                "onTransactions": "Sur les transactions",
+                "empty": "Aucun PDF sur les transactions liées à cet actif."
+            },
+            "sold": "Cédé",
+            "boughtFor": "acheté le {date} pour {amount}",
+            "boughtOn": "acheté le {date}",
+            "averagePrice": "prix moyen {amount}",
+            "insured": "assuré {amount}",
+            "insuredUnknown": "assuré",
+            "notInsured": "non assuré",
+            "interest": "{rate} % d’intérêt",
+            "blocked": "fonds bloqués",
+            "releaseOn": "libération le {date}",
+            "figs": {
+                "label": "Chiffres clés",
+                "value": "Valeur estimée",
+                "valuedOn": "valorisé le {date}",
+                "valueFromAccount": "solde du compte",
+                "noValuation": "pas encore valorisé"
+            },
+            "tabs": {
+                "label": "Sections de l’actif",
+                "informations": "Informations",
+                "details": "Détails",
+                "valuations": "Valorisations",
+                "mileages": "Relevés",
+                "maintenances": "Entretiens",
+                "transactions": "Transactions",
+                "attachments": "Justificatifs"
+            },
+            "financing": {
+                "title": "Financement",
+                "remaining": "Restant dû",
+                "netValue": "Valeur nette",
+                "netValueNote": "Valeur estimée moins le restant dû",
+                "excluded": "Hors devise de l’actif : {count} dette | Hors devise de l’actif : {count} dettes",
+                "residual": "Valeur résiduelle {amount}"
+            }
+        },
+        "valuations": {
+            "createTitle": "Nouvelle valorisation",
+            "hint": "Une valorisation par jour. La valeur affichée est la plus récente par date.",
+            "date": "Date",
+            "value": "Valeur",
+            "source": "Source",
+            "empty": "Aucune valorisation.",
+            "lastHint": "La dernière valorisation ne peut pas être supprimée.",
+            "deleteTitle": "Supprimer la valorisation ?",
+            "deleteBody": "La valorisation du {date} sera supprimée définitivement."
+        },
+        "mileages": {
+            "createTitle": "Nouveau relevé",
+            "hint": "Un relevé par jour. Le kilométrage actuel est le relevé le plus récent.",
+            "date": "Date",
+            "kilometrage": "Kilométrage",
+            "source": "Source",
+            "empty": "Aucun relevé kilométrique.",
+            "km": "{value} km",
+            "deleteTitle": "Supprimer le relevé ?",
+            "deleteBody": "Le relevé du {date} sera supprimé définitivement."
+        },
+        "maintenances": {
+            "hint": "Un entretien avec kilométrage enregistre aussi le relevé de sa date.",
+            "empty": "Aucun entretien.",
+            "date": "Date",
+            "type": "Type",
+            "kilometrage": "Kilométrage",
+            "garage": "Garage",
+            "cost": "Coût",
+            "next": "Prochain",
+            "nextKm": "à {value} km",
+            "createTitle": "Nouvel entretien",
+            "editTitle": "Entretien",
+            "subtitle": "Date, type, garage et coût de l’entretien.",
+            "fields": {
+                "maintenanceDate": "Date",
+                "maintenanceType": "Type",
+                "kilometrage": "Kilométrage",
+                "garage": "Garage",
+                "cost": "Coût ({currency})",
+                "description": "Description",
+                "nextMaintenanceDate": "Prochain entretien",
+                "nextMaintenanceKm": "Prochain à (km)"
+            },
+            "noGarage": "Aucun garage",
+            "transactionHint": "Lié à une transaction de dépense : le lien est conservé.",
+            "deleteTitle": "Supprimer l’entretien ?",
+            "deleteBody": "L’entretien du {date} sera supprimé."
+        },
+        "deleteModal": {
+            "title": "Supprimer l’actif ?",
+            "body": "« {name} » et son historique ne seront plus visibles. Pour le garder hors du patrimoine, marquez-le plutôt comme cédé."
+        },
+        "errors": {
+            "notFound": "Actif introuvable."
+        }
+    },
+    "debtsPage": {
+        "title": "Dettes",
+        "tabs": {
+            "label": "Types de dettes",
+            "liabilities": "Passifs",
+            "loans": "Prêts",
+            "shared": "Entre amis"
+        },
+        "subtitles": {
+            "liabilities": "Crédits, hypothèques et cartes : seuls les passifs en cours entrent dans le patrimoine net.",
+            "loans": "L’argent prêté ou emprunté à quelqu’un hors Spend.Up."
+        },
+        "searchPlaceholder": {
+            "liabilities": "Rechercher un passif ou un prêteur",
+            "loans": "Rechercher une personne ou un libellé"
+        },
+        "count": {
+            "liabilities": "{count} passif | {count} passif | {count} passifs",
+            "loans": "{count} prêt | {count} prêt | {count} prêts"
+        },
+        "filters": {
+            "type": "Type",
+            "allTypes": "Tous les types",
+            "direction": "Sens",
+            "allDirections": "Tous les sens",
+            "status": "Statut",
+            "allStatuses": "Tous les statuts"
+        },
+        "loading": "Chargement…",
+        "detailTitle": {
+            "liabilities": "Dette : {name}",
+            "loans": "Prêt : {name}",
+            "shared": "Dette : {name}"
+        },
+        "actions": {
+            "create": "Ajouter",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche",
+            "filter": "Filtres",
+            "back": "Dettes",
+            "backToList": "Retour aux dettes",
+            "edit": "Modifier"
+        },
+        "detail": {
+            "tabs": {
+                "label": "Sections de la dette",
+                "informations": "Informations",
+                "attachments": "Justificatifs",
+                "transactions": "Transactions"
+            },
+            "figs": {
+                "label": "Montants",
+                "remaining": "Restant dû",
+                "initial": "Montant initial",
+                "repaid": "Déjà remboursé",
+                "amount": "Montant"
+            }
+        }
+    },
+    "investmentsPage": {
+        "title": "Placements",
+        "tabs": {
+            "label": "Comptes de placement"
+        },
+        "accountPicker": {
+            "label": "Compte de placement",
+            "search": "Rechercher un compte"
+        },
+        "actions": {
+            "createOperation": "Nouvelle opération",
+            "createInstrument": "Nouvel instrument",
+            "edit": "Modifier",
+            "delete": "Supprimer"
+        },
+        "empty": {
+            "noAccount": "Aucun compte de placement. Créez un compte de type investissement ou crypto pour suivre vos positions.",
+            "goToAccounts": "Gérer les comptes"
+        },
+        "readOnly": "Compte partagé : consultation seule, seul le propriétaire saisit les opérations et les cours.",
+        "instrumentTypes": {
+            "action": "Action",
+            "etf": "ETF",
+            "obligation": "Obligation",
+            "fonds": "Fonds",
+            "crypto": "Crypto",
+            "other": "Autre"
+        },
+        "operationTypes": {
+            "achat": "Achat",
+            "vente": "Vente",
+            "depot": "Dépôt de titres",
+            "retrait": "Retrait de titres",
+            "dividende": "Dividende",
+            "frais": "Frais"
+        },
+        "positions": {
+            "title": "Positions",
+            "showClosed": "Positions soldées",
+            "figsLabel": "Totaux des positions",
+            "costBasis": "Coût total",
+            "marketValue": "Valeur de marché",
+            "unrealizedGain": "Plus-value latente",
+            "mixedCurrencies": "Devises mixtes : totaux indisponibles.",
+            "empty": "Aucune position ouverte sur ce compte.",
+            "emptyAll": "Aucune position sur ce compte.",
+            "noQuote": "Sans cours, valeur au coût",
+            "updatePrice": "Mettre à jour le cours de {symbol}",
+            "editInstrument": "Modifier l’instrument {symbol}",
+            "columns": {
+                "instrument": "Instrument",
+                "quantity": "Quantité",
+                "averagePrice": "PRU",
+                "lastPrice": "Dernier cours",
+                "marketValue": "Valeur",
+                "gain": "+/− value",
+                "actions": "Actions"
+            }
+        },
+        "operations": {
+            "title": "Journal des opérations",
+            "count": "aucune opération | {count} opération | {count} opérations",
+            "empty": "Aucune opération enregistrée sur ce compte.",
+            "emptyFiltered": "Aucune opération ne correspond aux filtres.",
+            "loadMore": "Charger plus",
+            "menu": "Actions sur l’opération {symbol}",
+            "filters": {
+                "allInstruments": "Tous les instruments",
+                "allTypes": "Tous les types",
+                "instrument": "Instrument",
+                "type": "Type",
+                "period": "Période",
+                "periodRange": "Du {from} au {to}",
+                "periodFrom": "Depuis le {date}",
+                "periodTo": "Jusqu’au {date}",
+                "from": "Du",
+                "to": "Au",
+                "reset": "Effacer les filtres"
+            },
+            "columns": {
+                "date": "Date",
+                "instrument": "Instrument",
+                "type": "Type",
+                "quantity": "Quantité",
+                "unitPrice": "Prix unitaire",
+                "amount": "Montant",
+                "actions": "Actions"
+            }
+        },
+        "instrumentPicker": {
+            "placeholder": "Choisir un instrument",
+            "search": "Symbole, nom ou ISIN",
+            "noResults": "Aucun instrument trouvé",
+            "emptyCatalog": "Votre catalogue d’instruments est vide",
+            "createNamed": "Créer « {name} »",
+            "create": "Nouvel instrument"
+        },
+        "instrumentForm": {
+            "createTitle": "Nouvel instrument",
+            "editTitle": "Modifier l’instrument",
+            "subtitle": "Catalogue personnel de titres, fonds et cryptos",
+            "lockedHint": "Le symbole, le type et la devise ne sont plus modifiables dès qu’une opération existe.",
+            "lastPriceHint": "Facultatif : cours manuel de départ.",
+            "lastPriceDateHint": "Vide = aujourd’hui.",
+            "fields": {
+                "symbol": "Symbole",
+                "name": "Nom",
+                "type": "Type",
+                "currency": "Devise",
+                "isin": "ISIN",
+                "lastPrice": "Cours initial",
+                "lastPriceDate": "Date du cours"
+            }
+        },
+        "priceForm": {
+            "title": "Cours de {symbol}",
+            "subtitle": "Mise à jour manuelle du cours",
+            "noQuote": "Aucun cours saisi pour l’instant : la position est valorisée au coût.",
+            "currentQuote": "Dernier cours : {price} le {date}",
+            "dateHint": "Pas de date future.",
+            "fields": {
+                "price": "Cours",
+                "date": "Date"
+            }
+        },
+        "operationForm": {
+            "createTitle": "Nouvelle opération",
+            "editTitle": "Modifier l’opération",
+            "subtitle": "Les positions sont recalculées à partir de toutes les opérations",
+            "totalHint": "Calculé automatiquement (quantité × prix), modifiable pour inclure les frais.",
+            "transactionHint": "La liaison à une transaction du compte (jambe cash) n’est pas encore disponible ici.",
+            "transactionLinked": "Cette opération est liée à une transaction du compte ; la liaison est conservée.",
+            "typeHints": {
+                "achat": "Achat de titres : quantité et prix unitaire.",
+                "vente": "Vente de titres : le PRU reste inchangé.",
+                "depot": "Titres reçus d’un autre dépôt, sans mouvement d’argent.",
+                "retrait": "Titres transférés vers un autre dépôt, sans mouvement d’argent.",
+                "dividende": "Montant encaissé, sans quantité ni prix.",
+                "frais": "Frais payés, sans quantité ni prix."
+            },
+            "fields": {
+                "instrument": "Instrument",
+                "type": "Type",
+                "date": "Date",
+                "quantity": "Quantité",
+                "unitPrice": "Prix unitaire",
+                "totalAmount": "Montant total",
+                "notes": "Notes"
+            }
+        },
+        "deleteModal": {
+            "title": "Supprimer l’opération ?",
+            "body": "{type} de {symbol} du {date}. La position sera recalculée."
+        },
+        "errors": {
+            "symbolRequired": "Le symbole est obligatoire.",
+            "symbolTooLong": "Le symbole compte 20 caractères au plus.",
+            "nameRequired": "Le nom est obligatoire.",
+            "nameTooLong": "Le nom compte 150 caractères au plus.",
+            "typeInvalid": "Choisissez un type.",
+            "currencyInvalid": "Choisissez une devise (CHF, EUR, USD, GBP).",
+            "isinInvalid": "ISIN invalide : 12 caractères, 2 lettres de pays et un chiffre de contrôle.",
+            "priceInvalid": "Le cours doit être un nombre positif ou nul.",
+            "priceNegative": "Le cours ne peut pas être négatif.",
+            "priceDateInvalid": "La date du cours est invalide.",
+            "priceDateFuture": "La date du cours ne peut pas être dans le futur.",
+            "priceRequired": "Le cours est obligatoire.",
+            "instrumentRequired": "Choisissez un instrument.",
+            "operationTypeInvalid": "Choisissez un type d’opération.",
+            "operationDateInvalid": "La date est invalide.",
+            "operationDateFuture": "La date ne peut pas être dans le futur.",
+            "quantityInvalid": "Quantité invalide (8 décimales au plus).",
+            "quantityNotPositive": "La quantité doit être supérieure à zéro.",
+            "unitPriceInvalid": "Le prix unitaire doit être un nombre positif ou nul.",
+            "unitPriceNegative": "Le prix unitaire ne peut pas être négatif.",
+            "totalAmountInvalid": "Le montant total est invalide.",
+            "totalAmountNotPositive": "Le montant total doit être supérieur à zéro.",
+            "transactionNotAllowed": "Un dépôt ou un retrait de titres ne peut pas être lié à une transaction.",
+            "notesTooLong": "Les notes comptent 500 caractères au plus.",
+            "instrumentNotFound": "Instrument introuvable.",
+            "operationNotFound": "Opération introuvable.",
+            "accountNotFound": "Compte de placement introuvable."
+        }
+    },
+    "liabilitiesPage": {
+        "title": "Passifs",
+        "types": {
+            "credit": "Crédit",
+            "hypotheque": "Hypothèque",
+            "dettePersonnelle": "Dette personnelle",
+            "carteCredit": "Carte de crédit",
+            "other": "Autre",
+            "leasing": "Leasing"
+        },
+        "statuses": {
+            "active": "En cours",
+            "rembourse": "Remboursés",
+            "annule": "Annulés"
+        },
+        "badges": {
+            "rembourse": "Remboursé",
+            "annule": "Annulé"
+        },
+        "card": {
+            "remaining": "Restant",
+            "initial": "Montant initial",
+            "interestRate": "Taux",
+            "plannedEndDate": "Fin prévue"
+        },
+        "list": {
+            "repaidPercent": "{percent} remboursé",
+            "noDate": "Sans échéance",
+            "financedAsset": "Finance {name}",
+            "unknownAsset": "un actif"
+        },
+        "empty": {
+            "list": "Aucun passif pour l’instant. Ajoutez un crédit, une hypothèque ou une carte.",
+            "active": "Aucun passif en cours.",
+            "rembourse": "Aucun passif remboursé.",
+            "annule": "Aucun passif annulé.",
+            "filtered": "Aucun passif ne correspond à ces filtres."
+        },
+        "actions": {
+            "edit": "Modifier",
+            "updateRemaining": "Mettre à jour le restant",
+            "delete": "Supprimer"
+        },
+        "deleteModal": {
+            "title": "Supprimer ce passif ?",
+            "body": "Il disparaîtra de vos dettes et du patrimoine net."
+        },
+        "remainingModal": {
+            "title": "Restant dû",
+            "subtitle": "Mettre à jour le montant restant",
+            "hint": "Entre 0 et {initial}. À zéro, le passif passe en remboursé."
+        },
+        "errors": {
+            "notFound": "Passif introuvable."
+        },
+        "form": {
+            "createTitle": "Nouveau passif",
+            "editTitle": "Passif",
+            "subtitle": "Crédit, hypothèque, leasing, carte ou dette envers un prêteur",
+            "fields": {
+                "name": "Nom",
+                "type": "Type",
+                "lender": "Prêteur",
+                "initialAmount": "Montant initial",
+                "remainingAmount": "Restant dû",
+                "interestRate": "Taux annuel",
+                "startDate": "Début",
+                "plannedEndDate": "Fin prévue",
+                "asset": "Actif financé",
+                "currency": "Devise",
+                "cancel": "Annulé",
+                "residualValue": "Valeur résiduelle",
+                "recurringExpense": "Mensualité",
+                "amortizationPerDue": "Amortissement par échéance"
+            },
+            "noLender": "Aucun prêteur",
+            "lenderHint": "Banque ou prêteur, parmi vos tiers.",
+            "noAsset": "Aucun actif",
+            "assetHint": "Le bien ou le véhicule financé, pour sa synthèse.",
+            "remainingCreateHint": "Vide = le montant initial.",
+            "remainingEditHint": "Déjà remboursé : {repaid}.",
+            "currencyDefaultHint": "Par défaut {currency}. Figée après la création.",
+            "currencyLockedHint": "La devise est figée après la création.",
+            "cancelHint": "Un passif annulé sort du patrimoine net et le reste.",
+            "errors": {
+                "nameRequired": "Le nom est obligatoire.",
+                "nameTooLong": "150 caractères au maximum.",
+                "typeInvalid": "Choisissez un type.",
+                "initialAmountInvalid": "Montant invalide.",
+                "initialAmountNotPositive": "Le montant initial doit être supérieur à zéro.",
+                "remainingAmountInvalid": "Montant invalide.",
+                "remainingAmountOutOfRange": "Entre 0 et le montant initial.",
+                "interestRateInvalid": "Taux invalide.",
+                "interestRateOutOfRange": "Entre 0 et 100 %.",
+                "startDateInvalid": "Date invalide.",
+                "plannedEndDateInvalid": "Date invalide.",
+                "plannedEndDateBeforeStart": "La fin prévue précède le début.",
+                "currencyInvalid": "Devise non prise en charge.",
+                "currencyLocked": "La devise ne se modifie pas après la création.",
+                "residualValueInvalid": "La valeur résiduelle est invalide.",
+                "amortizationPerDueInvalid": "L'amortissement par échéance est invalide."
+            },
+            "residualHint": "Montant à payer en fin de contrat pour garder le véhicule.",
+            "noRecurringExpense": "Aucune charge récurrente",
+            "recurringExpenseHint": "La charge récurrente qui rembourse ce passif. Chaque échéance payée diminue le restant dû.",
+            "amortizationHint": "La part de chaque échéance qui réduit le capital. Vide : toute l'échéance. 0 : intérêts seuls, le restant dû ne bouge pas."
+        },
+        "detail": {
+            "asset": "Actif financé",
+            "recurringExpense": "Mensualité",
+            "nextDue": "Prochaine échéance",
+            "residualValue": "Valeur résiduelle",
+            "autoRemaining": "Le restant dû suit les échéances payées de cette mensualité."
+        }
+    },
+    "netWorthPage": {
+        "title": "Patrimoine",
+        "subtitle": "Comptes, actifs, placements et passifs en un seul chiffre",
+        "hero": {
+            "label": "Patrimoine net",
+            "asOf": "au {date}",
+            "since": "{delta} depuis le {date}",
+            "noSnapshot": "Aucun snapshot pour comparer"
+        },
+        "figs": {
+            "label": "Chiffres clés du patrimoine",
+            "accounts": "Comptes",
+            "assets": "Actifs",
+            "liabilities": "Passifs",
+            "investments": "Placements",
+            "withoutQuote": "dont aucun sans cours | dont {count} sans cours (au PRU) | dont {count} sans cours (au PRU)"
+        },
+        "excluded": {
+            "message": "Éléments dans une autre devise non comptés : {list}.",
+            "accounts": "aucun compte | {count} compte | {count} comptes",
+            "assets": "aucun actif | {count} actif | {count} actifs",
+            "liabilities": "aucun passif | {count} passif | {count} passifs"
+        },
+        "breakdown": {
+            "title": "Répartition",
+            "subtitle": "Comptes, actifs, placements et passifs",
+            "barLabel": "Répartition du patrimoine",
+            "empty": "Rien à répartir pour l’instant",
+            "none": "Aucun élément",
+            "assetsTitle": "Actifs par type",
+            "liabilitiesTitle": "Passifs par type",
+            "accountsTitle": "Comptes par type",
+            "seeAssets": "Tous les actifs",
+            "seeRealEstate": "Immobilier",
+            "seeLiabilities": "Tous les passifs",
+            "seeAccounts": "Tous les comptes",
+            "seeInvestments": "Placements",
+            "pretAccorde": "Prêts accordés",
+            "dettePartagee": "Dettes entre amis",
+            "compteCredit": "Comptes de crédit",
+            "emprunt": "Emprunts"
+        },
+        "friends": {
+            "title": "Entre amis",
+            "seeAll": "Tout voir",
+            "receivable": "On me doit",
+            "payable": "Je dois"
+        },
+        "evolution": {
+            "title": "Évolution",
+            "chartLabel": "Courbe d’évolution du patrimoine net",
+            "today": "aujourd’hui",
+            "empty": "Aucun snapshot pour l’instant",
+            "note": "Un snapshot est recalculé chaque jour pour le mois en cours."
+        },
+        "snapshot": {
+            "title": "Dernier snapshot",
+            "period": "Mois du {date}",
+            "income": "Revenus du mois",
+            "expenses": "Dépenses du mois",
+            "savingsRate": "Taux d’épargne"
+        },
+        "actions": {
+            "refresh": "Actualiser",
+            "takeSnapshot": "Photographier maintenant"
+        },
+        "errors": {
+            "load": "Impossible de charger le patrimoine.",
+            "snapshot": "Impossible d’enregistrer le snapshot."
+        }
+    },
+    "personalLoansPage": {
+        "title": "Prêts",
+        "directions": {
+            "pret": "Je prête",
+            "emprunt": "J’emprunte"
+        },
+        "statuses": {
+            "active": "En cours",
+            "rembourse": "Remboursés",
+            "annule": "Annulés"
+        },
+        "badges": {
+            "rembourse": "Remboursé",
+            "annule": "Annulé",
+            "overdue": "En retard"
+        },
+        "figs": {
+            "label": "Totaux des prêts en cours",
+            "lent": "Je prête",
+            "borrowed": "J’emprunte",
+            "note": "Restant des prêts en cours",
+            "otherCurrencies": "{count} prêt en cours dans une autre devise n’est pas compté dans ces totaux en {currency}. | {count} prêts en cours dans d’autres devises ne sont pas comptés dans ces totaux en {currency}."
+        },
+        "card": {
+            "remaining": "Restant",
+            "initial": "Montant initial",
+            "plannedEndDate": "Échéance"
+        },
+        "list": {
+            "repaidPercent": "{percent} remboursé",
+            "noDate": "Sans échéance",
+            "noLabel": "Sans libellé",
+            "unknownCounterpart": "Contrepartie inconnue"
+        },
+        "empty": {
+            "list": "Aucun prêt pour l’instant. Notez l’argent prêté ou emprunté à un proche.",
+            "active": "Aucun prêt en cours.",
+            "rembourse": "Aucun prêt remboursé.",
+            "annule": "Aucun prêt annulé.",
+            "filtered": "Aucun prêt ne correspond à ces filtres."
+        },
+        "actions": {
+            "edit": "Modifier",
+            "delete": "Supprimer"
+        },
+        "deleteModal": {
+            "title": "Supprimer ce prêt ?",
+            "body": "Il disparaîtra de vos dettes et des totaux."
+        },
+        "errors": {
+            "notFound": "Prêt introuvable."
+        },
+        "form": {
+            "createTitle": "Nouveau prêt",
+            "editTitle": "Prêt",
+            "subtitle": "De l’argent prêté ou emprunté à quelqu’un hors Spend.Up",
+            "fields": {
+                "direction": "Sens",
+                "counterpart": "Contrepartie",
+                "label": "Libellé",
+                "initialAmount": "Montant initial",
+                "remainingAmount": "Restant dû",
+                "startDate": "Début",
+                "plannedEndDate": "Échéance",
+                "currency": "Devise",
+                "notes": "Notes",
+                "cancel": "Annulé"
+            },
+            "placeholders": {
+                "label": "Ex. voiture de Marc"
+            },
+            "counterpartHint": "Une personne de vos tiers. Pour un ami Spend.Up, utilisez l’onglet entre amis.",
+            "identityLockedHint": "Sens et contrepartie ne se modifient que sur un prêt en cours.",
+            "remainingCreateHint": "Vide = le montant initial.",
+            "remainingEditHint": "Déjà remboursé : {repaid}.",
+            "currencyDefaultHint": "Par défaut {currency}. Figée après la création.",
+            "currencyLockedHint": "La devise est figée après la création.",
+            "cancelHint": "Un prêt annulé sort des totaux et le reste.",
+            "errors": {
+                "directionInvalid": "Choisissez un sens.",
+                "directionLocked": "Le sens ne se modifie que sur un prêt en cours.",
+                "counterpartRequired": "Choisissez une contrepartie.",
+                "counterpartLocked": "La contrepartie ne se modifie que sur un prêt en cours.",
+                "labelTooLong": "150 caractères au maximum.",
+                "initialAmountInvalid": "Montant invalide.",
+                "initialAmountNotPositive": "Le montant initial doit être supérieur à zéro.",
+                "remainingAmountInvalid": "Montant invalide.",
+                "remainingAmountOutOfRange": "Entre 0 et le montant initial.",
+                "startDateRequired": "La date de début est obligatoire.",
+                "startDateInvalid": "Date invalide.",
+                "plannedEndDateInvalid": "Date invalide.",
+                "plannedEndDateBeforeStart": "L’échéance précède le début.",
+                "notesTooLong": "Notes trop longues.",
+                "currencyInvalid": "Devise non prise en charge.",
+                "currencyLocked": "La devise ne se modifie pas après la création."
+            }
+        }
+    },
+    "realEstatePage": {
+        "title": "Immobilier",
+        "detailTitle": "Immobilier : {name}",
+        "loading": "Chargement…",
+        "searchPlaceholder": "Rechercher un bien, une ville, une adresse",
+        "tabs": {
+            "label": "État des biens",
+            "active": "Actifs",
+            "sold": "Cédés"
+        },
+        "actions": {
+            "create": "Ajouter un bien",
+            "search": "Rechercher",
+            "clearSearch": "Effacer la recherche",
+            "edit": "Modifier",
+            "delete": "Supprimer",
+            "back": "Immobilier",
+            "backToList": "Retour à la liste des biens"
+        },
+        "empty": {
+            "active": "Aucun bien immobilier pour l’instant.",
+            "sold": "Aucun bien cédé.",
+            "filtered": "Aucun bien ne correspond à cette recherche."
+        },
+        "errors": {
+            "notFound": "Bien introuvable.",
+            "unitNotFound": "Lot introuvable.",
+            "chargeNotFound": "Charge introuvable.",
+            "maintenanceNotFound": "Travaux introuvables.",
+            "documentNotFound": "Document introuvable.",
+            "rentalNotFound": "Bail introuvable."
+        },
+        "card": {
+            "noAddress": "Adresse non renseignée"
+        },
+        "detail": {
+            "sold": "Bien cédé, hors patrimoine net",
+            "livingArea": "{value} m² habitables",
+            "landArea": "terrain {value} m²",
+            "rooms": "{value} pièces",
+            "builtIn": "construit en {year}",
+            "renovatedIn": "rénové en {year}",
+            "boughtOn": "acheté le {date}",
+            "boughtFor": "acheté le {date} pour {amount}",
+            "taxValue": "Valeur fiscale {amount} (informative)",
+            "amenities": {
+                "elevator": "ascenseur",
+                "balcony": "balcon",
+                "cellar": "cave",
+                "garage": "garage"
+            },
+            "figs": {
+                "label": "Synthèse du bien",
+                "summary": "Synthèse",
+                "value": "Valeur estimée",
+                "valuedOn": "estimée le {date}",
+                "mortgage": "Hypothèque restante",
+                "noMortgage": "aucun passif lié",
+                "mortgageExcluded": "{count} passif dans une autre devise, non compté | {count} passifs dans une autre devise, non comptés",
+                "equity": "Fonds propres",
+                "rent": "Loyer mensuel",
+                "rentCharges": "+ {amount} de charges locatives",
+                "activeRentals": "{count} bail actif | {count} baux actifs",
+                "charges": "Charges mensuelles",
+                "perMonth": "charges en cours, par mois",
+                "maintenance": "Total des travaux",
+                "maintenanceCount": "aucun travail | {count} intervention | {count} interventions"
+            },
+            "tabs": {
+                "label": "Sections du bien",
+                "informations": "Informations",
+                "units": "Lots",
+                "charges": "Charges",
+                "maintenance": "Travaux",
+                "documents": "Documents",
+                "rentals": "Baux",
+                "transactions": "Transactions"
+            }
+        },
+        "units": {
+            "add": "Ajouter un lot",
+            "count": "{count} lot | {count} lots",
+            "empty": "Aucun lot. Découpez le bien en lots pour louer une partie seulement.",
+            "occupied": "occupé",
+            "vacant": "libre",
+            "notRentable": "non louable",
+            "deleteTitle": "Supprimer ce lot ?",
+            "deleteBody": "Un lot encore couvert par un bail ne peut pas être supprimé.",
+            "columns": {
+                "name": "Lot",
+                "type": "Type",
+                "surface": "Surface",
+                "rooms": "Pièces",
+                "floor": "Étage",
+                "occupancy": "Occupation"
+            }
+        },
+        "charges": {
+            "add": "Ajouter une charge",
+            "count": "{count} charge | {count} charges",
+            "empty": "Aucune charge enregistrée.",
+            "current": "en cours",
+            "notCurrent": "hors période",
+            "monthlyTotal": "Charges en cours, par mois",
+            "deleteTitle": "Supprimer cette charge ?",
+            "deleteBody": "La charge disparaît de la synthèse du bien.",
+            "columns": {
+                "name": "Charge",
+                "type": "Type",
+                "amount": "Montant",
+                "monthly": "Par mois",
+                "period": "Période",
+                "unit": "Lot",
+                "tier": "Fournisseur",
+                "state": "État"
+            }
+        },
+        "maintenance": {
+            "add": "Ajouter des travaux",
+            "count": "{count} intervention | {count} interventions",
+            "empty": "Aucuns travaux enregistrés.",
+            "overdue": "échéance dépassée",
+            "total": "Total des travaux",
+            "deleteTitle": "Supprimer ces travaux ?",
+            "deleteBody": "Le coût est retiré du total des travaux du bien.",
+            "columns": {
+                "date": "Date",
+                "type": "Type",
+                "description": "Description",
+                "unit": "Lot",
+                "provider": "Prestataire",
+                "cost": "Coût",
+                "next": "Prochaine échéance"
+            }
+        },
+        "documents": {
+            "add": "Ajouter un document",
+            "count": "{count} document | {count} documents",
+            "empty": "Aucun document lié à ce bien.",
+            "open": "Ouvrir {name}",
+            "unlink": "Délier",
+            "deleteTitle": "Délier ce document ?",
+            "deleteBody": "Le document est retiré du bien. Le fichier PDF reste dans vos fichiers.",
+            "columns": {
+                "name": "Document",
+                "type": "Type",
+                "date": "Date",
+                "unit": "Lot",
+                "size": "Taille"
+            }
+        },
+        "rentals": {
+            "add": "Ajouter un bail",
+            "count": "{count} bail | {count} baux",
+            "empty": "Aucun bail pour ce bien.",
+            "emptyFiltered": "Aucun bail avec ce statut.",
+            "statusFilter": "Statut",
+            "allStatuses": "Tous les statuts",
+            "incomeLinked": "revenu récurrent lié",
+            "deleteTitle": "Supprimer ce bail ?",
+            "deleteBody": "Le bail est supprimé. Le revenu récurrent lié, s’il existe, n’est pas modifié.",
+            "columns": {
+                "tenant": "Locataire",
+                "unit": "Lot",
+                "period": "Période",
+                "rent": "Loyer",
+                "charges": "Charges",
+                "deposit": "Dépôt",
+                "status": "Statut"
+            }
+        },
+        "unitTypes": {
+            "appartement": "Appartement",
+            "chambre": "Chambre",
+            "localCommercial": "Local commercial",
+            "bureau": "Bureau",
+            "garage": "Garage",
+            "placeParking": "Place de parc",
+            "cave": "Cave",
+            "grenier": "Grenier",
+            "terrain": "Terrain",
+            "other": "Autre"
+        },
+        "chargeTypes": {
+            "ppe": "Charges PPE",
+            "syndic": "Gérance",
+            "eau": "Eau",
+            "electricite": "Électricité",
+            "chauffage": "Chauffage",
+            "assuranceBatiment": "Assurance bâtiment",
+            "taxeFonciere": "Taxe foncière",
+            "impotImmobilier": "Impôt immobilier",
+            "entretien": "Entretien",
+            "fondsRenovation": "Fonds de rénovation",
+            "ordures": "Ordures",
+            "other": "Autre"
+        },
+        "periodicities": {
+            "ponctuelle": "Ponctuelle",
+            "mensuelle": "Mensuelle",
+            "trimestrielle": "Trimestrielle",
+            "semestrielle": "Semestrielle",
+            "annuelle": "Annuelle"
+        },
+        "maintenanceTypes": {
+            "peinture": "Peinture",
+            "plomberie": "Plomberie",
+            "electricite": "Électricité",
+            "chauffage": "Chauffage",
+            "toiture": "Toiture",
+            "facade": "Façade",
+            "sols": "Sols",
+            "fenetres": "Fenêtres",
+            "cuisine": "Cuisine",
+            "salleBain": "Salle de bain",
+            "renovation": "Rénovation",
+            "reparation": "Réparation",
+            "controle": "Contrôle",
+            "other": "Autre"
+        },
+        "documentTypes": {
+            "acteVente": "Acte de vente",
+            "contratBail": "Contrat de bail",
+            "hypotheque": "Hypothèque",
+            "assurance": "Assurance",
+            "factureTravaux": "Facture de travaux",
+            "diagnostic": "Diagnostic",
+            "photo": "Photo",
+            "plan": "Plan",
+            "impot": "Impôt",
+            "other": "Autre"
+        },
+        "rentalStatuses": {
+            "active": "Actif",
+            "aVenir": "À venir",
+            "suspendue": "Suspendu",
+            "terminee": "Terminé"
+        },
+        "form": {
+            "wholeProperty": "Bien entier",
+            "noTier": "Aucun",
+            "fields": {
+                "name": "Nom",
+                "unitType": "Type de lot",
+                "surfaceM2": "Surface",
+                "rooms": "Pièces",
+                "floor": "Étage",
+                "isRentable": "Louable",
+                "notes": "Notes",
+                "chargeType": "Type de charge",
+                "amount": "Montant",
+                "periodicity": "Périodicité",
+                "startDate": "Début",
+                "endDate": "Fin",
+                "unit": "Lot",
+                "chargeTier": "Fournisseur",
+                "maintenanceDate": "Date",
+                "maintenanceType": "Type de travaux",
+                "description": "Description",
+                "cost": "Coût",
+                "nextMaintenanceDate": "Prochaine échéance",
+                "provider": "Prestataire",
+                "file": "Fichier PDF",
+                "documentType": "Type de document",
+                "documentName": "Nom affiché",
+                "documentDate": "Date du document",
+                "tenant": "Locataire",
+                "monthlyRent": "Loyer mensuel",
+                "monthlyCharges": "Charges mensuelles",
+                "deposit": "Dépôt de garantie",
+                "recurringIncome": "Revenu récurrent",
+                "status": "Statut"
+            },
+            "unit": {
+                "createTitle": "Nouveau lot",
+                "editTitle": "Modifier le lot",
+                "subtitle": "Une partie du bien : appartement, chambre, place de parc…",
+                "rentableHint": "Seul un lot louable peut recevoir un bail."
+            },
+            "charge": {
+                "createTitle": "Nouvelle charge",
+                "editTitle": "Modifier la charge",
+                "subtitle": "Montant dans la devise du bien, ramené au mois dans la synthèse.",
+                "periodHint": "Sans dates, la charge est considérée comme en cours."
+            },
+            "maintenance": {
+                "createTitle": "Nouveaux travaux",
+                "editTitle": "Modifier les travaux",
+                "subtitle": "Intervention passée sur le bien ou sur un lot."
+            },
+            "document": {
+                "createTitle": "Nouveau document",
+                "editTitle": "Modifier le document",
+                "subtitle": "Un PDF de vos fichiers, classé avec le bien.",
+                "noFile": "Choisir un fichier",
+                "upload": "Téléverser un PDF",
+                "uploading": "Téléversement… {percent} %",
+                "fileHint": "Choisissez un PDF existant ou téléversez-en un (10 Mo au plus).",
+                "fileLockedHint": "Pour changer de fichier, déliez ce document puis ajoutez-en un nouveau.",
+                "nameHint": "Vide : nom du fichier.",
+                "dateHint": "Vide : date du fichier."
+            },
+            "rental": {
+                "createTitle": "Nouveau bail",
+                "editTitle": "Modifier le bail",
+                "subtitle": "Location du bien entier ou d’un lot louable.",
+                "noTenant": "Choisir un locataire",
+                "tenantHint": "Le rôle locataire est ajouté automatiquement au tiers.",
+                "unitHint": "Sans lot, le bail couvre le bien entier.",
+                "noIncome": "Aucun",
+                "incomeHint": "Le revenu récurrent qui encaisse ce loyer, à créer d’abord dans Récurrences.",
+                "statusAuto": "Selon les dates",
+                "statusHint": "Terminé sans date de fin : la fin est fixée à aujourd’hui."
+            },
+            "errors": {
+                "nameRequired": "Le nom est obligatoire.",
+                "nameTooLong": "Le nom dépasse 150 caractères.",
+                "notesTooLong": "Les notes dépassent 2000 caractères.",
+                "descriptionTooLong": "La description dépasse 500 caractères.",
+                "unitTypeInvalid": "Choisissez un type de lot.",
+                "surfaceInvalid": "Surface invalide.",
+                "roomsInvalid": "Nombre de pièces invalide.",
+                "floorInvalid": "L’étage doit être un nombre entier.",
+                "chargeTypeInvalid": "Choisissez un type de charge.",
+                "periodicityInvalid": "Choisissez une périodicité.",
+                "amountInvalid": "Montant invalide.",
+                "amountNegative": "Le montant ne peut pas être négatif.",
+                "startDateInvalid": "Date de début invalide.",
+                "endDateInvalid": "Date de fin invalide.",
+                "endDateBeforeStart": "La fin doit suivre le début.",
+                "unitInvalid": "Ce lot n’existe plus.",
+                "unitNotRentable": "Ce lot n’est pas louable.",
+                "maintenanceTypeInvalid": "Choisissez un type de travaux.",
+                "maintenanceDateRequired": "La date est obligatoire.",
+                "maintenanceDateInvalid": "Date invalide.",
+                "maintenanceDateFuture": "La date ne peut pas être dans le futur.",
+                "nextDateInvalid": "Date d’échéance invalide.",
+                "nextDateBeforeDate": "L’échéance doit suivre la date des travaux.",
+                "costInvalid": "Coût invalide.",
+                "costNegative": "Le coût ne peut pas être négatif.",
+                "documentTypeInvalid": "Choisissez un type de document.",
+                "fileRequired": "Choisissez ou téléversez un PDF.",
+                "documentDateInvalid": "Date du document invalide.",
+                "tenantRequired": "Le locataire est obligatoire.",
+                "rentInvalid": "Loyer invalide.",
+                "rentNegative": "Le loyer ne peut pas être négatif.",
+                "chargesInvalid": "Charges invalides.",
+                "chargesNegative": "Les charges ne peuvent pas être négatives.",
+                "depositInvalid": "Dépôt invalide.",
+                "depositNegative": "Le dépôt ne peut pas être négatif.",
+                "statusInvalid": "Statut non pris en charge."
+            }
+        }
+    },
+    "sharedDebtsPage": {
+        "title": "Dettes entre amis",
+        "subtitle": "Ce que vos amis vous doivent, et ce que vous leur devez.",
+        "createButton": "Nouvelle dette",
+        "searchPlaceholder": "Rechercher un ami ou un libellé",
+        "figures": {
+            "owedToMe": "On me doit",
+            "owedToMeNote": "reste à rembourser par vos amis",
+            "iOwe": "Je dois",
+            "iOweNote": "reste à rembourser à vos amis",
+            "otherCurrencies": "{count} dette ouverte dans une autre devise n’est pas comptée dans ces totaux en {currency}. | {count} dettes ouvertes dans d’autres devises ne sont pas comptées dans ces totaux en {currency}."
+        },
+        "tabs": {
+            "label": "Point de vue",
+            "creditor": "Je suis créancier",
+            "debtor": "Je suis débiteur"
+        },
+        "roles": {
+            "creditor": "Créancier",
+            "debtor": "Débiteur"
+        },
+        "statuses": {
+            "aRembourser": "À rembourser",
+            "partiellementRemboursee": "Partiellement remboursée",
+            "remboursee": "Remboursée",
+            "canceled": "Annulée",
+            "overdue": "Échéance dépassée"
+        },
+        "filters": {
+            "status": "Statut",
+            "allStatuses": "Tous les statuts"
+        },
+        "list": {
+            "dueOn": "échéance {date}",
+            "noDueDate": "Sans échéance"
+        },
+        "empty": {
+            "creditor": "Personne ne vous doit d’argent pour l’instant.",
+            "debtor": "Vous ne devez rien à vos amis.",
+            "status": "Aucune dette avec ce statut.",
+            "filtered": "Aucune dette ne correspond à cette recherche."
+        },
+        "actions": {
+            "settle": "Rembourser",
+            "edit": "Modifier",
+            "cancel": "Annuler la dette",
+            "delete": "Supprimer"
+        },
+        "form": {
+            "createTitle": "Nouvelle dette",
+            "createSubtitle": "Vous avez payé pour un ami : il vous doit cette somme.",
+            "editTitle": "Modifier la dette",
+            "editSubtitle": "Modifiable tant que rien n’a été remboursé.",
+            "fields": {
+                "friend": "Ami",
+                "transaction": "Dépense liée",
+                "amount": "Montant",
+                "label": "Libellé",
+                "currency": "Devise",
+                "dueDate": "Échéance"
+            },
+            "friendSearch": "Rechercher un ami",
+            "friendNoResults": "Aucun ami trouvé",
+            "noFriends": "Ajoutez d’abord un ami pour lui attribuer une dette.",
+            "noTransaction": "Aucune",
+            "transactionSearch": "Rechercher une dépense",
+            "transactionNoResults": "Aucune dépense trouvée",
+            "transactionHint": "Facultatif : la devise et le libellé reprennent ceux de la dépense.",
+            "currencyLockedHint": "La devise ne peut plus être modifiée.",
+            "currencyFromTransactionHint": "Devise de la dépense liée.",
+            "currencyDefaultHint": "Par défaut : {currency}.",
+            "errors": {
+                "friendRequired": "Choisissez l’ami qui vous doit cette somme.",
+                "labelRequired": "Le libellé est obligatoire sans dépense liée.",
+                "labelTooLong": "Le libellé dépasse 150 caractères.",
+                "amountInvalid": "Montant invalide.",
+                "amountNotPositive": "Le montant doit être strictement positif.",
+                "dueDateInvalid": "La date d’échéance est invalide.",
+                "currencyInvalid": "Devise non supportée.",
+                "settleAmountInvalid": "Montant invalide.",
+                "settleAmountNotPositive": "Le montant remboursé doit être strictement positif.",
+                "settleAmountAboveRemaining": "Le montant remboursé dépasse le reste dû.",
+                "settleDateInvalid": "La date de remboursement est invalide.",
+                "settleDateFuture": "La date de remboursement ne peut pas être dans le futur."
+            }
+        },
+        "settle": {
+            "title": "Enregistrer un remboursement",
+            "subtitle": "{label} · reste dû {remaining}",
+            "fields": {
+                "amount": "Montant remboursé",
+                "date": "Date"
+            },
+            "amountHint": "Au plus {remaining}. Laissez vide pour solder la dette.",
+            "confirm": "Enregistrer"
+        },
+        "detail": {
+            "title": "Dette",
+            "subtitle": {
+                "creditor": "{name} vous doit",
+                "debtor": "Vous devez à {name}"
+            },
+            "role": "Mon rôle",
+            "label": "Libellé",
+            "amount": "Montant initial",
+            "repaid": "Déjà remboursé",
+            "remaining": "Reste dû",
+            "status": "Statut",
+            "dueDate": "Échéance",
+            "createdAt": "Créée le",
+            "updatedAt": "Modifiée le",
+            "settledAt": "Clôturée le",
+            "transaction": "Dépense liée",
+            "noTransaction": "Aucune",
+            "linkedTransaction": "Dépense liée"
+        },
+        "cancelModal": {
+            "title": "Annuler cette dette ?",
+            "body": "Votre ami ne vous devra plus rien pour cette dette. Elle restera visible comme annulée."
+        },
+        "deleteModal": {
+            "title": "Supprimer cette dette ?",
+            "body": "La dette disparaîtra pour vous et pour votre ami. Cette action est définitive."
+        },
+        "errors": {
+            "notFound": "Dette introuvable."
+        }
+    },
+    "taxPage": {
+        "amountInvalid": "Le montant saisi pour « {line} » n'est pas lisible. Corrigez-le ou videz la case.",
+        "title": "Impôts",
+        "subtitle": "Brouillon à recopier dans la déclaration cantonale. Seuls les montants que vous saisissez y entrent.",
+        "new": "Nouvelle déclaration",
+        "createModal": {
+            "title": "Nouvelle déclaration",
+            "subtitle": "Choisissez l’année et le canton, puis indiquez qui déclare. Tout reste modifiable ensuite.",
+            "person1": "Personne 1",
+            "person2": "Personne 2"
+        },
+        "importExisting": "Importer une déclaration existante",
+        "actions": {
+            "open": "Ouvrir",
+            "pdf": "Télécharger le PDF",
+            "nextYear": "Créer {year}",
+            "ready": "Marquer prête à recopier",
+            "resume": "Remettre en cours",
+            "archive": "Archiver",
+            "file": "Marquer comme déposée",
+            "correct": "Corriger",
+            "unfile": "Annuler le dépôt",
+            "bundle": "Télécharger les justificatifs",
+            "export": "Exporter…",
+            "exportCsv": "Exporter en CSV",
+            "exportJson": "Exporter en JSON",
+            "delete": "Supprimer"
+        },
+        "year": "Année",
+        "canton": "Canton",
+        "name": "Nom",
+        "namePlaceholder": "Par exemple : canton, conjoint, simulation",
+        "create": "Créer",
+        "import": "Importer",
+        "cantons": {
+            "AG": "Argovie",
+            "AI": "Appenzell Rhodes-Intérieures",
+            "AR": "Appenzell Rhodes-Extérieures",
+            "BE": "Berne",
+            "BL": "Bâle-Campagne",
+            "BS": "Bâle-Ville",
+            "FR": "Fribourg",
+            "GE": "Genève",
+            "GL": "Glaris",
+            "GR": "Grisons",
+            "JU": "Jura",
+            "LU": "Lucerne",
+            "NE": "Neuchâtel",
+            "NW": "Nidwald",
+            "OW": "Obwald",
+            "SG": "Saint-Gall",
+            "SH": "Schaffhouse",
+            "SO": "Soleure",
+            "SZ": "Schwytz",
+            "TG": "Thurgovie",
+            "TI": "Tessin",
+            "UR": "Uri",
+            "VD": "Vaud",
+            "VS": "Valais",
+            "ZG": "Zoug",
+            "ZH": "Zurich"
+        },
+        "importOrigin": "Lu dans le PDF importé",
+        "importRead": "{count} montant lu dans le PDF | {count} montants lus dans le PDF. Ils sont proposés dans chaque étape : vérifiez-les, puis acceptez-les.",
+        "chooseFile": "Choisir un PDF",
+        "importFile": "Déclaration PDF",
+        "importFileRequired": "Choisissez le PDF de la déclaration.",
+        "importDone": "La déclaration est créée. Le PDF est rangé dans les pièces.",
+        "cancel": "Annuler",
+        "empty": "Aucune déclaration. Créez-en une pour l’année en cours.",
+        "filled": "{filled} case remplie sur {total} | {filled} cases remplies sur {total}",
+        "back": "Toutes les déclarations",
+        "status": "Statut",
+        "statuses": {
+            "enCours": "En cours",
+            "preteARecopier": "Prête à recopier",
+            "archivee": "Archivée",
+            "deposee": "Déposée",
+            "taxee": "Taxée",
+            "soldee": "Soldée",
+            "contestee": "Contestée"
+        },
+        "civilStatus": "État civil (au 31.12)",
+        "civilStatuses": {
+            "none": "Non indiqué",
+            "celibataire": "Célibataire",
+            "marie": "Marié·e",
+            "partenariatEnregistre": "Partenariat enregistré",
+            "separe": "Séparé·e",
+            "divorce": "Divorcé·e",
+            "veuf": "Veuf·ve"
+        },
+        "taxationMode": "Mode de taxation",
+        "taxationModes": {
+            "ordinaire": "Ordinaire",
+            "source": "Imposé·e à la source"
+        },
+        "taxationSourceHint": "L'imposition à la source n'est pas encore prise en charge : la déclaration reste utilisable comme brouillon, mais vérifiez auprès de votre canton ce que vous devez déclarer.",
+        "profile": {
+            "draft": "Paramètres du canton {canton} {year} en préparation : libellés et codes officiels seulement, aucun plafond n'est encore vérifié.",
+            "otherYear": "Paramètres du canton {canton} pas encore mis à jour pour {current} : ceux de {year} sont utilisés."
+        },
+        "couple": "Couple (personne 2)",
+        "person": "Personne",
+        "persons": {
+            "1": "Personne 1",
+            "2": "Personne 2",
+            "both": "Les deux"
+        },
+        "identity": "Situation",
+        "steps": "Étapes de la déclaration",
+        "reminders": {
+            "title": "À faire avant de déclarer",
+            "unconfirmedNatures": "{count} dépense à confirmer ({amount}) : leur catégorie suggère une nature fiscale, elle ne compte pas tant que vous ne l'avez pas confirmée. | {count} dépenses à confirmer ({amount}) : leur catégorie suggère une nature fiscale, elles ne comptent pas tant que vous ne les avez pas confirmées.",
+            "missingDocument": "Pièce manquante : {label} ({amount} d’après vos opérations confirmées).",
+            "deadlineSoon": "Échéance proche : {label}, le {date} (reste {amount}).",
+            "deadlineOverdue": "Échéance dépassée : {label}, le {date} (reste {amount}).",
+            "pillar3aYearEnd": "3e pilier a : {amount} versés cette année. Le 3a se verse avant le 31 décembre."
+        },
+        "documentCandidates": {
+            "title": "Pièces trouvées dans vos opérations",
+            "hint": "Déjà jointes à une transaction ou à une assurance : un geste suffit pour les ranger sur la bonne ligne.",
+            "from": "Jointe à : {label}",
+            "file": "Ranger"
+        },
+        "themes": {
+            "title": "Totaux de l’année {year}",
+            "hint": "Information seulement : les plafonds du canton ne sont pas appliqués. Seules les natures confirmées sur une transaction comptent.",
+            "total": "{amount}",
+            "empty": "Aucune dépense confirmée pour ce thème.",
+            "document": "Pièce attendue : {label}",
+            "natures": {
+                "donation": "Dons",
+                "politicalContribution": "Partis politiques",
+                "childcare": "Frais de garde",
+                "alimonyPaid": "Pensions versées",
+                "trainingExpense": "Formation",
+                "commuting": "Trajet domicile-travail",
+                "jobExpense": "Autres frais professionnels",
+                "pillar2BuyIn": "Rachats dans le 2e pilier"
+            }
+        },
+        "medical": {
+            "title": "Frais médicaux {year}",
+            "hint": "Information seulement : la déduction dépend du seuil de votre canton.",
+            "summary": "Brut : {gross} · Remboursé : {reimbursed} · À charge : {net}",
+            "reimbursedLine": "remboursé {amount}",
+            "none": "Aucune facture médicale confirmée cette année (nature « frais médicaux » à confirmer sur la transaction).",
+            "unlinked": "{count} remboursement(s) non relié(s) à une facture sont comptés dans le remboursé."
+        },
+        "pillar3a": {
+            "title": "3e pilier a de l'année {year}",
+            "hint": "Information seulement : ce n'est pas une déduction calculée.",
+            "paid": "Versé : {amount}",
+            "none": "Aucun versement repéré cette année (virement vers un compte 3a, ou nature « 3e pilier a » confirmée sur une transaction).",
+            "limit": "plafond {max}, reste {remaining}",
+            "limitPercent": "{percent} % du revenu",
+            "noLimit": "Plafond non affiché : le profil du canton n'a pas encore été relu.",
+            "certificate": "Le montant déductible est celui de l'attestation annuelle de la fondation : comparez-le au versé.",
+            "appliesTo": {
+                "employeeWithPillar2": "Avec 2e pilier",
+                "withoutPillar2": "Sans 2e pilier"
+            }
+        },
+        "suggestionsTitle": "Propositions",
+        "detectedTitle": "Montants détectés dans le PDF",
+        "previousYear": "An dernier : {value}",
+        "locked": "Déposée le {date} : les montants sont verrouillés. Pour en changer un, utilisez « Corriger » sur la ligne ; chaque correction est journalisée avec son motif.",
+        "corrected": "Corrigé le {date} : {change} ({reason})",
+        "fileModal": {
+            "title": "Marquer la déclaration {year} comme déposée ?",
+            "message": "Indiquez quand vous l'avez déposée. Les montants seront ensuite verrouillés : une modification passera par « Corriger », avec un motif. Les pièces restent modifiables.",
+            "date": "Date de dépôt",
+            "confirm": "Marquer comme déposée"
+        },
+        "unfileModal": {
+            "title": "Annuler le dépôt de la déclaration {year} ?",
+            "message": "À utiliser si elle a été marquée déposée par erreur. Elle redevient « Prête à recopier » et ses montants sont de nouveau modifiables. L'annulation est journalisée ; les corrections déjà faites restent dans l'historique."
+        },
+        "guided": {
+            "title": "Saisie rapide des totaux",
+            "intro": "Recopiez les grands totaux de votre déclaration : quelques montants suffisent pour démarrer. Vous complétez ensuite le détail étape par étape.",
+            "introUnread": "Le PDF n'a pas pu être lu (scan, photo ou formulaire non reconnu). Recopiez ses grands totaux : quelques montants suffisent pour démarrer.",
+            "both": "même montant canton et Confédération",
+            "submit": "Inscrire {count} montant | Inscrire {count} montants",
+            "dismiss": "Remplir étape par étape",
+            "done": "{count} ligne remplie. Complétez le détail dans chaque étape. | {count} lignes remplies. Complétez le détail dans chaque étape."
+        },
+        "zone": {
+            "show": "Voir dans le PDF",
+            "title": "Montant dans le PDF",
+            "loading": "Ouverture du PDF…",
+            "unavailable": "La position de ce montant n'est pas connue (lecture faite avant cette fonction) : ouvrez le PDF depuis les pièces.",
+            "page": "Page {page}",
+            "close": "Fermer"
+        },
+        "bundle": {
+            "summaryFile": "Sommaire",
+            "summaryTitle": "Dossier de justificatifs — {title}",
+            "generated": "Préparé le {date} avec Spend.Up. Ce n’est pas un document du canton.",
+            "files": "Pièces incluses, dans l’ordre de la déclaration :",
+            "none": "Aucune pièce rangée sur la déclaration.",
+            "extra": "declaration-{year}-{canton}.pdf (récapitulatif de travail) et .json (dossier complet)",
+            "missing": "Pièces attendues pas encore reçues :",
+            "skipped": "Pièces qui n’ont pas pu être ajoutées :",
+            "disclaimer": "Ce dossier aide à préparer votre déclaration ; il ne remplace pas le logiciel officiel ni un conseil fiscal.",
+            "done": "Le dossier de justificatifs est téléchargé.",
+            "partial": "Le dossier est téléchargé, mais {count} pièce n’a pas pu être ajoutée : voyez le sommaire. | Le dossier est téléchargé, mais {count} pièces n’ont pas pu être ajoutées : voyez le sommaire."
+        },
+        "exportModal": {
+            "title": "Exporter la déclaration {year}",
+            "pdf": {
+                "title": "Récapitulatif PDF",
+                "detail": "À recopier dans le logiciel officiel, dans l’ordre du formulaire."
+            },
+            "bundle": {
+                "title": "Justificatifs (ZIP)",
+                "detail": "Toutes les pièces numérotées dans l’ordre de la déclaration, avec un sommaire."
+            },
+            "csv": {
+                "title": "Tableur (CSV)",
+                "detail": "Un montant par ligne, à ouvrir dans Excel ou Numbers."
+            },
+            "json": {
+                "title": "Données (JSON)",
+                "detail": "Sauvegarde complète de la déclaration."
+            }
+        },
+        "correctModal": {
+            "title": "Corriger un montant",
+            "message": "La déclaration est déposée : la correction est journalisée avec l’ancien montant, le nouveau et le motif.",
+            "competence": "Ressort",
+            "current": "Montant actuel",
+            "empty": "vide",
+            "amount": "Nouveau montant",
+            "reason": "Motif",
+            "reasonPlaceholder": "Ex. certificat de salaire rectifié par l’employeur",
+            "confirm": "Corriger"
+        },
+        "nextYearModal": {
+            "title": "Créer la déclaration {year} ?",
+            "message": "L'identité et les fiches (sans montants) sont reprises, et la liste des pièces attendues est préparée. Aucun montant n'est copié : ceux de l'an dernier restent affichés en référence.",
+            "confirm": "Créer"
+        },
+        "assessments": {
+            "heading": "Décision de taxation",
+            "hint": "Information seulement : recopiez ce que l'administration a retenu (décision, décompte). L'application ne calcule rien et compare seulement au déclaré.",
+            "notFiled": "Marquez d'abord la déclaration comme déposée pour saisir la décision.",
+            "empty": "Aucune décision saisie.",
+            "kind": {
+                "intermediateStatement": "Décompte intermédiaire",
+                "assessment": "Décision de taxation",
+                "finalStatement": "Décompte final",
+                "correction": "Décision sur réclamation"
+            },
+            "issuedOn": "du {date}",
+            "taxableIncome": "Revenu imposable : {amount}",
+            "taxableWealth": "Fortune imposable : {amount}",
+            "totalTax": "Impôt : {amount}",
+            "installmentsPaid": "Acomptes : {amount}",
+            "interest": "Intérêts : {amount}",
+            "balanceDue": "Solde à payer : {amount}",
+            "balanceRefund": "À rembourser : {amount}",
+            "dueBy": "à payer jusqu'au {date}",
+            "deviationsTitle": "Écarts avec votre déclaration",
+            "deviation": "{line} : déclaré {declared}, retenu {assessed} ({difference})",
+            "notDeclared": "non déclaré",
+            "competenceLabel": "Impôt",
+            "kindLabel": "Document",
+            "issuedLabel": "Date du document",
+            "incomeLabel": "Revenu imposable",
+            "wealthLabel": "Fortune imposable",
+            "totalTaxLabel": "Impôt total",
+            "interestLabel": "Intérêts (négatif : en votre faveur)",
+            "balanceLabel": "Solde (négatif : à rembourser)",
+            "balanceHint": "Laissé vide, le solde est calculé : impôt + intérêts − acomptes.",
+            "dueLabel": "Délai de paiement",
+            "noteLabel": "Note",
+            "addDeviation": "Ajouter un écart",
+            "deviationLine": "Ligne",
+            "deviationAssessed": "Montant retenu",
+            "removeDeviation": "Retirer",
+            "add": "Enregistrer le document",
+            "edit": "Modifier",
+            "fileLabel": "Fichier reçu",
+            "cancelEdit": "Annuler",
+            "update": "Enregistrer les modifications",
+            "pick": "Paiement à rapprocher",
+            "link": "Rapprocher",
+            "unlink": "Retirer",
+            "settleSuggested": "Les paiements rapprochés couvrent le solde : vous pouvez marquer le dossier comme soldé.",
+            "remove": "Supprimer",
+            "invalid": "Indiquez la date du document.",
+            "contest": "Faire une réclamation",
+            "settle": "Marquer comme soldé",
+            "reopen": "Rouvrir"
+        },
+        "installments": {
+            "step": "Paiements",
+            "heading": "Paiements de l'impôt",
+            "hint": "Information seulement : recopiez les tranches de votre facture (échéance et montant). Rien n'est calculé ni proposé, et rien n'est transmis au canton.",
+            "empty": "Aucune tranche saisie. Ajoutez vos acomptes ou votre solde d'après la facture reçue.",
+            "summary": "Prévu {planned} · payé {paid} · reste {remaining}",
+            "title": "{competence}, tranche {sequence}",
+            "dueOn": "échéance le {date}",
+            "competence": { "cantonal": "Canton et commune", "federal": "Impôt fédéral" },
+            "status": { "paid": "payée", "partial": "payée en partie", "overdue": "en retard", "due": "à payer" },
+            "competenceLabel": "Impôt",
+            "dueLabel": "Échéance",
+            "amountLabel": "Montant",
+            "noteLabel": "Note",
+            "add": "Ajouter la tranche",
+            "remove": "Supprimer",
+            "invalid": "Indiquez une échéance et un montant supérieur à zéro.",
+            "pick": "Paiement à rapprocher",
+            "link": "Rapprocher",
+            "unlink": "Retirer",
+            "markPaid": "Marquer comme payée",
+            "clearPaid": "Annuler le paiement"
+        },
+        "checklist": {
+            "step": "Pièces",
+            "title": "Pièces attendues",
+            "empty": "Aucune pièce attendue pour l'instant. Elles se préparent d'après vos fiches et l'an dernier.",
+            "progress": "{received} pièces reçues sur {total}.",
+            "count": "{received} / {total} pièces",
+            "required": "obligatoire",
+            "generate": "Compléter la liste"
+        },
+        "acceptVerified": "Accepter les lignes vérifiées ({count})",
+        "acceptAlerts": "Accepter malgré les alertes ({count})",
+        "acceptAlertsModal": {
+            "title": "Accepter {count} lignes à vérifier ?",
+            "message": "Ces lignes ne sont recoupées par aucun total du formulaire, ou un total présente un écart. Contrôlez-les avant de les inscrire.",
+            "confirm": "Accepter quand même"
+        },
+        "check": {
+            "verified": "vérifiée par un total",
+            "toCheck": "à vérifier",
+            "previousYear": "Écart avec l’an dernier ({amount}) : vérifiez la virgule et les chiffres"
+        },
+        "accept": "Accepter",
+        "documentsTitle": "Pièces",
+        "attach": "Joindre un fichier",
+        "line": "Ligne",
+        "importStatement": "Importer un relevé eCH-0196",
+        "fiches": {
+            "add": "Ajouter une fiche",
+            "title": "Intitulé",
+            "detail": "Précision",
+            "amount": "Montant",
+            "secondary": "Second montant",
+            "save": "Ajouter",
+            "remove": "Retirer",
+            "report": "Reporter le total sur les lignes",
+            "employment": "Emploi",
+            "child": "Enfant",
+            "property": "Immeuble",
+            "debt": "Dette",
+            "institution": "Établissement",
+            "employmentAmount": "Salaire",
+            "propertyAmount": "Valeur fiscale",
+            "propertyIncome": "Revenu immobilier",
+            "debtAmount": "Capital au 31 décembre",
+            "debtInterest": "Intérêts",
+            "institutionAmount": "Valeur des avoirs et titres",
+            "institutionIncome": "Revenu des avoirs et titres"
+        },
+        "stepDone": "Étape validée",
+        "stepOpen": "Étape à faire",
+        "validate": {
+            "situation": "Enregistrer la situation",
+            "revenus": "Valider les revenus",
+            "deductions": "Valider les déductions",
+            "fortune": "Valider la fortune",
+            "dettes": "Valider les dettes",
+            "aPart": "Valider les montants à part",
+            "fallback": "Valider {name}",
+            "prevoyance": "Valider la prévoyance",
+            "assurances": "Valider les assurances et la santé",
+            "famille": "Valider la famille",
+            "autres": "Valider les autres déductions"
+        },
+        "officialName": "Nom",
+        "firstName": "Prénom",
+        "vn": "N° AVS",
+        "municipality": "Commune",
+        "job": "Profession",
+        "taxpayerNumber": "N° de contribuable",
+        "notes": "Notes",
+        "saveHeader": "Enregistrer la situation",
+        "cantonal": "Canton",
+        "federal": "Confédération",
+        "amount": "Montant",
+        "emptyCell": "Non déclaré",
+        "subtotals": "Sous-totaux des cases remplies",
+        "income": "Revenus",
+        "deductions": "Déductions",
+        "netIncome": "Revenu net",
+        "assets": "Fortune",
+        "liabilities": "Dettes",
+        "netAssets": "Fortune nette",
+        "gaps": "{count} case encore vide | {count} cases encore vides",
+        "delete": "Supprimer",
+        "deleteConfirm": "Supprimer cette déclaration ? Les montants saisis disparaîtront.",
+        "loading": "Chargement…",
+        "saving": "Enregistrement…",
+        "simple": {
+            "copyToFederal": "Même montant pour la Confédération",
+            "copyToCantonal": "Même montant pour le canton"
+        },
+        "deleteModal": {
+            "title": "Supprimer la déclaration {year} ({canton}) ?",
+            "message": "Les montants et les fiches saisis seront supprimés. Cette action est définitive."
+        },
+        "stepTitles": {
+            "assurances": "Assurances et santé",
+            "autres": "Autres déductions",
+            "aPart": "Imposés à part"
+        },
+        "stepLabels": {
+            "revenus": "Revenus",
+            "prevoyance": "Prévoyance",
+            "assurances": "Santé",
+            "famille": "Famille",
+            "autres": "Déductions",
+            "fortune": "Fortune",
+            "dettes": "Dettes",
+            "aPart": "À part"
+        },
+        "help": {
+            "income": {
+                "employed": "Votre salaire net de l’année, tel qu’indiqué sur le certificat de salaire de chaque employeur.",
+                "selfEmployed": "Le résultat net de votre activité indépendante, selon votre comptabilité ou votre décompte annuel.",
+                "liquidationProfit": "Le bénéfice réalisé lors de la cessation ou de la vente de votre activité indépendante.",
+                "retirementPension": "Les rentes AVS perçues dans l’année, rentes pour enfants comprises : voir l’attestation de la caisse de compensation.",
+                "disabilityPension": "Les rentes AI perçues dans l’année : voir l’attestation de l’office AI ou de la caisse.",
+                "unemployment": "Chômage, indemnités journalières (maladie, accident, maternité) et perte de gain reçues dans l’année : voir les attestations des caisses.",
+                "allowances": "Allocations pour enfants et de formation reçues. Elles figurent parfois déjà sur le certificat de salaire : vérifiez pour ne pas les compter deux fois.",
+                "alimony": "Pensions alimentaires reçues, pour vous ou pour vos enfants, selon jugement ou convention.",
+                "securities": "Intérêts de comptes et dividendes de vos titres : voir le relevé fiscal de votre banque.",
+                "withholdingTax": "L’impôt anticipé retenu sur vos intérêts et dividendes : il figure sur le relevé fiscal de votre banque.",
+                "property": "Loyers encaissés et, selon le canton, valeur locative d’un logement dont vous êtes propriétaire.",
+                "other": "Tout autre revenu imposable qui ne rentre dans aucune des cases ci-dessus."
+            },
+            "deduction": {
+                "jobExpenses": "Frais de déplacement, de repas et autres frais liés à votre emploi. Selon le canton : un forfait ou les frais effectifs.",
+                "debtInterest": "Les intérêts payés sur vos dettes (hypothèque, crédit…) : voir le relevé d’intérêts de votre banque.",
+                "pillar2": "Vos cotisations ordinaires à la caisse de pension (2e pilier) : elles figurent sur le certificat de salaire.",
+                "pillar2BuyIn": "Les rachats d’années de cotisation versés à votre caisse de pension : voir l’attestation de la caisse.",
+                "pillar3a": "Vos versements sur le 3e pilier a dans l’année : voir l’attestation de la banque ou de l’assurance. Un plafond annuel s’applique.",
+                "insurance": "Primes d’assurance maladie, accidents et vie, et intérêts de vos comptes d’épargne. Le canton applique en général un plafond ou un forfait.",
+                "healthGross": "Les frais de maladie et d’accident que vous avez payés, avant remboursement : médecin, dentiste, médicaments, lunettes…",
+                "healthReimbursed": "Ce que votre assurance vous a remboursé pour ces frais.",
+                "health": "Les frais de maladie et d’accident restant à votre charge. Seule la part au-delà d’un seuil (en général un pourcentage du revenu net) est déductible.",
+                "handicap": "Les frais liés à un handicap (soins, aides, adaptations), si vous êtes reconnu·e en situation de handicap.",
+                "education": "Les frais de formation continue ou de perfectionnement liés à votre profession. La formation initiale n’est pas déductible. Un plafond s’applique.",
+                "donations": "Les dons à des institutions d’utilité publique exonérées d’impôt : conservez vos justificatifs. Un minimum et un plafond s’appliquent.",
+                "childcare": "Les frais de garde de vos enfants par des tiers (crèche, accueil de jour) : voir les factures. Un plafond s’applique.",
+                "social": "Les déductions pour enfants, personnes à charge et autres situations sociales : elles dépendent de votre situation et de votre canton.",
+                "other": "Toute autre déduction autorisée qui ne rentre dans aucune des cases ci-dessus."
+            },
+            "asset": {
+                "cashAndSecurities": "Le solde de vos comptes et la valeur de vos titres au 31 décembre : voir le relevé fiscal de votre banque.",
+                "property": "La valeur fiscale de vos immeubles, fixée par le canton : voir votre dernier avis de taxation.",
+                "qualifiedPrivate": "Vos participations d’au moins 10 % dans une société, détenues dans votre fortune privée.",
+                "qualifiedBusiness": "Vos participations qualifiées détenues dans la fortune commerciale d’une activité indépendante.",
+                "crypto": "La valeur de vos cryptomonnaies au 31 décembre, selon le cours indiqué par l’administration fiscale.",
+                "other": "Autres éléments de fortune : véhicules, objets de valeur, assurances avec valeur de rachat… Selon le canton."
+            },
+            "liability": {
+                "debts": "Le total de vos dettes au 31 décembre (hypothèque, crédits, leasing) : voir les relevés de vos créanciers."
+            },
+            "capital": {
+                "pillar2": "Le capital reçu de votre caisse de pension (2e pilier), imposé à part : voir l’attestation de versement.",
+                "pillar3a": "Le capital retiré de votre 3e pilier a, imposé à part : voir l’attestation de la banque ou de l’assurance.",
+                "vested": "Le capital d’une prestation de libre passage versée dans l’année.",
+                "other": "Les autres prestations en capital reçues dans l’année (indemnités, prestations d’assurance…)."
+            },
+            "gift": {
+                "amount": "Donations, avances d’hoirie et successions reçues dans l’année. Selon le canton, elles sont imposées ou exonérées."
+            }
+        },
+        "attachUpload": "Joindre un fichier",
+        "attachSelect": "Sélectionner",
+        "attachLine": "Ligne concernée (facultatif)",
+        "see": "Voir",
+        "importFormatUnknown": "Format de déclaration non reconnu (seuls les PDF JuraTax et FriTax 2025 sont lus pour l'instant) : le PDF est rangé dans les pièces, rien n'a été lu. Saisissez les totaux ci-dessous pour démarrer.",
+        "importReadNone": "Aucun montant à proposer n'a été lu dans ce PDF. Il est rangé dans les pièces.",
+        "review": {
+            "title": "Lecture du PDF · {profile}",
+            "dismiss": "Masquer",
+            "checks": "{ok} total sur {n} recoupé avec le formulaire. | {ok} totaux sur {n} recoupés avec le formulaire.",
+            "mismatch": "Écart sur : {lines}. Vérifiez ces lignes avant d’accepter.",
+            "none": "Rien à valider.",
+            "detected": "{count} montant détecté, à valider dans l’onglet correspondant. | {count} montants détectés, à valider dans les onglets correspondants.",
+            "spouse": "conjoint",
+            "acceptSelected": "Accepter la sélection ({count})",
+            "unmapped": "{count} ligne lue sans équivalent dans l’application",
+            "code": "code {code}, p. {page}",
+            "split": "{verified} vérifiés par un total, {toCheck} à vérifier.",
+            "wrongForm": "Ce PDF est un formulaire {formCanton} {formYear}, la déclaration est {canton} {year}. Rien n’est considéré comme vérifié.",
+            "previousYear": "{count} montant très différent de l’an dernier, probablement mal lu. | {count} montants très différents de l’an dernier, probablement mal lus."
         }
     }
 }

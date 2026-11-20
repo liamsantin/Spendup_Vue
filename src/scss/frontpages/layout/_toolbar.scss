@@ -66,7 +66,7 @@
         color: rgba(var(--v-theme-textPrimary), 0.78) !important;
 
         &:hover {
-            color: rgb(var(--v-theme-primary)) !important;
+            color: #3d63dd !important;
         }
     }
 }
@@ -125,13 +125,6 @@
         display: inline-flex !important;
         visibility: visible !important;
     }
-}
-
-.front-nav-menu .v-overlay__content {
-    border-radius: 12px;
-    box-shadow:
-        0 4px 24px rgba(15, 23, 42, 0.1),
-        0 1px 3px rgba(15, 23, 42, 0.06);
 }
 
 .lp-drawer {

@@ -99,14 +99,15 @@ function onTemplateSaved() {
         <AppAlert v-if="localError" type="error" closable @dismiss="localError = null">{{ localError }}</AppAlert>
         <AppAlert v-if="notice" type="success" closable @dismiss="notice = null">{{ notice }}</AppAlert>
 
-        <div class="import-result__card" :class="isValid ? 'is-valid' : 'is-cancelled'">
-            <span class="import-result__icon">
-                <CircleCheckIcon v-if="isValid" :size="28" stroke-width="1.6" />
-                <InfoCircleIcon v-else :size="28" stroke-width="1.6" />
+        <!-- Résultat : bloc sur filet 2 px, pictogramme dans un carré teinté, titre 16 px 700, notes grises -->
+        <div class="su-section import-result__block" :class="isValid ? 'is-valid' : 'is-cancelled'">
+            <span class="su-tile import-result__icon" :class="isValid ? 'su-tile--blue' : ''">
+                <CircleCheckIcon v-if="isValid" :size="18" stroke-width="1.6" />
+                <InfoCircleIcon v-else :size="18" stroke-width="1.6" />
             </span>
             <div class="import-result__body">
                 <template v-if="isValid">
-                    <h2 class="import-result__title">{{ t('importsPage.result.createdTitle', { count: created }, created) }}</h2>
+                    <h2 class="su-h2">{{ t('importsPage.result.createdTitle', { count: created }, created) }}</h2>
                     <p class="import-result__text">
                         {{
                             t('importsPage.result.validatedOn', { date: formatImportTimestamp(item.validatedAt ?? item.updatedAt, locale) })
@@ -119,7 +120,7 @@ function onTemplateSaved() {
                     <p v-if="detectedRecurrencesText" class="import-result__text">{{ detectedRecurrencesText }}</p>
                 </template>
                 <template v-else>
-                    <h2 class="import-result__title">{{ t('importsPage.result.cancelledTitle') }}</h2>
+                    <h2 class="su-h2">{{ t('importsPage.result.cancelledTitle') }}</h2>
                     <p class="import-result__text">{{ t('importsPage.result.cancelledBody') }}</p>
                 </template>
             </div>
@@ -158,7 +159,7 @@ function onTemplateSaved() {
         <RecurringSuggestionsPanel v-if="isValid" :import-public-id="item.publicId" hide-when-empty class="import-result__suggestions">
             <template #header="{ count }">
                 <div>
-                    <h3 class="import-result__subtitle">{{ t('importsPage.result.recurrencesTitle', { count }, count) }}</h3>
+                    <h3 class="su-h2">{{ t('importsPage.result.recurrencesTitle', { count }, count) }}</h3>
                     <p class="import-result__text">{{ t('importsPage.result.recurrencesHint') }}</p>
                 </div>
             </template>
@@ -195,58 +196,36 @@ function onTemplateSaved() {
 .import-result {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 24px;
     max-width: 720px;
-    padding: 8px 16px 16px;
+    padding: 0 0 24px;
 }
 
-.import-result__card {
-    --tint: var(--ink-muted);
+.import-result__block {
     display: flex;
     align-items: flex-start;
     gap: 14px;
-    padding: 18px;
-    border-radius: 20px;
-    background: color-mix(in srgb, var(--tint) 9%, transparent);
-}
-
-.import-result__card.is-valid {
-    --tint: rgb(var(--v-theme-success));
+    padding-top: 16px;
+    border-radius: 0;
+    background: transparent;
 }
 
 .import-result__icon {
-    display: grid;
-    place-items: center;
     flex: none;
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-    background: color-mix(in srgb, var(--tint) 16%, transparent);
-    color: var(--tint);
 }
 
-.import-result__title {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 680;
-    letter-spacing: -0.02em;
+.import-result__body {
+    min-width: 0;
 }
 
 .import-result__text {
     margin: 4px 0 0;
-    font-size: 0.86rem;
-    color: var(--ink-soft);
+    font-size: 14px;
+    color: var(--gray);
 }
 
 .import-result__suggestions {
-    margin-top: 8px;
-}
-
-.import-result__subtitle {
-    margin: 0;
-    font-size: 0.98rem;
-    font-weight: 650;
-    letter-spacing: -0.01em;
+    margin-top: 16px;
 }
 
 .import-result__actions {
@@ -261,7 +240,7 @@ function onTemplateSaved() {
 
 @media (max-width: 767px) {
     .import-result {
-        padding: 4px;
+        padding: 0 0 8px;
     }
 }
 </style>

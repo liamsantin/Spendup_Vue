@@ -17,6 +17,7 @@ export type AccountProfileFields = {
     street: Ref<string>;
     streetNumber: Ref<string>;
     countryId: Ref<number | null>;
+    canton: Ref<string | null>;
     username: Ref<string>;
     profilePicture: Ref<string | null>;
 };
@@ -44,7 +45,7 @@ export function useAccountProfileForm(options: {
     const saveConfirmOpen = ref(false);
     const baseline = ref<ProfileSnapshot | null>(null);
 
-    const { firstName, name, phone, birthDate, street, streetNumber, countryId, username, profilePicture } = options.fields;
+    const { firstName, name, phone, birthDate, street, streetNumber, countryId, canton, username, profilePicture } = options.fields;
 
     const displayPublicId = computed(() => auth.user?.userPublicId || '—');
     const birthDateMax = computed(() => {
@@ -64,7 +65,8 @@ export function useAccountProfileForm(options: {
             birthDate: birthDate.value,
             street: street.value,
             streetNumber: streetNumber.value,
-            countryId: countryId.value
+            countryId: countryId.value,
+            canton: canton.value
         };
     }
 
@@ -101,6 +103,7 @@ export function useAccountProfileForm(options: {
             streetNumber.value = '';
             profilePicture.value = null;
             countryId.value = null;
+            canton.value = null;
             username.value = '';
             options.onHydratePicture(null);
             return;
@@ -114,6 +117,7 @@ export function useAccountProfileForm(options: {
         streetNumber.value = user.streetNumber ?? '';
         profilePicture.value = user.profilePicture ?? null;
         countryId.value = user.countryId ?? null;
+        canton.value = user.canton ?? null;
         username.value = user.username ?? '';
         options.onHydratePicture(profilePicture.value);
     }
@@ -188,6 +192,10 @@ export function useAccountProfileForm(options: {
     async function resetProfile() {
         profileError.value = null;
         options.clearAccountFeedback();
+        // Les valeurs connues d'abord : `loadProfile` n'écrase pas une saisie en cours, et l'annulation
+        // doit aboutir même si `/me` échoue.
+        hydrateFromUser(auth.user);
+        commitBaseline();
         await loadProfile();
     }
 

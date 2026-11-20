@@ -60,13 +60,18 @@ function isGroupActive(group: AppSortGroup<T>): boolean {
     align-items: center;
     gap: 10px;
     min-height: 48px;
-    padding: 6px 6px 6px 8px;
-    border-radius: 14px;
-    transition: background 0.25s var(--ease, ease);
+    padding: 6px 4px;
+    border-radius: 0;
+    border-top: 1px solid var(--line);
+    transition: background 0.15s var(--ease, ease);
+}
+
+.app-sort__row:first-child {
+    border-top: 0;
 }
 
 .app-sort__row.is-active {
-    background: rgba(var(--v-theme-primary), 0.06);
+    background: transparent;
 }
 
 .app-sort__icon {
@@ -75,17 +80,17 @@ function isGroupActive(group: AppSortGroup<T>): boolean {
     flex: none;
     width: 32px;
     height: 32px;
-    border-radius: 10px;
-    background: var(--hair);
-    color: var(--ink-mute);
+    border-radius: 0;
+    background: var(--t-gray-bg);
+    color: var(--t-gray-ink);
     transition:
-        background 0.25s var(--ease, ease),
-        color 0.25s var(--ease, ease);
+        background 0.15s var(--ease, ease),
+        color 0.15s var(--ease, ease);
 }
 
 .app-sort__row.is-active .app-sort__icon {
-    background: rgba(var(--v-theme-primary), 0.14);
-    color: rgb(var(--v-theme-primary));
+    background: var(--t-blue-bg);
+    color: var(--t-blue-ink);
 }
 
 .app-sort__label {
@@ -94,59 +99,63 @@ function isGroupActive(group: AppSortGroup<T>): boolean {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: var(--ink-mute);
-    font-size: 0.86rem;
-    font-weight: 540;
+    color: var(--gray);
+    font-size: 14px;
+    font-weight: 400;
 }
 
 .app-sort__row.is-active .app-sort__label {
     color: var(--ink);
-    font-weight: 620;
+    font-weight: 700;
 }
 
 /* sélecteur segmenté du sens */
 .app-sort__segments {
     display: inline-flex;
     flex: none;
-    gap: 2px;
-    padding: 3px;
-    border-radius: 999px;
-    background: var(--hair);
+    gap: 0;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
 }
 
 .app-sort__segment {
     appearance: none;
-    height: 28px;
+    height: 30px;
     min-width: 58px;
     padding: 0 10px;
     border: 0;
-    border-radius: 999px;
+    border-radius: 0;
     background: transparent;
-    color: var(--ink-mute);
+    color: var(--gray);
     font: inherit;
-    font-size: 0.76rem;
-    font-weight: 560;
+    font-size: 12.5px;
+    font-weight: 400;
     white-space: nowrap;
     cursor: pointer;
     transition:
-        background 0.2s var(--ease, ease),
-        color 0.2s var(--ease, ease),
-        box-shadow 0.2s var(--ease, ease);
+        background 0.15s var(--ease, ease),
+        color 0.15s var(--ease, ease);
+}
+
+.app-sort__segment + .app-sort__segment {
+    border-left: 1px solid var(--line);
 }
 
 .app-sort__segment:hover:not(.is-selected) {
     color: var(--ink);
-    background: rgba(255, 255, 255, 0.7);
+    background: var(--soft);
 }
 
 .app-sort__segment.is-selected {
-    background: rgb(var(--v-theme-primary));
-    color: #fff;
-    box-shadow: 0 6px 14px -8px rgba(var(--v-theme-primary), 0.7);
+    background: var(--ink);
+    color: var(--bg);
+    font-weight: 700;
 }
 
 .app-sort__segment:focus-visible {
-    outline: 2px solid rgb(var(--v-theme-primary));
+    outline: 2px solid var(--ink);
     outline-offset: 1px;
 }
 </style>

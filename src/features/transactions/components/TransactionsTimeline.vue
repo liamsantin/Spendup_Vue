@@ -7,6 +7,7 @@ import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { amountInFilterRange, parseAmountFilter } from '@/components/shared/dropdown-filter/amount-range';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import { useAssetsStore } from '@/features/assets/stores/assets-store';
 import { useBudgetsStore } from '@/features/budgets/stores/budgets-store';
 import { parseBudgetTransactionScope } from '@/features/budgets/paths';
 import {
@@ -18,6 +19,7 @@ import {
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useTagsStore } from '@/features/tags/stores/tags-store';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
+import { isImportedTransaction } from '@/features/transactions/delete-warning';
 import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
 import {
     formatOperationDate,
@@ -28,11 +30,10 @@ import {
     sortTransactions,
     sourceAccountPublicId,
     targetAccountPublicId,
-    TRANSACTION_SORT_DEFAULT,
-    type TransactionSort
+    TRANSACTION_SORT_DEFAULT
 } from '@/features/transactions/format';
 import { downloadCsv } from '@/utils/helpers/csv';
-import TransactionTable from '@/features/transactions/components/list/TransactionTable.vue';
+import { amountSignOf, signedTransactionAmount } from '@/features/transactions/composables/useTransactionRowDisplay';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import {
     TRANSACTION_PAGE_SIZE_DEFAULT,
@@ -51,16 +52,60 @@ import TransactionFormModal from '@/features/transactions/components/modals/Tran
 const props = defineProps<{
     /** Si défini, force le filtre compte (fiche compte) et ignore la query. */
     lockedAccountPublicId?: string | null;
+    /** Si défini, charge `GET /api/transactions?assetPublicId=` (fiche d’actif) et ignore la query. */
+    lockedAssetPublicId?: string | null;
+    /**
+     * Filtres fixes d’un onglet « Transactions » de fiche (récurrence, tiers, budget) : ils remplacent la query de la
+     * page, qui porte l’onglet et non des filtres. Mêmes clés que la query de la page Transactions.
+     */
+    lockedFilters?: TransactionsLockedFilters | null;
+    /** Cases à cocher sur les lignes (bouton « Délier » d’une fiche). Toujours actives sur la fiche d’un actif. */
+    selectable?: boolean;
+    /** Valeurs préremplies du bouton « Ajouter » d’une fiche. */
+    createDefaults?: TransactionsCreateDefaults | null;
 }>();
 
-const emit = defineEmits<{
-    sort: [value: TransactionSort];
-}>();
+export type TransactionsLockedFilters = Partial<
+    Record<
+        | 'account'
+        | 'from'
+        | 'to'
+        | 'category'
+        | 'tier'
+        | 'type'
+        | 'budget'
+        | 'savingsGoal'
+        | 'recurringExpensePublicId'
+        | 'recurringIncomePublicId',
+        string
+    >
+>;
+
+export type TransactionsCreateDefaults = {
+    accountPublicId?: string | null;
+    type?: TransactionType | null;
+    recurrencePublicId?: string | null;
+    savingsGoalPublicId?: string | null;
+};
+
+/** Agrégats calculés sur la liste chargée (le store n'expose pas de totaux). */
+export type TransactionsSummary = {
+    count: number;
+    currency: string;
+    inflow: number;
+    inflowCount: number;
+    outflow: number;
+    outflowCount: number;
+    net: number;
+    /** « Octobre 2026 » si toutes les opérations visibles sont du même mois, sinon `null`. */
+    monthLabel: string | null;
+};
 
 const { t, locale } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const accountsStore = useAccountsStore();
+const assetsStore = useAssetsStore();
 const budgetsStore = useBudgetsStore();
 const categoriesStore = useCategoriesStore();
 const tagsStore = useTagsStore();
@@ -71,6 +116,7 @@ const store = useTransactionsStore();
 const createOpen = ref(false);
 const editTarget = ref<Transaction | null>(null);
 const deleteTarget = ref<Transaction | null>(null);
+const selectedIds = defineModel<string[]>('selectedIds', { default: () => [] });
 const unlinkTarget = ref<Transaction | null>(null);
 const addUndo = ref<{ publicId: string; previousCategoryPublicId: string; label: string } | null>(null);
 const localError = ref<string | null>(null);
@@ -82,6 +128,12 @@ const editOpen = computed({
     set: (value: boolean) => {
         if (!value) editTarget.value = null;
     }
+});
+
+/** Message de suppression : on ajoute l'avertissement si l'opération vient d'un import bancaire. */
+const deleteMessage = computed(() => {
+    const body = t('transactionsPage.deleteModal.body');
+    return isImportedTransaction(deleteTarget.value) ? `${body} ${t('transactionsPage.deleteModal.importedBody')}` : body;
 });
 
 const deleteOpen = computed({
@@ -103,28 +155,39 @@ function queryString(name: string): string | null {
     return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
 }
 
-const filterAccountId = computed(() => props.lockedAccountPublicId?.trim() || queryString('account'));
-const filterFrom = computed(() => (props.lockedAccountPublicId ? null : queryString('from')));
-const filterTo = computed(() => (props.lockedAccountPublicId ? null : queryString('to')));
-const filterCategoryId = computed(() => (props.lockedAccountPublicId ? null : queryString('category')));
-const filterTagId = computed(() => (props.lockedAccountPublicId ? null : queryString('tag')));
-const filterTierId = computed(() => (props.lockedAccountPublicId ? null : queryString('tier')));
-const filterPaymentMethodId = computed(() => (props.lockedAccountPublicId ? null : queryString('paymentMethod')));
-const filterRecurringExpenseId = computed(() => (props.lockedAccountPublicId ? null : queryString('recurringExpensePublicId')));
-const filterRecurringIncomeId = computed(() => (props.lockedAccountPublicId ? null : queryString('recurringIncomePublicId')));
+/** Fiche compte ou fiche d’actif : la query de la page (onglet, recherche d’annuaire) ne filtre pas les transactions. */
+const isolateFilters = computed(() => !!(props.lockedAccountPublicId?.trim() || props.lockedAssetPublicId?.trim() || props.lockedFilters));
+
+/** Valeur d’un filtre : fixe si la fiche l’impose, sinon lue dans la query (hors fiche). */
+function filterValue(name: keyof TransactionsLockedFilters): string | null {
+    const locked = props.lockedFilters?.[name]?.trim();
+    if (locked) return locked;
+    return isolateFilters.value ? null : queryString(name);
+}
+const filterAccountId = computed(() => props.lockedAccountPublicId?.trim() || filterValue('account'));
+/** Objectif d’épargne imposé par une fiche : filtré côté client, sur les transactions du compte lié. */
+const filterSavingsGoalId = computed(() => props.lockedFilters?.savingsGoal?.trim() || null);
+const filterAssetId = computed(() => props.lockedAssetPublicId?.trim() || null);
+const filterFrom = computed(() => filterValue('from'));
+const filterTo = computed(() => filterValue('to'));
+const filterCategoryId = computed(() => filterValue('category'));
+const filterTagId = computed(() => (isolateFilters.value ? null : queryString('tag')));
+const filterTierId = computed(() => filterValue('tier'));
+const filterPaymentMethodId = computed(() => (isolateFilters.value ? null : queryString('paymentMethod')));
+const filterRecurringExpenseId = computed(() => filterValue('recurringExpensePublicId'));
+const filterRecurringIncomeId = computed(() => filterValue('recurringIncomePublicId'));
 const filterSearch = computed(() => {
-    if (props.lockedAccountPublicId) return null;
+    if (isolateFilters.value) return null;
     return queryString('q')?.slice(0, TRANSACTION_SEARCH_MAX) ?? null;
 });
 const filterType = computed<TransactionType | null>(() => {
-    if (props.lockedAccountPublicId) return null;
-    const raw = queryString('type');
+    const raw = filterValue('type');
     return raw && TRANSACTION_TYPES.includes(raw as TransactionType) ? (raw as TransactionType) : null;
 });
-const listSort = computed(() => parseTransactionSort(queryString('sort')));
-const filterMinAmount = computed(() => (props.lockedAccountPublicId ? null : parseAmountFilter(queryString('minAmount'))));
-const filterMaxAmount = computed(() => (props.lockedAccountPublicId ? null : parseAmountFilter(queryString('maxAmount'))));
-const filterBudgetId = computed(() => (props.lockedAccountPublicId ? null : queryString('budget')));
+const listSort = computed(() => (isolateFilters.value ? TRANSACTION_SORT_DEFAULT : parseTransactionSort(queryString('sort'))));
+const filterMinAmount = computed(() => (isolateFilters.value ? null : parseAmountFilter(queryString('minAmount'))));
+const filterMaxAmount = computed(() => (isolateFilters.value ? null : parseAmountFilter(queryString('maxAmount'))));
+const filterBudgetId = computed(() => filterValue('budget'));
 const envelopeBudget = computed(() => {
     const id = filterBudgetId.value;
     if (!id) return null;
@@ -138,7 +201,12 @@ const envelopeLinkedCategoryIds = computed(() =>
     envelopeBudget.value ? budgetLinkedCategoryIds(envelopeBudget.value, categoriesStore.items) : null
 );
 const needsClientFullScan = computed(
-    () => filterMinAmount.value != null || filterMaxAmount.value != null || !!filterPaymentMethodId.value || !!filterBudgetId.value
+    () =>
+        filterMinAmount.value != null ||
+        filterMaxAmount.value != null ||
+        !!filterPaymentMethodId.value ||
+        !!filterBudgetId.value ||
+        !!filterSavingsGoalId.value
 );
 const groupByDate = computed(() => listSort.value === 'dateDesc' || listSort.value === 'dateAsc');
 
@@ -148,6 +216,7 @@ const visibleItems = computed(() => {
     const needle = filterSearch.value?.trim() ?? '';
     const filtered = store.items.filter((item) => {
         if (type && item.type !== type) return false;
+        if (filterSavingsGoalId.value && item.savingsGoalPublicId !== filterSavingsGoalId.value) return false;
         if (paymentMethodId && item.paymentMethodPublicId !== paymentMethodId) return false;
         if (!amountInFilterRange(item.amount, filterMinAmount.value, filterMaxAmount.value)) return false;
         const budget = envelopeBudget.value;
@@ -188,6 +257,7 @@ const emptyCopy = computed(() => {
     if (queryString('budget')) {
         return envelopeScope.value === 'out' ? t('transactionsPage.empty.budgetOut') : t('transactionsPage.empty.budget');
     }
+    if (filterAssetId.value) return t('transactionsPage.empty.asset');
     if (filterAccountId.value) return t('transactionsPage.empty.account');
     return t('transactionsPage.empty.timeline');
 });
@@ -204,9 +274,35 @@ const canCreate = computed(() => {
     return accountsStore.accounts.some((a) => canWriteTransactions(a));
 });
 
+function capitalize(value: string): string {
+    return value ? value.charAt(0).toLocaleUpperCase(locale.value) + value.slice(1) : value;
+}
+
+/** Date calendaire `YYYY-MM-DD` → midi UTC (pas de décalage de fuseau à l'affichage). */
+function calendarDate(ymd: string): Date | null {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(ymd.trim());
+    if (!match) return null;
+    return new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12));
+}
+
+function formatSignedTotal(value: number, currency: string): string {
+    return `${amountSignOf(value)}${resolveTransactionAmountDisplay(Math.abs(value), currency, locale.value).text}`;
+}
+
+/** Total d'un jour : somme des montants signés connus ; `null` si aucun montant n'est lisible. */
+function sumSigned(items: readonly Transaction[]): number | null {
+    let total: number | null = null;
+    for (const item of items) {
+        const signed = signedTransactionAmount(item, filterAccountId.value);
+        if (signed == null) continue;
+        total = (total ?? 0) + signed;
+    }
+    return total;
+}
+
 const dateGroups = computed(() => {
     if (!groupByDate.value) {
-        return [{ date: '_', label: '', items: visibleItems.value }];
+        return [{ date: '_', label: '', day: '', weekday: '', total: null as string | null, totalTone: '', items: visibleItems.value }];
     }
     const order: string[] = [];
     const map = new Map<string, Transaction[]>();
@@ -218,12 +314,60 @@ const dateGroups = computed(() => {
         }
         map.get(key)!.push(item);
     }
-    return order.map((date) => ({
-        date,
-        label: formatOperationDate(date, locale.value),
-        items: map.get(date)!
-    }));
+    const dayFormat = new Intl.DateTimeFormat(locale.value, { day: 'numeric', timeZone: 'UTC' });
+    const weekdayFormat = new Intl.DateTimeFormat(locale.value, { weekday: 'long', timeZone: 'UTC' });
+    return order.map((date) => {
+        const items = map.get(date)!;
+        const parsed = calendarDate(date);
+        const total = sumSigned(items);
+        const currency = items[0]?.currency ?? 'CHF';
+        return {
+            date,
+            label: formatOperationDate(date, locale.value),
+            day: parsed ? dayFormat.format(parsed) : date,
+            weekday: parsed ? capitalize(weekdayFormat.format(parsed)) : '',
+            total: total == null ? null : formatSignedTotal(total, currency),
+            totalTone: total != null && total > 0 ? 'is-credit' : '',
+            items
+        };
+    });
 });
+
+/** Entrées / sorties / solde net sur la liste visible (une seule devise, sinon `null`). */
+const summary = computed<TransactionsSummary | null>(() => {
+    const items = visibleItems.value;
+    if (!items.length) return null;
+    const currency = items[0]!.currency;
+    if (items.some((item) => item.currency !== currency)) return null;
+    let inflow = 0;
+    let inflowCount = 0;
+    let outflow = 0;
+    let outflowCount = 0;
+    for (const item of items) {
+        const signed = signedTransactionAmount(item, filterAccountId.value);
+        if (signed == null) continue;
+        if (signed > 0) {
+            inflow += signed;
+            inflowCount += 1;
+        } else if (signed < 0) {
+            outflow += -signed;
+            outflowCount += 1;
+        }
+    }
+    const months = new Set(items.map((item) => item.operationDate.slice(0, 7)));
+    let monthLabel: string | null = null;
+    if (months.size === 1) {
+        const parsed = calendarDate(`${items[0]!.operationDate.slice(0, 7)}-01`);
+        if (parsed) {
+            monthLabel = capitalize(
+                new Intl.DateTimeFormat(locale.value, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(parsed)
+            );
+        }
+    }
+    return { count: items.length, currency, inflow, inflowCount, outflow, outflowCount, net: inflow - outflow, monthLabel };
+});
+
+const loadedLabel = computed(() => t('transactionsPage.shownOf', { shown: store.items.length, total: store.totalCount }));
 
 const searchAppearIndex = computed(() => {
     const map = new Map<string, number>();
@@ -333,6 +477,8 @@ async function loadTimeline(force = false) {
                 tierPublicId: filterTierId.value ?? undefined,
                 recurringExpensePublicId: filterRecurringExpenseId.value ?? undefined,
                 recurringIncomePublicId: filterRecurringIncomeId.value ?? undefined,
+                assetPublicId: filterAssetId.value ?? undefined,
+                type: filterType.value ?? undefined,
                 from: filterFrom.value ?? undefined,
                 to: filterTo.value ?? undefined,
                 search: filterSearch.value ?? undefined,
@@ -342,7 +488,8 @@ async function loadTimeline(force = false) {
             categoriesStore.loadList({ force }).catch(() => undefined),
             tagsStore.loadList({ force }).catch(() => undefined),
             tiersStore.loadList({ pageSize: TIER_PAGE_SIZE_MAX, force }).catch(() => undefined),
-            paymentMethodsStore.loadList({ force }).catch(() => undefined)
+            paymentMethodsStore.loadList({ force }).catch(() => undefined),
+            assetsStore.loadList().catch(() => undefined)
         ]);
         if (needsClientFullScan.value) {
             let guard = 0;
@@ -356,7 +503,7 @@ async function loadTimeline(force = false) {
             localError.value = t('transactionsPage.errors.notFound');
             // 404 : compte inconnu, tag/tier/récurrence filtrés qui n’appartiennent pas (plus) à l’utilisateur → on retire le filtre fautif.
             if (
-                !props.lockedAccountPublicId &&
+                !isolateFilters.value &&
                 (filterAccountId.value ||
                     filterTagId.value ||
                     filterTierId.value ||
@@ -369,6 +516,7 @@ async function loadTimeline(force = false) {
                 await store
                     .loadList({
                         accountPublicId: dropTier || dropTag || dropRecurring ? (filterAccountId.value ?? undefined) : undefined,
+                        type: filterType.value ?? undefined,
                         from: filterFrom.value ?? undefined,
                         to: filterTo.value ?? undefined,
                         categoryPublicId: filterCategoryId.value ?? undefined,
@@ -398,7 +546,11 @@ async function loadTimeline(force = false) {
 
 function onVisibilityChange() {
     if (document.visibilityState !== 'visible' || !store.initialized) return;
-    void loadTimeline(true).catch(() => undefined);
+    // au retour sur l'onglet, la liste garde les lignes déjà chargées par « Charger plus » (position conservée)
+    const previousCount = store.items.length;
+    void loadTimeline(true)
+        .then(() => store.restoreDepth(previousCount, store.activeListKey))
+        .catch(() => undefined);
 }
 
 onMounted(() => {
@@ -449,12 +601,14 @@ function exportCsv() {
 
 const visibleCount = computed(() => visibleItems.value.length);
 
-defineExpose({ openCreate, exportCsv, visibleCount });
+defineExpose({ openCreate, exportCsv, visibleCount, summary });
 
 watch(
     () =>
         [
             filterAccountId.value,
+            filterAssetId.value,
+            filterType.value,
             filterFrom.value,
             filterTo.value,
             filterCategoryId.value,
@@ -474,11 +628,28 @@ watch(
 );
 
 // La query `q` est déjà écrite après un délai (`useBoardSearch`) : chaque valeur recharge la liste côté serveur.
+const selectionEnabled = computed(() => !!filterAssetId.value || !!props.selectable);
+
+watch(visibleItems, (items) => {
+    if (!selectionEnabled.value || !selectedIds.value.length) return;
+    const allowed = new Set(items.filter((item) => canWriteItem(item)).map((item) => item.publicId));
+    const next = selectedIds.value.filter((id) => allowed.has(id));
+    if (next.length !== selectedIds.value.length) selectedIds.value = next;
+});
+
 watch(filterSearch, (query, previous) => {
     if (query) hasSearched.value = true;
     if (query || previous) searchRevealKey.value += 1;
     if ((query ?? '') !== (previous ?? '')) void loadTimeline().catch(() => undefined);
 });
+
+function toggleSelected(publicId: string, value: boolean) {
+    if (value) {
+        if (!selectedIds.value.includes(publicId)) selectedIds.value = [...selectedIds.value, publicId];
+        return;
+    }
+    selectedIds.value = selectedIds.value.filter((id) => id !== publicId);
+}
 
 async function confirmDelete() {
     if (!deleteTarget.value) return;
@@ -512,63 +683,65 @@ async function confirmDelete() {
             {{ localError || store.error }}
         </AppAlert>
 
-        <div class="timeline-panel__scroll">
-            <div v-if="store.loading && !store.items.length" class="su-loading">
-                <span class="su-spin" />
-            </div>
-            <div
-                v-else-if="!visibleItems.length"
-                :key="`empty-${searchRevealKey}`"
-                class="su-empty"
-                :class="{ 'is-search-reveal': searchReveals }"
-            >
-                <p>{{ emptyCopy }}</p>
-            </div>
-            <div v-else class="timeline-directory">
-                <div class="timeline-directory__list">
-                    <section v-for="group in dateGroups" :key="group.date" class="transaction-timeline__group">
-                        <h2 v-if="group.label" class="transaction-timeline__date">{{ group.label }}</h2>
-                        <div :key="searchRevealKey" class="transaction-timeline__list" :class="{ 'is-search-reveal': searchReveals }">
-                            <TransactionListItem
-                                v-for="transaction in group.items"
-                                :key="transaction.publicId"
-                                :transaction="transaction"
-                                :can-write="canWriteItem(transaction)"
-                                :acting="store.acting"
-                                :statement-account-public-id="filterAccountId"
-                                :envelope-action="envelopeActionFor(transaction)"
-                                :style="{ '--i': searchAppearIndex.get(transaction.publicId) ?? 0 }"
-                                @edit="editTarget = $event"
-                                @delete="deleteTarget = $event"
-                                @envelope="onEnvelopeAction"
-                            />
-                        </div>
-                    </section>
+        <div v-if="store.loading && !store.items.length" class="su-loading">
+            <span class="su-spin" />
+        </div>
+        <div
+            v-else-if="!visibleItems.length"
+            :key="`empty-${searchRevealKey}`"
+            class="su-empty"
+            :class="{ 'is-search-reveal': searchReveals }"
+        >
+            <p>{{ emptyCopy }}</p>
+        </div>
+        <div v-else class="tx-days" :class="{ 'tx-days--flat': !groupByDate }">
+            <section v-for="group in dateGroups" :key="group.date" class="tx-day">
+                <header v-if="groupByDate" class="tx-day__head">
+                    <p class="tx-day__num">{{ group.day }}</p>
+                    <p class="tx-day__weekday">{{ group.weekday }}</p>
+                    <p class="tx-day__count">{{ t('transactionsPage.operations', { count: group.items.length }, group.items.length) }}</p>
+                    <p v-if="group.total" class="tx-day__total" :class="group.totalTone">{{ group.total }}</p>
+                </header>
+                <div :key="searchRevealKey" class="tx-day__rows" :class="{ 'is-search-reveal': searchReveals }">
+                    <TransactionListItem
+                        v-for="transaction in group.items"
+                        :key="transaction.publicId"
+                        :transaction="transaction"
+                        :can-write="canWriteItem(transaction)"
+                        :acting="store.acting"
+                        :statement-account-public-id="filterAccountId"
+                        :envelope-action="envelopeActionFor(transaction)"
+                        :show-date="!groupByDate"
+                        :end-action="filterAssetId ? 'none' : 'delete'"
+                        :selectable="selectionEnabled"
+                        :selected="selectedIds.includes(transaction.publicId)"
+                        :style="{ '--i': searchAppearIndex.get(transaction.publicId) ?? 0 }"
+                        @edit="editTarget = $event"
+                        @delete="deleteTarget = $event"
+                        @update:selected="toggleSelected(transaction.publicId, $event)"
+                        @envelope="onEnvelopeAction"
+                    />
                 </div>
-                <TransactionTable
-                    class="timeline-directory__table"
-                    :class="{ 'is-search-reveal': searchReveals }"
-                    :items="visibleItems"
-                    :sort="listSort"
-                    :acting="store.acting"
-                    :statement-account-public-id="filterAccountId"
-                    :can-write="canWriteItem"
-                    :envelope-action-for="envelopeActionFor"
-                    @edit="editTarget = $event"
-                    @delete="deleteTarget = $event"
-                    @envelope="onEnvelopeAction"
-                    @sort="emit('sort', $event)"
-                />
-            </div>
-
-            <div v-if="store.hasMore" class="su-more">
-                <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
-                    {{ t('transactionsPage.loadMore') }}
-                </button>
-            </div>
+            </section>
         </div>
 
-        <TransactionFormModal v-model="createOpen" :default-account-public-id="filterAccountId" :default-type="filterType" />
+        <footer v-if="store.hasMore && visibleItems.length" class="tx-more">
+            <p class="tx-more__count">{{ loadedLabel }}</p>
+            <button type="button" class="su-btn su-btn--ghost" :disabled="store.loadingMore" @click="store.loadMore()">
+                {{ t('transactionsPage.loadMore') }}
+            </button>
+        </footer>
+
+        <TransactionFormModal
+            v-model="createOpen"
+            :default-account-public-id="createDefaults?.accountPublicId || filterAccountId"
+            :default-type="createDefaults?.type || filterType"
+            :default-recurrence-public-id="createDefaults?.recurrencePublicId"
+            :default-savings-goal-public-id="createDefaults?.savingsGoalPublicId"
+            :default-asset-public-id="filterAssetId"
+            :default-tier-public-id="lockedFilters?.tier"
+            :default-category-public-id="lockedFilters?.category"
+        />
         <TransactionFormModal
             v-model="editOpen"
             :transaction="editTarget"
@@ -579,7 +752,7 @@ async function confirmDelete() {
         <AppConfirmationModal
             v-model="deleteOpen"
             :title="t('transactionsPage.deleteModal.title')"
-            :message="t('transactionsPage.deleteModal.body')"
+            :message="deleteMessage"
             :confirm-label="t('transactionsPage.actions.delete')"
             confirm-color="error"
             :loading="store.acting"
@@ -598,7 +771,7 @@ async function confirmDelete() {
         <Teleport to="body">
             <div v-if="addUndo" class="budget-add-toast" role="status">
                 <p class="budget-add-toast__text">{{ t('transactionsPage.envelope.addedToast', { name: addUndo.label }) }}</p>
-                <button type="button" class="budget-add-toast__undo" :disabled="store.acting" @click="undoAddToBudget">
+                <button type="button" class="su-btn su-btn--sm budget-add-toast__undo" :disabled="store.acting" @click="undoAddToBudget">
                     {{ t('common.cancel') }}
                 </button>
             </div>
@@ -608,77 +781,125 @@ async function confirmDelete() {
 
 <style scoped>
 .timeline-panel {
-    flex: 1 1 auto;
-    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.tx-days {
     display: flex;
     flex-direction: column;
 }
 
-.timeline-panel__scroll {
-    flex: 1 1 auto;
-    min-height: 0;
+/* ── journée façon horaire CFF : filet 2 px, colonne jour 132 px | lignes ── */
+.tx-day {
+    display: grid;
+    grid-template-columns: 132px minmax(0, 1fr);
+    gap: 24px;
+    padding: 16px 0 12px;
+    border-top: 1px solid var(--line);
+}
+
+.tx-days--flat .tx-day {
+    display: block;
+    padding: 0;
+}
+
+.tx-day__head {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    align-items: flex-start;
+    min-width: 0;
+    padding-top: 2px;
 }
 
-.timeline-directory {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    padding: 4px 16px 10px;
-}
-
-.timeline-directory__table {
-    display: none;
-}
-
-.transaction-timeline__date {
+.tx-day__head p {
     margin: 0;
-    padding: 12px 6px 6px;
-    font-size: 0.78rem;
-    font-weight: 650;
-    letter-spacing: 0.02em;
-    color: var(--ink-muted);
 }
 
-.transaction-timeline__list {
+/* numéro du jour 48 px 700, lettrage −0.06em */
+.tx-day__num {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.tx-day__weekday {
+    margin-top: 6px !important;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.tx-day__count {
+    margin-top: 2px !important;
+    color: var(--gray);
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+/* total du jour 700 : bleu avec « + » si positif, noir avec « − » sinon */
+.tx-day__total {
+    margin-top: 6px !important;
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.tx-day__total.is-credit {
+    color: var(--blue-ink);
+}
+
+.tx-day__rows > :deep(:first-child) {
+    border-top: 0;
+}
+
+.tx-day__rows {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    min-width: 0;
 }
 
-@media (min-width: 768px) {
-    .timeline-directory__list {
-        display: none;
-    }
-
-    .timeline-directory__table {
-        display: flex;
-        flex: 1 1 auto;
-        min-height: 0;
-        flex-direction: column;
-    }
+/* ── bas de liste : « N affichées sur M » à gauche, « Charger plus » à droite ── */
+.tx-more {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 16px;
+    padding: 16px 0 0;
+    border-top: 1px solid var(--line);
 }
 
+.tx-more__count {
+    margin: 0;
+    color: var(--gray);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── toast « ajoutée au budget » : carré, bordure noire, ombre décalée ── */
 .budget-add-toast {
     position: fixed;
-    top: calc(var(--header-h, 68px) + 10px);
-    right: 16px;
+    top: calc(var(--header-h, 72px) + 12px);
+    right: 24px;
     z-index: 40;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    max-width: min(360px, calc(100vw - 24px));
-    padding: 4px 4px 4px 12px;
-    border-radius: 999px;
-    border: 1px solid var(--stroke);
-    background: var(--surface);
-    box-shadow: 0 10px 28px -20px rgba(16, 16, 20, 0.4);
-    backdrop-filter: var(--blur);
-    color: var(--ink-mute);
-    animation: su-in 0.45s var(--ease) both;
+    gap: 12px;
+    max-width: min(400px, calc(100vw - 24px));
+    padding: 8px 8px 8px 16px;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    background: var(--raise);
+    box-shadow: var(--shadow-offset);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    animation: su-in 0.25s var(--ease) both;
 }
 
 .budget-add-toast__text {
@@ -688,54 +909,77 @@ async function confirmDelete() {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 12.5px;
-    font-weight: 520;
-    letter-spacing: -0.01em;
+    font-size: 13px;
     line-height: 1.3;
 }
 
 .budget-add-toast__undo {
-    appearance: none;
     flex: none;
-    height: 28px;
-    padding: 0 10px;
-    border: 0;
-    border-radius: 14px;
-    background: transparent;
-    color: var(--ink-soft);
-    font: inherit;
-    font-size: 12.5px;
-    font-weight: 620;
-    cursor: pointer;
-}
-
-.budget-add-toast__undo:hover:not(:disabled) {
-    background: var(--surface-hover);
-    color: var(--ink);
-}
-
-.budget-add-toast__undo:disabled {
-    opacity: 0.45;
-    cursor: default;
 }
 
 @media (max-width: 959.98px) {
     .budget-add-toast {
-        top: calc(var(--header-h-mobile, 58px) + 10px);
-        right: 10px;
+        top: calc(var(--header-h-mobile, 56px) + 10px);
+        right: 12px;
     }
 }
 
 @media (max-width: 767px) {
-    .timeline-panel__scroll {
+    /* mobile : la colonne jour devient une ligne d'en-tête (numéro 32 px + jour + total) */
+    .tx-day {
         display: block;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
+        padding: 14px 0 4px;
     }
 
-    .timeline-directory {
-        display: block;
-        padding: 0 4px 4px;
+    .tx-day__head {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas:
+            'num weekday total'
+            'num count total';
+        align-items: center;
+        column-gap: 12px;
+        padding: 0 0 8px;
+    }
+
+    .tx-day__num {
+        grid-area: num;
+        font-size: 32px;
+    }
+
+    .tx-day__weekday {
+        grid-area: weekday;
+        margin-top: 0 !important;
+        align-self: end;
+    }
+
+    .tx-day__count {
+        grid-area: count;
+        margin-top: 0 !important;
+        align-self: start;
+    }
+
+    .tx-day__total {
+        grid-area: total;
+        margin-top: 0 !important;
+        text-align: right;
+    }
+
+    .tx-day__rows {
+        border-top: 1px solid var(--line);
+    }
+
+    .tx-days--flat .tx-day__rows {
+        border-top: 0;
+    }
+
+    .tx-more {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .tx-more .su-btn {
+        width: 100%;
     }
 }
 </style>

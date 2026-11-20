@@ -21,7 +21,15 @@ import type {
     ImportChange,
     ImportChangedPayload,
     ImportTemplateChange,
-    ImportTemplateChangedPayload
+    ImportTemplateChangedPayload,
+    AssetChange,
+    AssetChangedPayload,
+    LiabilityChange,
+    LiabilityChangedPayload,
+    PersonalLoanChange,
+    PersonalLoanChangedPayload,
+    SharedDebtChange,
+    SharedDebtChangedPayload
 } from '@/features/notifications/types';
 
 /** Identifiants publics SignalR / metadata (UUID, slug) — refuse vide, espaces, chemins. */
@@ -44,7 +52,19 @@ const ACCOUNT_CHANGES = new Set<AccountChange>([
     'transactionUpdated',
     'transactionDeleted',
     'transactionsImported',
-    'transactionsReverted'
+    'transactionsReverted',
+    'investmentOperationCreated',
+    'investmentOperationUpdated',
+    'investmentOperationDeleted',
+    'investmentPriceUpdated'
+]);
+
+/** `accountChanged` qui modifie les positions / opérations de placement d’un compte. */
+const INVESTMENT_ACCOUNT_CHANGES = new Set<AccountChange>([
+    'investmentOperationCreated',
+    'investmentOperationUpdated',
+    'investmentOperationDeleted',
+    'investmentPriceUpdated'
 ]);
 
 /** Changements qui touchent le journal (solde, dépensé, contributions) — un seul événement par import. */
@@ -80,6 +100,21 @@ const IMPORT_CHANGES = new Set<ImportChange>([
     'importDeleted'
 ]);
 const IMPORT_TEMPLATE_CHANGES = new Set<ImportTemplateChange>(['importTemplateCreated', 'importTemplateUpdated', 'importTemplateDeleted']);
+const ASSET_CHANGES = new Set<AssetChange>(['assetCreated', 'assetUpdated', 'assetDeleted', 'assetRealEstateChanged']);
+const LIABILITY_CHANGES = new Set<LiabilityChange>(['liabilityCreated', 'liabilityUpdated', 'liabilityDeleted']);
+const PERSONAL_LOAN_CHANGES = new Set<PersonalLoanChange>(['personalLoanCreated', 'personalLoanUpdated', 'personalLoanDeleted']);
+const SHARED_DEBT_CHANGES = new Set<SharedDebtChange>([
+    'sharedDebtCreated',
+    'sharedDebtUpdated',
+    'sharedDebtSettled',
+    'sharedDebtCanceled',
+    'sharedDebtDeleted'
+]);
+
+/** `accountChanged` qui modifie les placements du compte (opérations, cours). */
+export function isInvestmentAccountChange(change: unknown): boolean {
+    return typeof change === 'string' && INVESTMENT_ACCOUNT_CHANGES.has(change as AccountChange);
+}
 
 /** `accountChanged` qui modifie les transactions du compte (unitaire ou import / revert groupé). */
 export function isTransactionAccountChange(change: unknown): boolean {
@@ -135,6 +170,10 @@ export function getBudgetPublicId(metadata: Record<string, unknown> | null | und
 
 export function getSavingsGoalPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
     return normalizePublicId(metadata?.savingsGoalPublicId);
+}
+
+export function getSharedDebtPublicId(metadata: Record<string, unknown> | null | undefined): string | null {
+    return normalizePublicId(metadata?.sharedDebtPublicId);
 }
 
 /**
@@ -251,6 +290,46 @@ export function parseImportTemplateChangedPayload(raw: unknown): ImportTemplateC
     const templatePublicId = normalizePublicId(payload.templatePublicId);
     if (!templatePublicId) return null;
     return { change: change as ImportTemplateChange, templatePublicId };
+}
+
+export function parseAssetChangedPayload(raw: unknown): AssetChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!ASSET_CHANGES.has(change as AssetChange)) return null;
+    const assetPublicId = normalizePublicId(payload.assetPublicId);
+    if (!assetPublicId) return null;
+    return { change: change as AssetChange, assetPublicId };
+}
+
+export function parseLiabilityChangedPayload(raw: unknown): LiabilityChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!LIABILITY_CHANGES.has(change as LiabilityChange)) return null;
+    const liabilityPublicId = normalizePublicId(payload.liabilityPublicId);
+    if (!liabilityPublicId) return null;
+    return { change: change as LiabilityChange, liabilityPublicId };
+}
+
+export function parsePersonalLoanChangedPayload(raw: unknown): PersonalLoanChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!PERSONAL_LOAN_CHANGES.has(change as PersonalLoanChange)) return null;
+    const personalLoanPublicId = normalizePublicId(payload.personalLoanPublicId);
+    if (!personalLoanPublicId) return null;
+    return { change: change as PersonalLoanChange, personalLoanPublicId };
+}
+
+export function parseSharedDebtChangedPayload(raw: unknown): SharedDebtChangedPayload | null {
+    if (!raw || typeof raw !== 'object') return null;
+    const payload = raw as Record<string, unknown>;
+    const change = typeof payload.change === 'string' ? payload.change.trim() : '';
+    if (!SHARED_DEBT_CHANGES.has(change as SharedDebtChange)) return null;
+    const sharedDebtPublicId = normalizePublicId(payload.sharedDebtPublicId);
+    if (!sharedDebtPublicId) return null;
+    return { change: change as SharedDebtChange, sharedDebtPublicId };
 }
 
 /** Normalise un item inbox / SignalR (metadata string → objet). */

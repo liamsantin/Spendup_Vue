@@ -2,6 +2,7 @@ import { accountsApi } from '@/features/accounts/api';
 import { canWriteBalanceSnapshots } from '@/features/accounts/rights';
 import type { AccountBalanceSnapshot, CreateBalanceSnapshotPayload, UpdateBalanceSnapshotPayload } from '@/features/accounts/types';
 import { AppError } from '@/utils/errors/app-error';
+import { nextPageFromLoaded } from '@/utils/helpers/paging';
 import {
     ACCOUNT_NOT_FOUND_CODE,
     assertAccountAllowed,
@@ -149,7 +150,7 @@ export function createAccountsSnapshots(state: AccountsState) {
             const size = snapshotsPageSize.value || 50;
             // Page déduite du nombre de relevés chargés : après une suppression locale les offsets serveur
             // reculent d’un cran, `page + 1` sauterait un relevé (dédup par `publicId` au merge).
-            const nextPage = Math.floor(balanceSnapshotsLength(accountPublicId) / size) + 1;
+            const nextPage = nextPageFromLoaded(balanceSnapshotsLength(accountPublicId), size);
             const result = await accountsApi.listBalanceSnapshots(accountPublicId, {
                 page: nextPage,
                 pageSize: size

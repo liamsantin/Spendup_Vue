@@ -35,24 +35,28 @@ function onActivate(event: MouseEvent) {
 </script>
 
 <template>
+    <!-- Ligne su-person : carré 36 px teinté, nom 700 (+ « Inactif » en gris), sous-ligne grise, actions à droite. -->
     <div
-        class="import-template-row"
+        class="su-person import-template-row"
         :class="{ 'is-system': template.isSystem, 'is-inactive': !template.isActive }"
         :data-template-id="template.publicId"
         @click="onActivate"
     >
-        <span class="import-template-row__icon">
+        <span
+            class="su-person__avatar su-person__avatar--tile"
+            :class="template.sourceType === 'excel' ? 'su-tile--green' : 'su-tile--blue'"
+        >
             <FileSpreadsheetIcon v-if="template.sourceType === 'excel'" :size="18" stroke-width="1.7" />
             <FileTextIcon v-else :size="18" stroke-width="1.7" />
         </span>
-        <div class="import-template-row__meta">
-            <p class="import-template-row__name">
+        <div class="su-person__meta">
+            <p class="su-person__name">
                 {{ template.name }}
                 <span v-if="!template.isActive" class="import-template-row__flag">{{ t('importsPage.templates.inactive') }}</span>
             </p>
-            <p class="import-template-row__sub">{{ subtitle }}</p>
+            <p class="su-person__sub">{{ subtitle }}</p>
         </div>
-        <div class="import-template-row__actions">
+        <div class="su-person__actions import-template-row__actions">
             <template v-if="template.isSystem">
                 <span class="import-template-row__lock" :title="t('importsPage.templates.systemReadOnly')">
                     <LockIcon :size="16" stroke-width="1.6" />
@@ -89,88 +93,32 @@ function onActivate(event: MouseEvent) {
 </template>
 
 <style scoped>
-.import-template-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    min-width: 0;
-    min-height: 56px;
-    padding: 8px 10px;
-    box-sizing: border-box;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
-
 .import-template-row.is-system {
     cursor: default;
 }
 
-.import-template-row:hover {
-    background: var(--surface-hover-soft);
-}
-
-.import-template-row__icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    background: rgba(var(--v-theme-primary), 0.1);
-    color: rgb(var(--v-theme-primary));
-}
-
-.import-template-row.is-inactive .import-template-row__icon,
-.import-template-row.is-inactive .import-template-row__name {
+.import-template-row.is-inactive .su-person__avatar,
+.import-template-row.is-inactive .su-person__name {
     opacity: 0.55;
 }
 
-.import-template-row__meta {
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-.import-template-row__name,
-.import-template-row__sub {
-    margin: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.import-template-row__name {
-    font-size: 14.5px;
-    font-weight: 620;
-    letter-spacing: -0.01em;
-}
-
 .import-template-row__flag {
-    margin-left: 6px;
-    font-size: 0.72rem;
-    font-weight: 560;
-    color: var(--ink-muted);
-}
-
-.import-template-row__sub {
-    margin-top: 2px;
-    font-size: 0.78rem;
-    color: var(--ink-muted);
+    margin-left: 8px;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--gray);
 }
 
 .import-template-row__actions {
-    display: flex;
-    flex: none;
-    align-items: center;
-    gap: 4px;
+    flex-wrap: nowrap;
+    gap: 8px;
 }
 
 .import-template-row__lock {
     display: grid;
     place-items: center;
-    width: 36px;
-    height: 36px;
-    color: var(--ink-muted);
+    width: 40px;
+    height: 40px;
+    color: var(--gray);
 }
 </style>

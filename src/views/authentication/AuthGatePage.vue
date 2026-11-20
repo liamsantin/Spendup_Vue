@@ -65,7 +65,7 @@ async function onGoogleCredential(idToken: string) {
                     :aria-selected="!isRegister"
                     @click="isRegister = false"
                 >
-                    {{ t('auth.pages.tabLogin') }}
+                    <span class="su-tab__label" :data-label="t('auth.pages.tabLogin')">{{ t('auth.pages.tabLogin') }}</span>
                 </button>
                 <button
                     type="button"
@@ -74,7 +74,7 @@ async function onGoogleCredential(idToken: string) {
                     :aria-selected="isRegister"
                     @click="isRegister = true"
                 >
-                    {{ t('auth.pages.tabRegister') }}
+                    <span class="su-tab__label" :data-label="t('auth.pages.tabRegister')">{{ t('auth.pages.tabRegister') }}</span>
                 </button>
             </nav>
         </template>
@@ -88,7 +88,7 @@ async function onGoogleCredential(idToken: string) {
                 <AuthLegalLink to="/conditions-utilisation">{{ t('auth.register.termsLink') }}</AuthLegalLink>
             </template>
             <template #privacy>
-                <AuthLegalLink to="/politique-confidentialite">{{ t('auth.register.privacyLink') }}</AuthLegalLink>
+                <AuthLegalLink to="/protection-des-donnees">{{ t('auth.register.privacyLink') }}</AuthLegalLink>
             </template>
         </i18n-t>
 

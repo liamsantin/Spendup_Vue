@@ -2,10 +2,11 @@
 import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import { PlusIcon, SearchIcon, XIcon } from 'vue-tabler-icons';
+import { ArrowLeftIcon, PencilIcon, PlusIcon, SearchIcon, TargetIcon, XIcon } from 'vue-tabler-icons';
 import { useCreateFromQuery } from '@/components/shared/board/useCreateFromQuery';
 import AppDropdownFilter from '@/components/shared/dropdown-filter/AppDropdownFilter.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
+import AppTitleTile from '@/components/shared/page-shell/AppTitleTile.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import {
     SAVINGS_GOALS_PATHS,
@@ -17,6 +18,8 @@ import {
 } from '@/features/savings-goals';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import type { SavingsGoalStatus } from '@/features/savings-goals/types';
+import SavingsGoalDetail, { type SavingsGoalDetailTab } from '@/features/savings-goals/components/SavingsGoalDetail.vue';
+import { SAVINGS_GOALS_PATHS as GOALS_PATHS, savingsGoalPublicIdFromPath } from '@/features/savings-goals/paths';
 
 const SEARCH_DEBOUNCE_MS = 300;
 
@@ -26,6 +29,38 @@ const router = useRouter();
 const store = useSavingsGoalsStore();
 const accountsStore = useAccountsStore();
 const directoryRef = ref<{ openCreate: () => void } | null>(null);
+const listTitle = computed(() => t('savingsGoalsPage.title'));
+/* ── fiche : `:publicId` dans le chemin, onglets `?tab=` ── */
+const DETAIL_TABS: SavingsGoalDetailTab[] = ['informations', 'transactions'];
+const detailRef = ref<{ openEdit: () => void } | null>(null);
+const notFound = ref(false);
+
+const detailId = computed(() => savingsGoalPublicIdFromPath(route.path));
+const detailItem = computed(() => (detailId.value ? store.findByPublicId(detailId.value) : null));
+const detailTitle = computed(() => (notFound.value || !detailItem.value ? listTitle.value : detailItem.value.name));
+const activeDetailTab = computed<SavingsGoalDetailTab>(() => (route.query.tab === 'transactions' ? 'transactions' : 'informations'));
+
+function selectDetailTab(tab: SavingsGoalDetailTab) {
+    if (tab === activeDetailTab.value) return;
+    const query = { ...route.query };
+    if (tab === 'informations') delete query.tab;
+    else query.tab = tab;
+    void router.replace({ path: route.path, query });
+}
+
+/** Retour à la liste en gardant ses filtres. */
+function backToList() {
+    const next: Record<string, string> = {};
+    for (const key of ['q', 'status', 'account'] as const) {
+        const value = route.query[key];
+        if (typeof value === 'string' && value) next[key] = value;
+    }
+    void router.push({ path: GOALS_PATHS.list, query: next });
+}
+
+watch(detailId, () => {
+    notFound.value = false;
+});
 
 function queryString(name: string): string {
     const raw = route.query[name];
@@ -130,17 +165,76 @@ if (!accountsStore.initialized) {
 </script>
 
 <template>
-    <AppPageShell :title="t('savingsGoalsPage.title')">
+    <!-- ── fiche ── -->
+    <AppPageShell v-if="detailId" :key="`detail-${detailId}`" :title="detailTitle" :body-scroll="activeDetailTab !== 'transactions'">
+        <template v-if="!notFound && detailItem" #title-icon>
+            <AppTitleTile :icon="TargetIcon" tone="blue" />
+        </template>
+
+        <template #actions>
+            <button type="button" class="su-btn" @click="backToList">
+                <ArrowLeftIcon :size="16" stroke-width="1.6" />
+                {{ t('common.back') }}
+            </button>
+            <button
+                v-if="!notFound && detailItem"
+                type="button"
+                class="su-btn su-btn--ink"
+                :disabled="store.acting"
+                @click="detailRef?.openEdit()"
+            >
+                <PencilIcon :size="16" stroke-width="1.6" />
+                {{ t('savingsGoalsPage.actions.edit') }}
+            </button>
+        </template>
+
+        <template #hero-extra>
+            <nav
+                v-if="!notFound"
+                class="su-tabs su-tabs--links goals-page__detail-tabs"
+                :aria-label="t('savingsGoalsPage.detail.tabs.label')"
+            >
+                <button
+                    v-for="tab in DETAIL_TABS"
+                    :key="tab"
+                    type="button"
+                    class="su-tab"
+                    :class="{ 'is-active': activeDetailTab === tab }"
+                    :aria-current="activeDetailTab === tab ? 'page' : undefined"
+                    @click="selectDetailTab(tab)"
+                >
+                    <span class="su-tab__label" :data-label="t(`savingsGoalsPage.detail.tabs.${tab}`)">{{
+                        t(`savingsGoalsPage.detail.tabs.${tab}`)
+                    }}</span>
+                </button>
+            </nav>
+        </template>
+
+        <div v-if="notFound" class="su-empty goals-page__not-found">
+            <p>{{ t('savingsGoalsPage.errors.notFound') }}</p>
+            <button type="button" class="su-link goals-page__back" @click="backToList">
+                {{ t('savingsGoalsPage.detail.backToList') }}
+            </button>
+        </div>
+        <SavingsGoalDetail v-else ref="detailRef" :savings-goal-public-id="detailId" :tab="activeDetailTab" @not-found="notFound = true" />
+    </AppPageShell>
+
+    <!-- ── liste ── -->
+    <AppPageShell v-else :title="t('savingsGoalsPage.title')">
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('savingsGoalsPage.tabs.label')">
                 <button type="button" class="su-tab" :class="{ 'is-active': !filterStatus }" @click="filterStatus = ''">
-                    {{ t('savingsGoalsPage.tabs.all') }}
+                    <span class="su-tab__label" :data-label="t('savingsGoalsPage.tabs.all')">{{ t('savingsGoalsPage.tabs.all') }}</span>
                 </button>
                 <button type="button" class="su-tab" :class="{ 'is-active': filterStatus === 'active' }" @click="filterStatus = 'active'">
-                    {{ t('savingsGoalsPage.tabs.active') }}
+                    <span class="su-tab__label" :data-label="t('savingsGoalsPage.tabs.active')">{{
+                        t('savingsGoalsPage.tabs.active')
+                    }}</span>
                 </button>
                 <button type="button" class="su-tab" :class="{ 'is-active': filterStatus === 'atteint' }" @click="filterStatus = 'atteint'">
-                    {{ t('savingsGoalsPage.tabs.atteint') }}
+                    <span class="su-tab__label" :data-label="t('savingsGoalsPage.tabs.atteint')">{{
+                        t('savingsGoalsPage.tabs.atteint')
+                    }}</span>
                 </button>
                 <button
                     type="button"
@@ -148,7 +242,9 @@ if (!accountsStore.initialized) {
                     :class="{ 'is-active': filterStatus === 'abandonne' }"
                     @click="filterStatus = 'abandonne'"
                 >
-                    {{ t('savingsGoalsPage.tabs.abandonne') }}
+                    <span class="su-tab__label" :data-label="t('savingsGoalsPage.tabs.abandonne')">{{
+                        t('savingsGoalsPage.tabs.abandonne')
+                    }}</span>
                 </button>
             </nav>
         </template>
@@ -252,23 +348,53 @@ if (!accountsStore.initialized) {
 </template>
 
 <style scoped>
+/* ── fiche : onglets sous le titre, comme la fiche d’un actif ── */
+.goals-page__detail-tabs {
+    width: 100%;
+    max-width: 100%;
+    margin-top: 16px;
+    margin-left: 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.goals-page__not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.goals-page__back {
+    border: 0;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+}
+
+/* bouton « Rechercher » (mobile) : actif = fond gris doux */
 .savings-goals-search-btn.is-active {
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.14);
-    box-shadow: none;
+    background: var(--soft);
 }
 
 @media (max-width: 767px) {
-    .savings-goals-search--desktop,
     .savings-goals-toolbar__count {
+        display: none !important;
+    }
+
+    /* recherche toujours visible en pleine largeur, actions alignées à droite dessous */
+    .savings-goals-search--desktop {
+        flex: 1 1 100% !important;
+        max-width: 100% !important;
+    }
+
+    .savings-goals-search--mobile {
         display: none !important;
     }
 }
 
-@media (min-width: 768px) {
-    .savings-goals-search--mobile {
-        display: none;
-    }
+.savings-goals-search--mobile {
+    display: none;
 }
 </style>
 

@@ -1,4 +1,8 @@
 <script setup lang="ts">
+/**
+ * Consommation de stockage : ligne libellé / détail sur filet fin + jauge carrée 4 px.
+ * Ton : bleu (normal), violet (approche du quota), rouge (quota atteint).
+ */
 defineOptions({ name: 'FileUsageMeter' });
 
 import { computed } from 'vue';
@@ -41,21 +45,21 @@ const tone = computed(() => usageTone(props.usage));
         </div>
         <div
             v-if="!usage.isUnlimited"
-            class="file-usage__track"
+            class="su-gauge file-usage__track"
             role="progressbar"
             :aria-valuemin="0"
             :aria-valuemax="100"
             :aria-valuenow="Math.round(percent)"
             :aria-label="label"
         >
-            <span class="file-usage__fill" :style="{ width: `${percent}%` }" />
+            <span class="su-gauge__fill file-usage__fill" :style="{ width: `${percent}%` }" />
         </div>
     </div>
 </template>
 
 <style scoped>
 .file-usage {
-    margin: 0 0 14px;
+    margin: 0;
 }
 
 .file-usage__head {
@@ -63,48 +67,40 @@ const tone = computed(() => usageTone(props.usage));
     align-items: baseline;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
 }
 
 .file-usage__label {
-    font-size: 0.82rem;
-    font-weight: 650;
+    font-size: 14px;
+    font-weight: 700;
     color: var(--ink);
+    font-variant-numeric: tabular-nums;
 }
 
 .file-usage__meta {
     flex: none;
-    font-size: 0.78rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
 }
 
 .file-usage__track {
-    height: 6px;
-    border-radius: 999px;
-    background: var(--hair);
-    overflow: hidden;
-}
-
-.file-usage__fill {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    transition: width 0.25s var(--ease);
+    height: 4px;
 }
 
 .file-usage.is-ok .file-usage__fill {
-    background: rgb(var(--v-theme-success));
+    background: var(--blue);
 }
 
 .file-usage.is-warn .file-usage__fill {
-    background: rgb(var(--v-theme-warning));
+    background: var(--violet);
 }
 
 .file-usage.is-danger .file-usage__fill {
-    background: rgb(var(--v-theme-error));
+    background: var(--danger);
 }
 
 .file-usage.is-danger .file-usage__label {
-    color: rgb(var(--v-theme-error));
+    color: var(--danger);
 }
 </style>

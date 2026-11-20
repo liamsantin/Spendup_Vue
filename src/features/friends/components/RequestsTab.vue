@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { InboxIcon, SendIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import FriendListItem from '@/features/friends/components/FriendListItem.vue';
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
@@ -20,14 +19,13 @@ function formatDate(value: string) {
         </AppAlert>
 
         <div class="su-split">
-            <section class="su-surface">
-                <header class="su-panel__head">
-                    <span class="su-panel__icon"><InboxIcon :size="20" stroke-width="1.5" /></span>
+            <section class="su-section">
+                <header class="su-section__head requests-head">
                     <div>
                         <h2>{{ t('friendsPage.requests.incomingTitle') }}</h2>
                         <p>{{ t('friendsPage.requests.incomingSubtitle') }}</p>
                     </div>
-                    <span v-if="store.incomingCount > 0" class="su-panel__chip">{{ store.incomingCount }}</span>
+                    <span v-if="store.incomingCount > 0" class="requests-head__count">{{ store.incomingCount }}</span>
                 </header>
 
                 <div v-if="store.loadingIncoming && !store.incomingRequests.length" class="su-loading">
@@ -48,7 +46,7 @@ function formatDate(value: string) {
                     >
                         <template #actions>
                             <button
-                                class="su-btn su-btn--ink"
+                                class="su-btn su-btn--sm su-btn--ink"
                                 type="button"
                                 :disabled="store.acting"
                                 @click.stop="store.acceptRequest(request.friendshipPublicId)"
@@ -56,7 +54,7 @@ function formatDate(value: string) {
                                 {{ t('friendsPage.actions.accept') }}
                             </button>
                             <button
-                                class="su-btn su-btn--danger"
+                                class="su-btn su-btn--sm"
                                 type="button"
                                 :disabled="store.acting"
                                 @click.stop="store.refuseRequest(request.friendshipPublicId)"
@@ -64,7 +62,7 @@ function formatDate(value: string) {
                                 {{ t('friendsPage.actions.refuse') }}
                             </button>
                             <button
-                                class="su-btn su-btn--warn"
+                                class="su-btn su-btn--sm su-btn--warn"
                                 type="button"
                                 :disabled="store.acting"
                                 @click.stop="store.blockUser(request.otherUser.publicId)"
@@ -86,14 +84,13 @@ function formatDate(value: string) {
                 </template>
             </section>
 
-            <section class="su-surface">
-                <header class="su-panel__head">
-                    <span class="su-panel__icon"><SendIcon :size="20" stroke-width="1.5" /></span>
+            <section class="su-section">
+                <header class="su-section__head requests-head">
                     <div>
                         <h2>{{ t('friendsPage.requests.outgoingTitle') }}</h2>
                         <p>{{ t('friendsPage.requests.outgoingSubtitle') }}</p>
                     </div>
-                    <span v-if="store.outgoingCount > 0" class="su-panel__chip">{{ store.outgoingCount }}</span>
+                    <span v-if="store.outgoingCount > 0" class="requests-head__count">{{ store.outgoingCount }}</span>
                 </header>
 
                 <div v-if="store.loadingOutgoing && !store.outgoingRequests.length" class="su-loading">
@@ -114,7 +111,7 @@ function formatDate(value: string) {
                     >
                         <template #actions>
                             <button
-                                class="su-btn su-btn--danger"
+                                class="su-btn su-btn--sm su-btn--danger"
                                 type="button"
                                 :disabled="store.acting"
                                 @click.stop="store.cancelRequest(request.friendshipPublicId)"
@@ -138,3 +135,21 @@ function formatDate(value: string) {
         </div>
     </div>
 </template>
+
+<style scoped>
+.requests-head {
+    align-items: flex-start;
+}
+
+.requests-head p {
+    margin-top: 4px;
+}
+
+/* compteur : chiffre 700 noir, pas de pastille */
+.requests-head__count {
+    flex: none;
+    font-size: 16px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+</style>

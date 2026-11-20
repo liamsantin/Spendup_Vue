@@ -1,5 +1,9 @@
-import { describe, expect, it } from 'vitest';
-import { buildContactMailto, CONTACT_MESSAGE_MAX, validateContactForm, type ContactFormValues } from '../contact-form';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { postMock } = vi.hoisted(() => ({ postMock: vi.fn() }));
+vi.mock('@/features/auth/api', () => ({ authHttp: { post: postMock } }));
+
+import { buildContactMailto, CONTACT_MESSAGE_MAX, sendContactMessage, validateContactForm, type ContactFormValues } from '../contact-form';
 
 const valid: ContactFormValues = {
     name: 'Léa Rochat',
@@ -21,6 +25,27 @@ describe('validateContactForm', () => {
 
     it('refuse un message trop long', () => {
         expect(validateContactForm({ ...valid, message: 'x'.repeat(CONTACT_MESSAGE_MAX + 1) }).message).toBeTruthy();
+    });
+});
+
+describe('sendContactMessage', () => {
+    beforeEach(() => postMock.mockReset().mockResolvedValue(undefined));
+
+    it('poste le message nettoyé vers /api/contact, champ piège vide par défaut', async () => {
+        await sendContactMessage({ ...valid, name: '  Léa Rochat ', message: ' Bonjour à vous ' });
+        expect(postMock).toHaveBeenCalledWith('/api/contact', {
+            name: 'Léa Rochat',
+            email: 'lea@example.ch',
+            subject: 'support',
+            message: 'Bonjour à vous',
+            consent: true,
+            website: ''
+        });
+    });
+
+    it('transmet le champ piège tel quel', async () => {
+        await sendContactMessage(valid, 'http://spam.example');
+        expect(postMock.mock.calls[0][1].website).toBe('http://spam.example');
     });
 });
 

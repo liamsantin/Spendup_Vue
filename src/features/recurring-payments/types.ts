@@ -92,6 +92,48 @@ export type RecurringExpense = {
     updatedAt: string | null;
     upcomingDues: RecurringDue[];
     files: RecurringFile[];
+    /** Fiche d'assurance (charge de type `assurance`) ; `null` ou absente sinon. */
+    insurance?: InsuranceDetails | null;
+};
+
+/** Types d'assurance : seuls maladie, vie et accident sont déductibles (nature fiscale déduite par l'API). */
+export const INSURANCE_TYPES = [
+    'healthBasic',
+    'healthSupplementary',
+    'life',
+    'accident',
+    'householdLiability',
+    'vehicle',
+    'legalProtection',
+    'other'
+] as const;
+
+export type InsuranceType = (typeof INSURANCE_TYPES)[number];
+
+/** Types dont les primes sont déductibles (miroir de `InsuranceNatures` côté API). */
+export const DEDUCTIBLE_INSURANCE_TYPES: readonly InsuranceType[] = ['healthBasic', 'healthSupplementary', 'life', 'accident'];
+
+/** Nature fiscale déduite du type d'assurance (miroir de `InsuranceNatures` côté API) ; `null` : non déductible. */
+export function insuranceTaxNature(type: string | null | undefined): string | null {
+    if (type === 'healthBasic' || type === 'healthSupplementary') return 'healthInsurancePremium';
+    if (type === 'life' || type === 'accident') return 'lifeInsurancePremium';
+    return null;
+}
+
+/** Montants par période de la charge. `premiumSubsidy` (réduction de primes) est une information. */
+export type InsuranceInput = {
+    insuranceType: string | null;
+    renewalDate: string | null;
+    franchise: number | null;
+    grossPremium: number | null;
+    premiumSubsidy: number | null;
+    /** Numéro de police : une information, rien n'en est déduit. */
+    policyNumber?: string | null;
+};
+
+export type InsuranceDetails = InsuranceInput & {
+    /** Nature fiscale déduite du type ; `null` : non déductible. */
+    taxNature?: string | null;
 };
 
 export type RecurringIncome = {
@@ -157,6 +199,8 @@ export type CreateRecurringExpensePayload = {
     notes: string | null;
     /** Max 10. PUT : toujours envoyé (`[]` détache). */
     tagPublicIds: string[];
+    /** Fiche d'assurance, envoyée seulement pour une charge de type `assurance`. */
+    insurance?: InsuranceInput;
 };
 
 export type UpdateRecurringExpensePayload = CreateRecurringExpensePayload;

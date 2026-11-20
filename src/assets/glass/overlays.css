@@ -1,29 +1,36 @@
-/* Overlays (modales, menus) — hors .su-page, teleport body. */
+/* Surcouches Swiss (fenêtres modales, menus, champs Vuetify) — hors .su-page, téléport body. */
 
 .v-overlay:has(.su-modal) .v-overlay__scrim,
 .v-overlay:has(.su-menu) .v-overlay__scrim,
 .v-overlay:has(.su-search-pop) .v-overlay__scrim {
     background: var(--scrim) !important;
-    backdrop-filter: blur(10px) saturate(140%);
+    backdrop-filter: none;
 }
 
+/* ── fenêtre modale : carrée, bordure 1 px noire, ombre décalée nette ── */
 .su-modal.v-card {
-    background: var(--surface-overlay) !important;
-    border: 1px solid var(--stroke) !important;
-    box-shadow: var(--shadow-overlay) !important;
-    backdrop-filter: var(--blur);
+    background: var(--raise) !important;
+    border: 1px solid var(--ink) !important;
+    box-shadow: none !important;
+    backdrop-filter: none;
     color: var(--ink);
     font-family: var(--font-ui);
-    border-radius: 28px !important;
+    font-variant-numeric: tabular-nums;
+    border-radius: 0 !important;
     overflow: hidden;
 }
 
 .app-modal-base--mobile.su-modal.v-card {
-    border-radius: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
 }
 
 .app-modal-base--sheet.su-modal.v-card {
-    border-radius: 28px 28px 0 0 !important;
+    border-radius: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    box-shadow: none !important;
 }
 
 .su-modal .text-h5,
@@ -31,24 +38,34 @@
     margin: 0;
     font-family: var(--font-heading);
     font-size: 18px;
-    font-weight: 650;
-    letter-spacing: -0.03em;
+    font-weight: 700;
+    letter-spacing: -0.025em;
     line-height: 1.25;
     color: var(--ink);
 }
 
 .su-modal .text-subtitle-1,
 .su-modal .text-medium-emphasis {
-    color: var(--ink-muted) !important;
+    color: var(--gray) !important;
 }
 
+/* filet 2 px noir sous l'en-tête, fin au-dessus du pied */
 .su-modal .v-divider {
-    display: none;
+    display: block;
+    border-color: var(--ink) !important;
+    border-width: 2px 0 0 !important;
+    opacity: 1;
+}
+
+.su-modal .v-divider:has(+ .app-modal-base__footer),
+.su-modal .v-divider:has(+ .app-confirmation-modal__footer) {
+    border-width: 1px 0 0 !important;
+    border-color: var(--line) !important;
 }
 
 .app-modal-base__header,
 .app-confirmation-modal__header {
-    border-bottom: 1px solid var(--hair);
+    border-bottom: 0;
 }
 
 .app-modal-base:has(.app-modal-tabs__toolbar) .app-modal-base__header {
@@ -63,11 +80,10 @@
 .app-modal-base__close.su-orb,
 .app-confirmation-modal__close.su-orb {
     position: absolute;
-    top: 14px;
-    right: 14px;
+    top: 16px;
+    right: 16px;
 }
 
-/* Evite le clipping du scale(1.06) contre le coin de la modale (overflow:hidden). */
 .app-modal-base__header,
 .app-confirmation-modal__header {
     overflow: visible;
@@ -77,9 +93,8 @@
 .app-confirmation-modal__footer {
     gap: 8px;
     width: 100%;
-    padding: 12px 16px 16px;
-    background: rgba(var(--v-theme-primary), 0.05);
-    /* Room for .su-btn hover scale at the footer edge. */
+    padding: 16px 24px 20px;
+    background: transparent;
     overflow: visible;
 }
 
@@ -88,20 +103,23 @@
 }
 
 .app-confirmation-modal__footer {
-    justify-content: space-between;
+    justify-content: flex-end;
 }
 
 .app-modal-base__footer .su-btn--ghost,
 .app-confirmation-modal__footer .su-btn--ghost {
     margin-right: auto;
+    border-color: var(--ink);
+    color: var(--ink);
+    font-weight: 700;
 }
 
 .app-modal-base .v-btn,
 .app-confirmation-modal .v-btn {
     text-transform: none !important;
-    letter-spacing: -0.01em;
-    font-weight: 580;
-    border-radius: 17px !important;
+    letter-spacing: 0;
+    font-weight: 700;
+    border-radius: 0 !important;
     box-shadow: none !important;
 }
 
@@ -109,46 +127,51 @@
 .app-modal-base .v-btn--variant-flat.bg-primary,
 .app-confirmation-modal .v-btn.bg-primary,
 .app-confirmation-modal .v-btn--variant-flat.bg-primary {
-    background: rgb(var(--v-theme-primary)) !important;
+    background: var(--blue-btn) !important;
     color: #fff !important;
-    box-shadow: 0 14px 28px -16px rgba(var(--v-theme-primary), 0.7) !important;
+    box-shadow: none !important;
 }
 
 .app-modal-base .v-btn.bg-error,
 .app-confirmation-modal .v-btn.bg-error,
 .app-modal-base .v-btn.text-error,
 .app-confirmation-modal .v-btn.text-error {
-    color: #b42318 !important;
+    color: var(--danger) !important;
 }
 
+/* ── sélecteur de date ───────────────────────────────── */
 .v-overlay__content > .v-date-picker {
-    background: var(--surface-overlay) !important;
-    border: 1px solid var(--stroke);
-    box-shadow: var(--shadow-overlay);
-    backdrop-filter: var(--blur);
-    border-radius: var(--radius-overlay) !important;
+    background: var(--raise) !important;
+    border: 1px solid var(--ink);
+    box-shadow: var(--shadow-offset);
+    backdrop-filter: none;
+    border-radius: 0 !important;
     overflow: hidden;
     font-family: var(--font-ui);
+}
+
+.v-date-picker .v-btn {
+    border-radius: 0 !important;
 }
 
 .v-date-picker .v-date-picker-month__day--selected .v-btn,
 .v-date-picker .v-date-picker-month__day--week .v-btn.v-btn--active {
-    background: rgb(var(--v-theme-primary)) !important;
+    background: var(--blue-btn) !important;
     color: #fff !important;
 }
 
+/* ── menu déroulant : fond, bordure 1 px noire, ombre décalée, items 56 px ── */
 .su-menu.v-sheet,
 .v-overlay__content > .v-list {
-    background: var(--surface-overlay) !important;
-    border: 1px solid var(--stroke);
-    box-shadow: var(--shadow-overlay);
-    backdrop-filter: var(--blur);
-    border-radius: var(--radius-overlay) !important;
+    background: var(--raise) !important;
+    border: 1px solid var(--ink);
+    box-shadow: var(--shadow-offset);
+    backdrop-filter: none;
+    border-radius: 0 !important;
     overflow: hidden;
     color: var(--ink);
     font-family: var(--font-ui);
-    /* Marge pour state-layer switch / scale des contrôles collés au bord du menu. */
-    padding: 8px 6px !important;
+    padding: 8px !important;
 }
 
 .su-menu .v-list {
@@ -157,11 +180,79 @@
 
 .su-menu .v-list-item {
     overflow: visible;
+    border-radius: 0 !important;
+    min-height: 44px;
 }
 
+.su-menu .v-list-item:hover {
+    background: var(--soft);
+}
+
+.su-menu .v-list-item-title {
+    font-weight: 700 !important;
+}
+
+/* item riche : icône teintée carrée + titre 700 + description grise */
+.su-menu-item {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 56px;
+    padding: 8px 10px;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.su-menu-item:hover,
+.su-menu-item:focus-visible {
+    background: var(--soft);
+    outline: none;
+}
+
+.su-menu-item__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
+}
+
+/* teinte par défaut bleue ; une classe su-tile--* posée à côté l'emporte */
+.su-menu-item__icon:not([class*='su-tile--']) {
+    background: var(--t-blue-bg);
+    color: var(--t-blue-ink);
+}
+
+.su-menu-item__icon > svg {
+    width: 18px;
+    height: 18px;
+}
+
+.su-menu-item__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.su-menu-item__desc {
+    margin: 1px 0 0;
+    color: var(--gray);
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+/* ── menu de sélection (AppSelect) ───────────────────── */
 .app-select-menu {
-    margin-top: 6px;
-    border-radius: 16px !important;
+    margin-top: 4px;
+    border-radius: 0 !important;
     overflow: hidden;
     max-width: calc(100vw - 24px);
 }
@@ -172,24 +263,25 @@
     min-width: 0;
     max-width: 100%;
     overflow: hidden;
-    background: #fff !important;
-    border: 1px solid var(--thread);
-    border-radius: 16px !important;
-    box-shadow: var(--shadow-overlay);
+    background: var(--raise) !important;
+    border: 1px solid var(--ink);
+    border-radius: 0 !important;
+    box-shadow: var(--shadow-offset);
     color: var(--ink);
 }
 
 .app-select-menu__footer {
     flex: none;
     min-width: 0;
-    padding: 0 7px 7px;
+    padding: 0 8px 8px;
+    border-top: 1px solid var(--line);
 }
 
 .app-select-menu__create {
     box-sizing: border-box;
     max-width: 100%;
-    color: rgb(var(--v-theme-primary)) !important;
-    font-weight: 600 !important;
+    color: var(--blue-ink) !important;
+    font-weight: 700 !important;
 }
 
 .app-select-menu__scroll {
@@ -211,9 +303,9 @@
 .app-select-menu__options {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 3px;
+    gap: 0;
     min-width: 0;
-    padding: 7px 13px 7px 7px;
+    padding: 4px 0;
 }
 
 .app-select-menu__option {
@@ -226,21 +318,21 @@
     width: 100%;
     min-width: 0;
     max-width: 100%;
-    min-height: 43px;
-    padding: 0 10px 0 13px;
+    min-height: 40px;
+    padding: 0 14px;
     border: 0;
-    border-radius: 11px;
+    border-radius: 0;
     background: transparent;
-    color: var(--ink-mute);
+    color: var(--ink);
     font: inherit;
-    font-size: 0.875rem;
+    font-size: 14px;
     font-weight: 400;
-    line-height: 1.5;
+    line-height: 1.4;
     text-align: left;
     cursor: pointer;
     transition:
-        background 0.2s ease,
-        color 0.2s ease;
+        background 0.15s ease,
+        color 0.15s ease;
 }
 
 .app-select-menu__option > span:first-child {
@@ -253,24 +345,24 @@
 .app-select-menu__option:hover,
 .app-select-menu__option:focus-visible {
     outline: none;
-    background: var(--surface-hover);
+    background: var(--soft);
     color: var(--ink);
 }
 
 .app-select-menu__option.is-active {
-    background: var(--surface-hover);
+    background: var(--soft);
     color: var(--ink);
 }
 
 .app-select-menu__option.is-placeholder {
-    color: var(--ink-muted);
+    color: var(--gray);
     font-weight: 400;
 }
 
 .app-select-menu__option.is-selected {
-    background: rgba(var(--v-theme-primary), 0.09) !important;
+    background: var(--blue-soft) !important;
     color: var(--ink) !important;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .app-select-menu__option.is-indent {
@@ -281,42 +373,46 @@
 .app-select-menu__check {
     display: grid;
     place-items: center;
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     flex: none;
-    border-radius: 50%;
-    background: rgb(var(--v-theme-primary));
+    border-radius: 0;
+    background: var(--blue-btn);
     color: #fff;
 }
 
 .app-select-menu .ps--active-y > .ps__rail-y {
-    right: 3px !important;
-    width: 7px !important;
+    right: 2px !important;
+    width: 6px !important;
     background: transparent !important;
     opacity: 1 !important;
 }
 
 .app-select-menu .ps__thumb-y {
     right: 1px !important;
-    width: 5px !important;
-    border-radius: 999px !important;
-    background: rgba(var(--v-theme-primary), 0.38) !important;
+    width: 4px !important;
+    border-radius: 0 !important;
+    background: var(--gray) !important;
 }
 
 @media (max-width: 959.98px) {
     .app-select-menu {
         position: fixed !important;
-        inset: auto 12px 12px !important;
+        inset: auto 0 0 !important;
         width: auto !important;
         min-width: 0 !important;
         max-width: none !important;
         margin: 0;
-        border-radius: 22px !important;
+        border-radius: 0 !important;
     }
 
     .app-select-menu__surface {
         width: 100%;
-        border-radius: 22px !important;
+        border-radius: 0 !important;
+        border-left: 0;
+        border-right: 0;
+        border-bottom: 0;
+        box-shadow: none;
     }
 
     .app-select-menu__scroll {
@@ -327,27 +423,26 @@
 .su-menu .text-h5,
 .su-menu .text-h6 {
     font-family: var(--font-heading);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.025em;
     color: var(--ink);
 }
 
+/* ── champs Vuetify : carrés, 42 px, bordure fine, focus noir sans halo ── */
 .app-modal-base .v-field,
 .su-modal .v-field,
 .su-page .v-field,
 .su-panel .v-field,
 .su-menu .v-field {
-    --v-field-input-padding-top: 10px;
-    --v-field-input-padding-bottom: 10px;
-    border-radius: var(--radius-field) !important;
-    background: rgba(255, 255, 255, 0.55);
+    --v-field-input-padding-top: 9px;
+    --v-field-input-padding-bottom: 9px;
+    border-radius: 0 !important;
+    background: var(--raise);
+    font-size: 14px;
 }
 
-.v-field--variant-outlined .v-field__outline__start {
-    border-radius: var(--radius-field) 0 0 var(--radius-field) !important;
-}
-
+.v-field--variant-outlined .v-field__outline__start,
 .v-field--variant-outlined .v-field__outline__end {
-    border-radius: 0 var(--radius-field) var(--radius-field) 0 !important;
+    border-radius: 0 !important;
 }
 
 .app-modal-base .v-field__outline,
@@ -355,13 +450,16 @@
 .su-page .v-field__outline,
 .su-panel .v-field__outline,
 .su-menu .v-field__outline {
-    --v-field-border-opacity: 0.12;
+    --v-field-border-opacity: 1;
+    color: var(--line);
 }
 
 .su-panel .v-field:hover .v-field__outline,
 .app-modal-base .v-field:hover .v-field__outline,
-.su-modal .v-field:hover .v-field__outline {
-    --v-field-border-opacity: 0.22;
+.su-modal .v-field:hover .v-field__outline,
+.su-page .v-field:hover .v-field__outline {
+    --v-field-border-opacity: 1;
+    color: var(--gray);
 }
 
 .su-panel .v-field--focused .v-field__outline,
@@ -370,18 +468,28 @@
 .su-page .v-field--focused .v-field__outline,
 .su-menu .v-field--focused .v-field__outline {
     --v-field-border-opacity: 1;
-    color: rgb(var(--v-theme-primary));
+    color: var(--ink);
 }
 
-.su-panel .v-switch .v-selection-control {
-    min-height: 32px;
-    align-items: center;
-    overflow: visible;
+.su-page .v-field--error .v-field__outline,
+.su-modal .v-field--error .v-field__outline,
+.app-modal-base .v-field--error .v-field__outline {
+    color: var(--danger);
 }
 
+.su-page .v-field--disabled,
+.su-modal .v-field--disabled {
+    background: var(--soft);
+    opacity: 1;
+}
+
+/* ── interrupteur : rond, bleu actif ─────────────────── */
+.su-panel .v-switch .v-selection-control,
 .su-page .v-switch .v-selection-control,
 .su-modal .v-switch .v-selection-control,
 .su-showcase .v-switch .v-selection-control {
+    min-height: 32px;
+    align-items: center;
     overflow: visible;
 }
 
@@ -398,14 +506,14 @@
 .su-page .v-switch .v-switch__track,
 .su-showcase .v-switch .v-switch__track {
     opacity: 1 !important;
-    background: var(--hair) !important;
+    background: var(--line) !important;
 }
 
 .su-panel .v-switch .v-selection-control--dirty .v-switch__track,
 .su-modal .v-switch .v-selection-control--dirty .v-switch__track,
 .su-page .v-switch .v-selection-control--dirty .v-switch__track,
 .su-showcase .v-switch .v-selection-control--dirty .v-switch__track {
-    background: rgb(var(--v-theme-primary)) !important;
+    background: var(--blue) !important;
 }
 
 .su-panel .v-switch .v-switch__thumb,
@@ -413,7 +521,7 @@
 .su-page .v-switch .v-switch__thumb,
 .su-showcase .v-switch .v-switch__thumb {
     background: #fff !important;
-    box-shadow: 0 2px 8px rgba(16, 16, 20, 0.2);
+    box-shadow: 0 1px 2px rgba(11, 12, 16, 0.25);
 }
 
 .su-panel .v-switch .v-selection-control--dirty .v-switch__thumb,
@@ -428,7 +536,7 @@
 .su-page .v-checkbox.v-selection-control--dirty .v-icon,
 .su-modal .v-checkbox.v-selection-control--dirty .v-icon,
 .su-showcase .v-radio.v-selection-control--dirty .v-icon {
-    color: rgb(var(--v-theme-primary)) !important;
+    color: var(--blue-btn) !important;
 }
 
 .app-modal-base .v-label,
@@ -437,58 +545,69 @@
 .app-modal-base .app-select__legend {
     font-family: var(--font-ui);
     font-size: 13px;
-    font-weight: 560;
-    color: var(--ink-mute);
+    font-weight: 400;
+    color: var(--ink);
+    opacity: 1;
 }
 
 .app-modal-base .v-alert,
 .su-page .v-alert,
 .su-panel .v-alert {
-    border-radius: var(--radius-leaf) !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
 }
 
 .su-panel .v-sheet.hover-btns {
-    background: var(--surface-raised) !important;
-    box-shadow: var(--shadow-pill-soft) !important;
-    border: 1px solid var(--stroke) !important;
-    border-radius: 16px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 0 !important;
 }
 
-/* Neutralise le rose Vuetify (lightprimary / primary) dans le chrome app. */
+.su-panel .v-sheet.hover-btns:hover {
+    border-color: var(--ink) !important;
+}
+
+/* ── neutralise les teintes Vuetify dans le chrome ───── */
 .su-page .bg-lightprimary,
 .su-modal .bg-lightprimary,
 .su-menu .bg-lightprimary,
 .su-page .v-list-item.bg-lightprimary,
 .su-modal .v-list-item.bg-lightprimary,
 .su-menu .v-list-item.bg-lightprimary {
-    background: rgba(var(--v-theme-primary), 0.1) !important;
+    background: var(--blue-soft) !important;
     color: var(--ink) !important;
 }
 
 .su-page .v-avatar.bg-lightprimary,
 .su-modal .v-avatar.bg-lightprimary,
 .su-menu .v-avatar.bg-lightprimary {
-    background: rgba(var(--v-theme-primary), 0.16) !important;
-    color: rgb(var(--v-theme-primary)) !important;
+    background: var(--t-blue-bg) !important;
+    color: var(--t-blue-ink) !important;
 }
 
 .su-page .v-avatar.bg-primary,
 .su-modal .v-avatar.bg-primary {
-    background: rgb(var(--v-theme-primary)) !important;
+    background: var(--blue-btn) !important;
     color: #fff !important;
+}
+
+.su-page .v-chip,
+.su-modal .v-chip,
+.su-menu .v-chip {
+    border-radius: 0 !important;
 }
 
 .su-page .v-chip.bg-primary,
 .su-modal .v-chip.bg-primary,
 .su-menu .v-chip.bg-primary {
-    background: rgb(var(--v-theme-primary)) !important;
+    background: var(--blue-btn) !important;
     color: #fff !important;
 }
 
 .su-page .v-chip.text-primary,
 .su-modal .v-chip.text-primary {
-    color: rgb(var(--v-theme-primary)) !important;
+    color: var(--blue-ink) !important;
 }
 
 .su-page .v-list-item--active > .v-list-item__overlay,
@@ -499,21 +618,33 @@
 
 .su-page .v-progress-circular,
 .su-modal .v-progress-circular {
-    color: rgb(var(--v-theme-primary)) !important;
+    color: var(--blue) !important;
 }
 
+.su-page .v-btn,
+.su-modal .v-btn,
+.su-menu .v-btn {
+    border-radius: 0 !important;
+    text-transform: none !important;
+    letter-spacing: 0;
+    font-weight: 700;
+}
+
+.v-bottom-sheet > .v-overlay__content {
+    border-radius: 0 !important;
+}
+
+/* ── vitrine des composants (page dev) ───────────────── */
 .su-showcase {
     min-height: 100dvh;
-    padding: 28px 20px 56px;
+    padding: 40px 48px 80px;
     color: var(--ink);
     font-family: var(--font-ui);
-    background:
-        radial-gradient(1200px 700px at 12% -10%, #ffffff 0%, rgba(255, 255, 255, 0) 60%),
-        linear-gradient(160deg, #f3f3f5 0%, #e9e9ee 48%, #dedee5 100%);
+    background: var(--bg);
 }
 
 .su-showcase .su-page {
-    max-width: 960px;
+    max-width: 1280px;
     margin: 0 auto;
     height: auto;
     min-height: calc(100dvh - 84px);
@@ -525,7 +656,7 @@
 
 .su-showcase__grid {
     display: grid;
-    gap: 20px;
+    gap: 40px;
 }
 
 .su-showcase__row {
@@ -533,4 +664,25 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 10px;
+}
+
+/* Swiss : pas de légende flottante dans la bordure du champ (le libellé vit au-dessus ou à gauche) ;
+   la légende reste dans le DOM pour l'accessibilité. */
+.app-select__legend {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* fenêtres modales : aucune ombre, la bordure noire suffit */
+.v-overlay:has(.su-modal) .v-overlay__content,
+.v-dialog > .v-overlay__content,
+.v-dialog > .v-overlay__content > .v-card {
+    box-shadow: none !important;
 }

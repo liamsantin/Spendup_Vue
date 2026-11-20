@@ -3,14 +3,17 @@ import { RouterView } from 'vue-router';
 import { useAppSettingsStore } from '@/app/stores/app-settings-store';
 import { useIdleLogout } from '@/features/auth/composables/useIdleLogout';
 import StepUpDialog from '@/features/auth/components/StepUpDialog.vue';
+import VaultHost from '@/features/vault/components/VaultHost.vue';
 import PlanSelectorHost from '@/features/subscription/components/PlanSelectorHost.vue';
 import AppShell from '@/layouts/shell/components/AppShell.vue';
 import { useShellNav } from '@/layouts/shell/composables/useShellNav';
+import DemoBanner from '@/features/demo/DemoBanner.vue';
+import { demoActive } from '@/features/demo/session';
 
 const appSettings = useAppSettingsStore();
 useIdleLogout();
 
-const { open, openId, activeId, primaryNav, secondaryNav, unreadCount, title } = useShellNav();
+const { open, openId, activeId, primaryNav, secondaryNav, headerLinks, headerMenus, unreadCount, title } = useShellNav();
 </script>
 
 <template>
@@ -27,15 +30,19 @@ const { open, openId, activeId, primaryNav, secondaryNav, unreadCount, title } =
                 :items="primaryNav"
                 :bottom-items="secondaryNav"
                 :notifications="unreadCount"
+                :header-links="headerLinks"
+                :header-menus="headerMenus"
                 :title="title"
             >
                 <div class="page-content" :class="appSettings.boxed ? 'maxWidth' : ''">
+                    <DemoBanner v-if="demoActive" />
                     <RouterView />
                 </div>
             </AppShell>
 
             <StepUpDialog />
             <PlanSelectorHost />
+            <VaultHost />
         </v-app>
     </v-locale-provider>
 </template>

@@ -48,7 +48,7 @@ const tap = useRowTap(
         @touchcancel="tap.onTouchcancel"
     >
         <span class="su-person__avatar su-person__avatar--tile">
-            <CreditCardIcon size="22" />
+            <CreditCardIcon :size="18" stroke-width="1.7" />
         </span>
         <div class="su-person__meta">
             <p class="su-person__name">{{ method.label }}</p>
@@ -61,7 +61,9 @@ const tap = useRowTap(
             <p v-if="method.reference" class="su-person__sub">{{ method.reference }}</p>
         </div>
         <div class="su-person__actions">
-            <span v-if="!method.isActive" class="su-chip su-btn--warn">{{ t('paymentMethodsPage.badges.inactive') }}</span>
+            <span v-if="!method.isActive" class="su-chip" style="--chip-color: var(--gray)">{{
+                t('paymentMethodsPage.badges.inactive')
+            }}</span>
             <template v-if="canWrite">
                 <button
                     type="button"
@@ -89,6 +91,10 @@ const tap = useRowTap(
 <style scoped>
 .payment-method-list-item {
     cursor: default;
+}
+
+.payment-method-list-item.opacity-60 .su-person__actions {
+    opacity: 1;
 }
 
 .payment-method-list-item--editable {

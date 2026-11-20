@@ -17,9 +17,10 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
+/* deux lignes sur filets fins, dernier filet en bas */
 .recurring-kind-choice {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    border-bottom: 1px solid var(--line);
 }
 </style>

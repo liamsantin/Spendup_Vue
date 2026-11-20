@@ -8,6 +8,14 @@ import {
     type UpdateCategoryPayload
 } from '@/features/categories/types';
 
+export const taxNaturesApi = {
+    /** Nature suggérée pour un nom de catégorie à créer (mots-clés côté API) ; jamais posée sans geste. */
+    suggest(categoryName: string, type: string) {
+        const params = new URLSearchParams({ categoryName, type });
+        return fetchWrapper.get(`/api/tax-natures/suggest?${params}`) as Promise<{ taxNature: string | null }>;
+    }
+};
+
 export const categoriesApi = {
     list(query: ListCategoriesQuery = {}) {
         const type = query.type;

@@ -1,4 +1,5 @@
 import { AppError } from '@/utils/errors/app-error';
+import { nextPageFromLoaded } from '@/utils/helpers/paging';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
@@ -84,10 +85,8 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         incomesByKey,
         activeExpenseKey,
         activeIncomeKey,
-        expensePage,
         expensePageSize,
         expenseTotalCount,
-        incomePage,
         incomePageSize,
         incomeTotalCount,
         loadingExpenses,
@@ -309,12 +308,15 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         loadingMoreExpenses.value = true;
         clearError();
         try {
-            const nextPage = expensePage.value + 1;
+            const size = expensePageSize.value || RECURRING_PAGE_SIZE_DEFAULT;
+            // Page déduite du nombre de charges chargées : après une suppression locale, `page + 1` en sauterait une.
+            const loaded = expensesByKey.get(key)?.items.length ?? expenses.value.length;
+            const nextPage = nextPageFromLoaded(loaded, size, RECURRING_PAGE_SIZE_DEFAULT);
             const result = await recurringExpensesApi.list({
                 ...filters,
                 accountPublicId: accountPublicId ?? undefined,
                 page: nextPage,
-                pageSize: expensePageSize.value || RECURRING_PAGE_SIZE_DEFAULT
+                pageSize: size
             });
             if (requestId !== expenseListSeq) return;
             const incoming = Array.isArray(result?.items) ? result.items : [];
@@ -322,10 +324,12 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
             const byId = new Map<string, RecurringExpense>();
             for (const item of prev) byId.set(item.publicId, item);
             for (const item of incoming) byId.set(item.publicId, item);
-            setExpenseList(key, [...byId.values()], {
+            const merged = [...byId.values()];
+            setExpenseList(key, merged, {
                 page: result?.page ?? nextPage,
-                pageSize: result?.pageSize ?? expensePageSize.value,
-                totalCount: result?.totalCount ?? expenseTotalCount.value
+                pageSize: result?.pageSize ?? size,
+                // Page vide : plus rien côté serveur, on arrête hasMore.
+                totalCount: incoming.length ? (result?.totalCount ?? expenseTotalCount.value) : merged.length
             });
             cache.touch(key);
         } catch (e: unknown) {
@@ -346,12 +350,15 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         loadingMoreIncomes.value = true;
         clearError();
         try {
-            const nextPage = incomePage.value + 1;
+            const size = incomePageSize.value || RECURRING_PAGE_SIZE_DEFAULT;
+            // Page déduite du nombre de revenus chargés : après une suppression locale, `page + 1` en sauterait un.
+            const loaded = incomesByKey.get(key)?.items.length ?? incomes.value.length;
+            const nextPage = nextPageFromLoaded(loaded, size, RECURRING_PAGE_SIZE_DEFAULT);
             const result = await recurringIncomesApi.list({
                 ...filters,
                 accountPublicId: accountPublicId ?? undefined,
                 page: nextPage,
-                pageSize: incomePageSize.value || RECURRING_PAGE_SIZE_DEFAULT
+                pageSize: size
             });
             if (requestId !== incomeListSeq) return;
             const incoming = Array.isArray(result?.items) ? result.items : [];
@@ -359,10 +366,12 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
             const byId = new Map<string, RecurringIncome>();
             for (const item of prev) byId.set(item.publicId, item);
             for (const item of incoming) byId.set(item.publicId, item);
-            setIncomeList(key, [...byId.values()], {
+            const merged = [...byId.values()];
+            setIncomeList(key, merged, {
                 page: result?.page ?? nextPage,
-                pageSize: result?.pageSize ?? incomePageSize.value,
-                totalCount: result?.totalCount ?? incomeTotalCount.value
+                pageSize: result?.pageSize ?? size,
+                // Page vide : plus rien côté serveur, on arrête hasMore.
+                totalCount: incoming.length ? (result?.totalCount ?? incomeTotalCount.value) : merged.length
             });
             cache.touch(key);
         } catch (e: unknown) {
@@ -604,6 +613,31 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         }
     }
 
+    /**
+     * Rafraîchissements qui suivent une action réussie sur une échéance (modèle, soldes, journal). Une erreur ici
+     * ne fait pas échouer l'action : elle est déjà faite côté serveur, et la présenter comme un échec pousserait à
+     * recliquer (second POST sur la même échéance).
+     */
+    async function refreshAfterDueAction(
+        kind: RecurringKind,
+        templatePublicId: string,
+        options: { reloadDues?: boolean; finance?: boolean }
+    ) {
+        let accountPublicId: string | null | undefined;
+        try {
+            const template = kind === 'expense' ? await getExpense(templatePublicId, true) : await getIncome(templatePublicId, true);
+            accountPublicId = template.accountPublicId;
+        } catch {
+            const cached =
+                kind === 'expense'
+                    ? expenses.value.find((item) => item.publicId === templatePublicId)
+                    : incomes.value.find((item) => item.publicId === templatePublicId);
+            accountPublicId = cached?.accountPublicId ?? getDetail(kind, templatePublicId)?.accountPublicId;
+        }
+        if (options.reloadDues) await loadDues(kind, templatePublicId, { force: true }).catch(() => undefined);
+        if (options.finance) await refreshLinkedFinance(accountPublicId).catch(() => undefined);
+    }
+
     async function confirmDue(kind: RecurringKind, templatePublicId: string, duePublicId: string, fields?: ConfirmDueFormFields) {
         beginActing();
         clearError();
@@ -620,8 +654,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
                     ? await recurringExpensesApi.confirmDue(templatePublicId, duePublicId, body)
                     : await recurringIncomesApi.confirmDue(templatePublicId, duePublicId, body);
             upsertDue(kind, templatePublicId, due);
-            const template = kind === 'expense' ? await getExpense(templatePublicId, true) : await getIncome(templatePublicId, true);
-            await refreshLinkedFinance(template.accountPublicId);
+            await refreshAfterDueAction(kind, templatePublicId, { finance: true });
             if (kind === 'expense') refreshTagCountersIfLoaded();
             return due;
         } catch (e: unknown) {
@@ -646,9 +679,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
                     ? await recurringExpensesApi.linkDue(templatePublicId, duePublicId, body)
                     : await recurringIncomesApi.linkDue(templatePublicId, duePublicId, body);
             upsertDue(kind, templatePublicId, due);
-            const template = kind === 'expense' ? await getExpense(templatePublicId, true) : await getIncome(templatePublicId, true);
-            await loadDues(kind, templatePublicId, { force: true }).catch(() => undefined);
-            await refreshLinkedFinance(template.accountPublicId);
+            await refreshAfterDueAction(kind, templatePublicId, { reloadDues: true, finance: true });
             return due;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
@@ -669,8 +700,7 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
                     ? await recurringExpensesApi.skipDue(templatePublicId, duePublicId)
                     : await recurringIncomesApi.skipDue(templatePublicId, duePublicId);
             upsertDue(kind, templatePublicId, due);
-            if (kind === 'expense') await getExpense(templatePublicId, true);
-            else await getIncome(templatePublicId, true);
+            await refreshAfterDueAction(kind, templatePublicId, {});
             return due;
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);

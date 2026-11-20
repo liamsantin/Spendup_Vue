@@ -3,6 +3,8 @@ import { useAuthStore } from '@/features/auth';
 import { csrfHeaderRecord } from '@/features/auth/csrf';
 import { createApiAxios, getApiBaseUrl, isAuthCookieMode } from '@/utils/helpers/axios-helpers';
 import { AppError, unwrapSpendupEnvelope } from '@/utils/errors/app-error';
+import { isDemoSession } from '@/features/demo/session';
+import { handleDemoRequest } from '@/features/demo/handle';
 
 /**
  * Client Axios pour les API domaine authentifiées.
@@ -35,6 +37,13 @@ export const fetchWrapper = {
             onUploadProgress: options.onUploadProgress
         });
     },
+    /** Comme `postForm`, en `PUT` (contenu d'un fichier existant). */
+    putForm(url: string, body: FormData, options: FetchFormOptions = {}) {
+        return send('PUT', url, body, {
+            timeout: options.timeout ?? 120_000,
+            onUploadProgress: options.onUploadProgress
+        });
+    },
     /** GET binaire authentifié (`/content`, avatar uploadé). 401/404 restent du JSON enveloppé. */
     getBlob(url: string) {
         return send('GET', url, undefined, { binary: true }) as Promise<Blob>;
@@ -46,6 +55,9 @@ function request(method: Method) {
 }
 
 async function send(method: Method, url: string, body?: unknown, extra: SendOptions = {}): Promise<unknown> {
+    if (isDemoSession()) {
+        return handleDemoRequest(method, url, body);
+    }
     const { binary = false, ...axiosExtra } = extra;
     const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
 
@@ -167,6 +179,10 @@ async function handleResponse(
             const refreshed = await auth.refreshSession();
             if (refreshed) {
                 return retry();
+            }
+            // Refresh injoignable (réseau, 5xx) : la session n'est pas invalide, on ne la détruit pas.
+            if (auth.lastRefreshTransient) {
+                return Promise.reject(new AppError(err.message, 401, err.code, err.details));
             }
         }
         // Passe le message API (ex. idle) pour la notice login si le refresh a aussi échoué.

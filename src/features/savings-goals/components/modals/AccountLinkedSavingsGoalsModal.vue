@@ -107,7 +107,7 @@ async function remove(goal: SavingsGoal) {
         <div v-if="loading && !linked.length" class="su-loading">
             <span class="su-spin" />
         </div>
-        <p v-else-if="!hasLinked" class="text-body-2 text-medium-emphasis mb-0">
+        <p v-else-if="!hasLinked" class="linked-goals__empty">
             {{ t('savingsGoalsPage.linkedAccount.empty') }}
         </p>
         <ul v-else class="linked-goals">
@@ -124,10 +124,10 @@ async function remove(goal: SavingsGoal) {
                     </span>
                 </div>
                 <div class="linked-goals__actions">
-                    <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="unlink(goal)">
+                    <button type="button" class="su-btn su-btn--sm" :disabled="store.acting" @click="unlink(goal)">
                         {{ t('savingsGoalsPage.linkedAccount.unlink') }}
                     </button>
-                    <button type="button" class="su-btn su-btn--ghost linked-goals__delete" :disabled="store.acting" @click="remove(goal)">
+                    <button type="button" class="su-btn su-btn--sm su-btn--danger" :disabled="store.acting" @click="remove(goal)">
                         {{ t('savingsGoalsPage.actions.delete') }}
                     </button>
                 </div>
@@ -143,43 +143,71 @@ async function remove(goal: SavingsGoal) {
 </template>
 
 <style scoped>
+.linked-goals__empty {
+    margin: 0;
+    color: var(--gray);
+    font-size: 14px;
+}
+
+/* lignes sur filets fins : nom 700 + sous-ligne grise | actions */
 .linked-goals {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    border-top: 1px solid var(--line);
 }
 
 .linked-goals__item {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px;
-    border: 1px solid var(--stroke);
-    border-radius: 14px;
-    background: var(--surface);
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+}
+
+.linked-goals > .linked-goals__item:first-child {
+    border-top: 0;
 }
 
 .linked-goals__meta {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
+}
+
+.linked-goals__meta strong {
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .linked-goals__meta span {
-    color: var(--ink-muted);
-    font-size: 0.8rem;
+    color: var(--gray);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
 }
 
 .linked-goals__actions {
     display: flex;
+    flex: none;
     flex-wrap: wrap;
-    gap: 8px;
+    justify-content: flex-end;
+    gap: 6px;
 }
 
-.linked-goals__delete {
-    color: #e11d48;
+@media (max-width: 599.98px) {
+    .linked-goals__item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .linked-goals__actions {
+        justify-content: flex-start;
+    }
 }
 </style>

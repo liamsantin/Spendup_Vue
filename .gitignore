@@ -29,3 +29,9 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+
+# Worktrees locaux Claude Code
+.claude/worktrees/
+
+# Documents personnels de test (ne jamais commiter)
+.private/

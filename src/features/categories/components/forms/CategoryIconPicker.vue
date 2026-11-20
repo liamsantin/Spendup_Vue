@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Grille d’icônes Tabler pour une catégorie.
+ * Grille de pictogrammes Tabler pour une catégorie : carrés 36 px, sélection cadrée de noir.
  */
 defineOptions({ name: 'CategoryIconPicker' });
 
@@ -25,13 +25,14 @@ function select(key: string) {
 </script>
 
 <template>
-    <div class="category-icon-picker" :class="{ 'category-icon-picker--disabled': disabled }">
+    <div class="category-icon-picker" :class="{ 'category-icon-picker--disabled': disabled }" role="group">
         <button
             type="button"
             class="category-icon-picker__swatch"
             :class="{ 'is-selected': !modelValue }"
             :disabled="disabled"
             :aria-label="noneLabel"
+            :aria-pressed="!modelValue"
             @click="select('')"
         >
             —
@@ -44,9 +45,10 @@ function select(key: string) {
             :class="{ 'is-selected': modelValue === key }"
             :disabled="disabled"
             :aria-label="key"
+            :aria-pressed="modelValue === key"
             @click="select(key)"
         >
-            <component :is="resolveCategoryIcon(key)" :size="18" stroke-width="1.6" />
+            <component :is="resolveCategoryIcon(key)" :size="18" stroke-width="1.7" />
         </button>
     </div>
 </template>
@@ -54,7 +56,7 @@ function select(key: string) {
 <style scoped>
 .category-icon-picker {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+    grid-template-columns: repeat(auto-fill, 36px);
     gap: 6px;
 }
 
@@ -64,32 +66,38 @@ function select(key: string) {
     place-items: center;
     width: 36px;
     height: 36px;
-    border: 1px solid var(--thread);
-    border-radius: 10px;
-    background: var(--surface-raised);
-    color: var(--ink-mute);
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--gray);
+    font: inherit;
     cursor: pointer;
     transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease;
+        border-color 0.15s var(--ease),
+        color 0.15s var(--ease),
+        background 0.15s var(--ease);
 }
 
-.category-icon-picker__swatch:hover:not(:disabled),
-.category-icon-picker__swatch:focus-visible {
-    outline: none;
+.category-icon-picker__swatch:hover:not(:disabled) {
     color: var(--ink);
-    border-color: rgba(var(--v-theme-primary), 0.4);
+    border-color: var(--gray);
+}
+
+.category-icon-picker__swatch:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
 }
 
 .category-icon-picker__swatch.is-selected {
-    color: rgb(var(--v-theme-primary));
-    border-color: rgba(var(--v-theme-primary), 0.55);
-    background: rgba(var(--v-theme-primary), 0.1);
+    color: var(--ink);
+    border-color: var(--ink);
+    background: var(--soft);
 }
 
 .category-icon-picker--disabled .category-icon-picker__swatch {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: default;
 }
 </style>

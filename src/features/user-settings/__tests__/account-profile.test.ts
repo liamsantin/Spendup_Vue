@@ -14,7 +14,8 @@ const fields = {
     birthDate: '1990-01-01',
     street: 'Rue',
     streetNumber: '12',
-    countryId: 33 as number | null
+    countryId: 33 as number | null,
+    canton: 'VD' as string | null
 };
 
 describe('account-profile', () => {
@@ -32,8 +33,13 @@ describe('account-profile', () => {
             birthDate: '1990-01-01',
             street: 'Rue',
             streetNumber: '12',
-            countryId: 33
+            countryId: 33,
+            canton: 'VD'
         });
+    });
+
+    it('buildProfilePayload vide le canton sans pays', () => {
+        expect(buildProfilePayload({ ...fields, countryId: null }).canton).toBeNull();
     });
 
     it('isProfileDirty compare au baseline', () => {
@@ -42,6 +48,7 @@ describe('account-profile', () => {
         expect(isProfileDirty(snap, snap)).toBe(false);
         expect(isProfileDirty({ ...snap, name: 'Other' }, snap)).toBe(true);
         expect(isProfileDirty({ ...snap, countryId: null }, snap)).toBe(true);
+        expect(isProfileDirty({ ...snap, canton: 'GE' }, snap)).toBe(true);
     });
 
     it('isValidAccountPassword exige 8+, lettre et chiffre', () => {

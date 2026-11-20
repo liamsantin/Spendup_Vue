@@ -2,6 +2,7 @@
 /**
  * Volet banque d’un tier (onglet « Banque » de la fiche). `form` est détenu par le parent.
  * Référentiel SIX (`bankPublicId`) ou banque hors référentiel (BIC / IID).
+ * Mise en page modale Swiss : libellé 170 px à gauche | champ carré à droite.
  */
 /* eslint-disable vue/no-mutating-props -- shared reactive form owned by parent */
 defineOptions({ name: 'TierBankForm' });
@@ -59,24 +60,20 @@ function setBankMode(mode: 'registry' | 'custom') {
 
 <template>
     <div class="tier-bank-form">
-        <div v-if="locked" class="text-caption text-medium-emphasis">{{ t('tiersPage.form.bankLockedHint') }}</div>
-        <v-row v-else class="align-center" no-gutters>
-            <v-col cols="12" sm="3" class="pr-sm-3">
-                <label class="v-label font-weight-medium" for="tier-form-is-bank">{{ t('tiersPage.form.fields.isBank') }}</label>
-            </v-col>
-            <v-col cols="12" sm="9">
+        <p v-if="locked" class="tier-bank-form__note">{{ t('tiersPage.form.bankLockedHint') }}</p>
+        <div v-else class="tier-bank-form__row">
+            <label class="tier-bank-form__label" for="tier-form-is-bank">{{ t('tiersPage.form.fields.isBank') }}</label>
+            <div class="tier-bank-form__field">
                 <AppSwitch id="tier-form-is-bank" v-model="form.bank.enabled" />
-            </v-col>
-            <v-col cols="12">
-                <div class="text-caption text-medium-emphasis">{{ t('tiersPage.form.bankHint') }}</div>
-            </v-col>
-        </v-row>
+                <p class="tier-bank-form__note">{{ t('tiersPage.form.bankHint') }}</p>
+            </div>
+        </div>
         <template v-if="form.bank.enabled">
-            <v-row v-if="form.bank.mode === 'registry'" class="align-center" no-gutters>
-                <v-col cols="12" sm="3" class="pr-sm-3">
-                    <label class="v-label font-weight-medium" for="tier-form-bank">{{ t('tiersPage.form.fields.bank') }} *</label>
-                </v-col>
-                <v-col cols="12" sm="9">
+            <div v-if="form.bank.mode === 'registry'" class="tier-bank-form__row tier-bank-form__row--top">
+                <label class="tier-bank-form__label" for="tier-form-bank">
+                    {{ t('tiersPage.form.fields.bank') }} <span class="tier-bank-form__req" aria-hidden="true">*</span>
+                </label>
+                <div class="tier-bank-form__field">
                     <BankPicker
                         id="tier-form-bank"
                         v-model="registryChoice"
@@ -86,20 +83,18 @@ function setBankMode(mode: 'registry' | 'custom') {
                         :error-messages="fieldErrors.bank || undefined"
                         hide-details="auto"
                     />
-                    <div class="tier-bank-form__custom mt-2">
-                        <span class="text-caption text-medium-emphasis">{{ t('tiersPage.form.bankNotListed') }}</span>
-                        <button type="button" class="su-btn su-btn--ghost tier-bank-form__switch-mode" @click="setBankMode('custom')">
+                    <div class="tier-bank-form__custom">
+                        <span class="tier-bank-form__note">{{ t('tiersPage.form.bankNotListed') }}</span>
+                        <button type="button" class="su-btn su-btn--ghost su-btn--sm" @click="setBankMode('custom')">
                             {{ t('tiersPage.form.bankCustom') }}
                         </button>
                     </div>
-                </v-col>
-            </v-row>
+                </div>
+            </div>
             <template v-else>
-                <v-row class="align-center" no-gutters>
-                    <v-col cols="12" sm="3" class="pr-sm-3">
-                        <label class="v-label font-weight-medium" for="tier-form-bic">{{ t('tiersPage.form.fields.bic') }}</label>
-                    </v-col>
-                    <v-col cols="12" sm="9">
+                <div class="tier-bank-form__row">
+                    <label class="tier-bank-form__label" for="tier-form-bic">{{ t('tiersPage.form.fields.bic') }}</label>
+                    <div class="tier-bank-form__field">
                         <v-text-field
                             id="tier-form-bic"
                             v-model="form.bank.bic"
@@ -112,13 +107,11 @@ function setBankMode(mode: 'registry' | 'custom') {
                             :error="!!(fieldErrors['bank.bic'] || fieldErrors.bank)"
                             :error-messages="fieldErrors['bank.bic'] || fieldErrors.bank || undefined"
                         />
-                    </v-col>
-                </v-row>
-                <v-row class="align-center" no-gutters>
-                    <v-col cols="12" sm="3" class="pr-sm-3">
-                        <label class="v-label font-weight-medium" for="tier-form-iid">{{ t('tiersPage.form.fields.iid') }}</label>
-                    </v-col>
-                    <v-col cols="12" sm="9">
+                    </div>
+                </div>
+                <div class="tier-bank-form__row">
+                    <label class="tier-bank-form__label" for="tier-form-iid">{{ t('tiersPage.form.fields.iid') }}</label>
+                    <div class="tier-bank-form__field">
                         <v-text-field
                             id="tier-form-iid"
                             v-model="form.bank.iid"
@@ -132,18 +125,17 @@ function setBankMode(mode: 'registry' | 'custom') {
                             :error="!!fieldErrors['bank.iid']"
                             :error-messages="fieldErrors['bank.iid'] || undefined"
                         />
-                    </v-col>
-                </v-row>
-                <v-row no-gutters>
-                    <v-col cols="12" sm="9" offset-sm="3">
-                        <div class="tier-bank-form__custom">
-                            <span class="text-caption text-medium-emphasis">{{ t('tiersPage.form.bankCustomHint') }}</span>
-                            <button type="button" class="su-btn su-btn--ghost tier-bank-form__switch-mode" @click="setBankMode('registry')">
-                                {{ t('tiersPage.form.bankUseRegistry') }}
-                            </button>
-                        </div>
-                    </v-col>
-                </v-row>
+                    </div>
+                </div>
+                <div class="tier-bank-form__row">
+                    <span class="tier-bank-form__label" aria-hidden="true" />
+                    <div class="tier-bank-form__field tier-bank-form__custom">
+                        <span class="tier-bank-form__note">{{ t('tiersPage.form.bankCustomHint') }}</span>
+                        <button type="button" class="su-btn su-btn--ghost su-btn--sm" @click="setBankMode('registry')">
+                            {{ t('tiersPage.form.bankUseRegistry') }}
+                        </button>
+                    </div>
+                </div>
             </template>
         </template>
     </div>
@@ -153,7 +145,48 @@ function setBankMode(mode: 'registry' | 'custom') {
 .tier-bank-form {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
+}
+
+/* ligne libellé 170 px | champ */
+.tier-bank-form__row {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 8px 16px;
+    align-items: center;
+}
+
+.tier-bank-form__row--top {
+    align-items: start;
+}
+
+.tier-bank-form__row--top .tier-bank-form__label {
+    padding-top: 10px;
+}
+
+.tier-bank-form__label {
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.3;
+}
+
+.tier-bank-form__req {
+    color: var(--blue-ink);
+}
+
+.tier-bank-form__field {
+    min-width: 0;
+}
+
+.tier-bank-form__note {
+    margin: 0;
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.4;
+}
+
+.tier-bank-form__field > .tier-bank-form__note {
+    margin-top: 4px;
 }
 
 .tier-bank-form__custom {
@@ -162,20 +195,21 @@ function setBankMode(mode: 'registry' | 'custom') {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 8px;
-}
-
-.tier-bank-form__switch-mode {
-    min-height: 34px;
-    padding: 0 12px;
+    margin-top: 8px;
 }
 
 @media (max-width: 599.98px) {
-    .tier-bank-form {
-        gap: 12px;
+    .tier-bank-form__row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
     }
 
-    .tier-bank-form :deep(.v-label) {
-        margin-bottom: 4px;
+    .tier-bank-form__row--top .tier-bank-form__label {
+        padding-top: 0;
+    }
+
+    .tier-bank-form__label:empty {
+        display: none;
     }
 }
 </style>

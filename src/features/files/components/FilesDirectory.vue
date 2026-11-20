@@ -24,7 +24,11 @@ import FileListItem from '@/features/files/components/list/FileListItem.vue';
 import FileTable from '@/features/files/components/list/FileTable.vue';
 import FileEditModal from '@/features/files/components/modals/FileEditModal.vue';
 import FileUsageMeter from '@/features/files/components/FileUsageMeter.vue';
+import FileSyncPanel from '@/features/files/components/sync/FileSyncPanel.vue';
+import FileSyncModal from '@/features/files/components/sync/FileSyncModal.vue';
+import { useFileSyncStore } from '@/features/files/sync/sync-store';
 import { downloadCsv } from '@/utils/helpers/csv';
+import { sensitiveExportValue } from '@/features/vault/display';
 
 const FILES_PATH = '/app/gestion/files';
 
@@ -44,6 +48,7 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useFilesStore();
+const fileSync = useFileSyncStore();
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const dragging = ref(false);
@@ -52,6 +57,14 @@ const uploadingName = ref<string | null>(null);
 const editTarget = ref<FileDto | null>(null);
 const deleteTarget = ref<FileDto | null>(null);
 const localError = ref<string | null>(null);
+const syncTarget = ref<FileDto | null>(null);
+
+const syncOpen = computed({
+    get: () => !!syncTarget.value,
+    set: (value: boolean) => {
+        if (!value) syncTarget.value = null;
+    }
+});
 
 const editOpen = computed({
     get: () => !!editTarget.value,
@@ -149,14 +162,16 @@ watch(previewId, async (id) => {
 
 function exportCsv() {
     const header = (['name', 'documentDate', 'size', 'added', 'description'] as const).map((key) => t(`filesPage.columns.${key}`));
+    // Coffre ouvert : valeurs en clair ; sinon un chiffré sort marqué « chiffré », jamais tel quel.
+    const encrypted = t('vault.encrypted');
     const rows = visibleItems.value.map((file) => {
         const parts = fileSizeParts(file.sizeBytes);
         return [
-            file.nameOriginal,
+            sensitiveExportValue(file.nameOriginal, encrypted) ?? '',
             file.documentDate ?? '',
             t(`filesPage.size.${parts.unit}`, { n: parts.n }),
             file.createdAt,
-            file.description ?? ''
+            sensitiveExportValue(file.description, encrypted) ?? ''
         ];
     });
     downloadCsv('fichiers', header, rows);
@@ -164,8 +179,12 @@ function exportCsv() {
 
 const visibleCount = computed(() => visibleItems.value.length);
 
+function openPicker() {
+    fileInputRef.value?.click();
+}
+
 defineExpose({
-    openPicker: () => fileInputRef.value?.click(),
+    openPicker,
     onFiles: (files: FileList | File[]) => void uploadFiles(files),
     openEdit: (file: FileDto) => {
         editTarget.value = file;
@@ -193,12 +212,19 @@ function requestDelete(file: FileDto) {
     deleteTarget.value = file;
 }
 
-async function confirmDelete() {
+/** Fichier en ligne et présent sur ce poste : demander s'il faut aussi le supprimer en ligne. */
+const deleteAsksOnline = computed(() => {
+    const target = deleteTarget.value;
+    if (!target || !fileSync.ready) return false;
+    return (target.contentLocation ?? 'online') === 'online' && fileSync.isHere(target.publicId);
+});
+
+async function confirmDelete(alsoOnline = true) {
     if (!deleteTarget.value) return;
     localError.value = null;
     const id = deleteTarget.value.publicId;
     try {
-        await store.deleteFile(id);
+        await store.deleteFile(id, { alsoOnline });
         deleteTarget.value = null;
         if (previewId.value === id) {
             void router.replace({ path: FILES_PATH, query: route.query });
@@ -225,16 +251,19 @@ async function uploadFiles(list: FileList | File[]) {
     localError.value = null;
     store.clearError();
 
+    // un fichier refusé n'arrête pas les suivants ; chaque refus est nommé dans le message final
+    const failures: string[] = [];
+    const fail = (file: File, message: string) => failures.push(`${file.name} : ${message}`);
     for (const file of files) {
         const check = await validatePdfFile(file);
         if (!check.ok) {
-            localError.value = t(`filesPage.errors.${check.code}`);
-            return;
+            fail(file, t(`filesPage.errors.${check.code}`));
+            continue;
         }
         const usage = store.usage;
         if (usage && wouldExceedQuota(usage, file.size)) {
-            localError.value = t('filesPage.errors.quotaExceeded');
-            return;
+            fail(file, t('filesPage.errors.quotaExceeded'));
+            continue;
         }
         uploadingName.value = file.name;
         uploadProgress.value = 0;
@@ -244,13 +273,13 @@ async function uploadFiles(list: FileList | File[]) {
             });
         } catch (e: unknown) {
             const err = AppError.fromUnknown(e);
-            localError.value = isQuotaExceededMessage(err.message) ? t('filesPage.errors.quotaExceeded') : getErrorMessage(e);
-            break;
+            fail(file, isQuotaExceededMessage(err.message) ? t('filesPage.errors.quotaExceeded') : getErrorMessage(e));
         } finally {
             uploadingName.value = null;
             uploadProgress.value = 0;
         }
     }
+    localError.value = failures.length ? failures.join(' · ') : null;
 }
 
 function onFileSelected(event: Event) {
@@ -296,11 +325,6 @@ function onDrop(event: DragEvent) {
     <div class="files-panel" @dragenter="onDragEnter" @dragover="onDragOver" @dragleave="onDragLeave" @drop="onDrop">
         <input ref="fileInputRef" class="files-panel__input" type="file" :accept="`${FILE_PDF_MIME},.pdf`" @change="onFileSelected" />
 
-        <div v-if="dragging" class="files-panel__drop">
-            <p class="files-panel__drop-title">{{ t('filesPage.drop.title') }}</p>
-            <p>{{ t('filesPage.drop.body') }}</p>
-        </div>
-
         <AppAlert
             v-if="localError || store.error"
             type="error"
@@ -314,14 +338,27 @@ function onDrop(event: DragEvent) {
             {{ localError || store.error }}
         </AppAlert>
 
+        <!-- zone de dépôt : cadre 1 px noir pointillé, sans fond ; s’active au survol d’un fichier -->
+        <div class="files-dropzone" :class="{ 'is-dragging': dragging, 'is-busy': uploading }">
+            <div class="files-dropzone__copy">
+                <p class="files-dropzone__title">{{ t('filesPage.drop.title') }}</p>
+                <p class="files-dropzone__body">{{ t('filesPage.drop.body') }}</p>
+            </div>
+            <button type="button" class="su-btn" :disabled="store.acting || uploading" @click="openPicker">
+                {{ t('filesPage.actions.upload') }}
+            </button>
+        </div>
+
         <div v-if="uploading" class="files-panel__progress" role="status">
             <p>{{ t('filesPage.upload.progress', { name: uploadingName, percent: uploadProgress }) }}</p>
-            <div class="files-panel__bar">
-                <span class="files-panel__bar-fill" :style="{ width: `${uploadProgress}%` }" />
+            <div class="su-gauge files-panel__bar">
+                <span class="su-gauge__fill su-gauge__fill--blue" :style="{ width: `${uploadProgress}%` }" />
             </div>
         </div>
 
         <FileUsageMeter v-if="store.usage" class="files-panel__usage" :usage="store.usage" />
+
+        <FileSyncPanel />
 
         <div class="files-panel__scroll">
             <div v-if="store.loading && !store.items.length" class="su-loading">
@@ -347,6 +384,7 @@ function onDrop(event: DragEvent) {
                         @download="onDownload"
                         @edit="editTarget = $event"
                         @delete="requestDelete"
+                        @sync="syncTarget = $event"
                     />
                 </div>
                 <FileTable
@@ -358,6 +396,7 @@ function onDrop(event: DragEvent) {
                     @download="onDownload"
                     @edit="editTarget = $event"
                     @delete="requestDelete"
+                    @sync="syncTarget = $event"
                     @sort="emit('sort', $event)"
                 />
             </div>
@@ -374,12 +413,26 @@ function onDrop(event: DragEvent) {
         <AppConfirmationModal
             v-model="deleteOpen"
             :title="t('filesPage.deleteModal.title')"
-            :message="t('filesPage.deleteModal.body')"
+            :message="deleteAsksOnline ? t('filesPage.sync.deleteModal.body') : t('filesPage.deleteModal.body')"
             :confirm-label="t('filesPage.actions.delete')"
             confirm-color="error"
             :loading="store.acting"
-            @confirm="confirmDelete"
-        />
+            @confirm="confirmDelete()"
+        >
+            <template v-if="deleteAsksOnline" #footer="{ close }">
+                <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
+                    {{ t('common.cancel') }}
+                </button>
+                <button type="button" class="su-btn su-btn--ink" :disabled="store.acting" @click="confirmDelete(false)">
+                    {{ t('filesPage.sync.deleteModal.localOnly') }}
+                </button>
+                <button type="button" class="su-btn su-btn--danger" :disabled="store.acting" @click="confirmDelete(true)">
+                    {{ t('filesPage.sync.deleteModal.everywhere') }}
+                </button>
+            </template>
+        </AppConfirmationModal>
+
+        <FileSyncModal v-model="syncOpen" :file="syncTarget" />
     </div>
 </template>
 
@@ -396,59 +449,76 @@ function onDrop(event: DragEvent) {
     display: none;
 }
 
-.files-panel__drop {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    display: grid;
-    place-content: center;
-    gap: 4px;
-    min-height: 220px;
-    border-radius: 16px;
-    border: 1.5px dashed rgb(var(--v-theme-primary));
-    background: color-mix(in srgb, rgb(var(--v-theme-primary)) 8%, var(--surface-raised));
-    color: var(--ink-muted);
-    text-align: center;
-    pointer-events: none;
+/* ── zone de dépôt ──────────────────────────────────── */
+.files-dropzone {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin: 0 0 24px;
+    padding: 20px 24px;
+    border: 1px dashed var(--ink);
+    border-radius: 0;
+    background: transparent;
+    color: var(--gray);
+    transition:
+        border-color 0.15s var(--ease),
+        color 0.15s var(--ease);
 }
 
-.files-panel__drop-title {
+.files-dropzone.is-dragging {
+    border-style: solid;
+    border-color: var(--blue-btn);
+    color: var(--blue-ink);
+}
+
+.files-dropzone.is-busy {
+    opacity: 0.6;
+}
+
+.files-dropzone__copy {
+    min-width: 0;
+}
+
+.files-dropzone__title {
     margin: 0;
-    font-weight: 650;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+}
+
+.files-dropzone.is-dragging .files-dropzone__title {
+    color: var(--blue-ink);
+}
+
+.files-dropzone__body {
+    margin: 2px 0 0;
+    font-size: 13px;
     color: inherit;
 }
 
+/* ── envoi en cours : texte + jauge carrée bleue ───── */
 .files-panel__progress {
     flex: none;
-    margin: 12px 16px 0;
-    padding: 12px 14px;
-    border-radius: 12px;
-    background: var(--surface-raised);
+    margin: 0 0 16px;
 }
 
 .files-panel__progress p {
     margin: 0 0 8px;
-    font-size: 0.85rem;
+    font-size: 13px;
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
 }
 
 .files-panel__bar {
-    height: 6px;
-    border-radius: 999px;
-    background: var(--hair);
-    overflow: hidden;
-}
-
-.files-panel__bar-fill {
-    display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: rgb(var(--v-theme-primary));
-    transition: width 0.2s var(--ease);
+    height: 4px;
 }
 
 .files-panel :deep(.file-usage) {
     flex: none;
-    margin: 12px 18px 0;
+    margin: 0 0 24px;
 }
 
 .files-panel__scroll {
@@ -464,13 +534,13 @@ function onDrop(event: DragEvent) {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    padding: 4px 16px 10px;
+    padding: 0;
 }
 
 .files-directory__list {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0;
     overflow: visible;
 }
 
@@ -500,13 +570,16 @@ function onDrop(event: DragEvent) {
 
     .files-directory {
         display: block;
-        padding: 0 4px 4px;
+        padding: 0;
     }
 
-    .files-panel :deep(.file-usage),
-    .files-panel__progress {
-        margin-left: 8px;
-        margin-right: 8px;
+    .files-dropzone {
+        margin-bottom: 16px;
+        padding: 16px;
+    }
+
+    .files-panel :deep(.file-usage) {
+        margin-bottom: 16px;
     }
 }
 </style>

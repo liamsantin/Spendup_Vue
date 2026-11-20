@@ -23,9 +23,10 @@ const emit = defineEmits<{
 </template>
 
 <style scoped>
+/* liste à plat : les options se suivent sur des filets fins */
 .tier-nature-choice {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0;
 }
 </style>

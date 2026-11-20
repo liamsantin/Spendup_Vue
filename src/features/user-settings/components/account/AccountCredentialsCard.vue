@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { KeyIcon, PencilIcon } from 'vue-tabler-icons';
+import { PencilIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
-import AppGlassCard from '@/components/shared/card/AppGlassCard.vue';
 
 defineProps<{
     username: string;
@@ -28,101 +27,136 @@ const { t } = useI18n();
 </script>
 
 <template>
-    <AppGlassCard :title="t('accounts.credentials.title')" :subtitle="t('accounts.credentials.hint')">
-        <template #icon>
-            <KeyIcon :size="20" stroke-width="1.5" />
-        </template>
-        <AppAlert v-if="success" type="success" class="mt-4" closable :dismiss-ms="5000" @dismiss="emit('dismissSuccess')">
-            {{ success }}
-        </AppAlert>
-        <AppAlert v-if="error" type="error" class="mt-4" closable @dismiss="emit('dismissError')">
-            {{ error }}
-        </AppAlert>
-        <AppAlert v-if="pendingEmail" type="warning" class="mt-4">
-            {{ t('accounts.credentials.pendingEmail', { email: pendingEmail }) }}
-            <button type="button" class="su-btn su-btn--warn ml-1" @click="emit('confirmPendingEmail')">
-                {{ t('accounts.credentials.enterCode') }}
-            </button>
-        </AppAlert>
-        <div class="mt-2">
-            <v-row>
-                <v-col cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('accounts.credentials.fields.username') }}</v-label>
-                    <v-text-field
-                        :model-value="username"
-                        color="primary"
-                        variant="outlined"
-                        hide-details
-                        readonly
-                        class="account-field-editable"
-                        @click="emit('editUsername')"
-                    >
-                        <template #append-inner>
-                            <PencilIcon
-                                size="18"
-                                stroke-width="1.5"
-                                class="text-medium-emphasis account-field-edit-icon"
-                                @click.stop="emit('editUsername')"
-                            />
-                        </template>
-                    </v-text-field>
-                </v-col>
-                <v-col cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('accounts.credentials.fields.email') }}</v-label>
-                    <v-text-field
-                        :model-value="email"
-                        color="primary"
-                        variant="outlined"
-                        hide-details
-                        readonly
-                        class="account-field-editable"
-                        @click="emit('editEmail')"
-                    >
-                        <template #append-inner>
-                            <PencilIcon
-                                size="18"
-                                stroke-width="1.5"
-                                class="text-medium-emphasis account-field-edit-icon"
-                                @click.stop="emit('editEmail')"
-                            />
-                        </template>
-                    </v-text-field>
-                </v-col>
-                <v-col v-if="showPasswordField" cols="12" md="6">
-                    <v-label class="mb-2 font-weight-medium">{{ t('accounts.credentials.fields.password') }}</v-label>
-                    <v-text-field
-                        model-value="••••••••"
-                        color="primary"
-                        variant="outlined"
-                        hide-details
-                        readonly
-                        class="account-field-editable"
-                        @click="emit('editPassword')"
-                    >
-                        <template #append-inner>
-                            <PencilIcon
-                                size="18"
-                                stroke-width="1.5"
-                                class="text-medium-emphasis account-field-edit-icon"
-                                @click.stop="emit('editPassword')"
-                            />
-                        </template>
-                    </v-text-field>
-                </v-col>
-            </v-row>
-            <div v-if="canUnlinkGoogle" class="d-flex align-center justify-space-between flex-wrap ga-3 mt-5">
-                <span class="text-subtitle-1 text-medium-emphasis">{{ t('accounts.credentials.googleLinked') }}</span>
+    <section class="su-settings account-credentials">
+        <div class="su-settings__lead">
+            <h2>{{ t('accounts.credentials.title') }}</h2>
+            <p>{{ t('accounts.credentials.hint') }}</p>
+        </div>
+        <div class="su-settings__fields">
+            <AppAlert v-if="success" type="success" class="is-full su-alert" closable :dismiss-ms="5000" @dismiss="emit('dismissSuccess')">
+                {{ success }}
+            </AppAlert>
+            <AppAlert v-if="error" type="error" class="is-full su-alert" closable @dismiss="emit('dismissError')">
+                {{ error }}
+            </AppAlert>
+            <AppAlert v-if="pendingEmail" type="warning" class="is-full su-alert">
+                {{ t('accounts.credentials.pendingEmail', { email: pendingEmail }) }}
+                <button type="button" class="su-btn su-btn--warn su-btn--sm ml-1" @click="emit('confirmPendingEmail')">
+                    {{ t('accounts.credentials.enterCode') }}
+                </button>
+            </AppAlert>
+
+            <!-- Champs en lecture seule sur fond `--soft`, crayon à droite : tout le champ ouvre la modale. -->
+            <div class="su-field">
+                <span id="account-credential-username" class="su-field__label">{{ t('accounts.credentials.fields.username') }}</span>
+                <button
+                    type="button"
+                    class="account-credentials__field"
+                    aria-labelledby="account-credential-username"
+                    @click="emit('editUsername')"
+                >
+                    <span class="account-credentials__value">{{ username }}</span>
+                    <span class="su-orb account-credentials__pen" aria-hidden="true">
+                        <PencilIcon :size="18" stroke-width="1.5" />
+                    </span>
+                </button>
+            </div>
+            <div class="su-field">
+                <span id="account-credential-email" class="su-field__label">{{ t('accounts.credentials.fields.email') }}</span>
+                <button
+                    type="button"
+                    class="account-credentials__field"
+                    aria-labelledby="account-credential-email"
+                    @click="emit('editEmail')"
+                >
+                    <span class="account-credentials__value">{{ email }}</span>
+                    <span class="su-orb account-credentials__pen" aria-hidden="true">
+                        <PencilIcon :size="18" stroke-width="1.5" />
+                    </span>
+                </button>
+            </div>
+            <div v-if="showPasswordField" class="su-field">
+                <span id="account-credential-password" class="su-field__label">{{ t('accounts.credentials.fields.password') }}</span>
+                <button
+                    type="button"
+                    class="account-credentials__field"
+                    aria-labelledby="account-credential-password"
+                    @click="emit('editPassword')"
+                >
+                    <span class="account-credentials__value">••••••••</span>
+                    <span class="su-orb account-credentials__pen" aria-hidden="true">
+                        <PencilIcon :size="18" stroke-width="1.5" />
+                    </span>
+                </button>
+            </div>
+
+            <div v-if="canUnlinkGoogle" class="is-full account-credentials__google">
+                <span>{{ t('accounts.credentials.googleLinked') }}</span>
                 <button type="button" class="su-btn su-btn--danger" @click="emit('unlinkGoogle')">
                     {{ t('accounts.credentials.unlinkGoogle') }}
                 </button>
             </div>
         </div>
-    </AppGlassCard>
+    </section>
 </template>
 
 <style scoped>
-.account-field-editable,
-.account-field-edit-icon {
+.account-credentials__field {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    min-height: 42px;
+    padding: 0 2px 0 14px;
+    border: 0;
+    border-radius: 0;
+    background: var(--soft);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    text-align: left;
     cursor: pointer;
+    transition: background 0.15s var(--ease);
+}
+
+.account-credentials__field:hover {
+    background: var(--line);
+}
+
+.account-credentials__field:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+}
+
+.account-credentials__value {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-credentials__pen {
+    width: 38px;
+    height: 38px;
+    color: var(--gray);
+}
+
+.account-credentials__field:hover .account-credentials__pen {
+    background: transparent;
+    color: var(--ink);
+}
+
+.account-credentials__google {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    color: var(--gray);
+    font-size: 14px;
 }
 </style>

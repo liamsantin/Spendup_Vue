@@ -1,3 +1,5 @@
+mod local_files;
+
 use std::io::{Read, Write};
 use std::net::TcpListener;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -21,6 +23,15 @@ const SUCCESS_HTML: &str = r#"<!DOCTYPE html>
 </body>
 </html>"#;
 
+const DENIED_HTML: &str = r#"<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="utf-8"><title>Spend.Up</title></head>
+<body>
+  <h1>Spend.Up</h1>
+  <p>La connexion avec Google n’a pas abouti. Vous pouvez fermer cette fenêtre et réessayer dans l’application.</p>
+</body>
+</html>"#;
+
 /// Drapeau d’annulation de l’attente loopback en cours (une seule à la fois).
 #[derive(Default)]
 struct OauthState {
@@ -29,12 +40,15 @@ struct OauthState {
 
 /// Attend le redirect OAuth Google sur `http://127.0.0.1:<port>/auth/google/callback`.
 /// Émet l’événement `oauth-loopback-ready` avec l’URI exacte à utiliser comme `redirect_uri`.
+/// `expected_state` : le `state` OAuth du flux ; une requête qui ne le porte pas ne termine pas l’attente.
 #[tauri::command]
 async fn oauth_loopback_wait(
     app: AppHandle,
     state: State<'_, OauthState>,
     timeout_ms: u64,
+    expected_state: Option<String>,
 ) -> Result<String, String> {
+    let expected_state = expected_state.filter(|s| !s.trim().is_empty());
     let listener = TcpListener::bind("127.0.0.1:0").map_err(|e| format!("bind loopback: {e}"))?;
     listener
         .set_nonblocking(true)
@@ -65,7 +79,7 @@ async fn oauth_loopback_wait(
     let flag = Arc::clone(&cancel);
 
     let outcome = tauri::async_runtime::spawn_blocking(move || {
-        accept_oauth_callback(listener, port, timeout, flag)
+        accept_oauth_callback(listener, port, timeout, flag, expected_state)
     })
     .await
     .map_err(|e| format!("join: {e}"))?;
@@ -215,6 +229,7 @@ fn accept_oauth_callback(
     port: u16,
     timeout: Duration,
     cancel: Arc<AtomicBool>,
+    expected_state: Option<String>,
 ) -> Result<String, String> {
     let started = Instant::now();
 
@@ -235,6 +250,11 @@ fn accept_oauth_callback(
             Err(e) => return Err(format!("accept: {e}")),
         };
 
+        // Le listener est non bloquant ; sous Windows et macOS le socket accepté en hérite et
+        // `read` rendrait `WouldBlock` avant l’arrivée de la requête. On le repasse en bloquant.
+        if stream.set_nonblocking(false).is_err() {
+            continue;
+        }
         let _ = stream.set_read_timeout(Some(Duration::from_secs(5)));
         let mut buf = [0u8; 8192];
         let n = match stream.read(&mut buf) {
@@ -245,20 +265,71 @@ fn accept_oauth_callback(
         let first_line = req.lines().next().unwrap_or("");
         let target = first_line.split_whitespace().nth(1).unwrap_or("");
 
-        // Ignore favicon / probes — attend le vrai callback OAuth.
-        if !target.starts_with(CALLBACK_PATH) {
-            let _ = write_http_response(&mut stream, 404, b"Not Found");
-            continue;
+        // Seul le vrai redirect Google (bon `state`, avec `code` ou `error`) termine l’attente :
+        // favicon, sondes et requêtes d’une autre page sont refusées sans fermer le listener.
+        match classify_callback(target, expected_state.as_deref()) {
+            CallbackKind::NotCallback => {
+                let _ = write_http_response(&mut stream, 404, b"Not Found");
+                continue;
+            }
+            CallbackKind::Rejected => {
+                let _ = write_http_response(&mut stream, 400, b"Bad Request");
+                continue;
+            }
+            CallbackKind::Denied => {
+                let _ = write_http_response(&mut stream, 200, DENIED_HTML.as_bytes());
+            }
+            CallbackKind::Authorized => {
+                let _ = write_http_response(&mut stream, 200, SUCCESS_HTML.as_bytes());
+            }
         }
-
-        let _ = write_http_response(&mut stream, 200, SUCCESS_HTML.as_bytes());
         return Ok(format!("http://127.0.0.1:{port}{target}"));
     }
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum CallbackKind {
+    /// Autre chemin (favicon, sonde).
+    NotCallback,
+    /// Bon chemin, mais `state` inattendu ou ni `code` ni `error`.
+    Rejected,
+    /// Google a redirigé avec `error` (accès refusé).
+    Denied,
+    /// Google a redirigé avec un `code`.
+    Authorized,
+}
+
+/// Valeur brute d’un paramètre de la query (les valeurs attendues sont en base64url, sans encodage).
+fn query_param<'a>(query: &'a str, key: &str) -> Option<&'a str> {
+    query.split('&').find_map(|pair| {
+        let (k, v) = pair.split_once('=')?;
+        (k == key).then_some(v)
+    })
+}
+
+fn classify_callback(target: &str, expected_state: Option<&str>) -> CallbackKind {
+    let (path, query) = target.split_once('?').unwrap_or((target, ""));
+    if path != CALLBACK_PATH {
+        return CallbackKind::NotCallback;
+    }
+    if let Some(expected) = expected_state {
+        if query_param(query, "state") != Some(expected) {
+            return CallbackKind::Rejected;
+        }
+    }
+    if query_param(query, "error").is_some_and(|v| !v.is_empty()) {
+        return CallbackKind::Denied;
+    }
+    if query_param(query, "code").is_some_and(|v| !v.is_empty()) {
+        return CallbackKind::Authorized;
+    }
+    CallbackKind::Rejected
 }
 
 fn write_http_response(stream: &mut impl Write, status: u16, body: &[u8]) -> std::io::Result<()> {
     let reason = match status {
         200 => "OK",
+        400 => "Bad Request",
         404 => "Not Found",
         _ => "Error",
     };
@@ -292,10 +363,23 @@ pub fn run() {
         .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             oauth_loopback_wait,
             oauth_loopback_cancel,
-            google_exchange_code
+            google_exchange_code,
+            local_files::local_files_get_root,
+            local_files::local_files_pick_root,
+            local_files::local_files_set_root,
+            local_files::local_files_list,
+            local_files::local_files_read,
+            local_files::local_files_write,
+            local_files::local_files_hash,
+            local_files::local_files_rename,
+            local_files::local_files_delete,
+            local_files::local_files_purge_trash,
+            local_files::local_files_read_index,
+            local_files::local_files_write_index
         ])
         .setup(|app| {
             #[cfg(any(windows, target_os = "linux"))]
@@ -304,6 +388,7 @@ pub fn run() {
                 app.deep_link().register_all()?;
             }
             app.manage(OauthState::default());
+            app.manage(local_files::PickedRoot::default());
             Ok(())
         })
         .run(tauri::generate_context!())
@@ -354,6 +439,39 @@ mod tests {
             "http://127.0.0.1:54321/auth/google/callback/extra"
         ));
         assert!(!is_allowed_oauth_redirect_uri(""));
+    }
+
+    #[test]
+    fn callback_ends_only_on_the_real_redirect() {
+        let ok = "/auth/google/callback?state=abc&code=4%2F0A";
+        assert_eq!(classify_callback(ok, Some("abc")), CallbackKind::Authorized);
+        assert_eq!(
+            classify_callback("/auth/google/callback?error=access_denied&state=abc", Some("abc")),
+            CallbackKind::Denied
+        );
+        // Sonde d’une autre page : pas de state, mauvais state, ou ni code ni erreur.
+        assert_eq!(classify_callback("/auth/google/callback", Some("abc")), CallbackKind::Rejected);
+        assert_eq!(
+            classify_callback("/auth/google/callback?state=zzz&code=x", Some("abc")),
+            CallbackKind::Rejected
+        );
+        assert_eq!(
+            classify_callback("/auth/google/callback?state=abc", Some("abc")),
+            CallbackKind::Rejected
+        );
+        assert_eq!(
+            classify_callback("/auth/google/callback?state=abc&code=", Some("abc")),
+            CallbackKind::Rejected
+        );
+        // Autre chemin, y compris un préfixe trompeur.
+        assert_eq!(classify_callback("/favicon.ico", Some("abc")), CallbackKind::NotCallback);
+        assert_eq!(
+            classify_callback("/auth/google/callbackX?state=abc&code=x", Some("abc")),
+            CallbackKind::NotCallback
+        );
+        // Ancien front sans state attendu : code ou erreur exigés quand même.
+        assert_eq!(classify_callback("/auth/google/callback?code=x&state=q", None), CallbackKind::Authorized);
+        assert_eq!(classify_callback("/auth/google/callback", None), CallbackKind::Rejected);
     }
 
     #[test]

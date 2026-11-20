@@ -3,16 +3,21 @@ import { authAxios, shouldSendBearerAuth } from '@/utils/helpers/axios-helpers';
 import { getDeviceInfo } from '@/features/auth/device';
 import { normalizeAuthDevices } from '@/features/auth/normalizeDevices';
 import type {
+    AccessLogPage,
     ApiResponse,
     AuthSession,
     AuthTokens,
     Me,
     RegisterResult,
     StepUpProof,
+    SupportCode,
+    SupportCodeStatus,
+    TransparencyReport,
     TwoFactorSetup,
     UpdateProfilePayload,
     UploadAvatarResult
 } from '@/features/auth/types';
+import type { VaultResetParams, VaultSetupRequest, VaultWrapRequest } from '@/features/vault/types';
 
 function bearerHeaders(accessToken: string | null | undefined): Record<string, string> | undefined {
     if (!shouldSendBearerAuth() || !accessToken) return undefined;
@@ -134,6 +139,8 @@ export const authApi = {
         password: string;
         firstName?: string | null;
         name?: string | null;
+        /** Coffre silencieux : DEK emballée par le mot de passe, générée dans le navigateur. */
+        vault?: VaultSetupRequest | null;
     }) {
         return authHttp.post<RegisterResult>('/api/auth/register', payload);
     },
@@ -301,17 +308,42 @@ export const authApi = {
         return authHttp.post<null>('/api/auth/forgot-password', { email });
     },
 
-    resetPassword(token: string, newPassword: string) {
-        return authHttp.post<null>('/api/auth/reset-password', { token, newPassword });
+    /**
+     * Réinitialisation par jeton e-mail. `vaultWrap` : DEK ré-emballée par le nouveau mot de passe grâce au
+     * code de récupération ; sans lui, l’API efface l’emballage et les champs du Coffre deviennent irrécupérables.
+     */
+    resetPassword(token: string, newPassword: string, vaultWrap?: VaultWrapRequest | null) {
+        return authHttp.post<null>('/api/auth/reset-password', { token, newPassword, ...(vaultWrap ? { vaultWrap } : {}) });
     },
 
-    changePassword(accessToken: string | null | undefined, currentPassword: string | null, newPassword: string, stepUp?: StepUpProof) {
+    /**
+     * Paramètres du Coffre lisibles avec un jeton de réinitialisation valide (avant connexion). Le jeton part
+     * dans le corps : en query string il finirait dans les journaux d'accès du serveur, du proxy ou du CDN.
+     */
+    resetPasswordVaultParams(token: string) {
+        return authHttp.post<VaultResetParams>('/api/auth/reset-password/vault', { token });
+    },
+
+    /**
+     * Changement de mot de passe. `vaultWrap` : DEK ré-emballée par le nouveau mot de passe (obligatoire
+     * quand un Coffre existe, 400 sinon) ; `vault` : création silencieuse pour un premier mot de passe.
+     */
+    changePassword(
+        accessToken: string | null | undefined,
+        currentPassword: string | null,
+        newPassword: string,
+        stepUp?: StepUpProof,
+        vaultWrap?: VaultWrapRequest | null,
+        vault?: VaultSetupRequest | null
+    ) {
         return authHttp.post<null>(
             '/api/auth/password/change',
             {
                 currentPassword: currentPassword ?? null,
                 newPassword,
-                ...(stepUp ? { stepUp } : {})
+                ...(stepUp ? { stepUp } : {}),
+                ...(vaultWrap ? { vaultWrap } : {}),
+                ...(vault ? { vault } : {})
             },
             accessToken
         );
@@ -355,8 +387,9 @@ export const authApi = {
         return authHttp.delete<null>('/api/auth/account', payload, accessToken);
     },
 
-    setup2fa(accessToken: string | null | undefined) {
-        return authHttp.post<TwoFactorSetup>('/api/auth/2fa/setup', undefined, accessToken);
+    /** Le serveur demande une preuve de propriété (`STEP_UP_REQUIRED`) avant de poser un second facteur. */
+    setup2fa(accessToken: string | null | undefined, stepUp?: StepUpProof) {
+        return authHttp.post<TwoFactorSetup>('/api/auth/2fa/setup', stepUp ? { stepUp } : undefined, accessToken);
     },
 
     enable2fa(accessToken: string | null | undefined, code: string) {
@@ -365,6 +398,27 @@ export const authApi = {
 
     disable2fa(accessToken: string | null | undefined, code: string) {
         return authHttp.post<null>('/api/auth/2fa/disable', { code }, accessToken);
+    },
+
+    /** État du code d’assistance courant (sans le code). */
+    getSupportCodeStatus(accessToken: string | null | undefined) {
+        return authHttp.get<SupportCodeStatus>('/api/auth/security/support-code', accessToken);
+    },
+
+    /** Génère un nouveau code d’assistance (remplace le précédent, 24 h, usage unique). */
+    generateSupportCode(accessToken: string | null | undefined) {
+        return authHttp.post<SupportCode>('/api/auth/security/support-code', undefined, accessToken);
+    },
+
+    /** Accès techniques subis par l’utilisateur courant, paginés (du plus récent au plus ancien). */
+    getAccessLog(page: number, pageSize: number, accessToken: string | null | undefined) {
+        const query = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
+        return authHttp.get<AccessLogPage>(`/api/auth/security/access-log?${query.toString()}`, accessToken);
+    },
+
+    /** Registre de transparence (identique pour tous les utilisateurs connectés). */
+    getTransparency(accessToken: string | null | undefined) {
+        return authHttp.get<TransparencyReport>('/api/auth/security/transparency', accessToken);
     },
 
     async listDevices(accessToken: string | null | undefined) {

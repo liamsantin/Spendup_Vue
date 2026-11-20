@@ -9,15 +9,23 @@ import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
+import TransactionReimbursements from '@/features/transactions/components/forms/TransactionReimbursements.vue';
+import TransactionTaxNature from '@/features/transactions/components/forms/TransactionTaxNature.vue';
+import { resolveTaxNature, type SetTransactionTaxNaturePayload } from '@/features/transactions/tax-nature';
 import { categorySelectItems } from '@/features/categories/payload';
+import { filterCategoryTreeByType } from '@/features/categories/format';
 import { RECURRING_PAGE_SIZE_MAX, useRecurringPaymentsStore } from '@/features/recurring-payments';
 import { useTiersStore } from '@/features/tiers/stores/tiers-store';
 import { sanitizeTagPublicIds } from '@/features/tags/format';
 import { useTagsStore } from '@/features/tags/stores/tags-store';
 import { isSavingsGoalCompatibleWithTransactionForm } from '@/features/savings-goals/link-transactions';
 import { useSavingsGoalsStore } from '@/features/savings-goals/stores/savings-goals-store';
-import { canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
-import { sourceAccountPublicId, targetAccountPublicId, todayUtcYmd } from '@/features/transactions/format';
+import { useAssetsStore } from '@/features/assets/stores/assets-store';
+import { ASSET_NOT_FOUND_MESSAGE } from '@/features/assets/types';
+import { canSetTransactionTaxNature, canWriteTransaction, canWriteTransactions } from '@/features/transactions/rights';
+import { sourceAccountPublicId, targetAccountPublicId } from '@/features/transactions/format';
+import { useUserSettingsStore } from '@/features/user-settings';
+import { todayInTimeZone } from '@/utils/helpers/today';
 import { plannedAmountForRecurrenceTransaction } from '@/features/transactions/recurrence-planned';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import {
@@ -30,6 +38,7 @@ import {
 } from '@/features/transactions/payload';
 import {
     FILE_ALREADY_LINKED_MESSAGE,
+    TRANSACTION_ASSET_ALREADY_LINKED_MESSAGE,
     TRANSACTION_FILES_MAX,
     TRANSACTION_MAX_FILES_MESSAGE,
     TRANSACTION_TYPES,
@@ -50,6 +59,16 @@ const props = defineProps<{
     transaction?: Transaction | null;
     defaultAccountPublicId?: string | null;
     defaultType?: TransactionType | null;
+    /** Préremplit l’actif (fiche patrimoine). */
+    defaultAssetPublicId?: string | null;
+    /** Préremplit le tiers (onglet Transactions d’une fiche de tiers). */
+    defaultTierPublicId?: string | null;
+    /** Préremplit la catégorie (onglet Transactions d’un budget). */
+    defaultCategoryPublicId?: string | null;
+    /** Préremplit la récurrence (onglet Transactions d’une récurrence). */
+    defaultRecurrencePublicId?: string | null;
+    /** Préremplit l’objectif d’épargne (onglet Transactions d’un objectif). */
+    defaultSavingsGoalPublicId?: string | null;
     /** Liste budget : afficher « Délier la transaction ». */
     showUnlinkFromBudget?: boolean;
 }>();
@@ -60,7 +79,7 @@ const emit = defineEmits<{
     unlink: [];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const accountsStore = useAccountsStore();
 const paymentMethodsStore = usePaymentMethodsStore();
 const categoriesStore = useCategoriesStore();
@@ -70,6 +89,13 @@ const recurringStore = useRecurringPaymentsStore();
 const store = useTransactionsStore();
 const filesStore = useFilesStore();
 const savingsGoalsStore = useSavingsGoalsStore();
+const assetsStore = useAssetsStore();
+const userSettings = useUserSettingsStore();
+
+/** Aujourd'hui dans le fuseau de l'utilisateur : celui que l'API applique pour refuser une date future. */
+function todayForUser(): string {
+    return todayInTimeZone(userSettings.current.timezone);
+}
 
 const isEdit = ref(false);
 const editTransaction = ref<Transaction | null>(null);
@@ -91,9 +117,15 @@ const unsubscribeTagDeleted = tagsStore.subscribeToDeleted((publicId) => {
     form.tagPublicIds = form.tagPublicIds.filter((id) => id !== publicId);
 });
 
+const unsubscribeAssetDeleted = assetsStore.subscribeToDeleted((publicId) => {
+    if (form.assetPublicId !== publicId) return;
+    form.assetPublicId = '';
+});
+
 onUnmounted(() => {
     unsubscribeTierDeleted();
     unsubscribeTagDeleted();
+    unsubscribeAssetDeleted();
 });
 
 const writableAccounts = computed(() => accountsStore.accounts.filter((a) => canWriteTransactions(a)));
@@ -137,8 +169,10 @@ const paymentMethodItems = computed(() => {
     return [...none, ...options];
 });
 
+// arbre complet filtré ici : le formulaire ne change plus la liste active du store (filtres de la page derrière)
 const categoryItems = computed(() => {
-    const items = categorySelectItems(categoriesStore.items, { noneTitle: t('transactionsPage.form.noCategory') });
+    const roots = filterCategoryTreeByType(categoriesStore.tree, form.type);
+    const items = categorySelectItems(roots, { noneTitle: t('transactionsPage.form.noCategory') });
     const selected = form.categoryPublicId;
     if (selected && !items.some((item) => item.value === selected)) {
         const known = categoriesStore.findByPublicId(selected);
@@ -147,14 +181,19 @@ const categoryItems = computed(() => {
     return items;
 });
 
+/** Modèles du type et du compte choisis : seuls candidats valables pour une nouvelle liaison. */
+function recurrenceTemplatesForForm() {
+    if (form.type === 'transfert') return [];
+    const accountId = form.accountPublicId;
+    return form.type === 'revenu'
+        ? recurringStore.incomes.filter((item) => !accountId || item.accountPublicId === accountId)
+        : recurringStore.expenses.filter((item) => !accountId || item.accountPublicId === accountId);
+}
+
 const recurrenceItems = computed(() => {
     const none = [{ title: t('transactionsPage.form.noRecurrence'), value: '' }];
     if (form.type === 'transfert') return none;
-    const accountId = form.accountPublicId;
-    const templates =
-        form.type === 'revenu'
-            ? recurringStore.incomes.filter((item) => !accountId || item.accountPublicId === accountId)
-            : recurringStore.expenses.filter((item) => !accountId || item.accountPublicId === accountId);
+    const templates = recurrenceTemplatesForForm();
     const selected = form.recurrencePublicId;
     const options = templates
         .filter((item) => item.isActive || item.publicId === selected)
@@ -187,6 +226,28 @@ const savingsGoalHint = computed(() => {
     if (savingsGoalItems.value.length <= 1) return t('transactionsPage.form.savingsGoalEmptyHint');
     return t('transactionsPage.form.savingsGoalHint');
 });
+
+const assetItems = computed(() => {
+    const none = [{ title: t('transactionsPage.form.noAsset'), value: '' }];
+    const assets = assetsStore
+        .allKnownItems()
+        .slice()
+        .sort((a, b) => a.name.localeCompare(b.name, locale.value));
+    const selected = form.assetPublicId.trim();
+    if (selected && !assets.some((asset) => asset.publicId === selected)) {
+        const extra = assetsStore.findByPublicId(selected);
+        if (extra) assets.unshift(extra);
+    }
+    return [
+        ...none,
+        ...assets.map((asset) => ({
+            title: `${asset.name} · ${t(`assetsPage.types.${asset.type}`)}`,
+            value: asset.publicId
+        }))
+    ];
+});
+
+const assetHint = computed(() => t('transactionsPage.form.assetHint'));
 
 const isSharedAccount = computed(() => {
     const account = sourceAccount.value;
@@ -229,7 +290,8 @@ const CLASSIFICATION_FIELDS = new Set([
     'categoryPublicId',
     'tierPublicId',
     'recurrencePublicId',
-    'savingsGoalPublicId'
+    'savingsGoalPublicId',
+    'assetPublicId'
 ]);
 
 const form = reactive<TransactionFormFields>({
@@ -238,13 +300,14 @@ const form = reactive<TransactionFormFields>({
     counterpartyAccountPublicId: '',
     label: '',
     amount: '',
-    operationDate: todayUtcYmd(),
+    operationDate: todayForUser(),
     valueDate: null,
     paymentMethodPublicId: '',
     categoryPublicId: '',
     tierPublicId: '',
     recurrencePublicId: '',
     savingsGoalPublicId: '',
+    assetPublicId: '',
     tagPublicIds: []
 });
 
@@ -319,6 +382,7 @@ function clearFieldErrors() {
     fieldErrors.tierPublicId = null;
     fieldErrors.recurrencePublicId = null;
     fieldErrors.savingsGoalPublicId = null;
+    fieldErrors.assetPublicId = null;
 }
 
 function payloadErrorText(code: TransactionPayloadErrorCode): string {
@@ -340,7 +404,11 @@ function formatAmountInput(value: number | null | undefined): string {
     return value.toFixed(2);
 }
 
+/** Vrai entre un `resetForm` qui change le type et le watcher de type qui s'ensuit. */
+let typeSetByReset = false;
+
 function resetForm() {
+    typeSetByReset = false;
     localError.message = null;
     tierDeletedHint.value = false;
     pendingFiles.value = [];
@@ -361,21 +429,27 @@ function resetForm() {
         form.tierPublicId = transaction.tierPublicId ?? '';
         form.recurrencePublicId = recurrencePublicIdFromTransaction(transaction);
         form.savingsGoalPublicId = transaction.savingsGoalPublicId ?? '';
+        form.assetPublicId = transaction.assetPublicId ?? '';
         form.tagPublicIds = sanitizeTagPublicIds(transaction.tagPublicIds);
         return;
     }
-    form.type = props.defaultType || 'depense';
+    const nextType = props.defaultType || 'depense';
+    // Le watcher de type vide catégorie, récurrence et objectif quand la personne change de type :
+    // ici le type vient des valeurs par défaut, posées avec lui, et elles doivent rester.
+    typeSetByReset = nextType !== form.type;
+    form.type = nextType;
     form.accountPublicId = props.defaultAccountPublicId?.trim() || writableAccounts.value[0]?.publicId || '';
     form.counterpartyAccountPublicId = '';
     form.label = '';
     form.amount = '';
-    form.operationDate = todayUtcYmd();
+    form.operationDate = todayForUser();
     form.valueDate = null;
     form.paymentMethodPublicId = '';
-    form.categoryPublicId = '';
-    form.tierPublicId = '';
-    form.recurrencePublicId = '';
-    form.savingsGoalPublicId = '';
+    form.categoryPublicId = props.defaultCategoryPublicId?.trim() || '';
+    form.tierPublicId = props.defaultTierPublicId?.trim() || '';
+    form.recurrencePublicId = props.defaultRecurrencePublicId?.trim() || '';
+    form.savingsGoalPublicId = props.defaultSavingsGoalPublicId?.trim() || '';
+    form.assetPublicId = props.defaultAssetPublicId?.trim() || '';
     form.tagPublicIds = [];
 }
 
@@ -385,8 +459,8 @@ async function loadPaymentMethodsForAccount(accountPublicId: string | null) {
     await paymentMethodsStore.loadList({ accountPublicId: id }).catch(() => undefined);
 }
 
-async function loadCategoriesForType(type: TransactionType) {
-    await categoriesStore.loadList({ type }).catch(() => undefined);
+async function loadCategoryTree() {
+    await categoriesStore.loadTree().catch(() => undefined);
 }
 
 async function loadRecurrences() {
@@ -402,7 +476,9 @@ function syncRecurrenceSelection() {
         return;
     }
     if (!form.recurrencePublicId) return;
-    if (!recurrenceItems.value.some((item) => item.value === form.recurrencePublicId)) {
+    // contrôle sur les modèles du compte, pas sur `recurrenceItems` qui garde toujours la valeur choisie en repli
+    // (pour l'afficher) : sinon une récurrence du compte A restait liée après le passage au compte B
+    if (!recurrenceTemplatesForForm().some((item) => item.publicId === form.recurrencePublicId)) {
         form.recurrencePublicId = '';
     }
 }
@@ -426,11 +502,12 @@ watch(
         resetForm();
         await Promise.all([
             loadPaymentMethodsForAccount(form.accountPublicId),
-            loadCategoriesForType(form.type),
+            loadCategoryTree(),
             loadRecurrences(),
             filesStore.loadList().catch(() => undefined),
             filesStore.loadUsage(),
             savingsGoalsStore.loadList().catch(() => undefined),
+            assetsStore.loadList().catch(() => undefined),
             tagsStore.loadList().catch(() => undefined)
         ]);
     }
@@ -438,8 +515,11 @@ watch(
 
 watch(
     () => form.type,
-    async (type) => {
+    (type) => {
+        const fromReset = typeSetByReset;
+        typeSetByReset = false;
         if (isEdit.value) return;
+        if (fromReset) return;
         if (type !== 'transfert') {
             form.counterpartyAccountPublicId = '';
         } else if (form.counterpartyAccountPublicId === form.accountPublicId) {
@@ -448,7 +528,6 @@ watch(
         form.categoryPublicId = '';
         form.recurrencePublicId = '';
         form.savingsGoalPublicId = '';
-        await loadCategoriesForType(type);
     }
 );
 
@@ -464,9 +543,13 @@ watch(
             form.counterpartyAccountPublicId = '';
         }
         await loadPaymentMethodsForAccount(accountId);
-        const stillValid = paymentMethodItems.value.some((item) => item.value === form.paymentMethodPublicId);
-        if (!stillValid) form.paymentMethodPublicId = '';
-        syncRecurrenceSelection();
+        // en édition le compte ne change pas : un GET des moyens de paiement en échec (ou qui n'inclut pas celui
+        // de la transaction) ne doit pas retirer le moyen de paiement à l'enregistrement
+        if (!isEdit.value) {
+            const stillValid = paymentMethodItems.value.some((item) => item.value === form.paymentMethodPublicId);
+            if (!stillValid) form.paymentMethodPublicId = '';
+            syncRecurrenceSelection();
+        }
         syncSavingsGoalSelection();
     }
 );
@@ -484,7 +567,8 @@ async function onSave() {
     clearFieldErrors();
     const context = {
         accounts: accountsStore.accounts,
-        savingsGoals: savingsGoalsStore.allKnownItems()
+        savingsGoals: savingsGoalsStore.allKnownItems(),
+        timeZone: userSettings.current.timezone ?? null
     };
     const built = isEdit.value ? buildUpdateTransactionPayload(form, context) : buildCreateTransactionPayload(form, context);
     if (!built.ok) {
@@ -505,6 +589,18 @@ async function onSave() {
         open.value = false;
     } catch (e: unknown) {
         const err = AppError.fromUnknown(e);
+        if (err.status === 404 && err.message === ASSET_NOT_FOUND_MESSAGE) {
+            fieldErrors.assetPublicId = t('assetsPage.errors.notFound');
+            activeTab.value = 'classification';
+            localError.message = t('assetsPage.errors.notFound');
+            return;
+        }
+        if (err.message === TRANSACTION_ASSET_ALREADY_LINKED_MESSAGE) {
+            fieldErrors.assetPublicId = t('transactionsPage.form.errors.assetAlreadyLinked');
+            activeTab.value = 'classification';
+            localError.message = t('transactionsPage.form.errors.assetAlreadyLinked');
+            return;
+        }
         if (err.status === 404) {
             localError.message = t('transactionsPage.errors.notFound');
             return;
@@ -591,6 +687,39 @@ async function onDetachAttachment(file: TransactionFile) {
     }
 }
 
+/** Transaction à jour (cache du store) : porte la nature fiscale après un geste. */
+const liveTransaction = computed(() => {
+    const current = editTransaction.value;
+    if (!current) return null;
+    return store.allKnownItems().find((item) => item.publicId === current.publicId) ?? current;
+});
+
+/** Nature par défaut de la catégorie choisie dans le formulaire (suggestion, jamais appliquée seule). */
+const categoryTaxNature = computed(() => categoriesStore.findByPublicId(form.categoryPublicId ?? '')?.taxNature ?? null);
+
+/** Nature fiscale effective de la transaction (confirmée, sinon suggérée par la catégorie). */
+const effectiveTaxNature = computed(() => {
+    const current = liveTransaction.value;
+    if (!current) return null;
+    return resolveTaxNature({ taxNature: current.taxNature, taxNatureStatus: current.taxNatureStatus }, categoryTaxNature.value).code;
+});
+
+/** Sur un compte reçu en partage, la nature fiscale appartient au propriétaire : le bloc n'est pas affiché. */
+const canSetTaxNature = computed(
+    () => !!liveTransaction.value && canSetTransactionTaxNature(liveTransaction.value, accountsStore.accounts)
+);
+
+async function onTaxNatureChange(payload: SetTransactionTaxNaturePayload) {
+    localError.message = null;
+    if (!editTransaction.value || !canEditFiles.value || !canSetTaxNature.value) return;
+    try {
+        await store.setTransactionTaxNature(editTransaction.value.publicId, payload);
+    } catch (e: unknown) {
+        const err = AppError.fromUnknown(e);
+        localError.message = err.status === 404 ? t('transactionsPage.errors.notFound') : err.message;
+    }
+}
+
 function onOpenAttachment(file: TransactionFile) {
     previewFile.value = file;
     previewOpen.value = true;
@@ -601,6 +730,7 @@ function onOpenAttachment(file: TransactionFile) {
     <AppModalTabs
         v-model="open"
         v-model:tab="activeTab"
+        class="tx-form-modal"
         :title="isEdit ? t('transactionsPage.form.editTitle') : t('transactionsPage.form.createTitle')"
         :subtitle="t('transactionsPage.form.subtitle')"
         :tabs="formTabs"
@@ -624,6 +754,7 @@ function onOpenAttachment(file: TransactionFile) {
                     :category-items="categoryItems"
                     :recurrence-items="recurrenceItems"
                     :savings-goal-items="savingsGoalItems"
+                    :asset-items="assetItems"
                     :field-errors="fieldErrors"
                     :archived-hint="archivedHint"
                     :counterparty-hint="counterpartyHint"
@@ -633,7 +764,7 @@ function onOpenAttachment(file: TransactionFile) {
                 <button
                     v-if="showUnlinkFromBudget"
                     type="button"
-                    class="tx-form-modal__unlink"
+                    class="su-btn su-btn--danger su-btn--sm tx-form-modal__unlink"
                     :disabled="store.acting"
                     @click="emit('unlink')"
                 >
@@ -656,16 +787,34 @@ function onOpenAttachment(file: TransactionFile) {
                     :category-items="categoryItems"
                     :recurrence-items="recurrenceItems"
                     :savings-goal-items="savingsGoalItems"
+                    :asset-items="assetItems"
                     :field-errors="fieldErrors"
                     :category-hint="isSharedAccount ? t('transactionsPage.form.categoryPersonalHint') : null"
                     :tags-hint="isSharedAccount ? t('transactionsPage.form.tagsPersonalHint') : null"
                     :tier-hint="tierHint"
                     :savings-goal-hint="savingsGoalHint"
+                    :asset-hint="assetHint"
+                />
+                <TransactionTaxNature
+                    v-if="isEdit && liveTransaction && form.type !== 'transfert' && canSetTaxNature"
+                    :tax-nature="liveTransaction.taxNature"
+                    :tax-nature-status="liveTransaction.taxNatureStatus"
+                    :category-nature="categoryTaxNature"
+                    :transaction-type="form.type"
+                    :disabled="store.acting || !canEditFiles"
+                    @change="onTaxNatureChange"
+                />
+                <TransactionReimbursements
+                    v-if="isEdit && liveTransaction && (form.type === 'depense' || form.type === 'revenu')"
+                    :public-id="liveTransaction.publicId"
+                    :transaction-type="form.type"
+                    :effective-nature="effectiveTaxNature"
+                    :disabled="store.acting || !canEditFiles"
                 />
                 <button
                     v-if="showUnlinkFromBudget"
                     type="button"
-                    class="tx-form-modal__unlink"
+                    class="su-btn su-btn--danger su-btn--sm tx-form-modal__unlink"
                     :disabled="store.acting"
                     @click="emit('unlink')"
                 >
@@ -692,7 +841,7 @@ function onOpenAttachment(file: TransactionFile) {
         </template>
 
         <template #footer="{ close }">
-            <button type="button" class="su-btn su-btn--ghost" :disabled="store.acting" @click="close">
+            <button type="button" class="su-btn" :disabled="store.acting" @click="close">
                 {{ t('common.cancel') }}
             </button>
             <button type="button" class="su-btn su-btn--ink" :disabled="store.acting || !canSave" @click="onSave">
@@ -705,31 +854,60 @@ function onOpenAttachment(file: TransactionFile) {
 </template>
 
 <style scoped>
+/* « Délier la transaction » : bouton danger discret, aligné à gauche sous les champs */
 .tx-form-modal__unlink {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    margin: 20px 0 4px;
-    padding: 8px;
-    border: 0;
+    margin: 24px 0 4px;
+}
+</style>
+
+<!-- Non scopé : la fenêtre est téléportée ; onglets de la modale en texte souligné (kit Swiss). -->
+<style>
+.tx-form-modal .app-modal-tabs__toolbar {
+    padding: 0 24px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.tx-form-modal .app-modal-tabs__nav {
+    gap: 22px;
+}
+
+.tx-form-modal .app-modal-tabs__tab {
+    height: 40px;
+    padding: 0;
+    border-radius: 0;
     background: transparent;
-    color: rgba(159, 45, 35, 0.72);
-    font: inherit;
-    font-size: 13.5px;
-    font-weight: 520;
-    letter-spacing: -0.01em;
-    text-align: center;
-    cursor: pointer;
+    color: var(--gray);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0;
 }
 
-.tx-form-modal__unlink:hover:not(:disabled) {
-    color: #9f2d23;
+.tx-form-modal .app-modal-tabs__tab:hover:not(:disabled):not(.is-active) {
+    background: transparent;
+    color: var(--ink);
 }
 
-.tx-form-modal__unlink:disabled {
-    opacity: 0.45;
-    cursor: default;
+.tx-form-modal .app-modal-tabs__tab.is-active {
+    background: transparent;
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: inset 0 -2px 0 var(--ink);
+}
+
+.tx-form-modal .app-modal-tabs__tab svg {
+    display: none;
+}
+
+.tx-form-modal .app-modal-tabs__chip,
+.tx-form-modal .app-modal-tabs__tab.is-active .app-modal-tabs__chip {
+    border-radius: 0;
+    background: var(--blue);
+    color: #fff;
+    font-weight: 700;
+}
+
+/* la toolbar porte déjà le filet 2 px : pas de second filet sous l'en-tête */
+.tx-form-modal .app-modal-base__header + .v-divider {
+    display: none;
 }
 </style>

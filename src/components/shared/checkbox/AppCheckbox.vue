@@ -49,7 +49,7 @@ const model = defineModel<boolean | null>({ default: false });
 .app-checkbox {
     --v-input-control-height: 32px;
     --app-checkbox-size: 18px;
-    --app-checkbox-radius: 6px;
+    --app-checkbox-radius: 0;
 }
 
 .app-checkbox :deep(.v-selection-control) {
@@ -72,8 +72,8 @@ const model = defineModel<boolean | null>({ default: false });
     width: var(--app-checkbox-size);
     height: var(--app-checkbox-size);
     border-radius: var(--app-checkbox-radius);
-    border: 1.5px solid var(--thread);
-    background: var(--surface-raised);
+    border: 1px solid var(--gray);
+    background: var(--raise);
     color: #fff;
     transition:
         background 0.2s ease,
@@ -86,8 +86,8 @@ const model = defineModel<boolean | null>({ default: false });
 
 .app-checkbox :deep(.v-selection-control--dirty .v-selection-control__input),
 .app-checkbox :deep(.v-selection-control--indeterminate .v-selection-control__input) {
-    background: rgb(var(--v-theme-primary));
-    border-color: rgb(var(--v-theme-primary));
+    background: var(--blue-btn);
+    border-color: var(--blue-btn);
 }
 
 .app-checkbox :deep(.v-selection-control__input .v-icon) {

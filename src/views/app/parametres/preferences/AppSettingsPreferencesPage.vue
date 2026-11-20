@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { AdjustmentsHorizontalIcon } from 'vue-tabler-icons';
 import { PreferencesTab, useSettingsFormPage } from '@/features/user-settings';
 import AppSettingsFormPage from '@/views/app/parametres/AppSettingsFormPage.vue';
+import FileSyncSettings from '@/features/files/components/sync/FileSyncSettings.vue';
 
 const { t } = useI18n();
 const { tabRef, dirty, loading, onSave, onCancel, onDiscard } = useSettingsFormPage();
@@ -20,5 +21,6 @@ const { tabRef, dirty, loading, onSave, onCancel, onDiscard } = useSettingsFormP
         @discard="onDiscard"
     >
         <PreferencesTab ref="tabRef" @dirty="dirty = $event" />
+        <FileSyncSettings />
     </AppSettingsFormPage>
 </template>

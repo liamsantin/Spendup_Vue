@@ -11,6 +11,13 @@ import type { Account, CreateAccountPayload, UpdateAccountPayload } from '@/feat
 import { assertAccountAllowed, requireLocalAccount } from '@/features/accounts/stores/internal/accounts-authz';
 import { ACCOUNTS_DETAIL_MAX_AGE_MS, KEY_ACCOUNTS, type AccountsState } from '@/features/accounts/stores/internal/accounts-state';
 import { AppError } from '@/utils/errors/app-error';
+import {
+    decryptAccountFields,
+    encryptAccountPayload,
+    hasSensitiveCreateFields,
+    isVaultActiveForWrites
+} from '@/features/accounts/vault-fields';
+import { withFreshPublicId } from '@/features/vault/public-id';
 
 function normalizeAccount(account: Account): Account {
     return {
@@ -20,6 +27,15 @@ function normalizeAccount(account: Account): Account {
         institutionName: account.institutionName ?? null,
         bank: account.bank ?? null
     };
+}
+
+/** Normalise puis déchiffre les champs du socle (Coffre ouvert) ; en clair sinon. */
+async function prepareAccount(account: Account): Promise<Account> {
+    return decryptAccountFields(normalizeAccount(account));
+}
+
+async function prepareAccounts(items: Account[]): Promise<Account[]> {
+    return Promise.all(items.map(prepareAccount));
 }
 
 /**
@@ -69,7 +85,7 @@ export function createAccountsCrud(state: AccountsState) {
                 clearError();
                 try {
                     const result = await accountsApi.list();
-                    accounts.value = (Array.isArray(result?.items) ? result.items : []).map(normalizeAccount);
+                    accounts.value = await prepareAccounts(Array.isArray(result?.items) ? result.items : []);
                     syncSelectedWithList();
                 } catch (e: unknown) {
                     error.value = e instanceof Error ? e.message : String(e);
@@ -108,7 +124,7 @@ export function createAccountsCrud(state: AccountsState) {
                 cacheKey,
                 async () => {
                     try {
-                        const account = normalizeAccount(await accountsApi.get(publicId));
+                        const account = await prepareAccount(await accountsApi.get(publicId));
                         // Ne pas écraser liste / sélection avec une réponse périmée.
                         if (requestId !== detailRequestSeq) {
                             return;
@@ -178,7 +194,7 @@ export function createAccountsCrud(state: AccountsState) {
         beginActing();
         clearError();
         try {
-            const account = normalizeAccount(await accountsApi.create(payload));
+            const account = await createAccountWithVault(payload);
             upsertAccount(account, true);
             cache.touch(KEY_ACCOUNTS);
             cache.touch(`detail:${account.publicId}`);
@@ -196,6 +212,23 @@ export function createAccountsCrud(state: AccountsState) {
     }
 
     /**
+     * Coffre ouvert et champs du socle saisis : le client choisit le `publicId`, chiffre avec cet AAD et
+     * envoie tout en un seul `POST` (409 `CONFLICT` sur l’identifiant → nouvel identifiant). Sinon, POST en clair.
+     * @param payload Payload de création en clair.
+     * @returns Le compte créé, champs déchiffrés.
+     */
+    async function createAccountWithVault(payload: CreateAccountPayload): Promise<Account> {
+        if (!hasSensitiveCreateFields(payload) || !(await isVaultActiveForWrites())) {
+            return prepareAccount(await accountsApi.create(payload));
+        }
+        const created = await withFreshPublicId(async (publicId) => {
+            const body: CreateAccountPayload = { ...payload, publicId };
+            return accountsApi.create(await encryptAccountPayload(publicId, body));
+        });
+        return prepareAccount(created);
+    }
+
+    /**
      * Met à jour un compte existant.
      * @param publicId Identifiant public du compte.
      * @param payload Champs à mettre à jour.
@@ -207,8 +240,10 @@ export function createAccountsCrud(state: AccountsState) {
         try {
             const local = requireLocalAccount(accounts.value, selectedAccount.value, publicId);
             assertAccountAllowed(canEditAccount(local));
-            const body = sanitizeUpdateAccountPayload(local, payload);
-            const account = normalizeAccount(await accountsApi.update(publicId, body));
+            const sanitized = sanitizeUpdateAccountPayload(local, payload);
+            // Un editor n’a pas la clé du propriétaire : il écrit en clair, comme avant.
+            const body = local.isOwned ? await encryptAccountPayload(publicId, sanitized) : sanitized;
+            const account = await prepareAccount(await accountsApi.update(publicId, body));
             upsertAccount(account);
             bumpDetailData(publicId);
             if (account.isOwned && account.isPrimary) {
@@ -234,7 +269,7 @@ export function createAccountsCrud(state: AccountsState) {
         try {
             const local = requireLocalAccount(accounts.value, selectedAccount.value, publicId);
             assertAccountAllowed(canSetPrimaryAccount(local));
-            const account = normalizeAccount(await accountsApi.setPrimary(publicId));
+            const account = await prepareAccount(await accountsApi.setPrimary(publicId));
             applyPrimaryLocally(publicId, account);
             bumpDetailData(publicId);
             markPromoted(publicId);
@@ -258,7 +293,7 @@ export function createAccountsCrud(state: AccountsState) {
         try {
             const local = requireLocalAccount(accounts.value, selectedAccount.value, publicId);
             assertAccountAllowed(canArchiveAccount(local));
-            const account = normalizeAccount(await accountsApi.archive(publicId));
+            const account = await prepareAccount(await accountsApi.archive(publicId));
             upsertAccount(account);
             bumpDetailData(publicId);
             return account;
@@ -281,7 +316,7 @@ export function createAccountsCrud(state: AccountsState) {
         try {
             const local = requireLocalAccount(accounts.value, selectedAccount.value, publicId);
             assertAccountAllowed(canRestoreAccount(local));
-            const account = normalizeAccount(await accountsApi.restore(publicId));
+            const account = await prepareAccount(await accountsApi.restore(publicId));
             upsertAccount(account);
             bumpDetailData(publicId);
             return account;

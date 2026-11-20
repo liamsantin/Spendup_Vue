@@ -23,12 +23,12 @@
         "security": {
             "csp": {
                 "default-src": "'self' customprotocol: asset:",
-                "img-src": "'self' asset: http://asset.localhost data: blob: https:",
+                "img-src": "'self' asset: http://asset.localhost data: blob:",
                 "font-src": "'self' https://fonts.gstatic.com data:",
                 "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com",
                 "script-src": "'self' https://accounts.google.com",
                 "frame-src": "'self' blob: https://accounts.google.com",
-                "connect-src": "'self' ipc: http://ipc.localhost https://accounts.google.com https://*.googleapis.com https://api-spendup.ch wss://api-spendup.ch http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:* wss://localhost:* wss://127.0.0.1:*",
+                "connect-src": "'self' ipc: http://ipc.localhost https://accounts.google.com https://*.googleapis.com https://api.spendup.ch wss://api.spendup.ch",
                 "base-uri": "'self'",
                 "form-action": "'self'",
                 "object-src": "'none'",
@@ -36,7 +36,7 @@
             },
             "devCsp": {
                 "default-src": "'self' customprotocol: asset:",
-                "img-src": "'self' asset: http://asset.localhost data: blob: https:",
+                "img-src": "'self' asset: http://asset.localhost data: blob:",
                 "font-src": "'self' https://fonts.gstatic.com data:",
                 "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com",
                 "script-src": "'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com",

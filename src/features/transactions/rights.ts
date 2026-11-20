@@ -27,6 +27,19 @@ export function canWriteTransaction(
     });
 }
 
+/**
+ * Nature fiscale : réservée au propriétaire de **tous** les comptes touchés (l’API la refuse à un éditeur),
+ * car elle alimente la déclaration d’impôts du propriétaire.
+ */
+export function canSetTransactionTaxNature(
+    transaction: Pick<Transaction, 'movements'>,
+    accounts: readonly Pick<Account, 'publicId' | 'myRole'>[]
+): boolean {
+    const ids = involvedAccountPublicIds(transaction);
+    if (!ids.length) return false;
+    return ids.every((id) => accounts.find((a) => a.publicId === id)?.myRole === 'owner');
+}
+
 /** Transfert : editor+ sur les deux comptes, tous deux actifs. */
 export function canWriteTransfer(
     source: Pick<Account, 'myRole' | 'isActive'> | null | undefined,

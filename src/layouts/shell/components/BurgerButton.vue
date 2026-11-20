@@ -34,20 +34,15 @@ withDefaults(defineProps<{ open?: boolean; label?: string }>(), {
     place-items: center;
     width: var(--burger-size, var(--slot));
     height: var(--burger-size, var(--slot));
-    border-radius: 50%;
+    border-radius: 0;
     background: transparent;
     color: var(--ink);
     transition:
-        background 0.4s var(--ease),
-        transform 0.45s var(--spring),
-        color 0.3s var(--ease);
+        background 0.15s var(--ease),
+        color 0.15s var(--ease);
 }
 .burger:hover {
-    background: var(--surface-hover);
-    transform: scale(1.08);
-}
-.burger:active {
-    transform: scale(0.94);
+    background: var(--soft);
 }
 
 .burger__box {

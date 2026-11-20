@@ -1,3 +1,5 @@
+import type { TransactionTaxNatureStatus } from '@/features/transactions/tax-nature';
+
 export type TransactionType = 'depense' | 'revenu' | 'transfert';
 export type TransactionStatus = 'validee' | 'rapprochee';
 export type TransactionSource = 'manuelle' | 'recurrence' | 'import';
@@ -58,6 +60,15 @@ export type Transaction = {
      * Sur un compte partagé : uniquement tes libellés, pas ceux du co-détenteur.
      */
     tagPublicIds: string[];
+    /**
+     * Actif du patrimoine lié. `null` si détaché, si l’actif est supprimé,
+     * ou si le viewer n’en est pas le propriétaire (compte partagé).
+     */
+    assetPublicId: string | null;
+    /** Nature fiscale confirmée sur la transaction (module Impôts), ou `null`. */
+    taxNature?: string | null;
+    /** `confirmee`, `ecartee`, ou `null` : la suggestion de la catégorie s'applique. */
+    taxNatureStatus?: TransactionTaxNatureStatus | null;
 };
 
 export type TransactionList = {
@@ -74,6 +85,10 @@ export type ListTransactionsQuery = {
     tierPublicId?: string;
     recurringExpensePublicId?: string;
     recurringIncomePublicId?: string;
+    /** Transactions accessibles liées à cet actif. 404 si l’actif est inconnu, à autrui ou supprimé. */
+    assetPublicId?: string;
+    /** Type filtré par le serveur, avant la pagination : `totalCount` porte sur ce type seul. */
+    type?: TransactionType;
     from?: string;
     to?: string;
     /**
@@ -104,6 +119,8 @@ export type CreateTransactionPayload = {
     filePublicIds?: string[];
     /** Objectif d’épargne optionnel. Refusé si l’objectif n’a pas de compte / devise / mouvement. */
     savingsGoalPublicId?: string | null;
+    /** Actif du patrimoine. Absent ou `null` : pas de rattachement. */
+    assetPublicId?: string | null;
     /** Max 10, doublons ignorés. Omis ou `[]` = aucun tag. */
     tagPublicIds?: string[];
 };
@@ -123,6 +140,8 @@ export type UpdateTransactionPayload = {
     recurringIncomePublicId: string | null;
     /** État complet : omettre ou `null` détache l’objectif. */
     savingsGoalPublicId: string | null;
+    /** État complet : omettre ou `null` détache l’actif. Renvoyer la valeur lue pour le conserver. */
+    assetPublicId: string | null;
     /** État complet : omettre ou `[]` détache **tes** tags (ceux d’un co-détenteur restent). */
     tagPublicIds: string[];
 };
@@ -141,3 +160,4 @@ export const TRANSACTION_PAGE_SIZE_MAX = 200;
 export const TRANSACTION_FILES_MAX = 5;
 export const FILE_ALREADY_LINKED_MESSAGE = 'Fichier déjà lié.';
 export const TRANSACTION_MAX_FILES_MESSAGE = 'Une transaction accepte au plus 5 fichiers.';
+export const TRANSACTION_ASSET_ALREADY_LINKED_MESSAGE = 'Cette transaction est déjà liée à un autre actif.';

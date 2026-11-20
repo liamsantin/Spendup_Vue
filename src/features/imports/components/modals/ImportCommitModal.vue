@@ -43,6 +43,14 @@ function money(value: number | null | undefined) {
     return formatImportAmount(value, currency.value, locale.value);
 }
 
+/** Présentation du signe : « + » pour un crédit, vrai signe moins (U+2212) pour un débit. */
+function signedMoney(value: number) {
+    const text = money(value);
+    if (value > 0) return `+${text}`;
+    if (value < 0) return text.replace('-', '−');
+    return text;
+}
+
 const periodLabel = computed(() => {
     const from = preview.value?.periodFrom;
     const to = preview.value?.periodTo;
@@ -125,26 +133,28 @@ async function onCommit() {
         </div>
 
         <div v-else-if="preview" class="import-commit">
-            <div class="import-commit__hero">
-                <p class="import-commit__count">{{ t('importsPage.commit.toCreate', { count: preview.toCreate }, preview.toCreate) }}</p>
-                <p v-if="periodLabel" class="import-commit__period">{{ periodLabel }}</p>
+            <div class="su-fig import-commit__hero">
+                <p class="su-fig__num import-commit__count">
+                    {{ t('importsPage.commit.toCreate', { count: preview.toCreate }, preview.toCreate) }}
+                </p>
+                <p v-if="periodLabel" class="su-fig__note">{{ periodLabel }}</p>
             </div>
 
             <dl class="import-commit__totals">
-                <div>
+                <div class="su-kv su-kv--strong">
                     <dt>{{ t('importsPage.commit.totalDebit') }}</dt>
-                    <dd class="is-debit">{{ money(-Math.abs(preview.totalDebit)) }}</dd>
+                    <dd class="is-debit">{{ signedMoney(-Math.abs(preview.totalDebit)) }}</dd>
                 </div>
-                <div>
+                <div class="su-kv su-kv--strong">
                     <dt>{{ t('importsPage.commit.totalCredit') }}</dt>
-                    <dd class="is-credit">{{ money(preview.totalCredit) }}</dd>
+                    <dd class="is-credit">{{ signedMoney(preview.totalCredit) }}</dd>
                 </div>
                 <template v-if="hasBalance">
-                    <div>
+                    <div class="su-kv">
                         <dt>{{ t('importsPage.commit.balanceBefore') }}</dt>
                         <dd>{{ money(preview.balanceBefore) }}</dd>
                     </div>
-                    <div>
+                    <div class="su-kv su-kv--strong">
                         <dt>{{ t('importsPage.commit.balanceAfter') }}</dt>
                         <dd>{{ money(preview.balanceAfter) }}</dd>
                     </div>
@@ -194,52 +204,24 @@ async function onCommit() {
 </template>
 
 <style scoped>
+/* Aperçu du commit : chiffre clé sur filet 2 px, totaux en lignes libellé / valeur, contrôle du solde sans boîte colorée. */
 .import-commit {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-}
-
-.import-commit__hero {
-    text-align: center;
+    gap: 20px;
 }
 
 .import-commit__count {
-    margin: 0;
-    font-size: 1.35rem;
-    font-weight: 680;
-    letter-spacing: -0.02em;
-}
-
-.import-commit__period {
-    margin: 4px 0 0;
-    font-size: 0.84rem;
-    color: var(--ink-muted);
+    font-size: 24px;
+    white-space: normal;
 }
 
 .import-commit__totals {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
     margin: 0;
 }
 
-.import-commit__totals > div {
-    padding: 12px 14px;
-    border-radius: 14px;
-    background: var(--hair, rgba(16, 16, 20, 0.04));
-}
-
-.import-commit__totals dt {
-    font-size: 0.76rem;
-    color: var(--ink-muted);
-}
-
 .import-commit__totals dd {
-    margin: 2px 0 0;
-    font-size: 1rem;
-    font-weight: 650;
-    font-variant-numeric: tabular-nums;
+    margin: 0;
 }
 
 .import-commit__totals dd.is-debit {
@@ -250,39 +232,45 @@ async function onCommit() {
     color: rgb(var(--amount-credit));
 }
 
+/* contrôle du solde : pictogramme coloré, titre 700, explication grise, filets fins */
 .import-commit__check {
-    --tint: var(--ink-muted);
+    --tint: var(--gray);
     display: flex;
-    gap: 10px;
+    gap: 12px;
     align-items: flex-start;
-    padding: 12px 14px;
-    border-radius: 14px;
-    background: color-mix(in srgb, var(--tint) 10%, transparent);
+    padding: 12px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
+}
+
+.import-commit__check > svg {
+    flex: none;
     color: var(--tint);
 }
 
 .import-commit__check.is-match {
-    --tint: rgb(var(--v-theme-success));
+    --tint: var(--blue-ink);
 }
 
 .import-commit__check.is-mismatch {
-    --tint: rgb(var(--v-theme-warning));
+    --tint: var(--violet-ink);
 }
 
 .import-commit__check-title {
     margin: 0;
-    font-weight: 620;
+    font-weight: 700;
 }
 
 .import-commit__check-body {
     margin: 2px 0 0;
-    font-size: 0.82rem;
-    color: var(--ink-soft);
+    font-size: 13px;
+    color: var(--gray);
 }
 
 .import-commit__note {
     margin: 0;
-    font-size: 0.78rem;
-    color: var(--ink-muted);
+    font-size: 13px;
+    color: var(--gray);
 }
 </style>

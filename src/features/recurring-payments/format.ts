@@ -255,3 +255,56 @@ export function addMonthsYmd(ymd: string, months: number): string {
     const dd = String(date.getDate()).padStart(2, '0');
     return `${yy}-${mm}-${dd}`;
 }
+
+/** Date courte « 25.11 » (jour et mois, selon la locale). */
+export function formatShortDayMonth(value: string | null | undefined, locale?: string): string {
+    if (!value) return '';
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value.trim());
+    if (!match) return value;
+    const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12);
+    return new Intl.DateTimeFormat(locale || undefined, { day: '2-digit', month: '2-digit' }).format(date);
+}
+
+/** Jour du mois d’une date `YYYY-MM-DD` (1–31), `null` si la date est invalide. */
+export function dayOfYmd(value: string | null | undefined): number | null {
+    if (!isValidYmd(value)) return null;
+    return Number(value!.trim().slice(8, 10));
+}
+
+/**
+ * Facteur pour ramener un montant planifié à un équivalent mensuel selon la fréquence
+ * (vocabulaire charges et revenus confondu). Fréquence inconnue : 1.
+ */
+export function recurringMonthlyFactor(frequency: string | null | undefined): number {
+    switch ((frequency ?? '').trim()) {
+        case 'quotidien':
+            return 365 / 12;
+        case 'hebdomadaire':
+            return 52 / 12;
+        case 'trimestriel':
+        case 'trimestrielle':
+            return 1 / 3;
+        case 'semestriel':
+        case 'semestrielle':
+            return 1 / 6;
+        case 'annuel':
+        case 'annuelle':
+            return 1 / 12;
+        default:
+            return 1;
+    }
+}
+
+/** Nature affichée d’une récurrence : revenu, abonnement ou charge fixe. */
+export type RecurringNature = 'incomes' | 'subscriptions' | 'fixed';
+
+export function recurringNature(item: RecurringExpense | RecurringIncome): RecurringNature {
+    if (!isExpenseTemplate(item)) return 'incomes';
+    return item.expenseType === 'abonnement' ? 'subscriptions' : 'fixed';
+}
+
+/** Montant signé : « +CHF 6’850.00 » pour un revenu (bleu), « −CHF 1’650.00 » pour une charge (noir). */
+export function formatSignedPlannedAmount(amount: number, kind: RecurringKind, currency: string, locale?: string): string {
+    const formatted = formatPlannedAmount(Math.abs(amount), currency, locale);
+    return kind === 'income' ? `+${formatted}` : `−${formatted}`;
+}

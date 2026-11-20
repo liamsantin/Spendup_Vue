@@ -116,10 +116,11 @@ onUnmounted(() => {
                 type="button"
                 class="tag-picker__chip"
                 :disabled="disabled"
-                :style="chip.color ? { '--tag-color': chip.color } : undefined"
+                :style="chip.color ? { '--sq-color': chip.color } : undefined"
                 :aria-label="t('tagsPage.picker.remove', { name: chip.name })"
                 @click="removeId(chip.publicId)"
             >
+                <span class="su-sq" aria-hidden="true" />
                 <span class="tag-picker__chip-name">{{ chip.name }}</span>
                 <XIcon :size="12" stroke-width="2" />
             </button>
@@ -161,22 +162,33 @@ onUnmounted(() => {
 }
 
 .tag-picker__chip {
-    --tag-color: rgb(var(--v-theme-primary));
+    --sq-color: var(--t-gray-ink);
     appearance: none;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     max-width: 100%;
+    height: 32px;
     margin: 0;
-    padding: 3px 8px 3px 10px;
-    border: 0;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--tag-color) 16%, transparent);
-    color: var(--tag-color);
+    padding: 0 8px 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--ink);
     font: inherit;
-    font-size: 0.78rem;
-    font-weight: 620;
+    font-size: 13px;
+    font-weight: 400;
     cursor: pointer;
+    transition: border-color 0.15s var(--ease);
+}
+
+.tag-picker__chip:hover:not(:disabled) {
+    border-color: var(--ink);
+}
+
+.tag-picker__chip > svg {
+    flex: none;
+    color: var(--gray);
 }
 
 .tag-picker__chip:disabled {

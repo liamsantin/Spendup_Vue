@@ -2,9 +2,10 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { RouterLink, useRoute, useRouter } from 'vue-router';
-import { ArrowLeftIcon } from 'vue-tabler-icons';
+import { ArrowLeftIcon, FileImportIcon } from 'vue-tabler-icons';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
+import AppTitleTile from '@/components/shared/page-shell/AppTitleTile.vue';
 import { IMPORTS_PATHS, ImportWorkspace, importDetailPath, isImportLineStatus, useImportsStore } from '@/features/imports';
 import type { ImportLineStatus } from '@/features/imports';
 
@@ -83,6 +84,10 @@ function onDeleted() {
 
 <template>
     <AppPageShell class="import-detail-page" :class="{ 'is-board': layout === 'board' && !!item }" :title="title" :body-scroll="false">
+        <template #title-icon>
+            <AppTitleTile :icon="FileImportIcon" />
+        </template>
+
         <template #actions>
             <RouterLink :to="IMPORTS_PATHS.list" class="su-btn su-btn--ghost import-detail-page__back">
                 <ArrowLeftIcon :size="16" stroke-width="1.7" />
@@ -100,7 +105,7 @@ function onDeleted() {
                     :class="{ 'is-active': lineStatus === tab.value }"
                     @click="selectLineStatus(tab.value)"
                 >
-                    {{ tab.label }}
+                    <span class="su-tab__label" :data-label="tab.label">{{ tab.label }}</span>
                     <span v-if="tab.count" class="su-tab__chip">{{ tab.count }}</span>
                 </button>
             </nav>

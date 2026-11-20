@@ -6,13 +6,14 @@ import type { Tier } from '@/features/tiers/types';
 import type { TierSort } from '@/features/tiers/format';
 import TierTableRow from '@/features/tiers/components/list/TierTableRow.vue';
 
+/* Colonnes du tableau éditorial, dans l’ordre d’affichage : nom, type, rôle, puis les coordonnées. */
 const COLUMN_SORT = {
     name: { asc: 'nameAsc', desc: 'nameDesc' },
+    nature: { asc: 'natureAsc', desc: 'natureDesc' },
     roles: { asc: 'rolesAsc', desc: 'rolesDesc' },
     email: { asc: 'emailAsc', desc: 'emailDesc' },
     phone: { asc: 'phoneAsc', desc: 'phoneDesc' },
-    website: { asc: 'websiteAsc', desc: 'websiteDesc' },
-    nature: { asc: 'natureAsc', desc: 'natureDesc' }
+    website: { asc: 'websiteAsc', desc: 'websiteDesc' }
 } as const satisfies Record<string, { asc: TierSort; desc: TierSort }>;
 
 const props = defineProps<{
@@ -22,6 +23,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
+    open: [tier: Tier];
     edit: [tier: Tier];
     delete: [tier: Tier];
     sort: [value: TierSort];
@@ -30,12 +32,12 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const COLUMN_WIDTH = {
-    name: '23%',
-    roles: '16%',
-    email: '19%',
+    name: '27%',
+    nature: '14%',
+    roles: '15%',
+    email: '20%',
     phone: '12%',
-    website: '13%',
-    nature: '17%'
+    website: '12%'
 } as const;
 
 const columns = computed(() =>
@@ -85,6 +87,7 @@ function onSort(value: AppDataTableSort) {
             :tier="tier"
             :acting="acting"
             :style="{ '--i': index }"
+            @open="emit('open', $event)"
             @edit="emit('edit', $event)"
             @delete="emit('delete', $event)"
         />

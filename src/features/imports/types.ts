@@ -361,6 +361,8 @@ export const IMPORT_DATE_FORMATS = ['dd.MM.yyyy', 'dd/MM/yyyy', 'dd-MM-yyyy', 'y
 export const IMPORT_CSV_MAX_BYTES = 2 * 1024 * 1024;
 export const IMPORT_XLSX_MAX_BYTES = 5 * 1024 * 1024;
 export const IMPORT_ACCEPT = '.csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+/** La démo ne lit que le CSV. */
+export const IMPORT_ACCEPT_DEMO = '.csv,text/csv';
 
 export const IMPORT_PAGE_SIZE_DEFAULT = 20;
 export const IMPORT_PAGE_SIZE_MAX = 100;

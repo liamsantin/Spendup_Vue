@@ -24,8 +24,11 @@ describe('csp', () => {
     it('prod enforce sans unsafe-eval ni wildcards https:/wss:', () => {
         expect(CSP_PROD_ENFORCE).toContain("default-src 'self'");
         expect(CSP_PROD_ENFORCE).toContain('https://accounts.google.com');
-        expect(CSP_PROD_ENFORCE).toContain('http://localhost:*');
-        expect(CSP_PROD_ENFORCE).toContain('ws://localhost:*');
+        // Pas de joker localhost : seule l’origine exacte de l’API (ici celle du build local) est ouverte.
+        expect(CSP_PROD_ENFORCE).not.toContain('localhost:*');
+        expect(CSP_PROD_ENFORCE).not.toContain('127.0.0.1:*');
+        expect(CSP_PROD_ENFORCE).toContain('http://localhost:5124');
+        expect(CSP_PROD_ENFORCE).toContain('ws://localhost:5124');
         expect(CSP_PROD_ENFORCE).not.toContain('unsafe-eval');
         // Pas de source « https: » / « wss: » nue (wildcard schéma).
         expect(CSP_PROD_ENFORCE).not.toMatch(/connect-src[^;]*?(?:^|[\s;])https:(?=[\s;]|$)/);
@@ -33,6 +36,9 @@ describe('csp', () => {
         // Preview PDF : iframe blob: (même origine), jamais l’origine API.
         expect(CSP_PROD_ENFORCE).toMatch(/frame-src[^;]*\bblob:/);
         expect(CSP_PROD_ENFORCE).toMatch(/frame-src[^;]*https:\/\/accounts\.google\.com/);
+        // Aucune image externe : une adresse d'image ne peut pas emporter de texte (import en démo, E4).
+        expect(CSP_PROD_ENFORCE).toContain("img-src 'self' data: blob:;");
+        expect(CSP_DEV_REPORT_ONLY).not.toMatch(/img-src[^;]*https?:/);
     });
 
     it('buildCspProdEnforce injecte l’origine API + wss', () => {
@@ -66,13 +72,17 @@ describe('tauri.conf.json CSP', () => {
         expect(csp['connect-src']).toContain('ipc:');
         expect(csp['connect-src']).toContain('http://ipc.localhost');
         expect(csp['connect-src']).toContain('https://accounts.google.com');
-        expect(csp['connect-src']).toContain('https://api-spendup.ch');
-        expect(csp['connect-src']).toContain('wss://api-spendup.ch');
-        expect(csp['connect-src']).toContain('wss://localhost:*');
+        expect(csp['connect-src']).toContain('https://api.spendup.ch');
+        expect(csp['connect-src']).toContain('wss://api.spendup.ch');
+        // Prod du bureau : aucun service local joignable (le dev passe par `devCsp`).
+        expect(csp['connect-src']).not.toContain('localhost:*');
+        expect(csp['connect-src']).not.toContain('127.0.0.1:*');
         expect(csp['connect-src']).not.toMatch(/(?:^|\s)https:(?=\s|$)/);
         expect(csp['connect-src']).not.toMatch(/(?:^|\s)wss:(?=\s|$)/);
         expect(csp['img-src']).toContain('asset:');
         expect(csp['img-src']).toContain('http://asset.localhost');
+        expect(csp['img-src']).not.toMatch(/(?:^|\s)https:(?=\s|$)/);
+        expect(tauriConf.app.security.devCsp?.['img-src']).not.toMatch(/(?:^|\s)https:(?=\s|$)/);
         expect(csp['object-src']).toBe("'none'");
         expect(csp['frame-src']).toContain('blob:');
         expect(csp['frame-src']).toContain('https://accounts.google.com');

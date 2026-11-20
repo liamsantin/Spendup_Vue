@@ -80,27 +80,18 @@ const sheetOpen = ref(false);
     </v-bottom-sheet>
 </template>
 
-<!-- Non scopé : s’applique aux composants passés en slot (pastilles, recherche, boutons). -->
+<!-- Non scopé : s’applique aux composants passés en slot (filtres, recherche, boutons). -->
 <style>
-.su-page:has(> .su-body > .app-board) > .su-hero {
-    padding: 2px 6px 0;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
-    backdrop-filter: none;
-}
-
+/* Plateau Swiss : une ligne filtres · recherche soulignée · actions, puis la liste à plat. */
 .su-body:has(> .app-board) {
     display: flex;
     flex-direction: column;
     overflow: hidden;
     min-height: 0;
-    padding-top: 8px;
+    padding-top: 24px;
 }
 
 .app-board {
-    --board-shell: rgba(255, 255, 255, 0.55);
-    --board-card: #fffdf9;
     flex: 1 1 auto;
     min-height: 0;
     display: flex;
@@ -111,8 +102,10 @@ const sheetOpen = ref(false);
 .app-board__top {
     flex: none;
     display: flex;
-    align-items: stretch;
+    align-items: flex-end;
+    gap: 24px;
     min-width: 0;
+    padding-bottom: 16px;
 }
 
 .app-board__bar {
@@ -122,40 +115,44 @@ const sheetOpen = ref(false);
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
-    padding: 14px 14px 12px 18px;
-    background: var(--board-shell);
-    border-radius: 28px 28px 0 0;
-}
-
-.app-board--notched .app-board__bar::after {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    right: -24px;
-    bottom: 0;
-    width: 24px;
-    height: 24px;
-    background: radial-gradient(circle at 100% 0, transparent 23px, var(--board-shell) 24px);
-    pointer-events: none;
+    gap: 12px 22px;
 }
 
 .app-board__filters {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 8px 22px;
 }
 
+/* déclencheurs de filtre : texte seul, actif = 700 souligné ; compteur en pastille bleue */
 .app-board .app-board__filters .su-btn {
-    height: 34px;
-    padding: 0 14px;
-    border-radius: 17px;
-    background: #fff;
-    font-size: 0.8rem;
-    box-shadow:
-        0 1px 2px rgba(16, 16, 20, 0.06),
-        0 0 0 1px rgba(16, 16, 20, 0.05);
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--gray);
+    font-size: 14px;
+    font-weight: 400;
+    box-shadow: none;
+}
+
+.app-board .app-board__filters .su-btn:hover:not(:disabled) {
+    background: transparent;
+    color: var(--ink);
+}
+
+.app-board .app-board__filters .su-btn.is-active,
+.app-board .app-board__filters .su-btn[aria-expanded='true'] {
+    color: var(--ink);
+    font-weight: 700;
+    box-shadow: inset 0 -2px 0 var(--ink);
+}
+
+.app-board .app-board__filters .su-btn > svg {
+    display: none;
 }
 
 .app-board__notch {
@@ -163,35 +160,35 @@ const sheetOpen = ref(false);
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 2px 16px 22px;
+    padding: 0;
 }
 
 .app-board .app-board__notch .su-btn--ink {
     height: 40px;
     padding: 0 16px;
     gap: 8px;
-    border-radius: 20px;
-    background: #fff;
-    font-size: 0.82rem;
-    font-weight: 550;
+    border: 1px solid var(--ink);
+    background: transparent;
+    font-size: 13.5px;
+    font-weight: 700;
     color: var(--ink);
-    box-shadow:
-        0 10px 24px -16px rgba(16, 16, 20, 0.45),
-        0 0 0 1px rgba(255, 255, 255, 0.9);
+    box-shadow: none;
 }
 
 .app-board .app-board__notch .su-btn--ink:hover:not(:disabled) {
-    background: #fff;
+    background: var(--soft);
 }
 
 .app-board .app-board__notch .su-btn--ink.app-board__primary {
-    background: rgb(var(--v-theme-primary));
-    color: rgb(var(--v-theme-on-primary));
-    box-shadow: 0 10px 24px -14px rgba(var(--v-theme-primary), 0.7);
+    background: var(--blue-btn);
+    border-color: var(--blue-btn);
+    color: #fff;
+    box-shadow: none;
 }
 
 .app-board .app-board__notch .su-btn--ink.app-board__primary:hover:not(:disabled) {
-    background: color-mix(in srgb, rgb(var(--v-theme-primary)) 88%, #000);
+    background: var(--blue-ink);
+    border-color: var(--blue-ink);
 }
 
 .app-board__panel {
@@ -200,36 +197,32 @@ const sheetOpen = ref(false);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: var(--board-card);
-    border-radius: 0 0 28px 28px;
-    box-shadow: 0 18px 44px -30px rgba(16, 16, 20, 0.38);
-}
-
-.app-board--notched .app-board__panel {
-    border-radius: 0 28px 28px 28px;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 @media (max-width: 767px) {
     .su-body:has(> .app-board) {
-        padding: 0;
+        padding-top: 16px;
+    }
+
+    .app-board__top {
+        gap: 8px;
+        padding-bottom: 12px;
     }
 
     .app-board__bar {
         flex-wrap: nowrap;
-        gap: 6px;
-        border-radius: 22px 22px 0 0;
-        padding: 6px 4px 6px 6px;
+        gap: 12px;
     }
 
     .app-board__filters {
         flex-wrap: nowrap;
-        gap: 6px;
+        gap: 16px;
         min-width: 0;
         overflow-x: auto;
         scrollbar-width: none;
-        /* Laisse respirer l’ombre des pastilles malgré le défilement horizontal. */
-        padding: 2px;
-        margin: -2px;
     }
 
     .app-board__filters::-webkit-scrollbar {
@@ -240,13 +233,8 @@ const sheetOpen = ref(false);
         flex: none;
     }
 
-    .app-board .app-board__filters .su-btn {
-        padding: 0 10px;
-    }
-
     .app-board__notch {
         gap: 6px;
-        padding: 2px 0 8px 12px;
     }
 
     .app-board__label,
@@ -255,17 +243,9 @@ const sheetOpen = ref(false);
     }
 
     .app-board .app-board__notch .su-btn--ink {
-        width: 38px;
-        height: 38px;
+        width: 40px;
+        height: 40px;
         padding: 0;
-    }
-
-    .app-board__panel {
-        border-radius: 0 0 22px 22px;
-    }
-
-    .app-board--notched .app-board__panel {
-        border-radius: 0 22px 22px 22px;
     }
 }
 
@@ -273,51 +253,46 @@ const sheetOpen = ref(false);
 .app-board-sheet {
     max-height: 80dvh;
     overflow-y: auto;
-    padding: 8px 16px calc(20px + env(safe-area-inset-bottom, 0px));
-    border-radius: 26px 26px 0 0;
-    background: #fff;
+    padding: 12px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--ink);
+    background: var(--raise);
     color: var(--ink);
     font-family: var(--font-ui);
 }
 
 .app-board-sheet__handle {
-    display: block;
-    width: 40px;
-    height: 4px;
-    margin: 0 auto 10px;
-    border-radius: 2px;
-    background: rgba(16, 16, 20, 0.16);
+    display: none;
 }
 
 .app-board-sheet__head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 4px 12px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
 }
 
 .app-board-sheet__title {
     margin: 0;
     font-size: 18px;
-    font-weight: 650;
-    letter-spacing: -0.02em;
+    font-weight: 700;
+    letter-spacing: -0.025em;
 }
 
 .app-board-sheet .app-board-sheet__done {
-    height: 34px;
+    height: 36px;
+    min-height: 36px;
     padding: 0 14px;
-    border-radius: 17px;
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 13px;
 }
 
 .app-board-sheet__list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0;
 }
 
-/* chaque pastille devient une ligne pleine largeur ; son menu s’ouvre par-dessus */
 .app-board-sheet__list > *,
 .app-board-sheet__list > * > button {
     width: 100%;
@@ -328,11 +303,14 @@ const sheetOpen = ref(false);
 .app-board-sheet .app-board-sheet__list > label {
     justify-content: flex-start;
     min-height: 48px;
-    padding: 0 16px;
-    border-radius: 16px;
-    background: rgba(16, 16, 20, 0.04);
+    padding: 0 4px;
+    border: 0;
+    border-top: 1px solid var(--line);
+    border-radius: 0;
+    background: transparent;
     box-shadow: none;
-    font-size: 0.95rem;
+    font-size: 15px;
+    color: var(--ink);
 }
 
 .app-board-sheet__list .su-btn__count {

@@ -32,8 +32,8 @@ const options: { value: ShareRole; icon: typeof EyeIcon; hintKey: string }[] = [
             :disabled="disabled"
             @click="model = option.value"
         >
-            <span class="share-role-picker__icon" aria-hidden="true">
-                <component :is="option.icon" :size="22" stroke-width="1.5" />
+            <span class="share-role-picker__icon su-tile su-tile--blue" aria-hidden="true">
+                <component :is="option.icon" :size="18" stroke-width="1.6" />
             </span>
             <span class="share-role-picker__copy">
                 <span class="share-role-picker__title">{{ t(`comptesPage.roles.${option.value}`) }}</span>
@@ -44,6 +44,7 @@ const options: { value: ShareRole; icon: typeof EyeIcon; hintKey: string }[] = [
 </template>
 
 <style scoped>
+/* Deux blocs carrés : bordure fine, sélection = bordure noire (pas de fond coloré). */
 .share-role-picker {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -57,31 +58,35 @@ const options: { value: ShareRole; icon: typeof EyeIcon; hintKey: string }[] = [
 }
 
 .share-role-picker__option {
+    appearance: none;
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
     padding: 12px;
     text-align: left;
-    color: rgb(var(--v-theme-on-surface));
+    color: var(--ink);
     background: transparent;
-    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-    border-radius: 10px;
+    border: 1px solid var(--line);
+    border-radius: 0;
+    font: inherit;
     cursor: pointer;
     transition:
-        border-color 160ms ease,
-        background-color 160ms ease,
-        box-shadow 160ms ease;
+        border-color 0.15s var(--ease),
+        background 0.15s var(--ease);
 }
 
 .share-role-picker__option:hover:not(:disabled) {
-    border-color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.04);
+    background: var(--soft);
 }
 
 .share-role-picker__option--active {
-    border-color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.08);
-    box-shadow: 0 0 0 1px rgb(var(--v-theme-primary));
+    border-color: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink);
+}
+
+.share-role-picker__option:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
 }
 
 .share-role-picker__option:disabled {
@@ -90,14 +95,7 @@ const options: { value: ShareRole; icon: typeof EyeIcon; hintKey: string }[] = [
 }
 
 .share-role-picker__icon {
-    display: grid;
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    place-items: center;
-    color: rgb(var(--v-theme-primary));
-    background: rgba(var(--v-theme-primary), 0.1);
-    border-radius: 8px;
+    flex: none;
 }
 
 .share-role-picker__copy {
@@ -108,14 +106,14 @@ const options: { value: ShareRole; icon: typeof EyeIcon; hintKey: string }[] = [
 }
 
 .share-role-picker__title {
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
     line-height: 1.3;
 }
 
 .share-role-picker__hint {
-    color: rgba(var(--v-theme-on-surface), 0.6);
-    font-size: 0.75rem;
+    color: var(--gray);
+    font-size: 13px;
     line-height: 1.35;
 }
 </style>

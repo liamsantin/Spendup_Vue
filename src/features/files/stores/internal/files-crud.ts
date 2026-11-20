@@ -4,6 +4,30 @@ import { isQuotaExceededMessage } from '@/features/files/format';
 import { buildUpdateFileRequest, type FileFormFields } from '@/features/files/payload';
 import { FILE_PAGE_SIZE_DEFAULT, type FileDto, type ListFilesQuery } from '@/features/files/types';
 import { FILES_LIST_CACHE_KEY, nextPageFromLoaded, type FilesState } from '@/features/files/stores/internal/files-state';
+import { decryptFileFields, encryptFileUpdate } from '@/features/files/vault-fields';
+import { useVaultStore } from '@/features/vault/stores/vault-store';
+import { generatePublicId, isConflictError } from '@/features/vault/public-id';
+import { useFileSyncStore } from '@/features/files/sync/sync-store';
+import { isTauri } from '@/utils/helpers/platform-helpers';
+
+/** Store de synchro, seulement dans l'app de bureau (le navigateur n'a pas de dossier local). */
+function desktopSync() {
+    return isTauri() ? useFileSyncStore() : null;
+}
+
+/** Options de suppression dans l'app de bureau. */
+export type DeleteFileOptions = {
+    /**
+     * Fichier en ligne et présent sur ce poste : `false` retire seulement la copie locale (le fichier reste en ligne).
+     * Par défaut, suppression partout.
+     */
+    alsoOnline?: boolean;
+};
+
+/** Déchiffre nom et description (Coffre ouvert) d’une liste de fichiers. */
+function prepareFiles(files: FileDto[]): Promise<FileDto[]> {
+    return Promise.all(files.map(decryptFileFields));
+}
 
 export const FILE_NOT_FOUND_MESSAGE = 'Ce fichier n’est plus disponible.';
 
@@ -73,7 +97,8 @@ export function createFilesCrud(state: FilesState) {
                             pageSize: query.pageSize ?? FILE_PAGE_SIZE_DEFAULT
                         });
                         if (requestId !== listRequestSeq) return;
-                        const nextItems = Array.isArray(result?.items) ? result.items : [];
+                        const nextItems = await prepareFiles(Array.isArray(result?.items) ? result.items : []);
+                        if (requestId !== listRequestSeq) return;
                         setList(key, nextItems, {
                             page: result?.page ?? 1,
                             pageSize: result?.pageSize ?? query.pageSize ?? FILE_PAGE_SIZE_DEFAULT,
@@ -132,7 +157,8 @@ export function createFilesCrud(state: FilesState) {
                 pageSize: size
             });
             if (requestId !== listRequestSeq) return;
-            const incoming = Array.isArray(result?.items) ? result.items : [];
+            const incoming = await prepareFiles(Array.isArray(result?.items) ? result.items : []);
+            if (requestId !== listRequestSeq) return;
             const byId = new Map<string, FileDto>();
             for (const item of prev) byId.set(item.publicId, item);
             for (const item of incoming) byId.set(item.publicId, item);
@@ -166,7 +192,7 @@ export function createFilesCrud(state: FilesState) {
 
     async function fetchFile(publicId: string): Promise<FileDto | null> {
         try {
-            const file = await filesApi.get(publicId);
+            const file = await decryptFileFields(await filesApi.get(publicId));
             upsertItem(file);
             return file;
         } catch (e: unknown) {
@@ -179,17 +205,43 @@ export function createFilesCrud(state: FilesState) {
         }
     }
 
+    /** Nouveaux identifiants tirés après un 409 avant d’abandonner. */
+    const UPLOAD_ID_RETRIES = 3;
+
+    /**
+     * Périmètre étendu ouvert : le client choisit le `publicId`, chiffre le PDF (AAD `file:content:<publicId>`)
+     * et son nom (`file:name_original:<publicId>`), puis envoie tout en un seul `POST` avec `encrypted=true`.
+     * Un 409 `CONFLICT` sur l’identifiant fait retirer un identifiant et rechiffrer. Sinon : upload en clair.
+     */
+    async function uploadWithVault(file: File, onProgress?: (percent: number) => void): Promise<FileDto> {
+        const progress = {
+            onUploadProgress: (event: { loaded: number; total?: number }) => {
+                if (!onProgress || !event.total) return;
+                onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
+            }
+        };
+        const vault = useVaultStore();
+        for (let attempt = 0; ; attempt += 1) {
+            const publicId = generatePublicId();
+            const sealed = await vault.encryptPdf(file, publicId);
+            if (!sealed) {
+                return decryptFileFields(await filesApi.upload(file, progress));
+            }
+            try {
+                return await decryptFileFields(await filesApi.upload(sealed, progress, { encrypted: true, publicId }));
+            } catch (e: unknown) {
+                if (!isConflictError(e) || attempt >= UPLOAD_ID_RETRIES) throw e;
+            }
+        }
+    }
+
     async function uploadFile(file: File, onProgress?: (percent: number) => void) {
         beginActing();
         clearError();
         let refreshUsage = false;
         try {
-            const created = await filesApi.upload(file, {
-                onUploadProgress: (event) => {
-                    if (!onProgress || !event.total) return;
-                    onProgress(Math.min(100, Math.round((event.loaded / event.total) * 100)));
-                }
-            });
+            const sync = desktopSync();
+            const created = sync?.ready ? await sync.addFile(file) : await uploadWithVault(file, onProgress);
             upsertItem(created);
             touchHydratedListCaches();
             refreshUsage = true;
@@ -222,8 +274,9 @@ export function createFilesCrud(state: FilesState) {
                 throw new AppError(payloadErrorMessage(built.code), 400, built.code);
             }
             if (!built.hasChanges) return current;
-            const updated = await filesApi.update(publicId, built.request);
+            const updated = await decryptFileFields(await filesApi.update(publicId, await encryptFileUpdate(publicId, built.request)));
             upsertItem(updated);
+            desktopSync()?.upsertRemote(updated);
             touchHydratedListCaches();
             return updated;
         } catch (e: unknown) {
@@ -241,12 +294,20 @@ export function createFilesCrud(state: FilesState) {
         }
     }
 
-    async function deleteFile(publicId: string) {
+    async function deleteFile(publicId: string, options: DeleteFileOptions = {}) {
         beginActing();
         clearError();
         let refreshUsage = false;
         try {
+            const sync = desktopSync();
+            const current = state.findByPublicId(publicId);
+            const onlineHere = !!sync && (current?.contentLocation ?? 'online') === 'online' && sync.isHere(publicId);
+            if (sync && onlineHere && options.alsoOnline === false) {
+                await sync.removeLocalCopy(publicId);
+                return;
+            }
             await filesApi.remove(publicId);
+            await sync?.forget(publicId).catch(() => undefined);
             removeItemLocal(publicId);
             touchHydratedListCaches();
             refreshUsage = true;
@@ -268,6 +329,34 @@ export function createFilesCrud(state: FilesState) {
         }
     }
 
+    /**
+     * Inclut ou exclut un fichier de la synchro. Exclure un fichier en ligne avec `removeOnline` le garde seulement
+     * sur ce poste (copie locale vérifiée avant de retirer la copie en ligne) et libère le quota.
+     */
+    async function setSyncExcluded(publicId: string, excluded: boolean, removeOnline = false) {
+        beginActing();
+        clearError();
+        try {
+            const sync = desktopSync();
+            let updated = await decryptFileFields(await filesApi.update(publicId, { syncExcluded: excluded }));
+            if (sync && excluded && removeOnline && (updated.contentLocation ?? 'online') === 'online') {
+                updated = await sync.keepOnlyHere(updated);
+            }
+            upsertItem(updated);
+            sync?.upsertRemote(updated);
+            touchHydratedListCaches();
+            void sync?.run();
+            await loadUsage();
+            return updated;
+        } catch (e: unknown) {
+            const err = AppError.fromUnknown(e);
+            error.value = err.message;
+            throw err;
+        } finally {
+            endActing();
+        }
+    }
+
     async function refetchActive(force = true) {
         await loadList({ force }).catch(() => undefined);
     }
@@ -281,6 +370,7 @@ export function createFilesCrud(state: FilesState) {
         uploadFile,
         updateFile,
         deleteFile,
+        setSyncExcluded,
         refetchActive
     };
 }

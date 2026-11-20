@@ -1,16 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Receipt2Icon, TrendingUpIcon } from 'vue-tabler-icons';
+import { useRouter } from 'vue-router';
+import { recurrenceDetailPath } from '@/features/recurring-payments/paths';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
-import RecurringTemplateDetailModal from '@/features/recurring-payments/components/modals/RecurringTemplateDetailModal.vue';
 import {
     addMonthsYmd,
     displayDueStatus,
-    formatCalendarDate,
-    formatPlannedAmount,
     isDueOpen,
     isDueSettled,
     matchesRecurringSearch,
@@ -43,21 +41,13 @@ const emit = defineEmits<{
     sort: [value: UpcomingDueSort];
 }>();
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
+const router = useRouter();
 const accountsStore = useAccountsStore();
 const store = useRecurringPaymentsStore();
 const loading = ref(false);
 const localError = ref<string | null>(null);
 const rows = ref<UpcomingRow[]>([]);
-const detailKind = ref<RecurringKind>('expense');
-const detailId = ref<string | null>(null);
-
-const detailOpen = computed({
-    get: () => !!detailId.value,
-    set: (value: boolean) => {
-        if (!value) detailId.value = null;
-    }
-});
 
 const visibleRows = computed(() => {
     const accountId = props.accountPublicId?.trim() || null;
@@ -164,9 +154,9 @@ function accountName(id: string) {
     return accountsStore.accounts.find((item) => item.publicId === id)?.name ?? t('recurrencesPage.unknownAccount');
 }
 
+/** Ouvre la fiche de la récurrence de l’échéance. */
 function openRow(row: UpcomingRow) {
-    detailKind.value = row.kind;
-    detailId.value = row.templatePublicId;
+    void router.push(recurrenceDetailPath(row.kind, row.templatePublicId));
 }
 
 function exportCsv() {
@@ -196,38 +186,7 @@ defineExpose({ exportCsv, visibleCount });
                 <p>{{ emptyCopy }}</p>
             </div>
             <div v-else class="recurring-upcoming">
-                <div class="recurring-upcoming__list">
-                    <button
-                        v-for="row in visibleRows"
-                        :key="`${row.kind}-${row.due.publicId}`"
-                        type="button"
-                        class="recurring-upcoming-row"
-                        @click="openRow(row)"
-                    >
-                        <span class="recurring-upcoming-row__icon" :class="`is-${row.kind}`">
-                            <component :is="row.kind === 'expense' ? Receipt2Icon : TrendingUpIcon" size="18" stroke-width="1.8" />
-                        </span>
-                        <div class="recurring-upcoming-row__meta">
-                            <div class="recurring-upcoming-row__title">
-                                <p class="recurring-upcoming-row__name">{{ row.templateName }}</p>
-                                <span class="recurring-upcoming-row__badge" :class="`is-${row.kind}`">{{
-                                    t(`recurrencesPage.kinds.${row.kind}`)
-                                }}</span>
-                            </div>
-                            <p class="recurring-upcoming-row__sub">
-                                {{ formatCalendarDate(row.due.scheduledAt, locale) }} · {{ accountName(row.accountPublicId) }}
-                            </p>
-                            <p class="recurring-upcoming-row__sub">
-                                {{ t(`recurrencesPage.dueStatuses.${displayDueStatus(row.due, row.kind)}`) }}
-                            </p>
-                        </div>
-                        <span class="recurring-upcoming-row__amount" :class="row.kind === 'expense' ? 'is-debit' : 'is-credit'">
-                            {{ formatPlannedAmount(row.due.plannedAmount, row.currency, locale) }}
-                        </span>
-                    </button>
-                </div>
                 <RecurringUpcomingTable
-                    class="recurring-upcoming__table"
                     :rows="visibleRows"
                     :sort="parseUpcomingDueSort(sort)"
                     :account-name="accountName"
@@ -236,8 +195,6 @@ defineExpose({ exportCsv, visibleCount });
                 />
             </div>
         </div>
-
-        <RecurringTemplateDetailModal v-model="detailOpen" :kind="detailKind" :public-id="detailId" />
     </div>
 </template>
 
@@ -252,185 +209,18 @@ defineExpose({ exportCsv, visibleCount });
 .recurring-panel__scroll {
     flex: 1 1 auto;
     min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+    overflow: auto;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
 }
 
 .recurring-upcoming {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    padding: 4px 16px 10px;
-}
-
-.recurring-upcoming__list {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    overflow: visible;
-}
-
-.recurring-upcoming__table {
-    display: none;
-}
-
-@media (min-width: 768px) {
-    .recurring-upcoming__list {
-        display: none;
-    }
-
-    .recurring-upcoming__table {
-        display: flex;
-        flex: 1 1 auto;
-        min-height: 0;
-        flex-direction: column;
-    }
+    padding: 8px 0 24px;
 }
 
 @media (max-width: 767px) {
-    .recurring-panel__scroll {
-        display: block;
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-
     .recurring-upcoming {
-        display: block;
-        padding: 0 4px 4px;
+        padding: 0 0 16px;
     }
-}
-
-.recurring-upcoming-row {
-    appearance: none;
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    width: 100%;
-    margin: 0;
-    padding: 10px;
-    border: 0;
-    border-radius: 12px;
-    background: transparent;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    cursor: pointer;
-    position: relative;
-    z-index: 0;
-    transition:
-        transform 0.5s var(--spring),
-        box-shadow 0.45s var(--ease),
-        background 0.3s var(--ease);
-}
-
-.recurring-upcoming-row:hover {
-    background: var(--surface-hover-soft);
-}
-
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-    .recurring-upcoming-row:hover {
-        z-index: 1;
-        transform: scale(1.012);
-        box-shadow:
-            0 1px 2px rgba(16, 16, 20, 0.04),
-            0 12px 28px -16px rgba(16, 16, 20, 0.18);
-    }
-}
-
-.recurring-upcoming-row__icon {
-    display: grid;
-    place-items: center;
-    flex: none;
-    width: 38px;
-    height: 38px;
-    margin-top: 1px;
-    border-radius: 12px;
-    background: var(--hair);
-}
-
-.recurring-upcoming-row__icon.is-expense {
-    background: rgba(var(--amount-debit), 0.1);
-    color: rgb(var(--amount-debit));
-}
-
-.recurring-upcoming-row__icon.is-income {
-    background: rgba(var(--amount-credit), 0.12);
-    color: rgb(var(--amount-credit));
-}
-
-.recurring-upcoming-row__meta {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.recurring-upcoming-row__title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-}
-
-.recurring-upcoming-row__name {
-    margin: 0;
-    min-width: 0;
-    font-size: 14.5px;
-    font-weight: 620;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.recurring-upcoming-row__badge {
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    background: var(--hair);
-    color: var(--ink-muted);
-}
-
-.recurring-upcoming-row__badge.is-expense {
-    background: rgba(var(--amount-debit), 0.1);
-    color: rgb(var(--amount-debit));
-}
-
-.recurring-upcoming-row__badge.is-income {
-    background: rgba(var(--amount-credit), 0.12);
-    color: rgb(var(--amount-credit));
-}
-
-.recurring-upcoming-row__sub {
-    margin: 0;
-    font-size: 0.8rem;
-    color: var(--ink-muted);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.recurring-upcoming-row__amount {
-    flex: none;
-    margin-top: 8px;
-    font-size: 0.92rem;
-    font-weight: 680;
-    letter-spacing: -0.02em;
-    white-space: nowrap;
-}
-
-.recurring-upcoming-row__amount.is-debit {
-    color: rgb(var(--amount-debit));
-}
-
-.recurring-upcoming-row__amount.is-credit {
-    color: rgb(var(--amount-credit));
 }
 </style>

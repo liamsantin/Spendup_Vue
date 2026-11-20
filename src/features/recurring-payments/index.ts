@@ -69,7 +69,7 @@ export { isTransactionLinkableToRecurrence, isTransactionLinkedToRecurrence } fr
 export { default as RecurringTemplatesDirectory } from '@/features/recurring-payments/components/RecurringTemplatesDirectory.vue';
 export { default as RecurringUpcomingPanel } from '@/features/recurring-payments/components/RecurringUpcomingPanel.vue';
 export { default as RecurringTemplateFormModal } from '@/features/recurring-payments/components/modals/RecurringTemplateFormModal.vue';
-export { default as RecurringTemplateDetailModal } from '@/features/recurring-payments/components/modals/RecurringTemplateDetailModal.vue';
+export { default as RecurringDetail } from '@/features/recurring-payments/components/RecurringDetail.vue';
 export { default as RecurringLinkTransactionsModal } from '@/features/recurring-payments/components/modals/RecurringLinkTransactionsModal.vue';
 export { default as RecurringSuggestionsPanel } from '@/features/recurring-payments/components/RecurringSuggestionsPanel.vue';
 export { default as RecurringSuggestionsModal } from '@/features/recurring-payments/components/modals/RecurringSuggestionsModal.vue';
