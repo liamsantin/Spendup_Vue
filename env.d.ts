@@ -10,6 +10,8 @@ interface ImportMetaEnv {
     readonly VITE_APP_ENV: string;
     /** `true` = cookies HttpOnly + CSRF (same-site). Défaut / prod = Bearer (`false`). */
     readonly VITE_AUTH_COOKIE_MODE: string;
+    /** `true` = l'API est servie sous le domaine du site : requis en production pour activer le cookie-mode. */
+    readonly VITE_AUTH_SAME_SITE_API?: string;
     /** Destinataire du formulaire /contact (mailto:). Vide = formulaire désactivé. */
     readonly VITE_CONTACT_EMAIL?: string;
     /** URL publique du site (sans slash final) : liens légaux ouverts depuis l'application Windows. */
