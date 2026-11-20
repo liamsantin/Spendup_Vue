@@ -17,6 +17,8 @@
     <If "%{REQUEST_URI} =~ m#^/assets/#">
         Header set Cache-Control "public, max-age=31536000, immutable"
     </If>
+    # Remplacé au build (vite.plugins.ts, apacheHeadersCsp) par la CSP calculée depuis VITE_API_BASE_URL.
+    Header set Content-Security-Policy "__CSP__"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"

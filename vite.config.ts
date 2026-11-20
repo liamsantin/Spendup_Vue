@@ -6,7 +6,7 @@ import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
 import vueDevTools from 'vite-plugin-vue-devtools';
 import { buildCspProdEnforce, CSP_DEV_REPORT_ONLY, SECURITY_HEADERS_BASE } from './src/security/csp';
-import { excludeDesktopInstaller, netlifyHeadersCsp, vueTablerIconsTreeshake } from './vite.plugins';
+import { apacheHeadersCsp, excludeDesktopInstaller, netlifyHeadersCsp, vueTablerIconsTreeshake } from './vite.plugins';
 
 /** Injecte une CSP enforce en meta sur le HTML de build (filet si le CDN omet le header). */
 function htmlCspMetaPlugin(cspProd: string): Plugin {
@@ -38,6 +38,7 @@ export default defineConfig(({ command, mode }) => {
             vuetify({ autoImport: true }),
             htmlCspMetaPlugin(cspProd),
             netlifyHeadersCsp(cspProd),
+            apacheHeadersCsp(cspProd),
             excludeDesktopInstaller()
         ],
         /**
