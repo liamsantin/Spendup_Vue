@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { handleDemoRequest } from '@/features/demo/handle';
 import { demoDb, localYmd, resetDemoDb } from '@/features/demo/db';
+import { demoSampleStatementFile, demoSampleStatementText } from '@/features/demo/imports/sample';
 import type {
     BulkUpdateImportLinesResult,
     CommitImportResult,
@@ -344,6 +345,28 @@ describe('import de relevés en démo', () => {
                 recurringDue: { recurringPublicId: 'REC1', scheduledAt: '2026-11-01' }
             })
         ).toThrow('Échéance introuvable');
+    });
+
+    it('lit le relevé d’exemple et y montre alias, suggestion et doublon', async () => {
+        const created = await upload(demoSampleStatementFile('releve-exemple.csv'));
+        expect(created).toMatchObject({ status: 'aValider', fileName: 'releve-exemple.csv' });
+        const items = lines(created.publicId);
+        expect(items).toHaveLength(11);
+        expect(items.every((item) => item.status !== 'erreur')).toBe(true);
+        expect(items.filter((item) => item.label === 'MIGROS LAUSANNE').every((item) => item.tierPublicId === 'TIERMIG')).toBe(true);
+        expect(byLabel(items, 'Restaurant')).toMatchObject({ categoryPublicId: 'CATREST', categorySuggested: true });
+        expect(items.filter((item) => item.label === 'Café de la Gare')[1].duplicateOfLineNumber).not.toBeNull();
+        // Le dernier solde du relevé suit les montants : l'aperçu peut le comparer.
+        expect(created.analysis.columns.map((column) => column.field)).toContain('balance');
+    });
+
+    it('fabrique un relevé d’exemple daté du passé récent', () => {
+        const today = new Date(2026, 10, 20);
+        const text = demoSampleStatementText(today);
+        expect(text.split('\r\n')[2]).toBe('Date;Libellé;Montant;Solde');
+        expect(text).toContain('02.11.2026;MIGROS LAUSANNE;-64.35;3135.65');
+        expect(text).toContain('18.11.2026;Coop Pronto;-12.60;');
+        expect(text).not.toContain('20.11.2026');
     });
 
     it('repart de zéro au rechargement de la démo', async () => {

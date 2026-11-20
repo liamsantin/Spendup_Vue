@@ -1,11 +1,21 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth';
+import { IMPORTS_BASE } from '@/features/imports/paths';
+import { asAppPath } from '@/features/demo/session';
 
 const { t } = useI18n();
 const auth = useAuthStore();
+const route = useRoute();
 const router = useRouter();
+
+/** Pages d'import : le bandeau rappelle que le relevé ne quitte pas le navigateur. */
+const onImports = computed(() => {
+    const path = asAppPath(route.path);
+    return path === IMPORTS_BASE || path.startsWith(`${IMPORTS_BASE}/`);
+});
 
 function reset() {
     window.location.assign('/demo');
@@ -19,7 +29,13 @@ async function exit() {
 
 <template>
     <section class="su-box demo-banner" role="status">
-        <p class="demo-banner__text">{{ t('demo.banner') }}</p>
+        <p class="demo-banner__text">
+            {{ t('demo.banner') }}
+            <template v-if="onImports">
+                <br />
+                {{ t('demo.importPromise') }}
+            </template>
+        </p>
         <div class="demo-banner__actions">
             <button type="button" class="su-link" @click="reset">{{ t('demo.reset') }}</button>
             <router-link class="su-link" to="/auth?tab=register">{{ t('demo.signup') }}</router-link>

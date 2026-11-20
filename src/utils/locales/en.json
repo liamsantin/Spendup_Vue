@@ -33,6 +33,7 @@
     },
     "demo": {
         "banner": "Demo — nothing is saved on our servers.",
+        "importPromise": "An imported statement is read in your browser and never sent to our servers.",
         "reset": "Reset",
         "exit": "Exit",
         "signup": "Create an account",
@@ -2393,6 +2394,7 @@
     "importsPage": {
         "title": "Imports",
         "subtitle": "Import a CSV or Excel statement, review the lines, then create the transactions in one go.",
+        "subtitleDemo": "Import a CSV statement, review the lines, then create the transactions in one go.",
         "count": "{count} import | {count} import | {count} imports",
         "loadMore": "Load more",
         "tabs": {
@@ -2456,6 +2458,7 @@
         },
         "empty": {
             "list": "No imports yet. Import a CSV or Excel statement exported from your bank.",
+            "listDemo": "No imports yet. Import a CSV statement exported from your bank, or the sample statement.",
             "filtered": "No import matches these filters."
         },
         "list": {
@@ -2493,6 +2496,15 @@
             "account": "Target account",
             "pick": "Choose a file or drop it here",
             "formats": ".csv (2 MB max.) or .xlsx (5 MB max.)",
+            "formatsDemo": ".csv (2 MB max.)",
+            "demo": {
+                "promise": "The file is read in your browser and never sent to our servers.",
+                "reload": "Reloading the page clears the import and its transactions, like the rest of the demo.",
+                "sample": "No statement at hand?",
+                "useSample": "Use the sample statement",
+                "downloadSample": "Download",
+                "sampleName": "sample-statement.csv"
+            },
             "clearFile": "Remove file",
             "template": "Template",
             "autoDetect": "Automatic detection",
@@ -2515,6 +2527,7 @@
                 "legacyXls": ".xls is not supported: save the workbook as .xlsx or .csv.",
                 "macroXlsm": "Macro-enabled workbooks (.xlsm) are not accepted: save as .xlsx.",
                 "unsupported": "Unsupported format. Use a .csv or .xlsx file (OFX and CAMT are not accepted).",
+                "demoCsvOnly": "The demo reads CSV statements: export your statement as .csv from your e-banking.",
                 "tooLarge": "File too large ({max} max.)."
             }
         },

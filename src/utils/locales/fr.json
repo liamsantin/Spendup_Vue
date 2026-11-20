@@ -33,6 +33,7 @@
     },
     "demo": {
         "banner": "Démo — rien n’est enregistré sur nos serveurs.",
+        "importPromise": "Un relevé importé est lu dans votre navigateur et n’est jamais envoyé à nos serveurs.",
         "reset": "Réinitialiser",
         "exit": "Quitter",
         "signup": "Créer un compte",
@@ -2393,6 +2394,7 @@
     "importsPage": {
         "title": "Imports",
         "subtitle": "Importez un relevé CSV ou Excel, vérifiez les lignes, puis créez les transactions en une fois.",
+        "subtitleDemo": "Importez un relevé CSV, vérifiez les lignes, puis créez les transactions en une fois.",
         "count": "{count} import | {count} import | {count} imports",
         "loadMore": "Charger plus",
         "tabs": {
@@ -2456,6 +2458,7 @@
         },
         "empty": {
             "list": "Aucun import pour l’instant. Importez un relevé CSV ou Excel exporté depuis votre banque.",
+            "listDemo": "Aucun import pour l’instant. Importez un relevé CSV exporté depuis votre banque, ou le relevé d’exemple.",
             "filtered": "Aucun import ne correspond à ces filtres."
         },
         "list": {
@@ -2493,6 +2496,15 @@
             "account": "Compte cible",
             "pick": "Choisir un fichier ou le déposer ici",
             "formats": ".csv (2 Mo max.) ou .xlsx (5 Mo max.)",
+            "formatsDemo": ".csv (2 Mo max.)",
+            "demo": {
+                "promise": "Le fichier est lu dans votre navigateur et n’est jamais envoyé à nos serveurs.",
+                "reload": "Recharger la page efface l’import et ses transactions, comme le reste de la démo.",
+                "sample": "Pas de relevé sous la main ?",
+                "useSample": "Utiliser le relevé d’exemple",
+                "downloadSample": "Télécharger",
+                "sampleName": "releve-exemple.csv"
+            },
             "clearFile": "Retirer le fichier",
             "template": "Modèle",
             "autoDetect": "Détection automatique",
@@ -2515,6 +2527,7 @@
                 "legacyXls": "Format .xls non pris en charge : enregistrez le classeur en .xlsx ou .csv.",
                 "macroXlsm": "Les classeurs avec macros (.xlsm) ne sont pas acceptés : enregistrez en .xlsx.",
                 "unsupported": "Format non pris en charge. Utilisez un fichier .csv ou .xlsx (OFX et CAMT ne sont pas acceptés).",
+                "demoCsvOnly": "La démo lit les relevés au format CSV : exportez votre relevé en .csv depuis votre e-banking.",
                 "tooLarge": "Fichier trop volumineux (maximum {max})."
             }
         },

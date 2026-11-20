@@ -20,7 +20,7 @@ import {
     useImportsStore
 } from '@/features/imports';
 import type { Import, ImportStatus } from '@/features/imports';
-import { asAppPath } from '@/features/demo/session';
+import { asAppPath, demoActive } from '@/features/demo/session';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -93,7 +93,12 @@ useCreateFromQuery(onCreate, () => !store.acting);
 </script>
 
 <template>
-    <AppPageShell class="imports-page" :title="t('importsPage.title')" :subtitle="t('importsPage.subtitle')" :body-scroll="false">
+    <AppPageShell
+        class="imports-page"
+        :title="t('importsPage.title')"
+        :subtitle="demoActive ? t('importsPage.subtitleDemo') : t('importsPage.subtitle')"
+        :body-scroll="false"
+    >
         <template #tabs>
             <nav class="su-tabs su-tabs--links" :aria-label="t('importsPage.tabs.label')">
                 <RouterLink :to="IMPORTS_PATHS.list" class="su-tab" :class="{ 'is-active': tab === 'history' }">

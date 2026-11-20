@@ -30,6 +30,12 @@ describe('imports format', () => {
         expect(validateImportFile({ name: 'releve.xlsx', size: IMPORT_XLSX_MAX_BYTES + 1 })).toMatchObject({ ok: false, code: 'tooLarge' });
     });
 
+    it('refuse un classeur en démo, qui ne lit que le CSV', () => {
+        expect(validateImportFile({ name: 'releve.xlsx', size: 10 }, { csvOnly: true })).toEqual({ ok: false, code: 'demoCsvOnly' });
+        expect(validateImportFile({ name: 'releve.csv', size: 10 }, { csvOnly: true })).toMatchObject({ ok: true, sourceType: 'csv' });
+        expect(validateImportFile({ name: 'releve.ofx', size: 10 }, { csvOnly: true })).toEqual({ ok: false, code: 'unsupported' });
+    });
+
     it('lit et construit le tri API', () => {
         expect(parseImportLineSort('-date')).toBe('-date');
         expect(parseImportLineSort('label')).toBe('lineNumber');

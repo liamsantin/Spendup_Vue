@@ -162,6 +162,10 @@ const platforms = [
 const demoPoints = [
     { title: 'Un foyer déjà rempli', text: 'Sacha a des comptes, des transactions, des amis et un patrimoine.' },
     { title: 'Vous pouvez modifier', text: 'Ajoutez une dépense, un budget ou un fichier : trois PDF au maximum.' },
+    {
+        title: 'Importez votre relevé',
+        text: 'Un CSV de votre banque, ou notre relevé d’exemple. Le fichier est lu dans votre navigateur et n’est jamais envoyé à nos serveurs.'
+    },
     { title: 'Rien n’est conservé', text: 'Rechargez la page ou réinitialisez pour retrouver l’exemple de départ.' }
 ];
 </script>
@@ -443,8 +447,8 @@ const demoPoints = [
                         <span class="s-kicker"><b>08</b> Essayer la démo</span>
                         <h2 class="s-h2">Parcourez Spend.Up avant de créer un compte.</h2>
                         <p>
-                            Un foyer d’exemple est déjà rempli : comptes, transactions, budgets, récurrences et patrimoine. Rien n’est
-                            enregistré sur nos serveurs.
+                            Un foyer d’exemple est déjà rempli : comptes, transactions, budgets, récurrences et patrimoine. Vous pouvez y
+                            importer votre propre relevé. Rien n’est enregistré sur nos serveurs.
                         </p>
                         <div class="s-actions">
                             <v-btn color="primary" size="x-large" flat class="text-none" to="/demo">
