@@ -1,3 +1,5 @@
+import { asAppPath } from '@/features/demo/session';
+
 export const IMPORTS_BASE = '/app/finances/imports';
 
 export const IMPORTS_PATHS = {
@@ -11,7 +13,8 @@ export function importDetailPath(publicId: string): string {
 }
 
 export function importPublicIdFromPath(path: string): string | null {
-    const trimmed = path.trim();
+    // En démo l'URL est `/demo/...` : ramenée au chemin applicatif.
+    const trimmed = asAppPath(path);
     if (!trimmed.startsWith(`${IMPORTS_BASE}/`)) return null;
     const rest = trimmed.slice(`${IMPORTS_BASE}/`.length).split(/[/?#]/)[0] ?? '';
     const decoded = decodeURIComponent(rest).trim();

@@ -20,6 +20,7 @@ import {
     useImportsStore
 } from '@/features/imports';
 import type { Import, ImportStatus } from '@/features/imports';
+import { asAppPath } from '@/features/demo/session';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -29,7 +30,7 @@ const accountsStore = useAccountsStore();
 
 const uploadOpen = ref(false);
 
-const tab = computed<'history' | 'templates'>(() => (route.path.startsWith(IMPORTS_PATHS.templates) ? 'templates' : 'history'));
+const tab = computed<'history' | 'templates'>(() => (asAppPath(route.path).startsWith(IMPORTS_PATHS.templates) ? 'templates' : 'history'));
 
 function queryString(name: string): string {
     const raw = route.query[name];

@@ -102,12 +102,12 @@ describe('verrou réseau de la démo', () => {
         expectSilentNetwork();
     });
 
-    it('refuse un fichier envoyé vers une route que la démo ne reproduit pas', async () => {
+    it('lit un relevé dans l’onglet sans l’envoyer, et refuse une route que la démo ne reproduit pas', async () => {
         const form = new FormData();
-        form.append('file', new File(['date;montant\n2026-11-20;-12.50'], 'releve.csv', { type: 'text/csv' }));
+        form.append('file', new File(['date;libellé;montant\n2026-11-02;Café;-12.50'], 'releve.csv', { type: 'text/csv' }));
         form.append('accountPublicId', 'ACCCOUR');
 
-        await expect(fetchWrapper.postForm('/api/imports', form)).rejects.toMatchObject({ name: 'AppError' });
+        await expect(fetchWrapper.postForm('/api/imports', form)).resolves.toMatchObject({ fileName: 'releve.csv', status: 'aValider' });
         await expect(fetchWrapper.putForm('/api/imports/IMP1/content', form)).rejects.toMatchObject({ name: 'AppError' });
         expectSilentNetwork();
     });

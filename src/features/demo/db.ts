@@ -1,4 +1,6 @@
 import type { Alias } from '@/features/aliases/types';
+import type { ImportTemplate } from '@/features/imports/types';
+import type { DemoImportJob } from '@/features/demo/imports/routes';
 import { clearDemoDeviceStorage } from '@/features/demo/device-storage';
 import type { Account, AccountType, Currency } from '@/features/accounts/types';
 import type { Bank } from '@/features/banks/types';
@@ -96,6 +98,12 @@ export type DemoDb = {
     taxReturns: DemoTaxReturn[];
     /** Liens remboursement → facture (part reliée). */
     reimbursementLinks: { reimbursementPublicId: string; invoicePublicId: string; amount: number }[];
+    /** Imports de relevés lus dans l'onglet. */
+    imports: DemoImportJob[];
+    /** Modèles d'import personnels. */
+    importTemplates: ImportTemplate[];
+    /** Octets d'un relevé en revue (relecture), oubliés à la clôture de l'import. Jamais envoyés ni stockés. */
+    importFiles: Record<string, Uint8Array>;
 };
 
 const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -857,6 +865,9 @@ export function createDemoDb(): DemoDb {
         fileBlobs: {},
         taxReturns: seedTaxReturns(),
         reimbursementLinks: [],
+        imports: [],
+        importTemplates: [],
+        importFiles: {},
         aliases: {
             TIERMIG: [
                 {
@@ -1055,7 +1066,14 @@ export function slideDemoDb(source: DemoDb, now?: Date): DemoDb {
 
     const today = now ?? new Date();
     const todayYmd = localYmd(today);
-    const skip = new Set<string>([...Object.keys(seedRecurringHousehold()), 'taxReturns', 'fileBlobs']);
+    const skip = new Set<string>([
+        ...Object.keys(seedRecurringHousehold()),
+        'taxReturns',
+        'fileBlobs',
+        'imports',
+        'importTemplates',
+        'importFiles'
+    ]);
     const slid: Record<string, unknown> = { ...source };
     for (const key of Object.keys(slid)) {
         if (!skip.has(key)) slid[key] = shiftDemoDates(slid[key], months, today);
