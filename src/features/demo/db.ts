@@ -908,8 +908,14 @@ export function periodBounds(periode: Budget['periode'], startDate: string): { p
     else if (periode === 'trimestriel') end.setMonth(end.getMonth() + 3, end.getDate() - 1);
     else if (periode === 'annuel') end.setFullYear(end.getFullYear() + 1, end.getMonth(), end.getDate() - 1);
     else end.setMonth(end.getMonth() + 1, 0);
-    const iso = (date: Date) => date.toISOString().slice(0, 10);
-    return { periodStart: iso(start), periodEnd: iso(end) };
+    return { periodStart: localYmd(start), periodEnd: localYmd(end) };
+}
+
+/** Date civile locale (`YYYY-MM-DD`). `toISOString` donnerait le jour UTC, donc la veille à minuit en Suisse. */
+export function localYmd(date: Date): string {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${date.getFullYear()}-${month}-${day}`;
 }
 
 /** La catégorie du budget et ses sous-catégories. */
@@ -932,7 +938,7 @@ function spentForBudget(db: DemoDb, budget: Budget): number {
 }
 
 export function refreshBudgets(db: DemoDb): void {
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localYmd(new Date());
     for (const budget of db.budgets) {
         const spent = spentForBudget(db, budget);
         budget.spentAmount = spent;
@@ -949,7 +955,7 @@ function goalFromTransactions(db: DemoDb, goal: SavingsGoal): void {
     goal.currentAmount = roundMoney(goal.openingAmount + contributed);
     goal.remainingAmount = roundMoney(Math.max(0, goal.targetAmount - goal.currentAmount));
     goal.percentReached = goal.targetAmount > 0 ? roundMoney((goal.currentAmount / goal.targetAmount) * 100) : 0;
-    goal.isOverdue = !!goal.targetDate && goal.targetDate < new Date().toISOString().slice(0, 10) && goal.currentAmount < goal.targetAmount;
+    goal.isOverdue = !!goal.targetDate && goal.targetDate < localYmd(new Date()) && goal.currentAmount < goal.targetAmount;
     goal.contributions = linked
         .slice()
         .sort((a, b) => b.operationDate.localeCompare(a.operationDate))

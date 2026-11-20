@@ -97,16 +97,22 @@ function matchTypeLabel(alias: Alias) {
     return t(`aliases.matchTypes.${alias.matchType}`);
 }
 
+/** Numéro du dernier chargement : la réponse tardive d’un autre propriétaire est ignorée. */
+let loadSeq = 0;
+
 async function load() {
+    const seq = ++loadSeq;
     if (props.draft || !props.ownerPublicId) return;
     loading.value = true;
     try {
-        items.value = (await aliasesApi.list(props.target, props.ownerPublicId)).items;
+        const result = await aliasesApi.list(props.target, props.ownerPublicId);
+        if (seq !== loadSeq) return;
+        items.value = result.items;
         emit('count', items.value.length);
     } catch (e: unknown) {
-        localError.value = getErrorMessage(e);
+        if (seq === loadSeq) localError.value = getErrorMessage(e);
     } finally {
-        loading.value = false;
+        if (seq === loadSeq) loading.value = false;
     }
 }
 

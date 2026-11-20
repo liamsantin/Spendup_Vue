@@ -14,7 +14,7 @@ import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
-import { todayYmdInTimeZone } from '@/features/accounts/format';
+import { useTodayYmd } from '@/utils/helpers/today';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { formatAssetInteger, formatCalendarDate } from '@/features/assets/format';
 import { buildSaveMileagePayload, emptyVehicleMileageFormFields, type AssetPayloadErrorCode } from '@/features/assets/payload';
@@ -36,7 +36,7 @@ const localError = ref<string | null>(null);
 const createOpen = ref(false);
 const deleteTarget = ref<VehicleMileage | null>(null);
 
-const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
+const today = useTodayYmd(() => settings.current.timezone);
 const items = computed(() => store.mileagesFor(props.asset.publicId));
 
 const deleteOpen = computed({

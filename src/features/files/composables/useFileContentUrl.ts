@@ -55,6 +55,9 @@ export function useFileContentUrl() {
     return { objectUrl, blob, loading, error, load, reset, revoke };
 }
 
+/** Délai avant de révoquer l’URL d’un téléchargement (le moteur doit avoir commencé à lire le blob). */
+export const DOWNLOAD_URL_REVOKE_DELAY_MS = 60_000;
+
 export async function downloadFileBlob(publicId: string, nameOriginal: string) {
     const blob = await loadReadablePdf(publicId);
     const url = URL.createObjectURL(blob);
@@ -67,6 +70,8 @@ export async function downloadFileBlob(publicId: string, nameOriginal: string) {
         link.click();
         link.remove();
     } finally {
-        URL.revokeObjectURL(url);
+        // Révocation différée : Safari / WKWebView démarrent le téléchargement après `click()`,
+        // une révocation immédiate peut donner un fichier vide.
+        setTimeout(() => URL.revokeObjectURL(url), DOWNLOAD_URL_REVOKE_DELAY_MS);
     }
 }

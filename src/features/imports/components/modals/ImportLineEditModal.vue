@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTodayYmd } from '@/utils/helpers/today';
 /**
  * Corriger / trancher une ligne : dates, libellé, montant signé, catégorie, tier, moyen de paiement,
  * échéance récurrente rapprochée (réglée au commit).
@@ -15,7 +16,7 @@ import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { getErrorMessage } from '@/utils/errors/app-error';
 import { importsApi } from '@/features/imports/api';
-import { parseAccountAmount, todayYmdInTimeZone } from '@/features/accounts/format';
+import { parseAccountAmount } from '@/features/accounts/format';
 import CategoryFormModal from '@/features/categories/components/modals/CategoryFormModal.vue';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import type { Category } from '@/features/categories/types';
@@ -102,7 +103,7 @@ const faulty = computed(() => (live.value ? issueFields(live.value) : new Set<st
 const uncorrectable = computed(() => (live.value ? hasUncorrectableIssue(live.value) : false));
 const doubt = computed(() => (live.value ? importLineDoubt(live.value) : null));
 const dirty = computed(() => (live.value ? isImportLineFormDirty(live.value, form) : false));
-const maxDate = computed(() => todayYmdInTimeZone(timeZone.value));
+const maxDate = useTodayYmd(timeZone);
 
 const formAmount = computed(() => parseAccountAmount(form.amount.trim()) ?? live.value?.amount ?? null);
 

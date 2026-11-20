@@ -87,6 +87,20 @@ export function formatCalendarDate(value: string | null | undefined, locale?: st
     return new Intl.DateTimeFormat(locale || undefined, { dateStyle: 'medium' }).format(date);
 }
 
+/**
+ * Jour d’un horodatage ISO (`createdAt`), dans le fuseau de l’appareil comme la fiche détail.
+ * Ne pas passer par `formatCalendarDate` : couper l’ISO à 10 caractères donne le jour UTC,
+ * donc la veille pour une dette créée juste après minuit en Suisse.
+ */
+export function formatTimestampDay(value: string | null | undefined, locale?: string): string {
+    if (!value) return '';
+    const trimmed = value.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return formatCalendarDate(trimmed, locale);
+    const date = new Date(trimmed);
+    if (Number.isNaN(date.getTime())) return formatCalendarDate(trimmed, locale);
+    return new Intl.DateTimeFormat(locale || undefined, { dateStyle: 'medium' }).format(date);
+}
+
 export function formatSharedDebtAmount(amount: number, currency: string, locale?: string): string {
     return formatAccountBalance(amount, currency as Currency, locale);
 }

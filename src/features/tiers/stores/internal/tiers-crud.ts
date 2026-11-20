@@ -1,4 +1,5 @@
 import { AppError } from '@/utils/errors/app-error';
+import { nextPageFromLoaded } from '@/utils/helpers/paging';
 import { tiersApi } from '@/features/tiers/api';
 import { buildCreateTierPayload, buildUpdateTierPayload, type TierFormFields } from '@/features/tiers/payload';
 import { matchesTierSearch } from '@/features/tiers/format';
@@ -82,7 +83,6 @@ export function createTiersCrud(state: TiersState) {
         items,
         itemsByListKey,
         activeListKey,
-        page,
         pageSize,
         totalCount,
         loading,
@@ -194,14 +194,17 @@ export function createTiersCrud(state: TiersState) {
         loadingMore.value = true;
         clearError();
         try {
-            const nextPage = page.value + 1;
+            const size = pageSize.value || TIER_PAGE_SIZE_DEFAULT;
+            // Page déduite du nombre de tiers chargés : après une suppression locale, `page + 1` en sauterait un.
+            const loaded = itemsByListKey.get(key)?.items.length ?? items.value.length;
+            const nextPage = nextPageFromLoaded(loaded, size, TIER_PAGE_SIZE_DEFAULT);
             const result = await tiersApi.list({
                 nature: query.nature ?? undefined,
                 role: query.role ?? undefined,
                 isBank: query.isBank ?? undefined,
                 search: query.search ?? undefined,
                 page: nextPage,
-                pageSize: pageSize.value || TIER_PAGE_SIZE_DEFAULT
+                pageSize: size
             });
             if (requestId !== listRequestSeq) return;
             const incoming = await prepareTiers(Array.isArray(result?.items) ? result.items : []);
@@ -210,10 +213,12 @@ export function createTiersCrud(state: TiersState) {
             const byId = new Map<string, Tier>();
             for (const item of prev) byId.set(item.publicId, item);
             for (const item of incoming) byId.set(item.publicId, item);
-            setList(key, [...byId.values()], {
+            const merged = [...byId.values()];
+            setList(key, merged, {
                 page: result?.page ?? nextPage,
-                pageSize: result?.pageSize ?? pageSize.value,
-                totalCount: result?.totalCount ?? totalCount.value
+                pageSize: result?.pageSize ?? size,
+                // Page vide : plus rien côté serveur, on arrête hasMore.
+                totalCount: incoming.length ? (result?.totalCount ?? totalCount.value) : merged.length
             });
             cache.touch(key);
         } catch (e: unknown) {

@@ -13,7 +13,7 @@ import { useRoute, useRouter, type LocationQueryRaw } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { todayYmdInTimeZone } from '@/features/accounts/format';
+import { useTodayYmd } from '@/utils/helpers/today';
 import { useFriendNicknameLabels } from '@/features/friends';
 import { DEBTS_PATHS, sharedDebtDetailPath } from '@/features/liabilities/paths';
 import { useUserSettingsStore } from '@/features/user-settings';
@@ -43,7 +43,7 @@ const cancelTarget = ref<SharedDebt | null>(null);
 const deleteTarget = ref<SharedDebt | null>(null);
 const localError = ref<string | null>(null);
 
-const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
+const today = useTodayYmd(() => settings.current.timezone);
 
 /** v-model booléen dérivé d’une cible : fermer = vider la cible. */
 function targetModel(target: typeof settleTarget, onClose?: () => void) {

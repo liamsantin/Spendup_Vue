@@ -16,6 +16,7 @@ import {
     counterpartLabel,
     formatCalendarDate,
     formatSignedSharedDebtAmount,
+    formatTimestampDay,
     isOpenSharedDebt,
     isSharedDebtOverdue
 } from '@/features/shared-debts/format';
@@ -45,7 +46,7 @@ const closed = computed(() => !isOpenSharedDebt(props.sharedDebt));
 
 const subline = computed(() => {
     const debt = props.sharedDebt;
-    const parts = [debt.label, formatCalendarDate(debt.createdAt, locale.value)];
+    const parts = [debt.label, formatTimestampDay(debt.createdAt, locale.value)];
     if (debt.dueDate) parts.push(t('sharedDebtsPage.list.dueOn', { date: formatCalendarDate(debt.dueDate, locale.value) }));
     return parts.filter(Boolean).join(' · ');
 });

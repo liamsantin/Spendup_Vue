@@ -11,7 +11,7 @@ import { useRoute, useRouter } from 'vue-router';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { todayYmdInTimeZone } from '@/features/accounts/format';
+import { useTodayYmd } from '@/utils/helpers/today';
 import { useFriendNicknameLabels, UserPhotoAvatar } from '@/features/friends';
 import { useUserSettingsStore } from '@/features/user-settings';
 import {
@@ -52,7 +52,7 @@ const cancelOpen = ref(false);
 const deleteOpen = ref(false);
 
 const debt = computed(() => store.findByPublicId(props.sharedDebtPublicId));
-const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
+const today = useTodayYmd(() => settings.current.timezone);
 const overdue = computed(() => !!debt.value && isSharedDebtOverdue(debt.value, today.value));
 const counterpartName = computed(() => (debt.value ? counterpartLabel(debt.value, nicknameByUserId.value) : ''));
 

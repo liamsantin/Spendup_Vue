@@ -29,6 +29,7 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         twoFactorToken,
         pendingPassword,
         returnUrl,
+        returnUrlOwner,
         setPendingEmail,
         setPendingPassword,
         clearPendingRegistration,
@@ -85,10 +86,16 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
         return 'ok';
     }
 
-    /** Navigue vers `returnUrl` sanitisé (ou l’accueil app). */
+    /**
+     * Navigue vers `returnUrl` sanitisé (ou l’accueil app). Un lien conservé pour un autre compte
+     * (re-login forcé de A, puis connexion de B dans le même onglet) est ignoré.
+     */
     async function navigateAfterLogin() {
-        const target = sanitizeReturnUrl(returnUrl.value, APP_HOME_ROUTE);
+        const owner = returnUrlOwner.value;
+        const sameAccount = !owner || owner === session.user.value?.userPublicId;
+        const target = sameAccount ? sanitizeReturnUrl(returnUrl.value, APP_HOME_ROUTE) : APP_HOME_ROUTE;
         returnUrl.value = null;
+        returnUrlOwner.value = null;
         await router.push(target);
     }
 
@@ -169,10 +176,8 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
             setPendingEmail(result.email);
             setPendingPassword(payload.password);
             // replace : le retour arrière ne ramène pas sur un formulaire d’inscription déjà consommé
-            await router.replace({
-                path: '/auth/confirm-email',
-                query: { email: result.email }
-            });
+            // Pas d’e-mail dans l’URL (historique, journaux de l’hébergeur) : le formulaire relit `pendingEmail`.
+            await router.replace('/auth/confirm-email');
             return { outcome: 'confirm-email' as const, result };
         }
         const identifier = result.username || payload.username || payload.email;

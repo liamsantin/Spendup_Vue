@@ -1,4 +1,5 @@
 import { AppError } from '@/utils/errors/app-error';
+import { nextPageFromLoaded } from '@/utils/helpers/paging';
 import { ASSET_NOT_FOUND_MESSAGE } from '@/features/assets/types';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
@@ -240,7 +241,7 @@ export function createTransactionsCrud(state: TransactionsState) {
             const size = pageSize.value || TRANSACTION_PAGE_SIZE_DEFAULT;
             // Page déduite du nombre d’éléments chargés (robuste aux suppressions locales qui décalent les offsets serveur).
             const loaded = itemsByListKey.get(key)?.items.length ?? items.value.length;
-            const nextPage = Math.floor(loaded / size) + 1;
+            const nextPage = nextPageFromLoaded(loaded, size, TRANSACTION_PAGE_SIZE_DEFAULT);
             const result = await transactionsApi.list({
                 accountPublicId: query.accountPublicId ?? undefined,
                 categoryPublicId: query.categoryPublicId ?? undefined,

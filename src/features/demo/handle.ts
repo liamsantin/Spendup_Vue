@@ -141,6 +141,30 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
         const page = pageOf(db.notifications, query);
         return ok({ ...page, unreadCount: db.notifications.filter((item) => !item.isRead).length });
     }
+    if (path === '/api/notifications/read-all' && method === 'POST') {
+        const unread = db.notifications.filter((item) => !item.isRead);
+        const readAt = new Date().toISOString();
+        for (const item of unread) {
+            item.isRead = true;
+            item.readAt = readAt;
+        }
+        return ok({ markedCount: unread.length, unreadCount: 0 });
+    }
+    const notificationRead = /^\/api\/notifications\/(\d+)\/read$/.exec(path);
+    if (notificationRead && method === 'POST') {
+        const item = db.notifications.find((entry) => entry.id === Number(notificationRead[1]));
+        if (!item) return notFound('Notification introuvable.');
+        if (!item.isRead) {
+            item.isRead = true;
+            item.readAt = new Date().toISOString();
+        }
+        return ok(item);
+    }
+    if (path === '/api/notifications' && method === 'DELETE') {
+        const deletedCount = db.notifications.length;
+        db.notifications = [];
+        return ok({ deletedCount });
+    }
 
     const tax = routeTax(method, path, body, query);
     if (tax) return tax;

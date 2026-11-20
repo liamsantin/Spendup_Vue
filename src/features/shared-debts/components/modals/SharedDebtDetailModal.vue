@@ -6,7 +6,7 @@
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
-import { todayYmdInTimeZone } from '@/features/accounts/format';
+import { useTodayYmd } from '@/utils/helpers/today';
 import { UserPhotoAvatar } from '@/features/friends';
 import { useUserSettingsStore } from '@/features/user-settings';
 import {
@@ -52,7 +52,7 @@ const liveDebt = computed(() => {
     return store.findByPublicId(id) ?? props.sharedDebt ?? null;
 });
 
-const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
+const today = useTodayYmd(() => settings.current.timezone);
 
 const counterpartName = computed(() => (liveDebt.value ? counterpartLabel(liveDebt.value, props.nicknameMap) : ''));
 

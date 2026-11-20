@@ -96,6 +96,22 @@ export function createInvestmentsOperations(state: InvestmentsState, deps: Pick<
     // Dernière clé (compte + filtres) voulue par compte : voir `investments-positions.ts`.
     const wantedKeyByAccount = new Map<string, string>();
 
+    // Drapeau global, séquences par compte : on compte les chargements en vol (voir `investments-positions.ts`).
+    let pendingLoads = 0;
+    let pendingGeneration = 0;
+
+    function beginLoading(): number {
+        pendingLoads += 1;
+        loadingOperations.value = true;
+        return pendingGeneration;
+    }
+
+    function endLoading(generation: number) {
+        if (generation !== pendingGeneration) return;
+        pendingLoads = Math.max(0, pendingLoads - 1);
+        if (pendingLoads === 0) loadingOperations.value = false;
+    }
+
     function nextSeq(accountPublicId: string): number {
         const next = (requestSeqByAccount.get(accountPublicId) ?? 0) + 1;
         requestSeqByAccount.set(accountPublicId, next);
@@ -128,7 +144,7 @@ export function createInvestmentsOperations(state: InvestmentsState, deps: Pick<
         const current = operationsFor(id);
         const sameFilters = !!current && operationsCacheKey(id, current.filters) === key;
         const force = !!options.force || !sameFilters;
-        loadingOperations.value = true;
+        const generation = beginLoading();
         clearError();
         try {
             await cache.ensure(
@@ -143,10 +159,8 @@ export function createInvestmentsOperations(state: InvestmentsState, deps: Pick<
         } catch (e: unknown) {
             throw handleLoadError(id, e);
         } finally {
-            if (isCurrent(id, seq)) {
-                loadingOperations.value = false;
-                initialized.value = true;
-            }
+            endLoading(generation);
+            if (isCurrent(id, seq)) initialized.value = true;
         }
     }
 
@@ -156,7 +170,7 @@ export function createInvestmentsOperations(state: InvestmentsState, deps: Pick<
         const current = operationsFor(id);
         if (!id || !current || !current.hasMore || loadingOperations.value) return;
         const seq = nextSeq(id);
-        loadingOperations.value = true;
+        const generation = beginLoading();
         clearError();
         try {
             const result = await investmentsApi.listOperations(id, {
@@ -169,7 +183,7 @@ export function createInvestmentsOperations(state: InvestmentsState, deps: Pick<
         } catch (e: unknown) {
             throw handleLoadError(id, e);
         } finally {
-            if (isCurrent(id, seq)) loadingOperations.value = false;
+            endLoading(generation);
         }
     }
 
@@ -292,6 +306,8 @@ export function createInvestmentsOperations(state: InvestmentsState, deps: Pick<
     function cancelPendingOperations() {
         for (const id of requestSeqByAccount.keys()) nextSeq(id);
         wantedKeyByAccount.clear();
+        pendingGeneration += 1;
+        pendingLoads = 0;
         loadingOperations.value = false;
     }
 

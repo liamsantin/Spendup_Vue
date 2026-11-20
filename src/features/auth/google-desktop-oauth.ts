@@ -130,7 +130,9 @@ export async function requestGoogleIdTokenDesktop(options: GoogleDesktopOAuthOpt
             resolveReady?.(event.payload);
         });
 
-        const waitPromise = invoke<string>('oauth_loopback_wait', { timeoutMs: OAUTH_TIMEOUT_MS });
+        // `expectedState` : le natif n’arrête l’attente que sur le redirect qui porte ce `state`
+        // (une autre page ne peut pas fermer le listener en sondant le port).
+        const waitPromise = invoke<string>('oauth_loopback_wait', { timeoutMs: OAUTH_TIMEOUT_MS, expectedState: state });
         // Si le wait échoue avant l’event ready (cancel / timeout / bind), débloque readyPromise.
         void waitPromise.then(
             () => undefined,

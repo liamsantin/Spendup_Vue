@@ -9,7 +9,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { todayYmdInTimeZone } from '@/features/accounts/format';
+import { useTodayYmd } from '@/utils/helpers/today';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { formatCalendarDate, formatPrice } from '@/features/investments/format';
 import { buildSetPricePayload, emptyPriceFormFields, type PriceFormFields } from '@/features/investments/payload';
@@ -39,7 +39,7 @@ const open = computed({
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
-const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
+const today = useTodayYmd(() => settings.current.timezone);
 
 const currentQuote = computed(() => {
     const instrument = props.instrument;

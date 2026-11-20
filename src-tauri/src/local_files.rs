@@ -2,7 +2,7 @@
 //!
 //! Le webview n'a aucun accès disque générique : il passe par ces commandes, qui ne travaillent que dans
 //! `<racine>/<compte>/`, avec un nom de fichier validé (pas de séparateur, pas de `..`, extension `.pdf` ou `.spdf`).
-//! La racine est choisie par l'utilisateur (sélecteur natif) et mémorisée dans `file-sync.json` du dossier de config
+//! La racine est choisie par l'utilisateur (sélecteur natif : `local_files_set_root` refuse tout autre chemin) et mémorisée dans `file-sync.json` du dossier de config
 //! de l'app ; par défaut `Documents/Spend.Up`. Les suppressions venues d'un autre appareil vont dans `.corbeille/`.
 
 use std::fs;
@@ -13,7 +13,8 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use tauri::ipc::{InvokeBody, Request, Response};
-use tauri::{AppHandle, Manager};
+use std::sync::Mutex;
+use tauri::{AppHandle, Manager, State};
 use tauri_plugin_dialog::DialogExt;
 
 const CONFIG_FILE: &str = "file-sync.json";
@@ -174,11 +175,23 @@ pub fn local_files_get_root(app: AppHandle) -> Result<(String, bool, bool), Stri
     Ok((root.to_string_lossy().into_owned(), configured, available))
 }
 
+/// Dernier dossier rendu par le sélecteur natif. `local_files_set_root` n'accepte que celui-là : le webview ne
+/// peut pas désigner un chemin que l'utilisateur n'a pas choisi lui-même.
+#[derive(Default)]
+pub struct PickedRoot(Mutex<Option<String>>);
+
 /// Ouvre le sélecteur natif de dossier ; `None` si l'utilisateur annule.
 #[tauri::command]
-pub async fn local_files_pick_root(app: AppHandle) -> Result<Option<String>, String> {
+pub async fn local_files_pick_root(app: AppHandle, picked_root: State<'_, PickedRoot>) -> Result<Option<String>, String> {
     let picked = app.dialog().file().set_title("Dossier des documents Spend.Up").blocking_pick_folder();
-    Ok(picked.and_then(|p| p.into_path().ok()).map(|p| p.to_string_lossy().into_owned()))
+    let path = picked.and_then(|p| p.into_path().ok()).map(|p| p.to_string_lossy().into_owned());
+    *picked_root.0.lock().map_err(|_| "État du sélecteur indisponible.".to_string())? = path.clone();
+    Ok(path)
+}
+
+/// Vrai si `path` est le dossier que le sélecteur vient de rendre (comparaison exacte, espaces de bord ignorés).
+fn is_picked_root(picked: Option<&str>, path: &str) -> bool {
+    picked.is_some_and(|p| !p.trim().is_empty() && p.trim() == path.trim())
 }
 
 fn copy_dir(from: &Path, to: &Path) -> Result<(), String> {
@@ -202,12 +215,21 @@ fn copy_dir(from: &Path, to: &Path) -> Result<(), String> {
 
 /// Change la racine. Avec `move_account`, déplace le dossier de ce compte (renommage, sinon copie vérifiée puis
 /// suppression de l'ancien). Refuse une racine incluse dans l'ancienne, ou l'inverse.
+/// Le chemin doit être celui que `local_files_pick_root` vient de rendre ; il n'est accepté qu'une fois.
 #[tauri::command]
 pub async fn local_files_set_root(
     app: AppHandle,
+    picked_root: State<'_, PickedRoot>,
     path: String,
     move_account: Option<String>,
 ) -> Result<String, String> {
+    {
+        let mut picked = picked_root.0.lock().map_err(|_| "État du sélecteur indisponible.".to_string())?;
+        if !is_picked_root(picked.as_deref(), &path) {
+            return Err("Choisissez le dossier avec le sélecteur de l'application.".into());
+        }
+        *picked = None;
+    }
     let new_root = PathBuf::from(path.trim());
     if !new_root.is_absolute() {
         return Err("Le dossier doit être un chemin absolu.".into());
@@ -379,6 +401,16 @@ pub fn local_files_write_index(app: AppHandle, account: String, json: String) ->
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn root_must_be_the_one_just_picked() {
+        assert!(is_picked_root(Some("C:\\Users\\x\\Documents\\Spend.Up"), "C:\\Users\\x\\Documents\\Spend.Up"));
+        assert!(is_picked_root(Some("/home/x/docs"), " /home/x/docs "));
+        // Rien de choisi, ou un autre chemin que celui du sélecteur.
+        assert!(!is_picked_root(None, "C:\\Users\\x\\Documents"));
+        assert!(!is_picked_root(Some(""), ""));
+        assert!(!is_picked_root(Some("C:\\Users\\x\\Documents\\Spend.Up"), "C:\\Users\\x\\Documents"));
+    }
 
     #[test]
     fn accepts_plain_pdf_names() {

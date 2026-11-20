@@ -1049,7 +1049,8 @@ function saveBlob(blob: Blob, fileName: string) {
     link.href = url;
     link.download = fileName;
     link.click();
-    URL.revokeObjectURL(url);
+    // Révocation différée : certains moteurs (Safari / WKWebView) lisent le blob après `click()`.
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
 async function downloadPdf(id: string, year: number, canton: string) {

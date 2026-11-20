@@ -13,7 +13,8 @@ import {
     operationNeedsQuantity,
     operationNeedsTotal,
     parsePrice,
-    parseQuantity
+    parseQuantity,
+    stripThousandSeparators
 } from '@/features/investments/format';
 import {
     INSTRUMENT_NAME_MAX,
@@ -297,7 +298,7 @@ export function buildSaveOperationPayload(
 
     const totalRaw = fields.totalAmount.trim();
     if (totalRaw) {
-        const parsed = parseAccountAmount(totalRaw);
+        const parsed = parseAccountAmount(stripThousandSeparators(totalRaw));
         if (parsed == null) return fail('totalAmountInvalid', 'totalAmount');
         totalAmount = parsed;
     }
@@ -347,7 +348,7 @@ export function isOperationFormDirty(operation: InvestmentOperation, fields: Ope
     if (emptyToNull(fields.operationDate) !== emptyToNull(original.operationDate)) return true;
     if (parseQuantity(fields.quantity.trim()) !== parseQuantity(original.quantity)) return true;
     if (parsePrice(fields.unitPrice.trim()) !== parsePrice(original.unitPrice)) return true;
-    if (parseAccountAmount(fields.totalAmount.trim()) !== parseAccountAmount(original.totalAmount)) return true;
+    if (parseAccountAmount(stripThousandSeparators(fields.totalAmount)) !== parseAccountAmount(original.totalAmount)) return true;
     if (emptyToNull(fields.transactionPublicId) !== emptyToNull(original.transactionPublicId)) return true;
     if (emptyToNull(fields.notes) !== emptyToNull(original.notes)) return true;
     return false;

@@ -21,6 +21,14 @@ const QUANTITY_RE = /^[0-9]+([.,][0-9]+)?$/;
 /** Quantité max (12 chiffres entiers) : garde-fou client, le serveur fait foi. */
 const MAX_QUANTITY = 1_000_000_000_000;
 
+/**
+ * Retire les séparateurs de milliers d’une saisie (« 1'250.50 », « 1’250,50 », « 1 250.50 ») :
+ * apostrophes droite et typographique, accent grave, espaces (insécables comprises).
+ */
+export function stripThousandSeparators(value: string): string {
+    return value.replace(/['\u2019`\s\u00a0\u202f]/g, '');
+}
+
 export function emptyToNull(value: string | null | undefined): string | null {
     if (value == null) return null;
     const trimmed = value.trim();
@@ -177,7 +185,7 @@ export function normalizeSymbol(value: string | null | undefined): string {
 }
 
 /**
- * Parse une quantité de titres (8 décimales max). Accepte « 1,5 » / « 1.5 ».
+ * Parse une quantité de titres (8 décimales max). Accepte « 1,5 » / « 1.5 » et les séparateurs de milliers suisses.
  * @returns Le nombre, ou `null` si invalide.
  */
 export function parseQuantity(value: unknown): number | null {
@@ -186,7 +194,7 @@ export function parseQuantity(value: unknown): number | null {
     if (typeof value === 'number') {
         n = value;
     } else if (typeof value === 'string') {
-        const trimmed = value.trim();
+        const trimmed = stripThousandSeparators(value);
         if (!trimmed || !QUANTITY_RE.test(trimmed)) return null;
         n = Number(trimmed.replace(',', '.'));
     } else {

@@ -64,6 +64,7 @@ export function createSharedDebtsCrud(state: SharedDebtsState) {
         removeItemLocal,
         invalidateAllLists,
         rememberLocalMutation,
+        consumeLocalMutation,
         notifyDeleted,
         findByPublicId,
         expenseCandidates,
@@ -206,13 +207,15 @@ export function createSharedDebtsCrud(state: SharedDebtsState) {
     async function mutate(publicId: string, run: () => Promise<SharedDebt>): Promise<SharedDebt> {
         beginActing();
         clearError();
+        // Marqueur posé avant l’appel : l’écho temps réel peut arriver avant la réponse HTTP.
+        rememberLocalMutation(publicId);
         try {
             const updated = normalizeSharedDebt(await run());
             upsertItem(updated);
             invalidateAfterMutation();
-            rememberLocalMutation(updated.publicId);
             return updated;
         } catch (e: unknown) {
+            consumeLocalMutation(publicId);
             const err = AppError.fromUnknown(e);
             if (err.status === 404) handleNotFound(publicId);
             else error.value = err.message;
@@ -245,13 +248,14 @@ export function createSharedDebtsCrud(state: SharedDebtsState) {
     async function deleteSharedDebt(publicId: string): Promise<void> {
         beginActing();
         clearError();
+        rememberLocalMutation(publicId);
         try {
             await sharedDebtsApi.remove(publicId);
             removeItemLocal(publicId);
             invalidateAfterMutation();
-            rememberLocalMutation(publicId);
             notifyDeleted(publicId);
         } catch (e: unknown) {
+            consumeLocalMutation(publicId);
             const err = AppError.fromUnknown(e);
             if (err.status === 404) handleNotFound(publicId, true);
             else error.value = err.message;

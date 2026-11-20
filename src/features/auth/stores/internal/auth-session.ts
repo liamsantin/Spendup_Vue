@@ -14,6 +14,7 @@ import {
     writeTokens
 } from '@/features/auth/session-storage';
 import { useUserSettingsStore } from '@/features/user-settings';
+import { useStepUpStore } from '@/features/auth/stores/step-up-store';
 import { useNotificationsStore } from '@/features/notifications/stores/notifications-store';
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
@@ -88,6 +89,11 @@ export function createAuthSession() {
     const pendingPassword = ref<string | null>(pendingPasswordMemory);
     const user = ref<Me | null>(null);
     const returnUrl = ref<string | null>(null);
+    /**
+     * Compte qui était connecté quand `returnUrl` a été conservé par un re-login forcé (inactivité, 401).
+     * `null` = lien demandé sans session (guard) : valable pour le compte qui se connecte.
+     */
+    const returnUrlOwner = ref<string | null>(null);
 
     /** Mutex partagé store ↔ fetchWrapper — un seul refresh à la fois. */
     let refreshInFlight: Promise<boolean> | null = null;
@@ -200,6 +206,7 @@ export function createAuthSession() {
         bootstrapInFlight = null;
         clearDemoSession();
         resetDemoDb();
+        useStepUpStore().reset();
         useUserSettingsStore().reset();
         useNotificationsStore().reset();
         useFriendsStore().reset();
@@ -387,6 +394,7 @@ export function createAuthSession() {
         pendingPassword,
         user,
         returnUrl,
+        returnUrlOwner,
         cookieSessionActive,
         pendingIdleLogoutNotice,
         lastRefreshTransient,

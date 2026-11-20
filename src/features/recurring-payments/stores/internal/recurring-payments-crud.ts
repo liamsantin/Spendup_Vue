@@ -1,4 +1,5 @@
 import { AppError } from '@/utils/errors/app-error';
+import { nextPageFromLoaded } from '@/utils/helpers/paging';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { useTransactionsStore } from '@/features/transactions/stores/transactions-store';
 import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
@@ -84,10 +85,8 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         incomesByKey,
         activeExpenseKey,
         activeIncomeKey,
-        expensePage,
         expensePageSize,
         expenseTotalCount,
-        incomePage,
         incomePageSize,
         incomeTotalCount,
         loadingExpenses,
@@ -309,12 +308,15 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         loadingMoreExpenses.value = true;
         clearError();
         try {
-            const nextPage = expensePage.value + 1;
+            const size = expensePageSize.value || RECURRING_PAGE_SIZE_DEFAULT;
+            // Page déduite du nombre de charges chargées : après une suppression locale, `page + 1` en sauterait une.
+            const loaded = expensesByKey.get(key)?.items.length ?? expenses.value.length;
+            const nextPage = nextPageFromLoaded(loaded, size, RECURRING_PAGE_SIZE_DEFAULT);
             const result = await recurringExpensesApi.list({
                 ...filters,
                 accountPublicId: accountPublicId ?? undefined,
                 page: nextPage,
-                pageSize: expensePageSize.value || RECURRING_PAGE_SIZE_DEFAULT
+                pageSize: size
             });
             if (requestId !== expenseListSeq) return;
             const incoming = Array.isArray(result?.items) ? result.items : [];
@@ -322,10 +324,12 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
             const byId = new Map<string, RecurringExpense>();
             for (const item of prev) byId.set(item.publicId, item);
             for (const item of incoming) byId.set(item.publicId, item);
-            setExpenseList(key, [...byId.values()], {
+            const merged = [...byId.values()];
+            setExpenseList(key, merged, {
                 page: result?.page ?? nextPage,
-                pageSize: result?.pageSize ?? expensePageSize.value,
-                totalCount: result?.totalCount ?? expenseTotalCount.value
+                pageSize: result?.pageSize ?? size,
+                // Page vide : plus rien côté serveur, on arrête hasMore.
+                totalCount: incoming.length ? (result?.totalCount ?? expenseTotalCount.value) : merged.length
             });
             cache.touch(key);
         } catch (e: unknown) {
@@ -346,12 +350,15 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
         loadingMoreIncomes.value = true;
         clearError();
         try {
-            const nextPage = incomePage.value + 1;
+            const size = incomePageSize.value || RECURRING_PAGE_SIZE_DEFAULT;
+            // Page déduite du nombre de revenus chargés : après une suppression locale, `page + 1` en sauterait un.
+            const loaded = incomesByKey.get(key)?.items.length ?? incomes.value.length;
+            const nextPage = nextPageFromLoaded(loaded, size, RECURRING_PAGE_SIZE_DEFAULT);
             const result = await recurringIncomesApi.list({
                 ...filters,
                 accountPublicId: accountPublicId ?? undefined,
                 page: nextPage,
-                pageSize: incomePageSize.value || RECURRING_PAGE_SIZE_DEFAULT
+                pageSize: size
             });
             if (requestId !== incomeListSeq) return;
             const incoming = Array.isArray(result?.items) ? result.items : [];
@@ -359,10 +366,12 @@ export function createRecurringPaymentsCrud(state: RecurringPaymentsState) {
             const byId = new Map<string, RecurringIncome>();
             for (const item of prev) byId.set(item.publicId, item);
             for (const item of incoming) byId.set(item.publicId, item);
-            setIncomeList(key, [...byId.values()], {
+            const merged = [...byId.values()];
+            setIncomeList(key, merged, {
                 page: result?.page ?? nextPage,
-                pageSize: result?.pageSize ?? incomePageSize.value,
-                totalCount: result?.totalCount ?? incomeTotalCount.value
+                pageSize: result?.pageSize ?? size,
+                // Page vide : plus rien côté serveur, on arrête hasMore.
+                totalCount: incoming.length ? (result?.totalCount ?? incomeTotalCount.value) : merged.length
             });
             cache.touch(key);
         } catch (e: unknown) {

@@ -10,7 +10,7 @@ import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { todayYmdInTimeZone } from '@/features/accounts/format';
+import { useTodayYmd } from '@/utils/helpers/today';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { isInstrumentCurrency } from '@/features/investments/format';
 import {
@@ -70,7 +70,7 @@ const open = computed({
 });
 
 const isEdit = computed(() => !!props.instrument);
-const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
+const today = useTodayYmd(() => settings.current.timezone);
 const canSave = computed(() => !props.instrument || isInstrumentFormDirty(props.instrument, form));
 
 const typeItems = computed(() => INSTRUMENT_TYPES.map((value) => ({ title: t(`investmentsPage.instrumentTypes.${value}`), value })));

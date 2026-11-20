@@ -35,20 +35,12 @@ export function apiConnectSources(apiBaseUrl: string | null | undefined): string
     }
 }
 
-/** connect-src prod : self + Google + localhost + origine API (si fournie). */
+/**
+ * connect-src prod : self + Google + origine API (si fournie). Pas de joker `localhost:*` : en cas d’injection,
+ * il laisserait parler à n’importe quel service local. Une API locale passe par son origine exacte.
+ */
 export function buildProdConnectSrc(apiBaseUrl?: string | null): string {
-    const parts = [
-        "'self'",
-        'https://accounts.google.com',
-        'https://*.googleapis.com',
-        'http://localhost:*',
-        'http://127.0.0.1:*',
-        'ws://localhost:*',
-        'ws://127.0.0.1:*',
-        'wss://localhost:*',
-        'wss://127.0.0.1:*',
-        ...apiConnectSources(apiBaseUrl)
-    ];
+    const parts = ["'self'", 'https://accounts.google.com', 'https://*.googleapis.com', ...apiConnectSources(apiBaseUrl)];
     return `connect-src ${Array.from(new Set(parts)).join(' ')}`;
 }
 

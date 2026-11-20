@@ -8,7 +8,7 @@ import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
-import { todayYmdInTimeZone } from '@/features/accounts/format';
+import { useTodayYmd } from '@/utils/helpers/today';
 import TierPicker from '@/features/tiers/components/forms/TierPicker.vue';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { useRealEstateForm } from '@/features/real-estate/composables/useRealEstateForm';
@@ -46,7 +46,7 @@ const open = computed({
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
-const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
+const today = useTodayYmd(() => settings.current.timezone);
 const isEdit = computed(() => !!props.maintenance);
 const canSave = computed(() => !props.maintenance || isMaintenanceFormDirty(props.maintenance, form));
 const typeItems = computed(() =>

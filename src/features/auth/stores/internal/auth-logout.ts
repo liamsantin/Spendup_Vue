@@ -16,7 +16,7 @@ function t(key: string) {
  * @returns Les actions de logout / navigation login.
  */
 export function createAuthLogout(session: AuthSessionState) {
-    const { cookieMode, accessToken, refreshToken, returnUrl, pendingIdleLogoutNotice, clearSession } = session;
+    const { cookieMode, accessToken, refreshToken, returnUrl, returnUrlOwner, user, pendingIdleLogoutNotice, clearSession } = session;
 
     /** Appelle l’API logout serveur (ignore les erreurs). */
     async function clearServerSession() {
@@ -36,6 +36,7 @@ export function createAuthLogout(session: AuthSessionState) {
         await clearServerSession();
         clearSession();
         returnUrl.value = null;
+        returnUrlOwner.value = null;
         await router.push('/');
     }
 
@@ -74,9 +75,12 @@ export function createAuthLogout(session: AuthSessionState) {
         pendingIdleLogoutNotice.value = false;
         preserveReturnUrlForReLogin();
         const preservedReturnUrl = returnUrl.value;
+        // Le lien conservé appartient à ce compte : un autre compte qui se connecte ensuite ne doit pas y être envoyé.
+        const owner = user.value?.userPublicId ?? returnUrlOwner.value;
         await clearServerSession();
         clearSession();
         returnUrl.value = preservedReturnUrl;
+        returnUrlOwner.value = preservedReturnUrl ? owner : null;
         await goToLogin(idleNotice ? t('security.session.idleLogoutNotice') : message);
     }
 

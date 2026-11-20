@@ -19,7 +19,7 @@ import { validatePdfFile } from '@/features/files/validate-upload';
 import TransactionAttachments from '@/features/transactions/components/forms/TransactionAttachments.vue';
 import TransactionFilePreviewModal from '@/features/transactions/components/modals/TransactionFilePreviewModal.vue';
 import type { TransactionFile } from '@/features/transactions/types';
-import { todayYmdInTimeZone } from '@/features/accounts/format';
+import { useTodayYmd } from '@/utils/helpers/today';
 import { TierPicker } from '@/features/tiers';
 import { useUserSettingsStore } from '@/features/user-settings';
 import {
@@ -77,7 +77,7 @@ const open = computed({
     set: (value: boolean) => emit('update:modelValue', value)
 });
 
-const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
+const today = useTodayYmd(() => settings.current.timezone);
 const isEdit = computed(() => !!editTarget.value);
 const title = computed(() => (isEdit.value ? t('assetsPage.maintenances.editTitle') : t('assetsPage.maintenances.createTitle')));
 const typeItems = computed(() => VEHICLE_MAINTENANCE_TYPES.map((value) => ({ title: t(`assetsPage.maintenanceTypes.${value}`), value })));

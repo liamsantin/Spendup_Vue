@@ -5,7 +5,7 @@ defineOptions({ name: 'RealEstateMaintenancePanel' });
 import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import AppConfirmationModal from '@/components/shared/modal/AppConfirmationModal.vue';
-import { todayYmdInTimeZone } from '@/features/accounts/format';
+import { useTodayYmd } from '@/utils/helpers/today';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { useRealEstatePanel } from '@/features/real-estate/composables/useRealEstatePanel';
 import { formatCalendarDate, formatRealEstateAmount, unitNameOf } from '@/features/real-estate/format';
@@ -33,7 +33,7 @@ const { createOpen, editOpen, editTarget, deleteOpen, errorText } = panel;
 const items = computed(() => store.maintenanceFor(props.assetPublicId));
 const units = computed(() => store.unitsFor(props.assetPublicId));
 const loading = computed(() => store.loadingFor(props.assetPublicId, 'maintenance'));
-const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
+const today = useTodayYmd(() => settings.current.timezone);
 const countLabel = computed(() =>
     items.value.length ? t('realEstatePage.maintenance.count', { count: items.value.length }, items.value.length) : null
 );

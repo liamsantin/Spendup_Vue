@@ -62,6 +62,7 @@ export function createPersonalLoansCrud(state: PersonalLoansState) {
         removeItemLocal,
         invalidateAllLists,
         rememberLocalMutation,
+        consumeLocalMutation,
         notifyDeleted,
         findByPublicId
     } = state;
@@ -191,12 +192,14 @@ export function createPersonalLoansCrud(state: PersonalLoansState) {
         try {
             const built = buildUpdatePersonalLoanPayload(fields, { current: extra?.current ?? findByPublicId(publicId) });
             if (!built.ok) throw new AppError(payloadErrorMessage(built.code), 400, built.code);
+            // Marqueur posé avant l’appel : l’écho temps réel peut arriver avant la réponse HTTP.
+            rememberLocalMutation(publicId);
             const updated = normalizePersonalLoan(await personalLoansApi.update(publicId, built.payload));
-            rememberLocalMutation(updated.publicId);
             upsertItem(updated);
             refreshTotals();
             return updated;
         } catch (e: unknown) {
+            consumeLocalMutation(publicId);
             const err = AppError.fromUnknown(e);
             if (err.status === 404) handleNotFound(publicId);
             else error.value = err.message;
@@ -209,13 +212,14 @@ export function createPersonalLoansCrud(state: PersonalLoansState) {
     async function deletePersonalLoan(publicId: string) {
         beginActing();
         clearError();
+        rememberLocalMutation(publicId);
         try {
             await personalLoansApi.remove(publicId);
-            rememberLocalMutation(publicId);
             removeItemLocal(publicId);
             notifyDeleted(publicId);
             refreshTotals();
         } catch (e: unknown) {
+            consumeLocalMutation(publicId);
             const err = AppError.fromUnknown(e);
             if (err.status === 404) {
                 handleNotFound(publicId);

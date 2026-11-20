@@ -11,7 +11,7 @@ import AppDatePicker from '@/components/shared/date-picker/AppDatePicker.vue';
 import AppModalBase from '@/components/shared/modal/AppModalBase.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
-import { todayYmdInTimeZone } from '@/features/accounts/format';
+import { useTodayYmd } from '@/utils/helpers/today';
 import { useUserSettingsStore } from '@/features/user-settings';
 import { instrumentLabel, isOperationType, operationNeedsQuantity } from '@/features/investments/format';
 import {
@@ -69,7 +69,7 @@ const open = computed({
 });
 
 const isEdit = computed(() => !!props.operation);
-const today = computed(() => todayYmdInTimeZone(settings.current.timezone));
+const today = useTodayYmd(() => settings.current.timezone);
 const canSave = computed(() => !props.operation || isOperationFormDirty(props.operation, form));
 const needsQuantity = computed(() => isOperationType(form.type) && operationNeedsQuantity(form.type));
 

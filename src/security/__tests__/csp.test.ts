@@ -24,8 +24,11 @@ describe('csp', () => {
     it('prod enforce sans unsafe-eval ni wildcards https:/wss:', () => {
         expect(CSP_PROD_ENFORCE).toContain("default-src 'self'");
         expect(CSP_PROD_ENFORCE).toContain('https://accounts.google.com');
-        expect(CSP_PROD_ENFORCE).toContain('http://localhost:*');
-        expect(CSP_PROD_ENFORCE).toContain('ws://localhost:*');
+        // Pas de joker localhost : seule l’origine exacte de l’API (ici celle du build local) est ouverte.
+        expect(CSP_PROD_ENFORCE).not.toContain('localhost:*');
+        expect(CSP_PROD_ENFORCE).not.toContain('127.0.0.1:*');
+        expect(CSP_PROD_ENFORCE).toContain('http://localhost:5124');
+        expect(CSP_PROD_ENFORCE).toContain('ws://localhost:5124');
         expect(CSP_PROD_ENFORCE).not.toContain('unsafe-eval');
         // Pas de source « https: » / « wss: » nue (wildcard schéma).
         expect(CSP_PROD_ENFORCE).not.toMatch(/connect-src[^;]*?(?:^|[\s;])https:(?=[\s;]|$)/);
@@ -68,7 +71,9 @@ describe('tauri.conf.json CSP', () => {
         expect(csp['connect-src']).toContain('https://accounts.google.com');
         expect(csp['connect-src']).toContain('https://api-spendup.ch');
         expect(csp['connect-src']).toContain('wss://api-spendup.ch');
-        expect(csp['connect-src']).toContain('wss://localhost:*');
+        // Prod du bureau : aucun service local joignable (le dev passe par `devCsp`).
+        expect(csp['connect-src']).not.toContain('localhost:*');
+        expect(csp['connect-src']).not.toContain('127.0.0.1:*');
         expect(csp['connect-src']).not.toMatch(/(?:^|\s)https:(?=\s|$)/);
         expect(csp['connect-src']).not.toMatch(/(?:^|\s)wss:(?=\s|$)/);
         expect(csp['img-src']).toContain('asset:');

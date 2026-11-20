@@ -14,6 +14,11 @@ export function createInvestmentsPositions(state: InvestmentsState) {
     // la requête en vol du premier (même clé) doit voir sa réponse écrite.
     const wantedKeyByAccount = new Map<string, string>();
 
+    // Le drapeau est global, les séquences sont par compte : il compte les chargements en vol,
+    // sinon la réponse d’un compte quitté l’éteindrait pendant que le compte affiché charge encore.
+    let pendingLoads = 0;
+    let pendingGeneration = 0;
+
     function nextSeq(accountPublicId: string): number {
         const next = (requestSeqByAccount.get(accountPublicId) ?? 0) + 1;
         requestSeqByAccount.set(accountPublicId, next);
@@ -37,6 +42,8 @@ export function createInvestmentsPositions(state: InvestmentsState) {
         wantedKeyByAccount.set(id, key);
         // Un seul résultat mémorisé par compte : changer `includeClosed` force le GET même si le cache est frais.
         const force = !!options.force || includeClosed !== includeClosedFor(id) || !state.positionsFor(id);
+        const generation = pendingGeneration;
+        pendingLoads += 1;
         loadingPositions.value = true;
         clearError();
         try {
@@ -61,10 +68,11 @@ export function createInvestmentsPositions(state: InvestmentsState) {
             }
             throw err;
         } finally {
-            if (isCurrent(id, seq)) {
-                loadingPositions.value = false;
-                initialized.value = true;
+            if (generation === pendingGeneration) {
+                pendingLoads = Math.max(0, pendingLoads - 1);
+                if (pendingLoads === 0) loadingPositions.value = false;
             }
+            if (isCurrent(id, seq)) initialized.value = true;
         }
     }
 
@@ -76,6 +84,8 @@ export function createInvestmentsPositions(state: InvestmentsState) {
     function cancelPendingPositions() {
         for (const id of requestSeqByAccount.keys()) nextSeq(id);
         wantedKeyByAccount.clear();
+        pendingGeneration += 1;
+        pendingLoads = 0;
         loadingPositions.value = false;
     }
 

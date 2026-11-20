@@ -35,11 +35,17 @@ export const useStepUpStore = defineStore('step-up', () => {
         resolve?.(null);
     }
 
+    /** Déconnexion : ferme une demande en cours (l’appelant reçoit `null`, comme pour une annulation). */
+    function reset() {
+        cancel();
+    }
+
     return {
         open,
         details,
         prompt,
         confirm,
-        cancel
+        cancel,
+        reset
     };
 });
