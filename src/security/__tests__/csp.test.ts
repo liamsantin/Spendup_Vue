@@ -72,8 +72,8 @@ describe('tauri.conf.json CSP', () => {
         expect(csp['connect-src']).toContain('ipc:');
         expect(csp['connect-src']).toContain('http://ipc.localhost');
         expect(csp['connect-src']).toContain('https://accounts.google.com');
-        expect(csp['connect-src']).toContain('https://api-spendup.ch');
-        expect(csp['connect-src']).toContain('wss://api-spendup.ch');
+        expect(csp['connect-src']).toContain('https://api.spendup.ch');
+        expect(csp['connect-src']).toContain('wss://api.spendup.ch');
         // Prod du bureau : aucun service local joignable (le dev passe par `devCsp`).
         expect(csp['connect-src']).not.toContain('localhost:*');
         expect(csp['connect-src']).not.toContain('127.0.0.1:*');

@@ -28,7 +28,7 @@
                 "style-src": "'self' 'unsafe-inline' https://fonts.googleapis.com",
                 "script-src": "'self' https://accounts.google.com",
                 "frame-src": "'self' blob: https://accounts.google.com",
-                "connect-src": "'self' ipc: http://ipc.localhost https://accounts.google.com https://*.googleapis.com https://api-spendup.ch wss://api-spendup.ch",
+                "connect-src": "'self' ipc: http://ipc.localhost https://accounts.google.com https://*.googleapis.com https://api.spendup.ch wss://api.spendup.ch",
                 "base-uri": "'self'",
                 "form-action": "'self'",
                 "object-src": "'none'",

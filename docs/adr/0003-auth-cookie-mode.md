@@ -6,7 +6,7 @@
 
 ## Contexte
 
-Front (`spendup-vue.onrender.com`) et API (`api-spendup.ch`) sont **cross-site**. Les cookies de session (`spendup_access`, `spendup_refresh`, `spendup_csrf`) sont des cookies tiers : refusés ou non renvoyés sur mobile (Safari / iOS) → 401 après login. CORS / `SameSite=None` côté API ne suffisent pas.
+Front (`spendup-vue.onrender.com`) et API (`api-spendup.ch`) étaient **cross-site** (le front est maintenant sur `spendup.ch`, l'API sur `api.spendup.ch`). Les cookies de session (`spendup_access`, `spendup_refresh`, `spendup_csrf`) sont des cookies tiers : refusés ou non renvoyés sur mobile (Safari / iOS) → 401 après login. CORS / `SameSite=None` côté API ne suffisent pas.
 
 ## Décision
 
