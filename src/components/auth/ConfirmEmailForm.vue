@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import { useAuthStore } from '@/features/auth';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import OtpDigitsInput from '@/components/auth/OtpDigitsInput.vue';
+import AuthPasswordField from '@/components/auth/AuthPasswordField.vue';
 
 const route = useRoute();
 const auth = useAuthStore();
@@ -12,6 +13,8 @@ const { t } = useI18n();
 
 const email = ref('');
 const code = ref('');
+/** Mot de passe saisi ici seulement quand l’inscription n’a pas laissé le sien en mémoire (page rechargée, lien du courriel). */
+const password = ref('');
 const loading = ref(false);
 const resending = ref(false);
 const error = ref<string | null>(null);
@@ -20,6 +23,7 @@ const success = ref<string | null>(null);
 const canRetryLogin = ref(false);
 
 const hasEmail = computed(() => !!email.value);
+const needsPassword = computed(() => !auth.pendingPassword);
 
 onMounted(() => {
     const q = route.query.email;
@@ -42,17 +46,22 @@ async function confirm(submittedCode?: string) {
         error.value = t('auth.confirmEmail.errors.otp');
         return;
     }
+    if (needsPassword.value && !password.value) {
+        error.value = t('auth.confirmEmail.errors.passwordRequired');
+        return;
+    }
     if (loading.value) return;
     error.value = null;
     success.value = null;
     canRetryLogin.value = false;
     loading.value = true;
     try {
-        await auth.confirmEmail(email.value, otp);
+        await auth.confirmEmail(email.value, otp, password.value || undefined);
     } catch (e: unknown) {
         error.value = e instanceof Error ? e.message : String(e);
-        // E-mail déjà confirmé côté API : proposer un retry login si le mdp est encore en mémoire.
-        canRetryLogin.value = !!auth.pendingPassword;
+        // E-mail déjà confirmé côté API (l’action a alors vidé l’e-mail en attente) : proposer un retry login.
+        // Un code ou un mot de passe refusé garde l’e-mail en attente : on reste sur la saisie.
+        canRetryLogin.value = !auth.pendingEmail && !!auth.pendingPassword;
     } finally {
         loading.value = false;
     }
@@ -99,6 +108,13 @@ async function resend() {
             <p class="auth-field__hint mb-4">{{ t('auth.confirmEmail.sentTo', { email }) }}</p>
             <label class="auth-field__label">{{ t('auth.confirmEmail.otpLabel') }}</label>
             <OtpDigitsInput v-model="code" field-class="confirm-email-otp" :disabled="canRetryLogin" @complete="confirm" />
+            <AuthPasswordField
+                v-if="needsPassword && !canRetryLogin"
+                v-model="password"
+                :label="t('auth.confirmEmail.passwordLabel')"
+                :hint="t('auth.confirmEmail.passwordHint')"
+                autocomplete="current-password"
+            />
             <button v-if="!canRetryLogin" type="button" class="su-btn su-btn--ghost auth-submit" :disabled="resending" @click="resend">
                 <span v-if="resending" class="su-spin" aria-hidden="true" />
                 {{ t('auth.confirmEmail.resend') }}

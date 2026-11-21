@@ -515,4 +515,56 @@ describe('useAuthStore', () => {
         expect(auth.lastRefreshTransient).toBe(true);
         expect(auth.isAuthenticated).toBe(true);
     });
+
+    describe('confirmEmail : le mot de passe lie la confirmation (A1.2)', () => {
+        function mockLoginOk() {
+            authApiMock.confirmEmail.mockResolvedValue(null);
+            authApiMock.login.mockResolvedValue({ requiresTwoFactor: false, twoFactorToken: null, ...tokens() });
+            authApiMock.me.mockResolvedValue(meUser());
+        }
+
+        it('envoie le mot de passe gardé en mémoire depuis l’inscription, puis connecte avec', async () => {
+            const auth = useAuthStore();
+            authApiMock.register.mockResolvedValue({ email: 'new@spendup.test', username: null });
+            await auth.register({ email: 'new@spendup.test', username: null, password: 'Secret123', firstName: null, name: null });
+            mockLoginOk();
+
+            await auth.confirmEmail('new@spendup.test', '123456');
+
+            expect(authApiMock.confirmEmail).toHaveBeenCalledWith({ email: 'new@spendup.test', code: '123456', password: 'Secret123' });
+            expect(authApiMock.login).toHaveBeenCalled();
+            expect(auth.pendingPassword).toBeNull();
+        });
+
+        it('utilise le mot de passe saisi quand aucun n’est en mémoire (page rechargée)', async () => {
+            const auth = useAuthStore();
+            mockLoginOk();
+
+            await auth.confirmEmail('new@spendup.test', '123456', 'Typed123');
+
+            expect(authApiMock.confirmEmail).toHaveBeenCalledWith({ email: 'new@spendup.test', code: '123456', password: 'Typed123' });
+            expect(authApiMock.login.mock.calls[0].slice(0, 2)).toEqual(['new@spendup.test', 'Typed123']);
+        });
+
+        it('refuse sans mot de passe, sans appeler l’API', async () => {
+            const auth = useAuthStore();
+
+            await expect(auth.confirmEmail('new@spendup.test', '123456')).rejects.toThrow();
+
+            expect(authApiMock.confirmEmail).not.toHaveBeenCalled();
+            expect(authApiMock.login).not.toHaveBeenCalled();
+        });
+
+        it('garde l’e-mail en attente quand l’API refuse (mauvais code ou mauvais mot de passe)', async () => {
+            const auth = useAuthStore();
+            authApiMock.register.mockResolvedValue({ email: 'new@spendup.test', username: null });
+            await auth.register({ email: 'new@spendup.test', username: null, password: 'Secret123', firstName: null, name: null });
+            authApiMock.confirmEmail.mockRejectedValue(new ApiError('Code de vérification invalide ou expiré.', 401));
+
+            await expect(auth.confirmEmail('new@spendup.test', '000000')).rejects.toThrow();
+
+            expect(authApiMock.login).not.toHaveBeenCalled();
+            expect(auth.pendingEmail).toBe('new@spendup.test');
+        });
+    });
 });

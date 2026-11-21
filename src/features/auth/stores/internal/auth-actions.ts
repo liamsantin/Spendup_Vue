@@ -189,23 +189,26 @@ export function createAuthActions(session: AuthSessionState, deps: ActionsDeps) 
     }
 
     /**
-     * Confirme l’e-mail d’inscription puis login auto si mot de passe en mémoire.
+     * Confirme l’e-mail d’inscription puis connecte. Le mot de passe du compte est exigé par l’API (il lie la
+     * confirmation à celui qui l’a posé, revue de code A1.2) : celui saisi, sinon celui gardé en mémoire depuis
+     * l’inscription.
      * @param email E-mail à confirmer.
      * @param code Code de vérification.
+     * @param typedPassword Mot de passe saisi à la confirmation (obligatoire si aucun n’est en mémoire).
      */
-    async function confirmEmail(email: string, code: string) {
-        await authApi.confirmEmail({ email, code });
-        const password = pendingPassword.value;
+    async function confirmEmail(email: string, code: string, typedPassword?: string) {
+        const password = typedPassword || pendingPassword.value;
         if (!password) {
-            clearPendingRegistration();
-            await goToLogin(t('auth.notices.emailConfirmed'));
-            return;
+            throw new Error(t('auth.confirmEmail.errors.passwordRequired'));
         }
+        await authApi.confirmEmail({ email, code, password });
         try {
+            // garder le mot de passe pour `retryPendingLogin` si la connexion échoue après la confirmation
+            setPendingPassword(password);
             await login(email, password);
             clearPendingRegistration();
         } catch (e: unknown) {
-            // E-mail déjà confirmé : garder le mot de passe pour `retryPendingLogin` (UI).
+            // E-mail déjà confirmé : le mot de passe reste en mémoire pour `retryPendingLogin` (UI).
             setPendingEmail(null);
             throw e;
         }

@@ -3700,10 +3700,13 @@
             "backToRegister": "Back to registration",
             "backToLogin": "Back to sign in",
             "resendSuccess": "If an account exists for this email, a new code was sent.",
+            "passwordLabel": "Account password",
+            "passwordHint": "The password you chose when signing up, to confirm it is you.",
             "retryLogin": "Retry sign in",
             "errors": {
                 "missingEmail": "Email missing. Start registration again.",
-                "otp": "Enter the 6-digit code."
+                "otp": "Enter the 6-digit code.",
+                "passwordRequired": "Enter the account password."
             }
         },
         "confirmEmailChange": {

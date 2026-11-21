@@ -145,7 +145,7 @@ export const authApi = {
         return authHttp.post<RegisterResult>('/api/auth/register', payload);
     },
 
-    confirmEmail(payload: { email: string; code: string }) {
+    confirmEmail(payload: { email: string; code: string; password: string }) {
         return authHttp.post<null>('/api/auth/confirm-email', payload);
     },
 
