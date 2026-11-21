@@ -10,6 +10,8 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useAuthStore } from '@/features/auth/stores/auth-store';
 import { useVaultStore } from '@/features/vault/stores/vault-store';
+import { shouldShowSetupHint } from '@/features/vault/setup-hint';
+import { isDemoSession } from '@/features/demo/session';
 import VaultMigrationBanner from '@/features/vault/components/VaultMigrationBanner.vue';
 import VaultPhraseUnlockDialog from '@/features/vault/components/VaultPhraseUnlockDialog.vue';
 import VaultRestoreDialog from '@/features/vault/components/VaultRestoreDialog.vue';
@@ -60,14 +62,16 @@ function rememberHintShown(): void {
 const lockedBannerVisible = computed(() => bootstrapped.value && vault.passwordWrapLost);
 
 /** Compte Google seul, sans Coffre : proposition discrète, une seule fois. */
-const setupHintVisible = computed(
-    () =>
-        bootstrapped.value &&
-        !setupHintDismissed.value &&
-        auth.user?.hasPassword === false &&
-        vault.status != null &&
-        !vault.exists &&
-        !hintAlreadyShown()
+const setupHintVisible = computed(() =>
+    shouldShowSetupHint({
+        bootstrapped: bootstrapped.value,
+        dismissed: setupHintDismissed.value,
+        demo: isDemoSession(),
+        hasPassword: auth.user?.hasPassword,
+        statusLoaded: vault.status != null,
+        vaultExists: vault.exists,
+        alreadyShown: hintAlreadyShown()
+    })
 );
 
 function dismissSetupHint(): void {
