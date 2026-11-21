@@ -16,6 +16,7 @@ import {
 import { useUserSettingsStore } from '@/features/user-settings';
 import { useStepUpStore } from '@/features/auth/stores/step-up-store';
 import { useNotificationsStore } from '@/features/notifications/stores/notifications-store';
+import { stopNotificationsHub } from '@/features/notifications/hub';
 import { useFriendsStore } from '@/features/friends/stores/friends-store';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
 import { usePaymentMethodsStore } from '@/features/payment-methods/stores/payment-methods-store';
@@ -280,6 +281,9 @@ export function createAuthSession() {
      */
     /** Session locale « Sacha », sans jeton persistant et sans appel réseau. */
     function enterDemo() {
+        // Passage d'une session réelle à la démo : la connexion SignalR ouverte se reconnecterait avec le jeton
+        // « demo » (négociation en 401). On la coupe avant de changer de jeton.
+        if (!isDemoSession()) void stopNotificationsHub();
         markDemoSession();
         accessToken.value = 'demo';
         refreshToken.value = null;

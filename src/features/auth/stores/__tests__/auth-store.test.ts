@@ -69,6 +69,13 @@ const vaultApiMock = vi.hoisted(() => ({
     setPasswordWrap: vi.fn()
 }));
 
+const hubMock = vi.hoisted(() => ({ stop: vi.fn(async () => undefined) }));
+
+vi.mock('@/features/notifications/hub', async () => {
+    const actual = await vi.importActual<typeof import('@/features/notifications/hub')>('@/features/notifications/hub');
+    return { ...actual, stopNotificationsHub: hubMock.stop };
+});
+
 vi.mock('@/features/vault/api', () => ({ vaultApi: vaultApiMock }));
 
 vi.mock('@/utils/helpers/axios-helpers', async () => {
@@ -125,6 +132,19 @@ describe('useAuthStore', () => {
         Object.values(authApiMock).forEach((fn) => fn.mockReset());
         Object.values(vaultApiMock).forEach((fn) => fn.mockReset());
         vaultApiMock.status.mockResolvedValue({ exists: false, pendingCount: 0 });
+    });
+
+    it('coupe le hub SignalR réel en passant à la démo (sinon il se reconnecte avec le jeton « demo »)', async () => {
+        const stopHub = hubMock.stop;
+        stopHub.mockClear();
+        const auth = useAuthStore();
+
+        auth.enterDemo();
+        expect(stopHub).toHaveBeenCalledTimes(1);
+
+        // déjà en démo : pas de nouvel arrêt à chaque navigation
+        auth.enterDemo();
+        expect(stopHub).toHaveBeenCalledTimes(1);
     });
 
     it('ne stocke pas le mot de passe pending en sessionStorage', async () => {
