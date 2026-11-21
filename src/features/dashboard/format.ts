@@ -117,13 +117,28 @@ export function topExpenseCategories(
         total += amount;
     }
     if (!total) return [];
-    const sorted = [...totals.entries()]
-        .map(([categoryPublicId, amount]) => ({ categoryPublicId, amount }))
-        .sort((a, b) => b.amount - a.amount);
+    return topCategoryTotals(
+        [...totals.entries()].map(([categoryPublicId, amount]) => ({ categoryPublicId, amount })),
+        limit
+    );
+}
+
+/**
+ * Totaux par catégorie déjà calculés (ex. `expenseByCategory` de l’API), triés ; au-delà de `limit`,
+ * regroupés sous `categoryPublicId: 'other'`. La part est calculée sur la somme des lignes.
+ */
+export function topCategoryTotals(
+    rows: readonly { categoryPublicId: string | null; amount: number }[],
+    limit = DASHBOARD_TOP_CATEGORIES
+): CategorySpend[] {
+    const positive = rows.filter((row) => row.amount > 0);
+    const total = positive.reduce((sum, row) => sum + row.amount, 0);
+    if (!total) return [];
+    const sorted = [...positive].sort((a, b) => b.amount - a.amount);
     const head = sorted.slice(0, limit);
     const rest = sorted.slice(limit).reduce((sum, item) => sum + item.amount, 0);
-    const rows = rest > 0 ? [...head, { categoryPublicId: 'other', amount: rest }] : head;
-    return rows.map((row) => ({ ...row, share: row.amount / total }));
+    const out = rest > 0 ? [...head, { categoryPublicId: 'other', amount: rest }] : head;
+    return out.map((row) => ({ ...row, share: row.amount / total }));
 }
 
 type UpcomingTemplate = {

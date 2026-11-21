@@ -42,6 +42,7 @@ type ShopChild = {
     color?: string;
     icone?: string;
     taxNature?: string;
+    spendingKind?: string;
 };
 
 type ShopItem = {
@@ -50,6 +51,7 @@ type ShopItem = {
     type: CategoryPlanNodeDef['type'];
     color?: string;
     icone?: string;
+    spendingKind?: string;
     children: ShopChild[];
     alreadyPresent: boolean;
 };
@@ -72,12 +74,14 @@ const shopItems = computed<ShopItem[]>(() =>
             type: root.type,
             color: root.color,
             icone: root.icone,
+            spendingKind: root.spendingKind,
             children: (root.children ?? []).map((child) => ({
                 name: t(`categoriesPage.plan.nodes.${child.nameKey}`),
                 type: child.type ?? root.type,
                 color: child.color,
                 icone: child.icone,
-                taxNature: child.taxNature
+                taxNature: child.taxNature,
+                spendingKind: child.spendingKind
             })),
             alreadyPresent: rootAlreadyPresent(name, root.type)
         };
@@ -148,7 +152,7 @@ async function onApply() {
         const selected = new Set(selectedKeys.value);
         const nodes = shopItems.value
             .filter((item) => selected.has(item.nameKey))
-            .map(({ name, type, color, icone, children }) => ({ name, type, color, icone, children }));
+            .map(({ name, type, color, icone, spendingKind, children }) => ({ name, type, color, icone, spendingKind, children }));
         await store.applyCategoryPlan(nodes);
         open.value = false;
         emit('applied');

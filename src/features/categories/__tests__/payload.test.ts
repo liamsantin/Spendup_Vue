@@ -96,3 +96,38 @@ describe('category payload', () => {
         expect(isCategoryFormDirty(current, fields({ name: 'Maison' }))).toBe(true);
     });
 });
+
+describe('type de dépense', () => {
+    it('envoie le type à la création, seulement pour une catégorie de dépense', () => {
+        const created = buildCreateCategoryPayload(fields({ spendingKind: 'plaisir' }));
+        expect(created.ok && created.payload.spendingKind).toBe('plaisir');
+
+        const income = buildCreateCategoryPayload(fields({ name: 'Salaire', type: 'revenu', spendingKind: 'plaisir' }));
+        expect(income.ok && income.payload.spendingKind).toBeUndefined();
+    });
+
+    it('en mise à jour : absent conserve, vide efface', () => {
+        const kept = buildUpdateCategoryPayload(fields());
+        expect(kept.ok && 'spendingKind' in kept.payload).toBe(false);
+
+        const cleared = buildUpdateCategoryPayload(fields({ spendingKind: '' }));
+        expect(cleared.ok && cleared.payload.spendingKind).toBe('');
+    });
+
+    it('marque le formulaire modifié quand le type change', () => {
+        const category = {
+            publicId: 'C1',
+            name: 'Logement',
+            type: 'depense',
+            color: '#2A9D8F',
+            icone: 'home',
+            parentPublicId: null,
+            createdAt: '2026-01-01T00:00:00Z',
+            updatedAt: null,
+            children: [],
+            spendingKind: 'obligatoire'
+        } as Category;
+        expect(isCategoryFormDirty(category, fields({ spendingKind: 'obligatoire' }))).toBe(false);
+        expect(isCategoryFormDirty(category, fields({ spendingKind: 'plaisir' }))).toBe(true);
+    });
+});

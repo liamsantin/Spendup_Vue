@@ -1,47 +1,23 @@
-import { onMounted, ref, shallowRef } from 'vue';
+import { onMounted, ref, shallowRef, watch, type Ref } from 'vue';
 import { recurringExpensesApi, recurringIncomesApi } from '@/features/recurring-payments/api';
 import type { RecurringExpense, RecurringIncome } from '@/features/recurring-payments/types';
-import { transactionsApi } from '@/features/transactions/api';
-import { TRANSACTION_PAGE_SIZE_MAX, type Transaction } from '@/features/transactions/types';
 import { DASHBOARD_UPCOMING_DAYS, monthToDateRanges, ymd, type DateRange } from '@/features/dashboard/format';
+import { insightsApi, type MonthInsights } from '@/features/dashboard/insights';
 
-/** Garde-fou : 10 pages de 200 transactions par période. */
-const MAX_PAGES = 10;
 const RECURRING_PAGE_SIZE = 200;
 
-export type LoadedTransactions = {
-    items: Transaction[];
-    /** Le garde-fou a coupé le chargement : des transactions de la période manquent, les totaux sont partiels. */
-    truncated: boolean;
-};
-
-/**
- * Charge toutes les transactions d’une période, dans la limite de `maxPages` pages.
- * @param list Appel de liste (injecté pour les tests).
- */
-export async function loadAllTransactions(
-    range: DateRange,
-    list: typeof transactionsApi.list = transactionsApi.list,
-    maxPages = MAX_PAGES
-): Promise<LoadedTransactions> {
-    const items: Transaction[] = [];
-    let total = 0;
-    for (let page = 1; page <= maxPages; page += 1) {
-        const result = await list({ from: range.from, to: range.to, page, pageSize: TRANSACTION_PAGE_SIZE_MAX });
-        const batch = Array.isArray(result?.items) ? result.items : [];
-        items.push(...batch);
-        total = result?.totalCount ?? 0;
-        if (!batch.length || items.length >= total) return { items, truncated: false };
-    }
-    return { items, truncated: items.length < total };
+/** Résumé d’une période du mois, calculé par l’API (`GET /api/insights/month`, sans pagination). */
+function loadPeriod(range: DateRange, currency: string): Promise<MonthInsights> {
+    return insightsApi.month(range.from.slice(0, 7), currency, range.to);
 }
 
 /**
- * Chiffres du mois pour le tableau de bord : transactions du mois en cours et de la même période
- * du mois précédent, et modèles récurrents actifs dont l’échéance tombe dans les 30 prochains jours.
- * Appels directs à l’API : la liste active des stores (page Transactions, Récurrences) n’est pas touchée.
+ * Chiffres du mois pour le tableau de bord : résumé du mois en cours jusqu’à aujourd’hui et de la même période
+ * du mois précédent (calculés côté serveur, sans troncature), et modèles récurrents actifs dont l’échéance
+ * tombe dans les 30 prochains jours. Rechargé quand la devise du résumé change.
+ * @param currency Devise des chiffres (celle du compte principal).
  */
-export function useDashboardMonth() {
+export function useDashboardMonth(currency: Readonly<Ref<string>>) {
     const ranges = monthToDateRanges();
     const today = new Date();
     const upcomingRange: DateRange = {
@@ -51,27 +27,26 @@ export function useDashboardMonth() {
 
     const loading = ref(true);
     const failed = ref(false);
-    /** Plus de transactions que le garde-fou n’en charge : les chiffres affichés sont partiels. */
-    const truncated = ref(false);
-    const current = shallowRef<Transaction[]>([]);
-    const previous = shallowRef<Transaction[]>([]);
+    const current = shallowRef<MonthInsights | null>(null);
+    const previous = shallowRef<MonthInsights | null>(null);
     const expenses = shallowRef<RecurringExpense[]>([]);
     const incomes = shallowRef<RecurringIncome[]>([]);
+    let seq = 0;
 
     async function load() {
+        const ticket = ++seq;
         loading.value = true;
         failed.value = false;
-        truncated.value = false;
         const recurringQuery = { isActive: true, from: upcomingRange.from, to: upcomingRange.to, pageSize: RECURRING_PAGE_SIZE };
         const [cur, prev, exp, inc] = await Promise.allSettled([
-            loadAllTransactions(ranges.current),
-            loadAllTransactions(ranges.previous),
+            loadPeriod(ranges.current, currency.value),
+            loadPeriod(ranges.previous, currency.value),
             recurringExpensesApi.list(recurringQuery),
             recurringIncomesApi.list(recurringQuery)
         ]);
-        current.value = cur.status === 'fulfilled' ? cur.value.items : [];
-        previous.value = prev.status === 'fulfilled' ? prev.value.items : [];
-        truncated.value = [cur, prev].some((result) => result.status === 'fulfilled' && result.value.truncated);
+        if (ticket !== seq) return;
+        current.value = cur.status === 'fulfilled' ? cur.value : null;
+        previous.value = prev.status === 'fulfilled' ? prev.value : null;
         expenses.value = exp.status === 'fulfilled' && Array.isArray(exp.value?.items) ? exp.value.items : [];
         incomes.value = inc.status === 'fulfilled' && Array.isArray(inc.value?.items) ? inc.value.items : [];
         // un seul chargement en échec suffit : sans cela, « Revenus 0.00 » s'affichait comme un vrai chiffre
@@ -82,6 +57,7 @@ export function useDashboardMonth() {
     onMounted(() => {
         void load();
     });
+    watch(currency, () => void load());
 
-    return { ranges, upcomingRange, loading, failed, truncated, current, previous, expenses, incomes, reload: load };
+    return { ranges, upcomingRange, loading, failed, current, previous, expenses, incomes, reload: load };
 }

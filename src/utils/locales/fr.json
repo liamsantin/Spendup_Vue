@@ -66,6 +66,7 @@
             "household": "Foyer",
             "accounts": "Comptes",
             "transactions": "Transactions",
+            "month": "Mon mois",
             "banks": "Banques",
             "paymentMethods": "Moyens de paiement",
             "import": "Import",
@@ -342,8 +343,28 @@
             "upcomingHint": "aucune échéance | {count} échéance | {count} échéances",
             "vsPrevious": "{change} vs {month}",
             "noComparison": "Pas de comparaison possible",
-            "loadFailed": "Les chiffres du mois n’ont pas pu être chargés : les montants affichés sont incomplets.",
-            "truncated": "Ce mois compte trop de transactions pour être chargé en entier : les montants affichés sont partiels."
+            "loadFailed": "Les chiffres du mois n’ont pas pu être chargés : les montants affichés sont incomplets."
+        },
+        "remaining": {
+            "title": "Reste à dépenser",
+            "previous": "Mois précédent",
+            "next": "Mois suivant",
+            "current": "Revenir au mois en cours",
+            "income": "Revenus",
+            "expense": "Sorties",
+            "savingsRate": "Taux d’épargne",
+            "noSavingsRate": "—",
+            "actual": "Constaté",
+            "planned": "Prévu",
+            "plannedLine": "Encore prévu ce mois : {income} de revenus, {expense} de sorties.",
+            "projected": "Solde prévu en fin de mois : {amount}",
+            "savingsTransfers": "Viré vers l’épargne : {amount} (non compté dans les sorties)",
+            "hidden": "{count} opération d’un compte partagé masqué non comptée | {count} opérations d’un compte partagé masqué non comptées",
+            "otherCurrencies": "Autres devises, non additionnées : {list}",
+            "empty": "Aucune opération ce mois-ci.",
+            "loadFailed": "Le reste à dépenser n’a pas pu être calculé.",
+            "breakdown": "Répartition des sorties",
+            "seeMonth": "Voir le détail du mois"
         },
         "spending": {
             "title": "Dépenses par catégorie",
@@ -1431,6 +1452,29 @@
             }
         }
     },
+    "monthPage": {
+        "title": "Mon mois",
+        "subtitle": "Ce qui est entré, ce qui est sorti et ce qu’il reste à dépenser, mois par mois.",
+        "total": "Total",
+        "balance": "Reste",
+        "count": "{count} opération | {count} opérations",
+        "plannedEmpty": "Rien de prévu d’ici la fin du mois.",
+        "totalHint": "Constaté + prévu : le solde attendu en fin de mois.",
+        "byKind": "Sorties par type de dépense",
+        "byKindHint": "Sorties constatées, regroupées selon le type de leur catégorie.",
+        "uncategorized": "Sans catégorie",
+        "unclassifiedHint": "Ces catégories n’ont pas encore de type de dépense.",
+        "classify": "Classer mes catégories",
+        "seeTransactions": "Voir les dépenses du mois",
+        "categoryTransactions": "Voir les dépenses « {name} » du mois",
+        "notes": "À savoir"
+    },
+    "spendingKinds": {
+        "obligatoire": "Obligatoire",
+        "plaisir": "Plaisir",
+        "epargne": "Épargne",
+        "nonClasse": "Non classé"
+    },
     "taxNatures": {
         "none": "Aucune",
         "pillar3aContribution": "Cotisation 3e pilier A",
@@ -1583,9 +1627,12 @@
                 "parent": "Parent",
                 "color": "Couleur",
                 "icone": "Icône",
-                "taxNature": "Nature fiscale"
+                "taxNature": "Nature fiscale",
+                "spendingKind": "Type de dépense"
             },
             "taxNatureHint": "Facultatif. Sert à préparer votre déclaration d’impôts ; ne change rien d’autre.",
+            "spendingKindHint": "Sert à la répartition du mois au tableau de bord. Sans choix, une sous-catégorie reprend celui de sa catégorie parente.",
+            "spendingKindNone": "Non précisé",
             "taxNatureSuggestion": "Suggestion : {nature}.",
             "taxNatureUse": "Utiliser",
             "errors": {

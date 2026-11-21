@@ -66,6 +66,7 @@
             "household": "Household",
             "accounts": "Accounts",
             "transactions": "Transactions",
+            "month": "My month",
             "banks": "Banks",
             "paymentMethods": "Payment methods",
             "import": "Import",
@@ -342,8 +343,28 @@
             "upcomingHint": "nothing due | {count} payment due | {count} payments due",
             "vsPrevious": "{change} vs {month}",
             "noComparison": "No comparison available",
-            "loadFailed": "This month’s figures could not be loaded: the amounts shown are incomplete.",
-            "truncated": "This month has too many transactions to load in full: the amounts shown are partial."
+            "loadFailed": "This month’s figures could not be loaded: the amounts shown are incomplete."
+        },
+        "remaining": {
+            "title": "Left to spend",
+            "previous": "Previous month",
+            "next": "Next month",
+            "current": "Back to current month",
+            "income": "Income",
+            "expense": "Outgoings",
+            "savingsRate": "Savings rate",
+            "noSavingsRate": "—",
+            "actual": "Actual",
+            "planned": "Planned",
+            "plannedLine": "Still planned this month: {income} income, {expense} outgoings.",
+            "projected": "Projected end-of-month balance: {amount}",
+            "savingsTransfers": "Moved to savings: {amount} (not counted as outgoings)",
+            "hidden": "{count} transaction from a hidden shared account not counted | {count} transactions from a hidden shared account not counted",
+            "otherCurrencies": "Other currencies, not added up: {list}",
+            "empty": "No transactions this month.",
+            "loadFailed": "Left to spend could not be calculated.",
+            "breakdown": "Outgoings breakdown",
+            "seeMonth": "See month details"
         },
         "spending": {
             "title": "Spending by category",
@@ -1431,6 +1452,29 @@
             }
         }
     },
+    "monthPage": {
+        "title": "My month",
+        "subtitle": "What came in, what went out and what is left to spend, month by month.",
+        "total": "Total",
+        "balance": "Left",
+        "count": "{count} transaction | {count} transactions",
+        "plannedEmpty": "Nothing planned before the end of the month.",
+        "totalHint": "Actual + planned: the expected end-of-month balance.",
+        "byKind": "Outgoings by spending type",
+        "byKindHint": "Actual outgoings, grouped by the type of their category.",
+        "uncategorized": "Uncategorised",
+        "unclassifiedHint": "These categories have no spending type yet.",
+        "classify": "Classify my categories",
+        "seeTransactions": "See this month’s expenses",
+        "categoryTransactions": "See this month’s “{name}” expenses",
+        "notes": "Good to know"
+    },
+    "spendingKinds": {
+        "obligatoire": "Essential",
+        "plaisir": "Lifestyle",
+        "epargne": "Savings",
+        "nonClasse": "Unclassified"
+    },
     "taxNatures": {
         "none": "None",
         "pillar3aContribution": "Pillar 3a contribution",
@@ -1583,9 +1627,12 @@
                 "parent": "Parent",
                 "color": "Color",
                 "icone": "Icon",
-                "taxNature": "Tax nature"
+                "taxNature": "Tax nature",
+                "spendingKind": "Spending type"
             },
             "taxNatureHint": "Optional. Used to prepare your tax return; changes nothing else.",
+            "spendingKindHint": "Used for the monthly breakdown on the dashboard. Left empty, a subcategory uses its parent’s type.",
+            "spendingKindNone": "Not set",
             "taxNatureSuggestion": "Suggestion: {nature}.",
             "taxNatureUse": "Use",
             "errors": {

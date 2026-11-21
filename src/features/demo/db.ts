@@ -125,7 +125,12 @@ function category(
     name: string,
     type: CategoryType,
     color: string,
-    extras: { parentPublicId?: string | null; icone?: string | null; taxNature?: string | null } = {}
+    extras: {
+        parentPublicId?: string | null;
+        icone?: string | null;
+        taxNature?: string | null;
+        spendingKind?: Category['spendingKind'];
+    } = {}
 ): Category {
     return {
         publicId,
@@ -137,7 +142,8 @@ function category(
         createdAt: NOW,
         updatedAt: null,
         children: [],
-        taxNature: extras.taxNature ?? null
+        taxNature: extras.taxNature ?? null,
+        spendingKind: extras.spendingKind ?? null
     };
 }
 
@@ -256,21 +262,21 @@ export function createDemoDb(): DemoDb {
             account('ACCINV1', 'Compte titres', 'investissement', 3940, false, ubs)
         ],
         categories: [
-            tree(category('CATFOOD', 'Courses', 'depense', '#10B981', { icone: 'shopping-cart' }), [
+            tree(category('CATFOOD', 'Courses', 'depense', '#10B981', { icone: 'shopping-cart', spendingKind: 'obligatoire' }), [
                 category('CATGROC', 'Supermarché', 'depense', '#10B981', { parentPublicId: 'CATFOOD', icone: 'building-store' }),
                 category('CATMRKT', 'Marché', 'depense', '#10B981', { parentPublicId: 'CATFOOD', icone: 'leaf' }),
                 category('CATBAKE', 'Boulangerie', 'depense', '#10B981', { parentPublicId: 'CATFOOD', icone: 'coffee' })
             ]),
-            tree(category('CATRENT', 'Logement', 'depense', '#4F46E5', { icone: 'home' }), [
+            tree(category('CATRENT', 'Logement', 'depense', '#4F46E5', { icone: 'home', spendingKind: 'obligatoire' }), [
                 category('CATLOYR', 'Loyer', 'depense', '#4F46E5', { parentPublicId: 'CATRENT', icone: 'home' }),
                 category('CATFEES', 'Charges', 'depense', '#4F46E5', { parentPublicId: 'CATRENT', icone: 'bolt' }),
                 category('CATREPR', 'Entretien', 'depense', '#4F46E5', { parentPublicId: 'CATRENT', icone: 'tools' })
             ]),
-            tree(category('CATFUN1', 'Sorties', 'depense', '#F59E0B', { icone: 'music' }), [
+            tree(category('CATFUN1', 'Sorties', 'depense', '#F59E0B', { icone: 'music', spendingKind: 'plaisir' }), [
                 category('CATREST', 'Restaurants', 'depense', '#F59E0B', { parentPublicId: 'CATFUN1', icone: 'utensils' }),
                 category('CATCAFE', 'Cafés', 'depense', '#F59E0B', { parentPublicId: 'CATFUN1', icone: 'coffee' })
             ]),
-            tree(category('CATMOVE', 'Transports', 'depense', '#0EA5E9', { icone: 'bus' }), [
+            tree(category('CATMOVE', 'Transports', 'depense', '#0EA5E9', { icone: 'bus', spendingKind: 'obligatoire' }), [
                 category('CATPUBL', 'Transports publics', 'depense', '#0EA5E9', { parentPublicId: 'CATMOVE', icone: 'bus' }),
                 category('CATFUEL', 'Carburant', 'depense', '#0EA5E9', { parentPublicId: 'CATMOVE', icone: 'flame' })
             ]),
@@ -278,7 +284,7 @@ export function createDemoDb(): DemoDb {
                 category('CATSALN', 'Salaire net', 'revenu', '#2A9D8F', { parentPublicId: 'CATSAL1', icone: 'cash' }),
                 category('CAT13TH', '13e salaire', 'revenu', '#2A9D8F', { parentPublicId: 'CATSAL1', icone: 'star' })
             ]),
-            tree(category('CATHLTH', 'Santé', 'depense', '#EF4444', { icone: 'heart' }), [
+            tree(category('CATHLTH', 'Santé', 'depense', '#EF4444', { icone: 'heart', spendingKind: 'obligatoire' }), [
                 category('CATHINS', 'Assurance maladie', 'depense', '#EF4444', {
                     parentPublicId: 'CATHLTH',
                     icone: 'heart',

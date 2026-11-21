@@ -7,7 +7,7 @@ import {
     isDuplicateName,
     type CategoryFormFields
 } from '@/features/categories/payload';
-import { CATEGORY_TYPES, type Category, type ListCategoriesQuery } from '@/features/categories/types';
+import { CATEGORY_TYPES, type Category, type ListCategoriesQuery, type SpendingKind } from '@/features/categories/types';
 import { KEY_TREE, listCacheKey, type CategoriesState } from '@/features/categories/stores/internal/categories-state';
 
 export const CATEGORY_NOT_FOUND_CODE = 'category_not_found';
@@ -312,12 +312,14 @@ export function createCategoriesCrud(state: CategoriesState) {
             type: Category['type'];
             color?: string | null;
             icone?: string | null;
+            spendingKind?: string | null;
             children?: ReadonlyArray<{
                 name: string;
                 type?: Category['type'];
                 color?: string | null;
                 icone?: string | null;
                 taxNature?: string | null;
+                spendingKind?: string | null;
             }>;
         }>
     ): Promise<{ created: number; skipped: number }> {
@@ -344,7 +346,8 @@ export function createCategoriesCrud(state: CategoriesState) {
                             type: rootType,
                             color: root.color ?? null,
                             icone: root.icone ?? '',
-                            parentPublicId: ''
+                            parentPublicId: '',
+                            spendingKind: (root.spendingKind ?? '') as SpendingKind | ''
                         },
                         treeRoots()
                     );
@@ -370,7 +373,8 @@ export function createCategoriesCrud(state: CategoriesState) {
                             color: child.color ?? null,
                             icone: child.icone ?? '',
                             parentPublicId: parentPublicId ?? '',
-                            taxNature: child.taxNature ?? ''
+                            taxNature: child.taxNature ?? '',
+                            spendingKind: (child.spendingKind ?? '') as SpendingKind | ''
                         },
                         treeRoots()
                     );

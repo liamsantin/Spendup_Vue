@@ -60,7 +60,8 @@ const form = reactive<CategoryFormFields>({
     color: null,
     icone: '',
     parentPublicId: '',
-    taxNature: ''
+    taxNature: '',
+    spendingKind: ''
 });
 
 /** Nature proposée d'après le nom (création seulement) ; appliquée seulement sur geste. */
@@ -134,6 +135,7 @@ function resetForm() {
         form.icone = category.icone ?? '';
         form.parentPublicId = category.parentPublicId ?? '';
         form.taxNature = category.taxNature ?? '';
+        form.spendingKind = category.spendingKind ?? '';
         return;
     }
     form.name = props.defaultName?.trim() || '';
@@ -142,6 +144,7 @@ function resetForm() {
     form.icone = '';
     form.parentPublicId = props.defaultParentPublicId?.trim() || '';
     form.taxNature = '';
+    form.spendingKind = '';
     suggestedTaxNature.value = null;
 }
 

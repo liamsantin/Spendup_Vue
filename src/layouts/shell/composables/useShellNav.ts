@@ -12,6 +12,7 @@ import { INVESTMENTS_PATHS } from '@/features/investments/paths';
 import { DEBTS_PATHS } from '@/features/liabilities/paths';
 import { TAX_BASE } from '@/features/tax/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
+import { MONTH_PATH } from '@/features/dashboard/month-page';
 import { SECURITY_PATHS, SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import {
     AccountNavIcon,
@@ -35,6 +36,7 @@ import {
     ImportNavIcon,
     NetworkNavIcon,
     InvestmentsNavIcon,
+    MonthNavIcon,
     NotificationsNavIcon,
     BanksNavIcon,
     PaymentMethodsNavIcon,
@@ -68,6 +70,7 @@ export const SHELL_NAV_IDS = {
     paymentMethods: 'payment-methods',
     banks: 'banks',
     transactions: 'transactions',
+    month: 'month',
     import: 'import',
     recurrences: 'recurrences',
     recurrencesOverview: 'recurrences-overview',
@@ -135,6 +138,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     }
     if (pathIs(path, '/app/finances/transactions')) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.transactions };
+    }
+    if (pathIs(path, MONTH_PATH)) {
+        return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.month };
     }
     if (pathIs(path, IMPORTS_PATHS.list)) {
         return { openId: SHELL_NAV_IDS.finances, activeId: SHELL_NAV_IDS.import };
@@ -247,6 +253,7 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.banks, t('nav.items.banks'), BanksNavIcon, '/app/finances/banques'),
         live(SHELL_NAV_IDS.paymentMethods, t('nav.items.paymentMethods'), PaymentMethodsNavIcon, '/app/finances/moyens-de-paiement'),
         live(SHELL_NAV_IDS.transactions, t('nav.items.transactions'), TransactionsNavIcon, '/app/finances/transactions'),
+        live(SHELL_NAV_IDS.month, t('nav.items.month'), MonthNavIcon, MONTH_PATH),
         live(SHELL_NAV_IDS.import, t('nav.items.import'), ImportNavIcon, IMPORTS_PATHS.list)
     ]);
 

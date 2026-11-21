@@ -10,9 +10,12 @@ import {
     CATEGORY_ICON_MAX,
     CATEGORY_NAME_MAX,
     CATEGORY_TYPES,
+    SPENDING_KINDS,
+    hasSpendingKind,
     type Category,
     type CategoryType,
     type CreateCategoryPayload,
+    type SpendingKind,
     type UpdateCategoryPayload
 } from '@/features/categories/types';
 
@@ -36,6 +39,8 @@ export type CategoryFormFields = {
     parentPublicId: string;
     /** Code de nature fiscale ; vide = aucune. */
     taxNature?: string;
+    /** Type de dépense ; vide = hérite de la racine (sinon non classé). */
+    spendingKind?: SpendingKind | '';
 };
 
 export type BuildCategoryPayloadOk<T> = { ok: true; payload: T };
@@ -78,6 +83,7 @@ function commonFields(
           icone: string | null;
           parentPublicId: string | null;
           taxNature: string | null;
+          spendingKind: SpendingKind | null;
       } {
     if (!CATEGORY_TYPES.includes(fields.type)) {
         return fail('typeInvalid', 'type');
@@ -129,8 +135,13 @@ function commonFields(
         color,
         icone,
         parentPublicId,
-        taxNature: emptyToNull(fields.taxNature ?? '')
+        taxNature: emptyToNull(fields.taxNature ?? ''),
+        spendingKind: hasSpendingKind(fields.type) ? toSpendingKind(fields.spendingKind) : null
     };
+}
+
+function toSpendingKind(value: string | undefined | null): SpendingKind | null {
+    return value && (SPENDING_KINDS as string[]).includes(value) ? (value as SpendingKind) : null;
 }
 
 export function buildCreateCategoryPayload(
@@ -148,6 +159,7 @@ export function buildCreateCategoryPayload(
     if (common.icone) payload.icone = common.icone;
     if (common.parentPublicId) payload.parentPublicId = common.parentPublicId;
     if (common.taxNature) payload.taxNature = common.taxNature;
+    if (common.spendingKind) payload.spendingKind = common.spendingKind;
     return { ok: true, payload };
 }
 
@@ -168,6 +180,7 @@ export function buildUpdateCategoryPayload(
     };
     // Champ absent : l'API conserve la nature ; chaîne vide : elle l'efface.
     if (fields.taxNature !== undefined) payload.taxNature = common.taxNature ?? '';
+    if (fields.spendingKind !== undefined) payload.spendingKind = common.spendingKind ?? '';
     return { ok: true, payload };
 }
 
@@ -178,6 +191,7 @@ export function isCategoryFormDirty(category: Category, fields: CategoryFormFiel
     if (emptyToNull(fields.icone) !== emptyToNull(category.icone)) return true;
     if (emptyToNull(fields.parentPublicId) !== emptyToNull(category.parentPublicId)) return true;
     if (emptyToNull(fields.taxNature ?? '') !== emptyToNull(category.taxNature ?? '')) return true;
+    if (fields.spendingKind !== undefined && toSpendingKind(fields.spendingKind) !== (category.spendingKind ?? null)) return true;
     return false;
 }
 

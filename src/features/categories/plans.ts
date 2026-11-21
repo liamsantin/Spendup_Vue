@@ -1,6 +1,6 @@
 import type { CategoryIconKey } from '@/features/categories/icons';
 import type { TaxNatureCode } from '@/features/categories/tax-natures';
-import type { CategoryType } from '@/features/categories/types';
+import type { CategoryType, SpendingKind } from '@/features/categories/types';
 
 /** Nœud du plan (clés i18n sous `categoriesPage.plan.nodes.*`). */
 export type CategoryPlanNodeDef = {
@@ -8,6 +8,8 @@ export type CategoryPlanNodeDef = {
     type: CategoryType;
     color?: string;
     icone?: CategoryIconKey;
+    /** Type de dépense de la racine, hérité par les enfants qui n'en ont pas. */
+    spendingKind?: SpendingKind;
     children?: Array<{
         nameKey: string;
         type?: CategoryType;
@@ -15,6 +17,8 @@ export type CategoryPlanNodeDef = {
         icone?: CategoryIconKey;
         /** Nature fiscale par défaut, jamais héritée du parent. */
         taxNature?: TaxNatureCode;
+        /** Exception au type de dépense de la racine. */
+        spendingKind?: SpendingKind;
     }>;
 };
 
@@ -25,6 +29,7 @@ export type CategoryPlanNodeDef = {
 export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
     {
         nameKey: 'logement',
+        spendingKind: 'obligatoire',
         type: 'depense',
         color: '#2A9D8F',
         icone: 'home',
@@ -38,17 +43,19 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
     },
     {
         nameKey: 'alimentation',
+        spendingKind: 'obligatoire',
         type: 'depense',
         color: '#F59E0B',
         icone: 'utensils',
         children: [
             { nameKey: 'courses', icone: 'shopping-cart' },
-            { nameKey: 'restaurants', icone: 'utensils' },
-            { nameKey: 'cafes', icone: 'coffee' }
+            { nameKey: 'restaurants', icone: 'utensils', spendingKind: 'plaisir' },
+            { nameKey: 'cafes', icone: 'coffee', spendingKind: 'plaisir' }
         ]
     },
     {
         nameKey: 'transport',
+        spendingKind: 'obligatoire',
         type: 'depense',
         color: '#0EA5E9',
         icone: 'bus',
@@ -62,6 +69,7 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
     },
     {
         nameKey: 'sante',
+        spendingKind: 'obligatoire',
         type: 'depense',
         color: '#EF4444',
         icone: 'heart',
@@ -75,6 +83,7 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
     },
     {
         nameKey: 'impots',
+        spendingKind: 'obligatoire',
         type: 'depense',
         color: '#78716C',
         icone: 'building-bank',
@@ -86,6 +95,7 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
     },
     {
         nameKey: 'loisirs',
+        spendingKind: 'plaisir',
         type: 'depense',
         color: '#8B5CF6',
         icone: 'movie',
@@ -98,6 +108,7 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
     },
     {
         nameKey: 'shopping',
+        spendingKind: 'plaisir',
         type: 'depense',
         color: '#EC4899',
         icone: 'shopping-cart',
@@ -109,17 +120,19 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
     },
     {
         nameKey: 'abonnements',
+        spendingKind: 'plaisir',
         type: 'depense',
         color: '#4F46E5',
         icone: 'wifi',
         children: [
-            { nameKey: 'telecom', icone: 'device-mobile' },
+            { nameKey: 'telecom', icone: 'device-mobile', spendingKind: 'obligatoire' },
             { nameKey: 'streaming', icone: 'movie' },
             { nameKey: 'logiciels', icone: 'wifi' }
         ]
     },
     {
         nameKey: 'famille',
+        spendingKind: 'obligatoire',
         type: 'depense',
         color: '#F472B6',
         icone: 'baby-carriage',
@@ -131,12 +144,13 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
     },
     {
         nameKey: 'banque',
+        spendingKind: 'obligatoire',
         type: 'depense',
         color: '#64748B',
         icone: 'credit-card',
         children: [
             { nameKey: 'fraisBancaires', icone: 'credit-card' },
-            { nameKey: 'dons', icone: 'gift', taxNature: 'donation' }
+            { nameKey: 'dons', icone: 'gift', taxNature: 'donation', spendingKind: 'plaisir' }
         ]
     },
     {
@@ -156,6 +170,7 @@ export const DEFAULT_CATEGORY_PLAN: readonly CategoryPlanNodeDef[] = [
     },
     {
         nameKey: 'epargne',
+        spendingKind: 'epargne',
         type: 'transfert',
         color: '#0D9488',
         icone: 'pig-money',

@@ -38,9 +38,6 @@
             {{ t('dashboard.month.loadFailed') }}
             <button type="button" class="su-link" @click="month.reload()">{{ t('common.retry') }}</button>
         </AppAlert>
-        <AppAlert v-else-if="month.truncated.value && !month.loading.value" type="warning" class="su-alert">
-            {{ t('dashboard.month.truncated') }}
-        </AppAlert>
 
         <!-- ── alertes : lignes texte sur filet fin ── -->
         <nav v-if="alerts.length" class="dash-alerts" :aria-label="t('dashboard.alerts.label')">
@@ -54,6 +51,8 @@
         <!-- ── grille 12 colonnes : 7 | 5 ── -->
         <div class="su-g12 dash-main">
             <div class="dash-col dash-col--main">
+                <MonthRemainingCard :currency="currency" :hide-amounts="hideAmounts" />
+
                 <DashboardBudgetsCard v-if="defaultDashboardView === 'budget'" :hide-amounts="hideAmounts" />
 
                 <section class="su-section">
@@ -184,16 +183,17 @@ import { DashboardSavingsGoalsCard } from '@/features/savings-goals';
 import { SAVINGS_GOALS_PATHS } from '@/features/savings-goals/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
+import MonthRemainingCard from '@/features/dashboard/components/MonthRemainingCard.vue';
 import { useDashboardMonth } from '@/features/dashboard/composables/useDashboardMonth';
 import { useDashboardOverview } from '@/features/dashboard/composables/useDashboardOverview';
+import type { MonthInsights } from '@/features/dashboard/insights';
 import {
     DASHBOARD_MASKED_AMOUNT,
     DASHBOARD_UPCOMING_DAYS,
     formatShortDayMonth,
     percentChange,
     splitHeroAmount,
-    summarizeFlows,
-    topExpenseCategories,
+    topCategoryTotals,
     upcomingDues
 } from '@/features/dashboard/format';
 import { formatOperationDate, resolveTransactionAmountDisplay, sourceAccountPublicId } from '@/features/transactions/format';
@@ -225,15 +225,21 @@ const {
     categoryById,
     accountById
 } = useDashboardOverview();
-const month = useDashboardMonth();
-
 /** Les chiffres du mois sont dans la devise du compte principal (CHF par défaut). */
 const currency = computed<Currency>(() => primaryCurrency.value ?? 'CHF');
 
+const month = useDashboardMonth(currency);
+
 const monthLabel = computed(() => new Intl.DateTimeFormat(locale.value, { month: 'long' }).format(new Date()));
 
-const flows = computed(() => summarizeFlows(month.current.value, currency.value));
-const previousFlows = computed(() => summarizeFlows(month.previous.value, currency.value));
+/** Revenus, dépenses et solde d’une période, tels que les calcule l’API (transferts exclus). */
+function periodFlows(period: MonthInsights | null) {
+    const actual = period?.actual;
+    return { income: actual?.income ?? 0, expense: actual?.expense ?? 0, net: actual?.balance ?? 0, count: actual?.count ?? 0 };
+}
+
+const flows = computed(() => periodFlows(month.current.value));
+const previousFlows = computed(() => periodFlows(month.previous.value));
 
 const allUpcoming = computed(() => upcomingDues(month.expenses.value, month.incomes.value, month.upcomingRange, Number.POSITIVE_INFINITY));
 const upcomingList = computed(() => allUpcoming.value.slice(0, 5));
@@ -318,7 +324,7 @@ const heroLede = computed(() => {
 });
 
 const spending = computed(() =>
-    topExpenseCategories(month.current.value, currency.value).map((row) => {
+    topCategoryTotals(month.current.value?.expenseByCategory ?? []).map((row) => {
         if (row.categoryPublicId === 'other') {
             return { key: 'other', name: t('dashboard.spending.other'), color: OTHER_COLOR, amount: row.amount, share: row.share };
         }

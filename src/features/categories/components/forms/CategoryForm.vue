@@ -13,7 +13,14 @@ import AppColorPicker from '@/components/shared/color-picker/AppColorPicker.vue'
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import CategoryIconPicker from '@/features/categories/components/forms/CategoryIconPicker.vue';
 import { taxNatureCodesForType } from '@/features/categories/tax-natures';
-import { CATEGORY_COLOR_PRESETS, CATEGORY_NAME_MAX, type CategoryType } from '@/features/categories/types';
+import {
+    CATEGORY_COLOR_PRESETS,
+    CATEGORY_NAME_MAX,
+    SPENDING_KINDS,
+    hasSpendingKind,
+    type CategoryType,
+    type SpendingKind
+} from '@/features/categories/types';
 import type { CategoryFormFields } from '@/features/categories/payload';
 
 export type CategoryFormFieldErrors = {
@@ -23,6 +30,7 @@ export type CategoryFormFieldErrors = {
     icone?: string | null;
     parentPublicId?: string | null;
     taxNature?: string | null;
+    spendingKind?: string | null;
 };
 
 const props = withDefaults(
@@ -65,6 +73,20 @@ const taxNatureModel = computed({
     get: () => props.form.taxNature ?? '',
     set: (value: string) => {
         props.form.taxNature = value;
+    }
+});
+
+const showSpendingKind = computed(() => hasSpendingKind(props.form.type));
+
+const spendingKindItems = computed(() => [
+    { title: t('categoriesPage.form.spendingKindNone'), value: '' },
+    ...SPENDING_KINDS.map((kind) => ({ title: t(`spendingKinds.${kind}`), value: kind }))
+]);
+
+const spendingKindModel = computed({
+    get: () => props.form.spendingKind ?? '',
+    set: (value: SpendingKind | '') => {
+        props.form.spendingKind = value;
     }
 });
 
@@ -149,6 +171,22 @@ function isPresetSelected(preset: string): boolean {
                         {{ t('categoriesPage.form.taxNatureUse') }}
                     </button>
                 </p>
+            </div>
+        </div>
+        <div v-if="showSpendingKind" class="category-form__row category-form__row--top">
+            <label class="category-form__label" for="category-form-spending-kind">{{ t('categoriesPage.form.fields.spendingKind') }}</label>
+            <div class="category-form__field">
+                <AppSelect
+                    id="category-form-spending-kind"
+                    v-model="spendingKindModel"
+                    :items="spendingKindItems"
+                    :label="t('categoriesPage.form.fields.spendingKind')"
+                    hide-details="auto"
+                    :error="!!fieldErrors.spendingKind"
+                    :error-messages="fieldErrors.spendingKind || undefined"
+                    :hint="t('categoriesPage.form.spendingKindHint')"
+                    persistent-hint
+                />
             </div>
         </div>
         <div class="category-form__row category-form__row--top">

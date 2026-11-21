@@ -24,6 +24,7 @@ export { BuildingsIcon as BanksNavIcon } from '@solar-icons/vue/line-duotone/bui
 export { CardIcon as PaymentMethodsNavIcon } from '@solar-icons/vue/line-duotone/card';
 export { RoundTransferHorizontalIcon as TransactionsNavIcon } from '@solar-icons/vue/line-duotone/round-transfer-horizontal';
 export { ImportIcon as ImportNavIcon } from '@solar-icons/vue/line-duotone/import';
+export { WalletMoneyIcon as MonthNavIcon } from '@solar-icons/vue/line-duotone/wallet-money';
 export { RestartIcon as RecurrencesOverviewNavIcon } from '@solar-icons/vue/line-duotone/restart';
 export { BillListIcon as RecurrencesExpensesNavIcon } from '@solar-icons/vue/line-duotone/bill-list';
 export { GraphUpIcon as RecurrencesIncomesNavIcon } from '@solar-icons/vue/line-duotone/graph-up';

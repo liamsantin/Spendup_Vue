@@ -8,6 +8,7 @@ const OPEN_DEMO_PATHS = new Set([
     'friends',
     'finances/comptes',
     'finances/transactions',
+    'finances/mois',
     'finances/imports',
     'finances/imports/modeles',
     'finances/imports/:publicId',

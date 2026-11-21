@@ -57,6 +57,7 @@ import {
     refreshBudgets,
     refreshGoals
 } from '@/features/demo/db';
+import { demoMonthInsights } from '@/features/demo/insights';
 
 type DemoResult = { status: number; body: unknown };
 
@@ -216,6 +217,8 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
     if (path.startsWith('/api/attachments/') && path.includes('/files')) throw new AppError('Les fichiers ne sont pas dans la démo.', 403);
 
     if (path === '/api/tax-natures/suggest' && method === 'GET') return ok({ taxNature: null });
+    if (path === '/api/insights/month' && method === 'GET')
+        return ok(demoMonthInsights(db, query.get('month'), query.get('currency'), query.get('to')));
     if (path === '/api/categories' && method === 'GET') return ok(listCategories(query));
     if (path === '/api/categories' && method === 'POST') return ok(createCategory(body as CreateCategoryPayload));
     const categoryId = match(path, '/api/categories/:id');
@@ -1160,6 +1163,7 @@ function createCategory(body: CreateCategoryPayload) {
         icone: body.icone ?? null,
         parentPublicId: body.parentPublicId?.trim() || null,
         taxNature: body.taxNature?.trim() || null,
+        spendingKind: body.spendingKind || null,
         createdAt: stamp(),
         updatedAt: null,
         children: [] as ReturnType<typeof findCategory>['children']
@@ -1185,6 +1189,7 @@ function updateCategory(id: string, body: UpdateCategoryPayload) {
     item.icone = body.icone;
     // Absent : la nature est conservée ; chaîne vide : elle est effacée (comme l'API).
     if (body.taxNature !== undefined) item.taxNature = body.taxNature.trim() || null;
+    if (body.spendingKind !== undefined) item.spendingKind = body.spendingKind || null;
     item.updatedAt = stamp();
     return item;
 }
