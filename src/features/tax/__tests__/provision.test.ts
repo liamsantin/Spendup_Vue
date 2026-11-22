@@ -102,8 +102,8 @@ describe('GET /api/tax-returns/provision en démo', () => {
 });
 
 describe('page Provision d’impôts', () => {
-    it('place l’entrée dans le menu Planification, distincte de la déclaration', () => {
-        expect(idsFromPath(TAX_PROVISION_PATH)).toEqual({ openId: 'planning', activeId: 'tax-provision' });
+    it('place l’entrée dans le menu Outils, distincte de la déclaration', () => {
+        expect(idsFromPath(TAX_PROVISION_PATH)).toEqual({ openId: 'tools', activeId: 'tax-provision' });
         expect(idsFromPath('/demo/planning/provision-impots').activeId).toBe('tax-provision');
         expect(idsFromPath('/app/planning/impots').activeId).toBe('tax');
     });

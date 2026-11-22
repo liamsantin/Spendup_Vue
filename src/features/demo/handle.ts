@@ -58,6 +58,8 @@ import {
     refreshGoals
 } from '@/features/demo/db';
 import { demoMonthInsights, demoYearForecast } from '@/features/demo/insights';
+import { demoLamalCompare, demoLamalContext } from '@/features/demo/lamal';
+import type { LamalComparisonRequest } from '@/features/insurance/lamal';
 
 type DemoResult = { status: number; body: unknown };
 
@@ -220,6 +222,9 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
     if (path === '/api/insights/month' && method === 'GET')
         return ok(demoMonthInsights(db, query.get('month'), query.get('currency'), query.get('to')));
     if (path === '/api/forecasts/year' && method === 'GET') return ok(demoYearForecast(db, query.get('year'), query.get('currency')));
+    if (path === '/api/insurance/lamal-comparison/context' && method === 'GET')
+        return ok(demoLamalContext(db, query.get('year') ? Number(query.get('year')) : null));
+    if (path === '/api/insurance/lamal-comparison' && method === 'POST') return ok(demoLamalCompare(body as LamalComparisonRequest));
     if (path === '/api/categories' && method === 'GET') return ok(listCategories(query));
     if (path === '/api/categories' && method === 'POST') return ok(createCategory(body as CreateCategoryPayload));
     const categoryId = match(path, '/api/categories/:id');

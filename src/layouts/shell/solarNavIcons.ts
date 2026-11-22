@@ -11,6 +11,7 @@ export { FolderWithFilesIcon as GestionNavIcon } from '@solar-icons/vue/linear/f
 export { ChecklistMinimalisticIcon as PlanningNavIcon } from '@solar-icons/vue/linear/checklist-minimalistic';
 export { SafeSquareIcon as WealthNavIcon } from '@solar-icons/vue/linear/safe-square';
 export { UsersGroupRoundedIcon as NetworkNavIcon } from '@solar-icons/vue/linear/users-group-rounded';
+export { CalculatorIcon as ToolsNavIcon } from '@solar-icons/vue/linear/calculator';
 export { SettingsIcon as SettingsNavIcon } from '@solar-icons/vue/linear/settings';
 export { Widget5Icon as DashboardNavIcon } from '@solar-icons/vue/linear/widget-5';
 
@@ -21,6 +22,7 @@ export { FolderWithFilesIcon as GestionActiveNavIcon } from '@solar-icons/vue/bo
 export { ChecklistMinimalisticIcon as PlanningActiveNavIcon } from '@solar-icons/vue/bold/checklist-minimalistic';
 export { SafeSquareIcon as WealthActiveNavIcon } from '@solar-icons/vue/bold/safe-square';
 export { UsersGroupRoundedIcon as NetworkActiveNavIcon } from '@solar-icons/vue/bold/users-group-rounded';
+export { CalculatorIcon as ToolsActiveNavIcon } from '@solar-icons/vue/bold/calculator';
 export { SettingsIcon as SettingsActiveNavIcon } from '@solar-icons/vue/bold/settings';
 export { Widget5Icon as DashboardActiveNavIcon } from '@solar-icons/vue/bold/widget-5';
 
@@ -49,8 +51,9 @@ export { Chart2Icon as InvestmentsNavIcon } from '@solar-icons/vue/linear/chart-
 export { Home2Icon as RealEstateNavIcon } from '@solar-icons/vue/linear/home-2';
 export { HandMoneyIcon as DebtsNavIcon } from '@solar-icons/vue/linear/hand-money';
 export { CourseUpIcon as ForecastsNavIcon } from '@solar-icons/vue/linear/course-up';
-export { CalculatorIcon as TaxNavIcon } from '@solar-icons/vue/linear/calculator';
+export { BillCheckIcon as TaxNavIcon } from '@solar-icons/vue/linear/bill-check';
 export { BillListIcon as TaxProvisionNavIcon } from '@solar-icons/vue/linear/bill-list';
+export { HeartPulseIcon as LamalNavIcon } from '@solar-icons/vue/linear/heart-pulse';
 export { UsersGroupTwoRoundedIcon as FriendsNavIcon } from '@solar-icons/vue/linear/users-group-two-rounded';
 export { HomeSmileIcon as HouseholdNavIcon } from '@solar-icons/vue/linear/home-smile';
 export { UserCircleIcon as ProfileNavIcon } from '@solar-icons/vue/linear/user-circle';

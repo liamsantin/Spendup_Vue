@@ -13,6 +13,7 @@ import { DEBTS_PATHS } from '@/features/liabilities/paths';
 import { TAX_BASE, TAX_PROVISION_PATH } from '@/features/tax/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
 import { FORECASTS_PATH } from '@/features/forecasts/forecasts';
+import { LAMAL_COMPARISON_PATH } from '@/features/insurance/lamal';
 import { MONTH_PATH } from '@/features/dashboard/month-page';
 import { SECURITY_PATHS, SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import {
@@ -62,6 +63,9 @@ import {
     SubscriptionNavIcon,
     TaxNavIcon,
     TaxProvisionNavIcon,
+    ToolsActiveNavIcon,
+    ToolsNavIcon,
+    LamalNavIcon,
     TiersNavIcon,
     TransactionsNavIcon,
     TransparencyNavIcon,
@@ -103,6 +107,8 @@ export const SHELL_NAV_IDS = {
     forecasts: 'forecasts',
     tax: 'tax',
     taxProvision: 'tax-provision',
+    lamal: 'lamal',
+    tools: 'tools',
     network: 'network',
     friends: 'friends',
     household: 'household',
@@ -178,8 +184,11 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, FORECASTS_PATH)) {
         return { openId: SHELL_NAV_IDS.planning, activeId: SHELL_NAV_IDS.forecasts };
     }
+    if (pathIs(path, LAMAL_COMPARISON_PATH)) {
+        return { openId: SHELL_NAV_IDS.tools, activeId: SHELL_NAV_IDS.lamal };
+    }
     if (pathIs(path, TAX_PROVISION_PATH)) {
-        return { openId: SHELL_NAV_IDS.planning, activeId: SHELL_NAV_IDS.taxProvision };
+        return { openId: SHELL_NAV_IDS.tools, activeId: SHELL_NAV_IDS.taxProvision };
     }
     if (pathIs(path, TAX_BASE)) {
         return { openId: SHELL_NAV_IDS.planning, activeId: SHELL_NAV_IDS.tax };
@@ -290,8 +299,13 @@ export function useShellNav() {
         live(SHELL_NAV_IDS.budgets, t('nav.items.budgets'), BudgetsNavIcon, BUDGETS_PATHS.list),
         live(SHELL_NAV_IDS.goals, t('nav.items.goals'), GoalsNavIcon, SAVINGS_GOALS_PATHS.list),
         live(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), ForecastsNavIcon, FORECASTS_PATH),
-        live(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon, TAX_BASE),
-        live(SHELL_NAV_IDS.taxProvision, t('nav.items.taxProvision'), TaxProvisionNavIcon, TAX_PROVISION_PATH)
+        live(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon, TAX_BASE)
+    ]);
+
+    /* Calculateurs ponctuels : on les ouvre quand on en a besoin, hors du suivi quotidien. */
+    const toolsLeaves = computed<NavLeaf[]>(() => [
+        live(SHELL_NAV_IDS.taxProvision, t('nav.items.taxProvision'), TaxProvisionNavIcon, TAX_PROVISION_PATH),
+        live(SHELL_NAV_IDS.lamal, t('nav.items.lamal'), LamalNavIcon, LAMAL_COMPARISON_PATH)
     ]);
 
     const wealthLeaves = computed<NavLeaf[]>(() => [
@@ -318,7 +332,7 @@ export function useShellNav() {
     ]);
 
     /* Une rangée par section, comme l'ancienne colonne : un clic déplie ses pages (accordéon).
-       Ordre : suivre l'argent, planifier (budgets, prévisions, impôts), mesurer, puis les données de support et le réseau. */
+       Ordre : suivre l'argent, planifier (budgets, prévisions, impôts), mesurer, outils ponctuels, puis les données de support et le réseau. */
     const primaryNav = computed<NavItem[]>(() => [
         { ...live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardNavIcon, '/app'), activeIcon: DashboardActiveNavIcon },
         section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesNavIcon, financeLeaves.value, false, FinancesActiveNavIcon),
@@ -332,6 +346,7 @@ export function useShellNav() {
         ),
         section(SHELL_NAV_IDS.planning, t('nav.headers.planning'), PlanningNavIcon, planningLeaves.value, false, PlanningActiveNavIcon),
         section(SHELL_NAV_IDS.wealth, t('nav.headers.wealth'), WealthNavIcon, wealthLeaves.value, false, WealthActiveNavIcon),
+        section(SHELL_NAV_IDS.tools, t('nav.headers.tools'), ToolsNavIcon, toolsLeaves.value, false, ToolsActiveNavIcon),
         section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionNavIcon, gestionLeaves.value, false, GestionActiveNavIcon),
         section(SHELL_NAV_IDS.network, t('nav.headers.network'), NetworkNavIcon, networkLeaves.value, false, NetworkActiveNavIcon)
     ]);

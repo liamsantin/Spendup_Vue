@@ -34,7 +34,8 @@ const OPEN_DEMO_PATHS = new Set([
     'patrimoine/dettes/amis/:publicId?',
     'patrimoine/dettes/:publicId?',
     'planning/impots/:publicId?',
-    'planning/provision-impots'
+    'planning/provision-impots',
+    'planning/comparateur-lamal'
 ]);
 
 function toDemoChild(child: RouteRecordRaw): RouteRecordRaw {

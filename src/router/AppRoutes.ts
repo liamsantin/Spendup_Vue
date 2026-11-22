@@ -185,6 +185,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/analyses/AppTaxProvisionPage.vue')
         },
         {
+            name: 'AppLamalComparison',
+            path: 'planning/comparateur-lamal',
+            component: () => import('@/views/app/analyses/AppLamalComparisonPage.vue')
+        },
+        {
             name: 'AppTax',
             path: 'planning/impots/:publicId?',
             component: () => import('@/views/app/analyses/AppTaxPage.vue')

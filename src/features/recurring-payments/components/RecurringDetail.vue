@@ -28,6 +28,7 @@ import {
     isDueSettled,
     isExpenseTemplate
 } from '@/features/recurring-payments/format';
+import { LAMAL_COMPARISON_PATH } from '@/features/insurance/lamal';
 import { groupTransactionsWithFiles, listAllLinkedTransactions } from '@/features/recurring-payments/linked-transaction-files';
 import type { RecurringDetailTab } from '@/features/recurring-payments/paths';
 import { canConfirmRecurringOnAccount } from '@/features/recurring-payments/rights';
@@ -75,6 +76,9 @@ const template = computed(() => {
     return store.getDetail(props.kind, props.publicId);
 });
 const expense = computed(() => (template.value && isExpenseTemplate(template.value) ? template.value : null));
+const isBasicHealthInsurance = computed(
+    () => expense.value?.expenseType === 'assurance' && expense.value.insurance?.insuranceType === 'healthBasic'
+);
 const income = computed(() => (template.value && !isExpenseTemplate(template.value) ? template.value : null));
 
 const dues = computed(() => {
@@ -377,6 +381,10 @@ defineExpose({ openEdit, openLink, reload: loadDetail, canEdit: canConfirm, canL
                 </div>
 
                 <p v-if="template.notes" class="recurring-detail__notes">{{ template.notes }}</p>
+
+                <p v-if="isBasicHealthInsurance" class="recurring-detail__notes">
+                    <RouterLink :to="LAMAL_COMPARISON_PATH" class="su-link">{{ t('recurrencesPage.detail.compareLamal') }}</RouterLink>
+                </p>
             </div>
 
             <!-- ── Échéances ── -->
