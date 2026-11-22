@@ -69,11 +69,26 @@ describe('contenu du catalogue 2026', () => {
         expect(withAmount.map((a) => a.id)).toEqual([]);
     });
 
-    it('chaque canton romand couvre la santé, la formation et l’aide sociale', () => {
-        for (const canton of AID_CANTONS) {
+    it('les cantons romands et Berne couvrent la santé, la formation et l’aide sociale', () => {
+        for (const canton of ['JU', 'VD', 'NE', 'FR', 'GE', 'BE']) {
             const themes = AIDS_2026.filter((a) => a.scope === canton).map((a) => a.theme);
             expect(themes, canton).toEqual(expect.arrayContaining(['health', 'education', 'social']));
         }
+    });
+
+    it('chacun des 26 cantons a au moins deux aides au catalogue', () => {
+        expect(AID_CANTONS).toHaveLength(26);
+        for (const canton of AID_CANTONS) {
+            expect(AIDS_2026.filter((a) => a.scope === canton).length, canton).toBeGreaterThanOrEqual(2);
+        }
+    });
+
+    it('une page officielle en allemand ou en italien est signalée dans la note', () => {
+        const german = AIDS_2026.find((a) => a.id === 'zh-premium-subsidy')!;
+        expect(german.texts.fr.note).toContain('allemand');
+        expect(german.texts.en.note).toContain('German');
+        const italian = AIDS_2026.find((a) => a.id === 'ti-premium-subsidy')!;
+        expect(italian.texts.fr.note).toContain('italien');
     });
 
     it('la Confédération couvre famille, chômage, retraite et invalidité, énergie et santé', () => {
@@ -114,7 +129,8 @@ describe('filtres', () => {
     it('préchoisit le canton du profil quand il est au catalogue, sinon le fédéral', () => {
         expect(defaultAidCanton('vd')).toBe('VD');
         expect(defaultAidCanton('GE')).toBe('GE');
-        expect(defaultAidCanton('ZH')).toBe(AID_FEDERAL);
+        expect(defaultAidCanton('ZH')).toBe('ZH');
+        expect(defaultAidCanton('XX')).toBe(AID_FEDERAL);
         expect(defaultAidCanton(null)).toBe(AID_FEDERAL);
     });
 

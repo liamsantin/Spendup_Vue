@@ -1,3 +1,4 @@
+import { AIDS_2026_CANTONS } from '@/features/aids/data/aids-2026-cantons';
 import type { AidEntry } from '@/features/aids/types';
 
 /**
@@ -8,7 +9,7 @@ import type { AidEntry } from '@/features/aids/types';
  */
 const V = '2026-11-22';
 
-export const AIDS_2026: AidEntry[] = [
+const AIDS_2026_BASE: AidEntry[] = [
     /* ── Confédération ── */
     {
         id: 'ch-priminfo',
@@ -915,5 +916,136 @@ export const AIDS_2026: AidEntry[] = [
                 organization: 'Social Action Service (SAS) and regional social service'
             }
         }
+    },
+
+    /* ── Berne (canton bilingue : pages officielles en français) ── */
+    {
+        id: 'be-premium-subsidy',
+        theme: 'health',
+        scope: 'BE',
+        url: 'https://www.asv.dij.be.ch/fr/start/themen/pv.html',
+        verifiedAt: V,
+        texts: {
+            fr: {
+                title: 'Réduction des primes d’assurance-maladie',
+                summary:
+                    'Aide du canton de Berne pour les primes de l’assurance de base. Le droit est en principe calculé d’office d’après les données fiscales, puis versé directement à l’assureur ; certaines situations demandent une demande.',
+                conditions: [
+                    'Être domicilié dans le canton de Berne et assuré à la LAMal',
+                    'Une demande est nécessaire notamment pour certains jeunes adultes, l’imposition à la source, l’absence de revenu déclaré, un déménagement depuis un autre canton ou un changement de situation en cours d’année',
+                    'La demande vaut pour l’année civile en cours et doit parvenir à l’office au plus tard le 31 décembre'
+                ],
+                organization: 'Office des assurances sociales (OAS), réduction des primes'
+            },
+            en: {
+                title: 'Health insurance premium reduction',
+                summary:
+                    'Help from the canton of Bern with basic insurance premiums. The right is in principle calculated automatically from tax data and paid directly to the insurer; some situations require an application.',
+                conditions: [
+                    'Live in the canton of Bern and be insured under the LAMal',
+                    'An application is needed notably for some young adults, taxation at source, no declared income, a move from another canton or a change of situation during the year',
+                    'The application covers the current calendar year and must reach the office by 31 December at the latest'
+                ],
+                organization: 'Social Insurance Office (OAS), premium reduction'
+            }
+        }
+    },
+    {
+        id: 'be-family-allowance',
+        theme: 'family',
+        scope: 'BE',
+        url: 'https://www.akbern.ch/fr/Assurances/AF/Allocations-familiales/Allocations-familiales.html',
+        verifiedAt: V,
+        texts: {
+            fr: {
+                title: 'Allocations familiales bernoises',
+                summary:
+                    'Allocations pour enfant et de formation selon le droit fédéral et les taux fixés par le canton de Berne. Le droit naît à la naissance de l’enfant. Les taux figurent sur la page officielle.',
+                conditions: [
+                    'Être salarié·e, indépendant·e ou sans activité lucrative',
+                    'Avoir un lien de filiation avec l’enfant, vivre avec l’enfant de son conjoint ou en avoir la garde',
+                    'Les salariés et indépendants adressent la demande à la caisse d’allocations familiales de l’employeur ou de leur propre caisse, les personnes sans activité à la caisse cantonale'
+                ],
+                organization: 'Caisse de compensation du canton de Berne (CCB), caisse d’allocations familiales'
+            },
+            en: {
+                title: 'Bern family allowances',
+                summary:
+                    'Child and training allowances under federal law and the rates set by the canton of Bern. The right starts at the child’s birth. The rates are on the official page.',
+                conditions: [
+                    'Be an employee, self-employed or without gainful activity',
+                    'Be the child’s parent, live with your spouse’s child or have custody',
+                    'Employees and the self-employed apply to the employer’s or their own family allowance fund, people without activity to the cantonal fund'
+                ],
+                organization: 'Compensation fund of the canton of Bern (CCB), family allowance fund'
+            }
+        }
+    },
+    {
+        id: 'be-scholarship',
+        theme: 'education',
+        scope: 'BE',
+        url: 'https://www.bkd.be.ch/fr/start/dienstleistungen/foerderung-und-unterstuetzung/ausbildungsbeitraege.html',
+        verifiedAt: V,
+        texts: {
+            fr: {
+                title: 'Subsides de formation (bourses et prêts)',
+                summary:
+                    'Aide pour une première formation, calculée avant tout selon la situation financière des parents. La demande se fait uniquement en ligne sur BourseBE-Online, avec un compte BE-Login.',
+                conditions: [
+                    'Suivre une première formation reconnue, les parents étant domiciliés dans le canton de Berne',
+                    'Ne pas pouvoir financer la formation seul·e ou avec l’aide de ses parents',
+                    'Déposer la demande au plus tard le 30 juin pour une formation qui commence au premier semestre, le 31 décembre pour une formation qui commence au second'
+                ],
+                organization: 'Section des subsides de formation, Direction de l’instruction publique et de la culture (INC)',
+                note: 'Un prêt peut être possible dans d’autres cas : voir la page officielle.'
+            },
+            en: {
+                title: 'Training grants and loans',
+                summary:
+                    'Help for a first training, calculated mainly on the parents’ financial situation. The application is made online only, on BourseBE-Online, with a BE-Login account.',
+                conditions: [
+                    'Follow a recognised first training, with parents living in the canton of Bern',
+                    'Be unable to fund the training alone or with your parents’ help',
+                    'Apply by 30 June for training starting in the first half of the year, by 31 December for training starting in the second half'
+                ],
+                organization: 'Training grants section, Department of Education and Culture (INC)',
+                note: 'A loan may be possible in other cases: see the official page.'
+            }
+        }
+    },
+    {
+        id: 'be-social-assistance',
+        theme: 'social',
+        scope: 'BE',
+        url: 'https://www.gsi.be.ch/fr/start/themen/soziales/sozialhilfe.html',
+        verifiedAt: V,
+        texts: {
+            fr: {
+                title: 'Aide sociale bernoise',
+                summary:
+                    'Aide temporaire pour les personnes qui ne peuvent pas subvenir seules à leurs besoins. Elle est assurée par le service social de la commune de domicile ; l’Office de l’intégration et de l’action sociale supervise le dispositif.',
+                conditions: [
+                    'Être domicilié dans le canton de Berne',
+                    'Ne pas disposer de ressources suffisantes pour couvrir ses besoins',
+                    'S’adresser au service social de sa commune de domicile (les règles diffèrent pour l’asile et certaines admissions provisoires)'
+                ],
+                organization: 'Service social de votre commune ; Office de l’intégration et de l’action sociale (OIAS)'
+            },
+            en: {
+                title: 'Bern social assistance',
+                summary:
+                    'Temporary help for people who cannot meet their needs on their own. It is provided by the social service of your municipality of residence; the Integration and Social Action Office oversees the scheme.',
+                conditions: [
+                    'Live in the canton of Bern',
+                    'Not have sufficient resources to cover your needs',
+                    'Contact the social service of your municipality of residence (different rules apply to asylum and some provisional admissions)'
+                ],
+                organization: 'Your municipality’s social service; Integration and Social Action Office (OIAS)'
+            }
+        }
     }
 ];
+
+/** Toutes les aides 2026 : Confédération, cantons romands et Berne ci-dessus, autres cantons dans `aids-2026-cantons.ts`. */
+export const AIDS_2026: AidEntry[] = [...AIDS_2026_BASE, ...AIDS_2026_CANTONS];

@@ -7,8 +7,35 @@ export const AIDS_PATH = '/app/planning/aides';
 export const AID_THEMES = ['health', 'family', 'housing', 'education', 'unemployment', 'retirementDisability', 'social', 'energy'] as const;
 export type AidTheme = (typeof AID_THEMES)[number];
 
-/** Cantons dont les aides sont au catalogue (romands d’abord). Les autres cantons ne voient que les aides fédérales. */
-export const AID_CANTONS = ['JU', 'VD', 'NE', 'FR', 'GE'] as const;
+/** Les 26 cantons : romands d’abord, puis Berne (bilingue), le Valais et le Tessin, puis la Suisse alémanique. */
+export const AID_CANTONS = [
+    'JU',
+    'VD',
+    'NE',
+    'FR',
+    'GE',
+    'BE',
+    'VS',
+    'TI',
+    'ZH',
+    'LU',
+    'UR',
+    'SZ',
+    'OW',
+    'NW',
+    'GL',
+    'ZG',
+    'SO',
+    'BS',
+    'BL',
+    'SH',
+    'AR',
+    'AI',
+    'SG',
+    'GR',
+    'AG',
+    'TG'
+] as const;
 export type AidCanton = (typeof AID_CANTONS)[number];
 
 export const AID_FEDERAL = 'federal';
