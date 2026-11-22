@@ -11,6 +11,14 @@ import {
 } from '@/features/notifications/link';
 import { getFriendshipPublicId, normalizeAppNotification, parseNotificationMetadata } from '@/features/notifications/normalize';
 
+describe('rappel d’aide', () => {
+    it('garde le lien vers le catalogue avec son thème', () => {
+        const notification = { type: 'aidReminder', metadata: { key: 'aid:health:2026', theme: 'health' } };
+        expect(resolveNotificationLink('/app/planning/aides?theme=health', notification)).toBe('/app/planning/aides?theme=health');
+        expect(resolveNotificationLink('/app/planning/aides?theme=family', notification)).toBe('/app/planning/aides?theme=family');
+    });
+});
+
 describe('resolveNotificationLink', () => {
     it('mappe /security* vers /app/parametres/securite', () => {
         expect(resolveNotificationLink('/security')).toBe('/app/parametres/securite');

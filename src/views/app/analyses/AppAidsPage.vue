@@ -6,6 +6,7 @@
  */
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import AppPageShell from '@/components/shared/page-shell/AppPageShell.vue';
 import AppSelect from '@/components/shared/select/AppSelect.vue';
 import { legalParametersApi } from '@/features/aids/api';
@@ -20,18 +21,21 @@ import {
     resolveAids,
     type AidCantonFilter
 } from '@/features/aids/catalogue';
-import { AID_CANTONS, AID_FEDERAL, type AidEntry, type AidTheme, type LegalParameter } from '@/features/aids/types';
+import { AID_CANTONS, AID_FEDERAL, AID_THEMES, type AidEntry, type AidTheme, type LegalParameter } from '@/features/aids/types';
 import { useAuthStore } from '@/features/auth';
 
 const { t, locale } = useI18n();
 const auth = useAuthStore();
+const route = useRoute();
 
 const resolved = computed(() => resolveAids(new Date().getFullYear()));
 const entries = computed(() => resolved.value?.entries ?? []);
 const language = computed(() => aidLanguage(locale.value));
 
 const canton = ref<AidCantonFilter>(defaultAidCanton(auth.user?.canton));
-const theme = ref<AidTheme | 'all'>('all');
+/** Thème préchoisi par `?theme=` (lien d'un rappel), ignoré s'il n'existe pas au catalogue. */
+const requestedTheme = String(route.query.theme ?? '');
+const theme = ref<AidTheme | 'all'>((AID_THEMES as readonly string[]).includes(requestedTheme) ? (requestedTheme as AidTheme) : 'all');
 const query = ref('');
 const legal = ref<Map<string, LegalParameter>>(new Map());
 const legalYear = ref<number | null>(null);

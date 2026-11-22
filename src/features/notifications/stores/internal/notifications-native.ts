@@ -36,6 +36,7 @@ export function createNotificationsNative(state: NotificationsState) {
         if (isBudgetAlertNotificationType(type) && !settings.pushFinancialAlerts) return false;
         if (isSavingsGoalReachedNotificationType(type) && !settings.pushFinancialAlerts) return false;
         if (isSharedDebtNotificationType(type) && !settings.pushFinancialAlerts) return false;
+        if (type === 'aidReminder' && !settings.pushFinancialAlerts) return false;
         // Types finance futurs — coupe le chip / OS notify si désactivé.
         if (type.toLowerCase().includes('financial') && !settings.pushFinancialAlerts) return false;
         return true;
