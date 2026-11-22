@@ -12,6 +12,7 @@ import { INVESTMENTS_PATHS } from '@/features/investments/paths';
 import { DEBTS_PATHS } from '@/features/liabilities/paths';
 import { TAX_BASE } from '@/features/tax/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
+import { FORECASTS_PATH } from '@/features/forecasts/forecasts';
 import { MONTH_PATH } from '@/features/dashboard/month-page';
 import { SECURITY_PATHS, SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
 import {
@@ -184,6 +185,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     if (pathIs(path, DEBTS_PATHS.liabilities)) {
         return { openId: SHELL_NAV_IDS.wealth, activeId: SHELL_NAV_IDS.debts };
     }
+    if (pathIs(path, FORECASTS_PATH)) {
+        return { openId: SHELL_NAV_IDS.analytics, activeId: SHELL_NAV_IDS.forecasts };
+    }
     if (pathIs(path, TAX_BASE)) {
         return { openId: SHELL_NAV_IDS.analytics, activeId: SHELL_NAV_IDS.tax };
     }
@@ -286,7 +290,7 @@ export function useShellNav() {
     ]);
 
     const analyticsLeaves = computed<NavLeaf[]>(() => [
-        upcoming(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), ForecastsNavIcon),
+        live(SHELL_NAV_IDS.forecasts, t('nav.items.forecasts'), ForecastsNavIcon, FORECASTS_PATH),
         live(SHELL_NAV_IDS.tax, t('nav.items.tax'), TaxNavIcon, TAX_BASE)
     ]);
 

@@ -57,7 +57,7 @@ import {
     refreshBudgets,
     refreshGoals
 } from '@/features/demo/db';
-import { demoMonthInsights } from '@/features/demo/insights';
+import { demoMonthInsights, demoYearForecast } from '@/features/demo/insights';
 
 type DemoResult = { status: number; body: unknown };
 
@@ -219,6 +219,7 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
     if (path === '/api/tax-natures/suggest' && method === 'GET') return ok({ taxNature: null });
     if (path === '/api/insights/month' && method === 'GET')
         return ok(demoMonthInsights(db, query.get('month'), query.get('currency'), query.get('to')));
+    if (path === '/api/forecasts/year' && method === 'GET') return ok(demoYearForecast(db, query.get('year'), query.get('currency')));
     if (path === '/api/categories' && method === 'GET') return ok(listCategories(query));
     if (path === '/api/categories' && method === 'POST') return ok(createCategory(body as CreateCategoryPayload));
     const categoryId = match(path, '/api/categories/:id');

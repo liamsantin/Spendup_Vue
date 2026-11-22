@@ -1452,6 +1452,27 @@
             }
         }
     },
+    "forecastsPage": {
+        "title": "Forecasts",
+        "subtitle": "Your year, month by month: actuals for past months, forecasts for the months ahead.",
+        "previous": "Previous year",
+        "next": "Next year",
+        "current": "Current year",
+        "loadFailed": "Could not load the forecasts.",
+        "empty": "Nothing to show for this year: add transactions, recurring expenses or recurring income.",
+        "cumulative": "Running total since January",
+        "cumulativeShort": "Total",
+        "cumulativeHint": "Sum of each month’s remainder; this is not your account balance.",
+        "estimateNote": "Estimate: coming months rely on your recurring items, your budgets and the average of your last 3 months.",
+        "month": "Month",
+        "phase": { "passe": "Actual", "courant": "Current", "futur": "Forecast" },
+        "plannedShare": "{share} forecast",
+        "source": { "constate": "actual", "recurrence": "recurring", "budget": "budget", "moyenne": "3-month average" },
+        "incomeLine": "Income",
+        "uncategorized": "Uncategorized",
+        "monthEmpty": "Nothing for this month.",
+        "seeMonth": "See month details"
+    },
     "monthPage": {
         "title": "My month",
         "subtitle": "What came in, what went out and what is left to spend, month by month.",

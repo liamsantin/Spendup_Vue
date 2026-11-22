@@ -9,6 +9,7 @@ const OPEN_DEMO_PATHS = new Set([
     'finances/comptes',
     'finances/transactions',
     'finances/mois',
+    'analyses/previsions',
     'finances/imports',
     'finances/imports/modeles',
     'finances/imports/:publicId',

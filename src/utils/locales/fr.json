@@ -1452,6 +1452,27 @@
             }
         }
     },
+    "forecastsPage": {
+        "title": "Prévisions",
+        "subtitle": "Votre année, mois par mois : le réel pour les mois passés, le prévu pour les mois à venir.",
+        "previous": "Année précédente",
+        "next": "Année suivante",
+        "current": "Année en cours",
+        "loadFailed": "Impossible de charger les prévisions.",
+        "empty": "Rien à afficher pour cette année : ajoutez des transactions, des charges ou des revenus récurrents.",
+        "cumulative": "Cumul depuis janvier",
+        "cumulativeShort": "Cumul",
+        "cumulativeHint": "Somme des restes de chaque mois ; ce n’est pas le solde de vos comptes.",
+        "estimateNote": "Estimation : les mois à venir reposent sur vos récurrences, vos budgets et la moyenne de vos 3 derniers mois.",
+        "month": "Mois",
+        "phase": { "passe": "Réel", "courant": "En cours", "futur": "Prévu" },
+        "plannedShare": "dont {share} prévu",
+        "source": { "constate": "constaté", "recurrence": "récurrence", "budget": "budget", "moyenne": "moyenne 3 mois" },
+        "incomeLine": "Revenus",
+        "uncategorized": "Sans catégorie",
+        "monthEmpty": "Rien pour ce mois.",
+        "seeMonth": "Voir le détail du mois"
+    },
     "monthPage": {
         "title": "Mon mois",
         "subtitle": "Ce qui est entré, ce qui est sorti et ce qu’il reste à dépenser, mois par mois.",

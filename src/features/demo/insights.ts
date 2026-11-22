@@ -1,6 +1,7 @@
 import type { Category } from '@/features/categories/types';
 import type { MonthFlows, MonthInsights, MonthSpendingKind, OtherCurrencyFlows } from '@/features/dashboard/insights';
 import type { DemoDb } from '@/features/demo/db';
+import type { ForecastLine, ForecastMonth, ForecastSource, YearForecast } from '@/features/forecasts/forecasts';
 import { AppError } from '@/utils/errors/app-error';
 
 /** Mêmes statuts « ouverts » que l'API : échéance pas encore réglée ni annulée. */
@@ -173,4 +174,65 @@ export function demoMonthInsights(db: DemoDb, month: string | null, currency: st
             db.categories
         )
     };
+}
+
+/**
+ * `GET /api/forecasts/year` du mode démo : le constaté et les échéances ouvertes de chaque mois (calcul de M1).
+ * Approximation : pas de budget ni de moyenne pour les mois futurs, les échéances prévues sont regroupées en une ligne.
+ */
+export function demoYearForecast(db: DemoDb, year: string | null, currency: string | null): YearForecast {
+    const now = new Date();
+    const target = year && /^\d{4}$/.test(year) ? Number(year) : now.getFullYear();
+    if (target < 1900 || target > 2200) throw new AppError('Année invalide.', 400);
+    const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const names = new Map(db.categories.flatMap((root) => [root, ...(root.children ?? [])]).map((c) => [c.publicId, c.name]));
+    const kinds = categoryKinds(db.categories);
+    let main = currency;
+    let cumulative = 0;
+    const months: ForecastMonth[] = [];
+    for (let m = 1; m <= 12; m++) {
+        const key = `${target}-${String(m).padStart(2, '0')}`;
+        const insights = demoMonthInsights(db, key, main);
+        main = insights.currency;
+        const lines: ForecastLine[] = [];
+        const add = (partial: Partial<ForecastLine> & Pick<ForecastLine, 'direction' | 'amount' | 'source'>) =>
+            lines.push({
+                label: null,
+                categoryPublicId: null,
+                spendingKind: null,
+                recurrencePublicId: null,
+                budgetPublicId: null,
+                ...partial
+            });
+        if (insights.actual.income > 0) add({ direction: 'revenu', amount: insights.actual.income, source: 'constate' });
+        for (const row of insights.expenseByCategory) {
+            const kind = row.categoryPublicId ? kinds.get(row.categoryPublicId) : undefined;
+            add({
+                direction: 'depense',
+                amount: row.amount,
+                source: 'constate',
+                label: row.categoryPublicId ? (names.get(row.categoryPublicId) ?? null) : null,
+                categoryPublicId: row.categoryPublicId,
+                spendingKind: kind && kind !== 'nonClasse' ? kind : null
+            });
+        }
+        if (insights.planned.income > 0) add({ direction: 'revenu', amount: insights.planned.income, source: 'recurrence' });
+        if (insights.planned.expense > 0) add({ direction: 'depense', amount: insights.planned.expense, source: 'recurrence' });
+        cumulative = round(cumulative + insights.total.balance);
+        const sum = (source: ForecastSource, income: boolean) =>
+            round(lines.filter((l) => l.source === source && (l.direction === 'revenu') === income).reduce((s, l) => s + l.amount, 0));
+        months.push({
+            month: key,
+            phase: key < currentKey ? 'passe' : key === currentKey ? 'courant' : 'futur',
+            flows: insights.total,
+            cumulativeBalance: cumulative,
+            sources: (['constate', 'recurrence', 'budget', 'moyenne'] as const).map((source) => ({
+                source,
+                income: sum(source, true),
+                expense: sum(source, false)
+            })),
+            lines
+        });
+    }
+    return { year: target, currency: main ?? 'CHF', months };
 }
