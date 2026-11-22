@@ -195,6 +195,11 @@ const AppRoutes: RouteRecordRaw = {
             component: () => import('@/views/app/analyses/AppRepaymentSimulatorPage.vue')
         },
         {
+            name: 'AppAids',
+            path: 'planning/aides',
+            component: () => import('@/views/app/analyses/AppAidsPage.vue')
+        },
+        {
             name: 'AppCompoundInterest',
             path: 'planning/interets-composes',
             component: () => import('@/views/app/analyses/AppCompoundInterestPage.vue')

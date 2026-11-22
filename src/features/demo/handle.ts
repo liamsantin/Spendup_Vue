@@ -67,6 +67,7 @@ import {
     demoCompoundUpdate
 } from '@/features/demo/compound-interest';
 import { demoLamalCompare, demoLamalContext } from '@/features/demo/lamal';
+import { demoLegalParameters } from '@/features/demo/legal-parameters';
 import { demoRepaymentSimulation } from '@/features/demo/repayment';
 import { demoSavingsProjection } from '@/features/demo/savings-projection';
 import type { LamalComparisonRequest } from '@/features/insurance/lamal';
@@ -237,6 +238,8 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
         return ok(demoLamalContext(db, query.get('year') ? Number(query.get('year')) : null));
     if (path === '/api/insurance/lamal-comparison' && method === 'POST') return ok(demoLamalCompare(body as LamalComparisonRequest));
     if (path === '/api/liabilities/repayment-simulation' && method === 'POST') return ok(demoRepaymentSimulation(body as RepaymentRequest));
+    if (path === '/api/legal-parameters' && method === 'GET')
+        return ok(demoLegalParameters(query.get('year') ? Number(query.get('year')) : null));
     if (path === '/api/compound-interest/simulate' && method === 'POST')
         return ok(demoCompoundSimulate(body as Parameters<typeof demoCompoundSimulate>[0]));
     if (path === '/api/compound-interest/calculations' && method === 'GET') return ok(demoCompoundList());
