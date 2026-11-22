@@ -13,6 +13,7 @@ import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAssetsStore } from '@/features/assets';
 import { assetDetailPath } from '@/features/assets/paths';
 import { formatCalendarDate, formatInterestRate, formatLiabilityAmount, formatPercentRepaid } from '@/features/liabilities/format';
+import { REPAYMENT_SIMULATOR_PATH } from '@/features/liabilities/repayment';
 import { useLiabilitiesStore } from '@/features/liabilities/stores/liabilities-store';
 import LiabilityFormModal from '@/features/liabilities/components/modals/LiabilityFormModal.vue';
 import LiabilityRemainingAmountModal from '@/features/liabilities/components/modals/LiabilityRemainingAmountModal.vue';
@@ -247,6 +248,14 @@ defineExpose({ openEdit, openRemaining, reload: loadLiability });
                         <span v-else>{{ fact.value }}</span>
                     </div>
                 </div>
+
+                <p v-if="liability.status === 'active' && liability.remainingAmount > 0">
+                    <RouterLink
+                        :to="{ path: REPAYMENT_SIMULATOR_PATH, query: { passif: liability.publicId } }"
+                        class="su-link debt-detail__link"
+                        >{{ t('repaymentSimulator.simulate') }}</RouterLink
+                    >
+                </p>
 
                 <p v-if="liability.recurringExpensePublicId" class="debt-detail__auto">{{ t('liabilitiesPage.detail.autoRemaining') }}</p>
             </div>

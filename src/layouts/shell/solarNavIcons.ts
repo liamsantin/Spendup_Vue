@@ -54,6 +54,7 @@ export { CourseUpIcon as ForecastsNavIcon } from '@solar-icons/vue/linear/course
 export { BillCheckIcon as TaxNavIcon } from '@solar-icons/vue/linear/bill-check';
 export { BillListIcon as TaxProvisionNavIcon } from '@solar-icons/vue/linear/bill-list';
 export { HeartPulseIcon as LamalNavIcon } from '@solar-icons/vue/linear/heart-pulse';
+export { CalculatorMinimalisticIcon as RepaymentNavIcon } from '@solar-icons/vue/linear/calculator-minimalistic';
 export { UsersGroupTwoRoundedIcon as FriendsNavIcon } from '@solar-icons/vue/linear/users-group-two-rounded';
 export { HomeSmileIcon as HouseholdNavIcon } from '@solar-icons/vue/linear/home-smile';
 export { UserCircleIcon as ProfileNavIcon } from '@solar-icons/vue/linear/user-circle';
