@@ -14,6 +14,7 @@ import { TAX_BASE, TAX_PROVISION_PATH } from '@/features/tax/paths';
 import { RECURRENCES_PATHS } from '@/features/recurring-payments/paths';
 import { FORECASTS_PATH } from '@/features/forecasts/forecasts';
 import { LAMAL_COMPARISON_PATH } from '@/features/insurance/lamal';
+import { COMPOUND_INTEREST_PATH } from '@/features/compound-interest/types';
 import { REPAYMENT_SIMULATOR_PATH } from '@/features/liabilities/repayment';
 import { MONTH_PATH } from '@/features/dashboard/month-page';
 import { SECURITY_PATHS, SETTINGS_PATHS } from '@/features/user-settings/settings-paths';
@@ -68,6 +69,7 @@ import {
     ToolsNavIcon,
     LamalNavIcon,
     RepaymentNavIcon,
+    CompoundInterestNavIcon,
     TiersNavIcon,
     TransactionsNavIcon,
     TransparencyNavIcon,
@@ -112,6 +114,7 @@ export const SHELL_NAV_IDS = {
     taxProvision: 'tax-provision',
     lamal: 'lamal',
     repayment: 'repayment',
+    compoundInterest: 'compoundInterest',
     tools: 'tools',
     network: 'network',
     friends: 'friends',
@@ -193,6 +196,9 @@ export function idsFromPath(path: string): { openId: string | null; activeId: st
     }
     if (pathIs(path, REPAYMENT_SIMULATOR_PATH)) {
         return { openId: SHELL_NAV_IDS.tools, activeId: SHELL_NAV_IDS.repayment };
+    }
+    if (pathIs(path, COMPOUND_INTEREST_PATH)) {
+        return { openId: SHELL_NAV_IDS.tools, activeId: SHELL_NAV_IDS.compoundInterest };
     }
     if (pathIs(path, TAX_PROVISION_PATH)) {
         return { openId: SHELL_NAV_IDS.tools, activeId: SHELL_NAV_IDS.taxProvision };
@@ -313,7 +319,8 @@ export function useShellNav() {
     const toolsLeaves = computed<NavLeaf[]>(() => [
         live(SHELL_NAV_IDS.taxProvision, t('nav.items.taxProvision'), TaxProvisionNavIcon, TAX_PROVISION_PATH),
         live(SHELL_NAV_IDS.lamal, t('nav.items.lamal'), LamalNavIcon, LAMAL_COMPARISON_PATH),
-        live(SHELL_NAV_IDS.repayment, t('nav.items.repayment'), RepaymentNavIcon, REPAYMENT_SIMULATOR_PATH)
+        live(SHELL_NAV_IDS.repayment, t('nav.items.repayment'), RepaymentNavIcon, REPAYMENT_SIMULATOR_PATH),
+        live(SHELL_NAV_IDS.compoundInterest, t('nav.items.compoundInterest'), CompoundInterestNavIcon, COMPOUND_INTEREST_PATH)
     ]);
 
     const wealthLeaves = computed<NavLeaf[]>(() => [

@@ -36,7 +36,8 @@ const OPEN_DEMO_PATHS = new Set([
     'planning/impots/:publicId?',
     'planning/provision-impots',
     'planning/comparateur-lamal',
-    'planning/simulateur-remboursement'
+    'planning/simulateur-remboursement',
+    'planning/interets-composes'
 ]);
 
 function toDemoChild(child: RouteRecordRaw): RouteRecordRaw {

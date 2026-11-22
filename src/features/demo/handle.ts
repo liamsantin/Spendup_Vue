@@ -58,6 +58,14 @@ import {
     refreshGoals
 } from '@/features/demo/db';
 import { demoMonthInsights, demoYearForecast } from '@/features/demo/insights';
+import {
+    demoCompoundCreate,
+    demoCompoundGet,
+    demoCompoundList,
+    demoCompoundRemove,
+    demoCompoundSimulate,
+    demoCompoundUpdate
+} from '@/features/demo/compound-interest';
 import { demoLamalCompare, demoLamalContext } from '@/features/demo/lamal';
 import { demoRepaymentSimulation } from '@/features/demo/repayment';
 import { demoSavingsProjection } from '@/features/demo/savings-projection';
@@ -229,6 +237,18 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
         return ok(demoLamalContext(db, query.get('year') ? Number(query.get('year')) : null));
     if (path === '/api/insurance/lamal-comparison' && method === 'POST') return ok(demoLamalCompare(body as LamalComparisonRequest));
     if (path === '/api/liabilities/repayment-simulation' && method === 'POST') return ok(demoRepaymentSimulation(body as RepaymentRequest));
+    if (path === '/api/compound-interest/simulate' && method === 'POST')
+        return ok(demoCompoundSimulate(body as Parameters<typeof demoCompoundSimulate>[0]));
+    if (path === '/api/compound-interest/calculations' && method === 'GET') return ok(demoCompoundList());
+    if (path === '/api/compound-interest/calculations' && method === 'POST')
+        return ok(demoCompoundCreate(body as Parameters<typeof demoCompoundCreate>[0]));
+    const compoundId = match(path, '/api/compound-interest/calculations/:id');
+    if (compoundId && method === 'GET') return ok(demoCompoundGet(compoundId.id));
+    if (compoundId && method === 'PUT') return ok(demoCompoundUpdate(compoundId.id, body as Parameters<typeof demoCompoundUpdate>[1]));
+    if (compoundId && method === 'DELETE') {
+        demoCompoundRemove(compoundId.id);
+        return noContent();
+    }
     if (path === '/api/categories' && method === 'GET') return ok(listCategories(query));
     if (path === '/api/categories' && method === 'POST') return ok(createCategory(body as CreateCategoryPayload));
     const categoryId = match(path, '/api/categories/:id');

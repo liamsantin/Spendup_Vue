@@ -12,6 +12,7 @@ import type { AppNotification } from '@/features/notifications/types';
 import type { PaymentMethod } from '@/features/payment-methods/types';
 import type { RecurringDue, RecurringExpense, RecurringIncome } from '@/features/recurring-payments/types';
 import type { SavingsGoal, SavingsGoalStatus } from '@/features/savings-goals/types';
+import type { CompoundCalculation } from '@/features/compound-interest/types';
 import type { Instrument, InvestmentOperation } from '@/features/investments/types';
 import type { Liability } from '@/features/liabilities/types';
 import type { PersonalLoan } from '@/features/personal-loans/types';
@@ -72,6 +73,8 @@ export type DemoDb = {
     categories: Category[];
     budgets: Budget[];
     goals: SavingsGoal[];
+    /** Calculs d’intérêts composés enregistrés (paramètres seulement). */
+    compoundCalculations: CompoundCalculation[];
     assets: Asset[];
     assetValuations: Record<string, AssetValuation[]>;
     assetMileages: Record<string, VehicleMileage[]>;
@@ -891,6 +894,7 @@ export function createDemoDb(): DemoDb {
             ]
         },
         goals: [],
+        compoundCalculations: [],
         assetValuations: {
             ASTCAR1: [{ valuationDate: '2026-10-01', value: 18500, source: 'manuelle', createdAt: NOW, updatedAt: null }],
             ASTFLAT: [{ valuationDate: '2026-09-01', value: 890000, source: 'manuelle', createdAt: NOW, updatedAt: null }]
