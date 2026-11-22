@@ -294,9 +294,11 @@ onUnmounted(() => {
 <style scoped>
 .hsearch {
     position: relative;
-    flex: 1 1 320px;
+    /* champ sans bordure : sa largeur se voit à l'écart avec « + Nouveau », on la garde
+       proche du texte pour que le bouton paraisse collé à la recherche */
+    flex: 0 1 280px;
     min-width: 0;
-    max-width: 440px;
+    max-width: 280px;
 }
 
 .hsearch__field {
