@@ -25,6 +25,7 @@ import {
     type YearForecast
 } from '@/features/forecasts/forecasts';
 import { recurrenceDetailPath } from '@/features/recurring-payments/paths';
+import TaxProvisionNote from '@/features/tax/components/TaxProvisionNote.vue';
 import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
 
 const { t, locale } = useI18n();
@@ -236,6 +237,7 @@ function monthLink(month: ForecastMonth) {
                             </table>
                         </div>
                     </section>
+                    <TaxProvisionNote />
                 </template>
             </template>
         </div>

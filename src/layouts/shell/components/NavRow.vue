@@ -76,7 +76,9 @@ function onRowClick() {
             :aria-disabled="item.disabled ? 'true' : undefined"
             @click="onRowClick"
         >
-            <span class="row__icon"><ShellNavIcon :icon="item.icon" :size="compact ? 18 : 16" /></span>
+            <span class="row__icon">
+                <ShellNavIcon :icon="isCurrent && item.activeIcon ? item.activeIcon : item.icon" :size="compact ? 18 : 16" />
+            </span>
             <span class="row__label">{{ item.label }}</span>
             <span v-if="item.badge" class="row__badge">{{ item.badge }}</span>
             <span v-else-if="item.caption" class="row__caption">{{ item.caption }}</span>

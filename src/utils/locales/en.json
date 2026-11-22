@@ -50,13 +50,11 @@
             "friends": "Friends",
             "finances": "Finances",
             "recurrences": "Recurring",
-            "gestion": "Management",
+            "gestion": "Reference data",
             "planning": "Planning",
             "wealth": "Wealth",
-            "analytics": "Analytics",
             "network": "Network",
-            "settings": "Settings",
-            "upcoming": "Coming up"
+            "settings": "Settings"
         },
         "items": {
             "dashboard": "Dashboard",
@@ -88,6 +86,7 @@
             "realEstate": "Real estate",
             "debts": "Debts",
             "forecasts": "Forecasts",
+            "taxProvision": "Tax provision",
             "tax": "Tax",
             "profile": "Profile",
             "preferences": "Preferences",
@@ -1451,6 +1450,34 @@
                 "colorInvalid": "Color must be a hex code (#RGB or #RRGGBB)."
             }
         }
+    },
+    "taxProvision": {
+        "title": "Tax provision",
+        "subtitle": "How much to set aside each month for your taxes.",
+        "pageSubtitle": "An estimate of what to set aside each month to pay your taxes.",
+        "howTitle": "How it is established",
+        "howDecision": "The base is the total tax (cantonal and federal) of your latest assessment, as notified by the authority.",
+        "howMonthly": "The monthly provision is that base divided by 12. What remains for the year is the base minus the installments already paid.",
+        "howTyped": "Without an assessment, you can enter a yearly tax amount yourself: it is used as the base until an assessment is recorded.",
+        "howNever": "Spendup does not calculate any tax: only amounts you enter or that the authority notified are used.",
+        "seeReturn": "See the {year} return",
+        "goToTax": "Record a tax assessment",
+        "perMonth": "per month",
+        "basisDecision": "Estimate based on your latest assessment ({year}): {amount} a year.",
+        "basisTyped": "Estimate based on the yearly amount you entered: {amount} a year.",
+        "paid": "Share of the year already paid",
+        "paidRemaining": "Already paid: {paid} · Remaining: {remaining}",
+        "none": "No tax assessment recorded. Enter a yearly tax amount to get a monthly provision.",
+        "referenceLabel": "Yearly tax amount (CHF)",
+        "referencePlaceholder": "E.g. 9,711",
+        "save": "Save",
+        "clear": "Clear",
+        "invalid": "Enter a positive amount.",
+        "saveFailed": "The operation failed. Try again.",
+        "loadFailed": "The provision could not be loaded.",
+        "estimateNote": "Estimate, not binding: this is neither a calculated tax nor an amount set by the authority.",
+        "note": "Estimated tax provision: {amount} per month (not included in the totals).",
+        "noteLink": "See my provision"
     },
     "forecastsPage": {
         "title": "Forecasts",

@@ -50,13 +50,11 @@
             "friends": "Amis",
             "finances": "Finances",
             "recurrences": "Récurrences",
-            "gestion": "Gestion",
+            "gestion": "Référentiels",
             "planning": "Planification",
             "wealth": "Patrimoine",
-            "analytics": "Analyses",
             "network": "Réseau",
-            "settings": "Paramètres",
-            "upcoming": "À venir"
+            "settings": "Paramètres"
         },
         "items": {
             "dashboard": "Tableau de bord",
@@ -88,7 +86,8 @@
             "realEstate": "Immobilier",
             "debts": "Dettes",
             "forecasts": "Prévisions",
-            "tax": "Fiscalité",
+            "taxProvision": "Provision d'impôts",
+            "tax": "Impôts",
             "profile": "Profil",
             "preferences": "Préférences",
             "notificationSettings": "Notifications",
@@ -1451,6 +1450,34 @@
                 "colorInvalid": "La couleur doit être un code hexadécimal (#RGB ou #RRGGBB)."
             }
         }
+    },
+    "taxProvision": {
+        "title": "Provision d'impôts",
+        "subtitle": "Combien mettre de côté chaque mois pour vos impôts.",
+        "pageSubtitle": "Une estimation de ce qu'il faut mettre de côté chaque mois pour payer vos impôts.",
+        "howTitle": "Comment c'est établi",
+        "howDecision": "La base est le total d'impôt (cantonal et fédéral) de votre dernière décision de taxation, tel que l'administration l'a notifié.",
+        "howMonthly": "La provision mensuelle est cette base divisée par 12. Le restant de l'année est la base moins les tranches déjà payées.",
+        "howTyped": "Sans décision, vous pouvez saisir vous-même un montant annuel d'impôts : il sert de base tant qu'aucune décision n'est enregistrée.",
+        "howNever": "Spendup ne calcule aucun impôt : seuls les montants que vous saisissez ou que l'administration a notifiés sont utilisés.",
+        "seeReturn": "Voir la déclaration {year}",
+        "goToTax": "Enregistrer une décision de taxation",
+        "perMonth": "par mois",
+        "basisDecision": "Estimation fondée sur votre dernière taxation ({year}) : {amount} par an.",
+        "basisTyped": "Estimation fondée sur le montant annuel que vous avez saisi : {amount} par an.",
+        "paid": "Part de l'année déjà payée",
+        "paidRemaining": "Déjà payé : {paid} · Restant : {remaining}",
+        "none": "Aucune décision de taxation enregistrée. Saisissez un montant annuel d'impôts pour obtenir une provision mensuelle.",
+        "referenceLabel": "Montant annuel d'impôts (CHF)",
+        "referencePlaceholder": "Ex. 9 711",
+        "save": "Enregistrer",
+        "clear": "Effacer",
+        "invalid": "Saisissez un montant positif.",
+        "saveFailed": "L'opération a échoué. Réessayez.",
+        "loadFailed": "La provision n'a pas pu être chargée.",
+        "estimateNote": "Estimation, non contractuelle : ce n'est pas un impôt calculé ni un montant fixé par l'administration.",
+        "note": "Provision d'impôts estimée : {amount} par mois (non incluse dans les totaux).",
+        "noteLink": "Voir ma provision"
     },
     "forecastsPage": {
         "title": "Prévisions",

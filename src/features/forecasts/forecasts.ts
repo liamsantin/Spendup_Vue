@@ -40,7 +40,7 @@ export const forecastsApi = {
 };
 
 /** Page « Prévisions » (budget prévisionnel de l’année, `?y=YYYY`). */
-export const FORECASTS_PATH = '/app/analyses/previsions';
+export const FORECASTS_PATH = '/app/planning/previsions';
 
 /** Année lue dans l’adresse ; absente ou invalide = année en cours. */
 export function parseYearQuery(raw: unknown, today = new Date()): number {

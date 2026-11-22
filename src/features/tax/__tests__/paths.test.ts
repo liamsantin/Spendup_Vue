@@ -6,7 +6,7 @@ describe('tax paths', () => {
         const id = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
         expect(taxDetailPath(id)).toBe(`${TAX_BASE}/${id}`);
         expect(taxPublicIdFromPath(taxDetailPath(id))).toBe(id);
-        expect(taxPublicIdFromPath(`/demo/analyses/impots/${id}`)).toBe(id);
+        expect(taxPublicIdFromPath(`/demo/planning/impots/${id}`)).toBe(id);
         expect(taxPublicIdFromPath(TAX_BASE)).toBeNull();
     });
 

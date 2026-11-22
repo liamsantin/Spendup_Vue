@@ -77,12 +77,12 @@ describe('idsFromPath', () => {
             openId: SHELL_NAV_IDS.network,
             activeId: SHELL_NAV_IDS.friends
         });
-        expect(idsFromPath('/app/analyses/impots')).toEqual({
-            openId: SHELL_NAV_IDS.analytics,
+        expect(idsFromPath('/app/planning/impots')).toEqual({
+            openId: SHELL_NAV_IDS.planning,
             activeId: SHELL_NAV_IDS.tax
         });
-        expect(idsFromPath('/demo/analyses/impots/abc')).toEqual({
-            openId: SHELL_NAV_IDS.analytics,
+        expect(idsFromPath('/demo/planning/impots/abc')).toEqual({
+            openId: SHELL_NAV_IDS.planning,
             activeId: SHELL_NAV_IDS.tax
         });
     });

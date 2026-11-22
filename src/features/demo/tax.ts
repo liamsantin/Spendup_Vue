@@ -39,6 +39,7 @@ import type {
     UpsertTaxEntryPayload
 } from '@/features/tax/types';
 import { createPublicId, demoDb } from '@/features/demo/db';
+import type { TaxProvision } from '@/features/tax/provision';
 
 type TaxBucket = 'income' | 'deduction' | 'asset' | 'liability' | 'none';
 
@@ -1617,8 +1618,77 @@ function routeAssessments(method: string, path: string, body: unknown): TaxResul
 }
 
 /** Routes `/api/tax-returns`. `null` si le chemin n’est pas concerné. */
+/**
+ * `GET /api/tax-returns/provision` de la démo : mêmes règles que l'API. Dossier de l'année la plus récente qui a une décision ;
+ * par ressort, le document le plus récent (jamais le décompte intermédiaire) ; provision = total / 12.
+ */
+export function demoTaxProvision(): TaxProvision {
+    const saved = demoDb().taxProvisionReference;
+    const reference = saved && saved > 0 ? saved : null;
+    const candidates = store()
+        .map((tax) => ({
+            tax,
+            documents: assessmentsOf(tax).filter((a) => a.kind !== 'intermediateStatement' && a.totalTax !== null)
+        }))
+        .filter((c) => c.documents.length > 0)
+        .sort((a, b) => b.tax.year - a.tax.year);
+    const chosen = candidates[0];
+    if (!chosen) {
+        return reference === null
+            ? {
+                  source: 'none',
+                  referenceYear: null,
+                  returnPublicId: null,
+                  annualAmount: null,
+                  monthlyAmount: null,
+                  paid: 0,
+                  remaining: 0,
+                  reference,
+                  currency: 'CHF'
+              }
+            : {
+                  source: 'saisie',
+                  referenceYear: null,
+                  returnPublicId: null,
+                  annualAmount: reference,
+                  monthlyAmount: round(reference / 12),
+                  paid: 0,
+                  remaining: reference,
+                  reference,
+                  currency: 'CHF'
+              };
+    }
+    const latest = new Map<string, DemoAssessment>();
+    for (const document of chosen.documents) {
+        const current = latest.get(document.competence);
+        if (!current || document.issuedAt >= current.issuedAt) latest.set(document.competence, document);
+    }
+    const annual = round([...latest.values()].reduce((sum, document) => sum + (document.totalTax ?? 0), 0));
+    const paid = toInstallments(chosen.tax).paid;
+    return {
+        source: 'decision',
+        referenceYear: chosen.tax.year,
+        returnPublicId: chosen.tax.publicId,
+        annualAmount: annual,
+        monthlyAmount: round(annual / 12),
+        paid,
+        remaining: Math.max(0, round(annual - paid)),
+        reference,
+        currency: 'CHF'
+    };
+}
+
 export function routeTax(method: string, path: string, body: unknown, query?: URLSearchParams): TaxResult {
     if (!path.startsWith('/api/tax-returns')) return null;
+
+    if (path === '/api/tax-returns/provision' && method === 'GET') return ok(demoTaxProvision());
+    if (path === '/api/tax-returns/provision/reference' && method === 'PUT') {
+        const amount = (body as { amount?: number | null } | undefined)?.amount ?? null;
+        if (amount !== null && (typeof amount !== 'number' || !Number.isFinite(amount) || amount < 0))
+            invalid('Le montant ne peut pas être négatif.');
+        demoDb().taxProvisionReference = amount !== null && amount > 0 ? round(amount) : null;
+        return ok(demoTaxProvision());
+    }
 
     if (path === '/api/tax-returns' && method === 'GET') {
         const items = [...store()].sort((a, b) => b.year - a.year).map(toListItem);

@@ -45,12 +45,12 @@ describe('adresse de la page Prévisions', () => {
     });
 
     it('place l’entrée dans le menu Analyses', () => {
-        expect(idsFromPath('/app/analyses/previsions')).toEqual({ openId: 'analytics', activeId: 'forecasts' });
-        expect(idsFromPath('/demo/analyses/previsions').activeId).toBe('forecasts');
+        expect(idsFromPath('/app/planning/previsions')).toEqual({ openId: 'planning', activeId: 'forecasts' });
+        expect(idsFromPath('/demo/planning/previsions').activeId).toBe('forecasts');
     });
 
     it('ouvre la page dans la démo', () => {
-        const page = (DemoRoutes.children ?? []).find((child) => child.path === 'analyses/previsions');
+        const page = (DemoRoutes.children ?? []).find((child) => child.path === 'planning/previsions');
         expect(page?.name).toBe('DemoAppForecasts');
         expect(String(page?.component)).not.toContain('DemoLockedPage');
     });

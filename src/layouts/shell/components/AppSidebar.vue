@@ -142,23 +142,24 @@ void props;
                             @tab="openTab"
                         />
                     </ul>
-                </div>
 
-                <div v-if="bottomItems.length" class="rail__bottom">
-                    <ul class="nav nav--bottom">
-                        <NavRow
-                            v-for="(item, i) in bottomItems"
-                            :key="item.id"
-                            :item="item"
-                            :open="openId === item.id"
-                            :active-id="activeId"
-                            :expanded="expandedRail"
-                            :index="i + items.length"
-                            @toggle="toggleItem"
-                            @select="selectLeaf"
-                            @tab="openTab"
-                        />
-                    </ul>
+                    <!-- dans la zone défilante : une section ouverte ne rogne plus les autres, tout défile d'un bloc -->
+                    <div v-if="bottomItems.length" class="rail__bottom">
+                        <ul class="nav nav--bottom">
+                            <NavRow
+                                v-for="(item, i) in bottomItems"
+                                :key="item.id"
+                                :item="item"
+                                :open="openId === item.id"
+                                :active-id="activeId"
+                                :expanded="expandedRail"
+                                :index="i + items.length"
+                                @toggle="toggleItem"
+                                @select="selectLeaf"
+                                @tab="openTab"
+                            />
+                        </ul>
+                    </div>
                 </div>
             </nav>
         </div>
@@ -269,10 +270,10 @@ void props;
 .rail__scroll {
     flex: 1;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     scrollbar-width: none;
-    /* le filet du dernier groupe ne doit pas se coller au bord */
-    padding-bottom: 24px;
 }
 
 .rail__scroll::-webkit-scrollbar {
@@ -288,6 +289,7 @@ void props;
 .rail__bottom {
     flex: none;
     margin-top: auto;
+    /* garde un espace entre la dernière section et le filet quand tout défile */
     padding-top: 20px;
     border-top: 1px solid var(--line);
 }

@@ -9,7 +9,7 @@ const OPEN_DEMO_PATHS = new Set([
     'finances/comptes',
     'finances/transactions',
     'finances/mois',
-    'analyses/previsions',
+    'planning/previsions',
     'finances/imports',
     'finances/imports/modeles',
     'finances/imports/:publicId',
@@ -33,7 +33,8 @@ const OPEN_DEMO_PATHS = new Set([
     'patrimoine/dettes/prets/:publicId?',
     'patrimoine/dettes/amis/:publicId?',
     'patrimoine/dettes/:publicId?',
-    'analyses/impots/:publicId?'
+    'planning/impots/:publicId?',
+    'planning/provision-impots'
 ]);
 
 function toDemoChild(child: RouteRecordRaw): RouteRecordRaw {

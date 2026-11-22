@@ -176,12 +176,17 @@ const AppRoutes: RouteRecordRaw = {
         },
         {
             name: 'AppForecasts',
-            path: 'analyses/previsions',
+            path: 'planning/previsions',
             component: () => import('@/views/app/analyses/AppForecastsPage.vue')
         },
         {
+            name: 'AppTaxProvision',
+            path: 'planning/provision-impots',
+            component: () => import('@/views/app/analyses/AppTaxProvisionPage.vue')
+        },
+        {
             name: 'AppTax',
-            path: 'analyses/impots/:publicId?',
+            path: 'planning/impots/:publicId?',
             component: () => import('@/views/app/analyses/AppTaxPage.vue')
         },
         {

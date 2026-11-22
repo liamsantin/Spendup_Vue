@@ -13,8 +13,11 @@ function accountFocusPath(publicId: string): string {
     return `${ACCOUNTS_PAGE}?account=${encodeURIComponent(publicId)}`;
 }
 
-/** Brouillon de déclaration : `/app/analyses/impots`. */
-export const TAX_BASE = '/app/analyses/impots';
+/** Provision d'impôt mensuelle : `/app/planning/provision-impots`. */
+export const TAX_PROVISION_PATH = '/app/planning/provision-impots';
+
+/** Brouillon de déclaration : `/app/planning/impots`. */
+export const TAX_BASE = '/app/planning/impots';
 
 export function taxDetailPath(publicId: string): string {
     const id = publicId.trim();

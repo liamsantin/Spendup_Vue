@@ -65,6 +65,8 @@ export const DEMO_BANKS: Bank[] = [
 
 export type DemoDb = {
     settings: UserSettings;
+    /** Montant annuel d'impôts saisi (provision d'impôt) quand aucune décision n'existe. */
+    taxProvisionReference?: number | null;
     accounts: Account[];
     transactions: Transaction[];
     categories: Category[];

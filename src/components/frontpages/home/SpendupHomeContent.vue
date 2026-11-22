@@ -377,7 +377,7 @@ const demoPoints = [
                     <div class="tax-note__copy">
                         <h3>Un brouillon de travail, pas un logiciel officiel.</h3>
                         <div class="s-actions">
-                            <v-btn color="white" size="large" flat class="text-none" to="/demo/analyses/impots">
+                            <v-btn color="white" size="large" flat class="text-none" to="/demo/planning/impots">
                                 Essayer dans la démo
                                 <ArrowRightIcon size="18" class="ms-3" />
                             </v-btn>

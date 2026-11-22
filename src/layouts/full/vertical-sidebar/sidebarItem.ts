@@ -21,7 +21,7 @@ import {
     TiersNavIcon,
     TagsNavIcon
 } from '@/layouts/shell/solarNavIcons';
-// Les icônes de thème (parents) sont déjà en bold-duotone via solarNavIcons.
+// Les icônes de thème (parents) sont en trait (« linear ») via solarNavIcons.
 
 export const THEME_RAIL_WIDTH = 80;
 export const CONTENT_SIDEBAR_WIDTH = 250;

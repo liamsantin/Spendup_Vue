@@ -3,9 +3,9 @@ import { readReturnTo, withReturnTo } from '@/utils/helpers/navigation-helpers';
 
 describe('retour vers la page d’origine', () => {
     it('retient la page d’origine dans l’état de navigation, pas dans l’URL', () => {
-        const to = withReturnTo('/app/finances/recurrences/revenus/RIN1', '/app/analyses/impots/TAX1');
-        expect(to).toEqual({ path: '/app/finances/recurrences/revenus/RIN1', state: { returnTo: '/app/analyses/impots/TAX1' } });
-        expect(readReturnTo((to as { state: unknown }).state)).toBe('/app/analyses/impots/TAX1');
+        const to = withReturnTo('/app/finances/recurrences/revenus/RIN1', '/app/planning/impots/TAX1');
+        expect(to).toEqual({ path: '/app/finances/recurrences/revenus/RIN1', state: { returnTo: '/app/planning/impots/TAX1' } });
+        expect(readReturnTo((to as { state: unknown }).state)).toBe('/app/planning/impots/TAX1');
     });
 
     it('ne renvoie rien sans origine', () => {

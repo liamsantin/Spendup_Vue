@@ -72,4 +72,6 @@ export interface NavItem extends NavLeaf {
     detail?: NavGroup[];
     /** Section annoncée : visuellement en retrait du menu principal. */
     muted?: boolean;
+    /** Variante pleine de l'icône, affichée quand la section est la page courante. */
+    activeIcon?: NavIcon;
 }

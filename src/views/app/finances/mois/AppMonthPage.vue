@@ -8,6 +8,7 @@ import MonthOverviewContent from '@/features/dashboard/components/MonthOverviewC
 import { monthPageLocation, parseMonthQuery } from '@/features/dashboard/month-page';
 import { useCategoriesStore } from '@/features/categories/stores/categories-store';
 import { useUserSettingsStore } from '@/features/user-settings/stores/user-settings-store';
+import TaxProvisionNote from '@/features/tax/components/TaxProvisionNote.vue';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -37,5 +38,6 @@ onMounted(() => {
 <template>
     <AppPageShell :title="t('monthPage.title')" :subtitle="t('monthPage.subtitle')">
         <MonthOverviewContent :month="month" :hide-amounts="hideAmounts" :find-category="findCategory" @update:month="setMonth" />
+        <TaxProvisionNote />
     </AppPageShell>
 </template>
