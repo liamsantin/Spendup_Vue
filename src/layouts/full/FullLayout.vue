@@ -13,7 +13,7 @@ import { demoActive } from '@/features/demo/session';
 const appSettings = useAppSettingsStore();
 useIdleLogout();
 
-const { open, openId, activeId, primaryNav, secondaryNav, headerLinks, headerMenus, unreadCount, title } = useShellNav();
+const { open, openId, activeId, primaryNav, secondaryNav, headerLinks, headerMenus, unreadCount, title, setNavOrder } = useShellNav();
 </script>
 
 <template>
@@ -33,6 +33,7 @@ const { open, openId, activeId, primaryNav, secondaryNav, headerLinks, headerMen
                 :header-links="headerLinks"
                 :header-menus="headerMenus"
                 :title="title"
+                @reorder="setNavOrder"
             >
                 <div class="page-content" :class="appSettings.boxed ? 'maxWidth' : ''">
                     <DemoBanner v-if="demoActive" />

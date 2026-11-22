@@ -7,6 +7,7 @@ import NavRow from './NavRow.vue';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import { useIsMobile } from '../composables/useBreakpoint';
 import { useScrollLock } from '../composables/useScrollLock';
+import { LOCKED_NAV_IDS, moveNavId, shiftNavId } from '../navOrder';
 import type { NavItem, NavLeaf as NavLeafType } from '../types/navigation';
 
 /**
@@ -32,7 +33,11 @@ const openId = defineModel<string | null>('openId', { default: null });
 /** Entrée terminale sélectionnée. */
 const activeId = defineModel<string | null>('activeId', { default: null });
 
-const emit = defineEmits<{ select: [leaf: NavLeafType] }>();
+const emit = defineEmits<{
+    select: [leaf: NavLeafType];
+    /** Nouvel ordre des sections déplaçables (Tableau de bord, verrouillé, n'en fait pas partie). */
+    reorder: [ids: string[]];
+}>();
 
 const { t } = useI18n();
 const isMobile = useIsMobile();
@@ -65,6 +70,77 @@ function openTab(item: NavItem) {
     }
     open.value = true;
     openId.value = item.id;
+}
+
+/* ── réordonner les sections (desktop, colonne déployée) ───────── */
+const movableIds = computed(() => props.items.filter((item) => !LOCKED_NAV_IDS.includes(item.id)).map((item) => item.id));
+const canReorder = computed(() => !isMobile.value && expandedRail.value && movableIds.value.length > 1);
+const draggingId = ref<string | null>(null);
+const drop = ref<{ id: string; after: boolean } | null>(null);
+
+function isMovable(id: string) {
+    return canReorder.value && movableIds.value.includes(id);
+}
+
+function sameOrder(next: string[]) {
+    return next.every((id, i) => id === movableIds.value[i]);
+}
+
+function onDragStart(event: DragEvent, id: string) {
+    if (!isMovable(id)) return;
+    draggingId.value = id;
+    if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', id);
+        /* l'aperçu glissé est la seule rangée, même si la section est dépliée */
+        const row = (event.currentTarget as HTMLElement).querySelector<HTMLElement>(':scope > .row');
+        if (row) event.dataTransfer.setDragImage(row, 20, 20);
+    }
+    /* une section dépliée se referme dès qu'on la saisit ; différé, car changer le DOM
+       pendant `dragstart` fait avorter le geste dans certains navigateurs */
+    if (openId.value === id) setTimeout(() => (openId.value = null), 0);
+}
+
+function onDragOver(event: DragEvent, id: string) {
+    if (!draggingId.value || !isMovable(id)) return;
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    drop.value = { id, after: event.clientY > rect.top + rect.height / 2 };
+}
+
+function onDrop(event: DragEvent) {
+    if (!draggingId.value || !drop.value) return;
+    event.preventDefault();
+    const next = moveNavId(movableIds.value, draggingId.value, drop.value.id, drop.value.after);
+    if (!sameOrder(next)) emit('reorder', next);
+    onDragEnd();
+}
+
+function onDragEnd() {
+    draggingId.value = null;
+    drop.value = null;
+}
+
+/** Repère visuel : le filet bleu n'apparaît que si le dépôt change quelque chose. */
+function dropSide(id: string): 'before' | 'after' | null {
+    const target = drop.value;
+    if (!target || target.id !== id || !draggingId.value || draggingId.value === id) return null;
+    if (sameOrder(moveNavId(movableIds.value, draggingId.value, id, target.after))) return null;
+    return target.after ? 'after' : 'before';
+}
+
+/* clavier : Alt + ↑ / ↓ sur la rangée d'une section */
+async function onRowKeydown(event: KeyboardEvent, id: string) {
+    if (!event.altKey || !isMovable(id)) return;
+    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
+    if (!(event.target as HTMLElement).classList.contains('row')) return;
+    event.preventDefault();
+    const next = shiftNavId(movableIds.value, id, event.key === 'ArrowUp' ? -1 : 1);
+    if (sameOrder(next)) return;
+    emit('reorder', next);
+    await nextTick();
+    surface.value?.querySelector<HTMLElement>(`[data-nav-id="${id}"] > .row`)?.focus();
 }
 
 /* ── overlay mobile : scroll, focus, échappement ───────── */
@@ -137,9 +213,21 @@ void props;
                             :active-id="activeId"
                             :expanded="expandedRail"
                             :index="i"
+                            :data-nav-id="item.id"
+                            :draggable="isMovable(item.id) ? 'true' : undefined"
+                            :class="{
+                                'is-dragging': draggingId === item.id,
+                                'is-drop-before': dropSide(item.id) === 'before',
+                                'is-drop-after': dropSide(item.id) === 'after'
+                            }"
                             @toggle="toggleItem"
                             @select="selectLeaf"
                             @tab="openTab"
+                            @dragstart="onDragStart($event, item.id)"
+                            @dragover="onDragOver($event, item.id)"
+                            @drop="onDrop"
+                            @dragend="onDragEnd"
+                            @keydown="onRowKeydown($event, item.id)"
                         />
                     </ul>
 

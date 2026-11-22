@@ -75,6 +75,7 @@ import {
     WealthOverviewNavIcon
 } from '../solarNavIcons';
 import type { NavIcon, NavItem, NavLeaf } from '../types/navigation';
+import { applyNavOrder, useNavOrder } from '../navOrder';
 
 export const SHELL_NAV_IDS = {
     dashboard: 'dashboard',
@@ -340,7 +341,7 @@ export function useShellNav() {
 
     /* Une rangée par section, comme l'ancienne colonne : un clic déplie ses pages (accordéon).
        Ordre : suivre l'argent, planifier (budgets, prévisions, impôts), mesurer, outils ponctuels, puis les données de support et le réseau. */
-    const primaryNav = computed<NavItem[]>(() => [
+    const defaultPrimaryNav = computed<NavItem[]>(() => [
         { ...live(SHELL_NAV_IDS.dashboard, t('nav.items.dashboard'), DashboardNavIcon, '/app'), activeIcon: DashboardActiveNavIcon },
         section(SHELL_NAV_IDS.finances, t('nav.headers.finances'), FinancesNavIcon, financeLeaves.value, false, FinancesActiveNavIcon),
         section(
@@ -357,6 +358,10 @@ export function useShellNav() {
         section(SHELL_NAV_IDS.gestion, t('nav.headers.gestion'), GestionNavIcon, gestionLeaves.value, false, GestionActiveNavIcon),
         section(SHELL_NAV_IDS.network, t('nav.headers.network'), NetworkNavIcon, networkLeaves.value, false, NetworkActiveNavIcon)
     ]);
+
+    /* L'utilisateur peut réordonner les sections ; Tableau de bord reste en tête. */
+    const navOrder = useNavOrder();
+    const primaryNav = computed<NavItem[]>(() => applyNavOrder(defaultPrimaryNav.value, navOrder.savedOrder.value));
 
     const headerLinks = computed<NavLeaf[]>(() => [
         live(SHELL_NAV_IDS.calendar, t('nav.items.calendar'), CalendarNavIcon, '/app/calendrier'),
@@ -386,6 +391,8 @@ export function useShellNav() {
         openId,
         activeId,
         primaryNav,
+        setNavOrder: navOrder.save,
+        resetNavOrder: navOrder.reset,
         secondaryNav,
         headerLinks,
         headerMenus,

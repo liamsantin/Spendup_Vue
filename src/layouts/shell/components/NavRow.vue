@@ -99,9 +99,35 @@ function onRowClick() {
 
 <style scoped>
 .group {
+    position: relative;
     list-style: none;
     margin: 0;
     padding: 0;
+}
+
+/* réordonnancement : section en cours de déplacement, et filet bleu à l'endroit du dépôt */
+.group.is-dragging {
+    opacity: 0.4;
+}
+
+.group.is-drop-before::before,
+.group.is-drop-after::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    height: 2px;
+    background: var(--blue);
+    pointer-events: none;
+}
+
+.group.is-drop-before::before {
+    top: -1px;
+}
+
+.group.is-drop-after::after {
+    bottom: -1px;
 }
 
 .group + .group {

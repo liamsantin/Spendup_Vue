@@ -40,6 +40,8 @@ const search = defineModel<string>('search', { default: '' });
 
 const emit = defineEmits<{
     select: [leaf: NavLeaf];
+    /** Nouvel ordre des sections déplaçables (sidebar desktop). */
+    reorder: [ids: string[]];
     'search-submit': [value: string];
 }>();
 
@@ -96,6 +98,7 @@ watch(isMobile, (mobile) => {
                 :bottom-items="bottomItems"
                 :title="title"
                 @select="emit('select', $event)"
+                @reorder="emit('reorder', $event)"
             />
         </div>
 
