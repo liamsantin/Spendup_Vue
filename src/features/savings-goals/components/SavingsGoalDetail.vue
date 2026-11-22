@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * Fiche d’un objectif d’épargne (page, même structure que la fiche d’un actif). Onglets portés par `?tab=` :
- * Informations (chiffres clés, jauge, caractéristiques) et Transactions (versements rattachés : lier, délier les lignes cochées, ajouter).
+ * Informations (chiffres clés, jauge, caractéristiques), Projection (épargne future) et Transactions (versements rattachés : lier, délier les lignes cochées, ajouter).
  * La modification reste dans `SavingsGoalFormModal`.
  */
 defineOptions({ name: 'SavingsGoalDetail' });
@@ -11,6 +11,7 @@ import { useI18n } from 'vue-i18n';
 import AppAlert from '@/components/shared/alert/AppAlert.vue';
 import { AppError, getErrorMessage } from '@/utils/errors/app-error';
 import { useAccountsStore } from '@/features/accounts/stores/accounts-store';
+import SavingsGoalProjection from '@/features/savings-goals/components/SavingsGoalProjection.vue';
 import SavingsGoalFormModal from '@/features/savings-goals/components/modals/SavingsGoalFormModal.vue';
 import SavingsGoalLinkTransactionsModal from '@/features/savings-goals/components/modals/SavingsGoalLinkTransactionsModal.vue';
 import { formatCalendarDate, formatPercentReached, formatSavingsGoalAmount, savingsGoalBarWidth } from '@/features/savings-goals/format';
@@ -20,7 +21,7 @@ import LinkedTransactionsPanel from '@/features/transactions/components/LinkedTr
 import type { TransactionsLockedFilters } from '@/features/transactions/components/TransactionsTimeline.vue';
 import type { Transaction } from '@/features/transactions/types';
 
-export type SavingsGoalDetailTab = 'informations' | 'transactions';
+export type SavingsGoalDetailTab = 'informations' | 'projection' | 'transactions';
 
 const props = defineProps<{
     savingsGoalPublicId: string;
@@ -194,6 +195,13 @@ defineExpose({ openEdit, reload: loadGoal });
                     </div>
                 </div>
             </div>
+
+            <!-- ── Projection : valeur future d’une épargne régulière ── -->
+            <SavingsGoalProjection
+                v-else-if="tab === 'projection'"
+                :key="`${goal.publicId}-${goal.updatedAt ?? ''}-${goal.currentAmount}`"
+                :goal="goal"
+            />
 
             <!-- ── Transactions : versements rattachés à l’objectif ── -->
             <template v-else-if="tab === 'transactions'">

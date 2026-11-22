@@ -25,6 +25,8 @@ function payloadErrorMessage(code: string): string {
         case 'openingAmountInvalid':
         case 'openingAmountNegative':
             return 'Le montant d’ouverture ne peut pas être négatif.';
+        case 'expectedReturnRateInvalid':
+            return 'Le rendement annuel doit être compris entre -100 et 100 %.';
         case 'targetDateInvalid':
             return "La date d'échéance est invalide.";
         case 'currencyInvalid':

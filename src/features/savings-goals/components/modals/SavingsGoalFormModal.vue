@@ -113,6 +113,7 @@ function clearFieldErrors() {
     fieldErrors.name = null;
     fieldErrors.targetAmount = null;
     fieldErrors.openingAmount = null;
+    fieldErrors.expectedReturnRate = null;
     fieldErrors.targetDate = null;
     fieldErrors.accountPublicId = null;
     fieldErrors.currency = null;

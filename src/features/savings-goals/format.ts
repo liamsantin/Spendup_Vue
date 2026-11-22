@@ -108,6 +108,7 @@ export function normalizeSavingsGoal(goal: SavingsGoal): SavingsGoal {
     return {
         ...goal,
         openingAmount: Number(goal.openingAmount) || 0,
+        expectedReturnRate: goal.expectedReturnRate ?? null,
         contributedAmount: Number(goal.contributedAmount) || 0,
         currentAmount: Number(goal.currentAmount) || 0,
         remainingAmount: Number(goal.remainingAmount) || 0,

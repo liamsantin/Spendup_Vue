@@ -17,6 +17,8 @@ export type SavingsGoal = {
     targetAmount: number;
     /** Argent déjà de côté avant Spend.Up — seul montant saisi par le client. */
     openingAmount: number;
+    /** Rendement annuel supposé en % (projection d’épargne), `null` si non renseigné. */
+    expectedReturnRate: number | null;
     /** Somme des transactions rattachées (validee/rapprochee, même devise, mouvement sur le compte). */
     contributedAmount: number;
     /** `openingAmount` + `contributedAmount`. */
@@ -53,6 +55,7 @@ export type CreateSavingsGoalPayload = {
     targetDate?: string | null;
     accountPublicId?: string | null;
     currency?: SavingsGoalCurrency | null;
+    expectedReturnRate?: number | null;
 };
 
 export type UpdateSavingsGoalPayload = {
@@ -63,6 +66,7 @@ export type UpdateSavingsGoalPayload = {
     accountPublicId: string | null;
     currency: SavingsGoalCurrency;
     status: SavingsGoalStatus | null;
+    expectedReturnRate?: number | null;
 };
 
 export const SAVINGS_GOAL_STATUSES: SavingsGoalStatus[] = ['active', 'atteint', 'abandonne'];

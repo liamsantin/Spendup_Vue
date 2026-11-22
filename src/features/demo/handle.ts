@@ -60,6 +60,7 @@ import {
 import { demoMonthInsights, demoYearForecast } from '@/features/demo/insights';
 import { demoLamalCompare, demoLamalContext } from '@/features/demo/lamal';
 import { demoRepaymentSimulation } from '@/features/demo/repayment';
+import { demoSavingsProjection } from '@/features/demo/savings-projection';
 import type { LamalComparisonRequest } from '@/features/insurance/lamal';
 import type { RepaymentRequest } from '@/features/liabilities/repayment';
 
@@ -250,6 +251,8 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
 
     if (path === '/api/savings-goals' && method === 'GET') return ok(listGoals(query));
     if (path === '/api/savings-goals' && method === 'POST') return ok(createGoal(body as CreateSavingsGoalPayload));
+    const goalProjection = match(path, '/api/savings-goals/:id/projection');
+    if (goalProjection && method === 'GET') return ok(demoSavingsProjection(findGoal(goalProjection.id), query));
     const goalId = match(path, '/api/savings-goals/:id');
     if (goalId && method === 'GET') return ok(findGoal(goalId.id));
     if (goalId && method === 'PUT') return ok(updateGoal(goalId.id, body as UpdateSavingsGoalPayload));
@@ -1296,6 +1299,7 @@ function createGoal(body: CreateSavingsGoalPayload) {
         name: body.name,
         targetAmount: body.targetAmount,
         openingAmount: opening,
+        expectedReturnRate: body.expectedReturnRate ?? null,
         contributedAmount: 0,
         currentAmount: opening,
         remainingAmount: Math.max(0, body.targetAmount - opening),
@@ -1320,6 +1324,7 @@ function updateGoal(id: string, body: UpdateSavingsGoalPayload) {
     item.name = body.name;
     item.targetAmount = body.targetAmount;
     item.openingAmount = body.openingAmount;
+    item.expectedReturnRate = body.expectedReturnRate ?? null;
     item.targetDate = body.targetDate;
     item.accountPublicId = body.accountPublicId;
     item.currency = body.currency;

@@ -17,6 +17,7 @@ export type SavingsGoalFormFieldErrors = {
     name?: string | null;
     targetAmount?: string | null;
     openingAmount?: string | null;
+    expectedReturnRate?: string | null;
     targetDate?: string | null;
     accountPublicId?: string | null;
     currency?: string | null;
@@ -120,6 +121,26 @@ const targetDateModel = computed({
                 />
                 <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ t('savingsGoalsPage.form.openingAmountHint') }}</p>
                 <p v-if="progressHint" class="text-caption text-medium-emphasis mb-0 mt-1">{{ progressHint }}</p>
+            </div>
+        </div>
+
+        <div class="savings-goal-form__row">
+            <label class="savings-goal-form__label" for="savings-goal-form-rate">
+                {{ t('savingsGoalsPage.form.fields.expectedReturnRate') }}
+            </label>
+            <div class="savings-goal-form__field">
+                <v-text-field
+                    id="savings-goal-form-rate"
+                    v-model="form.expectedReturnRate"
+                    type="text"
+                    inputmode="decimal"
+                    color="primary"
+                    variant="outlined"
+                    hide-details="auto"
+                    :error="!!fieldErrors.expectedReturnRate"
+                    :error-messages="fieldErrors.expectedReturnRate || undefined"
+                />
+                <p class="text-caption text-medium-emphasis mb-0 mt-1">{{ t('savingsGoalsPage.form.expectedReturnRateHint') }}</p>
             </div>
         </div>
 

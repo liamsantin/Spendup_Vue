@@ -1315,7 +1315,8 @@
             "tabs": {
                 "transactions": "Transactions",
                 "label": "Sections de l’objectif",
-                "informations": "Informations"
+                "informations": "Informations",
+                "projection": "Projection"
             },
             "figs": {
                 "saved": "Épargné",
@@ -1362,6 +1363,7 @@
             "accountHint": "Compte actif dont vous êtes propriétaire. Sans compte, aucune transaction ne peut être liée.",
             "abandonHint": "Un objectif abandonné le reste, même si le montant couvre la cible. Pas de notification.",
             "openingAmountHint": "Argent déjà de côté avant Spend.Up. Il s’ajoute aux contributions, il ne les remplace pas.",
+            "expectedReturnRateHint": "Facultatif. Sert à la projection d’épargne (hypothèse, pas une promesse). Entre -100 et 100.",
             "progressHint": "Contributions : {contributed} · Suivi : {current}",
             "projectedOn": "Atteinte estimée le {date}",
             "detachAccountHint": "Détacher le compte retire toutes les transactions liées à cet objectif.",
@@ -1383,7 +1385,8 @@
                 "targetDate": "Échéance",
                 "account": "Compte lié",
                 "currency": "Devise",
-                "abandon": "Abandonner"
+                "abandon": "Abandonner",
+                "expectedReturnRate": "Rendement supposé (%)"
             },
             "errors": {
                 "nameRequired": "Le nom de l’objectif est obligatoire.",
@@ -1395,8 +1398,31 @@
                 "targetDateInvalid": "La date d’échéance est invalide.",
                 "currencyInvalid": "Devise non supportée (CHF, EUR, USD, GBP).",
                 "currencyLocked": "La devise d’un objectif d’épargne ne peut pas être modifiée.",
-                "accountInvalid": "Le compte lié doit être un compte actif dont vous êtes propriétaire."
+                "accountInvalid": "Le compte lié doit être un compte actif dont vous êtes propriétaire.",
+                "expectedReturnRateInvalid": "Le rendement annuel doit être compris entre -100 et 100 %."
             }
+        },
+        "projection": {
+            "title": "Projection d’épargne",
+            "intro": "Si vous continuez à épargner chaque mois, voici ce que votre objectif vaudrait, en partant de {start} déjà épargnés.",
+            "monthlyLabel": "Versement mensuel",
+            "monthlyHintHistory": "Rythme des trois derniers mois (versements liés à l’objectif). Modifiez-le pour tester un autre montant.",
+            "monthlyHint": "Montant versé à chaque fin de mois.",
+            "rateLabel": "Rendement annuel supposé (%)",
+            "rateHint": "Une hypothèse de votre part, pas une promesse. Laissez vide pour 0 %.",
+            "yearsLabel": "Horizon",
+            "yearsOption": "{n} an | {n} ans",
+            "invalid": "Saisissez un versement positif ou nul, et un rendement entre -100 et 100 %.",
+            "valueAfter": "Valeur dans {n} an | Valeur dans {n} ans",
+            "contributed": "Total versé (départ compris)",
+            "interest": "Intérêts",
+            "chartLabel": "Courbe de la valeur projetée et du total versé",
+            "legendValue": "Valeur projetée",
+            "legendContributed": "Total versé",
+            "today": "Aujourd’hui",
+            "axisYear": "{n} an | {n} ans",
+            "disclaimer": "Hypothèse : sans frais, impôts ni inflation, versements en fin de mois. Ce n’est ni une prévision ni un conseil en placement.",
+            "loadFailed": "La projection n’a pas pu être calculée."
         }
     },
     "tagsPage": {

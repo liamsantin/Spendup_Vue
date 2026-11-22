@@ -31,14 +31,14 @@ const accountsStore = useAccountsStore();
 const directoryRef = ref<{ openCreate: () => void } | null>(null);
 const listTitle = computed(() => t('savingsGoalsPage.title'));
 /* ── fiche : `:publicId` dans le chemin, onglets `?tab=` ── */
-const DETAIL_TABS: SavingsGoalDetailTab[] = ['informations', 'transactions'];
+const DETAIL_TABS: SavingsGoalDetailTab[] = ['informations', 'projection', 'transactions'];
 const detailRef = ref<{ openEdit: () => void } | null>(null);
 const notFound = ref(false);
 
 const detailId = computed(() => savingsGoalPublicIdFromPath(route.path));
 const detailItem = computed(() => (detailId.value ? store.findByPublicId(detailId.value) : null));
 const detailTitle = computed(() => (notFound.value || !detailItem.value ? listTitle.value : detailItem.value.name));
-const activeDetailTab = computed<SavingsGoalDetailTab>(() => (route.query.tab === 'transactions' ? 'transactions' : 'informations'));
+const activeDetailTab = computed<SavingsGoalDetailTab>(() => DETAIL_TABS.find((tab) => tab === route.query.tab) ?? 'informations');
 
 function selectDetailTab(tab: SavingsGoalDetailTab) {
     if (tab === activeDetailTab.value) return;

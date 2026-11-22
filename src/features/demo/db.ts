@@ -1039,6 +1039,7 @@ function seedBudgetsAndGoals(db: DemoDb): void {
             name: 'Vacances d’été',
             targetAmount: 3000,
             openingAmount: 800,
+            expectedReturnRate: null,
             contributedAmount: 0,
             currentAmount: 800,
             remainingAmount: 2200,

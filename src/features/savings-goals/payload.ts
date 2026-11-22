@@ -16,6 +16,7 @@ export type SavingsGoalPayloadErrorCode =
     | 'targetAmountNotPositive'
     | 'openingAmountInvalid'
     | 'openingAmountNegative'
+    | 'expectedReturnRateInvalid'
     | 'targetDateInvalid'
     | 'currencyInvalid'
     | 'currencyLocked'
@@ -25,6 +26,8 @@ export type SavingsGoalFormFields = {
     name: string;
     targetAmount: string;
     openingAmount: string;
+    /** Rendement annuel supposé en %, vide = non renseigné. */
+    expectedReturnRate: string;
     targetDate: string | null;
     accountPublicId: string;
     currency: SavingsGoalCurrency | '';
@@ -53,6 +56,7 @@ export function emptySavingsGoalFormFields(
         name: '',
         targetAmount: '',
         openingAmount: defaults.openingAmount ?? '0',
+        expectedReturnRate: '',
         targetDate: null,
         accountPublicId: '',
         currency: defaults.currency ?? '',
@@ -65,6 +69,7 @@ export function savingsGoalToFormFields(goal: SavingsGoal): SavingsGoalFormField
         name: goal.name,
         targetAmount: String(goal.targetAmount),
         openingAmount: String(goal.openingAmount),
+        expectedReturnRate: goal.expectedReturnRate === null ? '' : String(goal.expectedReturnRate),
         targetDate: goal.targetDate,
         accountPublicId: goal.accountPublicId ?? '',
         currency: goal.currency,
@@ -79,6 +84,7 @@ type CommonFields =
           name: string;
           targetAmount: number;
           openingAmount: number;
+          expectedReturnRate: number | null;
           targetDate: string | null;
           accountPublicId: string | null;
       };
@@ -101,6 +107,14 @@ function commonFields(fields: SavingsGoalFormFields, context: SavingsGoalPayload
     }
     if (openingAmount < 0) return fail('openingAmountNegative', 'openingAmount');
 
+    const rateRaw = fields.expectedReturnRate.trim();
+    let expectedReturnRate: number | null = null;
+    if (rateRaw) {
+        const parsed = parseAccountAmount(rateRaw);
+        if (parsed == null || parsed < -100 || parsed > 100) return fail('expectedReturnRateInvalid', 'expectedReturnRate');
+        expectedReturnRate = parsed;
+    }
+
     const targetDate = emptyToNull(fields.targetDate);
     if (targetDate && !isValidYmd(targetDate)) return fail('targetDateInvalid', 'targetDate');
 
@@ -114,6 +128,7 @@ function commonFields(fields: SavingsGoalFormFields, context: SavingsGoalPayload
         name,
         targetAmount,
         openingAmount,
+        expectedReturnRate,
         targetDate,
         accountPublicId
     };
@@ -139,6 +154,7 @@ export function buildCreateSavingsGoalPayload(
             name: common.name,
             targetAmount: common.targetAmount,
             openingAmount: common.openingAmount,
+            expectedReturnRate: common.expectedReturnRate,
             targetDate: common.targetDate,
             accountPublicId: common.accountPublicId,
             currency
@@ -168,6 +184,7 @@ export function buildUpdateSavingsGoalPayload(
             name: common.name,
             targetAmount: common.targetAmount,
             openingAmount: common.openingAmount,
+            expectedReturnRate: common.expectedReturnRate,
             targetDate: common.targetDate,
             accountPublicId: common.accountPublicId,
             currency: locked,
@@ -182,6 +199,7 @@ export function buildUnlinkAccountPayload(goal: SavingsGoal): UpdateSavingsGoalP
         name: goal.name,
         targetAmount: goal.targetAmount,
         openingAmount: goal.openingAmount,
+        expectedReturnRate: goal.expectedReturnRate,
         targetDate: goal.targetDate,
         accountPublicId: null,
         currency: goal.currency,
@@ -196,6 +214,8 @@ export function isSavingsGoalFormDirty(goal: SavingsGoal, fields: SavingsGoalFor
     const openingRaw = fields.openingAmount.trim();
     const opening = openingRaw ? parseAccountAmount(openingRaw) : 0;
     if (opening !== goal.openingAmount) return true;
+    const rateRaw = fields.expectedReturnRate.trim();
+    if ((rateRaw ? parseAccountAmount(rateRaw) : null) !== goal.expectedReturnRate) return true;
     if (emptyToNull(fields.targetDate) !== emptyToNull(goal.targetDate)) return true;
     if (emptyToNull(fields.accountPublicId) !== emptyToNull(goal.accountPublicId)) return true;
     if (fields.abandon !== (goal.status === 'abandonne')) return true;

@@ -17,6 +17,7 @@ function goal(partial: Partial<SavingsGoal> = {}): SavingsGoal {
         name: 'Vacances',
         targetAmount: 2000,
         openingAmount: 150,
+        expectedReturnRate: null,
         contributedAmount: 0,
         currentAmount: 150,
         remainingAmount: 1850,
