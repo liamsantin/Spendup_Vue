@@ -66,6 +66,7 @@ import {
     demoCompoundSimulate,
     demoCompoundUpdate
 } from '@/features/demo/compound-interest';
+import { demoRetirementGet, demoRetirementRemove, demoRetirementSave, demoRetirementSimulate } from '@/features/demo/retirement';
 import { demoLamalCompare, demoLamalContext } from '@/features/demo/lamal';
 import { demoLegalParameters } from '@/features/demo/legal-parameters';
 import { demoRepaymentSimulation } from '@/features/demo/repayment';
@@ -250,6 +251,15 @@ function dispatch(method: string, target: { path: string; query: URLSearchParams
     if (compoundId && method === 'PUT') return ok(demoCompoundUpdate(compoundId.id, body as Parameters<typeof demoCompoundUpdate>[1]));
     if (compoundId && method === 'DELETE') {
         demoCompoundRemove(compoundId.id);
+        return noContent();
+    }
+    if (path === '/api/retirement/simulate' && method === 'POST')
+        return ok(demoRetirementSimulate(body as Parameters<typeof demoRetirementSimulate>[0]));
+    if (path === '/api/retirement/profile' && method === 'GET') return ok(demoRetirementGet());
+    if (path === '/api/retirement/profile' && method === 'PUT')
+        return ok(demoRetirementSave(body as Parameters<typeof demoRetirementSave>[0]));
+    if (path === '/api/retirement/profile' && method === 'DELETE') {
+        demoRetirementRemove();
         return noContent();
     }
     if (path === '/api/categories' && method === 'GET') return ok(listCategories(query));

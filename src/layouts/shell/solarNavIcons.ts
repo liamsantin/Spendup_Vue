@@ -57,6 +57,7 @@ export { HeartPulseIcon as LamalNavIcon } from '@solar-icons/vue/linear/heart-pu
 export { CalculatorMinimalisticIcon as RepaymentNavIcon } from '@solar-icons/vue/linear/calculator-minimalistic';
 export { GraphNewUpIcon as CompoundInterestNavIcon } from '@solar-icons/vue/linear/graph-new-up';
 export { HandHeartIcon as AidsNavIcon } from '@solar-icons/vue/linear/hand-heart';
+export { HourglassIcon as RetirementNavIcon } from '@solar-icons/vue/linear/hourglass';
 export { UsersGroupTwoRoundedIcon as FriendsNavIcon } from '@solar-icons/vue/linear/users-group-two-rounded';
 export { HomeSmileIcon as HouseholdNavIcon } from '@solar-icons/vue/linear/home-smile';
 export { UserCircleIcon as ProfileNavIcon } from '@solar-icons/vue/linear/user-circle';
