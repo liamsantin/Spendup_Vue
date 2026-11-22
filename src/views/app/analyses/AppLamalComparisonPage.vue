@@ -123,8 +123,8 @@ onMounted(() => void load());
                     <header class="su-section__head">
                         <h2>{{ t('lamalComparison.stepCosts') }}</h2>
                     </header>
-                    <div class="lamal__field">
-                        <label for="lamal-expected">{{ t('lamalComparison.expectedLabel') }}</label>
+                    <div class="su-field lamal__field">
+                        <label for="lamal-expected" class="su-field__label">{{ t('lamalComparison.expectedLabel') }}</label>
                         <v-text-field
                             id="lamal-expected"
                             v-model="expected"
@@ -141,8 +141,8 @@ onMounted(() => void load());
                             v-for="preset in PRESETS"
                             :key="preset.id"
                             type="button"
-                            class="su-btn lamal__preset"
-                            :class="{ 'is-on': costs === preset.amount }"
+                            class="su-btn"
+                            :class="{ 'su-btn--ink': costs === preset.amount }"
                             :aria-pressed="costs === preset.amount"
                             @click="expected = String(preset.amount)"
                         >
@@ -171,16 +171,16 @@ onMounted(() => void load());
                     </p>
                     <p v-else class="lamal__muted">{{ t('lamalComparison.noInsurance') }}</p>
 
-                    <div class="lamal__table-wrap">
-                        <table class="lamal__table">
+                    <div class="su-table-wrap lamal__table-wrap">
+                        <table class="su-table lamal__table">
                             <thead>
                                 <tr>
-                                    <th scope="col">{{ t('lamalComparison.colMine') }}</th>
+                                    <th scope="col" class="is-center">{{ t('lamalComparison.colMine') }}</th>
                                     <th scope="col">{{ t('lamalComparison.colFranchise') }}</th>
                                     <th scope="col">{{ t('lamalComparison.colPremiumInput') }}</th>
-                                    <th scope="col">{{ t('lamalComparison.colCost') }}</th>
-                                    <th scope="col">{{ t('lamalComparison.colMax') }}</th>
-                                    <th scope="col">{{ t('lamalComparison.colSaving') }}</th>
+                                    <th scope="col" class="is-num">{{ t('lamalComparison.colCost') }}</th>
+                                    <th scope="col" class="is-num">{{ t('lamalComparison.colMax') }}</th>
+                                    <th scope="col" class="is-num">{{ t('lamalComparison.colSaving') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -189,10 +189,11 @@ onMounted(() => void load());
                                     :key="franchise"
                                     :class="{ 'is-best': optionOf(franchise)?.isCheapest }"
                                 >
-                                    <td class="lamal__center">
+                                    <td class="is-center">
                                         <input
                                             v-model="current"
                                             type="radio"
+                                            class="lamal__radio"
                                             name="lamal-current"
                                             :value="franchise"
                                             :aria-label="
@@ -204,7 +205,7 @@ onMounted(() => void load());
                                     </td>
                                     <th scope="row">
                                         {{ franchiseLabel(franchise) }}
-                                        <span v-if="optionOf(franchise)?.isCheapest" class="lamal__tag is-best">{{
+                                        <span v-if="optionOf(franchise)?.isCheapest" class="su-chip" style="--chip-color: var(--blue)">{{
                                             t('lamalComparison.cheapestTag')
                                         }}</span>
                                     </th>
@@ -221,9 +222,9 @@ onMounted(() => void load());
                                             :placeholder="t('lamalComparison.premiumPlaceholder')"
                                         />
                                     </td>
-                                    <td>{{ optionOf(franchise) ? money(optionOf(franchise)!.expectedCost) : '—' }}</td>
-                                    <td>{{ optionOf(franchise) ? money(optionOf(franchise)!.maxCost) : '—' }}</td>
-                                    <td>
+                                    <td class="is-num">{{ optionOf(franchise) ? money(optionOf(franchise)!.expectedCost) : '—' }}</td>
+                                    <td class="is-num">{{ optionOf(franchise) ? money(optionOf(franchise)!.maxCost) : '—' }}</td>
+                                    <td class="is-num">
                                         {{
                                             optionOf(franchise)?.savingVsCurrent != null
                                                 ? money(optionOf(franchise)!.savingVsCurrent!)
@@ -235,7 +236,7 @@ onMounted(() => void load());
                         </table>
                     </div>
                     <label class="lamal__none">
-                        <input v-model="current" type="radio" name="lamal-current" :value="null" />
+                        <input v-model="current" type="radio" class="lamal__radio" name="lamal-current" :value="null" />
                         {{ t('lamalComparison.currentNone') }}
                     </label>
                     <p v-if="anyInvalid" class="lamal__error" role="alert">{{ t('lamalComparison.invalid') }}</p>
@@ -247,13 +248,15 @@ onMounted(() => void load());
                     </header>
                     <p v-if="!best" class="lamal__muted">{{ t('lamalComparison.waiting') }}</p>
                     <template v-else>
-                        <p class="lamal__reco">
-                            <strong>{{ t('lamalComparison.recommended', { amount: franchiseLabel(best.franchise) }) }}</strong>
-                            <span v-if="saving !== null"> — {{ t('lamalComparison.saving', { amount: money(saving) }) }}</span>
-                            <span v-else-if="comparedAgainstCurrent"> — {{ t('lamalComparison.alreadyBest') }}</span>
-                        </p>
-                        <p class="lamal__muted">{{ t('lamalComparison.worstCase', { amount: money(best.maxCost) }) }}</p>
-                        <p v-if="options.length < 2" class="lamal__muted">{{ t('lamalComparison.incomplete') }}</p>
+                        <div class="su-box su-box--soft lamal__reco">
+                            <p>
+                                <strong>{{ t('lamalComparison.recommended', { amount: franchiseLabel(best.franchise) }) }}</strong>
+                                <span v-if="saving !== null"> — {{ t('lamalComparison.saving', { amount: money(saving) }) }}</span>
+                                <span v-else-if="comparedAgainstCurrent"> — {{ t('lamalComparison.alreadyBest') }}</span>
+                            </p>
+                            <p class="lamal__muted">{{ t('lamalComparison.worstCase', { amount: money(best.maxCost) }) }}</p>
+                            <p v-if="options.length < 2" class="lamal__muted">{{ t('lamalComparison.incomplete') }}</p>
+                        </div>
                     </template>
                     <p class="lamal__muted">
                         {{ t('lamalComparison.formula', { rate: context.quotePartRate, max: money(context.quotePartMax) }) }}
@@ -281,117 +284,132 @@ onMounted(() => void load());
 .lamal {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 16px;
+    gap: 24px;
 }
 
 .lamal__intro {
     margin: 0;
     max-width: 44rem;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
 .lamal__muted {
     margin: 0;
     color: var(--gray);
-    font-size: 0.875rem;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 .lamal__field {
-    display: grid;
-    gap: 4px;
     max-width: 24rem;
-    margin-bottom: 8px;
-    font-size: 0.875rem;
+    margin-bottom: 12px;
 }
 
 .lamal__presets {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: 8px;
-}
-
-.lamal__preset.is-on {
-    border-color: var(--blue);
-    color: var(--blue);
-}
-
-.lamal__tag {
-    margin-left: 4px;
-    padding: 1px 6px;
-    border-radius: 999px;
-    background: var(--t-gray-bg);
-    color: var(--gray);
-    font-size: 0.75rem;
-    font-weight: 400;
-}
-
-.lamal__tag.is-best {
-    background: var(--blue);
-    color: #fff;
-}
-
-.lamal__reco {
-    margin: 0 0 4px;
+    margin-bottom: 12px;
 }
 
 .lamal__table-wrap {
-    overflow-x: auto;
+    margin-top: 12px;
 }
 
-.lamal__table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-    font-variant-numeric: tabular-nums;
-}
-
-.lamal__table th,
-.lamal__table td {
-    padding: 6px 8px;
-    border-bottom: 1px solid var(--line);
-    text-align: right;
+.lamal__table th.is-num,
+.lamal__table td.is-num {
     white-space: nowrap;
 }
 
-.lamal__table th:first-child,
-.lamal__table .lamal__center {
+.lamal__table th.is-center,
+.lamal__table td.is-center {
     text-align: center;
 }
 
-.lamal__table th[scope='row'],
-.lamal__table th[scope='col']:nth-child(2) {
-    text-align: left;
+.lamal__table tbody tr.is-best,
+.lamal__table tbody tr.is-best:hover {
+    background: var(--soft);
 }
 
-.lamal__table tr.is-best {
-    background: var(--t-gray-bg);
+.lamal__table th[scope='row'] {
+    color: var(--ink);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
 .lamal__input {
-    min-width: 8rem;
+    min-width: 9rem;
+}
+
+/* bouton radio carré, comme le reste du thème (pas d'angle arrondi) */
+.lamal__radio {
+    appearance: none;
+    display: inline-grid;
+    place-content: center;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.lamal__radio::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: var(--ink);
+    transform: scale(0);
+    transition: transform 0.12s var(--ease);
+}
+
+.lamal__radio:checked::before {
+    transform: scale(1);
+}
+
+.lamal__radio:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
 }
 
 .lamal__none {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-top: 8px;
+    gap: 8px;
+    margin-top: 12px;
     color: var(--gray);
-    font-size: 0.875rem;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.lamal__reco {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.lamal__reco p {
+    margin: 0;
 }
 
 .lamal__how {
     display: grid;
     gap: 8px;
-    margin: 0 0 8px;
+    margin: 0 0 12px;
     padding-left: 1.25rem;
     color: var(--gray);
-    font-size: 0.875rem;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 .lamal__error {
     margin: 8px 0 0;
-    color: var(--red, #c0392b);
-    font-size: 0.875rem;
+    color: var(--danger);
+    font-size: 13px;
 }
 </style>

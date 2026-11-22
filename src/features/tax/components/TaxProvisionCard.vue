@@ -71,7 +71,7 @@ onMounted(() => void load());
 </script>
 
 <template>
-    <section class="provision" :aria-label="t('taxProvision.title')">
+    <section class="provision su-box" :aria-label="t('taxProvision.title')">
         <header v-if="props.showHead" class="provision__head">
             <h2>{{ t('taxProvision.title') }}</h2>
             <p>{{ t('taxProvision.subtitle') }}</p>
@@ -85,7 +85,8 @@ onMounted(() => void load());
         <template v-else-if="provision">
             <template v-if="hasProvision(provision)">
                 <p class="provision__monthly">
-                    <strong>{{ money(provision.monthlyAmount ?? 0) }}</strong> <span>{{ t('taxProvision.perMonth') }}</span>
+                    <span class="su-fig__num">{{ money(provision.monthlyAmount ?? 0) }}</span>
+                    <span class="provision__muted">{{ t('taxProvision.perMonth') }}</span>
                 </p>
                 <p class="provision__muted">
                     {{
@@ -96,14 +97,17 @@ onMounted(() => void load());
                 </p>
                 <template v-if="withDecision">
                     <div
-                        class="provision__bar"
+                        class="su-gauge"
                         role="progressbar"
                         :aria-label="t('taxProvision.paid')"
                         aria-valuemin="0"
                         aria-valuemax="100"
                         :aria-valuenow="Math.round(paidShare(provision) * 100)"
                     >
-                        <span :style="{ width: `${Math.round(paidShare(provision) * 100)}%` }" />
+                        <span
+                            class="su-gauge__fill su-gauge__fill--blue"
+                            :style="{ width: `${Math.round(paidShare(provision) * 100)}%` }"
+                        />
                     </div>
                     <p class="provision__muted">
                         {{ t('taxProvision.paidRemaining', { paid: money(provision.paid), remaining: money(provision.remaining) }) }}
@@ -113,7 +117,7 @@ onMounted(() => void load());
             <p v-else class="provision__muted">{{ t('taxProvision.none') }}</p>
 
             <form v-if="!withDecision" class="provision__form" @submit.prevent="submit">
-                <label for="tax-provision-reference">{{ t('taxProvision.referenceLabel') }}</label>
+                <label for="tax-provision-reference" class="su-field__label">{{ t('taxProvision.referenceLabel') }}</label>
                 <div class="provision__row">
                     <v-text-field
                         id="tax-provision-reference"
@@ -142,54 +146,40 @@ onMounted(() => void load());
 <style scoped>
 .provision {
     display: grid;
-    gap: 8px;
+    gap: 12px;
     margin-bottom: 16px;
-    padding: 16px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
 }
 
 .provision__head h2 {
     margin: 0;
-    font-size: 1rem;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
 }
 
 .provision__head p,
 .provision__muted {
     margin: 0;
     color: var(--gray);
-    font-size: 0.875rem;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 .provision__monthly {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
     margin: 0;
 }
 
-.provision__monthly strong {
-    font-size: 1.5rem;
-    font-variant-numeric: tabular-nums;
-}
-
-.provision__bar {
-    height: 8px;
-    overflow: hidden;
-    border-radius: 999px;
-    background: var(--t-gray-bg);
-}
-
-.provision__bar span {
-    display: block;
-    height: 100%;
-    background: var(--blue);
+.provision__monthly .su-fig__num {
+    margin: 0;
 }
 
 .provision__form {
     display: grid;
-    gap: 4px;
-}
-
-.provision__form label {
-    font-size: 0.875rem;
+    gap: 8px;
 }
 
 .provision__row {
@@ -206,7 +196,7 @@ onMounted(() => void load());
 
 .provision__error {
     margin: 0;
-    color: var(--red, #c0392b);
-    font-size: 0.875rem;
+    color: var(--danger);
+    font-size: 13px;
 }
 </style>
