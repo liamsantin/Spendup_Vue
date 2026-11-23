@@ -1860,6 +1860,8 @@
         "previous": "Previous year",
         "next": "Next year",
         "current": "Current year",
+        "currency": "Currency",
+        "currencyNote": "Amounts are calculated in one currency at a time, without conversion: other currencies are not added together.",
         "loadFailed": "Could not load the forecasts.",
         "empty": "Nothing to show for this year: add transactions, recurring expenses or recurring income.",
         "cumulative": "Running total since January",

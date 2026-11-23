@@ -234,5 +234,8 @@ export function demoYearForecast(db: DemoDb, year: string | null, currency: stri
             lines
         });
     }
-    return { year: target, currency: main ?? 'CHF', months };
+    const used = new Set<string>([main ?? 'CHF']);
+    for (const account of db.accounts) if (account.isActive && account.currency) used.add(account.currency);
+    for (const item of [...db.recurringExpenses, ...db.recurringIncomes]) if (item.currency) used.add(item.currency);
+    return { year: target, currency: main ?? 'CHF', months, currencies: [...used].sort() };
 }

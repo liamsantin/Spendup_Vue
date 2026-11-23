@@ -18,6 +18,7 @@ import {
     forecastsApi,
     forecastsLocation,
     lineTarget,
+    parseCurrencyQuery,
     parseYearQuery,
     plannedShare,
     type ForecastLine,
@@ -34,6 +35,8 @@ const router = useRouter();
 const settings = useUserSettingsStore();
 
 const year = computed(() => parseYearQuery(route.query.y));
+/** Devise choisie (`?c=`) ; `null` = devise du compte principal. */
+const requestedCurrency = computed(() => parseCurrencyQuery(route.query.c));
 const hideAmounts = computed(() => settings.current.hideSensitiveAmounts);
 
 const data = shallowRef<YearForecast | null>(null);
@@ -47,7 +50,7 @@ async function load() {
     loading.value = true;
     failed.value = false;
     try {
-        const result = await forecastsApi.year(year.value);
+        const result = await forecastsApi.year(year.value, requestedCurrency.value);
         if (ticket === seq) data.value = result;
     } catch {
         if (ticket === seq) {
@@ -59,7 +62,7 @@ async function load() {
     }
 }
 
-watch(year, () => {
+watch([year, requestedCurrency], () => {
     openMonth.value = null;
     void load();
 });
@@ -71,6 +74,25 @@ function setYear(next: number) {
     delete rest.y;
     void router.push({ path: route.path, query: { ...rest, ...query } });
 }
+
+function setCurrency(code: string) {
+    const rest = { ...route.query };
+    delete rest.c;
+    // La devise du compte principal garde une adresse sans paramètre.
+    const query = code === primaryCurrency.value ? rest : { ...rest, c: code };
+    void router.push({ path: route.path, query });
+}
+
+/** Devise du compte principal, connue tant qu'aucune devise n'est choisie. */
+const primaryCurrency = ref<string | null>(null);
+watch(
+    data,
+    (value) => {
+        if (value && !requestedCurrency.value) primaryCurrency.value = value.currency;
+    },
+    { immediate: true }
+);
+const currencies = computed(() => data.value?.currencies ?? []);
 
 function money(amount: number): string {
     if (hideAmounts.value) return DASHBOARD_MASKED_AMOUNT;
@@ -138,7 +160,14 @@ function monthLink(month: ForecastMonth) {
                 <button v-if="year !== new Date().getFullYear()" type="button" class="su-link" @click="setYear(new Date().getFullYear())">
                     {{ t('forecastsPage.current') }}
                 </button>
+                <label v-if="currencies.length > 1" class="forecast__currency">
+                    <span>{{ t('forecastsPage.currency') }}</span>
+                    <select :value="data?.currency" @change="setCurrency(($event.target as HTMLSelectElement).value)">
+                        <option v-for="code in currencies" :key="code" :value="code">{{ code }}</option>
+                    </select>
+                </label>
             </nav>
+            <p v-if="currencies.length > 1" class="forecast__muted">{{ t('forecastsPage.currencyNote') }}</p>
 
             <div v-if="loading && !data" class="su-loading"><span class="su-spin" /></div>
             <p v-else-if="failed" class="forecast__muted">
@@ -254,6 +283,14 @@ function monthLink(month: ForecastMonth) {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.forecast__currency {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    font-size: 0.875rem;
 }
 
 .forecast__year {

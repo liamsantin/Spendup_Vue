@@ -6,6 +6,7 @@ import {
     forecastsLocation,
     isPlannedSource,
     lineTarget,
+    parseCurrencyQuery,
     parseYearQuery,
     plannedShare,
     type ForecastLine,
@@ -37,6 +38,14 @@ describe('adresse de la page Prévisions', () => {
         expect(parseYearQuery('abc', today)).toBe(2026);
         expect(parseYearQuery('1800', today)).toBe(2026);
         expect(parseYearQuery(undefined, today)).toBe(2026);
+    });
+
+    it('lit la devise, sinon aucune', () => {
+        expect(parseCurrencyQuery('eur')).toBe('EUR');
+        expect(parseCurrencyQuery(['CHF'])).toBe('CHF');
+        expect(parseCurrencyQuery('EURO')).toBeNull();
+        expect(parseCurrencyQuery('12')).toBeNull();
+        expect(parseCurrencyQuery(undefined)).toBeNull();
     });
 
     it('garde une adresse sans paramètre pour l’année en cours', () => {
@@ -133,6 +142,12 @@ describe('GET /api/forecasts/year en démo', () => {
             const lineExpense = m.lines.filter((l) => l.direction === 'depense').reduce((s, l) => s + l.amount, 0);
             expect(lineExpense).toBeCloseTo(m.flows.expense, 2);
         }
+    });
+
+    it('liste les devises en usage, dont celle du calcul', () => {
+        const forecast = handleDemoRequest('GET', '/api/forecasts/year') as YearForecast;
+        expect(forecast.currencies).toContain(forecast.currency);
+        expect([...forecast.currencies].sort()).toEqual(forecast.currencies);
     });
 
     it('refuse une année invalide', () => {

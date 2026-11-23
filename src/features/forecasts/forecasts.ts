@@ -29,7 +29,13 @@ export type ForecastMonth = {
 };
 
 /** Réponse de `GET /api/forecasts/year` : 12 mois, une seule devise. */
-export type YearForecast = { year: number; currency: string; months: ForecastMonth[] };
+export type YearForecast = {
+    year: number;
+    currency: string;
+    months: ForecastMonth[];
+    /** Devises en usage (comptes et récurrences actifs), triées ; sert au sélecteur. */
+    currencies: string[];
+};
 
 export const forecastsApi = {
     year(year: number, currency?: string | null) {
@@ -47,6 +53,12 @@ export function parseYearQuery(raw: unknown, today = new Date()): number {
     const value = Array.isArray(raw) ? raw[0] : raw;
     const year = typeof value === 'string' && /^\d{4}$/.test(value) ? Number(value) : NaN;
     return year >= 1900 && year <= 2200 ? year : today.getFullYear();
+}
+
+/** Devise lue dans l’adresse (`?c=CHF`) ; absente ou invalide = `null` (devise du compte principal). */
+export function parseCurrencyQuery(raw: unknown): string | null {
+    const value = Array.isArray(raw) ? raw[0] : raw;
+    return typeof value === 'string' && /^[A-Za-z]{3}$/.test(value) ? value.toUpperCase() : null;
 }
 
 /** Lien vers la page ; l’année en cours garde une adresse sans paramètre. */

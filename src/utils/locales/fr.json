@@ -1860,6 +1860,8 @@
         "previous": "Année précédente",
         "next": "Année suivante",
         "current": "Année en cours",
+        "currency": "Devise",
+        "currencyNote": "Les montants sont calculés dans une seule devise à la fois, sans conversion : les autres devises ne sont pas additionnées.",
         "loadFailed": "Impossible de charger les prévisions.",
         "empty": "Rien à afficher pour cette année : ajoutez des transactions, des charges ou des revenus récurrents.",
         "cumulative": "Cumul depuis janvier",
