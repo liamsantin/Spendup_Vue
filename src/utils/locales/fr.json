@@ -1593,6 +1593,8 @@
         "lppRateHint": "Celui de votre caisse, qui peut différer du minimum légal.",
         "pillar3aLabel": "Capital 3e pilier a",
         "pillar3aHint": "Total de vos avoirs 3a, actuel ou projeté. Laissez vide si vous n’en avez pas.",
+        "pillar3aUseBalance": "Reprendre le solde de mes comptes 3a : {amount}",
+        "pillar3aOtherCurrency": "Un compte 3a dans une autre devise n’est pas compté. | {count} comptes 3a dans une autre devise ne sont pas comptés.",
         "spreadLabel": "Répartition du capital (années)",
         "spreadHint": "Le capital 3a est réparti sur cette durée (20 ans par défaut). Elle sert aussi à calculer le capital manquant.",
         "expensesLabel": "Dépenses mensuelles",

@@ -37,6 +37,8 @@ const lppCapitalText = ref('');
 const lppRateText = ref('');
 const lppRatePlaceholder = ref('');
 const pillar3aText = ref('');
+/** Solde des comptes 3a, connu s'il y en a au moins un en CHF. */
+const pillar3aBalance = ref<{ total: number; accountCount: number; otherCurrencyCount: number } | null>(null);
 const spreadText = ref(String(RETIREMENT_DEFAULT_SPREAD_YEARS));
 const expensesText = ref('');
 const returnText = ref('');
@@ -142,7 +144,19 @@ watch(
 
 onBeforeUnmount(() => clearTimeout(timer));
 
+function usePillar3aBalance() {
+    if (pillar3aBalance.value) pillar3aText.value = asText(pillar3aBalance.value.total);
+}
+
 onMounted(async () => {
+    retirementApi
+        .pillar3aBalance()
+        .then((balance) => {
+            pillar3aBalance.value = balance.accountCount > 0 ? balance : null;
+        })
+        .catch(() => {
+            /* Sans solde, le champ reste une saisie libre. */
+        });
     /* Taux minimal légal LPP (M0) affiché en exemple dans le champ : jamais écrit en dur. */
     legalApi
         .get()
@@ -319,6 +333,20 @@ const ageText = computed(() => {
                             :suffix="currency"
                         />
                         <p class="retire__muted">{{ t('retirement.pillar3aHint') }}</p>
+                        <p v-if="pillar3aBalance" class="retire__muted">
+                            <button type="button" class="su-link" @click="usePillar3aBalance()">
+                                {{ t('retirement.pillar3aUseBalance', { amount: money(pillar3aBalance.total) }) }}
+                            </button>
+                            <template v-if="pillar3aBalance.otherCurrencyCount > 0">
+                                {{
+                                    t(
+                                        'retirement.pillar3aOtherCurrency',
+                                        { count: pillar3aBalance.otherCurrencyCount },
+                                        pillar3aBalance.otherCurrencyCount
+                                    )
+                                }}
+                            </template>
+                        </p>
                     </div>
                     <div class="su-field">
                         <label for="retire-spread" class="su-field__label">{{ t('retirement.spreadLabel') }}</label>

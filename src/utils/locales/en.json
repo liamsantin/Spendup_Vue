@@ -1593,6 +1593,8 @@
         "lppRateHint": "Your fund’s own rate, which may differ from the legal minimum.",
         "pillar3aLabel": "Pillar 3a capital",
         "pillar3aHint": "Total of your 3a savings, current or projected. Leave empty if you have none.",
+        "pillar3aUseBalance": "Use the balance of my 3a accounts: {amount}",
+        "pillar3aOtherCurrency": "One 3a account in another currency is not counted. | {count} 3a accounts in another currency are not counted.",
         "spreadLabel": "Capital spread (years)",
         "spreadHint": "The 3a capital is spread over this period (20 years by default). It also sets the capital needed to fill a gap.",
         "expensesLabel": "Monthly spending",

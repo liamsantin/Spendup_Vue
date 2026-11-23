@@ -75,3 +75,11 @@ export interface RetirementProfile {
     input: RetirementInput | null;
     updatedAt: string | null;
 }
+
+/** Solde actuel des comptes 3e pilier A (CHF) ; `accountCount` 0 = aucun compte 3a. Les autres devises ne sont pas converties. */
+export interface RetirementPillar3aBalance {
+    total: number;
+    currency: string;
+    accountCount: number;
+    otherCurrencyCount: number;
+}

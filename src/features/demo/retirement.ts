@@ -4,6 +4,7 @@ import { computeRetirement, retirementInputIssue, type RetirementLegal } from '@
 import {
     RETIREMENT_DEFAULT_SPREAD_YEARS,
     type RetirementInput,
+    type RetirementPillar3aBalance,
     type RetirementProfile,
     type RetirementResult
 } from '@/features/retirement/types';
@@ -69,4 +70,9 @@ export function demoRetirementSave(body: Partial<RetirementInput>): RetirementPr
 
 export function demoRetirementRemove(): void {
     demoDb().retirementProfile = null;
+}
+
+/** `GET /api/retirement/pillar3a-balance` : la démo n'a pas de compte 3a. */
+export function demoRetirementPillar3aBalance(): RetirementPillar3aBalance {
+    return { total: 0, currency: 'CHF', accountCount: 0, otherCurrencyCount: 0 };
 }

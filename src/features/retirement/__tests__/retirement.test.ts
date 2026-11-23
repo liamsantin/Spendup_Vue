@@ -153,6 +153,12 @@ describe('démo', () => {
         expect(() => handleDemoRequest('PUT', `${BASE}/profile`, input({ gender: 'x' as never }))).toThrow();
     });
 
+    it('répond sans compte 3a en démo', () => {
+        const balance = handleDemoRequest('GET', `${BASE}/pillar3a-balance`) as { total: number; accountCount: number };
+        expect(balance.accountCount).toBe(0);
+        expect(balance.total).toBe(0);
+    });
+
     it('enregistre un seul profil, le remplace puis le supprime', () => {
         handleDemoRequest('PUT', `${BASE}/profile`, input({ pillar3aCapital: 50000, pillar3aSpreadYears: null }));
         handleDemoRequest('PUT', `${BASE}/profile`, input({ avsMonthlyPension: 2100, pillar3aCapital: 60000, pillar3aSpreadYears: 25 }));
